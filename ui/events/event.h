@@ -472,11 +472,6 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
   float force() const { return force_; }
   int source_device_id() const { return source_device_id_; }
 
-  // Relocate the touch-point to a new |origin|.
-  // This is useful when touch event is in X Root Window coordinates,
-  // and it needs to be mapped into Aura Root Window coordinates.
-  void Relocate(const gfx::Point& origin);
-
   // Used for unit tests.
   void set_radius_x(const float r) { radius_x_ = r; }
   void set_radius_y(const float r) { radius_y_ = r; }

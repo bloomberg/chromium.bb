@@ -64,7 +64,7 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   // Called when X Configure Notify event is recevied.
   virtual void OnConfigureNotify();
 
-  // Translates the native mouse location into screen coordinates and and
+  // Translates the native mouse location into screen coordinates and
   // dispatches the event via WindowEventDispatcher.
   virtual void TranslateAndDispatchLocatedEvent(ui::LocatedEvent* event);
 

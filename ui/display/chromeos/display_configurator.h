@@ -19,6 +19,7 @@
 #include "ui/display/display_export.h"
 #include "ui/display/types/chromeos/native_display_observer.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace gfx {
 class Point;
@@ -36,16 +37,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   typedef uint64_t ContentProtectionClientId;
   static const ContentProtectionClientId kInvalidClientId = 0;
 
-  struct CoordinateTransformation {
-    // Initialized to the identity transformation.
-    CoordinateTransformation();
-
-    float x_scale;
-    float x_offset;
-    float y_scale;
-    float y_offset;
-  };
-
   struct DisplayState {
     DisplayState();
 
@@ -53,8 +44,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
     // XInput device ID or 0 if this display isn't a touchscreen.
     int touch_device_id;
-
-    CoordinateTransformation transform;
 
     // User-selected mode for the display.
     const DisplayMode* selected_mode;
@@ -117,14 +106,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
     // If a touchscreen with same resolution as a display's native mode
     // is detected, its id will be stored in this display.
     virtual void AssociateTouchscreens(std::vector<DisplayState>* displays) = 0;
-
-    // Configures XInput's Coordinate Transformation Matrix property.
-    // |touch_device_id| the ID of the touchscreen device to configure.
-    // |ctm| contains the desired transformation parameters.  The offsets
-    // in it should be normalized so that 1 corresponds to the X or Y axis
-    // size for the corresponding offset.
-    virtual void ConfigureCTM(int touch_device_id,
-                              const CoordinateTransformation& ctm) = 0;
   };
 
   // Helper class used by tests.
@@ -171,6 +152,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   MultipleDisplayState display_state() const { return display_state_; }
   chromeos::DisplayPowerState power_state() const { return power_state_; }
+  const gfx::Size framebuffer_size() const { return framebuffer_size_; }
   const std::vector<DisplayState>& cached_displays() const {
     return cached_displays_;
   }
@@ -335,21 +317,6 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   MultipleDisplayState ChooseDisplayState(
       chromeos::DisplayPowerState power_state) const;
 
-  // Computes the relevant transformation for mirror mode.
-  // |display| is the display on which mirror mode is being applied.
-  // Returns the transformation or identity if computations fail.
-  CoordinateTransformation GetMirrorModeCTM(const DisplayState& display);
-
-  // Computes the relevant transformation for extended mode. |display| is the
-  // display on which extended mode is being applied. |new_origin| is the
-  // position of the display on the framebuffer. |framebuffer_size| is the
-  // size of the combined framebuffer.
-  // Returns the transformation or identity if computations fail.
-  CoordinateTransformation GetExtendedModeCTM(
-      const DisplayState& display,
-      const gfx::Point& new_origin,
-      const gfx::Size& framebuffer_size);
-
   // Returns the ratio between mirrored mode area and native mode area:
   // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
   float GetMirroredDisplayAreaRatio(const DisplayState& display);
@@ -382,6 +349,8 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
   // The current display state.
   MultipleDisplayState display_state_;
+
+  gfx::Size framebuffer_size_;
 
   // The current power state.
   chromeos::DisplayPowerState power_state_;

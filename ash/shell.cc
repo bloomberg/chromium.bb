@@ -114,6 +114,7 @@
 #if defined(USE_X11)
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
+#include "ash/touch/touch_transformer_controller.h"
 #include "ui/gfx/x/x11_types.h"
 #endif  // defined(USE_X11)
 #include "ash/ash_constants.h"
@@ -756,6 +757,10 @@ Shell::~Shell() {
 #endif
   desktop_background_controller_.reset();
 
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  touch_transformer_controller_.reset();
+#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction
   // of its owned RootWindowControllers relies on the value.
@@ -986,6 +991,13 @@ void Shell::Init() {
       base::Bind(&SystemTrayDelegate::SignOut,
                  base::Unretained(system_tray_delegate_.get()))));
 #endif
+
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  // Create TouchTransformerController before DisplayController::InitDisplays()
+  // since TouchTransformerController listens on
+  // DisplayController::Observer::OnDisplaysInitialized().
+  touch_transformer_controller_.reset(new TouchTransformerController());
+#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
 
   display_controller_->InitDisplays();
 

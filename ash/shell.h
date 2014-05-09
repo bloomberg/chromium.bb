@@ -136,6 +136,7 @@ class SystemTray;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
 class ToplevelWindowEventHandler;
+class TouchTransformerController;
 class TouchObserverHUD;
 class UserActivityDetector;
 class UserWallpaperDelegate;
@@ -370,6 +371,11 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   DisplayController* display_controller() {
     return display_controller_.get();
   }
+#if defined(OS_CHROMEOS) && defined(USE_X11)
+  TouchTransformerController* touch_transformer_controller() {
+    return touch_transformer_controller_.get();
+  }
+#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
   MouseCursorEventFilter* mouse_cursor_filter() {
     return mouse_cursor_filter_.get();
   }
@@ -714,6 +720,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 #if defined(USE_X11)
   scoped_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
   scoped_ptr<ui::EventHandler> speech_feedback_handler_;
+  scoped_ptr<TouchTransformerController> touch_transformer_controller_;
 #endif  // defined(USE_X11)
 #endif  // defined(OS_CHROMEOS)
 

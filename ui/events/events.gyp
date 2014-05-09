@@ -25,6 +25,7 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         'dom4_keycode_converter',
@@ -312,6 +313,7 @@
       'target_name': 'events_test_support',
       'type': 'static_library',
       'dependencies': [
+        '<(DEPTH)/skia/skia.gyp:skia',
         'events',
         'events_base',
       ],
@@ -351,6 +353,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:run_all_unittests',
         '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gfx/gfx.gyp:gfx_test_support',

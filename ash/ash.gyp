@@ -519,6 +519,8 @@
         'touch/touch_hud_projection.h',
         'touch/touch_observer_hud.cc',
         'touch/touch_observer_hud.h',
+        'touch/touch_transformer_controller.cc',
+        'touch/touch_transformer_controller.h',
         'touch/touch_uma.cc',
         'touch/touch_uma.h',
         'volume_control_delegate.h',
@@ -700,6 +702,8 @@
             ['exclude', 'accelerators/magnifier_key_scroller.h'],
             ['exclude', 'accelerators/spoken_feedback_toggler.cc'],
             ['exclude', 'accelerators/spoken_feedback_toggler.h'],
+            ['exclude', 'touch/touch_transformer_controller.cc'],
+            ['exclude', 'touch/touch_transformer_controller.h'],
           ],
         }, { # else: use_x11==1
           'dependencies': [
@@ -725,6 +729,8 @@
 	    ['exclude', 'system/tray/media_security/media_capture_observer.h'],
 	    ['exclude', 'system/tray/media_security/multi_profile_media_tray_item.cc'],
 	    ['exclude', 'system/tray/media_security/multi_profile_media_tray_item.h'],
+            ['exclude', 'touch/touch_transformer_controller.cc'],
+            ['exclude', 'touch/touch_transformer_controller.h'],
           ],
         }],
       ],
@@ -973,6 +979,7 @@
         'test/ash_unittests.cc',
         'tooltips/tooltip_controller_unittest.cc',
         'touch/touch_observer_hud_unittest.cc',
+        'touch/touch_transformer_controller_unittest.cc',
         'wm/app_list_controller_unittest.cc',
         'wm/ash_native_cursor_manager_unittest.cc',
         'wm/dock/docked_window_layout_manager_unittest.cc',
@@ -1047,6 +1054,7 @@
           'sources/': [
             ['exclude', 'accelerators/magnifier_key_scroller_unittest.cc'],
             ['exclude', 'accelerators/spoken_feedback_toggler_unittest.cc'],
+            ['exclude', 'touch/touch_transformer_controller_unittest.cc'],
           ],
         }],
         ['chromeos==1', {
@@ -1064,6 +1072,7 @@
         }, { # else: chromeos!=1
           'sources/': [
             ['exclude', 'display/resolution_notification_controller_unittest.cc'],
+            ['exclude', 'touch/touch_transformer_controller_unittest.cc'],
           ],
         }],
         ['OS=="linux" and component=="shared_library" and use_allocator!="none"', {

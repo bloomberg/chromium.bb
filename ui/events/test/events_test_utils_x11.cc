@@ -109,6 +109,7 @@ XEvent* CreateXInput2Event(int deviceid,
   xiev->detail = tracking_id;
   xiev->event_x = location.x();
   xiev->event_y = location.y();
+  xiev->event = DefaultRootWindow(gfx::GetXDisplay());
   if (evtype == XI_ButtonPress || evtype == XI_ButtonRelease) {
     xiev->buttons.mask_len = 8;
     xiev->buttons.mask = new unsigned char[xiev->buttons.mask_len];

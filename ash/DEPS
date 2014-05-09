@@ -21,4 +21,7 @@ specific_include_rules = {
   "root_window_controller\.*": [
     "+ash/host"
   ],
+  "touch_transformer_controller\.*": [
+    "+ash/host"
+  ],
 }

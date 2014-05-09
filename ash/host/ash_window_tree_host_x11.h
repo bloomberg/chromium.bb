@@ -30,6 +30,7 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   virtual void SetRootWindowTransformer(
       scoped_ptr<RootWindowTransformer> transformer) OVERRIDE;
   virtual aura::WindowTreeHost* AsWindowTreeHost() OVERRIDE;
+  virtual void UpdateDisplayID(int64 id1, int64 id2) OVERRIDE;
 
   // aura::WindowTreehost:
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
@@ -41,6 +42,7 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
 
   // aura::WindowTreeHostX11:
   virtual void OnConfigureNotify() OVERRIDE;
+  virtual bool CanDispatchEvent(const ui::PlatformEvent& event) OVERRIDE;
   virtual void TranslateAndDispatchLocatedEvent(ui::LocatedEvent* event)
       OVERRIDE;
 
@@ -48,23 +50,20 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   virtual void OnWindowInitialized(aura::Window* window) OVERRIDE;
   virtual void OnHostInitialized(aura::WindowTreeHost* host) OVERRIDE;
 
-  class TouchEventCalibrate;
-
-  // Update is_internal_display_ based on the current state.
-  void UpdateIsInternalDisplay();
-
   // Set the CrOS touchpad "tap paused" property. It is used to temporarily
   // turn off the Tap-to-click feature when the mouse pointer is invisible.
   void SetCrOSTapPaused(bool state);
 
-  // True if the root host resides on the internal display
-  bool is_internal_display_;
-
   scoped_ptr<XID[]> pointer_barriers_;
 
-  scoped_ptr<TouchEventCalibrate> touch_calibrate_;
-
   TransformerHelper transformer_helper_;
+
+  // The display IDs associated with this root window.
+  // In single monitor or extended mode dual monitor case, the root window
+  // is associated with one display.
+  // In mirror mode dual monitors case, the root window is associated with
+  // both displays.
+  std::pair<int64, int64> display_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(AshWindowTreeHostX11);
 };
