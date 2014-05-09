@@ -6,6 +6,8 @@
 {%-   for param in parameters %}
 {%-     if param.kind|is_object_kind -%}
 mojo::internal::Wrap(params->{{param.name}}())
+{%-     elif param.kind|is_interface_kind -%}
+mojo::MakeProxy<{{param.kind.name}}>(mojo::MakePassable(params->{{param.name}}()).Pass())
 {%-     elif param.kind|is_handle_kind -%}
 mojo::MakePassable(params->{{param.name}}()).Pass()
 {%-     elif param.kind|is_enum_kind -%}
@@ -38,6 +40,14 @@ params->{{param.name}}()
   if (!in_{{param.name}}.is_null())
     params->set_{{param.name}}(
         mojo::internal::Unwrap(in_{{param.name}})->Clone(builder.buffer()));
+{%-     elif param.kind|is_interface_kind %}
+  if (!in_{{param.name}}.get()) {
+    params->set_{{param.name}}(mojo::MessagePipeHandle());
+  } else {
+    // Delegate handle.
+    params->set_{{param.name}}(
+        in_{{param.name}}.ResetAndReturnMessagePipe().release());
+  }
 {%-     elif param.kind|is_handle_kind %}
   params->set_{{param.name}}(in_{{param.name}}.release());
 {%-     else %}
@@ -165,8 +175,8 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
 {%-   endif -%}
 {%- endfor %}
 
-{{class_name}}Stub::{{class_name}}Stub({{class_name}}* sink)
-    : sink_(sink) {
+{{class_name}}Stub::{{class_name}}Stub()
+    : sink_(NULL) {
 }
 
 {#--- Stub definition #}

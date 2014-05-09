@@ -47,7 +47,7 @@ struct OmniboxResultMojo {
   AutocompleteResultsForProviderMojo[] results_by_provider;
 };
 
-[Peer=OmniboxPage]
+[Client=OmniboxPage]
 interface OmniboxUIHandlerMojo {
   StartOmniboxQuery(string input_string,
                     int32 cursor_position,
@@ -56,7 +56,6 @@ interface OmniboxUIHandlerMojo {
                     int32 page_classification);
 };
 
-[Peer=OmniboxUIHandlerMojo]
 interface OmniboxPage {
   HandleNewAutocompleteResult(OmniboxResultMojo result);
 };

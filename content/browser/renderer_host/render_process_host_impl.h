@@ -21,9 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/embedder/scoped_platform_handle.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
-#include "mojo/public/interfaces/shell/shell.mojom.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
 
 struct ViewHostMsg_CompositorSurfaceBuffersSwapped_Params;
 
@@ -244,6 +242,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // content/common/mojo/mojo_service_names.h for a list of services.
   void ConnectTo(const base::StringPiece& service_name,
                  mojo::ScopedMessagePipeHandle handle);
+
+  template <typename Interface>
+  void ConnectTo(const base::StringPiece& service_name,
+                 mojo::InterfacePtr<Interface>* ptr) {
+    mojo::MessagePipe pipe;
+    ptr->Bind(pipe.handle0.Pass());
+    ConnectTo(service_name, pipe.handle1.Pass());
+  }
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see

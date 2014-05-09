@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
@@ -30,14 +29,13 @@
 namespace mojo {
 namespace examples {
 
-class DBusEchoApp : public Application, public mojo::EchoClient {
+class DBusEchoApp : public Application {
  public:
   explicit DBusEchoApp(MojoHandle shell_handle) : Application(shell_handle) {
-    InterfacePipe<EchoService, AnyInterface> echo_pipe;
-    mojo::AllocationScope scope;
-    shell()->Connect("dbus:org.chromium.EchoService/org/chromium/MojoImpl",
-                     echo_pipe.handle_to_peer.Pass());
-    echo_service_.reset(echo_pipe.handle_to_self.Pass(), this);
+    ConnectTo("dbus:org.chromium.EchoService/org/chromium/MojoImpl",
+              &echo_service_);
+
+    AllocationScope scope;
     echo_service_->Echo("who", base::Bind(&DBusEchoApp::OnEcho,
                                           base::Unretained(this)));
   }
@@ -46,11 +44,11 @@ class DBusEchoApp : public Application, public mojo::EchoClient {
   }
 
  private:
-  void OnEcho(const mojo::String& echoed) {
+  void OnEcho(const String& echoed) {
     LOG(INFO) << "echo'd " << echoed.To<std::string>();
   }
 
-  RemotePtr<EchoService> echo_service_;
+  EchoServicePtr echo_service_;
 };
 
 }  // namespace examples

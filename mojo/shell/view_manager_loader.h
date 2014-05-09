@@ -30,7 +30,7 @@ class ViewManagerLoader : public ServiceLoader {
   // ServiceLoader overrides:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
-                           ScopedShellHandle shell_handle) OVERRIDE;
+                           ScopedMessagePipeHandle shell_handle) OVERRIDE;
   virtual void OnServiceError(ServiceManager* manager,
                               const GURL& url) OVERRIDE;
 

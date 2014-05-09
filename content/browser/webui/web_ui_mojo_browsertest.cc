@@ -25,7 +25,6 @@
 #include "grit/content_resources.h"
 #include "mojo/common/test/test_utils.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/js/bindings/constants.h"
 
 namespace content {
@@ -54,23 +53,24 @@ bool GetResource(const std::string& id,
   return true;
 }
 
-class BrowserTargetImpl : public mojo::BrowserTarget {
+class BrowserTargetImpl : public BrowserTarget {
  public:
-  BrowserTargetImpl(mojo::ScopedRendererTargetHandle& handle,
+  BrowserTargetImpl(mojo::ScopedMessagePipeHandle handle,
                     base::RunLoop* run_loop)
-      : client_(handle.Pass(), this),
+      : renderer_(mojo::MakeProxy<RendererTarget>(handle.Pass())),
         run_loop_(run_loop) {
+    renderer_->SetClient(this);
   }
 
   virtual ~BrowserTargetImpl() {}
 
-  // mojo::BrowserTarget overrides:
+  // BrowserTarget overrides:
   virtual void PingResponse() OVERRIDE {
     NOTREACHED();
   }
 
  protected:
-  mojo::RemotePtr<mojo::RendererTarget> client_;
+  RendererTargetPtr renderer_;
   base::RunLoop* run_loop_;
 
  private:
@@ -79,15 +79,15 @@ class BrowserTargetImpl : public mojo::BrowserTarget {
 
 class PingBrowserTargetImpl : public BrowserTargetImpl {
  public:
-  PingBrowserTargetImpl(mojo::ScopedRendererTargetHandle handle,
+  PingBrowserTargetImpl(mojo::ScopedMessagePipeHandle handle,
                         base::RunLoop* run_loop)
-      : BrowserTargetImpl(handle, run_loop) {
-    client_->Ping();
+      : BrowserTargetImpl(handle.Pass(), run_loop) {
+    renderer_->Ping();
   }
 
   virtual ~PingBrowserTargetImpl() {}
 
-  // mojo::BrowserTarget overrides:
+  // BrowserTarget overrides:
   // Quit the RunLoop when called.
   virtual void PingResponse() OVERRIDE {
     got_message = true;
@@ -128,11 +128,10 @@ class PingTestWebUIController : public TestWebUIController {
 
   // WebUIController overrides:
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE {
-    mojo::InterfacePipe<mojo::BrowserTarget, mojo::RendererTarget> pipe;
-    browser_target_.reset(new PingBrowserTargetImpl(
-        pipe.handle_to_peer.Pass(), run_loop_));
-    render_view_host->SetWebUIHandle(
-        mojo::ScopedMessagePipeHandle(pipe.handle_to_self.release()));
+    mojo::MessagePipe pipe;
+    browser_target_.reset(
+        new PingBrowserTargetImpl(pipe.handle0.Pass(), run_loop_));
+    render_view_host->SetWebUIHandle(pipe.handle1.Pass());
   }
 
  private:

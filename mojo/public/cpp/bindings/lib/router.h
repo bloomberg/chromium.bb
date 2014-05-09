@@ -43,6 +43,14 @@ class Router : public MessageReceiver {
   // waiting to read from the pipe.
   bool encountered_error() const { return connector_.encountered_error(); }
 
+  void CloseMessagePipe() {
+    connector_.CloseMessagePipe();
+  }
+
+  ScopedMessagePipeHandle ReleaseMessagePipe() {
+    return connector_.ReleaseMessagePipe();
+  }
+
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) MOJO_OVERRIDE;
   virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)

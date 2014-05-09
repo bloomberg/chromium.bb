@@ -3,6 +3,12 @@ class {{interface.name}}Proxy : public {{interface.name}} {
  public:
   explicit {{interface.name}}Proxy(mojo::MessageReceiver* receiver);
 
+{%- if interface.client %}
+  virtual void SetClient({{interface.client}}* client) = 0;
+{%- else %}
+  virtual void SetClient(mojo::NoInterface* client) {}
+{%- endif %}
+
 {%- for method in interface.methods %}
   virtual void {{method.name}}(
       {{interface_macros.declare_request_params("", method)}}

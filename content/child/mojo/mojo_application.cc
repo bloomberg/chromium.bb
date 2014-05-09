@@ -38,8 +38,8 @@ void MojoApplication::OnActivate(
                          ChildProcess::current()->io_message_loop_proxy());
   DCHECK(message_pipe.is_valid());
 
-  shell_.reset(
-      mojo::ScopedShellHandle::From(message_pipe.Pass()), shell_client_);
+  shell_.Bind(message_pipe.Pass());
+  shell_->SetClient(shell_client_);
 }
 
 }  // namespace content

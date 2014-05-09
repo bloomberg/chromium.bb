@@ -7,7 +7,6 @@
 
 #include "mojo/examples/sample_app/spinning_cube.h"
 #include "mojo/public/c/gles2/gles2.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/size.h"

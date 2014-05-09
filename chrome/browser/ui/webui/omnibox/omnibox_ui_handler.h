@@ -14,7 +14,6 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 
 class AutocompleteController;
 class Profile;
@@ -24,16 +23,22 @@ class Profile;
 // AutocompleteController to OnResultChanged() and passes those results to
 // the OmniboxPage.
 class OmniboxUIHandler : public AutocompleteControllerDelegate,
-                         public OmniboxUIHandlerMojo,
+                         public mojo::InterfaceImpl<OmniboxUIHandlerMojo>,
                          public MojoWebUIHandler {
  public:
-  OmniboxUIHandler(ScopedOmniboxPageHandle handle, Profile* profile);
+  explicit OmniboxUIHandler(Profile* profile);
   virtual ~OmniboxUIHandler();
 
   // AutocompleteControllerDelegate overrides:
   virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
 
+  // ErrorHandler overrides:
+  virtual void OnConnectionError() OVERRIDE {
+    // TODO(darin): How should we handle connection error?
+  }
+
   // OmniboxUIHandlerMojo overrides:
+  virtual void SetClient(OmniboxPage* page) OVERRIDE;
   virtual void StartOmniboxQuery(const mojo::String& input_string,
                                  int32_t cursor_position,
                                  bool prevent_inline_autocomplete,
@@ -50,7 +55,7 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   // next query.
   void ResetController();
 
-  mojo::RemotePtr<OmniboxPage> page_;
+  OmniboxPage* page_;
 
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.

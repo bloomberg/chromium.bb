@@ -4,13 +4,8 @@
 
 module mojo {
 
-[Peer=ExternalServiceHost]
 interface ExternalService {
   Activate(handle<message_pipe> shell_handle);
-};
-
-[Peer=ExternalService]
-interface ExternalServiceHost {
 };
 
 }

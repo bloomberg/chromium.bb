@@ -26,12 +26,14 @@ mojo::ContextFactoryMojo* WindowTreeHostMojo::context_factory_ = NULL;
 // WindowTreeHostMojo, public:
 
 WindowTreeHostMojo::WindowTreeHostMojo(
-    ScopedNativeViewportHandle viewport_handle,
+    NativeViewportPtr viewport,
     const gfx::Rect& bounds,
     const base::Callback<void()>& compositor_created_callback)
-    : native_viewport_(viewport_handle.Pass(), this),
+    : native_viewport_(viewport.Pass()),
       compositor_created_callback_(compositor_created_callback),
       bounds_(bounds) {
+  native_viewport_->SetClient(this);
+
   AllocationScope scope;
   native_viewport_->Create(bounds);
 

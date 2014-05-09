@@ -46,6 +46,9 @@ def IsObjectKind(kind):
 def IsHandleKind(kind):
   return kind.spec.startswith('h') or isinstance(kind, mojom.Interface)
 
+def IsInterfaceKind(kind):
+  return isinstance(kind, mojom.Interface)
+
 def StudlyCapsToCamel(studly):
   return studly[0].lower() + studly[1:]
 

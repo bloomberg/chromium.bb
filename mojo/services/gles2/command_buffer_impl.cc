@@ -48,10 +48,9 @@ class MemoryTrackerStub : public gpu::gles2::MemoryTracker {
 
 }  // anonymous namespace
 
-CommandBufferImpl::CommandBufferImpl(ScopedCommandBufferClientHandle client,
-                                     gfx::AcceleratedWidget widget,
+CommandBufferImpl::CommandBufferImpl(gfx::AcceleratedWidget widget,
                                      const gfx::Size& size)
-    : client_(client.Pass(), this), widget_(widget), size_(size) {}
+    : widget_(widget), size_(size) {}
 
 CommandBufferImpl::~CommandBufferImpl() {
   client_->DidDestroy();
@@ -61,10 +60,18 @@ CommandBufferImpl::~CommandBufferImpl() {
   }
 }
 
+void CommandBufferImpl::OnConnectionError() {
+  // TODO(darin): How should we handle this error?
+}
+
+void CommandBufferImpl::SetClient(CommandBufferClient* client) {
+  client_ = client;
+}
+
 void CommandBufferImpl::Initialize(
-    ScopedCommandBufferSyncClientHandle sync_client,
+    CommandBufferSyncClientPtr sync_client,
     mojo::ScopedSharedBufferHandle shared_state) {
-  sync_client_.reset(sync_client.Pass(), NULL);
+  sync_client_ = sync_client.Pass();
   sync_client_->DidInitialize(DoInitialize(shared_state.Pass()));
 }
 

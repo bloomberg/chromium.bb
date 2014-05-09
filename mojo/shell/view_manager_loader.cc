@@ -19,7 +19,7 @@ ViewManagerLoader::~ViewManagerLoader() {
 
 void ViewManagerLoader::LoadService(ServiceManager* manager,
                                     const GURL& url,
-                                    ScopedShellHandle shell_handle) {
+                                    ScopedMessagePipeHandle shell_handle) {
   scoped_ptr<Application> app(new Application(shell_handle.Pass()));
   if (!root_node_manager_.get()) {
     root_node_manager_.reset(

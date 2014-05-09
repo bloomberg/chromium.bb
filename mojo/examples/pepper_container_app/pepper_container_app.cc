@@ -12,7 +12,6 @@
 #include "mojo/examples/pepper_container_app/plugin_module.h"
 #include "mojo/examples/pepper_container_app/type_converters.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/shell/application.h"
@@ -43,11 +42,11 @@ class PepperContainerApp: public Application,
       : Application(shell_handle),
         ppapi_globals_(this),
         plugin_module_(new PluginModule) {
-    InterfacePipe<NativeViewport, AnyInterface> viewport_pipe;
     mojo::AllocationScope scope;
-    shell()->Connect("mojo:mojo_native_viewport_service",
-                     viewport_pipe.handle_to_peer.Pass());
-    viewport_.reset(viewport_pipe.handle_to_self.Pass(), this);
+
+    ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
+    viewport_->SetClient(this);
+
     Rect::Builder rect;
     Point::Builder point;
     point.set_x(10);
@@ -110,7 +109,7 @@ class PepperContainerApp: public Application,
  private:
   MojoPpapiGlobals ppapi_globals_;
 
-  RemotePtr<NativeViewport> viewport_;
+  NativeViewportPtr viewport_;
   scoped_refptr<PluginModule> plugin_module_;
   scoped_ptr<PluginInstance> plugin_instance_;
 

@@ -29,7 +29,7 @@ class DynamicServiceRunner {
   // runs it on some other thread/process. |app_completed_callback| is posted
   // (to the thread on which |Start()| was called) after |MojoMain()| completes.
   virtual void Start(const base::FilePath& app_path,
-                     ScopedShellHandle service_handle,
+                     ScopedMessagePipeHandle service_handle,
                      const base::Closure& app_completed_callback) = 0;
 };
 

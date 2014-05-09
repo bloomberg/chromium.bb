@@ -6,7 +6,6 @@
 #define MOJO_SHELL_APP_CHILD_PROCESS_HOST_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/shell/app_child_process.mojom.h"
 #include "mojo/shell/child_process_host.h"
 
@@ -27,10 +26,10 @@ class AppChildProcessHost : public ChildProcessHost,
                             public ChildProcessHost::Delegate {
  public:
   AppChildProcessHost(Context* context,
-                      mojo_shell::AppChildControllerClient* controller_client);
+                      AppChildControllerClient* controller_client);
   virtual ~AppChildProcessHost();
 
-  mojo_shell::AppChildController* controller() {
+  AppChildController* controller() {
     return controller_.get();
   }
 
@@ -42,9 +41,9 @@ class AppChildProcessHost : public ChildProcessHost,
   // Callback for |embedder::CreateChannel()|.
   void DidCreateChannel(embedder::ChannelInfo* channel_info);
 
-  mojo_shell::AppChildControllerClient* const controller_client_;
+  AppChildControllerClient* const controller_client_;
 
-  RemotePtr<mojo_shell::AppChildController> controller_;
+  AppChildControllerPtr controller_;
   embedder::ChannelInfo* channel_info_;
 
   DISALLOW_COPY_AND_ASSIGN(AppChildProcessHost);

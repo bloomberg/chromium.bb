@@ -37,7 +37,7 @@ struct Event {
   TouchData touch_data;
 };
 
-[Peer=NativeViewportClient]
+[Client=NativeViewportClient]
 interface NativeViewport {
   Create(Rect bounds);
   Show();
@@ -47,7 +47,6 @@ interface NativeViewport {
   CreateGLES2Context(handle<message_pipe> gles2_client);
 };
 
-[Peer=NativeViewport]
 interface NativeViewportClient {
   OnCreated();
   OnBoundsChanged(Rect bounds);

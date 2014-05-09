@@ -11,8 +11,6 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/service_manager/service_loader.h"
 
 namespace mojo {
@@ -22,74 +20,74 @@ namespace {
 bool has_created_instance = false;
 }
 
-class ServiceManager::ServiceFactory : public Shell, public ErrorHandler {
+class ServiceManager::ServiceFactory : public InterfaceImpl<Shell> {
  public:
   ServiceFactory(ServiceManager* manager, const GURL& url)
       : manager_(manager),
-        url_(url) {
-    InterfacePipe<Shell> pipe;
-    shell_client_.reset(pipe.handle_to_peer.Pass(), this, this);
-    manager_->GetLoaderForURL(url)->LoadService(manager_,
-                                                url,
-                                                pipe.handle_to_self.Pass());
+        url_(url),
+        client_(NULL) {
   }
 
-  virtual ~ServiceFactory() {}
+  virtual ~ServiceFactory() {
+  }
 
   void ConnectToClient(ScopedMessagePipeHandle handle) {
-    if (handle.is_valid()) {
-      AllocationScope scope;
-      shell_client_->AcceptConnection(url_.spec(), handle.Pass());
+    if (!handle.is_valid()) {
+      assert(false);
+      return;
     }
+    AllocationScope scope;
+    client_->AcceptConnection(url_.spec(), handle.Pass());
   }
 
+  // Shell implementation:
+  virtual void SetClient(ShellClient* client) OVERRIDE {
+    client_ = client;
+  }
   virtual void Connect(const String& url,
                        ScopedMessagePipeHandle client_pipe) OVERRIDE {
     manager_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
-  }
-
-  virtual void OnError() OVERRIDE {
-    manager_->OnServiceFactoryError(this);
   }
 
   const GURL& url() const { return url_; }
 
  private:
+  virtual void OnConnectionError() OVERRIDE {
+    manager_->OnServiceFactoryError(this);
+  }
+
   ServiceManager* const manager_;
   const GURL url_;
-  RemotePtr<ShellClient> shell_client_;
+  ShellClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
 };
 
 class ServiceManager::TestAPI::TestShellConnection
-    : public Shell,
-      public ErrorHandler {
+    : public InterfaceImpl<Shell> {
  public:
-  explicit TestShellConnection(ServiceManager* manager) : manager_(manager) {
-    InterfacePipe<Shell> pipe;
-    shell_client_.reset(pipe.handle_to_peer.Pass(), this, this);
-    shell_handle_ = pipe.handle_to_self.Pass();
+  explicit TestShellConnection(ServiceManager* manager)
+      : manager_(manager),
+        client_(NULL) {
   }
   virtual ~TestShellConnection() {}
 
-  ScopedShellHandle GetShellHandle() {
-    return shell_handle_.Pass();
+  virtual void OnConnectionError() OVERRIDE {
+    // TODO(darin): How should we handle this error?
   }
 
   // Shell:
+  virtual void SetClient(ShellClient* client) OVERRIDE {
+    client_ = client;
+  }
   virtual void Connect(const String& url,
                        ScopedMessagePipeHandle client_pipe) OVERRIDE {
     manager_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
   }
 
-  virtual void OnError() OVERRIDE {
-  }
-
  private:
   ServiceManager* manager_;
-  RemotePtr<ShellClient> shell_client_;
-  ScopedShellHandle shell_handle_;
+  ShellClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellConnection);
 };
@@ -105,15 +103,16 @@ bool ServiceManager::TestAPI::HasCreatedInstance() {
   return has_created_instance;
 }
 
-ScopedShellHandle ServiceManager::TestAPI::GetShellHandle() {
-  if (!shell_connection_.get())
-    shell_connection_.reset(new TestShellConnection(manager_));
-  return shell_connection_->GetShellHandle().Pass();
+ScopedMessagePipeHandle ServiceManager::TestAPI::GetShellHandle() {
+  MessagePipe pipe;
+  shell_.reset(
+      BindToPipe(new TestShellConnection(manager_), pipe.handle0.Pass()));
+  return pipe.handle1.Pass();
 }
 
 bool ServiceManager::TestAPI::HasFactoryForURL(const GURL& url) const {
   return manager_->url_to_service_factory_.find(url) !=
-      manager_->url_to_service_factory_.end();
+         manager_->url_to_service_factory_.end();
 }
 
 ServiceManager::ServiceManager()
@@ -142,7 +141,12 @@ void ServiceManager::Connect(const GURL& url,
   if (service_it != url_to_service_factory_.end()) {
     service_factory = service_it->second;
   } else {
-    service_factory = new ServiceFactory(this, url);
+    MessagePipe pipe;
+    GetLoaderForURL(url)->LoadService(this, url, pipe.handle0.Pass());
+
+    service_factory =
+        BindToPipe(new ServiceFactory(this, url), pipe.handle1.Pass());
+
     url_to_service_factory_[url] = service_factory;
   }
   if (interceptor_) {
@@ -186,6 +190,7 @@ ServiceLoader* ServiceManager::GetLoaderForURL(const GURL& url) {
 }
 
 void ServiceManager::OnServiceFactoryError(ServiceFactory* service_factory) {
+  // Called from ~ServiceFactory, so we do not need to call Destroy here.
   const GURL url = service_factory->url();
   URLToServiceFactoryMap::iterator it = url_to_service_factory_.find(url);
   DCHECK(it != url_to_service_factory_.end());

@@ -34,7 +34,8 @@ class NativeViewportImpl
       public NativeViewportDelegate {
  public:
   NativeViewportImpl()
-      : widget_(gfx::kNullAcceleratedWidget),
+      : client_(NULL),
+        widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false) {}
   virtual ~NativeViewportImpl() {
     // Destroy the NativeViewport early on as it may call us back during
@@ -42,11 +43,15 @@ class NativeViewportImpl
     native_viewport_.reset();
   }
 
+  virtual void SetClient(NativeViewportClient* client) OVERRIDE {
+    client_ = client;
+  }
+
   virtual void Create(const Rect& bounds) OVERRIDE {
     native_viewport_ =
         services::NativeViewport::Create(context(), this);
     native_viewport_->Init(bounds);
-    client()->OnCreated();
+    client_->OnCreated();
     OnBoundsChanged(bounds);
   }
 
@@ -72,17 +77,13 @@ class NativeViewportImpl
 
   virtual void CreateGLES2Context(ScopedMessagePipeHandle client_handle)
       OVERRIDE {
-    if (command_buffer_ || command_buffer_handle_.is_valid()) {
+    if (command_buffer_.get() || command_buffer_handle_.is_valid()) {
       LOG(ERROR) << "Can't create multiple contexts on a NativeViewport";
       return;
     }
 
-    // TODO(darin):
-    // CreateGLES2Context should accept a ScopedCommandBufferClientHandle once
-    // it is possible to import interface definitions from another module.  For
-    // now, we just kludge it.
-    command_buffer_handle_.reset(
-        InterfaceHandle<CommandBufferClient>(client_handle.release().value()));
+    // TODO(darin): CreateGLES2Context should accept a |CommandBufferPtr*|.
+    command_buffer_handle_ = client_handle.Pass();
 
     CreateCommandBufferIfNeeded();
   }
@@ -100,8 +101,9 @@ class NativeViewportImpl
     gfx::Size size = native_viewport_->GetSize();
     if (size.IsEmpty())
       return;
-    command_buffer_.reset(new CommandBufferImpl(
-        command_buffer_handle_.Pass(), widget_, native_viewport_->GetSize()));
+    command_buffer_.reset(
+        BindToPipe(new CommandBufferImpl(widget_, native_viewport_->GetSize()),
+                   command_buffer_handle_.Pass()));
   }
 
   virtual bool OnEvent(ui::Event* ui_event) OVERRIDE {
@@ -151,9 +153,9 @@ class NativeViewportImpl
       event.set_key_data(key_data.Finish());
     }
 
-    client()->OnEvent(event.Finish(),
-                      base::Bind(&NativeViewportImpl::AckEvent,
-                                 base::Unretained(this)));
+    client_->OnEvent(event.Finish(),
+                     base::Bind(&NativeViewportImpl::AckEvent,
+                                base::Unretained(this)));
     waiting_for_event_ack_ = true;
     return false;
   }
@@ -167,19 +169,20 @@ class NativeViewportImpl
   virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE {
     CreateCommandBufferIfNeeded();
     AllocationScope scope;
-    client()->OnBoundsChanged(bounds);
+    client_->OnBoundsChanged(bounds);
   }
 
   virtual void OnDestroyed() OVERRIDE {
     command_buffer_.reset();
-    client()->OnDestroyed();
+    client_->OnDestroyed();
     base::MessageLoop::current()->Quit();
   }
 
  private:
+  NativeViewportClient* client_;
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
-  ScopedCommandBufferClientHandle command_buffer_handle_;
+  ScopedMessagePipeHandle command_buffer_handle_;
   scoped_ptr<CommandBufferImpl> command_buffer_;
   bool waiting_for_event_ack_;
 };
@@ -190,7 +193,7 @@ class NativeViewportImpl
 
 MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
     CreateNativeViewportService(mojo::shell::Context* context,
-                                mojo::ScopedShellHandle shell_handle) {
+                                mojo::ScopedMessagePipeHandle shell_handle) {
   mojo::Application* app = new mojo::Application(shell_handle.Pass());
   app->AddServiceConnector(
       new mojo::ServiceConnector<mojo::services::NativeViewportImpl,

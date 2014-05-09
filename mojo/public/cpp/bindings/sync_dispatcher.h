@@ -16,11 +16,11 @@ class MessageReceiver;
 bool WaitForMessageAndDispatch(MessagePipeHandle handle,
                                mojo::MessageReceiver* receiver);
 
-template<typename S> class SyncDispatcher {
+template<typename Interface> class SyncDispatcher {
  public:
-  SyncDispatcher(ScopedMessagePipeHandle message_pipe, S* sink)
-      : message_pipe_(message_pipe.Pass()),
-        stub_(sink) {
+  SyncDispatcher(ScopedMessagePipeHandle message_pipe, Interface* sink)
+      : message_pipe_(message_pipe.Pass()) {
+    stub_.set_sink(sink);
   }
 
   bool WaitAndDispatchOneMessage() {
@@ -29,7 +29,7 @@ template<typename S> class SyncDispatcher {
 
  private:
   ScopedMessagePipeHandle message_pipe_;
-  typename S::_Stub stub_;
+  typename Interface::Stub_ stub_;
 };
 
 }  // namespace mojo

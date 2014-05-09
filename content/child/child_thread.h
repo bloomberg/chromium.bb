@@ -58,7 +58,7 @@ struct RequestInfo;
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThread : public IPC::Listener,
                                    public IPC::Sender,
-                                   public mojo::ShellClient {
+                                   public NON_EXPORTED_BASE(mojo::ShellClient) {
  public:
   // Creates the thread.
   ChildThread();

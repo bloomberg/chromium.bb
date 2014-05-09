@@ -6,13 +6,13 @@
 
 namespace mojo {
 
-Application::Application(ScopedShellHandle shell_handle)
+Application::Application(ScopedMessagePipeHandle shell_handle)
     : internal::ServiceConnectorBase::Owner(shell_handle.Pass()) {
 }
 
 Application::Application(MojoHandle shell_handle)
     : internal::ServiceConnectorBase::Owner(
-          mojo::MakeScopedHandle(ShellHandle(shell_handle)).Pass()) {}
+          mojo::MakeScopedHandle(MessagePipeHandle(shell_handle)).Pass()) {}
 
 Application::~Application() {
   for (ServiceConnectorList::iterator it = service_connectors_.begin();

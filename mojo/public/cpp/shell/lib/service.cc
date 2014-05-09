@@ -7,8 +7,9 @@
 namespace mojo {
 namespace internal {
 
-ServiceConnectorBase::Owner::Owner(ScopedShellHandle shell_handle)
-  : shell_(shell_handle.Pass(), this) {
+ServiceConnectorBase::Owner::Owner(ScopedMessagePipeHandle shell_handle)
+    : shell_(MakeProxy<Shell>(shell_handle.Pass())) {
+  shell_->SetClient(this);
 }
 
 ServiceConnectorBase::Owner::~Owner() {}

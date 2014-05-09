@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 
@@ -55,7 +54,7 @@ class ShellTestHelper {
   // Client interface for the shell.
   scoped_ptr<TestShellClient> shell_client_;
 
-  RemotePtr<Shell> shell_;
+  ShellPtr shell_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellTestHelper);
 };

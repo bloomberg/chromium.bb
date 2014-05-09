@@ -75,6 +75,12 @@
             'mojo_test_apk',
           ],
         }],
+        ['OS == "linux"', {
+          'dependencies': [
+            'mojo_dbus_echo',
+            'mojo_dbus_echo_service',
+          ],
+        }],
       ]
     },
     {
@@ -521,6 +527,7 @@
             'mojo_gles2',
             'mojo_shell_client',
             'mojo_view_manager',
+            'mojo_view_manager_bindings',
           ],
         }, {  # use_aura==0
           'sources!': [

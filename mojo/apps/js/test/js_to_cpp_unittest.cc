@@ -13,7 +13,6 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/test/test_utils.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -114,15 +113,15 @@ void CheckSampleEchoArgs(const js_to_cpp::EchoArgs& arg) {
 // run_loop().
 class CppSideConnection : public js_to_cpp::CppSide {
  public:
-  CppSideConnection() : run_loop_(NULL), client_(NULL) {
+  CppSideConnection() : run_loop_(NULL), js_side_(NULL) {
   }
   virtual ~CppSideConnection() {}
 
   void set_run_loop(base::RunLoop* run_loop) { run_loop_ = run_loop; }
   base::RunLoop* run_loop() { return run_loop_; }
 
-  void set_client(js_to_cpp::JsSide* client) { client_ = client; }
-  js_to_cpp::JsSide* client() { return client_; }
+  void set_js_side(js_to_cpp::JsSide* js_side) { js_side_ = js_side; }
+  js_to_cpp::JsSide* js_side() { return js_side_; }
 
   // js_to_cpp::CppSide:
   virtual void StartTest() OVERRIDE {
@@ -148,7 +147,7 @@ class CppSideConnection : public js_to_cpp::CppSide {
 
  protected:
   base::RunLoop* run_loop_;
-  js_to_cpp::JsSide* client_;
+  js_to_cpp::JsSide* js_side_;
 
  private:
   Environment environment;
@@ -163,7 +162,7 @@ class PingCppSideConnection : public CppSideConnection {
 
   // js_to_cpp::CppSide:
   virtual void StartTest() OVERRIDE {
-    client_->Ping();
+    js_side_->Ping();
   }
 
   virtual void PingResponse() OVERRIDE {
@@ -192,7 +191,7 @@ class EchoCppSideConnection : public CppSideConnection {
   // js_to_cpp::CppSide:
   virtual void StartTest() OVERRIDE {
     AllocationScope scope;
-    client_->Echo(kExpectedMessageCount, BuildSampleEchoArgs());
+    js_side_->Echo(kExpectedMessageCount, BuildSampleEchoArgs());
   }
 
   virtual void EchoResponse(const js_to_cpp::EchoArgs& arg1,
@@ -231,7 +230,7 @@ class BitFlipCppSideConnection : public CppSideConnection {
   // js_to_cpp::CppSide:
   virtual void StartTest() OVERRIDE {
     AllocationScope scope;
-    client_->BitFlip(BuildSampleEchoArgs());
+    js_side_->BitFlip(BuildSampleEchoArgs());
   }
 
   virtual void BitFlipResponse(const js_to_cpp::EchoArgs& arg1) OVERRIDE {
@@ -260,18 +259,21 @@ class JsToCppTest : public testing::Test {
 
   void RunTest(const std::string& test, CppSideConnection* cpp_side) {
     cpp_side->set_run_loop(&run_loop_);
-    InterfacePipe<js_to_cpp::CppSide, js_to_cpp::JsSide> pipe;
-    RemotePtr<js_to_cpp::JsSide> js_side;
-    js_side.reset(pipe.handle_to_peer.Pass(), cpp_side);
-    js_side.router_for_testing()->
+
+    MessagePipe pipe;
+    js_to_cpp::JsSidePtr js_side =
+        MakeProxy<js_to_cpp::JsSide>(pipe.handle0.Pass());
+    js_side->SetClient(cpp_side);
+
+    js_side.internal_state()->router()->
         set_enforce_errors_from_incoming_receiver(false);
-    cpp_side->set_client(js_side.get());
+
+    cpp_side->set_js_side(js_side.get());
 
     gin::IsolateHolder instance(gin::IsolateHolder::kStrictMode);
     apps::MojoRunnerDelegate delegate;
     gin::ShellRunner runner(&delegate, instance.isolate());
-    delegate.Start(&runner, pipe.handle_to_self.release().value(),
-                   test);
+    delegate.Start(&runner, pipe.handle1.release().value(), test);
 
     run_loop_.Run();
   }

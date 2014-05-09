@@ -53,8 +53,13 @@ class Connector : public MessageReceiver {
   // waiting to read from the pipe.
   bool encountered_error() const { return error_; }
 
-  // Closes the pipe, triggering the error state.
+  // Closes the pipe, triggering the error state. Connector is put into a
+  // quiescent state.
   void CloseMessagePipe();
+
+  // Releases the pipe, not triggering the error state. Connector is put into
+  // a quiescent state.
+  ScopedMessagePipeHandle ReleaseMessagePipe();
 
   // MessageReceiver implementation:
   virtual bool Accept(Message* message) MOJO_OVERRIDE;

@@ -16,7 +16,7 @@ class BackgroundServiceLoader::BackgroundLoader {
 
   void LoadService(ServiceManager* manager,
                    const GURL& url,
-                   ScopedShellHandle shell_handle) {
+                   ScopedMessagePipeHandle shell_handle) {
     loader_->LoadService(manager, url, shell_handle.Pass());
   }
 
@@ -48,16 +48,18 @@ BackgroundServiceLoader::~BackgroundServiceLoader() {
   thread_.Stop();
 }
 
-void BackgroundServiceLoader::LoadService(ServiceManager* manager,
-                                          const GURL& url,
-                                          ScopedShellHandle service_handle) {
+void BackgroundServiceLoader::LoadService(
+    ServiceManager* manager,
+    const GURL& url,
+    ScopedMessagePipeHandle service_handle) {
   if (!thread_.IsRunning())
     thread_.Start();
   thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&BackgroundServiceLoader::LoadServiceOnBackgroundThread,
                  base::Unretained(this), manager, url,
-                 base::Owned(new ScopedShellHandle(service_handle.Pass()))));
+                 base::Owned(
+                    new ScopedMessagePipeHandle(service_handle.Pass()))));
 }
 
 void BackgroundServiceLoader::OnServiceError(ServiceManager* manager,
@@ -73,7 +75,7 @@ void BackgroundServiceLoader::OnServiceError(ServiceManager* manager,
 void BackgroundServiceLoader::LoadServiceOnBackgroundThread(
     ServiceManager* manager,
     const GURL& url,
-    ScopedShellHandle* shell_handle) {
+    ScopedMessagePipeHandle* shell_handle) {
   if (!background_loader_)
     background_loader_ = new BackgroundLoader(loader_.get());
   background_loader_->LoadService(manager, url, shell_handle->Pass());

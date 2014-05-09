@@ -10,7 +10,7 @@ enum Enum {
   ENUM_VALUE
 };
 
-[Peer=ProviderClient]
+[Client=ProviderClient]
 interface Provider {
   EchoString(string a) => (string a);
   EchoStrings(string a, string b) => (string a, string b);
@@ -18,7 +18,7 @@ interface Provider {
   EchoEnum(Enum a) => (Enum a);
 };
 
-[Peer=Provider]
+// TODO(darin): We shouldn't need this, but JS bindings don't work without it.
 interface ProviderClient {
 };
 

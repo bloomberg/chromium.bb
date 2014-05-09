@@ -7,7 +7,6 @@
 
 #include "mojo/examples/sample_app/gles2_client_impl.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/shell/application.h"
@@ -30,14 +29,14 @@
 namespace mojo {
 namespace examples {
 
-class SampleApp : public Application, public mojo::NativeViewportClient {
+class SampleApp : public Application, public NativeViewportClient {
  public:
   explicit SampleApp(MojoHandle shell_handle) : Application(shell_handle) {
-    InterfacePipe<NativeViewport, AnyInterface> viewport_pipe;
-    mojo::AllocationScope scope;
-    shell()->Connect("mojo:mojo_native_viewport_service",
-                     viewport_pipe.handle_to_peer.Pass());
-    viewport_.reset(viewport_pipe.handle_to_self.Pass(), this);
+    ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
+    viewport_->SetClient(this);
+
+    AllocationScope scope;
+
     Rect::Builder rect;
     Point::Builder point;
     point.set_x(10);
@@ -51,8 +50,8 @@ class SampleApp : public Application, public mojo::NativeViewportClient {
     viewport_->Show();
 
     MessagePipe gles2_pipe;
-    viewport_->CreateGLES2Context(gles2_pipe.handle1.Pass());
-    gles2_client_.reset(new GLES2ClientImpl(gles2_pipe.handle0.Pass()));
+    viewport_->CreateGLES2Context(gles2_pipe.handle0.Pass());
+    gles2_client_.reset(new GLES2ClientImpl(gles2_pipe.handle1.Pass()));
   }
 
   virtual ~SampleApp() {
@@ -72,7 +71,7 @@ class SampleApp : public Application, public mojo::NativeViewportClient {
   }
 
   virtual void OnEvent(const Event& event,
-                       const mojo::Callback<void()>& callback) MOJO_OVERRIDE {
+                       const Callback<void()>& callback) MOJO_OVERRIDE {
     if (!event.location().is_null())
       gles2_client_->HandleInputEvent(event);
     callback.Run();
@@ -80,7 +79,7 @@ class SampleApp : public Application, public mojo::NativeViewportClient {
 
  private:
   scoped_ptr<GLES2ClientImpl> gles2_client_;
-  RemotePtr<NativeViewport> viewport_;
+  NativeViewportPtr viewport_;
 };
 
 }  // namespace examples

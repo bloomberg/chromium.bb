@@ -19,24 +19,24 @@ namespace shell {
 // (from the file system) in a separate process (of its own).
 class OutOfProcessDynamicServiceRunner
     : public DynamicServiceRunner,
-      public mojo_shell::AppChildControllerClient {
+      public AppChildControllerClient {
  public:
   explicit OutOfProcessDynamicServiceRunner(Context* context);
   virtual ~OutOfProcessDynamicServiceRunner();
 
   // |DynamicServiceRunner| method:
   virtual void Start(const base::FilePath& app_path,
-                     ScopedShellHandle service_handle,
+                     ScopedMessagePipeHandle service_handle,
                      const base::Closure& app_completed_callback) OVERRIDE;
 
  private:
-  // |mojo_shell::AppChildControllerClient| method:
+  // |AppChildControllerClient| method:
   virtual void AppCompleted(int32_t result) OVERRIDE;
 
   Context* const context_;
 
   base::FilePath app_path_;
-  ScopedShellHandle service_handle_;
+  ScopedMessagePipeHandle service_handle_;
   base::Closure app_completed_callback_;
 
   scoped_ptr<AppChildProcessHost> app_child_process_host_;

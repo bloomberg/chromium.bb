@@ -16,7 +16,7 @@ namespace shell {
 
 AppChildProcessHost::AppChildProcessHost(
     Context* context,
-    mojo_shell::AppChildControllerClient* controller_client)
+    AppChildControllerClient* controller_client)
     : ChildProcessHost(context, this, ChildProcess::TYPE_APP),
       controller_client_(controller_client),
       channel_info_(NULL) {
@@ -28,16 +28,15 @@ AppChildProcessHost::~AppChildProcessHost() {
 void AppChildProcessHost::WillStart() {
   DCHECK(platform_channel()->is_valid());
 
-  mojo::ScopedMessagePipeHandle child_message_pipe(embedder::CreateChannel(
+  mojo::ScopedMessagePipeHandle handle(embedder::CreateChannel(
       platform_channel()->Pass(),
       context()->task_runners()->io_runner(),
       base::Bind(&AppChildProcessHost::DidCreateChannel,
                  base::Unretained(this)),
       base::MessageLoop::current()->message_loop_proxy()));
-  controller_.reset(
-      mojo_shell::ScopedAppChildControllerHandle(
-          mojo_shell::AppChildControllerHandle(
-              child_message_pipe.release().value())), controller_client_);
+
+  controller_.Bind(handle.Pass());
+  controller_->SetClient(controller_client_);
 }
 
 void AppChildProcessHost::DidStart(bool success) {

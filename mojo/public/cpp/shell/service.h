@@ -5,11 +5,11 @@
 #ifndef MOJO_PUBLIC_SHELL_SERVICE_H_
 #define MOJO_PUBLIC_SHELL_SERVICE_H_
 
+#include <assert.h>
+
 #include <vector>
 
-#include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
-#include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 
 // Utility classes for creating ShellClients that vend service instances.
@@ -19,11 +19,9 @@
 // class FooImpl : public Foo {
 //  public:
 //   FooImpl();
-//   void Initialize(ServiceConnector<FooImpl>* service_connector,
-//                   ScopedMessagePipeHandle client_handle
+//   void Initialize();
 //  private:
 //   ServiceConnector<FooImpl>* service_connector_;
-//   RemotePtr<FooPeer> client_;
 // };
 //
 //
@@ -66,8 +64,8 @@ class ServiceConnectorBase {
  public:
   class Owner : public ShellClient {
    public:
-    Owner(ScopedShellHandle shell_handle);
-    ~Owner();
+    Owner(ScopedMessagePipeHandle shell_handle);
+    virtual ~Owner();
     Shell* shell() { return shell_.get(); }
     virtual void AddServiceConnector(
         internal::ServiceConnectorBase* service_connector) = 0;
@@ -79,7 +77,7 @@ class ServiceConnectorBase {
                                      Owner* owner) {
       service_connector->owner_ = owner;
     }
-    RemotePtr<Shell> shell_;
+    ShellPtr shell_;
   };
   ServiceConnectorBase() : owner_(NULL) {}
   virtual ~ServiceConnectorBase();
@@ -98,27 +96,33 @@ class ServiceConnector : public internal::ServiceConnectorBase {
   ServiceConnector(Context* context = NULL) : context_(context) {}
 
   virtual ~ServiceConnector() {
-    for (typename ServiceList::iterator it = services_.begin();
-         it != services_.end(); ++it) {
+    ConnectionList doomed;
+    doomed.swap(connections_);
+    for (typename ConnectionList::iterator it = doomed.begin();
+         it != doomed.end(); ++it) {
       delete *it;
     }
+    assert(connections_.empty());  // No one should have added more!
   }
 
   virtual void AcceptConnection(const std::string& url,
-                                ScopedMessagePipeHandle client_handle)
-      MOJO_OVERRIDE {
-    ServiceImpl* service = new ServiceImpl();
-    service->Initialize(this, client_handle.Pass());
-    services_.push_back(service);
+                                ScopedMessagePipeHandle handle) MOJO_OVERRIDE {
+    ServiceImpl* impl = BindToPipe(new ServiceImpl(), handle.Pass());
+    impl->set_connector(this);
+
+    connections_.push_back(impl);
+
+    impl->Initialize();
   }
 
-  void RemoveService(ServiceImpl* service) {
-    for (typename ServiceList::iterator it = services_.begin();
-         it != services_.end(); ++it) {
-      if (*it == service) {
-        services_.erase(it);
-        delete service;
-        if (services_.empty())
+  void RemoveConnection(ServiceImpl* impl) {
+    // Called from ~ServiceImpl, in response to a connection error.
+    for (typename ConnectionList::iterator it = connections_.begin();
+         it != connections_.end(); ++it) {
+      if (*it == impl) {
+        delete impl;
+        connections_.erase(it);
+        if (connections_.empty())
           owner_->RemoveServiceConnector(this);
         return;
       }
@@ -128,57 +132,62 @@ class ServiceConnector : public internal::ServiceConnectorBase {
   Context* context() const { return context_; }
 
  private:
-  typedef std::vector<ServiceImpl*> ServiceList;
-  ServiceList services_;
+  typedef std::vector<ServiceImpl*> ConnectionList;
+  ConnectionList connections_;
   Context* context_;
 };
 
 // Specialization of ServiceConnection.
 // ServiceInterface: Service interface.
-// ServiceImpl: Implementation of Service interface.
+// ServiceImpl: Subclass of ServiceConnection<...>.
 // Context: Optional type of shared context.
 template <class ServiceInterface, class ServiceImpl, typename Context=void>
-class ServiceConnection : public ServiceInterface {
- public:
+class ServiceConnection : public InterfaceImpl<ServiceInterface> {
+ protected:
+  // NOTE: shell() and context() are not available at construction time.
+  // Initialize() will be called once those are available.
+  ServiceConnection() : service_connector_(NULL) {}
+
   virtual ~ServiceConnection() {}
 
- protected:
-  ServiceConnection() : reaper_(this), service_connector_(NULL) {}
-
-  void Initialize(ServiceConnector<ServiceImpl, Context>* service_connector,
-                  ScopedMessagePipeHandle client_handle) {
-    service_connector_ = service_connector;
-    client_.reset(
-        MakeScopedHandle(
-            InterfaceHandle<typename ServiceInterface::_Peer>(
-                client_handle.release().value())).Pass(),
-        this,
-        &reaper_);
+  virtual void OnConnectionError() MOJO_OVERRIDE {
+    service_connector_->RemoveConnection(static_cast<ServiceImpl*>(this));
   }
 
-  Shell* shell() { return service_connector_->shell(); }
-  Context* context() const { return service_connector_->context(); }
-  typename ServiceInterface::_Peer* client() { return client_.get(); }
+  // Shadow this method in ServiceImpl to perform one-time initialization.
+  // At the time this is called, shell() and context() will be available.
+  // NOTE: No need to call the base class Initialize from your subclass. It
+  // will always be a no-op.
+  void Initialize() {}
+
+  Shell* shell() {
+    return service_connector_->shell();
+  }
+
+  Context* context() const {
+    return service_connector_->context();
+  }
 
  private:
-  // The Reaper class allows us to handle errors on the client proxy without
-  // polluting the name space of the ServiceConnection<> class.
-  class Reaper : public ErrorHandler {
-   public:
-    Reaper(ServiceConnection<ServiceInterface, ServiceImpl, Context>* service)
-        : service_(service) {}
-    virtual void OnError() {
-      service_->service_connector_->RemoveService(
-          static_cast<ServiceImpl*>(service_));
-    }
-   private:
-    ServiceConnection<ServiceInterface, ServiceImpl, Context>* service_;
-  };
   friend class ServiceConnector<ServiceImpl, Context>;
-  Reaper reaper_;
+
+  // Called shortly after this class is instantiated.
+  void set_connector(ServiceConnector<ServiceImpl, Context>* connector) {
+    service_connector_ = connector;
+  }
+
   ServiceConnector<ServiceImpl, Context>* service_connector_;
-  RemotePtr<typename ServiceInterface::_Peer> client_;
 };
+
+template <typename Interface>
+inline void ConnectTo(Shell* shell, const std::string& url,
+                      InterfacePtr<Interface>* ptr) {
+  MessagePipe pipe;
+  ptr->Bind(pipe.handle0.Pass());
+
+  AllocationScope scope;
+  shell->Connect(url, pipe.handle1.Pass());
+}
 
 }  // namespace mojo
 

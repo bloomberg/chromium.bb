@@ -139,7 +139,7 @@ class Method(object):
 
 
 class Interface(Kind):
-  def __init__(self, name=None, peer=None, module=None):
+  def __init__(self, name=None, client=None, module=None):
     self.module = module
     self.name = name
     if name != None:
@@ -147,7 +147,7 @@ class Interface(Kind):
     else:
       spec = None
     Kind.__init__(self, spec)
-    self.peer = peer
+    self.client = client
     self.methods = []
 
   def AddMethod(self, name, ordinal=None):

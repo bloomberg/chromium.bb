@@ -19,7 +19,7 @@ interface CommandBufferSyncClient {
   DidMakeProgress(CommandBufferState state);
 };
 
-[Peer=CommandBufferClient]
+[Client=CommandBufferClient]
 interface CommandBuffer {
   Initialize(CommandBufferSyncClient sync_client,
              handle<shared_buffer> shared_state);
@@ -38,7 +38,6 @@ interface CommandBuffer {
   // TODO(piman): sync points
 };
 
-[Peer=CommandBuffer]
 interface CommandBufferClient {
   DidDestroy();
   LostContext(int32 lost_reason);  // TODO(piman): enum
@@ -48,4 +47,3 @@ interface CommandBufferClient {
 };
 
 }
-

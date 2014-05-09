@@ -6,8 +6,6 @@
 #define MOJO_AURA_WINDOW_TREE_HOST_MOJO_H_
 
 #include "base/bind.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/services/native_viewport/native_viewport.mojom.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
@@ -25,7 +23,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
                            public ui::EventSource,
                            public NativeViewportClient {
  public:
-  WindowTreeHostMojo(ScopedNativeViewportHandle viewport_handle,
+  WindowTreeHostMojo(NativeViewportPtr viewport,
                      const gfx::Rect& bounds,
                      const base::Callback<void()>& compositor_created_callback);
   virtual ~WindowTreeHostMojo();
@@ -61,7 +59,7 @@ class WindowTreeHostMojo : public aura::WindowTreeHost,
 
   static ContextFactoryMojo* context_factory_;
 
-  RemotePtr<NativeViewport> native_viewport_;
+  NativeViewportPtr native_viewport_;
   base::Callback<void()> compositor_created_callback_;
 
   gfx::Rect bounds_;

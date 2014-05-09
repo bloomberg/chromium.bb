@@ -7,7 +7,6 @@
 
 #include "ipc/ipc_platform_file.h"
 #include "mojo/common/channel_init.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 
 namespace IPC {
@@ -36,7 +35,7 @@ class MojoApplication {
   void OnActivate(const IPC::PlatformFileForTransit& file);
 
   mojo::common::ChannelInit channel_init_;
-  mojo::RemotePtr<mojo::Shell> shell_;
+  mojo::ShellPtr shell_;
   mojo::ShellClient* shell_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoApplication);

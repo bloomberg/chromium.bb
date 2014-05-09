@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/services/gles2/command_buffer.mojom.h"
 #include "ui/gfx/native_widget_types.h"
@@ -25,14 +24,15 @@ class GLES2Decoder;
 namespace mojo {
 namespace services {
 
-class CommandBufferImpl : public CommandBuffer {
+class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
  public:
-  CommandBufferImpl(ScopedCommandBufferClientHandle client,
-                    gfx::AcceleratedWidget widget,
+  CommandBufferImpl(gfx::AcceleratedWidget widget,
                     const gfx::Size& size);
   virtual ~CommandBufferImpl();
 
-  virtual void Initialize(ScopedCommandBufferSyncClientHandle sync_client,
+  virtual void OnConnectionError() OVERRIDE;
+  virtual void SetClient(CommandBufferClient* client) OVERRIDE;
+  virtual void Initialize(CommandBufferSyncClientPtr sync_client,
                           mojo::ScopedSharedBufferHandle shared_state) OVERRIDE;
   virtual void SetGetBuffer(int32_t buffer) OVERRIDE;
   virtual void Flush(int32_t put_offset) OVERRIDE;
@@ -54,8 +54,8 @@ class CommandBufferImpl : public CommandBuffer {
 
   void DrawAnimationFrame();
 
-  RemotePtr<CommandBufferClient> client_;
-  RemotePtr<CommandBufferSyncClient> sync_client_;
+  CommandBufferClient* client_;
+  CommandBufferSyncClientPtr sync_client_;
 
   gfx::AcceleratedWidget widget_;
   gfx::Size size_;

@@ -7,29 +7,22 @@
 
 #include "base/basictypes.h"
 #include "content/common/web_ui_setup.mojom.h"
-#include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 
 namespace content {
 
-class WebUISetupImpl : public WebUISetup,
-                       public mojo::ErrorHandler {
+class WebUISetupImpl : public mojo::InterfaceImpl<WebUISetup> {
  public:
   static void Bind(mojo::ScopedMessagePipeHandle handle);
 
  private:
-  explicit WebUISetupImpl(mojo::ScopedMessagePipeHandle handle);
-  virtual ~WebUISetupImpl();
+  WebUISetupImpl() {}
+
+  virtual void OnConnectionError() OVERRIDE;
 
   // WebUISetup methods:
   virtual void SetWebUIHandle(
       int32_t view_routing_id,
       mojo::ScopedMessagePipeHandle web_ui_handle) OVERRIDE;
-
-  // mojo::ErrorHandler methods:
-  virtual void OnError() OVERRIDE;
-
-  mojo::RemotePtr<WebUISetupClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUISetupImpl);
 };

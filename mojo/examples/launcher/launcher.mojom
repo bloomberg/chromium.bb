@@ -4,13 +4,12 @@
 
 module mojo {
 
-[Peer=LauncherClient]
+[Client=LauncherClient]
 interface Launcher {
   Show();
   Hide();
 };
 
-[Peer=Launcher]
 interface LauncherClient {
   // Called when the user has requested |url| be launched.
   OnURLEntered(string url);

@@ -221,7 +221,7 @@ def MethodFromData(module, data, interface):
 def InterfaceToData(interface):
   return {
     istr(0, 'name'):    interface.name,
-    istr(1, 'peer'):    interface.peer,
+    istr(1, 'client'):  interface.client,
     istr(2, 'methods'): map(MethodToData, interface.methods)
   }
 
@@ -229,7 +229,7 @@ def InterfaceFromData(module, data):
   interface = mojom.Interface(module=module)
   interface.name = data['name']
   interface.spec = 'x:' + module.namespace + '.' + interface.name
-  interface.peer = data['peer'] if data.has_key('peer') else None
+  interface.client = data['client'] if data.has_key('client') else None
   module.kinds[interface.spec] = interface
   interface.enums = map(lambda enum:
       EnumFromData(module, enum, interface), data['enums'])

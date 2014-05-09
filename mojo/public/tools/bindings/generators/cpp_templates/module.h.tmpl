@@ -10,7 +10,9 @@
 
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/callback.h"
-#include "mojo/public/cpp/bindings/interface.h"
+#include "mojo/public/cpp/bindings/interface_impl.h"
+#include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/no_interface.h"
 #include "{{module.path}}-internal.h"
 {%- for import in imports %}
 #include "{{import.module.path}}.h"
@@ -28,10 +30,7 @@ namespace {{namespace}} {
 {#--- Interface Forward Declarations -#}
 {%  for interface in interfaces %}
 class {{interface.name}};
-// A typesafe variant of MessagePipeHandle:
-typedef mojo::Interface<{{interface.name}}>::Handle {{interface.name}}Handle;
-// A typesafe variant of ScopedMessagePipeHandle:
-typedef mojo::Interface<{{interface.name}}>::ScopedHandle Scoped{{interface.name}}Handle;
+typedef mojo::InterfacePtr<{{interface.name}}> {{interface.name}}Ptr;
 {%  endfor %}
 
 {#--- Structs #}

@@ -5,14 +5,13 @@
 [JavaPackage="org.chromium.mojo.bindings.test"]
 module math {
 
-[Peer=CalculatorUI]
+[Client=CalculatorUI]
 interface Calculator {
   Clear@0();
   Add@1(double value @0);
   Multiply@2(double value @0);
 };
 
-[Peer=Calculator]
 interface CalculatorUI {
   Output@0(double value @0);
 };

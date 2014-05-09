@@ -50,7 +50,7 @@ def GetCppType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::internal::Array_Data<%s>*" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "%sHandle" % kind.name
+    return "mojo::MessagePipeHandle"
   if isinstance(kind, mojom.Enum):
     return "int32_t"
   if kind.spec == 's':
@@ -63,7 +63,7 @@ def GetCppArrayArgWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "%sHandle" % kind.name
+    raise Exception("Arrays of interfaces not yet supported!")
   if kind.spec == 's':
     return "mojo::String"
   return _kind_to_cpp_type[kind]
@@ -74,7 +74,7 @@ def GetCppResultWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "Scoped%sHandle" % kind.name
+    return "%sPtr" % kind.name
   if kind.spec == 's':
     return "mojo::String"
   if kind.spec == 'h':
@@ -95,7 +95,7 @@ def GetCppWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::Array<%s >" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "mojo::Passable<%sHandle>" % kind.name
+    return "mojo::Passable<mojo::MessagePipeHandle>"
   if kind.spec == 's':
     return "mojo::String"
   if generator.IsHandleKind(kind):
@@ -108,7 +108,7 @@ def GetCppConstWrapperType(kind):
   if isinstance(kind, mojom.Array):
     return "const mojo::Array<%s >&" % GetCppArrayArgWrapperType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "Scoped%sHandle" % kind.name
+    return "%sPtr" % kind.name
   if isinstance(kind, mojom.Enum):
     return GetNameForKind(kind)
   if kind.spec == 's':
@@ -134,7 +134,7 @@ def GetCppFieldType(kind):
   if isinstance(kind, mojom.Array):
     return "mojo::internal::ArrayPointer<%s>" % GetCppType(kind.kind)
   if isinstance(kind, mojom.Interface):
-    return "%sHandle" % kind.name
+    return "mojo::MessagePipeHandle"
   if isinstance(kind, mojom.Enum):
     return GetNameForKind(kind)
   if kind.spec == 's':
@@ -180,6 +180,7 @@ class Generator(generator.Generator):
     "get_pad": pack.GetPad,
     "is_enum_kind": generator.IsEnumKind,
     "is_handle_kind": generator.IsHandleKind,
+    "is_interface_kind": generator.IsInterfaceKind,
     "is_object_kind": generator.IsObjectKind,
     "is_string_kind": generator.IsStringKind,
     "is_array_kind": lambda kind: isinstance(kind, mojom.Array),

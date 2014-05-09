@@ -4,13 +4,8 @@
 
 module mojo {
 
-[Peer=EchoClient]
 interface EchoService {
   Echo(string to_echo) => (string echoed);
-};
-
-[Peer=EchoService]
-interface EchoClient {
 };
 
 }

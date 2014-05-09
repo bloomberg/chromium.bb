@@ -266,7 +266,14 @@ void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
 
 class ServiceImpl : public Service {
  public:
-  virtual void Frobinate(const Foo& foo, BazOptions baz, ScopedPortHandle port)
+  ServiceImpl() : client_(NULL) {
+  }
+
+  virtual void SetClient(ServiceClient* client) MOJO_OVERRIDE {
+    client_ = client;
+  }
+
+  virtual void Frobinate(const Foo& foo, BazOptions baz, PortPtr port)
       MOJO_OVERRIDE {
     // Users code goes here to handle the incoming Frobinate message.
 
@@ -282,6 +289,20 @@ class ServiceImpl : public Service {
       Print(depth, "baz", baz);
       Print(depth, "port", port.get());
     }
+  }
+
+ private:
+  ServiceClient* client_;
+};
+
+class ServiceProxyImpl : public ServiceProxy {
+ public:
+  explicit ServiceProxyImpl(mojo::MessageReceiver* receiver)
+      : ServiceProxy(receiver) {
+  }
+
+  virtual void SetClient(ServiceClient* client) MOJO_OVERRIDE {
+    assert(false);
   }
 };
 
@@ -299,7 +320,8 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
     // the system. It receives the incoming message.
     ServiceImpl impl;
 
-    ServiceStub stub(&impl);
+    ServiceStub stub;
+    stub.set_sink(&impl);
     return stub.Accept(message);
   }
 
@@ -315,7 +337,7 @@ TEST(BindingsSampleTest, Basic) {
   SimpleMessageReceiver receiver;
 
   // User has a proxy to a Service somehow.
-  Service* service = new ServiceProxy(&receiver);
+  Service* service = new ServiceProxyImpl(&receiver);
 
   // User constructs a message to send.
 
@@ -328,8 +350,8 @@ TEST(BindingsSampleTest, Basic) {
   Foo foo = MakeFoo();
   CheckFoo(foo);
 
-  mojo::InterfacePipe<Port, mojo::AnyInterface> pipe;
-  service->Frobinate(foo, Service::BAZ_EXTRA, pipe.handle_to_self.Pass());
+  PortPtr port;
+  service->Frobinate(foo, Service::BAZ_EXTRA, port.Pass());
 }
 
 TEST(BindingsSampleTest, DefaultValues) {

@@ -30,7 +30,7 @@ MojoApplicationHost::~MojoApplicationHost() {
 }
 
 bool MojoApplicationHost::Init() {
-  DCHECK(shell_client_.is_null()) << "Already initialized!";
+  DCHECK(!shell_.get()) << "Already initialized!";
 
   mojo::embedder::PlatformChannelPair channel_pair;
 
@@ -43,10 +43,7 @@ bool MojoApplicationHost::Init() {
   // Forward this to the client once we know its process handle.
   client_handle_ = channel_pair.PassClientHandle();
 
-  // TODO(darin): Provide a Shell implementation
-  shell_client_.reset(
-      mojo::ScopedShellClientHandle::From(message_pipe.Pass()), NULL);
-
+  shell_.reset(BindToPipe(new ShellImpl(), message_pipe.Pass()));
   return true;
 }
 
@@ -60,6 +57,16 @@ bool MojoApplicationHost::Activate(IPC::Sender* sender,
   did_activate_ = sender->Send(new MojoMsg_Activate(
       IPC::GetFileHandleForProcess(client_file, process_handle, true)));
   return did_activate_;
+}
+
+void MojoApplicationHost::ShellImpl::SetClient(mojo::ShellClient* client) {
+  client_ = client;
+}
+
+void MojoApplicationHost::ShellImpl::Connect(
+    const mojo::String& url,
+    mojo::ScopedMessagePipeHandle handle) {
+  // TODO(darin): Provide something meaningful here.
 }
 
 }  // namespace content

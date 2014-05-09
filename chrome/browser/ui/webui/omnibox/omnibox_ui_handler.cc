@@ -111,9 +111,8 @@ class TypeConverter<AutocompleteResultsForProviderMojo, AutocompleteProvider*> {
 
 }  // namespace mojo
 
-OmniboxUIHandler::OmniboxUIHandler(ScopedOmniboxPageHandle handle,
-                                   Profile* profile)
-    : page_(handle.Pass(), this),
+OmniboxUIHandler::OmniboxUIHandler(Profile* profile)
+    : page_(NULL),
       profile_(profile) {
   ResetController();
 }
@@ -161,6 +160,10 @@ bool OmniboxUIHandler::LookupIsTypedHost(const base::string16& host,
     return false;
   *is_typed_host = url_db->IsTypedHost(base::UTF16ToUTF8(host));
   return true;
+}
+
+void OmniboxUIHandler::SetClient(OmniboxPage* page) {
+  page_ = page;
 }
 
 void OmniboxUIHandler::StartOmniboxQuery(const mojo::String& input_string,

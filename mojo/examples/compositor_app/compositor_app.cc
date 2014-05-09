@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/examples/compositor_app/compositor_host.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/gles2/gles2.h"
 #include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/cpp/system/core.h"
@@ -34,21 +33,17 @@ namespace examples {
 class SampleApp : public Application, public NativeViewportClient {
  public:
   explicit SampleApp(MojoHandle shell_handle) : Application(shell_handle) {
-    InterfacePipe<NativeViewport, AnyInterface> viewport_pipe;
-
     AllocationScope scope;
-    shell()->Connect("mojo:mojo_native_viewport_service",
-                     viewport_pipe.handle_to_peer.Pass());
 
-    viewport_.reset(viewport_pipe.handle_to_self.Pass(), this);
+    ConnectTo("mojo:mojo_native_viewport_service", &viewport_);
+    viewport_->SetClient(this);
+
     viewport_->Create(gfx::Rect(10, 10, 800, 600));
     viewport_->Show();
-    ScopedMessagePipeHandle gles2_handle;
-    ScopedMessagePipeHandle gles2_client_handle;
-    CreateMessagePipe(&gles2_handle, &gles2_client_handle);
 
-    viewport_->CreateGLES2Context(gles2_client_handle.Pass());
-    host_.reset(new CompositorHost(gles2_handle.Pass()));
+    MessagePipe gles2_pipe;
+    viewport_->CreateGLES2Context(gles2_pipe.handle0.Pass());
+    host_.reset(new CompositorHost(gles2_pipe.handle1.Pass()));
   }
 
   virtual void OnCreated() OVERRIDE {
@@ -68,7 +63,7 @@ class SampleApp : public Application, public NativeViewportClient {
   }
 
  private:
-  RemotePtr<NativeViewport> viewport_;
+  NativeViewportPtr viewport_;
   scoped_ptr<CompositorHost> host_;
 };
 

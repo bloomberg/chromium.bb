@@ -53,7 +53,7 @@ struct DefaultsTest {
   Bar.Type bar_type = Bar.TYPE_BOTH;
 };
 
-[Peer=ServiceClient]
+[Client=ServiceClient]
 interface Service {
   enum BazOptions {
     BAZ_REGULAR = 0,
@@ -62,7 +62,6 @@ interface Service {
   Frobinate@0(Foo foo @0, BazOptions baz @1, Port port @2);
 };
 
-[Peer=Service]
 interface ServiceClient {
   DidFrobinate@0(int32 result @0);
 };
@@ -70,7 +69,7 @@ interface ServiceClient {
 // This interface is referenced above where it is defined. It also refers to
 // itself from a method.
 interface Port {
-  PostMessage@0(string message_text @0, Port[] extra_ports@1);
+  PostMessage@0(string message_text @0, Port port@1);
 };
 
 }

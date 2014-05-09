@@ -19,7 +19,7 @@ namespace shell {
 struct ShellTestHelper::State {
   scoped_ptr<Context> context;
   scoped_ptr<ServiceManager::TestAPI> test_api;
-  ScopedShellHandle shell_handle;
+  ScopedMessagePipeHandle shell_handle;
 };
 
 namespace {
@@ -79,7 +79,8 @@ void ShellTestHelper::Init() {
 void ShellTestHelper::OnShellStarted() {
   DCHECK(state_);
   shell_client_.reset(new TestShellClient);
-  shell_.reset(state_->shell_handle.Pass(), shell_client_.get());
+  shell_.Bind(state_->shell_handle.Pass());
+  shell_->SetClient(shell_client_.get());
   run_loop_->Quit();
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/interface.h"
+#include "mojo/public/cpp/bindings/no_interface.h"
 
 namespace mojo {
 

@@ -4,12 +4,11 @@
 
 module mojo {
 
-[Peer=TestClient]
+[Client=TestClient]
 interface TestService {
   Test(string test_string);
 };
 
-[Peer=TestService]
 interface TestClient {
   AckTest();
 };

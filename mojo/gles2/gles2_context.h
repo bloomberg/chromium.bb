@@ -10,7 +10,6 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "mojo/gles2/command_buffer_client_impl.h"
 #include "mojo/public/c/gles2/gles2.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 
 struct MojoGLES2ContextPrivate {};
 
@@ -29,7 +28,7 @@ class GLES2Context : public CommandBufferDelegate,
                      public MojoGLES2ContextPrivate {
  public:
   explicit GLES2Context(MojoAsyncWaiter* async_waiter,
-                        ScopedCommandBufferHandle command_buffer_handle,
+                        ScopedMessagePipeHandle command_buffer_handle,
                         MojoGLES2ContextLost lost_callback,
                         MojoGLES2DrawAnimationFrame animation_callback,
                         void* closure);

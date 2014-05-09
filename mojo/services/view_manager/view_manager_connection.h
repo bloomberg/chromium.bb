@@ -33,10 +33,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
   TransportConnectionId id() const { return id_; }
 
-  // Invoked from Service when connection is established.
-  void Initialize(
-      ServiceConnector<ViewManagerConnection, RootNodeManager>* service_factory,
-      ScopedMessagePipeHandle client_handle);
+  // Invoked when connection is established.
+  void Initialize();
 
   // Returns the Node with the specified id.
   Node* GetNode(const NodeId& id);
@@ -77,6 +75,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                    TransportChangeId change_id);
 
   // Overridden from IViewManager:
+  virtual void SetClient(IViewManagerClient* client) OVERRIDE;
   virtual void CreateNode(TransportConnectionSpecificNodeId node_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteNode(TransportNodeId transport_node_id,
@@ -113,6 +112,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   virtual void OnNodeViewReplaced(const NodeId& node,
                                   const ViewId& new_view_id,
                                   const ViewId& old_view_id) OVERRIDE;
+
+  IViewManagerClient* client_;
 
   // Id of this connection as assigned by RootNodeManager. Assigned in
   // Initialize().

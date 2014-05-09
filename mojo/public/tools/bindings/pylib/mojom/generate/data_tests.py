@@ -44,7 +44,7 @@ test_dict = {
       {'name': 'testfield2', 'kind': 'a:i32', 'ordinal': 42}]}],
   'interfaces': [{
     'name': 'Server',
-    'peer': None,
+    'client': None,
     'methods': [{
       'name': 'Foo',
       'parameters': [

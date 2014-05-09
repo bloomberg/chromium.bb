@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/bindings/allocation_scope.h"
+#include "mojo/public/cpp/shell/service.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
@@ -187,17 +187,16 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
       next_change_id_(0),
       sync_factory_(this),
       init_loop_(NULL) {
-  InterfacePipe<services::view_manager::IViewManager, AnyInterface>
-      view_manager_pipe;
+  ConnectTo(ViewManagerPrivate(view_manager_).shell(), "mojo:mojo_view_manager",
+            &service_);
+  service_->SetClient(this);
+
   AllocationScope scope;
-  MessagePipeHandle client_handle = view_manager_pipe.handle_to_peer.get();
-  ViewManagerPrivate(view_manager_).shell()->Connect(
-      "mojo:mojo_view_manager", view_manager_pipe.handle_to_peer.Pass());
-  service_.reset(view_manager_pipe.handle_to_self.Pass(), this);
   service_->GetNodeTree(
       1,
       base::Bind(&ViewManagerSynchronizer::OnRootTreeReceived,
                  base::Unretained(this)));
+
   base::RunLoop loop;
   init_loop_ = &loop;
   init_loop_->Run();

@@ -8,7 +8,6 @@
 #include <new>
 
 #include "mojo/public/cpp/bindings/buffer.h"
-#include "mojo/public/cpp/bindings/interface.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_serialization.h"
 #include "mojo/public/cpp/bindings/passable.h"

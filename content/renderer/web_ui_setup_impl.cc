@@ -11,15 +11,11 @@ namespace content {
 
 // static
 void WebUISetupImpl::Bind(mojo::ScopedMessagePipeHandle handle) {
-  // This instance will be destroyed when the pipe is closed. See OnError.
-  new WebUISetupImpl(handle.Pass());
+  mojo::BindToPipe(new WebUISetupImpl(), handle.Pass());
 }
 
-WebUISetupImpl::WebUISetupImpl(mojo::ScopedMessagePipeHandle handle)
-    : client_(ScopedWebUISetupClientHandle::From(handle.Pass()), this) {
-}
-
-WebUISetupImpl::~WebUISetupImpl() {
+void WebUISetupImpl::OnConnectionError() {
+  delete this;
 }
 
 void WebUISetupImpl::SetWebUIHandle(
@@ -32,10 +28,6 @@ void WebUISetupImpl::SetWebUIHandle(
   if (!web_ui_mojo)
     return;
   web_ui_mojo->SetBrowserHandle(web_ui_handle.Pass());
-}
-
-void WebUISetupImpl::OnError() {
-  delete this;
 }
 
 }  // namespace content

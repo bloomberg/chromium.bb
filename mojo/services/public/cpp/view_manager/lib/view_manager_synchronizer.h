@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 
@@ -94,7 +93,7 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   // construction.
   base::RunLoop* init_loop_;
 
-  RemotePtr<IViewManager> service_;
+  IViewManagerPtr service_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerSynchronizer);
 };

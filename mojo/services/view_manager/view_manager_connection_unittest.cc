@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
+#include "mojo/public/cpp/shell/service.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
@@ -252,14 +253,10 @@ class ViewManagerConnectionTest : public testing::Test {
   ViewManagerConnectionTest() {}
 
   virtual void SetUp() OVERRIDE {
-    AllocationScope allocation_scope;
-
     test_helper_.Init();
 
-    InterfacePipe<IViewManager, AnyInterface> pipe;
-    test_helper_.shell()->Connect("mojo:mojo_view_manager",
-                                  pipe.handle_to_peer.Pass());
-    view_manager_.reset(pipe.handle_to_self.Pass(), &client_);
+    ConnectTo(test_helper_.shell(), "mojo:mojo_view_manager", &view_manager_);
+    view_manager_->SetClient(&client_);
 
     client_.WaitForId();
   }
@@ -267,11 +264,8 @@ class ViewManagerConnectionTest : public testing::Test {
  protected:
   // Creates a second connection to the viewmanager.
   void EstablishSecondConnection() {
-    AllocationScope allocation_scope;
-    InterfacePipe<IViewManager, AnyInterface> pipe;
-    test_helper_.shell()->Connect("mojo:mojo_view_manager",
-                                  pipe.handle_to_peer.Pass());
-    view_manager2_.reset(pipe.handle_to_self.Pass(), &client2_);
+    ConnectTo(test_helper_.shell(), "mojo:mojo_view_manager", &view_manager2_);
+    view_manager2_->SetClient(&client2_);
 
     client2_.WaitForId();
   }
@@ -284,10 +278,10 @@ class ViewManagerConnectionTest : public testing::Test {
   shell::ShellTestHelper test_helper_;
 
   ViewManagerClientImpl client_;
-  RemotePtr<IViewManager> view_manager_;
+  IViewManagerPtr view_manager_;
 
   ViewManagerClientImpl client2_;
-  RemotePtr<IViewManager> view_manager2_;
+  IViewManagerPtr view_manager2_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnectionTest);
 };

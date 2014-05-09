@@ -31,7 +31,7 @@ OutOfProcessDynamicServiceRunner::~OutOfProcessDynamicServiceRunner() {
 
 void OutOfProcessDynamicServiceRunner::Start(
     const base::FilePath& app_path,
-    ScopedShellHandle service_handle,
+    ScopedMessagePipeHandle service_handle,
     const base::Closure& app_completed_callback) {
   app_path_ = app_path;
 

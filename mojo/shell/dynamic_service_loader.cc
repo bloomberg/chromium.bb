@@ -34,7 +34,7 @@ class DynamicServiceLoader::LoadContext : public mojo::shell::Loader::Delegate {
  public:
   LoadContext(DynamicServiceLoader* loader,
               const GURL& url,
-              ScopedShellHandle service_handle,
+              ScopedMessagePipeHandle service_handle,
               scoped_ptr<DynamicServiceRunner> runner)
       : loader_(loader),
         url_(url),
@@ -79,7 +79,7 @@ class DynamicServiceLoader::LoadContext : public mojo::shell::Loader::Delegate {
   DynamicServiceLoader* const loader_;
   const GURL url_;
   scoped_ptr<mojo::shell::Loader::Job> request_;
-  ScopedShellHandle service_handle_;
+  ScopedMessagePipeHandle service_handle_;
   scoped_ptr<DynamicServiceRunner> runner_;
   KeepAlive keep_alive_;
 
@@ -99,7 +99,7 @@ DynamicServiceLoader::~DynamicServiceLoader() {
 
 void DynamicServiceLoader::LoadService(ServiceManager* manager,
                                        const GURL& url,
-                                       ScopedShellHandle service_handle) {
+                                       ScopedMessagePipeHandle service_handle) {
   DCHECK(url_to_load_context_.find(url) == url_to_load_context_.end());
   url_to_load_context_[url] = new LoadContext(
       this, url, service_handle.Pass(), runner_factory_->Create(context_));

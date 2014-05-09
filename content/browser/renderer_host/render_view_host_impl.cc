@@ -687,12 +687,11 @@ void RenderViewHostImpl::SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) {
 
   DCHECK(renderer_initialized_);
 
-  mojo::InterfacePipe<WebUISetup, mojo::AnyInterface> pipe;
-  mojo::RemotePtr<WebUISetup> web_ui_setup(pipe.handle_to_self.Pass(), NULL);
-  web_ui_setup->SetWebUIHandle(GetRoutingID(), handle.Pass());
-
+  WebUISetupPtr web_ui_setup;
   static_cast<RenderProcessHostImpl*>(GetProcess())->ConnectTo(
-      kRendererService_WebUISetup, pipe.handle_to_peer.Pass());
+      kRendererService_WebUISetup, &web_ui_setup);
+
+  web_ui_setup->SetWebUIHandle(GetRoutingID(), handle.Pass());
 }
 
 #if defined(OS_ANDROID)

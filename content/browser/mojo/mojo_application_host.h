@@ -8,7 +8,6 @@
 #include "base/process/process_handle.h"
 #include "mojo/common/channel_init.h"
 #include "mojo/embedder/scoped_platform_handle.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 
 namespace IPC {
@@ -25,7 +24,7 @@ namespace content {
 class MojoApplicationHost {
  public:
   MojoApplicationHost();
-  ~MojoApplicationHost();
+  virtual ~MojoApplicationHost();
 
   // Two-phase initialization:
   //  1- Init makes the shell_client() available synchronously.
@@ -35,12 +34,34 @@ class MojoApplicationHost {
 
   bool did_activate() const { return did_activate_; }
 
-  mojo::ShellClient* shell_client() { return shell_client_.get(); }
+  mojo::ShellClient* shell_client() {
+    DCHECK(shell_.get());
+    return shell_->client();
+  }
 
  private:
+  class ShellImpl : public mojo::InterfaceImpl<mojo::Shell> {
+   public:
+    ShellImpl() : client_(NULL) {}
+    mojo::ShellClient* client() { return client_; }
+
+    virtual void OnConnectionError() OVERRIDE {
+      // TODO(darin): How should we handle this error?
+    }
+
+    // mojo::Shell methods:
+    virtual void SetClient(mojo::ShellClient* client) OVERRIDE;
+    virtual void Connect(const mojo::String& url,
+                         mojo::ScopedMessagePipeHandle handle) OVERRIDE;
+   private:
+    mojo::ShellClient* client_;
+  };
+
   mojo::common::ChannelInit channel_init_;
   mojo::embedder::ScopedPlatformHandle client_handle_;
-  mojo::RemotePtr<mojo::ShellClient> shell_client_;
+
+  scoped_ptr<ShellImpl> shell_;
+
   bool did_activate_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoApplicationHost);

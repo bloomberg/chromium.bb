@@ -88,7 +88,7 @@ def _MapStruct(tree):
 def _MapInterface(tree):
   interface = {}
   interface['name'] = tree[1]
-  interface['peer'] = _GetAttribute(tree[2], 'Peer')
+  interface['client'] = _GetAttribute(tree[2], 'Client')
   interface['methods'] = _MapTree(_MapMethod, tree[3], 'METHOD')
   interface['enums'] = _MapTree(_MapEnum, tree[3], 'ENUM')
   return interface

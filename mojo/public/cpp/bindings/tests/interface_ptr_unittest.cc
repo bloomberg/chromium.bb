@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 #include "mojo/public/interfaces/bindings/tests/math_calculator.mojom.h"
@@ -21,7 +20,7 @@ class ErrorObserver : public ErrorHandler {
 
   bool encountered_error() const { return encountered_error_; }
 
-  virtual void OnError() MOJO_OVERRIDE {
+  virtual void OnConnectionError() MOJO_OVERRIDE {
     encountered_error_ = true;
   }
 
@@ -29,13 +28,19 @@ class ErrorObserver : public ErrorHandler {
   bool encountered_error_;
 };
 
-class MathCalculatorImpl : public math::Calculator {
+class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
  public:
   virtual ~MathCalculatorImpl() {}
 
-  explicit MathCalculatorImpl(math::ScopedCalculatorUIHandle ui_handle)
-      : ui_(ui_handle.Pass(), this),
-        total_(0.0) {
+  MathCalculatorImpl() : total_(0.0) {
+  }
+
+  virtual void OnConnectionError() MOJO_OVERRIDE {
+    delete this;
+  }
+
+  virtual void SetClient(math::CalculatorUI* ui) MOJO_OVERRIDE {
+    ui_ = ui;
   }
 
   virtual void Clear() MOJO_OVERRIDE {
@@ -53,16 +58,16 @@ class MathCalculatorImpl : public math::Calculator {
   }
 
  private:
-  RemotePtr<math::CalculatorUI> ui_;
+  math::CalculatorUI* ui_;
   double total_;
 };
 
 class MathCalculatorUIImpl : public math::CalculatorUI {
  public:
-  explicit MathCalculatorUIImpl(math::ScopedCalculatorHandle calculator_handle,
-                                ErrorHandler* error_handler = NULL)
-      : calculator_(calculator_handle.Pass(), this, error_handler),
+  explicit MathCalculatorUIImpl(math::CalculatorPtr calculator)
+      : calculator_(calculator.Pass()),
         output_(0.0) {
+    calculator_->SetClient(this);
   }
 
   bool encountered_error() const {
@@ -95,30 +100,31 @@ class MathCalculatorUIImpl : public math::CalculatorUI {
     output_ = value;
   }
 
-  RemotePtr<math::Calculator> calculator_;
+  math::CalculatorPtr calculator_;
   double output_;
 };
 
-class RemotePtrTest : public testing::Test {
+class InterfacePtrTest : public testing::Test {
  public:
-  void PumpMessages() {
+  virtual ~InterfacePtrTest() {
     loop_.RunUntilIdle();
   }
 
- protected:
-  InterfacePipe<math::CalculatorUI> pipe_;
+  void PumpMessages() {
+    loop_.RunUntilIdle();
+  }
 
  private:
   Environment env_;
   RunLoop loop_;
 };
 
-TEST_F(RemotePtrTest, EndToEnd) {
-  // Suppose this is instantiated in a process that has pipe0_.
-  MathCalculatorImpl calculator(pipe_.handle_to_self.Pass());
+TEST_F(InterfacePtrTest, EndToEnd) {
+  math::CalculatorPtr calc;
+  BindToProxy(new MathCalculatorImpl(), &calc);
 
   // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUIImpl calculator_ui(pipe_.handle_to_peer.Pass());
+  MathCalculatorUIImpl calculator_ui(calc.Pass());
 
   calculator_ui.Add(2.0);
   calculator_ui.Multiply(5.0);
@@ -128,43 +134,48 @@ TEST_F(RemotePtrTest, EndToEnd) {
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
 
-TEST_F(RemotePtrTest, Movable) {
-  RemotePtr<math::Calculator> a;
-  RemotePtr<math::Calculator> b(pipe_.handle_to_peer.Pass(), NULL);
+TEST_F(InterfacePtrTest, Movable) {
+  math::CalculatorPtr a;
+  math::CalculatorPtr b;
+  BindToProxy(new MathCalculatorImpl(), &b);
 
-  EXPECT_TRUE(a.is_null());
-  EXPECT_FALSE(b.is_null());
+  EXPECT_TRUE(!a.get());
+  EXPECT_FALSE(!b.get());
 
   a = b.Pass();
 
-  EXPECT_FALSE(a.is_null());
-  EXPECT_TRUE(b.is_null());
+  EXPECT_FALSE(!a.get());
+  EXPECT_TRUE(!b.get());
 }
 
-TEST_F(RemotePtrTest, Resettable) {
-  RemotePtr<math::Calculator> a;
+TEST_F(InterfacePtrTest, Resettable) {
+  math::CalculatorPtr a;
 
-  EXPECT_TRUE(a.is_null());
+  EXPECT_TRUE(!a.get());
 
-  math::CalculatorHandle handle = pipe_.handle_to_peer.get();
+  MessagePipe pipe;
 
-  a.reset(pipe_.handle_to_peer.Pass(), NULL);
+  // Save this so we can test it later.
+  Handle handle = pipe.handle0.get();
 
-  EXPECT_FALSE(a.is_null());
+  a = MakeProxy<math::Calculator>(pipe.handle0.Pass());
+
+  EXPECT_FALSE(!a.get());
 
   a.reset();
 
-  EXPECT_TRUE(a.is_null());
+  EXPECT_TRUE(!a.get());
+  EXPECT_FALSE(a.internal_state()->router());
 
   // Test that handle was closed.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, CloseRaw(handle));
 }
 
-TEST_F(RemotePtrTest, EncounteredError) {
-  MathCalculatorImpl* calculator =
-      new MathCalculatorImpl(pipe_.handle_to_self.Pass());
+TEST_F(InterfacePtrTest, EncounteredError) {
+  math::CalculatorPtr proxy;
+  MathCalculatorImpl* server = BindToProxy(new MathCalculatorImpl(), &proxy);
 
-  MathCalculatorUIImpl calculator_ui(pipe_.handle_to_peer.Pass());
+  MathCalculatorUIImpl calculator_ui(proxy.Pass());
 
   calculator_ui.Add(2.0);
   PumpMessages();
@@ -174,8 +185,8 @@ TEST_F(RemotePtrTest, EncounteredError) {
   calculator_ui.Multiply(5.0);
   EXPECT_FALSE(calculator_ui.encountered_error());
 
-  // Close the other side of the pipe.
-  delete calculator;
+  // Close the server.
+  server->internal_state()->router()->CloseMessagePipe();
 
   // The state change isn't picked up locally yet.
   EXPECT_FALSE(calculator_ui.encountered_error());
@@ -186,13 +197,14 @@ TEST_F(RemotePtrTest, EncounteredError) {
   EXPECT_TRUE(calculator_ui.encountered_error());
 }
 
-TEST_F(RemotePtrTest, EncounteredErrorCallback) {
-  MathCalculatorImpl* calculator =
-      new MathCalculatorImpl(pipe_.handle_to_self.Pass());
+TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
+  math::CalculatorPtr proxy;
+  MathCalculatorImpl* server = BindToProxy(new MathCalculatorImpl(), &proxy);
 
   ErrorObserver error_observer;
-  MathCalculatorUIImpl calculator_ui(pipe_.handle_to_peer.Pass(),
-                                     &error_observer);
+  proxy.set_error_handler(&error_observer);
+
+  MathCalculatorUIImpl calculator_ui(proxy.Pass());
 
   calculator_ui.Add(2.0);
   PumpMessages();
@@ -202,8 +214,8 @@ TEST_F(RemotePtrTest, EncounteredErrorCallback) {
   calculator_ui.Multiply(5.0);
   EXPECT_FALSE(calculator_ui.encountered_error());
 
-  // Close the other side of the pipe.
-  delete calculator;
+  // Close the server.
+  server->internal_state()->router()->CloseMessagePipe();
 
   // The state change isn't picked up locally yet.
   EXPECT_FALSE(calculator_ui.encountered_error());
@@ -218,11 +230,12 @@ TEST_F(RemotePtrTest, EncounteredErrorCallback) {
   EXPECT_TRUE(error_observer.encountered_error());
 }
 
-TEST_F(RemotePtrTest, NoPeerAttribute) {
+TEST_F(InterfacePtrTest, NoClientAttribute) {
   // This is a test to ensure the following compiles. The sample::Port interface
-  // does not have an explicit Peer attribute.
-  InterfacePipe<sample::Port, NoInterface> pipe;
-  RemotePtr<sample::Port> port(pipe.handle_to_self.Pass(), NULL);
+  // does not have an explicit Client attribute.
+  sample::PortPtr port;
+  MessagePipe pipe;
+  port.Bind(pipe.handle0.Pass());
 }
 
 }  // namespace

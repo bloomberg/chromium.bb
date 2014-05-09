@@ -61,7 +61,7 @@ class Context::NativeViewportServiceLoader : public ServiceLoader {
  private:
   virtual void LoadService(ServiceManager* manager,
                            const GURL& url,
-                           ScopedShellHandle service_handle) OVERRIDE {
+                           ScopedMessagePipeHandle service_handle) OVERRIDE {
     app_.reset(::CreateNativeViewportService(context_, service_handle.Pass()));
   }
 

@@ -25,8 +25,8 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
     explicit TestAPI(ServiceManager* manager);
     ~TestAPI();
 
-    // Returns a handle to the shell.
-    ScopedShellHandle GetShellHandle();
+    // Returns a handle to a unique shell instance.
+    ScopedMessagePipeHandle GetShellHandle();
 
     // Returns true if the shared instance has been created.
     static bool HasCreatedInstance();
@@ -37,8 +37,7 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
     class TestShellConnection;
 
     ServiceManager* manager_;
-
-    scoped_ptr<TestShellConnection> shell_connection_;
+    scoped_ptr<TestShellConnection> shell_;
 
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
@@ -85,7 +84,7 @@ class MOJO_SERVICE_MANAGER_EXPORT ServiceManager {
   // then one that's been specified for a scheme, then the default.
   ServiceLoader* GetLoaderForURL(const GURL& url);
 
-  // Removes a ServiceFactory when it no longer has any connections.
+  // Removes a ServiceFactory when it encounters an error.
   void OnServiceFactoryError(ServiceFactory* service_factory);
 
   // Loader management.

@@ -16,7 +16,6 @@
 #include "dbus/object_path.h"
 #include "mojo/common/channel_init.h"
 #include "mojo/public/cpp/bindings/error_handler.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/shell/application.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/shell/external_service.mojom.h"
@@ -35,10 +34,6 @@ void DBusExternalServiceBase::Start() {
   ExportMethods();
   TakeDBusServiceOwnership();
   DVLOG(1) << "External service started";
-}
-
-void DBusExternalServiceBase::OnError() {
-  Disconnect();
 }
 
 void DBusExternalServiceBase::ConnectChannel(
@@ -61,7 +56,7 @@ void DBusExternalServiceBase::ConnectChannel(
                           base::MessageLoopProxy::current());
   CHECK(message_pipe.is_valid());
 
-  Connect(mojo::ScopedExternalServiceHostHandle::From(message_pipe.Pass()));
+  Connect(message_pipe.Pass());
   sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 

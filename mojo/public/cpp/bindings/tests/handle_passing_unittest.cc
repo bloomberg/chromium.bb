@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -17,10 +16,14 @@ namespace {
 const char kText1[] = "hello";
 const char kText2[] = "world";
 
-class SampleFactoryImpl : public sample::Factory {
+class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
  public:
-  explicit SampleFactoryImpl(sample::ScopedFactoryClientHandle handle)
-      : client_(handle.Pass(), this) {
+  virtual void OnConnectionError() MOJO_OVERRIDE {
+    delete this;
+  }
+
+  virtual void SetClient(sample::FactoryClient* client) MOJO_OVERRIDE {
+    client_ = client;
   }
 
   virtual void DoStuff(const sample::Request& request,
@@ -70,69 +73,17 @@ class SampleFactoryImpl : public sample::Factory {
   }
 
  private:
-  RemotePtr<sample::FactoryClient> client_;
+  sample::FactoryClient* client_;
   ScopedMessagePipeHandle pipe1_;
 };
 
 class SampleFactoryClientImpl : public sample::FactoryClient {
  public:
-  explicit SampleFactoryClientImpl(sample::ScopedFactoryHandle handle)
-      : factory_(handle.Pass(), this),
-        got_response_(false) {
+  SampleFactoryClientImpl() : got_response_(false) {
   }
 
-  void Start() {
-    expected_text_reply_ = kText1;
-
-    ScopedMessagePipeHandle pipe0;
-    CreateMessagePipe(&pipe0, &pipe1_);
-
-    EXPECT_TRUE(WriteTextMessage(pipe1_.get(), kText1));
-
-    ScopedMessagePipeHandle pipe2;
-    CreateMessagePipe(&pipe2, &pipe3_);
-
-    EXPECT_TRUE(WriteTextMessage(pipe3_.get(), kText2));
-
-    AllocationScope scope;
-    sample::Request::Builder request;
-    request.set_x(1);
-    request.set_pipe(pipe2.Pass());
-    factory_->DoStuff(request.Finish(), pipe0.Pass());
-  }
-
-  void StartNoPipes() {
-    expected_text_reply_.clear();
-
-    AllocationScope scope;
-    sample::Request::Builder request;
-    request.set_x(1);
-    factory_->DoStuff(request.Finish(), ScopedMessagePipeHandle().Pass());
-  }
-
-  // Writes a string to a data pipe and passes the data pipe (consumer) to the
-  // factory.
-  void StartDataPipe() {
-    expected_text_reply_.clear();
-
-    ScopedDataPipeProducerHandle producer_handle;
-    ScopedDataPipeConsumerHandle consumer_handle;
-    MojoCreateDataPipeOptions options = {
-        sizeof(MojoCreateDataPipeOptions),
-        MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
-        1,
-        1024};
-    ASSERT_EQ(MOJO_RESULT_OK,
-              CreateDataPipe(&options, &producer_handle, &consumer_handle));
-    expected_text_reply_ = "got it";
-    // +1 for \0.
-    uint32_t data_size = static_cast<uint32_t>(expected_text_reply_.size() + 1);
-    ASSERT_EQ(MOJO_RESULT_OK,
-              WriteDataRaw(producer_handle.get(), expected_text_reply_.c_str(),
-                           &data_size, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
-
-    AllocationScope scope;
-    factory_->DoStuff2(consumer_handle.Pass());
+  void set_expected_text_reply(const std::string& expected_text_reply) {
+    expected_text_reply_ = expected_text_reply;
   }
 
   bool got_response() const {
@@ -167,7 +118,6 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
   }
 
  private:
-  RemotePtr<sample::Factory> factory_;
   ScopedMessagePipeHandle pipe1_;
   ScopedMessagePipeHandle pipe3_;
   std::string expected_text_reply_;
@@ -176,6 +126,10 @@ class SampleFactoryClientImpl : public sample::FactoryClient {
 
 class HandlePassingTest : public testing::Test {
  public:
+  virtual void TearDown() {
+    PumpMessages();
+  }
+
   void PumpMessages() {
     loop_.RunUntilIdle();
   }
@@ -186,12 +140,31 @@ class HandlePassingTest : public testing::Test {
 };
 
 TEST_F(HandlePassingTest, Basic) {
-  InterfacePipe<sample::Factory> pipe;
+  sample::FactoryPtr factory;
+  BindToProxy(new SampleFactoryImpl(), &factory);
 
-  SampleFactoryImpl factory(pipe.handle_to_peer.Pass());
-  SampleFactoryClientImpl factory_client(pipe.handle_to_self.Pass());
+  SampleFactoryClientImpl factory_client;
+  factory_client.set_expected_text_reply(kText1);
 
-  factory_client.Start();
+  factory->SetClient(&factory_client);
+
+  ScopedMessagePipeHandle pipe0, pipe1;
+  CreateMessagePipe(&pipe0, &pipe1);
+
+  EXPECT_TRUE(WriteTextMessage(pipe1.get(), kText1));
+
+  ScopedMessagePipeHandle pipe2, pipe3;
+  CreateMessagePipe(&pipe2, &pipe3);
+
+  EXPECT_TRUE(WriteTextMessage(pipe3.get(), kText2));
+
+  {
+    AllocationScope scope;
+    sample::Request::Builder request;
+    request.set_x(1);
+    request.set_pipe(pipe2.Pass());
+    factory->DoStuff(request.Finish(), pipe0.Pass());
+  }
 
   EXPECT_FALSE(factory_client.got_response());
 
@@ -201,12 +174,18 @@ TEST_F(HandlePassingTest, Basic) {
 }
 
 TEST_F(HandlePassingTest, PassInvalid) {
-  InterfacePipe<sample::Factory> pipe;
+  sample::FactoryPtr factory;
+  BindToProxy(new SampleFactoryImpl(), &factory);
 
-  SampleFactoryImpl factory(pipe.handle_to_peer.Pass());
-  SampleFactoryClientImpl factory_client(pipe.handle_to_self.Pass());
+  SampleFactoryClientImpl factory_client;
+  factory->SetClient(&factory_client);
 
-  factory_client.StartNoPipes();
+  {
+    AllocationScope scope;
+    sample::Request::Builder request;
+    request.set_x(1);
+    factory->DoStuff(request.Finish(), ScopedMessagePipeHandle().Pass());
+  }
 
   EXPECT_FALSE(factory_client.got_response());
 
@@ -217,12 +196,35 @@ TEST_F(HandlePassingTest, PassInvalid) {
 
 // Verifies DataPipeConsumer can be passed and read from.
 TEST_F(HandlePassingTest, DataPipe) {
-  InterfacePipe<sample::Factory> pipe;
+  sample::FactoryPtr factory;
+  BindToProxy(new SampleFactoryImpl(), &factory);
 
-  SampleFactoryImpl factory(pipe.handle_to_peer.Pass());
-  SampleFactoryClientImpl factory_client(pipe.handle_to_self.Pass());
+  SampleFactoryClientImpl factory_client;
+  factory->SetClient(&factory_client);
 
-  ASSERT_NO_FATAL_FAILURE(factory_client.StartDataPipe());
+  // Writes a string to a data pipe and passes the data pipe (consumer) to the
+  // factory.
+  ScopedDataPipeProducerHandle producer_handle;
+  ScopedDataPipeConsumerHandle consumer_handle;
+  MojoCreateDataPipeOptions options = {
+      sizeof(MojoCreateDataPipeOptions),
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+      1,
+      1024};
+  ASSERT_EQ(MOJO_RESULT_OK,
+            CreateDataPipe(&options, &producer_handle, &consumer_handle));
+  std::string expected_text_reply = "got it";
+  factory_client.set_expected_text_reply(expected_text_reply);
+  // +1 for \0.
+  uint32_t data_size = static_cast<uint32_t>(expected_text_reply.size() + 1);
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WriteDataRaw(producer_handle.get(), expected_text_reply.c_str(),
+                         &data_size, MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+
+  {
+    AllocationScope scope;
+    factory->DoStuff2(consumer_handle.Pass());
+  }
 
   EXPECT_FALSE(factory_client.got_response());
 
@@ -232,8 +234,11 @@ TEST_F(HandlePassingTest, DataPipe) {
 }
 
 TEST_F(HandlePassingTest, PipesAreClosed) {
-  InterfacePipe<sample::Factory> pipe;
-  RemotePtr<sample::Factory> factory(pipe.handle_to_self.Pass(), NULL);
+  sample::FactoryPtr factory;
+  BindToProxy(new SampleFactoryImpl(), &factory);
+
+  SampleFactoryClientImpl factory_client;
+  factory->SetClient(&factory_client);
 
   MessagePipe extra_pipe;
 

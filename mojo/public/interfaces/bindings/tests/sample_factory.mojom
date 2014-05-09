@@ -19,13 +19,12 @@ struct Response {
   handle<message_pipe> pipe;
 };
 
-[Peer=FactoryClient]
+[Client=FactoryClient]
 interface Factory {
   DoStuff(Request request, handle<message_pipe> pipe);
   DoStuff2(handle<data_pipe_consumer> pipe);
 };
 
-[Peer=Factory]
 interface FactoryClient {
   DidStuff(Response response, string text);
   DidStuff2(string text);

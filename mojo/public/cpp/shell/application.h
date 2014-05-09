@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/shell/service.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
@@ -16,7 +15,7 @@ namespace mojo {
 
 class Application : public internal::ServiceConnectorBase::Owner {
  public:
-  explicit Application(ScopedShellHandle shell_handle);
+  explicit Application(ScopedMessagePipeHandle shell_handle);
   explicit Application(MojoHandle shell_handle);
   virtual ~Application();
 
@@ -26,6 +25,11 @@ class Application : public internal::ServiceConnectorBase::Owner {
       internal::ServiceConnectorBase* service_connector) MOJO_OVERRIDE;
   virtual void RemoveServiceConnector(
       internal::ServiceConnectorBase* service_connector) MOJO_OVERRIDE;
+
+  template <typename Interface>
+  void ConnectTo(const std::string& url, InterfacePtr<Interface>* ptr) {
+    mojo::ConnectTo(shell(), url, ptr);
+  }
 
  protected:
   // ShellClient methods.

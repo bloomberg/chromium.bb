@@ -117,13 +117,11 @@ class AuraDemo : public Application {
     screen_.reset(ScreenMojo::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
-    InterfacePipe<NativeViewport, AnyInterface> pipe;
+    NativeViewportPtr native_viewport;
+    ConnectTo("mojo:mojo_native_viewport_service", &native_viewport);
 
-    mojo::AllocationScope scope;
-    shell()->Connect("mojo:mojo_native_viewport_service",
-                     pipe.handle_to_peer.Pass());
     window_tree_host_.reset(new WindowTreeHostMojo(
-        pipe.handle_to_self.Pass(),
+        native_viewport.Pass(),
         gfx::Rect(800, 600),
         base::Bind(&AuraDemo::HostContextCreated, base::Unretained(this))));
   }

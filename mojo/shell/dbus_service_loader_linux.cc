@@ -20,8 +20,6 @@
 #include "mojo/dbus/dbus_external_service.h"
 #include "mojo/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/interface.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/shell/context.h"
 #include "mojo/shell/external_service.mojom.h"
 #include "mojo/shell/keep_alive.h"
@@ -30,7 +28,7 @@ namespace mojo {
 namespace shell {
 
 // Manages the connection to a single externally-running service.
-class DBusServiceLoader::LoadContext : public mojo::ExternalServiceHost {
+class DBusServiceLoader::LoadContext {
  public:
   // Kicks off the attempt to bootstrap a connection to the externally-running
   // service specified by url_.
@@ -39,7 +37,7 @@ class DBusServiceLoader::LoadContext : public mojo::ExternalServiceHost {
   LoadContext(DBusServiceLoader* loader,
               const scoped_refptr<dbus::Bus>& bus,
               const GURL& url,
-              ScopedShellHandle shell_handle)
+              ScopedMessagePipeHandle shell_handle)
       : loader_(loader),
         bus_(bus),
         service_dbus_proxy_(NULL),
@@ -73,9 +71,7 @@ class DBusServiceLoader::LoadContext : public mojo::ExternalServiceHost {
                             loader_->context_->task_runners()->io_runner());
     CHECK(bootstrap_message_pipe.is_valid());
 
-    external_service_.reset(
-        mojo::ScopedExternalServiceHandle::From(bootstrap_message_pipe.Pass()),
-        this);
+    external_service_.Bind(bootstrap_message_pipe.Pass());
 
     scoped_ptr<dbus::FileDescriptor> client_fd(new dbus::FileDescriptor);
     client_fd->PutValue(channel_pair.PassClientHandle().release().fd);
@@ -136,10 +132,10 @@ class DBusServiceLoader::LoadContext : public mojo::ExternalServiceHost {
   scoped_refptr<dbus::Bus> bus_;
   dbus::ObjectProxy* service_dbus_proxy_;  // Owned by bus_;
   const GURL url_;
-  ScopedShellHandle shell_handle_;
+  ScopedMessagePipeHandle shell_handle_;
   KeepAlive keep_alive_;
   scoped_ptr<common::ChannelInit> channel_init_;
-  mojo::RemotePtr<mojo::ExternalService> external_service_;
+  ExternalServicePtr external_service_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadContext);
 };
@@ -157,7 +153,7 @@ DBusServiceLoader::~DBusServiceLoader() {
 
 void DBusServiceLoader::LoadService(ServiceManager* manager,
                                     const GURL& url,
-                                    ScopedShellHandle service_handle) {
+                                    ScopedMessagePipeHandle service_handle) {
   DCHECK(url.SchemeIs("dbus"));
   DCHECK(url_to_load_context_.find(url) == url_to_load_context_.end());
   url_to_load_context_[url] =

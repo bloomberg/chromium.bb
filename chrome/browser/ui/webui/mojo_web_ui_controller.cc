@@ -9,7 +9,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/bindings_policy.h"
-#include "mojo/public/cpp/bindings/interface.h"
+#include "mojo/public/cpp/system/core.h"
 
 MojoWebUIController::MojoWebUIController(content::WebUI* contents)
     : WebUIController(contents),
@@ -23,9 +23,9 @@ void MojoWebUIController::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   render_view_host->AllowBindings(content::BINDINGS_POLICY_WEB_UI);
 
-  mojo::InterfacePipe<mojo::AnyInterface, mojo::AnyInterface> pipe;
-  ui_handler_ = CreateUIHandler(pipe.handle_to_peer.Pass());
-  render_view_host->SetWebUIHandle(pipe.handle_to_self.Pass());
+  mojo::MessagePipe pipe;
+  ui_handler_ = CreateUIHandler(pipe.handle0.Pass());
+  render_view_host->SetWebUIHandle(pipe.handle1.Pass());
 }
 
 void MojoWebUIController::AddMojoResourcePath(const std::string& path,

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "mojo/public/cpp/bindings/allocation_scope.h"
-#include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/cpp/utility/run_loop.h"
@@ -15,10 +14,14 @@ namespace mojo {
 namespace test {
 namespace {
 
-class ProviderImpl : public sample::Provider {
+class ProviderImpl : public InterfaceImpl<sample::Provider> {
  public:
-  explicit ProviderImpl(sample::ScopedProviderClientHandle handle)
-      : client_(handle.Pass(), this) {
+  virtual void OnConnectionError() MOJO_OVERRIDE {
+    delete this;
+  }
+
+  virtual void SetClient(sample::ProviderClient* client) MOJO_OVERRIDE {
+    // Ignored. TODO(darin): Eliminate ProviderClient.
   }
 
   virtual void EchoString(
@@ -51,9 +54,6 @@ class ProviderImpl : public sample::Provider {
       MOJO_OVERRIDE {
     callback.Run(a);
   }
-
- private:
-  RemotePtr<sample::ProviderClient> client_;
 };
 
 class StringRecorder {
@@ -94,6 +94,10 @@ class MessagePipeWriter {
 
 class RequestResponseTest : public testing::Test {
  public:
+  virtual ~RequestResponseTest() {
+    loop_.RunUntilIdle();
+  }
+
   void PumpMessages() {
     loop_.RunUntilIdle();
   }
@@ -104,9 +108,8 @@ class RequestResponseTest : public testing::Test {
 };
 
 TEST_F(RequestResponseTest, EchoString) {
-  InterfacePipe<sample::Provider> pipe;
-  ProviderImpl provider_impl(pipe.handle_to_peer.Pass());
-  RemotePtr<sample::Provider> provider(pipe.handle_to_self.Pass(), NULL);
+  sample::ProviderPtr provider;
+  BindToProxy(new ProviderImpl(), &provider);
 
   std::string buf;
   {
@@ -120,9 +123,8 @@ TEST_F(RequestResponseTest, EchoString) {
 }
 
 TEST_F(RequestResponseTest, EchoStrings) {
-  InterfacePipe<sample::Provider> pipe;
-  ProviderImpl provider_impl(pipe.handle_to_peer.Pass());
-  RemotePtr<sample::Provider> provider(pipe.handle_to_self.Pass(), NULL);
+  sample::ProviderPtr provider;
+  BindToProxy(new ProviderImpl(), &provider);
 
   std::string buf;
   {
@@ -136,9 +138,8 @@ TEST_F(RequestResponseTest, EchoStrings) {
 }
 
 TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
-  InterfacePipe<sample::Provider> pipe;
-  ProviderImpl provider_impl(pipe.handle_to_peer.Pass());
-  RemotePtr<sample::Provider> provider(pipe.handle_to_self.Pass(), NULL);
+  sample::ProviderPtr provider;
+  BindToProxy(new ProviderImpl(), &provider);
 
   MessagePipe pipe2;
   {
@@ -156,9 +157,8 @@ TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
 }
 
 TEST_F(RequestResponseTest, EchoEnum) {
-  InterfacePipe<sample::Provider> pipe;
-  ProviderImpl provider_impl(pipe.handle_to_peer.Pass());
-  RemotePtr<sample::Provider> provider(pipe.handle_to_self.Pass(), NULL);
+  sample::ProviderPtr provider;
+  BindToProxy(new ProviderImpl(), &provider);
 
   sample::Enum value;
   {

@@ -12,13 +12,12 @@
 #include "mojo/common/channel_init.h"
 #include "mojo/dbus/dbus_external_service.h"
 #include "mojo/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/interface.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/services/dbus_echo/echo.mojom.h"
 
 namespace {
-class EchoServiceImpl : public mojo::ServiceConnection<mojo::EchoService,
-                                                       EchoServiceImpl> {
+class EchoServiceImpl
+    : public mojo::ServiceConnection<mojo::EchoService, EchoServiceImpl> {
  public:
   EchoServiceImpl() {}
   virtual ~EchoServiceImpl() {}
