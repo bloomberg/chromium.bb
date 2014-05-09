@@ -170,6 +170,17 @@ DevToolsAgentHost* EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
   return agent_host;
 }
 
+DevToolsAgentHost*
+EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForServiceWorker(
+    const base::FilePath& storage_partition_path,
+    const GURL& service_worker_scope) {
+  WorkerInfoMap::iterator it = FindExistingServiceWorkerInfo(
+      storage_partition_path, service_worker_scope);
+  if (it == workers_.end())
+    return NULL;
+  return GetDevToolsAgentHostForWorker(it->first.first, it->first.second);
+}
+
 EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsManager() {
 }
 

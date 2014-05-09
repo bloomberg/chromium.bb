@@ -33,6 +33,9 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
 
   DevToolsAgentHost* GetDevToolsAgentHostForWorker(int worker_process_id,
                                                    int worker_route_id);
+  DevToolsAgentHost* GetDevToolsAgentHostForServiceWorker(
+      const base::FilePath& storage_partition_path,
+      const GURL& service_worker_scope);
 
   // Returns true when the worker must be paused on start.
   bool SharedWorkerCreated(int worker_process_id,
