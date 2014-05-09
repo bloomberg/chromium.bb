@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_interface.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "url/gurl.h"
@@ -99,6 +100,8 @@ class InputMethodEngine : public InputMethodEngineInterface {
   virtual void HideInputView() OVERRIDE;
 
  private:
+  void RecordHistogram(const char* name, int count);
+
   // Converts MenuItem to InputMethodMenuItem.
   void MenuItemToProperty(const MenuItem& item,
                           ash::ime::InputMethodMenuItem* property);
@@ -157,6 +160,10 @@ class InputMethodEngine : public InputMethodEngineInterface {
   // Used with SendKeyEvents and ProcessKeyEvent to check if the key event
   // sent to ProcessKeyEvent is sent by SendKeyEvents.
   const ui::KeyEvent* sent_key_event_;
+
+  // The start & end time of using this input method. This is for UMA.
+  base::Time start_time_;
+  base::Time end_time_;
 };
 
 }  // namespace chromeos

@@ -19,8 +19,10 @@
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/composition_text.h"
@@ -55,6 +57,19 @@ void UpdateComposition(const CompositionText& composition_text,
         composition_text, cursor_pos, is_visible);
 }
 
+// Returns the length of characters of a UTF-8 string with unknown string
+// length. Cannot apply faster algorithm to count characters in an utf-8
+// string without knowing the string length,  so just does a full scan.
+size_t GetUtf8StringLength(const char* s) {
+  size_t ret = 0;
+  while (*s) {
+    if ((*s & 0xC0) != 0x80)
+      ret++;
+    ++s;
+  }
+  return ret;
+}
+
 }  // namespace
 
 InputMethodEngine::InputMethodEngine()
@@ -69,6 +84,8 @@ InputMethodEngine::InputMethodEngine()
       sent_key_event_(NULL) {}
 
 InputMethodEngine::~InputMethodEngine() {
+  if (start_time_.ToInternalValue())
+    RecordHistogram("WorkingTime", (end_time_ - start_time_).InSeconds());
   input_method::InputMethodManager::Get()->RemoveInputMethodExtension(imm_id_);
 }
 
@@ -120,6 +137,15 @@ void InputMethodEngine::Initialize(
 const input_method::InputMethodDescriptor& InputMethodEngine::GetDescriptor()
     const {
   return descriptor_;
+}
+
+void InputMethodEngine::RecordHistogram(const char* name, int count) {
+  std::string histo_name =
+      base::StringPrintf("InputMethod.%s.%s", name, engine_id_.c_str());
+  base::HistogramBase* counter = base::Histogram::FactoryGet(
+      histo_name, 0, 1000000, 50, base::HistogramBase::kNoFlags);
+  if (counter)
+    counter->Add(count);
 }
 
 void InputMethodEngine::NotifyImeReady() {
@@ -209,6 +235,14 @@ bool InputMethodEngine::CommitText(int context_id, const char* text,
   }
 
   IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
+
+  // Records times for using input method.
+  if (!start_time_.ToInternalValue())
+    start_time_ = base::Time::Now();
+  end_time_ = base::Time::Now();
+  // Records histograms for counts of commits and committed characters.
+  RecordHistogram("Commit", 1);
+  RecordHistogram("CommitCharacter", GetUtf8StringLength(text));
   return true;
 }
 
@@ -525,11 +559,18 @@ void InputMethodEngine::Enable() {
   FocusIn(IMEEngineHandlerInterface::InputContext(
       current_input_type_, ui::TEXT_INPUT_MODE_DEFAULT));
   EnableInputView(true);
+
+  start_time_ = base::Time();
+  end_time_ = base::Time();
+  RecordHistogram("Enable", 1);
 }
 
 void InputMethodEngine::Disable() {
   active_ = false;
   observer_->OnDeactivated(engine_id_);
+
+  if (start_time_.ToInternalValue())
+    RecordHistogram("WorkingTime", (end_time_ - start_time_).InSeconds());
 }
 
 void InputMethodEngine::PropertyActivate(const std::string& property_name) {
