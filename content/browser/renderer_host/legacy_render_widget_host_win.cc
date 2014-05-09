@@ -9,6 +9,7 @@
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/view_prop.h"
@@ -17,6 +18,11 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace content {
+
+// A custom MSAA object id used to determine if a screen reader or some
+// other client is listening on MSAA events - if so, we enable full web
+// accessibility support.
+const int kIdScreenReaderHoneyPot = 1;
 
 LegacyRenderWidgetHostHWND::~LegacyRenderWidgetHostHWND() {
   ::DestroyWindow(hwnd());
@@ -100,6 +106,14 @@ bool LegacyRenderWidgetHostHWND::Init() {
       hwnd(), OBJID_WINDOW, IID_IAccessible,
       reinterpret_cast<void **>(window_accessible_.Receive()));
   DCHECK(SUCCEEDED(hr));
+
+  if (!BrowserAccessibilityState::GetInstance()->IsAccessibleBrowser()) {
+    // Attempt to detect screen readers or other clients who want full
+    // accessibility support, by seeing if they respond to this event.
+    NotifyWinEvent(EVENT_SYSTEM_ALERT, hwnd(), kIdScreenReaderHoneyPot,
+                   CHILDID_SELF);
+  }
+
   return !!SUCCEEDED(hr);
 }
 
@@ -119,6 +133,13 @@ LRESULT LegacyRenderWidgetHostHWND::OnEraseBkGnd(UINT message,
 LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
                                                 WPARAM w_param,
                                                 LPARAM l_param) {
+  if (kIdScreenReaderHoneyPot == l_param) {
+    // When an MSAA client has responded to our fake event on this id,
+    // enable screen reader support.
+    BrowserAccessibilityState::GetInstance()->OnScreenReaderDetected();
+    return static_cast<LRESULT>(0L);
+  }
+
   if (OBJID_CLIENT != l_param || !manager_)
     return static_cast<LRESULT>(0L);
 
