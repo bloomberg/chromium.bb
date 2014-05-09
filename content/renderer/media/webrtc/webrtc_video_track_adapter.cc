@@ -22,6 +22,12 @@ bool ConstraintKeyExists(const blink::WebMediaConstraints& constraints,
 
 namespace content {
 
+// Used to make sure |source| is released on the main render thread.
+void ReleaseWebRtcSourceOnMainRenderThread(
+    webrtc::VideoSourceInterface* source) {
+  source->Release();
+}
+
 // Simple help class used for receiving video frames on the IO-thread from
 // a MediaStreamVideoTrack and forward the frames to a
 // WebRtcVideoCapturerAdapter that implements a video capturer for libjingle.
@@ -39,8 +45,12 @@ class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
   friend class base::RefCountedThreadSafe<WebRtcVideoSourceAdapter>;
   virtual ~WebRtcVideoSourceAdapter();
 
+  scoped_refptr<base::MessageLoopProxy> render_thread_message_loop_;
   // Used to DCHECK that frames are called on the IO-thread.
   base::ThreadChecker io_thread_checker_;
+
+  // |video_source_| is a libjingle object that must be released on the main
+  // render thread.
   scoped_refptr<webrtc::VideoSourceInterface> video_source_;
   // |capture_adapter_| is owned by |video_source_|
   WebRtcVideoCapturerAdapter* capture_adapter_;
@@ -49,12 +59,22 @@ class WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter
 WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::WebRtcVideoSourceAdapter(
     const scoped_refptr<webrtc::VideoSourceInterface>& source,
     WebRtcVideoCapturerAdapter* capture_adapter)
-    : video_source_(source),
+    : render_thread_message_loop_(base::MessageLoopProxy::current()),
+      video_source_(source),
       capture_adapter_(capture_adapter) {
   io_thread_checker_.DetachFromThread();
 }
 
 WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::~WebRtcVideoSourceAdapter() {
+  if (!render_thread_message_loop_->BelongsToCurrentThread()) {
+    webrtc::VideoSourceInterface* source = video_source_.get();
+    source->AddRef();
+    video_source_ = NULL;
+    render_thread_message_loop_->PostTask(
+        FROM_HERE,
+        base::Bind(&ReleaseWebRtcSourceOnMainRenderThread,
+                   base::Unretained(source)));
+  }
 }
 
 void WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::OnVideoFrameOnIO(
