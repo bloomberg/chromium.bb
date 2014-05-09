@@ -132,9 +132,6 @@
           # TODO(mmenke):  Should probably get rid of the dependency on
           # net_resources in this case (It's used in net_util, to format
           # directory listings.  Also used outside of net/).
-          'dependencies!': [
-            'net_resources',
-          ],
           'sources!': [
             'base/directory_lister.cc',
             'base/directory_lister.h',
