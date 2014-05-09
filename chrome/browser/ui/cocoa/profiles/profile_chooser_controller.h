@@ -36,10 +36,19 @@ class WebContents;
     // Shows a web view for adding secondary accounts.
     BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT,
     // Shows a view for confirming account removal.
-    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL
+    BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
+    // Shows a view for ending new profile management preview.
+    BUBBLE_VIEW_MODE_END_PREVIEW
   };
 
  @private
+  enum TutorialMode {
+    TUTORIAL_MODE_NONE,             // No tutorial card shown.
+    TUTORIAL_MODE_ENABLE_PREVIEW,   // The enable-mirror-preview tutorial shown.
+    TUTORIAL_MODE_WELCOME,          // The welcome-to-mirror tutorial shown.
+    TUTORIAL_MODE_SEND_FEEDBACK     // The send-feedback tutorial shown.
+  };
+
   // The menu that contains the data from the backend.
   scoped_ptr<AvatarMenu> avatarMenu_;
 
@@ -58,8 +67,8 @@ class WebContents;
   // Active view mode.
   BubbleViewMode viewMode_;
 
-  // Whether the tutorial card is showing in the last active view.
-  BOOL tutorialShowing_;
+  // The current tutorial mode.
+  TutorialMode tutorialMode_;
 
   // List of the full, un-elided accounts for the active profile. The keys are
   // generated used to tag the UI buttons, and the values are the original
