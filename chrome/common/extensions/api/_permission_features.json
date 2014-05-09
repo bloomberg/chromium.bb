@@ -68,7 +68,7 @@
     "extension_types": ["platform_app"]
   },
   "app.window.shape": {
-    "channel": "dev",
+    "channel": "beta",
     "extension_types": ["platform_app"]
   },
   "audio": [

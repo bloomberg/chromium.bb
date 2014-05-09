@@ -45,6 +45,9 @@ const char kNoAssociatedAppWindow[] =
 const char kDevChannelOnly[] =
     "This function is currently only available in the Dev channel.";
 
+const char kBetaChannelOnly[] =
+    "This function is currently only available in the Beta or Dev channel.";
+
 const char kRequiresFramelessWindow[] =
     "This function requires a frameless window (frame:none).";
 
@@ -384,12 +387,12 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
     "8B344D9E8A4C505EF82A0DBBC25B8BD1F984E777",
     "E06AFCB1EB0EFD237824CC4AC8FDD3D43E8BC868"
   };
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
+  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_BETA &&
       !SimpleFeature::IsIdInList(
           GetExtension()->id(),
           std::set<std::string>(whitelist,
                                 whitelist + arraysize(whitelist)))) {
-    error_ = kDevChannelOnly;
+    error_ = kBetaChannelOnly;
     return false;
   }
 
