@@ -1173,35 +1173,42 @@ TEST_F(OriginChipV2Test, NotSet) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2"));
   EXPECT_FALSE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2Condition());
 }
 
 TEST_F(OriginChipV2Test, Disabled) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:0"));
   EXPECT_FALSE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2Condition());
 }
 
 TEST_F(OriginChipV2Test, HideOnMouseRelease) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:1"));
   EXPECT_TRUE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2Condition());
 }
 
 TEST_F(OriginChipV2Test, HideOnUserInput) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:2"));
   EXPECT_TRUE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT, GetOriginChipV2Condition());
+}
+
+TEST_F(OriginChipV2Test, OnSrp) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:3"));
+  EXPECT_TRUE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_ON_SRP, GetOriginChipV2Condition());
 }
 
 TEST_F(OriginChipV2Test, InvalidValue) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:3"));
+      "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:4"));
   EXPECT_FALSE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2Condition());
 }
 
 TEST_F(OriginChipV2Test, BothVersions) {
@@ -1212,34 +1219,41 @@ TEST_F(OriginChipV2Test, BothVersions) {
   EXPECT_FALSE(ShouldDisplayOriginChip());
   EXPECT_EQ(ORIGIN_CHIP_DISABLED, GetOriginChipPosition());
   EXPECT_TRUE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2Condition());
 }
 
 TEST_F(OriginChipV2Test, CommandLineDisabled) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableOriginChipV2);
   EXPECT_FALSE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2Condition());
 
   // Command-line disable should override the field trial.
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2 origin_chip_v2:1"));
   EXPECT_FALSE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_DISABLED, GetOriginChipV2Condition());
 }
 
 TEST_F(OriginChipV2Test, CommandLineHideOnMouseRelease) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableOriginChipV2HideOnMouseRelease);
   EXPECT_TRUE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE, GetOriginChipV2Condition());
 }
 
 TEST_F(OriginChipV2Test, CommandLineHideOnUserInput) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableOriginChipV2HideOnUserInput);
   EXPECT_TRUE(ShouldDisplayOriginChipV2());
-  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT, GetOriginChipV2HideTrigger());
+  EXPECT_EQ(ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT, GetOriginChipV2Condition());
+}
+
+TEST_F(OriginChipV2Test, CommandLineOnSrp) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableOriginChipV2OnSrp);
+  EXPECT_TRUE(ShouldDisplayOriginChipV2());
+  EXPECT_EQ(ORIGIN_CHIP_V2_ON_SRP, GetOriginChipV2Condition());
 }
 
 }  // namespace chrome

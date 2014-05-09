@@ -510,7 +510,8 @@ void OmniboxEditModel::SetInputInProgress(bool in_progress) {
   }
 
   // The following code handles two cases:
-  // * For HIDE_ON_USER_INPUT, it hides the chip when user input begins.
+  // * For HIDE_ON_USER_INPUT and ON_SRP, it hides the chip when user input
+  //   begins.
   // * For HIDE_ON_MOUSE_RELEASE, which only hides the chip on mouse release if
   //   the omnibox is empty, it handles the "omnibox was not empty" case by
   //   acting like HIDE_ON_USER_INPUT.

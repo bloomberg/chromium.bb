@@ -182,10 +182,18 @@ bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
     }
   }
 
-  bool should_display_origin_chip =
-      chrome::ShouldDisplayOriginChip() || chrome::ShouldDisplayOriginChipV2();
-  return should_display_origin_chip && delegate_->InTabbedBrowser() &&
-      ShouldDisplayURL() && url_replacement_enabled();
+  if (!delegate_->InTabbedBrowser() || !ShouldDisplayURL() ||
+      !url_replacement_enabled())
+    return false;
+
+  if (chrome::ShouldDisplayOriginChip())
+    return true;
+
+  const chrome::OriginChipV2Condition chip_condition =
+      chrome::GetOriginChipV2Condition();
+  return (chip_condition != chrome::ORIGIN_CHIP_V2_DISABLED) &&
+      ((chip_condition != chrome::ORIGIN_CHIP_V2_ON_SRP) ||
+       WouldPerformSearchTermReplacement(false));
 }
 
 bool ToolbarModelImpl::WouldPerformSearchTermReplacement(

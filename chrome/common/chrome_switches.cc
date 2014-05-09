@@ -582,6 +582,7 @@ const char kEnableOriginChipV2HideOnMouseRelease[] =
     "enable-origin-chip-v2-hide-on-mouse-release";
 const char kEnableOriginChipV2HideOnUserInput[] =
     "enable-origin-chip-v2-hide-on-user-input";
+const char kEnableOriginChipV2OnSrp[] = "enable-origin-chip-v2-on-srp";
 
 // Enables panels (always on-top docked pop-up windows).
 const char kEnablePanels[]                  = "enable-panels";

@@ -90,7 +90,7 @@ OmniboxView::~OmniboxView() {
 void OmniboxView::HandleOriginChipMouseRelease() {
   // HIDE_ON_MOUSE_RELEASE only hides if there isn't any current text in the
   // Omnibox (e.g. search terms).
-  if ((chrome::GetOriginChipV2HideTrigger() ==
+  if ((chrome::GetOriginChipV2Condition() ==
        chrome::ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE) &&
       controller()->GetToolbarModel()->GetText().empty()) {
     controller()->HideOriginChip();

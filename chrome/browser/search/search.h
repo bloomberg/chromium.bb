@@ -56,10 +56,11 @@ enum OriginChipPosition {
   ORIGIN_CHIP_NUM_VALUES,
 };
 
-enum OriginChipV2HideTrigger {
+enum OriginChipV2Condition {
   ORIGIN_CHIP_V2_DISABLED,
   ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE,
   ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT,
+  ORIGIN_CHIP_V2_ON_SRP,
   ORIGIN_CHIP_V2_NUM_VALUES,
 };
 
@@ -210,7 +211,7 @@ bool ShouldDisplayOriginChipV2();
 
 // Returns a value indicating what event should trigger hiding the origin chip
 // in the location bar.
-OriginChipV2HideTrigger GetOriginChipV2HideTrigger();
+OriginChipV2Condition GetOriginChipV2Condition();
 
 // Returns true if the local new tab page should show a Google logo and search
 // box for users whose default search provider is Google, or false if not.

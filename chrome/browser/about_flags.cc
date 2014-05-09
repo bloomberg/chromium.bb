@@ -374,7 +374,9 @@ const Experiment::Choice kOriginChipV2Choices[] = {
   { IDS_FLAGS_ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE,
     switches::kEnableOriginChipV2HideOnMouseRelease, ""},
   { IDS_FLAGS_ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT,
-    switches::kEnableOriginChipV2HideOnUserInput, ""}
+    switches::kEnableOriginChipV2HideOnUserInput, ""},
+  { IDS_FLAGS_ORIGIN_CHIP_V2_ON_SRP,
+    switches::kEnableOriginChipV2OnSrp, ""}
 };
 
 const Experiment::Choice kTouchScrollingModeChoices[] = {

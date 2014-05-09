@@ -652,10 +652,10 @@ OriginChipPosition GetOriginChipPosition() {
 }
 
 bool ShouldDisplayOriginChipV2() {
-  return GetOriginChipV2HideTrigger() != ORIGIN_CHIP_V2_DISABLED;
+  return GetOriginChipV2Condition() != ORIGIN_CHIP_V2_DISABLED;
 }
 
-OriginChipV2HideTrigger GetOriginChipV2HideTrigger() {
+OriginChipV2Condition GetOriginChipV2Condition() {
   const CommandLine* cl = CommandLine::ForCurrentProcess();
   if (cl->HasSwitch(switches::kDisableOriginChipV2))
     return ORIGIN_CHIP_V2_DISABLED;
@@ -663,6 +663,8 @@ OriginChipV2HideTrigger GetOriginChipV2HideTrigger() {
     return ORIGIN_CHIP_V2_HIDE_ON_MOUSE_RELEASE;
   if (cl->HasSwitch(switches::kEnableOriginChipV2HideOnUserInput))
     return ORIGIN_CHIP_V2_HIDE_ON_USER_INPUT;
+  if (cl->HasSwitch(switches::kEnableOriginChipV2OnSrp))
+    return ORIGIN_CHIP_V2_ON_SRP;
 
   FieldTrialFlags flags;
   if (!GetFieldTrialInfo(&flags))
@@ -670,7 +672,7 @@ OriginChipV2HideTrigger GetOriginChipV2HideTrigger() {
   uint64 value =
       GetUInt64ValueForFlagWithDefault(kOriginChipV2FlagName, 0, flags);
   return (value < ORIGIN_CHIP_V2_NUM_VALUES) ?
-      static_cast<OriginChipV2HideTrigger>(value) :
+      static_cast<OriginChipV2Condition>(value) :
       ORIGIN_CHIP_V2_DISABLED;
 }
 
