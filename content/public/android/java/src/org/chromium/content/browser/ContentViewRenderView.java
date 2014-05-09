@@ -186,18 +186,7 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
      * @return The created SurfaceView object.
      */
     protected SurfaceView createSurfaceView(Context context) {
-        return new SurfaceView(context) {
-            @Override
-            public void onDraw(Canvas canvas) {
-                // We only need to draw to software canvases, which are used for taking screenshots.
-                if (canvas.isHardwareAccelerated()) return;
-                Bitmap bitmap = Bitmap.createBitmap(getWidth(), getHeight(),
-                        Bitmap.Config.ARGB_8888);
-                if (nativeCompositeToBitmap(mNativeContentViewRenderView, bitmap)) {
-                    canvas.drawBitmap(bitmap, 0, 0, null);
-                }
-            }
-        };
+        return new SurfaceView(context);
     }
 
     /**
@@ -288,7 +277,6 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
     private native void nativeSurfaceChanged(long nativeContentViewRenderView,
             int format, int width, int height, Surface surface);
     private native boolean nativeComposite(long nativeContentViewRenderView);
-    private native boolean nativeCompositeToBitmap(long nativeContentViewRenderView, Bitmap bitmap);
     private native void nativeSetOverlayVideoMode(long nativeContentViewRenderView,
             boolean enabled);
 }
