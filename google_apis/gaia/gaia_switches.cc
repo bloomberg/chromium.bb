@@ -6,7 +6,6 @@
 
 namespace switches {
 
-const char kClientLoginToOAuth2Url[]        = "client-login-to-oauth2-url";
 const char kGaiaUrl[]                       = "gaia-url";
 const char kGoogleApisUrl[]                 = "google-apis-url";
 const char kLsoUrl[]                        = "lso-url";

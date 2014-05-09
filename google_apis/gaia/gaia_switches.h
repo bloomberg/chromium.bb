@@ -7,9 +7,6 @@
 
 namespace switches {
 
-// Supplies custom client login to OAuth2 URL for testing purposes.
-extern const char kClientLoginToOAuth2Url[];
-
 // Specifies the path for GAIA authentication URL. The default value is
 // "https://accounts.google.com".
 extern const char kGaiaUrl[];
