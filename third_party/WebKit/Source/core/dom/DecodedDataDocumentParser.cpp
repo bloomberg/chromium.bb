@@ -32,8 +32,8 @@
 
 namespace WebCore {
 
-DecodedDataDocumentParser::DecodedDataDocumentParser(Document* document)
-    : DocumentParser(document)
+DecodedDataDocumentParser::DecodedDataDocumentParser(Document& document)
+    : DocumentParser(&document)
     , m_needsDecoder(true)
 {
 }

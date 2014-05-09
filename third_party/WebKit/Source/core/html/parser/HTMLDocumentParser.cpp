@@ -99,8 +99,9 @@ private:
     WeakPtr<BackgroundHTMLParser> m_backgroundParser;
 };
 
+// FIXME: HTMLDocument should be a reference.
 HTMLDocumentParser::HTMLDocumentParser(HTMLDocument* document, bool reportErrors)
-    : ScriptableDocumentParser(document)
+    : ScriptableDocumentParser(*document)
     , m_options(document)
     , m_token(m_options.useThreading ? nullptr : adoptPtr(new HTMLToken))
     , m_tokenizer(m_options.useThreading ? nullptr : HTMLTokenizer::create(m_options))
@@ -121,7 +122,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument* document, bool reportErrors
 // FIXME: Member variables should be grouped into self-initializing structs to
 // minimize code duplication between these constructors.
 HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)
-    : ScriptableDocumentParser(&fragment->document(), parserContentPolicy)
+    : ScriptableDocumentParser(fragment->document(), parserContentPolicy)
     , m_options(&fragment->document())
     , m_token(adoptPtr(new HTMLToken))
     , m_tokenizer(HTMLTokenizer::create(m_options))

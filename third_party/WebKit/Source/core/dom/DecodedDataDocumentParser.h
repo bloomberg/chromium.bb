@@ -49,7 +49,7 @@ public:
     PassOwnPtr<TextResourceDecoder> takeDecoder();
 
 protected:
-    explicit DecodedDataDocumentParser(Document*);
+    explicit DecodedDataDocumentParser(Document&);
     virtual ~DecodedDataDocumentParser();
 
 private:

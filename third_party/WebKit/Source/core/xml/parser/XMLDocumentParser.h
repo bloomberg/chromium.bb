@@ -66,7 +66,7 @@ class Text;
     class XMLDocumentParser FINAL : public ScriptableDocumentParser, public ResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
-        static PassRefPtr<XMLDocumentParser> create(Document* document, FrameView* view)
+        static PassRefPtr<XMLDocumentParser> create(Document& document, FrameView* view)
         {
             return adoptRef(new XMLDocumentParser(document, view));
         }
@@ -101,7 +101,7 @@ class Text;
         };
 
     private:
-        XMLDocumentParser(Document*, FrameView* = 0);
+        explicit XMLDocumentParser(Document&, FrameView* = 0);
         XMLDocumentParser(DocumentFragment*, Element*, ParserContentPolicy);
 
         // From DocumentParser

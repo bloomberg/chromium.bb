@@ -97,7 +97,7 @@ void DOMPatchSupport::patchDocument(const String& markup)
     if (m_document.isHTMLDocument())
         parser = HTMLDocumentParser::create(toHTMLDocument(newDocument.get()), false);
     else
-        parser = XMLDocumentParser::create(newDocument.get(), 0);
+        parser = XMLDocumentParser::create(*newDocument, 0);
     parser->insert(markup); // Use insert() so that the parser will not yield.
     parser->finish();
     parser->detach();

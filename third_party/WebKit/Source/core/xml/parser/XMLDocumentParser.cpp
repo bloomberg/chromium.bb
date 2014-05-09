@@ -739,11 +739,11 @@ bool XMLDocumentParser::supportsXMLVersion(const String& version)
     return version == "1.0";
 }
 
-XMLDocumentParser::XMLDocumentParser(Document* document, FrameView* frameView)
+XMLDocumentParser::XMLDocumentParser(Document& document, FrameView* frameView)
     : ScriptableDocumentParser(document)
     , m_view(frameView)
     , m_context(nullptr)
-    , m_currentNode(document)
+    , m_currentNode(&document)
     , m_isCurrentlyParsing8BitChunk(false)
     , m_sawError(false)
     , m_sawCSS(false)
@@ -753,18 +753,18 @@ XMLDocumentParser::XMLDocumentParser(Document* document, FrameView* frameView)
     , m_parserPaused(false)
     , m_requestingScript(false)
     , m_finishCalled(false)
-    , m_xmlErrors(document)
+    , m_xmlErrors(&document)
     , m_pendingScript(0)
     , m_scriptStartPosition(TextPosition::belowRangePosition())
     , m_parsingFragment(false)
 {
     // This is XML being used as a document resource.
-    if (frameView && document->isXMLDocument())
-        UseCounter::count(*document, UseCounter::XMLDocument);
+    if (frameView && document.isXMLDocument())
+        UseCounter::count(document, UseCounter::XMLDocument);
 }
 
 XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parentElement, ParserContentPolicy parserContentPolicy)
-    : ScriptableDocumentParser(&fragment->document(), parserContentPolicy)
+    : ScriptableDocumentParser(fragment->document(), parserContentPolicy)
     , m_view(0)
     , m_context(nullptr)
     , m_currentNode(fragment)
