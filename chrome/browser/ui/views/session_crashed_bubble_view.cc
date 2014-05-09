@@ -24,6 +24,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/google_chrome_strings.h"
 #include "grit/ui_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -31,6 +32,7 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -41,6 +43,9 @@ namespace {
 
 // Fixed width of the column holding the description label of the bubble.
 const int kWidthOfDescriptionText = 320;
+
+// Distance between checkbox and the text to the right of it.
+const int kCheckboxTextDistance = 4;
 
 // Margins width for the top rows to compensate for the bottom panel for which
 // we don't want any margin.
@@ -198,19 +203,49 @@ void SessionCrashedBubbleView::Init() {
 
 void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
   // Checkbox for metric reporting setting.
-  uma_option_ = new views::Checkbox(
-      l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_VIEW_UMA_OPTIN));
+  // Since the text to the right of the checkbox can't be a simple string (needs
+  // a hyperlink in it), this checkbox contains an empty string as its label,
+  // and the real text will be added as a separate view.
+  uma_option_ = new views::Checkbox(base::string16());
   uma_option_->SetTextColor(views::Button::STATE_NORMAL, SK_ColorGRAY);
   uma_option_->SetChecked(false);
-  uma_option_->SetTextMultiLine(true);
   uma_option_->set_background(
       views::Background::CreateSolidBackground(kLightGrayBackgroundColor));
   uma_option_->set_listener(this);
+
+  // The text to the right of the checkbox.
+  size_t offset;
+  base::string16 link_text =
+      l10n_util::GetStringUTF16(IDS_SESSION_CRASHED_BUBBLE_UMA_LINK_TEXT);
+  base::string16 uma_text = l10n_util::GetStringFUTF16(
+      IDS_SESSION_CRASHED_VIEW_UMA_OPTIN,
+      link_text,
+      &offset);
+  views::StyledLabel* uma_label = new views::StyledLabel(uma_text, this);
+  uma_label->set_background(
+      views::Background::CreateSolidBackground(kLightGrayBackgroundColor));
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  link_style.font_style = gfx::Font::NORMAL;
+  uma_label->AddStyleRange(gfx::Range(offset, offset + link_text.length()),
+                           link_style);
+  views::StyledLabel::RangeStyleInfo uma_style;
+  uma_style.color = SK_ColorGRAY;
+  gfx::Range before_link_range(0, offset);
+  if (!before_link_range.is_empty())
+    uma_label->AddStyleRange(before_link_range, uma_style);
+  gfx::Range after_link_range(offset + link_text.length(), uma_text.length());
+  if (!after_link_range.is_empty())
+    uma_label->AddStyleRange(after_link_range, uma_style);
+
   // We use a border instead of padding so that the background color reach
   // the edges of the bubble.
   uma_option_->SetBorder(
+      views::Border::CreateSolidSidedBorder(0, kMarginWidth, 0, 0,
+                                            kLightGrayBackgroundColor));
+  uma_label->SetBorder(
       views::Border::CreateSolidSidedBorder(
-          kMarginHeight, kMarginWidth, kMarginHeight, kMarginWidth,
+          kMarginHeight, kCheckboxTextDistance, kMarginHeight, kMarginWidth,
           kLightGrayBackgroundColor));
 
   // Separator.
@@ -222,13 +257,16 @@ void SessionCrashedBubbleView::CreateUmaOptinView(GridLayout* layout) {
   // Reporting row.
   const int kReportColumnSetId = 4;
   cs = layout->AddColumnSet(kReportColumnSetId);
+  cs->AddColumn(GridLayout::CENTER, GridLayout::FILL, 0,
+                GridLayout::USE_PREF, 0, 0);
   cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                GridLayout::FIXED, kWidthOfDescriptionText + kMarginWidth, 0);
+                GridLayout::FIXED, kWidthOfDescriptionText, 0);
 
   layout->StartRow(0, kSeparatorColumnSetId);
   layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
   layout->StartRow(0, kReportColumnSetId);
   layout->AddView(uma_option_);
+  layout->AddView(uma_label);
 }
 
 void SessionCrashedBubbleView::ButtonPressed(views::Button* sender,
@@ -238,6 +276,16 @@ void SessionCrashedBubbleView::ButtonPressed(views::Button* sender,
     RestorePreviousSession(sender);
   else if (sender == close_)
     CloseBubble();
+}
+
+void SessionCrashedBubbleView::StyledLabelLinkClicked(const gfx::Range& range,
+                                                      int event_flags) {
+  browser_->OpenURL(content::OpenURLParams(
+      GURL("https://support.google.com/chrome/answer/96817"),
+      content::Referrer(),
+      NEW_FOREGROUND_TAB,
+      content::PAGE_TRANSITION_LINK,
+      false));
 }
 
 void SessionCrashedBubbleView::DidStartNavigationToPendingEntry(
