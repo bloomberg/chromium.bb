@@ -4,8 +4,10 @@
 # See http://code.google.com/p/chromium/wiki/UsingGit
 #
 # To test manually, run:
-#   python tools/deps2git/deps2git.py -o .DEPS.git
+#   python tools/deps2git/deps2git.py -o .DEPS.git -w <gclientdir>
 #   gclient runhooks
+# where <gcliendir> is the absolute path to the directory containing the
+# .gclient file (the parent of "src").
 # DO NOT CHECK IN CHANGES TO .DEPS.git. It will be automatically updated by
 # a bot when you modify this one.
 #
