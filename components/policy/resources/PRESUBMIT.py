@@ -52,7 +52,9 @@ def _CheckPolicyTestCases(input_api, output_api, policies):
   policy_test_cases_file = input_api.os_path.join(
       root, 'chrome', 'test', 'data', 'policy', 'policy_test_cases.json')
   test_names = input_api.json.load(open(policy_test_cases_file)).keys()
-  tested_policies = frozenset(name for name in test_names if name[:2] != '--')
+  tested_policies = frozenset(name.partition('.')[0]
+                              for name in test_names
+                              if name[:2] != '--')
   policy_names = frozenset(policy['name'] for policy in policies)
 
   # Finally check if any policies are missing.
