@@ -113,6 +113,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     int origin_pid;
     MessageQueue deferred_message_queue;
     bool is_deferred;
+    bool is_canceled;
     // Original requested url.
     GURL url;
     // The security origin of the frame that initiates this request.
