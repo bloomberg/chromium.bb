@@ -43,8 +43,6 @@ const char kInvalidWindowId[] =
     "The window id can not be more than 256 characters long.";
 const char kInvalidColorSpecification[] =
     "The color specification could not be parsed.";
-const char kInvalidChannelForFrameOptions[] =
-    "Frame options are only available in dev channel.";
 const char kColorWithFrameNone[] = "Windows with no frame cannot have a color.";
 const char kInactiveColorWithoutColor[] =
     "frame.inactiveColor must be used with frame.color.";
@@ -261,8 +259,6 @@ bool AppWindowCreateFunction::RunAsync() {
     }
   }
 
-  UpdateFrameOptionsForChannel(&create_params);
-
   create_params.creator_process_id =
       render_view_host_->GetProcess()->GetID();
 
@@ -438,11 +434,6 @@ bool AppWindowCreateFunction::GetFrameOptions(
     return true;
   }
 
-  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
-    error_ = app_window_constants::kInvalidChannelForFrameOptions;
-    return false;
-  }
-
   if (options.frame->as_frame_options->type)
     create_params->frame =
         GetFrameFromString(*options.frame->as_frame_options->type);
@@ -481,21 +472,6 @@ bool AppWindowCreateFunction::GetFrameOptions(
   }
 
   return true;
-}
-
-void AppWindowCreateFunction::UpdateFrameOptionsForChannel(
-    apps::AppWindow::CreateParams* create_params) {
-#if defined(OS_WIN)
-  if (create_params->frame == AppWindow::FRAME_CHROME &&
-      GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV) {
-    // If not on trunk or dev channel, always use the standard white frame.
-    // TODO(benwells): Remove this code once we get agreement to use the new
-    // native style frame.
-    create_params->has_frame_color = true;
-    create_params->active_frame_color = SK_ColorWHITE;
-    create_params->inactive_frame_color = SK_ColorWHITE;
-  }
-#endif
 }
 
 }  // namespace extensions

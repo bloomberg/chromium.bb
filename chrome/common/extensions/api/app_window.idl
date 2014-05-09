@@ -106,20 +106,20 @@ namespace app.window {
     DOMString? type;
     // Allows the frame color to be set. Frame coloring is only available if the
     // frame type is <code>chrome</code>.<br>
-    // Frame coloring is experimental and only available in dev channel.
+    // Frame coloring is new in Chrome 36.
     DOMString? color;
     // Allows the frame color of the window when active to be set. Frame
     // coloring is only available if the frame type is <code>chrome</code>.<br>
     // Frame coloring is only available if the frame type is
     // <code>chrome</code>.<br>
-    // Frame coloring is experimental and only available in dev channel.
+    // Frame coloring is new in Chrome 36.
     DOMString? activeColor;
     // Allows the frame color of the window when inactive to be set differently
     // to the active color. Frame
     // coloring is only available if the frame type is <code>chrome</code>.<br>
     // <code>inactiveColor</code> must be used in conjunction with <code>
     // color</code>.<br>
-    // Frame coloring is experimental and only available in dev channel.
+    // Frame coloring is new in Chrome 36.
     DOMString? inactiveColor;
   };
 
@@ -212,7 +212,7 @@ namespace app.window {
     // draggability to the app's window. <code>-webkit-app-region: drag</code>
     // can be used to mark regions draggable. <code>no-drag</code> can be used
     // to disable this style on nested elements.<br>
-    // Use of <code>FrameOptions</code> is only supported in dev channel.
+    // Use of <code>FrameOptions</code> is new in M36.
     (DOMString or FrameOptions)? frame;
 
     // Size and position of the content in the window (excluding the titlebar).

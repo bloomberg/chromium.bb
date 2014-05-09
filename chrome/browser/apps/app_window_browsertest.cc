@@ -249,8 +249,11 @@ IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestFrameColors) {
   ASSERT_TRUE(RunAppWindowAPITest("testFrameColors")) << message_;
 }
 
+// TODO(benwells): Remove this test once all the things are merged together. It
+// is currently present as this feature was previously disabled on stable
+// channel, so the test is to ensure it has all been re-enabled properly.
 IN_PROC_BROWSER_TEST_F(AppWindowAPITest, TestFrameColorsInStable) {
   extensions::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_STABLE);
-  ASSERT_TRUE(RunAppWindowAPITest("testFrameColorsInStable")) << message_;
+  ASSERT_TRUE(RunAppWindowAPITest("testFrameColors")) << message_;
 }
 #endif

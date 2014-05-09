@@ -1352,32 +1352,6 @@ function testFrameColors() {
   ]);
 }
 
-function testFrameColorsInStable() {
-  chrome.test.runTests([
-    function testWithNoColor() {
-      chrome.app.window.create('test.html', callbackPass(function(win) {
-        if (navigator.platform.substr(0, 3).toLowerCase() == "win") {
-          chrome.test.assertEq(true, win.hasFrameColor);
-          chrome.test.assertEq(0xFFFFFF, win.activeFrameColor);
-          chrome.test.assertEq(0xFFFFFF, win.inactiveFrameColor);
-        } else {
-          chrome.test.assertEq(false, win.hasFrameColor);
-        }
-        win.close();
-      }));
-    },
-
-    function testWithOptionsGivesError() {
-      chrome.app.window.create('test.html', {
-        frame: {
-          color: '#FFF'
-        }
-      },
-      callbackFail('Frame options are only available in dev channel.'));
-    }
-  ]);
-}
-
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.test.sendMessage('Launched', function(reply) {
     window[reply]();
