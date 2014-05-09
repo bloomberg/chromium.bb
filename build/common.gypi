@@ -558,6 +558,9 @@
        # Enable the Syzygy optimization step.
       'syzygy_optimize%': 0,
 
+      # Enable hole punching for the protected video.
+      'video_hole%': 0,
+
       'conditions': [
         # A flag for POSIX platforms
         ['OS=="win"', {
@@ -676,6 +679,7 @@
            # Set to 1 once we have a notification system for Android.
            # http://crbug.com/115320
           'notifications%': 0,
+          'video_hole%': 1,
         }],
 
         # Android OS includes support for proprietary codecs regardless of
@@ -1078,6 +1082,7 @@
     'proprietary_codecs%': '<(proprietary_codecs)',
     'use_goma%': '<(use_goma)',
     'gomadir%': '<(gomadir)',
+    'video_hole%': '<(video_hole)',
 
     # Use system protobuf instead of bundled one.
     'use_system_protobuf%': 0,
@@ -1360,9 +1365,6 @@
 
     # Force disable libstdc++ debug mode.
     'disable_glibcxx_debug%': 0,
-
-    # Set to 1 to compile with the hole punching for the protected video.
-    'video_hole%': 0,
 
     # Set to 1 to compile with MSE support for MPEG2 TS
     'enable_mpeg2ts_stream_parser%': 0,
