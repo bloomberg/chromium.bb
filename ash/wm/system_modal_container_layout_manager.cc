@@ -4,6 +4,8 @@
 
 #include "ash/wm/system_modal_container_layout_manager.h"
 
+#include <cmath>
+
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -15,6 +17,7 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -27,7 +30,16 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/compound_event_filter.h"
 
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(ASH_EXPORT, bool);
+
 namespace ash {
+
+// If this is set to true, the window will get centered.
+DEFINE_WINDOW_PROPERTY_KEY(bool, kCenteredKey, false);
+
+// The center point of the window can diverge this much from the center point
+// of the container to be kept centered upon resizing operations.
+const int kCenterPixelDelta = 32;
 
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, public:
@@ -87,6 +99,7 @@ void SystemModalContainerLayoutManager::SetChildBounds(
     aura::Window* child,
     const gfx::Rect& requested_bounds) {
   SetChildBoundsDirect(child, requested_bounds);
+  child->SetProperty(kCenteredKey, DialogIsCentered(requested_bounds));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -232,14 +245,10 @@ void SystemModalContainerLayoutManager::RemoveModalWindow(
 }
 
 void SystemModalContainerLayoutManager::PositionDialogsAfterWorkAreaResize() {
-  gfx::Rect valid_bounds = GetUsableDialogArea();
-
   if (!modal_windows_.empty()) {
     for (aura::Window::Windows::iterator it = modal_windows_.begin();
          it != modal_windows_.end(); ++it) {
-      gfx::Rect bounds = (*it)->bounds();
-      bounds.AdjustToFit(valid_bounds);
-      (*it)->SetBounds(bounds);
+      (*it)->SetBounds(GetCenteredAndOrFittedBounds(*it));
     }
   }
 }
@@ -261,6 +270,28 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() {
     }
   }
   return valid_bounds;
+}
+
+gfx::Rect SystemModalContainerLayoutManager::GetCenteredAndOrFittedBounds(
+    const aura::Window* window) {
+  if (window->GetProperty(kCenteredKey)) {
+    // Keep the dialog centered if it was centered before.
+    gfx::Rect target_bounds = GetUsableDialogArea();
+    target_bounds.ClampToCenteredSize(window->bounds().size());
+    return target_bounds;
+  }
+  gfx::Rect target_bounds = window->bounds();
+  target_bounds.AdjustToFit(GetUsableDialogArea());
+  return target_bounds;
+}
+
+bool SystemModalContainerLayoutManager::DialogIsCentered(
+    const gfx::Rect& window_bounds) {
+  gfx::Point window_center = window_bounds.CenterPoint();
+  gfx::Point container_center = GetUsableDialogArea().CenterPoint();
+  return
+      std::abs(window_center.x() - container_center.x()) < kCenterPixelDelta &&
+      std::abs(window_center.y() - container_center.y()) < kCenterPixelDelta;
 }
 
 }  // namespace ash

@@ -431,6 +431,24 @@ TEST_F(SystemModalContainerLayoutManagerTest, KeepVisible) {
   EXPECT_EQ(bounds, gfx::Rect(700, 500, 100, 100));
 }
 
+// Verifies that centered windows will remain centered after the visible screen
+// area changed.
+TEST_F(SystemModalContainerLayoutManagerTest, KeepCentered) {
+  GetModalContainer()->SetBounds(gfx::Rect(0, 0, 800, 600));
+  scoped_ptr<aura::Window> main(OpenTestWindowWithParent(GetModalContainer(),
+                                                         true));
+  // Center the window.
+  main->SetBounds(gfx::Rect((800 - 512) / 2, (600 - 256) / 2, 512, 256));
+
+  // We set now the bounds of the root window to something new which will
+  // Then trigger the reposition operation.
+  GetModalContainer()->SetBounds(gfx::Rect(0, 0, 1024, 768));
+
+  // The window should still be centered.
+  gfx::Rect bounds = main->bounds();
+  EXPECT_EQ(bounds.ToString(), gfx::Rect(256, 256, 512, 256).ToString());
+}
+
 TEST_F(SystemModalContainerLayoutManagerTest, ShowNormalBackgroundOrLocked) {
   scoped_ptr<aura::Window> parent(OpenToplevelTestWindow(false));
   scoped_ptr<aura::Window> modal_window(

@@ -29,6 +29,8 @@ class Widget;
 namespace ash {
 
 // LayoutManager for the modal window container.
+// System modal windows which are centered on the screen will be kept centered
+// when the container size changes.
 class ASH_EXPORT SystemModalContainerLayoutManager
     : public aura::LayoutManager,
       public aura::WindowObserver,
@@ -84,6 +86,13 @@ class ASH_EXPORT SystemModalContainerLayoutManager
 
   // Get the usable bounds rectangle for enclosed dialogs.
   gfx::Rect GetUsableDialogArea();
+
+  // Gets the new bounds for a |window| to use which are either centered (if the
+  // window was previously centered) or fitted to the screen.
+  gfx::Rect GetCenteredAndOrFittedBounds(const aura::Window* window);
+
+  // Returns true if |window_bounds| is centered.
+  bool DialogIsCentered(const gfx::Rect& window_bounds);
 
   aura::Window* modal_window() {
     return !modal_windows_.empty() ? modal_windows_.back() : NULL;
