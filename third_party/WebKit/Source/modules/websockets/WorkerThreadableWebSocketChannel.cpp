@@ -49,6 +49,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "wtf/ArrayBuffer.h"
+#include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
 
@@ -297,6 +298,12 @@ void WorkerThreadableWebSocketChannel::Peer::sendArrayBuffer(PassOwnPtr<Vector<c
         m_syncHelper->setSendRequestResult(WebSocketChannel::SendFail);
     } else {
         RefPtr<ArrayBuffer> binaryData = ArrayBuffer::create(data->data(), data->size());
+        if (!binaryData) {
+            // Failed to allocate an ArrayBuffer. We need to crash the renderer
+            // since there's no way defined in the spec to tell this to the
+            // user.
+            CRASH();
+        }
         WebSocketChannel::SendResult sendRequestResult = m_mainWebSocketChannel->send(*binaryData, 0, binaryData->byteLength());
         m_syncHelper->setSendRequestResult(sendRequestResult);
     }
