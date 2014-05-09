@@ -44,6 +44,7 @@ namespace drive_backend {
 
 class LocalToRemoteSyncer;
 class MetadataDatabase;
+class RemoteChangeProcessorOnWorker;
 class RemoteToLocalSyncer;
 class SyncEngineContext;
 class SyncEngineInitializer;
@@ -96,7 +97,8 @@ class SyncWorker : public SyncTaskManager::Client {
       RemoteFileSyncService::UninstallFlag flag,
       const SyncStatusCallback& callback);
   void ProcessRemoteChange(const SyncFileCallback& callback);
-  void SetRemoteChangeProcessor(RemoteChangeProcessor* processor);
+  void SetRemoteChangeProcessor(
+      RemoteChangeProcessorOnWorker* remote_change_processor_on_worker);
   RemoteServiceState GetCurrentState() const;
   void GetOriginStatusMap(RemoteFileSyncService::OriginStatusMap* status_map);
   scoped_ptr<base::ListValue> DumpFiles(const GURL& origin);

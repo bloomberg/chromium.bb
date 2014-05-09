@@ -108,11 +108,11 @@ class SyncEngineTest
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     extension_service_.reset(new MockExtensionService);
-    scoped_ptr<drive::FakeDriveService> fake_drive_service(
-        new drive::FakeDriveService);
+    scoped_ptr<drive::DriveServiceInterface>
+        fake_drive_service(new drive::FakeDriveService);
 
     sync_engine_.reset(new drive_backend::SyncEngine(
-        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
+        fake_drive_service.Pass(),
         scoped_ptr<drive::DriveUploaderInterface>(),
         base::MessageLoopProxy::current(),
         NULL /* notification_manager */,

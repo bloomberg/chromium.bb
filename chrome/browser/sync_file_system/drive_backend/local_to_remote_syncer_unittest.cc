@@ -56,22 +56,23 @@ class LocalToRemoteSyncerTest : public testing::Test {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    fake_drive_service_.reset(new FakeDriveServiceWrapper);
-
-    drive_uploader_.reset(new FakeDriveUploader(fake_drive_service_.get()));
+    scoped_ptr<FakeDriveServiceWrapper>
+        fake_drive_service(new FakeDriveServiceWrapper);
+    scoped_ptr<drive::DriveUploaderInterface>
+        drive_uploader(new FakeDriveUploader(fake_drive_service.get()));
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_.get(),
-        drive_uploader_.get(),
+        fake_drive_service.get(),
+        drive_uploader.get(),
         kSyncRootFolderTitle));
-    fake_remote_change_processor_.reset(new FakeRemoteChangeProcessor);
+    remote_change_processor_.reset(new FakeRemoteChangeProcessor);
 
     context_.reset(new SyncEngineContext(
-        fake_drive_service_.get(),
-        drive_uploader_.get(),
+        fake_drive_service.PassAs<drive::DriveServiceInterface>(),
+        drive_uploader.Pass(),
         base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current()));
-    context_->SetRemoteChangeProcessor(fake_remote_change_processor_.get());
+    context_->SetRemoteChangeProcessor(remote_change_processor_.get());
 
     RegisterSyncableFileSystem();
 
@@ -83,12 +84,7 @@ class LocalToRemoteSyncerTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     sync_task_manager_.reset();
-    fake_drive_service_.reset();
-    drive_uploader_.reset();
-
     RevokeSyncableFileSystem();
-
-    fake_remote_change_processor_.reset();
     fake_drive_helper_.reset();
     context_.reset();
     base::RunLoop().RunUntilIdle();
@@ -243,12 +239,10 @@ class LocalToRemoteSyncerTest : public testing::Test {
   base::ScopedTempDir database_dir_;
   scoped_ptr<leveldb::Env> in_memory_env_;
 
-  scoped_ptr<FakeDriveServiceWrapper> fake_drive_service_;
-  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
   scoped_ptr<SyncEngineContext> context_;
   scoped_ptr<FakeDriveServiceHelper> fake_drive_helper_;
+  scoped_ptr<FakeRemoteChangeProcessor> remote_change_processor_;
   scoped_ptr<MetadataDatabase> metadata_database_;
-  scoped_ptr<FakeRemoteChangeProcessor> fake_remote_change_processor_;
   scoped_ptr<SyncTaskManager> sync_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalToRemoteSyncerTest);

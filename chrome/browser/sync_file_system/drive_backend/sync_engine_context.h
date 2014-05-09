@@ -31,12 +31,16 @@ class MetadataDatabase;
 class SyncEngineContext {
  public:
   SyncEngineContext(
-      drive::DriveServiceInterface* drive_service,
-      drive::DriveUploaderInterface* drive_uploader,
+      scoped_ptr<drive::DriveServiceInterface> drive_service,
+      scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
       base::SingleThreadTaskRunner* ui_task_runner,
       base::SequencedTaskRunner* worker_task_runner,
       base::SequencedTaskRunner* file_task_runner);
   ~SyncEngineContext();
+
+  void SetMetadataDatabase(scoped_ptr<MetadataDatabase> metadata_database);
+  void SetRemoteChangeProcessor(
+      RemoteChangeProcessor* remote_change_processor);
 
   drive::DriveServiceInterface* GetDriveService();
   drive::DriveUploaderInterface* GetDriveUploader();
@@ -46,15 +50,12 @@ class SyncEngineContext {
   base::SequencedTaskRunner* GetWorkerTaskRunner();
   base::SequencedTaskRunner* GetFileTaskRunner();
 
-  void SetMetadataDatabase(scoped_ptr<MetadataDatabase> metadata_database);
-  void SetRemoteChangeProcessor(RemoteChangeProcessor* remote_change_processor);
-
   scoped_ptr<MetadataDatabase> PassMetadataDatabase();
 
  private:
-  drive::DriveServiceInterface* drive_service_;
-  drive::DriveUploaderInterface* drive_uploader_;
-  RemoteChangeProcessor* remote_change_processor_;
+  scoped_ptr<drive::DriveServiceInterface> drive_service_;
+  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
+  RemoteChangeProcessor* remote_change_processor_;  // Do not own
 
   scoped_ptr<MetadataDatabase> metadata_database_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;

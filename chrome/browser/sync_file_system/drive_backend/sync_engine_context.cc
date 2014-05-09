@@ -18,13 +18,13 @@ namespace sync_file_system {
 namespace drive_backend {
 
 SyncEngineContext::SyncEngineContext(
-    drive::DriveServiceInterface* drive_service,
-    drive::DriveUploaderInterface* drive_uploader,
+    scoped_ptr<drive::DriveServiceInterface> drive_service,
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
     base::SingleThreadTaskRunner* ui_task_runner,
     base::SequencedTaskRunner* worker_task_runner,
     base::SequencedTaskRunner* file_task_runner)
-    : drive_service_(drive_service),
-      drive_uploader_(drive_uploader),
+    : drive_service_(drive_service.Pass()),
+      drive_uploader_(drive_uploader.Pass()),
       remote_change_processor_(NULL),
       ui_task_runner_(ui_task_runner),
       worker_task_runner_(worker_task_runner),
@@ -33,11 +33,11 @@ SyncEngineContext::SyncEngineContext(
 SyncEngineContext::~SyncEngineContext() {}
 
 drive::DriveServiceInterface* SyncEngineContext::GetDriveService() {
-  return drive_service_;
+  return drive_service_.get();
 }
 
 drive::DriveUploaderInterface* SyncEngineContext::GetDriveUploader() {
-  return drive_uploader_;
+  return drive_uploader_.get();
 }
 
 MetadataDatabase* SyncEngineContext::GetMetadataDatabase() {
@@ -72,6 +72,7 @@ void SyncEngineContext::SetMetadataDatabase(
 
 void SyncEngineContext::SetRemoteChangeProcessor(
     RemoteChangeProcessor* remote_change_processor) {
+  DCHECK(remote_change_processor);
   remote_change_processor_ = remote_change_processor;
 }
 

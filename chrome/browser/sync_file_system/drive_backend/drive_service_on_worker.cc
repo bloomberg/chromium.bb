@@ -232,6 +232,13 @@ google_apis::CancelCallback DriveServiceOnWorker::SearchByTitle(
   return google_apis::CancelCallback();
 }
 
+bool DriveServiceOnWorker::HasRefreshToken() const {
+  // TODO(peria): Cache the state and returns it directly, before migration of
+  //    SyncWorker to a worker thread.
+  DCHECK(wrapper_);
+  return wrapper_->HasRefreshToken();
+}
+
 void DriveServiceOnWorker::Initialize(const std::string& account_id) {
   NOTREACHED();
 }
@@ -264,11 +271,6 @@ bool DriveServiceOnWorker::HasAccessToken() const {
 void DriveServiceOnWorker::RequestAccessToken(
     const google_apis::AuthStatusCallback& callback) {
   NOTREACHED();
-}
-
-bool DriveServiceOnWorker::HasRefreshToken() const {
-  NOTREACHED();
-  return false;
 }
 
 void DriveServiceOnWorker::ClearAccessToken() {

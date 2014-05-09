@@ -87,6 +87,10 @@ void DriveServiceWrapper::GetResourceListInDirectory(
                                              callback);
 }
 
+bool DriveServiceWrapper::HasRefreshToken() const {
+  return drive_service_->HasRefreshToken();
+}
+
 void DriveServiceWrapper::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,

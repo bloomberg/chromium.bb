@@ -42,8 +42,12 @@ class RemoteChangeProcessor;
 
 namespace drive_backend {
 
+class DriveServiceWrapper;
+class DriveUploaderWrapper;
 class LocalToRemoteSyncer;
 class MetadataDatabase;
+class RemoteChangeProcessorOnWorker;
+class RemoteChangeProcessorWrapper;
 class RemoteToLocalSyncer;
 class SyncEngineInitializer;
 class SyncTaskManager;
@@ -164,7 +168,13 @@ class SyncEngine : public RemoteFileSyncService,
   void UpdateRegisteredApps();
 
   scoped_ptr<drive::DriveServiceInterface> drive_service_;
+  scoped_ptr<DriveServiceWrapper> drive_service_wrapper_;
   scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
+  scoped_ptr<DriveUploaderWrapper> drive_uploader_wrapper_;
+  RemoteChangeProcessor* remote_change_processor_;
+  scoped_ptr<RemoteChangeProcessorWrapper> remote_change_processor_wrapper_;
+
+  scoped_ptr<RemoteChangeProcessorOnWorker> remote_change_processor_on_worker_;
 
   // These external services are not owned by SyncEngine.
   // The owner of the SyncEngine is responsible for their lifetime.

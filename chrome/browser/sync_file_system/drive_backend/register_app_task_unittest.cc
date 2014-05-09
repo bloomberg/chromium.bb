@@ -46,21 +46,24 @@ class RegisterAppTaskTest : public testing::Test {
     ASSERT_TRUE(database_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    fake_drive_service_.reset(new drive::FakeDriveService);
-
-    drive_uploader_.reset(new drive::DriveUploader(
-        fake_drive_service_.get(), base::MessageLoopProxy::current()));
+    scoped_ptr<drive::FakeDriveService>
+        fake_drive_service(new drive::FakeDriveService);
+    scoped_ptr<drive::DriveUploaderInterface>
+        drive_uploader(new drive::DriveUploader(
+            fake_drive_service.get(),
+            base::MessageLoopProxy::current()));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
-        fake_drive_service_.get(), drive_uploader_.get(),
+        fake_drive_service.get(), drive_uploader.get(),
         kSyncRootFolderTitle));
 
     context_.reset(
-        new SyncEngineContext(fake_drive_service_.get(),
-                              drive_uploader_.get(),
-                              base::MessageLoopProxy::current(),
-                              base::MessageLoopProxy::current(),
-                              base::MessageLoopProxy::current()));
+        new SyncEngineContext(
+            fake_drive_service.PassAs<drive::DriveServiceInterface>(),
+            drive_uploader.Pass(),
+            base::MessageLoopProxy::current(),
+            base::MessageLoopProxy::current(),
+            base::MessageLoopProxy::current()));
 
     ASSERT_EQ(google_apis::HTTP_CREATED,
               fake_drive_service_helper_->AddOrphanedFolder(
@@ -69,8 +72,6 @@ class RegisterAppTaskTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {
     context_.reset();
-    fake_drive_service_.reset();
-    drive_uploader_.reset();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -246,8 +247,6 @@ class RegisterAppTaskTest : public testing::Test {
   base::ScopedTempDir database_dir_;
 
   scoped_ptr<SyncEngineContext> context_;
-  scoped_ptr<drive::FakeDriveService> fake_drive_service_;
-  scoped_ptr<drive::DriveUploaderInterface> drive_uploader_;
   scoped_ptr<FakeDriveServiceHelper> fake_drive_service_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(RegisterAppTaskTest);

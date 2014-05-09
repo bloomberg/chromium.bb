@@ -84,7 +84,9 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const std::string& directory_resource_id,
       const google_apis::GetResourceListCallback& callback) OVERRIDE;
 
-  // Following methods are expected not to be accessed at all.
+  virtual bool HasRefreshToken() const OVERRIDE;
+
+  // Following virtual methods are expected not to be accessed at all.
   virtual void Initialize(const std::string& account_id) OVERRIDE;
   virtual void AddObserver(drive::DriveServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(drive::DriveServiceObserver* observer) OVERRIDE;
@@ -94,7 +96,6 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
   virtual bool HasAccessToken() const OVERRIDE;
   virtual void RequestAccessToken(
       const google_apis::AuthStatusCallback& callback) OVERRIDE;
-  virtual bool HasRefreshToken() const OVERRIDE;
   virtual void ClearAccessToken() OVERRIDE;
   virtual void ClearRefreshToken() OVERRIDE;
   virtual google_apis::CancelCallback GetAllResourceList(

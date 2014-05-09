@@ -21,10 +21,16 @@
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_service_on_worker.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_service_wrapper.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_uploader_on_worker.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_uploader_wrapper.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/register_app_task.h"
+#include "chrome/browser/sync_file_system/drive_backend/remote_change_processor_on_worker.h"
+#include "chrome/browser/sync_file_system/drive_backend/remote_change_processor_wrapper.h"
 #include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
@@ -183,12 +189,26 @@ SyncEngine::~SyncEngine() {
 void SyncEngine::Initialize(const base::FilePath& base_dir,
                             base::SequencedTaskRunner* file_task_runner,
                             leveldb::Env* env_override) {
-  scoped_ptr<SyncEngineContext> sync_engine_context(
-      new SyncEngineContext(drive_service_.get(),
-                            drive_uploader_.get(),
-                            base::MessageLoopProxy::current(),
-                            worker_task_runner_,
-                            file_task_runner));
+  // DriveServiceWrapper and DriveServiceOnWorker relay communications
+  // between DriveService and syncers in SyncWorker.
+  scoped_ptr<drive::DriveServiceInterface>
+      drive_service_on_worker(
+          new DriveServiceOnWorker(drive_service_wrapper_->AsWeakPtr(),
+                                   base::MessageLoopProxy::current(),
+                                   worker_task_runner_));
+  scoped_ptr<drive::DriveUploaderInterface>
+      drive_uploader_on_worker(
+          new DriveUploaderOnWorker(drive_uploader_wrapper_->AsWeakPtr(),
+                                    base::MessageLoopProxy::current(),
+                                    worker_task_runner_));
+  scoped_ptr<SyncEngineContext>
+      sync_engine_context(
+          new SyncEngineContext(drive_service_on_worker.Pass(),
+                                drive_uploader_on_worker.Pass(),
+                                base::MessageLoopProxy::current(),
+                                worker_task_runner_,
+                                file_task_runner));
+
   worker_observer_.reset(
       new WorkerObserver(base::MessageLoopProxy::current(),
                          weak_ptr_factory_.GetWeakPtr()));
@@ -275,11 +295,20 @@ void SyncEngine::ProcessRemoteChange(const SyncFileCallback& callback) {
 }
 
 void SyncEngine::SetRemoteChangeProcessor(RemoteChangeProcessor* processor) {
+  remote_change_processor_ = processor;
+  remote_change_processor_wrapper_.reset(
+      new RemoteChangeProcessorWrapper(processor));
+
+  remote_change_processor_on_worker_.reset(new RemoteChangeProcessorOnWorker(
+      remote_change_processor_wrapper_->AsWeakPtr(),
+      base::MessageLoopProxy::current(), /* ui_task_runner */
+      worker_task_runner_));
+
   worker_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SyncWorker::SetRemoteChangeProcessor,
                  base::Unretained(sync_worker_.get()),
-                 processor));
+                 remote_change_processor_on_worker_.get()));
 }
 
 LocalChangeProcessor* SyncEngine::GetLocalChangeProcessor() {
@@ -457,7 +486,9 @@ SyncEngine::SyncEngine(
     ExtensionServiceInterface* extension_service,
     SigninManagerBase* signin_manager)
     : drive_service_(drive_service.Pass()),
+      drive_service_wrapper_(new DriveServiceWrapper(drive_service_.get())),
       drive_uploader_(drive_uploader.Pass()),
+      drive_uploader_wrapper_(new DriveUploaderWrapper(drive_uploader_.get())),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
       signin_manager_(signin_manager),

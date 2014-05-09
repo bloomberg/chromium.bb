@@ -63,8 +63,8 @@ class DriveBackendSyncTest : public testing::Test,
         &profile_, in_memory_env_.get());
     local_sync_service_->AddChangeObserver(this);
 
-    scoped_ptr<drive::FakeDriveService> drive_service(
-        new drive::FakeDriveService());
+    scoped_ptr<drive::FakeDriveService>
+        drive_service(new drive::FakeDriveService);
     drive_service->Initialize("test@example.com");
     ASSERT_TRUE(drive::test_util::SetUpTestEntries(drive_service.get()));
 
