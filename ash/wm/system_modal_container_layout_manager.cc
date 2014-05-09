@@ -263,10 +263,8 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() {
   if (keyboard_controller) {
     gfx::Rect bounds = keyboard_controller->current_keyboard_bounds();
     if (!bounds.IsEmpty()) {
-      DCHECK_EQ(valid_bounds.x(), bounds.x());
-      DCHECK_EQ(valid_bounds.right(), bounds.right());
-      DCHECK_LT(valid_bounds.y(), bounds.y());
-      valid_bounds.set_height(bounds.y() - valid_bounds.y());
+      valid_bounds.set_height(std::max(
+          0, valid_bounds.height() - bounds.height()));
     }
   }
   return valid_bounds;
