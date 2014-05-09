@@ -175,6 +175,15 @@ class BluetoothLowEnergyReadCharacteristicValueFunction
 
   // BluetoothLowEnergyExtensionFunction override.
   virtual bool DoWork() OVERRIDE;
+
+ private:
+  // Success and error callbacks, called by
+  // BluetoothLowEnergyEventRouter::ReadCharacteristicValue.
+  void SuccessCallback();
+  void ErrorCallback();
+
+  // The instance ID of the requested characteristic.
+  std::string instance_id_;
 };
 
 class BluetoothLowEnergyWriteCharacteristicValueFunction

@@ -26,6 +26,8 @@ const char kErrorCharacteristicNotFoundFormat[] =
     "Characteristic with ID \"%s\" not found.";
 const char kErrorDeviceNotFoundFormat[] =
     "Device with address \"%s\" not found.";
+const char kErrorReadCharacteristicValueFailedFormat[] =
+    "Failed to read value of characteristic with ID \"%s\".";
 const char kErrorServiceNotFoundFormat[] = "Service with ID \"%s\" not found.";
 const char kErrorPlatformNotSupported[] =
     "This operation is not supported on the current platform";
@@ -301,10 +303,65 @@ bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyReadCharacteristicValueFunction::DoWork() {
-  // TODO(armansito): Implement.
-  SetError("Call not supported.");
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::ReadCharacteristicValue::Params> params(
+      apibtle::ReadCharacteristicValue::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  instance_id_ = params->characteristic_id;
+
+  if (!event_router->ReadCharacteristicValue(
+          instance_id_,
+          base::Bind(&BluetoothLowEnergyReadCharacteristicValueFunction::
+                         SuccessCallback,
+                     this),
+          base::Bind(
+              &BluetoothLowEnergyReadCharacteristicValueFunction::ErrorCallback,
+              this))) {
+    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
+                                instance_id_.c_str()));
+    SendResponse(false);
+    return false;
+  }
+
+  return true;
+}
+
+void BluetoothLowEnergyReadCharacteristicValueFunction::SuccessCallback() {
+  // Obtain info on the characteristic and see whether or not the characteristic
+  // is still around.
+  apibtle::Characteristic characteristic;
+  if (!GetEventRouter(browser_context())
+           ->GetCharacteristic(instance_id_, &characteristic)) {
+    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
+                                instance_id_.c_str()));
+    SendResponse(false);
+    return;
+  }
+
+  // Manually construct the result instead of using
+  // apibtle::GetCharacteristic::Result::Create as it doesn't convert lists of
+  // enums correctly.
+  SetResult(apibtle::CharacteristicToValue(&characteristic).release());
+  SendResponse(true);
+}
+
+void BluetoothLowEnergyReadCharacteristicValueFunction::ErrorCallback() {
+  SetError(base::StringPrintf(kErrorReadCharacteristicValueFailedFormat,
+                              instance_id_.c_str()));
   SendResponse(false);
-  return false;
 }
 
 bool BluetoothLowEnergyWriteCharacteristicValueFunction::DoWork() {

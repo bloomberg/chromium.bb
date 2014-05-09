@@ -103,6 +103,14 @@ class BluetoothLowEnergyEventRouter
       const std::string& instance_id,
       api::bluetooth_low_energy::Characteristic* out_characteristic) const;
 
+  // Sends a request to read the value of the characteristic with intance ID
+  // |instance_id|. Returns false, if no such characteristic is known.
+  // Otherwise, returns true and invokes |callback| on success and
+  // |error_callback| on failure.
+  bool ReadCharacteristicValue(const std::string& instance_id,
+                               const base::Closure& callback,
+                               const base::Closure& error_callback);
+
   // Initializes the adapter for testing. Used by unit tests only.
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
 
@@ -151,6 +159,11 @@ class BluetoothLowEnergyEventRouter
   // Returns NULL, if the characteristic cannot be found.
   device::BluetoothGattCharacteristic* FindCharacteristicById(
       const std::string& instance_id) const;
+
+  // Called by BluetoothGattCharacteristic in response to
+  // ReadRemoteCharacteristic.
+  void ValueCallback(const base::Closure& callback,
+                     const std::vector<uint8>& value);
 
   // Mapping from instance ids to identifiers of owning instances. The keys are
   // used to identify individual instances of GATT objects and are used by

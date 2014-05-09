@@ -317,6 +317,32 @@ bool BluetoothLowEnergyEventRouter::GetCharacteristic(
   return true;
 }
 
+bool BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
+    const std::string& instance_id,
+    const base::Closure& callback,
+    const base::Closure& error_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    return false;
+  }
+
+  BluetoothGattCharacteristic* characteristic =
+      FindCharacteristicById(instance_id);
+  if (!characteristic) {
+    VLOG(1) << "Characteristic not found: " << instance_id;
+    return false;
+  }
+
+  characteristic->ReadRemoteCharacteristic(
+      base::Bind(&BluetoothLowEnergyEventRouter::ValueCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback),
+      error_callback);
+
+  return true;
+}
+
 void BluetoothLowEnergyEventRouter::SetAdapterForTesting(
     device::BluetoothAdapter* adapter) {
   adapter_ = adapter;
@@ -588,6 +614,13 @@ BluetoothLowEnergyEventRouter::FindCharacteristicById(
   }
 
   return characteristic;
+}
+
+void BluetoothLowEnergyEventRouter::ValueCallback(
+    const base::Closure& callback,
+    const std::vector<uint8>& value) {
+  VLOG(2) << "Remote characteristic value read successful.";
+  callback.Run();
 }
 
 }  // namespace extensions
