@@ -5,9 +5,12 @@
 // The following is duplicated from base/linux_utils.cc.
 // We shouldn't link against C++ code in a setuid binary.
 
-#include "sandbox/linux/suid/linux_util.h"
+// Needed for O_DIRECTORY, must be defined before fcntl.h is included
+// (and it can be included earlier than the explicit #include below
+// in some versions of glibc).
+#define _GNU_SOURCE
 
-#define _GNU_SOURCE  // For O_DIRECTORY
+#include "sandbox/linux/suid/linux_util.h"
 
 #include <dirent.h>
 #include <errno.h>
