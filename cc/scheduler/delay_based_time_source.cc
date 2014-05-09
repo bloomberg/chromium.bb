@@ -43,8 +43,10 @@ scoped_refptr<DelayBasedTimeSourceHighRes> DelayBasedTimeSourceHighRes::Create(
 }
 
 DelayBasedTimeSourceHighRes::DelayBasedTimeSourceHighRes(
-    base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner)
-    : DelayBasedTimeSource(interval, task_runner) {}
+    base::TimeDelta interval,
+    base::SingleThreadTaskRunner* task_runner)
+    : DelayBasedTimeSource(interval, task_runner) {
+}
 
 DelayBasedTimeSourceHighRes::~DelayBasedTimeSourceHighRes() {}
 
@@ -61,14 +63,17 @@ scoped_refptr<DelayBasedTimeSource> DelayBasedTimeSource::Create(
 }
 
 DelayBasedTimeSource::DelayBasedTimeSource(
-    base::TimeDelta interval, base::SingleThreadTaskRunner* task_runner)
+    base::TimeDelta interval,
+    base::SingleThreadTaskRunner* task_runner)
     : client_(NULL),
       last_tick_time_(base::TimeTicks() - interval),
       current_parameters_(interval, base::TimeTicks()),
       next_parameters_(interval, base::TimeTicks()),
       active_(false),
       task_runner_(task_runner),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK_GT(interval.ToInternalValue(), 0);
+}
 
 DelayBasedTimeSource::~DelayBasedTimeSource() {}
 
@@ -124,6 +129,7 @@ void DelayBasedTimeSource::SetClient(TimeSourceClient* client) {
 
 void DelayBasedTimeSource::SetTimebaseAndInterval(base::TimeTicks timebase,
                                                   base::TimeDelta interval) {
+  DCHECK_GT(interval.ToInternalValue(), 0);
   next_parameters_.interval = interval;
   next_parameters_.tick_target = timebase;
 
