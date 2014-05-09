@@ -6,14 +6,20 @@
 #define CHROME_BROWSER_UI_WEBUI_PASSWORD_MANAGER_INTERNALS_PASSWORD_MANAGER_INTERNALS_UI_H_
 
 #include "components/password_manager/core/browser/password_manager_logger.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 
 class PasswordManagerInternalsUI
     : public content::WebUIController,
+      public content::WebContentsObserver,
       public password_manager::PasswordManagerLogger {
  public:
   explicit PasswordManagerInternalsUI(content::WebUI* web_ui);
   virtual ~PasswordManagerInternalsUI();
+
+  // WebContentsObserver implementation.
+  virtual void DidStopLoading(
+      content::RenderViewHost* render_view_host) OVERRIDE;
 
   // PasswordManagerLogger implementation.
   virtual void LogSavePasswordProgress(const std::string& text) OVERRIDE;
@@ -32,6 +38,17 @@ class PasswordManagerInternalsUI
   // PAGE_CLOSED -- PasswordManagerLogger is reset for clients
   void NotifyAllPasswordManagerClients(
       ClientNotificationType notification_type);
+
+  // Helper used by LogSavePasswordProgress, actually sends |text| to the
+  // internals page.
+  void LogInternal(const std::string& text);
+
+  // Whether the observed WebContents did stop loading.
+  bool did_stop_loading_;
+
+  // Stores the logs here until |did_stop_loading_| becomes true. At that point
+  // all stored logs are displayed and any new are displayed directly.
+  std::string log_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerInternalsUI);
 };
