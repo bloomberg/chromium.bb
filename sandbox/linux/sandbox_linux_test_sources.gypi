@@ -31,6 +31,7 @@
     }],
     [ 'use_seccomp_bpf==1', {
       'sources': [
+        'seccomp-bpf-helpers/baseline_policy_unittest.cc',
         'seccomp-bpf/bpf_tests_unittest.cc',
         'seccomp-bpf/codegen_unittest.cc',
         'seccomp-bpf/errorcode_unittest.cc',

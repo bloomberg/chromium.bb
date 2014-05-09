@@ -19,6 +19,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
@@ -51,25 +52,53 @@ inline bool IsArchitectureI386() {
 #endif
 }
 
+inline bool IsAndroid() {
+#if defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
 }  // namespace.
 
 namespace sandbox {
 
+// Allow Glibc's and Android pthread creation flags, crash on any other
+// thread creation attempts and EPERM attempts to use neither
+// CLONE_VM, nor CLONE_THREAD, which includes all fork() implementations.
 ErrorCode RestrictCloneToThreadsAndEPERMFork(SandboxBPF* sandbox) {
-  // Glibc's pthread.
-  return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND |
-                       CLONE_THREAD | CLONE_SYSVSEM | CLONE_SETTLS |
-                       CLONE_PARENT_SETTID | CLONE_CHILD_CLEARTID,
-                       ErrorCode(ErrorCode::ERR_ALLOWED),
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       CLONE_PARENT_SETTID | SIGCHLD,
-                       ErrorCode(EPERM),
-         // ARM
-         sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
-                       CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID | SIGCHLD,
-                       ErrorCode(EPERM),
-         sandbox->Trap(SIGSYSCloneFailure, NULL))));
+  if (!IsAndroid()) {
+    const uint64_t kGlibcPthreadFlags =
+        CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD |
+        CLONE_SYSVSEM | CLONE_SETTLS | CLONE_PARENT_SETTID |
+        CLONE_CHILD_CLEARTID;
+
+    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         kGlibcPthreadFlags,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
+                         CLONE_VM | CLONE_THREAD,
+                         sandbox->Trap(SIGSYSCloneFailure, NULL),
+                         ErrorCode(EPERM)));
+  } else {
+    const uint64_t kAndroidCloneMask = CLONE_VM | CLONE_FS | CLONE_FILES |
+                                       CLONE_SIGHAND | CLONE_THREAD |
+                                       CLONE_SYSVSEM;
+    const uint64_t kObsoleteAndroidCloneMask =
+        kAndroidCloneMask | CLONE_DETACHED;
+
+    return sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         kAndroidCloneMask,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_EQUAL,
+                         kObsoleteAndroidCloneMask,
+                         ErrorCode(ErrorCode::ERR_ALLOWED),
+           sandbox->Cond(0, ErrorCode::TP_32BIT, ErrorCode::OP_HAS_ANY_BITS,
+                         CLONE_VM | CLONE_THREAD,
+                         sandbox->Trap(SIGSYSCloneFailure, NULL),
+                         ErrorCode(EPERM))));
+  }
 }
 
 ErrorCode RestrictPrctl(SandboxBPF* sandbox) {

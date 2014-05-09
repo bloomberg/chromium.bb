@@ -21,6 +21,8 @@ sandbox::ErrorCode SandboxBPFBasePolicyAndroid::EvaluateSyscall(
   bool override_and_allow = false;
 
   switch (sysno) {
+    // TODO(rsesek): restrict clone parameters.
+    case __NR_clone:
     case __NR_epoll_pwait:
     case __NR_flock:
     case __NR_getpriority:

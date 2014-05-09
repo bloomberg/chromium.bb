@@ -166,6 +166,8 @@ GpuProcessPolicy::~GpuProcessPolicy() {}
 ErrorCode GpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                             int sysno) const {
   switch (sysno) {
+    // TODO(jln): restrict clone.
+    case __NR_clone:
     case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__)
     // The Nvidia driver uses flags not in the baseline policy

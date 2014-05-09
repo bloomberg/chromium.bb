@@ -74,6 +74,7 @@ ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     sandbox::SandboxBPF* sb, int sysno) const {
   DCHECK(baseline_policy_);
   switch (sysno) {
+    case __NR_clone:  // TODO(jln): restrict parameters.
     // TODO(jln): NaCl's GDB debug stub uses the following socket system calls,
     // see if it can be restricted a bit.
 #if defined(__x86_64__) || defined(__arm__)

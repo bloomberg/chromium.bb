@@ -97,6 +97,10 @@ ErrorCode EvaluateSyscallImpl(int fs_denied_errno,
     return ErrorCode(ErrorCode::ERR_ALLOWED);
   }
 
+  if (sysno == __NR_clone) {
+    return RestrictCloneToThreadsAndEPERMFork(sandbox);
+  }
+
 #if defined(__x86_64__) || defined(__arm__)
   if (sysno == __NR_socketpair) {
     // Only allow AF_UNIX, PF_UNIX. Crash if anything else is seen.

@@ -24,8 +24,6 @@ RendererProcessPolicy::~RendererProcessPolicy() {}
 ErrorCode RendererProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                                  int sysno) const {
   switch (sysno) {
-    case __NR_clone:
-      return sandbox::RestrictCloneToThreadsAndEPERMFork(sandbox);
     case __NR_ioctl:
       return sandbox::RestrictIoctl(sandbox);
     case __NR_prctl:

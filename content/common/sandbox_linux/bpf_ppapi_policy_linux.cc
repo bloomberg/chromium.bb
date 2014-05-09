@@ -24,8 +24,6 @@ PpapiProcessPolicy::~PpapiProcessPolicy() {}
 ErrorCode PpapiProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                               int sysno) const {
   switch (sysno) {
-    case __NR_clone:
-      return sandbox::RestrictCloneToThreadsAndEPERMFork(sandbox);
     case __NR_pread64:
     case __NR_pwrite64:
     case __NR_sched_get_priority_max:

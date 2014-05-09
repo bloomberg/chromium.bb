@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include "base/file_util.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/third_party/valgrind/valgrind.h"
 #include "build/build_config.h"
 #include "sandbox/linux/tests/unit_tests.h"

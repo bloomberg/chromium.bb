@@ -350,7 +350,6 @@ bool SyscallSets::IsKernelInternalApi(int sysno) {
 // This should be thought through in conjunction with IsFutex().
 bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
   switch (sysno) {
-    case __NR_clone:  // TODO(jln): restrict flags.
     case __NR_exit:
     case __NR_exit_group:
     case __NR_wait4:
@@ -359,6 +358,7 @@ bool SyscallSets::IsAllowedProcessStartOrDeath(int sysno) {
     case __NR_waitpid:
 #endif
       return true;
+    case __NR_clone:  // Should be parameter-restricted.
     case __NR_setns:  // Privileged.
     case __NR_fork:
 #if defined(__i386__) || defined(__x86_64__)
