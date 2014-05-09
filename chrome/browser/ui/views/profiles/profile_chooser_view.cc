@@ -60,7 +60,7 @@ namespace {
 
 const int kFixedMenuWidth = 250;
 const int kButtonHeight = 29;
-const int kProfileAvatarTutorialShowMax = 5;
+const int kProfileAvatarTutorialShowMax = 1;
 const int kFixedGaiaViewHeight = 400;
 const int kFixedGaiaViewWidth = 360;
 const int kFixedAccountRemovalViewWidth = 280;
