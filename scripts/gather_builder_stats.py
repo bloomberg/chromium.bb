@@ -1087,16 +1087,26 @@ class CLStats(StatsManager):
           any(a.action == constants.CL_ACTION_SUBMITTED for a in v)):
         rejected_then_submitted[k] = v
 
+    unique_blames = set()
+    for blames in self.blames.itervalues():
+      unique_blames.update(blames)
+
+    unique_cl_blames = {blame for blame in unique_blames if
+                        'crosreview.com' in blame}
+
     patch_reason_counts = {}
     patch_blame_counts = {}
+    good_patch_rejection_count = 0
     for k, v in rejected_then_submitted.iteritems():
       for a in v:
-        if a.action == constants.CL_ACTION_KICKED_OUT and a.bot_type == CQ:
-          reason = self.reasons[a.build.build_number]
-          blames = self.blames[a.build.build_number]
-          patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
-          for blame in blames:
-            patch_blame_counts[blame] = patch_blame_counts.get(blame, 0) + 1
+        if a.action == constants.CL_ACTION_KICKED_OUT:
+          good_patch_rejection_count = good_patch_rejection_count + 1
+          if a.bot_type == CQ:
+            reason = self.reasons[a.build.build_number]
+            blames = self.blames[a.build.build_number]
+            patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
+            for blame in blames:
+              patch_blame_counts[blame] = patch_blame_counts.get(blame, 0) + 1
 
     submitted_changes = {k : v for k, v, in self.per_cl_actions.iteritems()
                          if any(a.action==constants.CL_ACTION_SUBMITTED
@@ -1147,12 +1157,23 @@ class CLStats(StatsManager):
                    numpy.mean(good_patch_rejections.values()),
                'good_patch_rejection_breakdown' :
                    good_patch_rejection_breakdown,
+               'good_patch_rejection_count' :
+                   good_patch_rejection_count,
                'median_handling_time' : numpy.median(patch_handle_times),
                self.PATCH_HANDLING_TIME_SUMMARY_KEY : patch_handle_times,
                'bad_cl_candidates' : bad_cl_candidates,
                'correctly_rejected_by_stage' : correctly_rejected_by_stage,
                'incorrectly_rejected_by_stage' : incorrectly_rejected_by_stage,
+               'unique_blames_change_count' : len(unique_cl_blames),
                }
+
+    logging.info('CQ committed %s changes', summary['submitted_patches'])
+    logging.info('CQ correctly rejected %s unique changes',
+                 summary['unique_blames_change_count'])
+    logging.info('pre-CQ and CQ incorrectly rejected %s changes a total of '
+                 '%s times',
+                 summary['good_patches_rejected'],
+                 summary['good_patch_rejection_count'])
 
     logging.info('      Total CL actions: %d.', summary['total_cl_actions'])
     logging.info('    Unique CLs touched: %d.', summary['unique_cls'])

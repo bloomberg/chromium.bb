@@ -117,8 +117,10 @@ class TestCLActionLogic(unittest.TestCase):
       expected = {
           'mean_good_patch_rejections': 0.5,
           'unique_patches': 3,
+          'unique_blames_change_count': 0,
           'total_cl_actions': 9,
           'good_patch_rejection_breakdown': [(0, 1), (1, 1)],
+          'good_patch_rejection_count': 1,
           'good_patches_rejected': 1,
           'submitted_patches': 2,
           'submit_fails': 0,
