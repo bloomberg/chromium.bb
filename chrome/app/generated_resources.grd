@@ -5126,19 +5126,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <if expr="use_titlecase">
-        <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE" desc="In Title Case: Title of the dialog shown when suspicious extensions have been disabled">
-          Suspicious Extensions Disabled
+        <message name="IDS_EXTENSIONS_UNSUPPORTED_DISABLED_TITLE" desc="In Title Case: Title of the dialog shown when unsupported extensions have been disabled">
+          Unsupported Extensions Disabled
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_TITLE" desc="Title of the dialog shown when suspicious extensions have been disabled">
-          Suspicious extensions disabled
+        <message name="IDS_EXTENSIONS_UNSUPPORTED_DISABLED_TITLE" desc="Title of the dialog shown when unsupported extensions have been disabled">
+          Unsupported extensions disabled
         </message>
       </if>
-      <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_AND_N_MORE" desc="Used for a count of additional items in the IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BODY dialog shown when suspicious extensions have been disabled, if we could not fit them all in the dialog">
+      <message name="IDS_EXTENSIONS_DISABLED_AND_N_MORE" desc="Used for a count of additional items in the IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BODY dialog shown when unsupported extensions have been disabled, if we could not fit them all in the dialog">
         and <ph name="NUMBER_ADDITIONAL_DISABLED">$1<ex>5</ex></ph> more
       </message>
-      <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BUTTON" desc="Text of the button on the dialog shown when suspicious extensions have been disabled">
+      <message name="IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BUTTON" desc="Text of the button on the dialog shown when unsupported extensions have been disabled">
       OK, got it
       </message>
       <message name="IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE" desc="Text shown in the extensions settings for items that might have been forcefully added to chrome without the user's knowledge">

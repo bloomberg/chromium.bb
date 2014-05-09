@@ -79,7 +79,7 @@ base::string16 DevModeBubbleDelegate::GetMessageBody() const {
 base::string16 DevModeBubbleDelegate::GetOverflowText(
     const base::string16& overflow_count) const {
   return l10n_util::GetStringFUTF16(
-            IDS_EXTENSIONS_SUSPICIOUS_DISABLED_AND_N_MORE,
+            IDS_EXTENSIONS_DISABLED_AND_N_MORE,
             overflow_count);
 }
 

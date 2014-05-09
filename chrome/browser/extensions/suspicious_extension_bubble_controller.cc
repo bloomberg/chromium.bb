@@ -63,37 +63,19 @@ void SuspiciousExtensionBubbleDelegate::PerformAction(
 }
 
 base::string16 SuspiciousExtensionBubbleDelegate::GetTitle() const {
-  // TODO(asargent/finnur) - we've temporarily borrowed an already translated
-  // string that has another purpose so we could change this on a release
-  // branch. crbug.com/370517
-  return l10n_util::GetStringUTF16(
-      IDS_PERFORMANCE_MONITOR_EXTENSION_DISABLE_EVENT_MOUSEOVER);
+  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNSUPPORTED_DISABLED_TITLE);
 }
 
 base::string16 SuspiciousExtensionBubbleDelegate::GetMessageBody() const {
-  return l10n_util::GetStringFUTF16(IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BODY,
+  return l10n_util::GetStringFUTF16(IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BODY,
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
 }
 
 base::string16 SuspiciousExtensionBubbleDelegate::GetOverflowText(
     const base::string16& overflow_count) const {
-  base::string16 overflow_string = l10n_util::GetStringUTF16(
-      IDS_EXTENSIONS_SUSPICIOUS_DISABLED_AND_N_MORE);
-  base::string16 new_string;
-
-  // Just before string freeze, we checked in # as a substitution value for
-  // this string, whereas we should have used $1. It was discovered too late,
-  // so we do the substitution by hand in that case.
-  if (overflow_string.find(base::ASCIIToUTF16("#")) != base::string16::npos) {
-    base::ReplaceChars(overflow_string, base::ASCIIToUTF16("#").c_str(),
-                       overflow_count, &new_string);
-  } else {
-    new_string = l10n_util::GetStringFUTF16(
-            IDS_EXTENSIONS_SUSPICIOUS_DISABLED_AND_N_MORE,
+  return l10n_util::GetStringFUTF16(
+            IDS_EXTENSIONS_DISABLED_AND_N_MORE,
             overflow_count);
-  }
-
-  return new_string;
 }
 
 base::string16
@@ -112,7 +94,7 @@ SuspiciousExtensionBubbleDelegate::GetActionButtonLabel() const {
 
 base::string16
 SuspiciousExtensionBubbleDelegate::GetDismissButtonLabel() const {
-  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BUTTON);
+  return l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNSUPPORTED_DISABLED_BUTTON);
 }
 
 bool
