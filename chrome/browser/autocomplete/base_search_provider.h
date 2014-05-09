@@ -451,6 +451,10 @@ class BaseSearchProvider : public AutocompleteProvider,
   // Records UMA statistics about a suggest server response.
   virtual void LogFetchComplete(bool succeeded, bool is_keyword) = 0;
 
+  // Modify provider-specific UMA statistics.
+  virtual void ModifyProviderInfo(
+      metrics::OmniboxEventProto_ProviderInfo* provider_info) const;
+
   // Returns whether the |fetcher| is for the keyword provider.
   virtual bool IsKeywordFetcher(const net::URLFetcher* fetcher) const = 0;
 

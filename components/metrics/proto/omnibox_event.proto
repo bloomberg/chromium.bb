@@ -225,7 +225,7 @@ message OmniboxEventProto {
 
   // A data structure that holds per-provider information, general information
   // not associated with a particular result.
-  // Next tag: 5
+  // Next tag: 6
   message ProviderInfo {
     // Which provider generated this ProviderInfo entry.
     optional ProviderType provider = 1;
@@ -250,6 +250,12 @@ message OmniboxEventProto {
     // See chrome/browser/autocomplete/search_provider.cc for a specific usage
     // example.
     repeated fixed32 field_trial_triggered_in_session = 4;
+
+    // The number of times this provider returned a non-zero number of
+    // suggestions during this omnibox session.
+    // Note that each provider may define a session differently for its
+    // purposes.
+    optional int32 times_returned_results_in_session = 5;
   }
   // A list of diagnostic information about each provider.  Providers
   // will appear at most once in this list.

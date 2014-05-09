@@ -189,6 +189,7 @@ void BaseSearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
           field_trial_hashes[i]);
     }
   }
+  ModifyProviderInfo(&new_entry);
 }
 
 // static
@@ -890,6 +891,10 @@ bool BaseSearchProvider::StoreSuggestionResponse(
     const std::string& json_data,
     const base::Value& parsed_data) {
   return false;
+}
+
+void BaseSearchProvider::ModifyProviderInfo(
+    metrics::OmniboxEventProto_ProviderInfo* provider_info) const {
 }
 
 void BaseSearchProvider::DeleteMatchFromMatches(

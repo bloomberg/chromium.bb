@@ -155,6 +155,12 @@ void ZeroSuggestProvider::ResetSession() {
   field_trial_triggered_ = false;
 }
 
+void ZeroSuggestProvider::ModifyProviderInfo(
+    metrics::OmniboxEventProto_ProviderInfo* provider_info) const {
+  if (!results_.suggest_results.empty() || !results_.navigation_results.empty())
+    provider_info->set_times_returned_results_in_session(1);
+}
+
 ZeroSuggestProvider::ZeroSuggestProvider(
   AutocompleteProviderListener* listener,
   Profile* profile)

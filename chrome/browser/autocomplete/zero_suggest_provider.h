@@ -62,6 +62,11 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Sets |field_trial_triggered_| to false.
   virtual void ResetSession() OVERRIDE;
 
+ protected:
+  // BaseSearchProvider:
+  virtual void ModifyProviderInfo(
+      metrics::OmniboxEventProto_ProviderInfo* provider_info) const OVERRIDE;
+
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,
                       Profile* profile);
