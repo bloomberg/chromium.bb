@@ -281,6 +281,9 @@ class BrowserOptionsHandler
   // Callback for "launchEasyUnlockSetup" message.
   void HandleLaunchEasyUnlockSetup(const base::ListValue* args);
 
+  // Callback for "refreshExtensionControlIndicators" message.
+  void HandleRefreshExtensionControlIndicators(const base::ListValue* args);
+
 #if defined(OS_CHROMEOS)
   // Opens the wallpaper manager component extension.
   void HandleOpenWallpaperManager(const base::ListValue* args);
@@ -323,7 +326,7 @@ class BrowserOptionsHandler
   void SetupEasyUnlock();
 
   // Setup the UI for showing which settings are extension controlled.
-  void SetupExtensionControlledIndicators(const base::ListValue* args);
+  void SetupExtensionControlledIndicators();
 
 #if defined(OS_CHROMEOS)
   // Setup the accessibility features for ChromeOS.

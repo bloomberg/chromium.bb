@@ -1589,64 +1589,31 @@ cr.define('options', function() {
     },
 
     /**
-     * Toggles the bubble that shows which extension is controlling the search
-     * engine.
-     * @param {string} extensionId The ID of the extension controlling the
-     *     default search engine setting.
-     * @param {string} extensionName The name of the extension.
+     * Toggles the warning boxes that show which extension is controlling
+     * various settings of Chrome.
+     * @param {object} details A dictionary of ID+name pairs for each of the
+     *     settings controlled by an extension.
      * @private
      */
-    toggleSearchEngineControlled_: function(extensionId, extensionName) {
+    toggleExtensionIndicators_: function(details) {
       this.toggleExtensionControlledBox_('search-section-content',
                                          'search-engine-controlled',
-                                         extensionId,
-                                         extensionName);
-    },
-
-    /**
-     * Toggles the bubble that shows which extension is controlling the home
-     * page.
-     * @param {string} extensionId The ID of the extension controlling the
-     *     home page setting.
-     * @param {string} extensionName The name of the extension.
-     * @private
-     */
-    toggleHomepageControlled_: function(extensionId, extensionName) {
+                                         details.searchEngine.id,
+                                         details.searchEngine.name);
       this.toggleExtensionControlledBox_('extension-controlled-container',
                                          'homepage-controlled',
-                                         extensionId,
-                                         extensionName);
-    },
-
-    /**
-     * Toggles the bubble that shows which extension is controlling the new tab
-     * page.
-     * @param {string} extensionId The ID of the extension controlling the
-     *     new tab page setting.
-     * @param {string} extensionName The name of the extension.
-     * @private
-     */
-    toggleNewTabPageControlled_: function(extensionId, extensionName) {
-      this.toggleExtensionControlledBox_('newtab-section-content',
-                                         'newtab-controlled',
-                                         extensionId,
-                                         extensionName);
-    },
-
-    /**
-     * Toggles the bubble that shows which extension is controlling the startup
-     * pages.
-     * @param {string} extensionId The ID of the extension controlling the
-     *     startup pages setting.
-     * @param {string} extensionName The name of the extension.
-     * @private
-     */
-    toggleStartupPagesControlled_: function(extensionId, extensionName) {
+                                         details.homePage.id,
+                                         details.homePage.name);
       this.toggleExtensionControlledBox_('startup-section-content',
                                          'startpage-controlled',
-                                         extensionId,
-                                         extensionName);
+                                         details.startUpPage.id,
+                                         details.startUpPage.name);
+      this.toggleExtensionControlledBox_('newtab-section-content',
+                                         'newtab-controlled',
+                                         details.newTabPage.id,
+                                         details.newTabPage.name);
     },
+
 
     /**
      * Show/hide touchpad-related settings.
@@ -1823,10 +1790,7 @@ cr.define('options', function() {
     'showManagedUserImportSuccess',
     'showMouseControls',
     'showTouchpadControls',
-    'toggleHomepageControlled',
-    'toggleNewTabPageControlled',
-    'toggleSearchEngineControlled',
-    'toggleStartupPagesControlled',
+    'toggleExtensionIndicators',
     'updateAccountPicture',
     'updateAutoLaunchState',
     'updateDefaultBrowserState',
