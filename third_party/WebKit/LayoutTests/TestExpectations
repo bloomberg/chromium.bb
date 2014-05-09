@@ -91,14 +91,6 @@ crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ ImageOnlyFail
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ ImageOnlyFailure Pass ]
 crbug.com/318434 [ Mac ] virtual/gpu/compositedscrolling/scrollbars/custom-scrollbar-with-incomplete-style.html [ ImageOnlyFailure ]
 
-crbug.com/369609 svg/zoom/page/relative-sized-document-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/page/zoom-svg-through-object-with-text.xhtml-disabled [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/absolute-sized-document-no-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/absolute-sized-document-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/relative-sized-document-scrollbars.svg [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/zoom-coords-viewattr-01-b.svg [ NeedsRebaseline ]
-crbug.com/369609 svg/zoom/text/zoom-foreignObject.svg [ NeedsRebaseline ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
