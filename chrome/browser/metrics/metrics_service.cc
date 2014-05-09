@@ -462,9 +462,8 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif  // defined(OS_ANDROID)
 }
 
-MetricsService::MetricsService()
-    : state_manager_(metrics::MetricsStateManager::Create(
-        g_browser_process->local_state())),
+MetricsService::MetricsService(metrics::MetricsStateManager* state_manager)
+    : state_manager_(state_manager),
       recording_active_(false),
       reporting_active_(false),
       test_mode_active_(false),

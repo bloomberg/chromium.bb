@@ -127,7 +127,10 @@ class MetricsService
     SHUTDOWN_COMPLETE = 700,
   };
 
-  MetricsService();
+  // Creates the MetricsService with the given |state_manager|. Does not take
+  // ownership of |state_manager|, instead stores a weak pointer to it. Caller
+  // should ensure that |state_manager| is valid for the lifetime of this class.
+  explicit MetricsService(metrics::MetricsStateManager* state_manager);
   virtual ~MetricsService();
 
   // Initializes metrics recording state. Updates various bookkeeping values in
@@ -472,8 +475,8 @@ class MetricsService
       std::vector<chrome_variations::ActiveGroupId>* synthetic_trials);
 
   // Used to manage various metrics reporting state prefs, such as client id,
-  // low entropy source and whether metrics reporting is enabled.
-  scoped_ptr<metrics::MetricsStateManager> state_manager_;
+  // low entropy source and whether metrics reporting is enabled. Weak pointer.
+  metrics::MetricsStateManager* state_manager_;
 
   base::ActionCallback action_callback_;
 

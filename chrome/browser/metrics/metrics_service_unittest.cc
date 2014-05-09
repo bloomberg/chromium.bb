@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -29,7 +30,9 @@ using metrics::MetricsLogManager;
 
 class TestMetricsService : public MetricsService {
  public:
-  TestMetricsService() {}
+  explicit TestMetricsService(metrics::MetricsStateManager* state_manager)
+      : MetricsService(state_manager) {
+  }
   virtual ~TestMetricsService() {}
 
   MetricsLogManager* log_manager() {
@@ -85,11 +88,17 @@ class TestMetricsLog : public MetricsLog {
 class MetricsServiceTest : public testing::Test {
  public:
   MetricsServiceTest()
-      : testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+      : testing_local_state_(TestingBrowserProcess::GetGlobal()),
+        metrics_state_manager_(metrics::MetricsStateManager::Create(
+            GetLocalState())) {
   }
 
   virtual ~MetricsServiceTest() {
     MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
+  }
+
+  metrics::MetricsStateManager* GetMetricsStateManager() {
+    return metrics_state_manager_.get();
   }
 
   PrefService* GetLocalState() {
@@ -131,6 +140,7 @@ class MetricsServiceTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   ScopedTestingLocalState testing_local_state_;
+  scoped_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
 };
@@ -150,7 +160,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCleanShutDown) {
   EnableMetricsReporting();
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, true);
 
-  TestMetricsService service;
+  TestMetricsService service(GetMetricsStateManager());
   service.InitializeMetricsRecordingState();
   // No initial stability log should be generated.
   EXPECT_FALSE(service.log_manager()->has_unsent_logs());
@@ -179,7 +189,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 
   GetLocalState()->SetBoolean(prefs::kStabilityExitedCleanly, false);
 
-  TestMetricsService service;
+  TestMetricsService service(GetMetricsStateManager());
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
@@ -207,7 +217,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
 }
 
 TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
-  MetricsService service;
+  MetricsService service(GetMetricsStateManager());
 
   // Add two synthetic trials and confirm that they show up in the list.
   SyntheticTrialGroup trial1(metrics::HashName("TestTrial1"),
@@ -237,7 +247,6 @@ TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
   WaitUntilTimeChanges(begin_log_time);
 
   // Change the group for the first trial after the log started.
-  // TODO(asvitkine): Assumption that this is > than BeginLoggingWithLog() time.
   SyntheticTrialGroup trial3(metrics::HashName("TestTrial1"),
                              metrics::HashName("Group2"));
   service.RegisterSyntheticFieldTrial(trial3);
