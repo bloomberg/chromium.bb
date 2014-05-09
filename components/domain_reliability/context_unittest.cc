@@ -18,7 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace domain_reliability {
-
 namespace {
 
 typedef std::vector<DomainReliabilityBeacon> BeaconVector;
@@ -43,8 +42,10 @@ class DomainReliabilityContextTest : public testing::Test {
         params_(CreateParams()),
         uploader_(base::Bind(&DomainReliabilityContextTest::OnUploadRequest,
                              base::Unretained(this))),
+        upload_reporter_string_("test-reporter"),
         context_(&time_,
                  params_,
+                 upload_reporter_string_,
                  &dispatcher_,
                  &uploader_,
                  CreateConfig().Pass()),
@@ -73,14 +74,16 @@ class DomainReliabilityContextTest : public testing::Test {
     upload_pending_ = false;
   }
 
-  bool CheckNoBeacons(int index) {
+  bool CheckNoBeacons(size_t index) {
     BeaconVector beacons;
     context_.GetQueuedDataForTesting(index, &beacons, NULL, NULL);
     return beacons.empty();
   }
 
-  bool CheckCounts(int index, int expected_successful, int expected_failed) {
-    int successful, failed;
+  bool CheckCounts(size_t index,
+                   unsigned expected_successful,
+                   unsigned expected_failed) {
+    unsigned successful, failed;
     context_.GetQueuedDataForTesting(index, NULL, &successful, &failed);
     return successful == expected_successful && failed == expected_failed;
   }
@@ -89,6 +92,7 @@ class DomainReliabilityContextTest : public testing::Test {
   DomainReliabilityDispatcher dispatcher_;
   DomainReliabilityScheduler::Params params_;
   MockUploader uploader_;
+  std::string upload_reporter_string_;
   DomainReliabilityContext context_;
 
  private:
@@ -153,8 +157,9 @@ TEST_F(DomainReliabilityContextTest, Create) {
 }
 
 TEST_F(DomainReliabilityContextTest, NoResource) {
+  GURL url("http://example/no_resource");
   DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.AddBeacon(beacon, GURL("http://example/no_resource"));
+  context_.OnBeacon(url, beacon);
 
   EXPECT_TRUE(CheckNoBeacons(0));
   EXPECT_TRUE(CheckCounts(0, 0, 0));
@@ -163,8 +168,9 @@ TEST_F(DomainReliabilityContextTest, NoResource) {
 }
 
 TEST_F(DomainReliabilityContextTest, NeverReport) {
+  GURL url("http://example/never_report");
   DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.AddBeacon(beacon, GURL("http://example/never_report"));
+  context_.OnBeacon(url, beacon);
 
   EXPECT_TRUE(CheckNoBeacons(0));
   EXPECT_TRUE(CheckCounts(0, 0, 0));
@@ -173,8 +179,9 @@ TEST_F(DomainReliabilityContextTest, NeverReport) {
 }
 
 TEST_F(DomainReliabilityContextTest, AlwaysReport) {
+  GURL url("http://example/always_report");
   DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.AddBeacon(beacon, GURL("http://example/always_report"));
+  context_.OnBeacon(url, beacon);
 
   BeaconVector beacons;
   context_.GetQueuedDataForTesting(0, &beacons, NULL, NULL);
@@ -185,10 +192,11 @@ TEST_F(DomainReliabilityContextTest, AlwaysReport) {
 }
 
 TEST_F(DomainReliabilityContextTest, ReportUpload) {
+  GURL url("http://example/always_report");
   DomainReliabilityBeacon beacon = MakeBeacon(&time_);
-  context_.AddBeacon(beacon, GURL("http://example/always_report"));
+  context_.OnBeacon(url, beacon);
 
-  const char* kExpectedReport = "{\"reporter\":\"chrome\","
+  const char* kExpectedReport = "{\"reporter\":\"test-reporter\","
       "\"resource_reports\":[{\"beacons\":[{\"http_response_code\":200,"
       "\"request_age_ms\":300250,\"request_elapsed_ms\":250,\"server_ip\":"
       "\"127.0.0.1\",\"status\":\"ok\"}],\"failed_requests\":0,"

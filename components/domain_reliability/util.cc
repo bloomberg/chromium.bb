@@ -20,6 +20,7 @@ class ActualTimer : public MockableTime::Timer {
  public:
   // Initialize base timer with retain_user_info and is_repeating false.
   ActualTimer() : base_timer_(false, false) {}
+
   virtual ~ActualTimer() {}
 
   // MockableTime::Timer implementation:
@@ -77,7 +78,7 @@ const struct NetErrorMapping {
 }  // namespace
 
 // static
-bool DomainReliabilityUtil::GetBeaconStatus(
+bool GetDomainReliabilityBeaconStatus(
     int net_error,
     int http_response_code,
     std::string* beacon_status_out) {
@@ -87,15 +88,16 @@ bool DomainReliabilityUtil::GetBeaconStatus(
     else
       *beacon_status_out = "ok";
     return true;
-  } else {
-    for (size_t i = 0; i < arraysize(net_error_map); i++) {
-      if (net_error_map[i].net_error == net_error) {
-        *beacon_status_out = net_error_map[i].beacon_status;
-        return true;
-      }
-    }
-    return false;
   }
+
+  // TODO(ttuttle): Consider sorting and using binary search?
+  for (size_t i = 0; i < arraysize(net_error_map); i++) {
+    if (net_error_map[i].net_error == net_error) {
+      *beacon_status_out = net_error_map[i].beacon_status;
+      return true;
+    }
+  }
+  return false;
 }
 
 MockableTime::Timer::~Timer() {}

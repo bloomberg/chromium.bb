@@ -36,6 +36,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
             base::MessageLoopProxy::current())),
         time_(new MockTime()),
         monitor_(url_request_context_getter_->GetURLRequestContext(),
+                 "test-reporter",
                  scoped_ptr<MockableTime>(time_)),
         context_(monitor_.AddContextForTesting(CreateConfig())) {}
 
@@ -86,9 +87,9 @@ class DomainReliabilityMonitorTest : public testing::Test {
     return request;
   }
 
-  bool CheckNoBeacons(int index) {
+  bool CheckNoBeacons(size_t index) {
     BeaconVector beacons;
-    int successful, failed;
+    unsigned successful, failed;
     context_->GetQueuedDataForTesting(index, &beacons, &successful, &failed);
     return beacons.empty() && successful == 0 && failed == 0;
   }
@@ -156,6 +157,7 @@ TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
   // source tree.
   monitor_.AddBakedInConfigs();
 
+  // Count the number of baked-in configs.
   size_t num_baked_in_configs = 0;
   for (const char* const* p = kBakedInJsonConfigs; *p; ++p)
     ++num_baked_in_configs;

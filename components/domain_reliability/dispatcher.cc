@@ -12,6 +12,32 @@
 
 namespace domain_reliability {
 
+struct DomainReliabilityDispatcher::Task {
+  Task(const base::Closure& closure,
+       scoped_ptr<MockableTime::Timer> timer,
+       base::TimeDelta min_delay,
+       base::TimeDelta max_delay);
+  ~Task();
+
+  base::Closure closure;
+  scoped_ptr<MockableTime::Timer> timer;
+  base::TimeDelta min_delay;
+  base::TimeDelta max_delay;
+  bool eligible;
+};
+
+DomainReliabilityDispatcher::Task::Task(const base::Closure& closure,
+                                        scoped_ptr<MockableTime::Timer> timer,
+                                        base::TimeDelta min_delay,
+                                        base::TimeDelta max_delay)
+    : closure(closure),
+      timer(timer.Pass()),
+      min_delay(min_delay),
+      max_delay(max_delay),
+      eligible(false) {}
+
+DomainReliabilityDispatcher::Task::~Task() {}
+
 DomainReliabilityDispatcher::DomainReliabilityDispatcher(MockableTime* time)
     : time_(time) {}
 
@@ -56,29 +82,15 @@ void DomainReliabilityDispatcher::RunEligibleTasks() {
   }
 }
 
-DomainReliabilityDispatcher::Task::Task(const base::Closure& closure,
-                                        scoped_ptr<MockableTime::Timer> timer,
-                                        base::TimeDelta min_delay,
-                                        base::TimeDelta max_delay)
-    : closure(closure),
-      timer(timer.Pass()),
-      min_delay(min_delay),
-      max_delay(max_delay),
-      eligible(false) {}
-
-DomainReliabilityDispatcher::Task::~Task() {}
-
 void DomainReliabilityDispatcher::MakeTaskWaiting(Task* task) {
   DCHECK(task);
   DCHECK(!task->eligible);
   DCHECK(!task->timer->IsRunning());
-  task->timer->Start(
-      FROM_HERE,
-      task->min_delay,
-      base::Bind(
-          &DomainReliabilityDispatcher::MakeTaskEligible,
-          base::Unretained(this),
-          task));
+  task->timer->Start(FROM_HERE,
+                     task->min_delay,
+                     base::Bind(&DomainReliabilityDispatcher::MakeTaskEligible,
+                                base::Unretained(this),
+                                task));
 }
 
 void
@@ -87,13 +99,11 @@ DomainReliabilityDispatcher::MakeTaskEligible(Task* task) {
   DCHECK(!task->eligible);
   task->eligible = true;
   eligible_tasks_.insert(task);
-  task->timer->Start(
-      FROM_HERE,
-      task->max_delay - task->min_delay,
-      base::Bind(
-          &DomainReliabilityDispatcher::RunAndDeleteTask,
-          base::Unretained(this),
-          task));
+  task->timer->Start(FROM_HERE,
+                     task->max_delay - task->min_delay,
+                     base::Bind(&DomainReliabilityDispatcher::RunAndDeleteTask,
+                                base::Unretained(this),
+                                task));
 }
 
 void DomainReliabilityDispatcher::RunAndDeleteTask(Task* task) {

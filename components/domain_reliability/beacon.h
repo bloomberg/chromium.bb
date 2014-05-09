@@ -17,7 +17,7 @@ class Value;
 namespace domain_reliability {
 
 // The per-request data that is uploaded to the Domain Reliability collector.
-class DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
+struct DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
  public:
   DomainReliabilityBeacon();
   ~DomainReliabilityBeacon();
@@ -39,7 +39,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityBeacon {
   // Start time of the request.  Encoded as the request age in the final JSON.
   base::TimeTicks start_time;
 
-  // Okay to copy and assign :)
+  // Okay to copy and assign.
 };
 
 }  // namespace domain_reliability

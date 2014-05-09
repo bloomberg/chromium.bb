@@ -12,18 +12,21 @@
 #define DOMAIN_RELIABILITY_EXPORT __declspec(dllexport)
 #else
 #define DOMAIN_RELIABILITY_EXPORT __declspec(dllimport)
-#endif  // defined(DOMAIN_RELIABILITY_IMPLEMENTATION)
+#endif
 
 #else  // defined(WIN32)
+
 #if defined(DOMAIN_RELIABILITY_IMPLEMENTATION)
 #define DOMAIN_RELIABILITY_EXPORT __attribute__((visibility("default")))
 #else
 #define DOMAIN_RELIABILITY_EXPORT
 #endif
-#endif
 
+#endif  // defined(WIN32)
 #else  // defined(COMPONENT_BUILD)
+
 #define DOMAIN_RELIABILITY_EXPORT
+
 #endif
 
 #endif  // COMPONENTS_DOMAIN_RELIABILITY_DOMAIN_RELIABILITY_EXPORT_H_

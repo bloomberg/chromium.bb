@@ -9,6 +9,8 @@
 
 namespace domain_reliability {
 
+// NULL-terminated array of pointers to JSON-encoded Domain Reliability
+// configurations. Read by DomainReliabilityMonitor::AddBakedInConfigs.
 DOMAIN_RELIABILITY_EXPORT extern const char* const kBakedInJsonConfigs[];
 
 }  // namespace domain_reliability

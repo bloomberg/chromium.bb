@@ -40,8 +40,8 @@ const void* UploadUserData::kUserDataKey =
 class DomainReliabilityUploaderImpl
     : public DomainReliabilityUploader, net::URLFetcherDelegate {
  public:
-  DomainReliabilityUploaderImpl(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
+  DomainReliabilityUploaderImpl(const scoped_refptr<
+      net::URLRequestContextGetter>& url_request_context_getter)
       : url_request_context_getter_(url_request_context_getter) {}
 
   virtual ~DomainReliabilityUploaderImpl() {
@@ -104,12 +104,12 @@ class DomainReliabilityUploaderImpl
 }  // namespace
 
 DomainReliabilityUploader::DomainReliabilityUploader() {}
-
 DomainReliabilityUploader::~DomainReliabilityUploader() {}
 
 // static
 scoped_ptr<DomainReliabilityUploader> DomainReliabilityUploader::Create(
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
+    const scoped_refptr<net::URLRequestContextGetter>&
+        url_request_context_getter) {
   return scoped_ptr<DomainReliabilityUploader>(
       new DomainReliabilityUploaderImpl(url_request_context_getter));
 }

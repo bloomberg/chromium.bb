@@ -23,6 +23,8 @@ namespace domain_reliability {
 // with what frequency, and where the beacons are uploaded.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
  public:
+  static const size_t kInvalidResourceIndex;
+
   // A particular resource named in the config -- includes a set of URL
   // patterns that the resource will match, along with sample rates for
   // successful and unsuccessful requests.
@@ -33,12 +35,11 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
 
     // Returns whether |url_string| matches at least one of the |url_patterns|
     // in this Resource.
-    bool MatchesUrlString(const std::string& url_string) const;
+    bool MatchesUrl(const GURL& url) const;
 
     // Returns whether a request (that was successful if |success| is true)
-    // should be reported (with a full beacon). (The output is random; it
-    // compares a random number to |success_sample_rate| or
-    // |failure_sample_rate|.)
+    // should be reported with a full beacon. (The output is non-deterministic;
+    // it |success_sample_rate| or |failure_sample_rate| to a random number.)
     bool DecideIfShouldReportRequest(bool success) const;
 
     // Registers with the JSONValueConverter so it will know how to convert the
@@ -93,11 +94,13 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityConfig {
 
   bool IsValid() const;
 
+  // Checks whether |now| is past the expiration time provided in the config.
   bool IsExpired(base::Time now) const;
 
   // Finds the index (in resources) of the first Resource that matches a
-  // particular URL. Returns -1 if the URL is not matched by any Resources.
-  int GetResourceIndexForUrl(const GURL& url) const;
+  // particular URL. Returns kInvalidResourceIndex if it is not matched by any
+  // Resources.
+  size_t GetResourceIndexForUrl(const GURL& url) const;
 
   // Registers with the JSONValueConverter so it will know how to convert the
   // JSON for a config into the struct.

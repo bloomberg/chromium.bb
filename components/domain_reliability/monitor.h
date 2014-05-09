@@ -29,26 +29,29 @@ class URLRequestContextGetter;
 
 namespace domain_reliability {
 
-// The top-level per-profile object that measures requests and hands off the
-// measurements to the proper |DomainReliabilityContext|.  Referenced by the
-// |ChromeNetworkDelegate|, which calls the On* methods.
+// The top-level object that measures requests and hands off the measurements
+// to the proper |DomainReliabilityContext|. Lives on the I/O thread, so the
+// constructor accepts a URLRequestContext directly instead of a
+// URLRequestContextGetter.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
  public:
-  // NB: We don't take a URLRequestContextGetter because we already live on the
-  // I/O thread.
-  explicit DomainReliabilityMonitor(
-      net::URLRequestContext* url_request_context);
-  DomainReliabilityMonitor(
-      net::URLRequestContext* url_request_context,
-      scoped_ptr<MockableTime> time);
+  DomainReliabilityMonitor(net::URLRequestContext* url_request_context,
+                           const std::string& upload_reporter_string);
+  DomainReliabilityMonitor(net::URLRequestContext* url_request_context,
+                           const std::string& upload_reporter_string,
+                           scoped_ptr<MockableTime> time);
   ~DomainReliabilityMonitor();
 
-  // Adds the "baked-in" configuration(s) for Google sites.
+  // Populates the monitor with contexts that were configured at compile time.
   void AddBakedInConfigs();
 
-  // Should be called from the profile's NetworkDelegate on the corresponding
-  // events:
+  // Should be called when |request| is about to follow a redirect. Will
+  // examine and possibly log the redirect request.
   void OnBeforeRedirect(net::URLRequest* request);
+
+  // Should be called when |request| is complete. Will examine and possibly
+  // log the (final) request. (|started| should be true if the request was
+  // actually started before it was terminated.)
   void OnCompleted(net::URLRequest* request, bool started);
 
   DomainReliabilityContext* AddContextForTesting(
@@ -86,6 +89,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
 
   scoped_ptr<MockableTime> time_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
+  const std::string upload_reporter_string_;
   DomainReliabilityScheduler::Params scheduler_params_;
   DomainReliabilityDispatcher dispatcher_;
   scoped_ptr<DomainReliabilityUploader> uploader_;

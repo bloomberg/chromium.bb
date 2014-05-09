@@ -11,14 +11,24 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace domain_reliability {
-
 namespace {
 
-scoped_ptr<DomainReliabilityConfig> MakeValidConfig() {
+scoped_ptr<DomainReliabilityConfig> MakeBaseConfig() {
   DomainReliabilityConfig* config = new DomainReliabilityConfig();
   config->domain = "example";
   config->valid_until = 1234567890.0;
   config->version = "1";
+
+  DomainReliabilityConfig::Collector* collector =
+      new DomainReliabilityConfig::Collector();
+  collector->upload_url = GURL("https://example/upload");
+  config->collectors.push_back(collector);
+
+  return scoped_ptr<DomainReliabilityConfig>(config);
+}
+
+scoped_ptr<DomainReliabilityConfig> MakeSampleConfig() {
+  scoped_ptr<DomainReliabilityConfig> config(MakeBaseConfig());
 
   DomainReliabilityConfig::Resource* resource =
       new DomainReliabilityConfig::Resource();
@@ -45,13 +55,25 @@ scoped_ptr<DomainReliabilityConfig> MakeValidConfig() {
   resource->failure_sample_rate = 1.0;
   config->resources.push_back(resource);
 
-  DomainReliabilityConfig::Collector* collector =
-      new DomainReliabilityConfig::Collector();
-  collector->upload_url = GURL("https://example/upload");
-  config->collectors.push_back(collector);
+  EXPECT_TRUE(config->IsValid());
+  return config.Pass();
+}
+
+scoped_ptr<DomainReliabilityConfig> MakeConfigWithResource(
+    const std::string& name,
+    const std::string& pattern) {
+  scoped_ptr<DomainReliabilityConfig> config(MakeBaseConfig());
+
+  DomainReliabilityConfig::Resource* resource =
+      new DomainReliabilityConfig::Resource();
+  resource->name = name;
+  resource->url_patterns.push_back(new std::string(pattern));
+  resource->success_sample_rate = 1.0;
+  resource->failure_sample_rate = 1.0;
+  config->resources.push_back(resource);
 
   EXPECT_TRUE(config->IsValid());
-  return scoped_ptr<DomainReliabilityConfig>(config);
+  return config.Pass();
 }
 
 int GetIndex(DomainReliabilityConfig* config, const char* url_string) {
@@ -65,46 +87,46 @@ class DomainReliabilityConfigTest : public testing::Test { };
 TEST_F(DomainReliabilityConfigTest, IsValid) {
   scoped_ptr<DomainReliabilityConfig> config;
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   EXPECT_TRUE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->domain = "";
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->valid_until = 0.0;
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->version = "";
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->resources.clear();
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->resources[0]->name.clear();
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->resources[0]->url_patterns.clear();
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->resources[0]->success_sample_rate = 2.0;
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->resources[0]->failure_sample_rate = 2.0;
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->collectors.clear();
   EXPECT_FALSE(config->IsValid());
 
-  config = MakeValidConfig();
+  config = MakeSampleConfig();
   config->collectors[0]->upload_url = GURL();
   EXPECT_FALSE(config->IsValid());
 }
@@ -123,13 +145,34 @@ TEST_F(DomainReliabilityConfigTest, IsExpired) {
 }
 
 TEST_F(DomainReliabilityConfigTest, GetResourceIndexForUrl) {
-  scoped_ptr<DomainReliabilityConfig> config = MakeValidConfig();
+  scoped_ptr<DomainReliabilityConfig> config = MakeSampleConfig();
 
-  EXPECT_EQ(0, GetIndex(&*config, "http://example/"));
-  EXPECT_EQ(1, GetIndex(&*config, "http://example/css/foo.css"));
-  EXPECT_EQ(1, GetIndex(&*config, "http://example/js/bar.js"));
-  EXPECT_EQ(2, GetIndex(&*config, "http://example/test.html"));
-  EXPECT_EQ(-1, GetIndex(&*config, "http://example/no-resource"));
+  EXPECT_EQ(0, GetIndex(config.get(), "http://example/"));
+  EXPECT_EQ(1, GetIndex(config.get(), "http://example/css/foo.css"));
+  EXPECT_EQ(1, GetIndex(config.get(), "http://example/js/bar.js"));
+  EXPECT_EQ(2, GetIndex(config.get(), "http://example/test.html"));
+  EXPECT_EQ(-1, GetIndex(config.get(), "http://example/no-resource"));
+}
+
+TEST_F(DomainReliabilityConfigTest, UrlPatternCantMatchUsername) {
+  scoped_ptr<DomainReliabilityConfig> config =
+      MakeConfigWithResource("username", "*username*");
+
+  EXPECT_EQ(-1, GetIndex(config.get(), "http://username:password@example/"));
+}
+
+TEST_F(DomainReliabilityConfigTest, UrlPatternCantMatchPassword) {
+  scoped_ptr<DomainReliabilityConfig> config =
+      MakeConfigWithResource("password", "*password*");
+
+  EXPECT_EQ(-1, GetIndex(config.get(), "http://username:password@example/"));
+}
+
+TEST_F(DomainReliabilityConfigTest, UrlPatternCantMatchFragment) {
+  scoped_ptr<DomainReliabilityConfig> config =
+      MakeConfigWithResource("fragment", "*fragment*");
+
+  EXPECT_EQ(-1, GetIndex(config.get(), "http://example/#fragment"));
 }
 
 TEST_F(DomainReliabilityConfigTest, FromJSON) {

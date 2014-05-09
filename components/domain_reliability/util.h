@@ -15,18 +15,20 @@
 
 namespace domain_reliability {
 
-class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUtil {
- public:
-  // Attempts to convert a net error and an HTTP response code into the status
-  // string that should be recorded in a beacon. Returns true if it could.
-  static bool GetBeaconStatus(
-      int net_error,
-      int http_response_code,
-      std::string* beacon_status_out);
-};
+// Attempts to convert a net error and an HTTP response code into the status
+// string that should be recorded in a beacon. Returns true if it could.
+//
+// N.B.: This functions as the whitelist of "safe" errors to report; network-
+//       local errors are purposefully not converted to avoid revealing
+//       information about the local network to the remote server.
+bool GetDomainReliabilityBeaconStatus(
+    int net_error,
+    int http_response_code,
+    std::string* beacon_status_out);
 
 // Mockable wrapper around TimeTicks::Now and Timer. Mock version is in
 // test_util.h.
+// TODO(ttuttle): Rename to Time{Provider,Source,?}.
 class DOMAIN_RELIABILITY_EXPORT MockableTime {
  public:
   // Mockable wrapper around (a subset of) base::Timer.
@@ -65,6 +67,7 @@ class DOMAIN_RELIABILITY_EXPORT MockableTime {
 class DOMAIN_RELIABILITY_EXPORT ActualTime : public MockableTime {
  public:
   ActualTime();
+
   virtual ~ActualTime();
 
   // MockableTime implementation:

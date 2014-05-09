@@ -20,16 +20,23 @@ class URLRequestContextGetter;
 
 namespace domain_reliability {
 
+// Uploads Domain Reliability reports to collectors.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
  public:
   typedef base::Callback<void(bool success)> UploadCallback;
 
   DomainReliabilityUploader();
+
   virtual ~DomainReliabilityUploader();
 
-  static scoped_ptr<DomainReliabilityUploader> Create(
-      scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+  // Creates an uploader that uses the given |url_request_context_getter| to
+  // get a URLRequestContext to use for uploads. (See test_util.h for a mock
+  // version.)
+  static scoped_ptr<DomainReliabilityUploader> Create(const scoped_refptr<
+      net::URLRequestContextGetter>& url_request_context_getter);
 
+  // Uploads |report_json| to |upload_url| and calls |callback| when the upload
+  // has either completed or failed.
   virtual void UploadReport(const std::string& report_json,
                             const GURL& upload_url,
                             const UploadCallback& callback) = 0;

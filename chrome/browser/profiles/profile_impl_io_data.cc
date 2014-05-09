@@ -54,6 +54,9 @@
 
 namespace {
 
+// Identifies Chrome as the source of Domain Reliability uploads it sends.
+const char* kDomainReliabilityUploadReporterString = "chrome";
+
 net::BackendType ChooseCacheBackendType() {
 #if defined(OS_ANDROID)
   return net::CACHE_BACKEND_SIMPLE;
@@ -503,7 +506,8 @@ void ProfileImplIOData::InitializeInternal(
 
   if (IsDomainReliabilityMonitoringEnabled()) {
     domain_reliability_monitor_.reset(
-        new domain_reliability::DomainReliabilityMonitor(main_context));
+        new domain_reliability::DomainReliabilityMonitor(
+            main_context, kDomainReliabilityUploadReporterString));
     domain_reliability_monitor_->AddBakedInConfigs();
     network_delegate()->set_domain_reliability_monitor(
         domain_reliability_monitor_.get());

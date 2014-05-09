@@ -49,16 +49,20 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
                              const ScheduleUploadCallback& callback);
   ~DomainReliabilityScheduler();
 
-  // Called when a beacon is added to the context. May call the provided
-  // ScheduleUploadCallback (if all previous beacons have been uploaded).
+  // If there is no upload pending, schedules an upload based on the provided
+  // parameters (some time between the minimum and maximum delay from now).
+  // May call the ScheduleUploadCallback.
   void OnBeaconAdded();
 
-  // Called when an upload is about to start.
-  void OnUploadStart(int* collector_index_out);
+  // Returns which collector to use for an upload that is about to start. Must
+  // be called exactly once during or after the ScheduleUploadCallback but
+  // before OnUploadComplete is called. (Also records the upload start time for
+  // future retries, if the upload ends up failing.)
+  size_t OnUploadStart();
 
-  // Called when an upload has finished. May call the provided
-  // ScheduleUploadCallback (if the upload failed, or if beacons arrived
-  // during the upload).
+  // Updates the scheduler state based on the result of an upload. Must be
+  // called exactly once after |OnUploadStart|. |success| should be true if the
+  // upload was successful, and false otherwise.
   void OnUploadComplete(bool success);
 
  private:
@@ -67,7 +71,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
 
     // The number of consecutive failures to upload to this collector, or 0 if
     // the most recent upload succeeded.
-    int failures;
+    unsigned failures;
     base::TimeTicks next_upload;
   };
 
@@ -75,8 +79,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
 
   void GetNextUploadTimeAndCollector(base::TimeTicks now,
                                      base::TimeTicks* upload_time_out,
-                                     int* collector_index_out);
-  base::TimeDelta GetUploadRetryInterval(int failures);
+                                     size_t* collector_index_out);
+
+  base::TimeDelta GetUploadRetryInterval(unsigned failures);
 
   MockableTime* time_;
   std::vector<CollectorState> collectors_;
@@ -98,7 +103,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
 
   // Index of the collector selected for the next upload.  (Set in
   // |OnUploadStart| and cleared in |OnUploadComplete|.)
-  int collector_index_;
+  size_t collector_index_;
 
   // Time of the first beacon that was not included in the last successful
   // upload.

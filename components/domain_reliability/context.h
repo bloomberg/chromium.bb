@@ -6,13 +6,11 @@
 #define COMPONENTS_DOMAIN_RELIABILITY_CONTEXT_H_
 
 #include <deque>
-#include <map>
+#include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/scheduler.h"
@@ -23,6 +21,7 @@ class GURL;
 
 namespace domain_reliability {
 
+struct DomainReliabilityBeacon;
 class DomainReliabilityDispatcher;
 class MockableTime;
 
@@ -33,64 +32,31 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   DomainReliabilityContext(
       MockableTime* time,
       const DomainReliabilityScheduler::Params& scheduler_params,
+      const std::string& upload_reporter_string,
       DomainReliabilityDispatcher* dispatcher,
       DomainReliabilityUploader* uploader,
       scoped_ptr<const DomainReliabilityConfig> config);
-  virtual ~DomainReliabilityContext();
+  ~DomainReliabilityContext();
 
-  void AddBeacon(const DomainReliabilityBeacon& beacon, const GURL& url);
+  // Notifies the context of a beacon on its domain(s); may or may not save the
+  // actual beacon to be uploaded, depending on the sample rates in the config,
+  // but will increment one of the request counters in any case.
+  void OnBeacon(const GURL& url, const DomainReliabilityBeacon& beacon);
 
   void GetQueuedDataForTesting(
-      int resource_index,
+      size_t resource_index,
       std::vector<DomainReliabilityBeacon>* beacons_out,
-      int* successful_requests_out,
-      int* failed_requests_out) const;
+      uint32* successful_requests_out,
+      uint32* failed_requests_out) const;
 
   const DomainReliabilityConfig& config() { return *config_.get(); }
 
   // Maximum number of beacons queued per context; if more than this many are
   // queued; the oldest beacons will be removed.
-  static const int kMaxQueuedBeacons;
+  static const size_t kMaxQueuedBeacons;
 
  private:
-  // Resource-specific state (queued beacons and request counts).
-  class ResourceState {
-   public:
-    ResourceState(DomainReliabilityContext* context,
-                  const DomainReliabilityConfig::Resource* config);
-    ~ResourceState();
-
-    scoped_ptr<base::Value> ToValue(base::TimeTicks upload_time) const;
-
-    // Remembers the current state of the resource data when an upload starts.
-    void MarkUpload();
-
-    // Uses the state remembered by |MarkUpload| to remove successfully uploaded
-    // data but keep beacons and request counts added after the upload started.
-    void CommitUpload();
-
-    // Gets the start time of the oldest beacon, if there are any. Returns true
-    // and sets |oldest_start_out| if so; otherwise, returns false.
-    bool GetOldestBeaconStart(base::TimeTicks* oldest_start_out) const;
-    // Removes the oldest beacon. DCHECKs if there isn't one.
-    void RemoveOldestBeacon();
-
-    DomainReliabilityContext* context;
-    const DomainReliabilityConfig::Resource* config;
-
-    std::deque<DomainReliabilityBeacon> beacons;
-    int successful_requests;
-    int failed_requests;
-
-    // State saved during uploads; if an upload succeeds, these are used to
-    // remove uploaded data from the beacon list and request counters.
-    size_t uploading_beacons_size;
-    int uploading_successful_requests;
-    int uploading_failed_requests;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(ResourceState);
-  };
+  class ResourceState;
 
   typedef ScopedVector<ResourceState> ResourceStateVector;
   typedef ResourceStateVector::const_iterator ResourceStateIterator;
@@ -102,11 +68,15 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
 
   scoped_ptr<const base::Value> CreateReport(base::TimeTicks upload_time) const;
 
-  // Remembers the current state of the context when an upload starts.
+  // Remembers the current state of the context when an upload starts. Can be
+  // called multiple times in a row (without |CommitUpload|) if uploads fail
+  // and are retried.
   void MarkUpload();
 
   // Uses the state remembered by |MarkUpload| to remove successfully uploaded
   // data but keep beacons and request counts added after the upload started.
+  // N.B.: There is no equivalent "RollbackUpload" that needs to be called on a
+  // failed upload.
   void CommitUpload();
 
   // Finds and removes the oldest beacon. DCHECKs if there is none. (Called
@@ -115,6 +85,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
 
   scoped_ptr<const DomainReliabilityConfig> config_;
   MockableTime* time_;
+  const std::string& upload_reporter_string_;
   DomainReliabilityScheduler scheduler_;
   DomainReliabilityDispatcher* dispatcher_;
   DomainReliabilityUploader* uploader_;
@@ -122,8 +93,8 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   // Each ResourceState in |states_| corresponds to the Resource of the same
   // index in the config.
   ResourceStateVector states_;
-  int beacon_count_;
-  int uploading_beacon_count_;
+  size_t beacon_count_;
+  size_t uploading_beacon_count_;
   base::TimeTicks upload_time_;
   base::TimeTicks last_upload_time_;
 

@@ -21,6 +21,7 @@ class MockTimer : public MockableTime::Timer {
         weak_factory_(this) {
     DCHECK(time);
   }
+
   virtual ~MockTimer() {}
 
   // MockableTime::Timer implementation:

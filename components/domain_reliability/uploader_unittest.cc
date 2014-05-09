@@ -29,13 +29,13 @@ class DomainReliabilityUploaderTest : public testing::Test {
         uploader_(DomainReliabilityUploader::Create(
             url_request_context_getter_)) {}
 
-  DomainReliabilityUploader::UploadCallback MakeUploadCallback(int index) {
+  DomainReliabilityUploader::UploadCallback MakeUploadCallback(size_t index) {
     return base::Bind(&DomainReliabilityUploaderTest::OnUploadComplete,
                       base::Unretained(this),
                       index);
   }
 
-  void OnUploadComplete(int index, bool success) {
+  void OnUploadComplete(size_t index, bool success) {
     EXPECT_FALSE(upload_complete_[index]);
     upload_complete_[index] = true;
     upload_successful_[index] = success;
@@ -46,8 +46,10 @@ class DomainReliabilityUploaderTest : public testing::Test {
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
   scoped_ptr<DomainReliabilityUploader> uploader_;
 
-  std::map<int, bool> upload_complete_;
-  std::map<int, bool> upload_successful_;
+  // Whether the upload callback was called for a particular collector index.
+  std::map<size_t, bool> upload_complete_;
+  // Whether the upload to a particular collector was successful.
+  std::map<size_t, bool> upload_successful_;
 };
 
 TEST_F(DomainReliabilityUploaderTest, Create) {

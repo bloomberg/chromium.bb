@@ -13,27 +13,27 @@
 
 namespace {
 
-const int kInvalidCollectorIndex = -1;
+const unsigned kInvalidCollectorIndex = -1;
 
-const int kDefaultMinimumUploadDelaySec = 60;
-const int kDefaultMaximumUploadDelaySec = 300;
-const int kDefaultUploadRetryIntervalSec = 60;
+const unsigned kDefaultMinimumUploadDelaySec = 60;
+const unsigned kDefaultMaximumUploadDelaySec = 300;
+const unsigned kDefaultUploadRetryIntervalSec = 60;
 
 const char* kMinimumUploadDelayFieldTrialName = "DomRel-MinimumUploadDelay";
 const char* kMaximumUploadDelayFieldTrialName = "DomRel-MaximumUploadDelay";
 const char* kUploadRetryIntervalFieldTrialName = "DomRel-UploadRetryInterval";
 
-int GetIntegerFieldTrialValueOrDefault(
-    std::string field_trial_name,
-    int default_value) {
+unsigned GetUnsignedFieldTrialValueOrDefault(std::string field_trial_name,
+                                             unsigned default_value) {
   if (!base::FieldTrialList::TrialExists(field_trial_name))
     return default_value;
 
   std::string group_name = base::FieldTrialList::FindFullName(field_trial_name);
-  int value;
-  if (!base::StringToInt(group_name, &value)) {
-    LOG(ERROR) << "Expected integer for field trial " << field_trial_name
-               << " group name, but got \"" << group_name << "\".";
+  unsigned value;
+  if (!base::StringToUint(group_name, &value)) {
+    LOG(ERROR) << "Expected unsigned integer for field trial "
+               << field_trial_name << " group name, but got \"" << group_name
+               << "\".";
     return default_value;
   }
 
@@ -49,15 +49,15 @@ DomainReliabilityScheduler::Params
 DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults() {
   DomainReliabilityScheduler::Params params;
 
-  params.minimum_upload_delay = base::TimeDelta::FromSeconds(
-      GetIntegerFieldTrialValueOrDefault(kMinimumUploadDelayFieldTrialName,
-                                         kDefaultMinimumUploadDelaySec));
-  params.maximum_upload_delay = base::TimeDelta::FromSeconds(
-      GetIntegerFieldTrialValueOrDefault(kMaximumUploadDelayFieldTrialName,
-                                         kDefaultMaximumUploadDelaySec));
-  params.upload_retry_interval = base::TimeDelta::FromSeconds(
-      GetIntegerFieldTrialValueOrDefault(kUploadRetryIntervalFieldTrialName,
-                                         kDefaultUploadRetryIntervalSec));
+  params.minimum_upload_delay =
+      base::TimeDelta::FromSeconds(GetUnsignedFieldTrialValueOrDefault(
+          kMinimumUploadDelayFieldTrialName, kDefaultMinimumUploadDelaySec));
+  params.maximum_upload_delay =
+      base::TimeDelta::FromSeconds(GetUnsignedFieldTrialValueOrDefault(
+          kMaximumUploadDelayFieldTrialName, kDefaultMaximumUploadDelaySec));
+  params.upload_retry_interval =
+      base::TimeDelta::FromSeconds(GetUnsignedFieldTrialValueOrDefault(
+          kUploadRetryIntervalFieldTrialName, kDefaultUploadRetryIntervalSec));
 
   return params;
 }
@@ -83,12 +83,10 @@ void DomainReliabilityScheduler::OnBeaconAdded() {
   if (!upload_pending_)
     first_beacon_time_ = time_->NowTicks();
   upload_pending_ = true;
-  VLOG(2) << "OnBeaconAdded";
   MaybeScheduleUpload();
 }
 
-void DomainReliabilityScheduler::OnUploadStart(int* collector_index_out) {
-  DCHECK(collector_index_out);
+size_t DomainReliabilityScheduler::OnUploadStart() {
   DCHECK(upload_scheduled_);
   DCHECK_EQ(kInvalidCollectorIndex, collector_index_);
   upload_scheduled_ = false;
@@ -99,9 +97,9 @@ void DomainReliabilityScheduler::OnUploadStart(int* collector_index_out) {
   GetNextUploadTimeAndCollector(now, &min_upload_time, &collector_index_);
   DCHECK(min_upload_time <= now);
 
-  *collector_index_out = collector_index_;
-
   VLOG(1) << "Starting upload to collector " << collector_index_ << ".";
+
+  return collector_index_;
 }
 
 void DomainReliabilityScheduler::OnUploadComplete(bool success) {
@@ -153,7 +151,7 @@ void DomainReliabilityScheduler::MaybeScheduleUpload() {
   DCHECK(min_by_deadline <= max_by_deadline);
 
   base::TimeTicks min_by_backoff;
-  int collector_index;
+  size_t collector_index;
   GetNextUploadTimeAndCollector(now, &min_by_backoff, &collector_index);
 
   base::TimeDelta min_delay = std::max(min_by_deadline, min_by_backoff) - now;
@@ -166,19 +164,20 @@ void DomainReliabilityScheduler::MaybeScheduleUpload() {
 }
 
 // TODO(ttuttle): Add min and max interval to config, use that instead.
+
 // TODO(ttuttle): Cap min and max intervals received from config.
 
 void DomainReliabilityScheduler::GetNextUploadTimeAndCollector(
     base::TimeTicks now,
     base::TimeTicks* upload_time_out,
-    int* collector_index_out) {
+    size_t* collector_index_out) {
   DCHECK(upload_time_out);
   DCHECK(collector_index_out);
 
   base::TimeTicks min_time;
-  int min_index = kInvalidCollectorIndex;
+  size_t min_index = kInvalidCollectorIndex;
 
-  for (unsigned i = 0; i < collectors_.size(); ++i) {
+  for (size_t i = 0; i < collectors_.size(); ++i) {
     CollectorState* collector = &collectors_[i];
     // If a collector is usable, use the first one in the list.
     if (collector->failures == 0 || collector->next_upload <= now) {
@@ -199,11 +198,14 @@ void DomainReliabilityScheduler::GetNextUploadTimeAndCollector(
 }
 
 base::TimeDelta DomainReliabilityScheduler::GetUploadRetryInterval(
-    int failures) {
+    unsigned failures) {
   if (failures == 0)
     return base::TimeDelta::FromSeconds(0);
   else {
-    return params_.upload_retry_interval * (1 << std::min(failures - 1, 5));
+    // Don't back off more than 64x the original delay.
+    if (failures > 7)
+      failures = 7;
+    return params_.upload_retry_interval * (1 << (failures - 1));
   }
 }
 

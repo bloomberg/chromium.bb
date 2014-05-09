@@ -78,7 +78,6 @@ def main():
     return 1
 
   cpp_code = CC_HEADER
-  cpp_file = sys.argv[-1]
   for json_file in sys.argv[1:-1]:
     with open(json_file, 'r') as f:
       json_text = f.read()
@@ -96,7 +95,7 @@ def main():
     cpp_code += "\n"
   cpp_code += CC_FOOTER
 
-  with open(cpp_file, 'wb') as f:
+  with open(sys.argv[-1], 'wb') as f:
     f.write(cpp_code)
 
   return 0

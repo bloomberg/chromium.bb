@@ -31,8 +31,6 @@ Value* DomainReliabilityBeacon::ToValue(base::TimeTicks upload_time) const {
                            elapsed.InMilliseconds());
   beacon_value->SetInteger("request_age_ms",
                            (upload_time - start_time).InMilliseconds());
-  // TODO(ttuttle): Implement protocol and dns_resolver_ip[s] fields.
-
   return beacon_value;
 }
 

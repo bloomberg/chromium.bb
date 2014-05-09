@@ -18,7 +18,7 @@ class DomainReliabilityMockTimeTest : public testing::Test {
   MockTime time_;
 };
 
-TEST_F(DomainReliabilityMockTimeTest, Null) {
+TEST_F(DomainReliabilityMockTimeTest, Create) {
 }
 
 TEST_F(DomainReliabilityMockTimeTest, NowAndAdvance) {

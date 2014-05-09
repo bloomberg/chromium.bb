@@ -2,7 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Make sure stdint.h includes SIZE_MAX. (See C89, p259, footnote 221.)
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS 1
+#endif
+
 #include "components/domain_reliability/config.h"
+
+#include <stdint.h>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_value_converter.h"
@@ -22,16 +29,19 @@ bool IsValidSampleRate(double p) { return p >= 0.0 && p <= 1.0; }
 
 namespace domain_reliability {
 
-DomainReliabilityConfig::Resource::Resource() {}
+// static
+const size_t DomainReliabilityConfig::kInvalidResourceIndex = SIZE_MAX;
 
+DomainReliabilityConfig::Resource::Resource() {
+}
 DomainReliabilityConfig::Resource::~Resource() {}
 
-bool DomainReliabilityConfig::Resource::MatchesUrlString(
-    const std::string& url_string) const {
-  ScopedVector<std::string>::const_iterator it;
+bool DomainReliabilityConfig::Resource::MatchesUrl(const GURL& url) const {
+  const std::string& spec = url.spec();
 
+  ScopedVector<std::string>::const_iterator it;
   for (it = url_patterns.begin(); it != url_patterns.end(); it++) {
-    if (MatchPattern(url_string, **it))
+    if (MatchPattern(spec, **it))
       return true;
   }
 
@@ -41,6 +51,7 @@ bool DomainReliabilityConfig::Resource::MatchesUrlString(
 bool DomainReliabilityConfig::Resource::DecideIfShouldReportRequest(
     bool success) const {
   double sample_rate = success ? success_sample_rate : failure_sample_rate;
+  DCHECK(IsValidSampleRate(sample_rate));
   return base::RandDouble() < sample_rate;
 }
 
@@ -62,7 +73,6 @@ bool DomainReliabilityConfig::Resource::IsValid() const {
 }
 
 DomainReliabilityConfig::Collector::Collector() {}
-
 DomainReliabilityConfig::Collector::~Collector() {}
 
 // static
@@ -77,26 +87,20 @@ bool DomainReliabilityConfig::Collector::IsValid() const {
 }
 
 DomainReliabilityConfig::DomainReliabilityConfig() : valid_until(0.0) {}
-
 DomainReliabilityConfig::~DomainReliabilityConfig() {}
 
 // static
 scoped_ptr<const DomainReliabilityConfig> DomainReliabilityConfig::FromJSON(
     const base::StringPiece& json) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
-  if (!value)
-    return scoped_ptr<const DomainReliabilityConfig>();
-
-  DomainReliabilityConfig* config = new DomainReliabilityConfig();
   base::JSONValueConverter<DomainReliabilityConfig> converter;
-  if (!converter.Convert(*value, config)) {
-    return scoped_ptr<const DomainReliabilityConfig>();
-  }
+  DomainReliabilityConfig* config = new DomainReliabilityConfig();
 
-  if (!config->IsValid())
+  // If we can parse and convert the JSON into a valid config, return that.
+  if (value && converter.Convert(*value, config) && config->IsValid())
+    return scoped_ptr<const DomainReliabilityConfig>(config);
+  else
     return scoped_ptr<const DomainReliabilityConfig>();
-
-  return scoped_ptr<const DomainReliabilityConfig>(config);
 }
 
 bool DomainReliabilityConfig::IsValid() const {
@@ -119,19 +123,21 @@ bool DomainReliabilityConfig::IsValid() const {
 }
 
 bool DomainReliabilityConfig::IsExpired(base::Time now) const {
+  DCHECK_NE(0.0, valid_until);
   base::Time valid_until_time = base::Time::FromDoubleT(valid_until);
   return now > valid_until_time;
 }
 
-int DomainReliabilityConfig::GetResourceIndexForUrl(const GURL& url) const {
-  const std::string& url_string = url.spec();
+size_t DomainReliabilityConfig::GetResourceIndexForUrl(const GURL& url) const {
+  // Removes username, password, and fragment.
+  GURL sanitized_url = url.GetAsReferrer();
 
   for (size_t i = 0; i < resources.size(); ++i) {
-    if (resources[i]->MatchesUrlString(url_string))
-      return static_cast<int>(i);
+    if (resources[i]->MatchesUrl(sanitized_url))
+      return i;
   }
 
-  return -1;
+  return kInvalidResourceIndex;
 }
 
 // static

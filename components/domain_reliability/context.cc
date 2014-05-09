@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/values.h"
+#include "components/domain_reliability/beacon.h"
 #include "components/domain_reliability/dispatcher.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -23,23 +24,105 @@ using base::Value;
 namespace domain_reliability {
 
 namespace {
-const char* kReporter = "chrome";
 typedef std::deque<DomainReliabilityBeacon> BeaconDeque;
 typedef BeaconDeque::iterator BeaconIterator;
 typedef BeaconDeque::const_iterator BeaconConstIterator;
 }  // namespace
 
-const int DomainReliabilityContext::kMaxQueuedBeacons = 150;
+class DomainReliabilityContext::ResourceState {
+ public:
+  ResourceState(DomainReliabilityContext* context,
+                const DomainReliabilityConfig::Resource* config)
+      : context(context),
+        config(config),
+        successful_requests(0),
+        failed_requests(0) {}
+  ~ResourceState() {}
+
+  scoped_ptr<base::Value> ToValue(base::TimeTicks upload_time) const {
+    ListValue* beacons_value = new ListValue();
+    for (BeaconConstIterator it = beacons.begin(); it != beacons.end(); ++it)
+      beacons_value->Append(it->ToValue(upload_time));
+
+    DictionaryValue* resource_value = new DictionaryValue();
+    resource_value->SetString("resource_name", config->name);
+    resource_value->SetInteger("successful_requests", successful_requests);
+    resource_value->SetInteger("failed_requests", failed_requests);
+    resource_value->Set("beacons", beacons_value);
+
+    return scoped_ptr<Value>(resource_value);
+  }
+
+  // Remembers the current state of the resource data when an upload starts.
+  void MarkUpload() {
+    uploading_beacons_size = beacons.size();
+    uploading_successful_requests = successful_requests;
+    uploading_failed_requests = failed_requests;
+  }
+
+  // Uses the state remembered by |MarkUpload| to remove successfully uploaded
+  // data but keep beacons and request counts added after the upload started.
+  void CommitUpload() {
+    BeaconIterator begin = beacons.begin();
+    BeaconIterator end = begin + uploading_beacons_size;
+    beacons.erase(begin, end);
+    successful_requests -= uploading_successful_requests;
+    failed_requests -= uploading_failed_requests;
+  }
+
+  // Gets the start time of the oldest beacon, if there are any. Returns true
+  // and sets |oldest_start_out| if so; otherwise, returns false.
+  bool GetOldestBeaconStart(base::TimeTicks* oldest_start_out) const {
+    if (beacons.empty())
+      return false;
+    *oldest_start_out = beacons[0].start_time;
+    return true;
+  }
+
+  // Removes the oldest beacon. DCHECKs if there isn't one.
+  void RemoveOldestBeacon() {
+    DCHECK(!beacons.empty());
+    beacons.erase(beacons.begin());
+    // If that just removed a beacon counted in uploading_beacons_size,
+    // decrement
+    // that.
+    if (uploading_beacons_size > 0)
+      --uploading_beacons_size;
+  }
+
+  DomainReliabilityContext* context;
+  const DomainReliabilityConfig::Resource* config;
+
+  std::deque<DomainReliabilityBeacon> beacons;
+  uint32 successful_requests;
+  uint32 failed_requests;
+
+  // State saved during uploads; if an upload succeeds, these are used to
+  // remove uploaded data from the beacon list and request counters.
+  size_t uploading_beacons_size;
+  uint32 uploading_successful_requests;
+  uint32 uploading_failed_requests;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ResourceState);
+};
+
+// static
+const size_t DomainReliabilityContext::kMaxQueuedBeacons = 150;
 
 DomainReliabilityContext::DomainReliabilityContext(
     MockableTime* time,
     const DomainReliabilityScheduler::Params& scheduler_params,
+    const std::string& upload_reporter_string,
     DomainReliabilityDispatcher* dispatcher,
     DomainReliabilityUploader* uploader,
     scoped_ptr<const DomainReliabilityConfig> config)
     : config_(config.Pass()),
       time_(time),
-      scheduler_(time, config_->collectors.size(), scheduler_params,
+      upload_reporter_string_(upload_reporter_string),
+      scheduler_(time,
+                 config_->collectors.size(),
+                 scheduler_params,
                  base::Bind(&DomainReliabilityContext::ScheduleUpload,
                             base::Unretained(this))),
       dispatcher_(dispatcher),
@@ -51,13 +134,12 @@ DomainReliabilityContext::DomainReliabilityContext(
 
 DomainReliabilityContext::~DomainReliabilityContext() {}
 
-void DomainReliabilityContext::AddBeacon(
-    const DomainReliabilityBeacon& beacon,
-    const GURL& url) {
-  int index = config_->GetResourceIndexForUrl(url);
-  if (index < 0)
+void DomainReliabilityContext::OnBeacon(const GURL& url,
+                                        const DomainReliabilityBeacon& beacon) {
+  size_t index = config_->GetResourceIndexForUrl(url);
+  if (index == DomainReliabilityConfig::kInvalidResourceIndex)
     return;
-  DCHECK_GT(states_.size(), static_cast<size_t>(index));
+  DCHECK_GT(states_.size(), index);
 
   ResourceState* state = states_[index];
   bool success = beacon.http_response_code >= 200 &&
@@ -66,14 +148,6 @@ void DomainReliabilityContext::AddBeacon(
     ++state->successful_requests;
   else
     ++state->failed_requests;
-
-  VLOG(1) << "Received Beacon: "
-          << state->config->name << " "
-          << beacon.status << " "
-          << beacon.chrome_error << " "
-          << beacon.http_response_code << " "
-          << beacon.server_ip << " "
-          << beacon.elapsed.InMilliseconds() << "ms";
 
   bool reported = false;
   bool evicted = false;
@@ -92,82 +166,23 @@ void DomainReliabilityContext::AddBeacon(
   }
 
   UMA_HISTOGRAM_BOOLEAN("DomainReliability.BeaconReported", reported);
-  UMA_HISTOGRAM_BOOLEAN("DomainReliability.AddBeaconDidEvict", evicted);
+  UMA_HISTOGRAM_BOOLEAN("DomainReliability.OnBeaconDidEvict", evicted);
 }
 
 void DomainReliabilityContext::GetQueuedDataForTesting(
-    int resource_index,
+    size_t resource_index,
     std::vector<DomainReliabilityBeacon>* beacons_out,
-    int* successful_requests_out,
-    int* failed_requests_out) const {
-  DCHECK_LE(0, resource_index);
-  DCHECK_GT(static_cast<int>(states_.size()), resource_index);
+    uint32* successful_requests_out,
+    uint32* failed_requests_out) const {
+  DCHECK_NE(DomainReliabilityConfig::kInvalidResourceIndex, resource_index);
+  DCHECK_GT(states_.size(), resource_index);
   const ResourceState& state = *states_[resource_index];
-  if (beacons_out) {
-    beacons_out->resize(state.beacons.size());
-    std::copy(state.beacons.begin(), state.beacons.end(), beacons_out->begin());
-  }
+  if (beacons_out)
+    beacons_out->assign(state.beacons.begin(), state.beacons.end());
   if (successful_requests_out)
     *successful_requests_out = state.successful_requests;
   if (failed_requests_out)
     *failed_requests_out = state.failed_requests;
-}
-
-DomainReliabilityContext::ResourceState::ResourceState(
-    DomainReliabilityContext* context,
-    const DomainReliabilityConfig::Resource* config)
-    : context(context),
-      config(config),
-      successful_requests(0),
-      failed_requests(0) {}
-
-DomainReliabilityContext::ResourceState::~ResourceState() {}
-
-scoped_ptr<Value> DomainReliabilityContext::ResourceState::ToValue(
-    base::TimeTicks upload_time) const {
-  ListValue* beacons_value = new ListValue();
-  for (BeaconConstIterator it = beacons.begin(); it != beacons.end(); ++it)
-    beacons_value->Append(it->ToValue(upload_time));
-
-  DictionaryValue* resource_value = new DictionaryValue();
-  resource_value->SetString("resource_name", config->name);
-  resource_value->SetInteger("successful_requests", successful_requests);
-  resource_value->SetInteger("failed_requests", failed_requests);
-  resource_value->Set("beacons", beacons_value);
-
-  return scoped_ptr<Value>(resource_value);
-}
-
-void DomainReliabilityContext::ResourceState::MarkUpload() {
-  uploading_beacons_size = beacons.size();
-  uploading_successful_requests = successful_requests;
-  uploading_failed_requests = failed_requests;
-}
-
-void DomainReliabilityContext::ResourceState::CommitUpload() {
-  BeaconIterator begin = beacons.begin();
-  BeaconIterator end = begin + uploading_beacons_size;
-  beacons.erase(begin, end);
-  successful_requests -= uploading_successful_requests;
-  failed_requests -= uploading_failed_requests;
-}
-
-bool DomainReliabilityContext::ResourceState::GetOldestBeaconStart(
-    base::TimeTicks* oldest_start_out) const {
-  if (beacons.empty())
-    return false;
-
-  *oldest_start_out = beacons[0].start_time;
-  return true;
-}
-
-void DomainReliabilityContext::ResourceState::RemoveOldestBeacon() {
-  DCHECK(!beacons.empty());
-  beacons.erase(beacons.begin());
-  // If that just removed a beacon counted in uploading_beacons_size, decrement
-  // that.
-  if (uploading_beacons_size > 0)
-    --uploading_beacons_size;
 }
 
 void DomainReliabilityContext::InitializeResourceStates() {
@@ -197,8 +212,7 @@ void DomainReliabilityContext::StartUpload() {
   base::JSONWriter::Write(report_value.get(), &report_json);
   report_value.reset();
 
-  int collector_index;
-  scheduler_.OnUploadStart(&collector_index);
+  size_t collector_index = scheduler_.OnUploadStart();
 
   uploader_->UploadReport(
       report_json,
@@ -234,7 +248,7 @@ scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
     resources_value->Append((*it)->ToValue(upload_time).release());
 
   DictionaryValue* report_value = new DictionaryValue();
-  report_value->SetString("reporter", kReporter);
+  report_value->SetString("reporter", upload_reporter_string_);
   report_value->Set("resource_reports", resources_value);
 
   return scoped_ptr<const Value>(report_value);
@@ -253,7 +267,7 @@ void DomainReliabilityContext::CommitUpload() {
 }
 
 void DomainReliabilityContext::RemoveOldestBeacon() {
-  DCHECK_LT(0, beacon_count_);
+  DCHECK_LT(0u, beacon_count_);
 
   base::TimeTicks min_time;
   ResourceState* min_resource = NULL;
@@ -268,7 +282,8 @@ void DomainReliabilityContext::RemoveOldestBeacon() {
   }
   DCHECK(min_resource);
 
-  VLOG(1) << "Removing oldest beacon from " << min_resource->config->name;
+  VLOG(1) << "Beacon queue for " << config().domain << " full; "
+          << "removing oldest beacon from " << min_resource->config->name;
 
   min_resource->RemoveOldestBeacon();
   --beacon_count_;

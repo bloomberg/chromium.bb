@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
+#include "components/domain_reliability/config.h"
 #include "components/domain_reliability/test_util.h"
 #include "components/domain_reliability/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,11 +18,10 @@ namespace domain_reliability {
 
 class DomainReliabilitySchedulerTest : public testing::Test {
  public:
-  DomainReliabilitySchedulerTest() :
-      num_collectors_(0),
-      params_(CreateDefaultParams()),
-      callback_called_(false) {
-  }
+  DomainReliabilitySchedulerTest()
+      : num_collectors_(0),
+        params_(CreateDefaultParams()),
+        callback_called_(false) {}
 
   void CreateScheduler(int num_collectors) {
     DCHECK_LT(0, num_collectors);
@@ -80,13 +80,11 @@ class DomainReliabilitySchedulerTest : public testing::Test {
     }
   }
 
-  ::testing::AssertionResult CheckStartingUpload(int expected_collector) {
+  ::testing::AssertionResult CheckStartingUpload(size_t expected_collector) {
     DCHECK(scheduler_);
-    DCHECK_LE(0, expected_collector);
     DCHECK_GT(num_collectors_, expected_collector);
 
-    int collector;
-    scheduler_->OnUploadStart(&collector);
+    size_t collector = scheduler_->OnUploadStart();
     if (collector == expected_collector)
       return ::testing::AssertionSuccess();
 
@@ -108,7 +106,7 @@ class DomainReliabilitySchedulerTest : public testing::Test {
   }
 
   MockTime time_;
-  int num_collectors_;
+  size_t num_collectors_;
   DomainReliabilityScheduler::Params params_;
   scoped_ptr<DomainReliabilityScheduler> scheduler_;
 

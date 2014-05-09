@@ -54,13 +54,15 @@ class TrivialURLRequestContextGetter : public net::URLRequestContextGetter {
 namespace domain_reliability {
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
-    net::URLRequestContext* url_request_context)
+    net::URLRequestContext* url_request_context,
+    const std::string& upload_reporter_string)
     : time_(new ActualTime()),
       url_request_context_getter_(scoped_refptr<net::URLRequestContextGetter>(
           new TrivialURLRequestContextGetter(
               url_request_context,
               content::BrowserThread::GetMessageLoopProxyForThread(
                   content::BrowserThread::IO)))),
+      upload_reporter_string_(upload_reporter_string),
       scheduler_params_(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
@@ -71,6 +73,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
 
 DomainReliabilityMonitor::DomainReliabilityMonitor(
     net::URLRequestContext* url_request_context,
+    const std::string& upload_reporter_string,
     scoped_ptr<MockableTime> time)
     : time_(time.Pass()),
       url_request_context_getter_(scoped_refptr<net::URLRequestContextGetter>(
@@ -78,6 +81,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
               url_request_context,
               content::BrowserThread::GetMessageLoopProxyForThread(
                   content::BrowserThread::IO)))),
+      upload_reporter_string_(upload_reporter_string),
       scheduler_params_(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
@@ -88,8 +92,7 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
 
 DomainReliabilityMonitor::~DomainReliabilityMonitor() {
   DCHECK(OnIOThread());
-  STLDeleteContainerPairSecondPointers(
-      contexts_.begin(), contexts_.end());
+  STLDeleteContainerPairSecondPointers(contexts_.begin(), contexts_.end());
 }
 
 void DomainReliabilityMonitor::AddBakedInConfigs() {
@@ -109,9 +112,8 @@ void DomainReliabilityMonitor::AddBakedInConfigs() {
 
 void DomainReliabilityMonitor::OnBeforeRedirect(net::URLRequest* request) {
   DCHECK(OnIOThread());
-  RequestInfo request_info(*request);
   // Record the redirect itself in addition to the final request.
-  OnRequestLegComplete(request_info);
+  OnRequestLegComplete(RequestInfo(*request));
 }
 
 void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
@@ -161,15 +163,16 @@ DomainReliabilityContext* DomainReliabilityMonitor::AddContext(
   DCHECK(config);
   DCHECK(config->IsValid());
 
-  // Grab domain before we config.Pass().
+  // Grab a copy of the domain before transferring ownership of |config|.
   std::string domain = config->domain;
 
-  DomainReliabilityContext* context = new DomainReliabilityContext(
-      time_.get(),
-      scheduler_params_,
-      &dispatcher_,
-      uploader_.get(),
-      config.Pass());
+  DomainReliabilityContext* context =
+      new DomainReliabilityContext(time_.get(),
+                                   scheduler_params_,
+                                   upload_reporter_string_,
+                                   &dispatcher_,
+                                   uploader_.get(),
+                                   config.Pass());
 
   std::pair<ContextMap::iterator, bool> map_it =
       contexts_.insert(make_pair(domain, context));
@@ -201,7 +204,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   DomainReliabilityContext* context = it->second;
 
   std::string beacon_status;
-  bool got_status = DomainReliabilityUtil::GetBeaconStatus(
+  bool got_status = GetDomainReliabilityBeaconStatus(
       request.status.error(),
       request.response_code,
       &beacon_status);
@@ -215,7 +218,7 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   beacon.http_response_code = request.response_code;
   beacon.start_time = request.load_timing_info.request_start;
   beacon.elapsed = time_->NowTicks() - beacon.start_time;
-  context->AddBeacon(beacon, request.url);
+  context->OnBeacon(request.url, beacon);
 }
 
 }  // namespace domain_reliability

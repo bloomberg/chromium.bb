@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/util.h"
@@ -26,33 +25,31 @@ namespace domain_reliability {
 // (See scheduler.h for an explanation of how the intervals are chosen.)
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityDispatcher {
  public:
-  DomainReliabilityDispatcher(MockableTime* time);
+  explicit DomainReliabilityDispatcher(MockableTime* time);
   ~DomainReliabilityDispatcher();
 
-  void ScheduleTask(
-      const base::Closure& task,
-      base::TimeDelta min_delay,
-      base::TimeDelta max_delay);
+  // Schedules |task| to be executed between |min_delay| and |max_delay| from
+  // now. The task will be run at most |max_delay| from now; once |min_delay|
+  // has passed, any call to |RunEligibleTasks| will run the task earlier than
+  // that.
+  void ScheduleTask(const base::Closure& task,
+                    base::TimeDelta min_delay,
+                    base::TimeDelta max_delay);
 
+  // Runs all tasks whose minimum delay has already passed.
   void RunEligibleTasks();
 
  private:
-  struct Task {
-    Task(const base::Closure& closure_p,
-         scoped_ptr<MockableTime::Timer> timer_p,
-         base::TimeDelta min_delay_p,
-         base::TimeDelta max_delay_p);
-    ~Task();
+  struct Task;
 
-    base::Closure closure;
-    scoped_ptr<MockableTime::Timer> timer;
-    base::TimeDelta min_delay;
-    base::TimeDelta max_delay;
-    bool eligible;
-  };
-
+  // Adds |task| to the set of all tasks, but not the set of eligible tasks.
   void MakeTaskWaiting(Task* task);
+
+  // Adds |task| to the set of eligible tasks, and also the set of all tasks
+  // if not already there.
   void MakeTaskEligible(Task* task);
+
+  // Runs |task|'s callback, removes it from both sets, and deletes it.
   void RunAndDeleteTask(Task* task);
 
   MockableTime* time_;

@@ -43,6 +43,7 @@ class MockUploader : public DomainReliabilityUploader {
       UploadRequestCallback;
 
   MockUploader(const UploadRequestCallback& callback);
+
   virtual ~MockUploader();
 
   // DomainReliabilityUploader implementation:
@@ -57,6 +58,7 @@ class MockUploader : public DomainReliabilityUploader {
 class MockTime : public MockableTime {
  public:
   MockTime();
+
   // N.B.: Tasks (and therefore Timers) scheduled to run in the future will
   // never be run if MockTime is destroyed before the mock time is advanced
   // to their scheduled time.
