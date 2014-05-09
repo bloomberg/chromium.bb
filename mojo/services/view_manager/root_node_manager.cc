@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "mojo/services/view_manager/view_manager_connection.h"
+#include "ui/aura/env.h"
 
 namespace mojo {
 namespace services {
@@ -16,6 +17,14 @@ namespace {
 const TransportConnectionSpecificNodeId kRootId = 1;
 
 }  // namespace
+
+RootNodeManager::Context::Context() {
+  // Pass in false as native viewport creates the PlatformEventSource.
+  aura::Env::CreateInstance(false);
+}
+
+RootNodeManager::Context::~Context() {
+}
 
 RootNodeManager::ScopedChange::ScopedChange(ViewManagerConnection* connection,
                                             RootNodeManager* root,
@@ -28,12 +37,15 @@ RootNodeManager::ScopedChange::~ScopedChange() {
   root_->FinishChange();
 }
 
-RootNodeManager::RootNodeManager()
+RootNodeManager::RootNodeManager(Shell* shell)
     : next_connection_id_(1),
+      root_view_manager_(shell, this),
       root_(this, NodeId(0, kRootId)) {
 }
 
 RootNodeManager::~RootNodeManager() {
+  // All the connections should have been destroyed.
+  DCHECK(connection_map_.empty());
 }
 
 TransportConnectionId RootNodeManager::GetAndAdvanceNextConnectionId() {
@@ -107,24 +119,11 @@ void RootNodeManager::FinishChange() {
   change_.reset();
 }
 
-void RootNodeManager::OnCreated() {
-}
-
-void RootNodeManager::OnDestroyed() {
-}
-
-void RootNodeManager::OnBoundsChanged(const Rect& bounds) {
-}
-
-void RootNodeManager::OnEvent(const Event& event,
-                              const mojo::Callback<void()>& callback) {
-  callback.Run();
-}
-
 void RootNodeManager::OnNodeHierarchyChanged(const NodeId& node,
                                              const NodeId& new_parent,
                                              const NodeId& old_parent) {
-  NotifyNodeHierarchyChanged(node, new_parent, old_parent);
+  if (!root_view_manager_.in_setup())
+    NotifyNodeHierarchyChanged(node, new_parent, old_parent);
 }
 
 void RootNodeManager::OnNodeViewReplaced(const NodeId& node,
