@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
   var eventNatives = requireNative('event_natives');
+  var handleUncaughtException = require('uncaught_exception_handler').handle;
   var logging = requireNative('logging');
   var schemaRegistry = requireNative('schema_registry');
   var sendRequest = require('sendRequest').sendRequest;
@@ -380,10 +381,11 @@
         if (result !== undefined)
           $Array.push(results, result);
       } catch (e) {
-        console.error(
+        handleUncaughtException(
           'Error in event handler for ' +
-          (this.eventName ? this.eventName : '(unknown)') +
-          ': ' + e.message + '\nStack trace: ' + e.stack);
+              (this.eventName ? this.eventName : '(unknown)') +
+              ': ' + e.message + '\nStack trace: ' + e.stack,
+          e);
       }
     }
     if (results.length)

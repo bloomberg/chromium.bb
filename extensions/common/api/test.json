@@ -373,6 +373,22 @@
             ]
           }
         ]
+      },
+      {
+        "name": "setExceptionHandler",
+        "type": "function",
+        "description": "Sets the function to be called when an exception occurs. By default this is a function which fails the test. This is reset for every test run through $ref:test.runTests.",
+        "nocompile": true,
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"type": "string", "name": "message"},
+              {"type": "any", "name": "exception"}
+            ]
+          }
+        ]
       }
     ],
     "events": [

@@ -96,6 +96,7 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_TEST_CUSTOM_BINDINGS_JS" file="extensions\test_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TTS_CUSTOM_BINDINGS_JS" file="extensions\tts_custom_bindings.js" type="BINDATA" />
         <include name="IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS" file="extensions\tts_engine_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_UNCAUGHT_EXCEPTION_HANDLER_JS" file="extensions\uncaught_exception_handler.js" type="BINDATA" />
         <include name="IDR_UNLOAD_EVENT_JS" file="extensions\unload_event.js" type="BINDATA" />
         <include name="IDR_UTILS_JS" file="extensions\utils.js" type="BINDATA" />
         <include name="IDR_WINDOW_CONTROLS_JS" file="extensions\window_controls.js" type="BINDATA" />

@@ -17,6 +17,8 @@ class EventUnittest : public ModuleSystemTest {
     RegisterModule(kEventBindings, IDR_EVENT_BINDINGS_JS);
     RegisterModule("json_schema", IDR_JSON_SCHEMA_JS);
     RegisterModule(kSchemaUtils, IDR_SCHEMA_UTILS_JS);
+    RegisterModule("uncaught_exception_handler",
+                   IDR_UNCAUGHT_EXCEPTION_HANDLER_JS);
     RegisterModule("unload_event", IDR_UNLOAD_EVENT_JS);
     RegisterModule("utils", IDR_UTILS_JS);
 

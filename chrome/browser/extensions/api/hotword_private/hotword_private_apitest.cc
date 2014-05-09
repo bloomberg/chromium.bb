@@ -101,12 +101,12 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, SetEnabled) {
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled));
 
   ExtensionTestMessageListener listenerTrue("ready", false);
-  EXPECT_TRUE(RunComponentExtensionTest("setEnabledTrue")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("setEnabledTrue")) << message_;
   EXPECT_TRUE(listenerTrue.WaitUntilSatisfied());
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled));
 
   ExtensionTestMessageListener listenerFalse("ready", false);
-  EXPECT_TRUE(RunComponentExtensionTest("setEnabledFalse")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("setEnabledFalse")) << message_;
   EXPECT_TRUE(listenerFalse.WaitUntilSatisfied());
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled));
 }
@@ -117,16 +117,16 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, SetAudioLoggingEnabled) {
       prefs::kHotwordAudioLoggingEnabled));
 
   ExtensionTestMessageListener listenerTrue("ready", false);
-  EXPECT_TRUE(
-      RunComponentExtensionTest("setAudioLoggingEnableTrue")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("setAudioLoggingEnableTrue"))
+      << message_;
   EXPECT_TRUE(listenerTrue.WaitUntilSatisfied());
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
       prefs::kHotwordAudioLoggingEnabled));
   EXPECT_TRUE(service()->IsOptedIntoAudioLogging());
 
   ExtensionTestMessageListener listenerFalse("ready", false);
-  EXPECT_TRUE(
-      RunComponentExtensionTest("setAudioLoggingEnableFalse")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("setAudioLoggingEnableFalse"))
+      << message_;
   EXPECT_TRUE(listenerFalse.WaitUntilSatisfied());
   EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(
       prefs::kHotwordAudioLoggingEnabled));
@@ -134,20 +134,20 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, SetAudioLoggingEnabled) {
 }
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, GetStatus) {
-  EXPECT_TRUE(RunComponentExtensionTest("getEnabled")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("getEnabled")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, IsAvailableTrue) {
   service()->setServiceAvailable(true);
   ExtensionTestMessageListener listener("available: true", false);
-  EXPECT_TRUE(RunComponentExtensionTest("isAvailable")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("isAvailable")) << message_;
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, IsAvailableFalse) {
   service()->setServiceAvailable(false);
   ExtensionTestMessageListener listener("available: false", false);
-  EXPECT_TRUE(RunComponentExtensionTest("isAvailable")) << message_;
+  ASSERT_TRUE(RunComponentExtensionTest("isAvailable")) << message_;
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 }
 
@@ -155,8 +155,8 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnEnabledChanged) {
   // Trigger the pref registrar.
   extensions::HotwordPrivateEventService::GetFactoryInstance();
   ExtensionTestMessageListener listener("ready", false);
-  LoadExtensionAsComponent(
-      test_data_dir_.AppendASCII("onEnabledChanged"));
+  ASSERT_TRUE(
+      LoadExtensionAsComponent(test_data_dir_.AppendASCII("onEnabledChanged")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   ExtensionTestMessageListener listenerNotification("notification", false);

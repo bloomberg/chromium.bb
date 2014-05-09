@@ -176,6 +176,7 @@
         'renderer/resources/extensions/test_custom_bindings.js',
         'renderer/resources/extensions/tts_custom_bindings.js',
         'renderer/resources/extensions/tts_engine_custom_bindings.js',
+        'renderer/resources/extensions/uncaught_exception_handler.js',
         'renderer/resources/extensions/unload_event.js',
         'renderer/resources/extensions/utils.js',
         'renderer/resources/extensions/web_request_custom_bindings.js',

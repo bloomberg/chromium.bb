@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var handleUncaughtException = require('uncaught_exception_handler').handle;
 var lastError = require('lastError');
 var logging = requireNative('logging');
 var natives = requireNative('sendRequest');
@@ -23,7 +24,7 @@ function safeCallbackApply(name, request, callback, args) {
     var errorMessage = "Error in response to " + name + ": " + e;
     if (request.stack && request.stack != '')
       errorMessage += "\n" + request.stack;
-    console.error(errorMessage);
+    handleUncaughtException(errorMessage, e);
   }
 }
 
