@@ -61,8 +61,10 @@ MessageHeaderValidator::MessageHeaderValidator(MessageReceiver* next)
 
 bool MessageHeaderValidator::Accept(Message* message) {
   // Make sure the message header isn't truncated before we start to read it.
-  if (message->data_num_bytes() < message->header()->num_bytes)
+  if (message->data_num_bytes() < sizeof(internal::MessageHeader) ||
+      message->data_num_bytes() < message->header()->num_bytes) {
     return false;
+  }
 
   if (!IsValidMessageHeader(message->header()))
     return false;

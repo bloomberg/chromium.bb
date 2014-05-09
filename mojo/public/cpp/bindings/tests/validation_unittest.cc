@@ -54,6 +54,11 @@ bool ReadResultFile(const std::string& path, std::string* result) {
     return false;
   fseek(fp, 0, SEEK_END);
   size_t size = static_cast<size_t>(ftell(fp));
+  if (size == 0) {
+    // Result files should never be empty.
+    fclose(fp);
+    return false;
+  }
   fseek(fp, 0, SEEK_SET);
   result->resize(size);
   size_t size_read = fread(&result->at(0), 1, size, fp);
@@ -79,7 +84,8 @@ void RunValidationTest(const std::string& root, std::string (*func)(Message*)) {
 
   Message message;
   message.AllocUninitializedData(static_cast<uint32_t>(data.size()));
-  memcpy(message.mutable_data(), &data[0], data.size());
+  if (!data.empty())
+    memcpy(message.mutable_data(), &data[0], data.size());
 
   std::string result = func(&message);
   EXPECT_EQ(expected, result) << "failed test: " << root;
