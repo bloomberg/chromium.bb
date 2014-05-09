@@ -318,6 +318,39 @@ class Page20(ToughSchedulingCasesPage):
         'scroll_distance_function': 'function() { return 400; }'
       }))
 
+class EmptyTouchHandlerPage(ToughSchedulingCasesPage):
+
+  """ Why: Scrolling on a page with a touch handler that consumes no events but
+      may be slow """
+
+  def __init__(self, name, desktop, slow_handler, bounce, page_set):
+    super(EmptyTouchHandlerPage, self).__init__(
+      url='file://tough_scheduling_cases/empty_touch_handler' +
+        ('_desktop' if desktop else '') + '.html?' + name,
+      page_set=page_set)
+
+    if slow_handler:
+      self.synthetic_delays = {
+        'blink.HandleInputEvent': {'target_duration': 0.2}
+      }
+
+    self.bounce = bounce
+
+  def RunSmoothness(self, action_runner):
+    if self.bounce:
+      action = ScrollBounceAction()
+    else:
+      action = ScrollAction(
+        {
+          'scroll_requires_touch': True,
+           """ Speed and distance are tuned to run exactly as long as a scroll
+                bounce """
+          'speed': 400,
+          'scroll_distance_function': 'function() { return 2100; }'
+        })
+
+    action_runner.RunAction(action)
+
 class ToughSchedulingCasesPageSet(page_set_module.PageSet):
 
   """ Tough scheduler latency test cases """
@@ -370,3 +403,49 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
     self.AddPage(Page18(self))
     self.AddPage(Page19(self))
     self.AddPage(Page20(self))
+    # Why: Baseline for scrolling in the presence of a no-op touch handler
+    self.AddPage(EmptyTouchHandlerPage(
+      name='baseline',
+      desktop=False,
+      slow_handler=False,
+      bounce=False,
+      page_set=self))
+    # Why: Slow handler blocks scroll start
+    self.AddPage(EmptyTouchHandlerPage(
+      name='slow_handler',
+      desktop=False,
+      slow_handler=True,
+      bounce=False,
+      page_set=self))
+    # Why: Slow handler blocks scroll start until touch ACK timeout
+    self.AddPage(EmptyTouchHandlerPage(
+      name='desktop_slow_handler',
+      desktop=True,
+      slow_handler=True,
+      bounce=False,
+      page_set=self))
+    # Why: Scroll bounce showing repeated transitions between scrolling and
+    # sending synchronous touchmove events.  Should be nearly as fast as
+    # scroll baseline.
+    self.AddPage(EmptyTouchHandlerPage(
+      name='bounce',
+      desktop=False,
+      slow_handler=False,
+      bounce=True,
+      page_set=self))
+    # Why: Scroll bounce with slow handler, repeated blocking.
+    self.AddPage(EmptyTouchHandlerPage(
+      name='bounce_slow_handler',
+      desktop=False,
+      slow_handler=True,
+      bounce=True,
+      page_set=self))
+    # Why: Scroll bounce with slow handler on desktop, blocks only once until
+    # ACK timeout.
+    self.AddPage(EmptyTouchHandlerPage(
+      name='bounce_desktop_slow_handler',
+      desktop=True,
+      slow_handler=True,
+      bounce=True,
+      page_set=self))
+
