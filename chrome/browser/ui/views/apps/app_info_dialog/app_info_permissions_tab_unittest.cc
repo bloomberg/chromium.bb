@@ -84,13 +84,13 @@ TEST_F(AppInfoPermissionsTabTest, RequiredPermissionsObtainedCorrectly) {
           .MergeManifest(extensions::DictionaryBuilder().Set(
               "permissions",
               extensions::ListBuilder()
-                  .Append("location")       // A valid permission with a
-                                            // message
-                  .Append("bad_perm")       // An invalid permission
-                  .Append("notifications")  // An valid permission with
-                                            // no message
-                  .Append("serial")))       // Another valid permission with
-                                            // a message
+                  .Append("desktopCapture")  // A valid permission with a
+                                             // message
+                  .Append("bad_perm")        // An invalid permission
+                  .Append("notifications")   // An valid permission with
+                                             // no message
+                  .Append("serial")))        // Another valid permission with
+                                             // a message
           .SetID(kTestExtensionId)
           .Build();
   AppInfoPermissionsTab tab(window_, &profile_, app, base::Closure());
@@ -106,8 +106,9 @@ TEST_F(AppInfoPermissionsTabTest, RequiredPermissionsObtainedCorrectly) {
   const std::vector<base::string16> required_permission_messages =
       tab.GetRequiredPermissionMessages();
   ASSERT_EQ(2U, required_permission_messages.size());
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_GEOLOCATION),
-            base::UTF16ToUTF8(required_permission_messages[0]));
+  EXPECT_EQ(
+      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_DESKTOP_CAPTURE),
+      base::UTF16ToUTF8(required_permission_messages[0]));
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
             base::UTF16ToUTF8(required_permission_messages[1]));
 }
