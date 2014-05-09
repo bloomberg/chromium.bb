@@ -8,6 +8,7 @@
   </outputs>
   <release seq="1">
     <includes>
+      <include name="IDR_EXTENSION_API_JSON_ACCESSIBILITYPRIVATE" file="extensions\api\accessibility_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_APP" file="extensions\api\app.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_BROWSERACTION" file="extensions\api\browser_action.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_COMMANDS" file="extensions\api\commands.json" type="BINDATA" />

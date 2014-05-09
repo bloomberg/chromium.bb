@@ -4,7 +4,7 @@
 
 [
   {
-    "namespace": "experimental.accessibility",
+    "namespace": "accessibilityPrivate",
     "compiler_options": {
       "implemented_in": "chrome/browser/accessibility/accessibility_extension_api.h"
     },

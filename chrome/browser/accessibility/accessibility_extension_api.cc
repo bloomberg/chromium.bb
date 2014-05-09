@@ -14,7 +14,7 @@
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/experimental_accessibility.h"
+#include "chrome/common/extensions/api/accessibility_private.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "extensions/browser/event_router.h"
@@ -25,8 +25,7 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 
 namespace keys = extension_accessibility_api_constants;
-namespace experimental_accessibility =
-    extensions::api::experimental_accessibility;
+namespace accessibility_private = extensions::api::accessibility_private;
 
 // Returns the AccessibilityControlInfo serialized into a JSON string,
 // consisting of an array of a single object of type AccessibilityObject,
@@ -129,7 +128,7 @@ void ExtensionAccessibilityEventRouter::OnWindowOpened(
     const AccessibilityWindowInfo* info) {
   scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
-                experimental_accessibility::OnWindowOpened::kEventName,
+                accessibility_private::OnWindowOpened::kEventName,
                 args.Pass());
 }
 
@@ -139,7 +138,7 @@ void ExtensionAccessibilityEventRouter::OnControlFocused(
   info->SerializeToDict(&last_focused_control_dict_);
   scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
-                experimental_accessibility::OnControlFocused::kEventName,
+                accessibility_private::OnControlFocused::kEventName,
                 args.Pass());
 }
 
@@ -147,7 +146,7 @@ void ExtensionAccessibilityEventRouter::OnControlAction(
     const AccessibilityControlInfo* info) {
   scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
-                experimental_accessibility::OnControlAction::kEventName,
+                accessibility_private::OnControlAction::kEventName,
                 args.Pass());
 }
 
@@ -155,7 +154,7 @@ void ExtensionAccessibilityEventRouter::OnTextChanged(
     const AccessibilityControlInfo* info) {
   scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
-                experimental_accessibility::OnTextChanged::kEventName,
+                accessibility_private::OnTextChanged::kEventName,
                 args.Pass());
 }
 
@@ -163,7 +162,7 @@ void ExtensionAccessibilityEventRouter::OnMenuOpened(
     const AccessibilityMenuInfo* info) {
   scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
-                experimental_accessibility::OnMenuOpened::kEventName,
+                accessibility_private::OnMenuOpened::kEventName,
                 args.Pass());
 }
 
@@ -171,7 +170,7 @@ void ExtensionAccessibilityEventRouter::OnMenuClosed(
     const AccessibilityMenuInfo* info) {
   scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
-                experimental_accessibility::OnMenuClosed::kEventName,
+                accessibility_private::OnMenuClosed::kEventName,
                 args.Pass());
 }
 
@@ -182,8 +181,9 @@ void ExtensionAccessibilityEventRouter::OnChromeVoxLoadStateChanged(
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->Append(base::Value::CreateBooleanValue(loading));
   event_args->Append(base::Value::CreateBooleanValue(make_announcements));
-  ExtensionAccessibilityEventRouter::DispatchEventToChromeVox(profile,
-      experimental_accessibility::OnChromeVoxLoadStateChanged::kEventName,
+  ExtensionAccessibilityEventRouter::DispatchEventToChromeVox(
+      profile,
+      accessibility_private::OnChromeVoxLoadStateChanged::kEventName,
       event_args.Pass());
 }
 
@@ -217,7 +217,7 @@ void ExtensionAccessibilityEventRouter::DispatchEvent(
   event_router->BroadcastEvent(event.Pass());
 }
 
-bool AccessibilitySetAccessibilityEnabledFunction::RunSync() {
+bool AccessibilityPrivateSetAccessibilityEnabledFunction::RunSync() {
   bool enabled;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
   ExtensionAccessibilityEventRouter::GetInstance()
@@ -225,7 +225,7 @@ bool AccessibilitySetAccessibilityEnabledFunction::RunSync() {
   return true;
 }
 
-bool AccessibilitySetNativeAccessibilityEnabledFunction::RunSync() {
+bool AccessibilityPrivateSetNativeAccessibilityEnabledFunction::RunSync() {
   bool enabled;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
   if (enabled) {
@@ -238,7 +238,7 @@ bool AccessibilitySetNativeAccessibilityEnabledFunction::RunSync() {
   return true;
 }
 
-bool AccessibilityGetFocusedControlFunction::RunSync() {
+bool AccessibilityPrivateGetFocusedControlFunction::RunSync() {
   // Get the serialized dict from the last focused control and return it.
   // However, if the dict is empty, that means we haven't seen any focus
   // events yet, so return null instead.
@@ -254,7 +254,7 @@ bool AccessibilityGetFocusedControlFunction::RunSync() {
   return true;
 }
 
-bool AccessibilityGetAlertsForTabFunction::RunSync() {
+bool AccessibilityPrivateGetAlertsForTabFunction::RunSync() {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id));
 

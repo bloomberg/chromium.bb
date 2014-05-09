@@ -37,6 +37,7 @@ class APIPermission {
     // Real permissions.
     kAccessibilityFeaturesModify,
     kAccessibilityFeaturesRead,
+    kAccessibilityPrivate,
     kActiveTab,
     kActivityLogPrivate,
     kAdView,

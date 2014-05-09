@@ -84,6 +84,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagNone,
        IDS_EXTENSION_PROMPT_WARNING_ACCESSIBILITY_FEATURES_READ,
        PermissionMessage::kAccessibilityFeaturesRead},
+      {APIPermission::kAccessibilityPrivate, "accessibilityPrivate",
+       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kActiveTab, "activeTab"},
       {APIPermission::kAdView, "adview"},
       {APIPermission::kAlarms, "alarms"},

@@ -9,10 +9,10 @@ chrome.test.runTests([
   function experimental() {
     chrome.tabs.getSelected(null, function(tab) {
       try {
-        // If/when chrome.experimental.accessibility is moved out of
+        // If/when chrome.experimental.history is moved out of
         // experimental, this test needs to be updated.
-        chrome.experimental.accessibility.getAlertsForTab(
-          tab.id, function(alerts) {
+        chrome.experimental.history.getMostVisited(
+          {}, function(results) {
           chrome.test.fail();
         });
       } catch (e) {

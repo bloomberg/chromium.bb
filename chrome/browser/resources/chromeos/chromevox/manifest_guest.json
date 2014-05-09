@@ -11,6 +11,8 @@
     "page": "chromevox/background/background.html"
   },
   "permissions": [
+    "accessibilityPrivate",
+    "automation",
     "bookmarks",
     "tabs",
     "experimental",

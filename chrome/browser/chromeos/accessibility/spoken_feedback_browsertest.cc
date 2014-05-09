@@ -136,6 +136,42 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TypeInOmnibox) {
 }
 
 //
+// Spoken feedback tests that run in guest mode.
+//
+
+class GuestSpokenFeedbackTest : public SpokenFeedbackTest {
+ protected:
+  GuestSpokenFeedbackTest() {}
+  virtual ~GuestSpokenFeedbackTest() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitch(::switches::kIncognito);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                    chromeos::UserManager::kGuestUserName);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GuestSpokenFeedbackTest);
+};
+
+IN_PROC_BROWSER_TEST_F(GuestSpokenFeedbackTest, FocusToolbar) {
+  EXPECT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+
+  SpeechMonitor monitor;
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      true, ash::A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(monitor.SkipChromeVoxEnabledMessage());
+
+  chrome::ExecuteCommand(browser(), IDC_FOCUS_TOOLBAR);
+  // Might be "Google Chrome Toolbar" or "Chromium Toolbar".
+  EXPECT_TRUE(MatchPattern(monitor.GetNextUtterance(), "*oolbar*"));
+  EXPECT_EQ("Reload,", monitor.GetNextUtterance());
+  EXPECT_EQ("button", monitor.GetNextUtterance());
+}
+
+//
 // Spoken feedback tests of the out-of-box experience.
 //
 
