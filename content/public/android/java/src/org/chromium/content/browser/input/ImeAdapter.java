@@ -375,7 +375,7 @@ public class ImeAdapter {
         mViewEmbedder.onImeEvent(false);
         return nativeSendKeyEvent(mNativeImeAdapterAndroid, event, event.getAction(),
                 getModifiers(event.getMetaState()), event.getEventTime(), event.getKeyCode(),
-                                event.isSystem(), event.getUnicodeChar());
+                             /*isSystemKey=*/false, event.getUnicodeChar());
     }
 
     boolean sendSyntheticKeyEvent(int eventType, long timestampMs, int keyCode, int unicodeChar) {
