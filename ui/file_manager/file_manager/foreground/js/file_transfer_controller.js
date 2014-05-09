@@ -354,7 +354,7 @@ FileTransferController.prototype = {
             // TODO(hirono): Make the loop cancellable.
             var requestDriveShare = function(index) {
               if (index >= shareEntries.length)
-                return Promise.cast();
+                return;
               return new Promise(function(fulfill) {
                 chrome.fileBrowserPrivate.requestDriveShare(
                     shareEntries[index].toURL(),
