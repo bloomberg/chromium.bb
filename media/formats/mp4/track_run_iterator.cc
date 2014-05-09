@@ -9,6 +9,7 @@
 #include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/formats/mp4/rcheck.h"
+#include "media/formats/mp4/sample_to_group_iterator.h"
 
 namespace {
 static const uint32 kSampleIsDifferenceSampleFlagMask = 0x10000;
@@ -22,6 +23,7 @@ struct SampleInfo {
   int duration;
   int cts_offset;
   bool is_keyframe;
+  uint32 cenc_group_description_index;
 };
 
 struct TrackRunInfo {
@@ -39,6 +41,8 @@ struct TrackRunInfo {
   int aux_info_default_size;
   std::vector<uint8> aux_info_sizes;  // Populated if default_size == 0.
   int aux_info_total_size;
+
+  std::vector<CencSampleEncryptionInfoEntry> sample_encryption_info;
 
   TrackRunInfo();
   ~TrackRunInfo();
@@ -215,6 +219,9 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       }
     }
 
+    SampleToGroupIterator sample_to_group_itr(traf.sample_to_group);
+    bool is_sample_to_group_valid = sample_to_group_itr.IsValid();
+
     int64 run_start_dts = traf.decode_time.decode_time;
     int sample_count_sum = 0;
     bool is_sync_sample_box_present =
@@ -226,6 +233,7 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       tri.timescale = trak->media.header.timescale;
       tri.start_dts = run_start_dts;
       tri.sample_start_offset = trun.data_offset;
+      tri.sample_encryption_info = traf.sample_group_description.entries;
 
       tri.is_audio = (stsd.type == kAudio);
       if (tri.is_audio) {
@@ -289,10 +297,41 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
         // and downstream code's "is keyframe" concept.
         if (!is_sync_sample_box_present)
           tri.samples[k].is_keyframe = true;
+
+        if (!is_sample_to_group_valid) {
+          // Set group description index to 0 to read encryption information
+          // from TrackEncryption Box.
+          tri.samples[k].cenc_group_description_index = 0;
+          continue;
+        }
+
+        // ISO-14496-12 Section 8.9.2.3 and 8.9.4 : group description index
+        // (1) ranges from 1 to the number of sample group entries in the track
+        // level SampleGroupDescription Box, or (2) takes the value 0 to
+        // indicate that this sample is a member of no group, in this case, the
+        // sample is associated with the default values specified in
+        // TrackEncryption Box, or (3) starts at 0x10001, i.e. the index value
+        // 1, with the value 1 in the top 16 bits, to reference fragment-local
+        // SampleGroupDescription Box.
+        // Case (1) is not supported currently. We might not need it either as
+        // the same functionality can be better achieved using (2).
+        uint32 index = sample_to_group_itr.group_description_index();
+        if (index >= SampleToGroupEntry::kFragmentGroupDescriptionIndexBase) {
+          index -= SampleToGroupEntry::kFragmentGroupDescriptionIndexBase;
+          RCHECK(index != 0 && index <= tri.sample_encryption_info.size());
+        } else if (index != 0) {
+          NOTIMPLEMENTED() << "'sgpd' box in 'moov' is not supported.";
+          return false;
+        }
+        tri.samples[k].cenc_group_description_index = index;
+        is_sample_to_group_valid = sample_to_group_itr.Advance();
       }
       runs_.push_back(tri);
       sample_count_sum += trun.sample_count;
     }
+
+    // We should have iterated through all samples in SampleToGroup Box.
+    RCHECK(!sample_to_group_itr.IsValid());
   }
 
   std::sort(runs_.begin(), runs_.end(), CompareMinTrackRunDataOffset());
@@ -325,7 +364,7 @@ void TrackRunIterator::AdvanceSample() {
 // info is available in the stream.
 bool TrackRunIterator::AuxInfoNeedsToBeCached() {
   DCHECK(IsRunValid());
-  return is_encrypted() && aux_info_size() > 0 && cenc_info_.size() == 0;
+  return aux_info_size() > 0 && cenc_info_.size() == 0;
 }
 
 // This implementation currently only caches CENC auxiliary info.
@@ -339,8 +378,10 @@ bool TrackRunIterator::CacheAuxInfo(const uint8* buf, int buf_size) {
     if (!info_size)
       info_size = run_itr_->aux_info_sizes[i];
 
-    BufferReader reader(buf + pos, info_size);
-    RCHECK(cenc_info_[i].Parse(track_encryption().default_iv_size, &reader));
+    if (IsSampleEncrypted(i)) {
+      BufferReader reader(buf + pos, info_size);
+      RCHECK(cenc_info_[i].Parse(GetIvSize(i), &reader));
+    }
     pos += info_size;
   }
 
@@ -387,8 +428,8 @@ uint32 TrackRunIterator::track_id() const {
 }
 
 bool TrackRunIterator::is_encrypted() const {
-  DCHECK(IsRunValid());
-  return track_encryption().is_encrypted;
+  DCHECK(IsSampleValid());
+  return IsSampleEncrypted(sample_itr_ - run_itr_->samples.begin());
 }
 
 int64 TrackRunIterator::aux_info_offset() const {
@@ -454,10 +495,17 @@ const TrackEncryption& TrackRunIterator::track_encryption() const {
 }
 
 scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
+  DCHECK(is_encrypted());
+
+  if (cenc_info_.empty()) {
+    DCHECK_EQ(0, aux_info_size());
+    MEDIA_LOG(log_cb_) << "Aux Info is not available.";
+    return scoped_ptr<DecryptConfig>();
+  }
+
   size_t sample_idx = sample_itr_ - run_itr_->samples.begin();
-  DCHECK(sample_idx < cenc_info_.size());
+  DCHECK_LT(sample_idx, cenc_info_.size());
   const FrameCENCInfo& cenc_info = cenc_info_[sample_idx];
-  DCHECK(is_encrypted() && !AuxInfoNeedsToBeCached());
 
   size_t total_size = 0;
   if (!cenc_info.subsamples.empty() &&
@@ -467,12 +515,47 @@ scoped_ptr<DecryptConfig> TrackRunIterator::GetDecryptConfig() {
     return scoped_ptr<DecryptConfig>();
   }
 
-  const std::vector<uint8>& kid = track_encryption().default_kid;
+  const std::vector<uint8>& kid = GetKeyId(sample_idx);
   return scoped_ptr<DecryptConfig>(new DecryptConfig(
       std::string(reinterpret_cast<const char*>(&kid[0]), kid.size()),
       std::string(reinterpret_cast<const char*>(cenc_info.iv),
                   arraysize(cenc_info.iv)),
       cenc_info.subsamples));
+}
+
+uint32 TrackRunIterator::GetGroupDescriptionIndex(uint32 sample_index) const {
+  DCHECK(IsRunValid());
+  DCHECK_LT(sample_index, run_itr_->samples.size());
+  return run_itr_->samples[sample_index].cenc_group_description_index;
+}
+
+const CencSampleEncryptionInfoEntry&
+TrackRunIterator::GetSampleEncryptionInfoEntry(
+    uint32 group_description_index) const {
+  DCHECK(IsRunValid());
+  DCHECK_NE(group_description_index, 0u);
+  DCHECK_LE(group_description_index, run_itr_->sample_encryption_info.size());
+  // |group_description_index| is 1-based. Subtract by 1 to index the vector.
+  return run_itr_->sample_encryption_info[group_description_index - 1];
+}
+
+bool TrackRunIterator::IsSampleEncrypted(size_t sample_index) const {
+  uint32 index = GetGroupDescriptionIndex(sample_index);
+  return (index == 0) ? track_encryption().is_encrypted
+                      : GetSampleEncryptionInfoEntry(index).is_encrypted;
+}
+
+const std::vector<uint8>& TrackRunIterator::GetKeyId(
+    size_t sample_index) const {
+  uint32 index = GetGroupDescriptionIndex(sample_index);
+  return (index == 0) ? track_encryption().default_kid
+                      : GetSampleEncryptionInfoEntry(index).key_id;
+}
+
+uint8 TrackRunIterator::GetIvSize(size_t sample_index) const {
+  uint32 index = GetGroupDescriptionIndex(sample_index);
+  return (index == 0) ? track_encryption().default_iv_size
+                      : GetSampleEncryptionInfoEntry(index).iv_size;
 }
 
 }  // namespace mp4

@@ -209,7 +209,11 @@ TEST_F(MP4StreamParserTest, NoMoovAfterFlush) {
 // SampleAuxiliaryInformation{Sizes|Offsets}Box (saiz|saio) are missing.
 // The parser should fail instead of crash. See http://crbug.com/361347
 TEST_F(MP4StreamParserTest, MissingSampleAuxInfo) {
-  ParseMP4File("bear-1280x720-a_frag-cenc_missing-saiz-saio.mp4", 512);
+  InitializeParser();
+
+  scoped_refptr<DecoderBuffer> buffer =
+      ReadTestDataFile("bear-1280x720-a_frag-cenc_missing-saiz-saio.mp4");
+  EXPECT_FALSE(AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
 }
 
 // Test a file where all video samples start with an Access Unit
