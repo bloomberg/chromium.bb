@@ -37,6 +37,11 @@ static const int kRGBSizeScaled = kScaledWidth * kScaledHeight * kBpp;
 static const int kRGB24Size = kSourceYSize * 3;
 static const int kRGBSizeConverted = kSourceYSize * kBpp;
 
+#if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY)
+static const int kSourceAOffset = kSourceYSize * 12 / 8;
+static const int kYUVA12Size = kSourceYSize * 20 / 8;
+#endif
+
 // Helper for reading test data into a scoped_ptr<uint8[]>.
 static void ReadData(const base::FilePath::CharType* filename,
                      int expected_size,
@@ -68,6 +73,12 @@ static void ReadYV12Data(scoped_ptr<uint8[]>* data) {
 static void ReadYV16Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_P422.yuv"), kYUV16Size, data);
 }
+
+#if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY)
+static void ReadYV12AData(scoped_ptr<uint8[]>* data) {
+  ReadData(FILE_PATH_LITERAL("bali_640x360_P420_alpha.yuv"), kYUVA12Size, data);
+}
+#endif
 
 static void ReadRGB24Data(scoped_ptr<uint8[]>* data) {
   ReadData(FILE_PATH_LITERAL("bali_640x360_RGB24.rgb"), kRGB24Size, data);
@@ -517,6 +528,48 @@ TEST(YUVConvertTest, DownScaleYUVToRGB32WithRect) {
 }
 
 #if !defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_MIPS_FAMILY)
+TEST(YUVConvertTest, YUVAtoARGB_MMX_MatchReference) {
+  // Allocate all surfaces.
+  scoped_ptr<uint8[]> yuv_bytes;
+  scoped_ptr<uint8[]> rgb_bytes(new uint8[kRGBSize]);
+  scoped_ptr<uint8[]> rgb_converted_bytes(new uint8[kRGBSizeConverted]);
+  scoped_ptr<uint8[]> rgb_converted_bytes_ref(new uint8[kRGBSizeConverted]);
+
+  // Read YUV reference data from file.
+  ReadYV12AData(&yuv_bytes);
+
+  // Convert a frame of YUV to 32 bit ARGB using both C and MMX versions.
+  media::ConvertYUVAToARGB_C(yuv_bytes.get(),
+                             yuv_bytes.get() + kSourceUOffset,
+                             yuv_bytes.get() + kSourceVOffset,
+                             yuv_bytes.get() + kSourceAOffset,
+                             rgb_converted_bytes_ref.get(),
+                             kSourceWidth,
+                             kSourceHeight,
+                             kSourceWidth,
+                             kSourceWidth / 2,
+                             kSourceWidth,
+                             kSourceWidth * kBpp,
+                             media::YV12);
+  media::ConvertYUVAToARGB_MMX(yuv_bytes.get(),
+                               yuv_bytes.get() + kSourceUOffset,
+                               yuv_bytes.get() + kSourceVOffset,
+                               yuv_bytes.get() + kSourceAOffset,
+                               rgb_converted_bytes.get(),
+                               kSourceWidth,
+                               kSourceHeight,
+                               kSourceWidth,
+                               kSourceWidth / 2,
+                               kSourceWidth,
+                               kSourceWidth * kBpp,
+                               media::YV12);
+
+  EXPECT_EQ(0,
+            memcmp(rgb_converted_bytes.get(),
+                   rgb_converted_bytes_ref.get(),
+                   kRGBSizeConverted));
+}
+
 TEST(YUVConvertTest, RGB32ToYUV_SSE2_MatchReference) {
   base::CPU cpu;
   if (!cpu.has_sse2()) {
