@@ -172,6 +172,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     // TODO(kinuko): Would be nice to log the error case.
     response_type_ = FALLBACK_TO_NETWORK;
     NotifyRestartRequired();
+    return;
   }
 
   if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
