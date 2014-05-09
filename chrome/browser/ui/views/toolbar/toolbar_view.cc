@@ -58,11 +58,15 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
+#include "ui/keyboard/keyboard_controller.h"
+#include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -74,12 +78,6 @@
 #include "chrome/browser/enumerate_modules_model_win.h"
 #include "chrome/browser/ui/views/conflicting_module_view_win.h"
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
-#endif
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/compositor/layer.h"
-#include "ui/native_theme/native_theme_aura.h"
 #endif
 
 #if !defined(OS_CHROMEOS)
@@ -405,11 +403,17 @@ void ToolbarView::OnMenuButtonClicked(views::View* source,
   bool use_new_menu = false;
   bool supports_new_separators = false;
   // TODO: remove this.
-#if defined(USE_AURA) && !(defined(OS_LINUX) && !defined(OS_CHROMEOS))
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
   supports_new_separators =
       GetNativeTheme() == ui::NativeThemeAura::instance();
   use_new_menu = supports_new_separators;
 #endif
+
+  if (keyboard::KeyboardController::GetInstance() &&
+      keyboard::KeyboardController::GetInstance()->keyboard_visible()) {
+    keyboard::KeyboardController::GetInstance()->HideKeyboard(
+        keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
+  }
 
   wrench_menu_.reset(new WrenchMenu(browser_, use_new_menu,
                                     supports_new_separators));
