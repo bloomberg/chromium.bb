@@ -1,1 +1,15 @@
-You should see a green, blurred rectangle from 20x20 with width/height 100
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 0.00 0.00 40.00 140.00)
+        (rect 0.00 0.00 140.00 140.00)
+      )
+    )
+  )
+)
+

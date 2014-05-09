@@ -1,4 +1,0 @@
-CSS Transformed HTML div with SVG inside it. Animated SVG should repaint correctly.
-
-This is some text
-
