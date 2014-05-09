@@ -362,12 +362,6 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   base::TimeDelta min_rtt;
   base::TimeDelta max_rtt;
 
-  // Update delay and max number of frames in flight based on the the new
-  // received target delay.
-  rtp_max_delay_ =
-      base::TimeDelta::FromMilliseconds(cast_feedback.target_delay_ms_);
-  max_unacked_frames_ = 1 + static_cast<uint8>(cast_feedback.target_delay_ms_ *
-                                               max_frame_rate_ / 1000);
   if (rtcp_->Rtt(&rtt, &avg_rtt, &min_rtt, &max_rtt)) {
     // Don't use a RTT lower than our average.
     rtt = std::max(rtt, avg_rtt);
