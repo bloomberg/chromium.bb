@@ -250,9 +250,9 @@ def _CheckChromiumPlatformMacros(input_api, output_api, source_file_filter=None)
 def _CheckForPrintfDebugging(input_api, output_api):
     """Generally speaking, we'd prefer not to land patches that printf
     debug output."""
-    os_macro_re = input_api.re.compile(r'^\s*printf\(')
+    printf_re = input_api.re.compile(r'^\s*printf\(')
     errors = input_api.canned_checks._FindNewViolationsOfRule(
-        lambda _, x: not os_macro_re.search(x),
+        lambda _, x: not printf_re.search(x),
         input_api, None)
     errors = ['  * %s' % violation for violation in errors]
     if errors:
@@ -260,6 +260,24 @@ def _CheckForPrintfDebugging(input_api, output_api):
                     'printf debugging is best debugging! That said, it might '
                     'be a good idea to drop the following occurances from '
                     'your patch before uploading:\n%s' % '\n'.join(errors))]
+    return []
+
+
+def _CheckForDangerousTestFunctions(input_api, output_api):
+    """Tests should not be using serveAsynchronousMockedRequests, since it does
+    not guarantee that the threaded HTML parser will have completed."""
+    serve_async_requests_re = input_api.re.compile(
+        r'serveAsynchronousMockedRequests')
+    errors = input_api.canned_checks._FindNewViolationsOfRule(
+        lambda _, x: not serve_async_requests_re.search(x),
+        input_api, None)
+    errors = ['  * %s' % violation for violation in errors]
+    if errors:
+        return [output_api.PresubmitError(
+                    'You should be using FrameTestHelpers::'
+                    'pumpPendingRequests() instead of '
+                    'serveAsynchronousMockedRequests() in the following '
+                    'locations:\n%s' % '\n'.join(errors))]
     return []
 
 
@@ -295,6 +313,7 @@ def CheckChangeOnUpload(input_api, output_api):
     results.extend(_CommonChecks(input_api, output_api))
     results.extend(_CheckStyle(input_api, output_api))
     results.extend(_CheckForPrintfDebugging(input_api, output_api))
+    results.extend(_CheckForDangerousTestFunctions(input_api, output_api))
     return results
 
 
