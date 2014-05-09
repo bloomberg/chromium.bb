@@ -6,7 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
-#include "net/base/filename_util.h"
+#include "net/base/filename_util_unsafe.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
 #include "net/filter/gzip_filter.h"
@@ -177,9 +177,8 @@ void Filter::FixupEncodingTypes(
     DCHECK(success);
     filter_context.GetContentDisposition(&disposition);
     // Don't supply a MIME type here, since that may cause disk IO.
-    base::FilePath filepath = GenerateFileName(url, disposition, "UTF-8", "",
-                                               "", "");
-    base::FilePath::StringType extension = filepath.Extension();
+    base::FilePath::StringType extension =
+        GenerateFileExtensionUnsafe(url, disposition, "UTF-8", "", "", "");
 
     if (filter_context.IsDownload()) {
       // We don't want to decompress gzipped files when the user explicitly

@@ -22,16 +22,16 @@ specific_include_rules = {
   ],
 
   # Within net, only used by file: requests.
-  "filename_util\.cc": [
+  "filename_util_icu\.cc": [
     "+base/i18n/file_util_icu.h",
   ],
-  
+
   # Functions largely not used by the rest of net.
   "net_util_icu\.cc": [
     "+base/i18n",
     "+third_party/icu",
   ],
-  
+
   # Uses icu for debug logging only.
   "network_time_notifier\.cc": [
     "+base/i18n",
