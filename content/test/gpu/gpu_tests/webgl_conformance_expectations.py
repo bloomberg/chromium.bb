@@ -67,10 +67,10 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
         ['mountainlion', ('intel', 0x116)], bug=322795)
 
-    # Mac 10.8 / Mac Retina failures
+    # Mac Retina failures
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
-        ['mountainlion', ('nvidia', 0xfd5)], bug=368912)
+        ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
 
     # Mac 10.8 / ATI failures
     self.Fail(
