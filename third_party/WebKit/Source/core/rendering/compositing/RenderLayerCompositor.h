@@ -231,9 +231,6 @@ private:
 
     void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap&, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants, IntRect& absoluteDecendantBoundingBox);
 
-    // Hook compositing layers together
-    void setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer);
-
     bool hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const;
 
     void ensureRootLayer();

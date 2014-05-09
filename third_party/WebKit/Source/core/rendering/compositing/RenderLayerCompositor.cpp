@@ -664,29 +664,7 @@ void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer*
         repaintInCompositedAncestor(child, child->compositedLayerMapping()->compositedBounds());
     }
 
-    setCompositingParent(child, 0);
     setCompositingLayersNeedRebuild();
-}
-
-void RenderLayerCompositor::setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer)
-{
-    ASSERT(!parentLayer || childLayer->ancestorCompositingLayer() == parentLayer);
-    ASSERT(childLayer->hasCompositedLayerMapping());
-
-    // It's possible to be called with a parent that isn't yet composited when we're doing
-    // partial updates as required by painting or hit testing. Just bail in that case;
-    // we'll do a full layer update soon.
-    if (!parentLayer || !parentLayer->hasCompositedLayerMapping())
-        return;
-
-    if (parentLayer) {
-        GraphicsLayer* hostingLayer = parentLayer->compositedLayerMapping()->parentForSublayers();
-        GraphicsLayer* hostedLayer = childLayer->compositedLayerMapping()->childForSuperlayers();
-
-        hostingLayer->addChild(hostedLayer);
-    } else {
-        childLayer->compositedLayerMapping()->childForSuperlayers()->removeFromParent();
-    }
 }
 
 void RenderLayerCompositor::frameViewDidChangeLocation(const IntPoint& contentsOffset)
