@@ -1098,7 +1098,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Creates a vertex attrib manager for the given vertex array.
   void CreateVertexAttribManager(GLuint client_id, GLuint service_id) {
-    return vertex_array_manager()->CreateVertexAttribManager(
+    vertex_array_manager()->CreateVertexAttribManager(
       client_id, service_id, group_->max_vertex_attribs());
   }
 

@@ -29,7 +29,7 @@ bool DelegatedFrameHostClient::ShouldCreateResizeLock() {
 
 void DelegatedFrameHostClient::RequestCopyOfOutput(
     scoped_ptr<cc::CopyOutputRequest> request) {
-  return GetDelegatedFrameHost()->RequestCopyOfOutput(request.Pass());
+  GetDelegatedFrameHost()->RequestCopyOfOutput(request.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

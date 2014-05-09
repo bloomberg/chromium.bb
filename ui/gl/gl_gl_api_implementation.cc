@@ -131,7 +131,7 @@ static void GL_BINDING_CALL CustomTexImage2D(
   GLenum gl_internal_format = GetTexInternalFormat(
       internalformat, format, type);
   GLenum gl_type = GetTexType(type);
-  return g_driver_gl.orig_fn.glTexImage2DFn(
+  g_driver_gl.orig_fn.glTexImage2DFn(
       target, level, gl_internal_format, width, height, border, format, gl_type,
       pixels);
 }
@@ -140,7 +140,7 @@ static void GL_BINDING_CALL CustomTexSubImage2D(
       GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
       GLsizei height, GLenum format, GLenum type, const void* pixels) {
   GLenum gl_type = GetTexType(type);
-  return g_driver_gl.orig_fn.glTexSubImage2DFn(
+  g_driver_gl.orig_fn.glTexSubImage2DFn(
       target, level, xoffset, yoffset, width, height, format, gl_type, pixels);
 }
 
@@ -148,14 +148,14 @@ static void GL_BINDING_CALL CustomTexStorage2DEXT(
     GLenum target, GLsizei levels, GLenum internalformat, GLsizei width,
     GLsizei height) {
   GLenum gl_internal_format = GetInternalFormat(internalformat);
-  return g_driver_gl.orig_fn.glTexStorage2DEXTFn(
+  g_driver_gl.orig_fn.glTexStorage2DEXTFn(
       target, levels, gl_internal_format, width, height);
 }
 
 static void GL_BINDING_CALL CustomRenderbufferStorageEXT(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
   GLenum gl_internal_format = GetInternalFormat(internalformat);
-  return g_driver_gl.orig_fn.glRenderbufferStorageEXTFn(
+  g_driver_gl.orig_fn.glRenderbufferStorageEXTFn(
       target, gl_internal_format, width, height);
 }
 
@@ -167,7 +167,7 @@ static void GL_BINDING_CALL CustomRenderbufferStorageMultisampleEXT(
     GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
     GLsizei height) {
   GLenum gl_internal_format = GetInternalFormat(internalformat);
-  return g_driver_gl.orig_fn.glRenderbufferStorageMultisampleEXTFn(
+  g_driver_gl.orig_fn.glRenderbufferStorageMultisampleEXTFn(
       target, samples, gl_internal_format, width, height);
 }
 
