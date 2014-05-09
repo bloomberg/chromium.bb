@@ -125,7 +125,7 @@
           'cpu.cc',
           'cpu.h',
           'critical_closure.h',
-          'critical_closure_ios.mm',
+          'critical_closure_internal_ios.mm',
           'debug/alias.cc',
           'debug/alias.h',
           'debug/crash_logging.cc',
@@ -137,7 +137,7 @@
           'debug/dump_without_crashing.cc',
           'debug/dump_without_crashing.h',
           'debug/gdi_debug_util_win.cc',
-          'debug/gdi_debug_util_win.h',        
+          'debug/gdi_debug_util_win.h',
           # This file depends on files from the 'allocator' target,
           # but this target does not depend on 'allocator' (see
           # allocator.gyp for details).

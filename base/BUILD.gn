@@ -111,7 +111,7 @@ component("base") {
     "cpu.cc",
     "cpu.h",
     "critical_closure.h",
-    "critical_closure_ios.mm",
+    "critical_closure_internal_ios.mm",
     "debug/alias.cc",
     "debug/alias.h",
     "debug/crash_logging.cc",
