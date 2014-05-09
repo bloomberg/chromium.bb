@@ -460,3 +460,32 @@ UNADDRESSABLE ACCESS
 name=IntentionalCrash
 *!content::*::*Crash*
 *!content::*::MaybeHandleDebugURL
+
+HANDLE LEAK
+name=http://crbug.com/371348
+system call NtCreateSection
+KERNELBASE.dll!CreateFileMappingW
+base.dll!base::SharedMemory::Create
+base.dll!base::SharedMemory::CreateAndMapAnonymous
+content.dll!content::ChildThread::AllocateSharedMemory
+content.dll!content::ChildSharedBitmapManager::AllocateSharedBitmap
+cc.dll!cc::ResourceProvider::CreateBitmap
+
+HANDLE LEAK
+name=http://crbug.com/371357
+system call NtCreateEvent
+KERNELBASE.dll!CreateEventExW
+KERNELBASE.dll!CreateEventW
+base.dll!base::WaitableEvent::WaitableEvent
+base.dll!base::MessagePumpDefault::MessagePumpDefault
+base.dll!base::MessageLoop::CreateMessagePumpForType
+base.dll!base::MessageLoop::MessageLoop
+
+HANDLE LEAK
+name=http://crbug.com/371368
+system call NtCreateNamedPipeFile
+KERNELBASE.dll!CreateNamedPipeW
+ipc.dll!IPC::Channel::ChannelImpl::CreatePipe
+ipc.dll!IPC::Channel::ChannelImpl::ChannelImpl
+ipc.dll!IPC::Channel::Channel
+ipc.dll!IPC::ChannelProxy::Context::CreateChannel
