@@ -93,6 +93,7 @@ extern const char kDisableFullscreenWithinTab[];
 extern const char kDisableIPv6[];
 extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNTPOtherSessionsMenu[];
+extern const char kDisableOfflineAutoReload[];
 extern const char kDisableOriginChip[];
 extern const char kDisableOriginChipV2[];
 extern const char kDisablePasswordManagerReauthentication[];

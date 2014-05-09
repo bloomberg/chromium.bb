@@ -307,6 +307,9 @@ const char kDisableMinimizeOnSecondLauncherItemClick[] =
 // Disables the menu on the NTP for accessing sessions from other devices.
 const char kDisableNTPOtherSessionsMenu[]   = "disable-ntp-other-sessions-menu";
 
+// Disable auto-reload of error pages if offline.
+const char kDisableOfflineAutoReload[]       = "disable-offline-auto-reload";
+
 // Disable the origin chip.
 const char kDisableOriginChip[]             = "disable-origin-chip";
 

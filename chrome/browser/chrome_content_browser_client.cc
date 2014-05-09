@@ -1555,11 +1555,26 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     {
       // Enable auto-reload if this session is in the field trial or the user
       // explicitly enabled it.
-      std::string group =
-          base::FieldTrialList::FindFullName("AutoReloadExperiment");
-      if (group == "Enabled" ||
-          browser_command_line.HasSwitch(switches::kEnableOfflineAutoReload)) {
+      bool hard_enabled =
+          browser_command_line.HasSwitch(switches::kEnableOfflineAutoReload);
+      bool hard_disabled =
+          browser_command_line.HasSwitch(switches::kDisableOfflineAutoReload);
+      if (hard_enabled) {
         command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
+      } else if (!hard_disabled) {
+        chrome::VersionInfo::Channel channel =
+          chrome::VersionInfo::GetChannel();
+#if defined(OS_ANDROID) || defined(OS_IOS)
+        chrome::VersionInfo::Channel kForceChannel =
+            chrome::VersionInfo::CHANNEL_DEV;
+#else
+        chrome::VersionInfo::Channel kForceChannel =
+            chrome::VersionInfo::CHANNEL_CANARY;
+#endif
+        std::string group =
+            base::FieldTrialList::FindFullName("AutoReloadExperiment");
+        if (channel <= kForceChannel || group == "Enabled")
+          command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
       }
     }
 

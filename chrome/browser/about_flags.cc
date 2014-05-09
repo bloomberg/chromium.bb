@@ -1243,7 +1243,8 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_NAME,
     IDS_FLAGS_ENABLE_OFFLINE_AUTO_RELOAD_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableOfflineAutoReload)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflineAutoReload,
+                              switches::kDisableOfflineAutoReload)
   },
   {
     "enable-offline-load-stale-cache",
