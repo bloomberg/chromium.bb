@@ -19,17 +19,19 @@
 }
 
 #hid-detection #hid-prerequisite-msg {
-  padding: 10px 0 40px;
+  padding: 10px 0 30px;
 }
 
 #hid-keyboard-block,
 #hid-mouse-block {
-  padding: 20px, 0;
+  padding: 20px 0;
 }
 
 #hid-keyboard-icon,
 #hid-mouse-icon {
+  bottom: -15px;
   height: 40px;
+  position: relative;
   width: 40px;
 }
 
@@ -50,7 +52,7 @@
 
 #hid-keyboard-tick,
 #hid-mouse-tick {
-  left: -10px;
+  left: -20px;
   position: relative;
   visibility: hidden;
 }

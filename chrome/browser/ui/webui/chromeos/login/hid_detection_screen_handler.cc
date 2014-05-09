@@ -46,6 +46,11 @@ bool DeviceIsPointing(device::BluetoothDevice::DeviceType device_type) {
          device_type == device::BluetoothDevice::DEVICE_TABLET;
 }
 
+bool DeviceIsPointing(const device::InputServiceLinux::InputDeviceInfo& info) {
+  return info.is_mouse || info.is_touchpad || info.is_touchscreen ||
+         info.is_tablet;
+}
+
 bool DeviceIsKeyboard(device::BluetoothDevice::DeviceType device_type) {
   return device_type == device::BluetoothDevice::DEVICE_KEYBOARD ||
          device_type == device::BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO;
@@ -295,9 +300,7 @@ void HIDDetectionScreenHandler::OnInputDeviceAdded(
   if (!keyboard_device_id_.empty() && !pointing_device_id_.empty())
     return;
 
-  if (pointing_device_id_.empty() &&
-      (info.is_mouse || info.is_touchpad || info.is_touchscreen ||
-       info.is_tablet)) {
+  if (pointing_device_id_.empty() && DeviceIsPointing(info)) {
     pointing_device_id_ = info.id;
     pointing_device_name_ = info.name;
     pointing_device_connect_type_ = info.type;
@@ -356,7 +359,7 @@ void HIDDetectionScreenHandler::OnGetInputDevicesList(
        it != devices.end() &&
        (pointing_device_id_.empty() || keyboard_device_id_.empty());
        ++it) {
-    if (pointing_device_id_.empty() && (it->is_mouse || it->is_touchpad)) {
+    if (pointing_device_id_.empty() && DeviceIsPointing(*it)) {
       pointing_device_id_ = it->id;
       pointing_device_name_ = it->name;
       pointing_device_connect_type_ = it->type;
