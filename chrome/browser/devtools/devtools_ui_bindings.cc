@@ -547,6 +547,7 @@ void DevToolsUIBindings::SearchInPath(int request_id,
 
 void DevToolsUIBindings::SetWhitelistedShortcuts(
     const std::string& message) {
+  delegate_->SetWhitelistedShortcuts(message);
 }
 
 void DevToolsUIBindings::ZoomIn() {
