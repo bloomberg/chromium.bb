@@ -83,20 +83,20 @@ void RenderTable::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
     RenderBlock::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 
-    ETableLayout oldTableLayout = oldStyle ? oldStyle->tableLayout() : TAUTO;
+    bool oldFixedTableLayout = oldStyle ? oldStyle->isFixedTableLayout() : false;
 
     // In the collapsed border model, there is no cell spacing.
     m_hSpacing = collapseBorders() ? 0 : style()->horizontalBorderSpacing();
     m_vSpacing = collapseBorders() ? 0 : style()->verticalBorderSpacing();
     m_columnPos[0] = m_hSpacing;
 
-    if (!m_tableLayout || style()->tableLayout() != oldTableLayout) {
+    if (!m_tableLayout || style()->isFixedTableLayout() != oldFixedTableLayout) {
         if (m_tableLayout)
             m_tableLayout->willChangeTableLayout();
 
         // According to the CSS2 spec, you only use fixed table layout if an
         // explicit width is specified on the table.  Auto width implies auto table layout.
-        if (style()->tableLayout() == TFIXED && !style()->logicalWidth().isAuto())
+        if (style()->isFixedTableLayout())
             m_tableLayout = adoptPtr(new FixedTableLayout(this));
         else
             m_tableLayout = adoptPtr(new AutoTableLayout(this));

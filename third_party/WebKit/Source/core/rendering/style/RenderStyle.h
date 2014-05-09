@@ -563,6 +563,7 @@ public:
 
     EClear clear() const { return static_cast<EClear>(noninherited_flags._clear); }
     ETableLayout tableLayout() const { return static_cast<ETableLayout>(noninherited_flags._table_layout); }
+    bool isFixedTableLayout() const { return tableLayout() == TFIXED && !logicalWidth().isAuto(); }
 
     const Font& font() const;
     const FontMetrics& fontMetrics() const;
