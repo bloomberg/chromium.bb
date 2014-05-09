@@ -154,6 +154,8 @@
         'browser/browser_view_renderer.cc',
         'browser/browser_view_renderer.h',
         'browser/browser_view_renderer_client.h',
+        'browser/deferred_gpu_command_service.cc',
+        'browser/deferred_gpu_command_service.h',
         'browser/find_helper.cc',
         'browser/find_helper.h',
         'browser/global_tile_manager.cc',

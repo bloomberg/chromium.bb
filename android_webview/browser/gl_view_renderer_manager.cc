@@ -26,6 +26,7 @@ GLViewRendererManager::GLViewRendererManager() {}
 GLViewRendererManager::~GLViewRendererManager() {}
 
 GLViewRendererManager::Key GLViewRendererManager::PushBack(RendererType view) {
+  AutoLock auto_lock(lock_);
   DCHECK(mru_list_.end() ==
          std::find(mru_list_.begin(), mru_list_.end(), view));
   mru_list_.push_back(view);

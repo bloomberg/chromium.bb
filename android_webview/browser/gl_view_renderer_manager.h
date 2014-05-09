@@ -28,6 +28,10 @@ class GLViewRendererManager {
 
   static GLViewRendererManager* GetInstance();
 
+  Key NullKey() {
+    return mru_list_.end();
+  }
+
   Key PushBack(RendererType view);
 
   // |key| must be already in manager. Move renderer corresponding to |key| to

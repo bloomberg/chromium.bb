@@ -10,10 +10,12 @@
 #include "android_webview/browser/aw_browser_main_parts.h"
 #include "android_webview/browser/aw_resource_context.h"
 #include "android_webview/browser/browser_view_renderer.h"
+#include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/gpu_memory_buffer_factory_impl.h"
 #include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
+#include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_autofill_manager_delegate.h"
@@ -159,7 +161,8 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
           this,
           &shared_renderer_state_,
           web_contents_.get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)) {
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+      renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
   icon_helper_->SetListener(this);
@@ -324,14 +327,28 @@ jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
 }
 
 void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
+  GLViewRendererManager::GetInstance()->DidDrawGL(renderer_manager_key_);
+
+  ScopedAppGLStateRestore state_restore(
+      draw_info->mode == AwDrawGLInfo::kModeDraw
+          ? ScopedAppGLStateRestore::MODE_DRAW
+          : ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
+  ScopedAllowGL allow_gl;
+
   for (base::Closure c = shared_renderer_state_.PopFrontClosure(); !c.is_null();
        c = shared_renderer_state_.PopFrontClosure()) {
     c.Run();
   }
 
+  if (!hardware_renderer_)
+    return;
+
   // TODO(boliu): Make this a task as well.
   DrawGLResult result;
-  if (hardware_renderer_ && hardware_renderer_->DrawGL(draw_info, &result)) {
+  if (hardware_renderer_->DrawGL(state_restore.stencil_enabled(),
+                                 state_restore.framebuffer_binding_ext(),
+                                 draw_info,
+                                 &result)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
@@ -759,12 +776,20 @@ void AwContents::SetIsPaused(JNIEnv* env, jobject obj, bool paused) {
 
 void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Add task but don't schedule it. It will run when DrawGL is called for
-  // the first time.
-  shared_renderer_state_.AppendClosure(
-      base::Bind(&AwContents::InitializeHardwareDrawOnRenderThread,
-                 base::Unretained(this)));
   browser_view_renderer_.OnAttachedToWindow(w, h);
+}
+
+void AwContents::InitializeHardwareDrawIfNeeded() {
+  GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
+  if (renderer_manager_key_ == manager->NullKey()) {
+    // Add task but don't schedule it. It will run when DrawGL is called for
+    // the first time.
+    shared_renderer_state_.AppendClosure(
+        base::Bind(&AwContents::InitializeHardwareDrawOnRenderThread,
+                   base::Unretained(this)));
+    renderer_manager_key_ = manager->PushBack(&shared_renderer_state_);
+    DeferredGpuCommandService::SetInstance();
+  }
 }
 
 void AwContents::InitializeHardwareDrawOnRenderThread() {
@@ -783,14 +808,22 @@ void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   bool draw_functor_succeeded = RequestDrawGL(NULL, true);
   if (!draw_functor_succeeded &&
       shared_renderer_state_.IsHardwareInitialized()) {
-    LOG(ERROR) << "Unable to free GL resources. Has the Window leaked";
+    LOG(ERROR) << "Unable to free GL resources. Has the Window leaked?";
     // Calling release on wrong thread intentionally.
-    ReleaseHardwareDrawOnRenderThread();
+    AwDrawGLInfo info;
+    info.mode = AwDrawGLInfo::kModeProcess;
+    DrawGL(&info);
   } else {
     shared_renderer_state_.ClearClosureQueue();
   }
 
   browser_view_renderer_.OnDetachedFromWindow();
+
+  GLViewRendererManager* manager = GLViewRendererManager::GetInstance();
+  if (renderer_manager_key_ != manager->NullKey()) {
+    manager->Remove(renderer_manager_key_);
+    renderer_manager_key_ = manager->NullKey();
+  }
 }
 
 void AwContents::ReleaseHardwareDrawOnRenderThread() {
@@ -850,6 +883,8 @@ bool AwContents::OnDraw(JNIEnv* env,
                         jint clip_right,
                         jint clip_bottom) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (is_hardware_accelerated)
+    InitializeHardwareDrawIfNeeded();
   return browser_view_renderer_.OnDraw(
       canvas,
       is_hardware_accelerated,
