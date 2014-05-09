@@ -224,6 +224,7 @@
             'views/bounded_label_unittest.cc',
             'views/message_center_view_unittest.cc',
             'views/message_popup_collection_unittest.cc',
+            'views/notification_view_unittest.cc',
             'views/notifier_settings_view_unittest.cc',
           ],
         }],

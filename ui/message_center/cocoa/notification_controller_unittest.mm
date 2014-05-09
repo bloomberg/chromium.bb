@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #import "ui/base/cocoa/hover_image_button.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/fake_message_center.h"
@@ -356,6 +357,85 @@ TEST_F(NotificationControllerTest, NoMessage) {
   EXPECT_FALSE([[controller titleView] isHidden]);
   EXPECT_TRUE([[controller messageView] isHidden]);
   EXPECT_FALSE([[controller contextMessageView] isHidden]);
+}
+
+TEST_F(NotificationControllerTest, MessageSize) {
+  message_center::RichNotificationData data;
+  std::string id("id");
+  NotifierId notifier_id(NotifierId::APPLICATION, "notifier");
+  scoped_ptr<Notification> notification(new Notification(
+      NOTIFICATION_TYPE_BASE_FORMAT,
+      id,
+      base::UTF8ToUTF16(""),
+      ASCIIToUTF16("And\neven\nthe\nmessage is long.\nThis sure is wordy"),
+      gfx::Image(),
+      base::string16() /* display_source */,
+      notifier_id,
+      data,
+      NULL /* delegate */));
+
+  base::scoped_nsobject<MCNotificationController> controller(
+      [[MCNotificationController alloc] initWithNotification:notification.get()
+                                               messageCenter:NULL]);
+
+  // Set up the default layout.
+  [controller view];
+
+  auto compute_message_lines = ^{
+      NSString* string = [[[controller messageView] textStorage] string];
+      unsigned numberOfLines, index, stringLength = [string length];
+      for (index = 0, numberOfLines = 0; index < stringLength; numberOfLines++)
+        index = NSMaxRange([string lineRangeForRange:NSMakeRange(index, 0)]);
+
+      return numberOfLines;
+  };
+
+  // Message and no title: 5 lines.
+  EXPECT_EQ(5u, compute_message_lines());
+
+  // Message and one line title: 5 lines.
+  notification->set_title(ASCIIToUTF16("one line"));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(5u, compute_message_lines());
+
+  // Message and two line title: 3 lines.
+  notification->set_title(ASCIIToUTF16("two\nlines"));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(3u, compute_message_lines());
+
+  // Message, image and no title: 2 lines.
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 2, 2);
+  bitmap.allocPixels();
+  bitmap.eraseColor(SK_ColorGREEN);
+  notification->set_title(ASCIIToUTF16(""));
+  notification->set_image(gfx::Image::CreateFrom1xBitmap(bitmap));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(2u, compute_message_lines());
+
+  // Message, image and one line title: 2 lines.
+  notification->set_title(ASCIIToUTF16("one line"));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(2u, compute_message_lines());
+
+  // Message, image and two line title: 1 lines.
+  notification->set_title(ASCIIToUTF16("two\nlines"));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(1u, compute_message_lines());
+
+  // Same as above, but context message takes away from message lines.
+  notification->set_context_message(base::UTF8ToUTF16("foo"));
+  notification->set_title(ASCIIToUTF16(""));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(1u, compute_message_lines());
+
+  notification->set_title(ASCIIToUTF16("one line"));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(1u, compute_message_lines());
+
+  notification->set_title(ASCIIToUTF16("two\nlines"));
+  [controller updateNotification:notification.get()];
+  EXPECT_EQ(0u, compute_message_lines());
 }
 
 }  // namespace message_center

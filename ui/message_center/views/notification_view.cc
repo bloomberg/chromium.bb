@@ -318,15 +318,13 @@ NotificationView::NotificationView(MessageCenterController* controller,
     const gfx::FontList& font_list =
         default_label_font_list.DeriveWithSizeDelta(2);
     int padding = kTitleLineHeight - font_list.GetHeight();
-    int title_lines = notification.message().empty() ? kTitleNoMessageLineLimit
-                                                     : kTitleLineLimit;
     int title_character_limit =
-        kNotificationWidth * title_lines / kMinPixelsPerTitleCharacter;
+        kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacter;
     title_view_ = new BoundedLabel(
         gfx::TruncateString(notification.title(), title_character_limit),
         font_list);
     title_view_->SetLineHeight(kTitleLineHeight);
-    title_view_->SetLineLimit(title_lines);
+    title_view_->SetLineLimit(kMaxTitleLines);
     title_view_->SetColors(message_center::kRegularTextColor,
                            kRegularTextBackgroundColor);
     title_view_->SetBorder(MakeTextBorder(padding, 3, 0));
@@ -470,8 +468,13 @@ int NotificationView::GetHeightForWidth(int width) {
   // line limit would be different for the specified width than it currently is.
   // TODO(dharcourt): Avoid BoxLayout and directly compute the correct height.
   if (message_view_) {
+    int title_lines = 0;
+    if (title_view_) {
+      title_lines = title_view_->GetLinesForWidthAndLimit(width,
+                                                          kMaxTitleLines);
+    }
     int used_limit = message_view_->GetLineLimit();
-    int correct_limit = GetMessageLineLimit(width);
+    int correct_limit = GetMessageLineLimit(title_lines, width);
     if (used_limit != correct_limit) {
       top_height -= GetMessageHeight(content_width, used_limit);
       top_height += GetMessageHeight(content_width, correct_limit);
@@ -495,8 +498,13 @@ void NotificationView::Layout() {
   int content_width = width() - insets.width();
 
   // Before any resizing, set or adjust the number of message lines.
+  int title_lines = 0;
+  if (title_view_) {
+    title_lines =
+        title_view_->GetLinesForWidthAndLimit(width(), kMaxTitleLines);
+  }
   if (message_view_)
-    message_view_->SetLineLimit(GetMessageLineLimit(width()));
+    message_view_->SetLineLimit(GetMessageLineLimit(title_lines, width()));
 
   // Top views.
   int top_height = top_view_->GetHeightForWidth(content_width);
@@ -580,11 +588,22 @@ void NotificationView::RemoveNotification(const std::string& notification_id,
   controller_->RemoveNotification(notification_id, by_user);
 }
 
-int NotificationView::GetMessageLineLimit(int width) {
+int NotificationView::GetMessageLineLimit(int title_lines, int width) {
   // Image notifications require that the image must be kept flush against
   // their icons, but we can allow more text if no image.
-  if (!image_view_)
-    return message_center::kMessageExpandedLineLimit;
+  int effective_title_lines = std::max(0, title_lines - 1);
+  int line_reduction_from_title = (image_view_ ? 1 : 2) * effective_title_lines;
+  if (!image_view_) {
+    // Title lines are counted as twice as big as message lines for the purpose
+    // of this calculation.
+    // The effect from the title reduction here should be:
+    //   * 0 title lines: 5 max lines message.
+    //   * 1 title line:  5 max lines message.
+    //   * 2 title lines: 3 max lines message.
+    return std::max(
+        0,
+        message_center::kMessageExpandedLineLimit - line_reduction_from_title);
+  }
 
   int message_line_limit = message_center::kMessageCollapsedLineLimit;
 
@@ -595,7 +614,13 @@ int NotificationView::GetMessageLineLimit(int width) {
         message_center::kContextMessageLineLimit);
   }
 
-  DCHECK_GT(message_line_limit, 0);
+  // The effect from the title reduction here should be:
+  //   * 0 title lines: 2 max lines message + context message.
+  //   * 1 title line:  2 max lines message + context message.
+  //   * 2 title lines: 1 max lines message + context message.
+  message_line_limit =
+      std::max(0, message_line_limit - line_reduction_from_title);
+
   return message_line_limit;
 }
 

@@ -39,8 +39,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   static NotificationView* Create(MessageCenterController* controller,
                                   const Notification& notification,
                                   bool top_level);
-
-    virtual ~NotificationView();
+  virtual ~NotificationView();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -69,7 +68,8 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
                    const Notification& notification);
 
  private:
-  int GetMessageLineLimit(int width);
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestLineLimits);
+  int GetMessageLineLimit(int title_lines, int width);
   int GetMessageHeight(int width, int limit);
 
   MessageCenterController* controller_;  // Weak, lives longer then views.
