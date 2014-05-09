@@ -6404,3 +6404,10 @@
    fun:_ZN2v88internal8Compiler13CompileScriptENS0_6HandleINS0_6StringEEENS2_INS0_6ObjectEEEiibNS2_INS0_7Context*
    fun:_ZN2v814ScriptCompiler14CompileUnboundEPNS_7IsolateEPNS0_6SourceENS0_14CompileOptionsE
 }
+{
+  bug_371844
+  Memcheck:Uninitialized
+  fun:bcmp
+  fun:_ZNK7content15GamepadProvider8PadState5MatchERKN5blink10WebGamepadE
+  fun:_ZN7content15GamepadProvider6DoPollEv
+}

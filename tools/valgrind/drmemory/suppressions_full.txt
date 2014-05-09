@@ -2112,3 +2112,8 @@ base.dll!base::WaitableEvent::WaitableEvent
 gpu.dll!gpu::InProcessCommandBuffer::Initialize
 gl_in_process_context.dll!gpu::`anonymous namespace'::GLInProcessContextImpl::Initialize
 gl_in_process_context.dll!gpu::GLInProcessContext::CreateContext
+
+UNINITIALIZED READ
+name=bug_371844
+*!content::GamepadProvider::PadState::Match
+*!content::GamepadProvider::DoPoll
