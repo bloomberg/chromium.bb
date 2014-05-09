@@ -578,6 +578,11 @@ void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
     // Move the view to the front so that it appears on top of other views.
     ReorderChildView(drag_view_, -1);
     bounds_animator_.StopAnimatingView(drag_view_);
+    // Stopping the animation may have invalidated our drag view due to the
+    // view hierarchy changing.
+    if (!drag_view_)
+      return;
+
     StartSettingUpSynchronousDrag();
     if (!dragging_for_reparent_item_)
       StartDragAndDropHostDrag(point);
