@@ -108,6 +108,11 @@ bool WebSourceBufferImpl::setTimestampOffset(double offset) {
     return false;
 
   timestamp_offset_ = DoubleToTimeDelta(offset);
+
+  // http://www.w3.org/TR/media-source/#widl-SourceBuffer-timestampOffset
+  // Step 6: If the mode attribute equals "sequence", then set the group start
+  // timestamp to new timestamp offset.
+  demuxer_->SetGroupStartTimestampIfInSequenceMode(id_, timestamp_offset_);
   return true;
 }
 

@@ -449,10 +449,7 @@ class MockMediaSource {
 // Test parameter determines which coded frame processor is used to process
 // appended data, and is only applicable in tests where the pipeline is using a
 // (Mock)MediaSource (which are TEST_P, not TEST_F). If true,
-// LegacyFrameProcessor is used. Otherwise, (not yet supported), a more
-// compliant frame processor is used.
-// TODO(wolenetz): Enable usage of new frame processor based on this flag.
-// See http://crbug.com/249422.
+// LegacyFrameProcessor is used. Otherwise, the new FrameProcessor is used.
 class PipelineIntegrationTest
     : public testing::TestWithParam<bool>,
       public PipelineIntegrationTestBase {
@@ -1319,8 +1316,10 @@ TEST_F(PipelineIntegrationTest,
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
-// TODO(wolenetz): Enable MSE testing of new frame processor based on this flag,
-// once the new processor has landed. See http://crbug.com/249422.
+// For MediaSource tests, generate two sets of tests: one using FrameProcessor,
+// and one using LegacyFrameProcessor.
+INSTANTIATE_TEST_CASE_P(NewFrameProcessor, PipelineIntegrationTest,
+                        Values(false));
 INSTANTIATE_TEST_CASE_P(LegacyFrameProcessor, PipelineIntegrationTest,
                         Values(true));
 

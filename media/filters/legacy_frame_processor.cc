@@ -50,10 +50,6 @@ bool LegacyFrameProcessor::ProcessFrames(
   MseTrackBuffer* video_track = FindTrack(kVideoTrackId);
   DCHECK(video_buffers.empty() || video_track);
 
-  // TODO(wolenetz): DCHECK + return false if any of these buffers have UNKNOWN
-  // type() in upcoming coded frame processing compliant implementation. See
-  // http://crbug.com/249422.
-
   StreamParser::BufferQueue filtered_audio;
   StreamParser::BufferQueue filtered_video;
   StreamParser::TextBufferQueueMap filtered_text;
@@ -110,13 +106,8 @@ bool LegacyFrameProcessor::ProcessFrames(
     }
 
     *new_media_segment = false;
-
     DCHECK(segment_timestamp != kInfiniteDuration());
-    for (TrackBufferMap::iterator itr = track_buffers_.begin();
-         itr != track_buffers_.end();
-         ++itr) {
-      itr->second->stream()->OnNewMediaSegment(segment_timestamp);
-    }
+    NotifyNewMediaSegmentStarting(segment_timestamp);
   }
 
   if (!filtered_audio.empty() &&

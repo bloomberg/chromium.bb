@@ -25,6 +25,27 @@ class MseTrackBuffer {
   explicit MseTrackBuffer(ChunkDemuxerStream* stream);
   ~MseTrackBuffer();
 
+  // Get/set |last_decode_timestamp_|.
+  base::TimeDelta last_decode_timestamp() const {
+    return last_decode_timestamp_;
+  }
+  void set_last_decode_timestamp(base::TimeDelta timestamp) {
+    last_decode_timestamp_ = timestamp;
+  }
+
+  // Get/set |last_frame_duration_|.
+  base::TimeDelta last_frame_duration() const {
+    return last_frame_duration_;
+  }
+  void set_last_frame_duration(base::TimeDelta duration) {
+    last_frame_duration_ = duration;
+  }
+
+  // Gets |highest_presentation_timestamp_|.
+  base::TimeDelta highest_presentation_timestamp() const {
+    return highest_presentation_timestamp_;
+  }
+
   // Get/set |needs_random_access_point_|.
   bool needs_random_access_point() const {
     return needs_random_access_point_;
@@ -36,12 +57,33 @@ class MseTrackBuffer {
   // Gets a pointer to this track's ChunkDemuxerStream.
   ChunkDemuxerStream* stream() const { return stream_; }
 
-  // Sets |needs_random_access_point_| to true.
-  // TODO(wolenetz): Add the rest of the new coded frame processing algorithm
-  // track buffer attributes and reset them here. See http://crbug.com/249422.
+  // Unsets |last_decode_timestamp_|, unsets |last_frame_duration_|,
+  // unsets |highest_presentation_timestamp_|, and sets
+  // |needs_random_access_point_| to true.
   void Reset();
 
+  // If |highest_presentation_timestamp_| is unset or |timestamp| is greater
+  // than |highest_presentation_timestamp_|, sets
+  // |highest_presentation_timestamp_| to |timestamp|. Note that bidirectional
+  // prediction between coded frames can cause |timestamp| to not be
+  // monotonically increasing even though the decode timestamps are
+  // monotonically increasing.
+  void SetHighestPresentationTimestampIfIncreased(base::TimeDelta timestamp);
+
  private:
+  // The decode timestamp of the last coded frame appended in the current coded
+  // frame group. Initially kNoTimestamp(), meaning "unset".
+  base::TimeDelta last_decode_timestamp_;
+
+  // The coded frame duration of the last coded frame appended in the current
+  // coded frame group. Initially kNoTimestamp(), meaning "unset".
+  base::TimeDelta last_frame_duration_;
+
+  // The highest presentation timestamp encountered in a coded frame appended
+  // in the current coded frame group. Initially kNoTimestamp(), meaning
+  // "unset".
+  base::TimeDelta highest_presentation_timestamp_;
+
   // Keeps track of whether the track buffer is waiting for a random access
   // point coded frame. Initially set to true to indicate that a random access
   // point coded frame is needed before anything can be added to the track
@@ -97,6 +139,10 @@ class MEDIA_EXPORT FrameProcessorBase {
                              bool* new_media_segment,
                              base::TimeDelta* timestamp_offset) = 0;
 
+  // Signals the frame processor to update its group start timestamp to be
+  // |timestamp_offset| if it is in sequence append mode.
+  void SetGroupStartTimestampIfInSequenceMode(base::TimeDelta timestamp_offset);
+
   // Adds a new track with unique track ID |id|.
   // If |id| has previously been added, returns false to indicate error.
   // Otherwise, returns true, indicating future ProcessFrames() will emit
@@ -117,6 +163,10 @@ class MEDIA_EXPORT FrameProcessorBase {
   // MseTrackBuffer. Otherwise, returns NULL.
   MseTrackBuffer* FindTrack(StreamParser::TrackId id);
 
+  // Signals all track buffers' streams that a new media segment is starting
+  // with timestamp |segment_timestamp|.
+  void NotifyNewMediaSegmentStarting(base::TimeDelta segment_timestamp);
+
   // The AppendMode of the associated SourceBuffer.
   // See SetSequenceMode() for interpretation of |sequence_mode_|.
   // Per http://www.w3.org/TR/media-source/#widl-SourceBuffer-mode:
@@ -126,6 +176,13 @@ class MEDIA_EXPORT FrameProcessorBase {
 
   // TrackId-indexed map of each track's stream.
   TrackBufferMap track_buffers_;
+
+  // Tracks the MSE coded frame processing variable of same name.
+  // Initially kNoTimestamp(), meaning "unset".
+  // Note: LegacyFrameProcessor does not use this member; it's here to reduce
+  // short-term plumbing of SetGroupStartTimestampIfInSequenceMode() until
+  // LegacyFrameProcessor is removed.
+  base::TimeDelta group_start_timestamp_;
 };
 
 }  // namespace media

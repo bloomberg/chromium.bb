@@ -134,10 +134,8 @@ static void OnSeekDone_OKExpected(bool* called, PipelineStatus status) {
 static void LogFunc(const std::string& str) { DVLOG(1) << str; }
 
 // Test parameter determines which coded frame processor is used to process
-// appended data. If true, LegacyFrameProcessor is used. Otherwise, (not yet
-// supported), a more compliant frame processor is used.
-// TODO(wolenetz): Enable usage of new frame processor based on this flag.
-// See http://crbug.com/249422.
+// appended data. If true, LegacyFrameProcessor is used. Otherwise, the new
+// FrameProcessor is used.
 class ChunkDemuxerTest : public ::testing::TestWithParam<bool> {
  protected:
   enum CodecsIndex {
@@ -2817,12 +2815,11 @@ TEST_P(ChunkDemuxerTest, DurationChange) {
   // Add data beginning at the currently set duration and expect a new duration
   // to be signaled. Note that the last video block will have a higher end
   // timestamp than the last audio block.
-  // TODO(wolenetz): Compliant coded frame processor will emit a max of one
-  // duration change per each ProcessFrames(). Remove the first expectation here
-  // once compliant coded frame processor is used. See http://crbug.com/249422.
-  const int kNewStreamDurationAudio = kStreamDuration + kAudioBlockDuration;
-  EXPECT_CALL(host_, SetDuration(
+  if (use_legacy_frame_processor_) {
+    const int kNewStreamDurationAudio = kStreamDuration + kAudioBlockDuration;
+    EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(kNewStreamDurationAudio)));
+  }
   const int kNewStreamDurationVideo = kStreamDuration + kVideoBlockDuration;
   EXPECT_CALL(host_, SetDuration(
       base::TimeDelta::FromMilliseconds(kNewStreamDurationVideo)));
@@ -2849,12 +2846,11 @@ TEST_P(ChunkDemuxerTest, DurationChangeTimestampOffset) {
 
   ASSERT_TRUE(SetTimestampOffset(kSourceId, kDefaultDuration()));
 
-  // TODO(wolenetz): Compliant coded frame processor will emit a max of one
-  // duration change per each ProcessFrames(). Remove the first expectation here
-  // once compliant coded frame processor is used. See http://crbug.com/249422.
-  EXPECT_CALL(host_, SetDuration(
-      kDefaultDuration() + base::TimeDelta::FromMilliseconds(
-          kAudioBlockDuration * 2)));
+  if (use_legacy_frame_processor_) {
+    EXPECT_CALL(host_, SetDuration(
+        kDefaultDuration() + base::TimeDelta::FromMilliseconds(
+            kAudioBlockDuration * 2)));
+  }
   EXPECT_CALL(host_, SetDuration(
       kDefaultDuration() + base::TimeDelta::FromMilliseconds(
           kVideoBlockDuration * 2)));
@@ -3255,8 +3251,9 @@ TEST_P(ChunkDemuxerTest, SeekCompletesWithoutTextCues) {
   CheckExpectedBuffers(video_stream, "180 210");
 }
 
-// TODO(wolenetz): Enable testing of new frame processor based on this flag,
-// once the new processor has landed. See http://crbug.com/249422.
+// Generate two sets of tests: one using FrameProcessor, and one using
+// LegacyFrameProcessor.
+INSTANTIATE_TEST_CASE_P(NewFrameProcessor, ChunkDemuxerTest, Values(false));
 INSTANTIATE_TEST_CASE_P(LegacyFrameProcessor, ChunkDemuxerTest, Values(true));
 
 }  // namespace media

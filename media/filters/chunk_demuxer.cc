@@ -17,6 +17,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/video_decoder_config.h"
+#include "media/filters/frame_processor.h"
 #include "media/filters/legacy_frame_processor.h"
 #include "media/filters/stream_parser_factory.h"
 
@@ -132,6 +133,10 @@ class SourceState {
   // Sets |frame_processor_|'s sequence mode to |sequence_mode|.
   void SetSequenceMode(bool sequence_mode);
 
+  // Signals the coded frame processor to update its group start timestamp to be
+  // |timestamp_offset| if it is in sequence append mode.
+  void SetGroupStartTimestampIfInSequenceMode(base::TimeDelta timestamp_offset);
+
   // Returns the range of buffered data in this source, capped at |duration|.
   // |ended| - Set to true if end of stream has been signaled and the special
   // end of stream range logic needs to be executed.
@@ -229,6 +234,8 @@ class SourceState {
 
   // Indicates that timestampOffset should be updated automatically during
   // OnNewBuffers() based on the earliest end timestamp of the buffers provided.
+  // TODO(wolenetz): Refactor this function while integrating April 29, 2014
+  // changes to MSE spec. See http://crbug.com/371499.
   bool auto_update_timestamp_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceState);
@@ -286,15 +293,22 @@ void SourceState::SetSequenceMode(bool sequence_mode) {
   frame_processor_->SetSequenceMode(sequence_mode);
 }
 
+void SourceState::SetGroupStartTimestampIfInSequenceMode(
+    base::TimeDelta timestamp_offset) {
+  DCHECK(!parsing_media_segment_);
+
+  frame_processor_->SetGroupStartTimestampIfInSequenceMode(timestamp_offset);
+}
+
 bool SourceState::Append(const uint8* data, size_t length,
                          TimeDelta append_window_start,
                          TimeDelta append_window_end,
                          TimeDelta* timestamp_offset) {
   DCHECK(timestamp_offset);
   DCHECK(!timestamp_offset_during_append_);
-  timestamp_offset_during_append_ = timestamp_offset;
   append_window_start_during_append_ = append_window_start;
   append_window_end_during_append_ = append_window_end;
+  timestamp_offset_during_append_ = timestamp_offset;
 
   // TODO(wolenetz/acolwell): Curry and pass a NewBuffersCB here bound with
   // append window and timestamp offset pointer. See http://crbug.com/351454.
@@ -1156,13 +1170,16 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(
   if (has_video)
     source_id_video_ = id;
 
-  if (!use_legacy_frame_processor) {
-    DLOG(WARNING) << "New frame processor is not yet supported. Using legacy.";
+  scoped_ptr<FrameProcessorBase> frame_processor;
+  if (use_legacy_frame_processor) {
+    frame_processor.reset(new LegacyFrameProcessor(
+        base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
+                   base::Unretained(this))));
+  } else {
+    frame_processor.reset(new FrameProcessor(
+        base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
+                   base::Unretained(this))));
   }
-
-  scoped_ptr<FrameProcessorBase> frame_processor(new LegacyFrameProcessor(
-      base::Bind(&ChunkDemuxer::IncreaseDurationIfNecessary,
-                 base::Unretained(this))));
 
   scoped_ptr<SourceState> source_state(
       new SourceState(stream_parser.Pass(),
@@ -1388,6 +1405,20 @@ void ChunkDemuxer::SetSequenceMode(const std::string& id,
 
   source_state_map_[id]->SetSequenceMode(sequence_mode);
 }
+
+void ChunkDemuxer::SetGroupStartTimestampIfInSequenceMode(
+    const std::string& id,
+    base::TimeDelta timestamp_offset) {
+  base::AutoLock auto_lock(lock_);
+  DVLOG(1) << "SetGroupStartTimestampIfInSequenceMode(" << id << ", "
+           << timestamp_offset.InSecondsF() << ")";
+  CHECK(IsValidId(id));
+  DCHECK_NE(state_, ENDED);
+
+  source_state_map_[id]->SetGroupStartTimestampIfInSequenceMode(
+      timestamp_offset);
+}
+
 
 void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
   DVLOG(1) << "MarkEndOfStream(" << status << ")";
@@ -1619,6 +1650,14 @@ void ChunkDemuxer::UpdateDuration(TimeDelta new_duration) {
 
 void ChunkDemuxer::IncreaseDurationIfNecessary(TimeDelta new_duration) {
   DCHECK(new_duration != kNoTimestamp());
+  DCHECK(new_duration != kInfiniteDuration());
+
+  // Per April 1, 2014 MSE spec editor's draft:
+  // https://dvcs.w3.org/hg/html-media/raw-file/d471a4412040/media-source/
+  //     media-source.html#sourcebuffer-coded-frame-processing
+  // 5. If the media segment contains data beyond the current duration, then run
+  //    the duration change algorithm with new duration set to the maximum of
+  //    the current duration and the group end timestamp.
 
   if (new_duration <= duration_)
     return;
