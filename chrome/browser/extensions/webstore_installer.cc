@@ -86,6 +86,10 @@ const char kInlineInstallSource[] = "inline";
 const char kDefaultInstallSource[] = "ondemand";
 const char kAppLauncherInstallSource[] = "applauncher";
 
+// TODO(rockot): Share this duplicated constant with the extension updater.
+// See http://crbug.com/371398.
+const char kAuthUserQueryKey[] = "authuser";
+
 const size_t kTimeRemainingMinutesThreshold = 1u;
 
 // Folder for downloading crx files from the webstore. This is used so that the
@@ -138,6 +142,37 @@ bool UseSeparateWebstoreDownloadDirectory() {
   std::string field_trial_group =
       base::FieldTrialList::FindFullName(kFieldTrial);
   return field_trial_group == kSeparateDirectoryUnderUDD;
+}
+
+void MaybeAppendAuthUserParameter(const std::string& authuser, GURL* url) {
+  if (authuser.empty())
+    return;
+  std::string old_query = url->query();
+  url::Component query(0, old_query.length());
+  url::Component key, value;
+  // Ensure that the URL doesn't already specify an authuser parameter.
+  while (url::ExtractQueryKeyValue(
+             old_query.c_str(), &query, &key, &value)) {
+    std::string key_string = old_query.substr(key.begin, key.len);
+    if (key_string == kAuthUserQueryKey) {
+      return;
+    }
+  }
+  if (!old_query.empty()) {
+    old_query += "&";
+  }
+  std::string authuser_param = base::StringPrintf(
+      "%s=%s",
+      kAuthUserQueryKey,
+      authuser.c_str());
+
+  // TODO(rockot): Share this duplicated code with the extension updater.
+  // See http://crbug.com/371398.
+  std::string new_query_string = old_query + authuser_param;
+  url::Component new_query(0, new_query_string.length());
+  url::Replacements<char> replacements;
+  replacements.SetQuery(new_query_string.c_str(), new_query);
+  *url = url->ReplaceComponents(replacements);
 }
 
 }  // namespace
@@ -528,6 +563,7 @@ void WebstoreInstaller::DownloadCrx(
     const std::string& extension_id,
     InstallSource source) {
   download_url_ = GetWebstoreInstallURL(extension_id, source);
+  MaybeAppendAuthUserParameter(approval_->authuser, &download_url_);
 
   base::FilePath download_path;
   if (UseSeparateWebstoreDownloadDirectory()) {

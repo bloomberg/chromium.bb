@@ -271,10 +271,12 @@ void WebstorePrivateInstallBundleFunction::OnBundleInstallCompleted() {
 }
 
 WebstorePrivateBeginInstallWithManifest3Function::
-    WebstorePrivateBeginInstallWithManifest3Function() {}
+    WebstorePrivateBeginInstallWithManifest3Function() {
+}
 
 WebstorePrivateBeginInstallWithManifest3Function::
-    ~WebstorePrivateBeginInstallWithManifest3Function() {}
+    ~WebstorePrivateBeginInstallWithManifest3Function() {
+}
 
 bool WebstorePrivateBeginInstallWithManifest3Function::RunAsync() {
   params_ = BeginInstallWithManifest3::Params::Create(*args_);
@@ -301,6 +303,10 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunAsync() {
       error_ = kInvalidIconUrlError;
       return false;
     }
+  }
+
+  if (params_->details.authuser) {
+    authuser_ = *params_->details.authuser;
   }
 
   std::string icon_data = params_->details.icon_data ?
@@ -492,6 +498,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
   approval->skip_post_install_ui = params_->details.enable_launcher;
   approval->dummy_extension = dummy_extension_;
   approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
+  approval->authuser = authuser_;
   g_pending_approvals.Get().PushApproval(approval.Pass());
 
   SetResultCode(ERROR_NONE);

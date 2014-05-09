@@ -87,6 +87,9 @@ extern const char kStateStoreName[];
 // rules are stored.
 extern const char kRulesStoreName[];
 
+// The URL query parameter key corresponding to multi-login user index.
+extern const char kAuthUserQueryKey[];
+
 }  // namespace extensions
 
 namespace extension_misc {

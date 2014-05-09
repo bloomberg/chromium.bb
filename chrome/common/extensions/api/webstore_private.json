@@ -111,6 +111,11 @@
                 "type": "boolean",
                 "optional": true,
                 "description": "A flag to cause the app launcher to be installed before installing the extension, if it isn't installed already."
+              },
+              "authuser": {
+                "type": "string",
+                "optional": true,
+                "description": "The authuser index to be included with CRX download requests in multi-login sessions."
               }
             },
             "additionalProperties": { "type": "any" }

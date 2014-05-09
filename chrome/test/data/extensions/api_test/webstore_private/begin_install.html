@@ -10,7 +10,7 @@ runTests([
   function beginInstallWithAppBubble() {
     var manifest = getManifest("app/manifest.json");
     chrome.webstorePrivate.beginInstallWithManifest3(
-        {id: appId, manifest: manifest, appInstallBubble: true},
+        {id: appId, manifest: manifest, appInstallBubble: true, authuser: "2"},
         callbackPass(function(result) {
       assertEq("", result);
     }));

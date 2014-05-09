@@ -158,6 +158,10 @@ class WebstoreInstaller : public content::NotificationObserver,
     // Ephemeral apps (experimental) are not permanently installed in Chrome.
     bool is_ephemeral;
 
+    // The authuser index required to download the item being installed. May be
+    // the empty string, in which case no authuser parameter is used.
+    std::string authuser;
+
    private:
     Approval();
   };

@@ -356,6 +356,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_BeginInstall) {
   EXPECT_EQ(appId, approval->extension_id);
   EXPECT_TRUE(approval->use_app_installed_bubble);
   EXPECT_FALSE(approval->skip_post_install_ui);
+  EXPECT_EQ("2", approval->authuser);
   EXPECT_EQ(browser()->profile(), approval->profile);
 
   approval = WebstorePrivateApi::PopApprovalForTesting(
@@ -363,6 +364,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest, MAYBE_BeginInstall) {
   EXPECT_EQ(extensionId, approval->extension_id);
   EXPECT_FALSE(approval->use_app_installed_bubble);
   EXPECT_FALSE(approval->skip_post_install_ui);
+  EXPECT_TRUE(approval->authuser.empty());
   EXPECT_EQ(browser()->profile(), approval->profile);
 }
 

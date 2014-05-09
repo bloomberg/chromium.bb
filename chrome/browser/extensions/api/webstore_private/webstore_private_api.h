@@ -169,6 +169,10 @@ class WebstorePrivateBeginInstallWithManifest3Function
   scoped_ptr<ExtensionInstallPrompt> install_prompt_;
 
   scoped_ptr<SigninTracker> signin_tracker_;
+
+  // The authuser query parameter value which should be used with CRX download
+  // requests. This is empty if authuser should not be set on download requests.
+  std::string authuser_;
 };
 
 class WebstorePrivateCompleteInstallFunction
