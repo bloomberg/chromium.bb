@@ -58,14 +58,6 @@ using content::RenderViewHost;
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
-// NaCl glibc tests are included for x86 only, as there is no glibc support
-// for other architectures (ARM/MIPS).
-#if defined(ARCH_CPU_X86_FAMILY)
-#define MAYBE_GLIBC(test_name) test_name
-#else
-#define MAYBE_GLIBC(test_name) DISABLED_##test_name
-#endif
-
 #if defined(DISABLE_NACL)
 
 #define TEST_PPAPI_NACL(test_name)
@@ -547,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, URLLoader3) {
 #else
 #define MAYBE_URLLoader_BasicFilePOST URLLoader_BasicFilePOST
 #endif
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader0) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(URLLoader0)) {
   RunTestViaHTTP(
       LIST_TEST(URLLoader_BasicGET)
       LIST_TEST(URLLoader_BasicPOST)
@@ -557,13 +549,13 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader0) {
   );
 }
 
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader1) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(URLLoader1)) {
   RUN_URLLOADER_SUBTESTS_1;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader2) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(URLLoader2)) {
   RUN_URLLOADER_SUBTESTS_2;
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, URLLoader3) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(URLLoader3)) {
   RUN_URLLOADER_SUBTESTS_3;
 }
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, URLLoader0) {
@@ -859,7 +851,9 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, FileRef2) {
   RUN_FILEREF_SUBTESTS_2;
 }
 // Flaky on 32-bit linux bot; http://crbug.com/308908
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+// Glibc not available on ARM
+#if (defined(OS_LINUX) && defined(ARCH_CPU_X86)) \
+    || defined(ARCH_CPU_ARM_FAMILY)
 #define MAYBE_NaCl_Glibc_FileRef1 DISABLED_FileRef1
 #define MAYBE_NaCl_Glibc_FileRef2 DISABLED_FileRef2
 #else

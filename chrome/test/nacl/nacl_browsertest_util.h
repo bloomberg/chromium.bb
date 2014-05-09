@@ -159,9 +159,17 @@ class NaClBrowserTestStatic : public NaClBrowserTestBase {
 // and sometimes time out.  Disable until it is made faster:
 // https://code.google.com/p/chromium/issues/detail?id=177555
 #if (defined(OS_WIN) && !defined(NDEBUG))
-#define MAYBE_PNACL(test_name) DISABLED_##test_name
+#  define MAYBE_PNACL(test_name) DISABLED_##test_name
 #else
-#define MAYBE_PNACL(test_name) test_name
+#  define MAYBE_PNACL(test_name) test_name
+#endif
+
+// NaCl glibc tests are included for x86 only, as there is no glibc support
+// for other architectures (ARM/MIPS).
+#if defined(ARCH_CPU_X86_FAMILY)
+#  define MAYBE_GLIBC(test_name) test_name
+#else
+#  define MAYBE_GLIBC(test_name) DISABLED_##test_name
 #endif
 
 // ASan does not work with libc-free context, so disable the test.
@@ -179,26 +187,12 @@ class NaClBrowserTestStatic : public NaClBrowserTestBase {
 #  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case
 #endif
 
-#if defined(ARCH_CPU_ARM_FAMILY) || defined(ARCH_CPU_MIPS_FAMILY)
-
-// There is no support for Glibc on ARM and MIPS NaCl.
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body \
-IN_PROC_BROWSER_TEST_F(suite##Pnacl, MAYBE_PNACL(name)) \
-body
-
-#else
-
-// Otherwise, we have Glibc, Newlib and Pnacl tests
-#define NACL_BROWSER_TEST_F(suite, name, body) \
-IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
-body \
-IN_PROC_BROWSER_TEST_F(suite##GLibc, name) \
+IN_PROC_BROWSER_TEST_F(suite##GLibc, MAYBE_GLIBC(name)) \
 body \
 IN_PROC_BROWSER_TEST_F(suite##Pnacl, MAYBE_PNACL(name)) \
 body
-
-#endif
 
 #endif  // CHROME_TEST_NACL_NACL_BROWSERTEST_UTIL_H_
