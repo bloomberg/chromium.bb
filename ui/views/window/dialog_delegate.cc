@@ -156,10 +156,10 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
 // static
 NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(gfx::Insets());
-  const SkColor color = widget->GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DialogBackground);
-  frame->SetBubbleBorder(scoped_ptr<BubbleBorder>(new BubbleBorder(
-      BubbleBorder::FLOAT, BubbleBorder::SMALL_SHADOW, color)));
+  scoped_ptr<BubbleBorder> border(new BubbleBorder(
+      BubbleBorder::FLOAT, BubbleBorder::SMALL_SHADOW, SK_ColorRED));
+  border->set_use_theme_background_color(true);
+  frame->SetBubbleBorder(border.Pass());
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
     View* titlebar_view = delegate->CreateTitlebarExtraView();

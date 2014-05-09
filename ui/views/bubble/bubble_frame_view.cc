@@ -12,6 +12,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
@@ -221,6 +222,14 @@ void BubbleFrameView::OnThemeChanged() {
   UpdateWindowTitle();
   ResetWindowControls();
   UpdateWindowIcon();
+}
+
+void BubbleFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  if (bubble_border_ && bubble_border_->use_theme_background_color()) {
+    bubble_border_->set_background_color(GetNativeTheme()->
+        GetSystemColor(ui::NativeTheme::kColorId_DialogBackground));
+    SchedulePaint();
+  }
 }
 
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {

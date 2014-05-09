@@ -156,7 +156,8 @@ BubbleBorder::BubbleBorder(Arrow arrow, Shadow shadow, SkColor color)
       arrow_paint_type_(PAINT_NORMAL),
       alignment_(ALIGN_ARROW_TO_MID_ANCHOR),
       shadow_(shadow),
-      background_color_(color) {
+      background_color_(color),
+      use_theme_background_color_(false) {
   DCHECK(shadow < SHADOW_COUNT);
   images_ = GetBorderImages(shadow);
 }

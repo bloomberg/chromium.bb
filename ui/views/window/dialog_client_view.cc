@@ -265,13 +265,6 @@ void DialogClientView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   ClientView::ViewHierarchyChanged(details);
   if (details.is_add && details.child == this) {
-    // The old dialog style needs an explicit background color, while the new
-    // dialog style simply inherits the bubble's frame view color.
-    const DialogDelegate* dialog = GetDialogDelegate();
-    if (dialog && !dialog->UseNewStyleForThisDialog())
-      set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
-          GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
-
     focus_manager_ = GetFocusManager();
     if (focus_manager_)
       GetFocusManager()->AddFocusChangeListener(this);
@@ -301,6 +294,17 @@ void DialogClientView::NativeViewHierarchyChanged() {
     focus_manager_ = focus_manager;
     if (focus_manager_)
       focus_manager_->AddFocusChangeListener(this);
+  }
+}
+
+void DialogClientView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  // The old dialog style needs an explicit background color, while the new
+  // dialog style simply inherits the bubble's frame view color.
+  const DialogDelegate* dialog = GetDialogDelegate();
+
+  if (dialog && !dialog->UseNewStyleForThisDialog()) {
+    set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
+        GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
   }
 }
 
