@@ -400,6 +400,19 @@ const Experiment::Choice kEnableSyncAppListChoices[] = {
 };
 #endif
 
+const Experiment::Choice kExtensionContentVerificationChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_BOOTSTRAP,
+    extensions::switches::kExtensionContentVerification,
+    extensions::switches::kExtensionContentVerificationBootstrap },
+  { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_ENFORCE,
+    extensions::switches::kExtensionContentVerification,
+    extensions::switches::kExtensionContentVerificationEnforce },
+  { IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_ENFORCE_STRICT,
+    extensions::switches::kExtensionContentVerification,
+    extensions::switches::kExtensionContentVerificationEnforceStrict },
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the experiment is the internal name. If you'd like to
@@ -1858,6 +1871,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISTANCE_FIELD_TEXT_DESCRIPTION,
     kOsAll,
     MULTI_VALUE_TYPE(kDistanceFieldTextChoices)
+  },
+  {
+    "extension-content-verification",
+    IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_NAME,
+    IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_DESCRIPTION,
+    kOsDesktop,
+    MULTI_VALUE_TYPE(kExtensionContentVerificationChoices)
   },
 #if defined(USE_AURA)
   {

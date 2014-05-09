@@ -14381,6 +14381,26 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_APP_INSTALL_ALERTS_DESCRIPTION" desc="Description to allow app install alerts">
       If enabled, websites will be parsed for app install alert meta tags.
     </message>
+
+   <!-- Extension Content Verification -->
+    <message name="IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_NAME" desc="Name of the 'Extension Content Verification' flag">
+      Extension Content Verification
+    </message>
+    <message name="IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_DESCRIPTION" desc="Title for the flag to turn on verification of the contents of extensions from the webstore">
+      This flag can be used to turn on verification that the contents of the files on disk for extensions from the webstore match what they're expected to be. This can be used to turn on this feature if it would not otherwise have been turned on, but cannot be used to turn it off (because this setting can be tampered with by malware).
+    </message>
+
+    <message name="IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_BOOTSTRAP" desc="Description of the 'Extension Content Verification' bootstrap mode">
+      Bootstrap (get expected hashes, but do not enforce them)
+    </message>
+
+    <message name="IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_ENFORCE" desc="Description of the 'Extension Content Verification' enforce mode">
+      Enforce (try to get hashes, and enforce them if successful)
+    </message>
+
+    <message name="IDS_FLAGS_EXTENSION_CONTENT_VERIFICATION_ENFORCE_STRICT" desc="Description of the 'Extension Content Verification' enforce strict mode">
+      Enforce strict (hard fail if we can't get hashes)
+    </message>
   </messages>
   </release>
 </grit>
