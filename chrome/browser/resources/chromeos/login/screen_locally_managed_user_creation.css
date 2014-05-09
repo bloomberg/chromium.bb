@@ -349,6 +349,11 @@ input.managed-user-creation-manager-password,
   overflow-y: auto;
 }
 
+#managed-user-creation-import .page-title-explanation {
+  padding-bottom: 10px;
+  padding-top: 6px;
+}
+
 .manager-pod .password-error,
 #managed-user-creation .password-error,
 #managed-user-creation .duplicate-name {
