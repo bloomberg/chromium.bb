@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -18,29 +19,47 @@
 #include "media/cast/logging/logging_defines.h"
 #include "third_party/opus/src/include/opus.h"
 
+namespace media {
+namespace cast {
+
 namespace {
+
+// The fixed number of audio frames per second and, inversely, the duration of
+// one frame's worth of samples.
+const int kFramesPerSecond = 100;
+const int kFrameDurationMillis = 1000 / kFramesPerSecond;  // No remainder!
+
+// Threshold used to decide whether audio being delivered to the encoder is
+// coming in too slow with respect to the capture timestamps.
+const int kUnderrunThresholdMillis = 3 * kFrameDurationMillis;
 
 void LogAudioFrameEncodedEvent(
     const scoped_refptr<media::cast::CastEnvironment>& cast_environment,
     base::TimeTicks event_time,
-    media::cast::CastLoggingEvent event_type,
     media::cast::RtpTimestamp rtp_timestamp,
     uint32 frame_id,
     size_t frame_size) {
+  if (!cast_environment->CurrentlyOn(CastEnvironment::MAIN)) {
+    cast_environment->PostTask(
+        CastEnvironment::MAIN,
+        FROM_HERE,
+        base::Bind(&LogAudioFrameEncodedEvent,
+                   cast_environment, event_time,
+                   rtp_timestamp, frame_id, frame_size));
+    return;
+  }
   cast_environment->Logging()->InsertEncodedFrameEvent(
-      event_time, event_type, rtp_timestamp, frame_id,
+      event_time, kAudioFrameEncoded, rtp_timestamp, frame_id,
       static_cast<int>(frame_size), /* key_frame - unused */ false,
       /*target_bitrate - unused*/ 0);
 }
 
 }  // namespace
 
-namespace media {
-namespace cast {
 
 // Base class that handles the common problem of feeding one or more AudioBus'
-// data into a 10 ms buffer and then, once the buffer is full, encoding the
-// signal and emitting an EncodedAudioFrame via the FrameEncodedCallback.
+// data into a buffer and then, once the buffer is full, encoding the signal and
+// emitting an EncodedAudioFrame via the FrameEncodedCallback.
 //
 // Subclasses complete the implementation by handling the actual encoding
 // details.
@@ -55,15 +74,15 @@ class AudioEncoder::ImplBase
       : cast_environment_(cast_environment),
         codec_(codec),
         num_channels_(num_channels),
-        samples_per_10ms_(sampling_rate / 100),
+        samples_per_frame_(sampling_rate / kFramesPerSecond),
         callback_(callback),
         cast_initialization_status_(STATUS_AUDIO_UNINITIALIZED),
         buffer_fill_end_(0),
         frame_id_(0),
-        rtp_timestamp_(0) {
-    if (num_channels_ <= 0 || samples_per_10ms_ <= 0 ||
-        sampling_rate % 100 != 0 ||
-        samples_per_10ms_ * num_channels_ >
+        frame_rtp_timestamp_(0) {
+    if (num_channels_ <= 0 || samples_per_frame_ <= 0 ||
+        sampling_rate % kFramesPerSecond != 0 ||
+        samples_per_frame_ * num_channels_ >
             transport::EncodedAudioFrame::kMaxNumberOfSamples) {
       cast_initialization_status_ = STATUS_INVALID_AUDIO_CONFIGURATION;
     }
@@ -76,61 +95,75 @@ class AudioEncoder::ImplBase
   void EncodeAudio(scoped_ptr<AudioBus> audio_bus,
                    const base::TimeTicks& recorded_time) {
     DCHECK_EQ(cast_initialization_status_, STATUS_AUDIO_INITIALIZED);
+    DCHECK(!recorded_time.is_null());
 
+    // Determine whether |recorded_time| is consistent with the amount of audio
+    // data having been processed in the past.  Resolve the underrun problem by
+    // dropping data from the internal buffer and skipping ahead the next
+    // frame's RTP timestamp by the estimated number of frames missed.  On the
+    // other hand, don't attempt to resolve overruns: A receiver should
+    // gracefully deal with an excess of audio data.
+    const base::TimeDelta frame_duration =
+        base::TimeDelta::FromMilliseconds(kFrameDurationMillis);
+    base::TimeDelta buffer_fill_duration =
+        buffer_fill_end_ * frame_duration / samples_per_frame_;
+    if (!frame_capture_time_.is_null()) {
+      const base::TimeDelta amount_ahead_by =
+          recorded_time - (frame_capture_time_ + buffer_fill_duration);
+      if (amount_ahead_by >
+              base::TimeDelta::FromMilliseconds(kUnderrunThresholdMillis)) {
+        buffer_fill_end_ = 0;
+        buffer_fill_duration = base::TimeDelta();
+        const int64 num_frames_missed = amount_ahead_by /
+            base::TimeDelta::FromMilliseconds(kFrameDurationMillis);
+        frame_rtp_timestamp_ +=
+            static_cast<uint32>(num_frames_missed * samples_per_frame_);
+        DVLOG(1) << "Skipping RTP timestamp ahead to account for "
+                 << num_frames_missed * samples_per_frame_
+                 << " samples' worth of underrun.";
+      }
+    }
+    frame_capture_time_ = recorded_time - buffer_fill_duration;
+
+    // Encode all audio in |audio_bus| into zero or more frames.
     int src_pos = 0;
-    int packet_count = 0;
     while (src_pos < audio_bus->frames()) {
       const int num_samples_to_xfer = std::min(
-          samples_per_10ms_ - buffer_fill_end_, audio_bus->frames() - src_pos);
+          samples_per_frame_ - buffer_fill_end_, audio_bus->frames() - src_pos);
       DCHECK_EQ(audio_bus->channels(), num_channels_);
       TransferSamplesIntoBuffer(
           audio_bus.get(), src_pos, buffer_fill_end_, num_samples_to_xfer);
       src_pos += num_samples_to_xfer;
       buffer_fill_end_ += num_samples_to_xfer;
 
-      if (buffer_fill_end_ == samples_per_10ms_) {
-        scoped_ptr<transport::EncodedAudioFrame> audio_frame(
-            new transport::EncodedAudioFrame());
-        audio_frame->codec = codec_;
-        audio_frame->frame_id = frame_id_++;
-        rtp_timestamp_ += samples_per_10ms_;
-        audio_frame->rtp_timestamp = rtp_timestamp_;
+      if (buffer_fill_end_ < samples_per_frame_)
+        break;
 
-        if (EncodeFromFilledBuffer(&audio_frame->data)) {
-          // Update logging.
-          cast_environment_->PostTask(
-              CastEnvironment::MAIN,
-              FROM_HERE,
-              base::Bind(&LogAudioFrameEncodedEvent,
-                         cast_environment_,
-                         cast_environment_->Clock()->NowTicks(),
-                         kAudioFrameEncoded,
-                         audio_frame->rtp_timestamp,
-                         audio_frame->frame_id,
-                         audio_frame->data.size()));
-          // Compute an offset to determine the recorded time for the first
-          // audio sample in the buffer.
-          const base::TimeDelta buffer_time_offset =
-              (buffer_fill_end_ - src_pos) *
-              base::TimeDelta::FromMilliseconds(10) / samples_per_10ms_;
-          // TODO(miu): Consider batching EncodedAudioFrames so we only post a
-          // at most one task for each call to this method.
-          // Postpone every packet by 10mS with respect to the previous. Playout
-          // is postponed already by 10mS, and this will better correlate with
-          // the pacer's expectations.
-          //TODO(mikhal): Turn this into a list of packets.
-          // Update the end2end allowed error once this is fixed.
-          cast_environment_->PostDelayedTask(
-              CastEnvironment::MAIN,
-              FROM_HERE,
-              base::Bind(callback_,
-                         base::Passed(&audio_frame),
-                         recorded_time - buffer_time_offset),
-              base::TimeDelta::FromMilliseconds(packet_count * 10));
-          ++packet_count;
-        }
-        buffer_fill_end_ = 0;
+      scoped_ptr<transport::EncodedAudioFrame> audio_frame(
+          new transport::EncodedAudioFrame());
+      audio_frame->codec = codec_;
+      audio_frame->frame_id = frame_id_;
+      audio_frame->rtp_timestamp = frame_rtp_timestamp_;
+
+      if (EncodeFromFilledBuffer(&audio_frame->data)) {
+        LogAudioFrameEncodedEvent(cast_environment_,
+                                  cast_environment_->Clock()->NowTicks(),
+                                  audio_frame->rtp_timestamp,
+                                  audio_frame->frame_id,
+                                  audio_frame->data.size());
+        cast_environment_->PostTask(
+            CastEnvironment::MAIN,
+            FROM_HERE,
+            base::Bind(callback_,
+                       base::Passed(&audio_frame),
+                       frame_capture_time_));
       }
+
+      // Reset the internal buffer, frame ID, and timestamps for the next frame.
+      buffer_fill_end_ = 0;
+      ++frame_id_;
+      frame_rtp_timestamp_ += samples_per_frame_;
+      frame_capture_time_ += frame_duration;
     }
   }
 
@@ -147,7 +180,7 @@ class AudioEncoder::ImplBase
   const scoped_refptr<CastEnvironment> cast_environment_;
   const transport::AudioCodec codec_;
   const int num_channels_;
-  const int samples_per_10ms_;
+  const int samples_per_frame_;
   const FrameEncodedCallback callback_;
 
   // Subclass' ctor is expected to set this to STATUS_AUDIO_INITIALIZED.
@@ -162,9 +195,19 @@ class AudioEncoder::ImplBase
   // A counter used to label EncodedAudioFrames.
   uint32 frame_id_;
 
-  // For audio, rtp_timestamp is computed as the sum of the audio samples seen
-  // so far.
-  uint32 rtp_timestamp_;
+  // The RTP timestamp for the next frame of encoded audio.  This is defined as
+  // the number of audio samples encoded so far, plus the estimated number of
+  // samples that were missed due to data underruns.  A receiver uses this value
+  // to detect gaps in the audio signal data being provided.  Per the spec, RTP
+  // timestamp values are allowed to overflow and roll around past zero.
+  uint32 frame_rtp_timestamp_;
+
+  // The local system time associated with the start of the next frame of
+  // encoded audio.  This value is passed on to a receiver as a reference clock
+  // timestamp for the purposes of synchronizing audio and video.  Its
+  // progression is expected to drift relative to the elapsed time implied by
+  // the RTP timestamps.
+  base::TimeTicks frame_capture_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ImplBase);
 };
@@ -183,7 +226,7 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
                  callback),
         encoder_memory_(new uint8[opus_encoder_get_size(num_channels)]),
         opus_encoder_(reinterpret_cast<OpusEncoder*>(encoder_memory_.get())),
-        buffer_(new float[num_channels * samples_per_10ms_]) {
+        buffer_(new float[num_channels * samples_per_frame_]) {
     if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
       return;
     if (opus_encoder_init(opus_encoder_,
@@ -229,8 +272,8 @@ class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
     const opus_int32 result =
         opus_encode_float(opus_encoder_,
                           buffer_.get(),
-                          samples_per_10ms_,
-                          reinterpret_cast<uint8*>(&out->at(0)),
+                          samples_per_frame_,
+                          reinterpret_cast<uint8*>(string_as_array(out)),
                           kOpusMaxPayloadSize);
     if (result > 1) {
       out->resize(result);
@@ -271,7 +314,7 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
                  num_channels,
                  sampling_rate,
                  callback),
-        buffer_(new int16[num_channels * samples_per_10ms_]) {
+        buffer_(new int16[num_channels * samples_per_frame_]) {
     if (ImplBase::cast_initialization_status_ != STATUS_AUDIO_UNINITIALIZED)
       return;
     cast_initialization_status_ = STATUS_AUDIO_INITIALIZED;
@@ -293,9 +336,9 @@ class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
 
   virtual bool EncodeFromFilledBuffer(std::string* out) OVERRIDE {
     // Output 16-bit PCM integers in big-endian byte order.
-    out->resize(num_channels_ * samples_per_10ms_ * sizeof(int16));
+    out->resize(num_channels_ * samples_per_frame_ * sizeof(int16));
     const int16* src = buffer_.get();
-    const int16* const src_end = src + num_channels_ * samples_per_10ms_;
+    const int16* const src_end = src + num_channels_ * samples_per_frame_;
     uint16* dest = reinterpret_cast<uint16*>(&out->at(0));
     for (; src < src_end; ++src, ++dest)
       *dest = base::HostToNet16(*src);
