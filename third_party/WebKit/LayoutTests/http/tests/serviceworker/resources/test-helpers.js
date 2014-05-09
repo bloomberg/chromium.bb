@@ -10,9 +10,8 @@ function service_worker_test(url, description) {
                 messageChannel.port1.onmessage = t.step_func(onMessage);
                 worker.postMessage({port:messageChannel.port2}, [messageChannel.port2]);
             }),
-            t.step_func(function(reason) {
-                assert_unreached('Registration should succeed, but failed: ' + reason.name);
-            }));
+            unreached_rejection(t, 'Registration should succeed, but failed')
+        );
 
         function onMessage(e) {
             assert_equals(e.data, 'pass');
@@ -37,4 +36,14 @@ function unreached_rejection(test, prefix) {
     return test.step_func(function(reason) {
         assert_unreached(prefix + ': ' + reason.name);
     });
+}
+
+// FIXME: Clean up the iframe when the test completes.
+function with_iframe(url, f) {
+  var frame = document.createElement('iframe');
+  frame.src = url;
+  frame.onload = function() {
+      f(frame);
+  };
+  document.body.appendChild(frame);
 }

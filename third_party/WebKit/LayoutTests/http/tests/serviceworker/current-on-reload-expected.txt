@@ -1,0 +1,3 @@
+
+FAIL current is set upon reload after registration assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+

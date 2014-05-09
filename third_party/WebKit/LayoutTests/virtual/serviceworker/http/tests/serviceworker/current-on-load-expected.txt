@@ -1,0 +1,4 @@
+
+
+PASS current is set for a controlled document 
+

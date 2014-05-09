@@ -33,4 +33,6 @@
 ] interface ServiceWorkerContainer {
     [CallWith=ExecutionContext, ImplementedAs=registerServiceWorker] Promise register(DOMString url, optional Dictionary options);
     [CallWith=ExecutionContext, ImplementedAs=unregisterServiceWorker] Promise unregister(optional DOMString scope);
+
+    readonly attribute ServiceWorker current;
 };

@@ -49,6 +49,7 @@ PASS window.cached_navigator_battery.onchargingchange is null
 PASS window.cached_navigator_battery.onchargingtimechange is null
 PASS window.cached_navigator_battery.ondischargingtimechange is null
 PASS window.cached_navigator_battery.onlevelchange is null
+PASS window.cached_navigator_serviceWorker.current is null
 PASS window.cached_performance.onwebkitresourcetimingbufferfull is null
 PASS window.cached_performance_navigation.redirectCount is 0
 PASS window.cached_performance_navigation.type is 0

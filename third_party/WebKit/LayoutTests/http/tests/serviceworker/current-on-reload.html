@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<title>Service Worker: Current on reload</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script src="resources/testutils.js"></script>
+<body>
+<script>
+var t = async_test('current is set upon reload after registration');
+t.step(function() {
+    var reloaded = false;
+    var scope = 'resources/blank.html';
+    navigator.serviceWorker.unregister(scope).then(
+        doTest,
+        unreached_rejection(t, 'Unregister should not fail')
+    );
+
+    function doTest() {
+        with_iframe(scope, t.step_func(onIframeLoad));
+    }
+
+    function onIframeLoad(frame) {
+        var w = frame.contentWindow;
+
+        function onActive(event) {
+           assert_equals(w.navigator.serviceWorker.current, null,
+                         'current should be null until the document is reloaded');
+           reloaded = true;
+           w.location.reload();
+        }
+
+        function onRegister(worker) {
+            worker.addEventListener('statechange', t.step_func(function(event) {
+                if (event.target.state == 'active')
+                    onActive();
+            }));
+        }
+
+        if (reloaded) {
+            assert_true(w.navigator.serviceWorker.current instanceof w.ServiceWorker,
+                        'current should be a ServiceWorker object upon reload');
+            t.done();
+            return;
+        }
+
+        w.navigator.serviceWorker.register(
+            'worker-no-op.js', {scope: 'blank.html'}
+        ).then(
+            t.step_func(onRegister),
+            unreached_rejection(t, 'Registration should succeed, but failed')
+        );
+    }
+});
+</script>
+</body>

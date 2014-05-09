@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<title>Service Worker: Current on load</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<body>
+<script>
+var t = async_test('current is set for a controlled document');
+t.step(function() {
+    var scope = 'resources/blank.html'
+    navigator.serviceWorker.unregister(scope).then(
+        doTest,
+        unreached_rejection(t, 'Unregister should not fail')
+    );
+
+    function doTest() {
+        navigator.serviceWorker.register(
+            'resources/worker-no-op.js', {scope: scope}
+        ).then(
+            onRegister,
+            unreached_rejection(t, 'Registration should succeed, but failed')
+        );
+    }
+
+    function onRegister(worker) {
+        worker.addEventListener('statechange', t.step_func(function(event) {
+            if (event.target.state == 'active')
+                onActive();
+        }));
+    }
+
+    function onActive() {
+        with_iframe(scope, t.step_func(function(frame) {
+            var w = frame.contentWindow;
+            assert_true(w.navigator.serviceWorker.current instanceof w.ServiceWorker,
+                        'current should be a ServiceWorker object');
+            t.done();
+        }));
+    }
+});
+</script>
+</body>

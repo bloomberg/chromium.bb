@@ -1,0 +1,4 @@
+
+
+PASS current is set upon reload after registration 
+
