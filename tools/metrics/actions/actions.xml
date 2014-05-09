@@ -8268,6 +8268,9 @@ should be able to be added at any place in this file.
 <action name="Options_Homepage_HideHomeButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 03/2012. This option is now a checkbox (r127199).
+  </obsolete>
 </action>
 
 <action name="Options_Homepage_HomeButton_Disable">
@@ -8293,6 +8296,19 @@ should be able to be added at any place in this file.
 <action name="Options_Homepage_ShowHomeButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+  <obsolete>
+    Deprecated as of 03/2012. This option is now a checkbox (r127199).
+  </obsolete>
+</action>
+
+<action name="Options_Homepage_ShowSettings">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Appearance: (Homepage settings): Change</description>
+</action>
+
+<action name="Options_Homepage_URL">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Appearance: Home page: Open this page</description>
 </action>
 
 <action name="Options_Homepage_UseNewTab">
@@ -8608,6 +8624,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Options_OpenWallpaperManager">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Appearance: Set wallpaper...</description>
+</action>
+
 <action name="Options_PasswordGenerationCheckbox_Disable">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -8844,8 +8865,8 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_ThemesGallery">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Appearance: Get themes</description>
 </action>
 
 <action name="Options_ThemesReset">

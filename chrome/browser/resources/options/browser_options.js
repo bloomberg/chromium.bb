@@ -173,6 +173,8 @@ cr.define('options', function() {
 
       $('change-home-page').onclick = function(event) {
         OptionsPage.navigateToPage('homePageOverlay');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_Homepage_ShowSettings']);
       };
 
       chrome.send('requestHotwordAvailable');
@@ -180,11 +182,15 @@ cr.define('options', function() {
       if ($('set-wallpaper')) {
         $('set-wallpaper').onclick = function(event) {
           chrome.send('openWallpaperManager');
+          chrome.send('coreOptionsUserMetricsAction',
+                      ['Options_OpenWallpaperManager']);
         };
       }
 
       $('themes-gallery').onclick = function(event) {
         window.open(loadTimeData.getString('themesGalleryURL'));
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_ThemesGallery']);
       };
       $('themes-reset').onclick = function(event) {
         chrome.send('themesReset');
