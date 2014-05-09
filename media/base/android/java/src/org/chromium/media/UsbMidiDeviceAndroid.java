@@ -53,6 +53,11 @@ class UsbMidiDeviceAndroid {
     private boolean mIsClosed;
 
     /**
+     * True if there is a thread processing input data.
+     */
+    private boolean mHasInputThread;
+
+    /**
      * The identifier of this device.
      */
     private long mNativePointer;
@@ -73,6 +78,7 @@ class UsbMidiDeviceAndroid {
         mRequestMap = new HashMap<UsbEndpoint, UsbRequest>();
         mHandler = new Handler();
         mIsClosed = false;
+        mHasInputThread = false;
         mNativePointer = 0;
 
         for (int i = 0; i < device.getInterfaceCount(); ++i) {
@@ -124,6 +130,7 @@ class UsbMidiDeviceAndroid {
         if (bufferForEndpoints.isEmpty()) {
             return;
         }
+        mHasInputThread = true;
         // bufferForEndpoints must not be accessed hereafter on this thread.
         new Thread() {
             public void run() {
@@ -188,13 +195,35 @@ class UsbMidiDeviceAndroid {
         if (endpoint == null) {
             return;
         }
-        UsbRequest request = mRequestMap.get(endpoint);
-        if (request == null) {
-            request = new UsbRequest();
-            request.initialize(mConnection, endpoint);
-            mRequestMap.put(endpoint, request);
+        if (shouldUseBulkTransfer()) {
+            // We use bulkTransfer instead of UsbRequest.queue because queueing
+            // a UsbRequest is currently not thread safe.
+            // Note that this is not exactly correct because we don't care
+            // about the transfer attribute (bmAttribute) of the endpoint.
+            // See also:
+            //  http://stackoverflow.com/questions/9644415/
+            //  https://code.google.com/p/android/issues/detail?id=59467
+            //
+            // TODO(yhirano): Delete this block once the problem is fixed.
+            final int TIMEOUT = 100;
+            mConnection.bulkTransfer(endpoint, bs, 0, bs.length, TIMEOUT);
+        } else {
+            UsbRequest request = mRequestMap.get(endpoint);
+            if (request == null) {
+                request = new UsbRequest();
+                request.initialize(mConnection, endpoint);
+                mRequestMap.put(endpoint, request);
+            }
+            request.queue(ByteBuffer.wrap(bs), bs.length);
         }
-        request.queue(ByteBuffer.wrap(bs), bs.length);
+    }
+
+    /**
+     * Returns true if |bulkTransfer| should be used in |send|.
+     * See comments in |send|.
+     */
+    private boolean shouldUseBulkTransfer() {
+        return mHasInputThread;
     }
 
     /**
