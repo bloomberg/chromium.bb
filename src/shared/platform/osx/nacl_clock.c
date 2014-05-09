@@ -22,6 +22,7 @@
 #include <mach/task.h>
 #include <mach/task_info.h>
 #include <mach/thread_info.h>
+#include <pthread.h>
 
 static int                        g_NaClClock_is_initialized = 0;
 static mach_timebase_info_data_t  g_NaCl_time_base_info;
@@ -131,7 +132,12 @@ int NaClClockGetTime(nacl_clockid_t            clk_id,
     case NACL_CLOCK_THREAD_CPUTIME_ID:
       count = THREAD_BASIC_INFO_COUNT;
 
-      if (KERN_SUCCESS == thread_info(mach_thread_self(),
+      /*
+       * Don't use mach_thread_self() because it requires a separate
+       * mach_port_deallocate() system call to release it. Instead, rely on
+       * pthread's cached copy of the port.
+       */
+      if (KERN_SUCCESS == thread_info(pthread_mach_thread_np(pthread_self()),
                                       THREAD_BASIC_INFO,
                                       (thread_info_t) basic_info,
                                       &count)) {

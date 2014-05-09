@@ -1,7 +1,7 @@
 /*
  * Copyright 2009 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 /*
  * Mac OSX thread priority support.
@@ -11,6 +11,7 @@
 #include <mach/mach_time.h>
 #include <mach/thread_policy.h>
 #include <mach/thread_act.h>
+#include <pthread.h>
 
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_nice.h"
@@ -48,7 +49,13 @@ static uint64_t MyConvertToHostTime(uint64_t nanos) {
 
 int nacl_thread_nice(int nacl_nice) {
   kern_return_t kr;
-  thread_act_t mthread = mach_thread_self();
+
+  /*
+   * Don't use mach_thread_self() because it requires a separate
+   * mach_port_deallocate() system call to release it. Instead, rely on
+   * pthread's cached copy of the port.
+   */
+  thread_act_t mthread = pthread_mach_thread_np(pthread_self());
 
   switch (nacl_nice) {
     case NICE_REALTIME: {
