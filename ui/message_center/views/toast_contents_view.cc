@@ -87,6 +87,15 @@ void ToastContentsView::SetContents(MessageView* view,
     NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, false);
 }
 
+void ToastContentsView::UpdateContents(const Notification& notification,
+                                       bool a11y_feedback_for_updates) {
+  DCHECK_GT(child_count(), 0);
+  MessageView* message_view = static_cast<MessageView*>(child_at(0));
+  message_view->UpdateWithNotification(notification);
+  if (a11y_feedback_for_updates)
+    NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, false);
+}
+
 void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
   // Place/move the toast widgets. Currently it stacks the widgets from the
   // right-bottom of the work area.

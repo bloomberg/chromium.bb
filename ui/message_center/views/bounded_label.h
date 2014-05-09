@@ -40,6 +40,7 @@ class MESSAGE_CENTER_EXPORT BoundedLabel : public views::View {
   void SetColors(SkColor textColor, SkColor backgroundColor);
   void SetLineHeight(int height);  // Pass in 0 for default height.
   void SetLineLimit(int lines);  // Pass in -1 for no limit.
+  void SetText(const base::string16& text);  // Additionally clears caches.
 
   int GetLineHeight() const;
   int GetLineLimit() const;

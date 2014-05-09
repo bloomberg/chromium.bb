@@ -50,6 +50,9 @@ class ToastContentsView : public views::WidgetDelegateView,
   // accessibility message should be read after this update.
   void SetContents(MessageView* view, bool a11y_feedback_for_updates);
 
+  void UpdateContents(const Notification& notification,
+                      bool a11y_feedback_for_updates);
+
   // Shows the new toast for the first time, animated.
   // |origin| is the right-bottom corner of the toast.
   void RevealWithAnimation(gfx::Point origin);

@@ -51,6 +51,8 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event) OVERRIDE;
 
   // Overridden from MessageView:
+  virtual void UpdateWithNotification(
+      const Notification& notification) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
@@ -68,7 +70,21 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
                    const Notification& notification);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, CreateOrUpdateTest);
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, TestLineLimits);
+
+  void CreateOrUpdateViews(const Notification& notification);
+  void SetAccessibleName(const Notification& notification);
+
+  void CreateOrUpdateTitleView(const Notification& notification);
+  void CreateOrUpdateMessageView(const Notification& notification);
+  void CreateOrUpdateContextMessageView(const Notification& notification);
+  void CreateOrUpdateProgressBarView(const Notification& notification);
+  void CreateOrUpdateListItemViews(const Notification& notification);
+  void CreateOrUpdateIconView(const Notification& notification);
+  void CreateOrUpdateImageView(const Notification& notification);
+  void CreateOrUpdateActionButtonViews(const Notification& notification);
+
   int GetMessageLineLimit(int title_lines, int width);
   int GetMessageHeight(int width, int limit);
 
@@ -88,6 +104,7 @@ class MESSAGE_CENTER_EXPORT NotificationView : public MessageView,
   views::View* image_view_;
   views::ProgressBar* progress_bar_view_;
   std::vector<views::View*> action_buttons_;
+  std::vector<views::View*> separators_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationView);
 };

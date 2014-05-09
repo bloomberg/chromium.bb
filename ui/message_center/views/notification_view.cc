@@ -291,6 +291,30 @@ NotificationView* NotificationView::Create(MessageCenterController* controller,
   return notification_view;
 }
 
+void NotificationView::CreateOrUpdateViews(const Notification& notification) {
+  CreateOrUpdateTitleView(notification);
+  CreateOrUpdateMessageView(notification);
+  CreateOrUpdateContextMessageView(notification);
+  CreateOrUpdateProgressBarView(notification);
+  CreateOrUpdateListItemViews(notification);
+  CreateOrUpdateIconView(notification);
+  CreateOrUpdateImageView(notification);
+  CreateOrUpdateActionButtonViews(notification);
+}
+
+void NotificationView::SetAccessibleName(const Notification& notification) {
+  std::vector<base::string16> accessible_lines;
+  accessible_lines.push_back(notification.title());
+  accessible_lines.push_back(notification.message());
+  accessible_lines.push_back(notification.context_message());
+  std::vector<NotificationItem> items = notification.items();
+  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
+    accessible_lines.push_back(items[i].title + base::ASCIIToUTF16(" ") +
+                               items[i].message);
+  }
+  set_accessible_name(JoinString(accessible_lines, '\n'));
+}
+
 NotificationView::NotificationView(MessageCenterController* controller,
                                    const Notification& notification)
     : MessageView(this,
@@ -299,8 +323,15 @@ NotificationView::NotificationView(MessageCenterController* controller,
                   notification.small_image().AsImageSkia(),
                   notification.display_source()),
       controller_(controller),
-      clickable_(notification.clickable()) {
-  std::vector<base::string16> accessible_lines;
+      clickable_(notification.clickable()),
+      top_view_(NULL),
+      title_view_(NULL),
+      message_view_(NULL),
+      context_message_view_(NULL),
+      icon_view_(NULL),
+      bottom_view_(NULL),
+      image_view_(NULL),
+      progress_bar_view_(NULL) {
   // Create the top_view_, which collects into a vertical box all content
   // at the top of the notification (to the right of the icon) except for the
   // close button.
@@ -309,150 +340,31 @@ NotificationView::NotificationView(MessageCenterController* controller,
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   top_view_->SetBorder(
       MakeEmptyBorder(kTextTopPadding - 8, 0, kTextBottomPadding - 5, 0));
-
-  const gfx::FontList default_label_font_list = views::Label().font_list();
-
-  // Create the title view if appropriate.
-  title_view_ = NULL;
-  if (!notification.title().empty()) {
-    const gfx::FontList& font_list =
-        default_label_font_list.DeriveWithSizeDelta(2);
-    int padding = kTitleLineHeight - font_list.GetHeight();
-    int title_character_limit =
-        kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacter;
-    title_view_ = new BoundedLabel(
-        gfx::TruncateString(notification.title(), title_character_limit),
-        font_list);
-    title_view_->SetLineHeight(kTitleLineHeight);
-    title_view_->SetLineLimit(kMaxTitleLines);
-    title_view_->SetColors(message_center::kRegularTextColor,
-                           kRegularTextBackgroundColor);
-    title_view_->SetBorder(MakeTextBorder(padding, 3, 0));
-    top_view_->AddChildView(title_view_);
-    accessible_lines.push_back(notification.title());
-  }
-
-  // Create the message view if appropriate.
-  message_view_ = NULL;
-  if (!notification.message().empty()) {
-    int padding = kMessageLineHeight - default_label_font_list.GetHeight();
-    message_view_ = new BoundedLabel(
-        gfx::TruncateString(notification.message(), kMessageCharacterLimit));
-    message_view_->SetLineHeight(kMessageLineHeight);
-    message_view_->SetVisible(!notification.items().size());
-    message_view_->SetColors(message_center::kRegularTextColor,
-                             kDimTextBackgroundColor);
-    message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
-    top_view_->AddChildView(message_view_);
-    accessible_lines.push_back(notification.message());
-  }
-
-  // Create the context message view if appropriate.
-  context_message_view_ = NULL;
-  if (!notification.context_message().empty()) {
-    int padding = kMessageLineHeight - default_label_font_list.GetHeight();
-    context_message_view_ =
-        new BoundedLabel(gfx::TruncateString(notification.context_message(),
-                                            kContextMessageCharacterLimit),
-                         default_label_font_list);
-    context_message_view_->SetLineLimit(
-        message_center::kContextMessageLineLimit);
-    context_message_view_->SetLineHeight(kMessageLineHeight);
-    context_message_view_->SetColors(message_center::kDimTextColor,
-                                     kContextTextBackgroundColor);
-    context_message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
-    top_view_->AddChildView(context_message_view_);
-    accessible_lines.push_back(notification.context_message());
-  }
-
-  // Create the progress bar view.
-  progress_bar_view_ = NULL;
-  if (notification.type() == NOTIFICATION_TYPE_PROGRESS) {
-    progress_bar_view_ = new NotificationProgressBar();
-    progress_bar_view_->SetBorder(MakeProgressBarBorder(
-        message_center::kProgressBarTopPadding, kProgressBarBottomPadding));
-    progress_bar_view_->SetValue(notification.progress() / 100.0);
-    top_view_->AddChildView(progress_bar_view_);
-  }
-
-  // Create the list item views (up to a maximum).
-  int padding = kMessageLineHeight - default_label_font_list.GetHeight();
-  std::vector<NotificationItem> items = notification.items();
-  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
-    ItemView* item_view = new ItemView(items[i]);
-    item_view->SetBorder(MakeTextBorder(padding, i ? 0 : 4, 0));
-    item_views_.push_back(item_view);
-    top_view_->AddChildView(item_view);
-    accessible_lines.push_back(
-        items[i].title + base::ASCIIToUTF16(" ") + items[i].message);
-  }
-
-  // Create the notification icon view.
-  gfx::ImageSkia icon = notification.icon().AsImageSkia();
-  if (notification.type() == NOTIFICATION_TYPE_SIMPLE &&
-      (icon.width() != kIconSize ||
-       icon.height() != kIconSize ||
-       HasAlpha(icon, GetWidget()))) {
-    views::ImageView* icon_view = new views::ImageView();
-    icon_view->SetImage(icon);
-    icon_view->SetImageSize(gfx::Size(kLegacyIconSize, kLegacyIconSize));
-    icon_view->SetHorizontalAlignment(views::ImageView::CENTER);
-    icon_view->SetVerticalAlignment(views::ImageView::CENTER);
-    icon_view_ = icon_view;
-  } else {
-    icon_view_ =
-        new ProportionalImageView(icon, gfx::Size(kIconSize, kIconSize));
-  }
-
-  icon_view_->set_background(
-      views::Background::CreateSolidBackground(kIconBackgroundColor));
-
+  AddChildView(top_view_);
   // Create the bottom_view_, which collects into a vertical box all content
   // below the notification icon.
   bottom_view_ = new views::View();
   bottom_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+  AddChildView(bottom_view_);
 
-  // Create the image view if appropriate.
-  image_view_ = NULL;
-  if (!notification.image().IsEmpty()) {
-    gfx::Size image_size(
-        kNotificationPreferredImageWidth, kNotificationPreferredImageHeight);
-    image_view_ = MakeNotificationImage(notification.image(), image_size);
-    bottom_view_->AddChildView(image_view_);
-  }
-
-  // Create action buttons if appropriate.
-  std::vector<ButtonInfo> buttons = notification.buttons();
-  for (size_t i = 0; i < buttons.size(); ++i) {
-    views::View* separator = new views::ImageView();
-    separator->SetBorder(MakeSeparatorBorder(1, 0, kButtonSeparatorColor));
-    bottom_view_->AddChildView(separator);
-    NotificationButton* button = new NotificationButton(this);
-    ButtonInfo button_info = buttons[i];
-    button->SetTitle(button_info.title);
-    button->SetIcon(button_info.icon.AsImageSkia());
-    action_buttons_.push_back(button);
-    bottom_view_->AddChildView(button);
-  }
+  CreateOrUpdateViews(notification);
 
   // Put together the different content and control views. Layering those allows
   // for proper layout logic and it also allows the close button and small
   // image to overlap the content as needed to provide large enough click and
   // touch areas (<http://crbug.com/168822> and <http://crbug.com/168856>).
-  AddChildView(top_view_);
-  AddChildView(icon_view_);
-  AddChildView(bottom_view_);
   AddChildView(small_image());
   AddChildView(close_button());
-  set_accessible_name(JoinString(accessible_lines, '\n'));
+  SetAccessibleName(notification);
 }
 
 NotificationView::~NotificationView() {
 }
 
 gfx::Size NotificationView::GetPreferredSize() {
-  int top_width = top_view_->GetPreferredSize().width();
+  int top_width = top_view_->GetPreferredSize().width() +
+                  icon_view_->GetPreferredSize().width();
   int bottom_width = bottom_view_->GetPreferredSize().width();
   int preferred_width = std::max(top_width, bottom_width) + GetInsets().width();
   return gfx::Size(preferred_width, GetHeightForWidth(preferred_width));
@@ -559,6 +471,16 @@ gfx::NativeCursor NotificationView::GetCursor(const ui::MouseEvent& event) {
   return ui::kCursorHand;
 }
 
+void NotificationView::UpdateWithNotification(
+    const Notification& notification) {
+  MessageView::UpdateWithNotification(notification);
+
+  CreateOrUpdateViews(notification);
+  SetAccessibleName(notification);
+  Layout();
+  SchedulePaint();
+}
+
 void NotificationView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   // Certain operations can cause |this| to be destructed, so copy the members
@@ -586,6 +508,224 @@ void NotificationView::ClickOnNotification(const std::string& notification_id) {
 void NotificationView::RemoveNotification(const std::string& notification_id,
                                           bool by_user) {
   controller_->RemoveNotification(notification_id, by_user);
+}
+
+void NotificationView::CreateOrUpdateTitleView(
+    const Notification& notification) {
+  if (notification.title().empty()) {
+    if (title_view_) {
+      // Deletion will also remove |title_view_| from its parent.
+      delete title_view_;
+      title_view_ = NULL;
+    }
+    return;
+  }
+
+  DCHECK(top_view_ != NULL);
+
+  const gfx::FontList& font_list =
+      views::Label().font_list().DeriveWithSizeDelta(2);
+
+  int title_character_limit =
+      kNotificationWidth * kMaxTitleLines / kMinPixelsPerTitleCharacter;
+
+  if (!title_view_) {
+    int padding = kTitleLineHeight - font_list.GetHeight();
+
+    title_view_ = new BoundedLabel(
+        gfx::TruncateString(notification.title(), title_character_limit),
+        font_list);
+    title_view_->SetLineHeight(kTitleLineHeight);
+    title_view_->SetLineLimit(kMaxTitleLines);
+    title_view_->SetColors(message_center::kRegularTextColor,
+                           kRegularTextBackgroundColor);
+    title_view_->SetBorder(MakeTextBorder(padding, 3, 0));
+    top_view_->AddChildView(title_view_);
+  } else {
+    title_view_->SetText(
+        gfx::TruncateString(notification.title(), title_character_limit));
+  }
+}
+
+void NotificationView::CreateOrUpdateMessageView(
+    const Notification& notification) {
+  if (notification.message().empty()) {
+    if (message_view_) {
+      // Deletion will also remove |message_view_| from its parent.
+      delete message_view_;
+      message_view_ = NULL;
+    }
+    return;
+  }
+
+  DCHECK(top_view_ != NULL);
+
+  if (!message_view_) {
+    int padding = kMessageLineHeight - views::Label().font_list().GetHeight();
+    message_view_ = new BoundedLabel(
+        gfx::TruncateString(notification.message(), kMessageCharacterLimit));
+    message_view_->SetLineHeight(kMessageLineHeight);
+    message_view_->SetColors(message_center::kRegularTextColor,
+                             kDimTextBackgroundColor);
+    message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
+    top_view_->AddChildView(message_view_);
+  } else {
+    message_view_->SetText(
+        gfx::TruncateString(notification.message(), kMessageCharacterLimit));
+  }
+
+  message_view_->SetVisible(!notification.items().size());
+}
+
+void NotificationView::CreateOrUpdateContextMessageView(
+    const Notification& notification) {
+  if (notification.context_message().empty()) {
+    if (context_message_view_) {
+      // Deletion will also remove |context_message_view_| from its parent.
+      delete context_message_view_;
+      context_message_view_ = NULL;
+    }
+    return;
+  }
+
+  DCHECK(top_view_ != NULL);
+
+  if (!context_message_view_) {
+    int padding = kMessageLineHeight - views::Label().font_list().GetHeight();
+    context_message_view_ = new BoundedLabel(gfx::TruncateString(
+        notification.context_message(), kContextMessageCharacterLimit));
+    context_message_view_->SetLineLimit(
+        message_center::kContextMessageLineLimit);
+    context_message_view_->SetLineHeight(kMessageLineHeight);
+    context_message_view_->SetColors(message_center::kDimTextColor,
+                                     kContextTextBackgroundColor);
+    context_message_view_->SetBorder(MakeTextBorder(padding, 4, 0));
+    top_view_->AddChildView(context_message_view_);
+  } else {
+    context_message_view_->SetText(gfx::TruncateString(
+        notification.context_message(), kContextMessageCharacterLimit));
+  }
+}
+
+void NotificationView::CreateOrUpdateProgressBarView(
+    const Notification& notification) {
+  if (notification.type() != NOTIFICATION_TYPE_PROGRESS) {
+    if (progress_bar_view_) {
+      // Deletion will also remove |progress_bar_view_| from its parent.
+      delete progress_bar_view_;
+      progress_bar_view_ = NULL;
+    }
+    return;
+  }
+
+  DCHECK(top_view_ != NULL);
+
+  if (!progress_bar_view_) {
+    progress_bar_view_ = new NotificationProgressBar();
+    progress_bar_view_->SetBorder(MakeProgressBarBorder(
+        message_center::kProgressBarTopPadding, kProgressBarBottomPadding));
+    top_view_->AddChildView(progress_bar_view_);
+  }
+
+  progress_bar_view_->SetValue(notification.progress() / 100.0);
+  progress_bar_view_->SetVisible(!notification.items().size());
+}
+
+void NotificationView::CreateOrUpdateListItemViews(
+    const Notification& notification) {
+  for (size_t i = 0; i < item_views_.size(); ++i)
+    delete item_views_[i];
+  item_views_.clear();
+
+  int padding = kMessageLineHeight - views::Label().font_list().GetHeight();
+  std::vector<NotificationItem> items = notification.items();
+
+  if (items.size() == 0)
+    return;
+
+  DCHECK(top_view_);
+  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
+    ItemView* item_view = new ItemView(items[i]);
+    item_view->SetBorder(MakeTextBorder(padding, i ? 0 : 4, 0));
+    item_views_.push_back(item_view);
+    top_view_->AddChildView(item_view);
+  }
+}
+
+void NotificationView::CreateOrUpdateIconView(
+    const Notification& notification) {
+  if (icon_view_) {
+    delete icon_view_;
+    icon_view_ = NULL;
+  }
+
+  // TODO(dewittj): Detect a compatible update and use the existing icon view.
+  gfx::ImageSkia icon = notification.icon().AsImageSkia();
+  if (notification.type() == NOTIFICATION_TYPE_SIMPLE &&
+      (icon.width() != kIconSize || icon.height() != kIconSize ||
+       HasAlpha(icon, GetWidget()))) {
+    views::ImageView* icon_view = new views::ImageView();
+    icon_view->SetImage(icon);
+    icon_view->SetImageSize(gfx::Size(kLegacyIconSize, kLegacyIconSize));
+    icon_view->SetHorizontalAlignment(views::ImageView::CENTER);
+    icon_view->SetVerticalAlignment(views::ImageView::CENTER);
+    icon_view_ = icon_view;
+  } else {
+    icon_view_ =
+        new ProportionalImageView(icon, gfx::Size(kIconSize, kIconSize));
+  }
+
+  icon_view_->set_background(
+      views::Background::CreateSolidBackground(kIconBackgroundColor));
+
+  AddChildView(icon_view_);
+}
+
+void NotificationView::CreateOrUpdateImageView(
+    const Notification& notification) {
+  if (image_view_) {
+    delete image_view_;
+    image_view_ = NULL;
+  }
+
+  DCHECK(bottom_view_);
+  DCHECK_EQ(this, bottom_view_->parent());
+
+  // TODO(dewittj): Detect a compatible update and use the existing image view.
+  if (!notification.image().IsEmpty()) {
+    gfx::Size image_size(kNotificationPreferredImageWidth,
+                         kNotificationPreferredImageHeight);
+    image_view_ = MakeNotificationImage(notification.image(), image_size);
+    bottom_view_->AddChildView(image_view_);
+  }
+}
+
+void NotificationView::CreateOrUpdateActionButtonViews(
+    const Notification& notification) {
+  for (size_t i = 0; i < separators_.size(); ++i)
+    delete separators_[i];
+  separators_.clear();
+
+  for (size_t i = 0; i < action_buttons_.size(); ++i)
+    delete action_buttons_[i];
+  action_buttons_.clear();
+
+  DCHECK(bottom_view_);
+  DCHECK_EQ(this, bottom_view_->parent());
+
+  std::vector<ButtonInfo> buttons = notification.buttons();
+  for (size_t i = 0; i < buttons.size(); ++i) {
+    views::View* separator = new views::ImageView();
+    separator->SetBorder(MakeSeparatorBorder(1, 0, kButtonSeparatorColor));
+    separators_.push_back(separator);
+    bottom_view_->AddChildView(separator);
+    NotificationButton* button = new NotificationButton(this);
+    ButtonInfo button_info = buttons[i];
+    button->SetTitle(button_info.title);
+    button->SetIcon(button_info.icon.AsImageSkia());
+    action_buttons_.push_back(button);
+    bottom_view_->AddChildView(button);
+  }
 }
 
 int NotificationView::GetMessageLineLimit(int title_lines, int width) {

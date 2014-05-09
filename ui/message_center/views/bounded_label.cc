@@ -43,6 +43,9 @@ class InnerBoundedLabel : public views::Label {
   gfx::Size GetSizeForWidthAndLines(int width, int lines);
   std::vector<base::string16> GetWrappedText(int width, int lines);
 
+  // Overridden from views::Label.
+  virtual void SetText(const base::string16& text) OVERRIDE;
+
  protected:
   // Overridden from views::Label.
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -190,6 +193,11 @@ void InnerBoundedLabel::OnPaint(gfx::Canvas* canvas) {
   }
 }
 
+void InnerBoundedLabel::SetText(const base::string16& text) {
+  views::Label::SetText(text);
+  ClearCaches();
+}
+
 int InnerBoundedLabel::GetTextFlags() {
   int flags = gfx::Canvas::MULTI_LINE | gfx::Canvas::CHARACTER_BREAK;
 
@@ -291,6 +299,10 @@ void BoundedLabel::SetLineHeight(int height) {
 
 void BoundedLabel::SetLineLimit(int lines) {
   line_limit_ = std::max(lines, -1);
+}
+
+void BoundedLabel::SetText(const base::string16& text) {
+  label_->SetText(text);
 }
 
 int BoundedLabel::GetLineHeight() const {
