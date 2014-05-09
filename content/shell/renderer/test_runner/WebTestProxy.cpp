@@ -496,18 +496,7 @@ void WebTestProxyBase::CapturePixelsAsync(
     base::Callback<void(const SkBitmap&)> callback) {
   TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
 
-  // Do a layout here because it might leave compositing mode! x.x
-  // TODO(danakj): Remove this when we have kForceCompositingMode everywhere.
-  webWidget()->layout();
-
-  if (!webWidget()->isAcceleratedCompositingActive()) {
-    TRACE_EVENT0("shell",
-                 "WebTestProxyBase::CapturePixelsAsync "
-                 "isAcceleratedCompositingActive false");
-    callback.Run(SkBitmap());
-    return;
-  }
-
+  DCHECK(webWidget()->isAcceleratedCompositingActive());
   DCHECK(!callback.is_null());
   DCHECK(m_compositeAndReadbackCallback.is_null());
   m_compositeAndReadbackCallback = callback;

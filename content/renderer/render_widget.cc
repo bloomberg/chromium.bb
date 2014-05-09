@@ -383,7 +383,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
       is_accelerated_compositing_active_(false),
-      was_accelerated_compositing_ever_active_(false),
       animation_update_pending_(false),
       invalidation_task_posted_(false),
       screen_info_(screen_info),
@@ -1269,11 +1268,7 @@ void RenderWidget::didActivateCompositor() {
   is_accelerated_compositing_active_ = true;
   Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
       routing_id_, is_accelerated_compositing_active_));
-
-  if (!was_accelerated_compositing_ever_active_) {
-    was_accelerated_compositing_ever_active_ = true;
-    webwidget_->enterForceCompositingMode(true);
-  }
+  webwidget_->enterForceCompositingMode(true);
 }
 
 void RenderWidget::didDeactivateCompositor() {
