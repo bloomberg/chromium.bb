@@ -296,11 +296,7 @@ void ComponentLoader::AddVideoPlayerExtension() {
 }
 
 void ComponentLoader::AddGalleryExtension() {
-#if defined(OS_CHROMEOS)
-  const CommandLine* const command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(chromeos::switches::kFileManagerEnableNewGallery))
-    Add(IDR_GALLERY_MANIFEST, base::FilePath(FILE_PATH_LITERAL("gallery")));
-#endif
+  // TODO(hirono): Disable the new experimental gallery in M36 temporarily.
 }
 
 void ComponentLoader::AddHangoutServicesExtension() {
