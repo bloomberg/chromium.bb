@@ -120,7 +120,7 @@ void RenderListBox::updateFromElement()
 {
     FontCachePurgePreventer fontCachePurgePreventer;
     if (m_optionsChanged) {
-        const Vector<HTMLElement*>& listItems = selectElement()->listItems();
+        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
         int size = static_cast<int>(listItems.size());
 
         float width = 0;
@@ -373,7 +373,7 @@ void RenderListBox::addFocusRingRects(Vector<IntRect>& rects, const LayoutPoint&
 
     // No selected items, find the first non-disabled item.
     int size = numItems();
-    const Vector<HTMLElement*>& listItems = select->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = select->listItems();
     for (int i = 0; i < size; ++i) {
         HTMLElement* element = listItems[renderListBoxIndexToListIndex(i)];
         if (isHTMLOptionElement(*element) && !element->isDisabledFormControl()) {
@@ -431,7 +431,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
 
     HTMLSelectElement* select = selectElement();
 
-    const Vector<HTMLElement*>& listItems = select->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = select->listItems();
     HTMLElement* element = listItems[renderListBoxIndexToListIndex(listIndex)];
 
     RenderStyle* itemStyle = element->renderStyle();
@@ -480,7 +480,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
 
 void RenderListBox::paintItemBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset, int listIndex)
 {
-    const Vector<HTMLElement*>& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
     HTMLElement* element = listItems[renderListBoxIndexToListIndex(listIndex)];
 
     Color backColor;
@@ -736,7 +736,7 @@ bool RenderListBox::nodeAtPoint(const HitTestRequest& request, HitTestResult& re
 {
     if (!RenderBlockFlow::nodeAtPoint(request, result, locationInContainer, accumulatedOffset, hitTestAction))
         return false;
-    const Vector<HTMLElement*>& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
     int size = numItems();
     LayoutPoint adjustedLocation = accumulatedOffset + location();
 
@@ -975,7 +975,7 @@ void RenderListBox::setHasVerticalScrollbar(bool hasScrollbar)
 
 int RenderListBox::renderListBoxIndexToListIndex(int index) const
 {
-    const Vector<HTMLElement*>& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
     const int size = static_cast<int>(listItems.size());
 
     if (size == numItems())
@@ -998,7 +998,7 @@ int RenderListBox::renderListBoxIndexToListIndex(int index) const
 
 int RenderListBox::listIndexToRenderListBoxIndex(int index) const
 {
-    const Vector<HTMLElement*>& listItems = selectElement()->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = selectElement()->listItems();
     const int size = static_cast<int>(listItems.size());
 
     if (size == numItems())

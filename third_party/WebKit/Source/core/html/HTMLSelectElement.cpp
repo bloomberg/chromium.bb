@@ -229,7 +229,7 @@ void HTMLSelectElement::remove(int optionIndex)
 
 String HTMLSelectElement::value() const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); i++) {
         if (isHTMLOptionElement(items[i]) && toHTMLOptionElement(items[i])->selected())
             return toHTMLOptionElement(items[i])->value();
@@ -245,7 +245,7 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
         optionIndex = -1;
     } else {
         // Find the option with value() matching the given parameter and make it the current selection.
-        const Vector<HTMLElement*>& items = listItems();
+        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
         for (unsigned i = 0; i < items.size(); i++) {
             if (isHTMLOptionElement(items[i])) {
                 if (toHTMLOptionElement(items[i])->value() == value)
@@ -270,7 +270,7 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
 
 String HTMLSelectElement::suggestedValue() const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         if (isHTMLOptionElement(items[i]) && m_suggestedIndex >= 0) {
             if (i == static_cast<unsigned>(m_suggestedIndex))
@@ -287,7 +287,7 @@ void HTMLSelectElement::setSuggestedValue(const String& value)
         return;
     }
 
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     unsigned optionIndex = 0;
     for (unsigned i = 0; i < items.size(); ++i) {
         if (isHTMLOptionElement(items[i])) {
@@ -482,7 +482,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
                 break;
         } while (++diff);
     } else {
-        const Vector<HTMLElement*>& items = listItems();
+        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
 
         // Removing children fires mutation events, which might mutate the DOM further, so we first copy out a list
         // of elements that we intend to remove then attempt to remove them one at a time.
@@ -517,7 +517,7 @@ bool HTMLSelectElement::isRequiredFormControl() const
 int HTMLSelectElement::nextValidIndex(int listIndex, SkipDirection direction, int skip) const
 {
     ASSERT(direction == -1 || direction == 1);
-    const Vector<HTMLElement*>& listItems = this->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = this->listItems();
     int lastGoodIndex = listIndex;
     int size = listItems.size();
     for (listIndex += direction; listIndex >= 0 && listIndex < size; listIndex += direction) {
@@ -546,7 +546,7 @@ int HTMLSelectElement::previousSelectableListIndex(int startIndex) const
 
 int HTMLSelectElement::firstSelectableListIndex() const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     int index = nextValidIndex(items.size(), SkipBackwards, INT_MAX);
     if (static_cast<size_t>(index) == items.size())
         return -1;
@@ -561,7 +561,7 @@ int HTMLSelectElement::lastSelectableListIndex() const
 // Returns the index of the next valid item one page away from |startIndex| in direction |direction|.
 int HTMLSelectElement::nextSelectableListIndexPageAway(int startIndex, SkipDirection direction) const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     // Can't use m_size because renderer forces a minimum size.
     int pageSize = 0;
     if (renderer()->isListBox())
@@ -602,7 +602,7 @@ void HTMLSelectElement::saveLastSelection()
     }
 
     m_lastOnChangeSelection.clear();
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
         m_lastOnChangeSelection.append(isHTMLOptionElement(*element) && toHTMLOptionElement(element)->selected());
@@ -617,7 +617,7 @@ void HTMLSelectElement::setActiveSelectionAnchorIndex(int index)
     // selection pivots around this anchor index.
     m_cachedStateForActiveSelection.clear();
 
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
         m_cachedStateForActiveSelection.append(isHTMLOptionElement(*element) && toHTMLOptionElement(element)->selected());
@@ -637,7 +637,7 @@ void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions)
     unsigned start = min(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
     unsigned end = max(m_activeSelectionAnchorIndex, m_activeSelectionEndIndex);
 
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
         if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl() || toHTMLOptionElement(element)->isDisplayNone())
@@ -660,7 +660,7 @@ void HTMLSelectElement::listBoxOnChange()
 {
     ASSERT(!usesMenuList() || m_multiple);
 
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
 
     // If the cached selection list is empty, or the size has changed, then fire
     // dispatchFormControlChangeEvent, and return early.
@@ -681,7 +681,7 @@ void HTMLSelectElement::listBoxOnChange()
     }
 
     if (fireOnChange) {
-        RefPtr<HTMLSelectElement> protector(this);
+        RefPtrWillBeRawPtr<HTMLSelectElement> protector(this);
         dispatchInputEvent();
         dispatchFormControlChangeEvent();
     }
@@ -695,7 +695,7 @@ void HTMLSelectElement::dispatchInputAndChangeEventForMenuList(bool requiresUser
     if (m_lastOnChangeIndex != selected && (!requiresUserGesture || m_isProcessingUserDrivenChange)) {
         m_lastOnChangeIndex = selected;
         m_isProcessingUserDrivenChange = false;
-        RefPtr<HTMLSelectElement> protector(this);
+        RefPtrWillBeRawPtr<HTMLSelectElement> protector(this);
         dispatchInputEvent();
         dispatchFormControlChangeEvent();
     }
@@ -720,13 +720,13 @@ void HTMLSelectElement::setOptionsChangedOnRenderer()
     }
 }
 
-const Vector<HTMLElement*>& HTMLSelectElement::listItems() const
+const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& HTMLSelectElement::listItems() const
 {
     if (m_shouldRecalcListItems)
         recalcListItems();
     else {
 #if !ASSERT_DISABLED
-        Vector<HTMLElement*> items = m_listItems;
+        WillBeHeapVector<RawPtrWillBeMember<HTMLElement> > items = m_listItems;
         recalcListItems(false);
         ASSERT(items == m_listItems);
 #endif
@@ -829,7 +829,7 @@ int HTMLSelectElement::selectedIndex() const
     unsigned index = 0;
 
     // Return the number of the first option selected.
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (size_t i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
         if (isHTMLOptionElement(*element)) {
@@ -878,7 +878,7 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 {
     bool shouldDeselect = !m_multiple || (flags & DeselectOtherOptions);
 
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     int listIndex = optionToListIndex(optionIndex);
 
     HTMLElement* element = 0;
@@ -921,7 +921,7 @@ void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
 
 int HTMLSelectElement::optionToListIndex(int optionIndex) const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     int listSize = static_cast<int>(items.size());
     if (optionIndex < 0 || optionIndex >= listSize)
         return -1;
@@ -940,7 +940,7 @@ int HTMLSelectElement::optionToListIndex(int optionIndex) const
 
 int HTMLSelectElement::listToOptionIndex(int listIndex) const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     if (listIndex < 0 || listIndex >= static_cast<int>(items.size()) || !isHTMLOptionElement(*items[listIndex]))
         return -1;
 
@@ -975,7 +975,7 @@ void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement)
 
 void HTMLSelectElement::deselectItemsWithoutValidation(HTMLElement* excludeElement)
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
         if (element != excludeElement && isHTMLOptionElement(*element))
@@ -985,7 +985,7 @@ void HTMLSelectElement::deselectItemsWithoutValidation(HTMLElement* excludeEleme
 
 FormControlState HTMLSelectElement::saveFormControlState() const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     size_t length = items.size();
     FormControlState state;
     for (unsigned i = 0; i < length; ++i) {
@@ -1003,7 +1003,7 @@ FormControlState HTMLSelectElement::saveFormControlState() const
 
 size_t HTMLSelectElement::searchOptionsForValue(const String& value, size_t listIndexStart, size_t listIndexEnd) const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     size_t loopEndIndex = std::min(items.size(), listIndexEnd);
     for (size_t i = listIndexStart; i < loopEndIndex; ++i) {
         if (!isHTMLOptionElement(items[i]))
@@ -1018,7 +1018,7 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
 {
     recalcListItems();
 
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     size_t itemsSize = items.size();
     if (!itemsSize)
         return;
@@ -1067,7 +1067,7 @@ bool HTMLSelectElement::appendFormData(FormDataList& list, bool)
         return false;
 
     bool successful = false;
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
 
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
@@ -1088,7 +1088,7 @@ void HTMLSelectElement::resetImpl()
     HTMLOptionElement* firstOption = 0;
     HTMLOptionElement* selectedOption = 0;
 
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         HTMLElement* element = items[i];
         if (!isHTMLOptionElement(*element))
@@ -1166,7 +1166,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
 
         const String& keyIdentifier = toKeyboardEvent(event)->keyIdentifier();
         bool handled = true;
-        const Vector<HTMLElement*>& listItems = this->listItems();
+        const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = this->listItems();
         int listIndex = optionToListIndex(selectedIndex());
 
         if (keyIdentifier == "Down" || keyIdentifier == "Right")
@@ -1337,7 +1337,7 @@ void HTMLSelectElement::updateSelectedState(int listIndex, bool multi, bool shif
 
 void HTMLSelectElement::listBoxDefaultEventHandler(Event* event)
 {
-    const Vector<HTMLElement*>& listItems = this->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = this->listItems();
     if (event->type() == EventTypeNames::gesturetap && event->isGestureEvent()) {
         focus();
         // Calling focus() may cause us to lose our renderer or change the render type, in which case do not want to handle the event.
@@ -1536,7 +1536,7 @@ void HTMLSelectElement::defaultEventHandler(Event* event)
 
 int HTMLSelectElement::lastSelectedListIndex() const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (size_t i = items.size(); i;) {
         HTMLElement* element = items[--i];
         if (isHTMLOptionElement(*element) && toHTMLOptionElement(element)->selected())
@@ -1557,7 +1557,7 @@ int HTMLSelectElement::optionCount() const
 
 String HTMLSelectElement::optionAtIndex(int index) const
 {
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
 
     HTMLElement* element = items[index];
     if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl())
@@ -1592,7 +1592,7 @@ void HTMLSelectElement::accessKeySetSelectedIndex(int index)
         accessKeyAction(false);
 
     // If this index is already selected, unselect. otherwise update the selected index.
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     int listIndex = optionToListIndex(index);
     if (listIndex >= 0) {
         HTMLElement* element = items[listIndex];
@@ -1616,7 +1616,7 @@ unsigned HTMLSelectElement::length() const
 {
     unsigned options = 0;
 
-    const Vector<HTMLElement*>& items = listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& items = listItems();
     for (unsigned i = 0; i < items.size(); ++i) {
         if (isHTMLOptionElement(*items[i]))
             ++options;
@@ -1631,7 +1631,7 @@ void HTMLSelectElement::finishParsingChildren()
     updateListItemSelectedStates();
 }
 
-bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
+bool HTMLSelectElement::anonymousIndexedSetter(unsigned index, PassRefPtrWillBeRawPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
     if (!value) { // undefined or null
         remove(index);
@@ -1654,6 +1654,14 @@ bool HTMLSelectElement::supportsAutofocus() const
 void HTMLSelectElement::updateListOnRenderer()
 {
     setOptionsChangedOnRenderer();
+}
+
+void HTMLSelectElement::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_listItems);
+#endif
+    HTMLFormControlElementWithState::trace(visitor);
 }
 
 } // namespace

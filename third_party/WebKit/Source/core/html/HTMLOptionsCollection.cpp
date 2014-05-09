@@ -69,12 +69,12 @@ PassRefPtr<HTMLOptionsCollection> HTMLOptionsCollection::create(ContainerNode& s
     return adoptRef(new HTMLOptionsCollection(select));
 }
 
-void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, ExceptionState& exceptionState)
+void HTMLOptionsCollection::add(PassRefPtrWillBeRawPtr<HTMLOptionElement> element, ExceptionState& exceptionState)
 {
     add(element, length(), exceptionState);
 }
 
-void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index, ExceptionState& exceptionState)
+void HTMLOptionsCollection::add(PassRefPtrWillBeRawPtr<HTMLOptionElement> element, int index, ExceptionState& exceptionState)
 {
     HTMLOptionElement* newOption = element.get();
 
@@ -142,7 +142,7 @@ void HTMLOptionsCollection::namedGetter(const AtomicString& name, bool& returnVa
     returnValue0 = NamedNodesCollection::create(namedItems);
 }
 
-bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
+bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtrWillBeRawPtr<HTMLOptionElement> value, ExceptionState& exceptionState)
 {
     HTMLSelectElement& base = toHTMLSelectElement(ownerNode());
     if (!value) { // undefined or null

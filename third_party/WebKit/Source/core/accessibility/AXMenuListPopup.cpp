@@ -99,7 +99,7 @@ void AXMenuListPopup::addChildren()
 
     m_haveChildren = true;
 
-    const Vector<HTMLElement*>& listItems = toHTMLSelectElement(selectNode)->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = toHTMLSelectElement(selectNode)->listItems();
     unsigned length = listItems.size();
     for (unsigned i = 0; i < length; i++) {
         AXMenuListOption* option = menuListOptionAXObject(listItems[i]);

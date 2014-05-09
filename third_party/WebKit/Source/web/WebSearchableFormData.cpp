@@ -99,9 +99,9 @@ HTMLFormControlElement* GetButtonToActivate(HTMLFormElement* form)
 // selected state.
 bool IsSelectInDefaultState(HTMLSelectElement* select)
 {
-    const Vector<HTMLElement*>& listItems = select->listItems();
+    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >& listItems = select->listItems();
     if (select->multiple() || select->size() > 1) {
-        for (Vector<HTMLElement*>::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
+        for (WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
             if (!(*i)->hasLocalName(HTMLNames::optionTag))
                 continue;
             HTMLOptionElement* optionElement = toHTMLOptionElement(*i);
@@ -114,7 +114,7 @@ bool IsSelectInDefaultState(HTMLSelectElement* select)
     // The select is rendered as a combobox (called menulist in WebKit). At
     // least one item is selected, determine which one.
     HTMLOptionElement* initialSelected = 0;
-    for (Vector<HTMLElement*>::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
+    for (WillBeHeapVector<RawPtrWillBeMember<HTMLElement> >::const_iterator i(listItems.begin()); i != listItems.end(); ++i) {
         if (!(*i)->hasLocalName(HTMLNames::optionTag))
             continue;
         HTMLOptionElement* optionElement = toHTMLOptionElement(*i);
