@@ -158,25 +158,10 @@ const PrefHashFilter::TrackedPreferenceMetadata kTrackedPrefs[] = {
     PrefHashFilter::NO_ENFORCEMENT,
     PrefHashFilter::TRACKING_STRATEGY_ATOMIC
   },
-  {
-    // Protecting kPreferenceResetTime does two things:
-    //  1) It ensures this isn't accidently set by someone stomping the pref
-    //     file.
-    //  2) More importantly, it declares kPreferenceResetTime as a protected
-    //     pref which is required for it to be visible when queried via the
-    //     SegregatedPrefStore. This is because it's written directly in the
-    //     protected JsonPrefStore by that store's PrefHashFilter if there was
-    //     a reset in FilterOnLoad and SegregatedPrefStore will not look for it
-    //     in the protected JsonPrefStore unless it's declared as a protected
-    //     preference here.
-    15, prefs::kPreferenceResetTime,
-    PrefHashFilter::ENFORCE_ON_LOAD,
-    PrefHashFilter::TRACKING_STRATEGY_ATOMIC
-  },
 };
 
 // The count of tracked preferences IDs across all platforms.
-const size_t kTrackedPrefsReportingIDsCount = 16;
+const size_t kTrackedPrefsReportingIDsCount = 15;
 COMPILE_ASSERT(kTrackedPrefsReportingIDsCount >= arraysize(kTrackedPrefs),
                need_to_increment_ids_count);
 

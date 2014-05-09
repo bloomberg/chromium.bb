@@ -35,6 +35,9 @@ void SegregatedPrefStore::AggregatingObserver::OnInitializationCompleted(
   DCHECK_LE(failed_sub_initializations_ + successful_sub_initializations_, 2);
 
   if (failed_sub_initializations_ + successful_sub_initializations_ == 2) {
+    if (!outer_->on_initialization_.is_null())
+      outer_->on_initialization_.Run();
+
     if (successful_sub_initializations_ == 2 && outer_->read_error_delegate_) {
       PersistentPrefStore::PrefReadError read_error = outer_->GetReadError();
       if (read_error != PersistentPrefStore::PREF_READ_ERROR_NONE)
@@ -51,11 +54,14 @@ void SegregatedPrefStore::AggregatingObserver::OnInitializationCompleted(
 SegregatedPrefStore::SegregatedPrefStore(
     const scoped_refptr<PersistentPrefStore>& default_pref_store,
     const scoped_refptr<PersistentPrefStore>& selected_pref_store,
-    const std::set<std::string>& selected_pref_names)
+    const std::set<std::string>& selected_pref_names,
+    const base::Closure& on_initialization)
     : default_pref_store_(default_pref_store),
       selected_pref_store_(selected_pref_store),
       selected_preference_names_(selected_pref_names),
+      on_initialization_(on_initialization),
       aggregating_observer_(this) {
+
   default_pref_store_->AddObserver(&aggregating_observer_);
   selected_pref_store_->AddObserver(&aggregating_observer_);
 }
@@ -122,15 +128,8 @@ PersistentPrefStore::PrefReadError SegregatedPrefStore::GetReadError() const {
 }
 
 PersistentPrefStore::PrefReadError SegregatedPrefStore::ReadPrefs() {
-  // Note: Both of these stores own PrefFilters which makes ReadPrefs
-  // asynchronous. This is okay in this case as only the first call will be
-  // truly asynchronous, the second call will then unblock the migration in
-  // TrackedPreferencesMigrator and complete synchronously.
   default_pref_store_->ReadPrefs();
-  PersistentPrefStore::PrefReadError selected_store_read_error =
-      selected_pref_store_->ReadPrefs();
-  DCHECK_NE(PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE,
-            selected_store_read_error);
+  selected_pref_store_->ReadPrefs();
 
   return GetReadError();
 }
@@ -151,13 +150,34 @@ SegregatedPrefStore::~SegregatedPrefStore() {
   selected_pref_store_->RemoveObserver(&aggregating_observer_);
 }
 
-PersistentPrefStore* SegregatedPrefStore::StoreForKey(const std::string& key) {
-  return ContainsKey(selected_preference_names_, key) ? selected_pref_store_
-                                                      : default_pref_store_;
-}
-
 const PersistentPrefStore* SegregatedPrefStore::StoreForKey(
     const std::string& key) const {
-  return ContainsKey(selected_preference_names_, key) ? selected_pref_store_
-                                                      : default_pref_store_;
+  if (ContainsKey(selected_preference_names_, key) ||
+      selected_pref_store_->GetValue(key, NULL)) {
+    return selected_pref_store_.get();
+  }
+  return default_pref_store_.get();
+}
+
+PersistentPrefStore* SegregatedPrefStore::StoreForKey(const std::string& key) {
+  if (ContainsKey(selected_preference_names_, key))
+    return selected_pref_store_.get();
+
+  // Check if this unselected value was previously selected. If so, migrate it
+  // back to the unselected store.
+  // It's hard to do this in a single pass at startup because PrefStore does not
+  // permit us to enumerate its contents.
+  const base::Value* value = NULL;
+  if (selected_pref_store_->GetValue(key, &value)) {
+    default_pref_store_->SetValue(key, value->DeepCopy());
+    // Commit |default_pref_store_| to guarantee that the migrated value is
+    // flushed to disk before the removal from |selected_pref_store_| is
+    // eventually flushed to disk.
+    default_pref_store_->CommitPendingWrite();
+
+    value = NULL;
+    selected_pref_store_->RemoveValue(key);
+  }
+
+  return default_pref_store_.get();
 }
