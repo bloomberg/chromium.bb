@@ -248,42 +248,69 @@ std::string WebRtcTestBase::ExecuteJavascript(
   return result;
 }
 
-// The peer connection server lets our two tabs find each other and talk to
-// each other (e.g. it is the application-specific "signaling solution").
-void WebRtcTestBase::ConnectToPeerConnectionServer(
-    const std::string& peer_name,
-    content::WebContents* tab_contents) const {
-  std::string javascript = base::StringPrintf(
-      "connect('http://localhost:%s', '%s');",
-      test::PeerConnectionServerRunner::kDefaultPort, peer_name.c_str());
-  EXPECT_EQ("ok-connected", ExecuteJavascript(javascript, tab_contents));
+void WebRtcTestBase::SetupPeerconnectionWithLocalStream(
+    content::WebContents* tab) const {
+  EXPECT_EQ("ok-peerconnection-created",
+            ExecuteJavascript("preparePeerConnection()", tab));
+  EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", tab));
 }
 
-void WebRtcTestBase::EstablishCall(content::WebContents* from_tab,
+std::string WebRtcTestBase::CreateLocalOffer(
+      content::WebContents* from_tab) const {
+  std::string response = ExecuteJavascript("createLocalOffer({})", from_tab);
+  EXPECT_EQ("ok-", response.substr(0, 3)) << "Failed to create local offer: "
+      << response;
+
+  std::string local_offer = response.substr(3);
+  return local_offer;
+}
+
+std::string WebRtcTestBase::CreateAnswer(std::string local_offer,
+                                         content::WebContents* to_tab) const {
+  std::string javascript =
+      base::StringPrintf("receiveOfferFromPeer('%s', {})", local_offer.c_str());
+  std::string response = ExecuteJavascript(javascript, to_tab);
+  EXPECT_EQ("ok-", response.substr(0, 3))
+      << "Receiving peer failed to receive offer and create answer: "
+      << response;
+
+  std::string answer = response.substr(3);
+  return answer;
+}
+
+void WebRtcTestBase::ReceiveAnswer(std::string answer,
+                                   content::WebContents* from_tab) const {
+  ASSERT_EQ(
+      "ok-accepted-answer",
+      ExecuteJavascript(
+          base::StringPrintf("receiveAnswerFromPeer('%s')", answer.c_str()),
+          from_tab));
+}
+
+void WebRtcTestBase::GatherAndSendIceCandidates(
+    content::WebContents* from_tab,
+    content::WebContents* to_tab) const {
+  std::string ice_candidates =
+      ExecuteJavascript("getAllIceCandidates()", from_tab);
+
+  EXPECT_EQ("ok-received-candidates", ExecuteJavascript(
+      base::StringPrintf("receiveIceCandidates('%s')", ice_candidates.c_str()),
+      to_tab));
+}
+
+void WebRtcTestBase::NegotiateCall(content::WebContents* from_tab,
                                    content::WebContents* to_tab) const {
-  ConnectToPeerConnectionServer("peer 1", from_tab);
-  ConnectToPeerConnectionServer("peer 2", to_tab);
+  std::string local_offer = CreateLocalOffer(from_tab);
+  std::string answer = CreateAnswer(local_offer, to_tab);
+  ReceiveAnswer(answer, from_tab);
 
-  EXPECT_EQ("ok-peerconnection-created",
-            ExecuteJavascript("preparePeerConnection()", from_tab));
-  EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", from_tab));
-  EXPECT_EQ("ok-negotiating", ExecuteJavascript("negotiateCall()", from_tab));
-
-  // Ensure the call gets up on both sides.
-  EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
-                                     "active", from_tab));
-  EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
-                                     "active", to_tab));
+  // Send all ICE candidates (wait for gathering to finish if necessary).
+  GatherAndSendIceCandidates(to_tab, from_tab);
+  GatherAndSendIceCandidates(from_tab, to_tab);
 }
 
 void WebRtcTestBase::HangUp(content::WebContents* from_tab) const {
   EXPECT_EQ("ok-call-hung-up", ExecuteJavascript("hangUp()", from_tab));
-}
-
-void WebRtcTestBase::WaitUntilHangupVerified(
-    content::WebContents* tab_contents) const {
-  EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
-                                     "no-peer-connection", tab_contents));
 }
 
 void WebRtcTestBase::DetectErrorsInJavaScript() {

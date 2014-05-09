@@ -48,7 +48,6 @@ class WebRtcBrowserTest : public WebRtcTestBase,
  public:
   WebRtcBrowserTest() {}
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
@@ -129,8 +128,6 @@ class WebRtcBrowserTest : public WebRtcTestBase,
     return false;
 #endif
   }
-
-  test::PeerConnectionServerRunner peerconnection_server_;
 };
 
 static const bool kRunTestsWithFlag[] = { false, true };
@@ -144,14 +141,16 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  ASSERT_TRUE(peerconnection_server_.Start());
 
   content::WebContents* left_tab =
       OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
   content::WebContents* right_tab =
       OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
 
-  EstablishCall(left_tab, right_tab);
+  SetupPeerconnectionWithLocalStream(left_tab);
+  SetupPeerconnectionWithLocalStream(right_tab);
+
+  NegotiateCall(left_tab, right_tab);
 
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
@@ -160,10 +159,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   WaitForVideoToPlay(right_tab);
 
   HangUp(left_tab);
-  WaitUntilHangupVerified(left_tab);
-  WaitUntilHangupVerified(right_tab);
-
-  ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
@@ -171,7 +166,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
 
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  ASSERT_TRUE(peerconnection_server_.Start());
 
   base::FilePath results_file;
   ASSERT_TRUE(base::CreateTemporaryFile(&results_file));
@@ -203,20 +197,19 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   content::WebContents* right_tab =
       OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
 
-  EstablishCall(left_tab, right_tab);
+  SetupPeerconnectionWithLocalStream(left_tab);
+  SetupPeerconnectionWithLocalStream(right_tab);
+
+  NegotiateCall(left_tab, right_tab);
 
   test::SleepInJavascript(left_tab, 15000);
 
   HangUp(left_tab);
-  WaitUntilHangupVerified(left_tab);
-  WaitUntilHangupVerified(right_tab);
 
 #if !defined(OS_MACOSX)
   PrintProcessMetrics(renderer_process_metrics.get(), "_r");
 #endif
   PrintProcessMetrics(browser_process_metrics.get(), "_b");
-
-  ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
 // This is manual for its long execution time.
@@ -226,7 +219,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 
   ASSERT_TRUE(test::HasReferenceFilesInCheckout());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-  ASSERT_TRUE(peerconnection_server_.Start());
 
   ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100) <<
       "This is a long-running test; you must specify "
@@ -237,7 +229,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   content::WebContents* right_tab =
       OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
 
-  EstablishCall(left_tab, right_tab);
+  SetupPeerconnectionWithLocalStream(left_tab);
+  SetupPeerconnectionWithLocalStream(right_tab);
+
+  NegotiateCall(left_tab, right_tab);
 
   StartDetectingVideo(left_tab, "remote-view");
   StartDetectingVideo(right_tab, "remote-view");
@@ -267,10 +262,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
   test::PrintMetricsForAllStreams(*first_pc_dict);
 
   HangUp(left_tab);
-  WaitUntilHangupVerified(left_tab);
-  WaitUntilHangupVerified(right_tab);
-
-  ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MANUAL_TestWebAudioMediaStream) {

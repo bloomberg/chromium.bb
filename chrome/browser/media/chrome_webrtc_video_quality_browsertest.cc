@@ -106,10 +106,7 @@ static const struct VideoQualityTestConfig {
 // * zxing (see the CPP version at https://code.google.com/p/zxing)
 // * ffmpeg 0.11.1 or compatible version (see http://www.ffmpeg.org)
 //
-// The test case will launch a custom binary (peerconnection_server) which will
-// allow two WebRTC clients to find each other.
-//
-// The test also runs several other custom binaries - rgba_to_i420 converter and
+// The test runs several custom binaries - rgba_to_i420 converter and
 // frame_analyzer. Both tools can be found under third_party/webrtc/tools. The
 // test also runs a stand alone Python implementation of a WebSocket server
 // (pywebsocket) and a barcode_decoder script.
@@ -123,7 +120,6 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
     DetectErrorsInJavaScript();  // Look for errors in our rather complex js.
   }
 
@@ -298,7 +294,6 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
   }
 
  protected:
-  test::PeerConnectionServerRunner peerconnection_server_;
   VideoQualityTestConfig test_config_;
 
  private:
@@ -339,7 +334,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
   ASSERT_TRUE(HasAllRequiredResources());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(StartPyWebSocketServer());
-  ASSERT_TRUE(peerconnection_server_.Start());
 
   content::WebContents* left_tab =
       OpenPageAndGetUserMediaInNewTabWithConstraints(
@@ -350,7 +344,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
           embedded_test_server()->GetURL(test_config_.capture_page),
           test_config_.constraints);
 
-  EstablishCall(left_tab, right_tab);
+  SetupPeerconnectionWithLocalStream(left_tab);
+  SetupPeerconnectionWithLocalStream(right_tab);
+
+  NegotiateCall(left_tab, right_tab);
 
   // Poll slower here to avoid flooding the log with messages: capturing and
   // sending frames take quite a bit of time.
@@ -361,8 +358,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
       polling_interval_msec));
 
   HangUp(left_tab);
-  WaitUntilHangupVerified(left_tab);
-  WaitUntilHangupVerified(right_tab);
 
   EXPECT_TRUE(test::PollingWaitUntil(
       "haveMoreFramesToSend()", "no-more-frames", right_tab,
@@ -371,7 +366,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
   // Shut everything down to avoid having the javascript race with the analysis
   // tools. For instance, dont have console log printouts interleave with the
   // RESULT lines from the analysis tools (crbug.com/323200).
-  ASSERT_TRUE(peerconnection_server_.Stop());
   ASSERT_TRUE(ShutdownPyWebSocketServer());
 
   chrome::CloseWebContents(browser(), left_tab, false);

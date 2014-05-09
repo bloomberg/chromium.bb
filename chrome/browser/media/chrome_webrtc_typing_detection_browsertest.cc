@@ -50,10 +50,6 @@ class WebRtcTypingDetectionBrowserTest : public WebRtcTestBase {
  public:
   // TODO(phoglund): clean up duplication from audio quality browser test when
   // this test is complete and is proven to work.
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    test::PeerConnectionServerRunner::KillAllPeerConnectionServers();
-  }
-
   bool HasAllRequiredResources() {
     base::FilePath reference_file =
         GetTestDataDir().Append(kReferenceFile);
@@ -92,8 +88,6 @@ class WebRtcTypingDetectionBrowserTest : public WebRtcTestBase {
     EXPECT_TRUE(test::PollingWaitUntil("getPeerConnectionReadyState()",
                                        "active", to_tab));
   }
-
-  test::PeerConnectionServerRunner peerconnection_server_;
 };
 
 // TODO(phoglund): enable when fully implemented.
@@ -102,7 +96,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcTypingDetectionBrowserTest,
   // TODO(phoglund): make this use embedded_test_server when that test server
   // can handle files > ~400Kb.
   ASSERT_TRUE(test_server()->Start());
-  ASSERT_TRUE(peerconnection_server_.Start());
 
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
@@ -115,9 +108,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcTypingDetectionBrowserTest,
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
 
-  ConnectToPeerConnectionServer("peer 1", left_tab);
-  ConnectToPeerConnectionServer("peer 2", right_tab);
-
   GetUserMediaWithSpecificConstraintsAndAccept(left_tab,
                                                kAudioOnlyCallConstraints);
   EXPECT_EQ("ok-peerconnection-created",
@@ -126,7 +116,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcTypingDetectionBrowserTest,
   AddAudioFile(kReferenceFileRelativeUrl, left_tab);
   MixLocalStreamWithPreviouslyLoadedAudioFile(left_tab);
 
-  EstablishCall(left_tab, right_tab);
+  SetupPeerconnectionWithLocalStream(left_tab);
+  SetupPeerconnectionWithLocalStream(right_tab);
+
+  NegotiateCall(left_tab, right_tab);
 
   // Note: the media flow isn't necessarily established on the connection just
   // because the ready state is ok on both sides. We sleep a bit between call
@@ -141,8 +134,4 @@ IN_PROC_BROWSER_TEST_F(WebRtcTypingDetectionBrowserTest,
   test::SleepInJavascript(left_tab, 10000);
 
   HangUp(left_tab);
-  WaitUntilHangupVerified(left_tab);
-  WaitUntilHangupVerified(right_tab);
-
-  ASSERT_TRUE(peerconnection_server_.Stop());
 }

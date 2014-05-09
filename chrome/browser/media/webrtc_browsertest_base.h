@@ -74,17 +74,22 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // Closes the last local stream acquired by the GetUserMedia* methods.
   void CloseLastLocalStream(content::WebContents* tab_contents) const;
 
-  void ConnectToPeerConnectionServer(const std::string& peer_name,
-                                     content::WebContents* tab_contents) const;
   std::string ExecuteJavascript(const std::string& javascript,
                                 content::WebContents* tab_contents) const;
 
-  void EstablishCall(content::WebContents* from_tab,
+  // Sets up a peer connection in the tab and adds the current local stream
+  // (which you can prepare by calling one of the GetUserMedia* methods above).
+  void SetupPeerconnectionWithLocalStream(content::WebContents* tab) const;
+
+  // Exchanges offers and answers between the peer connections in the
+  // respective tabs. Before calling this, you must have prepared peer
+  // connections in both tabs and configured them as you like (for instance by
+  // calling SetupPeerconnectionWithLocalStream).
+  void NegotiateCall(content::WebContents* from_tab,
                      content::WebContents* to_tab) const;
 
+  // Hangs up a negotiated call.
   void HangUp(content::WebContents* from_tab) const;
-
-  void WaitUntilHangupVerified(content::WebContents* tab_contents) const;
 
   // Call this to enable monitoring of javascript errors for this test method.
   // This will only work if the tests are run sequentially by the test runner
@@ -108,6 +113,14 @@ class WebRtcTestBase : public InProcessBrowserTest {
  private:
   void CloseInfoBarInTab(content::WebContents* tab_contents,
                          infobars::InfoBar* infobar) const;
+
+  std::string CreateLocalOffer(content::WebContents* from_tab) const;
+  std::string CreateAnswer(std::string local_offer,
+                           content::WebContents* to_tab) const;
+  void ReceiveAnswer(std::string answer, content::WebContents* from_tab) const;
+  void GatherAndSendIceCandidates(content::WebContents* from_tab,
+                                  content::WebContents* to_tab) const;
+
   infobars::InfoBar* GetUserMediaAndWaitForInfoBar(
       content::WebContents* tab_contents,
       const std::string& constraints) const;

@@ -4,10 +4,8 @@
 
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/process/launch.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
@@ -132,51 +130,6 @@ bool PollingWaitUntil(const std::string& javascript,
       << " to evaluate to " << evaluates_to << "; last result was '" << result
       << "'";
   return false;
-}
-
-static base::FilePath::CharType kServerExecutable[] =
-#if defined(OS_WIN)
-    FILE_PATH_LITERAL("peerconnection_server.exe");
-#else
-    FILE_PATH_LITERAL("peerconnection_server");
-#endif
-
-const char PeerConnectionServerRunner::kDefaultPort[] = "7778";
-
-bool PeerConnectionServerRunner::Start() {
-  base::FilePath peerconnection_server;
-  if (!PathService::Get(base::DIR_MODULE, &peerconnection_server)) {
-    LOG(ERROR) << "Failed retrieving base::DIR_MODULE!";
-    return false;
-  }
-  peerconnection_server = peerconnection_server.Append(kServerExecutable);
-
-  if (!base::PathExists(peerconnection_server)) {
-    LOG(ERROR)
-        << "Missing " << kServerExecutable << ". You must build "
-        << "it so it ends up next to the browser test binary.";
-    return false;
-  }
-
-  CommandLine command_line(peerconnection_server);
-  command_line.AppendSwitchASCII("port", kDefaultPort);
-  VLOG(0) << "Running " << command_line.GetCommandLineString();
-  return base::LaunchProcess(command_line,
-                             base::LaunchOptions(),
-                             &server_pid_);
-}
-
-bool PeerConnectionServerRunner::Stop() {
-  return base::KillProcess(server_pid_, 0, false);
-}
-
-void PeerConnectionServerRunner::KillAllPeerConnectionServers() {
-  if (!base::KillProcesses(kServerExecutable, -1, NULL)) {
-    LOG(ERROR) << "Failed to kill instances of " << kServerExecutable << ".";
-    return;
-  }
-  base::WaitForProcessesToExit(kServerExecutable,
-                               base::TimeDelta::FromSeconds(5), NULL);
 }
 
 }  // namespace test

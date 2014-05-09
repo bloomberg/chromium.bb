@@ -54,25 +54,6 @@ bool PollingWaitUntil(const std::string& javascript,
                       content::WebContents* tab_contents,
                       int poll_interval_msec);
 
-class PeerConnectionServerRunner {
- public:
-  static const char kDefaultPort[];
-
-  PeerConnectionServerRunner(): server_pid_(0) {}
-  ~PeerConnectionServerRunner() {}
-
-  // Starts the peerconnection server on localhost on |kDefaultPort|.
-  bool Start();
-
-  // Stops the peerconnection server.
-  bool Stop();
-
-  static void KillAllPeerConnectionServers();
-
- private:
-  base::ProcessHandle server_pid_;
-};
-
 }  // namespace test
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_BROWSERTEST_COMMON_H_
