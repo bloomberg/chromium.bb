@@ -74,7 +74,6 @@ ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     sandbox::SandboxBPF* sb, int sysno) const {
   DCHECK(baseline_policy_);
   switch (sysno) {
-    case __NR_clone:  // TODO(jln): restrict parameters.
     // TODO(jln): NaCl's GDB debug stub uses the following socket system calls,
     // see if it can be restricted a bit.
 #if defined(__x86_64__) || defined(__arm__)
@@ -96,7 +95,7 @@ ErrorCode NaClBPFSandboxPolicy::EvaluateSyscall(
     // NaCl uses custom signal stacks.
     case __NR_sigaltstack:
     // Below is fairly similar to the policy for a Chromium renderer.
-    // TODO(jln): restrict clone(), ioctl() and prctl().
+    // TODO(jln): restrict ioctl() and prctl().
     case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__)
     case __NR_getrlimit:
