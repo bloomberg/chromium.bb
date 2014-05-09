@@ -14,6 +14,7 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
@@ -134,11 +135,13 @@ class NetworkPortalDetectorImplTest
   }
 
   void enable_error_screen_strategy() {
-    network_portal_detector()->OnErrorScreenShow();
+    network_portal_detector()->SetStrategy(
+        PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
   }
 
   void disable_error_screen_strategy() {
-    network_portal_detector()->OnErrorScreenHide();
+    network_portal_detector()->SetStrategy(
+        PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
   }
 
   void stop_detection() { network_portal_detector()->StopDetection(); }
