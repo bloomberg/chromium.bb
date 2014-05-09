@@ -97,6 +97,17 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   virtual void OnMouseReleased() OVERRIDE;
   virtual void OnMoveLoopEnded() OVERRIDE;
 
+ protected:
+  // The following methods are virtual for the sake of testing.
+
+  // Finds the topmost X11 window at |screen_point| and returns it if it is
+  // Xdnd aware. Returns NULL otherwise.
+  virtual ::Window FindWindowFor(const gfx::Point& screen_point);
+
+  // Sends |xev| to |xid|, optionally short circuiting the round trip to the X
+  // server.
+  virtual void SendXClientEvent(::Window xid, XEvent* xev);
+
  private:
   enum SourceState {
     // |source_current_window_| will receive a drop once we receive an
@@ -165,10 +176,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
                         const gfx::Point& screen_point,
                         unsigned long event_time);
   void SendXdndDrop(::Window dest_window);
-
-  // Sends |xev| to |xid|, optionally short circuiting the round trip to the X
-  // server.
-  void SendXClientEvent(::Window xid, XEvent* xev);
 
   // A nested message loop that notifies this object of events through the
   // X11WholeScreenMoveLoopDelegate interface.
