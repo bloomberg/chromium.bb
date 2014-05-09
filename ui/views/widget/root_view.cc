@@ -207,7 +207,7 @@ ui::EventDispatchDetails RootView::OnEventFromSource(ui::Event* event) {
   if (event->IsKeyEvent())
     return EventProcessor::OnEventFromSource(event);
   else if (event->IsScrollEvent())
-    DispatchScrollEvent(static_cast<ui::ScrollEvent*>(event));
+    return EventProcessor::OnEventFromSource(event);
   else if (event->IsTouchEvent())
     NOTREACHED() << "Touch events should not be sent to RootView.";
   else if (event->IsGestureEvent())
@@ -699,25 +699,6 @@ View::DragInfo* RootView::GetDragInfo() {
 // RootView, private:
 
 // Input -----------------------------------------------------------------------
-
-void RootView::DispatchScrollEvent(ui::ScrollEvent* event) {
-  for (View* v = GetEventHandlerForPoint(event->location());
-       v && v != this && !event->stopped_propagation(); v = v->parent()) {
-    ui::EventDispatchDetails dispatch_details = DispatchEvent(v, event);
-    if (dispatch_details.dispatcher_destroyed ||
-        dispatch_details.target_destroyed) {
-      return;
-    }
-  }
-
-  if (event->handled() || event->type() != ui::ET_SCROLL)
-    return;
-
-  // Convert unprocessed scroll events into mouse-wheel events.
-  ui::MouseWheelEvent wheel(*event);
-  if (OnMouseWheel(wheel))
-    event->SetHandled();
-}
 
 void RootView::UpdateCursor(const ui::MouseEvent& event) {
   if (!(event.flags() & ui::EF_IS_NON_CLIENT)) {

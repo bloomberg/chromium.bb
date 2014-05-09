@@ -108,8 +108,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
  public:
   typedef std::vector<View*> Views;
 
-  // TODO(tdanderson,sadrul): Becomes obsolete with the refactoring of the
-  // event targeting logic for views and windows.
+  // TODO(tdanderson): Becomes obsolete with the refactoring of the event
+  //                   targeting logic for views and windows. See
+  //                   crbug.com/355425.
   // Specifies the source of the region used in a hit test.
   // HIT_TEST_SOURCE_MOUSE indicates the hit test is being performed with a
   // single point and HIT_TEST_SOURCE_TOUCH indicates the hit test is being
@@ -557,6 +558,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // The points, rects, mouse locations, and touch locations in the following
   // functions are in the view's coordinates, except for a RootView.
 
+  // TODO(tdanderson): GetEventHandlerForPoint() and GetEventHandlerForRect()
+  //                   will be removed once their logic is moved into
+  //                   ViewTargeter and its derived classes. See
+  //                   crbug.com/355425.
+
   // Convenience functions which calls into GetEventHandler() with
   // a 1x1 rect centered at |point|.
   View* GetEventHandlerForPoint(const gfx::Point& point);
@@ -581,6 +587,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // lifetime may vary from platform to platform. On Windows and Aura,
   // the cursor is a shared resource.
   virtual gfx::NativeCursor GetCursor(const ui::MouseEvent& event);
+
+  // TODO(tdanderson): HitTestPoint() and HitTestRect() will be removed once
+  //                   their logic is moved into ViewTargeter and its
+  //                   derived classes. See crbug.com/355425.
 
   // A convenience function which calls HitTestRect() with a rect of size
   // 1x1 and an origin of |point|.
@@ -713,6 +723,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;
   virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
   virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
+  virtual void ConvertEventToTarget(ui::EventTarget* target,
+                                    ui::LocatedEvent* event) OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;

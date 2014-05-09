@@ -1265,7 +1265,14 @@ void Widget::OnMouseCaptureLost() {
 }
 
 void Widget::OnScrollEvent(ui::ScrollEvent* event) {
-  SendEventToProcessor(event);
+  ui::ScrollEvent event_copy(*event);
+  SendEventToProcessor(&event_copy);
+
+  // Convert unhandled ui::ET_SCROLL events into ui::ET_MOUSEWHEEL events.
+  if (!event_copy.handled() && event_copy.type() == ui::ET_SCROLL) {
+    ui::MouseWheelEvent wheel(*event);
+    OnMouseEvent(&wheel);
+  }
 }
 
 void Widget::OnGestureEvent(ui::GestureEvent* event) {

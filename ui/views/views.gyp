@@ -654,6 +654,7 @@
         'touchui/touch_selection_controller_impl_unittest.cc',
         'view_model_unittest.cc',
         'view_model_utils_unittest.cc',
+        'view_targeter_unittest.cc',
         'view_unittest.cc',
         'widget/desktop_aura/desktop_focus_rules_unittest.cc',
         'widget/desktop_aura/desktop_native_widget_aura_unittest.cc',

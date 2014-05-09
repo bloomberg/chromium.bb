@@ -1104,6 +1104,11 @@ ui::EventTargeter* View::GetEventTargeter() {
   return targeter_.get();
 }
 
+void View::ConvertEventToTarget(ui::EventTarget* target,
+                                ui::LocatedEvent* event) {
+  event->ConvertLocationToTarget(this, static_cast<View*>(target));
+}
+
 // Accelerators ----------------------------------------------------------------
 
 void View::AddAccelerator(const ui::Accelerator& accelerator) {
