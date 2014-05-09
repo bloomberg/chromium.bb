@@ -99,7 +99,8 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
-  OmniboxView* view = browser()->window()->GetLocationBar()->GetOmniboxView();
+  OmniboxView* view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &view));
   OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
 
   // Put an URL on the clipboard.
@@ -232,4 +233,48 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTabToFocus) {
   }
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
   EXPECT_TRUE(omnibox_view->IsSelectAll());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
+  OmniboxView* omnibox_view = NULL;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+  OmniboxViewViews* omnibox_view_views =
+      static_cast<OmniboxViewViews*>(omnibox_view);
+
+  // Populate suggestions for the omnibox popup.
+  AutocompleteController* autocomplete_controller =
+      omnibox_view->model()->popup_model()->autocomplete_controller();
+  AutocompleteResult& results = autocomplete_controller->result_;
+  ACMatches matches;
+  AutocompleteMatch match;
+  match.destination_url = GURL("http://autocomplete-result/");
+  match.allowed_to_be_default_match = true;
+  match.type = AutocompleteMatchType::HISTORY_TITLE;
+  match.relevance = 500;
+  matches.push_back(match);
+  match.destination_url = GURL("http://autocomplete-result2/");
+  matches.push_back(match);
+  results.AppendMatches(matches);
+  results.SortAndCull(AutocompleteInput(), browser()->profile());
+
+  // The omnibox popup should open with suggestions displayed.
+  omnibox_view->model()->popup_model()->OnResultChanged();
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+
+  // The omnibox text should be selected.
+  EXPECT_TRUE(omnibox_view->IsSelectAll());
+
+  // Simulate a mouse click before dragging the mouse.
+  gfx::Point point(omnibox_view_views->x(), omnibox_view_views->y());
+  ui::MouseEvent pressed(ui::ET_MOUSE_PRESSED, point, point,
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  omnibox_view_views->OnMousePressed(pressed);
+  EXPECT_TRUE(omnibox_view->model()->popup_model()->IsOpen());
+
+  // Simulate a mouse drag of the omnibox text, and the omnibox should close.
+  ui::MouseEvent dragged(ui::ET_MOUSE_DRAGGED, point, point,
+                         ui::EF_LEFT_MOUSE_BUTTON, 0);
+  omnibox_view_views->OnMouseDragged(dragged);
+
+  EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
 }

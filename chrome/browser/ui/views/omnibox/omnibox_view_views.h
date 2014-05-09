@@ -84,6 +84,8 @@ class OmniboxViewViews
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
+
   // Return the number of characers in the current buffer.
   virtual int GetOmniboxTextLength() const OVERRIDE;
 

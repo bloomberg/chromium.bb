@@ -26,7 +26,7 @@ bool LocationIconView::OnMousePressed(const ui::MouseEvent& event) {
         ui::CLIPBOARD_TYPE_SELECTION, &text);
     text = OmniboxView::SanitizeTextForPaste(text);
     OmniboxEditModel* model =
-        page_info_helper_.location_bar()->omnibox_view()->model();
+        page_info_helper_.location_bar()->GetOmniboxView()->model();
     if (model->CanPasteAndGo(text))
       model->PasteAndGo(text);
   }
@@ -41,6 +41,11 @@ void LocationIconView::OnMouseReleased(const ui::MouseEvent& event) {
   OnClickOrTap(event);
 }
 
+bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
+  page_info_helper_.location_bar()->GetOmniboxView()->CloseOmniboxPopup();
+  return false;
+}
+
 void LocationIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() != ui::ET_GESTURE_TAP)
     return;
@@ -53,7 +58,7 @@ void LocationIconView::OnClickOrTap(const ui::LocatedEvent& event) {
   // location bar is at the NTP.  Also skip showing the page info if the
   // toolbar-based origin chip is being shown because it is responsible for
   // showing the page info instead.
-  if (page_info_helper_.location_bar()->omnibox_view()->IsEditingOrEmpty() ||
+  if (page_info_helper_.location_bar()->GetOmniboxView()->IsEditingOrEmpty() ||
       chrome::ShouldDisplayOriginChip())
     return;
 
