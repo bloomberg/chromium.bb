@@ -52,32 +52,32 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   webkit_glue::ResourceLoaderBridge* CreateBridge(
       const RequestInfo& request_info);
 
-  // Adds a request from the pending_requests_ list, returning the new
-  // requests' ID
+  // Adds a request from the |pending_requests_| list, returning the new
+  // requests' ID.
   int AddPendingRequest(RequestPeer* callback,
                         ResourceType::Type resource_type,
                         int origin_pid,
                         const GURL& frame_origin,
-                        const GURL& request_url);
+                        const GURL& request_url,
+                        bool download_to_file);
 
-  // Removes a request from the pending_requests_ list, returning true if the
+  // Removes a request from the |pending_requests_| list, returning true if the
   // request was found and removed.
   bool RemovePendingRequest(int request_id);
 
-  // Cancels a request in the pending_requests_ list.
+  // Cancels a request in the |pending_requests_| list.
   void CancelPendingRequest(int request_id);
-
-  IPC::Sender* message_sender() const {
-    return message_sender_;
-  }
 
   // Toggles the is_deferred attribute for the specified request.
   void SetDefersLoading(int request_id, bool value);
 
   // Indicates the priority of the specified request changed.
-  void DidChangePriority(int routing_id, int request_id,
+  void DidChangePriority(int routing_id,
+                         int request_id,
                          net::RequestPriority new_priority,
                          int intra_priority_value);
+
+  IPC::Sender* message_sender() const { return message_sender_; }
 
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcher.
@@ -101,7 +101,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
                        ResourceType::Type resource_type,
                        int origin_pid,
                        const GURL& frame_origin,
-                       const GURL& request_url);
+                       const GURL& request_url,
+                       bool download_to_file);
 
     ~PendingRequestInfo();
 
@@ -120,6 +121,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     GURL frame_origin;
     // The url of the latest response even in case of redirection.
     GURL response_url;
+    bool download_to_file;
     linked_ptr<IPC::Message> pending_redirect_message;
     base::TimeTicks request_start;
     base::TimeTicks response_start;
@@ -139,33 +141,24 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void FollowPendingRedirect(int request_id, PendingRequestInfo& request_info);
 
   // Message response handlers, called by the message handler for this process.
-  void OnUploadProgress(
-      int request_id,
-      int64 position,
-      int64 size);
+  void OnUploadProgress(int request_id, int64 position, int64 size);
   void OnReceivedResponse(int request_id, const ResourceResponseHead&);
   void OnReceivedCachedMetadata(int request_id, const std::vector<char>& data);
-  void OnReceivedRedirect(
-      int request_id,
-      const GURL& new_url,
-      const ResourceResponseHead& response_head);
-  void OnSetDataBuffer(
-      int request_id,
-      base::SharedMemoryHandle shm_handle,
-      int shm_size,
-      base::ProcessId renderer_pid);
-  void OnReceivedData(
-      int request_id,
-      int data_offset,
-      int data_length,
-      int encoded_data_length);
-  void OnDownloadedData(
-      int request_id,
-      int data_len,
-      int encoded_data_length);
+  void OnReceivedRedirect(int request_id,
+                          const GURL& new_url,
+                          const ResourceResponseHead& response_head);
+  void OnSetDataBuffer(int request_id,
+                       base::SharedMemoryHandle shm_handle,
+                       int shm_size,
+                       base::ProcessId renderer_pid);
+  void OnReceivedData(int request_id,
+                      int data_offset,
+                      int data_length,
+                      int encoded_data_length);
+  void OnDownloadedData(int request_id, int data_len, int encoded_data_length);
   void OnRequestComplete(
       int request_id,
-      const ResourceMsg_RequestCompleteData &request_complete_data);
+      const ResourceMsg_RequestCompleteData& request_complete_data);
 
   // Dispatch the message to one of the message response handlers.
   void DispatchMessage(const IPC::Message& message);
