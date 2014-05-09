@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareInheritedData.h"
 
+#include "core/rendering/style/AppliedTextDecoration.h"
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/DataEquivalency.h"
 #include "core/rendering/style/QuotesData.h"
@@ -39,7 +40,7 @@ struct SameSizeAsStyleRareInheritedData : public RefCounted<SameSizeAsStyleRareI
     Color colors[5];
     void* ownPtrs[1];
     AtomicString atomicStrings[4];
-    void* refPtrs[2];
+    void* refPtrs[3];
     Length lengths[1];
     float secondFloat;
     unsigned m_bitfields[2];
@@ -152,6 +153,7 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
     , textEmphasisCustomMark(o.textEmphasisCustomMark)
     , m_tabSize(o.m_tabSize)
     , tapHighlightColor(o.tapHighlightColor)
+    , appliedTextDecorations(o.appliedTextDecorations)
 {
 }
 
@@ -214,7 +216,8 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const
         && m_imageRendering == o.m_imageRendering
         && m_textUnderlinePosition == o.m_textUnderlinePosition
         && m_rubyPosition == o.m_rubyPosition
-        && dataEquivalent(listStyleImage.get(), o.listStyleImage.get());
+        && dataEquivalent(listStyleImage.get(), o.listStyleImage.get())
+        && dataEquivalent(appliedTextDecorations, o.appliedTextDecorations);
 }
 
 bool StyleRareInheritedData::shadowDataEquivalent(const StyleRareInheritedData& o) const

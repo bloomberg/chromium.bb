@@ -245,9 +245,9 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     }
 
     if (doesNotInheritTextDecoration(style, e))
-        style->setTextDecorationsInEffect(style->textDecoration());
-    else
-        style->addToTextDecorationsInEffect(style->textDecoration());
+        style->clearAppliedTextDecorations();
+
+    style->applyTextDecorations();
 
     if (style->overflowX() != OVISIBLE || style->overflowY() != OVISIBLE)
         adjustOverflow(style);

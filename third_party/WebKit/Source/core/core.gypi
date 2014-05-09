@@ -1686,6 +1686,7 @@
             'rendering/shapes/ShapeInterval.h',
             'rendering/shapes/ShapeOutsideInfo.cpp',
             'rendering/shapes/ShapeOutsideInfo.h',
+            'rendering/style/AppliedTextDecoration.cpp',
             'rendering/style/BasicShapes.cpp',
             'rendering/style/BorderImageLength.h',
             'rendering/style/BorderImageLengthBox.h',

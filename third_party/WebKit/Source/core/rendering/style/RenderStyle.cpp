@@ -28,6 +28,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/TextAutosizer.h"
+#include "core/rendering/style/AppliedTextDecoration.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/QuotesData.h"
@@ -687,7 +688,7 @@ unsigned RenderStyle::computeChangedContextSensitiveProperties(const RenderStyle
 
     if (!diff.needsRepaint()) {
         if (inherited->color != other.inherited->color
-            || inherited_flags._text_decorations != other.inherited_flags._text_decorations
+            || inherited_flags.m_textUnderline != other.inherited_flags.m_textUnderline
             || visual->textDecoration != other.visual->textDecoration) {
             changedContextSensitiveProperties |= ContextSensitivePropertyTextOrColor;
         } else if (rareNonInheritedData.get() != other.rareNonInheritedData.get()) {
@@ -698,7 +699,8 @@ unsigned RenderStyle::computeChangedContextSensitiveProperties(const RenderStyle
             if (rareInheritedData->textFillColor() != other.rareInheritedData->textFillColor()
                 || rareInheritedData->textStrokeColor() != other.rareInheritedData->textStrokeColor()
                 || rareInheritedData->textEmphasisColor() != other.rareInheritedData->textEmphasisColor()
-                || rareInheritedData->textEmphasisFill != other.rareInheritedData->textEmphasisFill)
+                || rareInheritedData->textEmphasisFill != other.rareInheritedData->textEmphasisFill
+                || rareInheritedData->appliedTextDecorations != other.rareInheritedData->appliedTextDecorations)
                 changedContextSensitiveProperties |= ContextSensitivePropertyTextOrColor;
         }
     }
@@ -1179,6 +1181,32 @@ float RenderStyle::computedFontSize() const { return fontDescription().computedS
 int RenderStyle::fontSize() const { return fontDescription().computedPixelSize(); }
 FontWeight RenderStyle::fontWeight() const { return fontDescription().weight(); }
 
+TextDecoration RenderStyle::textDecorationsInEffect() const
+{
+    int decorations = 0;
+
+    const Vector<AppliedTextDecoration>& applied = appliedTextDecorations();
+
+    for (size_t i = 0; i < applied.size(); ++i)
+        decorations |= applied[i].line();
+
+    return static_cast<TextDecoration>(decorations);
+}
+
+const Vector<AppliedTextDecoration>& RenderStyle::appliedTextDecorations() const
+{
+    if (!inherited_flags.m_textUnderline && !rareInheritedData->appliedTextDecorations) {
+        DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, empty, ());
+        return empty;
+    }
+    if (inherited_flags.m_textUnderline) {
+        DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, underline, (1, AppliedTextDecoration(TextDecorationUnderline)));
+        return underline;
+    }
+
+    return rareInheritedData->appliedTextDecorations->vector();
+}
+
 float RenderStyle::wordSpacing() const { return fontDescription().wordSpacing(); }
 float RenderStyle::letterSpacing() const { return fontDescription().letterSpacing(); }
 
@@ -1272,6 +1300,52 @@ void RenderStyle::setFontWeight(FontWeight weight)
     desc.setWeight(weight);
     setFontDescription(desc);
     font().update(currentFontSelector);
+}
+
+void RenderStyle::addAppliedTextDecoration(const AppliedTextDecoration& decoration)
+{
+    RefPtr<AppliedTextDecorationList>& list = rareInheritedData.access()->appliedTextDecorations;
+
+    if (!list)
+        list = AppliedTextDecorationList::create();
+    else if (!list->hasOneRef())
+        list = list->copy();
+
+    if (inherited_flags.m_textUnderline) {
+        inherited_flags.m_textUnderline = false;
+        list->append(AppliedTextDecoration(TextDecorationUnderline));
+    }
+
+    list->append(decoration);
+}
+
+void RenderStyle::applyTextDecorations()
+{
+    if (textDecoration() == TextDecorationNone)
+        return;
+
+    int decorations = textDecoration();
+
+    if (decorations & TextDecorationUnderline) {
+        // To save memory, we don't use AppliedTextDecoration objects in the
+        // common case of a single underline.
+        if (!rareInheritedData->appliedTextDecorations)
+            inherited_flags.m_textUnderline = true;
+        else
+            addAppliedTextDecoration(AppliedTextDecoration(TextDecorationUnderline));
+    }
+    if (decorations & TextDecorationOverline)
+        addAppliedTextDecoration(AppliedTextDecoration(TextDecorationOverline));
+    if (decorations & TextDecorationLineThrough)
+        addAppliedTextDecoration(AppliedTextDecoration(TextDecorationLineThrough));
+}
+
+void RenderStyle::clearAppliedTextDecorations()
+{
+    inherited_flags.m_textUnderline = false;
+
+    if (rareInheritedData->appliedTextDecorations)
+        rareInheritedData.access()->appliedTextDecorations = nullptr;
 }
 
 void RenderStyle::getShadowExtent(const ShadowList* shadowList, LayoutUnit &top, LayoutUnit &right, LayoutUnit &bottom, LayoutUnit &left) const

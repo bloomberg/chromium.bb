@@ -31,14 +31,18 @@
 #include "platform/graphics/Color.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/RefVector.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
+class AppliedTextDecoration;
 class CursorList;
 class QuotesData;
 class ShadowList;
 class StyleImage;
+
+typedef RefVector<AppliedTextDecoration> AppliedTextDecorationList;
 
 // This struct is for rarely used inherited CSS3, CSS2, and WebKit-specific properties.
 // By grouping them together, we save space, and only allocate this object when someone
@@ -139,6 +143,8 @@ public:
     unsigned m_tabSize;
 
     Color tapHighlightColor;
+
+    RefPtr<AppliedTextDecorationList> appliedTextDecorations;
 
 private:
     StyleRareInheritedData();
