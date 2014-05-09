@@ -765,9 +765,8 @@ bool SafeBrowsingStoreFile::GetAddFullHashes(
 }
 
 bool SafeBrowsingStoreFile::WriteAddHash(int32 chunk_id,
-                                         base::Time receive_time,
                                          const SBFullHash& full_hash) {
-  add_hashes_.push_back(SBAddFullHash(chunk_id, receive_time, full_hash));
+  add_hashes_.push_back(SBAddFullHash(chunk_id, full_hash));
   return true;
 }
 

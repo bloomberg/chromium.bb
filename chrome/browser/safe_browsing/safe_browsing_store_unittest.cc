@@ -81,29 +81,27 @@ TEST(SafeBrowsingStoreTest, SBAddPrefixHashLess) {
   onetwo.full_hash[sizeof(SBPrefix)] = 2;
   two.prefix = 2;
 
-  const base::Time now = base::Time::Now();
-
   // prefix dominates.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(11, now, one),
-                                  SBAddFullHash(10, now, two)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(11, now, two),
-                                   SBAddFullHash(10, now, one)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(11, one),
+                                  SBAddFullHash(10, two)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(11, two),
+                                   SBAddFullHash(10, one)));
 
   // After prefix, add_id.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, now, one),
-                                  SBAddFullHash(11, now, onetwo)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(11, now, one),
-                                   SBAddFullHash(10, now, onetwo)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, one),
+                                  SBAddFullHash(11, onetwo)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(11, one),
+                                   SBAddFullHash(10, onetwo)));
 
   // After add_id, full hash.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, now, one),
-                                  SBAddFullHash(10, now, onetwo)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, now, onetwo),
-                                   SBAddFullHash(10, now, one)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, one),
+                                  SBAddFullHash(10, onetwo)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, onetwo),
+                                   SBAddFullHash(10, one)));
 
   // Equal is not less-than.
-  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, now, one),
-                                   SBAddFullHash(10, now, one)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, one),
+                                   SBAddFullHash(10, one)));
 }
 
 TEST(SafeBrowsingStoreTest, SBSubPrefixLess) {
@@ -174,8 +172,6 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsEmpty) {
 
 // Test that subs knock out adds.
 TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
-  const base::Time kNow = base::Time::Now();
-
   // A full hash which shares prefix with another.
   const SBFullHash kHash1mod = ModifyHashAfterPrefix(kHash1, 1);
 
@@ -192,13 +188,13 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
   sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash5.prefix));
 
   // Add hashes with same prefix, plus subs to knock them out.
-  add_hashes.push_back(SBAddFullHash(kAddChunk2, kNow, kHash1));
-  add_hashes.push_back(SBAddFullHash(kAddChunk2, kNow, kHash1mod));
+  add_hashes.push_back(SBAddFullHash(kAddChunk2, kHash1));
+  add_hashes.push_back(SBAddFullHash(kAddChunk2, kHash1mod));
   sub_hashes.push_back(SBSubFullHash(kSubChunk2, kAddChunk2, kHash1));
   sub_hashes.push_back(SBSubFullHash(kSubChunk2, kAddChunk2, kHash1mod));
 
   // Adds with no corresponding sub.  Both items should be retained.
-  add_hashes.push_back(SBAddFullHash(kAddChunk6, kNow, kHash6));
+  add_hashes.push_back(SBAddFullHash(kAddChunk6, kHash6));
   add_prefixes.push_back(SBAddPrefix(kAddChunk7, kHash2.prefix));
 
   // Subs with no corresponding add.  Both items should be retained.
@@ -207,8 +203,8 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
 
   // Add hashes with the same prefix, with a sub that will knock one of them
   // out.
-  add_hashes.push_back(SBAddFullHash(kAddChunk5, kNow, kHash4));
-  add_hashes.push_back(SBAddFullHash(kAddChunk5, kNow, kHash4mod));
+  add_hashes.push_back(SBAddFullHash(kAddChunk5, kHash4));
+  add_hashes.push_back(SBAddFullHash(kAddChunk5, kHash4mod));
   sub_hashes.push_back(SBSubFullHash(kSubChunk5, kAddChunk5, kHash4mod));
 
   const base::hash_set<int32> no_deletions;
@@ -239,8 +235,6 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsKnockout) {
 // Test chunk deletions, and ordering of deletions WRT subs knocking
 // out adds.
 TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
-  const base::Time kNow = base::Time::Now();
-
   // A full hash which shares prefix with another.
   const SBFullHash kHash1mod = ModifyHashAfterPrefix(kHash1, 1);
 
@@ -249,19 +243,18 @@ TEST(SafeBrowsingStoreTest, SBProcessSubsDeleteChunk) {
   SBSubPrefixes sub_prefixes;
   std::vector<SBSubFullHash> sub_hashes;
 
-
   // An add prefix plus a sub to knock it out.
   add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash5.prefix));
   sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash5.prefix));
 
   // Add hashes with same prefix, plus subs to knock them out.
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1));
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1mod));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kHash1));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kHash1mod));
   sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1));
   sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod));
 
   // Adds with no corresponding sub.  Both items should be retained.
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash6));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kHash6));
   add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash2.prefix));
 
   // Subs with no corresponding add.  Both items should be retained.
@@ -310,8 +303,6 @@ TEST(SafeBrowsingStoreTest, Y2K38) {
 // Test that prefixes which were injected from full hashes are being removed.
 // This was a mistake in earlier versions of the code.
 TEST(SafeBrowsingStoreTest, KnockoutPrefixVolunteers) {
-  const base::Time kNow = base::Time::Now();
-
   // Construct some full hashes which share prefix with another.
   const SBFullHash kHash1mod1 = ModifyHashAfterPrefix(kHash1, 1);
   const SBFullHash kHash2mod1 = ModifyHashAfterPrefix(kHash2, 1);
@@ -322,12 +313,12 @@ TEST(SafeBrowsingStoreTest, KnockoutPrefixVolunteers) {
   std::vector<SBSubFullHash> sub_hashes;
 
   // Full hashes for an add chunk will have had the prefix injected.
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1));
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1mod1));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kHash1));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kHash1mod1));
   add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash1.prefix));
 
   // Other full hashes or prefixes are not affected.
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash3));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kHash3));
   add_prefixes.push_back(SBAddPrefix(kAddChunk2, kHash4.prefix));
 
   // Full hashes for a sub chunk will have had the prefix injected.

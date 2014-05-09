@@ -856,12 +856,11 @@ void SafeBrowsingDatabaseNew::InsertAdd(int chunk_id, SBPrefix host,
     }
   } else {
     // Full hashes only.
-    const base::Time receive_time = base::Time::Now();
     for (int i = 0; i < count; ++i) {
       const SBFullHash full_hash = entry->FullHashAt(i);
 
       STATS_COUNTER("SB.PrefixAddFull", 1);
-      store->WriteAddHash(encoded_chunk_id, receive_time, full_hash);
+      store->WriteAddHash(encoded_chunk_id, full_hash);
     }
   }
 }

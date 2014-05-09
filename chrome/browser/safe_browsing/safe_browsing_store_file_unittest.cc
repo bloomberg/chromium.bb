@@ -67,7 +67,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
   }
 
   // Populate the store with some testing data.
-  void PopulateStore(const base::Time& now) {
+  void PopulateStore() {
     ASSERT_TRUE(store_->BeginUpdate());
 
     EXPECT_TRUE(store_->BeginChunk());
@@ -87,7 +87,7 @@ class SafeBrowsingStoreFileTest : public PlatformTest {
     EXPECT_TRUE(store_->BeginChunk());
     store_->SetAddChunk(kAddChunk2);
     EXPECT_TRUE(store_->CheckAddChunk(kAddChunk2));
-    EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, now, kHash4));
+    EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, kHash4));
     EXPECT_TRUE(store_->FinishChunk());
 
     // Chunk numbers shouldn't leak over.
@@ -151,8 +151,7 @@ TEST_F(SafeBrowsingStoreFileTest, Empty) {
 // Write some prefix and hash data to the store, add more data in another
 // transaction, then verify that the union of all the data is present.
 TEST_F(SafeBrowsingStoreFileTest, BasicStore) {
-  const base::Time now = base::Time::Now();
-  PopulateStore(now);
+  PopulateStore();
 
   ASSERT_TRUE(store_->BeginUpdate());
 
@@ -189,16 +188,13 @@ TEST_F(SafeBrowsingStoreFileTest, BasicStore) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
-    // EXPECT_TRUE(add_full_hashes_result[0].received == now)?
-    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
     EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
   }
 }
 
 // Verify that the min and max prefixes are stored and operated on.
 TEST_F(SafeBrowsingStoreFileTest, PrefixMinMax) {
-  const base::Time now = base::Time::Now();
-  PopulateStore(now);
+  PopulateStore();
 
   ASSERT_TRUE(store_->BeginUpdate());
 
@@ -247,8 +243,6 @@ TEST_F(SafeBrowsingStoreFileTest, PrefixMinMax) {
 TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
   ASSERT_TRUE(store_->BeginUpdate());
 
-  const base::Time now = base::Time::Now();
-
   EXPECT_TRUE(store_->BeginChunk());
   store_->SetAddChunk(kAddChunk1);
   EXPECT_TRUE(store_->WriteAddPrefix(kAddChunk1, kHash1.prefix));
@@ -257,7 +251,7 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
   EXPECT_TRUE(store_->BeginChunk());
   store_->SetAddChunk(kAddChunk2);
-  EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, now, kHash4));
+  EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, kHash4));
   EXPECT_TRUE(store_->FinishChunk());
 
   EXPECT_TRUE(store_->BeginChunk());
@@ -279,7 +273,6 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
-    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
     EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
   }
 
@@ -303,7 +296,6 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
-    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
     EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
   }
 
@@ -328,7 +320,6 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
-    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
     EXPECT_TRUE(SBFullHashEqual(kHash4, add_full_hashes_result[0].full_hash));
   }
 }
@@ -336,8 +327,6 @@ TEST_F(SafeBrowsingStoreFileTest, SubKnockout) {
 // Test that deletes delete the chunk's data.
 TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
   ASSERT_TRUE(store_->BeginUpdate());
-
-  const base::Time now = base::Time::Now();
 
   // A prefix chunk which will be deleted.
   EXPECT_FALSE(store_->CheckAddChunk(kAddChunk1));
@@ -358,7 +347,7 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
   EXPECT_FALSE(store_->CheckAddChunk(kAddChunk3));
   store_->SetAddChunk(kAddChunk3);
   EXPECT_TRUE(store_->BeginChunk());
-  EXPECT_TRUE(store_->WriteAddHash(kAddChunk3, now, kHash6));
+  EXPECT_TRUE(store_->WriteAddHash(kAddChunk3, kHash6));
   EXPECT_TRUE(store_->FinishChunk());
 
   // A sub chunk to delete.
@@ -397,7 +386,6 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteChunks) {
 
     ASSERT_EQ(1U, add_full_hashes_result.size());
     EXPECT_EQ(kAddChunk3, add_full_hashes_result[0].chunk_id);
-    EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
     EXPECT_TRUE(SBFullHashEqual(kHash6, add_full_hashes_result[0].full_hash));
   }
 
@@ -452,7 +440,7 @@ TEST_F(SafeBrowsingStoreFileTest, Delete) {
   EXPECT_TRUE(store_->Delete());
 
   // Create a store file.
-  PopulateStore(base::Time::Now());
+  PopulateStore();
 
   EXPECT_TRUE(base::PathExists(filename_));
   EXPECT_TRUE(store_->Delete());
@@ -487,7 +475,7 @@ TEST_F(SafeBrowsingStoreFileTest, DeleteTemp) {
 // Test basic corruption-handling.
 TEST_F(SafeBrowsingStoreFileTest, DetectsCorruption) {
   // Load a store with some data.
-  PopulateStore(base::Time::Now());
+  PopulateStore();
 
   // Can successfully open and read the store.
   {
@@ -549,7 +537,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidity) {
 
   // A store with some data is valid.
   EXPECT_FALSE(base::PathExists(filename_));
-  PopulateStore(base::Time::Now());
+  PopulateStore();
   EXPECT_TRUE(base::PathExists(filename_));
   ASSERT_TRUE(store_->BeginUpdate());
   EXPECT_FALSE(corruption_detected_);
@@ -560,7 +548,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidity) {
 
 // Corrupt the header.
 TEST_F(SafeBrowsingStoreFileTest, CheckValidityHeader) {
-  PopulateStore(base::Time::Now());
+  PopulateStore();
   EXPECT_TRUE(base::PathExists(filename_));
 
   // 37 is the most random prime number.  It's also past the initial header
@@ -578,7 +566,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidityHeader) {
 
 // Corrupt the prefix payload.
 TEST_F(SafeBrowsingStoreFileTest, CheckValidityPayload) {
-  PopulateStore(base::Time::Now());
+  PopulateStore();
   EXPECT_TRUE(base::PathExists(filename_));
 
   // 137 is the second most random prime number.  It's also past the header and
@@ -600,7 +588,7 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidityPayload) {
 
 // Corrupt the checksum.
 TEST_F(SafeBrowsingStoreFileTest, CheckValidityChecksum) {
-  PopulateStore(base::Time::Now());
+  PopulateStore();
   EXPECT_TRUE(base::PathExists(filename_));
 
   // An offset from the end of the file which is in the checksum.
@@ -621,8 +609,6 @@ TEST_F(SafeBrowsingStoreFileTest, CheckValidityChecksum) {
 TEST_F(SafeBrowsingStoreFileTest, GetAddPrefixesAndHashes) {
   ASSERT_TRUE(store_->BeginUpdate());
 
-  const base::Time now = base::Time::Now();
-
   EXPECT_TRUE(store_->BeginChunk());
   store_->SetAddChunk(kAddChunk1);
   EXPECT_TRUE(store_->CheckAddChunk(kAddChunk1));
@@ -633,7 +619,7 @@ TEST_F(SafeBrowsingStoreFileTest, GetAddPrefixesAndHashes) {
   EXPECT_TRUE(store_->BeginChunk());
   store_->SetAddChunk(kAddChunk2);
   EXPECT_TRUE(store_->CheckAddChunk(kAddChunk2));
-  EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, now, kHash4));
+  EXPECT_TRUE(store_->WriteAddHash(kAddChunk2, kHash4));
   EXPECT_TRUE(store_->FinishChunk());
 
   store_->SetSubChunk(kSubChunk1);
