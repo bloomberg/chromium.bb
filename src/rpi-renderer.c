@@ -858,8 +858,8 @@ rpir_view_compute_rects(struct rpir_view *view,
 	src_height = int_max(src_height, 0);
 
 	DBG("rpir_view %p %dx%d: p1 %f, %f; p2 %f, %f\n", view,
-	    view->view->geometry.width,
-	    view->view->geometry.height,
+	    view->view->surface->width,
+	    view->view->surface->height,
 	    p1.f[0], p1.f[1], p2.f[0], p2.f[1]);
 	DBG("src rect %d;%d, %d;%d, %d;%dx%d;%d\n",
 	    src_x >> 16, src_x & 0xffff,
