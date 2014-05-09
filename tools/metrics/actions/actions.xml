@@ -8178,6 +8178,11 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_Display">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Device: Display settings</description>
+</action>
+
 <action name="Options_DisplayRearrange">
   <owner>stevenjb@chromium.org</owner>
   <description>
