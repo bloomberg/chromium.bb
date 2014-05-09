@@ -222,7 +222,7 @@ if test x$enable_rdp_compositor = xyes; then
   CPPFLAGS="$SAVED_CPPFLAGS"
 fi
 
-AC_ARG_ENABLE([screen-sharing], [--enable-screen-sharing],,
+AC_ARG_ENABLE([screen-sharing], [  --enable-screen-sharing],,
               enable_screen_sharing=no)
 AM_CONDITIONAL([ENABLE_SCREEN_SHARING],
                [test x$enable_screen_sharing = xyes])
