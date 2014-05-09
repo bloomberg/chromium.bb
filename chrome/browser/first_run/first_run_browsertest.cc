@@ -292,6 +292,8 @@ INSTANTIATE_TEST_CASE_P(
         chrome_prefs::internals::kSettingsEnforcementGroupEnforceOnload,
         chrome_prefs::internals::kSettingsEnforcementGroupEnforceAlways,
         chrome_prefs::internals::
-            kSettingsEnforcementGroupEnforceAlwaysWithExtensions));
+            kSettingsEnforcementGroupEnforceAlwaysWithExtensions,
+        chrome_prefs::internals::
+            kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE));
 
 #endif  // !defined(OS_CHROMEOS)
