@@ -91,7 +91,7 @@ public interface SharedBufferHandle extends Handle {
     }
 
     /**
-     * TODO(qsr): Insert description here.
+     * Flags for the shared buffer map operation.
      */
     public static class MapFlags extends Flags<MapFlags> {
         private static final int FLAG_NONE = 0;

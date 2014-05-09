@@ -4,37 +4,35 @@
 
 package org.chromium.mojo.system;
 
+import org.chromium.mojo.system.DataPipe.ConsumerHandle;
+import org.chromium.mojo.system.DataPipe.ProducerHandle;
 
 /**
- * TODO(qsr): Insert description here.
+ * A mojo handle of unknown type. This handle can be typed by using one of its methods, which will
+ * return a handle of the requested type and invalidate this object. No validation is made when the
+ * conversion operation is called.
  */
 public interface UntypedHandle extends Handle {
 
     /**
-     * TODO(qsr):
-     *
-     * @return TODO(qsr)
+     * Returns the underlying handle, as a {@link MessagePipeHandle}, invalidating this
+     * representation.
      */
     public MessagePipeHandle toMessagePipeHandle();
 
     /**
-     * TODO(qsr):
-     *
-     * @return TODO(qsr)
+     * Returns the underlying handle, as a {@link ConsumerHandle}, invalidating this representation.
      */
-    public DataPipe.ConsumerHandle toDataPipeConsumerHandle();
+    public ConsumerHandle toDataPipeConsumerHandle();
 
     /**
-     * TODO(qsr):
-     *
-     * @return TODO(qsr)
+     * Returns the underlying handle, as a {@link ProducerHandle}, invalidating this representation.
      */
-    public DataPipe.ProducerHandle toDataPipeProducerHandle();
+    public ProducerHandle toDataPipeProducerHandle();
 
     /**
-     * TODO(qsr):
-     *
-     * @return TODO(qsr)
+     * Returns the underlying handle, as a {@link SharedBufferHandle}, invalidating this
+     * representation.
      */
     public SharedBufferHandle toSharedBufferHandle();
 
