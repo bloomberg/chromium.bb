@@ -76,7 +76,6 @@ const char* kAtomsToCache[] = {
   "UTF8_STRING",
   "WM_DELETE_WINDOW",
   "WM_PROTOCOLS",
-  "WM_S0",
   "_NET_WM_CM_S0",
   "_NET_WM_ICON",
   "_NET_WM_NAME",
@@ -1107,13 +1106,6 @@ void DesktopWindowTreeHostX11::InitX11Window(
     SetWindowIcons(gfx::ImageSkia(), *window_icon);
   }
   CreateCompositor(GetAcceleratedWidget());
-}
-
-bool DesktopWindowTreeHostX11::IsWindowManagerPresent() {
-  // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
-  // of WM_Sn selections (where n is a screen number).
-  return XGetSelectionOwner(
-      xdisplay_, atom_cache_.GetAtom("WM_S0")) != None;
 }
 
 void DesktopWindowTreeHostX11::SetWMSpecState(bool enabled,

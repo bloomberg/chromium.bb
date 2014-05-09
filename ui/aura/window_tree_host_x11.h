@@ -79,11 +79,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   // calibration).
   void DispatchXI2Event(const base::NativeEvent& event);
 
-  // Returns true if there's an X window manager present... in most cases.  Some
-  // window managers (notably, ion3) don't implement enough of ICCCM for us to
-  // detect that they're there.
-  bool IsWindowManagerPresent();
-
   // Sets the cursor on |xwindow_| to |cursor|.  Does not check or update
   // |current_cursor_|.
   void SetCursorInternal(gfx::NativeCursor cursor);

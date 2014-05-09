@@ -56,10 +56,6 @@ const char* kAtomsToCache[] = {
   "WM_DELETE_WINDOW",
   "_NET_WM_PING",
   "_NET_WM_PID",
-  "WM_S0",
-#if defined(OS_CHROMEOS)
-  "Tap Paused",  // Defined in the gestures library.
-#endif
   NULL
 };
 
@@ -171,6 +167,9 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
                   32,
                   PropModeReplace,
                   reinterpret_cast<unsigned char*>(&pid), 1);
+
+  // Allow subclasses to create and cache additional atoms.
+  atom_cache_.allow_uncached_atoms();
 
   XRRSelectInput(xdisplay_, x_root_window_,
                  RRScreenChangeNotifyMask | RROutputChangeNotifyMask);
@@ -572,13 +571,6 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
   // If we coalesced an event we need to free its cookie.
   if (num_coalesced > 0)
     XFreeEventData(xev->xgeneric.display, &last_event.xcookie);
-}
-
-bool WindowTreeHostX11::IsWindowManagerPresent() {
-  // Per ICCCM 2.8, "Manager Selections", window managers should take ownership
-  // of WM_Sn selections (where n is a screen number).
-  return XGetSelectionOwner(
-      xdisplay_, atom_cache_.GetAtom("WM_S0")) != None;
 }
 
 void WindowTreeHostX11::SetCursorInternal(gfx::NativeCursor cursor) {

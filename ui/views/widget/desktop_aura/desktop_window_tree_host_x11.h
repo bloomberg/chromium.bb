@@ -158,11 +158,6 @@ private:
   // along with all aura client objects that direct behavior.
   aura::WindowEventDispatcher* InitDispatcher(const Widget::InitParams& params);
 
-  // Returns true if there's an X window manager present... in most cases.  Some
-  // window managers (notably, ion3) don't implement enough of ICCCM for us to
-  // detect that they're there.
-  bool IsWindowManagerPresent();
-
   // Sends a message to the x11 window manager, enabling or disabling the
   // states |state1| and |state2|.
   void SetWMSpecState(bool enabled, ::Atom state1, ::Atom state2);
