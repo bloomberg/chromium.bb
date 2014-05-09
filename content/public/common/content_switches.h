@@ -247,6 +247,7 @@ extern const char kTraceStartupDuration[];
 extern const char kTraceStartupFile[];
 CONTENT_EXPORT extern const char kUIPrioritizeInGpuProcess[];
 CONTENT_EXPORT extern const char kUseDiscardableMemory[];
+CONTENT_EXPORT extern const char kUseFakeDeviceForMediaStream[];
 CONTENT_EXPORT extern const char kUseFakeUIForMediaStream[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
 extern const char kUtilityCmdPrefix[];

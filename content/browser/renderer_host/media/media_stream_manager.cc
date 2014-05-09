@@ -37,7 +37,8 @@
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_switches.h"
-#include "media/video/capture/video_capture_device_factory.h"
+#include "media/video/capture/fake_video_capture_device_factory.h"
+#include "media/video/capture/file_video_capture_device_factory.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -1437,13 +1438,26 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   io_loop_ = base::MessageLoop::current();
   io_loop_->AddDestructionObserver(this);
 
+  // Use a Fake Audio Device and Fake/File Video Device Factory if the command
+  // line flags are present, otherwise use a normal device factory.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeDeviceForMediaStream)) {
+          switches::kUseFakeDeviceForMediaStream)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kUseFileForFakeVideoCapture)) {
+      video_capture_manager_ = new VideoCaptureManager(
+          scoped_ptr<media::VideoCaptureDeviceFactory>(
+              new media::FileVideoCaptureDeviceFactory()));
+    } else {
+      video_capture_manager_ = new VideoCaptureManager(
+          scoped_ptr<media::VideoCaptureDeviceFactory>(
+              new media::FakeVideoCaptureDeviceFactory()));
+    }
     audio_input_device_manager()->UseFakeDevice();
+  } else {
+    video_capture_manager_ = new VideoCaptureManager(
+        scoped_ptr<media::VideoCaptureDeviceFactory>(
+            new media::VideoCaptureDeviceFactory()));
   }
-
-  video_capture_manager_ = new VideoCaptureManager(
-      media::VideoCaptureDeviceFactory::CreateFactory());
   video_capture_manager_->Register(this, device_task_runner_);
 }
 

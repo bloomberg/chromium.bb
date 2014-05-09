@@ -16,7 +16,6 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/webrtc_content_browsertest_base.h"
 #include "media/audio/audio_manager.h"
-#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_WIN)

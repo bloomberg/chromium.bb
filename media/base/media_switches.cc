@@ -40,7 +40,6 @@ const char kAlsaOutputDevice[] = "alsa-output-device";
 // for experimentation purposes, in particular library load time issue, the
 // usage of this library can be enabled by using this flag.
 const char kEnableAVFoundation[] = "enable-avfoundation";
-
 // QTKit is the media capture API predecessor to AVFoundation, available up and
 // until Mac OS X 10.9 (despite being deprecated in this last one). This flag
 // is used for troubleshooting and testing, and forces QTKit in builds and
@@ -85,9 +84,6 @@ const char kWaveOutBuffers[] = "waveout-buffers";
 // Use CRAS, the ChromeOS audio server.
 const char kUseCras[] = "use-cras";
 #endif
-
-// Use fake device for Media Stream to replace actual camera and microphone.
-const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
 
 // Use a raw video file as fake video capture device.
 const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";

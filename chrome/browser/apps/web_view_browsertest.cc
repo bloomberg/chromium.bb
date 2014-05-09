@@ -31,7 +31,6 @@
 #include "content/public/test/fake_speech_recognition_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
-#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"

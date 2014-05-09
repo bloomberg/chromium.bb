@@ -29,7 +29,6 @@
 #include "content/shell/android/shell_jni_registrar.h"
 #include "content/shell/app/shell_main_delegate.h"
 #include "jni/ContentBrowserTestsActivity_jni.h"
-#include "media/base/media_switches.h"
 #include "testing/android/native_test_util.h"
 
 using testing::native_test_util::ArgsToArgv;

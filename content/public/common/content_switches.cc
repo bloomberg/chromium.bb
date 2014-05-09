@@ -885,6 +885,9 @@ extern const char kUIPrioritizeInGpuProcess[] =
 // Overrides the preferred discardable memory implementation.
 const char kUseDiscardableMemory[] = "use-discardable-memory";
 
+// Use fake device for MediaStream to replace actual camera and microphone.
+const char kUseFakeDeviceForMediaStream[] = "use-fake-device-for-media-stream";
+
 // Bypass the media stream infobar by selecting the default device for media
 // streams (e.g. WebRTC). Works with --use-fake-device-for-media-stream.
 const char kUseFakeUIForMediaStream[]     = "use-fake-ui-for-media-stream";

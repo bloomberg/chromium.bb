@@ -26,7 +26,6 @@
 #include "content/test/test_content_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/mock_audio_manager.h"
-#include "media/base/media_switches.h"
 #include "media/video/capture/fake_video_capture_device_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
