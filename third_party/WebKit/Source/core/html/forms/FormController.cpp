@@ -374,13 +374,18 @@ void FormKeyGenerator::willDeleteForm(HTMLFormElement* form)
 
 // ----------------------------------------------------------------------------
 
-PassRefPtr<DocumentState> DocumentState::create()
+PassRefPtrWillBeRawPtr<DocumentState> DocumentState::create()
 {
-    return adoptRef(new DocumentState);
+    return adoptRefWillBeNoop(new DocumentState);
 }
 
 DocumentState::~DocumentState()
 {
+}
+
+void DocumentState::trace(Visitor* visitor)
+{
+    visitor->trace(m_formControls);
 }
 
 void DocumentState::addControl(HTMLFormControlElementWithState* control)
@@ -441,6 +446,11 @@ FormController::FormController()
 
 FormController::~FormController()
 {
+}
+
+void FormController::trace(Visitor* visitor)
+{
+    visitor->trace(m_documentState);
 }
 
 DocumentState* FormController::formElementsState() const

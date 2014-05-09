@@ -639,12 +639,10 @@ void Document::dispose()
     destroyTreeScopeData();
 
     removeDetachedChildren();
-#endif
 
     // removeDetachedChildren() can access FormController.
     m_formController.clear();
 
-#if !ENABLE(OILPAN)
     m_markers->clear();
 
     m_cssCanvasElements.clear();
@@ -5706,6 +5704,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_topLayerElements);
     visitor->trace(m_elemSheet);
     visitor->trace(m_styleEngine);
+    visitor->trace(m_formController);
     visitor->trace(m_fetcher);
     visitor->trace(m_contextFeatures);
     visitor->trace(m_styleSheetList);

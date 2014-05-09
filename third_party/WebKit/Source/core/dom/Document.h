@@ -1245,7 +1245,7 @@ private:
     OwnPtrWillBeMember<StyleEngine> m_styleEngine;
     RefPtrWillBeMember<StyleSheetList> m_styleSheetList;
 
-    OwnPtr<FormController> m_formController;
+    OwnPtrWillBeMember<FormController> m_formController;
 
     TextLinkColors m_textLinkColors;
     const OwnPtr<VisitedLinkState> m_visitedLinkState;

@@ -335,7 +335,7 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
 
     m_wasUserSubmitted = processingUserGesture;
 
-    RefPtr<HTMLFormControlElement> firstSuccessfulSubmitButton;
+    RefPtrWillBeRawPtr<HTMLFormControlElement> firstSuccessfulSubmitButton = nullptr;
     bool needButtonActivation = activateSubmitButton; // do we need to activate a submit button?
 
     const Vector<FormAssociatedElement*>& elements = associatedElements();
