@@ -25,10 +25,10 @@ namespace {
 {%-   for method in interface.methods %}
 {%-     set method_name = "k%s_%s_Name"|format(interface.name, method.name) %}
 const uint32_t {{method_name}} = {{method.ordinal}};
-{%      set struct = interface|struct_from_method(method) %}
+{%      set struct = method|struct_from_method %}
 {%-     include "params_definition.tmpl" %}
 {%-     if method.response_parameters != None %}
-{%-       set struct = interface|response_struct_from_method(method) %}
+{%-       set struct = method|response_struct_from_method %}
 {%-       include "params_definition.tmpl" %}
 {%-     endif %}
 {%-   endfor %}

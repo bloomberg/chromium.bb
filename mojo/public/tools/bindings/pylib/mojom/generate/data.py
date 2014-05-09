@@ -208,9 +208,7 @@ def MethodToData(method):
   return data
 
 def MethodFromData(module, data, interface):
-  method = mojom.Method()
-  method.name = data['name']
-  method.ordinal = data.get('ordinal')
+  method = mojom.Method(interface, data['name'], ordinal=data.get('ordinal'))
   method.default = data.get('default')
   method.parameters = map(lambda parameter:
       ParameterFromData(module, parameter, interface), data['parameters'])

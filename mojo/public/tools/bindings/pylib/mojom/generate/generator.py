@@ -10,25 +10,25 @@ import os.path
 import module as mojom
 import pack
 
-def GetStructFromMethod(interface, method):
+def GetStructFromMethod(method):
   """Converts a method's parameters into the fields of a struct."""
-  params_class = "%s_%s_Params" % (interface.name, method.name)
-  struct = mojom.Struct(params_class, module=interface.module)
+  params_class = "%s_%s_Params" % (method.interface.name, method.name)
+  struct = mojom.Struct(params_class, module=method.interface.module)
   for param in method.parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
   struct.packed = pack.PackedStruct(struct)
   return struct
 
-def GetResponseStructFromMethod(interface, method):
+def GetResponseStructFromMethod(method):
   """Converts a method's response_parameters into the fields of a struct."""
-  params_class = "%s_%s_ResponseParams" % (interface.name, method.name)
-  struct = mojom.Struct(params_class, module=interface.module)
+  params_class = "%s_%s_ResponseParams" % (method.interface.name, method.name)
+  struct = mojom.Struct(params_class, module=method.interface.module)
   for param in method.response_parameters:
     struct.AddField(param.name, param.kind, param.ordinal)
   struct.packed = pack.PackedStruct(struct)
   return struct
 
-def GetStructInfo(exported, struct):
+def GetDataHeader(exported, struct):
   struct.packed = pack.PackedStruct(struct)
   struct.bytes = pack.GetByteLayout(struct.packed)
   struct.exported = exported
@@ -80,13 +80,13 @@ class Generator(object):
     result = []
     for interface in self.module.interfaces:
       for method in interface.methods:
-        result.append(GetStructFromMethod(interface, method))
+        result.append(GetStructFromMethod(method))
         if method.response_parameters != None:
-          result.append(GetResponseStructFromMethod(interface, method))
-    return map(partial(GetStructInfo, False), result)
+          result.append(GetResponseStructFromMethod(method))
+    return map(partial(GetDataHeader, False), result)
 
   def GetStructs(self):
-    return map(partial(GetStructInfo, True), self.module.structs)
+    return map(partial(GetDataHeader, True), self.module.structs)
 
   def Write(self, contents, filename):
     if self.output_dir is None:

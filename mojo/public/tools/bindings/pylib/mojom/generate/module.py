@@ -118,7 +118,8 @@ class Parameter(object):
 
 
 class Method(object):
-  def __init__(self, name=None, ordinal=None):
+  def __init__(self, interface, name, ordinal=None):
+    self.interface = interface
     self.name = name
     self.ordinal = ordinal
     self.parameters = []
@@ -150,7 +151,7 @@ class Interface(Kind):
     self.methods = []
 
   def AddMethod(self, name, ordinal=None):
-    method = Method(name, ordinal)
+    method = Method(self, name, ordinal=ordinal)
     self.methods.append(method)
     return method
 
