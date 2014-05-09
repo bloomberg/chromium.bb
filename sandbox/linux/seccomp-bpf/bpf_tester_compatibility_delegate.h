@@ -17,6 +17,30 @@
 
 namespace sandbox {
 
+namespace internal {
+
+// Internal helper class to hold a value of type T.
+template <typename T>
+class AuxHolder {
+ public:
+  AuxHolder() : val_() {}
+  T* get() { return &val_; }
+
+ private:
+  T val_;
+};
+
+// Specialization of AuxHolder for void.
+// Returns a null pointer instead of allocating void.
+template <>
+class AuxHolder<void> {
+ public:
+  AuxHolder() {}
+  void* get() { return NULL; }
+};
+
+}  // namespace internal
+
 // This templated class allows building a BPFTesterDelegate from a
 // deprecated-style BPF policy (that is a SyscallEvaluator function pointer,
 // instead of a SandboxBPFPolicy class), specified in |policy_function| and a
@@ -31,50 +55,34 @@ class BPFTesterCompatibilityDelegate : public BPFTesterDelegate {
   BPFTesterCompatibilityDelegate(
       void (*test_function)(AuxType*),
       typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function)
-      : aux_pointer_for_policy_(NULL),
+      : aux_holder_(),
         test_function_(test_function),
-        policy_function_(policy_function) {
-    // This will be NULL iff AuxType is void.
-    aux_pointer_for_policy_ = NewAux();
-  }
+        policy_function_(policy_function) {}
 
-  virtual ~BPFTesterCompatibilityDelegate() {
-    DeleteAux(aux_pointer_for_policy_);
-  }
+  virtual ~BPFTesterCompatibilityDelegate() {}
 
   virtual scoped_ptr<SandboxBPFPolicy> GetSandboxBPFPolicy() OVERRIDE {
     // The current method is guaranteed to only run in the child process
     // running the test. In this process, the current object is guaranteed
     // to live forever. So it's ok to pass aux_pointer_for_policy_ to
     // the policy, which could in turn pass it to the kernel via Trap().
-    return scoped_ptr<SandboxBPFPolicy>(new CompatibilityPolicy<AuxType>(
-        policy_function_, aux_pointer_for_policy_));
+    return scoped_ptr<SandboxBPFPolicy>(
+        new CompatibilityPolicy<AuxType>(policy_function_, aux_holder_.get()));
   }
 
   virtual void RunTestFunction() OVERRIDE {
     // Run the actual test.
     // The current object is guaranteed to live forever in the child process
     // where this will run.
-    test_function_(aux_pointer_for_policy_);
+    test_function_(aux_holder_.get());
   }
 
  private:
-  // Allocate an object of type Aux. This is specialized to return NULL when
-  // trying to allocate a void.
-  static Aux* NewAux() { return new Aux(); }
-  static void DeleteAux(Aux* aux) { delete aux; }
-
-  AuxType* aux_pointer_for_policy_;
+  internal::AuxHolder<AuxType> aux_holder_;
   void (*test_function_)(AuxType*);
   typename CompatibilityPolicy<AuxType>::SyscallEvaluator policy_function_;
   DISALLOW_COPY_AND_ASSIGN(BPFTesterCompatibilityDelegate);
 };
-
-// Specialization of NewAux that returns NULL;
-template <>
-void* BPFTesterCompatibilityDelegate<void>::NewAux();
-template <>
-void BPFTesterCompatibilityDelegate<void>::DeleteAux(void* aux);
 
 }  // namespace sandbox
 

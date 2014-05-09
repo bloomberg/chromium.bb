@@ -77,7 +77,6 @@
       'conditions': [
         [ 'use_seccomp_bpf==1', {
           'sources': [
-            'seccomp-bpf/bpf_tester_compatibility_delegate.cc',
             'seccomp-bpf/bpf_tester_compatibility_delegate.h',
             'seccomp-bpf/bpf_tests.h',
             'seccomp-bpf/sandbox_bpf_test_runner.cc',
