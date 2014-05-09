@@ -565,7 +565,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
   AddNetworkSpeechSynthesisExtension();
 #endif
 
-  if (command_line->HasSwitch(switches::kEnableEasyUnlock)) {
+  if (!skip_session_components &&
+      command_line->HasSwitch(switches::kEnableEasyUnlock)) {
     if (command_line->HasSwitch(switches::kEasyUnlockAppPath)) {
       base::FilePath easy_unlock_path(
           command_line->GetSwitchValuePath(switches::kEasyUnlockAppPath));
