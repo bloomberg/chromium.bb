@@ -6,6 +6,7 @@
 #define Client_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
@@ -17,6 +18,7 @@ public:
 
     // Client.idl
     unsigned id() const { return m_id; }
+    void postMessage(ExecutionContext*, PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
 private:
     explicit Client(unsigned id);

@@ -88,6 +88,11 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(int syncEventID)
     m_client.didHandleSyncEvent(syncEventID);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray> webChannels)
+{
+    m_client.postMessageToClient(clientID, message, webChannels.leakPtr());
+}
+
 ServiceWorkerGlobalScopeClientImpl::ServiceWorkerGlobalScopeClientImpl(WebServiceWorkerContextClient& client)
     : m_client(client)
 {

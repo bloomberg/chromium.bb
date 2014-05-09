@@ -31,8 +31,10 @@
 #ifndef ServiceWorkerGlobalScopeClient_h
 #define ServiceWorkerGlobalScopeClient_h
 
+#include "core/dom/MessagePort.h"
 #include "core/workers/WorkerClients.h"
 #include "public/platform/WebCallbacks.h"
+#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebServiceWorkerClientsInfo.h"
 #include "public/platform/WebServiceWorkerEventResult.h"
 #include "wtf/Forward.h"
@@ -61,6 +63,7 @@ public:
     // A null response means no valid response was provided by the service worker, so fallback to native.
     virtual void didHandleFetchEvent(int fetchEventID, PassRefPtr<Response> = nullptr) = 0;
     virtual void didHandleSyncEvent(int syncEventID) = 0;
+    virtual void postMessageToClient(int clientID, const blink::WebString& message, PassOwnPtr<blink::WebMessagePortChannelArray>) = 0;
 
     static const char* supplementName();
     static ServiceWorkerGlobalScopeClient* from(ExecutionContext*);

@@ -161,6 +161,7 @@
             'v8/custom/V8CSSStyleDeclarationCustom.cpp',
             'v8/custom/V8CSSValueCustom.cpp',
             'v8/custom/V8CanvasRenderingContext2DCustom.cpp',
+            'v8/custom/V8ClientCustom.cpp',
             'v8/custom/V8CryptoCustom.cpp',
             'v8/custom/V8CustomEventCustom.cpp',
             'v8/custom/V8CustomSQLStatementErrorCallback.cpp',

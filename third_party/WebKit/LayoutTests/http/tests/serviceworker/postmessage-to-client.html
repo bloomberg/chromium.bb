@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<title>Service Worker: postMessage to Client</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+var t = async_test('postMessage from ServiceWorker to Client');
+t.step(function() {
+    var scope = 'resources/blank.html'
+    navigator.serviceWorker.unregister(scope).then(
+        doRegister,
+        unreached_rejection(t, 'Unregister should not fail')
+    );
+
+    function doRegister() {
+        navigator.serviceWorker.register(
+            'resources/postmessage-to-client-worker.js', {scope: scope}
+        ).then(
+            onRegister,
+            unreached_rejection(t, 'Registration should succeed, but failed')
+        );
+    }
+
+    function onRegister(worker) {
+        worker.addEventListener('statechange', t.step_func(function(event) {
+            if (event.target.state == 'active')
+                onActive();
+        }));
+    }
+
+    function onActive() {
+        with_iframe(scope, t.step_func(function(frame) {
+            var w = frame.contentWindow;
+            w.onmessage = t.step_func(onMessage);
+            w.navigator.serviceWorker.current.postMessage('ping');
+        }));
+    }
+
+    var result = [];
+    var expected = ['Sending message via clients'];
+
+    function onMessage(e) {
+        var message = e.data;
+        if (message === 'quit') {
+            assert_array_equals(result, expected, 'Worker should post back expected messages.');
+            t.done();
+        } else {
+            result.push(message);
+        }
+    }
+});
+</script>

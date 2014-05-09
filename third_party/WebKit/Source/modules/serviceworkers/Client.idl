@@ -7,4 +7,9 @@
     RuntimeEnabled=ServiceWorker
 ] interface Client {
     readonly attribute unsigned long id;
+
+    // FIXME: Currently we think targetOrigin's probably not necessary, but
+    // re-add it if the ongoing issue [1] concludes the other way.
+    // [1] https://github.com/slightlyoff/ServiceWorker/issues/190
+    [Custom, RaisesException, CallWith=ExecutionContext] void postMessage(SerializedScriptValue message, optional MessagePort[] messagePorts);
 };
