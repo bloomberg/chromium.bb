@@ -6,6 +6,7 @@
 #define REMOTING_CODEC_VIDEO_ENCODER_VPX_H_
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "remoting/codec/scoped_vpx_codec.h"
 #include "remoting/codec/video_encoder.h"
 
@@ -55,7 +56,7 @@ class VideoEncoderVpx : public VideoEncoder {
   scoped_ptr<uint8[]> active_map_;
   int active_map_width_;
   int active_map_height_;
-  int last_timestamp_;
+  base::TimeTicks timestamp_base_;
 
   // Buffer for storing the yuv image.
   scoped_ptr<uint8[]> yuv_image_;
