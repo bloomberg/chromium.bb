@@ -52,7 +52,7 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-	'../base/base.gyp:base_i18n',
+        '../base/base.gyp:base_i18n',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../crypto/crypto.gyp:crypto',
         '../gpu/gpu.gyp:command_buffer_common',
@@ -475,6 +475,8 @@
         'video/capture/mac/platform_video_capturing_mac.h',
         'video/capture/mac/video_capture_device_avfoundation_mac.h',
         'video/capture/mac/video_capture_device_avfoundation_mac.mm',
+        'video/capture/mac/video_capture_device_factory_mac.h',
+        'video/capture/mac/video_capture_device_factory_mac.mm',
         'video/capture/mac/video_capture_device_mac.h',
         'video/capture/mac/video_capture_device_mac.mm',
         'video/capture/mac/video_capture_device_qtkit_mac.h',
@@ -1063,6 +1065,7 @@
         'midi/usb_midi_descriptor_parser_unittest.cc',
         'midi/usb_midi_input_stream_unittest.cc',
         'midi/usb_midi_output_stream_unittest.cc',
+        'video/capture/fake_video_capture_device_unittest.cc',
         'video/capture/video_capture_device_unittest.cc',
         'formats/common/offset_byte_queue_unittest.cc',
         'formats/webm/cluster_builder.cc',
@@ -1192,6 +1195,11 @@
         # http://crbug.com/171009
         ['OS=="win" and target_arch=="x64"', {
           'msvs_disabled_warnings': [ 4267, ],
+        }],
+        ['OS=="mac"', {
+          'sources': [
+            'video/capture/mac/video_capture_device_factory_mac_unittest.mm',
+          ]
         }],
       ],
     },

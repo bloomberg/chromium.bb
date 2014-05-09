@@ -8,6 +8,7 @@
 #include "chrome/browser/media/webrtc_browsertest_common.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/common/content_switches.h"
+#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 static const char kMainWebrtcTestHtmlPage[] =

@@ -27,6 +27,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
 #include "net/url_request/url_request_context.h"

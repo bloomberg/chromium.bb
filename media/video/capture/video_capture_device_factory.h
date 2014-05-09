@@ -16,8 +16,10 @@ namespace media {
 // in Device Thread (a.k.a. Audio Thread).
 class MEDIA_EXPORT VideoCaptureDeviceFactory {
  public:
+  static scoped_ptr<VideoCaptureDeviceFactory> CreateFactory();
+
   VideoCaptureDeviceFactory();
-  virtual ~VideoCaptureDeviceFactory() {}
+  virtual ~VideoCaptureDeviceFactory();
 
   // Creates a VideoCaptureDevice object. Returns NULL if something goes wrong.
   virtual scoped_ptr<VideoCaptureDevice> Create(
