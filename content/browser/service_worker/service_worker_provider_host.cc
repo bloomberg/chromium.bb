@@ -5,6 +5,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 
 #include "base/stl_util.h"
+#include "content/browser/message_port_message_filter.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_controllee_request_handler.h"
@@ -116,6 +117,25 @@ ServiceWorkerProviderHost::CreateRequestHandler(
             context_, AsWeakPtr(), resource_type));
   }
   return scoped_ptr<ServiceWorkerRequestHandler>();
+}
+
+void ServiceWorkerProviderHost::PostMessage(
+    const base::string16& message,
+    const std::vector<int>& sent_message_port_ids) {
+  if (!dispatcher_host_)
+    return;  // Could be NULL in some tests.
+
+  std::vector<int> new_routing_ids;
+  dispatcher_host_->message_port_message_filter()->
+      UpdateMessagePortsWithNewRoutes(sent_message_port_ids,
+                                      &new_routing_ids);
+
+  dispatcher_host_->Send(
+      new ServiceWorkerMsg_MessageToDocument(
+          kDocumentMainThreadId, provider_id(),
+          message,
+          sent_message_port_ids,
+          new_routing_ids));
 }
 
 }  // namespace content

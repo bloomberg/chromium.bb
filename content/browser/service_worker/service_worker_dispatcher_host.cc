@@ -100,8 +100,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnProviderDestroyed)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetVersionId,
                         OnSetHostedVersionId)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessage,
-                        OnPostMessage)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
+                        OnPostMessageToWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
                         OnWorkerScriptLoaded)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoadFailed,
@@ -224,21 +224,12 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
                  request_id));
 }
 
-void ServiceWorkerDispatcherHost::OnPostMessage(
+void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     int handle_id,
     const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
   if (!context_ || !ServiceWorkerUtils::IsFeatureEnabled())
     return;
-
-  std::vector<int> new_routing_ids(sent_message_port_ids.size());
-  for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
-    new_routing_ids[i] = message_port_message_filter_->GetNextRoutingID();
-    MessagePortService::GetInstance()->UpdateMessagePort(
-        sent_message_port_ids[i],
-        message_port_message_filter_,
-        new_routing_ids[i]);
-  }
 
   ServiceWorkerHandle* handle = handles_.Lookup(handle_id);
   if (!handle) {
@@ -246,8 +237,13 @@ void ServiceWorkerDispatcherHost::OnPostMessage(
     return;
   }
 
+  std::vector<int> new_routing_ids;
+  message_port_message_filter_->UpdateMessagePortsWithNewRoutes(
+      sent_message_port_ids, &new_routing_ids);
   handle->version()->SendMessage(
-      ServiceWorkerMsg_Message(message, sent_message_port_ids, new_routing_ids),
+      ServiceWorkerMsg_MessageToWorker(message,
+                                       sent_message_port_ids,
+                                       new_routing_ids),
       base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
 }
 

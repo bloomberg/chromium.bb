@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/stl_util.h"
+#include "base/strings/string16.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -429,6 +430,8 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnFetchEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SyncEventFinished,
                         OnSyncEventFinished)
+    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToDocument,
+                        OnPostMessageToDocument)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -559,6 +562,19 @@ int64 ServiceWorkerVersion::LookupInScriptCache(const GURL& url) {
   if (found == script_cache_map_.end())
     return kInvalidServiceWorkerResponseId;
   return found->second;
+}
+
+void ServiceWorkerVersion::OnPostMessageToDocument(
+    int client_id,
+    const base::string16& message,
+    const std::vector<int>& sent_message_port_ids) {
+  ServiceWorkerProviderHost* provider_host =
+      controllee_by_id_.Lookup(client_id);
+  if (!provider_host) {
+    // The client may already have been closed, just ignore.
+    return;
+  }
+  provider_host->PostMessage(message, sent_message_port_ids);
 }
 
 }  // namespace content

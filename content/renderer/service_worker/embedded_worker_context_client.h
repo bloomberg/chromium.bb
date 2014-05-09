@@ -93,6 +93,10 @@ class EmbeddedWorkerContextClient
   virtual void didHandleSyncEvent(int request_id);
   virtual blink::WebServiceWorkerNetworkProvider*
       createServiceWorkerNetworkProvider(blink::WebDataSource* data_source);
+  virtual void postMessageToClient(
+      int client_id,
+      const blink::WebString& message,
+      blink::WebMessagePortChannelArray* channels);
 
   // TODO: Implement DevTools related method overrides.
 
@@ -100,6 +104,7 @@ class EmbeddedWorkerContextClient
   base::MessageLoopProxy* main_thread_proxy() const {
     return main_thread_proxy_;
   }
+  ThreadSafeSender* thread_safe_sender() { return sender_; }
 
  private:
   void OnMessageToWorker(int thread_id,

@@ -67,8 +67,8 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UnregisterServiceWorker,
                      GURL /* scope (url pattern) */)
 
 // Sends a 'message' event to a service worker (renderer->browser).
-IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessage,
-                     int64 /* version_id */,
+IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_PostMessageToWorker,
+                     int /* handle_id */,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */)
 
@@ -116,6 +116,12 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_SyncEventFinished,
 IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GetClientDocuments,
                     int /* request_id */)
 
+// Sends a 'message' event to a client document (renderer->browser).
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_PostMessageToDocument,
+                    int /* client_id */,
+                    base::string16 /* message */,
+                    std::vector<int> /* sent_message_port_ids */)
+
 //---------------------------------------------------------------------------
 // Messages sent from the browser to the child process.
 //
@@ -156,6 +162,14 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_SetCurrentServiceWorker,
                      int /* provider_id */,
                      content::ServiceWorkerObjectInfo)
 
+// Sends a 'message' event to a client document (browser->renderer).
+IPC_MESSAGE_CONTROL5(ServiceWorkerMsg_MessageToDocument,
+                     int /* thread_id */,
+                     int /* provider_id */,
+                     base::string16 /* message */,
+                     std::vector<int> /* sent_message_port_ids */,
+                     std::vector<int> /* new_routing_ids */)
+
 // Sent via EmbeddedWorker to dispatch events.
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_InstallEvent,
                      int /* request_id */,
@@ -167,7 +181,7 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_FetchEvent,
                      content::ServiceWorkerFetchRequest)
 IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_SyncEvent,
                      int /* request_id */)
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_Message,
+IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_MessageToWorker,
                      base::string16 /* message */,
                      std::vector<int> /* sent_message_port_ids */,
                      std::vector<int> /* new_routing_ids */)

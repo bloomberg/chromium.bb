@@ -7,10 +7,12 @@
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
+#include "content/child/child_thread.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/service_worker/web_service_worker_impl.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProviderClient.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -57,6 +59,8 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
                         OnServiceWorkerStateChanged)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SetCurrentServiceWorker,
                         OnSetCurrentServiceWorker)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToDocument,
+                        OnPostMessage)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
@@ -229,6 +233,36 @@ void ServiceWorkerDispatcher::OnSetCurrentServiceWorker(
     found->second->setCurrentServiceWorker(
         new WebServiceWorkerImpl(handle_ref.Pass(), thread_safe_sender_));
   }
+}
+
+void ServiceWorkerDispatcher::OnPostMessage(
+    int thread_id,
+    int provider_id,
+    const base::string16& message,
+    const std::vector<int>& sent_message_port_ids,
+    const std::vector<int>& new_routing_ids) {
+  // Make sure we're on the main document thread. (That must be the only
+  // thread we get this message)
+  DCHECK(ChildThread::current());
+
+  ScriptClientMap::iterator found = script_clients_.find(provider_id);
+  if (found == script_clients_.end()) {
+    // For now we do no queueing for messages sent to nonexistent / unattached
+    // client.
+    return;
+  }
+
+  std::vector<WebMessagePortChannelImpl*> ports;
+  if (!sent_message_port_ids.empty()) {
+    ports.resize(sent_message_port_ids.size());
+    for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
+      ports[i] = new WebMessagePortChannelImpl(
+          new_routing_ids[i], sent_message_port_ids[i],
+          base::MessageLoopProxy::current());
+    }
+  }
+
+  found->second->dispatchMessageEvent(message, ports);
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(

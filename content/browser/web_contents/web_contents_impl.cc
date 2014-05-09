@@ -3535,15 +3535,9 @@ void WebContentsImpl::RouteMessageEvent(
     MessagePortMessageFilter* message_port_message_filter =
         static_cast<RenderProcessHostImpl*>(GetRenderProcessHost())
             ->message_port_message_filter();
-    std::vector<int> new_routing_ids(params.message_port_ids.size());
-    for (size_t i = 0; i < params.message_port_ids.size(); ++i) {
-      new_routing_ids[i] = message_port_message_filter->GetNextRoutingID();
-      MessagePortService::GetInstance()->UpdateMessagePort(
-          params.message_port_ids[i],
-          message_port_message_filter,
-          new_routing_ids[i]);
-    }
-    new_params.new_routing_ids = new_routing_ids;
+    message_port_message_filter->UpdateMessagePortsWithNewRoutes(
+        params.message_port_ids,
+        &new_params.new_routing_ids);
   }
 
   // If there is a source_routing_id, translate it to the routing ID for

@@ -11,6 +11,7 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/child/webmessageportchannel_impl.h"
 #include "content/child/worker_task_runner.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "content/common/devtools_messages.h"
@@ -284,6 +285,16 @@ EmbeddedWorkerContextClient::createServiceWorkerNetworkProvider(
 
   // Blink is responsible for deleting the returned object.
   return new WebServiceWorkerNetworkProviderImpl();
+}
+
+void EmbeddedWorkerContextClient::postMessageToClient(
+    int client_id,
+    const blink::WebString& message,
+    blink::WebMessagePortChannelArray* channels) {
+  DCHECK(script_context_);
+  script_context_->PostMessageToDocument(
+      client_id, message,
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels));
 }
 
 void EmbeddedWorkerContextClient::OnMessageToWorker(

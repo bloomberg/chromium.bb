@@ -240,6 +240,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
   void OnSyncEventFinished(int request_id);
+  void OnPostMessageToDocument(int client_id,
+                               const base::string16& message,
+                               const std::vector<int>& sent_message_port_ids);
 
   const int64 version_id_;
   int64 registration_id_;

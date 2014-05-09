@@ -47,6 +47,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   void RegisterServiceWorkerHandle(scoped_ptr<ServiceWorkerHandle> handle);
 
+  MessagePortMessageFilter* message_port_message_filter() {
+    return message_port_message_filter_;
+  }
+
  protected:
   virtual ~ServiceWorkerDispatcherHost();
 
@@ -86,6 +90,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                      const std::vector<int>& sent_message_port_ids);
   void OnIncrementServiceWorkerRefCount(int handle_id);
   void OnDecrementServiceWorkerRefCount(int handle_id);
+  void OnPostMessageToWorker(int handle_id,
+                             const base::string16& message,
+                             const std::vector<int>& sent_message_port_ids);
+  void OnServiceWorkerObjectDestroyed(int handle_id);
 
   // Callbacks from ServiceWorkerContextCore
   void RegistrationComplete(int thread_id,

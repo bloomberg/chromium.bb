@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_PROVIDER_HOST_H_
 
 #include <set>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -82,6 +83,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // the request doesn't require special handling.
   scoped_ptr<ServiceWorkerRequestHandler> CreateRequestHandler(
       ResourceType::Type resource_type);
+
+  // Dispatches message event to the document.
+  void PostMessage(const base::string16& message,
+                   const std::vector<int>& sent_message_port_ids);
 
  private:
   const int process_id_;

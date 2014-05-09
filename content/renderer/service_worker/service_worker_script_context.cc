@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/service_worker_script_context.h"
 
 #include "base/logging.h"
+#include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/renderer/service_worker/embedded_worker_context_client.h"
@@ -13,6 +14,20 @@
 #include "third_party/WebKit/public/web/WebServiceWorkerContextProxy.h"
 
 namespace content {
+
+namespace {
+
+void SendPostMessageToDocumentOnMainThread(
+    ThreadSafeSender* sender,
+    int routing_id,
+    int client_id,
+    const base::string16& message,
+    const std::vector<int>& message_port_ids) {
+  sender->Send(new ServiceWorkerHostMsg_PostMessageToDocument(
+      routing_id, client_id, message, message_port_ids));
+}
+
+}  // namespace
 
 ServiceWorkerScriptContext::ServiceWorkerScriptContext(
     EmbeddedWorkerContextClient* embedded_context,
@@ -31,7 +46,7 @@ void ServiceWorkerScriptContext::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_SyncEvent, OnSyncEvent)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_Message, OnPostMessage)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetClientDocuments,
                         OnDidGetClientDocuments)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -72,6 +87,21 @@ void ServiceWorkerScriptContext::GetClientDocuments(
   int request_id = pending_clients_callbacks_.Add(callbacks);
   Send(new ServiceWorkerHostMsg_GetClientDocuments(
       GetRoutingID(), request_id));
+}
+
+void ServiceWorkerScriptContext::PostMessageToDocument(
+    int client_id,
+    const base::string16& message,
+    const std::vector<int>& message_port_ids) {
+  // This may send IDs for MessagePorts, and all internal book-keeping
+  // messages for MessagePort (e.g. QueueMessages) are sent from main thread
+  // (with thread hopping), so we need to do the same thread hopping here not
+  // to overtake those messages.
+  embedded_context_->main_thread_proxy()->PostTask(
+      FROM_HERE,
+      base::Bind(&SendPostMessageToDocumentOnMainThread,
+                 make_scoped_refptr(embedded_context_->thread_safe_sender()),
+                 GetRoutingID(), client_id, message, message_port_ids));
 }
 
 void ServiceWorkerScriptContext::Send(IPC::Message* message) {

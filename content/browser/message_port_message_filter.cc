@@ -57,6 +57,22 @@ int MessagePortMessageFilter::GetNextRoutingID() {
   return next_routing_id_.Run();
 }
 
+void MessagePortMessageFilter::UpdateMessagePortsWithNewRoutes(
+    const std::vector<int>& message_port_ids,
+    std::vector<int>* new_routing_ids) {
+  DCHECK(new_routing_ids);
+  new_routing_ids->clear();
+  new_routing_ids->resize(message_port_ids.size());
+
+  for (size_t i = 0; i < message_port_ids.size(); ++i) {
+    (*new_routing_ids)[i] = GetNextRoutingID();
+    MessagePortService::GetInstance()->UpdateMessagePort(
+        message_port_ids[i],
+        this,
+        (*new_routing_ids)[i]);
+  }
+}
+
 void MessagePortMessageFilter::OnCreateMessagePort(int *route_id,
                                                    int* message_port_id) {
   *route_id = next_routing_id_.Run();

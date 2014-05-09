@@ -6,6 +6,7 @@
 #define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_DISPATCHER_H_
 
 #include <map>
+#include <vector>
 
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
@@ -106,6 +107,11 @@ class ServiceWorkerDispatcher : public WorkerTaskRunner::Observer {
   void OnSetCurrentServiceWorker(int thread_id,
                                  int provider_id,
                                  const ServiceWorkerObjectInfo& info);
+  void OnPostMessage(int thread_id,
+                     int provider_id,
+                     const base::string16& message,
+                     const std::vector<int>& sent_message_port_ids,
+                     const std::vector<int>& new_routing_ids);
 
   // Keeps map from handle_id to ServiceWorker object.
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);
