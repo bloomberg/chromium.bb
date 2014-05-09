@@ -324,6 +324,25 @@ borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('.x-bar .x-zot::shadow div { border: 1px solid red; }')),
+            createDOM('div', {'id': 'x-foo'},
+                document.createTextNode('x-foo')),
+            createDOM('div', {'id': 'x-bar-host', 'class': 'x-bar'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'x-bar-target'},
+                        document.createTextNode('x-bar')),
+                    createDOM('div', {'id': 'x-zot-host', 'class': 'x-zot'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'x-zot-target'},
+                                document.createTextNode('x-zot')))))))));
+
+borderColorShouldNotBe('host/x-bar-host/x-zot-host/x-zot-target', 'rgb(255, 0, 0)');
+cleanUp();
+
 </script>
 </html>
 

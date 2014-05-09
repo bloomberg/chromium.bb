@@ -84,7 +84,7 @@ Element* SelectorChecker::parentElement(const SelectorCheckingContext& context, 
         return context.element->parentOrShadowHostElement();
 
     // If context.scope is a shadow host, we should walk up from a shadow root to its shadow host.
-    if (context.behaviorAtBoundary & SelectorChecker::ScopeIsShadowHost)
+    if ((context.behaviorAtBoundary & SelectorChecker::ScopeIsShadowHost) && context.scope == context.element->shadowHost())
         return context.element->parentOrShadowHostElement();
 
     if ((context.behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) != SelectorChecker::StaysWithinTreeScope)
