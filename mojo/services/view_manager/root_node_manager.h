@@ -71,6 +71,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   void NotifyNodeViewReplaced(const NodeId& node,
                               const ViewId& new_view_id,
                               const ViewId& old_view_id);
+  void NotifyNodeDeleted(const NodeId& node);
 
  private:
   // Used to setup any static state needed by RootNodeManager.

@@ -5,6 +5,8 @@
 #ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_H_
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_H_
 
+#include <map>
+
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/callback.h"
@@ -39,14 +41,19 @@ class ViewManager {
   // TODO(beng): this method could optionally not block if supplied a callback.
   void Init();
 
-  ViewTreeNode* tree() { return tree_.get(); }
+  ViewTreeNode* tree() { return tree_; }
+
+  ViewTreeNode* GetNodeById(TransportNodeId id);
 
  private:
   friend class ViewManagerPrivate;
+  typedef std::map<TransportNodeId, ViewTreeNode*> IdToNodeMap;
 
   Shell* shell_;
   scoped_ptr<ViewManagerSynchronizer> synchronizer_;
-  scoped_ptr<ViewTreeNode> tree_;
+  ViewTreeNode* tree_;
+
+  IdToNodeMap nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManager);
 };

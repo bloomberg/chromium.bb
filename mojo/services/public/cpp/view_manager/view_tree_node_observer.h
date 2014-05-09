@@ -33,6 +33,9 @@ class ViewTreeNodeObserver {
 
   virtual void OnTreeChange(const TreeChangeParams& params) {}
 
+  virtual void OnNodeDestroy(ViewTreeNode* node,
+                             DispositionChangePhase phase) {}
+
  protected:
   virtual ~ViewTreeNodeObserver() {}
 };

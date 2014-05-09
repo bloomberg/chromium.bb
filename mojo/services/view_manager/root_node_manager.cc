@@ -108,6 +108,16 @@ void RootNodeManager::NotifyNodeViewReplaced(const NodeId& node,
   }
 }
 
+void RootNodeManager::NotifyNodeDeleted(const NodeId& node) {
+  for (ConnectionMap::iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    const TransportChangeId change_id =
+        (change_ && i->first == change_->connection_id) ?
+        change_->change_id : 0;
+    i->second->NotifyNodeDeleted(node, change_id);
+  }
+}
+
 void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
                                        TransportChangeId change_id) {
   DCHECK(!change_.get());  // Should only ever have one change in flight.

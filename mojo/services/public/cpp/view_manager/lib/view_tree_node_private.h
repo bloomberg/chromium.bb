@@ -20,6 +20,8 @@ class ViewTreeNodePrivate {
   explicit ViewTreeNodePrivate(ViewTreeNode* node);
   ~ViewTreeNodePrivate();
 
+  static ViewTreeNode* LocalCreate();
+
   ObserverList<ViewTreeNodeObserver>* observers() { return &node_->observers_; }
 
   void ClearParent() { node_->parent_ = NULL; }
@@ -31,8 +33,14 @@ class ViewTreeNodePrivate {
     node_->manager_ = manager;
   }
 
+  void LocalDestroy() {
+    node_->LocalDestroy();
+  }
   void LocalAddChild(ViewTreeNode* child) {
     node_->LocalAddChild(child);
+  }
+  void LocalRemoveChild(ViewTreeNode* child) {
+    node_->LocalRemoveChild(child);
   }
 
  private:
