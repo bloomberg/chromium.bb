@@ -18,6 +18,11 @@
       'include_dirs': [
         '../',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../',
+        ],
+      },
       'sources': [
         'api/omxtypes.h',
         'sp/api/omxSP.h',
