@@ -461,21 +461,8 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-      float x = xievent->event_x;
-      float y = xievent->event_y;
-#if defined(OS_CHROMEOS)
-      switch (xievent->evtype) {
-        case XI_TouchBegin:
-        case XI_TouchUpdate:
-        case XI_TouchEnd:
-          ui::DeviceDataManager::GetInstance()->ApplyTouchTransformer(
-              xievent->deviceid, &x, &y);
-          break;
-        default:
-          break;
-      }
-#endif  // defined(OS_CHROMEOS)
-      return gfx::Point(static_cast<int>(x), static_cast<int>(y));
+      return gfx::Point(static_cast<int>(xievent->event_x),
+                        static_cast<int>(xievent->event_y));
     }
   }
   return gfx::Point();

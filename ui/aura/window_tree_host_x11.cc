@@ -498,7 +498,6 @@ ui::EventProcessor* WindowTreeHostX11::GetEventProcessor() {
 void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   XEvent* xev = event;
-  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
   if (!factory->ShouldProcessXI2Event(xev))
     return;
 
@@ -516,9 +515,19 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
+#if defined(OS_CHROMEOS)
+      // Bail out early before generating a ui::TouchEvent if this event
+      // is not within the range of this RootWindow. Converting an xevent
+      // to ui::TouchEvent might change the state of the global touch tracking
+      // state, e.g. touch release event can remove the touch id from the
+      // record, and doing this multiple time when there are multiple
+      // RootWindow will cause problem. So only generate the ui::TouchEvent
+      // when we are sure it belongs to this RootWindow.
+      if (base::SysInfo::IsRunningOnChromeOS() &&
+          !bounds().Contains(ui::EventLocationFromNative(xev)))
+        return;
+#endif
       ui::TouchEvent touchev(xev);
-      ui::DeviceDataManager::GetInstance()->CalibrateTouchEvent(
-          &touchev, xiev->deviceid, bounds_);
       TranslateAndDispatchLocatedEvent(&touchev);
       break;
     }
