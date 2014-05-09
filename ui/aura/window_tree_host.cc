@@ -178,6 +178,7 @@ WindowTreeHost::WindowTreeHost()
 }
 
 void WindowTreeHost::DestroyCompositor() {
+  DCHECK(GetAcceleratedWidget());
   compositor_.reset();
 }
 

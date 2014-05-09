@@ -9,8 +9,6 @@
 #include "mojo/services/view_manager/node.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "mojo/services/view_manager/view.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/codec/png_codec.h"
 
 namespace mojo {
 namespace services {
@@ -271,25 +269,6 @@ void ViewManagerConnection::SetView(
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
   callback.Run(SetViewImpl(node_id, ViewIdFromTransportId(transport_view_id),
                            change_id));
-}
-
-void ViewManagerConnection::SetViewContents(
-    TransportViewId view_id,
-    ScopedSharedBufferHandle buffer,
-    uint32_t buffer_size) {
-  View* view = GetView(ViewIdFromTransportId(view_id));
-  if (!view)
-    return;
-  void* handle_data;
-  if (MapBuffer(buffer.get(), 0, buffer_size, &handle_data,
-                MOJO_MAP_BUFFER_FLAG_NONE) != MOJO_RESULT_OK) {
-    return;
-  }
-  SkBitmap bitmap;
-  gfx::PNGCodec::Decode(static_cast<const unsigned char*>(handle_data),
-                        buffer_size, &bitmap);
-  view->SetBitmap(bitmap);
-  UnmapBuffer(handle_data);
 }
 
 void ViewManagerConnection::OnNodeHierarchyChanged(const NodeId& node,

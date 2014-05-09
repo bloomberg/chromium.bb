@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_export.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace mojo {
 namespace services {
@@ -28,9 +27,6 @@ class MOJO_VIEW_MANAGER_EXPORT View {
 
   Node* node() { return node_; }
 
-  void SetBitmap(const SkBitmap& contents);
-  const SkBitmap& bitmap() const { return bitmap_; }
-
  private:
   // Node is responsible for maintaining |node_|.
   friend class Node;
@@ -39,7 +35,6 @@ class MOJO_VIEW_MANAGER_EXPORT View {
 
   const ViewId id_;
   Node* node_;
-  SkBitmap bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };
