@@ -12,6 +12,7 @@ if (window.testRunner) {
   testRunner.waitUntilDone();
   testRunner.dumpAsText();
   requestAnimationFrame(function() {
+    document.documentElement.textContent = 'PASS';
     testRunner.notifyDone();
   });
 }
