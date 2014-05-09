@@ -124,14 +124,17 @@ class TestCLActionLogic(unittest.TestCase):
           'submit_fails': 0,
           'unique_cls': 2,
           'median_handling_time': -1, # This will be ignored in comparison
+          'patch_handling_time': -1,  # This will be ignored in comparison
           'bad_cl_candidates': {CQ: [
               cbuildbot_metadata.GerritChangeTuple(gerrit_number=2,
                                                    internal=True)]},
           'correctly_rejected_by_stage': {CQ: {}},
           'incorrectly_rejected_by_stage': {},
           'rejections': 2}
-      # Ignore handling time in comparison.
+      # Ignore handling times in comparison, since these are not fully
+      # reproducible from run to run of the unit test.
       summary['median_handling_time'] = expected['median_handling_time']
+      summary['patch_handling_time'] = expected['patch_handling_time']
       self.maxDiff = None
       self.assertEqual(summary, expected)
 
