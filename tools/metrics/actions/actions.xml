@@ -8773,6 +8773,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_SpellingServiceCheckbox_Disable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Privacy: Use spelling service</description>
+</action>
+
+<action name="Options_SpellingServiceCheckbox_Enable">
+  <owner>michaelpg@chromium.org</owner>
+  <description>Settings: Privacy: Use spelling service</description>
+</action>
+
 <action name="Options_Startup_Custom">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
