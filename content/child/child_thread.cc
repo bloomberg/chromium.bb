@@ -29,6 +29,7 @@
 #include "content/child/child_resource_message_filter.h"
 #include "content/child/child_shared_bitmap_manager.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
+#include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/mojo/mojo_application.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/child/quota_dispatcher.h"
@@ -340,6 +341,7 @@ void ChildThread::Shutdown() {
   // safely shutdown blink in their Shutdown implementation.
   file_system_dispatcher_.reset();
   quota_dispatcher_.reset();
+  WebFileSystemImpl::DeleteThreadSpecificInstance();
 }
 
 void ChildThread::OnChannelConnected(int32 peer_pid) {
