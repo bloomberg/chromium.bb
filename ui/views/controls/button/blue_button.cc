@@ -47,7 +47,7 @@ BlueButton::BlueButton(ButtonListener* listener, const base::string16& text)
           *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_PRESSED), insets));
   button_border->SetPainter(true, STATE_DISABLED, Painter::CreateImagePainter(
           *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
-  SetBorder(button_border.PassAs<Border>());
+  UpdateThemedBorder(button_border.PassAs<Border>());
 }
 
 BlueButton::~BlueButton() {}

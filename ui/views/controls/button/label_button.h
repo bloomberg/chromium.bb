@@ -74,6 +74,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   void SetFocusPainter(scoped_ptr<Painter> focus_painter);
 
   // View:
+  virtual void SetBorder(scoped_ptr<Border> border) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
@@ -155,6 +156,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // The button's overall style.
   ButtonStyle style_;
+
+  // True if current border was set by UpdateThemedBorder. Defaults to true.
+  bool border_is_themed_border_;
 
   scoped_ptr<Painter> focus_painter_;
 
