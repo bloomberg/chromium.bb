@@ -223,6 +223,25 @@ NOINLINE static void CrashIntentionally() {
   *zero = 0;
 }
 
+#if defined(SYZYASAN)
+NOINLINE static void CorruptMemoryBlock() {
+  // NOTE(sebmarchand): We intentionally corrupt a memory block here in order to
+  //     trigger an Address Sanitizer (ASAN) error report.
+  static const int kArraySize = 5;
+  int* array = new int[kArraySize];
+  // Encapsulate the invalid memory access into a try-catch statement to prevent
+  // this function from being instrumented. This way the underflow won't be
+  // detected but the corruption will (as the allocator will still be hooked).
+  __try {
+    int dummy = array[-1]--;
+    // Make sure the assignments to the dummy value aren't optimized away.
+    base::debug::Alias(&array);
+  } __except (EXCEPTION_EXECUTE_HANDLER) {
+  }
+  delete[] array;
+}
+#endif
+
 #if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
 NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
   // NOTE(rogerm): We intentionally perform an invalid heap access here in
@@ -231,6 +250,9 @@ NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
   static const char kHeapOverflow[] = "/heap-overflow";
   static const char kHeapUnderflow[] = "/heap-underflow";
   static const char kUseAfterFree[] = "/use-after-free";
+#if defined(SYZYASAN)
+  static const char kCorruptHeapBlock[] = "/corrupt-heap-block";
+#endif
   static const int kArraySize = 5;
 
   if (!url.DomainIs(kCrashDomain, sizeof(kCrashDomain) - 1))
@@ -250,6 +272,10 @@ NOINLINE static void MaybeTriggerAsanError(const GURL& url) {
     int* dangling = array.get();
     array.reset();
     dummy = dangling[kArraySize / 2];
+#if defined(SYZYASAN)
+  } else if (crash_type == kCorruptHeapBlock) {
+    CorruptMemoryBlock();
+#endif
   }
 
   // Make sure the assignments to the dummy value aren't optimized away.
