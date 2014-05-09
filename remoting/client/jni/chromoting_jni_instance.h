@@ -29,6 +29,10 @@ class ClipboardEvent;
 class CursorShapeInfo;
 }  // namespace protocol
 
+namespace client {
+class LogToServer;
+}
+
 class VideoRenderer;
 
 // ClientUserInterface that indirectly makes and receives JNI calls.
@@ -148,6 +152,7 @@ class ChromotingJniInstance
   scoped_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   scoped_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
+  scoped_ptr<client::LogToServer> log_to_server_;
 
   // Pass this the user's PIN once we have it. To be assigned and accessed on
   // the UI thread, but must be posted to the network thread to call it.

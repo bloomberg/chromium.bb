@@ -38,6 +38,9 @@
       'target_name': 'remoting_client',
       'type': 'static_library',
       'variables': { 'enable_wexit_time_destructors': 1, },
+      'defines': [
+        'VERSION=<(version_full)',
+      ],
       'dependencies': [
         'remoting_base',
         'remoting_protocol',

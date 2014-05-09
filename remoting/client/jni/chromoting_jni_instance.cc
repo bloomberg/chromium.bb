@@ -12,6 +12,8 @@
 #include "remoting/client/audio_player.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/log_to_server.h"
+#include "remoting/client/server_log_entry.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/jingle_glue/chromium_port_allocator.h"
 #include "remoting/jingle_glue/chromium_socket_factory.h"
@@ -29,7 +31,7 @@ const int kXmppPort = 5222;
 const bool kXmppUseTls = true;
 
 // Interval at which to log performance statistics, if enabled.
-const int kPerfStatsIntervalMs = 10000;
+const int kPerfStatsIntervalMs = 60000;
 
 }
 
@@ -215,6 +217,8 @@ void ChromotingJniInstance::OnConnectionState(
 
   EnableStatsLogging(state == protocol::ConnectionToHost::CONNECTED);
 
+  log_to_server_->LogSessionStateChange(state, error);
+
   if (create_pairing_ && state == protocol::ConnectionToHost::CONNECTED) {
     protocol::PairingRequest request;
     DCHECK(!device_name_.empty());
@@ -332,6 +336,10 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       net::ClientSocketFactory::GetDefaultFactory(),
       jni_runtime_->url_requester(), xmpp_config_));
 
+  log_to_server_.reset(new client::LogToServer(client::ServerLogEntry::ME2ME,
+                                               signaling_.get(),
+                                               "remoting@bot.talk.google.com"));
+
   NetworkSettings network_settings(NetworkSettings::NAT_TRAVERSAL_FULL);
 
   // Use Chrome's network stack to allocate ports for peer-to-peer channels.
@@ -358,6 +366,7 @@ void ChromotingJniInstance::DisconnectFromHostOnNetworkThread() {
   // |client_| must be torn down before |signaling_|.
   connection_.reset();
   client_.reset();
+  log_to_server_.reset();
 }
 
 void ChromotingJniInstance::FetchSecret(
@@ -419,6 +428,8 @@ void ChromotingJniInstance::LogPerfStats() {
                       stats->video_decode_ms()->Average(),
                       stats->video_paint_ms()->Average(),
                       stats->round_trip_ms()->Average());
+
+  log_to_server_->LogStatistics(stats);
 
   jni_runtime_->network_task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingJniInstance::LogPerfStats, this),
