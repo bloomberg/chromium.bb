@@ -271,8 +271,15 @@ udev_input_init(struct udev_input *input, struct weston_compositor *c, struct ud
 	libinput_log_set_handler(&libinput_log_func, NULL);
 
 	log_priority = getenv("WESTON_LIBINPUT_LOG_PRIORITY");
+
 	if (log_priority) {
-		libinput_log_set_priority(strtol(log_priority, NULL, 10));
+		if (strcmp(log_priority, "debug") == 0) {
+			libinput_log_set_priority(LIBINPUT_LOG_PRIORITY_DEBUG);
+		} else if (strcmp(log_priority, "info") == 0) {
+			libinput_log_set_priority(LIBINPUT_LOG_PRIORITY_INFO);
+		} else if (strcmp(log_priority, "error") == 0) {
+			libinput_log_set_priority(LIBINPUT_LOG_PRIORITY_ERROR);
+		}
 	}
 
 	input->libinput = libinput_udev_create_for_seat(&libinput_interface, input,
