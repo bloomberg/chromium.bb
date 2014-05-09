@@ -7,6 +7,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -648,6 +649,9 @@ void BaseSearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
     }
 
     scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
+    if (data && StoreSuggestionResponse(json_data, *data.get()))
+      return;
+
     results_updated = data.get() && ParseSuggestResults(
         *data.get(), is_keyword, GetResultsToFill(is_keyword));
   }
@@ -880,6 +884,12 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
 void BaseSearchProvider::SortResults(bool is_keyword,
                                      const base::ListValue* relevances,
                                      Results* results) {
+}
+
+bool BaseSearchProvider::StoreSuggestionResponse(
+    const std::string& json_data,
+    const base::Value& parsed_data) {
+  return false;
 }
 
 void BaseSearchProvider::DeleteMatchFromMatches(

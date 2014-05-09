@@ -414,6 +414,12 @@ class BaseSearchProvider : public AutocompleteProvider,
                            const base::ListValue* relevances,
                            Results* results);
 
+  // Optionally, cache the received |json_data| and return true if we want
+  // to stop processing results at this point. The |parsed_data| is the parsed
+  // version of |json_data| used to determine if we received an empty result.
+  virtual bool StoreSuggestionResponse(const std::string& json_data,
+                                       const base::Value& parsed_data);
+
   // Returns the TemplateURL corresponding to the keyword or default
   // provider based on the value of |is_keyword|.
   virtual const TemplateURL* GetTemplateURL(bool is_keyword) const = 0;

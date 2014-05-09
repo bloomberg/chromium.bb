@@ -1575,6 +1575,20 @@ TEST_F(BrowsingDataRemoverTest, CompletionInhibition) {
   EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
 }
 
+TEST_F(BrowsingDataRemoverTest, ZeroSuggestCacheClear) {
+  PrefService* prefs = GetProfile()->GetPrefs();
+  prefs->SetString(prefs::kZeroSuggestCachedResults,
+                   "[\"\", [\"foo\", \"bar\"]]");
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+                                BrowsingDataRemover::REMOVE_COOKIES,
+                                false);
+
+  // Expect the prefs to be cleared when cookies are removed.
+  EXPECT_TRUE(prefs->GetString(prefs::kZeroSuggestCachedResults).empty());
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_COOKIES, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginSetMask());
+}
+
 #if defined(OS_CHROMEOS)
 TEST_F(BrowsingDataRemoverTest, ContentProtectionPlatformKeysRemoval) {
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service;

@@ -32,6 +32,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -80,6 +81,15 @@ ZeroSuggestProvider* ZeroSuggestProvider::Create(
   return new ZeroSuggestProvider(listener, profile);
 }
 
+// static
+void ZeroSuggestProvider::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterStringPref(
+      prefs::kZeroSuggestCachedResults,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+}
+
 void ZeroSuggestProvider::Start(const AutocompleteInput& input,
                                 bool minimal_changes) {
   matches_.clear();
@@ -89,6 +99,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   Stop(true);
   field_trial_triggered_ = false;
   field_trial_triggered_in_session_ = false;
+  results_from_cache_ = false;
   permanent_text_ = input.text();
   current_query_ = input.current_url().spec();
   current_page_classification_ = input.current_page_classification();
@@ -123,7 +134,18 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   // TODO(jered): Consider adding locally-sourced zero-suggestions here too.
   // These may be useful on the NTP or more relevant to the user than server
   // suggestions, if based on local browsing history.
+  MaybeUseCachedSuggestions();
   Run(suggest_url);
+}
+
+void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
+  if (OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial()) {
+    // Remove the deleted match from the cache, so it is not shown to the user
+    // again. Since we cannot remove just one result, blow away the cache.
+    profile_->GetPrefs()->SetString(prefs::kZeroSuggestCachedResults,
+                                    std::string());
+  }
+  BaseSearchProvider::DeleteMatch(match);
 }
 
 void ZeroSuggestProvider::ResetSession() {
@@ -139,10 +161,35 @@ ZeroSuggestProvider::ZeroSuggestProvider(
     : BaseSearchProvider(listener, profile,
                          AutocompleteProvider::TYPE_ZERO_SUGGEST),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
+      results_from_cache_(false),
       weak_ptr_factory_(this) {
 }
 
 ZeroSuggestProvider::~ZeroSuggestProvider() {
+}
+
+bool ZeroSuggestProvider::StoreSuggestionResponse(
+    const std::string& json_data,
+    const base::Value& parsed_data) {
+  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial() ||
+      json_data.empty())
+    return false;
+  profile_->GetPrefs()->SetString(prefs::kZeroSuggestCachedResults, json_data);
+
+  // If we received an empty result list, we should update the display, as it
+  // may be showing cached results that should not be shown.
+  const base::ListValue* root_list = NULL;
+  const base::ListValue* results_list = NULL;
+  if (parsed_data.GetAsList(&root_list) &&
+      root_list->GetList(1, &results_list) &&
+      results_list->empty())
+    return false;
+
+  // We are finished with the request and want to bail early.
+  if (results_from_cache_)
+    done_ = true;
+
+  return results_from_cache_;
 }
 
 const TemplateURL* ZeroSuggestProvider::GetTemplateURL(bool is_keyword) const {
@@ -265,7 +312,6 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
   chrome_variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
       fetcher_->GetOriginalURL(), profile_->IsOffTheRecord(), false, &headers);
   fetcher_->SetExtraRequestHeaders(headers.ToString());
-
   fetcher_->Start();
 
   if (OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial()) {
@@ -390,4 +436,19 @@ bool ZeroSuggestProvider::CanShowZeroSuggestWithoutSendingURL(
     return false;
 
   return true;
+}
+
+void ZeroSuggestProvider::MaybeUseCachedSuggestions() {
+  if (!OmniboxFieldTrial::InZeroSuggestPersonalizedFieldTrial())
+    return;
+
+  std::string json_data = profile_->GetPrefs()->GetString(
+      prefs::kZeroSuggestCachedResults);
+  if (!json_data.empty()) {
+    scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
+    if (data && ParseSuggestResults(*data.get(), false, &results_)) {
+      ConvertResultsToAutocompleteMatches();
+      results_from_cache_ = !matches_.empty();
+    }
+  }
 }

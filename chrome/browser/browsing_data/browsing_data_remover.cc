@@ -662,6 +662,10 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   }
 #endif
 
+  // Remove omnibox zero-suggest cache results.
+  if ((remove_mask & (REMOVE_CACHE | REMOVE_COOKIES)))
+    prefs->SetString(prefs::kZeroSuggestCachedResults, std::string());
+
   // Always wipe accumulated network related data (TransportSecurityState and
   // HttpServerPropertiesManager data).
   waiting_for_clear_networking_history_ = true;

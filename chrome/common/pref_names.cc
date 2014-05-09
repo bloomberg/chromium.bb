@@ -1297,6 +1297,9 @@ extern const char kEasyUnlockShowTutorial[] = "easy_unlock.show_tutorial";
 // Preference storing Easy Unlock pairing data.
 extern const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 
+// A cache of zero suggest results using JSON serialized into a string.
+const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

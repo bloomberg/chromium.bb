@@ -31,6 +31,10 @@ namespace net {
 class URLFetcher;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // Autocomplete provider for searches based on the current URL.
 //
 // The controller will call StartZeroSuggest when the user focuses in the
@@ -47,9 +51,13 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   static ZeroSuggestProvider* Create(AutocompleteProviderListener* listener,
                                      Profile* profile);
 
+  // Registers a preference used to cache zero suggest results.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
                      bool minimal_changes) OVERRIDE;
+  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
 
   // Sets |field_trial_triggered_| to false.
   virtual void ResetSession() OVERRIDE;
@@ -61,6 +69,8 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   virtual ~ZeroSuggestProvider();
 
   // BaseSearchProvider:
+  virtual bool StoreSuggestionResponse(const std::string& json_data,
+                                       const base::Value& parsed_data) OVERRIDE;
   virtual const TemplateURL* GetTemplateURL(bool is_keyword) const OVERRIDE;
   virtual const AutocompleteInput GetInput(bool is_keyword) const OVERRIDE;
   virtual Results* GetResultsToFill(bool is_keyword) OVERRIDE;
@@ -76,8 +86,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Adds AutocompleteMatches for each of the suggestions in |results| to
   // |map|.
-  void AddSuggestResultsToMap(const SuggestResults& results,
-                              MatchMap* map);
+  void AddSuggestResultsToMap(const SuggestResults& results, MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion |navigation|.
   AutocompleteMatch NavigationToMatch(const NavigationResult& navigation);
@@ -105,9 +114,12 @@ class ZeroSuggestProvider : public BaseSearchProvider {
 
   // Whether we can show zero suggest on |current_page_url| without
   // sending |current_page_url| as a parameter to the server at |suggest_url|.
-  bool CanShowZeroSuggestWithoutSendingURL(
-      const GURL& suggest_url,
-      const GURL& current_page_url) const;
+  bool CanShowZeroSuggestWithoutSendingURL(const GURL& suggest_url,
+                                           const GURL& current_page_url) const;
+
+  // Checks whether we have a set of zero suggest results cached, and if so
+  // populates |matches_| with cached results.
+  void MaybeUseCachedSuggestions();
 
   // Used to build default search engine URLs for suggested queries.
   TemplateURLService* template_url_service_;
@@ -131,6 +143,9 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Contains suggest and navigation results as well as relevance parsed from
   // the response for the most recent zero suggest input URL.
   Results results_;
+
+  // Whether we are currently showing cached zero suggest results.
+  bool results_from_cache_;
 
   history::MostVisitedURLList most_visited_urls_;
 
