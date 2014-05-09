@@ -33983,6 +33983,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="757" label="AUTOMATIONINTERNAL_ENABLEDESKTOP"/>
   <int value="758" label="HOTWORDPRIVATE_SETHOTWORDSESSIONSTATE"/>
   <int value="759" label="HOTWORDPRIVATE_NOTIFYHOTWORDRECOGNITION"/>
+  <int value="760"
+      label="FILESYSTEMPROVIDERINTERNAL_READDIRECTORYREQUESTEDSUCCESS"/>
+  <int value="761"
+      label="FILESYSTEMPROVIDERINTERNAL_READDIRECTORYREQUESTEDERROR"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
