@@ -306,14 +306,18 @@ class CQMasterTable(SpreadsheetMasterTable):
 
   # Bump this number whenever this class adds new data columns, or changes
   # the values of existing data columns.
-  SHEETS_VERSION = SpreadsheetMasterTable.SHEETS_VERSION + 1
+  SHEETS_VERSION = SpreadsheetMasterTable.SHEETS_VERSION + 2
 
   COL_CL_COUNT = 'cl count'
+  COL_CL_SUBMITTED_COUNT = 'cls submitted'
+  COL_CL_REJECTED_COUNT = 'cls rejected'
 
   # These columns are in addition to those inherited from
   # SpreadsheetMasterTable
   COLUMNS = (
       COL_CL_COUNT,
+      COL_CL_SUBMITTED_COUNT,
+      COL_CL_REJECTED_COUNT,
   )
 
   def __init__(self):
@@ -329,6 +333,15 @@ class CQMasterTable(SpreadsheetMasterTable):
     """
     row = super(CQMasterTable, self)._GetBuildRow(build_data)
     row[self.COL_CL_COUNT] = str(build_data.count_changes)
+
+    cl_actions = [cbuildbot_metadata.CLActionTuple(*x)
+                  for x in build_data['cl_actions']]
+    submitted_cl_count = len([x for x in cl_actions if
+                              x.action == constants.CL_ACTION_SUBMITTED])
+    rejected_cl_count = len([x for x in cl_actions
+                             if x.action == constants.CL_ACTION_KICKED_OUT])
+    row[self.COL_CL_SUBMITTED_COUNT] = str(submitted_cl_count)
+    row[self.COL_CL_REJECTED_COUNT] = str(rejected_cl_count)
     return row
 
 
