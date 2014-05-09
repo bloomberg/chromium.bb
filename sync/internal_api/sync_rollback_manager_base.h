@@ -140,6 +140,8 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
 
   base::WeakPtrFactory<SyncRollbackManagerBase> weak_ptr_factory_;
 
+  scoped_ptr<SyncEncryptionHandler> dummy_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncRollbackManagerBase);
 };
 

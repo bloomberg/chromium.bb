@@ -8,7 +8,6 @@
 #include "sync/internal_api/public/internal_components_factory.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
-#include "sync/internal_api/public/util/syncer_error.h"
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/syncable/directory_backing_store.h"
 #include "sync/syncable/mutable_entry.h"
@@ -20,13 +19,31 @@ const char kBookmarkBarTag[] = "bookmark_bar";
 const char kMobileBookmarksTag[] = "synced_bookmarks";
 const char kOtherBookmarksTag[] = "other_bookmarks";
 
+class DummyEntryptionHandler : public syncer::SyncEncryptionHandler {
+  virtual void AddObserver(Observer* observer) OVERRIDE {}
+  virtual void RemoveObserver(Observer* observer) OVERRIDE {}
+  virtual void Init() OVERRIDE {}
+  virtual void SetEncryptionPassphrase(const std::string& passphrase,
+                                       bool is_explicit) OVERRIDE {}
+  virtual void SetDecryptionPassphrase(const std::string& passphrase)
+      OVERRIDE {}
+  virtual void EnableEncryptEverything() OVERRIDE {}
+  virtual bool EncryptEverythingEnabled() const OVERRIDE {
+    return false;
+  }
+  virtual syncer::PassphraseType GetPassphraseType() const OVERRIDE {
+    return syncer::KEYSTORE_PASSPHRASE;
+  }
+};
+
 }  // anonymous namespace
 
 namespace syncer {
 
 SyncRollbackManagerBase::SyncRollbackManagerBase()
     : report_unrecoverable_error_function_(NULL),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      dummy_handler_(new DummyEntryptionHandler) {
 }
 
 SyncRollbackManagerBase::~SyncRollbackManagerBase() {
@@ -85,7 +102,6 @@ bool SyncRollbackManagerBase::PurgePartiallySyncedTypes() {
 
 void SyncRollbackManagerBase::UpdateCredentials(
     const SyncCredentials& credentials) {
-  NOTREACHED();
 }
 
 void SyncRollbackManagerBase::StartSyncingNormally(
@@ -101,9 +117,6 @@ void SyncRollbackManagerBase::ConfigureSyncer(
       const ModelSafeRoutingInfo& new_routing_info,
       const base::Closure& ready_task,
       const base::Closure& retry_task) {
-  DCHECK(to_purge.Empty());
-  DCHECK(to_journal.Empty());
-  DCHECK(to_unapply.Empty());
   for (ModelTypeSet::Iterator type = to_download.First();
       type.Good(); type.Inc()) {
     if (InitTypeRootNode(type.Get())) {
@@ -169,7 +182,7 @@ bool SyncRollbackManagerBase::HasUnsyncedItems() {
 }
 
 SyncEncryptionHandler* SyncRollbackManagerBase::GetEncryptionHandler() {
-  return NULL;
+  return dummy_handler_.get();
 }
 
 void SyncRollbackManagerBase::RefreshTypes(ModelTypeSet types) {
