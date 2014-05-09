@@ -1,7 +1,9 @@
 include_rules = [
   "+mojo/aura",
   "+mojo/services",
+  "+third_party/skia",
   "+ui/aura",
+  "+ui/base/cursor/cursor.h",
   "+ui/base/hit_test.h",
   "+ui/events",
   "+ui/gfx",

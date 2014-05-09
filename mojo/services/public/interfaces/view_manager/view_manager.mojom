@@ -53,6 +53,11 @@ interface IViewManager {
 
   // Sets the view a node is showing.
   SetView(uint32 node_id, uint32 view_id, uint32 change_id) => (bool success);
+
+  // Shows the specified image (png encoded) in the specified view.
+  SetViewContents(uint32 view_id,
+                  handle<shared_buffer> buffer,
+                  uint32 buffer_size);
 };
 
 [Peer=IViewManager]

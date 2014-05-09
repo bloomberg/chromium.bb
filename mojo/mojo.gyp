@@ -504,6 +504,8 @@
         'shell/test_child_process.h',
         'shell/url_request_context_getter.cc',
         'shell/url_request_context_getter.h',
+        'shell/view_manager_loader.cc',
+        'shell/view_manager_loader.h',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -518,6 +520,11 @@
             '../skia/skia.gyp:skia',
             'mojo_shell_client',
             'mojo_view_manager',
+          ],
+        }, {  # use_aura==0
+          'sources!': [
+            'shell/view_manager_loader.cc',
+            'shell/view_manager_loader.h',
           ],
         }],
       ],

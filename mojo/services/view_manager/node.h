@@ -11,6 +11,7 @@
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/view_manager_export.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
 
 namespace mojo {
@@ -21,7 +22,9 @@ class NodeDelegate;
 class View;
 
 // Represents a node in the graph. Delegate is informed of interesting events.
-class MOJO_VIEW_MANAGER_EXPORT Node : public aura::WindowObserver {
+class MOJO_VIEW_MANAGER_EXPORT Node
+    : public aura::WindowObserver,
+      public aura::WindowDelegate {
  public:
   Node(NodeDelegate* delegate, const NodeId& id);
   virtual ~Node();
@@ -33,6 +36,8 @@ class MOJO_VIEW_MANAGER_EXPORT Node : public aura::WindowObserver {
 
   void Add(Node* child);
   void Remove(Node* child);
+
+  aura::Window* window() { return &window_; }
 
   Node* GetParent();
 
@@ -46,6 +51,26 @@ class MOJO_VIEW_MANAGER_EXPORT Node : public aura::WindowObserver {
   // WindowObserver overrides:
   virtual void OnWindowHierarchyChanged(
       const aura::WindowObserver::HierarchyChangeParams& params) OVERRIDE;
+
+  // WindowDelegate overrides:
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
+  virtual gfx::Size GetMaximumSize() const OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
+                               const gfx::Rect& new_bounds) OVERRIDE;
+  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) OVERRIDE;
+  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE;
+  virtual bool ShouldDescendIntoChildForEventHandling(
+      aura::Window* child,
+      const gfx::Point& location) OVERRIDE;
+  virtual bool CanFocus() OVERRIDE;
+  virtual void OnCaptureLost() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
+  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+  virtual void OnWindowTargetVisibilityChanged(bool visible) OVERRIDE;
+  virtual bool HasHitTestMask() const OVERRIDE;
+  virtual void GetHitTestMask(gfx::Path* mask) const OVERRIDE;
 
   NodeDelegate* delegate_;
   const NodeId id_;
