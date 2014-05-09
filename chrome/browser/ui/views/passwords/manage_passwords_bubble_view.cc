@@ -308,17 +308,21 @@ ManagePasswordsBubbleView::BlacklistedView::BlacklistedView(
   AddTitleRow(layout, parent_->model());
 
   // Add the "Hey! You blacklisted this site!" text.
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   views::Label* blacklisted = new views::Label(
       l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_BLACKLISTED));
   blacklisted->SetMultiLine(true);
   blacklisted->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::SmallFont));
+  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(blacklisted);
+  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
   // Then add the "enable password manager" and "Done" buttons.
   unblacklist_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UNBLACKLIST_BUTTON));
+  unblacklist_button_->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::SmallFont));
   done_button_ =
       new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
   done_button_->SetStyle(views::Button::STYLE_BUTTON);
