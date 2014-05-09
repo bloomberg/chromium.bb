@@ -50,6 +50,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -93,6 +94,7 @@ struct vaapi_recorder {
 	int width, height;
 	int frame_count;
 
+	int error;
 	int destroying;
 	pthread_t worker_thread;
 	pthread_mutex_t mutex;
@@ -761,7 +763,13 @@ encoder_create_output_buffer(struct vaapi_recorder *r)
 		return VA_INVALID_ID;
 }
 
-static int
+enum output_write_status {
+	OUTPUT_WRITE_SUCCESS,
+	OUTPUT_WRITE_OVERFLOW,
+	OUTPUT_WRITE_FATAL
+};
+
+static enum output_write_status
 encoder_write_output(struct vaapi_recorder *r, VABufferID output_buf)
 {
 	VACodedBufferSegment *segment;
@@ -770,19 +778,22 @@ encoder_write_output(struct vaapi_recorder *r, VABufferID output_buf)
 
 	status = vaMapBuffer(r->va_dpy, output_buf, (void **) &segment);
 	if (status != VA_STATUS_SUCCESS)
-		return -1;
+		return OUTPUT_WRITE_FATAL;
 
 	if (segment->status & VA_CODED_BUF_STATUS_SLICE_OVERFLOW_MASK) {
 		r->encoder.output_size *= 2;
 		vaUnmapBuffer(r->va_dpy, output_buf);
-		return -1;
+		return OUTPUT_WRITE_OVERFLOW;
 	}
 
 	count = write(r->output_fd, segment->buf, segment->size);
 
 	vaUnmapBuffer(r->va_dpy, output_buf);
 
-	return count;
+	if (count < 0)
+		return OUTPUT_WRITE_FATAL;
+
+	return OUTPUT_WRITE_SUCCESS;
 }
 
 static void
@@ -792,9 +803,8 @@ encoder_encode(struct vaapi_recorder *r, VASurfaceID input)
 
 	VABufferID buffers[8];
 	int count = 0;
-
-	int slice_type;
-	int ret, i;
+	int i, slice_type;
+	enum output_write_status ret;
 
 	if ((r->frame_count % r->encoder.intra_period) == 0)
 		slice_type = SLICE_TYPE_I;
@@ -829,7 +839,10 @@ encoder_encode(struct vaapi_recorder *r, VASurfaceID input)
 		output_buf = VA_INVALID_ID;
 
 		vaDestroyBuffer(r->va_dpy, buffers[--count]);
-	} while (ret < 0);
+	} while (ret == OUTPUT_WRITE_OVERFLOW);
+
+	if (ret == OUTPUT_WRITE_FATAL)
+		r->error = errno;
 
 	for (i = 0; i < count; i++)
 		vaDestroyBuffer(r->va_dpy, buffers[i]);
@@ -1138,10 +1151,18 @@ worker_thread_function(void *data)
 	return NULL;
 }
 
-void
+int
 vaapi_recorder_frame(struct vaapi_recorder *r, int prime_fd, int stride)
 {
+	int ret = 0;
+
 	pthread_mutex_lock(&r->mutex);
+
+	if (r->error) {
+		errno = r->error;
+		ret = -1;
+		goto unlock;
+	}
 
 	/* The mutex is never released while encoding, so this point should
 	 * never be reached if input.valid is true. */
@@ -1152,5 +1173,8 @@ vaapi_recorder_frame(struct vaapi_recorder *r, int prime_fd, int stride)
 	r->input.valid = 1;
 	pthread_cond_signal(&r->input_cond);
 
+unlock:
 	pthread_mutex_unlock(&r->mutex);
+
+	return ret;
 }

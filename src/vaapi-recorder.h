@@ -29,7 +29,7 @@ struct vaapi_recorder *
 vaapi_recorder_create(int drm_fd, int width, int height, const char *filename);
 void
 vaapi_recorder_destroy(struct vaapi_recorder *r);
-void
+int
 vaapi_recorder_frame(struct vaapi_recorder *r, int fd, int stride);
 
 #endif /* _VAAPI_RECORDER_H_ */
