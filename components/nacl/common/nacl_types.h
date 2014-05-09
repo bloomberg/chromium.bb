@@ -38,9 +38,6 @@ inline int ToNativeHandle(const FileDescriptor& desc) {
 
 
 // Parameters sent to the NaCl process when we start it.
-//
-// If you change this, you will also need to update the IPC serialization in
-// nacl_messages.h.
 struct NaClStartParams {
   NaClStartParams();
   ~NaClStartParams();
@@ -60,6 +57,9 @@ struct NaClStartParams {
   bool enable_ipc_proxy;
   bool uses_irt;
   bool enable_dyncode_syscalls;
+  // NOTE: Any new fields added here must also be added to the IPC
+  // serialization in nacl_messages.h and (for POD fields) the constructor
+  // in nacl_types.cc.
 };
 
 // Parameters sent to the browser process to have it launch a NaCl process.

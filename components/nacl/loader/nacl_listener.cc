@@ -375,10 +375,16 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 
 #if defined(OS_LINUX)
   if (uses_nonsfi_mode_) {
-    if (params.uses_irt) {
-      LOG(ERROR) << "IRT must not be used for non-SFI NaCl.";
-      return;
-    }
+    // Ensure that the validation cache key (used as an extra input to the
+    // validation cache's hashing) isn't exposed accidentally.
+    CHECK(!params.validation_cache_enabled);
+    CHECK(params.validation_cache_key.size() == 0);
+    CHECK(params.version.size() == 0);
+    // Ensure that a debug stub FD isn't passed through accidentally.
+    CHECK(!params.enable_debug_stub);
+    CHECK(params.debug_stub_server_bound_socket.fd == -1);
+
+    CHECK(!params.uses_irt);
     CHECK(handles.size() == 1);
     int imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
     nacl::nonsfi::MainStart(imc_bootstrap_handle);

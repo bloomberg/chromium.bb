@@ -798,16 +798,18 @@ bool NaClProcessHost::StartNaClExecution() {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
 
   NaClStartParams params;
-  params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
-  params.validation_cache_key = nacl_browser->GetValidationCacheKey();
-  params.version = NaClBrowser::GetDelegate()->GetVersionString();
-  params.enable_exception_handling = enable_exception_handling_;
-  params.enable_debug_stub = enable_debug_stub_ &&
-      NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
-  params.uses_irt = uses_irt_ && !uses_nonsfi_mode_;
-  params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
+  if (!uses_nonsfi_mode_) {
+    params.validation_cache_enabled = nacl_browser->ValidationCacheIsEnabled();
+    params.validation_cache_key = nacl_browser->GetValidationCacheKey();
+    params.version = NaClBrowser::GetDelegate()->GetVersionString();
+    params.enable_exception_handling = enable_exception_handling_;
+    params.enable_debug_stub = enable_debug_stub_ &&
+        NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
+    params.uses_irt = uses_irt_;
+    params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
+  }
 
   const ChildProcessData& data = process_->GetData();
   if (!ShareHandleToSelLdr(data.handle,
