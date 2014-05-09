@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/rtc_data_channel_handler.h"
 
+#include <limits>
 #include <string>
 
 #include "base/logging.h"
@@ -45,6 +46,13 @@ RtcDataChannelHandler::RtcDataChannelHandler(
     IncrementCounter(CHANNEL_ORDERED);
   if (negotiated())
     IncrementCounter(CHANNEL_NEGOTIATED);
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.DataChannelMaxRetransmits",
+                              maxRetransmits(), 0,
+                              std::numeric_limits<unsigned short>::max(), 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("WebRTC.DataChannelMaxRetransmitTime",
+                              maxRetransmitTime(), 0,
+                              std::numeric_limits<unsigned short>::max(), 50);
 }
 
 RtcDataChannelHandler::~RtcDataChannelHandler() {

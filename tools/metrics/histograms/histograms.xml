@@ -30464,6 +30464,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.DataChannelMaxRetransmits">
+  <owner>perkj@chromium.org</owner>
+  <summary>
+    The maximum number of retransmissions that are attempted in unreliable mode.
+    It is set to the value used in the configuration when a RTCDataChannel is
+    created.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.DataChannelMaxRetransmitTime" units="milliseconds">
+  <owner>perkj@chromium.org</owner>
+  <summary>
+    The length of the time window during which transmissions and retransmissions
+    may occur in unreliable mode. It is set to the value used in the
+    configuration when a RTCDataChannel is created.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.DesktopCaptureCounters" enum="DesktopCaptureCounters">
   <owner>jiayl@chromium.org</owner>
   <summary>
