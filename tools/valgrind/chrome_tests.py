@@ -508,7 +508,7 @@ class ChromeTests:
                   "--batch-size=1",
                   "--fully-parallel",
                   "--child-processes=%d" % jobs,
-                  "--time-out-ms=200000",
+                  "--time-out-ms=800000",
                   "--no-retry-failures",  # retrying takes too much time
                   # http://crbug.com/176908: Don't launch a browser when done.
                   "--no-show-results",
