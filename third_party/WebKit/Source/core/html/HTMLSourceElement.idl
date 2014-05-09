@@ -29,5 +29,9 @@
     [Reflect, URL, PerWorldBindings, LogActivity=SetterOnly] attribute DOMString src;
     attribute DOMString type;
 
+    [Reflect, RuntimeEnabled=Picture] attribute DOMString srcset;
+    [Reflect, RuntimeEnabled=Picture] attribute DOMString sizes;
+    [Reflect, RuntimeEnabled=Picture] attribute DOMString media;
+
     [Reflect, RuntimeEnabled=SubresourceIntegrity] attribute DOMString integrity;
 };
