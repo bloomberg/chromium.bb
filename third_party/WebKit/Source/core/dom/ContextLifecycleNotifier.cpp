@@ -59,7 +59,6 @@ void ContextLifecycleNotifier::removeObserver(ContextLifecycleNotifier::Observer
 
     RELEASE_ASSERT(m_iterating != IteratingOverContextObservers);
     if (observer->observerType() == Observer::ActiveDOMObjectType) {
-        RELEASE_ASSERT(m_iterating != IteratingOverActiveDOMObjects);
         m_activeDOMObjects.remove(static_cast<ActiveDOMObject*>(observer));
     }
 }
@@ -67,44 +66,61 @@ void ContextLifecycleNotifier::removeObserver(ContextLifecycleNotifier::Observer
 void ContextLifecycleNotifier::notifyResumingActiveDOMObjects()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
-    ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
-    for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == context());
-        ASSERT((*iter)->suspendIfNeededCalled());
-        (*iter)->resume();
+    Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
+    copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
+    for (Vector<ActiveDOMObject*>::iterator iter = snapshotOfActiveDOMObjects.begin(); iter != snapshotOfActiveDOMObjects.end(); iter++) {
+        // FIXME: Oilpan: At the moment, it's possible that the ActiveDOMObject is destructed
+        // during the iteration. Once we move ActiveDOMObject to the heap and
+        // make m_activeDOMObjects a HeapHashSet<WeakMember<ActiveDOMObject>>,
+        // it's no longer possible that ActiveDOMObject is destructed during the iteration,
+        // so we can remove the hack (i.e., we can just iterate m_activeDOMObjects without
+        // taking a snapshot). For more details, see https://codereview.chromium.org/247253002/.
+        if (m_activeDOMObjects.contains(*iter)) {
+            ASSERT((*iter)->executionContext() == context());
+            ASSERT((*iter)->suspendIfNeededCalled());
+            (*iter)->resume();
+        }
     }
 }
 
 void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
-    ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
-    for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == context());
-        ASSERT((*iter)->suspendIfNeededCalled());
-        (*iter)->suspend();
+    Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
+    copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
+    for (Vector<ActiveDOMObject*>::iterator iter = snapshotOfActiveDOMObjects.begin(); iter != snapshotOfActiveDOMObjects.end(); iter++) {
+        // It's possible that the ActiveDOMObject is already destructed.
+        // See a FIXME above.
+        if (m_activeDOMObjects.contains(*iter)) {
+            ASSERT((*iter)->executionContext() == context());
+            ASSERT((*iter)->suspendIfNeededCalled());
+            (*iter)->suspend();
+        }
     }
 }
 
 void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects()
 {
     TemporaryChange<IterationType> scope(this->m_iterating, IteratingOverActiveDOMObjects);
-    ActiveDOMObjectSet::iterator activeObjectsEnd = m_activeDOMObjects.end();
-    for (ActiveDOMObjectSet::iterator iter = m_activeDOMObjects.begin(); iter != activeObjectsEnd; ++iter) {
-        ASSERT((*iter)->executionContext() == context());
-        ASSERT((*iter)->suspendIfNeededCalled());
-        (*iter)->stop();
+    Vector<ActiveDOMObject*> snapshotOfActiveDOMObjects;
+    copyToVector(m_activeDOMObjects, snapshotOfActiveDOMObjects);
+    for (Vector<ActiveDOMObject*>::iterator iter = snapshotOfActiveDOMObjects.begin(); iter != snapshotOfActiveDOMObjects.end(); iter++) {
+        // It's possible that the ActiveDOMObject is already destructed.
+        // See a FIXME above.
+        if (m_activeDOMObjects.contains(*iter)) {
+            ASSERT((*iter)->executionContext() == context());
+            ASSERT((*iter)->suspendIfNeededCalled());
+            (*iter)->stop();
+        }
     }
 }
 
 bool ContextLifecycleNotifier::hasPendingActivity() const
 {
-    ActiveDOMObjectSet::const_iterator activeObjectsEnd = activeDOMObjects().end();
-    for (ActiveDOMObjectSet::const_iterator iter = activeDOMObjects().begin(); iter != activeObjectsEnd; ++iter) {
+    for (ActiveDOMObjectSet::const_iterator iter = m_activeDOMObjects.begin(); iter != m_activeDOMObjects.end(); ++iter) {
         if ((*iter)->hasPendingActivity())
             return true;
     }
-
     return false;
 }
 
