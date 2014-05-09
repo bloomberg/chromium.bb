@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/remote_ptr.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
@@ -42,8 +41,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   void AddChild(TransportNodeId child_id, TransportNodeId parent_id);
   void RemoveChild(TransportNodeId child_id, TransportNodeId parent_id);
 
-  bool OwnsNode(TransportNodeId id) const;
-
  private:
   friend class ViewManagerTransaction;
   typedef ScopedVector<ViewManagerTransaction> Transactions;
@@ -58,7 +55,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
                                   uint32_t new_view_id,
                                   uint32_t old_view_id,
                                   uint32_t change_id) OVERRIDE;
-  virtual void OnNodeDeleted(uint32_t node_id, uint32_t change_id) OVERRIDE;
 
   // Called to schedule a sync of the client model with the service after a
   // return to the message loop.
@@ -87,8 +83,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   uint32_t next_change_id_;
 
   Transactions pending_transactions_;
-
-  base::WeakPtrFactory<ViewManagerSynchronizer> sync_factory_;
 
   // Non-NULL while blocking on the connection to |service_| during
   // construction.

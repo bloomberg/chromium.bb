@@ -185,7 +185,6 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
       connection_id_(0),
       next_id_(1),
       next_change_id_(0),
-      sync_factory_(this),
       init_loop_(NULL) {
   InterfacePipe<services::view_manager::IViewManager, AnyInterface>
       view_manager_pipe;
@@ -205,7 +204,6 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
 }
 
 ViewManagerSynchronizer::~ViewManagerSynchronizer() {
-  DoSync();
 }
 
 TransportNodeId ViewManagerSynchronizer::CreateViewTreeNode() {
@@ -245,10 +243,6 @@ void ViewManagerSynchronizer::RemoveChild(TransportNodeId child_id,
   ScheduleSync();
 }
 
-bool ViewManagerSynchronizer::OwnsNode(TransportNodeId id) const {
-  return HiWord(id) == connection_id_;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, IViewManagerClient implementation:
 
@@ -263,26 +257,24 @@ void ViewManagerSynchronizer::OnNodeHierarchyChanged(uint32_t node_id,
                                                      uint32_t old_parent_id,
                                                      uint32_t change_id) {
   if (change_id == 0) {
-    ViewTreeNode* new_parent = view_manager_->GetNodeById(new_parent_id);
-    ViewTreeNode* old_parent = view_manager_->GetNodeById(old_parent_id);
+    ViewTreeNode* new_parent =
+        view_manager_->tree()->GetChildById(new_parent_id);
+    ViewTreeNode* old_parent =
+        view_manager_->tree()->GetChildById(old_parent_id);
     ViewTreeNode* node = NULL;
     if (old_parent) {
       // Existing node, mapped in this connection's tree.
       // TODO(beng): verify this is actually true.
-      node = view_manager_->GetNodeById(node_id);
+      node = view_manager_->tree()->GetChildById(node_id);
       DCHECK_EQ(node->parent(), old_parent);
     } else {
       // New node, originating from another connection.
-      node = ViewTreeNodePrivate::LocalCreate();
+      node = new ViewTreeNode;
       ViewTreeNodePrivate private_node(node);
       private_node.set_view_manager(view_manager_);
       private_node.set_id(node_id);
-      ViewManagerPrivate(view_manager_).AddNode(node->id(), node);
     }
-    if (new_parent)
-      ViewTreeNodePrivate(new_parent).LocalAddChild(node);
-    else
-      ViewTreeNodePrivate(old_parent).LocalRemoveChild(node);
+    ViewTreeNodePrivate(new_parent).LocalAddChild(node);
   }
 }
 
@@ -293,24 +285,13 @@ void ViewManagerSynchronizer::OnNodeViewReplaced(uint32_t node,
   // ..
 }
 
-void ViewManagerSynchronizer::OnNodeDeleted(uint32_t node_id,
-                                            uint32_t change_id) {
-  if (change_id == 0) {
-    ViewTreeNode* node = view_manager_->GetNodeById(node_id);
-    if (node)
-      ViewTreeNodePrivate(node).LocalDestroy();
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, private:
 
 void ViewManagerSynchronizer::ScheduleSync() {
-  if (sync_factory_.HasWeakPtrs())
-    return;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&ViewManagerSynchronizer::DoSync, sync_factory_.GetWeakPtr()));
+      base::Bind(&ViewManagerSynchronizer::DoSync, base::Unretained(this)));
 }
 
 void ViewManagerSynchronizer::DoSync() {
@@ -355,7 +336,7 @@ void ViewManagerSynchronizer::OnRootTreeReceived(
     }
     // We don't use the ctor that takes a ViewManager here, since it will call
     // back to the service and attempt to create a new node.
-    ViewTreeNode* node = ViewTreeNodePrivate::LocalCreate();
+    ViewTreeNode* node = new ViewTreeNode;
     ViewTreeNodePrivate private_node(node);
     private_node.set_view_manager(view_manager_);
     private_node.set_id(nodes[i].node_id());
@@ -364,9 +345,8 @@ void ViewManagerSynchronizer::OnRootTreeReceived(
     if (!last_node)
       root = node;
     last_node = node;
-    ViewManagerPrivate(view_manager_).AddNode(node->id(), node);
   }
-  ViewManagerPrivate(view_manager_).set_root(root);
+  ViewManagerPrivate(view_manager_).SetRoot(root);
   if (init_loop_)
     init_loop_->Quit();
 }

@@ -12,14 +12,8 @@ ViewManagerPrivate::ViewManagerPrivate(ViewManager* manager)
     : manager_(manager) {}
 ViewManagerPrivate::~ViewManagerPrivate() {}
 
-void ViewManagerPrivate::AddNode(TransportNodeId node_id, ViewTreeNode* node) {
-  manager_->nodes_[node_id] = node;
-}
-
-void ViewManagerPrivate::RemoveNode(TransportNodeId node_id) {
-  ViewManager::IdToNodeMap::iterator it = manager_->nodes_.find(node_id);
-  if (it != manager_->nodes_.end())
-    manager_->nodes_.erase(it);
+void ViewManagerPrivate::SetRoot(ViewTreeNode* root) {
+  manager_->tree_.reset(root);
 }
 
 }  // namespace view_manager

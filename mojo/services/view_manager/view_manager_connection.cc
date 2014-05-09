@@ -129,11 +129,6 @@ void ViewManagerConnection::NotifyNodeViewReplaced(
                                change_id);
 }
 
-void ViewManagerConnection::NotifyNodeDeleted(const NodeId& node,
-                                              TransportChangeId change_id) {
-  client()->OnNodeDeleted(NodeIdToTransportId(node), change_id);
-}
-
 bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
                                            const NodeId& node_id,
                                            TransportChangeId change_id) {
@@ -150,7 +145,6 @@ bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
   DCHECK(node->GetChildren().empty());
   node_map_.erase(node_id.node_id);
   delete node;
-  context()->NotifyNodeDeleted(node_id);
   return true;
 }
 

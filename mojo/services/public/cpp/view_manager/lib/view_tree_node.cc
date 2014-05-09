@@ -90,19 +90,36 @@ void RemoveChildImpl(ViewTreeNode* child, ViewTreeNode::Children* children) {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewTreeNode, public:
 
-// static
-ViewTreeNode* ViewTreeNode::Create(ViewManager* view_manager) {
-  ViewTreeNode* node = new ViewTreeNode(view_manager);
-  ViewManagerPrivate(view_manager).AddNode(node->id(), node);
-  return node;
-}
+ViewTreeNode::ViewTreeNode()
+    : manager_(NULL),
+      id_(-1),
+      owned_by_parent_(true),
+      parent_(NULL) {}
 
-void ViewTreeNode::Destroy() {
+ViewTreeNode::ViewTreeNode(ViewManager* manager)
+    : manager_(manager),
+      id_(ViewManagerPrivate(manager).synchronizer()->CreateViewTreeNode()),
+      owned_by_parent_(true),
+      parent_(NULL) {}
+
+ViewTreeNode::~ViewTreeNode() {
+  while (!children_.empty()) {
+    ViewTreeNode* child = children_.front();
+    if (child->owned_by_parent_) {
+      delete child;
+      // Deleting the child also removes it from our child list.
+      DCHECK(std::find(children_.begin(), children_.end(), child) ==
+             children_.end());
+    } else {
+      RemoveChild(child);
+    }
+  }
+
+  if (parent_)
+    parent_->RemoveChild(this);
+
   if (manager_)
     ViewManagerPrivate(manager_).synchronizer()->DestroyViewTreeNode(id_);
-  while (!children_.empty())
-    children_.front()->Destroy();
-  LocalDestroy();
 }
 
 void ViewTreeNode::AddObserver(ViewTreeNodeObserver* observer) {
@@ -147,39 +164,7 @@ ViewTreeNode* ViewTreeNode::GetChildById(TransportNodeId id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ViewTreeNode, protected:
-
-ViewTreeNode::ViewTreeNode()
-    : manager_(NULL),
-      id_(-1),
-      parent_(NULL) {}
-
-ViewTreeNode::~ViewTreeNode() {
-  FOR_EACH_OBSERVER(
-      ViewTreeNodeObserver,
-      observers_,
-      OnNodeDestroy(this, ViewTreeNodeObserver::DISPOSITION_CHANGING));
-  if (parent_)
-    parent_->LocalRemoveChild(this);
-  FOR_EACH_OBSERVER(
-      ViewTreeNodeObserver,
-      observers_,
-      OnNodeDestroy(this, ViewTreeNodeObserver::DISPOSITION_CHANGED));
-  if (manager_)
-    ViewManagerPrivate(manager_).RemoveNode(id_);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ViewTreeNode, private:
-
-ViewTreeNode::ViewTreeNode(ViewManager* manager)
-    : manager_(manager),
-      id_(ViewManagerPrivate(manager).synchronizer()->CreateViewTreeNode()),
-      parent_(NULL) {}
-
-void ViewTreeNode::LocalDestroy() {
-  delete this;
-}
 
 void ViewTreeNode::LocalAddChild(ViewTreeNode* child) {
   ScopedTreeNotifier notifier(child, child->parent(), this);

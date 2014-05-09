@@ -32,12 +32,11 @@ class SampleApp : public Application {
   explicit SampleApp(MojoHandle shell_handle)
       : Application(shell_handle) {
     view_manager_.reset(new services::view_manager::ViewManager(shell()));
-    view_manager_->Init();
-    services::view_manager::ViewTreeNode* node1 =
-        services::view_manager::ViewTreeNode::Create(view_manager_.get());
-    services::view_manager::ViewTreeNode* node11 =
-        services::view_manager::ViewTreeNode::Create(view_manager_.get());
-    node1->AddChild(node11);
+    node_1_.reset(
+        new services::view_manager::ViewTreeNode(view_manager_.get()));
+    node_11_.reset(
+      new services::view_manager::ViewTreeNode(view_manager_.get()));
+    node_1_->AddChild(node_11_.get());
   }
 
   virtual ~SampleApp() {
@@ -46,6 +45,8 @@ class SampleApp : public Application {
  private:
   // SampleApp creates a ViewManager and a trivial node hierarchy.
   scoped_ptr<services::view_manager::ViewManager> view_manager_;
+  scoped_ptr<services::view_manager::ViewTreeNode> node_1_;
+  scoped_ptr<services::view_manager::ViewTreeNode> node_11_;
 
   DISALLOW_COPY_AND_ASSIGN(SampleApp);
 };

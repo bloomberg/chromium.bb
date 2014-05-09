@@ -25,10 +25,7 @@ class ViewManagerPrivate {
   }
   Shell* shell() { return manager_->shell_; }
 
-  void set_root(ViewTreeNode* root) { manager_->tree_ = root; }
-
-  void AddNode(TransportNodeId node_id, ViewTreeNode* node);
-  void RemoveNode(TransportNodeId node_id);
+  void SetRoot(ViewTreeNode* root);
 
   // Returns true if the ViewManager's synchronizer is connected to the service.
   bool connected() { return manager_->synchronizer_->connected(); }

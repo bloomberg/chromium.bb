@@ -53,7 +53,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                               const ViewId& new_view_id,
                               const ViewId& old_view_id,
                               TransportChangeId change_id);
-  void NotifyNodeDeleted(const NodeId& node, TransportChangeId change_id);
 
  private:
   typedef std::map<TransportConnectionSpecificNodeId, Node*> NodeMap;
