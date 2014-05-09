@@ -79,9 +79,8 @@ class MapsPage(page.Page):
       url='http://localhost:10020/tracker.html',
       page_set=page_set,
       base_dir=base_dir,
-      name='Maps.maps_001')
-    self.script_to_evaluate_on_commit = 'window.screen = null;'
-    self.pixel_expectations = 'data/maps_001_expectations.json'
+      name='Maps.maps_002')
+    self.pixel_expectations = 'data/maps_002_expectations.json'
 
   def RunNavigateSteps(self, action_runner):
     action_runner.RunAction(NavigateAction())
