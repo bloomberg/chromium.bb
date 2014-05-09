@@ -892,6 +892,11 @@
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
           ],
         }],
+        ['OS!="win" and OS!="mac"', {
+          'sources!': [
+            'common/plugin_list_unittest.cc',
+          ],
+        }],
       ],
     },
   ],

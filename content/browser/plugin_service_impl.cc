@@ -761,7 +761,7 @@ void PluginServiceImpl::RefreshPlugins() {
 }
 
 void PluginServiceImpl::AddExtraPluginPath(const base::FilePath& path) {
- if (!NPAPIPluginsSupported()) {
+  if (!NPAPIPluginsSupported()) {
     // TODO(jam): remove and just have CHECK once we're sure this doesn't get
     // triggered.
     DVLOG(0) << "NPAPI plugins not supported";
@@ -799,8 +799,7 @@ void PluginServiceImpl::GetInternalPlugins(
 }
 
 bool PluginServiceImpl::NPAPIPluginsSupported() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_BSD) || \
-    (defined(OS_LINUX) && !defined(USE_AURA))
+#if defined(OS_WIN) || defined(OS_MACOSX)
   return true;
 #else
   return false;
