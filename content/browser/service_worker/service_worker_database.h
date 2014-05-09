@@ -77,6 +77,8 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   bool GetRegistrationsForOrigin(const GURL& origin,
                                  std::vector<RegistrationData>* registrations);
 
+  bool GetAllRegistrations(std::vector<RegistrationData>* registrations);
+
   // Saving, retrieving, and updating registration data.
   // (will bump next_avail_xxxx_ids as needed)
   // (resource ids will be added/removed from the uncommitted/purgeable

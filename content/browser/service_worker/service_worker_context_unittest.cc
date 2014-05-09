@@ -160,6 +160,7 @@ TEST_F(ServiceWorkerContextTest, Register) {
 
   context()->storage()->FindRegistrationForId(
       registration_id,
+      GURL("http://www.example.com"),
       base::Bind(&ExpectRegisteredWorkers,
                  SERVICE_WORKER_OK,
                  version_id,
@@ -198,6 +199,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
 
   context()->storage()->FindRegistrationForId(
       registration_id,
+      GURL("http://www.example.com"),
       base::Bind(&ExpectRegisteredWorkers,
                  SERVICE_WORKER_ERROR_NOT_FOUND,
                  kInvalidServiceWorkerVersionId,
@@ -236,6 +238,7 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
 
   context()->storage()->FindRegistrationForId(
       registration_id,
+      GURL("http://www.example.com"),
       base::Bind(&ExpectRegisteredWorkers,
                  SERVICE_WORKER_ERROR_NOT_FOUND,
                  kInvalidServiceWorkerVersionId,
@@ -274,6 +277,7 @@ TEST_F(ServiceWorkerContextTest, Unregister) {
 
   context()->storage()->FindRegistrationForId(
       registration_id,
+      pattern.GetOrigin(),
       base::Bind(&ExpectRegisteredWorkers,
                  SERVICE_WORKER_ERROR_NOT_FOUND,
                  kInvalidServiceWorkerVersionId,

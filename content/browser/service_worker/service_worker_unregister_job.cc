@@ -54,6 +54,7 @@ void ServiceWorkerUnregisterJob::DeleteExistingRegistration(
     // when the version no longer has any controllees.
     context_->storage()->DeleteRegistration(
         registration->id(),
+        registration->script_url().GetOrigin(),
         base::Bind(&ServiceWorkerUnregisterJob::Complete,
                    weak_factory_.GetWeakPtr()));
     return;

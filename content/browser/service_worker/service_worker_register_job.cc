@@ -183,6 +183,7 @@ void ServiceWorkerRegisterJob::HandleExistingRegistrationAndContinue(
   // when it no longer has any controllees.
   context_->storage()->DeleteRegistration(
       existing_registration->id(),
+      existing_registration->script_url().GetOrigin(),
       base::Bind(&ServiceWorkerRegisterJob::RegisterAndContinue,
                  weak_factory_.GetWeakPtr()));
 }
@@ -367,6 +368,7 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
     if (registration() && !registration()->active_version()) {
       context_->storage()->DeleteRegistration(
           registration()->id(),
+          registration()->script_url().GetOrigin(),
           base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
     }
     if (!is_promise_resolved_)

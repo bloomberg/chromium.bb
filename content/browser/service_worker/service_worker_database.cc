@@ -305,8 +305,13 @@ bool ServiceWorkerDatabase::GetRegistrationsForOrigin(
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(registrations);
 
-  if (!LazyOpen(false) || is_disabled_)
-    return false;
+  if (!LazyOpen(false)) {
+    if (is_disabled_)
+      return false;
+    // Database has never been used.
+    registrations->clear();
+    return true;
+  }
 
   // Create a key prefix for registrations.
   std::string prefix = base::StringPrintf(
@@ -321,6 +326,41 @@ bool ServiceWorkerDatabase::GetRegistrationsForOrigin(
     }
 
     if (!RemovePrefix(itr->key().ToString(), prefix, NULL))
+      break;
+
+    RegistrationData registration;
+    if (!ParseRegistrationData(itr->value().ToString(), &registration)) {
+      HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
+      registrations->clear();
+      return false;
+    }
+    registrations->push_back(registration);
+  }
+  return true;
+}
+
+bool ServiceWorkerDatabase::GetAllRegistrations(
+    std::vector<RegistrationData>* registrations) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(registrations);
+
+  if (!LazyOpen(false)) {
+    if (is_disabled_)
+      return false;
+    // Database has never been used.
+    registrations->clear();
+    return true;
+  }
+
+  scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
+  for (itr->Seek(kRegKeyPrefix); itr->Valid(); itr->Next()) {
+    if (!itr->status().ok()) {
+      HandleError(FROM_HERE, itr->status());
+      registrations->clear();
+      return false;
+    }
+
+    if (!RemovePrefix(itr->key().ToString(), kRegKeyPrefix, NULL))
       break;
 
     RegistrationData registration;

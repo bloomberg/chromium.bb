@@ -262,7 +262,8 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
 
   GURL origin("https://example.org");
   std::vector<RegistrationData> registrations;
-  EXPECT_FALSE(database->GetRegistrationsForOrigin(origin, &registrations));
+  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin, &registrations));
+  EXPECT_TRUE(registrations.empty());
 
   std::vector<Resource> resources;
 
@@ -295,10 +296,58 @@ TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   data4.version_id = 4000;
   ASSERT_TRUE(database->WriteRegistration(data4, resources));
 
+  registrations.clear();
   EXPECT_TRUE(database->GetRegistrationsForOrigin(origin, &registrations));
   EXPECT_EQ(2U, registrations.size());
   VerifyRegistrationData(data3, registrations[0]);
   VerifyRegistrationData(data4, registrations[1]);
+}
+
+TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+
+  std::vector<RegistrationData> registrations;
+  EXPECT_TRUE(database->GetAllRegistrations(&registrations));
+  EXPECT_TRUE(registrations.empty());
+
+  std::vector<Resource> resources;
+
+  RegistrationData data1;
+  data1.registration_id = 100;
+  data1.scope = GURL("http://www1.example.com/foo");
+  data1.script = GURL("http://www1.example.com/script1.js");
+  data1.version_id = 1000;
+  ASSERT_TRUE(database->WriteRegistration(data1, resources));
+
+  RegistrationData data2;
+  data2.registration_id = 200;
+  data2.scope = GURL("http://www2.example.com/bar");
+  data2.script = GURL("http://www2.example.com/script2.js");
+  data2.version_id = 2000;
+  ASSERT_TRUE(database->WriteRegistration(data2, resources));
+
+  RegistrationData data3;
+  data3.registration_id = 300;
+  data3.scope = GURL("http://www3.example.com/hoge");
+  data3.script = GURL("http://www3.example.com/script3.js");
+  data3.version_id = 3000;
+  ASSERT_TRUE(database->WriteRegistration(data3, resources));
+
+  // Same origin with |data3|.
+  RegistrationData data4;
+  data4.registration_id = 400;
+  data4.scope = GURL("http://www4.example.com/fuga");
+  data4.script = GURL("http://www4.example.com/script4.js");
+  data4.version_id = 4000;
+  ASSERT_TRUE(database->WriteRegistration(data4, resources));
+
+  registrations.clear();
+  EXPECT_TRUE(database->GetAllRegistrations(&registrations));
+  EXPECT_EQ(4U, registrations.size());
+  VerifyRegistrationData(data1, registrations[0]);
+  VerifyRegistrationData(data2, registrations[1]);
+  VerifyRegistrationData(data3, registrations[2]);
+  VerifyRegistrationData(data4, registrations[3]);
 }
 
 // TODO(nhiroki): Record read/write operations using gtest fixture to avoid
