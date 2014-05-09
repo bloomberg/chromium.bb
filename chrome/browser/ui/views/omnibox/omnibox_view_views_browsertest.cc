@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "grit/generated_resources.h"
@@ -277,4 +278,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag) {
   omnibox_view_views->OnMouseDragged(dragged);
 
   EXPECT_FALSE(omnibox_view->model()->popup_model()->IsOpen());
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, BackgroundIsOpaque) {
+  // The omnibox text should be rendered on an opaque background. Otherwise, we
+  // can't use subpixel rendering.
+  BrowserWindowTesting* window = browser()->window()->GetBrowserWindowTesting();
+  ASSERT_TRUE(window);
+  OmniboxViewViews* view = window->GetLocationBarView()->omnibox_view();
+  ASSERT_TRUE(view);
+  EXPECT_FALSE(view->GetRenderText()->background_is_transparent());
 }

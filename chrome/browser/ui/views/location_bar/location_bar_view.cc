@@ -1410,18 +1410,6 @@ void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     popup->UpdatePopupAppearance();
 }
 
-void LocationBarView::OnFocus() {
-  // Focus the view widget first which implements accessibility for
-  // Chrome OS.  It is noop on Win. This should be removed once
-  // Chrome OS migrates to aura, which uses Views' textfield that receives
-  // focus. See crbug.com/106428.
-  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, false);
-
-  // Then focus the native location view which implements accessibility for
-  // Windows.
-  omnibox_view_->SetFocus();
-}
-
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
@@ -1448,11 +1436,12 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 void LocationBarView::PaintChildren(gfx::Canvas* canvas) {
   // Paint all the children except for the origin chip and the search button,
   // which will be painted after the border.
-  for (int i = 0, count = child_count(); i < count; ++i)
+  for (int i = 0, count = child_count(); i < count; ++i) {
     if (!child_at(i)->layer() &&
         (child_at(i) != origin_chip_view_) &&
         (child_at(i) != search_button_))
       child_at(i)->Paint(canvas);
+  }
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
   // the focus rect to appear on top of children we paint here rather than

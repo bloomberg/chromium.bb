@@ -369,7 +369,6 @@ class LocationBarView : public LocationBar,
   // views::View:
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
-  virtual void OnFocus() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
 
