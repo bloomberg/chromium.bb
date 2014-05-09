@@ -29747,10 +29747,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="WebCore.Editing.Commands" enum="MappedEditingCommands">
+<histogram name="WebCore.Document.execCommand" enum="MappedEditingCommands">
   <owner>yoichio@chromium.org</owner>
   <summary>
     Counts the number of times each document.execCommand is executed. This
+    doesn't count commands not supported by Blink.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.Editing.Commands" enum="MappedEditingCommands">
+  <owner>yoichio@chromium.org</owner>
+  <summary>
+    Counts the number of times each Editor::Command::execute is called. This
     doesn't count commands not supported by Blink.
   </summary>
 </histogram>
