@@ -92,6 +92,8 @@ void DocumentAnimations::startPendingAnimations(Document& document)
         ASSERT(document.view());
         document.view()->scheduleAnimation();
     }
+
+    document.animationClock().unfreeze();
 }
 
 } // namespace WebCore

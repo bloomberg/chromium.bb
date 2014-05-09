@@ -35,7 +35,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Initializer.h"
 #include "core/Init.h"
-#include "core/animation/AnimationClock.h"
 #include "core/dom/Microtask.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
@@ -67,11 +66,8 @@ namespace {
 
 class EndOfTaskRunner : public WebThread::TaskObserver {
 public:
-    virtual void willProcessTask() OVERRIDE
-    {
-        WebCore::AnimationClock::notifyTaskStart();
-    }
-    virtual void didProcessTask() OVERRIDE
+    virtual void willProcessTask() { }
+    virtual void didProcessTask()
     {
         WebCore::Microtask::performCheckpoint();
     }

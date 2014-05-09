@@ -39,15 +39,11 @@ using namespace WebCore;
 namespace {
 
 class AnimationAnimationClockTest : public ::testing::Test {
-public:
-    AnimationAnimationClockTest()
-        : animationClock(mockTimeFunction)
-    {}
 protected:
     virtual void SetUp()
     {
-        mockTime = 0;
-        animationClock.resetTimeForTesting();
+        animationClock = AnimationClock::create(mockTimeFunction);
+        mockTime = 200;
     }
 
     static double mockTimeFunction()
@@ -56,88 +52,36 @@ protected:
     }
 
     static double mockTime;
-    AnimationClock animationClock;
+    OwnPtr<AnimationClock> animationClock;
 };
 
 double AnimationAnimationClockTest::mockTime;
 
-TEST_F(AnimationAnimationClockTest, TimeIsGreaterThanZeroForUnitTests)
+TEST_F(AnimationAnimationClockTest, CurrentTime)
 {
-    AnimationClock clock;
-    // unit tests outside core/animation shouldn't need to do anything to get
-    // a non-zero currentTime().
-    EXPECT_GT(clock.currentTime(), 0);
+    // Current time should not advance until minTimeBeforeUnsynchronizedTick has elapsed
+    EXPECT_EQ(200, animationClock->currentTime());
+    mockTime = 200 + minTimeBeforeUnsynchronizedAnimationClockTick / 2.0;
+    EXPECT_EQ(200, animationClock->currentTime());
+
+    mockTime = 200 + minTimeBeforeUnsynchronizedAnimationClockTick;
+    EXPECT_EQ(mockTime, animationClock->currentTime());
 }
 
-TEST_F(AnimationAnimationClockTest, TimeDoesNotChange)
+TEST_F(AnimationAnimationClockTest, UpdateTime)
 {
-    animationClock.updateTime(100);
-    EXPECT_EQ(100, animationClock.currentTime());
-    EXPECT_EQ(100, animationClock.currentTime());
-}
+    animationClock->updateTime(100);
+    EXPECT_EQ(100, animationClock->currentTime());
+    mockTime = 200;
+    EXPECT_EQ(100, animationClock->currentTime());
 
-TEST_F(AnimationAnimationClockTest, TimeAdvancesWhenUpdated)
-{
-    animationClock.updateTime(100);
-    EXPECT_EQ(100, animationClock.currentTime());
+    animationClock->unfreeze();
+    EXPECT_EQ(200, animationClock->currentTime());
 
-    animationClock.updateTime(200);
-    EXPECT_EQ(200, animationClock.currentTime());
-}
-
-TEST_F(AnimationAnimationClockTest, TimeAdvancesToTaskTime)
-{
-    animationClock.updateTime(100);
-    EXPECT_EQ(100, animationClock.currentTime());
-
-    mockTime = 150;
-    AnimationClock::notifyTaskStart();
-    EXPECT_GE(animationClock.currentTime(), mockTime);
-}
-
-TEST_F(AnimationAnimationClockTest, TimeAdvancesToTaskTimeOnlyWhenRequired)
-{
-    animationClock.updateTime(100);
-    EXPECT_EQ(100, animationClock.currentTime());
-
-    AnimationClock::notifyTaskStart();
-    animationClock.updateTime(125);
-    EXPECT_EQ(125, animationClock.currentTime());
-}
-
-TEST_F(AnimationAnimationClockTest, UpdateTimeIsMonotonic)
-{
-    animationClock.updateTime(100);
-    EXPECT_EQ(100, animationClock.currentTime());
-
-    // Update can't go backwards.
-    animationClock.updateTime(50);
-    EXPECT_EQ(100, animationClock.currentTime());
-
-    mockTime = 50;
-    AnimationClock::notifyTaskStart();
-    EXPECT_EQ(100, animationClock.currentTime());
-
-    mockTime = 150;
-    AnimationClock::notifyTaskStart();
-    EXPECT_GE(animationClock.currentTime(), mockTime);
-
-    // Update can't go backwards after advance to estimate.
-    animationClock.updateTime(100);
-    EXPECT_GE(animationClock.currentTime(), mockTime);
-}
-
-TEST_F(AnimationAnimationClockTest, CurrentTimeUpdatesTask)
-{
-    animationClock.updateTime(100);
-    EXPECT_EQ(100, animationClock.currentTime());
-
-    mockTime = 100;
-    AnimationClock::notifyTaskStart();
-    EXPECT_EQ(100, animationClock.currentTime());
-
-    mockTime = 150;
-    EXPECT_EQ(100, animationClock.currentTime());
+    animationClock->updateTime(300);
+    EXPECT_EQ(300, animationClock->currentTime());
+    mockTime = 400;
+    EXPECT_EQ(300, animationClock->currentTime());
 }
 
 }
