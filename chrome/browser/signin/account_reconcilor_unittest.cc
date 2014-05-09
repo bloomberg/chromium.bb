@@ -173,15 +173,12 @@ TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
-  ASSERT_FALSE(reconcilor->IsPeriodicReconciliationRunning());
   ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
 
   signin_manager()->OnExternalSigninCompleted(kTestEmail);
-  ASSERT_TRUE(reconcilor->IsPeriodicReconciliationRunning());
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 
   signin_manager()->SignOut();
-  ASSERT_FALSE(reconcilor->IsPeriodicReconciliationRunning());
   ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
 }
 
@@ -191,12 +188,10 @@ TEST_F(AccountReconcilorTest, Reauth) {
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
-  ASSERT_TRUE(reconcilor->IsPeriodicReconciliationRunning());
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 
   // Simulate reauth.  The state of the reconcilor should not change.
   signin_manager()->OnExternalSigninCompleted(kTestEmail);
-  ASSERT_TRUE(reconcilor->IsPeriodicReconciliationRunning());
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 }
 
@@ -208,7 +203,6 @@ TEST_F(AccountReconcilorTest, ProfileAlreadyConnected) {
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
-  ASSERT_TRUE(reconcilor->IsPeriodicReconciliationRunning());
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 }
 

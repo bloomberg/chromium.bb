@@ -73,10 +73,6 @@ class AccountReconcilor : public KeyedService,
   class RefreshTokenFetcher;
   class UserIdFetcher;
 
-  bool IsPeriodicReconciliationRunning() const {
-    return reconciliation_timer_.IsRunning();
-  }
-
   bool IsRegisteredWithTokenService() const {
     return registered_with_token_service_;
   }
@@ -137,11 +133,6 @@ class AccountReconcilor : public KeyedService,
   bool IsProfileConnected();
 
   void DeleteFetchers();
-
-  // Start and stop the periodic reconciliation.
-  void StartPeriodicReconciliation();
-  void StopPeriodicReconciliation();
-  void PeriodicReconciliation();
 
   // All actions with side effects.  Virtual so that they can be overridden
   // in tests.
@@ -214,7 +205,6 @@ class AccountReconcilor : public KeyedService,
   // The SigninClient associated with this reconcilor.
   SigninClient* client_;
 
-  base::RepeatingTimer<AccountReconcilor> reconciliation_timer_;
   MergeSessionHelper merge_session_helper_;
   scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
   bool registered_with_token_service_;

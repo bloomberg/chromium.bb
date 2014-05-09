@@ -207,7 +207,6 @@ AccountReconcilor::~AccountReconcilor() {
   VLOG(1) << "AccountReconcilor::~AccountReconcilor";
   // Make sure shutdown was called first.
   DCHECK(!registered_with_token_service_);
-  DCHECK(!reconciliation_timer_.IsRunning());
   DCHECK(!requests_);
   DCHECK_EQ(0u, user_id_fetchers_.size());
   DCHECK_EQ(0u, refresh_token_fetchers_.size());
@@ -222,7 +221,6 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
   if (IsProfileConnected()) {
     RegisterForCookieChanges();
     RegisterWithTokenService();
-    StartPeriodicReconciliation();
 
     // Start a reconcile if the tokens are already loaded.
     if (start_reconcile_if_tokens_available &&
@@ -241,7 +239,6 @@ void AccountReconcilor::Shutdown() {
   UnregisterWithSigninManager();
   UnregisterWithTokenService();
   UnregisterForCookieChanges();
-  StopPeriodicReconciliation();
 }
 
 void AccountReconcilor::AddMergeSessionObserver(
@@ -311,25 +308,6 @@ bool AccountReconcilor::IsProfileConnected() {
   return !signin_manager_->GetAuthenticatedUsername().empty();
 }
 
-void AccountReconcilor::StartPeriodicReconciliation() {
-  VLOG(1) << "AccountReconcilor::StartPeriodicReconciliation";
-  // TODO(rogerta): pick appropriate thread and timeout value.
-  reconciliation_timer_.Start(FROM_HERE,
-                              base::TimeDelta::FromSeconds(300),
-                              this,
-                              &AccountReconcilor::PeriodicReconciliation);
-}
-
-void AccountReconcilor::StopPeriodicReconciliation() {
-  VLOG(1) << "AccountReconcilor::StopPeriodicReconciliation";
-  reconciliation_timer_.Stop();
-}
-
-void AccountReconcilor::PeriodicReconciliation() {
-  VLOG(1) << "AccountReconcilor::PeriodicReconciliation";
-  StartReconcile();
-}
-
 void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie* cookie) {
   if (cookie->Name() == "LSID" &&
       cookie->Domain() == GaiaUrls::GetInstance()->gaia_url().host() &&
@@ -365,14 +343,12 @@ void AccountReconcilor::GoogleSigninSucceeded(const std::string& username,
   VLOG(1) << "AccountReconcilor::GoogleSigninSucceeded: signed in";
   RegisterForCookieChanges();
   RegisterWithTokenService();
-  StartPeriodicReconciliation();
 }
 
 void AccountReconcilor::GoogleSignedOut(const std::string& username) {
   VLOG(1) << "AccountReconcilor::GoogleSignedOut: signed out";
   UnregisterWithTokenService();
   UnregisterForCookieChanges();
-  StopPeriodicReconciliation();
 }
 
 void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
