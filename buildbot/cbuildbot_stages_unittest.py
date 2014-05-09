@@ -2137,6 +2137,7 @@ class DebugSymbolsStageTest(AbstractStageTest):
 
   def testGenerateCrashStillNotifies(self):
     """Crashes in symbol generation should still notify external events."""
+    self.skipTest('Test skipped due to crbug.com/363339')
     class TestError(Exception):
       """Unique test exception"""
 
