@@ -323,7 +323,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
     if (scale != viewport.scale()) {
         viewport.setScale(scale);
 
-        if (view)
+        if (view && !settings().pinchVirtualViewportEnabled())
             view->setVisibleContentScaleFactor(scale);
 
         mainFrame()->deviceOrPageScaleFactorChanged();

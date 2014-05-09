@@ -104,6 +104,16 @@ void HistoryItem::setTarget(const String& target)
     m_target = target;
 }
 
+const FloatPoint& HistoryItem::pinchViewportScrollPoint() const
+{
+    return m_pinchViewportScrollPoint;
+}
+
+void HistoryItem::setPinchViewportScrollPoint(const FloatPoint& point)
+{
+    m_pinchViewportScrollPoint = point;
+}
+
 const IntPoint& HistoryItem::scrollPoint() const
 {
     return m_scrollPoint;
@@ -116,8 +126,8 @@ void HistoryItem::setScrollPoint(const IntPoint& point)
 
 void HistoryItem::clearScrollPoint()
 {
-    m_scrollPoint.setX(0);
-    m_scrollPoint.setY(0);
+    m_scrollPoint = IntPoint();
+    m_pinchViewportScrollPoint = FloatPoint();
 }
 
 float HistoryItem::pageScaleFactor() const

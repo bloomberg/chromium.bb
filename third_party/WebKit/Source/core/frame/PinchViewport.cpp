@@ -64,8 +64,8 @@ namespace WebCore {
 
 PinchViewport::PinchViewport(FrameHost& owner)
     : m_frameHost(owner)
-    , m_scale(1)
 {
+    reset();
 }
 
 PinchViewport::~PinchViewport() { }
@@ -89,6 +89,12 @@ void PinchViewport::setSize(const IntSize& size)
     // Need to re-compute sizes for the overlay scrollbars.
     setupScrollbar(WebScrollbar::Horizontal);
     setupScrollbar(WebScrollbar::Vertical);
+}
+
+void PinchViewport::reset()
+{
+    setLocation(FloatPoint());
+    setScale(1);
 }
 
 void PinchViewport::mainFrameDidChangeSize()
@@ -120,11 +126,19 @@ void PinchViewport::setLocation(const FloatPoint& newLocation)
     ScrollingCoordinator* coordinator = m_frameHost.page().scrollingCoordinator();
     ASSERT(coordinator);
     coordinator->scrollableAreaScrollLayerDidChange(this);
+
+    mainFrame()->loader().saveScrollState();
 }
 
 void PinchViewport::setScale(float scale)
 {
+    if (scale == m_scale)
+        return;
+
     m_scale = scale;
+
+    if (mainFrame())
+        mainFrame()->loader().saveScrollState();
 
     // Old-style pinch sets scale here but we shouldn't call into the
     // clamping code below.
@@ -133,6 +147,9 @@ void PinchViewport::setScale(float scale)
 
     // Ensure we clamp so we remain within the bounds.
     setLocation(visibleRect().location());
+
+    // TODO: We should probably be calling scaleDidChange type functions here.
+    // see Page::setPageScaleFactor.
 }
 
 // Modifies the top of the graphics layer tree to add layers needed to support

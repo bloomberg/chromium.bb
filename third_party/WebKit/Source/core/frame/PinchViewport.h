@@ -81,6 +81,9 @@ public:
     void setSize(const IntSize&);
     IntSize size() const { return m_size; }
 
+    // Resets the viewport to initial state.
+    void reset();
+
     // Let the viewport know that the main frame changed size (either through screen
     // rotation on Android or window resize elsewhere).
     void mainFrameDidChangeSize();

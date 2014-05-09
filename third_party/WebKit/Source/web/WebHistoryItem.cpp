@@ -35,6 +35,7 @@
 #include "core/loader/HistoryItem.h"
 #include "platform/network/FormData.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
@@ -94,6 +95,16 @@ WebString WebHistoryItem::target() const
 void WebHistoryItem::setTarget(const WebString& target)
 {
     m_private->setTarget(target);
+}
+
+WebFloatPoint WebHistoryItem::pinchViewportScrollOffset() const
+{
+    return m_private->pinchViewportScrollPoint();
+}
+
+void WebHistoryItem::setPinchViewportScrollOffset(const WebFloatPoint& scrollOffset)
+{
+    m_private->setPinchViewportScrollPoint(scrollOffset);
 }
 
 WebPoint WebHistoryItem::scrollOffset() const

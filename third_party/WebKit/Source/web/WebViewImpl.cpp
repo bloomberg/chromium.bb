@@ -367,7 +367,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_zoomLevel(0)
     , m_minimumZoomLevel(zoomFactorToZoomLevel(minTextSizeMultiplier))
     , m_maximumZoomLevel(zoomFactorToZoomLevel(maxTextSizeMultiplier))
-    , m_savedPageScaleFactor(0)
     , m_doubleTapZoomPageScaleFactor(0)
     , m_doubleTapZoomPending(false)
     , m_enableFakePageScaleAnimationForTesting(false)
@@ -3048,30 +3047,13 @@ float WebViewImpl::maximumPageScaleFactor() const
     return m_pageScaleConstraintsSet.finalConstraints().maximumScale;
 }
 
-void WebViewImpl::saveScrollAndScaleState()
-{
-    m_savedPageScaleFactor = pageScaleFactor();
-    m_savedScrollOffset = mainFrame()->scrollOffset();
-}
-
-void WebViewImpl::restoreScrollAndScaleState()
-{
-    if (!m_savedPageScaleFactor)
-        return;
-
-    startPageScaleAnimation(IntPoint(m_savedScrollOffset), false, m_savedPageScaleFactor, scrollAndScaleAnimationDurationInSeconds);
-    resetSavedScrollAndScaleState();
-}
-
-void WebViewImpl::resetSavedScrollAndScaleState()
-{
-    m_savedPageScaleFactor = 0;
-    m_savedScrollOffset = IntSize();
-}
-
 void WebViewImpl::resetScrollAndScaleState()
 {
-    setPageScaleFactor(1, IntPoint());
+    // TODO: This is done by the pinchViewport().reset() call below and can be removed when
+    // the new pinch path is the only one.
+    setPageScaleFactor(1);
+    updateMainFrameScrollPosition(IntPoint(), true);
+    page()->frameHost().pinchViewport().reset();
 
     // Clear out the values for the current history item. This will prevent the history item from clobbering the
     // value determined during page scale initialization, which may be less than 1.
@@ -3081,7 +3063,6 @@ void WebViewImpl::resetScrollAndScaleState()
     // Clobber saved scales and scroll offsets.
     if (FrameView* view = page()->mainFrame()->document()->view())
         view->cacheCurrentScrollPosition();
-    resetSavedScrollAndScaleState();
 }
 
 void WebViewImpl::setFixedLayoutSize(const WebSize& layoutSize)
@@ -3596,7 +3577,6 @@ void WebViewImpl::didCommitLoad(bool isNewNavigation, bool isNavigationWithinPag
     // Make sure link highlight from previous page is cleared.
     m_linkHighlights.clear();
     endActiveFlingAnimation();
-    resetSavedScrollAndScaleState();
     m_userGestureObserved = false;
 }
 

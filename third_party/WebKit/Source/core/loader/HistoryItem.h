@@ -28,6 +28,7 @@
 #define HistoryItem_h
 
 #include "bindings/v8/SerializedScriptValue.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/RefCounted.h"
@@ -64,6 +65,8 @@ public:
     FormData* formData();
     const AtomicString& formContentType() const;
 
+    const FloatPoint& pinchViewportScrollPoint() const;
+    void setPinchViewportScrollPoint(const FloatPoint&);
     const IntPoint& scrollPoint() const;
     void setScrollPoint(const IntPoint&);
     void clearScrollPoint();
@@ -104,6 +107,7 @@ private:
     Referrer m_referrer;
     String m_target;
 
+    FloatPoint m_pinchViewportScrollPoint;
     IntPoint m_scrollPoint;
     float m_pageScaleFactor;
     Vector<String> m_documentStateVector;

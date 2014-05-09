@@ -1,3 +1,4 @@
+
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -22,6 +23,12 @@
 #include "web/tests/URLTestHelpers.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#define EXPECT_POINT_EQ(expected, actual) \
+    do { \
+        EXPECT_EQ((expected).x(), (actual).x()); \
+        EXPECT_EQ((expected).y(), (actual).y()); \
+    } while (false)
 
 #define EXPECT_FLOAT_POINT_EQ(expected, actual) \
     do { \
@@ -476,6 +483,82 @@ TEST_F(PinchViewportTest, TestTextSelectionHandles)
 
     // FIXME(bokan) - http://crbug.com/364154 - Figure out how to test text selection
     // as well rather than just carret.
+}
+
+// Test that the HistoryItem for the page stores the pinch viewport's offset and scale.
+TEST_F(PinchViewportTest, TestSavedToHistoryItem)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(200, 300));
+    webViewImpl()->layout();
+
+    registerMockedHttpURLLoad("200-by-300.html");
+    navigateTo(m_baseURL + "200-by-300.html");
+
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(0, 0),
+        webViewImpl()->page()->mainFrame()->loader().currentItem()->pinchViewportScrollPoint());
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    pinchViewport.setScale(2);
+
+    EXPECT_EQ(2, webViewImpl()->page()->mainFrame()->loader().currentItem()->pageScaleFactor());
+
+    pinchViewport.setLocation(FloatPoint(10, 20));
+
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(10, 20),
+        webViewImpl()->page()->mainFrame()->loader().currentItem()->pinchViewportScrollPoint());
+}
+
+// Test restoring a HistoryItem properly restores the pinch viewport's state.
+TEST_F(PinchViewportTest, TestRestoredFromHistoryItem)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(200, 300));
+
+    registerMockedHttpURLLoad("200-by-300.html");
+
+    WebHistoryItem item;
+    item.initialize();
+    WebURL destinationURL(blink::URLTestHelpers::toKURL(m_baseURL + "200-by-300.html"));
+    item.setURLString(destinationURL.string());
+    item.setPinchViewportScrollOffset(WebFloatPoint(100, 120));
+    item.setPageScaleFactor(2);
+
+    webViewImpl()->mainFrame()->loadHistoryItem(item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    EXPECT_EQ(2, pinchViewport.scale());
+
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(100, 120), pinchViewport.visibleRect().location());
+}
+
+// Test restoring a HistoryItem without the pinch viewport offset falls back to distributing
+// the scroll offset between the main frame and the pinch viewport.
+TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
+{
+    initializeWithDesktopSettings();
+    webViewImpl()->resize(IntSize(100, 150));
+
+    registerMockedHttpURLLoad("200-by-300-viewport.html");
+
+    WebHistoryItem item;
+    item.initialize();
+    WebURL destinationURL(blink::URLTestHelpers::toKURL(m_baseURL + "200-by-300-viewport.html"));
+    item.setURLString(destinationURL.string());
+    // (-1, -1) will be used if the HistoryItem is an older version prior to having
+    // pinch viewport scroll offset.
+    item.setPinchViewportScrollOffset(WebFloatPoint(-1, -1));
+    item.setScrollOffset(WebPoint(120, 180));
+    item.setPageScaleFactor(2);
+
+    webViewImpl()->mainFrame()->loadHistoryItem(item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    EXPECT_EQ(2, pinchViewport.scale());
+    EXPECT_POINT_EQ(IntPoint(100, 150), frame()->view()->scrollPosition());
+    EXPECT_FLOAT_POINT_EQ(FloatPoint(20, 30), pinchViewport.visibleRect().location());
 }
 
 } // namespace
