@@ -1211,6 +1211,7 @@ crbug.com/371651 svg/custom/js-update-pattern.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-pattern-child.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-stop.svg [ Pass Failure ]
 crbug.com/371651 svg/custom/js-update-stop-linked-gradient.svg [ Pass Failure ]
+crbug.com/371651 svg/custom/use-disappears-after-style-update.svg [ Pass Failure ]
 crbug.com/371651 svg/filters/filter-refresh.svg [ Failure ]
 crbug.com/371651 svg/text/text-text-05-t.svg [ Failure ]
 
