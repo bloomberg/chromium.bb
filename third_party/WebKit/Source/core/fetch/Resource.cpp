@@ -731,7 +731,6 @@ void Resource::revalidationSucceeded(const ResourceResponse& response)
     ASSERT(m_resourceToRevalidate);
     ASSERT(!memoryCache()->contains(m_resourceToRevalidate));
     ASSERT(m_resourceToRevalidate->isLoaded());
-    ASSERT(memoryCache()->contains(this));
 
     // Calling evict() can potentially delete revalidatingResource, which we use
     // below. This mustn't be the case since revalidation means it is loaded
