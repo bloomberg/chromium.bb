@@ -196,7 +196,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
                      const Referrer& referrer,
-                     const base::string16& suggested_name);
+                     const base::string16& suggested_name,
+                     const bool use_prompt);
   void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);
 

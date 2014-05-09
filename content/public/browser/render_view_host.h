@@ -91,6 +91,10 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // image at that location).
   virtual void CopyImageAt(int x, int y) = 0;
 
+  // Saves the image at location x, y to the disk (if there indeed is an
+  // image at that location).
+  virtual void SaveImageAt(int x, int y) = 0;
+
   // Notifies the listener that a directory enumeration is complete.
   virtual void DirectoryEnumerationFinished(
       int request_id,

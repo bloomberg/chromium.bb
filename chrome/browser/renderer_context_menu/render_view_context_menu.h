@@ -211,6 +211,7 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void AppendLinkItems();
   void AppendImageItems();
   void AppendAudioItems();
+  void AppendCanvasItems();
   void AppendVideoItems();
   void AppendMediaItems();
   void AppendPluginItems();

@@ -157,6 +157,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void ClearFocusedElement() OVERRIDE;
   virtual void ClosePage() OVERRIDE;
   virtual void CopyImageAt(int x, int y) OVERRIDE;
+  virtual void SaveImageAt(int x, int y) OVERRIDE;
   virtual void DirectoryEnumerationFinished(
       int request_id,
       const std::vector<base::FilePath>& files) OVERRIDE;

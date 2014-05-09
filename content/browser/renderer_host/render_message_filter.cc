@@ -884,9 +884,11 @@ void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
                                         const Referrer& referrer,
-                                        const base::string16& suggested_name) {
+                                        const base::string16& suggested_name,
+                                        const bool use_prompt) {
   scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
   save_info->suggested_name = suggested_name;
+  save_info->prompt_for_save_location = use_prompt;
 
   // There may be a special cookie store that we could use for this download,
   // rather than the default one. Since this feature is generally only used for

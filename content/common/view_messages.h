@@ -650,6 +650,12 @@ IPC_MESSAGE_ROUTED2(ViewMsg_CopyImageAt,
                     int /* x */,
                     int /* y */)
 
+// Saves the image at location x, y to the disk (if there indeed is an
+// image at that location).
+IPC_MESSAGE_ROUTED2(ViewMsg_SaveImageAt,
+                    int /* x */,
+                    int /* y */)
+
 // Tells the renderer to perform the given action on the media player
 // located at the given point.
 IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
@@ -1287,10 +1293,11 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_AppCacheAccessed,
                     bool /* blocked by policy */)
 
 // Initiates a download based on user actions like 'ALT+click'.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_DownloadUrl,
+IPC_MESSAGE_ROUTED4(ViewHostMsg_DownloadUrl,
                     GURL     /* url */,
                     content::Referrer /* referrer */,
-                    base::string16 /* suggested_name */)
+                    base::string16 /* suggested_name */,
+                    bool /* use prompt for save location */)
 
 // Used to go to the session history entry at the given offset (ie, -1 will
 // return the "back" item).

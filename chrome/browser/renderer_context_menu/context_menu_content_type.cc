@@ -127,6 +127,9 @@ bool ContextMenuContentType::SupportsGroupInternal(int group) {
     case ITEM_GROUP_MEDIA_AUDIO:
       return params_.media_type == WebContextMenuData::MediaTypeAudio;
 
+    case ITEM_GROUP_MEDIA_CANVAS:
+      return params_.media_type == WebContextMenuData::MediaTypeCanvas;
+
     case ITEM_GROUP_MEDIA_PLUGIN:
       return params_.media_type == WebContextMenuData::MediaTypePlugin;
 

@@ -626,6 +626,11 @@ void RenderViewContextMenu::InitMenu() {
   }
 
   if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_CANVAS)) {
+    AppendCanvasItems();
+  }
+
+  if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_MEDIA_PLUGIN)) {
     AppendPluginItems();
   }
@@ -837,6 +842,14 @@ void RenderViewContextMenu::AppendAudioItems() {
                                   IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
                                   IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
+}
+
+void RenderViewContextMenu::AppendCanvasItems() {
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
+                                  IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
+
+  // TODO(zino): We should support 'copy image' for canvas.
+  // http://crbug.com/369092
 }
 
 void RenderViewContextMenu::AppendVideoItems() {
@@ -1202,6 +1215,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
         return false;
 
+      if (params_.media_type == WebContextMenuData::MediaTypeCanvas)
+        return true;
+
       return params_.src_url.is_valid() &&
           ProfileIOData::IsHandledProtocol(params_.src_url.scheme());
     }
@@ -1501,12 +1517,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS: {
-      RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
-      const GURL& referrer =
-          params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
-      const GURL& url = params_.src_url;
-      source_web_contents_->SaveFrame(url, content::Referrer(
-          referrer, params_.referrer_policy));
+      if (params_.media_type == WebContextMenuData::MediaTypeCanvas) {
+        source_web_contents_->GetRenderViewHost()->SaveImageAt(
+          params_.x, params_.y);
+      } else {
+        // TODO(zino): We can use SaveImageAt() like a case of canvas.
+        RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
+        const GURL& referrer =
+            params_.frame_url.is_empty() ? params_.page_url : params_.frame_url;
+        const GURL& url = params_.src_url;
+        source_web_contents_->SaveFrame(url, content::Referrer(
+            referrer, params_.referrer_policy));
+      }
       break;
     }
 

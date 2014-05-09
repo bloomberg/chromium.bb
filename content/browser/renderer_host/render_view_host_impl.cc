@@ -1561,6 +1561,10 @@ void RenderViewHostImpl::CopyImageAt(int x, int y) {
   Send(new ViewMsg_CopyImageAt(GetRoutingID(), x, y));
 }
 
+void RenderViewHostImpl::SaveImageAt(int x, int y) {
+  Send(new ViewMsg_SaveImageAt(GetRoutingID(), x, y));
+}
+
 void RenderViewHostImpl::ExecuteMediaPlayerActionAtLocation(
   const gfx::Point& location, const blink::WebMediaPlayerAction& action) {
   Send(new ViewMsg_MediaPlayerActionAt(GetRoutingID(), location, action));
