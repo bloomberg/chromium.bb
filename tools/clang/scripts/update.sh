@@ -78,6 +78,10 @@ while [[ $# > 0 ]]; do
     --force-local-build)
       force_local_build=yes
       ;;
+    --print-revision)
+      echo $CLANG_REVISION
+      exit 0
+      ;;
     --run-tests)
       run_tests=yes
       ;;
@@ -113,6 +117,7 @@ while [[ $# > 0 ]]; do
       echo "--force-local-build: Don't try to download prebuilt binaries."
       echo "--if-needed: Download clang only if the script thinks it is needed."
       echo "--run-tests: Run tests after building. Only for local builds."
+      echo "--print-revision: Print current clang revision and exit."
       echo "--without-android: Don't build ASan Android runtime library."
       echo "--with-chrome-tools: Select which chrome tools to build." \
            "Defaults to plugins."
@@ -136,7 +141,6 @@ done
 if [[ -f "${LLVM_BUILD_DIR}/autoinstall_stamp" ]]; then
   echo Removing autoinstalled clang and clobbering
   rm -rf "${LLVM_BUILD_DIR}"
-  rm -rf "${THIS_DIR}/../../../out"
 fi
 
 if [[ -n "$if_needed" ]]; then
@@ -170,18 +174,6 @@ fi
 # To always force a new build if someone interrupts their build half way.
 rm -f "${STAMP_FILE}"
 
-
-# Clobber all output files. PCH files only work with the compiler that created
-# them, so we need clobber the output files to make sure they are rebuilt
-# using the new compiler.
-echo "Clobbering build files"
-MAKE_DIR="${THIS_DIR}/../../../out"
-XCODEBUILD_DIR="${THIS_DIR}/../../../xcodebuild"
-for DIR in "${XCODEBUILD_DIR}" "${MAKE_DIR}"; do
-  if [[ -d "${DIR}" ]]; then
-    rm -rf "${DIR}"
-  fi
-done
 
 if [[ -z "$force_local_build" ]]; then
   # Check if there's a prebuilt binary and if so just fetch that. That's faster,
