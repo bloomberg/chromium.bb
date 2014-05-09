@@ -29,6 +29,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_status_code.h"
 #include "url/gurl.h"
@@ -511,6 +512,10 @@ void TranslateTabHelper::ShowBubble(translate::TranslateStep step,
   }
 
   if (web_contents() != browser->tab_strip_model()->GetActiveWebContents())
+    return;
+
+  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
+  if (rvh->IsFocusedElementEditable())
     return;
 
   // This ShowBubble function is also used for upating the existing bubble.

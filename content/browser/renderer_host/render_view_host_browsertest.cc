@@ -117,4 +117,16 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BasicRenderFrameHost) {
             new_root->current_frame_host()->routing_id());
 }
 
+IN_PROC_BROWSER_TEST_F(RenderViewHostTest, IsFocusedElementEditable) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL test_url = embedded_test_server()->GetURL("/touch_selection.html");
+  NavigateToURL(shell(), test_url);
+
+  RenderViewHost* rvh = shell()->web_contents()->GetRenderViewHost();
+  EXPECT_FALSE(rvh->IsFocusedElementEditable());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "focus_textfield();"));
+  EXPECT_TRUE(rvh->IsFocusedElementEditable());
+}
+
 }  // namespace content

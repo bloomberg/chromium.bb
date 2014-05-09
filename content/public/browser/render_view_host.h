@@ -82,6 +82,9 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Tells the renderer to clear the focused element (if any).
   virtual void ClearFocusedElement() = 0;
 
+  // Returns true if the current focused element is editable.
+  virtual bool IsFocusedElementEditable() = 0;
+
   // Causes the renderer to close the current page, including running its
   // onunload event handler.  A ClosePage_ACK message will be sent to the
   // ResourceDispatcherHost when it is finished.

@@ -215,7 +215,8 @@ RenderViewHostImpl::RenderViewHostImpl(
       sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       virtual_keyboard_requested_(false),
-      weak_factory_(this) {
+      weak_factory_(this),
+      is_focused_element_editable_(false) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
 
@@ -1361,6 +1362,7 @@ void RenderViewHostImpl::OnTakeFocus(bool reverse) {
 }
 
 void RenderViewHostImpl::OnFocusedNodeChanged(bool is_editable_node) {
+  is_focused_element_editable_ = is_editable_node;
   if (view_)
     view_->FocusedNodeChanged(is_editable_node);
 #if defined(OS_WIN)
@@ -1527,7 +1529,12 @@ void RenderViewHostImpl::GetAudioOutputControllers(
 }
 
 void RenderViewHostImpl::ClearFocusedElement() {
+  is_focused_element_editable_ = false;
   Send(new ViewMsg_ClearFocusedElement(GetRoutingID()));
+}
+
+bool RenderViewHostImpl::IsFocusedElementEditable() {
+  return is_focused_element_editable_;
 }
 
 void RenderViewHostImpl::Zoom(PageZoom zoom) {
