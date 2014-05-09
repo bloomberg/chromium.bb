@@ -274,6 +274,8 @@
           'mac/mac_logging.cc',
           'mac/mac_util.h',
           'mac/mac_util.mm',
+          'mac/mach_logging.cc',
+          'mac/mach_logging.h',
           'mac/objc_property_releaser.h',
           'mac/objc_property_releaser.mm',
           'mac/os_crash_dumps.cc',
