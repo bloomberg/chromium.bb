@@ -61,6 +61,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   void SetSettingsVisible(bool visible);
   void OnSettingsChanged();
   bool settings_visible() const { return settings_visible_; }
+  MessageCenterTray* tray() { return tray_; }
 
   void SetIsClosing(bool is_closing);
 

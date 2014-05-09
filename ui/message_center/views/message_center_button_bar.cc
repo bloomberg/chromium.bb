@@ -13,6 +13,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/message_center/views/message_center_view.h"
 #include "ui/views/controls/button/button.h"
@@ -93,6 +94,9 @@ MessageCenterButtonBar::MessageCenterButtonBar(
     bool settings_initially_visible)
     : message_center_view_(message_center_view),
       message_center_(message_center),
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+      close_bubble_button_(NULL),
+#endif
       title_arrow_(NULL),
       notification_label_(NULL),
       button_container_(NULL),
@@ -166,6 +170,20 @@ MessageCenterButtonBar::MessageCenterButtonBar(
                                    IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL);
   button_container_->AddChildView(settings_button_);
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  close_bubble_button_ = new views::ImageButton(this);
+  close_bubble_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_BUBBLE_CLOSE));
+  close_bubble_button_->SetImage(
+      views::Button::STATE_HOVERED,
+      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_BUBBLE_CLOSE_HOVER));
+  close_bubble_button_->SetImage(
+      views::Button::STATE_PRESSED,
+      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_BUBBLE_CLOSE_PRESSED));
+  AddChildView(close_bubble_button_);
+#endif
+
   SetCloseAllButtonEnabled(!settings_initially_visible);
   SetBackArrowVisible(settings_initially_visible);
   ViewVisibilityChanged();
@@ -214,11 +232,24 @@ void MessageCenterButtonBar::ViewVisibilityChanged() {
                     0,
                     0);
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // The close-bubble button.
+  column->AddColumn(views::GridLayout::LEADING,
+                    views::GridLayout::LEADING,
+                    0.0f,
+                    views::GridLayout::USE_PREF,
+                    0,
+                    0);
+#endif
+
   layout->StartRow(0, 0);
   if (title_arrow_->visible())
     layout->AddView(title_arrow_);
   layout->AddView(notification_label_);
   layout->AddView(button_container_);
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  layout->AddView(close_bubble_button_);
+#endif
 }
 
 MessageCenterButtonBar::~MessageCenterButtonBar() {}
@@ -259,6 +290,10 @@ void MessageCenterButtonBar::ButtonPressed(views::Button* sender,
     else
       message_center()->EnterQuietModeWithExpire(base::TimeDelta::FromDays(1));
     quiet_mode_button_->SetToggled(message_center()->IsQuietMode());
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  } else if (sender == close_bubble_button_) {
+    message_center_view()->tray()->HideMessageCenterBubble();
+#endif
   } else {
     NOTREACHED();
   }
