@@ -20,11 +20,20 @@ if (window.internals) {
 
 if (window.testRunner) {
     testRunner.useUnfortunateSynchronousResizeMode();
+    testRunner.dumpAsText();
 
     window.onload = function() {
         window.resizeTo(testSizes[0].width, testSizes[0].height);
 
-        for (sizeIndex = 1; sizeIndex < testSizes.length; ++sizeIndex)
-            runRepaintTest();
+        var repaintRects = "";
+        for (sizeIndex = 1; sizeIndex < testSizes.length; ++sizeIndex) {
+            document.body.offsetTop;
+            internals.startTrackingRepaints(document);
+            repaintTest();
+            document.body.offsetTop;
+            repaintRects += internals.layerTreeAsText(document, window.internals.LAYER_TREE_INCLUDES_REPAINT_RECTS);
+            internals.stopTrackingRepaints(document);
+        }
+        testRunner.setCustomTextOutput(repaintRects);
     }
 }
