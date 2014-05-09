@@ -64,7 +64,7 @@ TEST_F(DefaultSearchPrefMigrationTest, MigrateUserSelectedValue) {
   scoped_ptr<TemplateURL> t_url(
       CreateKeyword("name1", "key1", "http://foo1/{searchTerms}"));
   // Store a value in the legacy location.
-  TemplateURLService::SaveDefaultSearchProviderToPrefs(
+  test_util()->model()->SaveDefaultSearchProviderToPrefs(
       t_url.get(), test_util()->profile()->GetPrefs());
 
   // Run the migration.
@@ -87,7 +87,7 @@ TEST_F(DefaultSearchPrefMigrationTest, ModernValuePresent) {
   scoped_ptr<TemplateURL> t_url2(
       CreateKeyword("name2", "key2", "http://foo2/{searchTerms}"));
   // Store a value in the legacy location.
-  TemplateURLService::SaveDefaultSearchProviderToPrefs(
+  test_util()->model()->SaveDefaultSearchProviderToPrefs(
       t_url.get(), test_util()->profile()->GetPrefs());
 
   // Store another value in the modern location.

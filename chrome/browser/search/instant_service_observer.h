@@ -23,11 +23,6 @@ class InstantServiceObserver {
   // Indicates that the default search provider changed.
   virtual void DefaultSearchProviderChanged();
 
-  // Indicates that the Google URL has changed as a result of searchdomaincheck.
-  // Note that the search domain change triggers a yellow infobar at the top of
-  // the page, and the actual change is triggered after the user accepts.
-  virtual void GoogleURLUpdated();
-
   // Indicates that the omnibox start margin has changed.
   virtual void OmniboxStartMarginChanged(int omnibox_start_margin);
 
