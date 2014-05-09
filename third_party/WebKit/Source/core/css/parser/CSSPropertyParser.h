@@ -68,7 +68,7 @@ class CSSPropertyParser {
 public:
     CSSPropertyParser(OwnPtr<CSSParserValueList>&,
         const CSSParserContext&, bool inViewport, bool savedImportant,
-        WillBeHeapVector<CSSProperty, 256>&, bool& hasFontFaceOnlyValues);
+        WillBeHeapVector<CSSProperty, 256>&, CSSRuleSourceData::Type);
     ~CSSPropertyParser();
 
     // FIXME: Should this be on a separate ColorParser object?
@@ -379,7 +379,7 @@ private:
 
     // Outputs:
     WillBeHeapVector<CSSProperty, 256>& m_parsedProperties;
-    bool m_hasFontFaceOnlyValues;
+    CSSRuleSourceData::Type m_ruleType;
 
     // Locals during parsing:
     int m_inParseShorthand;

@@ -158,13 +158,14 @@ private:
 
 CSSPropertyParser::CSSPropertyParser(OwnPtr<CSSParserValueList>& valueList,
     const CSSParserContext& context, bool inViewport, bool savedImportant,
-    WillBeHeapVector<CSSProperty, 256>& parsedProperties, bool& hasFontFaceOnlyValues)
+    WillBeHeapVector<CSSProperty, 256>& parsedProperties,
+    CSSRuleSourceData::Type ruleType)
     : m_valueList(valueList)
     , m_context(context)
     , m_inViewport(inViewport)
     , m_important(savedImportant) // See comment in header, should be removed.
     , m_parsedProperties(parsedProperties)
-    , m_hasFontFaceOnlyValues(hasFontFaceOnlyValues)
+    , m_ruleType(ruleType)
     , m_inParseShorthand(0)
     , m_currentShorthand(CSSPropertyInvalid)
     , m_implicitShorthand(false)
@@ -4747,6 +4748,9 @@ bool CSSPropertyParser::parseFontVariant(bool important)
             if (val->id == CSSValueNormal || val->id == CSSValueSmallCaps)
                 parsedValue = cssValuePool().createIdentifierValue(val->id);
             else if (val->id == CSSValueAll && !values) {
+                // FIXME: CSSPropertyParser::parseFontVariant() implements
+                // the old css3 draft:
+                // http://www.w3.org/TR/2002/WD-css3-webfonts-20020802/#font-variant
                 // 'all' is only allowed in @font-face and with no other values. Make a value list to
                 // indicate that we are in the @font-face case.
                 values = CSSValueList::createCommaSeparated();
@@ -4772,7 +4776,8 @@ bool CSSPropertyParser::parseFontVariant(bool important)
     }
 
     if (values && values->length()) {
-        m_hasFontFaceOnlyValues = true;
+        if (m_ruleType != CSSRuleSourceData::FONT_FACE_RULE)
+            return false;
         addProperty(CSSPropertyFontVariant, values.release(), important);
         return true;
     }

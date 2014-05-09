@@ -190,7 +190,6 @@ public:
 
     unsigned m_numParsedPropertiesBeforeMarginBox;
 
-    bool m_hasFontFaceOnlyValues;
     bool m_hadSyntacticallyValidCSSRule;
     bool m_logErrors;
     bool m_ignoreErrors;
@@ -266,8 +265,6 @@ private:
         setupParser(prefix, prefixLength - 1, string, suffix, suffixLength - 1);
     }
     void setupParser(const char* prefix, unsigned prefixLength, const String&, const char* suffix, unsigned suffixLength);
-
-    void deleteFontFaceOnlyValues();
 
     bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, StyleSheetContents* contextStyleSheet);
     PassRefPtr<ImmutableStylePropertySet> parseDeclaration(const String&, StyleSheetContents* contextStyleSheet);
