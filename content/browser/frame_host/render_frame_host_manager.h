@@ -260,9 +260,6 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details) OVERRIDE;
 
-  // Called when a RenderViewHost is about to be deleted.
-  void RenderViewDeleted(RenderViewHost* rvh);
-
   // Returns whether the given RenderFrameHost (or its associated
   // RenderViewHost) is on the list of swapped out RenderFrameHosts.
   bool IsRVHOnSwappedOutList(RenderViewHostImpl* rvh) const;
