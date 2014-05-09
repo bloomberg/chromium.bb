@@ -230,6 +230,7 @@ TemplateURLServiceSyncTest::TemplateURLServiceSyncTest()
           sync_processor_.get())) {}
 
 void TemplateURLServiceSyncTest::SetUp() {
+  TemplateURLService::set_fallback_search_engines_disabled(true);
   test_util_a_.SetUp();
   // Use ChangeToLoadState() instead of VerifyLoad() so we don't actually pull
   // in the prepopulate data, which the sync tests don't care about (and would
@@ -244,6 +245,7 @@ void TemplateURLServiceSyncTest::SetUp() {
 
 void TemplateURLServiceSyncTest::TearDown() {
   test_util_a_.TearDown();
+  TemplateURLService::set_fallback_search_engines_disabled(false);
 }
 
 scoped_ptr<syncer::SyncChangeProcessor>
@@ -1634,41 +1636,6 @@ TEST_F(TemplateURLServiceSyncTest, SyncedDefaultAlreadySetOnStartup) {
   ASSERT_EQ(default_search, model()->GetDefaultSearchProvider());
 }
 
-TEST_F(TemplateURLServiceSyncTest, NewDefaultIsAlreadySynced) {
-  // Ensure that if the synced DSP pref changed to another synced entry (as
-  // opposed to coming in as a new entry), it gets reset correctly.
-  // Start by setting kSyncedDefaultSearchProviderGUID to the entry that should
-  // end up as the default. Note that this must be done before the initial
-  // entries are added as otherwise this call will set the DSP immediately.
-  profile_a()->GetTestingPrefService()->SetString(
-      prefs::kSyncedDefaultSearchProviderGUID, "key2");
-
-  syncer::SyncDataList initial_data = CreateInitialSyncData();
-  // Ensure that our candidate default supports replacement.
-  scoped_ptr<TemplateURL> turl(CreateTestTemplateURL(ASCIIToUTF16("key2"),
-      "http://key2.com/{searchTerms}", "key2", 90));
-  initial_data[1] = TemplateURLService::CreateSyncDataFromTemplateURL(*turl);
-  for (syncer::SyncDataList::const_iterator iter = initial_data.begin();
-      iter != initial_data.end(); ++iter) {
-    TemplateURL* converted = Deserialize(*iter);
-    model()->Add(converted);
-  }
-
-  // Set the initial default to something other than the desired default.
-  model()->SetUserSelectedDefaultSearchProvider(
-      model()->GetTemplateURLForGUID("key1"));
-
-  // Merge in the same data (i.e. already synced entries).
-  model()->MergeDataAndStartSyncing(syncer::SEARCH_ENGINES, initial_data,
-      PassProcessor(), CreateAndPassSyncErrorFactory());
-
-  EXPECT_EQ(3U, model()->GetAllSyncData(syncer::SEARCH_ENGINES).size());
-  TemplateURL* current_default = model()->GetDefaultSearchProvider();
-  ASSERT_TRUE(current_default);
-  EXPECT_EQ("key2", current_default->sync_guid());
-  EXPECT_EQ(ASCIIToUTF16("key2"), current_default->keyword());
-}
-
 TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   // First start off with a few entries and make sure we can set an unmanaged
   // default search provider.
@@ -2248,4 +2215,26 @@ TEST_F(TemplateURLServiceSyncTest, MergeNonEditedPrepopulatedEngine) {
   EXPECT_EQ(default_turl->keyword(), result_turl->keyword());
   EXPECT_EQ(default_turl->short_name, result_turl->short_name());
   EXPECT_EQ(default_turl->url(), result_turl->url());
+}
+
+TEST_F(TemplateURLServiceSyncTest, GUIDUpdatedOnDefaultSearchChange) {
+  const char kGUID[] = "initdefault";
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"),
+                                     "http://thewhat.com/{searchTerms}",
+                                     kGUID));
+  model()->SetUserSelectedDefaultSearchProvider(
+      model()->GetTemplateURLForGUID(kGUID));
+
+  const TemplateURL* default_search = model()->GetDefaultSearchProvider();
+  ASSERT_TRUE(default_search);
+
+  const char kNewGUID[] = "newdefault";
+  model()->Add(CreateTestTemplateURL(ASCIIToUTF16("what"),
+                                     "http://thewhat.com/{searchTerms}",
+                                     kNewGUID));
+  model()->SetUserSelectedDefaultSearchProvider(
+      model()->GetTemplateURLForGUID(kNewGUID));
+
+  EXPECT_EQ(kNewGUID, profile_a()->GetTestingPrefService()->GetString(
+      prefs::kSyncedDefaultSearchProviderGUID));
 }

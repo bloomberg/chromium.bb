@@ -24,6 +24,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profile_resetter/brandcoded_default_settings.h"
 #include "chrome/browser/profile_resetter/profile_reset_global_error.h"
+#include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -91,16 +92,10 @@ class MockCallbackTarget {
 
 // Returns the details of the default search provider from |prefs| in a format
 // suitable for usage as |expected_details| in ExpectDetailsMatch().
-scoped_ptr<base::DictionaryValue> GetDefaultSearchProviderDetailsFromPrefs(
+const base::DictionaryValue* GetDefaultSearchProviderDetailsFromPrefs(
     const PrefService* prefs) {
-  const char kDefaultSearchProviderPrefix[] = "default_search_provider";
-  scoped_ptr<base::DictionaryValue> pref_values_with_path_expansion(
-      prefs->GetPreferenceValues());
-  const base::DictionaryValue* dsp_details = NULL;
-  EXPECT_TRUE(pref_values_with_path_expansion->GetDictionary(
-      kDefaultSearchProviderPrefix, &dsp_details));
-  return scoped_ptr<base::DictionaryValue>(
-      dsp_details ? dsp_details->DeepCopy() : new base::DictionaryValue);
+  return prefs->GetDictionary(
+      DefaultSearchManager::kDefaultSearchProviderDataPrefName);
 }
 
 // Verifies that the |details| of a search engine as provided by the delegate
@@ -119,24 +114,9 @@ void ExpectDetailsMatch(const base::DictionaryValue& expected_details,
     const base::Value* actual_value = NULL;
     ASSERT_TRUE(details.Get(it.key(), &actual_value));
 
-    if (it.key() == "id") {
-      // Ignore ID as it is dynamically assigned by the TemplateURLService.
-    } else if (it.key() == "encodings") {
-      // Encoding list is stored in Prefs as a single string with tokens
-      // delimited by semicolons.
-      std::string expected_encodings;
-      ASSERT_TRUE(expected_value->GetAsString(&expected_encodings));
-      const base::ListValue* actual_encodings_list = NULL;
-      ASSERT_TRUE(actual_value->GetAsList(&actual_encodings_list));
-      std::vector<std::string> actual_encodings_vector;
-      for (base::ListValue::const_iterator it = actual_encodings_list->begin();
-           it != actual_encodings_list->end(); ++it) {
-        std::string encoding;
-        ASSERT_TRUE((*it)->GetAsString(&encoding));
-        actual_encodings_vector.push_back(encoding);
-      }
-      EXPECT_EQ(expected_encodings, JoinString(actual_encodings_vector, ';'));
-    } else {
+    // Ignore ID as it is dynamically assigned by the TemplateURLService.
+    // last_modified may get updated during a run, so ignore value differences.
+    if (it.key() != "id" && it.key() != "last_modified") {
       // Everything else is the same format.
       EXPECT_TRUE(actual_value->Equals(expected_value))
           << "Expected: " << *expected_value << ". Actual: " << *actual_value;
@@ -379,8 +359,8 @@ TEST_F(AutomaticProfileResetterDelegateTest,
   ASSERT_TRUE(prefs);
   scoped_ptr<base::DictionaryValue> dsp_details(
       resetter_delegate()->GetDefaultSearchProviderDetails());
-  scoped_ptr<base::DictionaryValue> expected_dsp_details(
-      GetDefaultSearchProviderDetailsFromPrefs(prefs));
+  const base::DictionaryValue* expected_dsp_details =
+      GetDefaultSearchProviderDetailsFromPrefs(prefs);
 
   ExpectDetailsMatch(*expected_dsp_details, *dsp_details);
   EXPECT_FALSE(resetter_delegate()->IsDefaultSearchProviderManaged());
@@ -453,8 +433,8 @@ TEST_F(AutomaticProfileResetterDelegateTest,
 
     PrefService* prefs = profile()->GetPrefs();
     ASSERT_TRUE(prefs);
-    scoped_ptr<base::DictionaryValue> expected_dsp_details(
-        GetDefaultSearchProviderDetailsFromPrefs(prefs));
+    const base::DictionaryValue* expected_dsp_details =
+        GetDefaultSearchProviderDetailsFromPrefs(prefs);
     ExpectDetailsMatch(*expected_dsp_details, *details);
   }
 }

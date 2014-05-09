@@ -128,7 +128,8 @@ TemplateURLData* DefaultSearchManager::GetDefaultSearchEngine(
 
   if (source)
     *source = FROM_FALLBACK;
-  return fallback_default_search_.get();
+  return TemplateURLService::fallback_search_engines_disabled() ?
+      NULL : fallback_default_search_.get();
 }
 
 DefaultSearchManager::Source

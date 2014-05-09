@@ -13,6 +13,7 @@
 #include "chrome/browser/search_engines/default_search_manager.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/common/pref_names.h"
 
 namespace {
 
@@ -26,6 +27,25 @@ scoped_ptr<TemplateURLData> LoadDefaultSearchProviderFromPrefs(
       pref_service, &legacy_dse_from_prefs, &legacy_is_managed);
   return legacy_is_managed ?
       scoped_ptr<TemplateURLData>() : legacy_dse_from_prefs.Pass();
+}
+
+void ClearDefaultSearchProviderFromLegacyPrefs(PrefService* prefs) {
+  prefs->ClearPref(prefs::kDefaultSearchProviderName);
+  prefs->ClearPref(prefs::kDefaultSearchProviderKeyword);
+  prefs->ClearPref(prefs::kDefaultSearchProviderSearchURL);
+  prefs->ClearPref(prefs::kDefaultSearchProviderSuggestURL);
+  prefs->ClearPref(prefs::kDefaultSearchProviderInstantURL);
+  prefs->ClearPref(prefs::kDefaultSearchProviderImageURL);
+  prefs->ClearPref(prefs::kDefaultSearchProviderNewTabURL);
+  prefs->ClearPref(prefs::kDefaultSearchProviderSearchURLPostParams);
+  prefs->ClearPref(prefs::kDefaultSearchProviderSuggestURLPostParams);
+  prefs->ClearPref(prefs::kDefaultSearchProviderInstantURLPostParams);
+  prefs->ClearPref(prefs::kDefaultSearchProviderImageURLPostParams);
+  prefs->ClearPref(prefs::kDefaultSearchProviderIconURL);
+  prefs->ClearPref(prefs::kDefaultSearchProviderEncodings);
+  prefs->ClearPref(prefs::kDefaultSearchProviderPrepopulateID);
+  prefs->ClearPref(prefs::kDefaultSearchProviderAlternateURLs);
+  prefs->ClearPref(prefs::kDefaultSearchProviderSearchTermsReplacementKey);
 }
 
 void MigrateDefaultSearchPref(PrefService* pref_service) {
@@ -55,8 +75,7 @@ void MigrateDefaultSearchPref(PrefService* pref_service) {
     }
   }
 
-  // TODO(erikwright): Clear the legacy value when the modern value is the
-  // authority.
+  ClearDefaultSearchProviderFromLegacyPrefs(pref_service);
 }
 
 void OnPrefsInitialized(PrefService* pref_service,
