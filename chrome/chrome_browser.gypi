@@ -1062,8 +1062,6 @@
         'browser/media/desktop_media_picker.h',
         'browser/media/desktop_streams_registry.cc',
         'browser/media/desktop_streams_registry.h',
-        'browser/media/encrypted_media_message_filter_android.cc',
-        'browser/media/encrypted_media_message_filter_android.h',
         'browser/media/media_capture_devices_dispatcher.cc',
         'browser/media/media_capture_devices_dispatcher.h',
         'browser/media/media_device_id_salt.cc',
@@ -3140,6 +3138,7 @@
         }],
         ['OS=="android"', {
           'dependencies': [
+            '../components/components.gyp:cdm_browser',
             '../components/components.gyp:web_contents_delegate_android',
             'chrome_browser_jni_headers',
           ],

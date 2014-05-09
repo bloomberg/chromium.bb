@@ -18,6 +18,7 @@
 #include "android_webview/common/url_constants.h"
 #include "base/base_paths_android.h"
 #include "base/path_service.h"
+#include "components/cdm/browser/cdm_message_filter_android.h"
 #include "content/public/browser/access_token_store.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -207,6 +208,7 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
       host->GetID(), content::kFileScheme);
 
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
+  host->AddFilter(new cdm::CdmMessageFilterAndroid());
 }
 
 net::URLRequestContextGetter* AwContentBrowserClient::CreateRequestContext(

@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/render_messages.h"
+#include "components/cdm/renderer/widevine_key_systems.h"
 #include "content/public/renderer/render_thread.h"
 
 #include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
@@ -21,10 +22,6 @@
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_MIN_GLIBC_VERSION)
 #include <gnu/libc-version.h>
 #include "base/version.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "chrome/common/encrypted_media_messages_android.h"
 #endif
 
 using content::KeySystemInfo;
@@ -99,76 +96,12 @@ static void AddExternalClearKey(
   info.key_system = kExternalClearKeyCrashKeySystem;
   concrete_key_systems->push_back(info);
 }
-#endif  // defined(ENABLE_PEPPER_CDMS)
-
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-enum WidevineCdmType {
-  WIDEVINE,
-  WIDEVINE_HR,
-#if defined(OS_ANDROID)
-  WIDEVINE_HR_NON_COMPOSITING,
-#endif
-};
-
-#if !defined(OS_ANDROID)
-static bool IsWidevineHrSupported() {
-  // TODO(jrummell): Need to call CheckPlatformState() but it is
-  // asynchronous, and needs to be done in the browser.
-  return false;
-}
-#endif
-
-// Return |name|'s parent key system.
-static std::string GetDirectParentName(std::string name) {
-  int last_period = name.find_last_of('.');
-  DCHECK_GT(last_period, 0);
-  return name.substr(0, last_period);
-}
-
-static void AddWidevineWithCodecs(
-    WidevineCdmType widevine_cdm_type,
-    SupportedCodecs supported_codecs,
-    std::vector<KeySystemInfo>* concrete_key_systems) {
-  KeySystemInfo info(kWidevineKeySystem);
-
-  switch (widevine_cdm_type) {
-    case WIDEVINE:
-      // For standard Widevine, add parent name.
-      info.parent_key_system = GetDirectParentName(kWidevineKeySystem);
-      break;
-    case WIDEVINE_HR:
-      info.key_system.append(".hr");
-      break;
-#if defined(OS_ANDROID)
-    case WIDEVINE_HR_NON_COMPOSITING:
-      info.key_system.append(".hrnoncompositing");
-      break;
-#endif
-    default:
-      NOTREACHED();
-  }
-
-  // TODO(xhwang): A container or an initDataType may be supported even though
-  // there are no codecs supported in that container. Fix this when we support
-  // initDataType.
-  info.supported_codecs = supported_codecs;
-
-#if defined(ENABLE_PEPPER_CDMS)
-  info.pepper_type = kWidevineCdmPluginMimeType;
-#endif  // defined(ENABLE_PEPPER_CDMS)
-
-  concrete_key_systems->push_back(info);
-}
-
-#if defined(ENABLE_PEPPER_CDMS)
-// When the adapter is registered, a name-value pair is inserted in
-// additional_param_* that lists the supported codecs. The name is "codecs" and
-// the value is a comma-delimited list of codecs.
 // This function finds "codecs" and parses the value into the vector |codecs|.
 // Converts the codec strings to UTF-8 since we only expect ASCII strings and
 // this simplifies the rest of the code in this file.
-void GetSupportedCodecs(
+void GetSupportedCodecsForPepperCdm(
     const std::vector<base::string16>& additional_param_names,
     const std::vector<base::string16>& additional_param_values,
     std::vector<std::string>* codecs) {
@@ -212,7 +145,9 @@ static void AddPepperBasedWidevine(
   }
 
   std::vector<std::string> codecs;
-  GetSupportedCodecs(additional_param_names, additional_param_values, &codecs);
+  GetSupportedCodecsForPepperCdm(additional_param_names,
+                                 additional_param_values,
+                                 &codecs);
 
   SupportedCodecs supported_codecs = content::EME_CODEC_NONE;
   for (size_t i = 0; i < codecs.size(); ++i) {
@@ -230,52 +165,23 @@ static void AddPepperBasedWidevine(
 #endif  // defined(USE_PROPRIETARY_CODECS)
   }
 
-  AddWidevineWithCodecs(WIDEVINE, supported_codecs, concrete_key_systems);
-
-  if (IsWidevineHrSupported())
-    AddWidevineWithCodecs(WIDEVINE_HR, supported_codecs, concrete_key_systems);
+  cdm::AddWidevineWithCodecs(cdm::WIDEVINE,
+                             supported_codecs,
+                             concrete_key_systems);
 }
-#elif defined(OS_ANDROID)
-static void AddAndroidWidevine(
-    std::vector<KeySystemInfo>* concrete_key_systems) {
-  SupportedKeySystemRequest request;
-  SupportedKeySystemResponse response;
-
-  request.key_system = kWidevineKeySystem;
-  request.codecs = content::EME_CODEC_WEBM_ALL | content::EME_CODEC_MP4_ALL;
-  content::RenderThread::Get()->Send(
-      new ChromeViewHostMsg_GetSupportedKeySystems(request, &response));
-  DCHECK(response.compositing_codecs & content::EME_CODEC_ALL)
-      << "unrecognized codec";
-  DCHECK(response.non_compositing_codecs & content::EME_CODEC_ALL)
-      << "unrecognized codec";
-  if (response.compositing_codecs != content::EME_CODEC_NONE) {
-    AddWidevineWithCodecs(
-        WIDEVINE,
-        static_cast<SupportedCodecs>(response.compositing_codecs),
-        concrete_key_systems);
-  }
-
-  if (response.non_compositing_codecs != content::EME_CODEC_NONE) {
-    AddWidevineWithCodecs(
-        WIDEVINE_HR_NON_COMPOSITING,
-        static_cast<SupportedCodecs>(response.non_compositing_codecs),
-        concrete_key_systems);
-  }
-}
-#endif  // defined(ENABLE_PEPPER_CDMS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
 void AddChromeKeySystems(std::vector<KeySystemInfo>* key_systems_info) {
 #if defined(ENABLE_PEPPER_CDMS)
   AddExternalClearKey(key_systems_info);
-#endif
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
-#if defined(ENABLE_PEPPER_CDMS)
   AddPepperBasedWidevine(key_systems_info);
-#elif defined(OS_ANDROID)
-  AddAndroidWidevine(key_systems_info);
-#endif
-#endif
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+#endif  // defined(ENABLE_PEPPER_CDMS)
+
+#if defined(OS_ANDROID)
+  cdm::AddAndroidWidevine(key_systems_info);
+#endif  // defined(OS_ANDROID)
 }

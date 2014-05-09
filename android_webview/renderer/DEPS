@@ -4,6 +4,7 @@ include_rules = [
   "+android_webview/renderer",
 
   "+components/autofill/content/renderer",
+  "+components/cdm/renderer",
   "+components/visitedlink/renderer",
 
   "+content/public/renderer",

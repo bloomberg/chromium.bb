@@ -1,12 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/encrypted_media_message_filter_android.h"
+#include "components/cdm/browser/cdm_message_filter_android.h"
 
 #include <string>
 
-#include "chrome/common/encrypted_media_messages_android.h"
+#include "components/cdm/common/cdm_messages_android.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_drm_bridge.h"
@@ -16,7 +16,7 @@ using content::SupportedCodecs;
 using media::MediaCodecBridge;
 using media::MediaDrmBridge;
 
-namespace chrome {
+namespace cdm {
 
 const size_t kMaxKeySystemLength = 256;
 
@@ -65,16 +65,16 @@ static SupportedCodecs GetSupportedCodecs(
   return supported_codecs;
 }
 
-EncryptedMediaMessageFilterAndroid::EncryptedMediaMessageFilterAndroid()
+CdmMessageFilterAndroid::CdmMessageFilterAndroid()
     : BrowserMessageFilter(EncryptedMediaMsgStart) {}
 
-EncryptedMediaMessageFilterAndroid::~EncryptedMediaMessageFilterAndroid() {}
+CdmMessageFilterAndroid::~CdmMessageFilterAndroid() {}
 
-bool EncryptedMediaMessageFilterAndroid::OnMessageReceived(
+bool CdmMessageFilterAndroid::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(
-      EncryptedMediaMessageFilterAndroid, message, *message_was_ok)
+      CdmMessageFilterAndroid, message, *message_was_ok)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetSupportedKeySystems,
                         OnGetSupportedKeySystems)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -82,14 +82,14 @@ bool EncryptedMediaMessageFilterAndroid::OnMessageReceived(
   return handled;
 }
 
-void EncryptedMediaMessageFilterAndroid::OverrideThreadForMessage(
+void CdmMessageFilterAndroid::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
   // Move the IPC handling to FILE thread as it is not very cheap.
   if (message.type() == ChromeViewHostMsg_GetSupportedKeySystems::ID)
     *thread = BrowserThread::FILE;
 }
 
-void EncryptedMediaMessageFilterAndroid::OnGetSupportedKeySystems(
+void CdmMessageFilterAndroid::OnGetSupportedKeySystems(
     const SupportedKeySystemRequest& request,
     SupportedKeySystemResponse* response) {
   if (!response) {
@@ -112,4 +112,4 @@ void EncryptedMediaMessageFilterAndroid::OnGetSupportedKeySystems(
   response->non_compositing_codecs = GetSupportedCodecs(request, false);
 }
 
-}  // namespace chrome
+}  // namespace cdm

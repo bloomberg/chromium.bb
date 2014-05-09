@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_ENCRYPTED_MEDIA_MESSAGE_FILTER_ANDROID_H_
-#define CHROME_BROWSER_MEDIA_ENCRYPTED_MEDIA_MESSAGE_FILTER_ANDROID_H_
+#ifndef COMPONENTS_CDM_BROWSER_CDM_MESSAGE_FILTER_ANDROID_H_
+#define COMPONENTS_CDM_BROWSER_CDM_MESSAGE_FILTER_ANDROID_H_
 
 #include "base/basictypes.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -11,17 +11,17 @@
 struct SupportedKeySystemRequest;
 struct SupportedKeySystemResponse;
 
-namespace chrome {
+namespace cdm {
 
 // Message filter for EME on android. It is responsible for getting the
 // SupportedKeySystems information and passing it back to renderer.
-class EncryptedMediaMessageFilterAndroid
+class CdmMessageFilterAndroid
     : public content::BrowserMessageFilter {
  public:
-  EncryptedMediaMessageFilterAndroid();
+  CdmMessageFilterAndroid();
 
  private:
-  virtual ~EncryptedMediaMessageFilterAndroid();
+  virtual ~CdmMessageFilterAndroid();
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
@@ -35,9 +35,9 @@ class EncryptedMediaMessageFilterAndroid
       const SupportedKeySystemRequest& request,
       SupportedKeySystemResponse* response);
 
-  DISALLOW_COPY_AND_ASSIGN(EncryptedMediaMessageFilterAndroid);
+  DISALLOW_COPY_AND_ASSIGN(CdmMessageFilterAndroid);
 };
 
-}  // namespace chrome
+}  // namespace cdm
 
-#endif  // CHROME_BROWSER_MEDIA_ENCRYPTED_MEDIA_MESSAGE_FILTER_ANDROID_H_
+#endif  // COMPONENTS_CDM_BROWSER_CDM_MESSAGE_FILTER_ANDROID_H_

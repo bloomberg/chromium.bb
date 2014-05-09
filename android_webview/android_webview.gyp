@@ -90,6 +90,8 @@
         '../android_webview/native/webview_native.gyp:webview_native',
         '../components/components.gyp:auto_login_parser',
         '../components/components.gyp:autofill_content_renderer',
+        '../components/components.gyp:cdm_browser',
+        '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:data_reduction_proxy_browser',
         '../components/components.gyp:navigation_interception',
         '../components/components.gyp:visitedlink_browser',

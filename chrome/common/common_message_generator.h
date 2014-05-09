@@ -27,7 +27,3 @@
 #if defined(ENABLE_WEBRTC)
 #include "chrome/common/media/webrtc_logging_messages.h"
 #endif
-
-#if defined(OS_ANDROID)
-#include "chrome/common/encrypted_media_messages_android.h"
-#endif

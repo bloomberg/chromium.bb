@@ -15,6 +15,7 @@
         'chrome_resources.gyp:chrome_strings',
         '../third_party/re2/re2.gyp:re2',
         '../components/components.gyp:autofill_content_renderer',
+        '../components/components.gyp:cdm_renderer',
         '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:plugins_renderer',
         '../components/components.gyp:translate_core_common',

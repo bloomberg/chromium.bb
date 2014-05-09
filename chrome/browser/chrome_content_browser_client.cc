@@ -98,6 +98,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_constants.h"
+#include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/nacl_host_message_filter.h"
@@ -177,7 +178,6 @@
 #include "chrome/browser/android/new_tab_page_url_handler.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
 #include "chrome/browser/chrome_browser_main_android.h"
-#include "chrome/browser/media/encrypted_media_message_filter_android.h"
 #include "chrome/common/descriptors_android.h"
 #include "components/breakpad/browser/crash_dump_manager_android.h"
 #elif defined(OS_POSIX)
@@ -930,7 +930,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       context));
 #endif
 #if defined(OS_ANDROID)
-  host->AddFilter(new EncryptedMediaMessageFilterAndroid());
+  host->AddFilter(new cdm::CdmMessageFilterAndroid());
 #endif
   if (switches::IsNewProfileManagement())
     host->AddFilter(new PrincipalsMessageFilter(id));

@@ -48,6 +48,7 @@
   'conditions': [
     ['OS != "ios"', {
       'includes': [
+        'cdm.gypi',
         'navigation_interception.gypi',
         'plugins.gypi',
         'sessions.gypi',
