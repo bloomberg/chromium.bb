@@ -211,22 +211,25 @@ StackTrace::StackTrace() {
 #pragma optimize("", on)
 #endif
 
-StackTrace::StackTrace(EXCEPTION_POINTERS* exception_pointers) {
+StackTrace::StackTrace(const EXCEPTION_POINTERS* exception_pointers) {
   // When walking an exception stack, we need to use StackWalk64().
   count_ = 0;
+  // StackWalk64() may modify context record passed to it, so we will
+  // use a copy.
+  CONTEXT context_record = *exception_pointers->ContextRecord;
   // Initialize stack walking.
   STACKFRAME64 stack_frame;
   memset(&stack_frame, 0, sizeof(stack_frame));
 #if defined(_WIN64)
   int machine_type = IMAGE_FILE_MACHINE_AMD64;
-  stack_frame.AddrPC.Offset = exception_pointers->ContextRecord->Rip;
-  stack_frame.AddrFrame.Offset = exception_pointers->ContextRecord->Rbp;
-  stack_frame.AddrStack.Offset = exception_pointers->ContextRecord->Rsp;
+  stack_frame.AddrPC.Offset = context_record.Rip;
+  stack_frame.AddrFrame.Offset = context_record.Rbp;
+  stack_frame.AddrStack.Offset = context_record.Rsp;
 #else
   int machine_type = IMAGE_FILE_MACHINE_I386;
-  stack_frame.AddrPC.Offset = exception_pointers->ContextRecord->Eip;
-  stack_frame.AddrFrame.Offset = exception_pointers->ContextRecord->Ebp;
-  stack_frame.AddrStack.Offset = exception_pointers->ContextRecord->Esp;
+  stack_frame.AddrPC.Offset = context_record.Eip;
+  stack_frame.AddrFrame.Offset = context_record.Ebp;
+  stack_frame.AddrStack.Offset = context_record.Esp;
 #endif
   stack_frame.AddrPC.Mode = AddrModeFlat;
   stack_frame.AddrFrame.Mode = AddrModeFlat;
@@ -235,7 +238,7 @@ StackTrace::StackTrace(EXCEPTION_POINTERS* exception_pointers) {
                      GetCurrentProcess(),
                      GetCurrentThread(),
                      &stack_frame,
-                     exception_pointers->ContextRecord,
+                     &context_record,
                      NULL,
                      &SymFunctionTableAccess64,
                      &SymGetModuleBase64,
