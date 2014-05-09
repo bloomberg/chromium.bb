@@ -135,6 +135,9 @@ bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLa
             return false;
     }
 
+    if (layer->compositingContainer() == &squashingLayer)
+        return false;
+
     // Composited descendants need to be clipped by a child contianment graphics layer, which would not be available if the layer is
     if (m_compositor->clipsCompositingDescendants(layer))
         return false;
