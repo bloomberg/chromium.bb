@@ -1547,7 +1547,7 @@
       'name': 'Extensions',
       'type': 'group',
       'caption': '''Extensions''',
-      'desc': '''Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>. The blacklist takes precedence over the list of forced extensions.''',
+      'desc': '''Configures extension-related policies. The user is not allowed to install blacklisted extensions unless they are whitelisted. You can also force <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to automatically install extensions by specifying them in <ph name="EXTENSIONINSTALLFORCELIST_POLICY_NAME">ExtensionInstallForcelist</ph>. Force-installed extensions are installed regardless whether they are present in the blacklist.''',
       'policies': [
         {
           'name': 'ExtensionInstallBlacklist',
