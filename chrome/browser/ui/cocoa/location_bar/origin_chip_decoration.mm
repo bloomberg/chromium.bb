@@ -125,27 +125,18 @@ void OriginChipDecoration::Update() {
 }
 
 CGFloat OriginChipDecoration::GetWidthForSpace(CGFloat width) {
-  NSImage* icon = GetIconImage();
-  if (!icon || [label_ length] == 0)
+  if (!GetIconImage() || [label_ length] == 0)
     return kOmittedWidth;
 
-  const CGFloat label_width = [label_ sizeWithAttributes:attributes_].width;
-  const CGFloat min_width = kInnerLeftPadding +
-                            kIconSize +
-                            kIconLabelPadding +
-                            std::ceil(label_width) +
-                            kInnerRightPadding +
-                            kOuterRightPadding;
-
-  return (width < min_width) ? kOmittedWidth : min_width;
+  // Clip the chip if it can't fit, rather than hiding it (kOmittedWidth).
+  return std::min(width, GetChipWidth() + kOuterRightPadding);
 }
 
 void OriginChipDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   // The assets are aligned with the location bar assets, so check that we are
   // being asked to draw against the edge, then draw over the border.
   DCHECK(NSMinX(frame) == [control_view cr_lineWidth]);
-  frame = NSMakeRect(0, NSMinY(frame), NSWidth(frame) - kOuterRightPadding,
-                     NSHeight(frame));
+  frame = NSMakeRect(0, NSMinY(frame), GetChipWidth(), NSHeight(frame));
 
   const ui::NinePartImageIds image_ids = GetBackgroundImageIds();
 
@@ -222,6 +213,14 @@ bool OriginChipDecoration::ShouldShow() const {
   return chrome::ShouldDisplayOriginChip() ||
       (owner_->GetToolbarModel()->WouldOmitURLDueToOriginChip() &&
        owner_->GetToolbarModel()->origin_chip_enabled());
+}
+
+CGFloat OriginChipDecoration::GetChipWidth() const {
+  return kInnerLeftPadding +
+      kIconSize +
+      kIconLabelPadding +
+      std::ceil([label_ sizeWithAttributes:attributes_].width) +
+      kInnerRightPadding;
 }
 
 // TODO(macourteau): Implement eliding of the host.

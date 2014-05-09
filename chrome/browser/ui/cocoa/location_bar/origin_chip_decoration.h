@@ -52,6 +52,9 @@ class OriginChipDecoration : public ButtonDecoration,
   // Returns whether the origin chip should be shown or not.
   bool ShouldShow() const;
 
+  // Returns the width required to display the chip's contents.
+  CGFloat GetChipWidth() const;
+
   // Contains attributes for drawing the origin string.
   base::scoped_nsobject<NSMutableDictionary> attributes_;
 
