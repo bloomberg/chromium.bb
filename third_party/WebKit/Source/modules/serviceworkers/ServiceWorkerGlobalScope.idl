@@ -29,7 +29,7 @@
  */
 [
     Exposed=ServiceWorker,
-    Global=ServiceWorker,
+    Global=Worker&ServiceWorker,
     RuntimeEnabled=ServiceWorker,
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
 
