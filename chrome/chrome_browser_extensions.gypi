@@ -139,6 +139,7 @@
         'browser/extensions/api/audio/audio_service.cc',
         'browser/extensions/api/audio/audio_service.h',
         'browser/extensions/api/audio/audio_service_chromeos.cc',
+        'browser/extensions/api/audio/audio_service_linux.cc',
         'browser/extensions/api/automation_internal/automation_internal_api.cc',
         'browser/extensions/api/automation_internal/automation_internal_api.h',
         'browser/extensions/api/automation_internal/automation_util.cc',
