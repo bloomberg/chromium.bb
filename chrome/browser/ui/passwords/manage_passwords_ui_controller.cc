@@ -90,7 +90,6 @@ void ManagePasswordsUIController::WebContentsDestroyed() {
 
 void ManagePasswordsUIController::OnLoginsChanged(
     const password_manager::PasswordStoreChangeList& changes) {
-  password_manager::ui::State current_state = state_;
   for (password_manager::PasswordStoreChangeList::const_iterator it =
            changes.begin();
        it != changes.end();
@@ -101,20 +100,12 @@ void ManagePasswordsUIController::OnLoginsChanged(
 
     if (it->type() == password_manager::PasswordStoreChange::REMOVE) {
       password_form_map_.erase(changed_form.username_value);
-      if (changed_form.blacklisted_by_user) {
-        DCHECK(state_ == password_manager::ui::BLACKLIST_STATE);
-        state_ = password_manager::ui::MANAGE_STATE;
-      }
     } else {
       autofill::PasswordForm* new_form =
           new autofill::PasswordForm(changed_form);
       password_form_map_[changed_form.username_value] = new_form;
-      if (changed_form.blacklisted_by_user)
-        state_ = password_manager::ui::BLACKLIST_STATE;
     }
   }
-  if (current_state != state_)
-    UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::

@@ -102,7 +102,6 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, BlacklistBlockedAutofill) {
-  test_form().blacklisted_by_user = true;
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
   map[kTestUsername] = &test_form();
@@ -132,46 +131,3 @@ TEST_F(ManagePasswordsUIControllerTest, ClickedUnblacklist) {
   controller()->UpdateIconAndBubbleState(&mock);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
 }
-
-TEST_F(ManagePasswordsUIControllerTest, UnblacklistedElsewhere) {
-  test_form().blacklisted_by_user = true;
-  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-  autofill::PasswordFormMap map;
-  map[kTestUsername] = &test_form();
-  controller()->OnBlacklistBlockedAutofill(map);
-
-  password_manager::PasswordStoreChange change(
-      password_manager::PasswordStoreChange::REMOVE, test_form());
-  password_manager::PasswordStoreChangeList list(1, change);
-  controller()->OnLoginsChanged(list);
-
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->state());
-  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
-  EXPECT_EQ(test_form().origin, controller()->origin());
-
-  ManagePasswordsIconMock mock;
-  controller()->UpdateIconAndBubbleState(&mock);
-  EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
-}
-
-TEST_F(ManagePasswordsUIControllerTest, BlacklistedElsewhere) {
-  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-  autofill::PasswordFormMap map;
-  map[kTestUsername] = &test_form();
-  controller()->OnPasswordAutofilled(map);
-
-  test_form().blacklisted_by_user = true;
-  password_manager::PasswordStoreChange change(
-      password_manager::PasswordStoreChange::ADD, test_form());
-  password_manager::PasswordStoreChangeList list(1, change);
-  controller()->OnLoginsChanged(list);
-
-  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, controller()->state());
-  EXPECT_FALSE(controller()->PasswordPendingUserDecision());
-  EXPECT_EQ(test_form().origin, controller()->origin());
-
-  ManagePasswordsIconMock mock;
-  controller()->UpdateIconAndBubbleState(&mock);
-  EXPECT_EQ(password_manager::ui::BLACKLIST_STATE, mock.state());
-}
-
