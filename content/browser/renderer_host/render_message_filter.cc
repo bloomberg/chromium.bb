@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
@@ -1255,10 +1256,19 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
     handle->type = gfx::EMPTY_BUFFER;
     return;
   }
+  base::CheckedNumeric<int> size = width;
+  size *= height;
+  if (!size.IsValid()) {
+    handle->type = gfx::EMPTY_BUFFER;
+    return;
+  }
 
 #if defined(OS_MACOSX)
-  if (GpuMemoryBufferImplIOSurface::IsFormatSupported(internalformat) &&
-      GpuMemoryBufferImplIOSurface::IsUsageSupported(usage)) {
+  // TODO(reveman): This should be moved to
+  // GpuMemoryBufferImpl::AllocateForChildProcess and
+  // GpuMemoryBufferImplIOSurface. crbug.com/325045, crbug.com/323304
+  if (GpuMemoryBufferImplIOSurface::IsConfigurationSupported(internalformat,
+                                                             usage)) {
     IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
     if (io_surface_support) {
       base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
@@ -1303,8 +1313,12 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
 #endif
 
 #if defined(OS_ANDROID)
-  if (GpuMemoryBufferImplSurfaceTexture::IsFormatSupported(internalformat) &&
-      GpuMemoryBufferImplSurfaceTexture::IsUsageSupported(usage)) {
+  // TODO(reveman): This should be moved to
+  // GpuMemoryBufferImpl::AllocateForChildProcess and
+  // GpuMemoryBufferImplSurfaceTexture when adding support for out-of-process
+  // GPU service. crbug.com/368716
+  if (GpuMemoryBufferImplSurfaceTexture::IsConfigurationSupported(
+          internalformat, usage)) {
     // Each surface texture is associated with a render process id. This allows
     // the GPU service and Java Binder IPC to verify that a renderer is not
     // trying to use a surface texture it doesn't own.
@@ -1319,29 +1333,8 @@ void RenderMessageFilter::OnAllocateGpuMemoryBuffer(
   }
 #endif
 
-  uint64 stride = static_cast<uint64>(width) *
-      GpuMemoryBufferImpl::BytesPerPixel(internalformat);
-  if (stride > std::numeric_limits<uint32>::max()) {
-    handle->type = gfx::EMPTY_BUFFER;
-    return;
-  }
-
-  uint64 buffer_size = stride * static_cast<uint64>(height);
-  if (buffer_size > std::numeric_limits<size_t>::max()) {
-    handle->type = gfx::EMPTY_BUFFER;
-    return;
-  }
-
-  if (!GpuMemoryBufferImplShm::IsUsageSupported(usage)) {
-    handle->type = gfx::EMPTY_BUFFER;
-    return;
-  }
-
-  // Fallback to fake GpuMemoryBuffer that is backed by shared memory and
-  // requires an upload before it can be used as a texture.
-  handle->type = gfx::SHARED_MEMORY_BUFFER;
-  ChildProcessHostImpl::AllocateSharedMemory(
-      static_cast<size_t>(buffer_size), PeerHandle(), &handle->handle);
+  GpuMemoryBufferImpl::AllocateForChildProcess(
+      gfx::Size(width, height), internalformat, usage, PeerHandle(), handle);
 }
 
 }  // namespace content

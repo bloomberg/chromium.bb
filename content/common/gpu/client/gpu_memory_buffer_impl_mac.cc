@@ -9,15 +9,51 @@
 
 namespace content {
 
+// static
 scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::Create(
+    const gfx::Size& size,
+    unsigned internalformat,
+    unsigned usage) {
+  if (GpuMemoryBufferImplShm::IsConfigurationSupported(
+          size, internalformat, usage)) {
+    scoped_ptr<GpuMemoryBufferImplShm> buffer(
+        new GpuMemoryBufferImplShm(size, internalformat));
+    if (!buffer->Initialize())
+      return scoped_ptr<GpuMemoryBufferImpl>();
+
+    return buffer.PassAs<GpuMemoryBufferImpl>();
+  }
+
+  return scoped_ptr<GpuMemoryBufferImpl>();
+}
+
+// static
+void GpuMemoryBufferImpl::AllocateForChildProcess(
+    const gfx::Size& size,
+    unsigned internalformat,
+    unsigned usage,
+    base::ProcessHandle child_process,
+    gfx::GpuMemoryBufferHandle* handle) {
+  if (GpuMemoryBufferImplShm::IsConfigurationSupported(
+          size, internalformat, usage)) {
+    GpuMemoryBufferImplShm::AllocateSharedMemoryForChildProcess(
+        size, internalformat, child_process, handle);
+    return;
+  }
+
+  handle->type = gfx::EMPTY_BUFFER;
+}
+
+// static
+scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
     gfx::GpuMemoryBufferHandle handle,
-    gfx::Size size,
+    const gfx::Size& size,
     unsigned internalformat) {
   switch (handle.type) {
     case gfx::SHARED_MEMORY_BUFFER: {
       scoped_ptr<GpuMemoryBufferImplShm> buffer(
           new GpuMemoryBufferImplShm(size, internalformat));
-      if (!buffer->Initialize(handle))
+      if (!buffer->InitializeFromHandle(handle))
         return scoped_ptr<GpuMemoryBufferImpl>();
 
       return buffer.PassAs<GpuMemoryBufferImpl>();
@@ -25,7 +61,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::Create(
     case gfx::IO_SURFACE_BUFFER: {
       scoped_ptr<GpuMemoryBufferImplIOSurface> buffer(
           new GpuMemoryBufferImplIOSurface(size, internalformat));
-      if (!buffer->Initialize(handle))
+      if (!buffer->InitializeFromHandle(handle))
         return scoped_ptr<GpuMemoryBufferImpl>();
 
       return buffer.PassAs<GpuMemoryBufferImpl>();

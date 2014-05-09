@@ -11,17 +11,19 @@ struct ANativeWindow;
 
 namespace content {
 
-// Provides implementation of a GPU memory buffer based on a surface texture id.
+// Implementation of GPU memory buffer based on SurfaceTextures.
 class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
  public:
-  GpuMemoryBufferImplSurfaceTexture(gfx::Size size, unsigned internalformat);
+  GpuMemoryBufferImplSurfaceTexture(const gfx::Size& size,
+                                    unsigned internalformat);
   virtual ~GpuMemoryBufferImplSurfaceTexture();
-
-  bool Initialize(gfx::GpuMemoryBufferHandle handle);
 
   static bool IsFormatSupported(unsigned internalformat);
   static bool IsUsageSupported(unsigned usage);
+  static bool IsConfigurationSupported(unsigned internalformat, unsigned usage);
   static int WindowFormat(unsigned internalformat);
+
+  bool InitializeFromHandle(gfx::GpuMemoryBufferHandle handle);
 
   // Overridden from gfx::GpuMemoryBuffer:
   virtual void* Map() OVERRIDE;

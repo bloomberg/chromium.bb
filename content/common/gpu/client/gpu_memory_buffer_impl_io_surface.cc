@@ -11,7 +11,7 @@
 namespace content {
 
 GpuMemoryBufferImplIOSurface::GpuMemoryBufferImplIOSurface(
-    gfx::Size size,
+    const gfx::Size& size,
     unsigned internalformat)
     : GpuMemoryBufferImpl(size, internalformat),
       io_surface_support_(IOSurfaceSupport::Initialize()) {
@@ -41,6 +41,13 @@ bool GpuMemoryBufferImplIOSurface::IsUsageSupported(unsigned usage) {
 }
 
 // static
+bool GpuMemoryBufferImplIOSurface::IsConfigurationSupported(
+    unsigned internalformat,
+    unsigned usage) {
+  return IsFormatSupported(internalformat) && IsUsageSupported(usage);
+}
+
+// static
 uint32 GpuMemoryBufferImplIOSurface::PixelFormat(unsigned internalformat) {
   switch (internalformat) {
     case GL_BGRA8_EXT:
@@ -51,8 +58,9 @@ uint32 GpuMemoryBufferImplIOSurface::PixelFormat(unsigned internalformat) {
   }
 }
 
-bool GpuMemoryBufferImplIOSurface::Initialize(
+bool GpuMemoryBufferImplIOSurface::InitializeFromHandle(
     gfx::GpuMemoryBufferHandle handle) {
+  DCHECK(IsFormatSupported(internalformat_));
   io_surface_.reset(io_surface_support_->IOSurfaceLookup(handle.io_surface_id));
   if (!io_surface_) {
     VLOG(1) << "IOSurface lookup failed";

@@ -1167,7 +1167,7 @@ scoped_ptr<gfx::GpuMemoryBuffer> RenderThreadImpl::AllocateGpuMemoryBuffer(
   if (!success)
     return scoped_ptr<gfx::GpuMemoryBuffer>();
 
-  return GpuMemoryBufferImpl::Create(
+  return GpuMemoryBufferImpl::CreateFromHandle(
              handle, gfx::Size(width, height), internalformat)
       .PassAs<gfx::GpuMemoryBuffer>();
 }

@@ -11,7 +11,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/child_process_host_impl.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl_shm.h"
+#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -384,18 +384,9 @@ BrowserGpuChannelHostFactory::AllocateGpuMemoryBuffer(size_t width,
       !GpuMemoryBufferImpl::IsUsageValid(usage))
     return scoped_ptr<gfx::GpuMemoryBuffer>();
 
-  size_t size = width * height *
-      GpuMemoryBufferImpl::BytesPerPixel(internalformat);
-  scoped_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  if (!shm->CreateAnonymous(size))
-    return scoped_ptr<gfx::GpuMemoryBuffer>();
-
-  scoped_ptr<GpuMemoryBufferImplShm> buffer(
-      new GpuMemoryBufferImplShm(gfx::Size(width, height), internalformat));
-  if (!buffer->InitializeFromSharedMemory(shm.Pass()))
-    return scoped_ptr<gfx::GpuMemoryBuffer>();
-
-  return buffer.PassAs<gfx::GpuMemoryBuffer>();
+  return GpuMemoryBufferImpl::Create(gfx::Size(width, height),
+                                     internalformat,
+                                     usage).PassAs<gfx::GpuMemoryBuffer>();
 }
 
 // static
