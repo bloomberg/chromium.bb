@@ -59,7 +59,6 @@
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_scheduler_filter.h"
-#include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/message_port_message_filter.h"
@@ -149,6 +148,10 @@
 #include "ui/native_theme/native_theme_switches.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/resource_type.h"
+
+#if defined(OS_ANDROID)
+#include "content/browser/media/android/browser_demuxer_android.h"
+#endif
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
