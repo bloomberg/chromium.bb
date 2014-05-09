@@ -477,6 +477,10 @@ class TestRunner : public WebTestRunner,
   // Used to set the device scale factor.
   void SetBackingScaleFactor(double value, v8::Handle<v8::Function> callback);
 
+  // Change the device color profile while running a layout test.
+  void SetColorProfile(const std::string& name,
+                       v8::Handle<v8::Function> callback);
+
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.
   void SetPOSIXLocale(const std::string& locale);

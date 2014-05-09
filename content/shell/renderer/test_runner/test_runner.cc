@@ -228,6 +228,8 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetWindowIsKey(bool value);
   std::string PathToLocalResource(const std::string& path);
   void SetBackingScaleFactor(double value, v8::Handle<v8::Function> callback);
+  void SetColorProfile(const std::string& name,
+                       v8::Handle<v8::Function> callback);
   void SetPOSIXLocale(const std::string& locale);
   void SetMIDIAccessorResult(bool result);
   void SetMIDISysexPermission(bool value);
@@ -450,6 +452,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::PathToLocalResource)
       .SetMethod("setBackingScaleFactor",
                  &TestRunnerBindings::SetBackingScaleFactor)
+      .SetMethod("setColorProfile",
+                 &TestRunnerBindings::SetColorProfile)
       .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
       .SetMethod("setMIDIAccessorResult",
                  &TestRunnerBindings::SetMIDIAccessorResult)
@@ -1146,6 +1150,12 @@ void TestRunnerBindings::SetBackingScaleFactor(
     runner_->SetBackingScaleFactor(value, callback);
 }
 
+void TestRunnerBindings::SetColorProfile(
+    const std::string& name, v8::Handle<v8::Function> callback) {
+  if (runner_)
+    runner_->SetColorProfile(name, callback);
+}
+
 void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
   if (runner_)
     runner_->SetPOSIXLocale(locale);
@@ -1413,6 +1423,7 @@ void TestRunner::Reset() {
   if (delegate_) {
     // Reset the default quota for each origin to 5MB
     delegate_->setDatabaseQuota(5 * 1024 * 1024);
+    delegate_->setDeviceColorProfile("sRGB");
     delegate_->setDeviceScaleFactor(1);
     delegate_->setAcceptAllCookies(false);
     delegate_->setLocale("");
@@ -2493,6 +2504,12 @@ void TestRunner::SetBackingScaleFactor(double value,
                                        v8::Handle<v8::Function> callback) {
   delegate_->setDeviceScaleFactor(value);
   proxy_->discardBackingStore();
+  delegate_->postTask(new InvokeCallbackTask(this, callback));
+}
+
+void TestRunner::SetColorProfile(const std::string& name,
+                                 v8::Handle<v8::Function> callback) {
+  delegate_->setDeviceColorProfile(name);
   delegate_->postTask(new InvokeCallbackTask(this, callback));
 }
 

@@ -94,6 +94,7 @@ class WebKitTestRunner : public RenderViewObserver,
   virtual void clearAllDatabases() OVERRIDE;
   virtual void setDatabaseQuota(int quota) OVERRIDE;
   virtual void setDeviceScaleFactor(float factor) OVERRIDE;
+  virtual void setDeviceColorProfile(const std::string& name) OVERRIDE;
   virtual void setFocus(WebTestProxyBase* proxy, bool focus) OVERRIDE;
   virtual void setAcceptAllCookies(bool accept) OVERRIDE;
   virtual std::string pathToLocalResource(const std::string& resource) OVERRIDE;

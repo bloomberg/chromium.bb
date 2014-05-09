@@ -432,6 +432,10 @@ void WebKitTestRunner::setDeviceScaleFactor(float factor) {
   SetDeviceScaleFactor(render_view(), factor);
 }
 
+void WebKitTestRunner::setDeviceColorProfile(const std::string& name) {
+  SetDeviceColorProfile(render_view(), name);
+}
+
 void WebKitTestRunner::setFocus(WebTestProxyBase* proxy, bool focus) {
   ProxyToRenderViewVisitor visitor(proxy);
   RenderView::ForEach(&visitor);

@@ -4049,6 +4049,11 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   OnResize(params);
 }
 
+void RenderViewImpl::SetDeviceColorProfileForTesting(
+    const std::vector<char>& color_profile) {
+  // TODO(noel): Add RenderViewImpl::SetDeviceColorProfile(color_profile).
+}
+
 void RenderViewImpl::ForceResizeForTesting(const gfx::Size& new_size) {
   gfx::Rect new_position(rootWindowRect().x,
                          rootWindowRect().y,

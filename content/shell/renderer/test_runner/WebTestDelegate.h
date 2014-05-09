@@ -114,6 +114,9 @@ public:
     // Controls the device scale factor of the main WebView for hidpi tests.
     virtual void setDeviceScaleFactor(float) = 0;
 
+    // Change the device color profile while running a layout test.
+    virtual void setDeviceColorProfile(const std::string& name) = 0;
+
     // Controls which WebView should be focused.
     virtual void setFocus(WebTestProxyBase*, bool) = 0;
 
