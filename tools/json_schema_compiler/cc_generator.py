@@ -497,7 +497,9 @@ class _Generator(object):
         vardot = '(%s).' % var
       return '%sDeepCopy()' % vardot
     elif underlying_type.property_type == PropertyType.ENUM:
-      return 'new base::StringValue(ToString(%s))' % var
+      classname = cpp_util.Classname(schema_util.StripNamespace(
+          underlying_type.name))
+      return 'new base::StringValue(%sToString(%s))' % (classname, var)
     elif underlying_type.property_type == PropertyType.BINARY:
       if is_ptr:
         vardot = var + '->'
@@ -886,8 +888,8 @@ class _Generator(object):
       c.Append('// static')
     maybe_namespace = '' if cpp_namespace is None else '%s::' % cpp_namespace
 
-    c.Sblock('std::string %sToString(%s enum_param) {' %
-                 (maybe_namespace, classname))
+    c.Sblock('std::string %s%sToString(%s enum_param) {' %
+                 (maybe_namespace, classname, classname))
     c.Sblock('switch (enum_param) {')
     for enum_value in self._type_helper.FollowRef(type_).enum_values:
       (c.Append('case %s: ' % self._type_helper.GetEnumValue(type_, enum_value))
@@ -899,6 +901,12 @@ class _Generator(object):
       .Append('return "";')
       .Eblock('}')
     )
+
+    (c.Append()
+      .Sblock('std::string %sToString(%s enum_param) {' %
+                  (maybe_namespace, classname))
+      .Append('return %s%sToString(enum_param);' % (maybe_namespace, classname))
+      .Eblock('}'))
     return c
 
   def _GenerateEnumFromString(self, cpp_namespace, type_):

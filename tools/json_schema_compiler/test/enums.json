@@ -32,6 +32,19 @@
         }
       },
       {
+        "id": "InlineAndReferenceEnum",
+        "type": "object",
+        "properties": {
+          "inline_enum": {
+            "type": "string",
+            "enum": ["test1", "test2", "test3"]
+          },
+          "reference_enum": {
+            "$ref": "Enumeration"
+          }
+        }
+      },
+      {
         "id": "OptionalEnumType",
         "type": "object",
         "properties": {

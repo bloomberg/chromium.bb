@@ -53,6 +53,18 @@ TEST(JsonSchemaCompilerEnumsTest, EnumsAsTypes) {
     ASSERT_TRUE(HasEnumeration::Populate(value, &enumeration));
     EXPECT_TRUE(value.Equals(enumeration.ToValue().get()));
   }
+  {
+    InlineAndReferenceEnum enumeration;
+    base::DictionaryValue value;
+    ASSERT_FALSE(InlineAndReferenceEnum::Populate(value, &enumeration));
+
+    value.Set("inline_enum", base::Value::CreateStringValue("test2"));
+    ASSERT_FALSE(InlineAndReferenceEnum::Populate(value, &enumeration));
+
+    value.Set("reference_enum", base::Value::CreateStringValue("one"));
+    ASSERT_TRUE(InlineAndReferenceEnum::Populate(value, &enumeration));
+    EXPECT_TRUE(value.Equals(enumeration.ToValue().get()));
+  }
 }
 
 TEST(JsonSchemaCompilerEnumsTest, EnumsArrayAsType) {
