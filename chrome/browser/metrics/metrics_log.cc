@@ -407,7 +407,7 @@ MetricsLog::MetricsLog(const std::string& client_id,
       creation_time_(base::TimeTicks::Now()),
       extension_metrics_(uma_proto()->client_id()) {
   uma_proto()->mutable_system_profile()->set_channel(
-      AsProtobufChannel(chrome::VersionInfo::CHANNEL_STABLE));
+      AsProtobufChannel(chrome::VersionInfo::GetChannel()));
 
 #if defined(OS_CHROMEOS)
   metrics_log_chromeos_.reset(new MetricsLogChromeOS(uma_proto()));
