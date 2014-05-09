@@ -254,8 +254,11 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
     const gfx::Size& visible_viewport_size,
     gfx::Rect resizer_rect,
     bool is_fullscreen) {
-  applied_widget_rect_.set_size(params_.viewSize.isEmpty() ?
-      original_size_ : gfx::Size(params_.viewSize));
+  applied_widget_rect_.set_size(gfx::Size(params_.viewSize));
+  if (!applied_widget_rect_.width())
+    applied_widget_rect_.set_width(original_size_.width());
+  if (!applied_widget_rect_.height())
+    applied_widget_rect_.set_height(original_size_.height());
 
   if (params_.fitToView) {
     DCHECK(!original_size_.IsEmpty());
