@@ -1384,10 +1384,6 @@
       <arg name="hotspot_y" type="int" summary="y coordinate in surface-relative coordinates"/>
     </request>
 
-    <request name="release" type="destructor" since="3">
-      <description summary="release the pointer object"/>
-    </request>
-
     <event name="enter">
       <description summary="enter event">
 	Notification that this seat's pointer is focused on a certain
@@ -1485,6 +1481,13 @@
       <arg name="axis" type="uint"/>
       <arg name="value" type="fixed"/>
     </event>
+
+    <!-- Version 3 additions -->
+
+    <request name="release" type="destructor" since="3">
+      <description summary="release the pointer object"/>
+    </request>
+
   </interface>
 
   <interface name="wl_keyboard" version="3">
@@ -1492,10 +1495,6 @@
       The wl_keyboard interface represents one or more keyboards
       associated with a seat.
     </description>
-
-    <request name="release" type="destructor" since="3">
-      <description summary="release the keyboard object"/>
-    </request>
 
     <enum name="keymap_format">
       <description summary="keyboard mapping format">
@@ -1573,6 +1572,12 @@
       <arg name="mods_locked" type="uint"/>
       <arg name="group" type="uint"/>
     </event>
+
+    <!-- Version 3 additions -->
+
+    <request name="release" type="destructor" since="3">
+      <description summary="release the keyboard object"/>
+    </request>
   </interface>
 
   <interface name="wl_touch" version="3">
@@ -1586,10 +1591,6 @@
       and ending with an up event. Events relating to the same
       contact point can be identified by the ID of the sequence.
     </description>
-
-    <request name="release" type="destructor" since="3">
-      <description summary="release the touch object"/>
-    </request>
 
     <event name="down">
       <description summary="touch down event and beginning of a touch sequence">
@@ -1643,6 +1644,12 @@
 	this surface may re-use the touch point ID.
       </description>
     </event>
+
+    <!-- Version 3 additions -->
+
+    <request name="release" type="destructor" since="3">
+      <description summary="release the touch object"/>
+    </request>
   </interface>
 
   <interface name="wl_output" version="2">
