@@ -1144,6 +1144,11 @@ cr.define('login', function() {
       this.passwordElement.hidden = !isLockedUser;
       this.nameElement.hidden = isLockedUser;
 
+      if (this.isAuthTypeUserClick) {
+        this.passwordLabelElement.textContent = this.authValue;
+        this.customButtonElement.tabIndex = -1;
+      }
+
       UserPod.prototype.updateActionBoxArea.call(this);
     },
 
@@ -1198,6 +1203,9 @@ cr.define('login', function() {
       // just activate the pod and show the password field.
       if (!this.user.needsSignin && !this.isActionBoxMenuActive)
         this.activate(e);
+
+      if (this.isAuthTypeUserClick)
+        chrome.send('attemptUnlock', [this.user.emailAddress]);
     },
 
     /** @override */

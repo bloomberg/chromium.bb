@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace content {
@@ -44,7 +45,8 @@ class WebUIScreenLockerTester;
 // ScreenLocker creates a ScreenLockerDelegate which will display the lock UI.
 // As well, it takes care of authenticating the user and managing a global
 // instance of itself which will be deleted when the system is unlocked.
-class ScreenLocker : public LoginStatusConsumer {
+class ScreenLocker : public LoginStatusConsumer,
+                     public ScreenlockBridge::LockHandler {
  public:
   explicit ScreenLocker(const UserList& users);
 
@@ -58,7 +60,7 @@ class ScreenLocker : public LoginStatusConsumer {
   // Initialize and show the screen locker.
   void Init();
 
-  // LoginStatusConsumer implements:
+  // LoginStatusConsumer:
   virtual void OnLoginFailure(const chromeos::LoginFailure& error) OVERRIDE;
   virtual void OnLoginSuccess(const UserContext& user_context) OVERRIDE;
 
@@ -72,30 +74,22 @@ class ScreenLocker : public LoginStatusConsumer {
   // Close message bubble to clear error messages.
   void ClearErrors();
 
-  // (Re)enable input field.
-  void EnableInput();
-
   // Exit the chrome, which will sign out the current session.
   void Signout();
 
-  // Displays |message| in a banner on the lock screen.
-  void ShowBannerMessage(const std::string& message);
-
-  // Shows a button inside the user pod on the lock screen with an icon.
-  void ShowUserPodButton(const std::string& username,
-                         const gfx::Image& icon,
-                         const base::Closure& click_callback);
-
-  // Hides the user pod button for a user.
-  void HideUserPodButton(const std::string& username);
-
-  // Set the authentication type to be used on the lock screen.
-  void SetAuthType(const std::string& username,
-                   LoginDisplay::AuthType auth_type,
-                   const std::string& initial_value);
-
-  // Returns the authentication type used for |username|.
-  LoginDisplay::AuthType GetAuthType(const std::string& username) const;
+  // ScreenlockBridge::LockHandler:
+  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
+  virtual void ShowUserPodButton(const std::string& username,
+                                 const gfx::Image& icon,
+                                 const base::Closure& click_callback) OVERRIDE;
+  virtual void HideUserPodButton(const std::string& username) OVERRIDE;
+  virtual void EnableInput() OVERRIDE;
+  virtual void SetAuthType(const std::string& username,
+                           ScreenlockBridge::LockHandler::AuthType auth_type,
+                           const std::string& initial_value) OVERRIDE;
+  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
+      const std::string& username) const OVERRIDE;
+  virtual void Unlock(const std::string& user_email) OVERRIDE;
 
   // Disables all UI needed and shows error bubble with |message|.
   // If |sign_out_only| is true then all other input except "Sign Out"

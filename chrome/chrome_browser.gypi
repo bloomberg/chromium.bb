@@ -2052,6 +2052,8 @@
         'browser/signin/profile_oauth2_token_service_factory.h',
         'browser/signin/profile_oauth2_token_service_request.cc',
         'browser/signin/profile_oauth2_token_service_request.h',
+        'browser/signin/screenlock_bridge.cc',
+        'browser/signin/screenlock_bridge.h',
         'browser/signin/signin_error_notifier_ash.cc',
         'browser/signin/signin_error_notifier_ash.h',
         'browser/signin/signin_error_notifier_factory_ash.cc',

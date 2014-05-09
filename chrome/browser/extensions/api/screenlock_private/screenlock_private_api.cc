@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/screenlock_private_api.h"
+#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/extensions/image_loader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
 #include "ui/gfx/image/image.h"
 
 namespace screenlock = extensions::api::screenlock_private;
@@ -22,37 +20,37 @@ namespace {
 
 const char kNotLockedError[] = "Screen is not currently locked.";
 
-chromeos::LoginDisplay::AuthType ToLoginDisplayAuthType(
+ScreenlockBridge::LockHandler::AuthType ToLockHandlerAuthType(
     screenlock::AuthType auth_type) {
   switch (auth_type) {
     case screenlock::AUTH_TYPE_OFFLINEPASSWORD:
-      return chromeos::LoginDisplay::OFFLINE_PASSWORD;
+      return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
     case screenlock::AUTH_TYPE_NUMERICPIN:
-      return chromeos::LoginDisplay::NUMERIC_PIN;
+      return ScreenlockBridge::LockHandler::NUMERIC_PIN;
     case screenlock::AUTH_TYPE_USERCLICK:
-      return chromeos::LoginDisplay::USER_CLICK;
-    default:
-      NOTREACHED();
-      return chromeos::LoginDisplay::OFFLINE_PASSWORD;
+      return ScreenlockBridge::LockHandler::USER_CLICK;
+    case screenlock::AUTH_TYPE_NONE:
+      break;
   }
+  NOTREACHED();
+  return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
 }
 
-screenlock::AuthType ToScreenlockPrivateAuthType(
-    chromeos::LoginDisplay::AuthType auth_type) {
+screenlock::AuthType FromLockHandlerAuthType(
+    ScreenlockBridge::LockHandler::AuthType auth_type) {
   switch (auth_type) {
-    case chromeos::LoginDisplay::OFFLINE_PASSWORD:
+    case ScreenlockBridge::LockHandler::OFFLINE_PASSWORD:
       return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
-    case chromeos::LoginDisplay::NUMERIC_PIN:
+    case ScreenlockBridge::LockHandler::NUMERIC_PIN:
       return screenlock::AUTH_TYPE_NUMERICPIN;
-    case chromeos::LoginDisplay::USER_CLICK:
+    case ScreenlockBridge::LockHandler::USER_CLICK:
       return screenlock::AUTH_TYPE_USERCLICK;
-    case chromeos::LoginDisplay::ONLINE_SIGN_IN:
+    case ScreenlockBridge::LockHandler::ONLINE_SIGN_IN:
       // Apps should treat forced online sign in same as system password.
       return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
-    default:
-      NOTREACHED();
-      return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
   }
+  NOTREACHED();
+  return screenlock::AUTH_TYPE_OFFLINEPASSWORD;
 }
 
 }  // namespace
@@ -62,12 +60,7 @@ ScreenlockPrivateGetLockedFunction::ScreenlockPrivateGetLockedFunction() {}
 ScreenlockPrivateGetLockedFunction::~ScreenlockPrivateGetLockedFunction() {}
 
 bool ScreenlockPrivateGetLockedFunction::RunAsync() {
-  bool locked = false;
-  chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
-  if (locker)
-    locked = locker->locked();
-  SetResult(new base::FundamentalValue(locked));
+  SetResult(new base::FundamentalValue(ScreenlockBridge::Get()->IsLocked()));
   SendResponse(error_.empty());
   return true;
 }
@@ -80,16 +73,10 @@ bool ScreenlockPrivateSetLockedFunction::RunAsync() {
   scoped_ptr<screenlock::SetLocked::Params> params(
       screenlock::SetLocked::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  if (params->locked) {
-    chromeos::SessionManagerClient* session_manager =
-        chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-    session_manager->RequestLockScreen();
-  } else {
-    chromeos::ScreenLocker* locker =
-        chromeos::ScreenLocker::default_screen_locker();
-    if (locker)
-      chromeos::ScreenLocker::Hide();
-  }
+  if (params->locked)
+    ScreenlockBridge::Get()->Lock(GetProfile());
+  else
+    ScreenlockBridge::Get()->Unlock(GetProfile());
   SendResponse(error_.empty());
   return true;
 }
@@ -102,8 +89,8 @@ bool ScreenlockPrivateShowMessageFunction::RunAsync() {
   scoped_ptr<screenlock::ShowMessage::Params> params(
       screenlock::ShowMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
+  ScreenlockBridge::LockHandler* locker =
+      ScreenlockBridge::Get()->lock_handler();
   if (locker)
     locker->ShowBannerMessage(params->message);
   SendResponse(error_.empty());
@@ -122,8 +109,8 @@ bool ScreenlockPrivateShowButtonFunction::RunAsync() {
   scoped_ptr<screenlock::ShowButton::Params> params(
       screenlock::ShowButton::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
-  chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
+  ScreenlockBridge::LockHandler* locker =
+      ScreenlockBridge::Get()->lock_handler();
   if (!locker) {
     SetError(kNotLockedError);
     SendResponse(false);
@@ -139,14 +126,12 @@ bool ScreenlockPrivateShowButtonFunction::RunAsync() {
 
 void ScreenlockPrivateShowButtonFunction::OnImageLoaded(
     const gfx::Image& image) {
-  chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
+  ScreenlockBridge::LockHandler* locker =
+      ScreenlockBridge::Get()->lock_handler();
   ScreenlockPrivateEventRouter* router =
       ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(GetProfile());
-  const chromeos::User* user =
-      chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
   locker->ShowUserPodButton(
-      user->email(),
+      ScreenlockBridge::GetAuthenticatedUserEmail(GetProfile()),
       image,
       base::Bind(&ScreenlockPrivateEventRouter::OnButtonClicked,
                  base::Unretained(router)));
@@ -158,12 +143,11 @@ ScreenlockPrivateHideButtonFunction::ScreenlockPrivateHideButtonFunction() {}
 ScreenlockPrivateHideButtonFunction::~ScreenlockPrivateHideButtonFunction() {}
 
 bool ScreenlockPrivateHideButtonFunction::RunAsync() {
-  chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
+  ScreenlockBridge::LockHandler* locker =
+      ScreenlockBridge::Get()->lock_handler();
   if (locker) {
-    const chromeos::User* user =
-        chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
-    locker->HideUserPodButton(user->email());
+    locker->HideUserPodButton(
+        ScreenlockBridge::GetAuthenticatedUserEmail(GetProfile()));
   } else {
     SetError(kNotLockedError);
   }
@@ -180,16 +164,15 @@ bool ScreenlockPrivateSetAuthTypeFunction::RunAsync() {
       screenlock::SetAuthType::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
+  ScreenlockBridge::LockHandler* locker =
+      ScreenlockBridge::Get()->lock_handler();
   if (locker) {
     std::string initial_value =
         params->initial_value.get() ? *(params->initial_value.get()) : "";
-    const chromeos::User* user =
-        chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
-    locker->SetAuthType(user->email(),
-                        ToLoginDisplayAuthType(params->auth_type),
-                        initial_value);
+    locker->SetAuthType(
+        ScreenlockBridge::GetAuthenticatedUserEmail(GetProfile()),
+        ToLockHandlerAuthType(params->auth_type),
+        initial_value);
   } else {
     SetError(kNotLockedError);
   }
@@ -202,15 +185,13 @@ ScreenlockPrivateGetAuthTypeFunction::ScreenlockPrivateGetAuthTypeFunction() {}
 ScreenlockPrivateGetAuthTypeFunction::~ScreenlockPrivateGetAuthTypeFunction() {}
 
 bool ScreenlockPrivateGetAuthTypeFunction::RunAsync() {
-  chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
+  ScreenlockBridge::LockHandler* locker =
+      ScreenlockBridge::Get()->lock_handler();
   if (locker) {
-    const chromeos::User* user =
-        chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
-    chromeos::LoginDisplay::AuthType auth_type =
-        locker->GetAuthType(user->email());
+    ScreenlockBridge::LockHandler::AuthType auth_type = locker->GetAuthType(
+        ScreenlockBridge::GetAuthenticatedUserEmail(GetProfile()));
     std::string auth_type_name =
-        screenlock::ToString(ToScreenlockPrivateAuthType(auth_type));
+        screenlock::ToString(FromLockHandlerAuthType(auth_type));
     SetResult(new base::StringValue(auth_type_name));
   } else {
     SetError(kNotLockedError);
@@ -230,13 +211,14 @@ bool ScreenlockPrivateAcceptAuthAttemptFunction::RunAsync() {
       screenlock::AcceptAuthAttempt::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  chromeos::ScreenLocker* locker =
-      chromeos::ScreenLocker::default_screen_locker();
+  ScreenlockBridge::LockHandler* locker =
+      ScreenlockBridge::Get()->lock_handler();
   if (locker) {
-    if (params->accept)
-      chromeos::ScreenLocker::Hide();
-    else
+    if (params->accept) {
+      locker->Unlock(ScreenlockBridge::GetAuthenticatedUserEmail(GetProfile()));
+    } else {
       locker->EnableInput();
+    }
   } else {
     SetError(kNotLockedError);
   }
@@ -247,20 +229,17 @@ bool ScreenlockPrivateAcceptAuthAttemptFunction::RunAsync() {
 ScreenlockPrivateEventRouter::ScreenlockPrivateEventRouter(
     content::BrowserContext* context)
     : browser_context_(context) {
-  chromeos::SessionManagerClient* session_manager =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  if (!session_manager->HasObserver(this))
-    session_manager->AddObserver(this);
+  ScreenlockBridge::Get()->AddObserver(this);
 }
 
 ScreenlockPrivateEventRouter::~ScreenlockPrivateEventRouter() {}
 
-void ScreenlockPrivateEventRouter::ScreenIsLocked() {
+void ScreenlockPrivateEventRouter::OnScreenDidLock() {
   DispatchEvent(screenlock::OnChanged::kEventName,
       new base::FundamentalValue(true));
 }
 
-void ScreenlockPrivateEventRouter::ScreenIsUnlocked() {
+void ScreenlockPrivateEventRouter::OnScreenDidUnlock() {
   DispatchEvent(screenlock::OnChanged::kEventName,
       new base::FundamentalValue(false));
 }
@@ -286,10 +265,7 @@ ScreenlockPrivateEventRouter::GetFactoryInstance() {
 }
 
 void ScreenlockPrivateEventRouter::Shutdown() {
-  chromeos::SessionManagerClient* session_manager =
-      chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
-  if (session_manager->HasObserver(this))
-    session_manager->RemoveObserver(this);
+  ScreenlockBridge::Get()->RemoveObserver(this);
 }
 
 void ScreenlockPrivateEventRouter::OnButtonClicked() {
@@ -297,11 +273,10 @@ void ScreenlockPrivateEventRouter::OnButtonClicked() {
 }
 
 void ScreenlockPrivateEventRouter::OnAuthAttempted(
-    chromeos::LoginDisplay::AuthType auth_type,
+    ScreenlockBridge::LockHandler::AuthType auth_type,
     const std::string& value) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->AppendString(
-      screenlock::ToString(ToScreenlockPrivateAuthType(auth_type)));
+  args->AppendString(screenlock::ToString(FromLockHandlerAuthType(auth_type)));
   args->AppendString(value);
 
   scoped_ptr<extensions::Event> event(new extensions::Event(

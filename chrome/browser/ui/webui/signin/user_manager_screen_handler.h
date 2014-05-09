@@ -5,9 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_MANAGER_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_USER_MANAGER_SCREEN_HANDLER_H_
 
+#include <map>
+
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
@@ -21,6 +25,7 @@ class ListValue;
 }
 
 class UserManagerScreenHandler : public content::WebUIMessageHandler,
+                                 public ScreenlockBridge::LockHandler,
                                  public GaiaAuthConsumer {
  public:
   UserManagerScreenHandler();
@@ -30,6 +35,20 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   void GetLocalizedValues(base::DictionaryValue* localized_strings);
+
+  // ScreenlockBridge::LockHandler implementation.
+  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
+  virtual void ShowUserPodButton(const std::string& user_email,
+                                 const gfx::Image& icon,
+                                 const base::Closure& callback) OVERRIDE;
+  virtual void HideUserPodButton(const std::string& user_email) OVERRIDE;
+  virtual void EnableInput() OVERRIDE;
+  virtual void SetAuthType(const std::string& user_email,
+                           ScreenlockBridge::LockHandler::AuthType auth_type,
+                           const std::string& auth_value) OVERRIDE;
+  virtual ScreenlockBridge::LockHandler::AuthType GetAuthType(
+      const std::string& user_email) const OVERRIDE;
+  virtual void Unlock(const std::string& user_email) OVERRIDE;
 
  private:
   // An observer for any changes to Profiles in the ProfileInfoCache so that
@@ -42,6 +61,8 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
   void HandleLaunchGuest(const base::ListValue* args);
   void HandleLaunchUser(const base::ListValue* args);
   void HandleRemoveUser(const base::ListValue* args);
+  void HandleCustomButtonClicked(const base::ListValue* args);
+  void HandleAttemptUnlock(const base::ListValue* args);
 
   // Handle GAIA auth results.
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
@@ -70,6 +91,10 @@ class UserManagerScreenHandler : public content::WebUIMessageHandler,
 
   // Login password, held during on-line auth for saving later if correct.
   std::string password_attempt_;
+
+  typedef std::map<std::string, ScreenlockBridge::LockHandler::AuthType>
+      UserAuthTypeMap;
+  UserAuthTypeMap user_auth_type_map_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerScreenHandler);
 };

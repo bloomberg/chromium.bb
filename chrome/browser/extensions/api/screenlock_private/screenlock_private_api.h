@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_SCREENLOCK_PRIVATE_API_H_
-#define CHROME_BROWSER_CHROMEOS_EXTENSIONS_SCREENLOCK_PRIVATE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_API_SCREENLOCK_PRIVATE_SCREENLOCK_PRIVATE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_API_SCREENLOCK_PRIVATE_SCREENLOCK_PRIVATE_API_H_
 
-#include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chromeos/dbus/session_manager_client.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
 namespace gfx {
@@ -120,16 +119,15 @@ class ScreenlockPrivateAcceptAuthAttemptFunction
   DISALLOW_COPY_AND_ASSIGN(ScreenlockPrivateAcceptAuthAttemptFunction);
 };
 
-class ScreenlockPrivateEventRouter
-    : public extensions::BrowserContextKeyedAPI,
-      public chromeos::SessionManagerClient::Observer {
+class ScreenlockPrivateEventRouter : public extensions::BrowserContextKeyedAPI,
+                                     public ScreenlockBridge::Observer {
  public:
   explicit ScreenlockPrivateEventRouter(content::BrowserContext* context);
   virtual ~ScreenlockPrivateEventRouter();
 
   void OnButtonClicked();
 
-  void OnAuthAttempted(chromeos::LoginDisplay::AuthType auth_type,
+  void OnAuthAttempted(ScreenlockBridge::LockHandler::AuthType auth_type,
                        const std::string& value);
 
   // BrowserContextKeyedAPI
@@ -138,9 +136,9 @@ class ScreenlockPrivateEventRouter
       GetFactoryInstance();
   virtual void Shutdown() OVERRIDE;
 
-  // chromeos::SessionManagerClient::Observer
-  virtual void ScreenIsLocked() OVERRIDE;
-  virtual void ScreenIsUnlocked() OVERRIDE;
+  // ScreenlockBridge::Observer
+  virtual void OnScreenDidLock() OVERRIDE;
+  virtual void OnScreenDidUnlock() OVERRIDE;
 
  private:
   friend class extensions::BrowserContextKeyedAPIFactory<
@@ -161,4 +159,4 @@ class ScreenlockPrivateEventRouter
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_SCREENLOCK_PRIVATE_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_API_SCREENLOCK_PRIVATE_SCREENLOCK_PRIVATE_API_H_

@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/webui/signin/user_manager_screen_handler.h"
 
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/screenlock_private/screenlock_private_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -59,6 +61,8 @@ const char kJsApiUserManagerAuthLaunchUser[] = "authenticatedLaunchUser";
 const char kJsApiUserManagerLaunchGuest[] = "launchGuest";
 const char kJsApiUserManagerLaunchUser[] = "launchUser";
 const char kJsApiUserManagerRemoveUser[] = "removeUser";
+const char kJsApiUserManagerCustomButtonClicked[] = "customButtonClicked";
+const char kJsApiUserManagerAttemptUnlock[] = "attemptUnlock";
 
 const size_t kAvatarIconSize = 180;
 
@@ -118,11 +122,23 @@ size_t GetIndexOfProfileWithEmailAndName(const ProfileInfoCache& info_cache,
                                          const base::string16& name) {
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
     if (info_cache.GetUserNameOfProfileAtIndex(i) == email &&
-        info_cache.GetNameOfProfileAtIndex(i) == name) {
+        (name.empty() || info_cache.GetNameOfProfileAtIndex(i) == name)) {
       return i;
     }
   }
   return std::string::npos;
+}
+
+extensions::ScreenlockPrivateEventRouter* GetScreenlockRouter(
+    const std::string& email) {
+  ProfileInfoCache& info_cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  const size_t profile_index = GetIndexOfProfileWithEmailAndName(
+      info_cache, base::UTF8ToUTF16(email), base::string16());
+  Profile* profile = g_browser_process->profile_manager()
+      ->GetProfileByPath(info_cache.GetPathOfProfileAtIndex(profile_index));
+  return extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
+      profile);
 }
 
 } // namespace
@@ -195,6 +211,66 @@ UserManagerScreenHandler::UserManagerScreenHandler()
 }
 
 UserManagerScreenHandler::~UserManagerScreenHandler() {
+  ScreenlockBridge::Get()->SetLockHandler(NULL);
+}
+
+void UserManagerScreenHandler::ShowBannerMessage(const std::string& message) {
+  web_ui()->CallJavascriptFunction(
+      "login.AccountPickerScreen.showBannerMessage",
+      base::StringValue(message));
+}
+
+void UserManagerScreenHandler::ShowUserPodButton(
+    const std::string& user_email,
+    const gfx::Image& icon,
+    const base::Closure& callback) {
+  GURL icon_url(webui::GetBitmapDataUrl(icon.AsBitmap()));
+  web_ui()->CallJavascriptFunction(
+      "login.AccountPickerScreen.showUserPodButton",
+      base::StringValue(user_email),
+      base::StringValue(icon_url.spec()));
+}
+
+void UserManagerScreenHandler::HideUserPodButton(
+    const std::string& user_email) {
+  web_ui()->CallJavascriptFunction(
+      "login.AccountPickerScreen.hideUserPodButton",
+      base::StringValue(user_email));
+}
+
+void UserManagerScreenHandler::EnableInput() {
+  // Nothing here because UI is not disabled when starting to authenticate.
+}
+
+void UserManagerScreenHandler::SetAuthType(
+    const std::string& user_email,
+    ScreenlockBridge::LockHandler::AuthType auth_type,
+    const std::string& auth_value) {
+  user_auth_type_map_[user_email] = auth_type;
+  web_ui()->CallJavascriptFunction(
+      "login.AccountPickerScreen.setAuthType",
+      base::StringValue(user_email),
+      base::FundamentalValue(auth_type),
+      base::StringValue(auth_value));
+}
+
+ScreenlockBridge::LockHandler::AuthType UserManagerScreenHandler::GetAuthType(
+      const std::string& user_email) const {
+  UserAuthTypeMap::const_iterator it = user_auth_type_map_.find(user_email);
+  if (it == user_auth_type_map_.end())
+    return ScreenlockBridge::LockHandler::OFFLINE_PASSWORD;
+  return it->second;
+}
+
+void UserManagerScreenHandler::Unlock(const std::string& user_email) {
+  ProfileInfoCache& info_cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  const size_t profile_index = GetIndexOfProfileWithEmailAndName(
+      info_cache, base::UTF8ToUTF16(user_email), base::string16());
+  DCHECK_LT(profile_index, info_cache.GetNumberOfProfiles());
+
+  authenticating_profile_index_ = profile_index;
+  ReportAuthenticationResult(true, ProfileMetrics::AUTH_LOCAL);
 }
 
 void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
@@ -202,6 +278,8 @@ void UserManagerScreenHandler::HandleInitialize(const base::ListValue* args) {
   web_ui()->CallJavascriptFunction("cr.ui.Oobe.showUserManagerScreen");
   desktop_type_ = chrome::GetHostDesktopTypeForNativeView(
       web_ui()->GetWebContents()->GetNativeView());
+
+  ScreenlockBridge::Get()->SetLockHandler(this);
 }
 
 void UserManagerScreenHandler::HandleAddUser(const base::ListValue* args) {
@@ -325,6 +403,18 @@ void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
                             ProfileMetrics::SWITCH_PROFILE_MANAGER);
 }
 
+void UserManagerScreenHandler::HandleCustomButtonClicked(
+    const base::ListValue* args) {
+  // TODO(xiyuan): Remove this. Deprecated now.
+}
+
+void UserManagerScreenHandler::HandleAttemptUnlock(
+    const base::ListValue* args) {
+  std::string email;
+  CHECK(args->GetString(0, &email));
+  GetScreenlockRouter(email)->OnAuthAttempted(GetAuthType(email), "");
+}
+
 void UserManagerScreenHandler::OnClientLoginSuccess(
     const ClientLoginResult& result) {
   chrome::SetLocalAuthCredentials(authenticating_profile_index_,
@@ -366,6 +456,12 @@ void UserManagerScreenHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kJsApiUserManagerRemoveUser,
       base::Bind(&UserManagerScreenHandler::HandleRemoveUser,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerCustomButtonClicked,
+      base::Bind(&UserManagerScreenHandler::HandleCustomButtonClicked,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kJsApiUserManagerAttemptUnlock,
+      base::Bind(&UserManagerScreenHandler::HandleAttemptUnlock,
                  base::Unretained(this)));
 
   const content::WebUI::MessageCallback& kDoNothingCallback =
@@ -485,6 +581,8 @@ void UserManagerScreenHandler::SendUserList() {
       web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
   const ProfileInfoCache& info_cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
+
+  user_auth_type_map_.clear();
 
   // If the active user is a managed user, then they may not perform
   // certain actions (i.e. delete another user).

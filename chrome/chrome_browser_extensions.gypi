@@ -475,6 +475,8 @@
         'browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h',
         'browser/extensions/api/reading_list_private/reading_list_private_api.cc',
         'browser/extensions/api/reading_list_private/reading_list_private_api.h',
+        'browser/extensions/api/screenlock_private/screenlock_private_api.cc',
+        'browser/extensions/api/screenlock_private/screenlock_private_api.h',
         'browser/extensions/api/serial/serial_api.cc',
         'browser/extensions/api/serial/serial_api.h',
         'browser/extensions/api/serial/serial_connection.cc',
