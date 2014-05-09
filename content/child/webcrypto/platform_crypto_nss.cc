@@ -560,13 +560,16 @@ Status DoUnwrapSymKeyAesKw(const CryptoData& wrapped_key_data,
   PORT_SetError(0);
 #endif
 
-  crypto::ScopedPK11SymKey new_key(PK11_UnwrapSymKey(wrapping_key->key(),
-                                                     CKM_NSS_AES_KEY_WRAP,
-                                                     param_item.get(),
-                                                     &cipher_text,
-                                                     mechanism,
-                                                     flags,
-                                                     plaintext_length));
+  crypto::ScopedPK11SymKey new_key(
+      PK11_UnwrapSymKeyWithFlags(wrapping_key->key(),
+                                 CKM_NSS_AES_KEY_WRAP,
+                                 param_item.get(),
+                                 &cipher_text,
+                                 mechanism,
+                                 CKA_FLAGS_ONLY,
+                                 plaintext_length,
+                                 flags));
+
   // TODO(padolph): Use NSS PORT_GetError() and friends to report a more
   // accurate error, providing if doesn't leak any information to web pages
   // about other web crypto users, key details, etc.
@@ -1575,7 +1578,7 @@ Status DecryptAesKw(SymKey* wrapping_key,
   // temporarily viewed as a symmetric key to be unwrapped (decrypted).
   crypto::ScopedPK11SymKey decrypted;
   Status status = DoUnwrapSymKeyAesKw(
-      data, wrapping_key, CKK_GENERIC_SECRET, CKA_ENCRYPT, &decrypted);
+      data, wrapping_key, CKK_GENERIC_SECRET, 0, &decrypted);
   if (status.IsError())
     return status;
 
