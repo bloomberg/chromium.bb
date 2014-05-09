@@ -48,7 +48,12 @@
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/libosmesa.so',
           '<(PRODUCT_DIR)/locales/fr.pak',
+          '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
+        ],
+        'isolate_dependency_touched': [
+          '<(PRODUCT_DIR)/libppGoogleNaClPluginChrome.so',
         ],
       },
     }],
@@ -79,6 +84,7 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/exif.so',
           '<(PRODUCT_DIR)/ffmpegsumo.so',
+          '<(PRODUCT_DIR)/osmesa.so',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
@@ -107,6 +113,7 @@
           '<(PRODUCT_DIR)/chrome_elf.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/libexif.dll',
+          '<(PRODUCT_DIR)/osmesa.dll',
         ],
         'isolate_dependency_untracked': [
           '../ppapi/lib/gl/include/KHR/',

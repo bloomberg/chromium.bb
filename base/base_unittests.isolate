@@ -45,6 +45,12 @@
         ],
       },
     }],
+    ['OS=="win"', {
+      'variables': {
+        'isolate_dependency_tracked': [
+        ],
+      },
+    }],
   ],
   'includes': [
     'base.isolate',
