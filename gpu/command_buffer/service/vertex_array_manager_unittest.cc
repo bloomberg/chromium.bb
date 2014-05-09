@@ -58,7 +58,7 @@ TEST_F(VertexArrayManagerTest, Basic) {
 
   // Check we can create
   manager_->CreateVertexAttribManager(
-      kClient1Id, kService1Id, kNumVertexAttribs);
+      kClient1Id, kService1Id, kNumVertexAttribs, true);
   // Check creation success
   VertexAttribManager* info1 = manager_->GetVertexAttribManager(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
@@ -84,7 +84,8 @@ TEST_F(VertexArrayManagerTest, Destroy) {
   const GLuint kService1Id = 11;
   VertexArrayManager manager;
   // Check we can create
-  manager.CreateVertexAttribManager(kClient1Id, kService1Id, kNumVertexAttribs);
+  manager.CreateVertexAttribManager(
+      kClient1Id, kService1Id, kNumVertexAttribs, true);
   // Check creation success
   VertexAttribManager* info1 = manager.GetVertexAttribManager(kClient1Id);
   ASSERT_TRUE(info1 != NULL);
