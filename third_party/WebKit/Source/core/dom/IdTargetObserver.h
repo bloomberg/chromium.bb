@@ -26,15 +26,17 @@
 #ifndef IdTargetObserver_h
 #define IdTargetObserver_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
 class IdTargetObserverRegistry;
 
-class IdTargetObserver {
+class IdTargetObserver : public NoBaseWillBeGarbageCollectedFinalized<IdTargetObserver> {
 public:
     virtual ~IdTargetObserver();
+    virtual void trace(Visitor*);
     virtual void idTargetChanged() = 0;
     virtual void unregister();
 
@@ -42,7 +44,9 @@ protected:
     IdTargetObserver(IdTargetObserverRegistry&, const AtomicString& id);
 
 private:
-    IdTargetObserverRegistry& m_registry;
+    IdTargetObserverRegistry& registry() { return *m_registry; }
+
+    RawPtrWillBeMember<IdTargetObserverRegistry> m_registry;
     AtomicString m_id;
 };
 

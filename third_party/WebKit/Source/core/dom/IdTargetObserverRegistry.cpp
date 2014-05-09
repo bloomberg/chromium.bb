@@ -30,9 +30,15 @@
 
 namespace WebCore {
 
-PassOwnPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::create()
+PassOwnPtrWillBeRawPtr<IdTargetObserverRegistry> IdTargetObserverRegistry::create()
 {
-    return adoptPtr(new IdTargetObserverRegistry());
+    return adoptPtrWillBeNoop(new IdTargetObserverRegistry());
+}
+
+void IdTargetObserverRegistry::trace(Visitor* visitor)
+{
+    visitor->trace(m_registry);
+    visitor->trace(m_notifyingObserversInSet);
 }
 
 void IdTargetObserverRegistry::addObserver(const AtomicString& id, IdTargetObserver* observer)
@@ -42,7 +48,7 @@ void IdTargetObserverRegistry::addObserver(const AtomicString& id, IdTargetObser
 
     IdToObserverSetMap::AddResult result = m_registry.add(id.impl(), nullptr);
     if (result.isNewEntry)
-        result.storedValue->value = adoptPtr(new ObserverSet());
+        result.storedValue->value = adoptPtrWillBeNoop(new ObserverSet());
 
     result.storedValue->value->add(observer);
 }
@@ -69,9 +75,9 @@ void IdTargetObserverRegistry::notifyObserversInternal(const AtomicString& id)
     if (!m_notifyingObserversInSet)
         return;
 
-    Vector<IdTargetObserver*> copy;
+    WillBeHeapVector<RawPtrWillBeMember<IdTargetObserver> > copy;
     copyToVector(*m_notifyingObserversInSet, copy);
-    for (Vector<IdTargetObserver*>::const_iterator it = copy.begin(); it != copy.end(); ++it) {
+    for (WillBeHeapVector<RawPtrWillBeMember<IdTargetObserver> >::const_iterator it = copy.begin(); it != copy.end(); ++it) {
         if (m_notifyingObserversInSet->contains(*it))
             (*it)->idTargetChanged();
     }
@@ -79,7 +85,7 @@ void IdTargetObserverRegistry::notifyObserversInternal(const AtomicString& id)
     if (m_notifyingObserversInSet->isEmpty())
         m_registry.remove(id.impl());
 
-    m_notifyingObserversInSet = 0;
+    m_notifyingObserversInSet = nullptr;
 }
 
 bool IdTargetObserverRegistry::hasObservers(const AtomicString& id) const

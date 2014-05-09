@@ -542,6 +542,7 @@ void TreeScope::trace(Visitor* visitor)
     visitor->trace(m_rootNode);
     visitor->trace(m_document);
     visitor->trace(m_parentTreeScope);
+    visitor->trace(m_idTargetObserverRegistry);
     visitor->trace(m_selection);
 }
 

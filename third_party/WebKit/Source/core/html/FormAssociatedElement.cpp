@@ -36,12 +36,11 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-// FIXME: Oilpan: IdTargetObserver should be on-heap.
-class FormAttributeTargetObserver : public NoBaseWillBeGarbageCollectedFinalized<FormAttributeTargetObserver>, public IdTargetObserver {
+class FormAttributeTargetObserver : public IdTargetObserver {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
-    void trace(Visitor* visitor) { visitor->trace(m_element); }
+    virtual void trace(Visitor*) OVERRIDE;
     virtual void idTargetChanged() OVERRIDE;
 
 private:
@@ -336,6 +335,12 @@ FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id,
     : IdTargetObserver(toHTMLElement(element)->treeScope().idTargetObserverRegistry(), id)
     , m_element(element)
 {
+}
+
+void FormAttributeTargetObserver::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    IdTargetObserver::trace(visitor);
 }
 
 void FormAttributeTargetObserver::idTargetChanged()

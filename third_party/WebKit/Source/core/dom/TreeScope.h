@@ -186,7 +186,7 @@ private:
     OwnPtr<DocumentOrderedMap> m_imageMapsByName;
     OwnPtr<DocumentOrderedMap> m_labelsByForAttribute;
 
-    OwnPtr<IdTargetObserverRegistry> m_idTargetObserverRegistry;
+    OwnPtrWillBeMember<IdTargetObserverRegistry> m_idTargetObserverRegistry;
 
     mutable RefPtrWillBeMember<DOMSelection> m_selection;
 };

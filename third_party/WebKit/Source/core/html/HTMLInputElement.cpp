@@ -83,15 +83,16 @@ namespace WebCore {
 using namespace HTMLNames;
 
 class ListAttributeTargetObserver : public IdTargetObserver {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<ListAttributeTargetObserver> create(const AtomicString& id, HTMLInputElement*);
+    static PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver> create(const AtomicString& id, HTMLInputElement*);
+    virtual void trace(Visitor*) OVERRIDE;
     virtual void idTargetChanged() OVERRIDE;
 
 private:
     ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement*);
 
-    HTMLInputElement* m_element;
+    RawPtrWillBeMember<HTMLInputElement> m_element;
 };
 
 // FIXME: According to HTML4, the length attribute's value can be arbitrarily
@@ -140,6 +141,7 @@ void HTMLInputElement::trace(Visitor* visitor)
 {
     visitor->trace(m_inputType);
     visitor->trace(m_inputTypeView);
+    visitor->trace(m_listAttributeTargetObserver);
     HTMLTextFormControlElement::trace(visitor);
 }
 
@@ -1507,7 +1509,7 @@ bool HTMLInputElement::hasValidDataListOptions() const
     return false;
 }
 
-void HTMLInputElement::setListAttributeTargetObserver(PassOwnPtr<ListAttributeTargetObserver> newObserver)
+void HTMLInputElement::setListAttributeTargetObserver(PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver> newObserver)
 {
     if (m_listAttributeTargetObserver)
         m_listAttributeTargetObserver->unregister();
@@ -1762,15 +1764,21 @@ void HTMLInputElement::setWidth(unsigned width)
     setUnsignedIntegralAttribute(widthAttr, width);
 }
 
-PassOwnPtr<ListAttributeTargetObserver> ListAttributeTargetObserver::create(const AtomicString& id, HTMLInputElement* element)
+PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver> ListAttributeTargetObserver::create(const AtomicString& id, HTMLInputElement* element)
 {
-    return adoptPtr(new ListAttributeTargetObserver(id, element));
+    return adoptPtrWillBeNoop(new ListAttributeTargetObserver(id, element));
 }
 
 ListAttributeTargetObserver::ListAttributeTargetObserver(const AtomicString& id, HTMLInputElement* element)
     : IdTargetObserver(element->treeScope().idTargetObserverRegistry(), id)
     , m_element(element)
 {
+}
+
+void ListAttributeTargetObserver::trace(Visitor* visitor)
+{
+    visitor->trace(m_element);
+    IdTargetObserver::trace(visitor);
 }
 
 void ListAttributeTargetObserver::idTargetChanged()

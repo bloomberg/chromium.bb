@@ -26,6 +26,7 @@
 #ifndef IdTargetObserverRegistry_h
 #define IdTargetObserverRegistry_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -36,24 +37,26 @@ namespace WebCore {
 
 class IdTargetObserver;
 
-class IdTargetObserverRegistry {
-    WTF_MAKE_NONCOPYABLE(IdTargetObserverRegistry); WTF_MAKE_FAST_ALLOCATED;
+class IdTargetObserverRegistry FINAL : public NoBaseWillBeGarbageCollectedFinalized<IdTargetObserverRegistry> {
+    WTF_MAKE_NONCOPYABLE(IdTargetObserverRegistry);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
     friend class IdTargetObserver;
 public:
-    static PassOwnPtr<IdTargetObserverRegistry> create();
+    static PassOwnPtrWillBeRawPtr<IdTargetObserverRegistry> create();
+    void trace(Visitor*);
     void notifyObservers(const AtomicString& id);
     bool hasObservers(const AtomicString& id) const;
 
 private:
-    IdTargetObserverRegistry() : m_notifyingObserversInSet(0) { }
+    IdTargetObserverRegistry() : m_notifyingObserversInSet(nullptr) { }
     void addObserver(const AtomicString& id, IdTargetObserver*);
     void removeObserver(const AtomicString& id, IdTargetObserver*);
     void notifyObserversInternal(const AtomicString& id);
 
-    typedef HashSet<IdTargetObserver*> ObserverSet;
-    typedef HashMap<StringImpl*, OwnPtr<ObserverSet> > IdToObserverSetMap;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<IdTargetObserver> > ObserverSet;
+    typedef WillBeHeapHashMap<StringImpl*, OwnPtrWillBeMember<ObserverSet> > IdToObserverSetMap;
     IdToObserverSetMap m_registry;
-    ObserverSet* m_notifyingObserversInSet;
+    RawPtrWillBeMember<ObserverSet> m_notifyingObserversInSet;
 };
 
 inline void IdTargetObserverRegistry::notifyObservers(const AtomicString& id)

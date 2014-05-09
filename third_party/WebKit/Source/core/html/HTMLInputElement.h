@@ -361,7 +361,7 @@ private:
 
     virtual void subtreeHasChanged() OVERRIDE FINAL;
 
-    void setListAttributeTargetObserver(PassOwnPtr<ListAttributeTargetObserver>);
+    void setListAttributeTargetObserver(PassOwnPtrWillBeRawPtr<ListAttributeTargetObserver>);
     void resetListAttributeTargetObserver();
     void parseMaxLengthAttribute(const AtomicString&);
     void updateValueIfNeeded();
@@ -401,7 +401,7 @@ private:
     // that it lives as long as its owning element lives. If we move the loader into
     // the ImageInput object we may delete the loader while this element lives on.
     OwnPtr<HTMLImageLoader> m_imageLoader;
-    OwnPtr<ListAttributeTargetObserver> m_listAttributeTargetObserver;
+    OwnPtrWillBeMember<ListAttributeTargetObserver> m_listAttributeTargetObserver;
 };
 
 } //namespace

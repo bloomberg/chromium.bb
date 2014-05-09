@@ -30,24 +30,29 @@
 
 namespace WebCore {
 
-IdTargetObserver::IdTargetObserver(IdTargetObserverRegistry& registry, const AtomicString& id)
-    : m_registry(registry)
+IdTargetObserver::IdTargetObserver(IdTargetObserverRegistry& observerRegistry, const AtomicString& id)
+    : m_registry(&observerRegistry)
     , m_id(id)
 {
-    m_registry.addObserver(m_id, this);
+    registry().addObserver(m_id, this);
 }
 
 IdTargetObserver::~IdTargetObserver()
 {
 #if !ENABLE(OILPAN)
-    m_registry.removeObserver(m_id, this);
+    registry().removeObserver(m_id, this);
 #endif
+}
+
+void IdTargetObserver::trace(Visitor* visitor)
+{
+    visitor->trace(m_registry);
 }
 
 void IdTargetObserver::unregister()
 {
 #if ENABLE(OILPAN)
-    m_registry.removeObserver(m_id, this);
+    registry().removeObserver(m_id, this);
 #endif
 }
 
