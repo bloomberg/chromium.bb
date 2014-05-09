@@ -68,7 +68,9 @@ void ImportDataHandler::GetLocalizedValues(
     { "noProfileFound", IDS_IMPORT_NO_PROFILE_FOUND },
     { "importSucceeded", IDS_IMPORT_SUCCEEDED },
     { "findYourImportedBookmarks", IDS_IMPORT_FIND_YOUR_BOOKMARKS },
+#if defined(OS_MACOSX)
     { "macPasswordKeychain", IDS_IMPORT_PASSWORD_KEYCHAIN_WARNING },
+#endif
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

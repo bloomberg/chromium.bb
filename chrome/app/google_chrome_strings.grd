@@ -268,9 +268,6 @@ name="DOMAIN">$1<ex>paypal.com</ex></ph>&lt;/strong&gt;, but the server presente
       <message name="IDS_BROWSER_HUNGBROWSER_MESSAGE" desc="Content of the dialog box shown when the browser is hung">
         Google Chrome is unresponsive. Relaunch now?
       </message>
-      <message name="IDS_IMPORT_PROGRESS_INFO" desc="Explanatory text for the importing progress dialog">
-        Google Chrome is now importing the following items from <ph name="BROWSER_COMPONENT">$1<ex>History</ex></ph>:
-      </message>
       <message name="IDS_IMPORT_FIND_YOUR_BOOKMARKS" desc="Helpful reminder for where to find imported bookmarks">
         Find your bookmarks in the Chrome menu or on the bookmarks bar.
       </message>
@@ -462,9 +459,6 @@ Google Chrome is unable to recover your settings.
       <!-- Options Dialog -->
       <message name="IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE" desc="The text in the options panel that describes how we use web services to improve browsing experience.">
         Google Chrome may use web services to improve your browsing experience.
-      </message>
-      <message name="IDS_IMPORT_BOOKMARKS" desc="Explanatory text for the importing progress dialog when importing a bookmarks.html file from the bookmark manager">
-        Google Chrome is now importing Favorites/Bookmarks.
       </message>
       <message name="IDS_OEM_MAIN_SHORTCUT_NAME" desc="Name of the desktop shortcut to start the application for OEM pre-installations.">
         Internet Browser
