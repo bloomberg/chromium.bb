@@ -17,6 +17,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 from update_histogram_enum import ReadHistogramValues
 from update_histogram_enum import UpdateHistogramEnum
 
+USE_COUNTER_HEADER_PATH = \
+    '../../../third_party/WebKit/Source/core/frame/UseCounter.h'
+
 
 def print_enum_for_dashboard(enum_dict):
   """Prints enum_items formatted for use in uma.py of Chromium dashboard."""
@@ -33,19 +36,16 @@ if __name__ == '__main__':
                     'https://github.com/GoogleChrome/chromium-dashboard')
   options, args = parser.parse_args()
 
-  source_path = os.path.join(
-      '..', '..', '..',
-      'third_party', 'WebKit', 'Source', 'core', 'frame', 'UseCounter.h')
-
   START_MARKER = '^enum Feature {'
   END_MARKER = '^NumberOfFeatures'
 
   if options.dashboard:
-    enum_dict = ReadHistogramValues(source_path, START_MARKER, END_MARKER)
+    enum_dict = ReadHistogramValues(
+        USE_COUNTER_HEADER_PATH, START_MARKER, END_MARKER)
     print_enum_for_dashboard(enum_dict)
   else:
     UpdateHistogramEnum(
         histogram_enum_name='FeatureObserver',
-        source_enum_path=source_path,
+        source_enum_path=USE_COUNTER_HEADER_PATH,
         start_marker=START_MARKER,
         end_marker=END_MARKER)
