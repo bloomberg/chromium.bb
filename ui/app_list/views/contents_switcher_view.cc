@@ -4,58 +4,20 @@
 
 #include "ui/app_list/views/contents_switcher_view.h"
 
+#include "grit/ui_resources.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/views/contents_view.h"
-#include "ui/gfx/canvas.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace app_list {
 
 namespace {
 
-const int kPreferredHeight = 36;
-
+const int kPreferredHeight = 32;
 const int kButtonSpacing = 4;
-const int kButtonWidth = 36;
-const int kButtonHeight = 36;
-
-class ContentsSwitcherButton : public views::CustomButton {
- public:
-  explicit ContentsSwitcherButton(views::ButtonListener* listener,
-                                  ContentsView::ShowState show_state)
-      : views::CustomButton(listener) {
-    set_tag(show_state);
-  }
-
-  virtual ~ContentsSwitcherButton() {}
-
-  // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize() OVERRIDE {
-    return gfx::Size(kButtonWidth, kButtonHeight);
-  }
-
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
-    PaintButton(
-        canvas,
-        state() == STATE_HOVERED ? kPagerHoverColor : kPagerNormalColor);
-  }
-
- private:
-  // Paints a rectangular button.
-  void PaintButton(gfx::Canvas* canvas, SkColor base_color) {
-    gfx::Rect rect(GetContentsBounds());
-    rect.ClampToCenteredSize(gfx::Size(kButtonWidth, kButtonHeight));
-
-    SkPaint paint;
-    paint.setAntiAlias(true);
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setColor(base_color);
-    canvas->DrawRect(rect, paint);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ContentsSwitcherButton);
-};
 
 }  // namespace
 
@@ -65,13 +27,21 @@ ContentsSwitcherView::ContentsSwitcherView(ContentsView* contents_view)
 
   buttons_->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kHorizontal, 0, 0, kButtonSpacing));
-  buttons_->AddChildView(
-      new ContentsSwitcherButton(this, ContentsView::SHOW_APPS));
-  buttons_->AddChildView(
-      new ContentsSwitcherButton(this, ContentsView::SHOW_SEARCH_RESULTS));
+  AddSwitcherButton(IDR_APP_LIST_SEARCH_ICON,
+                    ContentsView::SHOW_SEARCH_RESULTS);
+  AddSwitcherButton(IDR_APP_LIST_APPS_ICON, ContentsView::SHOW_APPS);
 }
 
 ContentsSwitcherView::~ContentsSwitcherView() {}
+
+void ContentsSwitcherView::AddSwitcherButton(int resource_id, int tag) {
+  views::ImageButton* button = new views::ImageButton(this);
+  button->SetImage(
+      views::CustomButton::STATE_NORMAL,
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id));
+  button->set_tag(tag);
+  buttons_->AddChildView(button);
+}
 
 gfx::Size ContentsSwitcherView::GetPreferredSize() {
   return gfx::Size(buttons_->GetPreferredSize().width(), kPreferredHeight);
