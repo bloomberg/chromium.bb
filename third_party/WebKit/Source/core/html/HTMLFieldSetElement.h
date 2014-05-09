@@ -34,11 +34,12 @@ class HTMLCollection;
 class HTMLFieldSetElement FINAL : public HTMLFormControlElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLFieldSetElement> create(Document&, HTMLFormElement*);
+    virtual void trace(Visitor*) OVERRIDE;
     HTMLLegendElement* legend() const;
 
     PassRefPtr<HTMLCollection> elements();
 
-    const Vector<FormAssociatedElement*>& associatedElements() const;
+    const FormAssociatedElement::List& associatedElements() const;
 
 protected:
     virtual void disabledAttributeChanged() OVERRIDE;
@@ -57,7 +58,7 @@ private:
     static void invalidateDisabledStateUnder(Element&);
     void refreshElementsIfNeeded() const;
 
-    mutable Vector<FormAssociatedElement*> m_associatedElements;
+    mutable FormAssociatedElement::List m_associatedElements;
     // When dom tree is modified, we have to refresh the m_associatedElements array.
     mutable uint64_t m_documentVersion;
 };

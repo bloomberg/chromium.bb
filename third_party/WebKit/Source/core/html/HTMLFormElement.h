@@ -49,6 +49,7 @@ class HTMLFormElement FINAL : public HTMLElement {
 public:
     static PassRefPtrWillBeRawPtr<HTMLFormElement> create(Document&);
     virtual ~HTMLFormElement();
+    virtual void trace(Visitor*) OVERRIDE;
 
     PassRefPtr<HTMLCollection> elements();
     void getNamedElements(const AtomicString&, Vector<RefPtr<Element> >&);
@@ -110,7 +111,7 @@ public:
 
     RadioButtonGroupScope& radioButtonGroupScope() { return m_radioButtonGroupScope; }
 
-    const Vector<FormAssociatedElement*>& associatedElements() const;
+    const FormAssociatedElement::List& associatedElements() const;
     const Vector<HTMLImageElement*>& imageElements();
 
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<RadioNodeList>&, bool&, RefPtr<Element>&);
@@ -138,7 +139,7 @@ private:
 
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);
 
-    void collectAssociatedElements(Node& root, Vector<FormAssociatedElement*>&) const;
+    void collectAssociatedElements(Node& root, FormAssociatedElement::List&) const;
     void collectImageElements(Node& root, Vector<HTMLImageElement*>&);
 
     // Returns true if the submission should proceed.
@@ -161,8 +162,7 @@ private:
     RadioButtonGroupScope m_radioButtonGroupScope;
 
     // Do not access m_associatedElements directly. Use associatedElements() instead.
-    // FIXME: Oilpan: m_associatedElements should be HeapVector<Member<>>.
-    Vector<FormAssociatedElement*> m_associatedElements;
+    FormAssociatedElement::List m_associatedElements;
     // Do not access m_imageElements directly. Use imageElements() instead.
     Vector<HTMLImageElement*> m_imageElements;
     WeakPtrFactory<HTMLFormElement> m_weakPtrFactory;

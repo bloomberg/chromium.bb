@@ -91,6 +91,14 @@ HTMLFormElement::~HTMLFormElement()
 #endif
 }
 
+void HTMLFormElement::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_associatedElements);
+#endif
+    HTMLElement::trace(visitor);
+}
+
 bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (!m_wasDemoted)
@@ -129,7 +137,7 @@ Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* 
 }
 
 template<class T>
-void notifyFormRemovedFromTree(const Vector<T*>& elements, Node& root)
+void notifyFormRemovedFromTree(const T& elements, Node& root)
 {
     size_t size = elements.size();
     for (size_t i = 0; i < size; ++i)
@@ -144,10 +152,10 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint)
     if (m_hasElementsAssociatedByParser) {
         Node& root = highestAncestorOrSelf();
         if (!m_associatedElementsAreDirty) {
-            Vector<FormAssociatedElement*> elements(associatedElements());
+            FormAssociatedElement::List elements(associatedElements());
             notifyFormRemovedFromTree(elements, root);
         } else {
-            Vector<FormAssociatedElement*> elements;
+            FormAssociatedElement::List elements;
             collectAssociatedElements(insertionPoint->highestAncestorOrSelf(), elements);
             notifyFormRemovedFromTree(elements, root);
             collectAssociatedElements(root, elements);
@@ -183,7 +191,7 @@ void HTMLFormElement::handleLocalEvents(Event* event)
 
 unsigned HTMLFormElement::length() const
 {
-    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    const FormAssociatedElement::List& elements = associatedElements();
     unsigned len = 0;
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->isEnumeratable())
@@ -201,7 +209,7 @@ void HTMLFormElement::submitImplicitly(Event* event, bool fromImplicitSubmission
 {
     int submissionTriggerCount = 0;
     bool seenDefaultButton = false;
-    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    const FormAssociatedElement::List& elements = associatedElements();
     for (unsigned i = 0; i < elements.size(); ++i) {
         FormAssociatedElement* formAssociatedElement = elements[i];
         if (!formAssociatedElement->isFormControlElement())
@@ -245,7 +253,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
     if (submitElement && submitElement->formNoValidate())
         return true;
 
-    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    const FormAssociatedElement::List& elements = associatedElements();
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->isFormControlElement())
             toHTMLFormControlElement(elements[i])->hideVisibleValidationMessage();
@@ -338,7 +346,7 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton, bool proce
     RefPtrWillBeRawPtr<HTMLFormControlElement> firstSuccessfulSubmitButton = nullptr;
     bool needButtonActivation = activateSubmitButton; // do we need to activate a submit button?
 
-    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    const FormAssociatedElement::List& elements = associatedElements();
     for (unsigned i = 0; i < elements.size(); ++i) {
         FormAssociatedElement* associatedElement = elements[i];
         if (!associatedElement->isFormControlElement())
@@ -416,7 +424,7 @@ void HTMLFormElement::reset()
         return;
     }
 
-    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    const FormAssociatedElement::List& elements = associatedElements();
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->isFormControlElement())
             toHTMLFormControlElement(elements[i])->reset();
@@ -536,7 +544,7 @@ PassRefPtr<HTMLCollection> HTMLFormElement::elements()
     return ensureCachedHTMLCollection(FormControls);
 }
 
-void HTMLFormElement::collectAssociatedElements(Node& root, Vector<FormAssociatedElement*>& elements) const
+void HTMLFormElement::collectAssociatedElements(Node& root, FormAssociatedElement::List& elements) const
 {
     elements.clear();
     for (HTMLElement* element = Traversal<HTMLElement>::firstWithin(root); element; element = Traversal<HTMLElement>::next(*element)) {
@@ -554,7 +562,7 @@ void HTMLFormElement::collectAssociatedElements(Node& root, Vector<FormAssociate
 
 // This function should be const conceptually. However we update some fields
 // because of lazy evaluation.
-const Vector<FormAssociatedElement*>& HTMLFormElement::associatedElements() const
+const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
 {
     if (!m_associatedElementsAreDirty)
         return m_associatedElements;
@@ -628,7 +636,7 @@ bool HTMLFormElement::wasUserSubmitted() const
 
 HTMLFormControlElement* HTMLFormElement::defaultButton() const
 {
-    const Vector<FormAssociatedElement*>& elements = associatedElements();
+    const FormAssociatedElement::List& elements = associatedElements();
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (!elements[i]->isFormControlElement())
             continue;
@@ -650,7 +658,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<R
     RefPtr<HTMLFormElement> protector(this);
     // Copy associatedElements because event handlers called from
     // HTMLFormControlElement::checkValidity() might change associatedElements.
-    const Vector<FormAssociatedElement*>& associatedElements = this->associatedElements();
+    const FormAssociatedElement::List& associatedElements = this->associatedElements();
     WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> > elements;
     elements.reserveCapacity(associatedElements.size());
     for (unsigned i = 0; i < associatedElements.size(); ++i)

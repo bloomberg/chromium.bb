@@ -24,12 +24,12 @@
 #ifndef HTMLFormControlsCollection_h
 #define HTMLFormControlsCollection_h
 
+#include "core/html/FormAssociatedElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/RadioNodeList.h"
 
 namespace WebCore {
 
-class FormAssociatedElement;
 class HTMLElement;
 class HTMLImageElement;
 class QualifiedName;
@@ -52,7 +52,7 @@ private:
     virtual void updateIdNameCache() const OVERRIDE;
     virtual void supportedPropertyNames(Vector<String>& names) OVERRIDE;
 
-    const Vector<FormAssociatedElement*>& formControlElements() const;
+    const FormAssociatedElement::List& formControlElements() const;
     const Vector<HTMLImageElement*>& formImageElements() const;
     virtual Element* virtualItemAfter(Element*) const OVERRIDE;
     virtual void invalidateCache(Document* oldDocument = 0) const OVERRIDE;

@@ -49,6 +49,14 @@ PassRefPtrWillBeRawPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document
     return adoptRefWillBeRefCountedGarbageCollected(new HTMLFieldSetElement(document, form));
 }
 
+void HTMLFieldSetElement::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_associatedElements);
+#endif
+    HTMLFormControlElement::trace(visitor);
+}
+
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base)
 {
     for (Element* element = ElementTraversal::firstWithin(base); element; element = ElementTraversal::next(*element, &base)) {
@@ -120,7 +128,7 @@ void HTMLFieldSetElement::refreshElementsIfNeeded() const
     }
 }
 
-const Vector<FormAssociatedElement*>& HTMLFieldSetElement::associatedElements() const
+const FormAssociatedElement::List& HTMLFieldSetElement::associatedElements() const
 {
     refreshElementsIfNeeded();
     return m_associatedElements;

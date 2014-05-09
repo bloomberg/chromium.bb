@@ -36,16 +36,18 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-class FormAttributeTargetObserver : public IdTargetObserver {
-    WTF_MAKE_FAST_ALLOCATED;
+// FIXME: Oilpan: IdTargetObserver should be on-heap.
+class FormAttributeTargetObserver : public NoBaseWillBeGarbageCollectedFinalized<FormAttributeTargetObserver>, public IdTargetObserver {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
+    static PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> create(const AtomicString& id, FormAssociatedElement*);
+    void trace(Visitor* visitor) { visitor->trace(m_element); }
     virtual void idTargetChanged() OVERRIDE;
 
 private:
     FormAttributeTargetObserver(const AtomicString& id, FormAssociatedElement*);
 
-    FormAssociatedElement* m_element;
+    RawPtrWillBeMember<FormAssociatedElement> m_element;
 };
 
 FormAssociatedElement::FormAssociatedElement()
@@ -60,6 +62,7 @@ FormAssociatedElement::~FormAssociatedElement()
 
 void FormAssociatedElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_formAttributeTargetObserver);
     visitor->trace(m_form);
     visitor->trace(m_validityState);
 }
@@ -267,7 +270,7 @@ void FormAssociatedElement::setCustomValidity(const String& error)
     m_customValidationMessage = error;
 }
 
-void FormAssociatedElement::setFormAttributeTargetObserver(PassOwnPtr<FormAttributeTargetObserver> newObserver)
+void FormAssociatedElement::setFormAttributeTargetObserver(PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> newObserver)
 {
     if (m_formAttributeTargetObserver)
         m_formAttributeTargetObserver->unregister();
@@ -324,9 +327,9 @@ HTMLElement& toHTMLElement(FormAssociatedElement& associatedElement)
     return const_cast<HTMLElement&>(toHTMLElement(static_cast<const FormAssociatedElement&>(associatedElement)));
 }
 
-PassOwnPtr<FormAttributeTargetObserver> FormAttributeTargetObserver::create(const AtomicString& id, FormAssociatedElement* element)
+PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver> FormAttributeTargetObserver::create(const AtomicString& id, FormAssociatedElement* element)
 {
-    return adoptPtr(new FormAttributeTargetObserver(id, element));
+    return adoptPtrWillBeNoop(new FormAttributeTargetObserver(id, element));
 }
 
 FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id, FormAssociatedElement* element)

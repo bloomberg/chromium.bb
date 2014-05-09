@@ -98,8 +98,8 @@ void WebFormElement::getFormControlElements(WebVector<WebFormControlElement>& re
     const HTMLFormElement* form = constUnwrap<HTMLFormElement>();
     Vector<WebFormControlElement> formControlElements;
 
-    const Vector<FormAssociatedElement*>& associatedElements = form->associatedElements();
-    for (Vector<FormAssociatedElement*>::const_iterator it = associatedElements.begin(); it != associatedElements.end(); ++it) {
+    const FormAssociatedElement::List& associatedElements = form->associatedElements();
+    for (FormAssociatedElement::List::const_iterator it = associatedElements.begin(); it != associatedElements.end(); ++it) {
         if ((*it)->isFormControlElement())
             formControlElements.append(toHTMLFormControlElement(*it));
     }

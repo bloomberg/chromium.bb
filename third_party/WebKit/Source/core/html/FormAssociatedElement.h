@@ -90,6 +90,8 @@ public:
 
     void formAttributeTargetChanged();
 
+    typedef WillBeHeapVector<RawPtrWillBeMember<FormAssociatedElement> > List;
+
 protected:
     FormAssociatedElement();
 
@@ -118,10 +120,10 @@ private:
     virtual void derefFormAssociatedElement() = 0;
 #endif
 
-    void setFormAttributeTargetObserver(PassOwnPtr<FormAttributeTargetObserver>);
+    void setFormAttributeTargetObserver(PassOwnPtrWillBeRawPtr<FormAttributeTargetObserver>);
     void resetFormAttributeTargetObserver();
 
-    OwnPtr<FormAttributeTargetObserver> m_formAttributeTargetObserver;
+    OwnPtrWillBeMember<FormAttributeTargetObserver> m_formAttributeTargetObserver;
 #if ENABLE(OILPAN)
     Member<HTMLFormElement> m_form;
 #else
