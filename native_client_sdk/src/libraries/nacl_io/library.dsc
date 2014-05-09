@@ -232,6 +232,7 @@
     {
       'FILES': [
         "arpa/inet.h",
+        "memory.h",
         "netdb.h",
         "netinet/in.h",
         "netinet/tcp.h",
@@ -251,6 +252,7 @@
     {
       'FILES': [
         "arpa/inet.h",
+        "memory.h",
         "netdb.h",
         "netinet/in.h",
         "netinet/tcp.h",
