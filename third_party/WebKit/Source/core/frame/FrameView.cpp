@@ -533,6 +533,10 @@ void FrameView::applyOverflowToViewportAndSetRenderer(RenderObject* o, Scrollbar
     EOverflow overflowY = o->style()->overflowY();
 
     if (o->isSVGRoot()) {
+        // Don't allow overflow to affect <img> and css backgrounds
+        if (toRenderSVGRoot(o)->isEmbeddedThroughSVGImage())
+            return;
+
         // FIXME: evaluate if we can allow overflow for these cases too.
         // Overflow is always hidden when stand-alone SVG documents are embedded.
         if (toRenderSVGRoot(o)->isEmbeddedThroughFrameContainingSVGDocument()) {
