@@ -5,7 +5,6 @@
 var message = {
   messageId: "message-id",
   destinationId: "destination-id",
-  timeToLive: 100,
   data: {
     "key1": "value1",
     "key2": "value2"

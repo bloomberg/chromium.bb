@@ -67,6 +67,8 @@ class GCM_EXPORT GCMClient {
     // In seconds.
     int time_to_live;
     MessageData data;
+
+    static const int kMaximumTTL = 4 * 7 * 24 * 60 * 60;  // 4 weeks.
   };
 
   // Message being received from the other party.

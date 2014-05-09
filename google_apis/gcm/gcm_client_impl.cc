@@ -69,6 +69,20 @@ enum MessageType {
   SEND_ERROR,        // Error sending a message.
 };
 
+enum OutgoingMessageTTLCategory {
+  TTL_ZERO,
+  TTL_LESS_THAN_OR_EQUAL_TO_ONE_MINUTE,
+  TTL_LESS_THAN_OR_EQUAL_TO_ONE_HOUR,
+  TTL_LESS_THAN_OR_EQUAL_TO_ONE_DAY,
+  TTL_LESS_THAN_OR_EQUAL_TO_ONE_WEEK,
+  TTL_MORE_THAN_ONE_WEEK,
+  TTL_MAXIMUM,
+  // NOTE: always keep this entry at the end. Add new TTL category only
+  // immediately above this line. Make sure to update the corresponding
+  // histogram enum accordingly.
+  TTL_CATEGORY_COUNT
+};
+
 // MCS endpoints. SSL Key pinning is done automatically due to the *.google.com
 // pinning rule.
 // Note: modifying the endpoints will affect the ability to compare the
@@ -115,6 +129,29 @@ MessageType DecodeMessageType(const std::string& value) {
   if (kMessageTypeDataMessage == value)
     return DATA_MESSAGE;
   return UNKNOWN;
+}
+
+void RecordOutgoingMessageToUMA(
+    const gcm::GCMClient::OutgoingMessage& message) {
+  OutgoingMessageTTLCategory ttl_category;
+  if (message.time_to_live == 0)
+    ttl_category = TTL_ZERO;
+  else if (message.time_to_live <= 60 )
+    ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_MINUTE;
+  else if (message.time_to_live <= 60 * 60)
+    ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_HOUR;
+  else if (message.time_to_live <= 24 * 60 * 60)
+    ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_DAY;
+  else if (message.time_to_live <= 7 * 24 * 60 * 60)
+    ttl_category = TTL_LESS_THAN_OR_EQUAL_TO_ONE_WEEK;
+  else if (message.time_to_live < gcm::GCMClient::OutgoingMessage::kMaximumTTL)
+    ttl_category = TTL_MORE_THAN_ONE_WEEK;
+  else
+    ttl_category = TTL_MAXIMUM;
+
+  UMA_HISTOGRAM_ENUMERATION("GCM.GCMOutgoingMessageTTLCategory",
+                            ttl_category,
+                            TTL_CATEGORY_COUNT);
 }
 
 }  // namespace
@@ -556,6 +593,8 @@ void GCMClientImpl::Send(const std::string& app_id,
                          const std::string& receiver_id,
                          const OutgoingMessage& message) {
   DCHECK_EQ(state_, READY);
+
+  RecordOutgoingMessageToUMA(message);
 
   mcs_proto::DataMessageStanza stanza;
   stanza.set_ttl(message.time_to_live);

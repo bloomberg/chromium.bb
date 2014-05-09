@@ -7053,9 +7053,28 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GCM.APICallUnregister">
+  <owner>jianli@chromium.org</owner>
+  <summary>Number of times when gcm.unregister API is called.</summary>
+</histogram>
+
+<histogram name="GCM.CheckinCompleteTime" units="milliseconds">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Length of time taken to complete a GCM checkin request successfully. If the
+    checkin is retried multiple times, the length of time is counted for the
+    last successful retry.
+  </summary>
+</histogram>
+
 <histogram name="GCM.CheckinRequestStatus" enum="GCMCheckinRequestStatus">
   <owner>juyik@chromium.org</owner>
   <summary>Status code of the outcome of a GCM checkin request.</summary>
+</histogram>
+
+<histogram name="GCM.CheckinRetryCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>Number of retries before a GCM checkin succeeds.</summary>
 </histogram>
 
 <histogram name="GCM.ConnectedViaProxy" enum="Boolean">
@@ -7125,10 +7144,37 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GCM.OutgoingMessageTTL" enum="GCMOutgoingMessageTTLCategory">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Category of TTL specified in the outgoing message: 0, less than or equal to
+    1 minute, less than or equal to 1 hour and etc.
+  </summary>
+</histogram>
+
+<histogram name="GCM.RegistrationCompleteTime" units="milliseconds">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Length of time taken to complete a GCM registration request successfully. If
+    the registration is retried multiple times, the length of time is counted
+    for the last successful retry.
+  </summary>
+</histogram>
+
 <histogram name="GCM.RegistrationRequestStatus"
     enum="GCMRegistrationRequestStatus">
   <owner>juyik@chromium.org</owner>
   <summary>Status code of the outcome of a GCM registration request.</summary>
+</histogram>
+
+<histogram name="GCM.RegistrationRetryCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>Number of retries before a GCM registration succeeds.</summary>
+</histogram>
+
+<histogram name="GCM.RegistrationSenderIdCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>Number of sender IDs specified in a registration request.</summary>
 </histogram>
 
 <histogram name="GCM.RestoredIncomingMessages">
@@ -7176,10 +7222,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GCM.UnregistrationCompleteTime" units="milliseconds">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Length of time taken to complete a GCM unregistration request successfully.
+    If the unregistration is retried multiple times, the length of time is
+    counted for the last successful retry.
+  </summary>
+</histogram>
+
 <histogram name="GCM.UnregistrationRequestStatus"
     enum="GCMUnregistrationRequestStatus">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Status code of the outcome of a GCM unregistration request.</summary>
+</histogram>
+
+<histogram name="GCM.UnregistrationRetryCount">
+  <owner>jianli@chromium.org</owner>
+  <summary>Number of retries before a GCM unregistration succeeds.</summary>
 </histogram>
 
 <histogram name="GCMInvalidations.IncomingMessageStatus"
@@ -35250,6 +35310,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Message was discarded"/>
   <int value="2" label="Access token request failed"/>
   <int value="3" label="HTTP Post failed"/>
+</enum>
+
+<enum name="GCMOutgoingMessageTTLCategory" type="int">
+  <int value="0" label="Zero"/>
+  <int value="1" label="Less than or equal to 1 minute"/>
+  <int value="2" label="Less than or equal to 1 hour"/>
+  <int value="3" label="Less than or equal to 1 day"/>
+  <int value="4" label="Less than or equal to 1 week"/>
+  <int value="5" label="More than 1 week but less than maximum"/>
+  <int value="6" label="Default or maximium time"/>
 </enum>
 
 <enum name="GCMRegistrationRequestStatus" type="int">

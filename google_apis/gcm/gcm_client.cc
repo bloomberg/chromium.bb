@@ -7,7 +7,7 @@
 namespace gcm {
 
 GCMClient::OutgoingMessage::OutgoingMessage()
-    : time_to_live(0) {
+    : time_to_live(kMaximumTTL) {
 }
 
 GCMClient::OutgoingMessage::~OutgoingMessage() {

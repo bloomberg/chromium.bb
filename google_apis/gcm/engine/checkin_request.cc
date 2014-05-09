@@ -144,6 +144,7 @@ void CheckinRequest::Start() {
   url_fetcher_->SetRequestContext(request_context_getter_);
   url_fetcher_->SetUploadData(kRequestContentType, upload_data);
   recorder_->RecordCheckinInitiated(request_info_.android_id);
+  request_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
 }
 
@@ -219,6 +220,10 @@ void CheckinRequest::OnURLFetchComplete(const net::URLFetcher* source) {
   }
 
   RecordCheckinStatusAndReportUMA(SUCCESS, recorder_, false);
+  UMA_HISTOGRAM_COUNTS("GCM.CheckinRetryCount",
+                       backoff_entry_.failure_count());
+  UMA_HISTOGRAM_TIMES("GCM.CheckinCompleteTime",
+                      base::TimeTicks::Now() - request_start_time_);
   callback_.Run(response_proto);
 }
 

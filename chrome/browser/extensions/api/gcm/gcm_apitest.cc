@@ -151,11 +151,25 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, SendMessageData) {
       service()->last_sent_message();
   gcm::GCMClient::MessageData::const_iterator iter;
 
+  EXPECT_EQ(100, message.time_to_live);
+
   EXPECT_TRUE((iter = message.data.find("key1")) != message.data.end());
   EXPECT_EQ("value1", iter->second);
 
   EXPECT_TRUE((iter = message.data.find("key2")) != message.data.end());
   EXPECT_EQ("value2", iter->second);
+}
+
+IN_PROC_BROWSER_TEST_F(GcmApiTest, SendMessageDefaultTTL) {
+  StartCollecting();
+  ASSERT_TRUE(RunExtensionTest("gcm/functions/send_message_default_ttl"));
+
+  EXPECT_EQ("destination-id", service()->last_receiver_id());
+  const gcm::GCMClient::OutgoingMessage& message =
+      service()->last_sent_message();
+  gcm::GCMClient::MessageData::const_iterator iter;
+
+  EXPECT_EQ(2419200, message.time_to_live);
 }
 
 IN_PROC_BROWSER_TEST_F(GcmApiTest, OnMessagesDeleted) {

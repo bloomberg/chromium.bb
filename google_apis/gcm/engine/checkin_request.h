@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
@@ -83,6 +84,7 @@ class GCM_EXPORT CheckinRequest : public net::URLFetcherDelegate {
   GURL checkin_url_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   const RequestInfo request_info_;
+  base::TimeTicks request_start_time_;
 
   // Recorder that records GCM activities for debugging purpose. Not owned.
   GCMStatsRecorder* recorder_;
