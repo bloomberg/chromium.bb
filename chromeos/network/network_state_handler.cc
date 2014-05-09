@@ -631,6 +631,24 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
   }
 }
 
+void NetworkStateHandler::UpdateIPConfigProperties(
+    ManagedState::ManagedType type,
+    const std::string& path,
+    const std::string& ip_config_path,
+    const base::DictionaryValue& properties)  {
+  if (type == ManagedState::MANAGED_TYPE_NETWORK) {
+    NetworkState* network = GetModifiableNetworkState(path);
+    if (!network)
+      return;
+    network->IPConfigPropertiesChanged(properties);
+  } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
+    DeviceState* device = GetModifiableDeviceState(path);
+    if (!device)
+      return;
+    device->IPConfigPropertiesChanged(ip_config_path, properties);
+  }
+}
+
 void NetworkStateHandler::CheckPortalListChanged(
     const std::string& check_portal_list) {
   check_portal_list_ = check_portal_list;

@@ -16,33 +16,26 @@ FakeWiFiService::FakeWiFiService() {
   {
     WiFiService::NetworkProperties network_properties;
     network_properties.connection_state = onc::connection_state::kConnected;
-    network_properties.guid = "stub_ethernet";
-    network_properties.name = "eth0";
-    network_properties.type = onc::network_type::kEthernet;
-    network_properties.json_extra =
-        "    {"
-        "      \"Authentication\": \"None\""
-        "    }";
-    networks_.push_back(network_properties);
-  }
-  {
-    WiFiService::NetworkProperties network_properties;
-    network_properties.connection_state = onc::connection_state::kConnected;
     network_properties.guid = "stub_wifi1";
     network_properties.name = "wifi1";
     network_properties.type = onc::network_type::kWiFi;
     network_properties.frequency = 0;
-    network_properties.ssid = "stub_wifi1";
+    network_properties.ssid = "wifi1";
     network_properties.security = onc::wifi::kWEP_PSK;
-    network_properties.signal_strength = 0;
-    networks_.push_back(network_properties);
-  }
-  {
-    WiFiService::NetworkProperties network_properties;
-    network_properties.connection_state = onc::connection_state::kConnected;
-    network_properties.guid = "stub_vpn1";
-    network_properties.name = "vpn1";
-    network_properties.type = onc::network_type::kVPN;
+    network_properties.signal_strength = 40;
+    network_properties.json_extra =
+      "{"
+      "  \"IPConfigs\": [{"
+      "     \"Gateway\": \"0.0.0.1\","
+      "     \"IPAddress\": \"0.0.0.0\","
+      "     \"RoutingPrefix\": 0,"
+      "     \"Type\": \"IPv4\""
+      "  }],"
+      "  \"WiFi\": {"
+      "    \"Frequency\": 2400,"
+      "    \"FrequencyList\": [2400]"
+      "  }"
+      "}";
     networks_.push_back(network_properties);
   }
   {
@@ -57,20 +50,6 @@ FakeWiFiService::FakeWiFiService() {
     network_properties.ssid = "wifi2_PSK";
     network_properties.security = onc::wifi::kWPA_PSK;
     network_properties.signal_strength = 80;
-    networks_.push_back(network_properties);
-  }
-  {
-    WiFiService::NetworkProperties network_properties;
-    network_properties.connection_state = onc::connection_state::kNotConnected;
-    network_properties.guid = "stub_cellular1";
-    network_properties.name = "cellular1";
-    network_properties.type = onc::network_type::kCellular;
-    network_properties.json_extra =
-        "    {"
-        "      \"ActivationState\": \"not-activated\","
-        "      \"NetworkTechnology\": \"GSM\","
-        "      \"RoamingState\": \"home\""
-        "    }";
     networks_.push_back(network_properties);
   }
 }
@@ -101,61 +80,8 @@ void FakeWiFiService::GetManagedProperties(
     const std::string& network_guid,
     base::DictionaryValue* managed_properties,
     std::string* error) {
-  const std::string network_properties =
-      "{"
-      "  \"ConnectionState\": {"
-      "    \"Active\": \"NotConnected\","
-      "    \"Effective\": \"Unmanaged\""
-      "  },"
-      "  \"GUID\": \"stub_wifi2\","
-      "  \"Name\": {"
-      "    \"Active\": \"wifi2_PSK\","
-      "    \"Effective\": \"UserPolicy\","
-      "    \"UserPolicy\": \"My WiFi Network\""
-      "  },"
-      "  \"Type\": {"
-      "    \"Active\": \"WiFi\","
-      "    \"Effective\": \"UserPolicy\","
-      "    \"UserPolicy\": \"WiFi\""
-      "  },"
-      "  \"WiFi\": {"
-      "    \"AutoConnect\": {"
-      "      \"Active\": false,"
-      "      \"UserEditable\": true"
-      "    },"
-      "    \"Frequency\" : {"
-      "      \"Active\": 5000,"
-      "      \"Effective\": \"Unmanaged\""
-      "    },"
-      "    \"FrequencyList\" : {"
-      "      \"Active\": [2400, 5000],"
-      "      \"Effective\": \"Unmanaged\""
-      "    },"
-      "    \"Passphrase\": {"
-      "      \"Effective\": \"UserSetting\","
-      "      \"UserEditable\": true,"
-      "      \"UserSetting\": \"FAKE_CREDENTIAL_VPaJDV9x\""
-      "    },"
-      "    \"SSID\": {"
-      "      \"Active\": \"wifi2_PSK\","
-      "      \"Effective\": \"UserPolicy\","
-      "      \"UserPolicy\": \"wifi2_PSK\""
-      "    },"
-      "    \"Security\": {"
-      "      \"Active\": \"WPA-PSK\","
-      "      \"Effective\": \"UserPolicy\","
-      "      \"UserPolicy\": \"WPA-PSK\""
-      "    },"
-      "    \"SignalStrength\": {"
-      "      \"Active\": 80,"
-      "      \"Effective\": \"Unmanaged\""
-      "    }"
-      "  }"
-      "}";
-  scoped_ptr<base::DictionaryValue> properties_value(
-      reinterpret_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(network_properties)));
-  managed_properties->MergeDictionary(properties_value.get());
+  // Not implemented
+  *error = kErrorWiFiService;
 }
 
 void FakeWiFiService::GetState(const std::string& network_guid,
@@ -167,22 +93,7 @@ void FakeWiFiService::GetState(const std::string& network_guid,
     *error = "Error.InvalidParameter";
     return;
   }
-
-  const std::string network_state =
-      "{"
-      "  \"ConnectionState\": \"NotConnected\","
-      "  \"GUID\": \"stub_wifi2\","
-      "  \"Name\": \"wifi2_PSK\","
-      "  \"Type\": \"WiFi\","
-      "  \"WiFi\": {"
-      "    \"Security\": \"WPA-PSK\","
-      "    \"SignalStrength\": 80"
-      "  }"
-      "}";
-  scoped_ptr<base::DictionaryValue> properties_value(
-      reinterpret_cast<base::DictionaryValue*>(
-          base::JSONReader::Read(network_state)));
-  properties->MergeDictionary(properties_value.get());
+  properties->Swap(network_properties->ToValue(true).get());
 }
 
 void FakeWiFiService::SetProperties(

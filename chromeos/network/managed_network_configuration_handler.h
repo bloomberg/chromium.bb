@@ -60,7 +60,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   virtual void GetProperties(
       const std::string& service_path,
       const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const = 0;
+      const network_handler::ErrorCallback& error_callback) = 0;
 
   // Provides the managed properties of the network with |service_path| to
   // |callback|. |userhash| is only used to ensure that the user's policy is

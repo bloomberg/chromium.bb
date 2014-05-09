@@ -37,37 +37,42 @@ scoped_ptr<base::DictionaryValue> WiFiService::NetworkProperties::ToValue(
   value->SetString(onc::network_config::kGUID, guid);
   value->SetString(onc::network_config::kName, name);
   value->SetString(onc::network_config::kConnectionState, connection_state);
+  DCHECK(type == onc::network_type::kWiFi);
   value->SetString(onc::network_config::kType, type);
 
-  if (type == onc::network_type::kWiFi) {
-    scoped_ptr<base::DictionaryValue> wifi(new base::DictionaryValue());
-    wifi->SetString(onc::wifi::kSecurity, security);
-    wifi->SetInteger(onc::wifi::kSignalStrength, signal_strength);
+  // For now, assume all WiFi services are connectable.
+  value->SetBoolean(onc::network_config::kConnectable, true);
 
-    // Network list expects subset of data.
-    if (!network_list) {
-      if (frequency != WiFiService::kFrequencyUnknown)
-        wifi->SetInteger(onc::wifi::kFrequency, frequency);
-      scoped_ptr<base::ListValue> frequency_list(new base::ListValue());
-      for (FrequencySet::const_iterator it = this->frequency_set.begin();
-           it != this->frequency_set.end();
-           ++it) {
-        frequency_list->AppendInteger(*it);
-      }
-      if (!frequency_list->empty())
-        wifi->Set(onc::wifi::kFrequencyList, frequency_list.release());
-      if (!bssid.empty())
-        wifi->SetString(onc::wifi::kBSSID, bssid);
-      wifi->SetString(onc::wifi::kSSID, ssid);
+  scoped_ptr<base::DictionaryValue> wifi(new base::DictionaryValue());
+  wifi->SetString(onc::wifi::kSecurity, security);
+  wifi->SetInteger(onc::wifi::kSignalStrength, signal_strength);
+
+  // Network list expects subset of data.
+  if (!network_list) {
+    if (frequency != WiFiService::kFrequencyUnknown)
+      wifi->SetInteger(onc::wifi::kFrequency, frequency);
+    scoped_ptr<base::ListValue> frequency_list(new base::ListValue());
+    for (FrequencySet::const_iterator it = this->frequency_set.begin();
+         it != this->frequency_set.end();
+         ++it) {
+      frequency_list->AppendInteger(*it);
     }
-    value->Set(onc::network_type::kWiFi, wifi.release());
-  } else {
-    // Add properites from json extra if present.
-    if (!json_extra.empty()) {
-      base::Value* value_extra = base::JSONReader::Read(json_extra);
-      value->Set(type, value_extra);
-    }
+    if (!frequency_list->empty())
+      wifi->Set(onc::wifi::kFrequencyList, frequency_list.release());
+    if (!bssid.empty())
+      wifi->SetString(onc::wifi::kBSSID, bssid);
+    wifi->SetString(onc::wifi::kSSID, ssid);
   }
+  value->Set(onc::network_type::kWiFi, wifi.release());
+
+  if (!network_list && !json_extra.empty()) {
+    base::Value* value_extra = base::JSONReader::Read(json_extra);
+    CHECK(value_extra);
+    base::DictionaryValue* value_dictionary;
+    if (value_extra->GetAsDictionary(&value_dictionary))
+      value->MergeDictionary(value_dictionary);
+  }
+
   return value.Pass();
 }
 

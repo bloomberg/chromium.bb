@@ -319,15 +319,17 @@ void ShillToONCTranslator::TranslateIPConfig() {
   std::string shill_ip_method;
   shill_dictionary_->GetStringWithoutPathExpansion(shill::kMethodProperty,
                                                    &shill_ip_method);
-  if (shill_ip_method != shill::kTypeIPv4 &&
-      shill_ip_method != shill::kTypeIPv6) {
-    LOG(ERROR) << "Unhandled IPConfig Method value " << shill_ip_method;
-    return;
+  std::string type;
+  if (shill_ip_method == shill::kTypeIPv4 ||
+      shill_ip_method == shill::kTypeDHCP) {
+    type = ::onc::ipconfig::kIPv4;
+  } else if (shill_ip_method == shill::kTypeIPv6 ||
+             shill_ip_method == shill::kTypeDHCP6) {
+    type = ::onc::ipconfig::kIPv6;
+  } else {
+    return;  // Ignore unhandled IPConfig types, e.g. bootp, zeroconf, ppp
   }
 
-  std::string type = ::onc::ipconfig::kIPv4;
-  if (shill_ip_method == shill::kTypeIPv6)
-    type = ::onc::ipconfig::kIPv6;
   onc_object_->SetStringWithoutPathExpansion(::onc::ipconfig::kType, type);
 }
 

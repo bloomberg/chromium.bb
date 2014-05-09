@@ -89,7 +89,8 @@ void FakeShillServiceClient::GetProperties(
                                                   NULL);
     call_status = DBUS_METHOD_CALL_SUCCESS;
   } else {
-    LOG(ERROR) << "Properties not found for: " << service_path.value();
+    // This may happen if we remove services from the list.
+    VLOG(2) << "Properties not found for: " << service_path.value();
     result_properties.reset(new base::DictionaryValue);
     call_status = DBUS_METHOD_CALL_FAILURE;
   }

@@ -14,6 +14,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -547,12 +548,16 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   DBusThreadManager* dbus_manager = DBusThreadManager::Get();
   ShillServiceClient::TestInterface* services =
       dbus_manager->GetShillServiceClient()->GetTestInterface();
+  DCHECK(services);
   ShillProfileClient::TestInterface* profiles =
       dbus_manager->GetShillProfileClient()->GetTestInterface();
+  DCHECK(profiles);
   ShillDeviceClient::TestInterface* devices =
       dbus_manager->GetShillDeviceClient()->GetTestInterface();
-  if (!services || !profiles || !devices)
-    return;
+  DCHECK(devices);
+  ShillIPConfigClient::TestInterface* ip_configs =
+      dbus_manager->GetShillIPConfigClient()->GetTestInterface();
+  DCHECK(ip_configs);
 
   const std::string shared_profile = ShillProfileClient::GetSharedProfilePath();
   profiles->AddProfile(shared_profile, std::string());
@@ -563,12 +568,36 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
   bool enabled;
   std::string state;
 
+  // IPConfigs
+  base::DictionaryValue ipconfig_v4_dictionary;
+  ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
+      shill::kAddressProperty, "0.0.0.0");
+  ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
+      shill::kGatewayProperty, "0.0.0.1");
+  ipconfig_v4_dictionary.SetIntegerWithoutPathExpansion(
+      shill::kPrefixlenProperty, 0);
+  ipconfig_v4_dictionary.SetStringWithoutPathExpansion(
+      shill::kMethodProperty, shill::kTypeIPv4);
+  ip_configs->AddIPConfig("ipconfig_v4_path", ipconfig_v4_dictionary);
+  base::DictionaryValue ipconfig_v6_dictionary;
+  ipconfig_v6_dictionary.SetStringWithoutPathExpansion(
+      shill::kAddressProperty, "0:0:0:0:0:0:0:0");
+  ipconfig_v6_dictionary.SetStringWithoutPathExpansion(
+      shill::kMethodProperty, shill::kTypeIPv6);
+  ip_configs->AddIPConfig("ipconfig_v6_path", ipconfig_v6_dictionary);
+
   // Ethernet
   state = GetInitialStateForType(shill::kTypeEthernet, &enabled);
   if (state == shill::kStateOnline) {
     AddTechnology(shill::kTypeEthernet, enabled);
     devices->AddDevice(
         "/device/eth1", shill::kTypeEthernet, "stub_eth_device1");
+    base::ListValue eth_ip_configs;
+    eth_ip_configs.AppendString("ipconfig_v4_path");
+    eth_ip_configs.AppendString("ipconfig_v6_path");
+    devices->SetDeviceProperty("/device/eth1",
+                               shill::kIPConfigsProperty,
+                               eth_ip_configs);
     services->AddService("eth1", "eth1",
                          shill::kTypeEthernet,
                          state,
@@ -586,6 +615,12 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
     }
     AddTechnology(shill::kTypeWifi, enabled);
     devices->AddDevice("/device/wifi1", shill::kTypeWifi, "stub_wifi_device1");
+    base::ListValue wifi_ip_configs;
+    wifi_ip_configs.AppendString("ipconfig_v4_path");
+    wifi_ip_configs.AppendString("ipconfig_v6_path");
+    devices->SetDeviceProperty("/device/wifi1",
+                               shill::kIPConfigsProperty,
+                               wifi_ip_configs);
 
     services->AddService("wifi1",
                          "wifi1",

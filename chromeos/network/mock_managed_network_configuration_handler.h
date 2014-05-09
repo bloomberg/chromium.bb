@@ -22,11 +22,10 @@ class CHROMEOS_EXPORT MockManagedNetworkConfigurationHandler
   // ManagedNetworkConfigurationHandler overrides
   MOCK_METHOD1(AddObserver, void(NetworkPolicyObserver* observer));
   MOCK_METHOD1(RemoveObserver, void(NetworkPolicyObserver* observer));
-  MOCK_CONST_METHOD3(
-      GetProperties,
-      void(const std::string& service_path,
-           const network_handler::DictionaryResultCallback& callback,
-           const network_handler::ErrorCallback& error_callback));
+  MOCK_METHOD3(GetProperties,
+               void(const std::string& service_path,
+                    const network_handler::DictionaryResultCallback& callback,
+                    const network_handler::ErrorCallback& error_callback));
   MOCK_METHOD4(GetManagedProperties,
                void(const std::string& userhash,
                     const std::string& service_path,

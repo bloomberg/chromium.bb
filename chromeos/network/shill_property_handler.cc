@@ -489,16 +489,17 @@ void ShillPropertyHandler::GetPropertiesCallback(
     }
   }
   listener_->UpdateManagedStateProperties(type, path, properties);
-  // Request IPConfig parameters for networks.
-  if (type == ManagedState::MANAGED_TYPE_NETWORK &&
-      properties.HasKey(shill::kIPConfigProperty)) {
-    std::string ip_config_path;
-    if (properties.GetString(shill::kIPConfigProperty, &ip_config_path)) {
-      DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
-          dbus::ObjectPath(ip_config_path),
-          base::Bind(&ShillPropertyHandler::GetIPConfigCallback,
-                     AsWeakPtr(), path));
-    }
+
+  if (type == ManagedState::MANAGED_TYPE_NETWORK) {
+    // Request IPConfig properties.
+    const base::Value* value;
+    if (properties.GetWithoutPathExpansion(shill::kIPConfigProperty, &value))
+      RequestIPConfig(type, path, *value);
+  } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
+    // Clear and request IPConfig properties for each entry in IPConfigs.
+    const base::Value* value;
+    if (properties.GetWithoutPathExpansion(shill::kIPConfigsProperty, &value))
+      RequestIPConfigsList(type, path, *value);
   }
 
   // Notify the listener only when all updates for that type have completed.
@@ -518,70 +519,64 @@ void ShillPropertyHandler::PropertyChangedCallback(
     const std::string& path,
     const std::string& key,
     const base::Value& value) {
+  if (type == ManagedState::MANAGED_TYPE_NETWORK &&
+      key == shill::kIPConfigProperty) {
+    RequestIPConfig(type, path, value);
+  } else if (type == ManagedState::MANAGED_TYPE_DEVICE &&
+      key == shill::kIPConfigsProperty) {
+    RequestIPConfigsList(type, path, value);
+  }
+
   if (type == ManagedState::MANAGED_TYPE_NETWORK)
-    NetworkServicePropertyChangedCallback(path, key, value);
+    listener_->UpdateNetworkServiceProperty(path, key, value);
   else if (type == ManagedState::MANAGED_TYPE_DEVICE)
-    NetworkDevicePropertyChangedCallback(path, key, value);
+    listener_->UpdateDeviceProperty(path, key, value);
   else
     NOTREACHED();
 }
 
-void ShillPropertyHandler::NetworkServicePropertyChangedCallback(
+void ShillPropertyHandler::RequestIPConfig(
+    ManagedState::ManagedType type,
     const std::string& path,
-    const std::string& key,
-    const base::Value& value) {
-  if (key == shill::kIPConfigProperty) {
-    // Request the IPConfig for the network and update network properties
-    // when the request completes.
-    std::string ip_config_path;
-    value.GetAsString(&ip_config_path);
-    DCHECK(!ip_config_path.empty());
-    DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
-        dbus::ObjectPath(ip_config_path),
-        base::Bind(&ShillPropertyHandler::GetIPConfigCallback,
-                   AsWeakPtr(), path));
-  } else {
-    listener_->UpdateNetworkServiceProperty(path, key, value);
+    const base::Value& ip_config_path_value) {
+  std::string ip_config_path;
+  if (!ip_config_path_value.GetAsString(&ip_config_path) ||
+      ip_config_path.empty()) {
+    NET_LOG_ERROR("Invalid IPConfig", path);
+    return;
+  }
+  DBusThreadManager::Get()->GetShillIPConfigClient()->GetProperties(
+      dbus::ObjectPath(ip_config_path),
+      base::Bind(&ShillPropertyHandler::GetIPConfigCallback,
+                 AsWeakPtr(), type, path, ip_config_path));
+}
+
+void ShillPropertyHandler::RequestIPConfigsList(
+    ManagedState::ManagedType type,
+    const std::string& path,
+    const base::Value& ip_config_list_value) {
+  const base::ListValue* ip_configs;
+  if (!ip_config_list_value.GetAsList(&ip_configs))
+    return;
+  for (base::ListValue::const_iterator iter = ip_configs->begin();
+       iter != ip_configs->end(); ++iter) {
+    RequestIPConfig(type, path, **iter);
   }
 }
 
 void ShillPropertyHandler::GetIPConfigCallback(
-    const std::string& service_path,
+    ManagedState::ManagedType type,
+    const std::string& path,
+    const std::string& ip_config_path,
     DBusMethodCallStatus call_status,
     const base::DictionaryValue& properties)  {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
     NET_LOG_ERROR("Failed to get IP Config properties",
-                  base::StringPrintf("%s: %d",
-                                     service_path.c_str(), call_status));
+                  base::StringPrintf("%s: %d", path.c_str(), call_status));
     return;
   }
-  UpdateIPConfigProperty(service_path, properties, shill::kAddressProperty);
-  UpdateIPConfigProperty(service_path, properties, shill::kNameServersProperty);
-  UpdateIPConfigProperty(service_path, properties, shill::kPrefixlenProperty);
-  UpdateIPConfigProperty(service_path, properties, shill::kGatewayProperty);
-  UpdateIPConfigProperty(service_path, properties,
-                         shill::kWebProxyAutoDiscoveryUrlProperty);
-}
-
-void ShillPropertyHandler::UpdateIPConfigProperty(
-    const std::string& service_path,
-    const base::DictionaryValue& properties,
-    const char* property) {
-  const base::Value* value;
-  if (!properties.GetWithoutPathExpansion(property, &value)) {
-    LOG(ERROR) << "Failed to get IPConfig property: " << property
-               << ", for: " << service_path;
-    return;
-  }
-  listener_->UpdateNetworkServiceProperty(
-      service_path, NetworkState::IPConfigProperty(property), *value);
-}
-
-void ShillPropertyHandler::NetworkDevicePropertyChangedCallback(
-    const std::string& path,
-    const std::string& key,
-    const base::Value& value) {
-  listener_->UpdateDeviceProperty(path, key, value);
+  NET_LOG_EVENT("IP Config properties received", path);
+  listener_->UpdateIPConfigProperties(type, path, ip_config_path, properties);
 }
 
 }  // namespace internal

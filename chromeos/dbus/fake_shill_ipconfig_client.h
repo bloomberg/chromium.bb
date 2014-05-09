@@ -14,7 +14,9 @@
 namespace chromeos {
 
 // A fake implementation of ShillIPConfigClient.
-class CHROMEOS_EXPORT FakeShillIPConfigClient : public ShillIPConfigClient {
+class CHROMEOS_EXPORT FakeShillIPConfigClient
+    : public ShillIPConfigClient,
+      public ShillIPConfigClient::TestInterface {
  public:
   FakeShillIPConfigClient();
   virtual ~FakeShillIPConfigClient();
@@ -40,6 +42,11 @@ class CHROMEOS_EXPORT FakeShillIPConfigClient : public ShillIPConfigClient {
                              const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidDBusMethodCallback& callback) OVERRIDE;
+  virtual ShillIPConfigClient::TestInterface* GetTestInterface() OVERRIDE;
+
+  // ShillIPConfigClient::TestInterface overrides.
+  virtual void AddIPConfig(const std::string& ip_config_path,
+                           const base::DictionaryValue& properties) OVERRIDE;
 
  private:
   // Runs callback with |values|.

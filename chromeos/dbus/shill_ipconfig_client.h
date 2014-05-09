@@ -37,6 +37,17 @@ class CHROMEOS_EXPORT ShillIPConfigClient : public DBusClient {
  public:
   typedef ShillClientHelper::PropertyChangedHandler PropertyChangedHandler;
   typedef ShillClientHelper::DictionaryValueCallback DictionaryValueCallback;
+
+  class TestInterface {
+   public:
+    // Adds an IPConfig entry.
+    virtual void AddIPConfig(const std::string& ip_config_path,
+                             const base::DictionaryValue& properties) = 0;
+
+   protected:
+    virtual ~TestInterface() {}
+  };
+
   virtual ~ShillIPConfigClient();
 
   // Factory function, creates a new instance which is owned by the caller.
@@ -80,6 +91,9 @@ class CHROMEOS_EXPORT ShillIPConfigClient : public DBusClient {
   // |callback| is called after the method call succeeds.
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidDBusMethodCallback& callback) = 0;
+
+  // Returns an interface for testing (stub only), or returns NULL.
+  virtual ShillIPConfigClient::TestInterface* GetTestInterface() = 0;
 
  protected:
   friend class ShillIPConfigClientTest;

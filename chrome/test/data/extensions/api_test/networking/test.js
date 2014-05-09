@@ -135,13 +135,14 @@ var availableTests = [
                     "Type": "Ethernet"
                   },
                   {
+                    "Connectable": true,
                     "ConnectionState": "Connected",
                     "GUID": "stub_wifi1",
                     "Name": "wifi1",
                     "Type": "WiFi",
                     "WiFi": {
                       "Security": "WEP-PSK",
-                      "SignalStrength": 0
+                      "SignalStrength": 40
                     }
                   },
                   {
@@ -151,6 +152,7 @@ var availableTests = [
                     "Type": "VPN",
                   },
                   {
+                    "Connectable": true,
                     "ConnectionState": "NotConnected",
                     "GUID": "stub_wifi2",
                     "Name": "wifi2_PSK",
@@ -159,17 +161,6 @@ var availableTests = [
                       "Security": "WPA-PSK",
                       "SignalStrength": 80
                     }
-                  },
-                  {
-                    "Cellular": {
-                      "ActivationState": "not-activated",
-                      "NetworkTechnology": "GSM",
-                      "RoamingState": "home"
-                    },
-                    "ConnectionState": "NotConnected",
-                    "GUID": "stub_cellular1",
-                    "Name": "cellular1",
-                    "Type": "Cellular"
                   }], result);
       }));
   },
@@ -178,16 +169,18 @@ var availableTests = [
       "WiFi",
       callbackPass(function(result) {
         assertEq([{
+                    "Connectable": true,
                     "ConnectionState": "Connected",
                     "GUID": "stub_wifi1",
                     "Name": "wifi1",
                     "Type": "WiFi",
                     "WiFi": {
                       "Security": "WEP-PSK",
-                      "SignalStrength": 0
+                      "SignalStrength": 40
                     }
                   },
                   {
+                    "Connectable": true,
                     "ConnectionState": "NotConnected",
                     "GUID": "stub_wifi2",
                     "Name": "wifi2_PSK",
@@ -205,8 +198,7 @@ var availableTests = [
     var expected = ["stub_ethernet",
                     "stub_wifi1",
                     "stub_vpn1",
-                    "stub_wifi2",
-                    "stub_cellular1"];
+                    "stub_wifi2"];
     var done = chrome.test.callbackAdded();
     var listener = new privateHelpers.listListener(expected, done);
     chrome.networkingPrivate.onNetworkListChanged.addListener(
@@ -215,19 +207,25 @@ var availableTests = [
   },
   function getProperties() {
     chrome.networkingPrivate.getProperties(
-      "stub_wifi2",
+      "stub_wifi1",
       callbackPass(function(result) {
-        assertEq({
-                   "ConnectionState": "NotConnected",
-                   "GUID": "stub_wifi2",
-                   "Name": "wifi2_PSK",
+        assertEq({ "Connectable": true,
+                   "ConnectionState": "Connected",
+                   "GUID": "stub_wifi1",
+                   "IPConfigs": [{
+                     "Gateway": "0.0.0.1",
+                     "IPAddress": "0.0.0.0",
+                     "RoutingPrefix": 0,
+                     "Type": "IPv4"
+                   }],
+                   "Name": "wifi1",
                    "Type": "WiFi",
                    "WiFi": {
-                     "Frequency": 5000,
-                     "FrequencyList": [2400, 5000],
-                     "SSID": "wifi2_PSK",
-                     "Security": "WPA-PSK",
-                     "SignalStrength": 80
+                     "Frequency": 2400,
+                     "FrequencyList": [2400],
+                     "SSID": "wifi1",
+                     "Security": "WEP-PSK",
+                     "SignalStrength": 40
                    }
                  }, result);
       }));
@@ -237,6 +235,10 @@ var availableTests = [
       "stub_wifi2",
       callbackPass(function(result) {
         assertEq({
+                   "Connectable": {
+                     "Active": true,
+                     "Effective": "Unmanaged"
+                   },
                    "ConnectionState": {
                      "Active": "NotConnected",
                      "Effective": "Unmanaged"
@@ -310,6 +312,7 @@ var availableTests = [
       "stub_wifi2",
       callbackPass(function(result) {
         assertEq({
+          "Connectable": true,
           "ConnectionState": "NotConnected",
           "GUID": "stub_wifi2",
           "Name": "wifi2_PSK",
@@ -348,8 +351,7 @@ var availableTests = [
     var expected = ["stub_ethernet",
                     "stub_wifi2",
                     "stub_vpn1",
-                    "stub_wifi1",
-                    "stub_cellular1"];
+                    "stub_wifi1"];
     var done = chrome.test.callbackAdded();
     var listener = new privateHelpers.listListener(expected, done);
     chrome.networkingPrivate.onNetworkListChanged.addListener(

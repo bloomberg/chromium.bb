@@ -39,6 +39,8 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   virtual void GetStateProperties(
       base::DictionaryValue* dictionary) const OVERRIDE;
 
+  void IPConfigPropertiesChanged(const base::DictionaryValue& properties);
+
   // Returns true, if the network requires a service activation.
   bool RequiresActivation() const;
 
@@ -101,10 +103,6 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);
   static bool ErrorIsValid(const std::string& error);
-
-  // Helper to return a full prefixed version of an IPConfig property key.
-  static std::string IPConfigProperty(const char* key);
-
 
  private:
   friend class MobileActivatorTest;

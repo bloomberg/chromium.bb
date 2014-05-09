@@ -26,6 +26,9 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   virtual bool InitialPropertiesReceived(
       const base::DictionaryValue& properties) OVERRIDE;
 
+  void IPConfigPropertiesChanged(const std::string& ip_config_path,
+                                 const base::DictionaryValue& properties);
+
   // Accessors
   const std::string& mac_address() const { return mac_address_; }
 
@@ -52,6 +55,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   // Do not use this. It exists temporarily for internet_options_handler.cc
   // which is being deprecated.
   const base::DictionaryValue& properties() const { return properties_; }
+  const base::DictionaryValue& ip_configs() const { return ip_configs_; }
 
   // Ethernet specific accessors
   bool eap_authentication_completed() const {
@@ -88,6 +92,9 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
 
   // Keep all Device properties in a dictionary for now. See comment above.
   base::DictionaryValue properties_;
+
+  // Dictionary of IPConfig properties, keyed by IpConfig path.
+  base::DictionaryValue ip_configs_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceState);
 };

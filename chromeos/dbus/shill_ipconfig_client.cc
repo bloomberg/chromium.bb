@@ -51,6 +51,7 @@ class ShillIPConfigClientImpl : public ShillIPConfigClient {
                              const VoidDBusMethodCallback& callback) OVERRIDE;
   virtual void Remove(const dbus::ObjectPath& ipconfig_path,
                       const VoidDBusMethodCallback& callback) OVERRIDE;
+  virtual ShillIPConfigClient::TestInterface* GetTestInterface() OVERRIDE;
 
  protected:
   virtual void Init(dbus::Bus* bus) OVERRIDE {
@@ -162,6 +163,11 @@ void ShillIPConfigClientImpl::Remove(
   dbus::MethodCall method_call(shill::kFlimflamIPConfigInterface,
                                shill::kRemoveConfigFunction);
   GetHelper(ipconfig_path)->CallVoidMethod(&method_call, callback);
+}
+
+ShillIPConfigClient::TestInterface*
+ShillIPConfigClientImpl::GetTestInterface() {
+  return NULL;
 }
 
 }  // namespace

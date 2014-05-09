@@ -69,6 +69,14 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     AddPropertyUpdate(shill::kDevicesProperty, device_path);
   }
 
+  virtual void UpdateIPConfigProperties(
+      ManagedState::ManagedType type,
+      const std::string& path,
+      const std::string& ip_config_path,
+      const base::DictionaryValue& properties) OVERRIDE {
+    AddPropertyUpdate(shill::kIPConfigsProperty, ip_config_path);
+  }
+
   virtual void TechnologyListChanged() OVERRIDE {
     ++technology_list_updates_;
   }
@@ -463,20 +471,19 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerIPConfigPropertyChanged) {
       base::StringValue(kTestIPConfigPath),
       base::Bind(&base::DoNothing), base::Bind(&ErrorCallbackFunction));
   message_loop_.RunUntilIdle();
-  // IPConfig property change on the service should trigger property updates for
-  // IP Address, DNS, prefixlen, and gateway.
-  EXPECT_EQ(4, listener_->property_updates(
-      shill::kServicesProperty)[kTestServicePath1]);
+  // IPConfig property change on the service should trigger an IPConfigs update.
+  EXPECT_EQ(1, listener_->property_updates(
+      shill::kIPConfigsProperty)[kTestIPConfigPath]);
 
   // Now, Add a new watched service with the IPConfig already set.
   const std::string kTestServicePath2("test_wifi_service2");
   AddServiceWithIPConfig(shill::kTypeWifi, kTestServicePath2,
                          shill::kStateIdle, kTestIPConfigPath, true);
   message_loop_.RunUntilIdle();
-  // A watched service with the IPConfig property already set must trigger
-  // property updates for IP Address, DNS, prefixlen, and gateway when added.
-  EXPECT_EQ(4, listener_->property_updates(
-      shill::kServicesProperty)[kTestServicePath2]);
+  // A watched service with the IPConfig property already set should trigger an
+  // additional IPConfigs update.
+  EXPECT_EQ(2, listener_->property_updates(
+      shill::kIPConfigsProperty)[kTestIPConfigPath]);
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerServiceCompleteList) {

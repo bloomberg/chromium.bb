@@ -253,6 +253,14 @@ class CHROMEOS_EXPORT NetworkStateHandler
       const std::string& key,
       const base::Value& value) OVERRIDE;
 
+  // Called by ShillPropertyHandler when a watched network or device
+  // IPConfig property changes.
+  virtual void UpdateIPConfigProperties(
+      ManagedState::ManagedType type,
+      const std::string& path,
+      const std::string& ip_config_path,
+      const base::DictionaryValue& properties) OVERRIDE;
+
   // Called by ShillPropertyHandler when the portal check list manager property
   // changes.
   virtual void CheckPortalListChanged(

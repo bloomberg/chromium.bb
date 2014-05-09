@@ -71,6 +71,13 @@ class CHROMEOS_EXPORT ShillPropertyHandler
         const std::string& key,
         const base::Value& value) = 0;
 
+    // Called when a watched network or device IPConfig property changes.
+    virtual void UpdateIPConfigProperties(
+        ManagedState::ManagedType type,
+        const std::string& path,
+        const std::string& ip_config_path,
+        const base::DictionaryValue& properties) = 0;
+
     // Called when the list of devices with portal check enabled changes.
     virtual void CheckPortalListChanged(
          const std::string& check_portal_list) = 0;
@@ -187,23 +194,30 @@ class CHROMEOS_EXPORT ShillPropertyHandler
                                const std::string& path,
                                const std::string& key,
                                const base::Value& value);
-  void NetworkServicePropertyChangedCallback(const std::string& path,
-                                             const std::string& key,
-                                             const base::Value& value);
 
-  // Callback for getting the IPConfig property of a Network. Handled here
-  // instead of in NetworkState so that all asynchronous requests are done
+  // Request a single IPConfig object corresponding to |ip_config_path_value|
+  // from Shill.IPConfigClient and trigger a call to UpdateIPConfigProperties
+  // for the network or device corresponding to |type| and |path|.
+  void RequestIPConfig(ManagedState::ManagedType type,
+                       const std::string& path,
+                       const base::Value& ip_config_path_value);
+
+  // Request the IPConfig objects corresponding to entries in
+  // |ip_config_list_value| from Shill.IPConfigClient and trigger a call to
+  // UpdateIPConfigProperties with each object for the network or device
+  // corresponding to |type| and |path|.
+  void RequestIPConfigsList(ManagedState::ManagedType type,
+                            const std::string& path,
+                            const base::Value& ip_config_list_value);
+
+  // Callback for getting the IPConfig property of a network or device. Handled
+  // here instead of in NetworkState so that all asynchronous requests are done
   // in a single place (also simplifies NetworkState considerably).
-  void GetIPConfigCallback(const std::string& service_path,
+  void GetIPConfigCallback(ManagedState::ManagedType type,
+                           const std::string& path,
+                           const std::string& ip_config_path,
                            DBusMethodCallStatus call_status,
                            const base::DictionaryValue& properties);
-  void UpdateIPConfigProperty(const std::string& service_path,
-                              const base::DictionaryValue& properties,
-                              const char* property);
-
-  void NetworkDevicePropertyChangedCallback(const std::string& path,
-                                            const std::string& key,
-                                            const base::Value& value);
 
   // Pointer to containing class (owns this)
   Listener* listener_;

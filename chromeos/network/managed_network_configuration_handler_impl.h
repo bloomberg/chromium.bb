@@ -43,7 +43,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   virtual void GetProperties(
       const std::string& service_path,
       const network_handler::DictionaryResultCallback& callback,
-      const network_handler::ErrorCallback& error_callback) const OVERRIDE;
+      const network_handler::ErrorCallback& error_callback) OVERRIDE;
 
   virtual void GetManagedProperties(
       const std::string& userhash,
@@ -120,10 +120,20 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
       const std::string& service_path,
       const base::DictionaryValue& shill_properties);
 
+  void GetPropertiesCallback(
+      const network_handler::DictionaryResultCallback& callback,
+      const std::string& service_path,
+      const base::DictionaryValue& shill_properties);
+
   const Policies* GetPoliciesForUser(const std::string& userhash) const;
   const Policies* GetPoliciesForProfile(const NetworkProfile& profile) const;
 
   void OnPolicyAppliedToNetwork(const std::string& service_path);
+
+  // Helper method to append "IPConfigs" property to |properties| by extracting
+  // them from the associated DeviceState.
+  void GetIPConfigs(const std::string& service_path,
+                    base::DictionaryValue* properties);
 
   // If present, the empty string maps to the device policy.
   UserToPoliciesMap policies_by_user_;

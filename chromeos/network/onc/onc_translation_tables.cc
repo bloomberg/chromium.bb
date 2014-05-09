@@ -171,6 +171,9 @@ const FieldTranslationEntry network_fields[] = {
     // onc_translator_shill_to_onc.cc. It is only converted when going from
     // Shill->ONC, and ignored otherwise.
     // { ::onc::network_config::kConnectionState, shill::kStateProperty },
+
+    { ::onc::network_config::kConnectable, shill::kConnectableProperty },
+    { ::onc::network_config::kErrorState, shill::kErrorProperty },
     {NULL}};
 
 const FieldTranslationEntry ipconfig_fields[] = {
@@ -178,6 +181,9 @@ const FieldTranslationEntry ipconfig_fields[] = {
     { ::onc::ipconfig::kGateway, shill::kGatewayProperty},
     { ::onc::ipconfig::kRoutingPrefix, shill::kPrefixlenProperty},
     { ::onc::ipconfig::kNameServers, shill::kNameServersProperty},
+    // This field is converted during translation, see ShillToONCTranslator::
+    // TranslateIPConfig. It is only converted from Shill->ONC.
+    // { ::onc::ipconfig::kType, shill::kMethodProperty},
     {NULL}};
 
 struct OncValueTranslationEntry {

@@ -90,6 +90,21 @@ void FakeShillIPConfigClient::Remove(const dbus::ObjectPath& ipconfig_path,
       FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 
+ShillIPConfigClient::TestInterface*
+FakeShillIPConfigClient::GetTestInterface() {
+  return this;
+}
+
+// ShillIPConfigClient::TestInterface overrides
+
+void FakeShillIPConfigClient::AddIPConfig(
+    const std::string& ip_config_path,
+    const base::DictionaryValue& properties) {
+  ipconfigs_.SetWithoutPathExpansion(ip_config_path, properties.DeepCopy());
+}
+
+// Private methods
+
 void FakeShillIPConfigClient::PassProperties(
     const base::DictionaryValue* values,
     const DictionaryValueCallback& callback) const {
