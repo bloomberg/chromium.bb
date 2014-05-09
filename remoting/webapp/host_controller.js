@@ -124,7 +124,19 @@ remoting.HostController.prototype.getConsent = function(onDone, onError) {
  * @return {void}
  */
 remoting.HostController.prototype.installHost = function(onDone, onError) {
-  this.hostDispatcher_.installHost(onDone, onError);
+  /** @type {remoting.HostController} */
+  var that = this;
+
+  /** @param {remoting.HostController.AsyncResult} asyncResult */
+  var onHostInstalled = function(asyncResult) {
+    // Refresh the dispatcher after the host has been installed.
+    if (asyncResult == remoting.HostController.AsyncResult.OK) {
+      that.hostDispatcher_ = that.createDispatcher_();
+    }
+    onDone(asyncResult);
+  };
+
+  this.hostDispatcher_.installHost(onHostInstalled, onError);
 };
 
 /**
@@ -344,27 +356,7 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
                                          onError);
   }
 
-  /** @param {remoting.HostController.AsyncResult} asyncResult */
-  var onHostInstalled = function(asyncResult) {
-    if (asyncResult == remoting.HostController.AsyncResult.OK) {
-      // Now that the host is installed, we need to get a new dispatcher that
-      // dispatches to the NM host instead of the NPAPI plugin.
-      console.log('Recreating the host dispatcher.');
-      that.hostDispatcher_ = that.createDispatcher_();
-      that.hostDispatcher_.getHostName(startWithHostname, onError);
-    } else if (asyncResult == remoting.HostController.AsyncResult.CANCELLED) {
-      onError(remoting.Error.CANCELLED);
-    } else {
-      onError(remoting.Error.UNEXPECTED);
-    }
-  }
-
-  // Perform the installation step here on Windows.
-  if (navigator.platform == 'Win32') {
-    this.installHost(onHostInstalled, onError);
-  } else {
-    this.hostDispatcher_.getHostName(startWithHostname, onError);
-  }
+  this.hostDispatcher_.getHostName(startWithHostname, onError);
 };
 
 /**

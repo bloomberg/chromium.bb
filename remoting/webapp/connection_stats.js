@@ -52,7 +52,7 @@ remoting.ConnectionStats.prototype.update = function(stats) {
   /**
    * @param {number} value
    * @param {string} units
-   * @returns {string} Formatted number.
+   * @return {string} Formatted number.
    */
   function formatStatNumber(value, units) {
     if (value != undefined) {

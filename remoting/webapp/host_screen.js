@@ -58,10 +58,19 @@ remoting.tryShare = function() {
     // If we failed to initialize dispatcher then prompt the user to install the
     // host.
     if (hostInstallDialog == null) {
+      var onDone = function(asyncResult) {
+        // TODO (weitaosu): Ignore asyncResult for now because it is not set
+        // during manual host installation. We should fix it after switching
+        // to automatic host installation on Windows.
+        tryInitializeDispatcher();
+      };
+
       hostInstallDialog = new remoting.HostInstallDialog();
 
-      (/** @type {remoting.HostInstallDialog} */ hostInstallDialog)
-          .show(tryInitializeDispatcher, onInstallPromptError);
+      (/** @type {remoting.HostInstallDialog} */ hostInstallDialog).show(
+          null,
+          onDone,
+          onInstallPromptError);
     } else {
       (/** @type {remoting.HostInstallDialog} */ hostInstallDialog).tryAgain();
     }

@@ -327,6 +327,9 @@ remoting.HostDispatcher.prototype.getUsageStatsConsent =
 };
 
 /**
+ * This function installs the chromoting host using the NPAPI plugin and should
+ * only be called on Windows.
+ *
  * @param {function(remoting.HostController.AsyncResult):void} onDone
  * @param {function(remoting.Error):void} onError
  * @return {void}
