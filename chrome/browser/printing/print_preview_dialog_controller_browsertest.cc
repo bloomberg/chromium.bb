@@ -91,7 +91,7 @@ class PrintPreviewDialogDestroyedObserver : public WebContentsObserver {
 
  private:
   // content::WebContentsObserver implementation.
-  virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE {
+  virtual void WebContentsDestroyed() OVERRIDE {
     dialog_destroyed_ = true;
   }
 

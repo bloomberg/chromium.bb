@@ -81,7 +81,7 @@ class CloseObserver : public content::WebContentsObserver {
     close_loop_.Run();
   }
 
-  virtual void WebContentsDestroyed(WebContents* contents) OVERRIDE {
+  virtual void WebContentsDestroyed() OVERRIDE {
     close_loop_.Quit();
   }
 

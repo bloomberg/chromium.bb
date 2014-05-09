@@ -110,7 +110,7 @@ class WebContentsModalDialogManager
   virtual void DidGetIgnoredUIEvent() OVERRIDE;
   virtual void WasShown() OVERRIDE;
   virtual void WasHidden() OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
   virtual void DidAttachInterstitialPage() OVERRIDE;
 
   // Delegate for notifying our owner about stuff. Not owned by us.

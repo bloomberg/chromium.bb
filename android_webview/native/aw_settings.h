@@ -46,8 +46,7 @@ class AwSettings : public content::WebContentsObserver {
   // WebContentsObserver overrides:
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   bool accelerated_2d_canvas_disabled_by_switch_;
 

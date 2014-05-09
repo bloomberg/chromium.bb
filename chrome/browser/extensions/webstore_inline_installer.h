@@ -58,8 +58,7 @@ class WebstoreInlineInstaller
 
  private:
   // content::WebContentsObserver interface implementation.
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // Checks whether the install is initiated by a page in a verified site
   // (which is at least a domain, but can also have a port or a path).

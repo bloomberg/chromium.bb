@@ -479,8 +479,7 @@ bool ClientSideDetectionHost::DidPageReceiveSafeBrowsingMatch() const {
   return entry->GetExtraData(kSafeBrowsingMatchKey, &value);
 }
 
-void ClientSideDetectionHost::WebContentsDestroyed(WebContents* tab) {
-  DCHECK(tab);
+void ClientSideDetectionHost::WebContentsDestroyed() {
   // Tell any pending classification request that it is being canceled.
   if (classification_request_.get()) {
     classification_request_->Cancel();

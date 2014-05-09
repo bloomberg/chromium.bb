@@ -63,8 +63,7 @@ class AutoLoginRedirector : public UbertokenConsumer,
   virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
   // Implementation of content::WebContentsObserver
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // Redirect tab to MergeSession URL, logging the user in and navigating
   // to the desired page.
@@ -97,8 +96,7 @@ AutoLoginRedirector::AutoLoginRedirector(
 AutoLoginRedirector::~AutoLoginRedirector() {
 }
 
-void AutoLoginRedirector::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void AutoLoginRedirector::WebContentsDestroyed() {
   // The WebContents that started this has been destroyed. The request must be
   // cancelled and this object must be deleted.
   ubertoken_fetcher_.reset();

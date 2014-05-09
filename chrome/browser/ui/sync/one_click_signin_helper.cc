@@ -426,7 +426,7 @@ class CurrentHistoryCleaner : public content::WebContentsObserver {
   virtual ~CurrentHistoryCleaner();
 
   // content::WebContentsObserver:
-  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
       const base::string16& frame_unique_name,
@@ -479,8 +479,7 @@ void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
   }
 }
 
-void CurrentHistoryCleaner::WebContentsDestroyed(
-    content::WebContents* contents) {
+void CurrentHistoryCleaner::WebContentsDestroyed() {
   delete this;  // Failure.
 }
 

@@ -83,8 +83,7 @@ void ActiveTabPermissionGranter::DidNavigateMainFrame(
   ClearActiveExtensionsAndNotify();
 }
 
-void ActiveTabPermissionGranter::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void ActiveTabPermissionGranter::WebContentsDestroyed() {
   ClearActiveExtensionsAndNotify();
 }
 

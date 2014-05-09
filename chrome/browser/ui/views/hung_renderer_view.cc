@@ -155,8 +155,7 @@ void HungPagesTableModel::WebContentsObserverImpl::RenderProcessGone(
   model_->TabDestroyed(this);
 }
 
-void HungPagesTableModel::WebContentsObserverImpl::WebContentsDestroyed(
-    WebContents* tab) {
+void HungPagesTableModel::WebContentsObserverImpl::WebContentsDestroyed() {
   model_->TabDestroyed(this);
 }
 

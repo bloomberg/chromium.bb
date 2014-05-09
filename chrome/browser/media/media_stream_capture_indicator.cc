@@ -161,8 +161,8 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
 
  private:
   // content::WebContentsObserver overrides.
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
-    indicator_->UnregisterWebContents(web_contents);
+  virtual void WebContentsDestroyed() OVERRIDE {
+    indicator_->UnregisterWebContents(web_contents());
     delete this;
   }
 

@@ -70,8 +70,7 @@ class TabAutofillManagerDelegate
       const base::string16& profile_full_name) OVERRIDE;
 
   // content::WebContentsObserver implementation.
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // Exposed for testing.
   AutofillDialogController* GetDialogControllerForTesting() {

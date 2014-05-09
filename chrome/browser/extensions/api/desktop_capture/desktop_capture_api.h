@@ -52,8 +52,7 @@ class DesktopCaptureChooseDesktopMediaFunction
   virtual bool RunAsync() OVERRIDE;
 
   // content::WebContentsObserver overrides.
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   void OnPickerDialogResults(content::DesktopMediaID source);
 

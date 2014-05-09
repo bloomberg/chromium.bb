@@ -114,7 +114,7 @@ bool ShortcutBuilder::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ShortcutBuilder::WebContentsDestroyed(content::WebContents* web_contents) {
+void ShortcutBuilder::WebContentsDestroyed() {
   Destroy();
 }
 

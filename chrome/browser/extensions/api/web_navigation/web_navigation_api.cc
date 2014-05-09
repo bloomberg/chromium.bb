@@ -646,10 +646,10 @@ void WebNavigationTabObserver::FrameDetached(
   navigation_state_.FrameDetached(frame_id);
 }
 
-void WebNavigationTabObserver::WebContentsDestroyed(content::WebContents* tab) {
-  g_tab_observer.Get().erase(tab);
+void WebNavigationTabObserver::WebContentsDestroyed() {
+  g_tab_observer.Get().erase(web_contents());
   registrar_.RemoveAll();
-  SendErrorEvents(tab, NULL, FrameNavigationState::FrameID());
+  SendErrorEvents(web_contents(), NULL, FrameNavigationState::FrameID());
 }
 
 void WebNavigationTabObserver::SendErrorEvents(

@@ -60,14 +60,11 @@ class BrowserStatusMonitor::LocalWebContentsObserver
       monitor_->SetShelfIDForBrowserWindowContents(browser, web_contents());
   }
 
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_content) OVERRIDE {
-    if (web_content == web_contents()) {
-      // We can only come here when there was a non standard termination like
-      // an app got un-installed while running, etc.
-      monitor_->WebContentsDestroyed(web_content);
-      // |this| is gone now.
-    }
+  virtual void WebContentsDestroyed() OVERRIDE {
+    // We can only come here when there was a non standard termination like
+    // an app got un-installed while running, etc.
+    monitor_->WebContentsDestroyed(web_contents());
+    // |this| is gone now.
   }
 
  private:

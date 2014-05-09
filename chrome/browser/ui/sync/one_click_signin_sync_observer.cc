@@ -51,9 +51,8 @@ OneClickSigninSyncObserver::OneClickSigninSyncObserver(
 
 OneClickSigninSyncObserver::~OneClickSigninSyncObserver() {}
 
-void OneClickSigninSyncObserver::WebContentsDestroyed(
-    content::WebContents* web_contents) {
-  ProfileSyncService* sync_service = GetSyncService(web_contents);
+void OneClickSigninSyncObserver::WebContentsDestroyed() {
+  ProfileSyncService* sync_service = GetSyncService(web_contents());
   if (sync_service)
     sync_service->RemoveObserver(this);
 

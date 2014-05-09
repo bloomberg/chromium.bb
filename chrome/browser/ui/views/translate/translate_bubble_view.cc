@@ -261,8 +261,7 @@ void TranslateBubbleView::LinkClicked(views::Link* source, int event_flags) {
   HandleLinkClicked(static_cast<LinkID>(source->id()));
 }
 
-void TranslateBubbleView::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void TranslateBubbleView::WebContentsDestroyed() {
   GetWidget()->CloseNow();
 }
 

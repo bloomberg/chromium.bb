@@ -223,7 +223,7 @@ class WebContentsDestroyedWatcher : public WebContentsObserver {
 
  private:
   // Overridden WebContentsObserver methods.
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 

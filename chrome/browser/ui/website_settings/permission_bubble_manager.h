@@ -74,8 +74,7 @@ class PermissionBubbleManager
   // they will be finalized as if canceled by the user.
   virtual void NavigationEntryCommitted(
       const content::LoadCommittedDetails& details) OVERRIDE;
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // PermissionBubbleView::Delegate:
   virtual void ToggleAccept(int request_index, bool new_value) OVERRIDE;

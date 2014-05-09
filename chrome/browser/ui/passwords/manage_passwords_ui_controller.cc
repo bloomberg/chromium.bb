@@ -81,10 +81,9 @@ void ManagePasswordsUIController::OnBlacklistBlockedAutofill(
   UpdateBubbleAndIconVisibility();
 }
 
-void ManagePasswordsUIController::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void ManagePasswordsUIController::WebContentsDestroyed() {
   password_manager::PasswordStore* password_store =
-      GetPasswordStore(web_contents);
+      GetPasswordStore(web_contents());
   if (password_store)
     password_store->RemoveObserver(this);
 }

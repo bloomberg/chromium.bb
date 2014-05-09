@@ -110,14 +110,12 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserGesture() {
   }
 }
 
-void DownloadRequestLimiter::TabDownloadState::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void DownloadRequestLimiter::TabDownloadState::WebContentsDestroyed() {
   // Tab closed, no need to handle closing the dialog as it's owned by the
   // WebContents.
 
   NotifyCallbacks(false);
-  // Note that web_contents() is NULL at this point.
-  host_->Remove(this, web_contents);
+  host_->Remove(this, web_contents());
   // WARNING: We've been deleted.
 }
 

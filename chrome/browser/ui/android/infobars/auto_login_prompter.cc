@@ -97,7 +97,7 @@ void AutoLoginPrompter::DidStopLoading(
   delete this;
 }
 
-void AutoLoginPrompter::WebContentsDestroyed(WebContents* web_contents) {
+void AutoLoginPrompter::WebContentsDestroyed() {
   // The WebContents was destroyed before the navigation completed.
   delete this;
 }

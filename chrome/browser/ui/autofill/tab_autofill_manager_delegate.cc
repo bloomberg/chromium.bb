@@ -167,8 +167,7 @@ void TabAutofillManagerDelegate::HideRequestAutocompleteDialog() {
     dialog_controller_->Hide();
 }
 
-void TabAutofillManagerDelegate::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void TabAutofillManagerDelegate::WebContentsDestroyed() {
   HideAutofillPopup();
 }
 

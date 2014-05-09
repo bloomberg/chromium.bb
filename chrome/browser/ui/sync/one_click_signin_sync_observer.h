@@ -31,7 +31,7 @@ class OneClickSigninSyncObserver : public content::WebContentsObserver,
 
  private:
   // content::WebContentsObserver:
-  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // ProfileSyncServiceObserver:
   virtual void OnStateChanged() OVERRIDE;

@@ -67,7 +67,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   explicit ClientSideDetectionHost(content::WebContents* tab);
 
   // From content::WebContentsObserver.
-  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // Used for testing.
   void set_safe_browsing_managers(

@@ -73,7 +73,7 @@ class CONTENT_EXPORT WebContentsTracker
       OVERRIDE;
   virtual void DidNavigateMainFrame(const LoadCommittedDetails& details,
                                     const FrameNavigateParams& params) OVERRIDE;
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   ChangeCallback callback_;

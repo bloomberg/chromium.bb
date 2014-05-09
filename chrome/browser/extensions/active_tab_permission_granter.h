@@ -45,8 +45,7 @@ class ActiveTabPermissionGranter
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* web_contents)
-      OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // extensions::ExtensionRegistryObserver implementation.
   virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,

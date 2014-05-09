@@ -215,8 +215,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunAsync() {
   return true;
 }
 
-void DesktopCaptureChooseDesktopMediaFunction::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void DesktopCaptureChooseDesktopMediaFunction::WebContentsDestroyed() {
   Cancel();
 }
 

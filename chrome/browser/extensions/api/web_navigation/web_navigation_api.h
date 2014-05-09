@@ -105,7 +105,7 @@ class WebNavigationTabObserver
                                    int64 source_frame_num) OVERRIDE;
   virtual void FrameDetached(content::RenderViewHost* render_view_host,
                              int64 frame_num) OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
  private:
   explicit WebNavigationTabObserver(content::WebContents* web_contents);

@@ -293,9 +293,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                                         WebContents* new_web_contents) {}
 
   // Invoked when the WebContents is being destroyed. Gives subclasses a chance
-  // to cleanup. At the time this is invoked |web_contents()| returns NULL.
-  // It is safe to delete 'this' from here.
-  virtual void WebContentsDestroyed(WebContents* web_contents) {}
+  // to cleanup. After the whole loop over all WebContentsObservers has been
+  // finished, web_contents() returns NULL.
+  virtual void WebContentsDestroyed() {}
 
   // Called when the user agent override for a WebContents has been changed.
   virtual void UserAgentOverrideSet(const std::string& user_agent) {}
@@ -358,9 +358,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
  private:
   friend class WebContentsImpl;
 
-  // Invoked from WebContentsImpl. Invokes WebContentsDestroyed and NULL out
-  // |web_contents_|.
-  void WebContentsImplDestroyed();
+  void ResetWebContents();
 
   WebContentsImpl* web_contents_;
 

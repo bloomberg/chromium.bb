@@ -57,8 +57,7 @@ class ShortcutBuilder : public content::WebContentsObserver {
 
   // WebContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* web_contents)
-      OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
  private:
   void Destroy();

@@ -19,12 +19,11 @@ using content::WebContents;
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      web_contents_(web_contents),
       display_disposition_(
           password_manager::metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING),
       dismissal_reason_(password_manager::metrics_util::NOT_DISPLAYED) {
   ManagePasswordsUIController* controller =
-      ManagePasswordsUIController::FromWebContents(web_contents_);
+      ManagePasswordsUIController::FromWebContents(web_contents);
 
   // TODO(mkwst): Reverse this logic. The controller should populate the model
   // directly rather than the model pulling from the controller. Perhaps like
@@ -83,7 +82,7 @@ void ManagePasswordsBubbleModel::OnNopeClicked() {
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   dismissal_reason_ = password_manager::metrics_util::CLICKED_NEVER;
   ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents_);
+      ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->NeverSavePassword();
   state_ = password_manager::ui::BLACKLIST_STATE;
 }
@@ -91,7 +90,7 @@ void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
 void ManagePasswordsBubbleModel::OnUnblacklistClicked() {
   dismissal_reason_ = password_manager::metrics_util::CLICKED_UNBLACKLIST;
   ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents_);
+      ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->UnblacklistSite();
   state_ = password_manager::ui::MANAGE_STATE;
 }
@@ -99,7 +98,7 @@ void ManagePasswordsBubbleModel::OnUnblacklistClicked() {
 void ManagePasswordsBubbleModel::OnSaveClicked() {
   dismissal_reason_ = password_manager::metrics_util::CLICKED_SAVE;
   ManagePasswordsUIController* manage_passwords_ui_controller =
-      ManagePasswordsUIController::FromWebContents(web_contents_);
+      ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->SavePassword();
   state_ = password_manager::ui::MANAGE_STATE;
 }
@@ -110,17 +109,17 @@ void ManagePasswordsBubbleModel::OnDoneClicked() {
 
 void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   dismissal_reason_ = password_manager::metrics_util::CLICKED_MANAGE;
-  ManagePasswordsUIController::FromWebContents(web_contents_)
+  ManagePasswordsUIController::FromWebContents(web_contents())
       ->NavigateToPasswordManagerSettingsPage();
 }
 
 void ManagePasswordsBubbleModel::OnPasswordAction(
     const autofill::PasswordForm& password_form,
     PasswordAction action) {
-  if (!web_contents_)
+  if (!web_contents())
     return;
   Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   password_manager::PasswordStore* password_store =
       PasswordStoreFactory::GetForProfile(profile, Profile::EXPLICIT_ACCESS)
           .get();
@@ -129,10 +128,4 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
     password_store->RemoveLogin(password_form);
   else
     password_store->AddLogin(password_form);
-}
-
-void ManagePasswordsBubbleModel::WebContentsDestroyed(
-    content::WebContents* web_contents) {
-  // The WebContents have been destroyed.
-  web_contents_ = NULL;
 }

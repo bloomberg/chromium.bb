@@ -51,7 +51,7 @@ class WebContentsObserverBridge : public content::WebContentsObserver {
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE {
     [controller_ renderProcessGone];
   }
-  virtual void WebContentsDestroyed(WebContents* tab) OVERRIDE {
+  virtual void WebContentsDestroyed() OVERRIDE {
     [controller_ renderProcessGone];
   }
 

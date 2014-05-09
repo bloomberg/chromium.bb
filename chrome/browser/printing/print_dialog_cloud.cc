@@ -150,7 +150,7 @@ class SignInObserver : public content::WebContentsObserver {
     }
   }
 
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+  virtual void WebContentsDestroyed() OVERRIDE {
     delete this;
   }
 

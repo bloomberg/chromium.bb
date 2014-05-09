@@ -234,8 +234,7 @@ void PermissionBubbleManager::NavigationEntryCommitted(
   }
 }
 
-void PermissionBubbleManager::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void PermissionBubbleManager::WebContentsDestroyed() {
   // If the web contents has been destroyed, treat the bubble as cancelled.
   CancelPendingQueue();
   FinalizeBubble();
@@ -243,7 +242,7 @@ void PermissionBubbleManager::WebContentsDestroyed(
   // The WebContents is going away; be aggressively paranoid and delete
   // ourselves lest other parts of the system attempt to add permission bubbles
   // or use us otherwise during the destruction.
-  web_contents->RemoveUserData(UserDataKey());
+  web_contents()->RemoveUserData(UserDataKey());
   // That was the equivalent of "delete this". This object is now destroyed;
   // returning from this function is the only safe thing to do.
 }

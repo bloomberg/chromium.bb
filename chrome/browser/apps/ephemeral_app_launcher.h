@@ -90,8 +90,7 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
   virtual void CompleteInstall(const std::string& error) OVERRIDE;
 
   // content::WebContentsObserver implementation.
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // ExtensionRegistryObserver implementation.
   virtual void OnExtensionLoaded(

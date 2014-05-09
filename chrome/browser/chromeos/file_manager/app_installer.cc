@@ -27,9 +27,8 @@ class AppInstaller::WebContentsObserver
 
  protected:
   // content::WebContentsObserver implementation.
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE {
-    parent_->OnWebContentsDestroyed(web_contents);
+  virtual void WebContentsDestroyed() OVERRIDE {
+    parent_->OnWebContentsDestroyed(web_contents());
   }
 
  private:

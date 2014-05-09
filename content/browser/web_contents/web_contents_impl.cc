@@ -289,8 +289,9 @@ class WebContentsImpl::DestructionObserver : public WebContentsObserver {
   }
 
   // WebContentsObserver:
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
-    owner_->OnWebContentsDestroyed(static_cast<WebContentsImpl*>(web_contents));
+  virtual void WebContentsDestroyed() OVERRIDE {
+    owner_->OnWebContentsDestroyed(
+        static_cast<WebContentsImpl*>(web_contents()));
   }
 
  private:
@@ -363,14 +364,6 @@ WebContentsImpl::WebContentsImpl(
 WebContentsImpl::~WebContentsImpl() {
   is_being_destroyed_ = true;
 
-  // If there is an interstitial page being shown, tell it to close down early
-  // so that this contents will be alive enough to handle all the UI triggered
-  // by that. <http://crbug.com/363564>
-  InterstitialPageImpl* interstitial_page =
-      static_cast<InterstitialPageImpl*>(GetInterstitialPage());
-  if (interstitial_page)
-    interstitial_page->WebContentsWillBeDestroyed();
-
   // Delete all RFH pending shutdown, which will lead the corresponding RVH to
   // shutdown and be deleted as well.
   frame_tree_.ForEach(
@@ -419,7 +412,11 @@ WebContentsImpl::~WebContentsImpl() {
 
   FOR_EACH_OBSERVER(WebContentsObserver,
                     observers_,
-                    WebContentsImplDestroyed());
+                    WebContentsDestroyed());
+
+  FOR_EACH_OBSERVER(WebContentsObserver,
+                    observers_,
+                    ResetWebContents());
 
   SetDelegate(NULL);
 

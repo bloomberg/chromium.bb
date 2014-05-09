@@ -107,11 +107,11 @@ void InfoBarService::NavigationEntryCommitted(
   OnNavigation(NavigationDetailsFromLoadCommittedDetails(load_details));
 }
 
-void InfoBarService::WebContentsDestroyed(content::WebContents* web_contents) {
+void InfoBarService::WebContentsDestroyed() {
   // The WebContents is going away; be aggressively paranoid and delete
   // ourselves lest other parts of the system attempt to add infobars or use
   // us otherwise during the destruction.
-  web_contents->RemoveUserData(UserDataKey());
+  web_contents()->RemoveUserData(UserDataKey());
   // That was the equivalent of "delete this". This object is now destroyed;
   // returning from this function is the only safe thing to do.
 }

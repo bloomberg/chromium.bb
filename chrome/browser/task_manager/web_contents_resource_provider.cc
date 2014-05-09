@@ -51,8 +51,8 @@ class TaskManagerWebContentsObserver : public content::WebContentsObserver {
     provider_->RemoveFromTaskManager(web_contents());
   }
 
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
-    provider_->RemoveFromTaskManager(web_contents);
+  virtual void WebContentsDestroyed() OVERRIDE {
+    provider_->RemoveFromTaskManager(web_contents());
     provider_->DeleteObserver(this);  // Deletes |this|.
   }
 

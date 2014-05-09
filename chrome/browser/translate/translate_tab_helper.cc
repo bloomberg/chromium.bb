@@ -301,8 +301,7 @@ void TranslateTabHelper::DidNavigateAnyFrame(
   translate_driver_.DidNavigate(details);
 }
 
-void TranslateTabHelper::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void TranslateTabHelper::WebContentsDestroyed() {
   // Translation process can be interrupted.
   // Destroying the TranslateManager now guarantees that it never has to deal
   // with NULL WebContents.

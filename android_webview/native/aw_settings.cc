@@ -267,7 +267,7 @@ void AwSettings::RenderViewCreated(content::RenderViewHost* render_view_host) {
   UpdateEverything();
 }
 
-void AwSettings::WebContentsDestroyed(content::WebContents* web_contents) {
+void AwSettings::WebContentsDestroyed() {
   delete this;
 }
 

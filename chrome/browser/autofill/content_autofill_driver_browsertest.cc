@@ -81,20 +81,19 @@ class ContentAutofillDriverBrowserTest : public InProcessBrowserTest,
   virtual ~ContentAutofillDriverBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(web_contents_ != NULL);
-    Observe(web_contents_);
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents != NULL);
+    Observe(web_contents);
     AutofillManager::RegisterProfilePrefs(manager_delegate_.GetPrefRegistry());
 
     autofill_driver_.reset(
-        new TestContentAutofillDriver(web_contents_, &manager_delegate_));
+        new TestContentAutofillDriver(web_contents, &manager_delegate_));
   }
 
   // Normally the WebContents will automatically delete the driver, but here
   // the driver is owned by this test, so we have to manually destroy.
-  virtual void WebContentsDestroyed(content::WebContents* web_contents)
-      OVERRIDE {
-    DCHECK_EQ(web_contents_, web_contents);
+  virtual void WebContentsDestroyed() OVERRIDE {
     autofill_driver_.reset();
   }
 

@@ -497,8 +497,7 @@ class WebContentsLoadedOrDestroyedWatcher
   void Wait();
 
   // Overridden WebContentsObserver methods.
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
@@ -520,8 +519,7 @@ void WebContentsLoadedOrDestroyedWatcher::Wait() {
   message_loop_runner_->Run();
 }
 
-void WebContentsLoadedOrDestroyedWatcher::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void WebContentsLoadedOrDestroyedWatcher::WebContentsDestroyed() {
   message_loop_runner_->Quit();
 }
 

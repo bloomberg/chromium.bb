@@ -34,8 +34,8 @@ class TestNavigationObserver::TestWebContentsObserver
     parent_->OnDidAttachInterstitialPage(web_contents());
   }
 
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
-    parent_->OnWebContentsDestroyed(this, web_contents);
+  virtual void WebContentsDestroyed() OVERRIDE {
+    parent_->OnWebContentsDestroyed(this, web_contents());
   }
 
   virtual void DidStartLoading(RenderViewHost* render_view_host) OVERRIDE {

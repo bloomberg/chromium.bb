@@ -1118,8 +1118,7 @@ void PrerenderManager::PendingSwap::DidFailProvisionalLoad(
   prerender_data_->ClearPendingSwap();
 }
 
-void PrerenderManager::PendingSwap::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void PrerenderManager::PendingSwap::WebContentsDestroyed() {
   prerender_data_->ClearPendingSwap();
 }
 

@@ -1676,9 +1676,9 @@ void ContentViewCoreImpl::OnSmartClipDataExtracted(
       env, obj.obj(), jresult.obj());
 }
 
-void ContentViewCoreImpl::WebContentsDestroyed(WebContents* web_contents) {
+void ContentViewCoreImpl::WebContentsDestroyed() {
   WebContentsViewAndroid* wcva = static_cast<WebContentsViewAndroid*>(
-      static_cast<WebContentsImpl*>(web_contents)->GetView());
+      static_cast<WebContentsImpl*>(web_contents())->GetView());
   DCHECK(wcva);
   wcva->SetContentViewCore(NULL);
 }

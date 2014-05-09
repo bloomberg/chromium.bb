@@ -177,7 +177,7 @@ class BrowserPluginGuest::EmbedderWebContentsObserver
   }
 
   // WebContentsObserver:
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+  virtual void WebContentsDestroyed() OVERRIDE {
     browser_plugin_guest_->EmbedderDestroyed();
   }
 

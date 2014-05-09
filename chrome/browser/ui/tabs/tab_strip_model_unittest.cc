@@ -58,7 +58,7 @@ class DeleteWebContentsOnDestroyedObserver
         tab_strip_(tab_strip) {
   }
 
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+  virtual void WebContentsDestroyed() OVERRIDE {
     WebContents* tab_to_delete = tab_to_delete_;
     tab_to_delete_ = NULL;
     TabStripModel* tab_strip_to_delete = tab_strip_;

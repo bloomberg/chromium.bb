@@ -208,7 +208,7 @@ void PanelHost::RenderProcessGone(base::TerminationStatus status) {
   CloseContents(web_contents_.get());
 }
 
-void PanelHost::WebContentsDestroyed(content::WebContents* web_contents) {
+void PanelHost::WebContentsDestroyed() {
   // Web contents should only be destroyed by us.
   CHECK(!web_contents_.get());
 

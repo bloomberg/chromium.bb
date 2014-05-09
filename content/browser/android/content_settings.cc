@@ -42,7 +42,7 @@ bool ContentSettings::GetJavaScriptEnabled(JNIEnv* env, jobject obj) {
   return render_view_host->GetDelegate()->GetWebkitPrefs().javascript_enabled;
 }
 
-void ContentSettings::WebContentsDestroyed(WebContents* web_contents) {
+void ContentSettings::WebContentsDestroyed() {
   delete this;
 }
 

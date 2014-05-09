@@ -153,10 +153,9 @@ HistoryService* HistoryTabHelper::GetHistoryService() {
                                               Profile::IMPLICIT_ACCESS);
 }
 
-void HistoryTabHelper::WebContentsDestroyed(WebContents* tab) {
+void HistoryTabHelper::WebContentsDestroyed() {
   // We update the history for this URL.
-  // The content returned from web_contents() has been destroyed by now.
-  // We need to use tab value directly.
+  WebContents* tab = web_contents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   if (profile->IsOffTheRecord())
     return;

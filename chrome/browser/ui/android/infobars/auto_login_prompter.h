@@ -53,8 +53,7 @@ class AutoLoginPrompter : public content::WebContentsObserver {
   virtual void DidStopLoading(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // Add the infobar to the WebContents, if it's still needed.
   void AddInfoBarToWebContents();

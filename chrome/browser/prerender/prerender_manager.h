@@ -477,8 +477,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
         int error_code,
         const base::string16& error_description,
         content::RenderViewHost* render_view_host) OVERRIDE;
-    virtual void WebContentsDestroyed(content::WebContents* web_contents)
-        OVERRIDE;
+    virtual void WebContentsDestroyed() OVERRIDE;
 
    private:
     void RecordEvent(PrerenderEvent event) const;

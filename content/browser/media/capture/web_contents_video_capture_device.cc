@@ -269,7 +269,7 @@ class WebContentsCaptureMachine
     RenewFrameSubscription();
   }
 
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
  private:
   // Starts observing the web contents, returning false if lookup fails.
@@ -702,12 +702,11 @@ bool WebContentsCaptureMachine::StartObservingWebContents() {
   return false;
 }
 
-void WebContentsCaptureMachine::WebContentsDestroyed(
-    WebContents* web_contents) {
+void WebContentsCaptureMachine::WebContentsDestroyed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   subscription_.reset();
-  web_contents->DecrementCapturerCount();
+  web_contents()->DecrementCapturerCount();
   oracle_proxy_->ReportError("WebContentsDestroyed()");
 }
 

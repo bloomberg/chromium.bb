@@ -72,31 +72,27 @@ class AutofillPopupControllerBrowserTest
   virtual ~AutofillPopupControllerBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(web_contents_ != NULL);
-    Observe(web_contents_);
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    ASSERT_TRUE(web_contents != NULL);
+    Observe(web_contents);
 
     ContentAutofillDriver* driver =
-        ContentAutofillDriver::FromWebContents(web_contents_);
+        ContentAutofillDriver::FromWebContents(web_contents);
     autofill_external_delegate_.reset(
        new TestAutofillExternalDelegate(
-           web_contents_,
+           web_contents,
            driver->autofill_manager(),
            driver));
   }
 
   // Normally the WebContents will automatically delete the delegate, but here
   // the delegate is owned by this test, so we have to manually destroy.
-  virtual void WebContentsDestroyed(content::WebContents* web_contents)
-      OVERRIDE {
-    DCHECK_EQ(web_contents_, web_contents);
-
+  virtual void WebContentsDestroyed() OVERRIDE {
     autofill_external_delegate_.reset();
   }
 
  protected:
-  content::WebContents* web_contents_;
-
   scoped_ptr<TestAutofillExternalDelegate> autofill_external_delegate_;
 };
 

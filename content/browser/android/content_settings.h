@@ -26,7 +26,7 @@ class ContentSettings : public WebContentsObserver {
   virtual ~ContentSettings();
 
   // WebContentsObserver overrides:
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // The Java counterpart to this class.
   JavaObjectWeakGlobalRef content_settings_;

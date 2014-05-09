@@ -89,11 +89,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
 #endif
 
  private:
-  // content::WebContentsObserver
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
-
-  content::WebContents* web_contents_;
   password_manager::ui::State state_;
   base::string16 title_;
   autofill::PasswordForm pending_credentials_;

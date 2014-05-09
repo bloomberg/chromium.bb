@@ -187,7 +187,7 @@ void WebContentsModalDialogManager::WasHidden() {
     child_dialogs_.front()->manager->Hide();
 }
 
-void WebContentsModalDialogManager::WebContentsDestroyed(WebContents* tab) {
+void WebContentsModalDialogManager::WebContentsDestroyed() {
   // First cleanly close all child dialogs.
   // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
   // some of these to close.  CloseAllDialogs is async, so it might get called

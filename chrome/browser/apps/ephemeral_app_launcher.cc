@@ -252,8 +252,7 @@ void EphemeralAppLauncher::CompleteInstall(const std::string& error) {
   // WebstoreStandaloneInstaller to support this cleanly.
 }
 
-void EphemeralAppLauncher::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void EphemeralAppLauncher::WebContentsDestroyed() {
   AbortInstall();
 }
 

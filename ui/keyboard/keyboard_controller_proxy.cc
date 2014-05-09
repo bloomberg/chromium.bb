@@ -68,7 +68,7 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
   }
 
   // Overridden from content::WebContentsObserver:
-  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE {
+  virtual void WebContentsDestroyed() OVERRIDE {
     delete this;
   }
 

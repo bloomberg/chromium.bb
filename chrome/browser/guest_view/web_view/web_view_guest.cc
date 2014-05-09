@@ -791,14 +791,14 @@ void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
   DispatchEvent(new GuestViewBase::Event(webview::kEventLoadStop, args.Pass()));
 }
 
-void WebViewGuest::WebContentsDestroyed(WebContents* web_contents) {
+void WebViewGuest::WebContentsDestroyed() {
   // Clean up custom context menu items for this guest.
   extensions::MenuManager* menu_manager = extensions::MenuManager::Get(
       Profile::FromBrowserContext(browser_context()));
   menu_manager->RemoveAllContextItems(extensions::MenuItem::ExtensionKey(
       embedder_extension_id(), view_instance_id()));
 
-  RemoveWebViewFromExtensionRendererState(web_contents);
+  RemoveWebViewFromExtensionRendererState(web_contents());
 }
 
 void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {

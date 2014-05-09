@@ -51,7 +51,7 @@ class HistoryTabHelper : public content::WebContentsObserver,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual void TitleWasSet(content::NavigationEntry* entry,
                            bool explicit_set) OVERRIDE;
-  virtual void WebContentsDestroyed(content::WebContents* tab) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // Helper function to return the history service.  May return NULL.
   HistoryService* GetHistoryService();

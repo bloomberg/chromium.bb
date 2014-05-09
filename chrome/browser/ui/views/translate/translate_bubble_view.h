@@ -70,8 +70,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // content::WebContentsObserver method.
-  virtual void WebContentsDestroyed(content::WebContents* web_contents)
-      OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
 
   // Returns the current view state.
   TranslateBubbleModel::ViewState GetViewState() const;

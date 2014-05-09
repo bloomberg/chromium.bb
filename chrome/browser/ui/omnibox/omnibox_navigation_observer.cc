@@ -108,8 +108,7 @@ void OmniboxNavigationObserver::NavigationEntryCommitted(
     OnAllLoadingFinished();  // deletes |this|!
 }
 
-void OmniboxNavigationObserver::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void OmniboxNavigationObserver::WebContentsDestroyed() {
   delete this;
 }
 

@@ -85,7 +85,7 @@ class RPHReferenceManager {
 
    private:
     // content::WebContentsObserver
-    virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+    virtual void WebContentsDestroyed() OVERRIDE;
     virtual void NavigationEntryCommitted(
         const content::LoadCommittedDetails& load_details) OVERRIDE;
 
@@ -155,9 +155,8 @@ RPHReferenceManager::RPHWebContentsObserver::RPHWebContentsObserver(
       manager_(manager) {
 }
 
-void RPHReferenceManager::RPHWebContentsObserver::WebContentsDestroyed(
-    WebContents* web_contents) {
-  manager_->OnWebContentsDestroyedOrNavigated(web_contents);
+void RPHReferenceManager::RPHWebContentsObserver::WebContentsDestroyed() {
+  manager_->OnWebContentsDestroyedOrNavigated(web_contents());
 }
 
 void RPHReferenceManager::RPHWebContentsObserver::NavigationEntryCommitted(

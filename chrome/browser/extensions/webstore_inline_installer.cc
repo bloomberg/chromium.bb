@@ -158,8 +158,7 @@ bool WebstoreInlineInstaller::CheckRequestorPermitted(
 // Private implementation.
 //
 
-void WebstoreInlineInstaller::WebContentsDestroyed(
-    content::WebContents* web_contents) {
+void WebstoreInlineInstaller::WebContentsDestroyed() {
   AbortInstall();
 }
 

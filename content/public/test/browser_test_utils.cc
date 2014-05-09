@@ -598,8 +598,7 @@ void WebContentsDestroyedWatcher::Wait() {
   message_loop_runner_->Run();
 }
 
-void WebContentsDestroyedWatcher::WebContentsDestroyed(
-    WebContents* web_contents) {
+void WebContentsDestroyedWatcher::WebContentsDestroyed() {
   message_loop_runner_->Quit();
 }
 

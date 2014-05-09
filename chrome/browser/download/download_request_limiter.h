@@ -112,8 +112,7 @@ class DownloadRequestLimiter
     // Invoked when a user gesture occurs (mouse click, enter or space). This
     // may result in invoking Remove on DownloadRequestLimiter.
     virtual void DidGetUserGesture() OVERRIDE;
-    virtual void WebContentsDestroyed(
-        content::WebContents* web_contents) OVERRIDE;
+    virtual void WebContentsDestroyed() OVERRIDE;
 
     // Asks the user if they really want to allow the download.
     // See description above CanDownloadOnIOThread for details on lifetime of

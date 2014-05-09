@@ -126,7 +126,7 @@ void ShellDevToolsFrontend::DocumentOnLoadCompletedInMainFrame() {
       base::ASCIIToUTF16("InspectorFrontendAPI.setUseSoftMenu(true);"));
 }
 
-void ShellDevToolsFrontend::WebContentsDestroyed(WebContents* web_contents) {
+void ShellDevToolsFrontend::WebContentsDestroyed() {
   DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_.get());
   delete this;
 }

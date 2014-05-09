@@ -68,10 +68,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void Focus() OVERRIDE;
 
-  // This is called by a hosting WebContents to notify this interstitial page
-  // that it is going away.
-  void WebContentsWillBeDestroyed();
-
   // Allows the user to navigate away by disabling the interstitial, canceling
   // the pending request, and unblocking the hidden renderer.  The interstitial
   // will stay visible until the navigation completes.
@@ -109,7 +105,7 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // WebContentsObserver implementation:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
+  virtual void WebContentsDestroyed() OVERRIDE;
   virtual void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) OVERRIDE;
 

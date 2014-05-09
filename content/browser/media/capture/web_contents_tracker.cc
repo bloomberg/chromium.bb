@@ -95,7 +95,7 @@ void WebContentsTracker::DidNavigateMainFrame(
   OnWebContentsChangeEvent();
 }
 
-void WebContentsTracker::WebContentsDestroyed(WebContents* web_contents) {
+void WebContentsTracker::WebContentsDestroyed() {
   OnWebContentsChangeEvent();
 }
 

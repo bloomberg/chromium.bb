@@ -421,7 +421,7 @@ void WebKitTestController::RenderProcessGone(base::TerminationStatus status) {
   DiscardMainWindow();
 }
 
-void WebKitTestController::WebContentsDestroyed(WebContents* web_contents) {
+void WebKitTestController::WebContentsDestroyed() {
   DCHECK(CalledOnValidThread());
   printer_->AddErrorMessage("FAIL: main window was destroyed");
   DiscardMainWindow();
