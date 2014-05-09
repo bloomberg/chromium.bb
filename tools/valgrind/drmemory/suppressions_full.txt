@@ -2117,3 +2117,28 @@ UNINITIALIZED READ
 name=bug_371844
 *!content::GamepadProvider::PadState::Match
 *!content::GamepadProvider::DoPoll
+
+UNINITIALIZED READ
+name=bug_371950
+media.dll!ConvertYUVToRGB32Row_SSE
+media.dll!media::ConvertYUVToRGB32_SSE
+media.dll!media::ConvertVideoFrameToBitmap
+media.dll!media::SkCanvasVideoRenderer::Paint
+cc.dll!cc::VideoResourceUpdater::CreateForSoftwarePlanes
+cc.dll!cc::VideoResourceUpdater::CreateExternalResourcesFromVideoFrame
+cc.dll!cc::VideoLayerImpl::WillDraw
+
+UNINITIALIZED READ
+name=drm-i#1534
+system call NtUserSetKeyboardState parameter #0
+*!content::MockKeyboardDriverWin::~MockKeyboardDriverWin
+
+UNINITIALIZED READ
+name=bug_371959
+content.dll!webrtc::PeerConnection::DoInitialize
+content.dll!webrtc::PeerConnection::Initialize
+content.dll!webrtc::PeerConnectionFactory::CreatePeerConnection_s
+content.dll!webrtc::PeerConnectionFactory::OnMessage
+content.dll!jingle_glue::JingleThreadWrapper::Send
+content.dll!webrtc::PeerConnectionFactory::CreatePeerConnection
+content.dll!webrtc::PeerConnectionFactoryInterface::CreatePeerConnection

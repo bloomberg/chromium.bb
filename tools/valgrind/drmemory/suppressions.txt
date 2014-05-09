@@ -476,10 +476,6 @@ name=http://crbug.com/371357
 system call NtCreateEvent
 KERNELBASE.dll!CreateEventExW
 KERNELBASE.dll!CreateEventW
-base.dll!base::WaitableEvent::WaitableEvent
-base.dll!base::MessagePumpDefault::MessagePumpDefault
-base.dll!base::MessageLoop::CreateMessagePumpForType
-base.dll!base::MessageLoop::MessageLoop
 
 HANDLE LEAK
 name=http://crbug.com/371368
@@ -489,3 +485,23 @@ ipc.dll!IPC::Channel::ChannelImpl::CreatePipe
 ipc.dll!IPC::Channel::ChannelImpl::ChannelImpl
 ipc.dll!IPC::Channel::Channel
 ipc.dll!IPC::ChannelProxy::Context::CreateChannel
+
+HANDLE LEAK
+name=http://crbug.com/371942
+system call NtCreateThreadEx
+KERNELBASE.dll!CreateRemoteThreadEx
+KERNEL32.dll!CreateThread
+
+HANDLE LEAK
+name=http://crbug.com/371946
+system call NtUserWindowFromPoint
+content.dll!content::LegacyRenderWidgetHostHWND::OnMouseLeave
+content.dll!content::LegacyRenderWidgetHostHWND::_ProcessWindowMessage
+content.dll!content::LegacyRenderWidgetHostHWND::ProcessWindowMessage
+content.dll!ATL::CWindowImplBaseT<>::WindowProc
+USER32.dll!gapfnScSendMessage
+USER32.dll!GetThreadDesktop
+USER32.dll!CharPrevW
+USER32.dll!DispatchMessageW
+base.dll!base::MessagePumpForUI::ProcessMessageHelper
+base.dll!base::MessagePumpForUI::ProcessNextWindowsMessage
