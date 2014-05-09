@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/shared_module_service.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/id_util.h"
@@ -42,11 +43,17 @@ scoped_refptr<Extension> CreateExtensionImportingModule(
 }  // namespace
 
 class SharedModuleServiceUnitTest : public ExtensionServiceTestBase {
+ public:
+  SharedModuleServiceUnitTest() :
+      // The "export" key is open for dev-channel only, but unit tests
+      // run as stable channel on the official Windows build.
+      current_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
  protected:
   virtual void SetUp() OVERRIDE;
 
   // Install an extension and notify the ExtensionService.
   testing::AssertionResult InstallExtension(const Extension* extension);
+  ScopedCurrentChannel current_channel_;
 };
 
 void SharedModuleServiceUnitTest::SetUp() {
@@ -137,13 +144,7 @@ TEST_F(SharedModuleServiceUnitTest, PruneSharedModulesOnUninstall) {
                                            ExtensionRegistry::EVERYTHING));
 }
 
-#if defined(OS_WIN)
-// TODO(elijahtaylor) Temporary disable until crbug.com/369914 is fixed.
-#define MAYBE_WhitelistedImports DISABLED_WhitelistedImports
-#else
-#define MAYBE_WhitelistedImports WhitelistedImports
-#endif
-TEST_F(SharedModuleServiceUnitTest, MAYBE_WhitelistedImports) {
+TEST_F(SharedModuleServiceUnitTest, WhitelistedImports) {
   std::string whitelisted_id = id_util::GenerateId("whitelisted");
   std::string nonwhitelisted_id = id_util::GenerateId("nonwhitelisted");
   // Create a module which exports to a restricted whitelist.
