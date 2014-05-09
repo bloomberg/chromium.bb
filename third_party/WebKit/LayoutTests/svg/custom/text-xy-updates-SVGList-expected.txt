@@ -1,2 +1,0 @@
-Passes, if text is at 200x20
-

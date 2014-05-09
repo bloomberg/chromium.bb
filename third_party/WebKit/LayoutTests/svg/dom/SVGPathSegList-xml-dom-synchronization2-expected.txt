@@ -1,6 +1,0 @@
-Right after loading, a segment is added to the path.
-The path and its attribute should be updated to include the new segment.
-"d" initial:
-M50,150 l45,-43 l24,64 l-69,-21z
-"d" after:
-M 50 150 l 45 -43 l 50 50 l 24 64 l -69 -21 Z

@@ -1,3 +1,0 @@
-The svg area contained in the div element (red box), should fill out the whole area (blue rectangle), especially after resizing the content box to a different size
-
-

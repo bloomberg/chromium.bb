@@ -1,1 +1,15 @@
-Both shapes should look identical
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 78.00 38.00 84.00 42.00)
+        (rect 49.00 38.00 113.00 42.00)
+      )
+    )
+  )
+)
+

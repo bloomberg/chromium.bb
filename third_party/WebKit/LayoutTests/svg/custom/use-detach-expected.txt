@@ -1,2 +1,0 @@
-use
-For this test case to be successful, the box above must show text and a circle. Bug 14927

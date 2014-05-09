@@ -1,3 +1,0 @@
-The svg area contained in the div element (red box), should fill out the whole area with a green shaped path
-
-

@@ -1,3 +1,0 @@
-The svg area contained in the div element (red box), should fill out the whole area with a circle, which contains a radial gradient in its center
-
-
