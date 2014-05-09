@@ -7,7 +7,7 @@ PASS document.onpointerlockchange is defined.
 PASS document.onpointerlockerror is defined.
 PASS document.webkitExitPointerLock is defined.
 PASS document.webkitPointerLockElement is null
-PASS element.webkitRequestPointerLock is defined.
+PASS element.requestPointerLock is defined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

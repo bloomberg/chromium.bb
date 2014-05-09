@@ -37,7 +37,7 @@
 
     todo = [
         function () {
-            targetdiv1.webkitRequestPointerLock();
+            targetdiv1.requestPointerLock();
             expectedTargetToBeLockedString = "targetdiv1";
             // doNextStep() called by onpointerlockchange handler.
         },
@@ -54,7 +54,7 @@
             doNextStepWithUserGesture();
         },
         function () {
-            targetdiv2.webkitRequestPointerLock();
+            targetdiv2.requestPointerLock();
             expectedTargetToBeLockedString = "targetdiv2";
             // doNextStep() called by onpointerlockchange handler.
         },

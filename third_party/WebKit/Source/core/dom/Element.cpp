@@ -2685,6 +2685,12 @@ void Element::webkitRequestPointerLock()
         document().page()->pointerLockController().requestPointerLock(this);
 }
 
+void Element::requestPointerLock()
+{
+    if (document().page())
+        document().page()->pointerLockController().requestPointerLock(this);
+}
+
 SpellcheckAttributeState Element::spellcheckAttributeState() const
 {
     const AtomicString& value = fastGetAttribute(spellcheckAttr);

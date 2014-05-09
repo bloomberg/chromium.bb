@@ -19,7 +19,7 @@
             shouldBe("document.webkitPointerLockElement", "null");
             testRunner.setPointerLockWillRespondAsynchronously();
             expectOnlyChangeEvent("Lock.");
-            targetDiv1.webkitRequestPointerLock();
+            targetDiv1.requestPointerLock();
             doNextStep();
         },
         function () {

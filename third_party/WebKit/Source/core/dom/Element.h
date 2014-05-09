@@ -478,6 +478,7 @@ public:
     void setIsInTopLayer(bool);
 
     void webkitRequestPointerLock();
+    void requestPointerLock();
 
     bool isSpellCheckingEnabled() const;
 

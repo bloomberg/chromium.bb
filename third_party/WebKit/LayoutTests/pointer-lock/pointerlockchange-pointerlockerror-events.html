@@ -36,7 +36,7 @@
         },
         function () {
             expectOnlyChangeEvent("Lock targetDiv1.");
-            targetDiv1.webkitRequestPointerLock();
+            targetDiv1.requestPointerLock();
         },
         function () {
             expectOnlyChangeEvent("Unlock again.");
@@ -44,15 +44,15 @@
         },
         function () {
             expectOnlyChangeEvent("Lock targetDiv1 again.");
-            targetDiv1.webkitRequestPointerLock();
+            targetDiv1.requestPointerLock();
         },
         function () {
             expectOnlyChangeEvent("Lock targetDiv2.");
-            targetDiv2.webkitRequestPointerLock();
+            targetDiv2.requestPointerLock();
         },
         function () {
             expectOnlyChangeEvent("Lock targetDiv2 again.");
-            targetDiv2.webkitRequestPointerLock();
+            targetDiv2.requestPointerLock();
         },
         function () {
             expectOnlyChangeEvent("Unlock targetDiv2.");
@@ -69,13 +69,13 @@
         function () {
             expectNoEvents("Lock targetIframe1.");
             expectOnlyChangeEvent("Lock targetIframe1 (handler for iframe1).", targetIframe1.contentDocument);
-            targetIframe1.contentDocument.body.webkitRequestPointerLock();
+            targetIframe1.contentDocument.body.requestPointerLock();
         },
         function () {
             expectNoEvents("Lock targetIframe2.");
             expectNoEvents("Lock targetIframe2 (handler for iframe1).", targetIframe1.contentDocument);
             expectOnlyErrorEvent("Lock targetIframe2 (handler for iframe2).", targetIframe2.contentDocument);
-            targetIframe2.contentDocument.body.webkitRequestPointerLock();
+            targetIframe2.contentDocument.body.requestPointerLock();
         },
         function () {
             expectNoEvents("Unlock targetIframe2.");
@@ -87,7 +87,7 @@
             shouldBeDefined("testRunner.setPointerLockWillFailSynchronously");
             testRunner.setPointerLockWillFailSynchronously();
             expectOnlyErrorEvent("Lock with synchronous failure.");
-            targetDiv1.webkitRequestPointerLock();
+            targetDiv1.requestPointerLock();
         },
         function () {
             shouldBeDefined("testRunner.setPointerLockWillRespondAsynchronously");
@@ -95,7 +95,7 @@
             shouldBeDefined("testRunner.didNotAcquirePointerLock");
             testRunner.setPointerLockWillRespondAsynchronously();
             expectOnlyErrorEvent("Lock with asynchronous failure.");
-            targetDiv1.webkitRequestPointerLock();
+            targetDiv1.requestPointerLock();
             doNextStep();
         },
         function () {
@@ -104,7 +104,7 @@
         function () {
             testRunner.setPointerLockWillRespondAsynchronously();
             expectOnlyChangeEvent("Lock with asynchronous success.");
-            targetDiv1.webkitRequestPointerLock();
+            targetDiv1.requestPointerLock();
             doNextStep();
         },
         function () {

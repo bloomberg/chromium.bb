@@ -39,20 +39,20 @@
         function () {
             shouldBe("document.webkitPointerLockElement", "null");
             debug("     Locking targetdiv1.")
-            targetdiv1.webkitRequestPointerLock();
+            targetdiv1.requestPointerLock();
             expectedTargetToBeLockedString = "targetdiv1";
             // doNextStep() called by onpointerlockchange handler.
         },
         function () {
             debug("     Locking targetdiv1, again.")
-            targetdiv1.webkitRequestPointerLock();
+            targetdiv1.requestPointerLock();
             expectedTargetToBeLockedString = "targetdiv1";
             // doNextStep() called by onpointerlockchange handler.
         },
         function () {
             debug("     Locking targetdiv2.")
             expectTarget1Unlock = true;
-            targetdiv2.webkitRequestPointerLock();
+            targetdiv2.requestPointerLock();
             expectedTargetToBeLockedString = "targetdiv2";
             // doNextStep() called by onpointerlockchange handler.
         },
