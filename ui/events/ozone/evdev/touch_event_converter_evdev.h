@@ -40,11 +40,19 @@ class EVENTS_EXPORT TouchEventConverterEvdev
   friend class MockTouchEventConverterEvdev;
 
   // Unsafe part of initialization.
-  void Init();
+  void Init(const EventDeviceInfo& info);
 
   // Overidden from base::MessagePumpLibevent::Watcher.
   virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
   virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+
+  virtual bool Reinitialize();
+
+  // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
+  bool syn_dropped_;
+
+  // Set if this is a type A device (uses SYN_MT_REPORT).
+  bool is_type_a_;
 
   // Pressure values.
   int pressure_min_;

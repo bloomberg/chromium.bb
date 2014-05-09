@@ -58,6 +58,8 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
         new TouchEvent(*static_cast<TouchEvent*>(event)));
   }
 
+  bool Reinitialize() OVERRIDE { return true; }
+
  private:
   int read_pipe_;
   int write_pipe_;
@@ -418,4 +420,62 @@ TEST_F(TouchEventConverterEvdevTest, TwoFingerGesture) {
   EXPECT_EQ(1, ev1->touch_id());
   EXPECT_FLOAT_EQ(.5f, ev1->force());
   EXPECT_FLOAT_EQ(0.f, ev1->rotation_angle());
+}
+
+TEST_F(TouchEventConverterEvdevTest, TypeA) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+
+  struct input_event mock_kernel_queue_press0[] = {
+    {{0, 0}, EV_ABS, ABS_MT_TOUCH_MAJOR, 3},
+    {{0, 0}, EV_ABS, ABS_MT_PRESSURE, 45},
+    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 42},
+    {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 51},
+    {{0, 0}, EV_SYN, SYN_MT_REPORT, 0},
+    {{0, 0}, EV_ABS, ABS_MT_PRESSURE, 45},
+    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 61},
+    {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 71},
+    {{0, 0}, EV_SYN, SYN_MT_REPORT, 0},
+    {{0, 0}, EV_SYN, SYN_REPORT, 0}
+  };
+
+  // Check that two events are generated.
+  dev->ConfigureReadMock(mock_kernel_queue_press0, 10, 0);
+  dev->ReadNow();
+  EXPECT_EQ(2u, dev->size());
+}
+
+TEST_F(TouchEventConverterEvdevTest, Unsync) {
+  ui::MockTouchEventConverterEvdev* dev = device();
+
+  struct input_event mock_kernel_queue_press0[] = {
+    {{0, 0}, EV_ABS, ABS_MT_TRACKING_ID, 684},
+    {{0, 0}, EV_ABS, ABS_MT_TOUCH_MAJOR, 3},
+    {{0, 0}, EV_ABS, ABS_MT_PRESSURE, 45},
+    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 42},
+    {{0, 0}, EV_ABS, ABS_MT_POSITION_Y, 51}, {{0, 0}, EV_SYN, SYN_REPORT, 0}
+  };
+
+  dev->ConfigureReadMock(mock_kernel_queue_press0, 6, 0);
+  dev->ReadNow();
+  EXPECT_EQ(1u, dev->size());
+
+  // Prepare a move with a drop.
+  struct input_event mock_kernel_queue_move0[] = {
+    {{0, 0}, EV_SYN, SYN_DROPPED, 0},
+    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 40}, {{0, 0}, EV_SYN, SYN_REPORT, 0}
+  };
+
+  // Verify that we didn't receive it/
+  dev->ConfigureReadMock(mock_kernel_queue_move0, 3, 0);
+  dev->ReadNow();
+  EXPECT_EQ(1u, dev->size());
+
+  struct input_event mock_kernel_queue_move1[] = {
+    {{0, 0}, EV_ABS, ABS_MT_POSITION_X, 40}, {{0, 0}, EV_SYN, SYN_REPORT, 0}
+  };
+
+  // Verify that it re-syncs after a SYN_REPORT.
+  dev->ConfigureReadMock(mock_kernel_queue_move1, 2, 0);
+  dev->ReadNow();
+  EXPECT_EQ(2u, dev->size());
 }
