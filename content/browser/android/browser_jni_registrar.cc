@@ -10,6 +10,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/child_process_launcher_android.h"
+#include "content/browser/android/content_readback_handler.h"
 #include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/android/content_view_core_impl.h"
@@ -51,6 +52,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
      content::RegisterBrowserAccessibilityManager},
     {"BrowserStartupController", content::RegisterBrowserStartupController},
     {"ChildProcessLauncher", content::RegisterChildProcessLauncher},
+    {"ContentReadbackHandler",
+     content::ContentReadbackHandler::RegisterContentReadbackHandler},
     {"ContentSettings", content::ContentSettings::RegisterContentSettings},
     {"ContentVideoView", content::ContentVideoView::RegisterContentVideoView},
     {"ContentViewCore", content::RegisterContentViewCore},

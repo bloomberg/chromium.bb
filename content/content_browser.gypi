@@ -258,6 +258,8 @@
     'browser/android/browser_startup_controller.h',
     'browser/android/child_process_launcher_android.cc',
     'browser/android/child_process_launcher_android.h',
+    'browser/android/content_readback_handler.cc',
+    'browser/android/content_readback_handler.h',
     'browser/android/content_settings.cc',
     'browser/android/content_settings.h',
     'browser/android/content_startup_flags.cc',

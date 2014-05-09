@@ -15,6 +15,7 @@
     'public/android/java/src/org/chromium/content/browser/BrowserStartupController.java',
     'public/android/java/src/org/chromium/content/browser/ChildProcessLauncher.java',
     'public/android/java/src/org/chromium/content/browser/ContentSettings.java',
+    'public/android/java/src/org/chromium/content/browser/ContentReadbackHandler.java',
     'public/android/java/src/org/chromium/content/browser/ContentVideoView.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewCore.java',
     'public/android/java/src/org/chromium/content/browser/ContentViewRenderView.java',
