@@ -6411,3 +6411,12 @@
   fun:_ZNK7content15GamepadProvider8PadState5MatchERKN5blink10WebGamepadE
   fun:_ZN7content15GamepadProvider6DoPollEv
 }
+{
+   bug_371860
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN24TestingPrefServiceSimpleC1Ev
+   fun:_ZN8feedback20FeedbackUploaderTestC1Ev
+   fun:_ZN8feedback39FeedbackUploaderTest_QueueMultiple_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplIN8feedback39FeedbackUploaderTest_QueueMultiple_TestEE10CreateTestEv
+}
