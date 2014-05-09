@@ -724,6 +724,7 @@ background_draw(struct widget *widget, void *data)
 		case BACKGROUND_SCALE:
 			cairo_matrix_init_scale(&matrix, sx, sy);
 			cairo_pattern_set_matrix(pattern, &matrix);
+			cairo_pattern_set_extend(pattern, CAIRO_EXTEND_PAD);
 			break;
 		case BACKGROUND_SCALE_CROP:
 			s = (sx < sy) ? sx : sy;
@@ -733,6 +734,7 @@ background_draw(struct widget *widget, void *data)
 			cairo_matrix_init_translate(&matrix, tx, ty);
 			cairo_matrix_scale(&matrix, s, s);
 			cairo_pattern_set_matrix(pattern, &matrix);
+			cairo_pattern_set_extend(pattern, CAIRO_EXTEND_PAD);
 			break;
 		case BACKGROUND_TILE:
 			cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
