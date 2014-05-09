@@ -73,6 +73,7 @@ namespace ui {
     document,
     drawer,
     editable_text,
+    embedded_object,
     footer,
     form,
     grid,
