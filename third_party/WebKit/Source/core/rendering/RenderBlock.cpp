@@ -371,8 +371,27 @@ void RenderBlock::repaintTreeAfterLayout()
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
         TrackedRendererListHashSet::iterator end = positionedObjects->end();
         LayoutStateMaintainer statePusher(*this, isTableRow() ? LayoutSize() : locationOffset());
-        for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it)
-            (*it)->repaintTreeAfterLayout();
+
+        for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it) {
+            RenderBox* obj = *it;
+
+            // If the positioned renderer is absolutely positioned and it is inside
+            // a relatively positioend inline element, we need to account for
+            // the inline elements position in LayoutState.
+            if (obj->style()->position() == AbsolutePosition) {
+                RenderObject* o = obj->container(obj->containerForRepaint(), 0);
+                if (o->isInFlowPositioned() && o->isRenderInline()) {
+                    // FIXME: We should be able to use layout-state for this.
+                    // Currently, we will place absolutly positioned elements inside
+                    // relatively positioned inline blocks in the wrong location. crbug.com/371485
+                    LayoutStateDisabler disable(*this);
+                    obj->repaintTreeAfterLayout();
+                    continue;
+                }
+            }
+
+            obj->repaintTreeAfterLayout();
+        }
     }
 }
 

@@ -536,6 +536,9 @@ crbug.com/307777 [ Android ] virtual/softwarecompositing/overflow/get-transform-
 crbug.com/307777 [ Android ] webaudio/stereo2mono-down-mixing.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] webexposed/custom-elements.html [ Timeout Pass ]
 
+crbug.com/370945 fast/repaint/repaint-tile-clipped.html [ NeedsRebaseline ]
+crbug.com/370945 fast/repaint/bugzilla-7235.html [ NeedsRebaseline ]
+
 # Exceeds the number of file descriptors allowed when allocating shared bitmaps.
 crbug.com/351897 [ Mac ] virtual/softwarecompositing/overflow/universal-accelerated-overflow-scroll.html [ Crash Pass ]
 
