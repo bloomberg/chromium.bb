@@ -37,9 +37,9 @@
 #include "sync/protocol/sync.pb.h"
 
 using testing::_;
-using chromeos::testing::ManagedUserTestBase;
-using chromeos::testing::kTestSupervisedUserDisplayName;
-using chromeos::testing::kTestManager;
+using chromeos::ManagedUserTestBase;
+using chromeos::kTestSupervisedUserDisplayName;
+using chromeos::kTestManager;
 
 namespace chromeos {
 
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest, PasswordChangeFromUserTest) {
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _, _)).Times(1);
   SigninAsSupervisedUser(false, 0, kTestSupervisedUserDisplayName);
-  ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
       sync_id, managed_users::kChromeOSPasswordData, password, true, false);
   content::RunAllPendingInMessageLoop();
 
-  ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
 
 // After that supervised user signs in, and no password change happens.
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _, _)).Times(0);
   SigninAsSupervisedUser(false, 1, kTestSupervisedUserDisplayName);
-  ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
       sync_id, managed_users::kChromeOSPasswordData, password, true, false);
   content::RunAllPendingInMessageLoop();
 
-  ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
 
 // When supervised user signs in, password is already migrated, so no migration
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserPasswordTest,
   EXPECT_CALL(*mock_homedir_methods_, MountEx(_, _, _, _)).Times(1);
   EXPECT_CALL(*mock_homedir_methods_, UpdateKeyEx(_, _, _, _, _)).Times(0);
   SigninAsSupervisedUser(false, 1, kTestSupervisedUserDisplayName);
-  ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 }
 
 }  // namespace chromeos

@@ -37,9 +37,9 @@
 #include "sync/protocol/sync.pb.h"
 
 using testing::_;
-using chromeos::testing::ManagedUserTestBase;
-using chromeos::testing::kTestSupervisedUserDisplayName;
-using chromeos::testing::kTestManager;
+using chromeos::ManagedUserTestBase;
+using chromeos::kTestSupervisedUserDisplayName;
+using chromeos::kTestManager;
 
 namespace chromeos {
 
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
 
   JSEval("$('managed-user-creation-next-button').click()");
 
-  ::testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
+  testing::Mock::VerifyAndClearExpectations(mock_homedir_methods_);
 
   EXPECT_TRUE(registration_utility_stub_->register_was_called());
   EXPECT_EQ(registration_utility_stub_->display_name(),
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_(
     SupervisedUserTransactionCleanupTest,
     CreateAndCancelSupervisedUser,
     SupervisedUserTransactionCleanupTest2,
-    ::testing::internal::GetTypeId<SupervisedUserTransactionCleanupTest>()) {
+    testing::internal::GetTypeId<SupervisedUserTransactionCleanupTest>()) {
   // Make sure there is no supervised user in list.
   ASSERT_EQ(2UL, UserManager::Get()->GetUsers().size());
 }

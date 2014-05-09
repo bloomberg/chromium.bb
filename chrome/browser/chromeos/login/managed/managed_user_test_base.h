@@ -20,8 +20,6 @@
 
 namespace chromeos {
 
-namespace testing {
-
 const char kStubEthernetServicePath[] = "eth0";
 
 const char kTestManager[] = "test-manager@gmail.com";
@@ -113,8 +111,6 @@ class ManagedUserTestBase : public chromeos::LoginManagerTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagedUserTestBase);
 };
-
-}  // namespace testing
 
 }  // namespace chromeos
 

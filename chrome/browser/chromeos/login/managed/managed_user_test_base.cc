@@ -28,6 +28,7 @@
 #include "chrome/browser/managed_mode/managed_user_shared_settings_service_factory.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service.h"
 #include "chrome/browser/managed_mode/managed_user_sync_service_factory.h"
+#include "chrome/browser/profiles/profile_impl.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "content/public/browser/notification_service.h"
@@ -43,8 +44,6 @@ using testing::_;
 using base::StringPrintf;
 
 namespace chromeos {
-
-namespace testing {
 
 namespace {
 
@@ -366,6 +365,10 @@ void ManagedUserTestBase::SigninAsSupervisedUser(
   Profile* profile = UserManager::Get()->GetProfileByUser(user);
   shared_settings_adapter_.reset(
       new ManagedUsersSharedSettingsSyncTestAdapter(profile));
+
+  // Check ChromeOS preference is initialized.
+  EXPECT_TRUE(
+      static_cast<ProfileImpl*>(profile)->chromeos_preferences_);
 }
 
 void ManagedUserTestBase::SigninAsManager(int user_index) {
@@ -422,7 +425,5 @@ void ManagedUserTestBase::RemoveSupervisedUser(
   // Make sure there is no supervised user in list.
   ASSERT_EQ(original_user_count - 1, UserManager::Get()->GetUsers().size());
 }
-
-}  // namespace testing
 
 }  // namespace chromeos
