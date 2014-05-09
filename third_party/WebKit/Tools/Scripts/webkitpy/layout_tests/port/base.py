@@ -1737,13 +1737,17 @@ class Port(object):
                               '--force-compositing-mode']),
             VirtualTestSuite('linux-subpixel',
                              'platform/linux/fast/text/subpixel',
-                             ['--enable-webkit-text-subpixel-positioning']),
+                             ['--enable-webkit-text-subpixel-positioning',
+                              '--force-compositing-mode']),
             VirtualTestSuite('windows-directwrite',
                              'fast/text',
-                             ['--enable-direct-write', '--enable-font-antialiasing']),
+                             ['--enable-direct-write',
+                              '--enable-font-antialiasing',
+                              '--force-compositing-mode']),
             VirtualTestSuite('mac-antialiasedtext',
                              'fast/text',
-                             ['--enable-font-antialiasing']),
+                             ['--enable-font-antialiasing',
+                              '--force-compositing-mode']),
 
         ]
 
