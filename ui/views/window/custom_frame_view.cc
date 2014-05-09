@@ -192,7 +192,8 @@ void CustomFrameView::UpdateWindowIcon() {
 }
 
 void CustomFrameView::UpdateWindowTitle() {
-  SchedulePaintInRect(title_bounds_);
+  if (frame_->widget_delegate()->ShouldShowWindowTitle())
+    SchedulePaintInRect(title_bounds_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -379,7 +380,7 @@ void CustomFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // It seems like in some conditions we can be asked to paint after the window
   // that contains us is WM_DESTROYed. At this point, our delegate is NULL. The
   // correct long term fix may be to shut down the RootView in WM_DESTROY.
-  if (!delegate)
+  if (!delegate || !delegate->ShouldShowWindowTitle())
     return;
 
   gfx::Rect rect = title_bounds_;
@@ -537,6 +538,9 @@ void CustomFrameView::LayoutTitleBar() {
   bool show_window_icon = window_icon_ != NULL;
   if (show_window_icon)
     window_icon_->SetBoundsRect(icon_bounds);
+
+  if (!frame_->widget_delegate()->ShouldShowWindowTitle())
+    return;
 
   // The offset between the window left edge and the title text.
   int title_x = show_window_icon ? icon_bounds.right() + kTitleIconOffsetX
