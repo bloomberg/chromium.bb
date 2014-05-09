@@ -14,6 +14,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/password_manager/core/browser/password_form_data.h"
@@ -177,8 +178,8 @@ bool ProfilesContainSamePasswordForms(int index_a, int index_b) {
 bool AllProfilesContainSamePasswordFormsAsVerifier() {
   for (int i = 0; i < test()->num_clients(); ++i) {
     if (!ProfileContainsSamePasswordFormsAsVerifier(i)) {
-      LOG(ERROR) << "Profile " << i << " does not contain the same password"
-                                       " forms as the verifier.";
+      DVLOG(1) << "Profile " << i << " does not contain the same password"
+                                     " forms as the verifier.";
       return false;
     }
   }
@@ -188,8 +189,8 @@ bool AllProfilesContainSamePasswordFormsAsVerifier() {
 bool AllProfilesContainSamePasswordForms() {
   for (int i = 1; i < test()->num_clients(); ++i) {
     if (!ProfilesContainSamePasswordForms(0, i)) {
-      LOG(ERROR) << "Profile " << i << " does not contain the same password"
-                                       " forms as Profile 0.";
+      DVLOG(1) << "Profile " << i << " does not contain the same password"
+                                     " forms as Profile 0.";
       return false;
     }
   }
@@ -261,6 +262,69 @@ std::string SamePasswordFormsChecker::GetDebugMessage() const {
 
 bool AwaitAllProfilesContainSamePasswordForms() {
   SamePasswordFormsChecker checker;
+  checker.Wait();
+  return !checker.TimedOut();
+}
+
+namespace {
+
+// Helper class used in the implementation of
+// AwaitProfileContainSamePasswordFormsAsVerifier.
+class SamePasswordFormsAsVerifierChecker
+    : public SingleClientStatusChangeChecker {
+ public:
+  explicit SamePasswordFormsAsVerifierChecker(int index);
+  virtual ~SamePasswordFormsAsVerifierChecker();
+
+  virtual bool IsExitConditionSatisfied() OVERRIDE;
+  virtual std::string GetDebugMessage() const OVERRIDE;
+
+ private:
+  int index_;
+
+  bool in_progress_;
+  bool needs_recheck_;
+};
+
+SamePasswordFormsAsVerifierChecker::SamePasswordFormsAsVerifierChecker(int i)
+    : SingleClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncService(i)),
+      index_(i),
+      in_progress_(false),
+      needs_recheck_(false) {
+}
+
+SamePasswordFormsAsVerifierChecker::~SamePasswordFormsAsVerifierChecker() {
+}
+
+// This method uses the same re-entrancy prevention trick as
+// the SamePasswordFormsChecker.
+bool SamePasswordFormsAsVerifierChecker::IsExitConditionSatisfied() {
+  if (in_progress_) {
+    LOG(WARNING) << "Setting flag and returning early to prevent nesting.";
+    needs_recheck_ = true;
+    return false;
+  }
+
+  // Keep retrying until we get a good reading.
+  bool result = false;
+  in_progress_ = true;
+  do {
+    needs_recheck_ = false;
+    result = ProfileContainsSamePasswordFormsAsVerifier(index_);
+  } while (needs_recheck_);
+  in_progress_ = false;
+  return result;
+}
+
+std::string SamePasswordFormsAsVerifierChecker::GetDebugMessage() const {
+  return "Waiting for passwords to match verifier";
+}
+
+}  //  namespace
+
+bool AwaitProfileContainsSamePasswordFormsAsVerifier(int index) {
+  SamePasswordFormsAsVerifierChecker checker(index);
   checker.Wait();
   return !checker.TimedOut();
 }

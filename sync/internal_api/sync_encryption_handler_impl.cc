@@ -344,7 +344,6 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
   // encryption is to set a custom passphrase.
   if (IsNigoriMigratedToKeystore(node.GetNigoriSpecifics())) {
     if (!is_explicit) {
-      DCHECK(cryptographer->is_ready());
       // The user is setting a new implicit passphrase. At this point we don't
       // care, so drop it on the floor. This is safe because if we have a
       // migrated nigori node, then we don't need to create an initial

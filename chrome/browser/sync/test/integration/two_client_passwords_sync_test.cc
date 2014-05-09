@@ -13,30 +13,31 @@
 using passwords_helper::AddLogin;
 using passwords_helper::AllProfilesContainSamePasswordForms;
 using passwords_helper::AllProfilesContainSamePasswordFormsAsVerifier;
+using passwords_helper::AwaitAllProfilesContainSamePasswordForms;
+using passwords_helper::AwaitProfileContainsSamePasswordFormsAsVerifier;
 using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
 using passwords_helper::GetPasswordStore;
 using passwords_helper::GetVerifierPasswordCount;
 using passwords_helper::GetVerifierPasswordStore;
-using passwords_helper::ProfileContainsSamePasswordFormsAsVerifier;
 using passwords_helper::RemoveLogin;
 using passwords_helper::RemoveLogins;
 using passwords_helper::SetDecryptionPassphrase;
 using passwords_helper::SetEncryptionPassphrase;
 using passwords_helper::UpdateLogin;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 using sync_integration_test_util::AwaitPassphraseAccepted;
 using sync_integration_test_util::AwaitPassphraseRequired;
 
 using autofill::PasswordForm;
 
 static const char* kValidPassphrase = "passphrase!";
-static const char* kAnotherValidPassphrase = "another passphrase!";
 
 class TwoClientPasswordsSyncTest : public SyncTest {
  public:
   TwoClientPasswordsSyncTest() : SyncTest(TWO_CLIENT) {}
   virtual ~TwoClientPasswordsSyncTest() {}
+
+  virtual bool TestUsesSelfNotifications() OVERRIDE { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TwoClientPasswordsSyncTest);
@@ -62,8 +63,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Add) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Race) {
@@ -77,65 +77,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Race) {
   form1.password_value = base::ASCIIToUTF16("new_password");
   AddLogin(GetPasswordStore(1), form1);
 
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
-}
-
-// TCM ID - 4577932.
-IN_PROC_BROWSER_TEST_F(LegacyTwoClientPasswordsSyncTest, DisablePasswords) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
-
-  ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::PASSWORDS));
-  PasswordForm form = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form);
-  ASSERT_EQ(1, GetVerifierPasswordCount());
-  AddLogin(GetPasswordStore(0), form);
-  ASSERT_EQ(1, GetPasswordCount(0));
-
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
-  ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
-  ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
-
-  ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::PASSWORDS));
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
-  ASSERT_EQ(1, GetPasswordCount(1));
-}
-
-// TCM ID - 4649281.
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, DisableSync) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
-
-  ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
-  PasswordForm form = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form);
-  ASSERT_EQ(1, GetVerifierPasswordCount());
-  AddLogin(GetPasswordStore(0), form);
-  ASSERT_EQ(1, GetPasswordCount(0));
-
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
-  ASSERT_TRUE(ProfileContainsSamePasswordFormsAsVerifier(0));
-  ASSERT_FALSE(ProfileContainsSamePasswordFormsAsVerifier(1));
-
-  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
-  ASSERT_TRUE(AwaitQuiescence());
-  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
-  ASSERT_EQ(1, GetPasswordCount(1));
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, SetPassphrase) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((0))));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-
-  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService((1))));
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((1))));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((1))));
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
@@ -144,7 +86,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
 
   SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((0))));
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
   ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService((1))));
   ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
@@ -154,8 +95,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   AddLogin(GetPasswordStore(0), form);
   ASSERT_EQ(1, GetPasswordCount(0));
 
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_EQ(1, GetPasswordCount(1));
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
 }
 
 // TCM ID - 4603879
@@ -166,14 +106,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Update) {
   PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetVerifierPasswordStore(), form);
   AddLogin(GetPasswordStore(0), form);
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
+
+  // Wait for client 0 to commit and client 1 to receive the update.
+  ASSERT_TRUE(AwaitProfileContainsSamePasswordFormsAsVerifier(1));
 
   form.password_value = base::ASCIIToUTF16("new_password");
   UpdateLogin(GetVerifierPasswordStore(), form);
   UpdateLogin(GetPasswordStore(1), form);
-  ASSERT_TRUE(AwaitQuiescence());
-
   ASSERT_EQ(1, GetVerifierPasswordCount());
+
+  // Wait for client 1 to commit and client 0 to receive the update.
+  ASSERT_TRUE(AwaitProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
@@ -188,13 +131,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Delete) {
   PasswordForm form1 = CreateTestPasswordForm(1);
   AddLogin(GetVerifierPasswordStore(), form1);
   AddLogin(GetPasswordStore(0), form1);
-  ASSERT_TRUE(AwaitQuiescence());
+
+  // Wait for client 0 to commit and client 1 to receive the update.
+  ASSERT_TRUE(AwaitProfileContainsSamePasswordFormsAsVerifier(1));
 
   RemoveLogin(GetPasswordStore(1), form0);
   RemoveLogin(GetVerifierPasswordStore(), form0);
-  ASSERT_TRUE(AwaitQuiescence());
-
   ASSERT_EQ(1, GetVerifierPasswordCount());
+
+  // Wait for deletion from client 1 to propagate.
+  ASSERT_TRUE(AwaitProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
@@ -215,14 +161,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, MAYBE_DeleteAll) {
   PasswordForm form1 = CreateTestPasswordForm(1);
   AddLogin(GetVerifierPasswordStore(), form1);
   AddLogin(GetPasswordStore(0), form1);
-  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AwaitProfileContainsSamePasswordFormsAsVerifier(1));
+  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 
   RemoveLogins(GetPasswordStore(1));
   RemoveLogins(GetVerifierPasswordStore());
-  ASSERT_TRUE(AwaitQuiescence());
-
-  ASSERT_EQ(0, GetVerifierPasswordCount());
+  ASSERT_TRUE(AwaitProfileContainsSamePasswordFormsAsVerifier(0));
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
+  ASSERT_EQ(0, GetVerifierPasswordCount());
 }
 
 // TCM ID - 3694311
@@ -236,75 +182,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Merge) {
   AddLogin(GetPasswordStore(1), form1);
   PasswordForm form2 = CreateTestPasswordForm(2);
   AddLogin(GetPasswordStore(1), form2);
-  ASSERT_TRUE(AwaitQuiescence());
 
+  ASSERT_TRUE(AwaitAllProfilesContainSamePasswordForms());
   ASSERT_EQ(3, GetPasswordCount(0));
-  ASSERT_TRUE(AllProfilesContainSamePasswordForms());
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       SetPassphraseAndThenSetupSync) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-
-  ASSERT_TRUE(GetClient(0)->SetupSync());
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((0))));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
-
-  ASSERT_FALSE(GetClient(1)->SetupSync());
-  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService((1))));
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((1))));
-
-  // For some reason, the tests won't pass unless these flags are set.
-  GetSyncService((1))->SetSetupInProgress(false);
-  GetSyncService((1))->SetSyncSetupCompleted();
-
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((1))));
-
-  // Following ensures types are enabled and active (see bug 87572).
-  syncer::ModelSafeRoutingInfo routes;
-  GetSyncService((0))->GetModelSafeRoutingInfo(&routes);
-  ASSERT_EQ(syncer::GROUP_PASSWORD, routes[syncer::PASSWORDS]);
-  routes.clear();
-  GetSyncService((1))->GetModelSafeRoutingInfo(&routes);
-  ASSERT_EQ(syncer::GROUP_PASSWORD, routes[syncer::PASSWORDS]);
-}
-
-IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
-                       SetDifferentPassphraseAndThenSetupSync) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-
-  ASSERT_TRUE(GetClient(0)->SetupSync());
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((0))));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
-
-  // Setup 1 with a different passphrase, so that it fails to sync.
-  ASSERT_FALSE(GetClient(1)->SetupSync());
-  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService((1))));
-  ASSERT_FALSE(SetDecryptionPassphrase(1, kAnotherValidPassphrase));
-  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService((1))));
-
-  // Add a password on 0 while clients have different passphrases.
-  PasswordForm form0 = CreateTestPasswordForm(0);
-  AddLogin(GetVerifierPasswordStore(), form0);
-  AddLogin(GetPasswordStore(0), form0);
-
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
-
-  // Password hasn't been synced to 1 yet.
-  ASSERT_FALSE(AllProfilesContainSamePasswordFormsAsVerifier());
-
-  // Update 1 with the correct passphrase, the password should now sync over.
-  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService((1))));
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((1))));
-
-  // For some reason, the tests won't pass unless these flags are set.
-  GetSyncService((1))->SetSetupInProgress(false);
-  GetSyncService((1))->SetSyncSetupCompleted();
-
-  ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
