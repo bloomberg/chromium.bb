@@ -169,7 +169,7 @@ void FocusController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void FocusController::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED)
+  if (event->type() == ui::ET_MOUSE_PRESSED && !event->handled())
     WindowFocusedFromInputEvent(static_cast<aura::Window*>(event->target()));
 }
 
@@ -181,7 +181,8 @@ void FocusController::OnTouchEvent(ui::TouchEvent* event) {
 
 void FocusController::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_BEGIN &&
-      event->details().touch_points() == 1) {
+      event->details().touch_points() == 1 &&
+      !event->handled()) {
     WindowFocusedFromInputEvent(static_cast<aura::Window*>(event->target()));
   }
 }

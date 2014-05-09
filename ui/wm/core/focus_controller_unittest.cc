@@ -18,6 +18,8 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/text_input_focus_manager.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/wm_state.h"
@@ -271,6 +273,24 @@ class ScopedFocusedTextInputClientChanger
   }
 
   ui::TextInputClient* text_input_client_;
+};
+
+// Used to fake the handling of events in the pre-target phase.
+class SimpleEventHandler : public ui::EventHandler {
+ public:
+  SimpleEventHandler() {}
+  virtual ~SimpleEventHandler() {}
+
+  // Overridden from ui::EventHandler:
+  virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
+    event->SetHandled();
+  }
+  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
+    event->SetHandled();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SimpleEventHandler);
 };
 
 class FocusShiftingActivationObserver
@@ -882,6 +902,23 @@ class FocusControllerMouseEventTest : public FocusControllerDirectTestBase {
  public:
   FocusControllerMouseEventTest() {}
 
+  // Tests that a handled mouse or gesture event does not trigger a window
+  // activation.
+  void IgnoreHandledEvent() {
+    EXPECT_EQ(NULL, GetActiveWindow());
+    aura::Window* w1 = root_window()->GetChildById(1);
+    SimpleEventHandler handler;
+    root_window()->PrependPreTargetHandler(&handler);
+    aura::test::EventGenerator generator(root_window(), w1);
+    generator.ClickLeftButton();
+    EXPECT_EQ(NULL, GetActiveWindow());
+    generator.GestureTapAt(w1->bounds().CenterPoint());
+    EXPECT_EQ(NULL, GetActiveWindow());
+    root_window()->RemovePreTargetHandler(&handler);
+    generator.ClickLeftButton();
+    EXPECT_EQ(1, GetActiveWindowId());
+  }
+
  private:
   // Overridden from FocusControllerTestBase:
   virtual void FocusWindowDirect(aura::Window* window) OVERRIDE {
@@ -1241,5 +1278,8 @@ FOCUS_CONTROLLER_TEST(FocusControllerApiTest, DontPassDeletedWindow);
 // - Verifies that the focused text input client is cleard when the window focus
 //   changes.
 ALL_FOCUS_TESTS(FocusedTextInputClient);
+
+// If a mouse event was handled, it should not activate a window.
+FOCUS_CONTROLLER_TEST(FocusControllerMouseEventTest, IgnoreHandledEvent);
 
 }  // namespace wm
