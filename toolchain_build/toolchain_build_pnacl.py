@@ -599,7 +599,7 @@ if __name__ == '__main__':
   else:
     hosts = [pynacl.platform.PlatformTriple()]
   if pynacl.platform.IsLinux() and BUILD_CROSS_MINGW:
-    hosts.append('i686-w64-mingw32')
+    hosts.append(pynacl.platform.PlatformTriple('win', 'x86-32'))
   for host in hosts:
     packages.update(HostLibs(host))
     packages.update(HostTools(host, args))

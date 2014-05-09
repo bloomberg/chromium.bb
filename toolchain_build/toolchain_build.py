@@ -176,14 +176,14 @@ def CollectSources():
 
 # List of all platform and architectures we target and will distribute for.
 HOSTS = [
-    ('win', 'x86-64'),
+    ('win', 'x86-32'),
     ('darwin', 'x86-64'),
     ('linux', 'arm'),
     ('linux', 'x86-32')
     ]
 
 # Canonical tuples we use for hosts.
-WINDOWS_HOST_TUPLE = pynacl.platform.PlatformTriple('win', 'x86-64')
+WINDOWS_HOST_TUPLE = pynacl.platform.PlatformTriple('win', 'x86-32')
 MAC_HOST_TUPLE = pynacl.platform.PlatformTriple('darwin', 'x86-64')
 ARM_HOST_TUPLE = pynacl.platform.PlatformTriple('linux', 'arm')
 LINUX_X86_32_TUPLE = pynacl.platform.PlatformTriple('linux', 'x86-32')
@@ -215,7 +215,7 @@ UPLOAD_TARGETS = ['arm']
 # other means. List out what package targets, packages, and the tar file we are
 # injecting on top of here.
 GDB_INJECT_HOSTS = [
-  ('win', 'x86-64'),
+  ('win', 'x86-32'),
   ('darwin', 'x86-64'),
   ('linux', 'x86-32'),
   ]
