@@ -193,7 +193,7 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
       // button that was pressed (if triggered via keyboard, this is the display
       // with the currently focused window).
       view->InitAsBubbleAtFixedLocation(
-          NULL,
+          container,
           pagination_model_.get(),
           GetCenterOfDisplayForView(applist_button),
           views::BubbleBorder::FLOAT,

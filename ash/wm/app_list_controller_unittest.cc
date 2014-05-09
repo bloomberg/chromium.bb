@@ -7,17 +7,41 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 
 namespace ash {
 
-typedef test::AshTestBase AppListControllerTest;
+// The parameter is true to test the centered app list, false for normal.
+// (The test name ends in "/0" for normal, "/1" for centered.)
+class AppListControllerTest : public test::AshTestBase,
+                              public ::testing::WithParamInterface<bool> {
+ public:
+  AppListControllerTest();
+  virtual ~AppListControllerTest();
+  virtual void SetUp() OVERRIDE;
+};
+
+AppListControllerTest::AppListControllerTest() {
+}
+
+AppListControllerTest::~AppListControllerTest() {
+}
+
+void AppListControllerTest::SetUp() {
+  AshTestBase::SetUp();
+  if (GetParam()) {
+    CommandLine* command_line = CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(app_list::switches::kEnableCenteredAppList);
+  }
+}
 
 // Tests that app launcher hides when focus moves to a normal window.
-TEST_F(AppListControllerTest, HideOnFocusOut) {
+TEST_P(AppListControllerTest, HideOnFocusOut) {
   Shell::GetInstance()->ToggleAppList(NULL);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
@@ -29,7 +53,7 @@ TEST_F(AppListControllerTest, HideOnFocusOut) {
 
 // Tests that app launcher remains visible when focus is moved to a different
 // window in kShellWindowId_AppListContainer.
-TEST_F(AppListControllerTest, RemainVisibleWhenFocusingToApplistContainer) {
+TEST_P(AppListControllerTest, RemainVisibleWhenFocusingToApplistContainer) {
   Shell::GetInstance()->ToggleAppList(NULL);
   EXPECT_TRUE(Shell::GetInstance()->GetAppListTargetVisibility());
 
@@ -43,7 +67,7 @@ TEST_F(AppListControllerTest, RemainVisibleWhenFocusingToApplistContainer) {
 }
 
 // Tests that clicking outside the app-list bubble closes it.
-TEST_F(AppListControllerTest, ClickOutsideBubbleClosesBubble) {
+TEST_P(AppListControllerTest, ClickOutsideBubbleClosesBubble) {
   Shell* shell = Shell::GetInstance();
   shell->ToggleAppList(NULL);
 
@@ -67,7 +91,7 @@ TEST_F(AppListControllerTest, ClickOutsideBubbleClosesBubble) {
 }
 
 // Tests that clicking outside the app-list bubble closes it.
-TEST_F(AppListControllerTest, TapOutsideBubbleClosesBubble) {
+TEST_P(AppListControllerTest, TapOutsideBubbleClosesBubble) {
   Shell* shell = Shell::GetInstance();
   shell->ToggleAppList(NULL);
 
@@ -91,7 +115,7 @@ TEST_F(AppListControllerTest, TapOutsideBubbleClosesBubble) {
 
 // Tests opening the app launcher on a non-primary display, then deleting the
 // display.
-TEST_F(AppListControllerTest, NonPrimaryDisplay) {
+TEST_P(AppListControllerTest, NonPrimaryDisplay) {
   if (!SupportsMultipleDisplays())
     return;
 
@@ -112,5 +136,9 @@ TEST_F(AppListControllerTest, NonPrimaryDisplay) {
   // Updating the displays should close the app list.
   EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
 }
+
+INSTANTIATE_TEST_CASE_P(AppListControllerTestInstance,
+                        AppListControllerTest,
+                        ::testing::Bool());
 
 }  // namespace ash
