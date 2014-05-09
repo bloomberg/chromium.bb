@@ -18,7 +18,6 @@ using extensions::api::debugger::Debuggee;
 
 // Base debugger function.
 
-class ExtensionDevToolsClientHost;
 class DevToolsTargetImpl;
 
 namespace base {
@@ -29,6 +28,9 @@ namespace content {
 class DevToolsAgentHost;
 class WebContents;
 }
+
+namespace extensions {
+class ExtensionDevToolsClientHost;
 
 class DebuggerFunction : public ChromeAsyncExtensionFunction {
  protected:
@@ -104,5 +106,7 @@ class DebuggerGetTargetsFunction : public DebuggerFunction {
  private:
   void SendTargetList(const std::vector<DevToolsTargetImpl*>& target_list);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_DEBUGGER_DEBUGGER_API_H_
