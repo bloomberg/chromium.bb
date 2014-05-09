@@ -227,12 +227,18 @@ ExtensionFunction::ResponseValue ExtensionFunction::BadMessage() {
 
 ExtensionFunction::ResponseAction ExtensionFunction::RespondNow(
     ResponseValue result) {
-  return scoped_ptr<ResponseActionObject>(new RespondNowAction(
+  return ResponseAction(new RespondNowAction(
       result.Pass(), base::Bind(&ExtensionFunction::SendResponse, this)));
 }
 
 ExtensionFunction::ResponseAction ExtensionFunction::RespondLater() {
-  return scoped_ptr<ResponseActionObject>(new RespondLaterAction());
+  return ResponseAction(new RespondLaterAction());
+}
+
+// static
+ExtensionFunction::ResponseAction ExtensionFunction::ValidationFailure(
+    ExtensionFunction* function) {
+  return function->RespondNow(function->BadMessage());
 }
 
 void ExtensionFunction::Respond(ResponseValue result) {
@@ -364,6 +370,12 @@ ExtensionFunction::ResponseAction AsyncExtensionFunction::Run() {
   return RunAsync() ? RespondLater() : RespondNow(Error(error_));
 }
 
+// static
+bool AsyncExtensionFunction::ValidationFailure(
+    AsyncExtensionFunction* function) {
+  return false;
+}
+
 SyncExtensionFunction::SyncExtensionFunction() {
 }
 
@@ -375,6 +387,11 @@ ExtensionFunction::ResponseAction SyncExtensionFunction::Run() {
                               : Error(error_));
 }
 
+// static
+bool SyncExtensionFunction::ValidationFailure(SyncExtensionFunction* function) {
+  return false;
+}
+
 SyncIOThreadExtensionFunction::SyncIOThreadExtensionFunction() {
 }
 
@@ -384,4 +401,10 @@ SyncIOThreadExtensionFunction::~SyncIOThreadExtensionFunction() {
 ExtensionFunction::ResponseAction SyncIOThreadExtensionFunction::Run() {
   return RespondNow(RunSync() ? MultipleArguments(results_.get())
                               : Error(error_));
+}
+
+// static
+bool SyncIOThreadExtensionFunction::ValidationFailure(
+    SyncIOThreadExtensionFunction* function) {
+  return false;
 }

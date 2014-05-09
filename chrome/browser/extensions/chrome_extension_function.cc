@@ -119,6 +119,12 @@ ExtensionFunction::ResponseAction ChromeAsyncExtensionFunction::Run() {
   return RunAsync() ? RespondLater() : RespondNow(Error(error_));
 }
 
+// static
+bool ChromeAsyncExtensionFunction::ValidationFailure(
+    ChromeAsyncExtensionFunction* function) {
+  return false;
+}
+
 ChromeSyncExtensionFunction::ChromeSyncExtensionFunction() {
 }
 
@@ -127,4 +133,10 @@ ChromeSyncExtensionFunction::~ChromeSyncExtensionFunction() {}
 ExtensionFunction::ResponseAction ChromeSyncExtensionFunction::Run() {
   return RespondNow(RunSync() ? MultipleArguments(results_.get())
                               : Error(error_));
+}
+
+// static
+bool ChromeSyncExtensionFunction::ValidationFailure(
+    ChromeSyncExtensionFunction* function) {
+  return false;
 }

@@ -427,7 +427,7 @@ void RuntimeGetBackgroundPageFunction::OnPageLoaded(ExtensionHost* host) {
 
 ExtensionFunction::ResponseAction RuntimeSetUninstallURLFunction::Run() {
   std::string url_string;
-  EXTENSION_FUNCTION_VALIDATE_TYPESAFE(args_->GetString(0, &url_string));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &url_string));
 
   GURL url(url_string);
   if (!url.is_valid()) {

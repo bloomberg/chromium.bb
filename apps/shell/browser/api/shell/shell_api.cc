@@ -53,7 +53,7 @@ ShellCreateWindowFunction::~ShellCreateWindowFunction() {
 
 ExtensionFunction::ResponseAction ShellCreateWindowFunction::Run() {
   scoped_ptr<CreateWindow::Params> params(CreateWindow::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE_TYPESAFE(params.get());
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Convert "main.html" to "chrome-extension:/<id>/main.html".
   GURL url = GetExtension()->GetResourceURL(params->url);

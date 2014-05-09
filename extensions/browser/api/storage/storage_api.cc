@@ -40,13 +40,12 @@ bool SettingsFunction::ShouldSkipQuotaLimiting() const {
 
 ExtensionFunction::ResponseAction SettingsFunction::Run() {
   std::string settings_namespace_string;
-  EXTENSION_FUNCTION_VALIDATE_TYPESAFE(
-      args_->GetString(0, &settings_namespace_string));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &settings_namespace_string));
   args_->Remove(0, NULL);
   settings_namespace_ =
       settings_namespace::FromString(settings_namespace_string);
-  EXTENSION_FUNCTION_VALIDATE_TYPESAFE(settings_namespace_ !=
-                                       settings_namespace::INVALID);
+  EXTENSION_FUNCTION_VALIDATE(settings_namespace_ !=
+                              settings_namespace::INVALID);
 
   StorageFrontend* frontend = StorageFrontend::Get(browser_context());
   if (!frontend->IsStorageEnabled(settings_namespace_)) {

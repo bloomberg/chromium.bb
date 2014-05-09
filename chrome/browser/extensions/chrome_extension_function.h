@@ -74,6 +74,9 @@ class ChromeAsyncExtensionFunction : public ChromeUIThreadExtensionFunction {
   // Deprecated, see AsyncExtensionFunction::RunAsync.
   virtual bool RunAsync() = 0;
 
+  // ValidationFailure override to match RunAsync().
+  static bool ValidationFailure(ChromeAsyncExtensionFunction* function);
+
  private:
   virtual ResponseAction Run() OVERRIDE;
 };
@@ -89,6 +92,9 @@ class ChromeSyncExtensionFunction : public ChromeUIThreadExtensionFunction {
 
   // Deprecated, see SyncExtensionFunction::RunSync.
   virtual bool RunSync() = 0;
+
+  // ValidationFailure override to match RunSync().
+  static bool ValidationFailure(ChromeSyncExtensionFunction* function);
 
  private:
   virtual ResponseAction Run() OVERRIDE;
