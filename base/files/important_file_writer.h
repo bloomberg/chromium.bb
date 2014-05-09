@@ -9,6 +9,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
@@ -89,6 +90,11 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   // Serialize data pending to be saved and execute write on backend thread.
   void DoScheduledWrite();
 
+  // Registers |on_next_successful_write| to be called once, on the next
+  // successful write event. Only one callback can be set at once.
+  void RegisterOnNextSuccessfulWriteCallback(
+      const base::Closure& on_next_successful_write);
+
   TimeDelta commit_interval() const {
     return commit_interval_;
   }
@@ -98,6 +104,13 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   }
 
  private:
+  // If |result| is true and |on_next_successful_write_| is set, invokes
+  // |on_successful_write_| and then resets it; no-ops otherwise.
+  void ForwardSuccessfulWrite(bool result);
+
+  // Invoked once and then reset on the next successful write event.
+  base::Closure on_next_successful_write_;
+
   // Path being written to.
   const FilePath path_;
 
@@ -112,6 +125,8 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
 
   // Time delta after which scheduled data will be written to disk.
   TimeDelta commit_interval_;
+
+  WeakPtrFactory<ImportantFileWriter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportantFileWriter);
 };

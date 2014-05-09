@@ -6420,3 +6420,12 @@
    fun:_ZN8feedback*FeedbackUploaderTest*
    fun:_ZN7testing8internal15TestFactoryImplIN8feedback*
 }
+{
+   bug_371974
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN4base26PostTaskAndReplyWithResultIbbEEbPNS_10TaskRunnerERKN15tracked_objects8LocationERKNS_8CallbackIFT_vEEERKNS7_IFvT0_EEE
+   fun:_ZN4base19ImportantFileWriter8WriteNowERKSs
+}

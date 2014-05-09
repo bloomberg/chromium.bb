@@ -23,6 +23,7 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 
@@ -93,13 +94,13 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
   return true;
 }
 
-ImportantFileWriter::ImportantFileWriter(
-    const FilePath& path, base::SequencedTaskRunner* task_runner)
-        : path_(path),
-          task_runner_(task_runner),
-          serializer_(NULL),
-          commit_interval_(TimeDelta::FromMilliseconds(
-              kDefaultCommitIntervalMs)) {
+ImportantFileWriter::ImportantFileWriter(const FilePath& path,
+                                         base::SequencedTaskRunner* task_runner)
+    : path_(path),
+      task_runner_(task_runner),
+      serializer_(NULL),
+      commit_interval_(TimeDelta::FromMilliseconds(kDefaultCommitIntervalMs)),
+      weak_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(task_runner_.get());
 }
@@ -126,11 +127,13 @@ void ImportantFileWriter::WriteNow(const std::string& data) {
   if (HasPendingWrite())
     timer_.Stop();
 
-  if (!task_runner_->PostTask(
+  if (!base::PostTaskAndReplyWithResult(
+          task_runner_,
           FROM_HERE,
           MakeCriticalClosure(
-              Bind(IgnoreResult(&ImportantFileWriter::WriteFileAtomically),
-                   path_, data)))) {
+              Bind(&ImportantFileWriter::WriteFileAtomically, path_, data)),
+          Bind(&ImportantFileWriter::ForwardSuccessfulWrite,
+               weak_factory_.GetWeakPtr()))) {
     // Posting the task to background message loop is not expected
     // to fail, but if it does, avoid losing data and just hit the disk
     // on the current thread.
@@ -162,6 +165,20 @@ void ImportantFileWriter::DoScheduledWrite() {
                   << path_.value().c_str();
   }
   serializer_ = NULL;
+}
+
+void ImportantFileWriter::RegisterOnNextSuccessfulWriteCallback(
+    const base::Closure& on_next_successful_write) {
+  DCHECK(on_next_successful_write_.is_null());
+  on_next_successful_write_ = on_next_successful_write;
+}
+
+void ImportantFileWriter::ForwardSuccessfulWrite(bool result) {
+  DCHECK(CalledOnValidThread());
+  if (result && !on_next_successful_write_.is_null()) {
+    on_next_successful_write_.Run();
+    on_next_successful_write_.Reset();
+  }
 }
 
 }  // namespace base
