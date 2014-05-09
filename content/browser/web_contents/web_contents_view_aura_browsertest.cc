@@ -616,9 +616,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   delete web_contents->GetContentNativeView();
 }
 
-// TODO(dalecurtis): Test disabled due to flakiness.  http://crbug.com/369871.
+
+#if defined(OS_WIN)
+// This appears to be flaky in the same was as the other overscroll
+// tests. Enabling for non-Windows platforms.
+// See http://crbug.com/369871.
+#define MAYBE_RepeatedQuickOverscrollGestures DISABLED_RepeatedQuickOverscrollGestures
+#else
+#define MAYBE_RepeatedQuickOverscrollGestures RepeatedQuickOverscrollGestures
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
-                       DISABLED_RepeatedQuickOverscrollGestures) {
+                       MAYBE_RepeatedQuickOverscrollGestures) {
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
 
