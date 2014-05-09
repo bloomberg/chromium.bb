@@ -14,6 +14,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class Thread;
 }  // namespace base
 
 namespace webrtc {
@@ -33,9 +34,6 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   static scoped_ptr<media::VideoCaptureDevice> Create(
       const DesktopMediaID& source);
 
-  DesktopCaptureDevice(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                       scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
-                       DesktopMediaID::Type type);
   virtual ~DesktopCaptureDevice();
 
   // VideoCaptureDevice interface.
@@ -47,7 +45,15 @@ class CONTENT_EXPORT DesktopCaptureDevice : public media::VideoCaptureDevice {
   void SetNotificationWindowId(gfx::NativeViewId window_id);
 
  private:
+  friend class DesktopCaptureDeviceTest;
   class Core;
+
+  // Either |task_runner| or |thread| should be non-NULL, but not both.
+  DesktopCaptureDevice(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                       scoped_ptr<base::Thread> thread,
+                       scoped_ptr<webrtc::DesktopCapturer> desktop_capturer,
+                       DesktopMediaID::Type type);
+
   scoped_refptr<Core> core_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDevice);
