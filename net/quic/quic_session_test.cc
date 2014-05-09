@@ -381,7 +381,7 @@ TEST_P(QuicSessionTest, OnCanWriteBundlesStreams) {
           QuicConnectionPeer::GetWriter(session_.connection()));
   EXPECT_CALL(*writer, WritePacket(_, _, _, _)).WillOnce(
                   Return(WriteResult(WRITE_STATUS_OK, 0)));
-  EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _));
+  EXPECT_CALL(*send_algorithm, OnPacketSent(_, _, _, _, _));
   session_.OnCanWrite();
   EXPECT_FALSE(session_.HasPendingWrites());
 }

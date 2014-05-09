@@ -404,9 +404,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                                        QuicByteCount bytes_in_flight,
                                        const CongestionMap& acked_packets,
                                        const CongestionMap& lost_packets));
-  MOCK_METHOD4(OnPacketSent,
-               bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
-                    HasRetransmittableData));
+  MOCK_METHOD5(OnPacketSent,
+               bool(QuicTime, QuicByteCount, QuicPacketSequenceNumber,
+                    QuicByteCount, HasRetransmittableData));
   MOCK_METHOD1(OnRetransmissionTimeout, void(bool));
   MOCK_METHOD3(TimeUntilSend, QuicTime::Delta(QuicTime now,
                                               QuicByteCount bytes_in_flight,

@@ -63,6 +63,9 @@ class QuicSentPacketManagerPeer {
   static SequenceNumberSet GetUnackedPackets(
       const QuicSentPacketManager* sent_packet_manager);
 
+  static QuicByteCount GetBytesInFlight(
+      const QuicSentPacketManager* sent_packet_manager);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManagerPeer);
 };

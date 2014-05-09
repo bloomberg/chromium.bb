@@ -120,14 +120,10 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if there are any pending crypto packets.
   bool HasPendingCryptoPackets() const;
 
-  // Removes entries from the unacked packet map, and deletes
-  // the retransmittable frames associated with the packet.
+  // Deletes the retransmittable frames associated with the packet and removes
+  // it from unacked packets if it's not pending.
   // Does not remove any previous or subsequent transmissions of this packet.
-  void RemovePacket(QuicPacketSequenceNumber sequence_number);
-
-  // Neuters the specified packet.  Deletes any retransmittable
-  // frames, and sets all_transmissions to only include itself.
-  void NeuterPacket(QuicPacketSequenceNumber sequence_number);
+  void NeuterIfPendingOrRemovePacket(QuicPacketSequenceNumber sequence_number);
 
   // Returns true if the packet has been marked as sent by SetSent.
   static bool IsSentAndNotPending(const TransmissionInfo& transmission_info);

@@ -96,7 +96,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Removes the retransmittable frames from all unencrypted packets to ensure
   // they don't get retransmitted.
-  void NeuterUnencryptedPackets();
+  void DiscardUnencryptedPackets();
 
   // Returns true if the unacked packet |sequence_number| has retransmittable
   // frames.  This will only return false if the packet has been acked, if a
@@ -215,11 +215,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns true if the rtt was updated.
   bool MaybeUpdateRTT(const ReceivedPacketInfo& received_info,
                       const QuicTime& ack_receive_time);
-
-  // Chooses whether to nack retransmit any packets based on the receipt info.
-  // All acks have been handled before this method is invoked.
-  void MaybeRetransmitOnAckFrame(const ReceivedPacketInfo& received_info,
-                                 const QuicTime& ack_receive_time);
 
   // Invokes the loss detection algorithm and loses and retransmits packets if
   // necessary.

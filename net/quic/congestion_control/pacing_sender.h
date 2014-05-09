@@ -39,6 +39,7 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
                                  const CongestionMap& acked_packets,
                                  const CongestionMap& lost_packets) OVERRIDE;
   virtual bool OnPacketSent(QuicTime sent_time,
+                            QuicByteCount bytes_in_flight,
                             QuicPacketSequenceNumber sequence_number,
                             QuicByteCount bytes,
                             HasRetransmittableData is_retransmittable) OVERRIDE;

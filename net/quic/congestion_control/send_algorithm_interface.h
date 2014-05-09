@@ -57,6 +57,7 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   // that do not count outgoing ACK packets against the congestion window.
   // Note: this function must be called for every packet sent to the wire.
   virtual bool OnPacketSent(QuicTime sent_time,
+                            QuicByteCount bytes_in_flight,
                             QuicPacketSequenceNumber sequence_number,
                             QuicByteCount bytes,
                             HasRetransmittableData is_retransmittable) = 0;

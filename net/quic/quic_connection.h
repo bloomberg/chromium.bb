@@ -417,9 +417,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // initially encrypted packets when the initial encrypter changes.
   void RetransmitUnackedPackets(RetransmissionType retransmission_type);
 
-  // Calls |sent_packet_manager_|'s NeuterUnencryptedPackets. Used when the
+  // Calls |sent_packet_manager_|'s DiscardUnencryptedPackets. Used when the
   // connection becomes forward secure and hasn't received acks for all packets.
-  void NeuterUnencryptedPackets();
+  void DiscardUnencryptedPackets();
 
   // Changes the encrypter used for level |level| to |encrypter|. The function
   // takes ownership of |encrypter|.

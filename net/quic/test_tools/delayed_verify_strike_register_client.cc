@@ -29,7 +29,7 @@ void DelayedVerifyStrikeRegisterClient::VerifyNonceIsValidAndUnique(
     QuicWallTime now,
     ResultCallback* cb) {
   if (delay_verifications_) {
-    pending_verifications_.push_back(VerifyArgs(nonce.as_string(), now, cb));
+    pending_verifications_.push_back(VerifyArgs(nonce, now, cb));
   } else {
     LocalStrikeRegisterClient::VerifyNonceIsValidAndUnique(nonce, now, cb);
   }

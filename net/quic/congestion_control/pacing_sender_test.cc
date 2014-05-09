@@ -50,34 +50,33 @@ class PacingSenderTest : public ::testing::Test {
 
     // Actually send the packet.
     EXPECT_CALL(*mock_sender_,
-                OnPacketSent(clock_.Now(), sequence_number_, kMaxPacketSize,
-                             HAS_RETRANSMITTABLE_DATA));
-    pacing_sender_->OnPacketSent(clock_.Now(), sequence_number_++,
-                                 kMaxPacketSize, HAS_RETRANSMITTABLE_DATA);
+                OnPacketSent(clock_.Now(), kBytesInFlight, sequence_number_,
+                             kMaxPacketSize, HAS_RETRANSMITTABLE_DATA));
+    pacing_sender_->OnPacketSent(clock_.Now(), kBytesInFlight,
+                                 sequence_number_++, kMaxPacketSize,
+                                 HAS_RETRANSMITTABLE_DATA);
   }
 
   void CheckAckIsSentImmediately() {
     // In order for the ack to be sendable, the underlying sender must
     // permit it to be sent immediately.
     EXPECT_CALL(*mock_sender_, TimeUntilSend(clock_.Now(),
-                                             kBytesInFlight,
+                                             0,
                                              NO_RETRANSMITTABLE_DATA))
         .WillOnce(Return(zero_time_));
-    LOG(ERROR) << __LINE__;
     // Verify that the ACK can be sent immediately.
     EXPECT_EQ(zero_time_,
               pacing_sender_->TimeUntilSend(clock_.Now(),
-                                            kBytesInFlight,
+                                            0,
                                             NO_RETRANSMITTABLE_DATA));
 
-    LOG(ERROR) << __LINE__;
     // Actually send the packet.
     EXPECT_CALL(*mock_sender_,
-                OnPacketSent(clock_.Now(), sequence_number_, kMaxPacketSize,
-                             NO_RETRANSMITTABLE_DATA));
-    LOG(ERROR) << __LINE__;
-    pacing_sender_->OnPacketSent(clock_.Now(), sequence_number_++,
-                                 kMaxPacketSize, NO_RETRANSMITTABLE_DATA);
+                OnPacketSent(clock_.Now(), 0, sequence_number_,
+                             kMaxPacketSize, NO_RETRANSMITTABLE_DATA));
+    pacing_sender_->OnPacketSent(clock_.Now(), 0,
+                                 sequence_number_++, kMaxPacketSize,
+                                 NO_RETRANSMITTABLE_DATA);
   }
 
   void CheckPacketIsDelayed(QuicTime::Delta delay) {

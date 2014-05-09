@@ -1269,8 +1269,8 @@ void QuicConnection::RetransmitUnackedPackets(
   WriteIfNotBlocked();
 }
 
-void QuicConnection::NeuterUnencryptedPackets() {
-  sent_packet_manager_.NeuterUnencryptedPackets();
+void QuicConnection::DiscardUnencryptedPackets() {
+  sent_packet_manager_.DiscardUnencryptedPackets();
   // This may have changed the retransmission timer, so re-arm it.
   retransmission_alarm_->Cancel();
   QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();

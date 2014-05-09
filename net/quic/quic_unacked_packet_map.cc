@@ -91,7 +91,7 @@ void QuicUnackedPacketMap::ClearPreviousRetransmissions(size_t num_to_clear) {
     }
 
     ++it;
-    RemovePacket(sequence_number);
+    NeuterIfPendingOrRemovePacket(sequence_number);
     --num_to_clear;
   }
 }
@@ -119,30 +119,7 @@ void QuicUnackedPacketMap::NackPacket(QuicPacketSequenceNumber sequence_number,
   it->second.nack_count = max(min_nacks, it->second.nack_count);
 }
 
-void QuicUnackedPacketMap::RemovePacket(
-    QuicPacketSequenceNumber sequence_number) {
-  UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
-  if (it == unacked_packets_.end()) {
-    LOG(DFATAL) << "packet is not unacked: " << sequence_number;
-    return;
-  }
-  const TransmissionInfo& transmission_info = it->second;
-  transmission_info.all_transmissions->erase(sequence_number);
-  if (transmission_info.all_transmissions->empty()) {
-    delete transmission_info.all_transmissions;
-  }
-  if (transmission_info.retransmittable_frames != NULL) {
-    if (transmission_info.retransmittable_frames->HasCryptoHandshake()
-            == IS_HANDSHAKE) {
-      --pending_crypto_packet_count_;
-    }
-    delete transmission_info.retransmittable_frames;
-  }
-  DCHECK(!transmission_info.pending);
-  unacked_packets_.erase(it);
-}
-
-void QuicUnackedPacketMap::NeuterPacket(
+void QuicUnackedPacketMap::NeuterIfPendingOrRemovePacket(
     QuicPacketSequenceNumber sequence_number) {
   UnackedPacketMap::iterator it = unacked_packets_.find(sequence_number);
   if (it == unacked_packets_.end()) {
@@ -150,11 +127,6 @@ void QuicUnackedPacketMap::NeuterPacket(
     return;
   }
   TransmissionInfo* transmission_info = &it->second;
-  if (transmission_info->all_transmissions->size() > 1) {
-    transmission_info->all_transmissions->erase(sequence_number);
-    transmission_info->all_transmissions = new SequenceNumberSet();
-    transmission_info->all_transmissions->insert(sequence_number);
-  }
   if (transmission_info->retransmittable_frames != NULL) {
     if (transmission_info->retransmittable_frames->HasCryptoHandshake()
             == IS_HANDSHAKE) {
@@ -162,6 +134,21 @@ void QuicUnackedPacketMap::NeuterPacket(
     }
     delete transmission_info->retransmittable_frames;
     transmission_info->retransmittable_frames = NULL;
+  }
+  if (transmission_info->pending) {
+    // Neuter it so it can't be retransmitted.
+    if (transmission_info->all_transmissions->size() > 1) {
+      transmission_info->all_transmissions->erase(sequence_number);
+      transmission_info->all_transmissions = new SequenceNumberSet();
+      transmission_info->all_transmissions->insert(sequence_number);
+    }
+  } else {
+    // Remove it.
+    transmission_info->all_transmissions->erase(sequence_number);
+    if (transmission_info->all_transmissions->empty()) {
+      delete transmission_info->all_transmissions;
+    }
+    unacked_packets_.erase(it);
   }
 }
 

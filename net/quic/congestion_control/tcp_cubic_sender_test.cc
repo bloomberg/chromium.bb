@@ -44,7 +44,6 @@ class TcpCubicSenderPeer : public TcpCubicSender {
   RttStats rtt_stats_;
   QuicConnectionStats stats_;
 
-  using TcpCubicSender::AvailableSendWindow;
   using TcpCubicSender::SendWindow;
 };
 
@@ -67,8 +66,8 @@ class TcpCubicSenderTest : public ::testing::Test {
     bool can_send = sender_->TimeUntilSend(
         clock_.Now(), bytes_in_flight_, HAS_RETRANSMITTABLE_DATA).IsZero();
     while (can_send) {
-      sender_->OnPacketSent(clock_.Now(), sequence_number_++, kDefaultTCPMSS,
-                            HAS_RETRANSMITTABLE_DATA);
+      sender_->OnPacketSent(clock_.Now(), bytes_in_flight_, sequence_number_++,
+                            kDefaultTCPMSS, HAS_RETRANSMITTABLE_DATA);
       ++packets_sent;
       bytes_in_flight_ += kDefaultTCPMSS;
       can_send = sender_->TimeUntilSend(
@@ -149,6 +148,33 @@ TEST_F(TcpCubicSenderTest, SimpleSender) {
   EXPECT_FALSE(sender_->TimeUntilSend(clock_.Now(),
                                       sender_->GetCongestionWindow(),
                                       HAS_RETRANSMITTABLE_DATA).IsZero());
+}
+
+TEST_F(TcpCubicSenderTest, ApplicationLimitedSlowStart) {
+  // Send exactly 10 packets and ensure the CWND ends at 14 packets.
+  const int kNumberOfAcks = 5;
+  QuicCongestionFeedbackFrame feedback;
+  // At startup make sure we can send.
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
+      0,
+      HAS_RETRANSMITTABLE_DATA).IsZero());
+  // Get default QuicCongestionFeedbackFrame from receiver.
+  ASSERT_TRUE(receiver_->GenerateCongestionFeedback(&feedback));
+  sender_->OnIncomingQuicCongestionFeedbackFrame(feedback, clock_.Now());
+  // Make sure we can send.
+  EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
+                                     0,
+                                     HAS_RETRANSMITTABLE_DATA).IsZero());
+
+  SendAvailableSendWindow();
+  for (int i = 0; i < kNumberOfAcks; ++i) {
+    AckNPackets(2);
+  }
+  QuicByteCount bytes_to_send = sender_->SendWindow();
+  // It's expected 2 acks will arrive when the bytes_in_flight are greater than
+  // half the CWND.
+  EXPECT_EQ(kDefaultWindowTCP + kDefaultTCPMSS * 2 * 2,
+            bytes_to_send);
 }
 
 TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
@@ -543,12 +569,14 @@ TEST_F(TcpCubicSenderTest, MultipleLossesInOneWindow) {
 
 TEST_F(TcpCubicSenderTest, DontTrackAckPackets) {
   // Send a packet with no retransmittable data, and ensure it's not tracked.
-  EXPECT_FALSE(sender_->OnPacketSent(clock_.Now(), sequence_number_++,
-                                     kDefaultTCPMSS, NO_RETRANSMITTABLE_DATA));
+  EXPECT_FALSE(sender_->OnPacketSent(clock_.Now(), bytes_in_flight_,
+                                     sequence_number_++, kDefaultTCPMSS,
+                                     NO_RETRANSMITTABLE_DATA));
 
   // Send a data packet with retransmittable data, and ensure it is tracked.
-  EXPECT_TRUE(sender_->OnPacketSent(clock_.Now(), sequence_number_++,
-                                    kDefaultTCPMSS, HAS_RETRANSMITTABLE_DATA));
+  EXPECT_TRUE(sender_->OnPacketSent(clock_.Now(), bytes_in_flight_,
+                                    sequence_number_++, kDefaultTCPMSS,
+                                    HAS_RETRANSMITTABLE_DATA));
 }
 
 TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {

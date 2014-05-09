@@ -17,6 +17,9 @@
 namespace net {
 namespace test {
 
+// bytes_in_flight is unused by FixRateSender's OnPacketSent.
+QuicByteCount kUnused = 0;
+
 class FixRateReceiverPeer : public FixRateReceiver {
  public:
   FixRateReceiverPeer()
@@ -63,14 +66,14 @@ TEST_F(FixRateTest, SenderAPI) {
                                      0,
                                      HAS_RETRANSMITTABLE_DATA).IsZero());
 
-  sender_->OnPacketSent(clock_.Now(), 1, kDefaultMaxPacketSize,
+  sender_->OnPacketSent(clock_.Now(), kUnused, 1, kDefaultMaxPacketSize,
                         HAS_RETRANSMITTABLE_DATA);
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                      kDefaultMaxPacketSize,
                                      HAS_RETRANSMITTABLE_DATA).IsZero());
-  sender_->OnPacketSent(clock_.Now(), 2, kDefaultMaxPacketSize,
+  sender_->OnPacketSent(clock_.Now(), kUnused, 2, kDefaultMaxPacketSize,
                         HAS_RETRANSMITTABLE_DATA);
-  sender_->OnPacketSent(clock_.Now(), 3, 600,
+  sender_->OnPacketSent(clock_.Now(), kUnused, 3, 600,
                         HAS_RETRANSMITTABLE_DATA);
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10),
             sender_->TimeUntilSend(clock_.Now(),
@@ -101,12 +104,12 @@ TEST_F(FixRateTest, FixRatePacing) {
     EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                        0,
                                        HAS_RETRANSMITTABLE_DATA).IsZero());
-    sender_->OnPacketSent(clock_.Now(), sequence_number++, packet_size,
+    sender_->OnPacketSent(clock_.Now(), kUnused, sequence_number++, packet_size,
                           HAS_RETRANSMITTABLE_DATA);
     EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                        kDefaultMaxPacketSize,
                                        HAS_RETRANSMITTABLE_DATA).IsZero());
-    sender_->OnPacketSent(clock_.Now(), sequence_number++, packet_size,
+    sender_->OnPacketSent(clock_.Now(), kUnused, sequence_number++, packet_size,
                           HAS_RETRANSMITTABLE_DATA);
     QuicTime::Delta advance_time =
         sender_->TimeUntilSend(clock_.Now(),

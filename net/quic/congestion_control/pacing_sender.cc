@@ -41,6 +41,7 @@ void PacingSender::OnCongestionEvent(bool rtt_updated,
 
 bool PacingSender::OnPacketSent(
     QuicTime sent_time,
+    QuicByteCount bytes_in_flight,
     QuicPacketSequenceNumber sequence_number,
     QuicByteCount bytes,
     HasRetransmittableData has_retransmittable_data) {
@@ -55,8 +56,8 @@ bool PacingSender::OnPacketSent(
         BandwidthEstimate().Scale(kPacingAggression).TransferTime(bytes);
     next_packet_send_time_ = next_packet_send_time_.Add(delay);
   }
-  return sender_->OnPacketSent(sent_time, sequence_number, bytes,
-                               has_retransmittable_data);
+  return sender_->OnPacketSent(sent_time, bytes_in_flight, sequence_number,
+                               bytes, has_retransmittable_data);
 }
 
 void PacingSender::OnRetransmissionTimeout(bool packets_retransmitted) {

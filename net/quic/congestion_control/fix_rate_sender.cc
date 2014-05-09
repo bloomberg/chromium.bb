@@ -58,6 +58,7 @@ void FixRateSender::OnCongestionEvent(bool rtt_updated,
 
 bool FixRateSender::OnPacketSent(
     QuicTime sent_time,
+    QuicByteCount /*bytes_in_flight*/,
     QuicPacketSequenceNumber /*sequence_number*/,
     QuicByteCount bytes,
     HasRetransmittableData /*has_retransmittable_data*/) {

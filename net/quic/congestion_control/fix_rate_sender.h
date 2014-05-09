@@ -37,6 +37,7 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
                                  const CongestionMap& lost_packets) OVERRIDE;
   virtual bool OnPacketSent(
       QuicTime sent_time,
+      QuicByteCount bytes_in_flight,
       QuicPacketSequenceNumber sequence_number,
       QuicByteCount bytes,
       HasRetransmittableData has_retransmittable_data) OVERRIDE;

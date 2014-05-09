@@ -422,7 +422,7 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
           << "Handshake confirmed without parameter negotiation.";
       // Discard originally encrypted packets, since they can't be decrypted by
       // the peer.
-      connection_->NeuterUnencryptedPackets();
+      connection_->DiscardUnencryptedPackets();
       connection_->SetOverallConnectionTimeout(QuicTime::Delta::Infinite());
       max_open_streams_ = config_.max_streams_per_connection();
       break;

@@ -126,7 +126,7 @@ void QuicSentPacketManager::OnIncomingAck(
   largest_observed_ = received_info.largest_observed;
   bool largest_observed_acked = MaybeUpdateRTT(received_info, ack_receive_time);
   HandleAckForSentPackets(received_info);
-  MaybeRetransmitOnAckFrame(received_info, ack_receive_time);
+  InvokeLossDetection(ack_receive_time);
   MaybeInvokeCongestionEvent(largest_observed_acked, bytes_in_flight);
 
   // Anytime we are making forward progress and have a new RTT estimate, reset
@@ -175,6 +175,17 @@ void QuicSentPacketManager::HandleAckForSentPackets(
       if (QuicUnackedPacketMap::IsSentAndNotPending(it->second)) {
         it = MarkPacketHandled(sequence_number, delta_largest_observed);
       } else {
+        // Consider it multiple nacks when there is a gap between the missing
+        // packet and the largest observed, since the purpose of a nack
+        // threshold is to tolerate re-ordering.  This handles both StretchAcks
+        // and Forward Acks.
+        // The nack count only increases when the largest observed increases.
+        size_t min_nacks = received_info.largest_observed - sequence_number;
+        // Truncated acks can nack the largest observed, so use a min of 1.
+        if (min_nacks == 0) {
+          min_nacks = 1;
+        }
+        unacked_packets_.NackPacket(sequence_number, min_nacks);
         ++it;
       }
       continue;
@@ -240,19 +251,19 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
   }
 }
 
-void QuicSentPacketManager::NeuterUnencryptedPackets() {
+void QuicSentPacketManager::DiscardUnencryptedPackets() {
   QuicUnackedPacketMap::const_iterator unacked_it = unacked_packets_.begin();
   while (unacked_it != unacked_packets_.end()) {
     const RetransmittableFrames* frames =
         unacked_it->second.retransmittable_frames;
     if (frames != NULL && frames->encryption_level() == ENCRYPTION_NONE) {
-      // Since once you're forward secure, no unencrypted packets will be sent,
-      // crypto or otherwise. Unencrypted packets are neutered and abandoned, to
-      // ensure they are not retransmitted or considered lost from a congestion
-      // control perspective.
+      // Once you're forward secure, no unencrypted packets will be sent.
+      // Additionally, it's likely the peer will be forward secure, and no acks
+      // for these packets will be received, so mark the packet as handled.
       pending_retransmissions_.erase(unacked_it->first);
-      unacked_packets_.NeuterPacket(unacked_it->first);
-      unacked_packets_.SetNotPending(unacked_it->first);
+      unacked_it = MarkPacketHandled(unacked_it->first,
+                                     QuicTime::Delta::Zero());
+      continue;
     }
     ++unacked_it;
   }
@@ -326,11 +337,7 @@ void QuicSentPacketManager::MarkPacketRevived(
         sequence_number, delta_largest_observed);
   }
 
-  if (!transmission_info.pending) {
-    unacked_packets_.RemovePacket(sequence_number);
-  } else {
-    unacked_packets_.NeuterPacket(sequence_number);
-  }
+  unacked_packets_.NeuterIfPendingOrRemovePacket(sequence_number);
 }
 
 QuicUnackedPacketMap::const_iterator QuicSentPacketManager::MarkPacketHandled(
@@ -365,8 +372,6 @@ QuicUnackedPacketMap::const_iterator QuicSentPacketManager::MarkPacketHandled(
       unacked_packets_.GetTransmissionInfo(newest_transmission));
   while (all_transmissions_it != all_transmissions.rend()) {
     QuicPacketSequenceNumber previous_transmission = *all_transmissions_it;
-    const TransmissionInfo& transmission_info =
-        unacked_packets_.GetTransmissionInfo(previous_transmission);
     // If this packet was marked for retransmission, don't bother retransmitting
     // it anymore.
     pending_retransmissions_.erase(previous_transmission);
@@ -375,11 +380,7 @@ QuicUnackedPacketMap::const_iterator QuicSentPacketManager::MarkPacketHandled(
       // since they won't be acked now that one has been processed.
       unacked_packets_.SetNotPending(previous_transmission);
     }
-    if (!transmission_info.pending) {
-      unacked_packets_.RemovePacket(previous_transmission);
-    } else {
-      unacked_packets_.NeuterPacket(previous_transmission);
-    }
+    unacked_packets_.NeuterIfPendingOrRemovePacket(previous_transmission);
     ++all_transmissions_it;
   }
 
@@ -420,7 +421,10 @@ bool QuicSentPacketManager::OnPacketSent(
   }
 
   // Only track packets as pending that the send algorithm wants us to track.
-  if (!send_algorithm_->OnPacketSent(sent_time, sequence_number, bytes,
+  if (!send_algorithm_->OnPacketSent(sent_time,
+                                     unacked_packets_.bytes_in_flight(),
+                                     sequence_number,
+                                     bytes,
                                      has_retransmittable_data)) {
     unacked_packets_.SetSent(sequence_number, sent_time, bytes, false);
     // Do not reset the retransmission timer, since the packet isn't tracked.
@@ -562,38 +566,6 @@ void QuicSentPacketManager::OnIncomingQuicCongestionFeedbackFrame(
       frame, feedback_receive_time);
 }
 
-void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
-    const ReceivedPacketInfo& received_info,
-    const QuicTime& ack_receive_time) {
-  // Go through all pending packets up to the largest observed and count nacks.
-  // TODO(ianswett): Now that the SendAlgorithmInterface has changed, it may
-  // make sense to merge this with HandleAckForSentPackets.
-  for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
-       it != unacked_packets_.end() &&
-           it->first <= received_info.largest_observed; ++it) {
-    if (!it->second.pending) {
-      continue;
-    }
-    QuicPacketSequenceNumber sequence_number = it->first;
-    DVLOG(1) << "still missing packet " << sequence_number;
-    // Acks must be handled previously, so ensure it's missing and not acked.
-    DCHECK(IsAwaitingPacket(received_info, sequence_number));
-
-    // Consider it multiple nacks when there is a gap between the missing packet
-    // and the largest observed, since the purpose of a nack threshold is to
-    // tolerate re-ordering.  This handles both StretchAcks and Forward Acks.
-    // The nack count only increases when the largest observed increases.
-    size_t min_nacks = received_info.largest_observed - sequence_number;
-    // Truncated acks can nack the largest observed, so set the nack count to 1.
-    if (min_nacks == 0) {
-      min_nacks = 1;
-    }
-    unacked_packets_.NackPacket(sequence_number, min_nacks);
-  }
-
-  InvokeLossDetection(ack_receive_time);
-}
-
 void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
   SequenceNumberSet lost_packets =
       loss_algorithm_->DetectLostPackets(unacked_packets_,
@@ -619,7 +591,7 @@ void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
       // unacked_packets_.   This is either the current transmission of
       // a packet whose previous transmission has been acked, or it
       // is a packet that has been TLP retransmitted.
-      unacked_packets_.RemovePacket(sequence_number);
+      unacked_packets_.NeuterIfPendingOrRemovePacket(sequence_number);
     }
   }
 }

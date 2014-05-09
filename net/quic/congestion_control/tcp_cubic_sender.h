@@ -52,6 +52,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                                  const CongestionMap& acked_packets,
                                  const CongestionMap& lost_packets) OVERRIDE;
   virtual bool OnPacketSent(QuicTime sent_time,
+                            QuicByteCount bytes_in_flight,
                             QuicPacketSequenceNumber sequence_number,
                             QuicByteCount bytes,
                             HasRetransmittableData is_retransmittable) OVERRIDE;
@@ -74,9 +75,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
                      QuicByteCount bytes_in_flight);
   void OnPacketLost(QuicPacketSequenceNumber largest_loss,
                     QuicByteCount bytes_in_flight);
-  void OnRttUpdated();
 
-  QuicByteCount AvailableSendWindow(QuicByteCount bytes_in_flight);
   QuicByteCount SendWindow();
   void MaybeIncreaseCwnd(QuicPacketSequenceNumber acked_sequence_number,
                          QuicByteCount bytes_in_flight);
