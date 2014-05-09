@@ -2312,22 +2312,22 @@ private:
 
 } // namespace
 
-ScriptPromise Internals::createPromise(ExecutionContext* context)
+ScriptPromise Internals::createPromise(ScriptState* scriptState)
 {
-    return ScriptPromiseResolver::create(context)->promise();
+    return ScriptPromiseResolver::create(scriptState)->promise();
 }
 
-ScriptPromise Internals::createResolvedPromise(ExecutionContext* context, ScriptValue value)
+ScriptPromise Internals::createResolvedPromise(ScriptState* scriptState, ScriptValue value)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->resolve(value);
     return promise;
 }
 
-ScriptPromise Internals::createRejectedPromise(ExecutionContext* context, ScriptValue value)
+ScriptPromise Internals::createRejectedPromise(ScriptState* scriptState, ScriptValue value)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     resolver->reject(value);
     return promise;

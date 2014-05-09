@@ -75,8 +75,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadingerror);
 
     bool check(const String& font, const String& text, ExceptionState&);
-    ScriptPromise load(const String& font, const String& text);
-    ScriptPromise ready();
+    ScriptPromise load(ScriptState*, const String& font, const String& text);
+    ScriptPromise ready(ScriptState*);
 
     void add(FontFace*, ExceptionState&);
     void clear();

@@ -54,15 +54,15 @@ void InstallEvent::replace()
     notImplemented();
 }
 
-ScriptPromise InstallEvent::reloadAll(ExecutionContext* context)
+ScriptPromise InstallEvent::reloadAll(ScriptState* scriptState)
 {
     // FIXME: implement.
     notImplemented();
 
     // For now this just returns a promise which is already rejected.
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(context);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    resolver->reject(ScriptValue(v8::Null(toIsolate(context)), toIsolate(context)));
+    resolver->reject(ScriptValue(v8::Null(scriptState->isolate()), scriptState->isolate()));
     return promise;
 }
 

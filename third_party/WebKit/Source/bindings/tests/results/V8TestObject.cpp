@@ -945,7 +945,7 @@ static void promiseAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const 
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toNative(holder);
-    TONATIVE_VOID(ScriptPromise, cppValue, ScriptPromise(v8Value, info.GetIsolate()));
+    TONATIVE_VOID(ScriptPromise, cppValue, ScriptPromise(ScriptState::current(info.GetIsolate()), v8Value));
     impl->setPromiseAttribute(cppValue);
 }
 
@@ -5924,7 +5924,7 @@ static void voidMethodPromiseArgMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(ScriptPromise, promiseArg, ScriptPromise(info[0], info.GetIsolate()));
+    TONATIVE_VOID(ScriptPromise, promiseArg, ScriptPromise(ScriptState::current(info.GetIsolate()), info[0]));
     if (!promiseArg.isUndefinedOrNull() && !promiseArg.isObject()) {
         throwTypeError(ExceptionMessages::failedToExecute("voidMethodPromiseArg", "TestObject", "parameter 1 ('promiseArg') is not an object."), info.GetIsolate());
         return;

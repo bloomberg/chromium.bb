@@ -47,7 +47,7 @@ public:
 
     void replace();
 
-    ScriptPromise reloadAll(ExecutionContext*);
+    ScriptPromise reloadAll(ScriptState*);
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 

@@ -40,17 +40,18 @@
 
 namespace WebCore {
 
-ScriptPromise::ScriptPromise(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> value)
+    : m_scriptState(scriptState)
 {
     if (value.IsEmpty())
         return;
 
-    if (!V8PromiseCustom::isPromise(value, isolate) && !value->IsPromise()) {
-        m_promise = ScriptValue(v8::Handle<v8::Value>(), isolate);
-        V8ThrowException::throwTypeError("the given value is not a Promise", isolate);
+    if (!V8PromiseCustom::isPromise(value, scriptState->isolate()) && !value->IsPromise()) {
+        m_promise = ScriptValue(scriptState, v8::Handle<v8::Value>());
+        V8ThrowException::throwTypeError("the given value is not a Promise", scriptState->isolate());
         return;
     }
-    m_promise = ScriptValue(value, isolate);
+    m_promise = ScriptValue(scriptState, value);
 }
 
 ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOwnPtr<ScriptFunction> onRejected)
@@ -62,8 +63,8 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
     v8::Local<v8::Function> v8OnFulfilled = ScriptFunction::adoptByGarbageCollector(onFulfilled);
     v8::Local<v8::Function> v8OnRejected = ScriptFunction::adoptByGarbageCollector(onRejected);
 
-    if (V8PromiseCustom::isPromise(promise, isolate()))
-        return ScriptPromise(V8PromiseCustom::then(promise, v8OnFulfilled, v8OnRejected, isolate()), isolate());
+    if (V8PromiseCustom::isPromise(promise, m_scriptState->isolate()))
+        return ScriptPromise(m_scriptState.get(), V8PromiseCustom::then(promise, v8OnFulfilled, v8OnRejected, m_scriptState->isolate()));
 
     ASSERT(promise->IsPromise());
     // Return this Promise if no handlers are given.
@@ -82,7 +83,7 @@ ScriptPromise ScriptPromise::then(PassOwnPtr<ScriptFunction> onFulfilled, PassOw
     if (!v8OnRejected.IsEmpty())
         resultPromise = resultPromise->Catch(v8OnRejected);
 
-    return ScriptPromise(resultPromise, isolate());
+    return ScriptPromise(m_scriptState.get(), resultPromise);
 }
 
 ScriptPromise ScriptPromise::cast(const ScriptValue& value)
@@ -92,7 +93,7 @@ ScriptPromise ScriptPromise::cast(const ScriptValue& value)
     v8::Local<v8::Value> v8Value(value.v8Value());
     v8::Isolate* isolate = value.isolate();
     if (V8PromiseCustom::isPromise(v8Value, isolate) || v8Value->IsPromise()) {
-        return ScriptPromise(v8Value, isolate);
+        return ScriptPromise(value.scriptState(), v8Value);
     }
     if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled()) {
         v8::Local<v8::Promise::Resolver> resolver = v8::Promise::Resolver::New(isolate);
@@ -102,9 +103,9 @@ ScriptPromise ScriptPromise::cast(const ScriptValue& value)
             return ScriptPromise();
         }
         resolver->Resolve(v8Value);
-        return ScriptPromise(resolver->GetPromise(), isolate);
+        return ScriptPromise(value.scriptState(), resolver->GetPromise());
     }
-    return ScriptPromise(V8PromiseCustom::toPromise(v8Value, isolate), isolate);
+    return ScriptPromise(value.scriptState(), V8PromiseCustom::toPromise(v8Value, isolate));
 }
 
 } // namespace WebCore

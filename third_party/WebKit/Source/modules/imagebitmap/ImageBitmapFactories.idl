@@ -48,12 +48,12 @@ typedef (// HTMLImageElement or
     RuntimeEnabled=ExperimentalCanvasFeatures,
     TypeChecking=Interface|Nullable,
 ] interface ImageBitmapFactories {
-    [RaisesException] Promise createImageBitmap(Blob blob);
-    [RaisesException] Promise createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);
-    [RaisesException] Promise createImageBitmap(ImageData data);
-    [RaisesException] Promise createImageBitmap(ImageData data, long sx, long sy, long sw, long sh);
-    [RaisesException] Promise createImageBitmap(ImageBitmap bitmap);
-    [RaisesException] Promise createImageBitmap(ImageBitmap bitmap, long sx, long sy, long sw, long sh);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(Blob blob);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageData data);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageData data, long sx, long sy, long sw, long sh);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmap bitmap);
+    [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmap bitmap, long sx, long sy, long sw, long sh);
 };
 
 Window implements ImageBitmapFactories;

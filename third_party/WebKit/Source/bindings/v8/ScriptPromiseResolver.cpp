@@ -41,29 +41,16 @@
 
 namespace WebCore {
 
-ScriptPromiseResolver::ScriptPromiseResolver(ExecutionContext* context)
-    : m_isolate(toIsolate(context))
+ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* scriptState)
+    : m_scriptState(scriptState)
 {
-    ASSERT(context);
-    v8::Isolate* isolate = toIsolate(context);
+    v8::Isolate* isolate = m_scriptState->isolate();
+    ASSERT(!m_scriptState->contextIsEmpty());
     ASSERT(isolate->InContext());
     if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled()) {
-        m_resolver = ScriptValue(v8::Promise::Resolver::New(isolate), isolate);
+        m_resolver = ScriptValue(scriptState, v8::Promise::Resolver::New(isolate));
     } else {
-        v8::Handle<v8::Context> v8Context = toV8Context(context, DOMWrapperWorld::current(isolate));
-        v8::Handle<v8::Object> creationContext = v8Context.IsEmpty() ? v8::Object::New(isolate) : v8Context->Global();
-        m_promise = ScriptPromise(V8PromiseCustom::createPromise(creationContext, isolate), isolate);
-    }
-}
-
-ScriptPromiseResolver::ScriptPromiseResolver(v8::Isolate* isolate)
-    : m_isolate(isolate)
-{
-    ASSERT(isolate->InContext());
-    if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled()) {
-        m_resolver = ScriptValue(v8::Promise::Resolver::New(isolate), isolate);
-    } else {
-        m_promise = ScriptPromise(V8PromiseCustom::createPromise(v8::Object::New(isolate), isolate), isolate);
+        m_promise = ScriptPromise(scriptState, V8PromiseCustom::createPromise(m_scriptState->context()->Global(), isolate));
     }
 }
 
@@ -78,36 +65,30 @@ ScriptPromiseResolver::~ScriptPromiseResolver()
 
 ScriptPromise ScriptPromiseResolver::promise()
 {
-    ASSERT(m_isolate->InContext());
+    ASSERT(!m_scriptState->contextIsEmpty());
+    ASSERT(m_scriptState->isolate()->InContext());
     if (!m_resolver.isEmpty()) {
         v8::Local<v8::Promise::Resolver> v8Resolver = m_resolver.v8Value().As<v8::Promise::Resolver>();
-        return ScriptPromise(v8Resolver->GetPromise(), m_isolate);
+        return ScriptPromise(m_scriptState.get(), v8Resolver->GetPromise());
     }
     return m_promise;
 }
 
-PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ExecutionContext* context)
+PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptState* scriptState)
 {
-    ASSERT(context);
-    ASSERT(toIsolate(context)->InContext());
-    return adoptRef(new ScriptPromiseResolver(context));
-}
-
-PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(v8::Isolate* isolate)
-{
-    ASSERT(isolate->InContext());
-    return adoptRef(new ScriptPromiseResolver(isolate));
+    ASSERT(scriptState->isolate()->InContext());
+    return adoptRef(new ScriptPromiseResolver(scriptState));
 }
 
 void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 {
-    ASSERT(m_isolate->InContext());
+    ASSERT(m_scriptState->isolate()->InContext());
     if (!m_resolver.isEmpty()) {
         m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(value);
     } else if (!m_promise.isEmpty()) {
         v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
-        ASSERT(V8PromiseCustom::isPromise(promise, m_isolate));
-        V8PromiseCustom::resolve(promise, value, m_isolate);
+        ASSERT(V8PromiseCustom::isPromise(promise, m_scriptState->isolate()));
+        V8PromiseCustom::resolve(promise, value, m_scriptState->isolate());
     }
     m_promise.clear();
     m_resolver.clear();
@@ -115,13 +96,13 @@ void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 
 void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 {
-    ASSERT(m_isolate->InContext());
+    ASSERT(m_scriptState->isolate()->InContext());
     if (!m_resolver.isEmpty()) {
         m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(value);
     } else if (!m_promise.isEmpty()) {
         v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
-        ASSERT(V8PromiseCustom::isPromise(promise, m_isolate));
-        V8PromiseCustom::reject(promise, value, m_isolate);
+        ASSERT(V8PromiseCustom::isPromise(promise, m_scriptState->isolate()));
+        V8PromiseCustom::reject(promise, value, m_scriptState->isolate());
     }
     m_promise.clear();
     m_resolver.clear();

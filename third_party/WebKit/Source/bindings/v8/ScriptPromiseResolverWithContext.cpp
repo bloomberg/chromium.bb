@@ -42,7 +42,9 @@ ScriptPromiseResolverWithContext::ScriptPromiseResolverWithContext(ScriptState* 
     , m_state(Pending)
     , m_scriptState(scriptState)
     , m_timer(this, &ScriptPromiseResolverWithContext::onTimerFired)
-    , m_resolver(ScriptPromiseResolver::create(m_scriptState->executionContext())) { }
+    , m_resolver(ScriptPromiseResolver::create(m_scriptState.get()))
+{
+}
 
 void ScriptPromiseResolverWithContext::suspend()
 {

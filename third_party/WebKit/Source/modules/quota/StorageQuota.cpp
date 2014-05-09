@@ -103,19 +103,17 @@ ScriptPromise StorageQuota::queryInfo(ExecutionContext* executionContext, String
     return promise;
 }
 
-ScriptPromise StorageQuota::requestPersistentQuota(ExecutionContext* executionContext, unsigned long long newQuota)
+ScriptPromise StorageQuota::requestPersistentQuota(ScriptState* scriptState, unsigned long long newQuota)
 {
-    ASSERT(executionContext);
-
-    StorageQuotaClient* client = StorageQuotaClient::from(executionContext);
+    StorageQuotaClient* client = StorageQuotaClient::from(scriptState->executionContext());
     if (!client) {
-        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
         resolver->reject(DOMError::create(NotSupportedError));
         return promise;
     }
 
-    return client->requestPersistentQuota(executionContext, newQuota);
+    return client->requestPersistentQuota(scriptState->executionContext(), newQuota);
 }
 
 StorageQuota::~StorageQuota()

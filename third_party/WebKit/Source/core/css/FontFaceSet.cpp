@@ -115,9 +115,9 @@ void LoadFontPromiseResolver::trace(Visitor* visitor)
 
 class FontsReadyPromiseResolver {
 public:
-    static PassOwnPtr<FontsReadyPromiseResolver> create(ExecutionContext* context)
+    static PassOwnPtr<FontsReadyPromiseResolver> create(ScriptState* scriptState)
     {
-        return adoptPtr(new FontsReadyPromiseResolver(context));
+        return adoptPtr(new FontsReadyPromiseResolver(scriptState));
     }
 
     void resolve(PassRefPtrWillBeRawPtr<FontFaceSet> fontFaceSet)
@@ -128,8 +128,8 @@ public:
     ScriptPromise promise() { return m_resolver->promise(); }
 
 private:
-    FontsReadyPromiseResolver(ExecutionContext* context)
-        : m_resolver(ScriptPromiseResolverWithContext::create(ScriptState::current(toIsolate(context))))
+    explicit FontsReadyPromiseResolver(ScriptState* scriptState)
+        : m_resolver(ScriptPromiseResolverWithContext::create(scriptState))
     {
     }
 
@@ -267,11 +267,11 @@ void FontFaceSet::removeFromLoadingFonts(PassRefPtrWillBeRawPtr<FontFace> fontFa
         handlePendingEventsAndPromisesSoon();
 }
 
-ScriptPromise FontFaceSet::ready()
+ScriptPromise FontFaceSet::ready(ScriptState* scriptState)
 {
     if (!inActiveDocumentContext())
         return ScriptPromise();
-    OwnPtr<FontsReadyPromiseResolver> resolver = FontsReadyPromiseResolver::create(executionContext());
+    OwnPtr<FontsReadyPromiseResolver> resolver = FontsReadyPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     m_readyResolvers.append(resolver.release());
     handlePendingEventsAndPromisesSoon();
@@ -436,14 +436,14 @@ static const String& nullToSpace(const String& s)
     return s.isNull() ? space : s;
 }
 
-ScriptPromise FontFaceSet::load(const String& fontString, const String& text)
+ScriptPromise FontFaceSet::load(ScriptState* scriptState, const String& fontString, const String& text)
 {
     if (!inActiveDocumentContext())
         return ScriptPromise();
 
     Font font;
     if (!resolveFontStyle(fontString, font)) {
-        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext());
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
         resolver->reject(DOMError::create(SyntaxError, "Could not resolve '" + fontString + "' as a font."));
         return promise;

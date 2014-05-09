@@ -57,20 +57,20 @@ class ImageBitmapFactories FINAL : public NoBaseWillBeGarbageCollectedFinalized<
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapFactories);
 
 public:
-    static ScriptPromise createImageBitmap(EventTarget&, HTMLImageElement*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, HTMLVideoElement*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, HTMLVideoElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, CanvasRenderingContext2D*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, CanvasRenderingContext2D*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, HTMLCanvasElement*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, HTMLCanvasElement*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, Blob*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, Blob*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, ImageData*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, ImageData*, int sx, int sy, int sw, int sh, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, ImageBitmap*, ExceptionState&);
-    static ScriptPromise createImageBitmap(EventTarget&, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, HTMLImageElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, HTMLImageElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, HTMLVideoElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, HTMLVideoElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, CanvasRenderingContext2D*, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, CanvasRenderingContext2D*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, HTMLCanvasElement*, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, HTMLCanvasElement*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Blob*, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Blob*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageData*, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageData*, int sx, int sy, int sw, int sh, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageBitmap*, ExceptionState&);
+    static ScriptPromise createImageBitmap(ScriptState*, EventTarget&, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
 
     virtual ~ImageBitmapFactories() { }
 

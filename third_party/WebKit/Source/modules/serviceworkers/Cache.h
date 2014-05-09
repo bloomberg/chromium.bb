@@ -5,6 +5,7 @@
 #ifndef Cache_h
 #define Cache_h
 
+#include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
@@ -21,8 +22,8 @@ public:
     static PassRefPtr<Cache> create(const Vector<String>& urlStrings);
     ~Cache();
 
-    ScriptPromise match(ExecutionContext*, const String& urlString);
-    ScriptPromise ready(ExecutionContext*);
+    ScriptPromise match(ScriptState*, const String& urlString);
+    ScriptPromise ready(ScriptState*);
 
 private:
     Cache();

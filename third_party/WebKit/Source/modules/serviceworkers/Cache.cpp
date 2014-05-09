@@ -25,9 +25,9 @@ Cache::~Cache()
 {
 }
 
-ScriptPromise Cache::match(ExecutionContext* executionContext, const String& urlString)
+ScriptPromise Cache::match(ScriptState* scriptState, const String& urlString)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // FIXME: Implement.
@@ -36,9 +36,9 @@ ScriptPromise Cache::match(ExecutionContext* executionContext, const String& url
     return promise;
 }
 
-ScriptPromise Cache::ready(ExecutionContext* executionContext)
+ScriptPromise Cache::ready(ScriptState* scriptState)
 {
-    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(executionContext);
+    RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // FIXME: Implement.

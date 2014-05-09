@@ -310,9 +310,9 @@ public:
 
     void setShouldRevealPassword(Element*, bool, ExceptionState&);
 
-    ScriptPromise createPromise(ExecutionContext*);
-    ScriptPromise createResolvedPromise(ExecutionContext*, ScriptValue);
-    ScriptPromise createRejectedPromise(ExecutionContext*, ScriptValue);
+    ScriptPromise createPromise(ScriptState*);
+    ScriptPromise createResolvedPromise(ScriptState*, ScriptValue);
+    ScriptPromise createRejectedPromise(ScriptState*, ScriptValue);
     ScriptPromise addOneToPromise(ExecutionContext*, ScriptPromise);
 
     void trace(Visitor*);

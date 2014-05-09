@@ -54,7 +54,7 @@ public:
     void SetUp()
     {
         m_scope = V8ExecutionScope::create(m_isolate);
-        m_resolver = ScriptPromiseResolver::create(m_isolate);
+        m_resolver = ScriptPromiseResolver::create(m_scope->scriptState());
         m_promise = m_resolver->promise();
     }
 

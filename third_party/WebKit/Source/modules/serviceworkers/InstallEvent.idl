@@ -33,5 +33,5 @@
     Exposed=ServiceWorker,
 ] interface InstallEvent : InstallPhaseEvent {
     void replace();
-    [CallWith=ExecutionContext] Promise reloadAll();
+    [CallWith=ScriptState] Promise reloadAll();
 };

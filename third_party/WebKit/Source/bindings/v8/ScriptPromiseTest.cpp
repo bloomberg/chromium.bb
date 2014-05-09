@@ -50,15 +50,14 @@ void callback(const v8::FunctionCallbackInfo<v8::Value>& info) { }
 class ScriptPromiseTest : public testing::Test {
 public:
     ScriptPromiseTest()
-        : m_isolate(v8::Isolate::GetCurrent())
+        : m_scope(V8ExecutionScope::create(v8::Isolate::GetCurrent()))
     {
-        m_scope = V8ExecutionScope::create(m_isolate);
     }
 
     ~ScriptPromiseTest()
     {
         // FIXME: We put this statement here to clear an exception from the isolate.
-        createClosure(callback, v8::Undefined(m_isolate), m_isolate);
+        createClosure(callback, v8::Undefined(m_scope->isolate()), m_scope->isolate());
     }
 
     V8PromiseCustom::PromiseState state(ScriptPromise promise)
@@ -67,16 +66,13 @@ public:
     }
 
 protected:
-    v8::Isolate* m_isolate;
-
-private:
     OwnPtr<V8ExecutionScope> m_scope;
 };
 
 TEST_F(ScriptPromiseTest, constructFromNonPromise)
 {
     v8::TryCatch trycatch;
-    ScriptPromise promise(v8::Undefined(m_isolate), m_isolate);
+    ScriptPromise promise(m_scope->scriptState(), v8::Undefined(m_scope->isolate()));
     ASSERT_TRUE(trycatch.HasCaught());
     ASSERT_TRUE(promise.isEmpty());
 }
@@ -85,8 +81,8 @@ TEST_F(ScriptPromiseTest, castPromise)
 {
     if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
         return;
-    ScriptPromise promise = ScriptPromiseResolver::create(m_isolate)->promise();
-    ScriptPromise newPromise = ScriptPromise::cast(ScriptValue(ScriptState::current(m_isolate), promise.v8Value()));
+    ScriptPromise promise = ScriptPromiseResolver::create(m_scope->scriptState())->promise();
+    ScriptPromise newPromise = ScriptPromise::cast(ScriptValue(m_scope->scriptState(), promise.v8Value()));
 
     ASSERT_FALSE(promise.isEmpty());
     EXPECT_EQ(V8PromiseCustom::Pending, state(promise));
@@ -97,15 +93,15 @@ TEST_F(ScriptPromiseTest, castNonPromise)
 {
     if (RuntimeEnabledFeatures::scriptPromiseOnV8PromiseEnabled())
         return;
-    ScriptValue value = ScriptValue(ScriptState::current(m_isolate), v8String(m_isolate, "hello"));
+    ScriptValue value = ScriptValue(m_scope->scriptState(), v8String(m_scope->isolate(), "hello"));
     ScriptPromise promise1 = ScriptPromise::cast(ScriptValue(value));
     ScriptPromise promise2 = ScriptPromise::cast(ScriptValue(value));
 
     ASSERT_FALSE(promise1.isEmpty());
     ASSERT_FALSE(promise2.isEmpty());
 
-    ASSERT_TRUE(V8PromiseCustom::isPromise(promise1.v8Value(), m_isolate));
-    ASSERT_TRUE(V8PromiseCustom::isPromise(promise2.v8Value(), m_isolate));
+    ASSERT_TRUE(V8PromiseCustom::isPromise(promise1.v8Value(), m_scope->isolate()));
+    ASSERT_TRUE(V8PromiseCustom::isPromise(promise2.v8Value(), m_scope->isolate()));
 
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state(promise1));
     EXPECT_EQ(V8PromiseCustom::Fulfilled, state(promise2));

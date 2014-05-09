@@ -931,6 +931,8 @@ class V8ExecutionScope {
 public:
     static PassOwnPtr<V8ExecutionScope> create(v8::Isolate*);
     explicit V8ExecutionScope(v8::Isolate*);
+    ScriptState* scriptState() const;
+    v8::Isolate* isolate() const;
     ~V8ExecutionScope();
 
 private:

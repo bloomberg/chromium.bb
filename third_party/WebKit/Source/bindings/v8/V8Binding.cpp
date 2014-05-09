@@ -771,4 +771,14 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> devToolsTraceEventData(Executio
     return InspectorFunctionCallEvent::data(context, scriptId, resourceName, lineNumber);
 }
 
+ScriptState* V8ExecutionScope::scriptState() const
+{
+    return m_scriptState.get();
+}
+
+v8::Isolate* V8ExecutionScope::isolate() const
+{
+    return m_scriptState->isolate();
+}
+
 } // namespace WebCore

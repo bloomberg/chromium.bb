@@ -66,15 +66,15 @@ NavigatorWebMIDI& NavigatorWebMIDI::from(Navigator& navigator)
     return *supplement;
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(Navigator& navigator, const Dictionary& options)
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, Navigator& navigator, const Dictionary& options)
 {
-    return NavigatorWebMIDI::from(navigator).requestMIDIAccess(options);
+    return NavigatorWebMIDI::from(navigator).requestMIDIAccess(scriptState, options);
 }
 
-ScriptPromise NavigatorWebMIDI::requestMIDIAccess(const Dictionary& options)
+ScriptPromise NavigatorWebMIDI::requestMIDIAccess(ScriptState* scriptState, const Dictionary& options)
 {
     if (!frame() || frame()->document()->activeDOMObjectsAreStopped()) {
-        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(v8::Isolate::GetCurrent());
+        RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
         ScriptPromise promise = resolver->promise();
         // FIXME: Currently this rejection does not work because the context is stopped.
         resolver->reject(DOMError::create("AbortError"));

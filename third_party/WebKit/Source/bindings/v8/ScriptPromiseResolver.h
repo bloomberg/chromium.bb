@@ -68,8 +68,7 @@ class ExecutionContext;
 class ScriptPromiseResolver : public RefCounted<ScriptPromiseResolver> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolver);
 public:
-    static PassRefPtr<ScriptPromiseResolver> create(ExecutionContext*);
-    static PassRefPtr<ScriptPromiseResolver> create(v8::Isolate*);
+    static PassRefPtr<ScriptPromiseResolver> create(ScriptState*);
 
     // A ScriptPromiseResolver should be resolved / rejected before
     // its destruction.
@@ -85,7 +84,7 @@ public:
     template<typename T>
     void resolve(const T& value, ExecutionContext* executionContext)
     {
-        ASSERT(m_isolate->InContext());
+        ASSERT(m_scriptState->isolate()->InContext());
         // You should use ScriptPromiseResolverWithContext when you want
         // to resolve a Promise in a non-original V8 context.
         return resolve(value);
@@ -93,7 +92,7 @@ public:
     template<typename T>
     void reject(const T& value, ExecutionContext* executionContext)
     {
-        ASSERT(m_isolate->InContext());
+        ASSERT(m_scriptState->isolate()->InContext());
         // You should use ScriptPromiseResolverWithContext when you want
         // to reject a Promise in a non-original V8 context.
         return reject(value);
@@ -101,27 +100,27 @@ public:
     template<typename T>
     void resolve(const T& value)
     {
-        ASSERT(m_isolate->InContext());
+        ASSERT(m_scriptState->isolate()->InContext());
         resolve(toV8Value(value));
     }
     template<typename T>
     void reject(const T& value)
     {
-        ASSERT(m_isolate->InContext());
+        ASSERT(m_scriptState->isolate()->InContext());
         reject(toV8Value(value));
     }
     template<typename T> void resolve(const T& value, v8::Handle<v8::Object> creationContext)
     {
-        ASSERT(m_isolate->InContext());
+        ASSERT(m_scriptState->isolate()->InContext());
         resolve(toV8Value(value, creationContext));
     }
     template<typename T> void reject(const T& value, v8::Handle<v8::Object> creationContext)
     {
-        ASSERT(m_isolate->InContext());
+        ASSERT(m_scriptState->isolate()->InContext());
         reject(toV8Value(value, creationContext));
     }
 
-    v8::Isolate* isolate() const { return m_isolate; }
+    v8::Isolate* isolate() const { return m_scriptState->isolate(); }
 
     void resolve(v8::Handle<v8::Value>);
     void reject(v8::Handle<v8::Value>);
@@ -131,29 +130,29 @@ public:
     {
         return creationContext;
     }
-    // Used by ToV8Value<ScriptPromiseResolver, v8::Isolate*>.
-    static v8::Handle<v8::Object> getCreationContext(v8::Isolate* isolate)
+    // Used by ToV8Value<ScriptPromiseResolver, ScriptState*>.
+    static v8::Handle<v8::Object> getCreationContext(ScriptState* scriptState)
     {
-        return ScriptState::current(isolate)->context()->Global();
+        return scriptState->context()->Global();
     }
 
 private:
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value, v8::Handle<v8::Object> creationContext)
     {
-        return ToV8Value<ScriptPromiseResolver, v8::Handle<v8::Object> >::toV8Value(value, creationContext, m_isolate);
+        return ToV8Value<ScriptPromiseResolver, v8::Handle<v8::Object> >::toV8Value(value, creationContext, m_scriptState->isolate());
     }
 
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
     {
-        return ToV8Value<ScriptPromiseResolver, v8::Isolate*>::toV8Value(value, m_isolate, m_isolate);
+        return ToV8Value<ScriptPromiseResolver, ScriptState*>::toV8Value(value, m_scriptState.get(), m_scriptState->isolate());
     }
 
-    ScriptPromiseResolver(ExecutionContext*);
-    ScriptPromiseResolver(v8::Isolate*);
+    explicit ScriptPromiseResolver(ScriptState*);
 
-    v8::Isolate* m_isolate;
+    // FIXME: Remove this once ScriptValue::scriptState() becomes available.
+    RefPtr<ScriptState> m_scriptState;
     // Used when scriptPromiseOnV8Promise is disabled.
     ScriptPromise m_promise;
     // Used when scriptPromiseOnV8Promise is enabled.

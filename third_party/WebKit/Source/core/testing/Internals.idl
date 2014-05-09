@@ -272,9 +272,9 @@
 
     [RaisesException] void setShouldRevealPassword(Element element, boolean reveal);
 
-    [CallWith=ExecutionContext] Promise createPromise();
-    [CallWith=ExecutionContext] Promise createResolvedPromise(any value);
-    [CallWith=ExecutionContext] Promise createRejectedPromise(any reason);
+    [CallWith=ScriptState] Promise createPromise();
+    [CallWith=ScriptState] Promise createResolvedPromise(any value);
+    [CallWith=ScriptState] Promise createRejectedPromise(any reason);
     [CallWith=ExecutionContext] Promise addOneToPromise(Promise promise);
 
     void setValueForUser(Element element, DOMString value);

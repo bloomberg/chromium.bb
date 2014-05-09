@@ -40,5 +40,5 @@ enum StorageType {
 ] interface StorageQuota {
     readonly attribute StorageType[] supportedTypes;
     [CallWith=ExecutionContext] Promise queryInfo(StorageType type);
-    [CallWith=ExecutionContext] Promise requestPersistentQuota([Clamp] unsigned long long newQuota);
+    [CallWith=ScriptState] Promise requestPersistentQuota([Clamp] unsigned long long newQuota);
 };
