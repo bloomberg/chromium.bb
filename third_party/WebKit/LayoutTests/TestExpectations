@@ -465,6 +465,7 @@ crbug.com/340206 [ Win ] http/tests/security/cross-origin-css.html [ Pass Timeou
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass ImageOnlyFailure ]
 
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
+crbug.com/371716 [ Win ] http/tests/local/formdata/send-form-data.html [ Pass Timeout ]
 
 # 309184 and 303419 track Android-specific failures
 crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
