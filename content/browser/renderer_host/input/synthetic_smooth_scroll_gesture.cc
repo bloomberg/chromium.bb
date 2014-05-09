@@ -86,8 +86,6 @@ void SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
           current_scroll_segment_start_position_ +=
               params_.distances[current_scroll_segment_];
           ComputeNextScrollSegment();
-          // Start the next scroll immediately.
-          ForwardTouchInputEvents(timestamp, target);
         } else if (params_.prevent_fling) {
           state_ = STOPPING;
         } else {

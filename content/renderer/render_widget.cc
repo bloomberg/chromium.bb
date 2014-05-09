@@ -1067,6 +1067,8 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
           kInputHandlingTimeThrottlingThresholdMicroseconds;
   }
 
+  TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
+
   if (!WebInputEventTraits::IgnoresAckDisposition(*input_event)) {
     scoped_ptr<IPC::Message> response(
         new InputHostMsg_HandleInputEvent_ACK(routing_id_,
@@ -1107,7 +1109,6 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     UpdateTextInputState(SHOW_IME_IF_NEEDED, FROM_IME);
 #endif
 
-  TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
   handling_input_event_ = false;
 
   if (!prevent_default) {
