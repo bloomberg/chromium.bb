@@ -143,7 +143,7 @@ void FormSubmission::Attributes::copyFrom(const Attributes& other)
     m_acceptCharset = other.m_acceptCharset;
 }
 
-inline FormSubmission::FormSubmission(Method method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtr<FormState> state, PassRefPtr<FormData> data, const String& boundary, PassRefPtrWillBeRawPtr<Event> event)
+inline FormSubmission::FormSubmission(Method method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtrWillBeRawPtr<FormState> state, PassRefPtr<FormData> data, const String& boundary, PassRefPtrWillBeRawPtr<Event> event)
     : m_method(method)
     , m_action(action)
     , m_target(target)
@@ -243,8 +243,7 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     formData->setIdentifier(generateFormDataIdentifier());
     formData->setContainsPasswordData(containsPasswordData);
     AtomicString targetOrBaseTarget = copiedAttributes.target().isEmpty() ? document.baseTarget() : copiedAttributes.target();
-    RefPtr<FormState> formState = FormState::create(*form, trigger);
-    return adoptRef(new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, formState.release(), formData.release(), boundary, event));
+    return adoptRef(new FormSubmission(copiedAttributes.method(), actionURL, targetOrBaseTarget, encodingType, FormState::create(*form, trigger), formData.release(), boundary, event));
 }
 
 KURL FormSubmission::requestURL() const

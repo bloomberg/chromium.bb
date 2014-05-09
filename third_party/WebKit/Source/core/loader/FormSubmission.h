@@ -113,7 +113,7 @@ public:
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
+    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtrWillBeRawPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtrWillBeRawPtr<Event>);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 
@@ -122,7 +122,7 @@ private:
     KURL m_action;
     AtomicString m_target;
     AtomicString m_contentType;
-    RefPtr<FormState> m_formState;
+    RefPtrWillBePersistent<FormState> m_formState;
     RefPtr<FormData> m_formData;
     String m_boundary;
     RefPtrWillBePersistent<Event> m_event;

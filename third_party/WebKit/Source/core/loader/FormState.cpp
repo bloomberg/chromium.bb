@@ -40,9 +40,15 @@ inline FormState::FormState(HTMLFormElement& form, FormSubmissionTrigger formSub
 {
 }
 
-PassRefPtr<FormState> FormState::create(HTMLFormElement& form, FormSubmissionTrigger formSubmissionTrigger)
+PassRefPtrWillBeRawPtr<FormState> FormState::create(HTMLFormElement& form, FormSubmissionTrigger formSubmissionTrigger)
 {
-    return adoptRef(new FormState(form, formSubmissionTrigger));
+    return adoptRefWillBeNoop(new FormState(form, formSubmissionTrigger));
+}
+
+void FormState::trace(Visitor* visitor)
+{
+    visitor->trace(m_form);
+    visitor->trace(m_sourceDocument);
 }
 
 }

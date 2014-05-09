@@ -288,19 +288,20 @@ Vector<String> SavedFormState::getReferencedFilePaths() const
 
 // ----------------------------------------------------------------------------
 
-class FormKeyGenerator {
+class FormKeyGenerator FINAL : public NoBaseWillBeGarbageCollectedFinalized<FormKeyGenerator> {
     WTF_MAKE_NONCOPYABLE(FormKeyGenerator);
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 
 public:
-    static PassOwnPtr<FormKeyGenerator> create() { return adoptPtr(new FormKeyGenerator); }
+    static PassOwnPtrWillBeRawPtr<FormKeyGenerator> create() { return adoptPtrWillBeNoop(new FormKeyGenerator); }
+    void trace(Visitor* visitor) { visitor->trace(m_formToKeyMap); }
     const AtomicString& formKey(const HTMLFormControlElementWithState&);
     void willDeleteForm(HTMLFormElement*);
 
 private:
     FormKeyGenerator() { }
 
-    typedef HashMap<HTMLFormElement*, AtomicString> FormToKeyMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<HTMLFormElement>, AtomicString> FormToKeyMap;
     typedef HashMap<String, unsigned> FormSignatureToNextIndexMap;
     FormToKeyMap m_formToKeyMap;
     FormSignatureToNextIndexMap m_formSignatureToNextIndexMap;
@@ -409,7 +410,7 @@ static String formStateSignature()
 
 Vector<String> DocumentState::toStateVector()
 {
-    OwnPtr<FormKeyGenerator> keyGenerator = FormKeyGenerator::create();
+    OwnPtrWillBeRawPtr<FormKeyGenerator> keyGenerator = FormKeyGenerator::create();
     OwnPtr<SavedFormStateMap> stateMap = adoptPtr(new SavedFormStateMap);
     for (FormElementListHashSet::const_iterator it = m_formControls.begin(); it != m_formControls.end(); ++it) {
         HTMLFormControlElementWithState* control = (*it).get();
@@ -449,6 +450,7 @@ FormController::~FormController()
 void FormController::trace(Visitor* visitor)
 {
     visitor->trace(m_documentState);
+    visitor->trace(m_formKeyGenerator);
 }
 
 DocumentState* FormController::formElementsState() const

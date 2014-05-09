@@ -596,12 +596,12 @@ void HTMLConstructionSite::insertHTMLBodyElement(AtomicHTMLToken* token)
 
 void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token, bool isDemoted)
 {
-    RefPtr<Element> element = createHTMLElement(token);
+    RefPtrWillBeRawPtr<Element> element = createHTMLElement(token);
     ASSERT(isHTMLFormElement(element));
     m_form = static_pointer_cast<HTMLFormElement>(element.release());
     m_form->setDemoted(isDemoted);
-    attachLater(currentNode(), m_form);
-    m_openElements.push(HTMLStackItem::create(m_form, token));
+    attachLater(currentNode(), m_form.get());
+    m_openElements.push(HTMLStackItem::create(m_form.get(), token));
 }
 
 void HTMLConstructionSite::insertHTMLElement(AtomicHTMLToken* token)
@@ -731,7 +731,7 @@ inline Document& HTMLConstructionSite::ownerDocumentForCurrentNode()
     return currentNode()->document();
 }
 
-PassRefPtr<Element> HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
+PassRefPtrWillBeRawPtr<Element> HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
 {
     Document& document = ownerDocumentForCurrentNode();
     // Only associate the element with the current form if we're creating the new element
@@ -740,7 +740,13 @@ PassRefPtr<Element> HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* tok
     // FIXME: This can't use HTMLConstructionSite::createElement because we
     // have to pass the current form element.  We should rework form association
     // to occur after construction to allow better code sharing here.
+#if ENABLE(OILPAN)
+    // FIXME: Oilpan: HTMLElementFactory::createHTMLElement should return a raw
+    // pointer.
+    RawPtr<Element> element = HTMLElementFactory::createHTMLElement(token->name(), document, form, true).get();
+#else
     RefPtr<Element> element = HTMLElementFactory::createHTMLElement(token->name(), document, form, true);
+#endif
     setAttributes(element.get(), token, m_parserContentPolicy);
     ASSERT(element->isHTMLElement());
     return element.release();

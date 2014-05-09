@@ -87,7 +87,7 @@ public:
     virtual void handleTouchEvent(TouchEvent*);
     virtual void forwardEvent(Event*);
     virtual bool shouldSubmitImplicitly(Event*);
-    virtual PassRefPtr<HTMLFormElement> formForSubmission() const;
+    virtual PassRefPtrWillBeRawPtr<HTMLFormElement> formForSubmission() const;
     virtual bool hasCustomFocusLogic() const;
     virtual void handleFocusEvent(Element* oldFocusedElement, FocusType);
     virtual void handleBlurEvent();

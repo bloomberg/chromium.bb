@@ -92,7 +92,7 @@ bool InputTypeView::shouldSubmitImplicitly(Event* event)
     return false;
 }
 
-PassRefPtr<HTMLFormElement> InputTypeView::formForSubmission() const
+PassRefPtrWillBeRawPtr<HTMLFormElement> InputTypeView::formForSubmission() const
 {
     return element().form();
 }

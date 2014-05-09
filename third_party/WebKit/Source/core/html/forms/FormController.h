@@ -121,7 +121,7 @@ private:
     RadioButtonGroupScope m_radioButtonGroupScope;
     RefPtrWillBeMember<DocumentState> m_documentState;
     SavedFormStateMap m_savedFormStateMap;
-    OwnPtr<FormKeyGenerator> m_formKeyGenerator;
+    OwnPtrWillBeMember<FormKeyGenerator> m_formKeyGenerator;
 };
 
 } // namespace WebCore

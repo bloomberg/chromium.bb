@@ -29,6 +29,7 @@
 #ifndef FormState_h
 #define FormState_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 
@@ -42,9 +43,10 @@ namespace WebCore {
         NotSubmittedByJavaScript
     };
 
-    class FormState : public RefCounted<FormState> {
+    class FormState FINAL : public RefCountedWillBeGarbageCollected<FormState> {
     public:
-        static PassRefPtr<FormState> create(HTMLFormElement&, FormSubmissionTrigger);
+        static PassRefPtrWillBeRawPtr<FormState> create(HTMLFormElement&, FormSubmissionTrigger);
+        void trace(Visitor*);
 
         HTMLFormElement* form() const { return m_form.get(); }
         Document* sourceDocument() const { return m_sourceDocument.get(); }
@@ -53,8 +55,8 @@ namespace WebCore {
     private:
         FormState(HTMLFormElement&, FormSubmissionTrigger);
 
-        RefPtr<HTMLFormElement> m_form;
-        RefPtr<Document> m_sourceDocument;
+        RefPtrWillBeMember<HTMLFormElement> m_form;
+        RefPtrWillBeMember<Document> m_sourceDocument;
         FormSubmissionTrigger m_formSubmissionTrigger;
     };
 

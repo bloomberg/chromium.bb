@@ -154,10 +154,10 @@ private:
     void addToPastNamesMap(Element*, const AtomicString& pastName);
     void removeFromPastNamesMap(HTMLElement&);
 
-    typedef HashMap<AtomicString, Element*> PastNamesMap;
+    typedef WillBeHeapHashMap<AtomicString, RawPtrWillBeMember<Element> > PastNamesMap;
 
     FormSubmission::Attributes m_attributes;
-    OwnPtr<PastNamesMap> m_pastNamesMap;
+    OwnPtrWillBeMember<PastNamesMap> m_pastNamesMap;
 
     RadioButtonGroupScope m_radioButtonGroupScope;
 

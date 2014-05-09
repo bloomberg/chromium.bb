@@ -94,6 +94,7 @@ HTMLFormElement::~HTMLFormElement()
 void HTMLFormElement::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_pastNamesMap);
     visitor->trace(m_associatedElements);
 #endif
     HTMLElement::trace(visitor);
@@ -269,7 +270,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
     // has !renderer()->needsLayout() assertion.
     document().updateLayoutIgnorePendingStylesheets();
 
-    RefPtr<HTMLFormElement> protector(this);
+    RefPtrWillBeRawPtr<HTMLFormElement> protector(this);
     // Focus on the first focusable control and show a validation message.
     for (unsigned i = 0; i < unhandledInvalidControls.size(); ++i) {
         FormAssociatedElement* unhandledAssociatedElement = unhandledInvalidControls[i].get();
@@ -299,7 +300,7 @@ bool HTMLFormElement::validateInteractively(Event* event)
 
 void HTMLFormElement::prepareForSubmission(Event* event)
 {
-    RefPtr<HTMLFormElement> protector(this);
+    RefPtrWillBeRawPtr<HTMLFormElement> protector(this);
     LocalFrame* frame = document().frame();
     if (!frame)
         return;
@@ -655,7 +656,7 @@ bool HTMLFormElement::checkValidity()
 
 bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<FormAssociatedElement> >* unhandledInvalidControls)
 {
-    RefPtr<HTMLFormElement> protector(this);
+    RefPtrWillBeRawPtr<HTMLFormElement> protector(this);
     // Copy associatedElements because event handlers called from
     // HTMLFormControlElement::checkValidity() might change associatedElements.
     const FormAssociatedElement::List& associatedElements = this->associatedElements();
@@ -699,7 +700,7 @@ void HTMLFormElement::addToPastNamesMap(Element* element, const AtomicString& pa
     if (pastName.isEmpty())
         return;
     if (!m_pastNamesMap)
-        m_pastNamesMap = adoptPtr(new PastNamesMap);
+        m_pastNamesMap = adoptPtrWillBeNoop(new PastNamesMap);
     m_pastNamesMap->set(pastName, element);
 }
 
@@ -709,8 +710,8 @@ void HTMLFormElement::removeFromPastNamesMap(HTMLElement& element)
         return;
     PastNamesMap::iterator end = m_pastNamesMap->end();
     for (PastNamesMap::iterator it = m_pastNamesMap->begin(); it != end; ++it) {
-        if (it->value == &element) {
-            it->value = 0;
+        if (it->value.get() == &element) {
+            it->value = nullptr;
             // Keep looping. Single element can have multiple names.
         }
     }
