@@ -11,7 +11,7 @@ CFLAGS = $(CFLAGS) /Iinclude
 HEADERS = $(SRCDIR)\louis.h include\liblouis.h include\config.h
 DLLFLAGS = /dll /nologo /DEF:liblouis.def /OUT:liblouis.dll
 OBJ = compileTranslationTable.obj lou_translateString.obj \
-    lou_backTranslateString.obj wrappers.obj
+    lou_backTranslateString.obj wrappers.obj logging.obj
 !if "$(UCS)" == "2"
 CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="unsigned short int"
 CFLAGS = $(CFLAGS) /DUNICODEBITS=16
@@ -35,6 +35,9 @@ lou_translateString.obj: $(SRCDIR)\lou_translateString.c  $(HEADERS)
 lou_backTranslateString.obj: $(SRCDIR)\lou_backTranslateString.c \
     $(HEADERS)
     $(CC) $(CFLAGS) $(SRCDIR)\lou_backTranslateString.c
+
+logging.obj: $(SRCDIR)\logging.c $(HEADERS)
+    $(CC) $(CFLAGS) $(SRCDIR)\logging.c
 
 wrappers.obj: $(SRCDIR)\wrappers.c $(HEADERS)
     $(CC) $(CFLAGS) $(SRCDIR)\wrappers.c
