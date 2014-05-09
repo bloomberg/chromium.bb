@@ -184,8 +184,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
         CString data = message.utf8();
-        WebSocketFrame frame(WebSocketFrame::OpCodeText, data.data(), data.length(), WebSocketFrame::Final | WebSocketFrame::Masked);
-        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeText, true, data.data(), data.length());
     }
     m_messages.append(Message(message));
     sendInternal();
@@ -201,8 +200,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHa
         // FIXME: We can't access the data here.
         // Since Binary data are not displayed in Inspector, this does not
         // affect actual behavior.
-        WebSocketFrame frame(WebSocketFrame::OpCodeBinary, "", 0, WebSocketFrame::Final | WebSocketFrame::Masked);
-        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, "", 0);
     }
     m_messages.append(Message(blobDataHandle));
     sendInternal();
@@ -215,8 +213,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const ArrayBuffer& bu
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
-        WebSocketFrame frame(WebSocketFrame::OpCodeBinary, static_cast<const char*>(buffer.data()) + byteOffset, byteLength, WebSocketFrame::Final | WebSocketFrame::Masked);
-        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, frame.opCode, frame.masked, frame.payload, frame.payloadLength);
+        InspectorInstrumentation::didSendWebSocketFrame(document(), m_identifier, WebSocketFrame::OpCodeBinary, true, static_cast<const char*>(buffer.data()) + byteOffset, byteLength);
     }
     // buffer.slice copies its contents.
     m_messages.append(buffer.slice(byteOffset, byteOffset + byteLength));
