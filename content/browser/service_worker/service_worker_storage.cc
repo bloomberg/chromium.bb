@@ -57,7 +57,9 @@ void CompleteFindSoon(
 }
 
 const base::FilePath::CharType kServiceWorkerDirectory[] =
-    FILE_PATH_LITERAL("ServiceWorker");
+    FILE_PATH_LITERAL("Service Worker");
+const base::FilePath::CharType kDatabaseName[] =
+    FILE_PATH_LITERAL("Database");
 
 const int kMaxMemDiskCacheSize = 10 * 1024 * 1024;
 
@@ -169,12 +171,13 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       database_task_runner_(database_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
       weak_factory_(this) {
-  if (!path.empty())
+  if (!path.empty()) {
     path_ = path.Append(kServiceWorkerDirectory);
-
-  // TODO(nhiroki): Create a database on-disk after the database schema gets
-  // stable.
-  database_.reset(new ServiceWorkerDatabase(base::FilePath()));
+    database_.reset(new ServiceWorkerDatabase(path_.Append(kDatabaseName)));
+  } else {
+    // Create an in-memory database.
+    database_.reset(new ServiceWorkerDatabase(base::FilePath()));
+  }
 }
 
 ServiceWorkerStorage::~ServiceWorkerStorage() {
