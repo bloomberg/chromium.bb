@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -214,6 +215,9 @@ void SearchEngineManagerHandler::SetDefaultSearchEngine(
     return;
 
   list_controller_->MakeDefaultTemplateURL(index);
+
+  content::RecordAction(
+      base::UserMetricsAction("Options_SearchEngineSetDefault"));
 }
 
 void SearchEngineManagerHandler::RemoveSearchEngine(
@@ -226,8 +230,11 @@ void SearchEngineManagerHandler::RemoveSearchEngine(
   if (index < 0 || index >= list_controller_->table_model()->RowCount())
     return;
 
-  if (list_controller_->CanRemove(list_controller_->GetTemplateURL(index)))
+  if (list_controller_->CanRemove(list_controller_->GetTemplateURL(index))) {
     list_controller_->RemoveTemplateURL(index);
+    content::RecordAction(
+        base::UserMetricsAction("Options_SearchEngineRemoved"));
+  }
 }
 
 void SearchEngineManagerHandler::EditSearchEngine(const base::ListValue* args) {
