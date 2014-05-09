@@ -247,6 +247,7 @@ extern const char kBrailleImeExtensionPath[];
 extern const char kBrailleImeEngineId[];
 // Path to preinstalled Connectivity Diagnostics extension.
 extern const char kConnectivityDiagnosticsPath[];
+extern const char kConnectivityDiagnosticsKioskPath[];
 extern const char kConnectivityDiagnosticsLauncherPath[];
 // Path to preinstalled speech synthesis extension.
 extern const char kSpeechSynthesisExtensionPath[];

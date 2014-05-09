@@ -141,6 +141,8 @@ const char kBrailleImeEngineId[] =
     "_comp_ime_jddehjeebkoimngcbdkaahpobgicbffpbraille";
 const char kConnectivityDiagnosticsPath[] =
     "/usr/share/chromeos-assets/connectivity_diagnostics";
+const char kConnectivityDiagnosticsKioskPath[] =
+    "/usr/share/chromeos-assets/connectivity_diagnostics_kiosk";
 const char kConnectivityDiagnosticsLauncherPath[] =
     "/usr/share/chromeos-assets/connectivity_diagnostics_launcher";
 const char kSpeechSynthesisExtensionPath[] =

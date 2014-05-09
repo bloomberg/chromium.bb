@@ -174,7 +174,7 @@ void ErrorScreenHandler::HandleDiagnoseButtonClicked() {
   std::string extension_id =
       extension_service->component_loader()->Add(
           IDR_CONNECTIVITY_DIAGNOSTICS_MANIFEST,
-          base::FilePath(extension_misc::kConnectivityDiagnosticsPath));
+          base::FilePath(extension_misc::kConnectivityDiagnosticsKioskPath));
 
   const extensions::Extension* extension = extension_service->
       GetExtensionById(extension_id, true);
