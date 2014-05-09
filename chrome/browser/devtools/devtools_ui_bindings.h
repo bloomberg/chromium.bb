@@ -94,6 +94,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
   virtual void SetContentsResizingStrategy(
       const gfx::Insets& insets, const gfx::Size& min_size) OVERRIDE;
   virtual void InspectElementCompleted() OVERRIDE;
+  virtual void InspectedURLChanged(const std::string& url) OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void SetIsDocked(bool is_docked) OVERRIDE;
   virtual void OpenInNewTab(const std::string& url) OVERRIDE;

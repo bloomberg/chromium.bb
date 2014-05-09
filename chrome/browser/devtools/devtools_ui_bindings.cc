@@ -9,6 +9,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/devtools_client_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/favicon_status.h"
+#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
@@ -62,6 +64,7 @@ base::LazyInstance<DevToolsUIBindingsList>::Leaky g_instances =
 static const char kFrontendHostId[] = "id";
 static const char kFrontendHostMethod[] = "method";
 static const char kFrontendHostParams[] = "params";
+static const char kTitleFormat[] = "Developer Tools - %s";
 
 std::string SkColorToRGBAString(SkColor color) {
   // We avoid StringPrintf because it will use locale specific formatters for
@@ -423,6 +426,15 @@ void DevToolsUIBindings::SetIsDocked(bool dock_requested) {
 
 void DevToolsUIBindings::InspectElementCompleted() {
   delegate_->InspectElementCompleted();
+}
+
+void DevToolsUIBindings::InspectedURLChanged(const std::string& url) {
+  content::NavigationController& controller = web_contents()->GetController();
+  content::NavigationEntry* entry = controller.GetActiveEntry();
+  // DevTools UI is not localized.
+  entry->SetTitle(
+      base::UTF8ToUTF16(base::StringPrintf(kTitleFormat, url.c_str())));
+  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
 }
 
 void DevToolsUIBindings::OpenInNewTab(const std::string& url) {

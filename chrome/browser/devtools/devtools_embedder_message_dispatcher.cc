@@ -245,6 +245,8 @@ DevToolsEmbedderMessageDispatcher*
                      &Delegate::SetContentsResizingStrategy, delegate);
   d->RegisterHandler("inspectElementCompleted",
                      &Delegate::InspectElementCompleted, delegate);
+  d->RegisterHandler("inspectedURLChanged",
+                     &Delegate::InspectedURLChanged, delegate);
   d->RegisterHandler("moveWindowBy", &Delegate::MoveWindow, delegate);
   d->RegisterHandler("setIsDocked", &Delegate::SetIsDocked, delegate);
   d->RegisterHandler("openInNewTab", &Delegate::OpenInNewTab, delegate);
