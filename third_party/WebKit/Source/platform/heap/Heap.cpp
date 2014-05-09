@@ -131,6 +131,7 @@ public:
 
     WARN_UNUSED_RETURN bool commit()
     {
+        ASSERT(Heap::heapDoesNotContainCacheIsEmpty());
 #if OS(POSIX)
         int err = mprotect(m_base, m_size, PROT_READ | PROT_WRITE);
         if (!err) {
@@ -204,6 +205,7 @@ public:
         // unmap the excess memory before returning.
         size_t allocationSize = payloadSize + 2 * osPageSize() + blinkPageSize;
 
+        ASSERT(Heap::heapDoesNotContainCacheIsEmpty());
 #if OS(POSIX)
         Address base = static_cast<Address>(mmap(0, allocationSize, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0));
         RELEASE_ASSERT(base != MAP_FAILED);
@@ -426,16 +428,15 @@ bool LargeHeapObject<Header>::isMarked()
 }
 
 template<typename Header>
-bool LargeHeapObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
+void LargeHeapObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 {
-    if (contains(address)) {
+    ASSERT(contains(address));
+    if (!objectContains(address))
+        return;
 #if ENABLE(GC_TRACING)
-        visitor->setHostInfo(&address, "stack");
+    visitor->setHostInfo(&address, "stack");
 #endif
-        mark(visitor);
-        return true;
-    }
-    return false;
+    mark(visitor);
 }
 
 template<>
@@ -558,13 +559,10 @@ BaseHeapPage* ThreadHeap<Header>::heapPageFromAddress(Address address)
         if (page->contains(address))
             return page;
     }
-    return 0;
-}
-
-template<typename Header>
-BaseHeapPage* ThreadHeap<Header>::largeHeapObjectFromAddress(Address address)
-{
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next()) {
+        // Check that large pages are blinkPageSize aligned (modulo the
+        // osPageSize for the guard page).
+        ASSERT(reinterpret_cast<Address>(current) - osPageSize() == roundToBlinkPageStart(reinterpret_cast<Address>(current)));
         if (current->contains(address))
             return current;
     }
@@ -582,16 +580,6 @@ const GCInfo* ThreadHeap<Header>::findGCInfoOfLargeHeapObject(Address address)
     return 0;
 }
 #endif
-
-template<typename Header>
-bool ThreadHeap<Header>::checkAndMarkLargeHeapObject(Visitor* visitor, Address address)
-{
-    for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current; current = current->next()) {
-        if (current->checkAndMarkPointer(visitor, address))
-            return true;
-    }
-    return false;
-}
 
 template<typename Header>
 void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
@@ -647,6 +635,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 #endif
     if (threadState()->shouldGC())
         threadState()->setGCRequested();
+    Heap::flushHeapDoesNotContainCache();
     PageMemory* pageMemory = PageMemory::allocate(allocationSize);
     Address largeObjectAddress = pageMemory->writableStart();
     Address headerAddress = largeObjectAddress + sizeof(LargeHeapObject<Header>) + headerPadding<Header>();
@@ -668,6 +657,7 @@ Address ThreadHeap<Header>::allocateLargeObject(size_t size, const GCInfo* gcInf
 template<typename Header>
 void ThreadHeap<Header>::freeLargeObject(LargeHeapObject<Header>* object, LargeHeapObject<Header>** previousNext)
 {
+    flushHeapContainsCache();
     object->unlink(previousNext);
     object->finalize();
 
@@ -704,6 +694,7 @@ void ThreadHeap<Header>::clearPagePool()
 template<typename Header>
 PageMemory* ThreadHeap<Header>::takePageFromPool()
 {
+    Heap::flushHeapDoesNotContainCache();
     while (PagePoolEntry* entry = m_pagePool) {
         m_pagePool = entry->next();
         PageMemory* storage = entry->storage();
@@ -722,6 +713,7 @@ PageMemory* ThreadHeap<Header>::takePageFromPool()
 template<typename Header>
 void ThreadHeap<Header>::addPageToPool(HeapPage<Header>* unused)
 {
+    flushHeapContainsCache();
     PageMemory* storage = unused->storage();
     PagePoolEntry* entry = new PagePoolEntry(storage, m_pagePool);
     m_pagePool = entry;
@@ -731,7 +723,7 @@ void ThreadHeap<Header>::addPageToPool(HeapPage<Header>* unused)
 template<typename Header>
 void ThreadHeap<Header>::allocatePage(const GCInfo* gcInfo)
 {
-    heapContainsCache()->flush();
+    Heap::flushHeapDoesNotContainCache();
     PageMemory* pageMemory = takePageFromPool();
     if (!pageMemory) {
         pageMemory = PageMemory::allocate(blinkPagePayloadSize());
@@ -782,6 +774,7 @@ void ThreadHeap<Header>::sweep()
     bool pagesRemoved = false;
     while (page) {
         if (page->isEmpty()) {
+            flushHeapContainsCache();
             HeapPage<Header>* unused = page;
             page = page->next();
             HeapPage<Header>::unlink(unused, previous);
@@ -793,7 +786,7 @@ void ThreadHeap<Header>::sweep()
         }
     }
     if (pagesRemoved)
-        heapContainsCache()->flush();
+        flushHeapContainsCache();
 
     LargeHeapObject<Header>** previousNext = &m_firstLargeHeapObject;
     for (LargeHeapObject<Header>* current = m_firstLargeHeapObject; current;) {
@@ -867,7 +860,7 @@ void ThreadHeap<Header>::clearMarks()
 template<typename Header>
 void ThreadHeap<Header>::deletePages()
 {
-    heapContainsCache()->flush();
+    flushHeapContainsCache();
     // Add all pages in the pool to the heap's list of pages before deleting
     clearPagePool();
 
@@ -1079,11 +1072,12 @@ Header* HeapPage<Header>::findHeaderFromAddress(Address address)
 }
 
 template<typename Header>
-bool HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
+void HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 {
+    ASSERT(contains(address));
     Header* header = findHeaderFromAddress(address);
     if (!header)
-        return false;
+        return;
 
 #if ENABLE(GC_TRACING)
     visitor->setHostInfo(&address, "stack");
@@ -1092,7 +1086,6 @@ bool HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
         visitor->markConservatively(header);
     else
         visitor->mark(header, traceCallback(header));
-    return true;
 }
 
 #if ENABLE(GC_TRACING)
@@ -1174,18 +1167,18 @@ void LargeHeapObject<Header>::getStats(HeapStats& stats)
     stats.increaseObjectSpace(payloadSize());
 }
 
-HeapContainsCache::HeapContainsCache()
-    : m_entries(adoptArrayPtr(new Entry[HeapContainsCache::numberOfEntries]))
+template<typename Entry>
+void HeapExtentCache<Entry>::flush()
 {
+    if (m_hasEntries) {
+        for (int i = 0; i < numberOfEntries; i++)
+            m_entries[i] = Entry();
+        m_hasEntries = false;
+    }
 }
 
-void HeapContainsCache::flush()
-{
-    for (int i = 0; i < numberOfEntries; i++)
-        m_entries[i] = Entry();
-}
-
-size_t HeapContainsCache::hash(Address address)
+template<typename Entry>
+size_t HeapExtentCache<Entry>::hash(Address address)
 {
     size_t value = (reinterpret_cast<size_t>(address) >> blinkPageSizeLog2);
     value ^= value >> numberOfEntriesLog2;
@@ -1194,31 +1187,46 @@ size_t HeapContainsCache::hash(Address address)
     return value & ~1; // Returns only even number.
 }
 
-bool HeapContainsCache::lookup(Address address, BaseHeapPage** page)
+template<typename Entry>
+typename Entry::LookupResult HeapExtentCache<Entry>::lookup(Address address)
 {
-    ASSERT(page);
     size_t index = hash(address);
     ASSERT(!(index & 1));
     Address cachePage = roundToBlinkPageStart(address);
-    if (m_entries[index].address() == cachePage) {
-        *page = m_entries[index].containingPage();
-        return true;
-    }
-    if (m_entries[index + 1].address() == cachePage) {
-        *page = m_entries[index + 1].containingPage();
-        return true;
-    }
-    *page = 0;
-    return false;
+    if (m_entries[index].address() == cachePage)
+        return m_entries[index].result();
+    if (m_entries[index + 1].address() == cachePage)
+        return m_entries[index + 1].result();
+    return 0;
 }
 
-void HeapContainsCache::addEntry(Address address, BaseHeapPage* page)
+template<typename Entry>
+void HeapExtentCache<Entry>::addEntry(Address address, typename Entry::LookupResult entry)
 {
+    m_hasEntries = true;
     size_t index = hash(address);
     ASSERT(!(index & 1));
     Address cachePage = roundToBlinkPageStart(address);
     m_entries[index + 1] = m_entries[index];
-    m_entries[index] = Entry(cachePage, page);
+    m_entries[index] = Entry(cachePage, entry);
+}
+
+// These should not be needed, but it seems impossible to persuade clang to
+// instantiate the template functions and export them from a shared library, so
+// we add these in the non-templated subclass, which does not have that issue.
+void HeapContainsCache::addEntry(Address address, BaseHeapPage* page)
+{
+    HeapExtentCache<PositiveEntry>::addEntry(address, page);
+}
+
+BaseHeapPage* HeapContainsCache::lookup(Address address)
+{
+    return HeapExtentCache<PositiveEntry>::lookup(address);
+}
+
+void Heap::flushHeapDoesNotContainCache()
+{
+    s_heapDoesNotContainCache->flush();
 }
 
 void CallbackStack::init(CallbackStack** first)
@@ -1492,6 +1500,7 @@ void Heap::init()
     ThreadState::init();
     CallbackStack::init(&s_markingStack);
     CallbackStack::init(&s_weakCallbackStack);
+    s_heapDoesNotContainCache = new HeapDoesNotContainCache();
     s_markingVisitor = new MarkingVisitor();
 }
 
@@ -1511,6 +1520,8 @@ void Heap::doShutdown()
     ASSERT(!ThreadState::attachedThreads().size());
     delete s_markingVisitor;
     s_markingVisitor = 0;
+    delete s_heapDoesNotContainCache;
+    s_heapDoesNotContainCache = 0;
     CallbackStack::shutdown(&s_weakCallbackStack);
     CallbackStack::shutdown(&s_markingStack);
     ThreadState::shutdown();
@@ -1531,16 +1542,28 @@ BaseHeapPage* Heap::contains(Address address)
 Address Heap::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     ASSERT(ThreadState::isAnyThreadInGC());
-    if (!address)
+
+#ifdef NDEBUG
+    if (s_heapDoesNotContainCache->lookup(address))
         return 0;
+#endif
 
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
         if ((*it)->checkAndMarkPointer(visitor, address)) {
-            // Pointer found and marked.
+            // Pointer was in a page of that thread. If it actually pointed
+            // into an object then that object was found and marked.
+            ASSERT(!s_heapDoesNotContainCache->lookup(address));
             return address;
         }
     }
+
+#ifdef NDEBUG
+    s_heapDoesNotContainCache->addEntry(address, true);
+#else
+    if (!s_heapDoesNotContainCache->lookup(address))
+        s_heapDoesNotContainCache->addEntry(address, true);
+#endif
     return 0;
 }
 
@@ -1701,5 +1724,6 @@ template class ThreadHeap<HeapObjectHeader>;
 Visitor* Heap::s_markingVisitor;
 CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_weakCallbackStack;
+HeapDoesNotContainCache* Heap::s_heapDoesNotContainCache;
 bool Heap::s_shutdownCalled = false;
 }

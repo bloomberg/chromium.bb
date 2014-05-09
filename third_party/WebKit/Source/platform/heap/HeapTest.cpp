@@ -1853,6 +1853,15 @@ TEST(HeapTest, LargeObjects)
     {
         int slack = 8; // LargeObject points to an IntWrapper that is also allocated.
         Persistent<LargeObject> object = LargeObject::create();
+        EXPECT_TRUE(ThreadState::current()->contains(object));
+        EXPECT_TRUE(ThreadState::current()->contains(reinterpret_cast<char*>(object.get()) + sizeof(LargeObject) - 1));
+#if ENABLE(GC_TRACING)
+        const GCInfo* info = ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()));
+        EXPECT_NE(reinterpret_cast<const GCInfo*>(0), info);
+        EXPECT_EQ(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeObject) - 1));
+        EXPECT_NE(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) + sizeof(LargeObject)));
+        EXPECT_NE(info, ThreadState::current()->findGCInfo(reinterpret_cast<Address>(object.get()) - 1));
+#endif
         HeapStats afterAllocation;
         clearOutOldGarbage(&afterAllocation);
         {

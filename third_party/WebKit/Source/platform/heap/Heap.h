@@ -90,6 +90,11 @@ inline Address roundToBlinkPageStart(Address address)
     return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address) & blinkPageBaseMask);
 }
 
+inline Address roundToBlinkPageEnd(Address address)
+{
+    return reinterpret_cast<Address>(reinterpret_cast<uintptr_t>(address - 1) & blinkPageBaseMask) + blinkPageSize;
+}
+
 // Compute the amount of padding we have to add to a header to make
 // the size of the header plus the padding a multiple of 8 bytes.
 template<typename Header>
@@ -136,17 +141,15 @@ public:
         ASSERT(isPageHeaderAddress(reinterpret_cast<Address>(this)));
     }
 
-    // Check if the given address could point to an object in this
+    // Check if the given address points to an object in this
     // heap page. If so, find the start of that object and mark it
-    // using the given Visitor.
-    //
-    // Returns true if the object was found and marked, returns false
-    // otherwise.
+    // using the given Visitor. Otherwise do nothing. The pointer must
+    // be within the same aligned blinkPageSize as the this-pointer.
     //
     // This is used during conservative stack scanning to
     // conservatively mark all objects that could be referenced from
     // the stack.
-    virtual bool checkAndMarkPointer(Visitor*, Address) = 0;
+    virtual void checkAndMarkPointer(Visitor*, Address) = 0;
 
 #if ENABLE(GC_TRACING)
     virtual const GCInfo* findGCInfo(Address) = 0;
@@ -156,6 +159,7 @@ public:
     PageMemory* storage() const { return m_storage; }
     ThreadState* threadState() const { return m_threadState; }
     const GCInfo* gcInfo() { return m_gcInfo; }
+    virtual bool isLargeObject() { return false; }
 
 private:
     // Accessor to silence unused warnings.
@@ -187,11 +191,14 @@ public:
         COMPILE_ASSERT(!(sizeof(LargeHeapObject<Header>) & allocationMask), large_heap_object_header_misaligned);
     }
 
-    virtual bool checkAndMarkPointer(Visitor*, Address);
+    virtual void checkAndMarkPointer(Visitor*, Address) OVERRIDE;
+    virtual bool isLargeObject() OVERRIDE { return true; }
 
 #if ENABLE(GC_TRACING)
-    virtual const GCInfo* findGCInfo(Address)
+    virtual const GCInfo* findGCInfo(Address address)
     {
+        if (!objectContains(address))
+            return 0;
         return gcInfo();
     }
 #endif
@@ -207,9 +214,19 @@ public:
         *previousNext = m_next;
     }
 
+    // The LargeHeapObject pseudo-page contains one actual object. Determine
+    // whether the pointer is within that object.
+    bool objectContains(Address object)
+    {
+        return (payload() <= object) && (object < address() + size());
+    }
+
+    // Returns true for any address that is on one of the pages that this
+    // large object uses. That ensures that we can use a negative result to
+    // populate the negative page cache.
     bool contains(Address object)
     {
-        return (address() <= object) && (object <= (address() + size()));
+        return roundToBlinkPageStart(address()) <= object && object < roundToBlinkPageEnd(address() + size());
     }
 
     LargeHeapObject<Header>* next()
@@ -238,7 +255,6 @@ public:
     void finalize();
 
 private:
-    friend class Heap;
     friend class ThreadHeap<Header>;
 
     LargeHeapObject<Header>* m_next;
@@ -441,10 +457,14 @@ public:
 
     bool isEmpty();
 
+    // Returns true for the whole blinkPageSize page that the page is on, even
+    // for the header, and the unmapped guard page at the start. That ensures
+    // the result can be used to populate the negative page cache.
     bool contains(Address addr)
     {
         Address blinkPageStart = roundToBlinkPageStart(address());
-        return blinkPageStart <= addr && (blinkPageStart + blinkPageSize) > addr;
+        ASSERT(blinkPageStart = address() - osPageSize()); // Page is at aligned address plus guard page size.
+        return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
     }
 
     HeapPage* next() { return m_next; }
@@ -466,7 +486,7 @@ public:
     void sweep();
     void clearObjectStartBitMap();
     void finalize(Header*);
-    virtual bool checkAndMarkPointer(Visitor*, Address);
+    virtual void checkAndMarkPointer(Visitor*, Address) OVERRIDE;
 #if ENABLE(GC_TRACING)
     const GCInfo* findGCInfo(Address) OVERRIDE;
 #endif
@@ -490,76 +510,114 @@ protected:
     friend class ThreadHeap<Header>;
 };
 
-// A HeapContainsCache provides a fast way of taking an arbitrary
+class AddressEntry {
+public:
+    AddressEntry() : m_address(0) { }
+
+    explicit AddressEntry(Address address) : m_address(address) { }
+
+    Address address() const { return m_address; }
+
+private:
+    Address m_address;
+};
+
+class PositiveEntry : public AddressEntry {
+public:
+    PositiveEntry()
+        : AddressEntry()
+        , m_containingPage(0)
+    {
+    }
+
+    PositiveEntry(Address address, BaseHeapPage* containingPage)
+        : AddressEntry(address)
+        , m_containingPage(containingPage)
+    {
+    }
+
+    BaseHeapPage* result() const { return m_containingPage; }
+
+    typedef BaseHeapPage* LookupResult;
+
+private:
+    BaseHeapPage* m_containingPage;
+};
+
+class NegativeEntry : public AddressEntry {
+public:
+    NegativeEntry() : AddressEntry() { }
+
+    NegativeEntry(Address address, bool) : AddressEntry(address) { }
+
+    bool result() const { return true; }
+
+    typedef bool LookupResult;
+};
+
+// A HeapExtentCache provides a fast way of taking an arbitrary
 // pointer-sized word, and determining whether it can be interpreted
 // as a pointer to an area that is managed by the garbage collected
 // Blink heap. There is a cache of 'pages' that have previously been
-// determined to be either wholly inside or wholly outside the
-// heap. The size of these pages must be smaller than the allocation
-// alignment of the heap pages. We determine on-heap-ness by rounding
-// down the pointer to the nearest page and looking up the page in the
-// cache. If there is a miss in the cache we ask the heap to determine
-// the status of the pointer by iterating over all of the heap. The
-// result is then cached in the two-way associative page cache.
+// determined to be wholly inside the heap. The size of these pages must be
+// smaller than the allocation alignment of the heap pages. We determine
+// on-heap-ness by rounding down the pointer to the nearest page and looking up
+// the page in the cache. If there is a miss in the cache we can ask the heap
+// to determine the status of the pointer by iterating over all of the heap.
+// The result is then cached in the two-way associative page cache.
 //
-// A HeapContainsCache is both a positive and negative
-// cache. Therefore, it must be flushed both when new memory is added
-// and when memory is removed from the Blink heap.
-class HeapContainsCache {
+// A HeapContainsCache is a positive cache. Therefore, it must be flushed when
+// memory is removed from the Blink heap. The HeapDoesNotContainCache is a
+// negative cache, so it must be flushed when memory is added to the heap.
+template<typename Entry>
+class HeapExtentCache {
 public:
-    HeapContainsCache();
+    HeapExtentCache()
+        : m_entries(adoptArrayPtr(new Entry[HeapExtentCache::numberOfEntries]))
+        , m_hasEntries(false)
+    {
+    }
 
     void flush();
     bool contains(Address);
+    bool isEmpty() { return !m_hasEntries; }
 
     // Perform a lookup in the cache.
     //
-    // If lookup returns false the argument address was not found in
+    // If lookup returns null/false the argument address was not found in
     // the cache and it is unknown if the address is in the Blink
     // heap.
     //
-    // If lookup returns true the argument address was found in the
-    // cache. In that case, the address is in the heap if the base
-    // heap page out parameter is different from 0 and is not in the
-    // heap if the base heap page out parameter is 0.
-    bool lookup(Address, BaseHeapPage**);
+    // If lookup returns true/a page, the argument address was found in the
+    // cache. For the HeapContainsCache this means the address is in the heap.
+    // For the HeapDoesNotContainCache this means the address is not in the
+    // heap.
+    PLATFORM_EXPORT typename Entry::LookupResult lookup(Address);
 
-    // Add an entry to the cache. Use a 0 base heap page pointer to
-    // add a negative entry.
-    void addEntry(Address, BaseHeapPage*);
+    // Add an entry to the cache.
+    PLATFORM_EXPORT void addEntry(Address, typename Entry::LookupResult);
 
 private:
-    class Entry {
-    public:
-        Entry()
-            : m_address(0)
-            , m_containingPage(0)
-        {
-        }
-
-        Entry(Address address, BaseHeapPage* containingPage)
-            : m_address(address)
-            , m_containingPage(containingPage)
-        {
-        }
-
-        BaseHeapPage* containingPage() { return m_containingPage; }
-        Address address() { return m_address; }
-
-    private:
-        Address m_address;
-        BaseHeapPage* m_containingPage;
-    };
-
     static const int numberOfEntriesLog2 = 12;
     static const int numberOfEntries = 1 << numberOfEntriesLog2;
 
     static size_t hash(Address);
 
-    WTF::OwnPtr<HeapContainsCache::Entry[]> m_entries;
+    WTF::OwnPtr<Entry[]> m_entries;
+    bool m_hasEntries;
 
     friend class ThreadState;
 };
+
+// Normally these would be typedefs instead of subclasses, but that makes them
+// very hard to forward declare.
+class HeapContainsCache : public HeapExtentCache<PositiveEntry> {
+public:
+    BaseHeapPage* lookup(Address);
+    void addEntry(Address, BaseHeapPage*);
+};
+
+class HeapDoesNotContainCache : public HeapExtentCache<NegativeEntry> { };
 
 // FIXME: This is currently used by the WebAudio code.
 // We should attempt to restructure the WebAudio code so that the main thread
@@ -681,26 +739,9 @@ public:
     // page in this thread heap.
     virtual BaseHeapPage* heapPageFromAddress(Address) = 0;
 
-    // Find the large object in this thread heap containing the given
-    // address. Returns 0 if the address is not contained in any
-    // page in this thread heap.
-    virtual BaseHeapPage* largeHeapObjectFromAddress(Address) = 0;
-
 #if ENABLE(GC_TRACING)
     virtual const GCInfo* findGCInfoOfLargeHeapObject(Address) = 0;
 #endif
-
-    // Check if the given address could point to an object in this
-    // heap. If so, find the start of that object and mark it using
-    // the given Visitor.
-    //
-    // Returns true if the object was found and marked, returns false
-    // otherwise.
-    //
-    // This is used during conservative stack scanning to
-    // conservatively mark all objects that could be referenced from
-    // the stack.
-    virtual bool checkAndMarkLargeHeapObject(Visitor*, Address) = 0;
 
     // Sweep this part of the Blink heap. This finalizes dead objects
     // and builds freelists for all the unused memory.
@@ -744,11 +785,9 @@ public:
     virtual ~ThreadHeap();
 
     virtual BaseHeapPage* heapPageFromAddress(Address);
-    virtual BaseHeapPage* largeHeapObjectFromAddress(Address);
 #if ENABLE(GC_TRACING)
     virtual const GCInfo* findGCInfoOfLargeHeapObject(Address);
 #endif
-    virtual bool checkAndMarkLargeHeapObject(Visitor*, Address);
     virtual void sweep();
     virtual void assertEmpty();
     virtual void clearFreeLists();
@@ -762,7 +801,10 @@ public:
 
     ThreadState* threadState() { return m_threadState; }
     HeapStats& stats() { return m_threadState->stats(); }
-    HeapContainsCache* heapContainsCache() { return m_threadState->heapContainsCache(); }
+    void flushHeapContainsCache()
+    {
+        m_threadState->heapContainsCache()->flush();
+    }
 
     inline Address allocate(size_t, const GCInfo*);
     void addToFreeList(Address, size_t);
@@ -906,11 +948,17 @@ public:
     static bool isConsistentForGC();
     static void makeConsistentForGC();
 
+    static void flushHeapDoesNotContainCache();
+    static bool heapDoesNotContainCacheIsEmpty() { return s_heapDoesNotContainCache->isEmpty(); }
+
+private:
     static Visitor* s_markingVisitor;
 
     static CallbackStack* s_markingStack;
     static CallbackStack* s_weakCallbackStack;
+    static HeapDoesNotContainCache* s_heapDoesNotContainCache;
     static bool s_shutdownCalled;
+    friend class ThreadState;
 };
 
 // The NoAllocationScope class is used in debug mode to catch unwanted

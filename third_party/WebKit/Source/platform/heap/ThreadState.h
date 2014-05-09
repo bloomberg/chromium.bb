@@ -467,7 +467,7 @@ public:
     // address ranges for the Blink heap. If the address is in the Blink
     // heap the containing heap page is returned.
     HeapContainsCache* heapContainsCache() { return m_heapContainsCache.get(); }
-    BaseHeapPage* contains(Address);
+    BaseHeapPage* contains(Address address) { return heapPageFromAddress(address); }
     BaseHeapPage* contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
     BaseHeapPage* contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
 

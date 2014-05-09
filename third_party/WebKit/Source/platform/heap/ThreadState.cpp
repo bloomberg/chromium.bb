@@ -490,14 +490,18 @@ bool ThreadState::checkAndMarkPointer(Visitor* visitor, Address address)
     if (m_isCleaningUp)
         return false;
 
+    // This checks for normal pages and for large objects which span the extent
+    // of several normal pages.
     BaseHeapPage* page = heapPageFromAddress(address);
-    if (page)
-        return page->checkAndMarkPointer(visitor, address);
-    // Not in heap pages, check large objects
-    for (int i = 0; i < NumberOfHeaps; i++) {
-        if (m_heaps[i]->checkAndMarkLargeHeapObject(visitor, address))
-            return true;
+    if (page) {
+        page->checkAndMarkPointer(visitor, address);
+        // Whether or not the pointer was within an object it was certainly
+        // within a page that is part of the heap, so we don't want to ask the
+        // other other heaps or put this address in the
+        // HeapDoesNotContainCache.
+        return true;
     }
+
     return false;
 }
 
@@ -507,12 +511,6 @@ const GCInfo* ThreadState::findGCInfo(Address address)
     BaseHeapPage* page = heapPageFromAddress(address);
     if (page) {
         return page->findGCInfo(address);
-    }
-
-    // Not in heap pages, check large objects
-    for (int i = 0; i < NumberOfHeaps; i++) {
-        if (const GCInfo* info = m_heaps[i]->findGCInfoOfLargeHeapObject(address))
-            return info;
     }
     return 0;
 }
@@ -675,37 +673,28 @@ void ThreadState::prepareForGC()
 
 BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
 {
-    BaseHeapPage* page;
-    bool found = heapContainsCache()->lookup(address, &page);
-    if (found)
-        return page;
-
-    for (int i = 0; i < NumberOfHeaps; i++) {
-        page = m_heaps[i]->heapPageFromAddress(address);
-#ifndef NDEBUG
-        Address blinkPageAddr = roundToBlinkPageStart(address);
+    BaseHeapPage* cachedPage = heapContainsCache()->lookup(address);
+#ifdef NDEBUG
+    if (cachedPage)
+        return cachedPage;
 #endif
-        ASSERT(page == m_heaps[i]->heapPageFromAddress(blinkPageAddr));
-        ASSERT(page == m_heaps[i]->heapPageFromAddress(blinkPageAddr + blinkPageSize - 1));
-        if (page)
-            break;
-    }
-    heapContainsCache()->addEntry(address, page);
-    return page; // 0 if not found.
-}
 
-BaseHeapPage* ThreadState::contains(Address address)
-{
-    // Check heap contains cache first.
-    BaseHeapPage* page = heapPageFromAddress(address);
-    if (page)
-        return page;
-    // If no heap page was found check large objects.
     for (int i = 0; i < NumberOfHeaps; i++) {
-        page = m_heaps[i]->largeHeapObjectFromAddress(address);
-        if (page)
+        BaseHeapPage* page = m_heaps[i]->heapPageFromAddress(address);
+        if (page) {
+            // Asserts that make sure heapPageFromAddress takes addresses from
+            // the whole aligned blinkPageSize memory area. This is necessary
+            // for the negative cache to work.
+            ASSERT(page->isLargeObject() || page == m_heaps[i]->heapPageFromAddress(roundToBlinkPageStart(address)));
+            if (roundToBlinkPageStart(address) != roundToBlinkPageEnd(address))
+                ASSERT(page->isLargeObject() || page == m_heaps[i]->heapPageFromAddress(roundToBlinkPageEnd(address) - 1));
+            ASSERT(!cachedPage || page == cachedPage);
+            if (!cachedPage)
+                heapContainsCache()->addEntry(address, page);
             return page;
+        }
     }
+    ASSERT(!cachedPage);
     return 0;
 }
 
