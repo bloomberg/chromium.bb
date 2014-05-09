@@ -124,6 +124,14 @@ class MockRawChannelOnInitFails : public RawChannel {
   MockRawChannelOnInitFails() : on_init_called_(false) {}
   virtual ~MockRawChannelOnInitFails() {}
 
+  // |RawChannel| public methods:
+  virtual size_t GetSerializedPlatformHandleSize() const OVERRIDE {
+    CHECK(false);
+    return 0;
+  }
+
+ private:
+  // |RawChannel| protected methods:
   virtual IOResult Read(size_t*) OVERRIDE {
     CHECK(false);
     return IO_FAILED;
@@ -150,7 +158,6 @@ class MockRawChannelOnInitFails : public RawChannel {
     CHECK(false);
   }
 
- private:
   bool on_init_called_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRawChannelOnInitFails);
