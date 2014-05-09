@@ -92,6 +92,10 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // Invoked when |mouse_drag_timer_| fires to show dragging UI.
   void OnMouseDragTimer();
 
+  // If the item is not in a folder, not highlighted, not being dragged, and not
+  // having something dropped onto it, enables subpixel AA for the title.
+  void SetTitleSubpixelAA();
+
   // AppListItemObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemNameChanged() OVERRIDE;
@@ -102,6 +106,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // views::View overrides:
   virtual const char* GetClassName() const OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual void SchedulePaintInRect(const gfx::Rect& r) OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // views::ContextMenuController overrides:

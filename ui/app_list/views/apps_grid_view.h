@@ -125,6 +125,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Prerenders the icons on and around |page_index|.
   void Prerender(int page_index);
 
+  // Return true if the |bounds_animator_| is animating |view|.
+  bool IsAnimatingView(views::View* view);
+
   bool has_dragged_view() const { return drag_view_ != NULL; }
   bool dragging() const { return drag_pointer_ != NONE; }
 

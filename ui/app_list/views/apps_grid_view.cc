@@ -128,11 +128,11 @@ class RowMoveAnimationDelegate
   }
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     view_->layer()->SetOpacity(1.0f);
-    view_->layer()->ScheduleDraw();
+    view_->SchedulePaint();
   }
   virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
     view_->layer()->SetOpacity(1.0f);
-    view_->layer()->ScheduleDraw();
+    view_->SchedulePaint();
   }
 
  private:
@@ -169,6 +169,27 @@ class ItemRemoveAnimationDelegate
   scoped_ptr<views::View> view_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemRemoveAnimationDelegate);
+};
+
+// ItemMoveAnimationDelegate observes when an item finishes animating when it is
+// not moving between rows. This is to ensure an item is repainted for the
+// "zoom out" case when releasing an item being dragged.
+class ItemMoveAnimationDelegate
+    : public views::BoundsAnimator::OwnedAnimationDelegate {
+ public:
+  ItemMoveAnimationDelegate(views::View* view) : view_(view) {}
+
+  virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
+    view_->SchedulePaint();
+  }
+  virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
+    view_->SchedulePaint();
+  }
+
+ private:
+  views::View* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ItemMoveAnimationDelegate);
 };
 
 // Gets the distance between the centers of the |rect_1| and |rect_2|.
@@ -807,6 +828,10 @@ void AppsGridView::Prerender(int page_index) {
   }
 }
 
+bool AppsGridView::IsAnimatingView(views::View* view) {
+  return bounds_animator_.IsAnimating(view);
+}
+
 gfx::Size AppsGridView::GetPreferredSize() {
   const gfx::Insets insets(GetInsets());
   const gfx::Size tile_size = gfx::Size(kPreferredTileWidth,
@@ -1173,6 +1198,8 @@ void AppsGridView::AnimateToIdealBounds() {
                            target);
     } else if (visible || bounds_animator_.IsAnimating(view)) {
       bounds_animator_.AnimateViewTo(view, target);
+      bounds_animator_.SetAnimationDelegate(
+          view, new ItemMoveAnimationDelegate(view), true);
     } else {
       view->SetBoundsRect(target);
     }

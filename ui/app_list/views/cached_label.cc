@@ -17,9 +17,15 @@ CachedLabel::CachedLabel()
 void CachedLabel::PaintToBackingImage() {
   if (image_.size() == size() && !needs_repaint_)
     return;
-  gfx::Canvas canvas(size(), 1.0f, false /* is_opaque */);
-  canvas.FillRect(GetLocalBounds(), SkColorSetARGB(0, 0, 0, 0),
-                  SkXfermode::kSrc_Mode);
+
+  bool is_opaque = SkColorGetA(background_color()) == 0xFF;
+  gfx::Canvas canvas(size(), 1.0f, is_opaque);
+  // If a background is provided, it will initialize the canvas in
+  // View::OnPaintBackground(). Otherwise, the background must be set here.
+  if (!background()) {
+    canvas.FillRect(
+        GetLocalBounds(), background_color(), SkXfermode::kSrc_Mode);
+  }
   Label::OnPaint(&canvas);
   image_ = gfx::ImageSkia(canvas.ExtractImageRep());
   needs_repaint_ = false;
