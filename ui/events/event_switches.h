@@ -15,6 +15,7 @@ EVENTS_BASE_EXPORT extern const char kTouchEvents[];
 EVENTS_BASE_EXPORT extern const char kTouchEventsAuto[];
 EVENTS_BASE_EXPORT extern const char kTouchEventsEnabled[];
 EVENTS_BASE_EXPORT extern const char kTouchEventsDisabled[];
+EVENTS_BASE_EXPORT extern const char kUseUnifiedGestureDetector[];
 
 #if defined(OS_LINUX)
 EVENTS_BASE_EXPORT extern const char kTouchDevices[];

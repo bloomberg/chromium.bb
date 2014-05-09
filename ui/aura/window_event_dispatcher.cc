@@ -495,11 +495,6 @@ bool WindowEventDispatcher::CanDispatchToConsumer(
   return (consumer_window && consumer_window->GetRootWindow() == window());
 }
 
-void WindowEventDispatcher::DispatchPostponedGestureEvent(
-    ui::GestureEvent* event) {
-  DispatchGestureEvent(event);
-}
-
 void WindowEventDispatcher::DispatchCancelTouchEvent(ui::TouchEvent* event) {
   DispatchDetails details = OnEventFromSource(event);
   if (details.dispatcher_destroyed)

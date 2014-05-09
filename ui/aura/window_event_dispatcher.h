@@ -72,11 +72,6 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   void DispatchCancelModeEvent();
 
-  // Handles a gesture event. Returns true if handled. Unlike the other
-  // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture
-  // events are dispatched from GestureRecognizer instead of WindowTreeHost.
-  void DispatchGestureEvent(ui::GestureEvent* event);
-
   // Dispatches a ui::ET_MOUSE_EXITED event at |point|.
   // TODO(beng): needed only for WTH::OnCursorVisibilityChanged().
   void DispatchMouseExitAtPoint(const gfx::Point& point);
@@ -184,7 +179,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
 
   // Overridden from ui::GestureEventHelper.
   virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) OVERRIDE;
-  virtual void DispatchPostponedGestureEvent(ui::GestureEvent* event) OVERRIDE;
+  virtual void DispatchGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void DispatchCancelTouchEvent(ui::TouchEvent* event) OVERRIDE;
 
   // Overridden from WindowObserver:

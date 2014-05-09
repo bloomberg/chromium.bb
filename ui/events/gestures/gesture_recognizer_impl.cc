@@ -4,11 +4,16 @@
 
 #include "ui/events/gestures/gesture_recognizer_impl.h"
 
+#include <limits>
+
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/events/gestures/gesture_sequence.h"
@@ -54,16 +59,23 @@ void TransferTouchIdToConsumerMap(
   }
 }
 
+GestureProviderAura* CreateGestureProvider(GestureProviderAuraClient* client) {
+  return new GestureProviderAura(client);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // GestureRecognizerImpl, public:
 
-GestureRecognizerImpl::GestureRecognizerImpl() {
+GestureRecognizerImpl::GestureRecognizerImpl()
+    : use_unified_gesture_detector_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseUnifiedGestureDetector)) {
 }
 
 GestureRecognizerImpl::~GestureRecognizerImpl() {
   STLDeleteValues(&consumer_sequence_);
+  STLDeleteValues(&consumer_gesture_provider_);
 }
 
 // Checks if this finger is already down, if so, returns the current target.
@@ -83,34 +95,65 @@ GestureConsumer* GestureRecognizerImpl::GetTargetForGestureEvent(
 
 GestureConsumer* GestureRecognizerImpl::GetTargetForLocation(
     const gfx::PointF& location, int source_device_id) {
-  const GesturePoint* closest_point = NULL;
-  int64 closest_distance_squared = 0;
-  std::map<GestureConsumer*, GestureSequence*>::iterator i;
-  for (i = consumer_sequence_.begin(); i != consumer_sequence_.end(); ++i) {
-    const GesturePoint* points = i->second->points();
-    for (int j = 0; j < GestureSequence::kMaxGesturePoints; ++j) {
-      if (!points[j].in_use() ||
-          source_device_id != points[j].source_device_id()) {
-        continue;
-      }
-      gfx::Vector2dF delta = points[j].last_touch_position() - location;
-      // Relative distance is all we need here, so LengthSquared() is
-      // appropriate, and cheaper than Length().
-      int64 distance_squared = delta.LengthSquared();
-      if (!closest_point || distance_squared < closest_distance_squared) {
-        closest_point = &points[j];
-        closest_distance_squared = distance_squared;
-      }
-    }
-  }
-
   const int max_distance =
       GestureConfiguration::max_separation_for_gesture_touches_in_pixels();
 
-  if (closest_distance_squared < max_distance * max_distance && closest_point)
-    return touch_id_target_[closest_point->touch_id()];
-  else
-    return NULL;
+  if (!use_unified_gesture_detector_) {
+    const GesturePoint* closest_point = NULL;
+    int64 closest_distance_squared = 0;
+    std::map<GestureConsumer*, GestureSequence*>::iterator i;
+    for (i = consumer_sequence_.begin(); i != consumer_sequence_.end(); ++i) {
+      const GesturePoint* points = i->second->points();
+      for (int j = 0; j < GestureSequence::kMaxGesturePoints; ++j) {
+        if (!points[j].in_use() ||
+            source_device_id != points[j].source_device_id()) {
+          continue;
+        }
+        gfx::Vector2dF delta = points[j].last_touch_position() - location;
+        // Relative distance is all we need here, so LengthSquared() is
+        // appropriate, and cheaper than Length().
+        int64 distance_squared = delta.LengthSquared();
+        if (!closest_point || distance_squared < closest_distance_squared) {
+          closest_point = &points[j];
+          closest_distance_squared = distance_squared;
+        }
+      }
+    }
+
+    if (closest_distance_squared < max_distance * max_distance && closest_point)
+      return touch_id_target_[closest_point->touch_id()];
+    else
+      return NULL;
+  } else {
+    gfx::PointF closest_point;
+    int closest_touch_id;
+    float closest_distance_squared = std::numeric_limits<float>::infinity();
+
+    std::map<GestureConsumer*, GestureProviderAura*>::iterator i;
+    for (i = consumer_gesture_provider_.begin();
+         i != consumer_gesture_provider_.end();
+         ++i) {
+      const MotionEventAura& pointer_state = i->second->pointer_state();
+      for (size_t j = 0; j < pointer_state.GetPointerCount(); ++j) {
+        if (source_device_id != pointer_state.GetSourceDeviceId(j))
+          continue;
+        gfx::PointF point(pointer_state.GetX(j), pointer_state.GetY(j));
+        // Relative distance is all we need here, so LengthSquared() is
+        // appropriate, and cheaper than Length().
+        float distance_squared = (point - location).LengthSquared();
+        if (distance_squared < closest_distance_squared) {
+          closest_point = point;
+          closest_touch_id = pointer_state.GetPointerId(j);
+          closest_distance_squared = distance_squared;
+        }
+      }
+    }
+
+    if (closest_distance_squared < max_distance * max_distance)
+      return touch_id_target_[closest_touch_id];
+    else
+      return NULL;
+  }
 }
 
 void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
@@ -140,18 +183,30 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
                                  &touch_id_target_);
     TransferTouchIdToConsumerMap(current_consumer, new_consumer,
                                  &touch_id_target_for_gestures_);
-    TransferConsumer(current_consumer, new_consumer, &consumer_sequence_);
+    if (!use_unified_gesture_detector_)
+      TransferConsumer(current_consumer, new_consumer, &consumer_sequence_);
+    else
+      TransferConsumer(
+          current_consumer, new_consumer, &consumer_gesture_provider_);
   }
 }
 
 bool GestureRecognizerImpl::GetLastTouchPointForTarget(
     GestureConsumer* consumer,
     gfx::PointF* point) {
-  if (consumer_sequence_.count(consumer) == 0)
-    return false;
-
-  *point = consumer_sequence_[consumer]->last_touch_location();
-  return true;
+  if (!use_unified_gesture_detector_) {
+    if (consumer_sequence_.count(consumer) == 0)
+      return false;
+    *point = consumer_sequence_[consumer]->last_touch_location();
+    return true;
+  } else {
+    if (consumer_gesture_provider_.count(consumer) == 0)
+      return false;
+    const MotionEvent& pointer_state =
+        consumer_gesture_provider_[consumer]->pointer_state();
+    *point = gfx::PointF(pointer_state.GetX(), pointer_state.GetY());
+    return true;
+  }
 }
 
 bool GestureRecognizerImpl::CancelActiveTouches(GestureConsumer* consumer) {
@@ -187,6 +242,16 @@ GestureSequence* GestureRecognizerImpl::GetGestureSequenceForConsumer(
   return gesture_sequence;
 }
 
+GestureProviderAura* GestureRecognizerImpl::GetGestureProviderForConsumer(
+    GestureConsumer* consumer) {
+  GestureProviderAura* gesture_provider = consumer_gesture_provider_[consumer];
+  if (!gesture_provider) {
+    gesture_provider = CreateGestureProvider(this);
+    consumer_gesture_provider_[consumer] = gesture_provider;
+  }
+  return gesture_provider;
+}
+
 void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
                                          GestureConsumer* target) {
   if (event.type() == ui::ET_TOUCH_RELEASED ||
@@ -214,22 +279,55 @@ void GestureRecognizerImpl::CancelTouches(
   }
 }
 
+void GestureRecognizerImpl::DispatchGestureEvent(GestureEvent* event) {
+  GestureConsumer* consumer = GetTargetForGestureEvent(*event);
+  if (consumer) {
+    GestureEventHelper* helper = FindDispatchHelperForConsumer(consumer);
+    if (helper)
+      helper->DispatchGestureEvent(event);
+  }
+}
+
 GestureSequence::Gestures* GestureRecognizerImpl::ProcessTouchEventForGesture(
     const TouchEvent& event,
     ui::EventResult result,
     GestureConsumer* target) {
   SetupTargets(event, target);
-  GestureSequence* gesture_sequence = GetGestureSequenceForConsumer(target);
-  return gesture_sequence->ProcessTouchEventForGesture(event, result);
+
+  if (!use_unified_gesture_detector_) {
+    GestureSequence* gesture_sequence = GetGestureSequenceForConsumer(target);
+    return gesture_sequence->ProcessTouchEventForGesture(event, result);
+  } else {
+    GestureProviderAura* gesture_provider =
+        GetGestureProviderForConsumer(target);
+    // TODO(tdresser) - detect gestures eagerly.
+    if (!(result & ER_CONSUMED)) {
+      if (gesture_provider->OnTouchEvent(event))
+        gesture_provider->OnTouchEventAck(result != ER_UNHANDLED);
+    }
+    return NULL;
+  }
 }
 
 bool GestureRecognizerImpl::CleanupStateForConsumer(
     GestureConsumer* consumer) {
   bool state_cleaned_up = false;
-  if (consumer_sequence_.count(consumer)) {
-    state_cleaned_up = true;
-    delete consumer_sequence_[consumer];
-    consumer_sequence_.erase(consumer);
+
+  if (!use_unified_gesture_detector_) {
+    if (consumer_sequence_.count(consumer)) {
+      state_cleaned_up = true;
+      delete consumer_sequence_[consumer];
+      consumer_sequence_.erase(consumer);
+    }
+  } else {
+    if (consumer_gesture_provider_.count(consumer)) {
+      state_cleaned_up = true;
+      // Don't immediately delete the GestureProvider, as we could be in the
+      // middle of dispatching a set of gestures.
+      base::MessageLoop::current()->DeleteSoon(
+          FROM_HERE, consumer_gesture_provider_[consumer]);
+      consumer_gesture_provider_.erase(consumer);
+    }
   }
 
   state_cleaned_up |= RemoveConsumerFromMap(consumer, &touch_id_target_);
@@ -251,12 +349,11 @@ void GestureRecognizerImpl::RemoveGestureEventHelper(
 }
 
 void GestureRecognizerImpl::DispatchPostponedGestureEvent(GestureEvent* event) {
-  GestureConsumer* consumer = GetTargetForGestureEvent(*event);
-  if (consumer) {
-    GestureEventHelper* helper = FindDispatchHelperForConsumer(consumer);
-    if (helper)
-      helper->DispatchPostponedGestureEvent(event);
-  }
+  DispatchGestureEvent(event);
+}
+
+void GestureRecognizerImpl::OnGestureEvent(GestureEvent* event) {
+  DispatchGestureEvent(event);
 }
 
 GestureEventHelper* GestureRecognizerImpl::FindDispatchHelperForConsumer(

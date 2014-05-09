@@ -34,6 +34,10 @@ double GestureConfiguration::scroll_prediction_seconds_ = 0.03;
 double
   GestureConfiguration::min_touch_down_duration_in_seconds_for_click_ = 0.01;
 
+// If this is too small, we currently can get single finger pinch zoom. See
+// crbug.com/357237 for details.
+int GestureConfiguration::min_scaling_span_in_pixels_ = 125;
+
 // The number of points used in the linear regression which determines
 // touch velocity. Velocity is reported for 2 or more touch move events.
 int GestureConfiguration::points_buffered_for_velocity_ = 8;

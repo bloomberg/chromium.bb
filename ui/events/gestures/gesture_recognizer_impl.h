@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_export.h"
+#include "ui/events/gestures/gesture_provider_aura.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/events/gestures/gesture_sequence.h"
 #include "ui/gfx/point.h"
@@ -23,8 +24,12 @@ class GestureEventHelper;
 class GestureSequence;
 class TouchEvent;
 
+// TODO(tdresser): Once the unified gesture recognition process sticks
+// (crbug.com/332418), GestureRecognizerImpl can be cleaned up
+// significantly.
 class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
-                                            public GestureSequenceDelegate {
+                                            public GestureSequenceDelegate,
+                                            public GestureProviderAuraClient {
  public:
   typedef std::map<int, GestureConsumer*> TouchIdToConsumerMap;
 
@@ -47,13 +52,18 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   virtual bool CancelActiveTouches(GestureConsumer* consumer) OVERRIDE;
 
  protected:
-  virtual GestureSequence* CreateSequence(GestureSequenceDelegate* delegate);
   virtual GestureSequence* GetGestureSequenceForConsumer(GestureConsumer* c);
+  virtual GestureProviderAura* GetGestureProviderForConsumer(
+      GestureConsumer* c);
+  virtual GestureSequence* CreateSequence(
+      ui::GestureSequenceDelegate* delegate);
 
  private:
   // Sets up the target consumer for gestures based on the touch-event.
   void SetupTargets(const TouchEvent& event, GestureConsumer* consumer);
   void CancelTouches(std::vector<std::pair<int, GestureConsumer*> >* touches);
+
+  void DispatchGestureEvent(GestureEvent* event);
 
   // Overridden from GestureRecognizer
   virtual Gestures* ProcessTouchEventForGesture(
@@ -68,11 +78,15 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   // Overridden from ui::GestureSequenceDelegate.
   virtual void DispatchPostponedGestureEvent(GestureEvent* event) OVERRIDE;
 
+  // Overridden from GestureProviderAuraClient
+  virtual void OnGestureEvent(GestureEvent* event) OVERRIDE;
+
   // Convenience method to find the GestureEventHelper that can dispatch events
   // to a specific |consumer|.
   GestureEventHelper* FindDispatchHelperForConsumer(GestureConsumer* consumer);
 
   std::map<GestureConsumer*, GestureSequence*> consumer_sequence_;
+  std::map<GestureConsumer*, GestureProviderAura*> consumer_gesture_provider_;
 
   // Both |touch_id_target_| and |touch_id_target_for_gestures_| map a touch-id
   // to its target window.  touch-ids are removed from |touch_id_target_| on
@@ -82,6 +96,8 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   TouchIdToConsumerMap touch_id_target_for_gestures_;
 
   std::vector<GestureEventHelper*> helpers_;
+
+  bool use_unified_gesture_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerImpl);
 };

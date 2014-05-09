@@ -682,9 +682,8 @@ class GestureRecognizerTest : public AuraTestBase,
   virtual void SetUp() OVERRIDE {
     // TODO(tdresser): Once unified GR has landed, only run these tests once.
     if (UsingUnifiedGR()) {
-      // TODO(tdresser): use unified GR once it's available.
-      // CommandLine::ForCurrentProcess()->AppendSwitch(
-      //    switches::kUseUnifiedGestureDetector);
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kUseUnifiedGestureDetector);
     }
 
     AuraTestBase::SetUp();
@@ -746,6 +745,11 @@ TEST_P(GestureRecognizerTest, GestureEventTap) {
 // Check that appropriate touch events generate tap gesture events
 // when information about the touch radii are provided.
 TEST_P(GestureRecognizerTest, GestureEventTapRegion) {
+  // TODO(tdresser): enable this test with unified GR once we resolve the
+  // bounding box differences. See crbug.com/366641.
+  if (UsingUnifiedGR())
+    return;
+
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
@@ -3709,6 +3713,11 @@ TEST_P(GestureRecognizerTest, GestureEventConsumedTouchMoveCanFireTapCancel) {
 
 TEST_P(GestureRecognizerTest,
        TransferEventDispatchesTouchCancel) {
+  // TODO(tdresser): enable this test with unified GR once two finger tap is
+  // supported. See crbug.com/354396.
+  if (UsingUnifiedGR())
+    return;
+
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
