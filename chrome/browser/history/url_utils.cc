@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "url/gurl.h"
+
 namespace history {
 
 namespace {

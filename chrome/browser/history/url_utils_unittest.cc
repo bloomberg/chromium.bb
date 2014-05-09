@@ -5,6 +5,7 @@
 #include "chrome/browser/history/url_utils.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace history {
 

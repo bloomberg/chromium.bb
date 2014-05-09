@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/history/history_types.h"
+class GURL;
 
 namespace history {
 

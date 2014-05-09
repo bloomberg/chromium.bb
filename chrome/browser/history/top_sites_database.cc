@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/history/top_sites_database.h"
+
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
@@ -9,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
-#include "chrome/browser/history/top_sites_database.h"
 #include "chrome/common/thumbnail_score.h"
 #include "sql/connection.h"
 #include "sql/recovery.h"

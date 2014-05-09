@@ -16,7 +16,6 @@
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/scored_history_match.h"
-#include "content/public/browser/notification_details.h"
 
 class BookmarkService;
 class HistoryQuickProviderTest;

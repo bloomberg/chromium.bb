@@ -17,8 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/autocomplete/autocomplete_match.h"
-#include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/history/history_db_task.h"
 #include "chrome/browser/history/history_types.h"
