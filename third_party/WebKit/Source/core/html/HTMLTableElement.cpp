@@ -71,7 +71,7 @@ HTMLTableCaptionElement* HTMLTableElement::caption() const
     return Traversal<HTMLTableCaptionElement>::firstChild(*this);
 }
 
-void HTMLTableElement::setCaption(PassRefPtr<HTMLTableCaptionElement> newCaption, ExceptionState& exceptionState)
+void HTMLTableElement::setCaption(PassRefPtrWillBeRawPtr<HTMLTableCaptionElement> newCaption, ExceptionState& exceptionState)
 {
     deleteCaption();
     insertBefore(newCaption, firstChild(), exceptionState);
@@ -86,7 +86,7 @@ HTMLTableSectionElement* HTMLTableElement::tHead() const
     return 0;
 }
 
-void HTMLTableElement::setTHead(PassRefPtr<HTMLTableSectionElement> newHead, ExceptionState& exceptionState)
+void HTMLTableElement::setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> newHead, ExceptionState& exceptionState)
 {
     deleteTHead();
 
@@ -108,7 +108,7 @@ HTMLTableSectionElement* HTMLTableElement::tFoot() const
     return 0;
 }
 
-void HTMLTableElement::setTFoot(PassRefPtr<HTMLTableSectionElement> newFoot, ExceptionState& exceptionState)
+void HTMLTableElement::setTFoot(PassRefPtrWillBeRawPtr<HTMLTableSectionElement> newFoot, ExceptionState& exceptionState)
 {
     deleteTFoot();
 

@@ -41,13 +41,13 @@ public:
     static PassRefPtrWillBeRawPtr<HTMLTableElement> create(Document&);
 
     HTMLTableCaptionElement* caption() const;
-    void setCaption(PassRefPtr<HTMLTableCaptionElement>, ExceptionState&);
+    void setCaption(PassRefPtrWillBeRawPtr<HTMLTableCaptionElement>, ExceptionState&);
 
     HTMLTableSectionElement* tHead() const;
-    void setTHead(PassRefPtr<HTMLTableSectionElement>, ExceptionState&);
+    void setTHead(PassRefPtrWillBeRawPtr<HTMLTableSectionElement>, ExceptionState&);
 
     HTMLTableSectionElement* tFoot() const;
-    void setTFoot(PassRefPtr<HTMLTableSectionElement>, ExceptionState&);
+    void setTFoot(PassRefPtrWillBeRawPtr<HTMLTableSectionElement>, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<HTMLElement> createTHead();
     void deleteTHead();
