@@ -245,6 +245,11 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
     EXPECT_EQ(kBlue, webView->backgroundColor());
 }
 
+static void disableAccleratedCompositing(WebSettings* webSettings)
+{
+    webSettings->setAcceleratedCompositingEnabled(false);
+}
+
 TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
 {
     const WebColor kAlphaRed = 0x80FF0000;
@@ -252,8 +257,13 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     const int kWidth = 100;
     const int kHeight = 100;
 
+    // Make a WebView that is not composited.
+    bool enableJavascript = false;
+    FrameTestHelpers::TestWebFrameClient* frameClient = 0;
+    WebViewClient* viewClient = 0;
+    WebView* webView = m_webViewHelper.initialize(enableJavascript, frameClient, viewClient, &disableAccleratedCompositing);
+
     // Set WebView background to green with alpha.
-    WebView* webView = m_webViewHelper.initialize();
     webView->setBaseBackgroundColor(kAlphaGreen);
     webView->settings()->setShouldClearDocumentBackground(false);
     webView->resize(WebSize(kWidth, kHeight));
@@ -269,10 +279,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
     // The result should be a blend of red and green.
     SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);
     EXPECT_TRUE(WebCore::redChannel(color));
-    // FIXME: This should be EXPECT_TRUE. This looks to only work
-    // if compositing is disabled, which is no longer a shipping configuration.
-    // crbug.com/365810
-    EXPECT_FALSE(WebCore::greenChannel(color));
+    EXPECT_TRUE(WebCore::greenChannel(color));
 }
 
 TEST_F(WebViewTest, FocusIsInactive)

@@ -102,7 +102,7 @@ public:
     virtual void animate(double) OVERRIDE;
     virtual void layout() OVERRIDE;
     virtual void enterForceCompositingMode(bool enable) OVERRIDE;
-    virtual void paint(WebCanvas*, const WebRect&, PaintOptions = ReadbackFromCompositorIfAvailable) OVERRIDE;
+    virtual void paint(WebCanvas*, const WebRect&) OVERRIDE;
 #if OS(ANDROID)
     virtual void paintCompositedDeprecated(WebCanvas*, const WebRect&) OVERRIDE;
 #endif
@@ -548,7 +548,6 @@ private:
 
     void setIsAcceleratedCompositingActive(bool);
     void doComposite();
-    void doPixelReadbackToCanvas(WebCanvas*, const WebCore::IntRect&);
     void reallocateRenderer();
     void updateLayerTreeViewport();
     void updateLayerTreeBackgroundColor();
