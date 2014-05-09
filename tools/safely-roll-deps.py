@@ -33,8 +33,8 @@ def process_deps(path, project, new_rev, is_dry_run):
   # Hack for Blink to get the AutoRollBot running again.
   if project == "blink":
     project = "webkit"
-  old_line = r'(\s+)"%s_revision": "(\d+)",' % project
-  new_line = r'\1"%s_revision": "%d",' % (project, new_rev)
+  old_line = r'(\s+)"%s_revision": "([0-9a-f]{2,40})",' % project
+  new_line = r'\1"%s_revision": "%s",' % (project, new_rev)
   new_content = re.sub(old_line, new_line, content, 1)
   old_rev = re.search(old_line, content).group(2)
   if not old_rev or new_content == content:
@@ -93,7 +93,7 @@ def main():
   os.chdir(root_dir)
 
   project = args[0]
-  new_rev = int(args[1])
+  new_rev = args[1]
 
   # Silence the editor.
   os.environ['EDITOR'] = 'true'
@@ -126,8 +126,8 @@ def main():
     prnt_subprocess.check_output(branch_cmd)
 
   try:
-    old_rev = int(process_deps(os.path.join(root_dir, 'DEPS'), project, new_rev,
-                               options.dry_run))
+    old_rev = process_deps(os.path.join(root_dir, 'DEPS'), project, new_rev,
+                           options.dry_run)
     print '%s roll %s:%s' % (project.title(), old_rev, new_rev)
 
     review_field = 'TBR' if options.commit else 'R'
