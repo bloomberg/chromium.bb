@@ -20,10 +20,16 @@ namespace {
 const int kBeepDurationMilliseconds = 20;
 const int kBeepFrequency = 400;
 
+// Intervals between two automatic beeps.
+const int kAutomaticBeepIntervalInMs = 500;
+
+// Automatic beep will be triggered every |kAutomaticBeepIntervalInMs| unless
+// users explicitly call BeepOnce(), which will disable the automatic beep.
 struct BeepContext {
-  BeepContext() : beep_once(false) {}
+  BeepContext() : beep_once(false), automatic(true) {}
   base::Lock beep_lock;
   bool beep_once;
+  bool automatic;
 };
 
 static base::LazyInstance<BeepContext> g_beep_context =
@@ -78,14 +84,37 @@ void FakeAudioInputStream::Start(AudioInputCallback* callback)  {
 void FakeAudioInputStream::DoCallback() {
   DCHECK(callback_);
 
+  const TimeTicks now = TimeTicks::Now();
+  base::TimeDelta next_callback_time =
+      last_callback_time_ + callback_interval_ * 2 - now;
+
+  // If we are falling behind, try to catch up as much as we can in the next
+  // callback.
+  if (next_callback_time < base::TimeDelta())
+    next_callback_time = base::TimeDelta();
+
+  // Accumulate the time from the last beep.
+  interval_from_last_beep_ += now - last_callback_time_;
+
+  last_callback_time_ = now;
+
   memset(buffer_.get(), 0, buffer_size_);
 
   bool should_beep = false;
   {
     BeepContext* beep_context = g_beep_context.Pointer();
     base::AutoLock auto_lock(beep_context->beep_lock);
-    should_beep = beep_context->beep_once;
-    beep_context->beep_once = false;
+    if (beep_context->automatic) {
+      base::TimeDelta delta = interval_from_last_beep_ -
+          TimeDelta::FromMilliseconds(kAutomaticBeepIntervalInMs);
+      if (delta > base::TimeDelta()) {
+        should_beep = true;
+        interval_from_last_beep_ = delta;
+      }
+    } else {
+      should_beep = beep_context->beep_once;
+      beep_context->beep_once = false;
+    }
   }
 
   // If this object was instructed to generate a beep or has started to
@@ -103,7 +132,6 @@ void FakeAudioInputStream::DoCallback() {
     while (position + high_bytes <= buffer_size_) {
       // Write high values first.
       memset(buffer_.get() + position, 128, high_bytes);
-
       // Then leave low values in the buffer with |high_bytes|.
       position += high_bytes * 2;
     }
@@ -116,16 +144,6 @@ void FakeAudioInputStream::DoCallback() {
   callback_->OnData(this, buffer_.get(), buffer_size_, buffer_size_, 1.0);
   frames_elapsed_ += params_.frames_per_buffer();
 
-  const TimeTicks now = TimeTicks::Now();
-  base::TimeDelta next_callback_time =
-      last_callback_time_ + callback_interval_ * 2 - now;
-
-  // If we are falling behind, try to catch up as much as we can in the next
-  // callback.
-  if (next_callback_time < base::TimeDelta())
-    next_callback_time = base::TimeDelta();
-
-  last_callback_time_ = now;
   thread_.message_loop()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&FakeAudioInputStream::DoCallback, base::Unretained(this)),
@@ -163,6 +181,7 @@ void FakeAudioInputStream::BeepOnce() {
   BeepContext* beep_context = g_beep_context.Pointer();
   base::AutoLock auto_lock(beep_context->beep_lock);
   beep_context->beep_once = true;
+  beep_context->automatic = false;
 }
 
 }  // namespace media
