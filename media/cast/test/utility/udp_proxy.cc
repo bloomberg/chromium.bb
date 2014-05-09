@@ -385,6 +385,24 @@ scoped_ptr<PacketPipe> WifiNetwork() {
   return pipe.Pass();
 }
 
+scoped_ptr<PacketPipe> BadNetwork() {
+  scoped_ptr<PacketPipe> pipe;
+  // This represents the buffer on the sender.
+  BuildPipe(&pipe, new Buffer(64 << 10, 5000000)); // 64 kb buf, 5mbit/s
+  BuildPipe(&pipe, new RandomDrop(0.05));  // 5% packet drop
+  BuildPipe(&pipe, new RandomSortedDelay(2E-3, 20E-3, 1));
+  // This represents the buffer on the router.
+  BuildPipe(&pipe, new Buffer(64 << 10, 2000000));  // 64 kb buf, 2mbit/s
+  BuildPipe(&pipe, new ConstantDelay(1E-3));
+  // Random 40ms every other second
+  //  BuildPipe(&pipe, new NetworkGlitchPipe(2, 40E-1));
+  BuildPipe(&pipe, new RandomUnsortedDelay(5E-3));
+  // This represents the buffer on the receiving device.
+  BuildPipe(&pipe, new Buffer(64 << 10, 4000000));  // 64 kb buf, 4mbit/s
+  return pipe.Pass();
+}
+
+
 scoped_ptr<PacketPipe> EvilNetwork() {
   // This represents the buffer on the sender.
   scoped_ptr<PacketPipe> pipe;
@@ -413,7 +431,7 @@ class UDPProxyImpl : public UDPProxy {
       destination_(destination),
       proxy_thread_("media::cast::test::UdpProxy Thread"),
       to_dest_pipe_(to_dest_pipe.Pass()),
-      from_dest_pipe_(to_dest_pipe.Pass()) {
+      from_dest_pipe_(from_dest_pipe.Pass()) {
     proxy_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
     base::WaitableEvent start_event(false, false);
