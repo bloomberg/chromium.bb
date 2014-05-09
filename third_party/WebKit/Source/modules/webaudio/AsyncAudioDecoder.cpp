@@ -31,6 +31,8 @@
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
 #include "platform/Task.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioFileReader.h"
 #include "public/platform/Platform.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/MainThread.h"
@@ -63,26 +65,26 @@ void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, Pa
 
 void AsyncAudioDecoder::decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
 {
-    // Do the actual decoding and invoke the callback.
-    RefPtr<AudioBuffer> audioBuffer = AudioBuffer::createFromAudioFileData(audioData->data(), audioData->byteLength(), false, sampleRate);
+    RefPtr<AudioBus> bus = createBusFromInMemoryAudioFile(audioData->data(), audioData->byteLength(), false, sampleRate);
 
     // Decoding is finished, but we need to do the callbacks on the main thread.
     // The leaked reference to audioBuffer is picked up in notifyComplete.
-    callOnMainThread(WTF::bind(&AsyncAudioDecoder::notifyComplete, audioData, successCallback, errorCallback, audioBuffer.release().leakRef()));
+    callOnMainThread(WTF::bind(&AsyncAudioDecoder::notifyComplete, audioData, successCallback, errorCallback, bus.release().leakRef()));
 }
 
-void AsyncAudioDecoder::notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBuffer* audioBuffer)
+void AsyncAudioDecoder::notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus)
 {
     // Adopt references, so everything gets correctly dereffed.
     RefPtr<ArrayBuffer> audioDataRef = adoptRef(audioData);
     OwnPtr<AudioBufferCallback> successCallbackPtr = adoptPtr(successCallback);
     OwnPtr<AudioBufferCallback> errorCallbackPtr = adoptPtr(errorCallback);
-    RefPtr<AudioBuffer> audioBufferRef = adoptRef(audioBuffer);
+    RefPtr<AudioBus> audioBusRef = adoptRef(audioBus);
 
-    if (audioBuffer && successCallback)
-        successCallback->handleEvent(audioBuffer);
+    RefPtrWillBeRawPtr<AudioBuffer> audioBuffer = AudioBuffer::createFromAudioBus(audioBus);
+    if (audioBuffer.get() && successCallback)
+        successCallback->handleEvent(audioBuffer.get());
     else if (errorCallback)
-        errorCallback->handleEvent(audioBuffer);
+        errorCallback->handleEvent(audioBuffer.get());
 }
 
 } // namespace WebCore

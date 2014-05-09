@@ -41,7 +41,7 @@ class HTMLMediaElement;
 
 class MediaElementAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
 public:
-    static PassRefPtr<MediaElementAudioSourceNode> create(AudioContext*, HTMLMediaElement*);
+    static PassRefPtrWillBeRawPtr<MediaElementAudioSourceNode> create(AudioContext*, HTMLMediaElement*);
 
     virtual ~MediaElementAudioSourceNode();
 

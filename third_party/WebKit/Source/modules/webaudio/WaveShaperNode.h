@@ -36,9 +36,9 @@ class ExceptionState;
 
 class WaveShaperNode FINAL : public AudioBasicProcessorNode {
 public:
-    static PassRefPtr<WaveShaperNode> create(AudioContext* context)
+    static PassRefPtrWillBeRawPtr<WaveShaperNode> create(AudioContext* context)
     {
-        return adoptRef(new WaveShaperNode(context));
+        return adoptRefWillBeNoop(new WaveShaperNode(context));
     }
 
     // setCurve() is called on the main thread.

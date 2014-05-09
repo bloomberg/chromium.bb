@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
 {
     // FIXME: add support for workers.
     if (!context || !context->isDocument()) {
@@ -71,7 +71,7 @@ PassRefPtr<OfflineAudioContext> OfflineAudioContext::create(ExecutionContext* co
         return nullptr;
     }
 
-    RefPtr<OfflineAudioContext> audioContext(adoptRef(new OfflineAudioContext(document, numberOfChannels, numberOfFrames, sampleRate)));
+    RefPtrWillBeRawPtr<OfflineAudioContext> audioContext(adoptRefWillBeThreadSafeRefCountedGarbageCollected(new OfflineAudioContext(document, numberOfChannels, numberOfFrames, sampleRate)));
 
     if (!audioContext->destination()) {
         exceptionState.throwDOMException(

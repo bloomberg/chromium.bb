@@ -35,9 +35,9 @@ class DynamicsCompressor;
 
 class DynamicsCompressorNode FINAL : public AudioNode {
 public:
-    static PassRefPtr<DynamicsCompressorNode> create(AudioContext* context, float sampleRate)
+    static PassRefPtrWillBeRawPtr<DynamicsCompressorNode> create(AudioContext* context, float sampleRate)
     {
-        return adoptRef(new DynamicsCompressorNode(context, sampleRate));
+        return adoptRefWillBeNoop(new DynamicsCompressorNode(context, sampleRate));
     }
 
     virtual ~DynamicsCompressorNode();
@@ -57,6 +57,8 @@ public:
     // Amount by which the compressor is currently compressing the signal in decibels.
     AudioParam* reduction() { return m_reduction.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     virtual double tailTime() const OVERRIDE;
     virtual double latencyTime() const OVERRIDE;
@@ -64,12 +66,12 @@ private:
     DynamicsCompressorNode(AudioContext*, float sampleRate);
 
     OwnPtr<DynamicsCompressor> m_dynamicsCompressor;
-    RefPtr<AudioParam> m_threshold;
-    RefPtr<AudioParam> m_knee;
-    RefPtr<AudioParam> m_ratio;
-    RefPtr<AudioParam> m_reduction;
-    RefPtr<AudioParam> m_attack;
-    RefPtr<AudioParam> m_release;
+    RefPtrWillBeMember<AudioParam> m_threshold;
+    RefPtrWillBeMember<AudioParam> m_knee;
+    RefPtrWillBeMember<AudioParam> m_ratio;
+    RefPtrWillBeMember<AudioParam> m_reduction;
+    RefPtrWillBeMember<AudioParam> m_attack;
+    RefPtrWillBeMember<AudioParam> m_release;
 };
 
 } // namespace WebCore

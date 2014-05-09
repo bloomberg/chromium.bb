@@ -35,7 +35,7 @@ PassRefPtrWillBeRawPtr<AudioProcessingEvent> AudioProcessingEvent::create()
     return adoptRefWillBeNoop(new AudioProcessingEvent);
 }
 
-PassRefPtrWillBeRawPtr<AudioProcessingEvent> AudioProcessingEvent::create(PassRefPtr<AudioBuffer> inputBuffer, PassRefPtr<AudioBuffer> outputBuffer, double playbackTime)
+PassRefPtrWillBeRawPtr<AudioProcessingEvent> AudioProcessingEvent::create(PassRefPtrWillBeRawPtr<AudioBuffer> inputBuffer, PassRefPtrWillBeRawPtr<AudioBuffer> outputBuffer, double playbackTime)
 {
     return adoptRefWillBeNoop(new AudioProcessingEvent(inputBuffer, outputBuffer, playbackTime));
 }
@@ -45,7 +45,7 @@ AudioProcessingEvent::AudioProcessingEvent()
     ScriptWrappable::init(this);
 }
 
-AudioProcessingEvent::AudioProcessingEvent(PassRefPtr<AudioBuffer> inputBuffer, PassRefPtr<AudioBuffer> outputBuffer, double playbackTime)
+AudioProcessingEvent::AudioProcessingEvent(PassRefPtrWillBeRawPtr<AudioBuffer> inputBuffer, PassRefPtrWillBeRawPtr<AudioBuffer> outputBuffer, double playbackTime)
     : Event(EventTypeNames::audioprocess, true, false)
     , m_inputBuffer(inputBuffer)
     , m_outputBuffer(outputBuffer)
@@ -65,6 +65,8 @@ const AtomicString& AudioProcessingEvent::interfaceName() const
 
 void AudioProcessingEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_inputBuffer);
+    visitor->trace(m_outputBuffer);
     Event::trace(visitor);
 }
 

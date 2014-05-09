@@ -41,13 +41,15 @@ namespace WebCore {
 class AudioBus;
 class ExceptionState;
 
-class AudioBuffer : public ScriptWrappable, public RefCounted<AudioBuffer> {
+class AudioBuffer : public RefCountedWillBeGarbageCollectedFinalized<AudioBuffer>, public ScriptWrappable {
 public:
-    static PassRefPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
-    static PassRefPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
+    static PassRefPtrWillBeRawPtr<AudioBuffer> create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     // Returns 0 if data is not a valid audio file.
-    static PassRefPtr<AudioBuffer> createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate);
+    static PassRefPtrWillBeRawPtr<AudioBuffer> createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate);
+
+    static PassRefPtrWillBeRawPtr<AudioBuffer> createFromAudioBus(AudioBus*);
 
     // Format
     size_t length() const { return m_length; }
@@ -62,6 +64,9 @@ public:
 
     static float minAllowedSampleRate();
     static float maxAllowedSampleRate();
+
+    void trace(Visitor*) { }
+
 protected:
     AudioBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
     explicit AudioBuffer(AudioBus*);

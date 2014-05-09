@@ -25,6 +25,7 @@
 #ifndef AsyncAudioDecoder_h
 #define AsyncAudioDecoder_h
 
+#include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
@@ -33,6 +34,7 @@ namespace WebCore {
 
 class AudioBuffer;
 class AudioBufferCallback;
+class AudioBus;
 
 // AsyncAudioDecoder asynchronously decodes audio file data from an ArrayBuffer in a worker thread.
 // Upon successful decoding, a completion callback will be invoked with the decoded PCM data in an AudioBuffer.
@@ -47,8 +49,9 @@ public:
     void decodeAsync(ArrayBuffer* audioData, float sampleRate, PassOwnPtr<AudioBufferCallback> successCallback, PassOwnPtr<AudioBufferCallback> errorCallback);
 
 private:
+    PassRefPtrWillBeRawPtr<AudioBuffer> createAudioBufferFromAudioBus(AudioBus*);
     static void decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
-    static void notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBuffer*);
+    static void notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*);
 
     OwnPtr<blink::WebThread> m_thread;
 };

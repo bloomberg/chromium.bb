@@ -777,6 +777,7 @@ template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, 
 #define RefCountedWillBeRefCountedGarbageCollected WebCore::RefCountedGarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollected WebCore::GarbageCollected
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WebCore::GarbageCollectedFinalized
+#define ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected WebCore::ThreadSafeRefCountedGarbageCollected
 #define TreeSharedWillBeRefCountedGarbageCollected WebCore::RefCountedGarbageCollected
 #define PersistentWillBeMember WebCore::Member
 #define RefPtrWillBePersistent WebCore::Persistent
@@ -830,6 +831,13 @@ template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCo
     return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
 }
 
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeThreadSafeRefCountedGarbageCollected(T* ptr)
+{
+    static const bool isThreadSafeRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, ThreadSafeRefCountedGarbageCollected>::value;
+    COMPILE_ASSERT(isThreadSafeRefCountedGarbageCollected, useAdoptRefWillBeNoop);
+    return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
+}
+
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr)
 {
     static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
@@ -862,6 +870,7 @@ public:
 #define RefCountedWillBeRefCountedGarbageCollected WTF::RefCounted
 #define ThreadSafeRefCountedWillBeGarbageCollected WTF::ThreadSafeRefCounted
 #define ThreadSafeRefCountedWillBeGarbageCollectedFinalized WTF::ThreadSafeRefCounted
+#define ThreadSafeRefCountedWillBeThreadSafeRefCountedGarbageCollected WTF::ThreadSafeRefCounted
 #define TreeSharedWillBeRefCountedGarbageCollected WebCore::TreeShared
 #define PersistentWillBeMember WebCore::Persistent
 #define RefPtrWillBePersistent WTF::RefPtr
@@ -901,6 +910,7 @@ public:
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
+template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeThreadSafeRefCountedGarbageCollected(T* ptr) { return adoptRef(ptr); }
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr) { return adoptPtr(ptr); }
 
 #define WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED WTF_MAKE_FAST_ALLOCATED

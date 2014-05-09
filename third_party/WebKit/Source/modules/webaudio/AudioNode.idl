@@ -23,6 +23,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     Conditional=WEB_AUDIO,
     Custom=Wrap,
 ] interface AudioNode : EventTarget {

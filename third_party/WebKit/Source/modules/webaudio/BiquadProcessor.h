@@ -80,10 +80,10 @@ public:
 private:
     FilterType m_type;
 
-    RefPtr<AudioParam> m_parameter1;
-    RefPtr<AudioParam> m_parameter2;
-    RefPtr<AudioParam> m_parameter3;
-    RefPtr<AudioParam> m_parameter4;
+    RefPtrWillBePersistent<AudioParam> m_parameter1;
+    RefPtrWillBePersistent<AudioParam> m_parameter2;
+    RefPtrWillBePersistent<AudioParam> m_parameter3;
+    RefPtrWillBePersistent<AudioParam> m_parameter4;
 
     // so DSP kernels know when to re-compute coefficients
     bool m_filterCoefficientsDirty;

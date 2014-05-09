@@ -38,9 +38,9 @@ class Reverb;
 
 class ConvolverNode FINAL : public AudioNode {
 public:
-    static PassRefPtr<ConvolverNode> create(AudioContext* context, float sampleRate)
+    static PassRefPtrWillBeRawPtr<ConvolverNode> create(AudioContext* context, float sampleRate)
     {
-        return adoptRef(new ConvolverNode(context, sampleRate));
+        return adoptRefWillBeNoop(new ConvolverNode(context, sampleRate));
     }
 
     virtual ~ConvolverNode();
@@ -57,6 +57,8 @@ public:
     bool normalize() const { return m_normalize; }
     void setNormalize(bool normalize) { m_normalize = normalize; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     ConvolverNode(AudioContext*, float sampleRate);
 
@@ -64,7 +66,7 @@ private:
     virtual double latencyTime() const OVERRIDE;
 
     OwnPtr<Reverb> m_reverb;
-    RefPtr<AudioBuffer> m_buffer;
+    RefPtrWillBeMember<AudioBuffer> m_buffer;
 
     // This synchronizes dynamic changes to the convolution impulse response with process().
     mutable Mutex m_processLock;

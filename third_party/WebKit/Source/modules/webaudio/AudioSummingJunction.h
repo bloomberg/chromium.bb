@@ -26,6 +26,7 @@
 #define AudioSummingJunction_h
 
 #include "platform/audio/AudioBus.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
@@ -60,7 +61,7 @@ public:
     virtual void didUpdate() = 0;
 
 protected:
-    RefPtr<AudioContext> m_context;
+    RefPtrWillBePersistent<AudioContext> m_context;
 
     // m_outputs contains the AudioNodeOutputs representing current connections which are not disabled.
     // The rendering code should never use this directly, but instead uses m_renderingOutputs.

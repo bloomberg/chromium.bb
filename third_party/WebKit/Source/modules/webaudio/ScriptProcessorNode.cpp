@@ -56,7 +56,7 @@ static size_t chooseBufferSize()
     return bufferSize;
 }
 
-PassRefPtr<ScriptProcessorNode> ScriptProcessorNode::create(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+PassRefPtrWillBeRawPtr<ScriptProcessorNode> ScriptProcessorNode::create(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
 {
     // Check for valid buffer size.
     switch (bufferSize) {
@@ -84,7 +84,7 @@ PassRefPtr<ScriptProcessorNode> ScriptProcessorNode::create(AudioContext* contex
     if (numberOfOutputChannels > AudioContext::maxNumberOfChannels())
         return nullptr;
 
-    return adoptRef(new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
+    return adoptRefWillBeNoop(new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels));
 }
 
 ScriptProcessorNode::ScriptProcessorNode(AudioContext* context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
@@ -127,8 +127,8 @@ void ScriptProcessorNode::initialize()
     // Create double buffers on both the input and output sides.
     // These AudioBuffers will be directly accessed in the main thread by JavaScript.
     for (unsigned i = 0; i < 2; ++i) {
-        RefPtr<AudioBuffer> inputBuffer = m_numberOfInputChannels ? AudioBuffer::create(m_numberOfInputChannels, bufferSize(), sampleRate) : nullptr;
-        RefPtr<AudioBuffer> outputBuffer = m_numberOfOutputChannels ? AudioBuffer::create(m_numberOfOutputChannels, bufferSize(), sampleRate) : nullptr;
+        RefPtrWillBeRawPtr<AudioBuffer> inputBuffer = m_numberOfInputChannels ? AudioBuffer::create(m_numberOfInputChannels, bufferSize(), sampleRate) : nullptr;
+        RefPtrWillBeRawPtr<AudioBuffer> outputBuffer = m_numberOfOutputChannels ? AudioBuffer::create(m_numberOfOutputChannels, bufferSize(), sampleRate) : nullptr;
 
         m_inputBuffers.append(inputBuffer);
         m_outputBuffers.append(outputBuffer);
@@ -282,6 +282,13 @@ double ScriptProcessorNode::tailTime() const
 double ScriptProcessorNode::latencyTime() const
 {
     return std::numeric_limits<double>::infinity();
+}
+
+void ScriptProcessorNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_inputBuffers);
+    visitor->trace(m_outputBuffers);
+    AudioNode::trace(visitor);
 }
 
 } // namespace WebCore

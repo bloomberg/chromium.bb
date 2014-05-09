@@ -39,9 +39,9 @@ class AudioContext;
 
 class GainNode FINAL : public AudioNode {
 public:
-    static PassRefPtr<GainNode> create(AudioContext* context, float sampleRate)
+    static PassRefPtrWillBeRawPtr<GainNode> create(AudioContext* context, float sampleRate)
     {
-        return adoptRef(new GainNode(context, sampleRate));
+        return adoptRefWillBeNoop(new GainNode(context, sampleRate));
     }
 
     // AudioNode
@@ -53,6 +53,8 @@ public:
     // JavaScript interface
     AudioParam* gain() { return m_gain.get(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     virtual double tailTime() const OVERRIDE { return 0; }
     virtual double latencyTime() const OVERRIDE { return 0; }
@@ -60,7 +62,7 @@ private:
     GainNode(AudioContext*, float sampleRate);
 
     float m_lastGain; // for de-zippering
-    RefPtr<AudioParam> m_gain;
+    RefPtrWillBeMember<AudioParam> m_gain;
 
     AudioFloatArray m_sampleAccurateGainValues;
 };

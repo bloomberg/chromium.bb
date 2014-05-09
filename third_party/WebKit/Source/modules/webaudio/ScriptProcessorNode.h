@@ -50,7 +50,7 @@ public:
     // This value controls how frequently the onaudioprocess event handler is called and how many sample-frames need to be processed each call.
     // Lower numbers for bufferSize will result in a lower (better) latency. Higher numbers will be necessary to avoid audio breakup and glitches.
     // The value chosen must carefully balance between latency and audio quality.
-    static PassRefPtr<ScriptProcessorNode> create(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
+    static PassRefPtrWillBeRawPtr<ScriptProcessorNode> create(AudioContext*, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
 
     virtual ~ScriptProcessorNode();
 
@@ -63,6 +63,7 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
 
+    void trace(Visitor*);
 
 private:
     virtual double tailTime() const OVERRIDE;
@@ -78,8 +79,8 @@ private:
     void swapBuffers() { m_doubleBufferIndex = 1 - m_doubleBufferIndex; }
     unsigned m_doubleBufferIndex;
     unsigned m_doubleBufferIndexForEvent;
-    Vector<RefPtr<AudioBuffer> > m_inputBuffers;
-    Vector<RefPtr<AudioBuffer> > m_outputBuffers;
+    WillBeHeapVector<RefPtrWillBeMember<AudioBuffer> > m_inputBuffers;
+    WillBeHeapVector<RefPtrWillBeMember<AudioBuffer> > m_outputBuffers;
 
     size_t m_bufferSize;
     unsigned m_bufferReadWriteIndex;

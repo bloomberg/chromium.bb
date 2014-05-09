@@ -54,9 +54,9 @@ public:
         DopplerRateDirty = 0x4,
     };
 
-    static PassRefPtr<PannerNode> create(AudioContext* context, float sampleRate)
+    static PassRefPtrWillBeRawPtr<PannerNode> create(AudioContext* context, float sampleRate)
     {
-        return adoptRef(new PannerNode(context, sampleRate));
+        return adoptRefWillBeNoop(new PannerNode(context, sampleRate));
     }
 
     virtual ~PannerNode();

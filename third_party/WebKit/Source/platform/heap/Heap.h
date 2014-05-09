@@ -42,6 +42,7 @@
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
 #include <stdint.h>
 
@@ -70,6 +71,7 @@ class HeapStats;
 class PageMemory;
 template<ThreadAffinity affinity> class ThreadLocalPersistents;
 template<typename T, typename RootsAccessor = ThreadLocalPersistents<ThreadingTrait<T>::Affinity > > class Persistent;
+template<typename T> class CrossThreadPersistent;
 
 PLATFORM_EXPORT size_t osPageSize();
 
@@ -557,6 +559,56 @@ private:
     WTF::OwnPtr<HeapContainsCache::Entry[]> m_entries;
 
     friend class ThreadState;
+};
+
+// FIXME: This is currently used by the WebAudio code.
+// We should attempt to restructure the WebAudio code so that the main thread
+// alone determines life-time and receives messages about life-time from the
+// audio thread.
+template<typename T>
+class ThreadSafeRefCountedGarbageCollected : public GarbageCollectedFinalized<T>, public WTF::ThreadSafeRefCountedBase {
+    WTF_MAKE_NONCOPYABLE(ThreadSafeRefCountedGarbageCollected);
+
+public:
+    ThreadSafeRefCountedGarbageCollected()
+    {
+        m_keepAlive = adoptPtr(new CrossThreadPersistent<T>(static_cast<T*>(this)));
+    }
+
+    // Override ref to deal with a case where a reference count goes up
+    // from 0 to 1. This can happen in the following scenario:
+    // (1) The reference count becomes 0, but on-stack pointers keep references to the object.
+    // (2) The on-stack pointer is assigned to a RefPtr. The reference count becomes 1.
+    // In this case, we have to resurrect m_keepAlive.
+    void ref()
+    {
+        MutexLocker lock(m_mutex);
+        if (UNLIKELY(!refCount())) {
+            ASSERT(!m_keepAlive);
+            m_keepAlive = adoptPtr(new CrossThreadPersistent<T>(static_cast<T*>(this)));
+        }
+        WTF::ThreadSafeRefCountedBase::ref();
+    }
+
+    // Override deref to deal with our own deallocation based on ref counting.
+    void deref()
+    {
+        MutexLocker lock(m_mutex);
+        if (derefBase()) {
+            ASSERT(m_keepAlive);
+            m_keepAlive.clear();
+        }
+    }
+
+    using GarbageCollectedFinalized<T>::operator new;
+    using GarbageCollectedFinalized<T>::operator delete;
+
+protected:
+    ~ThreadSafeRefCountedGarbageCollected() { }
+
+private:
+    OwnPtr<CrossThreadPersistent<T> > m_keepAlive;
+    mutable Mutex m_mutex;
 };
 
 // The CallbackStack contains all the visitor callbacks used to trace and mark

@@ -35,7 +35,7 @@ PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent:
     return adoptRefWillBeNoop(new OfflineAudioCompletionEvent);
 }
 
-PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create(PassRefPtr<AudioBuffer> renderedBuffer)
+PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> OfflineAudioCompletionEvent::create(PassRefPtrWillBeRawPtr<AudioBuffer> renderedBuffer)
 {
     return adoptRefWillBeNoop(new OfflineAudioCompletionEvent(renderedBuffer));
 }
@@ -45,7 +45,7 @@ OfflineAudioCompletionEvent::OfflineAudioCompletionEvent()
     ScriptWrappable::init(this);
 }
 
-OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(PassRefPtr<AudioBuffer> renderedBuffer)
+OfflineAudioCompletionEvent::OfflineAudioCompletionEvent(PassRefPtrWillBeRawPtr<AudioBuffer> renderedBuffer)
     : Event(EventTypeNames::complete, true, false)
     , m_renderedBuffer(renderedBuffer)
 {
@@ -63,6 +63,7 @@ const AtomicString& OfflineAudioCompletionEvent::interfaceName() const
 
 void OfflineAudioCompletionEvent::trace(Visitor* visitor)
 {
+    visitor->trace(m_renderedBuffer);
     Event::trace(visitor);
 }
 

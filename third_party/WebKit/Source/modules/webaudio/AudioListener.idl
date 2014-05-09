@@ -27,6 +27,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     Conditional=WEB_AUDIO
 ] interface AudioListener {
     attribute float dopplerFactor;  // same as OpenAL (default 1.0)

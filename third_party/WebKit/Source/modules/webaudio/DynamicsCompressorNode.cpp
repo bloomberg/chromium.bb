@@ -113,6 +113,17 @@ double DynamicsCompressorNode::latencyTime() const
     return m_dynamicsCompressor->latencyTime();
 }
 
+void DynamicsCompressorNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_threshold);
+    visitor->trace(m_knee);
+    visitor->trace(m_ratio);
+    visitor->trace(m_reduction);
+    visitor->trace(m_attack);
+    visitor->trace(m_release);
+    AudioNode::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

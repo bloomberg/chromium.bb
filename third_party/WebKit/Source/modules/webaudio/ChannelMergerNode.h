@@ -38,7 +38,7 @@ class AudioContext;
 
 class ChannelMergerNode FINAL : public AudioNode {
 public:
-    static PassRefPtr<ChannelMergerNode> create(AudioContext*, float sampleRate, unsigned numberOfInputs);
+    static PassRefPtrWillBeRawPtr<ChannelMergerNode> create(AudioContext*, float sampleRate, unsigned numberOfInputs);
 
     // AudioNode
     virtual void process(size_t framesToProcess) OVERRIDE;

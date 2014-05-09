@@ -24,6 +24,7 @@
  */
 
 [
+    WillBeGarbageCollected,
     ActiveDOMObject,
     Conditional=WEB_AUDIO,
     Constructor,

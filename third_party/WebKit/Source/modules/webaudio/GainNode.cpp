@@ -108,6 +108,12 @@ void GainNode::checkNumberOfChannelsForInput(AudioNodeInput* input)
     AudioNode::checkNumberOfChannelsForInput(input);
 }
 
+void GainNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_gain);
+    AudioNode::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

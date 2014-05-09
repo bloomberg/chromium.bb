@@ -31,6 +31,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "platform/geometry/FloatPoint3D.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -41,11 +42,11 @@ class PannerNode;
 
 // AudioListener maintains the state of the listener in the audio scene as defined in the OpenAL specification.
 
-class AudioListener : public ScriptWrappable, public RefCounted<AudioListener> {
+class AudioListener : public RefCountedWillBeGarbageCollectedFinalized<AudioListener>, public ScriptWrappable {
 public:
-    static PassRefPtr<AudioListener> create()
+    static PassRefPtrWillBeRawPtr<AudioListener> create()
     {
-        return adoptRef(new AudioListener());
+        return adoptRefWillBeNoop(new AudioListener());
     }
     virtual ~AudioListener();
 
@@ -77,6 +78,8 @@ public:
     Mutex& listenerLock() { return m_listenerLock; }
     void addPanner(PannerNode*);
     void removePanner(PannerNode*);
+
+    void trace(Visitor*) { }
 
 private:
     AudioListener();

@@ -37,9 +37,9 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamAudioDestinationNode> MediaStreamAudioDestinationNode::create(AudioContext* context, size_t numberOfChannels)
+PassRefPtrWillBeRawPtr<MediaStreamAudioDestinationNode> MediaStreamAudioDestinationNode::create(AudioContext* context, size_t numberOfChannels)
 {
-    return adoptRef(new MediaStreamAudioDestinationNode(context, numberOfChannels));
+    return adoptRefWillBeNoop(new MediaStreamAudioDestinationNode(context, numberOfChannels));
 }
 
 MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* context, size_t numberOfChannels)

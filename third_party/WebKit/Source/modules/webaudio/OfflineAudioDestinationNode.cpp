@@ -153,6 +153,12 @@ void OfflineAudioDestinationNode::notifyComplete()
     context()->fireCompletionEvent();
 }
 
+void OfflineAudioDestinationNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_renderTarget);
+    AudioDestinationNode::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

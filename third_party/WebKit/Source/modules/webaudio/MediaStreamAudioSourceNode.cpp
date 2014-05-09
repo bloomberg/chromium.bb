@@ -35,9 +35,9 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamAudioSourceNode> MediaStreamAudioSourceNode::create(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+PassRefPtrWillBeRawPtr<MediaStreamAudioSourceNode> MediaStreamAudioSourceNode::create(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
 {
-    return adoptRef(new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, audioSourceProvider));
+    return adoptRefWillBeNoop(new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, audioSourceProvider));
 }
 
 MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AudioContext* context, MediaStream* mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)

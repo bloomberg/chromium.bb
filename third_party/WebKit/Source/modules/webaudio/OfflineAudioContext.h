@@ -33,7 +33,7 @@ class ExceptionState;
 
 class OfflineAudioContext FINAL : public AudioContext {
 public:
-    static PassRefPtr<OfflineAudioContext> create(ExecutionContext*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<OfflineAudioContext> create(ExecutionContext*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     virtual ~OfflineAudioContext();
 

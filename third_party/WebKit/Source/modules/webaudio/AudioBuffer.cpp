@@ -53,19 +53,19 @@ float AudioBuffer::maxAllowedSampleRate()
     return 192000;
 }
 
-PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
+PassRefPtrWillBeRawPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate)
 {
     if (sampleRate < minAllowedSampleRate() || sampleRate > maxAllowedSampleRate() || numberOfChannels > AudioContext::maxNumberOfChannels() || !numberOfChannels || !numberOfFrames)
         return nullptr;
 
-    RefPtr<AudioBuffer> buffer = adoptRef(new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate));
+    RefPtrWillBeRawPtr<AudioBuffer> buffer = adoptRefWillBeNoop(new AudioBuffer(numberOfChannels, numberOfFrames, sampleRate));
 
     if (!buffer->createdSuccessfully(numberOfChannels))
         return nullptr;
     return buffer;
 }
 
-PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
 {
     if (!numberOfChannels || numberOfChannels > AudioContext::maxNumberOfChannels()) {
         exceptionState.throwDOMException(
@@ -103,7 +103,7 @@ PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t nu
         return nullptr;
     }
 
-    RefPtr<AudioBuffer> audioBuffer = create(numberOfChannels, numberOfFrames, sampleRate);
+    RefPtrWillBeRawPtr<AudioBuffer> audioBuffer = create(numberOfChannels, numberOfFrames, sampleRate);
 
     if (!audioBuffer.get()) {
         exceptionState.throwDOMException(
@@ -118,15 +118,25 @@ PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t nu
     return audioBuffer;
 }
 
-PassRefPtr<AudioBuffer> AudioBuffer::createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
+PassRefPtrWillBeRawPtr<AudioBuffer> AudioBuffer::createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
 {
     RefPtr<AudioBus> bus = createBusFromInMemoryAudioFile(data, dataSize, mixToMono, sampleRate);
     if (bus.get()) {
-        RefPtr<AudioBuffer> buffer = adoptRef(new AudioBuffer(bus.get()));
+        RefPtrWillBeRawPtr<AudioBuffer> buffer = adoptRefWillBeNoop(new AudioBuffer(bus.get()));
         if (buffer->createdSuccessfully(bus->numberOfChannels()))
             return buffer;
     }
 
+    return nullptr;
+}
+
+PassRefPtrWillBeRawPtr<AudioBuffer> AudioBuffer::createFromAudioBus(AudioBus* bus)
+{
+    if (!bus)
+        return nullptr;
+    RefPtrWillBeRawPtr<AudioBuffer> buffer = adoptRefWillBeNoop(new AudioBuffer(bus));
+    if (buffer->createdSuccessfully(bus->numberOfChannels()))
+        return buffer;
     return nullptr;
 }
 

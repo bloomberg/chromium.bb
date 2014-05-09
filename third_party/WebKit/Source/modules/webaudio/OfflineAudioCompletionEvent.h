@@ -37,7 +37,7 @@ class AudioBuffer;
 class OfflineAudioCompletionEvent FINAL : public Event {
 public:
     static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create();
-    static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create(PassRefPtr<AudioBuffer> renderedBuffer);
+    static PassRefPtrWillBeRawPtr<OfflineAudioCompletionEvent> create(PassRefPtrWillBeRawPtr<AudioBuffer> renderedBuffer);
 
     virtual ~OfflineAudioCompletionEvent();
 
@@ -49,9 +49,9 @@ public:
 
 private:
     OfflineAudioCompletionEvent();
-    explicit OfflineAudioCompletionEvent(PassRefPtr<AudioBuffer> renderedBuffer);
+    explicit OfflineAudioCompletionEvent(PassRefPtrWillBeRawPtr<AudioBuffer> renderedBuffer);
 
-    RefPtr<AudioBuffer> m_renderedBuffer;
+    RefPtrWillBeMember<AudioBuffer> m_renderedBuffer;
 };
 
 } // namespace WebCore

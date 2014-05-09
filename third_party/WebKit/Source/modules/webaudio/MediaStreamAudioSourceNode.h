@@ -41,7 +41,7 @@ class AudioContext;
 
 class MediaStreamAudioSourceNode FINAL : public AudioSourceNode, public AudioSourceProviderClient {
 public:
-    static PassRefPtr<MediaStreamAudioSourceNode> create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    static PassRefPtrWillBeRawPtr<MediaStreamAudioSourceNode> create(AudioContext*, MediaStream*, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
 
     virtual ~MediaStreamAudioSourceNode();
 

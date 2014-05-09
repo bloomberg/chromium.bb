@@ -38,9 +38,9 @@ class AudioContext;
 
 class OfflineAudioDestinationNode FINAL : public AudioDestinationNode {
 public:
-    static PassRefPtr<OfflineAudioDestinationNode> create(AudioContext* context, AudioBuffer* renderTarget)
+    static PassRefPtrWillBeRawPtr<OfflineAudioDestinationNode> create(AudioContext* context, AudioBuffer* renderTarget)
     {
-        return adoptRef(new OfflineAudioDestinationNode(context, renderTarget));
+        return adoptRefWillBeNoop(new OfflineAudioDestinationNode(context, renderTarget));
     }
 
     virtual ~OfflineAudioDestinationNode();
@@ -54,6 +54,8 @@ public:
 
     virtual float sampleRate()  const OVERRIDE { return m_renderTarget->sampleRate(); }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     class OfflineRenderingTask;
     friend class OfflineRenderingTask;
@@ -61,7 +63,7 @@ private:
     OfflineAudioDestinationNode(AudioContext*, AudioBuffer* renderTarget);
 
     // This AudioNode renders into this AudioBuffer.
-    RefPtr<AudioBuffer> m_renderTarget;
+    RefPtrWillBeMember<AudioBuffer> m_renderTarget;
 
     // Temporary AudioBus for each render quantum.
     RefPtr<AudioBus> m_renderBus;

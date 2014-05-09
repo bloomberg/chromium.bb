@@ -44,7 +44,7 @@ class AudioContext;
 
 class AudioBufferSourceNode FINAL : public AudioScheduledSourceNode {
 public:
-    static PassRefPtr<AudioBufferSourceNode> create(AudioContext*, float sampleRate);
+    static PassRefPtrWillBeRawPtr<AudioBufferSourceNode> create(AudioContext*, float sampleRate);
 
     virtual ~AudioBufferSourceNode();
 
@@ -89,6 +89,8 @@ public:
     // AudioScheduledSourceNode
     virtual void finish() OVERRIDE;
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     AudioBufferSourceNode(AudioContext*, float sampleRate);
 
@@ -99,14 +101,14 @@ private:
     inline bool renderSilenceAndFinishIfNotLooping(AudioBus*, unsigned index, size_t framesToProcess);
 
     // m_buffer holds the sample data which this node outputs.
-    RefPtr<AudioBuffer> m_buffer;
+    RefPtrWillBeMember<AudioBuffer> m_buffer;
 
     // Pointers for the buffer and destination.
     OwnPtr<const float*[]> m_sourceChannels;
     OwnPtr<float*[]> m_destinationChannels;
 
     // Used for the "playbackRate" attributes.
-    RefPtr<AudioParam> m_playbackRate;
+    RefPtrWillBeMember<AudioParam> m_playbackRate;
 
     // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
     // If true, it will wrap around to the start of the buffer each time it reaches the end.

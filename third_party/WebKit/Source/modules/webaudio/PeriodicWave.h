@@ -40,15 +40,15 @@
 
 namespace WebCore {
 
-class PeriodicWave : public ScriptWrappable, public RefCounted<PeriodicWave> {
+class PeriodicWave : public RefCountedWillBeGarbageCollectedFinalized<PeriodicWave>, public ScriptWrappable {
 public:
-    static PassRefPtr<PeriodicWave> createSine(float sampleRate);
-    static PassRefPtr<PeriodicWave> createSquare(float sampleRate);
-    static PassRefPtr<PeriodicWave> createSawtooth(float sampleRate);
-    static PassRefPtr<PeriodicWave> createTriangle(float sampleRate);
+    static PassRefPtrWillBeRawPtr<PeriodicWave> createSine(float sampleRate);
+    static PassRefPtrWillBeRawPtr<PeriodicWave> createSquare(float sampleRate);
+    static PassRefPtrWillBeRawPtr<PeriodicWave> createSawtooth(float sampleRate);
+    static PassRefPtrWillBeRawPtr<PeriodicWave> createTriangle(float sampleRate);
 
     // Creates an arbitrary periodic wave given the frequency components (Fourier coefficients).
-    static PassRefPtr<PeriodicWave> create(float sampleRate, Float32Array* real, Float32Array* imag);
+    static PassRefPtrWillBeRawPtr<PeriodicWave> create(float sampleRate, Float32Array* real, Float32Array* imag);
 
     // Returns pointers to the lower and higher wave data for the pitch range containing
     // the given fundamental frequency. These two tables are in adjacent "pitch" ranges
@@ -62,6 +62,8 @@ public:
     float rateScale() const { return m_rateScale; }
 
     unsigned periodicWaveSize() const { return m_periodicWaveSize; }
+
+    void trace(Visitor*) { }
 
 private:
     explicit PeriodicWave(float sampleRate);

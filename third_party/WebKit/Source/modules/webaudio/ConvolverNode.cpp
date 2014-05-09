@@ -179,6 +179,12 @@ double ConvolverNode::latencyTime() const
     return std::numeric_limits<double>::infinity();
 }
 
+void ConvolverNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_buffer);
+    AudioNode::trace(visitor);
+}
+
 } // namespace WebCore
 
 #endif // ENABLE(WEB_AUDIO)

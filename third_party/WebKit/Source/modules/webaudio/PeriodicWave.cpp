@@ -45,12 +45,12 @@ namespace WebCore {
 
 using namespace VectorMath;
 
-PassRefPtr<PeriodicWave> PeriodicWave::create(float sampleRate, Float32Array* real, Float32Array* imag)
+PassRefPtrWillBeRawPtr<PeriodicWave> PeriodicWave::create(float sampleRate, Float32Array* real, Float32Array* imag)
 {
     bool isGood = real && imag && real->length() == imag->length();
     ASSERT(isGood);
     if (isGood) {
-        RefPtr<PeriodicWave> periodicWave = adoptRef(new PeriodicWave(sampleRate));
+        RefPtrWillBeRawPtr<PeriodicWave> periodicWave = adoptRefWillBeNoop(new PeriodicWave(sampleRate));
         size_t numberOfComponents = real->length();
         periodicWave->createBandLimitedTables(real->data(), imag->data(), numberOfComponents);
         return periodicWave;
@@ -58,30 +58,30 @@ PassRefPtr<PeriodicWave> PeriodicWave::create(float sampleRate, Float32Array* re
     return nullptr;
 }
 
-PassRefPtr<PeriodicWave> PeriodicWave::createSine(float sampleRate)
+PassRefPtrWillBeRawPtr<PeriodicWave> PeriodicWave::createSine(float sampleRate)
 {
-    RefPtr<PeriodicWave> periodicWave = adoptRef(new PeriodicWave(sampleRate));
+    RefPtrWillBeRawPtr<PeriodicWave> periodicWave = adoptRefWillBeNoop(new PeriodicWave(sampleRate));
     periodicWave->generateBasicWaveform(OscillatorNode::SINE);
     return periodicWave;
 }
 
-PassRefPtr<PeriodicWave> PeriodicWave::createSquare(float sampleRate)
+PassRefPtrWillBeRawPtr<PeriodicWave> PeriodicWave::createSquare(float sampleRate)
 {
-    RefPtr<PeriodicWave> periodicWave = adoptRef(new PeriodicWave(sampleRate));
+    RefPtrWillBeRawPtr<PeriodicWave> periodicWave = adoptRefWillBeNoop(new PeriodicWave(sampleRate));
     periodicWave->generateBasicWaveform(OscillatorNode::SQUARE);
     return periodicWave;
 }
 
-PassRefPtr<PeriodicWave> PeriodicWave::createSawtooth(float sampleRate)
+PassRefPtrWillBeRawPtr<PeriodicWave> PeriodicWave::createSawtooth(float sampleRate)
 {
-    RefPtr<PeriodicWave> periodicWave = adoptRef(new PeriodicWave(sampleRate));
+    RefPtrWillBeRawPtr<PeriodicWave> periodicWave = adoptRefWillBeNoop(new PeriodicWave(sampleRate));
     periodicWave->generateBasicWaveform(OscillatorNode::SAWTOOTH);
     return periodicWave;
 }
 
-PassRefPtr<PeriodicWave> PeriodicWave::createTriangle(float sampleRate)
+PassRefPtrWillBeRawPtr<PeriodicWave> PeriodicWave::createTriangle(float sampleRate)
 {
-    RefPtr<PeriodicWave> periodicWave = adoptRef(new PeriodicWave(sampleRate));
+    RefPtrWillBeRawPtr<PeriodicWave> periodicWave = adoptRefWillBeNoop(new PeriodicWave(sampleRate));
     periodicWave->generateBasicWaveform(OscillatorNode::TRIANGLE);
     return periodicWave;
 }

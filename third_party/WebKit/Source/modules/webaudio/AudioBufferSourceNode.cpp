@@ -49,9 +49,9 @@ const double DefaultGrainDuration = 0.020; // 20ms
 // to minimize linear interpolation aliasing.
 const double MaxRate = 1024;
 
-PassRefPtr<AudioBufferSourceNode> AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
+PassRefPtrWillBeRawPtr<AudioBufferSourceNode> AudioBufferSourceNode::create(AudioContext* context, float sampleRate)
 {
-    return adoptRef(new AudioBufferSourceNode(context, sampleRate));
+    return adoptRefWillBeNoop(new AudioBufferSourceNode(context, sampleRate));
 }
 
 AudioBufferSourceNode::AudioBufferSourceNode(AudioContext* context, float sampleRate)
@@ -473,6 +473,13 @@ void AudioBufferSourceNode::finish()
     clearPannerNode();
     ASSERT(!m_pannerNode);
     AudioScheduledSourceNode::finish();
+}
+
+void AudioBufferSourceNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_buffer);
+    visitor->trace(m_playbackRate);
+    AudioScheduledSourceNode::trace(visitor);
 }
 
 } // namespace WebCore

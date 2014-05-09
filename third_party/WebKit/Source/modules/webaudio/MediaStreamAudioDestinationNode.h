@@ -39,7 +39,7 @@ class AudioContext;
 
 class MediaStreamAudioDestinationNode FINAL : public AudioBasicInspectorNode {
 public:
-    static PassRefPtr<MediaStreamAudioDestinationNode> create(AudioContext*, size_t numberOfChannels);
+    static PassRefPtrWillBeRawPtr<MediaStreamAudioDestinationNode> create(AudioContext*, size_t numberOfChannels);
 
     virtual ~MediaStreamAudioDestinationNode();
 

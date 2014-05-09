@@ -43,9 +43,9 @@ namespace WebCore {
 
 using namespace VectorMath;
 
-PassRefPtr<OscillatorNode> OscillatorNode::create(AudioContext* context, float sampleRate)
+PassRefPtrWillBeRawPtr<OscillatorNode> OscillatorNode::create(AudioContext* context, float sampleRate)
 {
-    return adoptRef(new OscillatorNode(context, sampleRate));
+    return adoptRefWillBeNoop(new OscillatorNode(context, sampleRate));
 }
 
 OscillatorNode::OscillatorNode(AudioContext* context, float sampleRate)
@@ -116,22 +116,22 @@ bool OscillatorNode::setType(unsigned type)
 
     switch (type) {
     case SINE: {
-        DEFINE_STATIC_REF(PeriodicWave, periodicWaveSine, (PeriodicWave::createSine(sampleRate)));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(PeriodicWave, periodicWaveSine, (PeriodicWave::createSine(sampleRate)));
         periodicWave = periodicWaveSine;
         break;
     }
     case SQUARE: {
-        DEFINE_STATIC_REF(PeriodicWave, periodicWaveSquare, (PeriodicWave::createSquare(sampleRate)));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(PeriodicWave, periodicWaveSquare, (PeriodicWave::createSquare(sampleRate)));
         periodicWave = periodicWaveSquare;
         break;
     }
     case SAWTOOTH: {
-        DEFINE_STATIC_REF(PeriodicWave, periodicWaveSawtooth, (PeriodicWave::createSawtooth(sampleRate)));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(PeriodicWave, periodicWaveSawtooth, (PeriodicWave::createSawtooth(sampleRate)));
         periodicWave = periodicWaveSawtooth;
         break;
     }
     case TRIANGLE: {
-        DEFINE_STATIC_REF(PeriodicWave, periodicWaveTriangle, (PeriodicWave::createTriangle(sampleRate)));
+        DEFINE_STATIC_REF_WILL_BE_PERSISTENT(PeriodicWave, periodicWaveTriangle, (PeriodicWave::createTriangle(sampleRate)));
         periodicWave = periodicWaveTriangle;
         break;
     }
@@ -339,6 +339,14 @@ void OscillatorNode::setPeriodicWave(PeriodicWave* periodicWave)
 bool OscillatorNode::propagatesSilence() const
 {
     return !isPlayingOrScheduled() || hasFinished() || !m_periodicWave.get();
+}
+
+void OscillatorNode::trace(Visitor* visitor)
+{
+    visitor->trace(m_frequency);
+    visitor->trace(m_detune);
+    visitor->trace(m_periodicWave);
+    AudioScheduledSourceNode::trace(visitor);
 }
 
 } // namespace WebCore

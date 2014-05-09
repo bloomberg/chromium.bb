@@ -43,14 +43,14 @@ namespace WebCore {
 
 class AudioNodeOutput;
 
-class AudioParam FINAL : public RefCounted<AudioParam>, public ScriptWrappable, public AudioSummingJunction {
+class AudioParam FINAL : public RefCountedWillBeGarbageCollectedFinalized<AudioParam>, public ScriptWrappable, public AudioSummingJunction {
 public:
     static const double DefaultSmoothingConstant;
     static const double SnapThreshold;
 
-    static PassRefPtr<AudioParam> create(AudioContext* context, const String& name, double defaultValue, double minValue, double maxValue, unsigned units = 0)
+    static PassRefPtrWillBeRawPtr<AudioParam> create(AudioContext* context, const String& name, double defaultValue, double minValue, double maxValue, unsigned units = 0)
     {
-        return adoptRef(new AudioParam(context, name, defaultValue, minValue, maxValue, units));
+        return adoptRefWillBeNoop(new AudioParam(context, name, defaultValue, minValue, maxValue, units));
     }
 
     // AudioSummingJunction
@@ -101,6 +101,8 @@ public:
     // Connect an audio-rate signal to control this parameter.
     void connect(AudioNodeOutput*);
     void disconnect(AudioNodeOutput*);
+
+    void trace(Visitor*) { }
 
 protected:
     AudioParam(AudioContext* context, const String& name, double defaultValue, double minValue, double maxValue, unsigned units = 0)

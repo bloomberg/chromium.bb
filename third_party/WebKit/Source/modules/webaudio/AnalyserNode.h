@@ -35,9 +35,9 @@ class ExceptionState;
 
 class AnalyserNode FINAL : public AudioBasicInspectorNode {
 public:
-    static PassRefPtr<AnalyserNode> create(AudioContext* context, float sampleRate)
+    static PassRefPtrWillBeRawPtr<AnalyserNode> create(AudioContext* context, float sampleRate)
     {
-        return adoptRef(new AnalyserNode(context, sampleRate));
+        return adoptRefWillBeNoop(new AnalyserNode(context, sampleRate));
     }
 
     virtual ~AnalyserNode();
