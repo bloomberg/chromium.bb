@@ -32,6 +32,17 @@ from chromite.buildbot import remote_try
 from chromite.buildbot import repository
 from chromite.buildbot import tee
 from chromite.buildbot import trybot_patch_pool
+from chromite.buildbot.stages import artifact_stages
+from chromite.buildbot.stages import branch_stages
+from chromite.buildbot.stages import build_stages
+from chromite.buildbot.stages import chrome_stages
+from chromite.buildbot.stages import completion_stages
+from chromite.buildbot.stages import generic_stages
+from chromite.buildbot.stages import report_stages
+from chromite.buildbot.stages import sdk_stages
+from chromite.buildbot.stages import sync_stages
+from chromite.buildbot.stages import test_stages
+
 
 from chromite.lib import cgroups
 from chromite.lib import cleanup
@@ -154,7 +165,7 @@ class Builder(object):
     if self._run.options.resume:
       results_lib.LoadCheckpoint(self._run.buildroot)
 
-    self._RunStage(stages.CleanUpStage)
+    self._RunStage(build_stages.CleanUpStage)
 
   def _GetStageInstance(self, stage, *args, **kwargs):
     """Helper function to get a stage instance given the args.
@@ -266,7 +277,7 @@ class Builder(object):
     if not self._run.options.resume:
       results_lib.WriteCheckpoint(self._run.options.buildroot)
 
-    args = stages.BootstrapStage.FilterArgsForTargetCbuildbot(
+    args = sync_stages.BootstrapStage.FilterArgsForTargetCbuildbot(
         self._run.options.buildroot, constants.PATH_TO_CBUILDBOT,
         self._run.options)
 
@@ -306,7 +317,7 @@ class Builder(object):
 
     Do this only if we need to patch changes later on.
     """
-    changes_stage = stages.PatchChangesStage.StageNamePrefix()
+    changes_stage = sync_stages.PatchChangesStage.StageNamePrefix()
     check_func = results_lib.Results.PreviouslyCompletedRecord
     if not check_func(changes_stage) or self._run.options.bootstrap:
       self.patch_pool = AcquirePoolFromOptions(self._run.options)
@@ -324,8 +335,8 @@ class Builder(object):
     if (chromite_pool or manifest_pool or
         self._run.options.test_bootstrap or
         chromite_branch != self._run.options.branch):
-      stage = stages.BootstrapStage(self._run, chromite_pool,
-                                    manifest_pool)
+      stage = sync_stages.BootstrapStage(self._run, chromite_pool,
+                                         manifest_pool)
     return stage
 
   def Run(self):
@@ -357,13 +368,13 @@ class Builder(object):
         # them.  Manifest patches are patched in the BootstrapStage.
         non_manifest_patches = self.patch_pool.FilterManifest(negate=True)
         if non_manifest_patches:
-          self._RunStage(stages.PatchChangesStage, non_manifest_patches)
+          self._RunStage(sync_stages.PatchChangesStage, non_manifest_patches)
 
       if self._run.ShouldReexecAfterSync():
         print_report = False
         success = self._ReExecuteInBuildroot(sync_instance)
       else:
-        self._RunStage(stages.ReportBuildStartStage)
+        self._RunStage(report_stages.ReportBuildStartStage)
         self.RunStages()
 
     except Exception as ex:
@@ -381,7 +392,8 @@ class Builder(object):
       if print_report:
         results_lib.WriteCheckpoint(self._run.options.buildroot)
         completion_instance = self.GetCompletionInstance()
-        self._RunStage(stages.ReportStage, sync_instance, completion_instance)
+        self._RunStage(report_stages.ReportStage, sync_instance,
+                       completion_instance)
         success = results_lib.Results.BuildSucceededSoFar()
         if exception_thrown and success:
           success = False
@@ -406,13 +418,14 @@ class SimpleBuilder(Builder):
       The instance of the sync stage to run.
     """
     if self._run.options.force_version:
-      sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
+      sync_stage = self._GetStageInstance(
+          sync_stages.ManifestVersionedSyncStage)
     elif self._run.config.use_lkgm:
-      sync_stage = self._GetStageInstance(stages.LKGMSyncStage)
+      sync_stage = self._GetStageInstance(sync_stages.LKGMSyncStage)
     elif self._run.config.use_chrome_lkgm:
-      sync_stage = self._GetStageInstance(stages.ChromeLKGMSyncStage)
+      sync_stage = self._GetStageInstance(chrome_stages.ChromeLKGMSyncStage)
     else:
-      sync_stage = self._GetStageInstance(stages.SyncStage)
+      sync_stage = self._GetStageInstance(sync_stages.SyncStage)
 
     return sync_stage
 
@@ -424,7 +437,7 @@ class SimpleBuilder(Builder):
       board: Board name.
     """
     # Upload HWTest artifacts first.
-    self._RunStage(stages.UploadTestArtifactsStage, board,
+    self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
                    builder_run=builder_run)
 
     # We can not run hw tests without archiving the payloads.
@@ -433,13 +446,13 @@ class SimpleBuilder(Builder):
     if builder_run.options.archive:
       for suite_config in config.hw_tests:
         if suite_config.async:
-          stage_list.append([stages.ASyncHWTestStage, board, suite_config])
+          stage_list.append([test_stages.ASyncHWTestStage, board, suite_config])
         elif suite_config.suite == constants.HWTEST_AU_SUITE:
-          stage_list.append([stages.AUTestStage, board, suite_config])
+          stage_list.append([test_stages.AUTestStage, board, suite_config])
         elif suite_config.suite == constants.HWTEST_QAV_SUITE:
-          stage_list.append([stages.QATestStage, board, suite_config])
+          stage_list.append([test_stages.QATestStage, board, suite_config])
         else:
-          stage_list.append([stages.HWTestStage, board, suite_config])
+          stage_list.append([test_stages.HWTestStage, board, suite_config])
 
     stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
                   for x in stage_list]
@@ -469,18 +482,19 @@ class SimpleBuilder(Builder):
     assert not config.paygen or config.signer_results
 
     if config.build_packages_in_background:
-      self._RunStage(stages.BuildPackagesStage, board, builder_run=builder_run)
+      self._RunStage(build_stages.BuildPackagesStage, board,
+                     builder_run=builder_run)
 
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
-      self._RunStage(stages.UnitTestStage, board,
+      self._RunStage(test_stages.UnitTestStage, board,
                      builder_run=builder_run)
       return
 
     # Build the image first before doing anything else.
     # TODO(davidjames): Remove this lock once http://crbug.com/352994 is fixed.
     with self._build_image_lock:
-      self._RunStage(stages.BuildImageStage, board, builder_run=builder_run,
-                     pgo_use=config.pgo_use)
+      self._RunStage(build_stages.BuildImageStage, board,
+                     builder_run=builder_run, pgo_use=config.pgo_use)
 
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
@@ -489,25 +503,27 @@ class SimpleBuilder(Builder):
     # later stages showing up until it finishes.
     stage_list = []
     if builder_run.options.chrome_sdk and config.chrome_sdk:
-      stage_list.append([stages.ChromeSDKStage, board])
+      stage_list.append([chrome_stages.ChromeSDKStage, board])
 
     if config.vm_test_runs > 1:
       # Run the VMTests multiple times to see if they fail.
       stage_list += [
-          [stages.RepeatStage, config.vm_test_runs, stages.VMTestStage, board]]
+          [generic_stages.RepeatStage, config.vm_test_runs,
+           test_stages.VMTestStage, board]]
     else:
       # Give the VMTests one retry attempt in case failures are flaky.
-      stage_list += [[stages.RetryStage, 1, stages.VMTestStage, board]]
+      stage_list += [[generic_stages.RetryStage, 1, test_stages.VMTestStage,
+                      board]]
 
     stage_list += [
         [stages.SignerTestStage, board, archive_stage],
         [stages.SignerResultsStage, board, archive_stage],
         [stages.PaygenStage, board, archive_stage],
-        [stages.UnitTestStage, board],
-        [stages.UploadPrebuiltsStage, board],
-        [stages.DevInstallerPrebuiltsStage, board],
-        [stages.DebugSymbolsStage, board],
-        [stages.CPEExportStage, board],
+        [test_stages.UnitTestStage, board],
+        [artifact_stages.UploadPrebuiltsStage, board],
+        [artifact_stages.DevInstallerPrebuiltsStage, board],
+        [artifact_stages.DebugSymbolsStage, board],
+        [artifact_stages.CPEExportStage, board],
     ]
 
     stage_objs = [self._GetStageInstance(*x, builder_run=builder_run)
@@ -522,33 +538,35 @@ class SimpleBuilder(Builder):
     """Run the SetupBoard stage for all child configs and boards."""
     for builder_run in self._run.GetUngroupedBuilderRuns():
       for board in builder_run.config.boards:
-        self._RunStage(stages.SetupBoardStage, board, builder_run=builder_run)
+        self._RunStage(build_stages.SetupBoardStage, board,
+                       builder_run=builder_run)
 
   def _RunChrootBuilderTypeBuild(self):
     """Runs through stages of a CHROOT_BUILDER_TYPE build."""
-    self._RunStage(stages.UprevStage, boards=[], enter_chroot=False)
-    self._RunStage(stages.InitSDKStage)
-    self._RunStage(stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
-    self._RunStage(stages.SyncChromeStage)
-    self._RunStage(stages.PatchChromeStage)
-    self._RunStage(stages.SDKPackageStage)
-    self._RunStage(stages.SDKTestStage)
-    self._RunStage(stages.UploadPrebuiltsStage, constants.CHROOT_BUILDER_BOARD)
+    self._RunStage(build_stages.UprevStage, boards=[], enter_chroot=False)
+    self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
+    self._RunStage(chrome_stages.SyncChromeStage)
+    self._RunStage(chrome_stages.PatchChromeStage)
+    self._RunStage(sdk_stages.SDKPackageStage)
+    self._RunStage(sdk_stages.SDKTestStage)
+    self._RunStage(artifact_stages.UploadPrebuiltsStage,
+                   constants.CHROOT_BUILDER_BOARD)
 
   def _RunRefreshPackagesTypeBuild(self):
     """Runs through the stages of a REFRESH_PACKAGES_TYPE build."""
-    self._RunStage(stages.InitSDKStage)
+    self._RunStage(build_stages.InitSDKStage)
     self._RunSetupBoard()
-    self._RunStage(stages.RefreshPackageStatusStage)
+    self._RunStage(report_stages.RefreshPackageStatusStage)
 
   def _RunMasterPaladinBuild(self):
     """Runs through the stages of the paladin (commit queue) master build."""
-    self._RunStage(stages.InitSDKStage)
-    self._RunStage(stages.UprevStage)
+    self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UprevStage)
     # The CQ (paladin) master will not actually run the SyncChrome stage, but
     # we want the logic that gets triggered when SyncChrome stage is skipped.
-    self._RunStage(stages.SyncChromeStage)
-    self._RunStage(stages.MasterUploadPrebuiltsStage)
+    self._RunStage(chrome_stages.SyncChromeStage)
+    self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
 
   def _RunPayloadsBuild(self):
     """Run the PaygenStage once for each board."""
@@ -562,11 +580,11 @@ class SimpleBuilder(Builder):
 
   def _RunDefaultTypeBuild(self):
     """Runs through the stages of a non-special-type build."""
-    self._RunStage(stages.InitSDKStage)
-    self._RunStage(stages.UprevStage)
+    self._RunStage(build_stages.InitSDKStage)
+    self._RunStage(build_stages.UprevStage)
     self._RunSetupBoard()
-    self._RunStage(stages.SyncChromeStage)
-    self._RunStage(stages.PatchChromeStage)
+    self._RunStage(chrome_stages.SyncChromeStage)
+    self._RunStage(chrome_stages.PatchChromeStage)
 
     # Prepare stages to run in background.  If child_configs exist then
     # run each of those here, otherwise use default config.
@@ -579,7 +597,7 @@ class SimpleBuilder(Builder):
 
       for board in builder_run.config.boards:
         archive_stage = self._GetStageInstance(
-            stages.ArchiveStage, board, builder_run=builder_run,
+            artifact_stages.ArchiveStage, board, builder_run=builder_run,
             chrome_version=self._run.attrs.chrome_version)
         board_config = BoardConfig(board, builder_run.config.name)
         self.archive_stages[board_config] = archive_stage
@@ -599,15 +617,15 @@ class SimpleBuilder(Builder):
           elif builder_run.config.pgo_use:
             kwargs['pgo_use'] = True
 
-          self._RunStage(stages.BuildPackagesStage, board, **kwargs)
+          self._RunStage(build_stages.BuildPackagesStage, board, **kwargs)
 
           if builder_run.config.pgo_generate:
             # Generate the PGO data before allowing any other tasks to run.
-            self._RunStage(stages.BuildImageStage, board, **kwargs)
-            self._RunStage(stages.UploadTestArtifactsStage, board,
+            self._RunStage(build_stages.BuildImageStage, board, **kwargs)
+            self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
                            builder_run=builder_run, suffix='[pgo_generate]')
             suite = cbuildbot_config.PGORecordTest()
-            self._RunStage(stages.HWTestStage, board, suite,
+            self._RunStage(test_stages.HWTestStage, board, suite,
                            builder_run=builder_run)
 
         # Kick off our background stages.
@@ -617,9 +635,9 @@ class SimpleBuilder(Builder):
     """Runs through build process."""
     # TODO(sosa): Split these out into classes.
     if self._run.config.build_type == constants.PRE_CQ_LAUNCHER_TYPE:
-      self._RunStage(stages.PreCQLauncherStage)
+      self._RunStage(sync_stages.PreCQLauncherStage)
     elif self._run.config.build_type == constants.CREATE_BRANCH_TYPE:
-      self._RunStage(stages.BranchUtilStage)
+      self._RunStage(branch_stages.BranchUtilStage)
     elif self._run.config.build_type == constants.CHROOT_BUILDER_TYPE:
       self._RunChrootBuilderTypeBuild()
     elif self._run.config.build_type == constants.REFRESH_PACKAGES_TYPE:
@@ -660,22 +678,25 @@ class DistributedBuilder(SimpleBuilder):
     # Determine sync class to use.  CQ overrides PFQ bits so should check it
     # first.
     if self._run.config.pre_cq or self._run.options.pre_cq:
-      sync_stage = self._GetStageInstance(stages.PreCQSyncStage,
+      sync_stage = self._GetStageInstance(sync_stages.PreCQSyncStage,
                                           self.patch_pool.gerrit_patches)
-      self.completion_stage_class = stages.PreCQCompletionStage
+      self.completion_stage_class = completion_stages.PreCQCompletionStage
       self.patch_pool.gerrit_patches = []
     elif cbuildbot_config.IsCQType(self._run.config.build_type):
       if self._run.config.do_not_apply_cq_patches:
-        sync_stage = self._GetStageInstance(stages.MasterSlaveSyncStage)
+        sync_stage = self._GetStageInstance(sync_stages.MasterSlaveSyncStage)
       else:
-        sync_stage = self._GetStageInstance(stages.CommitQueueSyncStage)
-      self.completion_stage_class = stages.CommitQueueCompletionStage
+        sync_stage = self._GetStageInstance(sync_stages.CommitQueueSyncStage)
+      self.completion_stage_class = completion_stages.CommitQueueCompletionStage
     elif cbuildbot_config.IsPFQType(self._run.config.build_type):
-      sync_stage = self._GetStageInstance(stages.MasterSlaveSyncStage)
-      self.completion_stage_class = stages.MasterSlaveSyncCompletionStage
+      sync_stage = self._GetStageInstance(sync_stages.MasterSlaveSyncStage)
+      self.completion_stage_class = (
+          completion_stages.MasterSlaveSyncCompletionStage)
     else:
-      sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
-      self.completion_stage_class = stages.ManifestVersionedSyncCompletionStage
+      sync_stage = self._GetStageInstance(
+          sync_stages.ManifestVersionedSyncStage)
+      self.completion_stage_class = (
+          completion_stages.ManifestVersionedSyncCompletionStage)
 
     self.sync_stage = sync_stage
     return self.sync_stage
@@ -703,7 +724,8 @@ class DistributedBuilder(SimpleBuilder):
       if not completion_successful:
         was_build_successful = False
       if self._run.config.push_overlays:
-        self._RunStage(stages.PublishUprevChangesStage, was_build_successful)
+        self._RunStage(completion_stages.PublishUprevChangesStage,
+                       was_build_successful)
 
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""
@@ -1719,7 +1741,9 @@ def main(argv):
         mock_statuses = pickle.load(f)
         for key, value in mock_statuses.iteritems():
           mock_statuses[key] = manifest_version.BuilderStatus(**value)
-      stack.Add(mock.patch.object, stages.MasterSlaveSyncCompletionStage,
-                '_FetchSlaveStatuses', return_value=mock_statuses)
+      stack.Add(mock.patch.object,
+                completion_stages.MasterSlaveSyncCompletionStage,
+                '_FetchSlaveStatuses',
+                return_value=mock_statuses)
 
     _RunBuildStagesWrapper(options, build_config)
