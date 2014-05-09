@@ -23,6 +23,11 @@ namespace net {
 
 namespace {
 
+using std::string;
+
+const char kOriginal[] = "original";
+const char kRequeued[] = "requeued";
+
 class SpdyWriteQueueTest : public ::testing::Test {};
 
 // Makes a SpdyFrameProducer producing a frame with the data in the
@@ -43,6 +48,35 @@ scoped_ptr<SpdyBufferProducer> StringToProducer(const std::string& s) {
 scoped_ptr<SpdyBufferProducer> IntToProducer(int i) {
   return StringToProducer(base::IntToString(i));
 }
+
+// Producer whose produced buffer will enqueue yet another buffer into the
+// SpdyWriteQueue upon destruction.
+class RequeingBufferProducer : public SpdyBufferProducer {
+ public:
+  RequeingBufferProducer(SpdyWriteQueue* queue) {
+    buffer_.reset(new SpdyBuffer(kOriginal, arraysize(kOriginal)));
+    buffer_->AddConsumeCallback(
+        base::Bind(RequeingBufferProducer::ConsumeCallback, queue));
+  }
+
+  virtual scoped_ptr<SpdyBuffer> ProduceBuffer() OVERRIDE {
+    return buffer_.Pass();
+  }
+
+  static void ConsumeCallback(SpdyWriteQueue* queue,
+                              size_t size,
+                              SpdyBuffer::ConsumeSource source) {
+    scoped_ptr<SpdyBufferProducer> producer(
+        new SimpleBufferProducer(scoped_ptr<SpdyBuffer>(
+            new SpdyBuffer(kRequeued, arraysize(kRequeued)))));
+
+    queue->Enqueue(
+        MEDIUM, RST_STREAM, producer.Pass(), base::WeakPtr<SpdyStream>());
+  }
+
+ private:
+  scoped_ptr<SpdyBuffer> buffer_;
+};
 
 // Produces a frame with the given producer and returns a copy of its
 // data as a string.
@@ -245,6 +279,96 @@ TEST_F(SpdyWriteQueueTest, Clear) {
   scoped_ptr<SpdyBufferProducer> frame_producer;
   base::WeakPtr<SpdyStream> stream;
   EXPECT_FALSE(write_queue.Dequeue(&frame_type, &frame_producer, &stream));
+}
+
+TEST_F(SpdyWriteQueueTest, RequeingProducerWithoutReentrance) {
+  SpdyWriteQueue queue;
+  queue.Enqueue(
+      DEFAULT_PRIORITY,
+      SYN_STREAM,
+      scoped_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
+      base::WeakPtr<SpdyStream>());
+  {
+    SpdyFrameType frame_type;
+    scoped_ptr<SpdyBufferProducer> producer;
+    base::WeakPtr<SpdyStream> stream;
+
+    EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &stream));
+    EXPECT_TRUE(queue.IsEmpty());
+    EXPECT_EQ(string(kOriginal), producer->ProduceBuffer()->GetRemainingData());
+  }
+  // |producer| was destroyed, and a buffer is re-queued.
+  EXPECT_FALSE(queue.IsEmpty());
+
+  SpdyFrameType frame_type;
+  scoped_ptr<SpdyBufferProducer> producer;
+  base::WeakPtr<SpdyStream> stream;
+
+  EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &stream));
+  EXPECT_EQ(string(kRequeued), producer->ProduceBuffer()->GetRemainingData());
+}
+
+TEST_F(SpdyWriteQueueTest, ReentranceOnClear) {
+  SpdyWriteQueue queue;
+  queue.Enqueue(
+      DEFAULT_PRIORITY,
+      SYN_STREAM,
+      scoped_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
+      base::WeakPtr<SpdyStream>());
+
+  queue.Clear();
+  EXPECT_FALSE(queue.IsEmpty());
+
+  SpdyFrameType frame_type;
+  scoped_ptr<SpdyBufferProducer> producer;
+  base::WeakPtr<SpdyStream> stream;
+
+  EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &stream));
+  EXPECT_EQ(string(kRequeued), producer->ProduceBuffer()->GetRemainingData());
+}
+
+TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesAfter) {
+  scoped_ptr<SpdyStream> stream(MakeTestStream(DEFAULT_PRIORITY));
+  stream->set_stream_id(2);
+
+  SpdyWriteQueue queue;
+  queue.Enqueue(
+      DEFAULT_PRIORITY,
+      SYN_STREAM,
+      scoped_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
+      stream->GetWeakPtr());
+
+  queue.RemovePendingWritesForStreamsAfter(1);
+  EXPECT_FALSE(queue.IsEmpty());
+
+  SpdyFrameType frame_type;
+  scoped_ptr<SpdyBufferProducer> producer;
+  base::WeakPtr<SpdyStream> weak_stream;
+
+  EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &weak_stream));
+  EXPECT_EQ(string(kRequeued), producer->ProduceBuffer()->GetRemainingData());
+}
+
+TEST_F(SpdyWriteQueueTest, ReentranceOnRemovePendingWritesForStream) {
+  scoped_ptr<SpdyStream> stream(MakeTestStream(DEFAULT_PRIORITY));
+  stream->set_stream_id(2);
+
+  SpdyWriteQueue queue;
+  queue.Enqueue(
+      DEFAULT_PRIORITY,
+      SYN_STREAM,
+      scoped_ptr<SpdyBufferProducer>(new RequeingBufferProducer(&queue)),
+      stream->GetWeakPtr());
+
+  queue.RemovePendingWritesForStream(stream->GetWeakPtr());
+  EXPECT_FALSE(queue.IsEmpty());
+
+  SpdyFrameType frame_type;
+  scoped_ptr<SpdyBufferProducer> producer;
+  base::WeakPtr<SpdyStream> weak_stream;
+
+  EXPECT_TRUE(queue.Dequeue(&frame_type, &producer, &weak_stream));
+  EXPECT_EQ(string(kRequeued), producer->ProduceBuffer()->GetRemainingData());
 }
 
 }  // namespace

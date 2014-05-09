@@ -46,6 +46,7 @@ void SpdyWriteQueue::Enqueue(RequestPriority priority,
                              SpdyFrameType frame_type,
                              scoped_ptr<SpdyBufferProducer> frame_producer,
                              const base::WeakPtr<SpdyStream>& stream) {
+  CHECK(!removing_writes_);
   CHECK_GE(priority, MINIMUM_PRIORITY);
   CHECK_LE(priority, MAXIMUM_PRIORITY);
   if (stream.get())
