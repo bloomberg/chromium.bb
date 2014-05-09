@@ -6440,13 +6440,13 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg1, toInt32(info[0], exceptionState), exceptionState);
+    TONATIVE_VOID(bool, booleanArg, info[0]->BooleanValue());
     if (UNLIKELY(info.Length() <= 1)) {
-        impl->overloadedMethodB(longArg1);
+        impl->overloadedMethodB(booleanArg);
         return;
     }
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg2, toInt32(info[1], exceptionState), exceptionState);
-    impl->overloadedMethodB(longArg1, longArg2);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[1], exceptionState), exceptionState);
+    impl->overloadedMethodB(booleanArg, longArg);
 }
 
 static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6495,9 +6495,9 @@ static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    TONATIVE_VOID(bool, booleanArg, info[0]->BooleanValue());
     TONATIVE_VOID(Vector<int>, longArgs, toNativeArguments<int>(info, 1));
-    impl->overloadedMethodC(longArg, longArgs);
+    impl->overloadedMethodC(booleanArg, longArgs);
 }
 
 static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& info)

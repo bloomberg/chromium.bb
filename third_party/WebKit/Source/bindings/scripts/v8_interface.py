@@ -329,15 +329,16 @@ def generate_overloads_by_type(methods):
                           if method['name'] in overloaded_method_names]
 
     # Group by name (generally will be defined together, but not necessarily)
-    overloaded_methods.sort(key=itemgetter('name'))
-    method_overloads = dict(
-        (name, list(methods_iterator)) for name, methods_iterator in
-        itertools.groupby(overloaded_methods, itemgetter('name')))
+    method_overloads = sort_and_groupby(overloaded_methods, itemgetter('name'))
 
     # Add overload information only to overloaded methods, so template code can
     # easily verify if a function is overloaded
     for name, overloads in method_overloads.iteritems():
-        effective_overload_set(overloads)  # to test, compute but discard result
+        effective_overloads_by_length = effective_overload_set_by_length(overloads)
+        for effective_overloads in effective_overloads_by_length.itervalues():
+            # To test, compute but discard result
+            distinguishing_argument_index(effective_overloads)
+
         for index, method in enumerate(overloads, 1):
             method.update({
                 'overload_index': index,
@@ -392,7 +393,7 @@ def effective_overload_set(F):
         F: list of overloads for a given callable name.
 
     Returns:
-        S: list of tuples of the form <callable, type list, optionality list>.
+        S: list of tuples of the form (callable, type list, optionality list).
     """
     # Code closely follows the algorithm in the spec, for clarity and
     # correctness, and hence is not very Pythonic.
@@ -414,12 +415,14 @@ def effective_overload_set(F):
         n = len(arguments)
         # 2. Let t0..n−1 be a list of types, where ti is the type of X’s
         # argument at index i.
-        t = [argument['idl_type'] for argument in arguments]  # type list
+        # (“type list”)
+        t = tuple(argument['idl_type_object'] for argument in arguments)
         # 3. Let o0..n−1 be a list of optionality values, where oi is “variadic”
         # if X’s argument at index i is a final, variadic argument, “optional”
         # if the argument is optional, and “required” otherwise.
-        # (We're just using a boolean for optional vs. required.)
-        o = [argument['is_optional'] for argument in arguments]  # optionality list
+        # (“optionality list”)
+        # (We’re just using a boolean for optional vs. required.)
+        o = tuple(argument['is_optional'] for argument in arguments)
         # 4. Add to S the tuple <X, t0..n−1, o0..n−1>.
         S.append((X, t, o))
         # 5. If X is declared to be variadic, then:
@@ -443,6 +446,79 @@ def effective_overload_set(F):
             S.append((X, [], []))
     # 6. The effective overload set is S.
     return S
+
+
+def effective_overload_set_by_length(overloads):
+    def type_list_length(entry):
+        # Entries in the effective overload set are 3-tuples:
+        # (callable, type list, optionality list)
+        return len(entry[1])
+
+    effective_overloads = effective_overload_set(overloads)
+    return sort_and_groupby(effective_overloads, type_list_length)
+
+
+def distinguishing_argument_index(entries):
+    """Returns the distinguishing argument index for a sequence of entries.
+
+    Entries are elements of the effective overload set with the same number
+    of arguments (formally, same type list length), each a 3-tuple of the form
+    (callable, type list, optionality list).
+
+    Spec: http://heycam.github.io/webidl/#dfn-distinguishing-argument-index
+
+    If there is more than one entry in an effective overload set that has a
+    given type list length, then for those entries there must be an index i
+    such that for each pair of entries the types at index i are
+    distinguishable.
+    The lowest such index is termed the distinguishing argument index for the
+    entries of the effective overload set with the given type list length.
+    """
+    if len(entries) < 2:
+        # Only need to distinguish if two or more entries
+        return
+    type_lists = [tuple(idl_type.name for idl_type in entry[1])
+                  for entry in entries]
+    type_list_length = len(type_lists[0])
+    assert all(len(type_list) == type_list_length for type_list in type_lists)
+    name = entries[0][0]['name']
+
+    # The spec defines the distinguishing argument index by conditions it must
+    # satisfy, but does not give an algorithm.
+    #
+    # We compute the distinguishing argument index by first computing the
+    # minimum index where not all types are the same, and then checking that
+    # all types in this position are distinguishable (and the optionality lists
+    # up to this point are identical), since "minimum index where not all types
+    # are the same" is a *necessary* condition, and more direct to check than
+    # distinguishability.
+    types_by_index = (set(types) for types in zip(*type_lists))
+    try:
+        # “In addition, for each index j, where j is less than the
+        #  distinguishing argument index for a given type list length, the types
+        #  at index j in all of the entries’ type lists must be the same”
+        index = next(i for i, types in enumerate(types_by_index)
+                     if len(types) > 1)
+    except StopIteration:
+        raise ValueError('No distinguishing index found for %s, length %s:\n'
+                         'All entries have the same type list:\n'
+                         '%s' % (name, type_list_length, type_lists[0]))
+    # Check optionality
+    # “and the booleans in the corresponding list indicating argument
+    #  optionality must be the same.”
+    # FIXME: spec typo: optionality value is no longer a boolean
+    # https://www.w3.org/Bugs/Public/show_bug.cgi?id=25628
+    initial_optionality_lists = set(entry[2][:index] for entry in entries)
+    if len(initial_optionality_lists) > 1:
+        raise ValueError(
+            'Invalid optionality lists for %s, length %s:\n'
+            'Optionality lists differ below distinguishing argument index %s:\n'
+            '%s'
+            % (name, type_list_length, index, set(initial_optionality_lists)))
+
+    # FIXME: check distinguishability
+
+    return index
 
 
 def overload_resolution_expression(method):
@@ -533,6 +609,18 @@ def overload_check_argument(index, argument):
     return None
 
 
+################################################################################
+# Utility functions
+################################################################################
+
+def Counter(iterable):
+    # Once using Python 2.7, using collections.Counter
+    counter = defaultdict(lambda: 0)
+    for item in iterable:
+        counter[item] += 1
+    return counter
+
+
 def common_value(dicts, key):
     """Returns common value of a key across an iterable of dicts, or None.
 
@@ -546,12 +634,10 @@ def common_value(dicts, key):
     return None
 
 
-def Counter(iterable):
-    # Once using Python 2.7, using collections.Counter
-    counter = defaultdict(lambda: 0)
-    for item in iterable:
-        counter[item] += 1
-    return counter
+def sort_and_groupby(l, key=None):
+    """Returns a dict of {key: list}, sorting and grouping input list by key."""
+    l.sort(key=key)
+    return dict((k, list(g)) for k, g in itertools.groupby(l, key))
 
 
 ################################################################################

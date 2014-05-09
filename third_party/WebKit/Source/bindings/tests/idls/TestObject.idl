@@ -387,9 +387,9 @@ interface TestObject {
     void overloadedMethodA(long longArg);
     void overloadedMethodA(long longArg1, long longArg2);
     void overloadedMethodB(long longArg);
-    void overloadedMethodB(long longArg1, optional long longArg2);
+    void overloadedMethodB(boolean booleanArg, optional long longArg);
     void overloadedMethodC(long longArg);
-    void overloadedMethodC(long longArg, long... longArgs);
+    void overloadedMethodC(boolean booleanArg, long... longArgs);
     void overloadedMethodD(long longArg);
     void overloadedMethodD(TestInterfaceEmpty testInterfaceEmptyArg);
     void overloadedMethodE(long longArg);
