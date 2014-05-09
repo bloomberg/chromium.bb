@@ -1130,3 +1130,5 @@ crbug.com/371276 [ Linux ] virtual/deferred/inspector/timeline/timeline-window-f
 crbug.com/371276 [ Linux ] virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/371680 [ Mac ] editing/inserting/insert-div-023.html [ NeedsRebaseline ]
+
+crbug.com/371698 [ Mavericks ] fast/transforms/shadows.html [ NeedsRebaseline ]
