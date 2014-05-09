@@ -5,6 +5,7 @@
 #ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTPROXY_H_
 #define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTPROXY_H_
 
+#include <deque>
 #include <map>
 #include <string>
 
@@ -109,7 +110,6 @@ public:
     void didCloseChooser();
     bool isChooserShown();
 
-    void display(base::Closure callback);
     void displayAsyncThen(base::Closure callback);
 
     void discardBackingStore();
@@ -195,6 +195,8 @@ private:
     void invalidateAll();
     void animateNow();
     void DrawSelectionRect(SkCanvas* canvas);
+    void DisplayForSoftwareMode(const base::Closure& callback);
+    void DidDisplayAsync(const base::Closure& callback, const SkBitmap& bitmap);
 
     blink::WebWidget* webWidget();
 
@@ -214,7 +216,8 @@ private:
     bool m_animateScheduled;
     std::map<unsigned, std::string> m_resourceIdentifierMap;
     std::map<unsigned, blink::WebURLRequest> m_requestMap;
-    base::Callback<void(const SkBitmap&)> m_compositeAndReadbackCallback;
+    std::deque<base::Callback<void(const SkBitmap&)> >
+        m_compositeAndReadbackCallbacks;
 
     bool m_logConsoleOutput;
     int m_chooserCount;

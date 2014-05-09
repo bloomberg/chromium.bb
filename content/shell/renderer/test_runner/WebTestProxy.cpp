@@ -488,8 +488,9 @@ void WebTestProxyBase::didCompositeAndReadback(const SkBitmap& bitmap) {
                bitmap.info().fHeight);
   SkCanvas canvas(bitmap);
   DrawSelectionRect(&canvas);
-  DCHECK(!m_compositeAndReadbackCallback.is_null());
-  base::ResetAndReturn(&m_compositeAndReadbackCallback).Run(bitmap);
+  DCHECK(!m_compositeAndReadbackCallbacks.empty());
+  m_compositeAndReadbackCallbacks.front().Run(bitmap);
+  m_compositeAndReadbackCallbacks.pop_front();
 }
 
 void WebTestProxyBase::CapturePixelsAsync(
@@ -498,8 +499,7 @@ void WebTestProxyBase::CapturePixelsAsync(
 
   DCHECK(webWidget()->isAcceleratedCompositingActive());
   DCHECK(!callback.is_null());
-  DCHECK(m_compositeAndReadbackCallback.is_null());
-  m_compositeAndReadbackCallback = callback;
+  m_compositeAndReadbackCallbacks.push_back(callback);
   webWidget()->compositeAndReadbackAsync(this);
 }
 
@@ -596,26 +596,43 @@ SkCanvas* WebTestProxyBase::canvas()
     return m_canvas.get();
 }
 
-void WebTestProxyBase::display(base::Closure callback)
-{
-    const blink::WebSize& size = webWidget()->size();
-    WebRect rect(0, 0, size.width, size.height);
-    m_paintRect = rect;
-    paintInvalidatedRegion();
+void WebTestProxyBase::DisplayForSoftwareMode(const base::Closure& callback) {
+  const blink::WebSize& size = webWidget()->size();
+  WebRect rect(0, 0, size.width, size.height);
+  m_paintRect = rect;
+  paintInvalidatedRegion();
 
-    if (!callback.is_null())
-        callback.Run();
+  if (!callback.is_null())
+    callback.Run();
 }
 
-void WebTestProxyBase::displayAsyncThen(base::Closure callback)
-{
-  // TODO(enne): When compositing, this should invoke a real rAF, paint,
-  // and commit.  For now, just make sure that displayAsync is actually
-  // async so that callers can't depend on synchronous behavior.
-  m_delegate->postTask(new ClosureTask(
-      this,
-      base::Bind(
-          &WebTestProxyBase::display, base::Unretained(this), callback)));
+void WebTestProxyBase::DidDisplayAsync(const base::Closure& callback,
+                                       const SkBitmap& bitmap) {
+  // Verify we actually composited.
+  CHECK_NE(0, bitmap.info().fWidth);
+  CHECK_NE(0, bitmap.info().fHeight);
+  if (!callback.is_null())
+    callback.Run();
+}
+
+void WebTestProxyBase::displayAsyncThen(base::Closure callback) {
+  TRACE_EVENT0("shell", "WebTestProxyBase::displayAsyncThen");
+
+  // TODO(danakj): Remove when we have kForceCompositingMode everywhere.
+  if (!webWidget()->isAcceleratedCompositingActive()) {
+    TRACE_EVENT0("shell",
+                 "WebTestProxyBase::displayAsyncThen "
+                 "isAcceleratedCompositingActive false");
+    m_delegate->postTask(
+        new ClosureTask(this,
+                        base::Bind(&WebTestProxyBase::DisplayForSoftwareMode,
+                                   base::Unretained(this),
+                                   callback)));
+    return;
+  }
+
+  CapturePixelsAsync(base::Bind(
+      &WebTestProxyBase::DidDisplayAsync, base::Unretained(this), callback));
 }
 
 void WebTestProxyBase::discardBackingStore()
