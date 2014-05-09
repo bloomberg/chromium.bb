@@ -204,14 +204,12 @@ void SyncBackendRegistrar::ActivateDataType(
     syncer::UserShare* user_share) {
   DVLOG(1) << "Activate: " << syncer::ModelTypeToString(type);
 
-  CHECK(IsOnThreadForGroup(type, group));
   base::AutoLock lock(lock_);
   // Ensure that the given data type is in the PASSIVE group.
   syncer::ModelSafeRoutingInfo::iterator i = routing_info_.find(type);
   DCHECK(i != routing_info_.end());
   DCHECK_EQ(i->second, syncer::GROUP_PASSIVE);
   routing_info_[type] = group;
-  CHECK(IsCurrentThreadSafeForModel(type));
 
   // Add the data type's change processor to the list of change
   // processors so it can receive updates.

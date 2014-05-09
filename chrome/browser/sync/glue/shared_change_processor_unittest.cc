@@ -106,10 +106,13 @@ class SyncSharedChangeProcessorTest : public testing::Test {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
     EXPECT_CALL(sync_factory_, GetSyncableServiceForType(syncer::AUTOFILL)).
         WillOnce(GetWeakPtrToSyncableService(db_syncable_service_.get()));
+    syncer::UserShare share;
+    EXPECT_CALL(sync_service_, GetUserShare()).WillOnce(
+        ::testing::Return(&share));
     EXPECT_TRUE(shared_change_processor->Connect(
         &sync_factory_,
         &processor_factory_,
-        &sync_service_,
+        sync_service_.GetUserShare(),
         &error_handler_,
         syncer::AUTOFILL,
         base::WeakPtr<syncer::SyncMergeResult>()));

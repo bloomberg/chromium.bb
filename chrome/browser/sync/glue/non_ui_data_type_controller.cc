@@ -36,7 +36,8 @@ NonUIDataTypeController::NonUIDataTypeController(
       profile_sync_factory_(profile_sync_factory),
       profile_(profile),
       sync_service_(sync_service),
-      state_(NOT_RUNNING) {
+      state_(NOT_RUNNING),
+      user_share_(NULL) {
 }
 
 void NonUIDataTypeController::LoadModels(
@@ -58,7 +59,7 @@ void NonUIDataTypeController::LoadModels(
   DCHECK(!shared_change_processor_.get());
   shared_change_processor_ = CreateSharedChangeProcessor();
   DCHECK(shared_change_processor_.get());
-
+  user_share_ = sync_service_->GetUserShare();
   model_load_callback_ = model_load_callback;
   if (!StartModels()) {
     // If we are waiting for some external service to load before associating
@@ -312,6 +313,11 @@ bool NonUIDataTypeController::StartAssociationAsync() {
           shared_change_processor_));
 }
 
+ChangeProcessor* NonUIDataTypeController::GetChangeProcessor() const {
+  DCHECK_EQ(state_, RUNNING);
+  return shared_change_processor_->generic_change_processor();
+}
+
 // This method can execute after we've already stopped (and possibly even
 // destroyed) both the Syncer and the SyncableService. As a result, all actions
 // must either have no side effects outside of the DTC or must be protected
@@ -336,7 +342,7 @@ void NonUIDataTypeController::
   local_service_ = shared_change_processor->Connect(
       profile_sync_factory_,
       &factory,
-      sync_service_,
+      user_share_,
       this,
       type(),
       weak_ptr_factory.GetWeakPtr());
@@ -413,13 +419,6 @@ void NonUIDataTypeController::
   syncer_merge_result.set_num_items_after_association(
       shared_change_processor->GetSyncCount());
 
-  // If we've been disconnected, sync_service_ may return an invalid
-  // pointer, but |shared_change_processor| protects us from attempting to
-  // access it.
-  // Note: This must be done on the datatype's thread to ensure local_service_
-  // doesn't start trying to push changes from its thread before we activate
-  // the datatype.
-  shared_change_processor->ActivateDataType(model_safe_group());
   StartDone(!sync_has_nodes ? OK_FIRST_RUN : OK,
             local_merge_result,
             syncer_merge_result);

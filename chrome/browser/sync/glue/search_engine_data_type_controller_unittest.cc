@@ -69,11 +69,6 @@ class SyncSearchEngineDataTypeControllerTest : public testing::Test {
         WillOnce(Return(syncable_service_.AsWeakPtr()));
   }
 
-  void SetActivateExpectations() {
-    EXPECT_CALL(*service_.get(),
-                ActivateDataType(syncer::SEARCH_ENGINES, _, _));
-  }
-
   void SetStopExpectations() {
     EXPECT_CALL(*service_.get(),
                 DeactivateDataType(syncer::SEARCH_ENGINES));
@@ -104,7 +99,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartURLServiceReady) {
   SetStartExpectations();
   // We want to start ready.
   PreloadTemplateURLService();
-  SetActivateExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, search_engine_dtc_->state());
@@ -154,7 +148,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, StartAssociationFailed) {
 TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   SetStartExpectations();
   PreloadTemplateURLService();
-  SetActivateExpectations();
   SetStopExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
@@ -172,7 +165,6 @@ TEST_F(SyncSearchEngineDataTypeControllerTest,
        OnSingleDatatypeUnrecoverableError) {
   SetStartExpectations();
   PreloadTemplateURLService();
-  SetActivateExpectations();
   EXPECT_CALL(*service_.get(), DisableBrokenDatatype(_, _, _)).
       WillOnce(InvokeWithoutArgs(search_engine_dtc_.get(),
                                  &SearchEngineDataTypeController::Stop));

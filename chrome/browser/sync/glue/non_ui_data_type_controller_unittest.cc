@@ -64,7 +64,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   MOCK_METHOD6(Connect, base::WeakPtr<syncer::SyncableService>(
       browser_sync::SyncApiComponentFactory*,
       GenericChangeProcessorFactory*,
-      ProfileSyncService*,
+      syncer::UserShare*,
       DataTypeErrorHandler*,
       syncer::ModelType,
       const base::WeakPtr<syncer::SyncMergeResult>&));
@@ -80,8 +80,6 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
                bool(bool*));
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());
   MOCK_CONST_METHOD1(GetDataTypeContext, bool(std::string*));
-  MOCK_METHOD1(ActivateDataType,
-               void(syncer::ModelSafeGroup));
 
  protected:
   virtual ~SharedChangeProcessorMock() {}
@@ -242,7 +240,6 @@ class SyncNonUIDataTypeControllerTest : public testing::Test {
         .WillOnce(GetWeakPtrToSyncableService(&syncable_service_));
     EXPECT_CALL(*change_processor_.get(), CryptoReadyIfNecessary())
         .WillOnce(Return(true));
-    EXPECT_CALL(*change_processor_.get(), ActivateDataType(_));
     EXPECT_CALL(*change_processor_.get(), SyncModelHasUserCreatedNodes(_))
         .WillOnce(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*change_processor_.get(), GetAllSyncDataReturnError(_,_))

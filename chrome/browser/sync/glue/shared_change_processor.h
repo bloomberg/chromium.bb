@@ -22,10 +22,12 @@ class ProfileSyncService;
 
 namespace syncer {
 class SyncableService;
+struct UserShare;
 }  // namespace syncer
 
 namespace browser_sync {
 
+class ChangeProcessor;
 class GenericChangeProcessor;
 class GenericChangeProcessorFactory;
 class DataTypeErrorHandler;
@@ -60,11 +62,11 @@ class SharedChangeProcessor
   // Note: If this SharedChangeProcessor has been disconnected, or the
   // syncer::SyncableService was not alive, will return a null weak pointer.
   virtual base::WeakPtr<syncer::SyncableService> Connect(
-    browser_sync::SyncApiComponentFactory* sync_factory,
-    GenericChangeProcessorFactory* processor_factory,
-    ProfileSyncService* sync_service,
-    DataTypeErrorHandler* error_handler,
-    syncer::ModelType type,
+      browser_sync::SyncApiComponentFactory* sync_factory,
+      GenericChangeProcessorFactory* processor_factory,
+      syncer::UserShare* user_share,
+      DataTypeErrorHandler* error_handler,
+      syncer::ModelType type,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result);
 
   // Disconnects from the generic change processor. May be called from any
@@ -99,14 +101,11 @@ class SharedChangeProcessor
   // set, returns false.
   virtual bool GetDataTypeContext(std::string* context) const;
 
-  // Register |generic_change_processor_| as the change processor for the
-  // current type on |model_safe_group|.
-  // Does nothing if |disconnected_| is true.
-  virtual void ActivateDataType(syncer::ModelSafeGroup model_safe_group);
-
   virtual syncer::SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message);
+
+  ChangeProcessor* generic_change_processor();
 
  protected:
   friend class base::RefCountedThreadSafe<SharedChangeProcessor>;
@@ -123,9 +122,6 @@ class SharedChangeProcessor
 
   // The sync datatype we were last connected to.
   syncer::ModelType type_;
-
-  // The ProfileSyncService we're currently connected to.
-  ProfileSyncService* sync_service_;
 
   // The frontend / UI MessageLoop this object is constructed on. May also be
   // destructed and/or disconnected on this loop, see ~SharedChangeProcessor.

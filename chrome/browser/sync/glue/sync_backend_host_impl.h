@@ -107,11 +107,11 @@ class SyncBackendHostImpl
       const base::Callback<void(syncer::ModelTypeSet,
                                 syncer::ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) OVERRIDE;
-  virtual void EnableEncryptEverything() OVERRIDE;
   virtual void ActivateDataType(
-      syncer::ModelType type, syncer::ModelSafeGroup group,
-      ChangeProcessor* change_processor) OVERRIDE;
+     syncer::ModelType type, syncer::ModelSafeGroup group,
+     ChangeProcessor* change_processor) OVERRIDE;
   virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE;
+  virtual void EnableEncryptEverything() OVERRIDE;
   virtual syncer::UserShare* GetUserShare() const OVERRIDE;
   virtual scoped_ptr<syncer::SyncCoreProxy> GetSyncCoreProxy() OVERRIDE;
   virtual Status GetDetailedStatus() OVERRIDE;

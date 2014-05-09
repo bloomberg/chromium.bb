@@ -429,7 +429,7 @@ AssociatorInterface* NonFrontendDataTypeController::associator() const {
   return model_associator_;
 }
 
-ChangeProcessor* NonFrontendDataTypeController::change_processor() const {
+ChangeProcessor* NonFrontendDataTypeController::GetChangeProcessor() const {
   return change_processor_;
 }
 
@@ -464,8 +464,6 @@ void NonFrontendDataTypeController::AssociationCallback(
   change_processor_ = result.change_processor;
   model_associator_ = result.model_associator;
 
-  profile_sync_service_->ActivateDataType(type(), model_safe_group(),
-                                          change_processor());
   StartDone(!result.sync_has_nodes ? OK_FIRST_RUN : OK,
             result.local_merge_result,
             result.syncer_merge_result);

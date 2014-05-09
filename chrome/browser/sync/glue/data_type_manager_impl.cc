@@ -387,6 +387,14 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
     syncer::ModelType type,
     const syncer::DataTypeAssociationStats& association_stats) {
   DCHECK(!association_types_queue_.empty());
+  DataTypeController::TypeMap::const_iterator c_it = controllers_->find(type);
+  DCHECK(c_it != controllers_->end());
+  if (c_it->second->state() == DataTypeController::RUNNING) {
+    // Tell the backend about the change processor for this type so it can
+    // begin routing changes to it.
+    configurer_->ActivateDataType(type, c_it->second->model_safe_group(),
+                                  c_it->second->GetChangeProcessor());
+  }
 
   if (!debug_info_listener_.IsInitialized())
     return;

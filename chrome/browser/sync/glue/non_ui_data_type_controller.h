@@ -40,6 +40,7 @@ class NonUIDataTypeController : public DataTypeController {
   virtual void Stop() OVERRIDE;
   virtual syncer::ModelType type() const = 0;
   virtual syncer::ModelSafeGroup model_safe_group() const = 0;
+  virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
   virtual void OnSingleDatatypeUnrecoverableError(
@@ -157,6 +158,10 @@ class NonUIDataTypeController : public DataTypeController {
   // since we call Disconnect() before releasing the UI thread
   // reference).
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
+
+  // The UserShare to connect the SharedChangeProcessor to. NULL until set in
+  // LoadModels.
+  syncer::UserShare* user_share_;
 
   // A weak pointer to the actual local syncable service, which performs all the
   // real work. We do not own the object, and it is only safe to access on the

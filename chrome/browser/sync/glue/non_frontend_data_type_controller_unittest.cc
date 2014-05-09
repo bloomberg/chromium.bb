@@ -162,7 +162,6 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
   }
 
   void SetActivateExpectations(DataTypeController::StartResult result) {
-    EXPECT_CALL(service_, ActivateDataType(_, _, _));
     EXPECT_CALL(start_callback_, Run(result, _, _));
   }
 

@@ -27,6 +27,7 @@ class ProxyDataTypeController : public DataTypeController {
   virtual void Stop() OVERRIDE;
   virtual syncer::ModelType type() const OVERRIDE;
   virtual syncer::ModelSafeGroup model_safe_group() const OVERRIDE;
+  virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
   virtual std::string name() const OVERRIDE;
   virtual State state() const OVERRIDE;
 

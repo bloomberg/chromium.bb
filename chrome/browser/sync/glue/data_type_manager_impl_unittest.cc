@@ -74,6 +74,11 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
     }
   }
 
+  virtual void ActivateDataType(
+      syncer::ModelType type, syncer::ModelSafeGroup group,
+      ChangeProcessor* change_processor) OVERRIDE {}
+  virtual void DeactivateDataType(syncer::ModelType type) OVERRIDE {}
+
   base::Callback<void(ModelTypeSet, ModelTypeSet)> last_ready_task() const {
     return last_ready_task_;
   }

@@ -61,9 +61,6 @@ class ProfileSyncServiceMock : public ProfileSyncService {
                const tracked_objects::Location&,
                std::string message));
   MOCK_CONST_METHOD0(GetUserShare, syncer::UserShare*());
-  MOCK_METHOD3(ActivateDataType,
-               void(syncer::ModelType, syncer::ModelSafeGroup,
-                    browser_sync::ChangeProcessor*));
   MOCK_METHOD1(DeactivateDataType, void(syncer::ModelType));
   MOCK_METHOD0(UnsuppressAndStart, void());
 

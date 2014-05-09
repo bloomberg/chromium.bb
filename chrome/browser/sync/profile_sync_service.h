@@ -590,9 +590,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Overridden by tests.
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.
-  virtual void ActivateDataType(
-      syncer::ModelType type, syncer::ModelSafeGroup group,
-      browser_sync::ChangeProcessor* change_processor);
   virtual void DeactivateDataType(syncer::ModelType type);
 
   // SyncPrefObserver implementation.

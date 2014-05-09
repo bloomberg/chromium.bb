@@ -118,10 +118,12 @@ std::string FakeDataTypeController::name() const {
   return ModelTypeToString(type_);
 }
 
-// This isn't called by the DTM.
 syncer::ModelSafeGroup FakeDataTypeController::model_safe_group() const {
-  ADD_FAILURE();
   return syncer::GROUP_PASSIVE;
+}
+
+ChangeProcessor* FakeDataTypeController::GetChangeProcessor() const {
+  return NULL;
 }
 
 DataTypeController::State FakeDataTypeController::state() const {

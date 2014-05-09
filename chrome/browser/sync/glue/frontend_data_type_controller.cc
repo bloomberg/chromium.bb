@@ -200,8 +200,6 @@ bool FrontendDataTypeController::Associate() {
     return false;
   }
 
-  sync_service_->ActivateDataType(type(), model_safe_group(),
-                                  change_processor());
   state_ = RUNNING;
   // FinishStart() invokes the DataTypeManager callback, which can lead to a
   // call to Stop() if one of the other data types being started generates an
@@ -295,7 +293,7 @@ void FrontendDataTypeController::set_model_associator(
   model_associator_.reset(model_associator);
 }
 
-ChangeProcessor* FrontendDataTypeController::change_processor() const {
+ChangeProcessor* FrontendDataTypeController::GetChangeProcessor() const {
   return change_processor_.get();
 }
 

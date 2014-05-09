@@ -102,7 +102,7 @@ class FrontendDataTypeController : public DataTypeController {
 
   virtual AssociatorInterface* model_associator() const;
   virtual void set_model_associator(AssociatorInterface* associator);
-  virtual ChangeProcessor* change_processor() const;
+  virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
   virtual void set_change_processor(ChangeProcessor* processor);
 
   ProfileSyncComponentsFactory* const profile_sync_factory_;

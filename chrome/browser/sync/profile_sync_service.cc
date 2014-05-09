@@ -1938,17 +1938,6 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
   return result.release();
 }
 
-void ProfileSyncService::ActivateDataType(
-    syncer::ModelType type, syncer::ModelSafeGroup group,
-    ChangeProcessor* change_processor) {
-  if (!backend_) {
-    NOTREACHED();
-    return;
-  }
-  DCHECK(backend_initialized_);
-  backend_->ActivateDataType(type, group, change_processor);
-}
-
 void ProfileSyncService::DeactivateDataType(syncer::ModelType type) {
   if (!backend_)
     return;

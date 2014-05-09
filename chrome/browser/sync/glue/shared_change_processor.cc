@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/sync/profile_sync_service.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/sync_api_component_factory.h"
@@ -21,7 +20,6 @@ namespace browser_sync {
 SharedChangeProcessor::SharedChangeProcessor()
     : disconnected_(false),
       type_(syncer::UNSPECIFIED),
-      sync_service_(NULL),
       frontend_loop_(base::MessageLoopProxy::current()),
       generic_change_processor_(NULL),
       error_handler_(NULL) {
@@ -50,12 +48,11 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     browser_sync::SyncApiComponentFactory* sync_factory,
     GenericChangeProcessorFactory* processor_factory,
-    ProfileSyncService* sync_service,
+    syncer::UserShare* user_share,
     DataTypeErrorHandler* error_handler,
     syncer::ModelType type,
     const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
   DCHECK(sync_factory);
-  DCHECK(sync_service);
   DCHECK(error_handler);
   DCHECK_NE(type, syncer::UNSPECIFIED);
   backend_loop_ = base::MessageLoopProxy::current();
@@ -63,7 +60,6 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
   if (disconnected_)
     return base::WeakPtr<syncer::SyncableService>();
   type_ = type;
-  sync_service_ = sync_service;
   error_handler_ = error_handler;
   base::WeakPtr<syncer::SyncableService> local_service =
       sync_factory->GetSyncableServiceForType(type);
@@ -78,6 +74,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
   // 369536).
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader(
       new syncer::FakeAttachmentUploader);
+
   // TODO(maniscalco): Replace FakeAttachmentService with a real
   // AttachmentService implementation once implemented (bug 356359).
   scoped_ptr<syncer::AttachmentService> attachment_service(
@@ -86,7 +83,7 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
           attachment_uploader.Pass()));
 
   generic_change_processor_ = processor_factory->CreateGenericChangeProcessor(
-      sync_service_->GetUserShare(),
+      user_share,
       error_handler,
       local_service,
       merge_result,
@@ -102,6 +99,10 @@ bool SharedChangeProcessor::Disconnect() {
   disconnected_ = true;
   error_handler_ = NULL;
   return was_connected;
+}
+
+ChangeProcessor* SharedChangeProcessor::generic_change_processor() {
+  return generic_change_processor_;
 }
 
 int SharedChangeProcessor::GetSyncCount() {
@@ -207,20 +208,6 @@ bool SharedChangeProcessor::GetDataTypeContext(std::string* context) const {
     return false;
   }
   return generic_change_processor_->GetDataTypeContext(type_, context);
-}
-
-void SharedChangeProcessor::ActivateDataType(
-    syncer::ModelSafeGroup model_safe_group) {
-  DCHECK(backend_loop_.get());
-  DCHECK(backend_loop_->BelongsToCurrentThread());
-  AutoLock lock(monitor_lock_);
-  if (disconnected_) {
-    LOG(ERROR) << "Change processor disconnected.";
-    return;
-  }
-  sync_service_->ActivateDataType(type_,
-                                  model_safe_group,
-                                  generic_change_processor_);
 }
 
 syncer::SyncError SharedChangeProcessor::CreateAndUploadError(

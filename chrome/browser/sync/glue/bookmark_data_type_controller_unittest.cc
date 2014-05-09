@@ -141,7 +141,6 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test {
         WillRepeatedly(DoAll(SetArgumentPointee<0>(true), Return(true)));
     EXPECT_CALL(*model_associator_, AssociateModels(_, _)).
         WillRepeatedly(Return(syncer::SyncError()));
-    EXPECT_CALL(service_, ActivateDataType(_, _, _));
   }
 
   void SetStopExpectations() {

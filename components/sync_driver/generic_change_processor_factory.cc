@@ -20,6 +20,7 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
       const base::WeakPtr<syncer::SyncableService>& local_service,
       const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
       scoped_ptr<syncer::AttachmentService> attachment_service) {
+    DCHECK(user_share);
     return make_scoped_ptr(new GenericChangeProcessor(
         error_handler,
         local_service,

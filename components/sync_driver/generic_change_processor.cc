@@ -720,7 +720,6 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary(syncer::ModelType type) {
 }
 
 void GenericChangeProcessor::StartImpl() {
-  DCHECK(CalledOnValidThread());
 }
 
 syncer::UserShare* GenericChangeProcessor::share_handle() const {

@@ -10,8 +10,11 @@
 #include "base/callback.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
+#include "sync/internal_api/public/engine/model_safe_worker.h"
 
 namespace browser_sync {
+
+class ChangeProcessor;
 
 // The DataTypeConfigurer interface abstracts out the action of
 // configuring a set of new data types and cleaning up after a set of
@@ -54,6 +57,17 @@ class BackendDataTypeConfigurer {
   // Return model types in |state_map| that match |state|.
   static syncer::ModelTypeSet GetDataTypesInState(
       DataTypeConfigState state, const DataTypeConfigStateMap& state_map);
+
+  // Activates change processing for the given data type.  This must
+  // be called synchronously with the data type's model association so
+  // no changes are dropped between model association and change
+  // processor activation.
+  virtual void ActivateDataType(
+      syncer::ModelType type, syncer::ModelSafeGroup group,
+      ChangeProcessor* change_processor) = 0;
+
+  // Deactivates change processing for the given data type.
+  virtual void DeactivateDataType(syncer::ModelType type) = 0;
 
   // Set state of |types| in |state_map| to |state|.
   static void SetDataTypesState(DataTypeConfigState state,

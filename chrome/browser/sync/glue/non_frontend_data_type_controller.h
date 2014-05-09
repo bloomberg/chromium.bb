@@ -161,7 +161,7 @@ class NonFrontendDataTypeController : public DataTypeController {
   void set_state(State state);
 
   virtual AssociatorInterface* associator() const;
-  virtual ChangeProcessor* change_processor() const;
+  virtual ChangeProcessor* GetChangeProcessor() const OVERRIDE;
 
   State state_;
   StartCallback start_callback_;

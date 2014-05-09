@@ -48,6 +48,10 @@ syncer::ModelSafeGroup ProxyDataTypeController::model_safe_group() const {
   return syncer::GROUP_PASSIVE;
 }
 
+ChangeProcessor* ProxyDataTypeController::GetChangeProcessor() const {
+  return NULL;
+}
+
 std::string ProxyDataTypeController::name() const {
   // For logging only.
   return syncer::ModelTypeToString(type());

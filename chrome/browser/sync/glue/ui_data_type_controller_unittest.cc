@@ -68,10 +68,6 @@ class SyncUIDataTypeControllerTest : public testing::Test {
         WillOnce(Return(syncable_service_.AsWeakPtr()));
   }
 
-  void SetActivateExpectations() {
-    EXPECT_CALL(profile_sync_service_, ActivateDataType(type_, _, _));
-  }
-
   void SetStopExpectations() {
     EXPECT_CALL(profile_sync_service_, DeactivateDataType(type_));
   }
@@ -106,7 +102,6 @@ class SyncUIDataTypeControllerTest : public testing::Test {
 // service has been told to start syncing and that the DTC is now in RUNNING
 // state.
 TEST_F(SyncUIDataTypeControllerTest, Start) {
-  SetActivateExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
@@ -119,7 +114,6 @@ TEST_F(SyncUIDataTypeControllerTest, Start) {
 // Start and then stop the DTC. Verify that the service started and stopped
 // syncing, and that the DTC went from RUNNING to NOT_RUNNING.
 TEST_F(SyncUIDataTypeControllerTest, StartStop) {
-  SetActivateExpectations();
   SetStopExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK, _, _));
 
@@ -136,7 +130,6 @@ TEST_F(SyncUIDataTypeControllerTest, StartStop) {
 // Start the DTC when no user nodes are created. Verify that the callback
 // is called with OK_FIRST_RUN. Stop the DTC.
 TEST_F(SyncUIDataTypeControllerTest, StartStopFirstRun) {
-  SetActivateExpectations();
   SetStopExpectations();
   EXPECT_CALL(start_callback_, Run(DataTypeController::OK_FIRST_RUN, _, _));
   change_processor_->set_sync_model_has_user_created_nodes(false);
@@ -193,7 +186,6 @@ TEST_F(SyncUIDataTypeControllerTest,
 // Start the DTC, but then trigger an unrecoverable error. Verify the syncer
 // gets stopped and the DTC is in NOT_RUNNING state.
 TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
-  SetActivateExpectations();
   EXPECT_CALL(profile_sync_service_, DisableBrokenDatatype(_,_,_)).
       WillOnce(InvokeWithoutArgs(preference_dtc_.get(),
                                  &UIDataTypeController::Stop));

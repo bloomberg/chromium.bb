@@ -25,6 +25,8 @@ class SyncError;
 
 namespace browser_sync {
 
+class ChangeProcessor;
+
 // Data type controllers need to be refcounted threadsafe, as they may
 // need to run model associator or change processor on other threads.
 class DataTypeController
@@ -106,6 +108,10 @@ class DataTypeController
   // thread that should be used to modify the data type's native
   // model.
   virtual syncer::ModelSafeGroup model_safe_group() const = 0;
+
+  // Access to the ChangeProcessor for the type being controlled by |this|.
+  // Returns NULL if the ChangeProcessor isn't created or connected.
+  virtual ChangeProcessor* GetChangeProcessor() const = 0;
 
   // Current state of the data type controller.
   virtual State state() const = 0;
