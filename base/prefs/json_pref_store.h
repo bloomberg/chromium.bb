@@ -9,12 +9,10 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/observer_list.h"
 #include "base/prefs/base_prefs_export.h"
@@ -34,8 +32,7 @@ class Value;
 // A writable PrefStore implementation that is used for user preferences.
 class BASE_PREFS_EXPORT JsonPrefStore
     : public PersistentPrefStore,
-      public base::ImportantFileWriter::DataSerializer,
-      public base::SupportsWeakPtr<JsonPrefStore> {
+      public base::ImportantFileWriter::DataSerializer {
  public:
   // Returns instance of SequencedTaskRunner which guarantees that file
   // operations on the same file will be executed in sequenced order.
@@ -66,54 +63,22 @@ class BASE_PREFS_EXPORT JsonPrefStore
   virtual void RemoveValue(const std::string& key) OVERRIDE;
   virtual bool ReadOnly() const OVERRIDE;
   virtual PrefReadError GetReadError() const OVERRIDE;
-  // Note this method may be asynchronous if this instance has a |pref_filter_|
-  // in which case it will return PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE.
-  // See details in pref_filter.h.
   virtual PrefReadError ReadPrefs() OVERRIDE;
   virtual void ReadPrefsAsync(ReadErrorDelegate* error_delegate) OVERRIDE;
   virtual void CommitPendingWrite() OVERRIDE;
   virtual void ReportValueChanged(const std::string& key) OVERRIDE;
 
-  // Just like RemoveValue(), but doesn't notify observers. Used when doing some
-  // cleanup that shouldn't otherwise alert observers.
-  void RemoveValueSilently(const std::string& key);
-
-  // Registers |on_next_successful_write| to be called once, on the next
-  // successful write event of |writer_|.
-  void RegisterOnNextSuccessfulWriteCallback(
-      const base::Closure& on_next_successful_write);
-
-  // This method is called after the JSON file has been read.  It then hands
-  // |value| (or an empty dictionary in some read error cases) to the
-  // |pref_filter| if one is set. It also gives a callback pointing at
-  // FinalizeFileRead() to that |pref_filter_| which is then responsible for
-  // invoking it when done. If there is no |pref_filter_|, FinalizeFileRead()
-  // is invoked directly.
-  // Note, this method is used with asynchronous file reading, so this class
-  // exposes it only for the internal needs (read: do not call it manually).
-  // TODO(gab): Move this method to the private section and hand a callback to
-  // it to FileThreadDeserializer rather than exposing this public method and
-  // giving a JsonPrefStore* to FileThreadDeserializer.
-  void OnFileRead(scoped_ptr<base::Value> value,
-                  PrefReadError error,
-                  bool no_dir);
+  // This method is called after JSON file has been read. Method takes
+  // ownership of the |value| pointer. Note, this method is used with
+  // asynchronous file reading, so class exposes it only for the internal needs.
+  // (read: do not call it manually).
+  void OnFileRead(base::Value* value_owned, PrefReadError error, bool no_dir);
 
  private:
   virtual ~JsonPrefStore();
 
   // ImportantFileWriter::DataSerializer overrides:
   virtual bool SerializeData(std::string* output) OVERRIDE;
-
-  // This method is called after the JSON file has been read and the result has
-  // potentially been intercepted and modified by |pref_filter_|.
-  // |initialization_successful| is pre-determined by OnFileRead() and should
-  // be used when reporting OnInitializationCompleted().
-  // |schedule_write| indicates whether a write should be immediately scheduled
-  // (typically because the |pref_filter_| has already altered the |prefs|) --
-  // this will be ignored if this store is read-only.
-  void FinalizeFileRead(bool initialization_successful,
-                        scoped_ptr<base::DictionaryValue> prefs,
-                        bool schedule_write);
 
   base::FilePath path_;
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
@@ -131,7 +96,6 @@ class BASE_PREFS_EXPORT JsonPrefStore
   scoped_ptr<ReadErrorDelegate> error_delegate_;
 
   bool initialized_;
-  bool filtering_in_progress_;
   PrefReadError read_error_;
 
   std::set<std::string> keys_need_empty_value_;
