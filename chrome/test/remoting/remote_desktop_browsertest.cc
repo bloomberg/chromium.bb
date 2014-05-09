@@ -5,6 +5,9 @@
 #include "chrome/test/remoting/remote_desktop_browsertest.h"
 
 #include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/json/json_reader.h"
+#include "base/path_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -191,6 +194,8 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
   content::WebContents* web_contents = controller->GetWebContents();
   if (web_contents != active_web_contents())
     web_contents_stack_.push_back(web_contents);
+
+  app_web_content_ = web_contents;
 
   if (is_platform_app()) {
     EXPECT_EQ(GetFirstAppWindowWebContents(), active_web_contents());
@@ -637,6 +642,58 @@ std::string RemoteDesktopBrowserTest::ExecuteScriptAndExtractString(
       &result));
 
   return result;
+}
+
+// static
+bool RemoteDesktopBrowserTest::LoadScript(
+    content::WebContents* web_contents,
+    const base::FilePath::StringType& path) {
+  std::string script;
+  base::FilePath src_dir;
+  _ASSERT_TRUE(PathService::Get(base::DIR_EXE, &src_dir));
+  base::FilePath script_path = src_dir.Append(path);
+
+  if (!base::ReadFileToString(script_path, &script)) {
+    LOG(ERROR) << "Failed to load script " << script_path.value();
+    return false;
+  }
+
+  return content::ExecuteScript(web_contents, script);
+}
+
+// static
+void RemoteDesktopBrowserTest::RunJavaScriptTest(
+    content::WebContents* web_contents,
+    const std::string& testName,
+    const std::string& testData) {
+  std::string result;
+  std::string script = "browserTest.runTest(browserTest." + testName + ", " +
+                       testData + ");";
+
+  LOG(INFO) << "Executing " << script;
+
+  ASSERT_TRUE(
+      content::ExecuteScriptAndExtractString(web_contents, script, &result));
+
+  // Read in the JSON
+  base::JSONReader reader;
+  scoped_ptr<base::Value> value;
+  value.reset(reader.Read(result, base::JSON_ALLOW_TRAILING_COMMAS));
+
+  // Convert to dictionary
+  base::DictionaryValue* dict_value = NULL;
+  ASSERT_TRUE(value->GetAsDictionary(&dict_value));
+
+  bool succeeded;
+  std::string error_message;
+  std::string stack_trace;
+
+  // Extract the fields
+  ASSERT_TRUE(dict_value->GetBoolean("succeeded", &succeeded));
+  ASSERT_TRUE(dict_value->GetString("error_message", &error_message));
+  ASSERT_TRUE(dict_value->GetString("stack_trace", &stack_trace));
+
+  EXPECT_TRUE(succeeded) << error_message << "\n" << stack_trace;
 }
 
 void RemoteDesktopBrowserTest::ClickOnControl(const std::string& name) {

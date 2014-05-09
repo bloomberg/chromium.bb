@@ -237,5 +237,17 @@
         }],
       ],  # end of 'conditions'
     },  # end of target 'remoting_unittests'
+    {
+      'target_name': 'remoting_browser_test_resources',
+      'type': 'none',
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+            'files': [
+              '<@(remoting_webapp_js_browser_test_files)',
+            ],
+        },
+      ], #end of copies
+    },  # end of target 'remoting_browser_test_resources'
   ],  # end of targets
 }

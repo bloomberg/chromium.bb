@@ -805,6 +805,7 @@
         '../v8/tools/gyp/v8.gyp:v8',
         # Runtime dependencies
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
+        '../remoting/remoting.gyp:remoting_browser_test_resources',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_test_license_server',
       ],

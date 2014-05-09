@@ -50,8 +50,8 @@ base.debug.callstack = function() {
     var error = /** @type {Error} */ e;
     var callstack = error.stack
       .replace(/^\s+(at eval )?at\s+/gm, '') // Remove 'at' and indentation.
-      .split('\n')
-      .splice(0,2); // Remove the stack of the current function.
+      .split('\n');
+    callstack.splice(0,2); // Remove the stack of the current function.
   }
   return callstack.join('\n');
 };
@@ -98,6 +98,19 @@ base.extend = function(dest, src) {
 };
 
 base.doNothing = function() {};
+
+/**
+ * Returns an array containing the values of |dict|.
+ * @param {!Object} dict
+ * @return {Array}
+ */
+base.values = function (dict) {
+  return Object.keys(dict).map(
+    /** @param {string} key */
+    function(key) {
+      return dict[key];
+    });
+};
 
 /**
  * A mixin for classes with events.

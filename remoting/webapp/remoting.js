@@ -14,6 +14,14 @@ var remoting = remoting || {};
  */
 remoting.isAppsV2 = false;
 
+
+/**
+ * @type {base.EventSource} An event source object for handling global events.
+ *    This is an interim hack.  Eventually, we should move functionalities
+ *    away from the remoting namespace and into smaller objects.
+ */
+remoting.testEvents;
+
 /**
  * Show the authorization consent UI and register a one-shot event handler to
  * continue the authorization process.
@@ -148,6 +156,14 @@ remoting.init = function() {
     };
     isWindowed_(onIsWindowed);
   }
+
+  remoting.testEvents = new base.EventSource();
+
+  /** @enum {string} */
+  remoting.testEvents.Names = {
+    uiModeChanged: 'uiModeChanged'
+  };
+  remoting.testEvents.defineEvents(base.values(remoting.testEvents.Names));
 };
 
 /**

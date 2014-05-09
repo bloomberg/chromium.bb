@@ -187,6 +187,10 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
     return client_web_content_;
   }
 
+  content::WebContents* app_web_content() {
+    return app_web_content_;
+  }
+
   // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
   // This is useful for diagnostic purposes.
   bool NoCleanup() { return no_cleanup_; }
@@ -205,44 +209,59 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
     return active_web_contents()->GetURL();
   }
 
-  // Helpers to execute javascript code on a web page.
+  // Helpers to execute JavaScript code on a web page.
 
-  // Helper to execute a javascript code snippet in the active WebContents.
+  // Helper to execute a JavaScript code snippet in the active WebContents.
   void ExecuteScript(const std::string& script);
 
-  // Helper to execute a javascript code snippet in the active WebContents
+  // Helper to execute a JavaScript code snippet in the active WebContents
   // and wait for page load to complete.
   void ExecuteScriptAndWaitForAnyPageLoad(const std::string& script);
 
-  // Helper to execute a javascript code snippet in the active WebContents
+  // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the boolean result.
   bool ExecuteScriptAndExtractBool(const std::string& script) {
     return ExecuteScriptAndExtractBool(active_web_contents(), script);
   }
 
-  // Helper to execute a javascript code snippet and extract the boolean result.
+  // Helper to execute a JavaScript code snippet and extract the boolean result.
   static bool ExecuteScriptAndExtractBool(content::WebContents* web_contents,
                                           const std::string& script);
 
-  // Helper to execute a javascript code snippet in the active WebContents
+  // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the int result.
   int ExecuteScriptAndExtractInt(const std::string& script) {
     return ExecuteScriptAndExtractInt(active_web_contents(), script);
   }
 
-  // Helper to execute a javascript code snippet and extract the int result.
+  // Helper to execute a JavaScript code snippet and extract the int result.
   static int ExecuteScriptAndExtractInt(content::WebContents* web_contents,
                                         const std::string& script);
 
-  // Helper to execute a javascript code snippet in the active WebContents
+  // Helper to execute a JavaScript code snippet in the active WebContents
   // and extract the string result.
   std::string ExecuteScriptAndExtractString(const std::string& script) {
     return ExecuteScriptAndExtractString(active_web_contents(), script);
   }
 
-  // Helper to execute a javascript code snippet and extract the string result.
+  // Helper to execute a JavaScript code snippet and extract the string result.
   static std::string ExecuteScriptAndExtractString(
       content::WebContents* web_contents, const std::string& script);
+
+  // Helper to load a JavaScript file from |path| and inject it to
+  // current web_content.  The variable |path| is relative to the directory of
+  // the |browsertest| executable.
+  static bool LoadScript(content::WebContents* web_contents,
+                         const base::FilePath::StringType& path);
+
+  // Helper to execute a JavaScript browser test.  It creates an object using
+  // the |browserTest.testName| ctor and calls |run| on the created object with
+  // |testData|, which can be any arbitrary object literal. The script
+  // browser_test.js must be loaded (using LoadScript) before calling this
+  // function.
+  void RunJavaScriptTest(content::WebContents* web_contents,
+                         const std::string& testName,
+                         const std::string& testData);
 
   // Helper to check whether an html element with the given name exists in
   // the active WebContents.
@@ -313,6 +332,9 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // the HTTP server. This is how the remoting browser tests
   // will get acknowledgments of actions completed on the host.
   content::WebContents* client_web_content_;
+
+  // WebContent of the landing page in the chromoting app.
+  content::WebContents* app_web_content_;
 
   bool no_cleanup_;
   bool no_install_;

@@ -143,6 +143,8 @@ remoting.setMode = function(mode) {
     htmlNode.classList.remove('no-horizontal-scroll');
     htmlNode.classList.remove('no-vertical-scroll');
   }
+
+  remoting.testEvents.raiseEvent(remoting.testEvents.Names.uiModeChanged, mode);
 };
 
 /**
