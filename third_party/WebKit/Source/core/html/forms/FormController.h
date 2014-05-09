@@ -74,10 +74,10 @@ inline void FormControlState::append(const String& value)
 
 typedef HashMap<AtomicString, OwnPtr<SavedFormState> > SavedFormStateMap;
 
-class DocumentState : public RefCountedWillBeGarbageCollectedFinalized<DocumentState> {
+class DocumentState FINAL : public RefCountedWillBeGarbageCollected<DocumentState> {
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentState);
 public:
     static PassRefPtrWillBeRawPtr<DocumentState> create();
-    ~DocumentState();
     void trace(Visitor*);
 
     void addControl(HTMLFormControlElementWithState*);
@@ -89,7 +89,7 @@ private:
     FormElementListHashSet m_formControls;
 };
 
-class FormController : public NoBaseWillBeGarbageCollectedFinalized<FormController> {
+class FormController FINAL : public NoBaseWillBeGarbageCollectedFinalized<FormController> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     static PassOwnPtrWillBeRawPtr<FormController> create()

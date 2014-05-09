@@ -379,9 +379,7 @@ PassRefPtrWillBeRawPtr<DocumentState> DocumentState::create()
     return adoptRefWillBeNoop(new DocumentState);
 }
 
-DocumentState::~DocumentState()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DocumentState)
 
 void DocumentState::trace(Visitor* visitor)
 {

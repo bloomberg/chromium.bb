@@ -177,6 +177,8 @@ public:
     LinkedHashSet();
     LinkedHashSet(const LinkedHashSet&);
     LinkedHashSet& operator=(const LinkedHashSet&);
+
+    // Needs finalization. The anchor needs to unlink itself from the chain.
     ~LinkedHashSet();
 
     static void finalize(void* pointer) { reinterpret_cast<LinkedHashSet*>(pointer)->~LinkedHashSet(); }

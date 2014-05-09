@@ -56,10 +56,29 @@ namespace WTF {
     template<typename HashArg> struct ListHashSetNodeHashFunctions;
     template<typename HashArg> struct ListHashSetTranslator;
 
+    // Don't declare a destructor for HeapAllocated ListHashSet.
+    template<typename Derived, typename Allocator, bool isGarbageCollected>
+    class ListHashSetDestructorBase;
+
+    template<typename Derived, typename Allocator>
+    class ListHashSetDestructorBase<Derived, Allocator, true> {
+    protected:
+        typename Allocator::AllocatorProvider m_allocatorProvider;
+    };
+
+    template<typename Derived, typename Allocator>
+    class ListHashSetDestructorBase<Derived, Allocator, false> {
+    public:
+        ~ListHashSetDestructorBase() { static_cast<Derived*>(this)->finalize(); }
+    protected:
+        typename Allocator::AllocatorProvider m_allocatorProvider;
+    };
+
     // Note that for a ListHashSet you cannot specify the HashTraits as a
     // template argument. It uses the default hash traits for the ValueArg
     // type.
-    template<typename ValueArg, size_t inlineCapacity = 256, typename HashArg = typename DefaultHash<ValueArg>::Hash, typename AllocatorArg = ListHashSetAllocator<ValueArg, inlineCapacity> > class ListHashSet {
+    template<typename ValueArg, size_t inlineCapacity = 256, typename HashArg = typename DefaultHash<ValueArg>::Hash, typename AllocatorArg = ListHashSetAllocator<ValueArg, inlineCapacity> > class ListHashSet
+        : public ListHashSetDestructorBase<ListHashSet<ValueArg, inlineCapacity, HashArg, AllocatorArg>, AllocatorArg, AllocatorArg::isGarbageCollected> {
         typedef AllocatorArg Allocator;
         WTF_USE_ALLOCATOR(ListHashSet, Allocator);
 
@@ -98,7 +117,7 @@ namespace WTF {
         ListHashSet();
         ListHashSet(const ListHashSet&);
         ListHashSet& operator=(const ListHashSet&);
-        ~ListHashSet();
+        void finalize();
 
         void swap(ListHashSet&);
 
@@ -171,9 +190,9 @@ namespace WTF {
         void prependNode(Node*);
         void insertNodeBefore(Node* beforeNode, Node* newNode);
         void deleteAllNodes();
-        Allocator* allocator() const { return m_allocatorProvider.get(); }
-        void createAllocatorIfNeeded() { m_allocatorProvider.createAllocatorIfNeeded(); }
-        void deallocate(Node* node) const { m_allocatorProvider.deallocate(node); }
+        Allocator* allocator() const { return this->m_allocatorProvider.get(); }
+        void createAllocatorIfNeeded() { this->m_allocatorProvider.createAllocatorIfNeeded(); }
+        void deallocate(Node* node) const { this->m_allocatorProvider.deallocate(node); }
 
         iterator makeIterator(Node* position) { return iterator(this, position); }
         const_iterator makeConstIterator(Node* position) const { return const_iterator(this, position); }
@@ -185,7 +204,6 @@ namespace WTF {
         ImplType m_impl;
         Node* m_head;
         Node* m_tail;
-        typename Allocator::AllocatorProvider m_allocatorProvider;
     };
 
     // ListHashSetNode has this base class to hold the members because the MSVC
@@ -669,14 +687,14 @@ namespace WTF {
         m_impl.swap(other.m_impl);
         std::swap(m_head, other.m_head);
         std::swap(m_tail, other.m_tail);
-        m_allocatorProvider.swap(other.m_allocatorProvider);
+        this->m_allocatorProvider.swap(other.m_allocatorProvider);
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
-    inline ListHashSet<T, inlineCapacity, U, V>::~ListHashSet()
+    inline void ListHashSet<T, inlineCapacity, U, V>::finalize()
     {
-        if (!Allocator::isGarbageCollected)
-            deleteAllNodes();
+        COMPILE_ASSERT(!Allocator::isGarbageCollected, FinalizeOnHeapAllocatedListHashSetShouldNeverBeCalled);
+        deleteAllNodes();
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
