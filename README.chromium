@@ -54,6 +54,10 @@ for review:
   git push ssh://gerrit.chromium.org:29418/chromium/third_party/ffmpeg \
   HEAD:refs/for/master
 
+This will create a gerrit chanage. Make sure to "git commit --amend" and
+add "Change-Id: XXX" as the last line so that future pushes do not create new
+changes. You can get the "XXX" from the gerrit web interface.
+
 Note: You'll need a Gerrit account, see:
 
   http://www.chromium.org/chromium-os/developer-guide/gerrit-guide

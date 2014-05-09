@@ -132,6 +132,7 @@ if (build_ffmpegsumo) {
     ]
     if (is_clang) {
       cflags += [
+        "-Wno-absolute-value",
         "-Wno-deprecated-declarations",
         "-Wno-incompatible-pointer-types",
         "-Wno-logical-op-parentheses",
@@ -251,7 +252,12 @@ if (build_ffmpegsumo) {
 #                'libraries': [
 #                  '$(SDKROOT)/usr/lib/libz.dylib',
 #                ],
-      cflags -= [ "-fvisibilty=hidden" ]
+      # Ensure the symbols are exported.
+      #
+      # TODO(ajwong): Manually tag the API that we use to be exported.
+      if (!is_win) {
+        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+      }
 # TODO(ajwong): How to handle @loader_path?
 #              'xcode_settings': {
 #                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
@@ -370,9 +376,6 @@ if (is_win) {
     defines = [
       "__STDC_CONSTANT_MACROS",  # FFmpeg uses INT64_C.
     ]
-
-  # TODO(ajwong): Is this required?
-  #      'hard_dependency': 1,
 
     include_dirs = [
       platform_config_root,
