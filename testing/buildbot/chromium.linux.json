@@ -47,6 +47,7 @@
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
       "mojo_system_unittests",
+      "mojo_view_manager_unittests",
       "nacl_loader_unittests"
     ]
   },
@@ -145,6 +146,7 @@
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
       "mojo_system_unittests",
+      "mojo_view_manager_unittests",
       "nacl_loader_unittests"
     ]
   },
@@ -200,6 +202,7 @@
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
       "mojo_system_unittests",
+      "mojo_view_manager_unittests",
       "nacl_loader_unittests"
     ]
   },
@@ -226,6 +229,7 @@
       "mojo_public_utility_unittests",
       "mojo_service_manager_unittests",
       "mojo_system_unittests",
+      "mojo_view_manager_unittests",
       "nacl_loader_unittests"
     ]
   }
