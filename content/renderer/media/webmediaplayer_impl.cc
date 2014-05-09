@@ -1151,6 +1151,8 @@ void WebMediaPlayerImpl::StartPipeline() {
   UMA_HISTOGRAM_BOOLEAN("Media.MSE.Playback",
                         (load_type_ == LoadTypeMediaSource));
 
+  media::LogCB mse_log_cb;
+
   // Figure out which demuxer to use.
   if (load_type_ != LoadTypeMediaSource) {
     DCHECK(!chunk_demuxer_);
@@ -1164,10 +1166,12 @@ void WebMediaPlayerImpl::StartPipeline() {
     DCHECK(!chunk_demuxer_);
     DCHECK(!data_source_);
 
+    mse_log_cb = base::Bind(&LogMediaSourceError, media_log_);
+
     chunk_demuxer_ = new media::ChunkDemuxer(
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDemuxerOpened),
         BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNeedKey),
-        base::Bind(&LogMediaSourceError, media_log_),
+        mse_log_cb,
         true);
     demuxer_.reset(chunk_demuxer_);
   }
@@ -1181,7 +1185,8 @@ void WebMediaPlayerImpl::StartPipeline() {
 
   // Create our audio decoders and renderer.
   ScopedVector<media::AudioDecoder> audio_decoders;
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(media_loop_));
+  audio_decoders.push_back(new media::FFmpegAudioDecoder(media_loop_,
+                                                         mse_log_cb));
   audio_decoders.push_back(new media::OpusAudioDecoder(media_loop_));
 
   scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(

@@ -349,15 +349,16 @@ AVCDecoderConfigurationRecord::~AVCDecoderConfigurationRecord() {}
 FourCC AVCDecoderConfigurationRecord::BoxType() const { return FOURCC_AVCC; }
 
 bool AVCDecoderConfigurationRecord::Parse(BoxReader* reader) {
-  return ParseInternal(reader);
+  return ParseInternal(reader, reader->log_cb());
 }
 
 bool AVCDecoderConfigurationRecord::Parse(const uint8* data, int data_size) {
   BufferReader reader(data, data_size);
-  return ParseInternal(&reader);
+  return ParseInternal(&reader, LogCB());
 }
 
-bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader) {
+bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader,
+                                                  const LogCB& log_cb) {
   RCHECK(reader->Read1(&version) && version == 1 &&
          reader->Read1(&profile_indication) &&
          reader->Read1(&profile_compatibility) &&
@@ -379,6 +380,14 @@ bool AVCDecoderConfigurationRecord::ParseInternal(BufferReader* reader) {
     uint16 sps_length;
     RCHECK(reader->Read2(&sps_length) &&
            reader->ReadVec(&sps_list[i], sps_length));
+    RCHECK(sps_list[i].size() > 4);
+
+    if (!log_cb.is_null()) {
+      MEDIA_LOG(log_cb) << "Video codec: avc1." << std::hex
+                        << static_cast<int>(sps_list[i][1])
+                        << static_cast<int>(sps_list[i][2])
+                        << static_cast<int>(sps_list[i][3]);
+    }
   }
 
   uint8 num_pps;
@@ -469,7 +478,13 @@ bool ElementaryStreamDescriptor::Parse(BoxReader* reader) {
 
   object_type = es_desc.object_type();
 
-  RCHECK(aac.Parse(es_desc.decoder_specific_info()));
+  if (object_type != 0x40) {
+    MEDIA_LOG(reader->log_cb()) << "Audio codec: mp4a."
+                                << std::hex << static_cast<int>(object_type);
+  }
+
+  if (es_desc.IsAAC(object_type))
+    RCHECK(aac.Parse(es_desc.decoder_specific_info(), reader->log_cb()));
 
   return true;
 }

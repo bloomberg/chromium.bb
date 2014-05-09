@@ -263,7 +263,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
 
   ScopedVector<AudioDecoder> audio_decoders;
   audio_decoders.push_back(
-      new FFmpegAudioDecoder(message_loop_.message_loop_proxy()));
+      new FFmpegAudioDecoder(message_loop_.message_loop_proxy(), LogCB()));
   audio_decoders.push_back(
       new OpusAudioDecoder(message_loop_.message_loop_proxy()));
 

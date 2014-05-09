@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_export.h"
+#include "media/base/media_log.h"
 
 namespace media {
 
@@ -30,7 +31,7 @@ class MEDIA_EXPORT AAC {
   // The function will parse the data and get the ElementaryStreamDescriptor,
   // then it will parse the ElementaryStreamDescriptor to get audio stream
   // configurations.
-  bool Parse(const std::vector<uint8>& data);
+  bool Parse(const std::vector<uint8>& data, const LogCB& log_cb);
 
   // Gets the output sample rate for the AAC stream.
   // |sbr_in_mimetype| should be set to true if the SBR mode is

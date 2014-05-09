@@ -26,7 +26,8 @@ namespace media {
 class FFmpegAudioDecoderTest : public testing::Test {
  public:
   FFmpegAudioDecoderTest()
-      : decoder_(new FFmpegAudioDecoder(message_loop_.message_loop_proxy())),
+      : decoder_(new FFmpegAudioDecoder(message_loop_.message_loop_proxy(),
+                                        LogCB())),
         pending_decode_(false),
         pending_reset_(false) {
     FFmpegGlue::InitializeFFmpeg();

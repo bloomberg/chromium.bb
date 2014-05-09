@@ -126,8 +126,12 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
 }
 
 FFmpegAudioDecoder::FFmpegAudioDecoder(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : task_runner_(task_runner), state_(kUninitialized), av_sample_format_(0) {
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const LogCB& log_cb)
+    : task_runner_(task_runner),
+      state_(kUninitialized),
+      av_sample_format_(0),
+      log_cb_(log_cb) {
 }
 
 FFmpegAudioDecoder::~FFmpegAudioDecoder() {
@@ -351,6 +355,12 @@ bool FFmpegAudioDecoder::FFmpegDecode(
                     << ", Sample Format: " << av_frame_->format << " vs "
                     << av_sample_format_;
 
+        if (config_.codec() == kCodecAAC &&
+            av_frame_->sample_rate == 2 * config_.samples_per_second()) {
+          MEDIA_LOG(log_cb_) << "Implicit HE-AAC signalling is being used."
+                             << " Please use mp4a.40.5 instead of mp4a.40.2 in"
+                             << " the mimetype.";
+        }
         // This is an unrecoverable error, so bail out.
         queued_audio_.clear();
         av_frame_unref(av_frame_.get());

@@ -142,6 +142,8 @@ class MEDIA_EXPORT BoxReader : public BufferReader {
   uint8 version() const { return version_; }
   uint32 flags() const  { return flags_; }
 
+  const LogCB& log_cb() const { return log_cb_; }
+
  private:
   BoxReader(const uint8* buf, const int size, const LogCB& log_cb);
 

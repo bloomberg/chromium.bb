@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_log.h"
 #include "media/base/sample_format.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 
@@ -29,8 +30,9 @@ class DecoderBuffer;
 
 class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
  public:
-  explicit FFmpegAudioDecoder(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  FFmpegAudioDecoder(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const LogCB& log_cb);
   virtual ~FFmpegAudioDecoder();
 
   // AudioDecoder implementation.
@@ -86,6 +88,8 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   // Since multiple frames may be decoded from the same packet we need to queue
   // them up.
   std::list<scoped_refptr<AudioBuffer> > queued_audio_;
+
+  LogCB log_cb_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FFmpegAudioDecoder);
 };

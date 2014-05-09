@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "media/base/bit_reader.h"
+#include "media/base/media_log.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mpeg/adts_constants.h"
 
@@ -22,7 +23,7 @@ AAC::AAC()
 AAC::~AAC() {
 }
 
-bool AAC::Parse(const std::vector<uint8>& data) {
+bool AAC::Parse(const std::vector<uint8>& data, const LogCB& log_cb) {
 #if defined(OS_ANDROID)
   codec_specific_data_ = data;
 #endif
@@ -56,6 +57,9 @@ bool AAC::Parse(const std::vector<uint8>& data) {
       RCHECK(reader.ReadBits(24, &extension_frequency_));
     RCHECK(reader.ReadBits(5, &profile_));
   }
+
+  MEDIA_LOG(log_cb) << "Audio codec: mp4a.40."
+                    << std::hex << static_cast<int>(profile_);
 
   RCHECK(SkipDecoderGASpecificConfig(&reader));
   RCHECK(SkipErrorSpecificConfig());

@@ -121,7 +121,8 @@ void InitPipeline(
   collection->SetVideoRenderer(video_renderer.Pass());
 
   ScopedVector<media::AudioDecoder> audio_decoders;
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(task_runner));
+  audio_decoders.push_back(new media::FFmpegAudioDecoder(task_runner,
+                                                         media::LogCB()));
   media::AudioParameters out_params(
       media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       media::CHANNEL_LAYOUT_STEREO,
