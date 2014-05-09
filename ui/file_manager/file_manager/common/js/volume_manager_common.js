@@ -55,12 +55,22 @@ VolumeManagerCommon.RootType = Object.freeze({
  */
 VolumeManagerCommon.VolumeError = Object.freeze({
   /* Internal errors */
-  NOT_MOUNTED: 'not_mounted',
   TIMEOUT: 'timeout',
 
   /* System events */
   UNKNOWN: 'error_unknown',
   INTERNAL: 'error_internal',
+  INVALID_ARGUMENT: 'error_invalid_argument',
+  INVALID_PATH: 'error_invalid_path',
+  ALREADY_MOUNTED: 'error_path_already_mounted',
+  PATH_NOT_MOUNTED: 'error_path_not_mounted',
+  DIRECTORY_CREATION_FAILED: 'error_directory_creation_failed',
+  INVALID_MOUNT_OPTIONS: 'error_invalid_mount_options',
+  INVALID_UNMOUNT_OPTIONS: 'error_invalid_unmount_options',
+  INSUFFICIENT_PERMISSIONS: 'error_insufficient_permissions',
+  MOUNT_PROGRAM_NOT_FOUND: 'error_mount_program_not_found',
+  MOUNT_PROGRAM_FAILED: 'error_mount_program_failed',
+  INVALID_DEVICE_PATH: 'error_invalid_device_path',
   UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
   UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
   INVALID_ARCHIVE: 'error_invalid_archive',
