@@ -163,7 +163,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // |initial_flow_control_window_bytes| is the size of the initial flow
   // control window this client will use for new streams.
   //
-  // |clock| and |rand| are used to generate the nonce and |out_params| is
+  // |now| and |rand| are used to generate the nonce and |out_params| is
   // filled with the results of the handshake that the server is expected to
   // accept. |preferred_version| is the version of the QUIC protocol that this
   // client chose to use initially. This allows the server to detect downgrade
