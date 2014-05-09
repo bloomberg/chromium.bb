@@ -5,9 +5,11 @@
 #include "content/browser/media/webrtc_internals.h"
 
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "content/browser/media/webrtc_internals_ui_observer.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -40,15 +42,18 @@ WebRTCInternals::WebRTCInternals()
 // TODO(grunell): Shouldn't all the webrtc_internals* files be excluded from the
 // build if WebRTC is disabled?
 #if defined(ENABLE_WEBRTC)
-#if defined(OS_CHROMEOS)
+  aec_dump_file_path_ =
+      GetContentClient()->browser()->GetDefaultDownloadDirectory();
+  if (aec_dump_file_path_.empty()) {
+    // In this case the default path (|aec_dump_file_path_|) will be empty and
+    // the platform default path will be used in the file dialog (with no
+    // default file name). See SelectFileDialog::SelectFile. On Android where
+    // there's no dialog we'll fail to open the file.
+    LOG(WARNING) << "Could not get the download directory.";
+  } else {
     aec_dump_file_path_ =
-        base::FilePath(FILE_PATH_LITERAL("/tmp/audio.aecdump"));
-#elif defined(OS_ANDROID)
-    aec_dump_file_path_ =
-        base::FilePath(FILE_PATH_LITERAL("/sdcard/audio.aecdump"));
-#else
-    aec_dump_file_path_ = base::FilePath(FILE_PATH_LITERAL("audio.aecdump"));
-#endif
+        aec_dump_file_path_.Append(FILE_PATH_LITERAL("audio.aecdump"));
+  }
 #endif  // defined(ENABLE_WEBRTC)
 }
 
