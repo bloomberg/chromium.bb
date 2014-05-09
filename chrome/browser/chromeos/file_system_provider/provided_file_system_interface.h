@@ -36,6 +36,12 @@ class ProvidedFileSystemInterface {
   virtual void GetMetadata(
       const base::FilePath& entry_path,
       const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) = 0;
+  // Requests enumerating entries from the passed |directory_path|. The callback
+  // can be called multiple times until either an error is returned or the
+  // has_more field is set to false.
+  virtual void ReadDirectory(
+      const base::FilePath& directory_path,
+      const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
 
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;

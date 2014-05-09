@@ -73,10 +73,10 @@ class FileSystemProviderInternalFunction : public ChromeSyncExtensionFunction {
   // |request_manager_| have been fully initialized.
   virtual bool RunWhenValid() = 0;
 
- private:
   // ChromeSyncExtensionFunction overrides.
   virtual bool RunSync() OVERRIDE;
 
+ private:
   // Parses the request in order to extract the request manager. If fails, then
   // sets a response and returns false.
   bool Parse();

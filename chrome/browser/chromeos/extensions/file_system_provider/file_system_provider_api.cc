@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
@@ -118,6 +119,29 @@ FileSystemProviderInternalGetMetadataRequestedSuccessFunction::RunWhenValid() {
 bool
 FileSystemProviderInternalGetMetadataRequestedErrorFunction::RunWhenValid() {
   using api::file_system_provider_internal::GetMetadataRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  RejectRequest(ProviderErrorToFileError(params->error));
+  return true;
+}
+
+bool FileSystemProviderInternalReadDirectoryRequestedSuccessFunction::
+    RunWhenValid() {
+  using api::file_system_provider_internal::ReadDirectoryRequestedSuccess::
+      Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const bool has_next = params->has_next;
+  FulfillRequest(RequestValue::CreateForReadDirectorySuccess(params.Pass()),
+                 has_next);
+  return true;
+}
+
+bool
+FileSystemProviderInternalReadDirectoryRequestedErrorFunction::RunWhenValid() {
+  using api::file_system_provider_internal::ReadDirectoryRequestedError::Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 

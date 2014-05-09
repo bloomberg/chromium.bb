@@ -291,9 +291,10 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, ReadDirectory) {
       CreateOperationContext(),
       root_url_,
       base::Bind(&EventLogger::OnReadDirectory, logger.GetWeakPtr()));
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(logger.error());
-  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, *logger.error());
+  EXPECT_EQ(base::File::FILE_OK, *logger.error());
 }
 
 TEST_F(FileSystemProviderProviderAsyncFileUtilTest, Touch) {

@@ -45,6 +45,33 @@ void OnGetFileInfo(const fileapi::AsyncFileUtil::GetFileInfoCallback& callback,
       BrowserThread::IO, FROM_HERE, base::Bind(callback, result, file_info));
 }
 
+// Executes ReadDirectory on the UI thread.
+void ReadDirectoryOnUIThread(
+    scoped_ptr<fileapi::FileSystemOperationContext> context,
+    const fileapi::FileSystemURL& url,
+    const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) {
+  util::FileSystemURLParser parser(url);
+  if (!parser.Parse()) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND,
+                 fileapi::AsyncFileUtil::EntryList(),
+                 false /* has_more */);
+    return;
+  }
+
+  parser.file_system()->ReadDirectory(parser.file_path(), callback);
+}
+
+// Routes the response of ReadDirectory back to the IO thread.
+void OnReadDirectory(
+    const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback,
+    base::File::Error result,
+    const fileapi::AsyncFileUtil::EntryList& entry_list,
+    bool has_more) {
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(callback, result, entry_list, has_more));
+}
+
 }  // namespace
 
 ProviderAsyncFileUtil::ProviderAsyncFileUtil() {}
@@ -110,8 +137,12 @@ void ProviderAsyncFileUtil::ReadDirectory(
     const fileapi::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_NOT_FOUND, EntryList(), false);
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&ReadDirectoryOnUIThread,
+                                     base::Passed(&context),
+                                     url,
+                                     base::Bind(&OnReadDirectory, callback)));
 }
 
 void ProviderAsyncFileUtil::Touch(

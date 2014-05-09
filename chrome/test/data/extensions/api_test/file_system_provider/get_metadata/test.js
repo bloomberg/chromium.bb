@@ -36,7 +36,7 @@ var TESTING_FILE = Object.freeze({
  * @param {string} entryPath Path of the requested entry.
  * @param {function(Object)} onSuccess Success callback with metadata passed
  *     an argument.
- * @param {function(string}} onError Error callback with an error code.
+ * @param {function(string)} onError Error callback with an error code.
  */
 function onGetMetadataRequested(
     inFileSystemId, entryPath, onSuccess, onError) {

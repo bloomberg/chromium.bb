@@ -384,6 +384,8 @@
         'browser/chromeos/file_system_provider/operations/get_metadata.h',
         'browser/chromeos/file_system_provider/operations/operation.cc',
         'browser/chromeos/file_system_provider/operations/operation.h',
+        'browser/chromeos/file_system_provider/operations/read_directory.cc',
+        'browser/chromeos/file_system_provider/operations/read_directory.h',
         'browser/chromeos/file_system_provider/operations/unmount.cc',
         'browser/chromeos/file_system_provider/operations/unmount.h',
         'browser/chromeos/file_system_provider/provided_file_system.cc',

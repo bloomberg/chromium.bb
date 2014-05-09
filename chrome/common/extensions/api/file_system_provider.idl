@@ -69,6 +69,12 @@ namespace fileSystemProvider {
   // Success callback for the <code>onGetMetadataRequested</code> event.
   callback MetadataCallback = void(EntryMetadata metadata);
 
+  // Success callback for the <code>onDirectoryRequested</code> event. If more
+  // entries will be returned, then <code>hasNext</code> must be true, and it
+  // has to be called again with additional entries. If no more entries are
+  // available, then <code>hasNext</code> must be set to false.
+  callback EntriesCallback = void(ResourceEntry[] entries, bool hasNext);
+
   interface Functions {
     // Mounts a file system with the given <code>displayName</code>.
     // <code>displayName</code> will be shown in the left panel of
@@ -85,7 +91,7 @@ namespace fileSystemProvider {
     // the providing extension can decide to perform unmounting if not requested
     // (eg. in case of lost connection, or a file error). If there is no file
     // system with the requested id, or unmounting fails, then the
-    // <code>errorCallback</code> will be called.
+    // <code>errorCallback</code> must be called.
     static void unmount(long fileSystemId,
                         UnmountCallback successCallback,
                         [nocompile] ErrorCallback errorCallback);
@@ -93,10 +99,10 @@ namespace fileSystemProvider {
 
   interface Events {
     // Raised when unmounting for the file system with the <code>fileSystemId
-    // </code> identifier is requested. In response, the <code>unmount</code>
-    // API method should be called together with <code>successCallback</code>.
-    // If unmounting is not possible (eg. due to a pending operation), then
-    // <code>errorCallback</code> must be called.
+    // </code> identifier is requested. In the response, the <code>unmount
+    // </code> API method should be called together with <code>successCallback
+    // </code>. If unmounting is not possible (eg. due to a pending operation),
+    // then <code>errorCallback</code> must be called.
     [maxListeners=1] static void onUnmountRequested(
         long fileSystemId,
         ProviderSuccessCallback successCallback,
@@ -110,6 +116,16 @@ namespace fileSystemProvider {
         long fileSystemId,
         DOMString entryPath,
         MetadataCallback successCallback,
+        ErrorCallback errorCallback);
+
+    // Raised when contents of a directory at <code>directoryPath</code> are
+    // requested. The results should be returned in chunks by calling the <code>
+    // successCallback</code> several times. In case of an error, <code>
+    // errorCallback</code> must be called.
+    [maxListeners=1] static void onReadDirectoryRequested(
+        long fileSystemId,
+        DOMString directoryPath,
+        EntriesCallback successCallback,
         ErrorCallback errorCallback);
   };
 };

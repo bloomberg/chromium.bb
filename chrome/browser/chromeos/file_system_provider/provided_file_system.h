@@ -35,6 +35,9 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual void GetMetadata(
       const base::FilePath& entry_path,
       const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) OVERRIDE;
+  virtual void ReadDirectory(
+      const base::FilePath& directory_path,
+      const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
 

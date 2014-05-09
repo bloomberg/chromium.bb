@@ -33,6 +33,21 @@ namespace fileSystemProviderInternal {
         long fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
+
+    // Internal. Success callback of the <code>onReadDirectoryRequested</code>
+    // event. Can be called multiple times per request.
+    static void readDirectoryRequestedSuccess(
+        long fileSystemId,
+        long requestId,
+        fileSystemProvider.EntryMetadata[] entries,
+        boolean hasNext);
+
+    // Internal. Error callback of the <code>onReadDirectoryRequested</code>
+    // event. Must be called when reading a directory fails.
+    static void readDirectoryRequestedError(
+        long fileSystemId,
+        long requestId,
+        fileSystemProvider.ProviderError error);
   };
 };
 

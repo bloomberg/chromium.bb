@@ -78,6 +78,30 @@ class FileSystemProviderInternalGetMetadataRequestedErrorFunction
   virtual bool RunWhenValid() OVERRIDE;
 };
 
+class FileSystemProviderInternalReadDirectoryRequestedSuccessFunction
+    : public FileSystemProviderInternalFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.readDirectoryRequestedSuccess",
+      FILESYSTEMPROVIDERINTERNAL_READDIRECTORYREQUESTEDSUCCESS)
+
+ protected:
+  virtual ~FileSystemProviderInternalReadDirectoryRequestedSuccessFunction() {}
+  virtual bool RunWhenValid() OVERRIDE;
+};
+
+class FileSystemProviderInternalReadDirectoryRequestedErrorFunction
+    : public FileSystemProviderInternalFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.readDirectoryRequestedError",
+      FILESYSTEMPROVIDERINTERNAL_READDIRECTORYREQUESTEDERROR)
+
+ protected:
+  virtual ~FileSystemProviderInternalReadDirectoryRequestedErrorFunction() {}
+  virtual bool RunWhenValid() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_API_H_
