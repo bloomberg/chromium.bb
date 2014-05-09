@@ -1129,6 +1129,42 @@ static inline typename LayerType::RenderSurfaceType* CreateOrReuseRenderSurface(
   return layer->render_surface();
 }
 
+template <typename LayerTypePtr>
+static inline void MarkLayerWithRenderSurfaceLayerListId(
+    LayerTypePtr layer,
+    int current_render_surface_layer_list_id) {
+  layer->draw_properties().last_drawn_render_surface_layer_list_id =
+      current_render_surface_layer_list_id;
+}
+
+template <typename LayerTypePtr>
+static inline void MarkMasksWithRenderSurfaceLayerListId(
+    LayerTypePtr layer,
+    int current_render_surface_layer_list_id) {
+  if (layer->mask_layer()) {
+    MarkLayerWithRenderSurfaceLayerListId(layer->mask_layer(),
+                                          current_render_surface_layer_list_id);
+  }
+  if (layer->replica_layer() && layer->replica_layer()->mask_layer()) {
+    MarkLayerWithRenderSurfaceLayerListId(layer->replica_layer()->mask_layer(),
+                                          current_render_surface_layer_list_id);
+  }
+}
+
+template <typename LayerListType>
+static inline void MarkLayerListWithRenderSurfaceLayerListId(
+    LayerListType* layer_list,
+    int current_render_surface_layer_list_id) {
+  for (typename LayerListType::iterator it = layer_list->begin();
+       it != layer_list->end();
+       ++it) {
+    MarkLayerWithRenderSurfaceLayerListId(*it,
+                                          current_render_surface_layer_list_id);
+    MarkMasksWithRenderSurfaceLayerListId(*it,
+                                          current_render_surface_layer_list_id);
+  }
+}
+
 template <typename LayerType>
 static inline void RemoveSurfaceForEarlyExit(
     LayerType* layer_to_remove,
@@ -1141,10 +1177,17 @@ static inline void RemoveSurfaceForEarlyExit(
   // things to crash. So here we proactively remove any additional
   // layers from the end of the list.
   while (render_surface_layer_list->back() != layer_to_remove) {
+    MarkLayerListWithRenderSurfaceLayerListId(
+        &render_surface_layer_list->back()->render_surface()->layer_list(), 0);
+    MarkLayerWithRenderSurfaceLayerListId(render_surface_layer_list->back(), 0);
+
     render_surface_layer_list->back()->ClearRenderSurfaceLayerList();
     render_surface_layer_list->pop_back();
   }
   DCHECK_EQ(render_surface_layer_list->back(), layer_to_remove);
+  MarkLayerListWithRenderSurfaceLayerListId(
+      &layer_to_remove->render_surface()->layer_list(), 0);
+  MarkLayerWithRenderSurfaceLayerListId(layer_to_remove, 0);
   render_surface_layer_list->pop_back();
   layer_to_remove->ClearRenderSurfaceLayerList();
 }
@@ -1423,8 +1466,8 @@ static void CalculateDrawPropertiesInternal(
     const DataForRecursion<LayerType>& data_from_ancestor,
     typename LayerType::RenderSurfaceListType* render_surface_layer_list,
     typename LayerType::LayerListType* layer_list,
-    std::vector<AccumulatedSurfaceState<LayerType> >*
-        accumulated_surface_state) {
+    std::vector<AccumulatedSurfaceState<LayerType> >* accumulated_surface_state,
+    int current_render_surface_layer_list_id) {
   // This function computes the new matrix transformations recursively for this
   // layer and all its descendants. It also computes the appropriate render
   // surfaces.
@@ -2011,8 +2054,11 @@ static void CalculateDrawPropertiesInternal(
   // and should be included in the sorting process.
   size_t sorting_start_index = descendants.size();
 
-  if (!LayerShouldBeSkipped(layer, layer_is_drawn))
+  if (!LayerShouldBeSkipped(layer, layer_is_drawn)) {
+    MarkLayerWithRenderSurfaceLayerListId(layer,
+                                          current_render_surface_layer_list_id);
     descendants.push_back(layer);
+  }
 
   // Any layers that are appended after this point may need to be sorted if we
   // visit the children out of order.
@@ -2072,15 +2118,22 @@ static void CalculateDrawPropertiesInternal(
     child->draw_properties().index_of_first_render_surface_layer_list_addition =
         render_surface_layer_list->size();
 
-    CalculateDrawPropertiesInternal<LayerType>(child,
-                                               globals,
-                                               data_for_children,
-                                               render_surface_layer_list,
-                                               &descendants,
-                                               accumulated_surface_state);
+    CalculateDrawPropertiesInternal<LayerType>(
+        child,
+        globals,
+        data_for_children,
+        render_surface_layer_list,
+        &descendants,
+        accumulated_surface_state,
+        current_render_surface_layer_list_id);
     if (child->render_surface() &&
         !child->render_surface()->layer_list().empty() &&
         !child->render_surface()->content_rect().IsEmpty()) {
+      // This child will contribute its render surface, which means
+      // we need to mark just the mask layer (and replica mask layer)
+      // with the id.
+      MarkMasksWithRenderSurfaceLayerListId(
+          child, current_render_surface_layer_list_id);
       descendants.push_back(child);
     }
 
@@ -2328,12 +2381,14 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   PreCalculateMetaInformationRecursiveData recursive_data;
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
   std::vector<AccumulatedSurfaceState<Layer> > accumulated_surface_state;
-  CalculateDrawPropertiesInternal<Layer>(inputs->root_layer,
-                                         globals,
-                                         data_for_recursion,
-                                         inputs->render_surface_layer_list,
-                                         &dummy_layer_list,
-                                         &accumulated_surface_state);
+  CalculateDrawPropertiesInternal<Layer>(
+      inputs->root_layer,
+      globals,
+      data_for_recursion,
+      inputs->render_surface_layer_list,
+      &dummy_layer_list,
+      &accumulated_surface_state,
+      inputs->current_render_surface_layer_list_id);
 
   // The dummy layer list should not have been used.
   DCHECK_EQ(0u, dummy_layer_list.size());
@@ -2356,12 +2411,14 @@ void LayerTreeHostCommon::CalculateDrawProperties(
   PreCalculateMetaInformation(inputs->root_layer, &recursive_data);
   std::vector<AccumulatedSurfaceState<LayerImpl> >
       accumulated_surface_state;
-  CalculateDrawPropertiesInternal<LayerImpl>(inputs->root_layer,
-                                             globals,
-                                             data_for_recursion,
-                                             inputs->render_surface_layer_list,
-                                             &dummy_layer_list,
-                                             &accumulated_surface_state);
+  CalculateDrawPropertiesInternal<LayerImpl>(
+      inputs->root_layer,
+      globals,
+      data_for_recursion,
+      inputs->render_surface_layer_list,
+      &dummy_layer_list,
+      &accumulated_surface_state,
+      inputs->current_render_surface_layer_list_id);
 
   // The dummy layer list should not have been used.
   DCHECK_EQ(0u, dummy_layer_list.size());

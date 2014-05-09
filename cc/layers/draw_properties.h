@@ -34,7 +34,8 @@ struct CC_EXPORT DrawProperties {
         index_of_first_descendants_addition(0),
         num_descendants_added(0),
         index_of_first_render_surface_layer_list_addition(0),
-        num_render_surfaces_added(0) {}
+        num_render_surfaces_added(0),
+        last_drawn_render_surface_layer_list_id(0) {}
 
   // Transforms objects from content space to target surface space, where
   // this layer would be drawn.
@@ -118,6 +119,15 @@ struct CC_EXPORT DrawProperties {
   size_t num_descendants_added;
   size_t index_of_first_render_surface_layer_list_addition;
   size_t num_render_surfaces_added;
+
+  // Each time we generate a new render surface layer list, an ID is used to
+  // identify it. |last_drawn_render_surface_layer_list_id| is set to the ID
+  // that marked the render surface layer list generation which last updated
+  // these draw properties and determined that this layer will draw itself.
+  // If these draw properties are not a part of the render surface layer list,
+  // or the layer doesn't contribute anything, then this ID will be either out
+  // of date or 0.
+  int last_drawn_render_surface_layer_list_id;
 };
 
 }  // namespace cc

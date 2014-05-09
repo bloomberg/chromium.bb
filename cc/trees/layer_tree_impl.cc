@@ -97,7 +97,9 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
       needs_full_tree_sync_(true),
-      next_activation_forces_redraw_(false) {}
+      next_activation_forces_redraw_(false),
+      render_surface_layer_list_id_(0) {
+}
 
 LayerTreeImpl::~LayerTreeImpl() {
   // Need to explicitly clear the tree prior to destroying this so that
@@ -457,6 +459,8 @@ void LayerTreeImpl::UpdateDrawProperties() {
         page_scale_layer_ ? page_scale_layer_ : InnerViewportContainerLayer();
     bool can_render_to_separate_surface =
         !output_surface()->ForcedDrawToSoftwareDevice();
+
+    ++render_surface_layer_list_id_;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(),
         DrawViewportSize(),
@@ -468,7 +472,8 @@ void LayerTreeImpl::UpdateDrawProperties() {
         settings().can_use_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
-        &render_surface_layer_list_);
+        &render_surface_layer_list_,
+        render_surface_layer_list_id_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 

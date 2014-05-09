@@ -244,6 +244,10 @@ class CC_EXPORT LayerTreeImpl {
   void RemoveLayerWithCopyOutputRequest(LayerImpl* layer);
   const std::vector<LayerImpl*>& LayersWithCopyOutputRequest() const;
 
+  int current_render_surface_list_id() const {
+    return render_surface_layer_list_id_;
+  }
+
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
@@ -296,6 +300,8 @@ class CC_EXPORT LayerTreeImpl {
   ScopedPtrVector<SwapPromise> swap_promise_list_;
 
   UIResourceRequestQueue ui_resource_request_queue_;
+
+  int render_surface_layer_list_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);

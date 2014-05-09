@@ -1500,6 +1500,11 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   }
 }
 
+bool LayerImpl::IsDrawnRenderSurfaceLayerListMember() const {
+  return draw_properties_.last_drawn_render_surface_layer_list_id ==
+         layer_tree_impl_->current_render_surface_list_id();
+}
+
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }
 
 scoped_ptr<base::Value> LayerImpl::AsValue() const {

@@ -788,6 +788,10 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
 
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::CalcDrawProps");
     bool can_render_to_separate_surface = true;
+    // TODO(vmpstr): Passing 0 as the current render surface layer list id means
+    // that we won't be able to detect if a layer is part of |update_list|.
+    // Change this if this information is required.
+    int render_surface_layer_list_id = 0;
     LayerTreeHostCommon::CalcDrawPropsMainInputs inputs(
         root_layer,
         device_viewport_size(),
@@ -799,7 +803,8 @@ bool LayerTreeHost::UpdateLayers(Layer* root_layer,
         settings_.can_use_lcd_text,
         can_render_to_separate_surface,
         settings_.layer_transforms_should_scale_layer_contents,
-        &update_list);
+        &update_list,
+        render_surface_layer_list_id);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
     if (total_frames_used_for_lcd_text_metrics_ <=

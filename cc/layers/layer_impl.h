@@ -534,6 +534,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   virtual void SetDebugInfo(
       scoped_refptr<base::debug::ConvertableToTraceFormat> other);
 
+  bool IsDrawnRenderSurfaceLayerListMember() const;
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);
 
