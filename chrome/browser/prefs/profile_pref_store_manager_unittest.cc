@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_filter.h"
+#include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -110,6 +111,17 @@ class ProfilePrefStoreManagerTest : public testing::Test {
         kUnprotectedPref,
         std::string(),
         user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+    // As in chrome_pref_service_factory.cc, kPreferencesResetTime needs to be
+    // declared as protected in order to be read from the proper store by the
+    // SegregatedPrefStore. Only declare it after configured prefs have been
+    // registered above for this test as kPreferenceResetTime is already
+    // registered in ProfilePrefStoreManager::RegisterProfilePrefs.
+    PrefHashFilter::TrackedPreferenceMetadata pref_reset_time_config =
+        {configuration_.rbegin()->reporting_id + 1, prefs::kPreferenceResetTime,
+         PrefHashFilter::ENFORCE_ON_LOAD,
+         PrefHashFilter::TRACKING_STRATEGY_ATOMIC};
+    configuration_.push_back(pref_reset_time_config);
 
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
     ReloadConfiguration();
@@ -422,11 +434,7 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
             WasResetRecorded());
 }
 
-// This test does not directly verify that the values are moved from one pref
-// store to the other. segregated_pref_store_unittest.cc _does_ verify that
-// functionality.
-//
-// _This_ test verifies that preference values are correctly maintained when a
+// This test verifies that preference values are correctly maintained when a
 // preference's protection state changes from protected to unprotected.
 TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
   InitializePrefs();
@@ -438,7 +446,7 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
        it != configuration_.end();
        ++it) {
     if (it->name == kProtectedAtomic) {
-      configuration_.erase(it);
+      it->enforcement_level = PrefHashFilter::NO_ENFORCEMENT;
       break;
     }
   }
