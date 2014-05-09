@@ -179,7 +179,6 @@
         '../base/base.gyp:test_support_base',
         '../testing/gtest.gyp:gtest',
         'mojo_environment_chromium',
-        'mojo_run_all_unittests',
         'mojo_shell_test_support',
         'mojo_view_manager_bindings',
         'mojo_view_manager_lib',
@@ -189,6 +188,17 @@
         'services/public/cpp/view_manager/tests/view_manager_unittest.cc',
         'services/public/cpp/view_manager/tests/view_tree_host_unittest.cc',
         'services/public/cpp/view_manager/tests/view_tree_node_unittest.cc',
+      ],
+      'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            'mojo_view_manager_run_unittests'
+          ],
+        }, {  # use_aura==0
+          'dependencies': [
+            'mojo_run_all_unittests',
+          ],
+        }]
       ],
     },
   ],
@@ -202,7 +212,10 @@
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
             '../ui/aura/aura.gyp:aura',
+            '../ui/base/ui_base.gyp:ui_base',
+            '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
+            'mojo_aura_support',
             'mojo_common_lib',
             'mojo_environment_chromium',
             'mojo_launcher_bindings',
@@ -214,14 +227,16 @@
           ],
           'sources': [
             'services/view_manager/ids.h',
+            'services/view_manager/main.cc',
             'services/view_manager/node.cc',
             'services/view_manager/node.h',
             'services/view_manager/node_delegate.h',
             'services/view_manager/root_node_manager.cc',
             'services/view_manager/root_node_manager.h',
+            'services/view_manager/root_view_manager.cc',
+            'services/view_manager/root_view_manager.h',
             'services/view_manager/view.cc',
             'services/view_manager/view.h',
-            'services/view_manager/view_manager.cc',
             'services/view_manager/view_manager_connection.cc',
             'services/view_manager/view_manager_connection.h',
             'services/view_manager/view_manager_export.h',
@@ -231,20 +246,36 @@
           ],
         },
         {
+          'target_name': 'mojo_view_manager_run_unittests',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:test_support_base',
+            '../ui/gl/gl.gyp:gl',
+          ],
+          'sources': [
+            'services/public/cpp/view_manager/lib/view_manager_test_suite.cc',
+            'services/public/cpp/view_manager/lib/view_manager_test_suite.h',
+            'services/public/cpp/view_manager/lib/view_manager_unittests.cc',
+          ],
+        },
+        {
           'target_name': 'mojo_view_manager_unittests',
           'type': 'executable',
           'dependencies': [
             '../base/base.gyp:base',
-            '../base/base.gyp:run_all_unittests',
+            '../base/base.gyp:test_support_base',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
             '../ui/aura/aura.gyp:aura',
+            '../ui/gl/gl.gyp:gl',
             'mojo_environment_chromium',
             'mojo_shell_client',
             'mojo_shell_test_support',
             'mojo_system_impl',
             'mojo_view_manager_bindings',
             'mojo_view_manager_common',
+            'mojo_view_manager_run_unittests',
           ],
           'sources': [
             'services/view_manager/view_manager_connection_unittest.cc',

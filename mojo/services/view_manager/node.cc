@@ -7,6 +7,11 @@
 #include "mojo/services/view_manager/node_delegate.h"
 #include "mojo/services/view_manager/view.h"
 #include "ui/aura/window_property.h"
+#include "ui/base/cursor/cursor.h"
+#include "ui/base/hit_test.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/native_widget_types.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(mojo::services::view_manager::Node*);
 
@@ -20,11 +25,15 @@ Node::Node(NodeDelegate* delegate, const NodeId& id)
     : delegate_(delegate),
       id_(id),
       view_(NULL),
-      window_(NULL) {
+      window_(this) {
   DCHECK(delegate);  // Must provide a delegate.
   window_.set_owned_by_parent(false);
   window_.AddObserver(this);
   window_.SetProperty(kNodeKey, this);
+  window_.Init(aura::WINDOW_LAYER_TEXTURED);
+
+  // TODO(sky): this likely needs to be false and add a visibility API.
+  window_.Show();
 }
 
 Node::~Node() {
@@ -80,12 +89,71 @@ void Node::OnWindowHierarchyChanged(
   if (params.target != &window_ || params.receiver != &window_)
     return;
   NodeId new_parent_id;
-  if (params.new_parent)
+  if (params.new_parent && params.new_parent->GetProperty(kNodeKey))
     new_parent_id = params.new_parent->GetProperty(kNodeKey)->id();
   NodeId old_parent_id;
-  if (params.old_parent)
+  if (params.old_parent && params.old_parent->GetProperty(kNodeKey))
     old_parent_id = params.old_parent->GetProperty(kNodeKey)->id();
   delegate_->OnNodeHierarchyChanged(id_, new_parent_id, old_parent_id);
+}
+
+gfx::Size Node::GetMinimumSize() const {
+  return gfx::Size();
+}
+
+gfx::Size Node::GetMaximumSize() const {
+  return gfx::Size();
+}
+
+void Node::OnBoundsChanged(const gfx::Rect& old_bounds,
+                           const gfx::Rect& new_bounds) {
+}
+
+gfx::NativeCursor Node::GetCursor(const gfx::Point& point) {
+  return gfx::kNullCursor;
+}
+
+int Node::GetNonClientComponent(const gfx::Point& point) const {
+  return HTCAPTION;
+}
+
+bool Node::ShouldDescendIntoChildForEventHandling(
+    aura::Window* child,
+    const gfx::Point& location) {
+  return true;
+}
+
+bool Node::CanFocus() {
+  return true;
+}
+
+void Node::OnCaptureLost() {
+}
+
+void Node::OnPaint(gfx::Canvas* canvas) {
+  if (view_) {
+    canvas->DrawImageInt(
+        gfx::ImageSkia::CreateFrom1xBitmap(view_->bitmap()), 0, 0);
+  }
+}
+
+void Node::OnDeviceScaleFactorChanged(float device_scale_factor) {
+}
+
+void Node::OnWindowDestroying(aura::Window* window) {
+}
+
+void Node::OnWindowDestroyed(aura::Window* window) {
+}
+
+void Node::OnWindowTargetVisibilityChanged(bool visible) {
+}
+
+bool Node::HasHitTestMask() const {
+  return false;
+}
+
+void Node::GetHitTestMask(gfx::Path* mask) const {
 }
 
 }  // namespace view_manager

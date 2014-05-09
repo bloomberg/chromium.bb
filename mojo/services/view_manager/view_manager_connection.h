@@ -101,6 +101,9 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                        TransportViewId transport_view_id,
                        TransportChangeId change_id,
                        const Callback<void(bool)>& callback) OVERRIDE;
+  virtual void SetViewContents(TransportViewId view_id,
+                               ScopedSharedBufferHandle buffer,
+                               uint32_t buffer_size) OVERRIDE;
 
   // Overridden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const NodeId& node,
