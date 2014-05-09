@@ -1454,9 +1454,10 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   Widget* widget = CreateTopLevelNativeWidget();
   View* root_view = widget->GetRootView();
 
-  EventCountView* view = new EventCountView;
+  scoped_ptr<EventCountView> view(new EventCountView());
+  view->set_owned_by_client();
   view->SetBounds(0, 0, 20, 20);
-  root_view->AddChildView(view);
+  root_view->AddChildView(view.get());
 
   EventCountHandler h1;
   root_view->AddPreTargetHandler(&h1);
@@ -1528,7 +1529,7 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
 
   // Replace the child of |root_view| with a ScrollableEventCountView so that
   // ui::ET_SCROLL events are marked as handled at the target phase.
-  root_view->RemoveChildView(view);
+  root_view->RemoveChildView(view.get());
   ScrollableEventCountView* scroll_view = new ScrollableEventCountView;
   scroll_view->SetBounds(0, 0, 20, 20);
   root_view->AddChildView(scroll_view);
