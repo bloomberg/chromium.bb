@@ -22,7 +22,6 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/common/media_stream_request.h"
-#include "media/audio/audio_device_name.h"
 
 namespace media {
 class AudioManager;
@@ -57,10 +56,6 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   bool ShouldUseFakeDevice() const;
 
  private:
-  // Used by the unittests to get a list of fake devices.
-  friend class MediaStreamDispatcherHostTest;
-  void GetFakeDeviceNames(media::AudioDeviceNames* device_names);
-
   typedef std::vector<StreamDeviceInfo> StreamDeviceList;
   virtual ~AudioInputDeviceManager();
 
