@@ -490,14 +490,12 @@ def get_daemon_pid():
   uid = os.getuid()
   this_pid = os.getpid()
 
-  # Support new & old psutil API.
-  if 'error' in dir(psutil):
-    # Old API (0.x & 1.x).
-    psutil.Error = psutil.error.Error
-    psget = lambda x: x
-  else:
-    # New API (2.x+).
+  # Support new & old psutil API. This is the right way to check, according to
+  # http://grodola.blogspot.com/2014/01/psutil-20-porting.html
+  if psutil.version_info >= (2, 0):
     psget = lambda x: x()
+  else:
+    psget = lambda x: x
 
   for process in psutil.process_iter():
     # Skip any processes that raise an exception, as processes may terminate
@@ -517,7 +515,7 @@ def get_daemon_pid():
         continue
       if cmdline[0] == sys.executable and cmdline[1] == sys.argv[0]:
         return process.pid
-    except psutil.Error:
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
       continue
 
   return 0
