@@ -125,7 +125,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "extensions/browser/extension_protocols.h"
-#include "extensions/browser/extension_system.h"
 #include "grit/app_locale_settings.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -1256,8 +1255,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // NaClBrowserDelegateImpl is accessed inside PostProfileInit().
   // So make sure to create it before that.
 #if !defined(DISABLE_NACL)
-  NaClBrowserDelegateImpl* delegate = new NaClBrowserDelegateImpl(
-    extensions::ExtensionSystem::Get(profile_)->info_map());
+  NaClBrowserDelegateImpl* delegate =
+      new NaClBrowserDelegateImpl(browser_process_->profile_manager());
   nacl::NaClBrowser::SetDelegate(delegate);
 #endif
 

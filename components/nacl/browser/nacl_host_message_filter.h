@@ -40,6 +40,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
 
   int render_process_id() { return render_process_id_; }
   bool off_the_record() { return off_the_record_; }
+  const base::FilePath& profile_directory() const { return profile_directory_; }
   net::HostResolver* GetHostResolver();
 
  private:

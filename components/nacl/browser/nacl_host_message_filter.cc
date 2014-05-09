@@ -90,7 +90,10 @@ void NaClHostMessageFilter::OnLaunchNaCl(
   // because we're running in the I/O thread. Ideally we'd use the other path,
   // which would cover more cases.
   nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
-      manifest_url, false /* use_blocking_api */, &manifest_path);
+      manifest_url,
+      false /* use_blocking_api */,
+      profile_directory_,
+      &manifest_path);
   host->Launch(this, reply_msg, manifest_path);
 }
 

@@ -65,6 +65,7 @@ class NaClBrowserDelegate {
   // urls checking only the url scheme against kExtensionScheme).
   virtual bool MapUrlToLocalFilePath(const GURL& url,
                                      bool use_blocking_api,
+                                     const base::FilePath& profile_directory,
                                      base::FilePath* file_path) = 0;
   // Set match patterns which will be checked before enabling debug stub.
   virtual void SetDebugPatterns(std::string debug_patterns) = 0;

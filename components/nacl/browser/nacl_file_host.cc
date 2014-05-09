@@ -117,7 +117,10 @@ void DoOpenNaClExecutableOnThreadPool(
 
   base::FilePath file_path;
   if (!nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
-          file_url, true /* use_blocking_api */, &file_path)) {
+          file_url,
+          true /* use_blocking_api */,
+          nacl_host_message_filter->profile_directory(),
+          &file_path)) {
     NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
     return;
   }

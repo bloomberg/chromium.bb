@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -104,8 +105,10 @@ void OnKeepalive(
 }  // namespace
 
 NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
-    extensions::InfoMap* extension_info_map)
-    : extension_info_map_(extension_info_map), inverse_debug_patterns_(false) {}
+    ProfileManager* profile_manager)
+    : profile_manager_(profile_manager), inverse_debug_patterns_(false) {
+  DCHECK(profile_manager_);
+}
 
 NaClBrowserDelegateImpl::~NaClBrowserDelegateImpl() {
 }
@@ -203,11 +206,22 @@ bool NaClBrowserDelegateImpl::URLMatchesDebugPatterns(
 // This function is security sensitive.  Be sure to check with a security
 // person before you modify it.
 bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
-    const GURL& file_url, bool use_blocking_api, base::FilePath* file_path) {
-  DCHECK(extension_info_map_);
+    const GURL& file_url,
+    bool use_blocking_api,
+    const base::FilePath& profile_directory,
+    base::FilePath* file_path) {
+  // Get the profile associated with the renderer.
+  Profile* profile = profile_manager_->GetProfileByPath(profile_directory);
+  if (!profile)
+    return false;
+
+  scoped_refptr<extensions::InfoMap> extension_info_map =
+      extensions::ExtensionSystem::Get(profile)->info_map();
+  DCHECK(extension_info_map);
+
   // Check that the URL is recognized by the extension system.
   const extensions::Extension* extension =
-      extension_info_map_->extensions().GetExtensionOrAppByURL(file_url);
+      extension_info_map->extensions().GetExtensionOrAppByURL(file_url);
   if (!extension)
     return false;
 
@@ -234,7 +248,7 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
     SharedModuleInfo::ParseImportedPath(path, &new_extension_id,
                                         &new_relative_path);
     const extensions::Extension* new_extension =
-        extension_info_map_->extensions().GetByID(new_extension_id);
+        extension_info_map->extensions().GetByID(new_extension_id);
     if (!new_extension)
       return false;
 

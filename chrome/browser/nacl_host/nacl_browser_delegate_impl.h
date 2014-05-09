@@ -7,11 +7,13 @@
 
 #include "base/compiler_specific.h"
 #include "components/nacl/browser/nacl_browser_delegate.h"
-#include "extensions/browser/info_map.h"
+#include "extensions/common/url_pattern.h"
+
+class ProfileManager;
 
 class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
  public:
-  explicit NaClBrowserDelegateImpl(extensions::InfoMap* extension_info_map);
+  explicit NaClBrowserDelegateImpl(ProfileManager* profile_manager);
   virtual ~NaClBrowserDelegateImpl();
 
   virtual void ShowMissingArchInfobar(int render_process_id,
@@ -26,6 +28,7 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
       content::BrowserPpapiHost* ppapi_host) OVERRIDE;
   virtual bool MapUrlToLocalFilePath(const GURL& url,
                                      bool is_blocking,
+                                     const base::FilePath& profile_directory,
                                      base::FilePath* file_path) OVERRIDE;
   virtual void SetDebugPatterns(std::string debug_patterns) OVERRIDE;
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) OVERRIDE;
@@ -33,7 +36,7 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
       GetOnKeepaliveCallback() OVERRIDE;
 
  private:
-  scoped_refptr<extensions::InfoMap> extension_info_map_;
+  ProfileManager* profile_manager_;
   std::vector<URLPattern> debug_patterns_;
   bool inverse_debug_patterns_;
   DISALLOW_COPY_AND_ASSIGN(NaClBrowserDelegateImpl);
