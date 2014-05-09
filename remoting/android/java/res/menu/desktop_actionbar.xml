@@ -12,8 +12,8 @@
             android:icon="@drawable/ic_action_keyboard"
             android:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_hide"
-            android:title="@string/close"
-            android:icon="@android:drawable/ic_menu_close_clear_cancel"
+            android:title="@string/full_screen"
+            android:icon="@drawable/ic_action_full_screen"
             android:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_send_ctrl_alt_del"
             android:title="@string/send_ctrl_alt_del"

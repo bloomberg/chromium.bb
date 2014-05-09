@@ -551,7 +551,7 @@ First release of Chrome Remote Desktop for Android.
       <message desc="Footer text displayed at the host after an access code has been generated, but before a client connects." name="IDS_FOOTER_WAITING">
         waiting for connection…
       </message>
-      <message desc="Menu option for toggle full-screen mode. Equivalent to using the Wrench menu to do the same thing." name="IDS_FULL_SCREEN">
+      <message desc="Menu option for toggle full-screen mode. Equivalent to using the Wrench menu to do the same thing." name="IDS_FULL_SCREEN" formatter_data="android_java">
         Full screen
       </message>
       <message desc="Button displayed underneath explanatory text for app features. Clicking causes the text, infographic and the button itself to be replaced by the actual UI for that feature." name="IDS_GET_STARTED">
