@@ -516,6 +516,14 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [self onCustomize:nil];
 }
 
+- (void)activateTabWithContents:(content::WebContents*)newContents
+               previousContents:(content::WebContents*)oldContents
+                        atIndex:(NSInteger)index
+                         reason:(int)reason {
+  // The show/hide of this bubble is handled by the PermissionBubbleManager.
+  // So bypass the base class, which would close the bubble here.
+}
+
 + (CGFloat)matchWidthsOf:(NSView*)viewA andOf:(NSView*)viewB {
   NSRect frameA = [viewA frame];
   NSRect frameB = [viewB frame];
