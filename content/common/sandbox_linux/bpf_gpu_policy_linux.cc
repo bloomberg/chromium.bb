@@ -166,8 +166,6 @@ GpuProcessPolicy::~GpuProcessPolicy() {}
 ErrorCode GpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
                                             int sysno) const {
   switch (sysno) {
-    // TODO(jln): restrict clone.
-    case __NR_clone:
     case __NR_ioctl:
 #if defined(__i386__) || defined(__x86_64__)
     // The Nvidia driver uses flags not in the baseline policy
@@ -187,10 +185,6 @@ ErrorCode GpuProcessPolicy::EvaluateSyscall(SandboxBPF* sandbox,
       DCHECK(broker_process_);
       return sandbox->Trap(GpuSIGSYS_Handler, broker_process_);
     default:
-      // Allow *kill from the GPU process temporarily until fork()
-      // is denied here.
-      if (SyscallSets::IsKill(sysno))
-        return ErrorCode(ErrorCode::ERR_ALLOWED);
       if (SyscallSets::IsEventFd(sysno))
         return ErrorCode(ErrorCode::ERR_ALLOWED);
 
