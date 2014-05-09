@@ -223,7 +223,8 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env,
       view_android_(view_android),
       window_android_(window_android),
       device_orientation_(0),
-      geolocation_needs_pause_(false) {
+      geolocation_needs_pause_(false),
+      accessibility_enabled_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
 
@@ -328,6 +329,8 @@ void ContentViewCoreImpl::Observe(int type,
       SetFocusInternal(HasFocus());
       if (geolocation_needs_pause_)
         PauseOrResumeGeolocation(true);
+
+      SetAccessibilityEnabledInternal(accessibility_enabled_);
       break;
     }
     case NOTIFICATION_RENDERER_PROCESS_CREATED: {
@@ -1572,6 +1575,11 @@ void ContentViewCoreImpl::SetUseDesktopUserAgent(
 
 void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,
                                                   bool enabled) {
+  SetAccessibilityEnabledInternal(enabled);
+}
+
+void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
+  accessibility_enabled_ = enabled;
   RenderWidgetHostViewAndroid* host_view = GetRenderWidgetHostViewAndroid();
   if (!host_view)
     return;
