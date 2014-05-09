@@ -151,7 +151,7 @@ HRESULT GetFilesInJob(IBackgroundCopyJob* job,
 
   for (ULONG i = 0; i != num_files; ++i) {
     ScopedComPtr<IBackgroundCopyFile> file;
-    if (enum_files->Next(1, file.Receive(), NULL) == S_OK)
+    if (enum_files->Next(1, file.Receive(), NULL) == S_OK && file)
       files->push_back(file);
   }
 
@@ -164,6 +164,9 @@ HRESULT GetJobFileProperties(IBackgroundCopyFile* file,
                              base::string16* local_name,
                              base::string16* remote_name,
                              BG_FILE_PROGRESS* progress) {
+  if (!file)
+    return E_FAIL;
+
   HRESULT hr = S_OK;
 
   if (local_name) {
@@ -519,34 +522,15 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   int64 total_bytes = -1;
   GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
 
-  base::FilePath response;
-  if (SUCCEEDED(error)) {
-    DCHECK(job_);
-    std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
-    GetFilesInJob(job_, &files);
-    DCHECK_EQ(1u, files.size());
-    base::string16 local_name;
-    BG_FILE_PROGRESS progress = {0};
-    HRESULT hr = GetJobFileProperties(files[0], &local_name, NULL, &progress);
-    if (SUCCEEDED(hr)) {
-      // Sanity check the post-conditions of a successful download, including
-      // the file and job invariants. The byte counts for a job and its file
-      // must match as a job only contains one file.
-      DCHECK(progress.Completed);
-      DCHECK(downloaded_bytes == static_cast<int64>(progress.BytesTransferred));
-      DCHECK(total_bytes == static_cast<int64>(progress.BytesTotal));
-      response = base::FilePath(local_name);
-    } else {
-      error = hr;
-    }
-  }
-
   if (FAILED(error) && job_) {
     job_->Cancel();
     CleanupJobFiles(job_);
   }
 
   job_ = NULL;
+
+  CleanupStaleJobs(bits_manager_);
+  bits_manager_ = NULL;
 
   // Consider the url handled if it has been successfully downloaded or a
   // 5xx has been received.
@@ -563,14 +547,9 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   download_metrics.total_bytes = total_bytes;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
-  // Clean up stale jobs before invoking the callback.
-  CleanupStaleJobs(bits_manager_);
-
-  bits_manager_ = NULL;
-
   Result result;
   result.error = error_to_report;
-  result.response = response;
+  result.response = response_;
   result.downloaded_bytes = downloaded_bytes;
   result.total_bytes = total_bytes;
   BrowserThread::PostTask(BrowserThread::UI,
@@ -591,10 +570,7 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
 // BITS job by removing it from the BITS queue and making the download
 // available to the caller.
 void BackgroundDownloader::OnStateTransferred() {
-  HRESULT hr = job_->Complete();
-  if (SUCCEEDED(hr) || hr == BG_S_UNABLE_TO_DELETE_FILES)
-    hr = S_OK;
-  EndDownload(hr);
+  EndDownload(CompleteJob());
 }
 
 // Called when the job has encountered an error and no further progress can
@@ -757,6 +733,36 @@ bool BackgroundDownloader::IsStuck() {
   const base::TimeDelta job_stuck_timeout(
       base::TimeDelta::FromMinutes(kJobStuckTimeoutMin));
   return job_stuck_begin_time_ + job_stuck_timeout < base::Time::Now();
+}
+
+HRESULT BackgroundDownloader::CompleteJob() {
+  HRESULT hr = job_->Complete();
+  if (FAILED(hr) && hr != BG_S_UNABLE_TO_DELETE_FILES)
+    return hr;
+
+  std::vector<ScopedComPtr<IBackgroundCopyFile> > files;
+  hr = GetFilesInJob(job_, &files);
+  if (FAILED(hr))
+    return hr;
+
+  if (files.empty())
+    return E_UNEXPECTED;
+
+  base::string16 local_name;
+  BG_FILE_PROGRESS progress = {0};
+  hr = GetJobFileProperties(files.front(), &local_name, NULL, &progress);
+  if (FAILED(hr))
+    return hr;
+
+  // Sanity check the post-conditions of a successful download, including
+  // the file and job invariants. The byte counts for a job and its file
+  // must match as a job only contains one file.
+  DCHECK(progress.Completed);
+  DCHECK_EQ(progress.BytesTotal, progress.BytesTransferred);
+
+  response_ = base::FilePath(local_name);
+
+  return S_OK;
 }
 
 }  // namespace component_updater

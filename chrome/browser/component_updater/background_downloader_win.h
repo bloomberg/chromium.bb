@@ -14,6 +14,10 @@
 #include "base/win/scoped_comptr.h"
 #include "chrome/browser/component_updater/crx_downloader.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace component_updater {
 
 // Implements a downloader in terms of the BITS service. The public interface
@@ -67,6 +71,10 @@ class BackgroundDownloader : public CrxDownloader {
   // has not been making progress toward completion.
   bool IsStuck();
 
+  // Makes the downloaded file available to the caller by renaming the
+  // temporary file to its destination and removing it from the BITS queue.
+  HRESULT CompleteJob();
+
   net::URLRequestContextGetter* context_getter_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -84,7 +92,11 @@ class BackgroundDownloader : public CrxDownloader {
   // Contains the time when the BITS job is last seen making progress.
   base::Time job_stuck_begin_time_;
 
+  // True if EndDownload was called.
   bool is_completed_;
+
+  // Contains the path of the downloaded file if the download was successful.
+  base::FilePath response_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundDownloader);
 };
