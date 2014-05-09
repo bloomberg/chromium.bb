@@ -13019,6 +13019,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ConnectionTypeFromPeer" enum="AddressFamily">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The IP Address family of this connection, as reported by the server.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.ConnectionTypeFromSelf" enum="AddressFamily">
+  <owner>rch@chromium.org</owner>
+  <summary>The IP Address family of this connection, as seen locally.</summary>
+</histogram>
+
 <histogram name="Net.QuicSession.CreationError" enum="QuicSessionErrorCodes">
   <owner>jar@chromium.org</owner>
   <owner>rch@chromium.org</owner>
@@ -30694,6 +30706,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="2" label="Maximized"/>
   <int value="3" label="Fullscreen"/>
   <int value="4" label="Snapped"/>
+</enum>
+
+<enum name="AddressFamily" type="int">
+  <int value="0" label="Unspecified"/>
+  <int value="1" label="IPv4"/>
+  <int value="2" label="IPv6"/>
 </enum>
 
 <enum name="AlternateProtocolUsage" type="int">

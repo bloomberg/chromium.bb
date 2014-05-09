@@ -126,7 +126,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Number of times a truncated ACK frame was received.
   size_t num_truncated_acks_received_;
   // The kCADR value provided by the server in ServerHello.
-  IPEndPoint client_address_;
+  IPEndPoint local_address_from_shlo_;
+  // The first local address from which a packet was received.
+  IPEndPoint local_address_from_self_;
   // Count of the number of frames received.
   int num_frames_received_;
   // Count of the number of duplicate frames received.

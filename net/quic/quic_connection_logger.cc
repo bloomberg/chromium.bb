@@ -424,6 +424,13 @@ void QuicConnectionLogger:: OnPacketRetransmitted(
 void QuicConnectionLogger::OnPacketReceived(const IPEndPoint& self_address,
                                             const IPEndPoint& peer_address,
                                             const QuicEncryptedPacket& packet) {
+  if (local_address_from_self_.GetFamily() == ADDRESS_FAMILY_UNSPECIFIED) {
+    local_address_from_self_ = self_address;
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionTypeFromSelf",
+                              self_address.GetFamily(),
+                              ADDRESS_FAMILY_LAST);
+  }
+
   last_received_packet_size_ = packet.length();
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_PACKET_RECEIVED,
@@ -551,7 +558,7 @@ void QuicConnectionLogger::OnConnectionCloseFrame(
 void QuicConnectionLogger::OnPublicResetPacket(
     const QuicPublicResetPacket& packet) {
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED);
-  UpdatePublicResetAddressMismatchHistogram(client_address_,
+  UpdatePublicResetAddressMismatchHistogram(local_address_from_shlo_,
                                             packet.client_address);
 }
 
@@ -581,7 +588,10 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
     QuicSocketAddressCoder decoder;
     if (message.GetStringPiece(kCADR, &address) &&
         decoder.Decode(address.data(), address.size())) {
-      client_address_ = IPEndPoint(decoder.ip(), decoder.port());
+      local_address_from_shlo_ = IPEndPoint(decoder.ip(), decoder.port());
+      UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionTypeFromPeer",
+                                local_address_from_shlo_.GetFamily(),
+                                ADDRESS_FAMILY_LAST);
     }
   }
 }
