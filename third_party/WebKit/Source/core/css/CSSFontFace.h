@@ -97,6 +97,7 @@ public:
     class UnicodeRangeSet {
     public:
         explicit UnicodeRangeSet(const Vector<UnicodeRange>&);
+        bool contains(UChar32) const;
         bool intersectsWith(const String&) const;
         bool isEntireRange() const { return m_ranges.isEmpty(); }
         size_t size() const { return m_ranges.size(); }
@@ -106,7 +107,7 @@ public:
     };
 
     FontFace::LoadStatus loadStatus() const { return m_fontFace->loadStatus(); }
-    void willUseFontData(const FontDescription&);
+    bool maybeScheduleFontLoad(const FontDescription&, UChar32);
     void load(const FontDescription&, CSSFontSelector* = 0);
 
     bool hadBlankText() { return isValid() && m_sources.first()->hadBlankText(); }

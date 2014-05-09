@@ -29,6 +29,7 @@
 #include "platform/fonts/FontCacheClient.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
@@ -39,7 +40,7 @@ class FontSelector : public FontCacheClient {
 public:
     virtual ~FontSelector() { }
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString& familyName) = 0;
-    virtual void willUseFontData(const FontDescription&, const AtomicString& familyName) = 0;
+    virtual void willUseFontData(const FontDescription&, const AtomicString& familyName, UChar32) = 0;
 
     virtual unsigned version() const = 0;
 };
