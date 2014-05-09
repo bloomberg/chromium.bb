@@ -574,6 +574,7 @@
     'browser/frame_host/render_widget_host_view_child_frame.h',
     'browser/frame_host/render_widget_host_view_guest.cc',
     'browser/frame_host/render_widget_host_view_guest.h',
+    'browser/gamepad/gamepad_consumer.h',
     'browser/gamepad/gamepad_data_fetcher.h',
     'browser/gamepad/gamepad_platform_data_fetcher.h',
     'browser/gamepad/gamepad_platform_data_fetcher_linux.cc',

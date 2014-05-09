@@ -7,18 +7,23 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "content/browser/gamepad/gamepad_consumer.h"
 #include "content/browser/gamepad/gamepad_data_fetcher.h"
 #include "content/browser/gamepad/gamepad_provider.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace content {
 
-GamepadService::GamepadService() : num_readers_(0) {
+GamepadService::GamepadService()
+    : num_active_consumers_(0),
+      gesture_callback_pending_(false) {
 }
 
 GamepadService::GamepadService(scoped_ptr<GamepadDataFetcher> fetcher)
-    : num_readers_(0),
-      provider_(new GamepadProvider(fetcher.Pass())) {
+    : provider_(new GamepadProvider(fetcher.Pass())),
+      num_active_consumers_(0),
+      gesture_callback_pending_(false) {
   thread_checker_.DetachFromThread();
 }
 
@@ -30,28 +35,48 @@ GamepadService* GamepadService::GetInstance() {
                    LeakySingletonTraits<GamepadService> >::get();
 }
 
-void GamepadService::AddConsumer() {
+void GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  num_readers_++;
-  DCHECK(num_readers_ > 0);
   if (!provider_)
     provider_.reset(new GamepadProvider);
-  provider_->Resume();
+
+  std::pair<ConsumerSet::iterator, bool> insert_result =
+      consumers_.insert(consumer);
+  insert_result.first->is_active = true;
+  if (!insert_result.first->did_observe_user_gesture &&
+      !gesture_callback_pending_) {
+    provider_->RegisterForUserGesture(
+          base::Bind(&GamepadService::OnUserGesture,
+                     base::Unretained(this)));
+  }
+
+  if (num_active_consumers_++ == 0)
+    provider_->Resume();
 }
 
-void GamepadService::RemoveConsumer() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void GamepadService::ConsumerBecameInactive(GamepadConsumer* consumer) {
+  DCHECK(provider_);
+  DCHECK(num_active_consumers_ > 0);
+  DCHECK(consumers_.count(consumer) > 0);
+  DCHECK(consumers_.find(consumer)->is_active);
 
-  --num_readers_;
-  DCHECK(num_readers_ >= 0);
-
-  if (num_readers_ == 0)
+  consumers_.find(consumer)->is_active = false;
+  if (--num_active_consumers_ == 0)
     provider_->Pause();
 }
 
+void GamepadService::RemoveConsumer(GamepadConsumer* consumer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  ConsumerSet::iterator it = consumers_.find(consumer);
+  if (it->is_active && --num_active_consumers_ == 0)
+    provider_->Pause();
+  consumers_.erase(it);
+}
+
 void GamepadService::RegisterForUserGesture(const base::Closure& closure) {
-  DCHECK(num_readers_ > 0);
+  DCHECK(consumers_.size() > 0);
   DCHECK(thread_checker_.CalledOnValidThread());
   provider_->RegisterForUserGesture(closure);
 }
@@ -60,10 +85,59 @@ void GamepadService::Terminate() {
   provider_.reset();
 }
 
+void GamepadService::OnGamepadConnected(
+    int index,
+    const blink::WebGamepad& pad) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  for (ConsumerSet::iterator it = consumers_.begin();
+       it != consumers_.end(); ++it) {
+    if (it->did_observe_user_gesture && it->is_active)
+      it->consumer->OnGamepadConnected(index, pad);
+  }
+}
+
+void GamepadService::OnGamepadDisconnected(
+    int index,
+    const blink::WebGamepad& pad) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  for (ConsumerSet::iterator it = consumers_.begin();
+       it != consumers_.end(); ++it) {
+    if (it->did_observe_user_gesture && it->is_active)
+      it->consumer->OnGamepadDisconnected(index, pad);
+  }
+}
+
 base::SharedMemoryHandle GamepadService::GetSharedMemoryHandleForProcess(
     base::ProcessHandle handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return provider_->GetSharedMemoryHandleForProcess(handle);
+}
+
+void GamepadService::OnUserGesture() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  gesture_callback_pending_ = false;
+
+  if (!provider_ ||
+      num_active_consumers_ == 0)
+    return;
+
+  for (ConsumerSet::iterator it = consumers_.begin();
+       it != consumers_.end(); ++it) {
+    if (!it->did_observe_user_gesture && it->is_active) {
+      const ConsumerInfo& info = *it;
+      info.did_observe_user_gesture = true;
+      blink::WebGamepads gamepads;
+      provider_->GetCurrentGamepadData(&gamepads);
+      for (unsigned i = 0; i < blink::WebGamepads::itemsLengthCap; ++i) {
+        const blink::WebGamepad& pad = gamepads.items[i];
+        if (pad.connected)
+          info.consumer->OnGamepadConnected(i, pad);
+      }
+    }
+  }
 }
 
 }  // namespace content

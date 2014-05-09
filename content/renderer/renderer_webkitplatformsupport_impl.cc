@@ -884,7 +884,8 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
 
 void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
   if (g_test_gamepads == 0) {
-    RenderThreadImpl::current()->SampleGamepads(&gamepads);
+    RenderThreadImpl::current()->gamepad_shared_memory_reader()->
+        SampleGamepads(gamepads);
   } else {
     gamepads = g_test_gamepads.Get();
   }
@@ -893,6 +894,8 @@ void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
 void RendererWebKitPlatformSupportImpl::setGamepadListener(
       blink::WebGamepadListener* listener) {
   web_gamepad_listener = listener;
+  RenderThreadImpl::current()->gamepad_shared_memory_reader()->
+      SetGamepadListener(listener);
 }
 
 //------------------------------------------------------------------------------

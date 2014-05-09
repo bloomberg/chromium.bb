@@ -212,6 +212,8 @@
     'common/frame_param_macros.h',
     'common/gamepad_hardware_buffer.h',
     'common/gamepad_messages.h',
+    'common/gamepad_param_traits.cc',
+    'common/gamepad_param_traits.h',
     'common/gamepad_user_gesture.cc',
     'common/gamepad_user_gesture.h',
     'common/geolocation_messages.h',

@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/shared_memory.h"
+#include "content/browser/gamepad/gamepad_consumer.h"
 #include "content/public/browser/browser_message_filter.h"
 
 namespace content {
@@ -14,13 +15,23 @@ namespace content {
 class GamepadService;
 class RenderProcessHost;
 
-class GamepadBrowserMessageFilter : public BrowserMessageFilter {
+class GamepadBrowserMessageFilter :
+    public BrowserMessageFilter,
+    public GamepadConsumer {
  public:
   GamepadBrowserMessageFilter();
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
+
+  // GamepadConsumer implementation.
+  virtual void OnGamepadConnected(
+      unsigned index,
+      const blink::WebGamepad& gamepad) OVERRIDE;
+  virtual void OnGamepadDisconnected(
+      unsigned index,
+      const blink::WebGamepad& gamepad) OVERRIDE;
 
  private:
   virtual ~GamepadBrowserMessageFilter();

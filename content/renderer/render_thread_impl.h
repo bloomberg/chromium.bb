@@ -33,6 +33,7 @@ struct WorkerProcessMsg_CreateWorker_Params;
 
 namespace blink {
 class WebGamepads;
+class WebGamepadListener;
 class WebGraphicsContext3D;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
@@ -275,6 +276,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return vc_manager_.get();
   }
 
+  GamepadSharedMemoryReader* gamepad_shared_memory_reader() const {
+    return gamepad_shared_memory_reader_.get();
+  }
+
   // Get the GPU channel. Returns NULL if the channel is not established or
   // has been lost.
   GpuChannelHost* GetGpuChannel();
@@ -371,6 +376,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // Retrieve current gamepad data.
   void SampleGamepads(blink::WebGamepads* data);
+
+  // Set a listener for gamepad connected/disconnected events.
+  // A non-null listener must be set first before calling SampleGamepads.
+  void SetGamepadListener(blink::WebGamepadListener* listener);
 
   // Called by a RenderWidget when it is created or destroyed. This
   // allows the process to know when there are no visible widgets.

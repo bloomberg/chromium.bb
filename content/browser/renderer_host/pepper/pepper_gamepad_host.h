@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/gamepad/gamepad_consumer.h"
 #include "content/common/content_export.h"
 #include "ppapi/host/resource_host.h"
 
@@ -21,7 +22,9 @@ namespace content {
 class BrowserPpapiHost;
 class GamepadService;
 
-class CONTENT_EXPORT PepperGamepadHost : public ppapi::host::ResourceHost {
+class CONTENT_EXPORT PepperGamepadHost :
+    public ppapi::host::ResourceHost,
+    public GamepadConsumer {
  public:
   PepperGamepadHost(BrowserPpapiHost* host,
                     PP_Instance instance,
@@ -39,6 +42,14 @@ class CONTENT_EXPORT PepperGamepadHost : public ppapi::host::ResourceHost {
   virtual int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
+
+  // GamepadConsumer implementation.
+  virtual void OnGamepadConnected(
+      unsigned index,
+      const blink::WebGamepad& gamepad) OVERRIDE {}
+  virtual void OnGamepadDisconnected(
+      unsigned index,
+      const blink::WebGamepad& gamepad) OVERRIDE {}
 
  private:
   int32_t OnRequestMemory(ppapi::host::HostMessageContext* context);

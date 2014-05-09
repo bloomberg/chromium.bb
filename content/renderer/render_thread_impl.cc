@@ -396,6 +396,9 @@ void RenderThreadImpl::Init() {
 
   AddFilter((new EmbeddedWorkerContextMessageFilter())->GetFilter());
 
+  gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader());
+  AddObserver(gamepad_shared_memory_reader_.get());
+
   GetContentClient()->renderer()->RenderThreadStarted();
 
   InitSkiaEventTracer();
@@ -1463,9 +1466,11 @@ void RenderThreadImpl::SetFlingCurveParameters(
 }
 
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {
-  if (!gamepad_shared_memory_reader_)
-    gamepad_shared_memory_reader_.reset(new GamepadSharedMemoryReader);
   gamepad_shared_memory_reader_->SampleGamepads(*data);
+}
+
+void RenderThreadImpl::SetGamepadListener(blink::WebGamepadListener* listener) {
+  gamepad_shared_memory_reader_->SetGamepadListener(listener);
 }
 
 void RenderThreadImpl::WidgetCreated() {

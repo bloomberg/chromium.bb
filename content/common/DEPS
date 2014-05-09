@@ -13,6 +13,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebDeviceOrientationData.h",
   "+third_party/WebKit/public/platform/WebFloatPoint.h",
   "+third_party/WebKit/public/platform/WebFloatRect.h",
+  "+third_party/WebKit/public/platform/WebGamepad.h",
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebHTTPBody.h",

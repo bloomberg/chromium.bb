@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/WebGamepads.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -42,6 +43,8 @@ class CONTENT_EXPORT GamepadProvider :
   // given process.
   base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
       base::ProcessHandle renderer_process);
+
+  void GetCurrentGamepadData(blink::WebGamepads* data);
 
   // Pause and resume the background polling thread. Can be called from any
   // thread.
@@ -69,6 +72,13 @@ class CONTENT_EXPORT GamepadProvider :
   // Method for polling a GamepadDataFetcher. Runs on the polling_thread_.
   void DoPoll();
   void ScheduleDoPoll();
+
+  void OnGamepadConnectionChange(bool connected,
+                                 int index,
+                                 const blink::WebGamepad& pad);
+  void DispatchGamepadConnectionChange(bool connected,
+                                       int index,
+                                       const blink::WebGamepad& pad);
 
   GamepadHardwareBuffer* SharedMemoryAsHardwareBuffer();
 
@@ -112,9 +122,36 @@ class CONTENT_EXPORT GamepadProvider :
   base::Lock devices_changed_lock_;
   bool devices_changed_;
 
-  // When polling_thread_ is running, members below are only to be used
-  // from that thread.
+  bool ever_had_user_gesture_;
+
+  class PadState {
+   public:
+    PadState() {
+      SetDisconnected();
+    }
+
+    bool Match(const blink::WebGamepad& pad) const;
+    void SetPad(const blink::WebGamepad& pad);
+    void SetDisconnected();
+    void AsWebGamepad(blink::WebGamepad* pad);
+
+    bool connected() const { return connected_; }
+
+   private:
+    bool connected_;
+    unsigned axes_length_;
+    unsigned buttons_length_;
+    blink::WebUChar id_[blink::WebGamepad::idLengthCap];
+    blink::WebUChar mapping_[blink::WebGamepad::mappingLengthCap];
+  };
+
+  // Used to detect connections and disconnections.
+  scoped_ptr<PadState[]> pad_states_;
+
+  // Only used on the polling thread.
   scoped_ptr<GamepadDataFetcher> data_fetcher_;
+
+  base::Lock shared_memory_lock_;
   base::SharedMemory gamepad_shared_memory_;
 
   // Polling is done on this background thread.
