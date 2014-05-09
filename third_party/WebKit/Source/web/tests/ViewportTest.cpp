@@ -2968,7 +2968,7 @@ TEST_F(ViewportTest, viewportTriggersGpuRasterization)
     EXPECT_FALSE(webViewHelper.webViewImpl()->matchesHeuristicsForGpuRasterizationForTesting());
 }
 
-class ConsoleMessageWebFrameClient : public WebFrameClient {
+class ConsoleMessageWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     virtual void didAddMessageToConsole(const WebConsoleMessage& msg, const WebString& sourceName, unsigned sourceLine, const WebString& stackTrace)
     {

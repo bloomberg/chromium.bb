@@ -190,7 +190,6 @@ public:
         m_webViewHelper.webView()->setPrerendererClient(&m_prerendererClient);
 
         FrameTestHelpers::loadFrame(m_webViewHelper.webView()->mainFrame(), std::string(baseURL) + fileName);
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
     void navigateAway()

@@ -59,7 +59,6 @@
 
 using namespace WebCore;
 using namespace blink;
-using blink::FrameTestHelpers::runPendingTasks;
 
 namespace {
 
@@ -90,7 +89,6 @@ public:
     void navigateTo(const std::string& url)
     {
         FrameTestHelpers::loadFrame(webViewImpl()->mainFrame(), url);
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
     void forceFullCompositingUpdate()
@@ -101,12 +99,6 @@ public:
     void registerMockedHttpURLLoad(const std::string& fileName)
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(fileName.c_str()));
-    }
-
-    void executeScript(const WebString& code)
-    {
-        webViewImpl()->mainFrame()->executeScript(WebScriptSource(code));
-        runPendingTasks();
     }
 
     WebLayer* getRootScrollLayer()
@@ -524,8 +516,7 @@ TEST_F(PinchViewportTest, TestRestoredFromHistoryItem)
     item.setPinchViewportScrollOffset(WebFloatPoint(100, 120));
     item.setPageScaleFactor(2);
 
-    webViewImpl()->mainFrame()->loadHistoryItem(item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    FrameTestHelpers::loadHistoryItem(webViewImpl()->mainFrame(), item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     EXPECT_EQ(2, pinchViewport.scale());
@@ -552,8 +543,7 @@ TEST_F(PinchViewportTest, TestRestoredFromLegacyHistoryItem)
     item.setScrollOffset(WebPoint(120, 180));
     item.setPageScaleFactor(2);
 
-    webViewImpl()->mainFrame()->loadHistoryItem(item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    FrameTestHelpers::loadHistoryItem(webViewImpl()->mainFrame(), item, WebHistoryDifferentDocumentLoad, WebURLRequest::UseProtocolCachePolicy);
 
     PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
     EXPECT_EQ(2, pinchViewport.scale());

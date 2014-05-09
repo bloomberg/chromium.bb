@@ -82,12 +82,7 @@ protected:
 
     void loadURLInTopFrame(const WebURL& url)
     {
-        WebURLRequest urlRequest;
-        urlRequest.initialize();
-        urlRequest.setURL(url);
-        m_helper.webView()->mainFrame()->loadRequest(urlRequest);
-        // Make sure any pending request get served.
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+        FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), url.string().utf8().data());
     }
 
     Page* page() const { return m_helper.webViewImpl()->page(); }

@@ -223,14 +223,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColor)
     EXPECT_EQ(kBlue, webView->backgroundColor());
 
     WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
-    webView->mainFrame()->loadHTMLString(
-        "<html><head><style>body {background-color:#227788}</style></head></html>", baseURL);
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    FrameTestHelpers::loadHTMLString(webView->mainFrame(), "<html><head><style>body {background-color:#227788}</style></head></html>", baseURL);
     EXPECT_EQ(kDarkCyan, webView->backgroundColor());
 
-    webView->mainFrame()->loadHTMLString(
-        "<html><head><style>body {background-color:rgba(255,0,0,0.5)}</style></head></html>", baseURL);
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    FrameTestHelpers::loadHTMLString(webView->mainFrame(), "<html><head><style>body {background-color:rgba(255,0,0,0.5)}</style></head></html>", baseURL);
     // Expected: red (50% alpha) blended atop base of kBlue.
     EXPECT_EQ(0xFF7F0080, webView->backgroundColor());
 
@@ -833,6 +829,22 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
 
+class DropTask : public WebThread::Task {
+public:
+    explicit DropTask(WebView* webView) : m_webView(webView)
+    {
+    }
+
+    virtual void run() OVERRIDE
+    {
+        const WebPoint clientPoint(0, 0);
+        const WebPoint screenPoint(0, 0);
+        m_webView->dragTargetDrop(clientPoint, screenPoint, 0);
+    }
+
+private:
+    WebView* const m_webView;
+};
 static void DragAndDropURL(WebViewImpl* webView, const std::string& url)
 {
     blink::WebDragData dragData;
@@ -847,9 +859,8 @@ static void DragAndDropURL(WebViewImpl* webView, const std::string& url)
     const WebPoint clientPoint(0, 0);
     const WebPoint screenPoint(0, 0);
     webView->dragTargetDragEnter(dragData, clientPoint, screenPoint, blink::WebDragOperationCopy, 0);
-    webView->dragTargetDrop(clientPoint, screenPoint, 0);
-    FrameTestHelpers::runPendingTasks();
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    Platform::current()->currentThread()->postTask(new DropTask(webView));
+    FrameTestHelpers::pumpPendingRequestsDoNotUse(webView->mainFrame());
 }
 
 TEST_F(WebViewTest, DragDropURL)
@@ -1097,9 +1108,7 @@ TEST_F(WebViewTest, ShowPressOnTransformedLink)
     webViewImpl->resize(WebSize(pageWidth, pageHeight));
 
     WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
-    webViewImpl->mainFrame()->loadHTMLString(
-        "<a href='http://www.test.com' style='position: absolute; left: 20px; top: 20px; width: 200px; -webkit-transform:translateZ(0);'>A link to highlight</a>", baseURL);
-    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    FrameTestHelpers::loadHTMLString(webViewImpl->mainFrame(), "<a href='http://www.test.com' style='position: absolute; left: 20px; top: 20px; width: 200px; -webkit-transform:translateZ(0);'>A link to highlight</a>", baseURL);
 
     WebGestureEvent event;
     event.type = WebInputEvent::GestureShowPress;
