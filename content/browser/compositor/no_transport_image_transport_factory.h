@@ -22,12 +22,11 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
   virtual ~NoTransportImageTransportFactory();
 
   // ImageTransportFactory implementation.
+  virtual ui::ContextFactory* GetContextFactory() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() OVERRIDE;
   virtual GLHelper* GetGLHelper() OVERRIDE;
   virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
   virtual void RemoveObserver(ImageTransportFactoryObserver* observer) OVERRIDE;
-
-  ui::ContextFactory* context_factory() { return context_factory_.get(); }
 
  private:
   scoped_ptr<ui::ContextFactory> context_factory_;

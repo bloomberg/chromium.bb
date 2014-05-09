@@ -17,6 +17,10 @@ NoTransportImageTransportFactory::NoTransportImageTransportFactory(
 
 NoTransportImageTransportFactory::~NoTransportImageTransportFactory() {}
 
+ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {
+  return context_factory_.get();
+}
+
 gfx::GLSurfaceHandle
 NoTransportImageTransportFactory::GetSharedSurfaceHandle() {
   return gfx::GLSurfaceHandle();

@@ -222,6 +222,10 @@ cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {
   return HostSharedBitmapManager::current();
 }
 
+ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {
+  return this;
+}
+
 gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
       gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);

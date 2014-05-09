@@ -17,6 +17,12 @@ namespace {
 ImageTransportFactory* g_factory = NULL;
 bool g_initialized_for_unit_tests = false;
 static gfx::DisableNullDrawGLBindings* g_disable_null_draw = NULL;
+
+void SetFactory(ImageTransportFactory* factory) {
+  g_factory = factory;
+  ui::ContextFactory::SetInstance(factory->GetContextFactory());
+}
+
 }
 
 // static
@@ -24,9 +30,7 @@ void ImageTransportFactory::Initialize() {
   DCHECK(!g_factory || g_initialized_for_unit_tests);
   if (g_initialized_for_unit_tests)
     return;
-  GpuProcessTransportFactory* factory = new GpuProcessTransportFactory;
-  g_factory = factory;
-  ui::ContextFactory::SetInstance(factory);
+  SetFactory(new GpuProcessTransportFactory);
 }
 
 void ImageTransportFactory::InitializeForUnitTests(
@@ -39,10 +43,7 @@ void ImageTransportFactory::InitializeForUnitTests(
   if (command_line->HasSwitch(switches::kEnablePixelOutputInTests))
     g_disable_null_draw = new gfx::DisableNullDrawGLBindings;
 
-  NoTransportImageTransportFactory* factory =
-      new NoTransportImageTransportFactory(test_factory.Pass());
-  g_factory = factory;
-  ui::ContextFactory::SetInstance(factory->context_factory());
+  SetFactory(new NoTransportImageTransportFactory(test_factory.Pass()));
 }
 
 // static
