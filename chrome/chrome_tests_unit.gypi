@@ -555,6 +555,7 @@
         '../extensions/browser/value_store/value_store_frontend_unittest.cc',
         '../extensions/browser/value_store/value_store_unittest.cc',
         '../extensions/browser/value_store/value_store_unittest.h',
+        '../extensions/browser/verified_contents_unittest.cc',
         '../extensions/common/api/sockets/sockets_manifest_permission_unittest.cc',
         '../extensions/common/csp_validator_unittest.cc',
         '../extensions/common/event_filter_unittest.cc',
