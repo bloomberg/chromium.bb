@@ -627,8 +627,7 @@ void RTree::Remove(intptr_t key) {
   // Lastly check the root. If it has only one non-leaf child, delete it and
   // replace it with its child.
   if (root_->count() == 1 && root_->level() > 0) {
-    scoped_ptr<Node> new_root(root_->RemoveAndReturnLastChild());
-    root_.swap(new_root);
+    root_ = root_->RemoveAndReturnLastChild();
   }
 }
 
@@ -716,10 +715,14 @@ void RTree::RemoveNode(Node* node) {
   // Traverse up the tree, removing the child from each parent and deleting
   // parent nodes, until we either encounter the root of the tree or a parent
   // that still has sufficient children.
-  while (parent && parent->RemoveChild(child, &orphans) < min_children_) {
-    if (child != node) {
+  while (parent) {
+    size_t children_remaining = parent->RemoveChild(child, &orphans);
+    if (child != node)
       delete child;
-    }
+
+    if (children_remaining >= min_children_)
+      break;
+
     child = parent;
     parent = parent->parent();
   }
