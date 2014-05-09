@@ -75,10 +75,6 @@ struct MediaLogEvent {
     VIDEO_ENDED,
     TEXT_ENDED,
 
-    // The audio renderer has been disabled.
-    // params: none.
-    AUDIO_RENDERER_DISABLED,
-
     // The extents of the sliding buffer have changed.
     // params: "buffer_start": <first buffered byte>.
     //         "buffer_current": <current offset>.

@@ -48,7 +48,6 @@ Pipeline::Pipeline(
       audio_ended_(false),
       video_ended_(false),
       text_ended_(false),
-      audio_disabled_(false),
       demuxer_(NULL),
       creation_time_(default_tick_clock_.NowTicks()) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
@@ -295,21 +294,10 @@ void Pipeline::SetError(PipelineStatus error) {
   media_log_->AddEvent(media_log_->CreatePipelineErrorEvent(error));
 }
 
-void Pipeline::OnAudioDisabled() {
-  DCHECK(IsRunning());
-  task_runner_->PostTask(FROM_HERE, base::Bind(
-      &Pipeline::AudioDisabledTask, base::Unretained(this)));
-  media_log_->AddEvent(
-      media_log_->CreateEvent(MediaLogEvent::AUDIO_RENDERER_DISABLED));
-}
-
 void Pipeline::OnAudioTimeUpdate(TimeDelta time, TimeDelta max_time) {
   DCHECK_LE(time.InMicroseconds(), max_time.InMicroseconds());
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
-
-  if (audio_disabled_)
-    return;
 
   if (waiting_for_clock_update_ && time < clock_->Elapsed())
     return;
@@ -327,7 +315,7 @@ void Pipeline::OnVideoTimeUpdate(TimeDelta max_time) {
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
 
-  if (audio_renderer_ && !audio_disabled_)
+  if (audio_renderer_)
     return;
 
   // TODO(scherkus): |state_| should only be accessed on pipeline thread, see
@@ -433,7 +421,7 @@ void Pipeline::StateTransitionTask(PipelineStatus status) {
         // We use audio stream to update the clock. So if there is such a
         // stream, we pause the clock until we receive a valid timestamp.
         waiting_for_clock_update_ = true;
-        if (!audio_renderer_ || audio_disabled_) {
+        if (!audio_renderer_) {
           clock_->SetMaxTime(clock_->Duration());
           StartClockIfWaitingForTimeUpdate_Locked();
         }
@@ -793,7 +781,7 @@ void Pipeline::DoAudioRendererEnded() {
   audio_ended_ = true;
 
   // Start clock since there is no more audio to trigger clock updates.
-  if (!audio_disabled_) {
+  {
     base::AutoLock auto_lock(lock_);
     clock_->SetMaxTime(clock_->Duration());
     StartClockIfWaitingForTimeUpdate_Locked();
@@ -829,7 +817,7 @@ void Pipeline::DoTextRendererEnded() {
 void Pipeline::RunEndedCallbackIfNeeded() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (audio_renderer_ && !audio_ended_ && !audio_disabled_)
+  if (audio_renderer_ && !audio_ended_)
     return;
 
   if (video_renderer_ && !video_ended_)
@@ -845,20 +833,6 @@ void Pipeline::RunEndedCallbackIfNeeded() {
 
   DCHECK_EQ(status_, PIPELINE_OK);
   ended_cb_.Run();
-}
-
-void Pipeline::AudioDisabledTask() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-
-  base::AutoLock auto_lock(lock_);
-  audio_disabled_ = true;
-
-  // Notify our demuxer that we're no longer rendering audio.
-  demuxer_->OnAudioRendererDisabled();
-
-  // Start clock since there is no more audio to trigger clock updates.
-  clock_->SetMaxTime(clock_->Duration());
-  StartClockIfWaitingForTimeUpdate_Locked();
 }
 
 void Pipeline::AddTextStreamTask(DemuxerStream* text_stream,
@@ -892,7 +866,6 @@ void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
       base::Bind(&Pipeline::OnAudioUnderflow, base::Unretained(this)),
       base::Bind(&Pipeline::OnAudioTimeUpdate, base::Unretained(this)),
       base::Bind(&Pipeline::OnAudioRendererEnded, base::Unretained(this)),
-      base::Bind(&Pipeline::OnAudioDisabled, base::Unretained(this)),
       base::Bind(&Pipeline::SetError, base::Unretained(this)));
 }
 

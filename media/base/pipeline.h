@@ -182,8 +182,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PipelineTest, GetBufferedTimeRanges);
-  FRIEND_TEST_ALL_PREFIXES(PipelineTest, DisableAudioRenderer);
-  FRIEND_TEST_ALL_PREFIXES(PipelineTest, DisableAudioRendererDuringInit);
   FRIEND_TEST_ALL_PREFIXES(PipelineTest, EndedCallback);
   FRIEND_TEST_ALL_PREFIXES(PipelineTest, AudioStreamShorterThanVideo);
   friend class MediaLog;
@@ -234,9 +232,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Callback executed by filters to update statistics.
   void OnUpdateStatistics(const PipelineStatistics& stats);
 
-  // Callback executed by audio renderer when it has been disabled.
-  void OnAudioDisabled();
-
   // Callback executed by audio renderer to update clock time.
   void OnAudioTimeUpdate(base::TimeDelta time, base::TimeDelta max_time);
 
@@ -269,9 +264,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void DoVideoRendererEnded();
   void DoTextRendererEnded();
   void RunEndedCallbackIfNeeded();
-
-  // Carries out disabling the audio renderer.
-  void AudioDisabledTask();
 
   // Carries out adding a new text stream to the text renderer.
   void AddTextStreamTask(DemuxerStream* text_stream,
@@ -384,9 +376,6 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   bool audio_ended_;
   bool video_ended_;
   bool text_ended_;
-
-  // Set to true in DisableAudioRendererTask().
-  bool audio_disabled_;
 
   // Temporary callback used for Start() and Seek().
   PipelineStatusCB seek_cb_;

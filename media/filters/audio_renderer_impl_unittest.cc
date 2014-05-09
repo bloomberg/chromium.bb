@@ -118,7 +118,6 @@ class AudioRendererImplTest : public ::testing::Test {
 
   MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
   MOCK_METHOD0(OnUnderflow, void());
-  MOCK_METHOD0(OnDisabled, void());
   MOCK_METHOD1(OnError, void(PipelineStatus));
 
   void OnAudioTimeCallback(TimeDelta current_time, TimeDelta max_time) {
@@ -137,8 +136,6 @@ class AudioRendererImplTest : public ::testing::Test {
         base::Bind(&AudioRendererImplTest::OnAudioTimeCallback,
                    base::Unretained(this)),
         ended_event_.GetClosure(),
-        base::Bind(&AudioRendererImplTest::OnDisabled,
-                   base::Unretained(this)),
         base::Bind(&AudioRendererImplTest::OnError,
                    base::Unretained(this)));
   }
@@ -995,6 +992,15 @@ TEST_F(AudioRendererImplTest, ImmediateEndOfStream) {
   // Read a single frame. We shouldn't be able to satisfy it.
   EXPECT_FALSE(ConsumeBufferedData(1, NULL));
   WaitForEnded();
+}
+
+TEST_F(AudioRendererImplTest, OnRenderErrorCausesDecodeError) {
+  Initialize();
+  Preroll();
+  Play();
+
+  EXPECT_CALL(*this, OnError(PIPELINE_ERROR_DECODE));
+  sink_->OnRenderError();
 }
 
 }  // namespace media

@@ -38,10 +38,6 @@ class MEDIA_EXPORT AudioRenderer {
   //
   // |ended_cb| is executed when audio rendering has reached the end of stream.
   //
-  // |disabled_cb| is executed when audio rendering has been disabled due to
-  // external factors (i.e., device was removed). |time_cb| will no longer be
-  // executed. TODO(scherkus): this might not be needed http://crbug.com/234708
-  //
   // |error_cb| is executed if an error was encountered.
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
@@ -49,7 +45,6 @@ class MEDIA_EXPORT AudioRenderer {
                           const base::Closure& underflow_cb,
                           const TimeCB& time_cb,
                           const base::Closure& ended_cb,
-                          const base::Closure& disabled_cb,
                           const PipelineStatusCB& error_cb) = 0;
 
   // Start audio decoding and rendering at the current playback rate, executing

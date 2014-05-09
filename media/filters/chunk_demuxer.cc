@@ -1065,12 +1065,6 @@ void ChunkDemuxer::Seek(TimeDelta time, const PipelineStatusCB& cb) {
   base::ResetAndReturn(&seek_cb_).Run(PIPELINE_OK);
 }
 
-void ChunkDemuxer::OnAudioRendererDisabled() {
-  base::AutoLock auto_lock(lock_);
-  audio_->Shutdown();
-  disabled_audio_ = audio_.Pass();
-}
-
 // Demuxer implementation.
 DemuxerStream* ChunkDemuxer::GetStream(DemuxerStream::Type type) {
   DCHECK_NE(type, DemuxerStream::TEXT);

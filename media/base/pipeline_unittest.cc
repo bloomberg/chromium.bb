@@ -180,17 +180,10 @@ class PipelineTest : public ::testing::Test {
   }
 
   // Sets up expectations to allow the audio renderer to initialize.
-  void InitializeAudioRenderer(DemuxerStream* stream,
-                               bool disable_after_init_cb) {
-    if (disable_after_init_cb) {
-      EXPECT_CALL(*audio_renderer_, Initialize(stream, _, _, _, _, _, _, _))
-          .WillOnce(DoAll(RunCallback<1>(PIPELINE_OK),
-                          WithArg<6>(RunClosure<0>())));  // |disabled_cb|.
-    } else {
-      EXPECT_CALL(*audio_renderer_, Initialize(stream, _, _, _, _, _, _, _))
-          .WillOnce(DoAll(SaveArg<4>(&audio_time_cb_),
-                          RunCallback<1>(PIPELINE_OK)));
-    }
+  void InitializeAudioRenderer(DemuxerStream* stream) {
+    EXPECT_CALL(*audio_renderer_, Initialize(stream, _, _, _, _, _, _))
+        .WillOnce(DoAll(SaveArg<4>(&audio_time_cb_),
+                        RunCallback<1>(PIPELINE_OK)));
   }
 
   void AddTextStream() {
@@ -427,7 +420,7 @@ TEST_F(PipelineTest, AudioStream) {
   streams.push_back(audio_stream());
 
   InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
 
   InitializePipeline(PIPELINE_OK);
   EXPECT_TRUE(metadata_.has_audio);
@@ -455,7 +448,7 @@ TEST_F(PipelineTest, AudioVideoStream) {
   streams.push_back(video_stream());
 
   InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
   InitializeVideoRenderer(video_stream());
 
   InitializePipeline(PIPELINE_OK);
@@ -490,7 +483,7 @@ TEST_F(PipelineTest, VideoAudioTextStream) {
 
   InitializeDemuxer(&streams);
   InitializeVideoRenderer(video_stream());
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
 
   InitializePipeline(PIPELINE_OK);
   EXPECT_TRUE(metadata_.has_audio);
@@ -509,7 +502,7 @@ TEST_F(PipelineTest, Seek) {
   streams.push_back(video_stream());
 
   InitializeDemuxer(&streams, base::TimeDelta::FromSeconds(3000));
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
   InitializeVideoRenderer(video_stream());
 
   // Initialize then seek!
@@ -530,7 +523,7 @@ TEST_F(PipelineTest, SetVolume) {
   streams.push_back(audio_stream());
 
   InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
 
   // The audio renderer should receive a call to SetVolume().
   float expected = 0.5f;
@@ -584,51 +577,6 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
 }
 
-TEST_F(PipelineTest, DisableAudioRenderer) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
-
-  InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
-  InitializeVideoRenderer(video_stream());
-
-  InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(metadata_.has_audio);
-  EXPECT_TRUE(metadata_.has_video);
-
-  EXPECT_CALL(*demuxer_, OnAudioRendererDisabled());
-  pipeline_->OnAudioDisabled();
-
-  // Verify that ended event is fired when video ends.
-  EXPECT_CALL(callbacks_, OnEnded());
-  pipeline_->OnVideoRendererEnded();
-}
-
-TEST_F(PipelineTest, DisableAudioRendererDuringInit) {
-  CreateAudioStream();
-  CreateVideoStream();
-  MockDemuxerStreamVector streams;
-  streams.push_back(audio_stream());
-  streams.push_back(video_stream());
-
-  InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), true);
-  InitializeVideoRenderer(video_stream());
-
-  EXPECT_CALL(*demuxer_, OnAudioRendererDisabled());
-
-  InitializePipeline(PIPELINE_OK);
-  EXPECT_TRUE(metadata_.has_audio);
-  EXPECT_TRUE(metadata_.has_video);
-
-  // Verify that ended event is fired when video ends.
-  EXPECT_CALL(callbacks_, OnEnded());
-  pipeline_->OnVideoRendererEnded();
-}
-
 TEST_F(PipelineTest, EndedCallback) {
   CreateAudioStream();
   CreateVideoStream();
@@ -638,7 +586,7 @@ TEST_F(PipelineTest, EndedCallback) {
   streams.push_back(video_stream());
 
   InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
   InitializeVideoRenderer(video_stream());
   InitializePipeline(PIPELINE_OK);
 
@@ -670,7 +618,7 @@ TEST_F(PipelineTest, AudioStreamShorterThanVideo) {
   pipeline_->SetClockForTesting(new Clock(&test_tick_clock_));
 
   InitializeDemuxer(&streams, duration);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
   InitializeVideoRenderer(video_stream());
   InitializePipeline(PIPELINE_OK);
 
@@ -710,7 +658,7 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
   streams.push_back(audio_stream());
 
   InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
   InitializePipeline(PIPELINE_OK);
 
   float playback_rate = 1.0f;
@@ -764,7 +712,7 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
   streams.push_back(audio_stream());
 
   InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
   InitializePipeline(PIPELINE_OK);
 
   // Trigger additional requests on the pipeline during tear down from error.
@@ -844,7 +792,7 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
   streams.push_back(audio_stream());
 
   InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
   InitializePipeline(PIPELINE_OK);
 
   float playback_rate = 1.0f;
@@ -901,7 +849,7 @@ TEST_F(PipelineTest, DeleteAfterStop) {
   MockDemuxerStreamVector streams;
   streams.push_back(audio_stream());
   InitializeDemuxer(&streams);
-  InitializeAudioRenderer(audio_stream(), false);
+  InitializeAudioRenderer(audio_stream());
   InitializePipeline(PIPELINE_OK);
 
   ExpectStop();
@@ -1011,13 +959,13 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kInitAudioRenderer) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*audio_renderer_, Initialize(_, _, _, _, _, _, _, _))
+        EXPECT_CALL(*audio_renderer_, Initialize(_, _, _, _, _, _, _))
             .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb),
                             RunCallback<1>(PIPELINE_OK)));
         EXPECT_CALL(callbacks_, OnStop());
       } else {
         status = PIPELINE_ERROR_INITIALIZATION_FAILED;
-        EXPECT_CALL(*audio_renderer_, Initialize(_, _, _, _, _, _, _, _))
+        EXPECT_CALL(*audio_renderer_, Initialize(_, _, _, _, _, _, _))
             .WillOnce(RunCallback<1>(status));
       }
 
@@ -1026,7 +974,7 @@ class PipelineTeardownTest : public PipelineTest {
       return status;
     }
 
-    EXPECT_CALL(*audio_renderer_, Initialize(_, _, _, _, _, _, _, _))
+    EXPECT_CALL(*audio_renderer_, Initialize(_, _, _, _, _, _, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
 
     if (state == kInitVideoRenderer) {

@@ -71,7 +71,6 @@ class MEDIA_EXPORT AudioRendererImpl
                           const base::Closure& underflow_cb,
                           const TimeCB& time_cb,
                           const base::Closure& ended_cb,
-                          const base::Closure& disabled_cb,
                           const PipelineStatusCB& error_cb) OVERRIDE;
   virtual void Play(const base::Closure& callback) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
@@ -215,7 +214,6 @@ class MEDIA_EXPORT AudioRendererImpl
   base::Closure underflow_cb_;
   TimeCB time_cb_;
   base::Closure ended_cb_;
-  base::Closure disabled_cb_;
   PipelineStatusCB error_cb_;
 
   // Callback provided to Flush().

@@ -235,7 +235,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
                                    const base::Closure& underflow_cb,
                                    const TimeCB& time_cb,
                                    const base::Closure& ended_cb,
-                                   const base::Closure& disabled_cb,
                                    const PipelineStatusCB& error_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(stream);
@@ -245,7 +244,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!underflow_cb.is_null());
   DCHECK(!time_cb.is_null());
   DCHECK(!ended_cb.is_null());
-  DCHECK(!disabled_cb.is_null());
   DCHECK(!error_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
   DCHECK(sink_);
@@ -256,7 +254,6 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   underflow_cb_ = underflow_cb;
   time_cb_ = time_cb;
   ended_cb_ = ended_cb;
-  disabled_cb_ = disabled_cb;
   error_cb_ = error_cb;
 
   expecting_config_changes_ = stream->SupportsConfigChanges();
@@ -682,8 +679,12 @@ void AudioRendererImpl::UpdateEarliestEndTime_Locked(
 }
 
 void AudioRendererImpl::OnRenderError() {
+  // UMA data tells us this happens ~0.01% of the time. Trigger an error instead
+  // of trying to gracefully fall back to a fake sink. It's very likely
+  // OnRenderError() should be removed and the audio stack handle errors without
+  // notifying clients. See http://crbug.com/234708 for details.
   HistogramRendererEvent(RENDER_ERROR);
-  disabled_cb_.Run();
+  error_cb_.Run(PIPELINE_ERROR_DECODE);
 }
 
 void AudioRendererImpl::DisableUnderflowForTesting() {

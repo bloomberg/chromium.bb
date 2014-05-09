@@ -600,40 +600,6 @@ TEST_F(FFmpegDemuxerTest, Stop) {
   demuxer_.reset();
 }
 
-TEST_F(FFmpegDemuxerTest, DisableAudioStream) {
-  // We are doing the following things here:
-  // 1. Initialize the demuxer with audio and video stream.
-  // 2. Send a "disable audio stream" message to the demuxer.
-  // 3. Demuxer will free audio packets even if audio stream was initialized.
-  CreateDemuxer("bear-320x240.webm");
-  InitializeDemuxer();
-
-  // Submit a "disable audio stream" message to the demuxer.
-  demuxer_->OnAudioRendererDisabled();
-  message_loop_.RunUntilIdle();
-
-  // Get our streams.
-  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
-  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
-  ASSERT_TRUE(video);
-  ASSERT_TRUE(audio);
-
-  // The audio stream should have been prematurely stopped.
-  EXPECT_FALSE(IsStreamStopped(DemuxerStream::VIDEO));
-  EXPECT_TRUE(IsStreamStopped(DemuxerStream::AUDIO));
-
-  // Attempt a read from the video stream: it should return valid data.
-  video->Read(NewReadCB(FROM_HERE, 22084, 0));
-  message_loop_.Run();
-
-  // Attempt a read from the audio stream: it should immediately return end of
-  // stream without requiring the message loop to read data.
-  bool got_eos_buffer = false;
-  audio->Read(base::Bind(&EosOnReadDone, &got_eos_buffer));
-  message_loop_.RunUntilIdle();
-  EXPECT_TRUE(got_eos_buffer);
-}
-
 // Verify that seek works properly when the WebM cues data is at the start of
 // the file instead of at the end.
 TEST_F(FFmpegDemuxerTest, SeekWithCuesBeforeFirstCluster) {

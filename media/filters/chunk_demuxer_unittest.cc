@@ -2902,26 +2902,6 @@ TEST_P(ChunkDemuxerTest, Shutdown_BeforeInitialize) {
   message_loop_.RunUntilIdle();
 }
 
-TEST_P(ChunkDemuxerTest, ReadAfterAudioDisabled) {
-  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
-  AppendCluster(kDefaultFirstCluster());
-
-  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::AUDIO);
-  ASSERT_TRUE(stream);
-
-  // The stream should no longer be present.
-  demuxer_->OnAudioRendererDisabled();
-  ASSERT_FALSE(demuxer_->GetStream(DemuxerStream::AUDIO));
-
-  // Normally this would return an audio buffer at timestamp zero, but
-  // all reads should return EOS buffers when disabled.
-  bool audio_read_done = false;
-  stream->Read(base::Bind(&OnReadDone_EOSExpected, &audio_read_done));
-  message_loop_.RunUntilIdle();
-
-  EXPECT_TRUE(audio_read_done);
-}
-
 // Verifies that signaling end of stream while stalled at a gap
 // boundary does not trigger end of stream buffers to be returned.
 TEST_P(ChunkDemuxerTest, EndOfStreamWhileWaitingForGapToBeFilled) {

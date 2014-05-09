@@ -78,14 +78,6 @@ class MEDIA_EXPORT Demuxer {
   // call any method (including Stop()) after a demuxer has stopped.
   virtual void Stop(const base::Closure& callback) = 0;
 
-  // This method is called from the pipeline when the audio renderer
-  // is disabled. Demuxers can ignore the notification if they do not
-  // need to react to this event.
-  //
-  // TODO(acolwell): Change to generic DisableStream(DemuxerStream::Type).
-  // TODO(scherkus): this might not be needed http://crbug.com/234708
-  virtual void OnAudioRendererDisabled() = 0;
-
   // Returns the first stream of the given stream type (which is not allowed
   // to be DemuxerStream::TEXT), or NULL if that type of stream is not present.
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) = 0;

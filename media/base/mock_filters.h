@@ -139,13 +139,12 @@ class MockAudioRenderer : public AudioRenderer {
   virtual ~MockAudioRenderer();
 
   // AudioRenderer implementation.
-  MOCK_METHOD8(Initialize, void(DemuxerStream* stream,
+  MOCK_METHOD7(Initialize, void(DemuxerStream* stream,
                                 const PipelineStatusCB& init_cb,
                                 const StatisticsCB& statistics_cb,
                                 const base::Closure& underflow_cb,
                                 const TimeCB& time_cb,
                                 const base::Closure& ended_cb,
-                                const base::Closure& disabled_cb,
                                 const PipelineStatusCB& error_cb));
   MOCK_METHOD1(Play, void(const base::Closure& callback));
   MOCK_METHOD1(Pause, void(const base::Closure& callback));
