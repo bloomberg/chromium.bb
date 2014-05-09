@@ -114,6 +114,16 @@ BluetoothRemoteGattCharacteristicChromeOS::GetDescriptors() const {
   return descriptors;
 }
 
+device::BluetoothGattDescriptor*
+BluetoothRemoteGattCharacteristicChromeOS::GetDescriptor(
+    const std::string& identifier) const {
+  DescriptorMap::const_iterator iter =
+      descriptors_.find(dbus::ObjectPath(identifier));
+  if (iter == descriptors_.end())
+    return NULL;
+  return iter->second;
+}
+
 bool BluetoothRemoteGattCharacteristicChromeOS::AddDescriptor(
     device::BluetoothGattDescriptor* descriptor) {
   VLOG(1) << "Descriptors cannot be added to a remote GATT characteristic.";
@@ -194,6 +204,8 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorAdded(
   DCHECK(descriptor->GetIdentifier() == object_path.value());
   DCHECK(descriptor->GetUUID().IsValid());
   DCHECK(service_);
+
+  service_->NotifyDescriptorAddedOrRemoved(this, descriptor, true /* added */);
   service_->NotifyServiceChanged();
 }
 
@@ -211,9 +223,12 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorRemoved(
   BluetoothRemoteGattDescriptorChromeOS* descriptor = iter->second;
   DCHECK(descriptor->object_path() == object_path);
   descriptors_.erase(iter);
+
+  service_->NotifyDescriptorAddedOrRemoved(this, descriptor, false /* added */);
   delete descriptor;
 
   DCHECK(service_);
+
   service_->NotifyServiceChanged();
 }
 
@@ -224,8 +239,21 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorPropertyChanged(
   if (iter == descriptors_.end())
     return;
 
+  // Ignore all property changes except for "Value".
+  BluetoothGattDescriptorClient::Properties* properties =
+      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
+          GetProperties(object_path);
+  DCHECK(properties);
+  if (property_name != properties->value.name())
+    return;
+
   VLOG(1) << "GATT descriptor property changed: " << object_path.value()
           << ", property: " << property_name;
+
+  DCHECK(service_);
+
+  service_->NotifyDescriptorValueChanged(
+      this, iter->second, properties->value.value());
 }
 
 void BluetoothRemoteGattCharacteristicChromeOS::OnGetValue(

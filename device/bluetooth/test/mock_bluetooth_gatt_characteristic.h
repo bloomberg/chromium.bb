@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_GATT_CHARACTERISTIC_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -37,6 +38,8 @@ class MockBluetoothGattCharacteristic : public BluetoothGattCharacteristic {
   MOCK_CONST_METHOD0(GetProperties, Properties());
   MOCK_CONST_METHOD0(GetPermissions, Permissions());
   MOCK_CONST_METHOD0(GetDescriptors, std::vector<BluetoothGattDescriptor*>());
+  MOCK_CONST_METHOD1(GetDescriptor,
+                     BluetoothGattDescriptor*(const std::string&));
   MOCK_METHOD1(AddDescriptor, bool(BluetoothGattDescriptor*));
   MOCK_METHOD1(UpdateValue, bool(const std::vector<uint8>&));
   MOCK_METHOD2(ReadRemoteCharacteristic,

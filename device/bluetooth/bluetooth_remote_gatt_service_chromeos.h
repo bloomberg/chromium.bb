@@ -27,6 +27,7 @@ namespace chromeos {
 
 class BluetoothDeviceChromeOS;
 class BluetoothRemoteGattCharacteristicChromeOS;
+class BluetoothRemoteGattDescriptorChromeOS;
 
 // The BluetoothRemoteGattServiceChromeOS class implements BluetootGattService
 // for remote GATT services on the the Chrome OS platform.
@@ -67,6 +68,25 @@ class BluetoothRemoteGattServiceChromeOS
   // used by BluetoothRemoteGattCharacteristicChromeOS instances to notify
   // service observers when characteristic descriptors get added and removed.
   void NotifyServiceChanged();
+
+  // Notifies its observers that a descriptor |descriptor| belonging to
+  // characteristic |characteristic| has been added or removed. This is used
+  // by BluetoothRemoteGattCharacteristicChromeOS instances to notify service
+  // observers when characteristic descriptors get added and removed. If |added|
+  // is true, an "Added" event will be sent. Otherwise, a "Removed" event will
+  // be sent.
+  void NotifyDescriptorAddedOrRemoved(
+      BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+      BluetoothRemoteGattDescriptorChromeOS* descriptor,
+      bool added);
+
+  // Notifies its observers that the value of a descriptor has changed. Called
+  // by BluetoothRemoteGattCharacteristicChromeOS instances to notify service
+  // observers when the value of one of their descriptors gets updated.
+  void NotifyDescriptorValueChanged(
+      BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+      BluetoothRemoteGattDescriptorChromeOS* descriptor,
+      const std::vector<uint8>& value);
 
  private:
   friend class BluetoothDeviceChromeOS;

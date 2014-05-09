@@ -173,12 +173,40 @@ class BluetoothGattService {
         BluetoothGattService* service,
         BluetoothGattCharacteristic* characteristic) {}
 
+    // Called when the remote GATT characteristic descriptor |descriptor|
+    // belonging to characteristic |characteristic| has been discovered. Don't
+    // cache the arguments as the pointers may become invalid. Instead, use the
+    // specially assigned identifier to obtain a descriptor and cache that
+    // identifier as necessary.
+    //
+    // This method will always be followed by a call to GattServiceChanged,
+    // which can be used by observers to get all the characteristics of a
+    // service and perform the necessary updates. GattDescriptorAdded exists
+    // mostly for convenience.
+    virtual void GattDescriptorAdded(
+        BluetoothGattCharacteristic* characteristic,
+        BluetoothGattDescriptor* descriptor) {}
+
+    // Called when a GATT characteristic descriptor |descriptor| belonging to
+    // characteristic |characteristic| has been removed. This method is for
+    // convenience and will be followed by a call to GattServiceChanged (except
+    // when called after the service gets removed).
+    virtual void GattDescriptorRemoved(
+        BluetoothGattCharacteristic* characteristic,
+        BluetoothGattDescriptor* descriptor) {}
+
     // Called when the value of a characteristic has changed. This might be a
     // result of a read/write request to, or a notification/indication from, a
     // remote GATT characteristic.
     virtual void GattCharacteristicValueChanged(
         BluetoothGattService* service,
         BluetoothGattCharacteristic* characteristic,
+        const std::vector<uint8>& value) {}
+
+    // Called when the value of a characteristic descriptor has been updated.
+    virtual void GattDescriptorValueChanged(
+        BluetoothGattCharacteristic* characteristic,
+        BluetoothGattDescriptor* descriptor,
         const std::vector<uint8>& value) {}
   };
 

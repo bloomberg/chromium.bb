@@ -132,6 +132,9 @@ class TestGattServiceObserver : public BluetoothGattService::Observer {
         gatt_characteristic_added_count_(0),
         gatt_characteristic_removed_count_(0),
         gatt_characteristic_value_changed_count_(0),
+        gatt_descriptor_added_count_(0),
+        gatt_descriptor_removed_count_(0),
+        gatt_descriptor_value_changed_count_(0),
         device_address_(device->GetAddress()),
         gatt_service_id_(service->GetIdentifier()),
         adapter_(adapter) {
@@ -200,10 +203,61 @@ class TestGattServiceObserver : public BluetoothGattService::Observer {
     ++gatt_characteristic_value_changed_count_;
     last_gatt_characteristic_id_ = characteristic->GetIdentifier();
     last_gatt_characteristic_uuid_ = characteristic->GetUUID();
-    last_changed_characteristic_value_ = characteristic->GetValue();
+    last_changed_characteristic_value_ = value;
 
     EXPECT_EQ(service->GetCharacteristic(last_gatt_characteristic_id_),
               characteristic);
+    EXPECT_EQ(service, characteristic->GetService());
+
+    QuitMessageLoop();
+  }
+
+  virtual void GattDescriptorAdded(
+      BluetoothGattCharacteristic* characteristic,
+      BluetoothGattDescriptor* descriptor) OVERRIDE {
+    ASSERT_EQ(gatt_service_id_, characteristic->GetService()->GetIdentifier());
+
+    ++gatt_descriptor_added_count_;
+    last_gatt_descriptor_id_ = descriptor->GetIdentifier();
+    last_gatt_descriptor_uuid_ = descriptor->GetUUID();
+
+    EXPECT_EQ(characteristic->GetDescriptor(last_gatt_descriptor_id_),
+              descriptor);
+    EXPECT_EQ(characteristic, descriptor->GetCharacteristic());
+
+    QuitMessageLoop();
+  }
+
+  virtual void GattDescriptorRemoved(
+      BluetoothGattCharacteristic* characteristic,
+      BluetoothGattDescriptor* descriptor) OVERRIDE {
+    ASSERT_EQ(gatt_service_id_, characteristic->GetService()->GetIdentifier());
+
+    ++gatt_descriptor_removed_count_;
+    last_gatt_descriptor_id_ = descriptor->GetIdentifier();
+    last_gatt_descriptor_uuid_ = descriptor->GetUUID();
+
+    // The characteristic should return NULL for this descriptor..
+    EXPECT_FALSE(characteristic->GetDescriptor(last_gatt_descriptor_id_));
+    EXPECT_EQ(characteristic, descriptor->GetCharacteristic());
+
+    QuitMessageLoop();
+  }
+
+  virtual void GattDescriptorValueChanged(
+      BluetoothGattCharacteristic* characteristic,
+      BluetoothGattDescriptor* descriptor,
+      const std::vector<uint8>& value) OVERRIDE {
+    ASSERT_EQ(gatt_service_id_, characteristic->GetService()->GetIdentifier());
+
+    ++gatt_descriptor_value_changed_count_;
+    last_gatt_descriptor_id_ = descriptor->GetIdentifier();
+    last_gatt_descriptor_uuid_ = descriptor->GetUUID();
+    last_changed_descriptor_value_ = value;
+
+    EXPECT_EQ(characteristic->GetDescriptor(last_gatt_descriptor_id_),
+              descriptor);
+    EXPECT_EQ(characteristic, descriptor->GetCharacteristic());
 
     QuitMessageLoop();
   }
@@ -212,9 +266,15 @@ class TestGattServiceObserver : public BluetoothGattService::Observer {
   int gatt_characteristic_added_count_;
   int gatt_characteristic_removed_count_;
   int gatt_characteristic_value_changed_count_;
+  int gatt_descriptor_added_count_;
+  int gatt_descriptor_removed_count_;
+  int gatt_descriptor_value_changed_count_;
   std::string last_gatt_characteristic_id_;
   BluetoothUUID last_gatt_characteristic_uuid_;
   std::vector<uint8> last_changed_characteristic_value_;
+  std::string last_gatt_descriptor_id_;
+  BluetoothUUID last_gatt_descriptor_uuid_;
+  std::vector<uint8> last_changed_descriptor_value_;
 
  private:
   // Some tests use a message loop since background processing is simulated;
@@ -501,6 +561,10 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
 
   TestGattServiceObserver service_observer(adapter_, device, service);
   EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_added_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_removed_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
+
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Run the message loop so that the characteristics appear.
@@ -508,6 +572,10 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
   EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
 
   // Only the Heart Rate Measurement characteristic has a descriptor.
+  EXPECT_EQ(1, service_observer.gatt_descriptor_added_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_removed_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
+
   BluetoothGattCharacteristic* characteristic = service->GetCharacteristic(
       fake_bluetooth_gatt_characteristic_client_->
           GetBodySensorLocationPath().value());
@@ -530,25 +598,40 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
   EXPECT_FALSE(descriptor->IsLocal());
   EXPECT_EQ(BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid(),
             descriptor->GetUUID());
+  EXPECT_EQ(descriptor->GetUUID(),
+            service_observer.last_gatt_descriptor_uuid_);
+  EXPECT_EQ(descriptor->GetIdentifier(),
+            service_observer.last_gatt_descriptor_id_);
 
   // Hide the descriptor.
   fake_bluetooth_gatt_descriptor_client_->HideDescriptor(
       dbus::ObjectPath(descriptor->GetIdentifier()));
   EXPECT_TRUE(characteristic->GetDescriptors().empty());
   EXPECT_EQ(5, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(1, service_observer.gatt_descriptor_added_count_);
+  EXPECT_EQ(1, service_observer.gatt_descriptor_removed_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
 
   // Expose the descriptor again.
+  service_observer.last_gatt_descriptor_id_.clear();
+  service_observer.last_gatt_descriptor_uuid_ = BluetoothUUID();
   fake_bluetooth_gatt_descriptor_client_->ExposeDescriptor(
       dbus::ObjectPath(characteristic->GetIdentifier()),
       FakeBluetoothGattDescriptorClient::
           kClientCharacteristicConfigurationUUID);
   EXPECT_EQ(6, service_observer.gatt_service_changed_count_);
   EXPECT_EQ(1U, characteristic->GetDescriptors().size());
+  EXPECT_EQ(2, service_observer.gatt_descriptor_added_count_);
+  EXPECT_EQ(1, service_observer.gatt_descriptor_removed_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
 
   descriptor = characteristic->GetDescriptors()[0];
   EXPECT_FALSE(descriptor->IsLocal());
   EXPECT_EQ(BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid(),
             descriptor->GetUUID());
+  EXPECT_EQ(descriptor->GetUUID(), service_observer.last_gatt_descriptor_uuid_);
+  EXPECT_EQ(descriptor->GetIdentifier(),
+            service_observer.last_gatt_descriptor_id_);
 }
 
 TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
@@ -798,6 +881,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
 
   TestGattServiceObserver service_observer(adapter_, device, service);
   EXPECT_EQ(0, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Run the message loop so that the characteristics appear.
@@ -834,6 +918,8 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
+  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(0, service_observer.gatt_descriptor_value_changed_count_);
 
   // Write value.
   desc_value[0] = 0x03;
@@ -847,6 +933,8 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_FALSE(ValuesEqual(last_read_value_, descriptor->GetValue()));
   EXPECT_TRUE(ValuesEqual(desc_value, descriptor->GetValue()));
+  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(1, service_observer.gatt_descriptor_value_changed_count_);
 
   // Read new value.
   descriptor->ReadRemoteDescriptor(
@@ -858,6 +946,8 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(ValuesEqual(last_read_value_, descriptor->GetValue()));
   EXPECT_TRUE(ValuesEqual(desc_value, descriptor->GetValue()));
+  EXPECT_EQ(4, service_observer.gatt_service_changed_count_);
+  EXPECT_EQ(1, service_observer.gatt_descriptor_value_changed_count_);
 }
 
 }  // namespace chromeos

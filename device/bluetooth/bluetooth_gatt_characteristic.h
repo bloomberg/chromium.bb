@@ -138,6 +138,11 @@ class BluetoothGattCharacteristic {
   virtual std::vector<BluetoothGattDescriptor*>
       GetDescriptors() const = 0;
 
+  // Returns the GATT characteristic descriptor with identifier |identifier| if
+  // it belongs to this GATT characteristic.
+  virtual BluetoothGattDescriptor* GetDescriptor(
+      const std::string& identifier) const = 0;
+
   // Adds a characteristic descriptor to the locally hosted characteristic
   // represented by this instance. This method only makes sense for local
   // characteristics and won't have an effect if this instance represents a

@@ -10,6 +10,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
 
 namespace chromeos {
 
@@ -162,6 +163,32 @@ void BluetoothRemoteGattServiceChromeOS::Unregister(
 void BluetoothRemoteGattServiceChromeOS::NotifyServiceChanged() {
   FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
                     GattServiceChanged(this));
+}
+
+void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorAddedOrRemoved(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+    BluetoothRemoteGattDescriptorChromeOS* descriptor,
+    bool added) {
+  DCHECK(characteristic->GetService() == this);
+  DCHECK(descriptor->GetCharacteristic() == characteristic);
+  if (added) {
+    FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
+                      GattDescriptorAdded(characteristic, descriptor));
+    return;
+  }
+  FOR_EACH_OBSERVER(device::BluetoothGattService::Observer, observers_,
+                    GattDescriptorRemoved(characteristic, descriptor));
+}
+
+void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorValueChanged(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+    BluetoothRemoteGattDescriptorChromeOS* descriptor,
+    const std::vector<uint8>& value) {
+  DCHECK(characteristic->GetService() == this);
+  DCHECK(descriptor->GetCharacteristic() == characteristic);
+  FOR_EACH_OBSERVER(
+      device::BluetoothGattService::Observer, observers_,
+      GattDescriptorValueChanged(characteristic, descriptor, value));
 }
 
 void BluetoothRemoteGattServiceChromeOS::GattServicePropertyChanged(

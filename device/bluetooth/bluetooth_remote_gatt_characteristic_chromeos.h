@@ -44,6 +44,8 @@ class BluetoothRemoteGattCharacteristicChromeOS
   virtual Permissions GetPermissions() const OVERRIDE;
   virtual std::vector<device::BluetoothGattDescriptor*>
       GetDescriptors() const OVERRIDE;
+  virtual device::BluetoothGattDescriptor* GetDescriptor(
+      const std::string& identifier) const OVERRIDE;
   virtual bool AddDescriptor(
       device::BluetoothGattDescriptor* descriptor) OVERRIDE;
   virtual bool UpdateValue(const std::vector<uint8>& value) OVERRIDE;
