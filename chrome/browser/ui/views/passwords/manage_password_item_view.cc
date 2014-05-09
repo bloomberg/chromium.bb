@@ -107,12 +107,16 @@ ManagePasswordItemView::UndoView::UndoView(ManagePasswordItemView* parent)
   views::Label* text =
       new views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED));
   text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  text->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
 
   undo_link_ =
       new views::Link(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
   undo_link_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   undo_link_->set_listener(this);
   undo_link_->SetUnderline(false);
+  undo_link_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
+      ui::ResourceBundle::SmallFont));
 
   parent->BuildColumnSet(layout, TWO_COLUMN_SET);
   layout->StartRowWithPadding(
