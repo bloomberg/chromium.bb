@@ -63,19 +63,13 @@ void NinePatchLayerImpl::SetLayout(const gfx::Rect& aperture,
 }
 
 void NinePatchLayerImpl::CheckGeometryLimitations() {
-  // TODO(ccameron): the following "greater than or equal to" (GE) checks should
-  // be greater than (GT) to avoid degenerate nine-patches.  The relaxed
-  // condition "equal to" is a workaround for the overhang shadow use case and
-  // should be investigated further.
-
   // |border| is in layer space.  It cannot exceed the bounds of the layer.
-  DCHECK(!border_.size().IsEmpty());
   DCHECK_GE(bounds().width(), border_.width());
   DCHECK_GE(bounds().height(), border_.height());
 
   // Sanity Check on |border|
-  DCHECK_LT(border_.x(), border_.width());
-  DCHECK_LT(border_.y(), border_.height());
+  DCHECK_LE(border_.x(), border_.width());
+  DCHECK_LE(border_.y(), border_.height());
   DCHECK_GE(border_.x(), 0);
   DCHECK_GE(border_.y(), 0);
 
@@ -84,13 +78,6 @@ void NinePatchLayerImpl::CheckGeometryLimitations() {
   DCHECK(gfx::Rect(image_bounds_).Contains(image_aperture_))
       << "image_bounds_ " << gfx::Rect(image_bounds_).ToString()
       << " image_aperture_ " << image_aperture_.ToString();
-
-  // Avoid the degenerate cases where the aperture touches the edge of the
-  // image.
-  DCHECK_LT(image_aperture_.width(), image_bounds_.width() - 1);
-  DCHECK_LT(image_aperture_.height(), image_bounds_.height() - 1);
-  DCHECK_GT(image_aperture_.x(), 0);
-  DCHECK_GT(image_aperture_.y(), 0);
 }
 
 void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,

@@ -153,6 +153,66 @@ TEST(NinePatchLayerImplTest, VerifyDrawQuads) {
                            expected_quad_size);
 }
 
+TEST(NinePatchLayerImplTest, VerifyDrawQuadsWithEmptyPatches) {
+  // The top component of the 9-patch is empty, so there should be no quads for
+  // the top three components.
+  gfx::Size bitmap_size(100, 100);
+  gfx::Size layer_size(100, 100);
+  gfx::Rect aperture_rect(10, 0, 80, 90);
+  gfx::Rect border(10, 0, 20, 10);
+  bool fill_center = false;
+  size_t expected_quad_size = 5;
+  NinePatchLayerLayoutTest(bitmap_size,
+                           aperture_rect,
+                           layer_size,
+                           border,
+                           fill_center,
+                           expected_quad_size);
+
+  // The top and left components of the 9-patch are empty, so there should be no
+  // quads for the left and top components.
+  bitmap_size = gfx::Size(100, 100);
+  layer_size = gfx::Size(100, 100);
+  aperture_rect = gfx::Rect(0, 0, 90, 90);
+  border = gfx::Rect(0, 0, 10, 10);
+  fill_center = false;
+  expected_quad_size = 3;
+  NinePatchLayerLayoutTest(bitmap_size,
+                           aperture_rect,
+                           layer_size,
+                           border,
+                           fill_center,
+                           expected_quad_size);
+
+  // The aperture is the size of the bitmap and the center doesn't draw.
+  bitmap_size = gfx::Size(100, 100);
+  layer_size = gfx::Size(100, 100);
+  aperture_rect = gfx::Rect(0, 0, 100, 100);
+  border = gfx::Rect(0, 0, 0, 0);
+  fill_center = false;
+  expected_quad_size = 0;
+  NinePatchLayerLayoutTest(bitmap_size,
+                           aperture_rect,
+                           layer_size,
+                           border,
+                           fill_center,
+                           expected_quad_size);
+
+  // The aperture is the size of the bitmap and the center does draw.
+  bitmap_size = gfx::Size(100, 100);
+  layer_size = gfx::Size(100, 100);
+  aperture_rect = gfx::Rect(0, 0, 100, 100);
+  border = gfx::Rect(0, 0, 0, 0);
+  fill_center = true;
+  expected_quad_size = 1;
+  NinePatchLayerLayoutTest(bitmap_size,
+                           aperture_rect,
+                           layer_size,
+                           border,
+                           fill_center,
+                           expected_quad_size);
+}
+
 TEST(NinePatchLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
