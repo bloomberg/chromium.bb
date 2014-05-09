@@ -164,7 +164,7 @@ DOMPasteAllowed initial=false
 
 // FIXME: Remove this. Unfortunately many webkit_unit_tests
 // depend on parsing being synchronous. crbug.com/366354
-threadedHTMLParser initial=false
+threadedHTMLParser initial=true
 useThreadedHTMLParserForDataURLs initial=false
 
 allowCustomScrollbarInMainFrame initial=true

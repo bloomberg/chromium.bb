@@ -52,7 +52,6 @@
 
 using namespace WebCore;
 using namespace blink;
-using blink::FrameTestHelpers::runPendingTasks;
 
 namespace {
 
@@ -83,7 +82,6 @@ public:
     void navigateTo(const std::string& url)
     {
         FrameTestHelpers::loadFrame(webViewImpl()->mainFrame(), url);
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
     void forceFullCompositingUpdate()
@@ -94,12 +92,6 @@ public:
     void registerMockedHttpURLLoad(const std::string& fileName)
     {
         URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8(fileName.c_str()));
-    }
-
-    void executeScript(const WebString& code)
-    {
-        webViewImpl()->mainFrame()->executeScript(WebScriptSource(code));
-        runPendingTasks();
     }
 
     WebLayer* getRootScrollLayer()

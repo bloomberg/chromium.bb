@@ -65,7 +65,6 @@ public:
     void navigateTo(const std::string& url)
     {
         FrameTestHelpers::loadFrame(webViewImpl()->mainFrame(), url);
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
     void forceFullCompositingUpdate()

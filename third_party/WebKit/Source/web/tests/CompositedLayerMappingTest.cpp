@@ -80,7 +80,6 @@ public:
     void navigateTo(const std::string& url)
     {
         FrameTestHelpers::loadFrame(m_webViewImpl->mainFrame(), url);
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
     void registerMockedHttpURLLoad(const std::string& fileName)
