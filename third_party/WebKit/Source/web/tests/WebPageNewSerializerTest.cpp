@@ -159,7 +159,16 @@ protected:
 
     void loadURLInTopFrame(const WebURL& url)
     {
-        FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), url.string().utf8());
+        WebURLRequest urlRequest;
+        urlRequest.initialize();
+        urlRequest.setURL(url);
+        m_helper.webView()->mainFrame()->loadRequest(urlRequest);
+        // Make sure any pending request get served.
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+        // Some requests get delayed, run the timer.
+        runPendingTasks();
+        // Server the delayed resources.
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
     const WebString& htmlMimeType() const { return m_htmlMimeType; }
@@ -210,6 +219,12 @@ TEST_F(WebPageNewSerializeTest, PageWithFrames)
     registerMockedURLLoad(toKURL("http://www.test.com/blue_background.png"), WebString::fromUTF8("blue_background.png"), WebString::fromUTF8("pageserializer/"), pngMimeType());
 
     loadURLInTopFrame(topFrameURL);
+    // OBJECT/EMBED have some delay to start to load their content. The first
+    // serveAsynchronousMockedRequests call in loadURLInTopFrame() finishes
+    // before the start.
+    RefPtrWillBeRawPtr<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView()->mainFrame()->document());
+    document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     WebVector<WebPageSerializer::Resource> resources;
     WebPageSerializer::serialize(webView(), &resources);

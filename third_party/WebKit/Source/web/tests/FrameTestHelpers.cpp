@@ -32,7 +32,6 @@
 #include "web/tests/FrameTestHelpers.h"
 
 #include "public/platform/Platform.h"
-#include "public/platform/WebData.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURLRequest.h"
@@ -48,26 +47,6 @@ namespace blink {
 namespace FrameTestHelpers {
 
 namespace {
-
-// The frame test helpers coordinate frame loads in a carefully choreographed
-// dance. Since the parser is threaded, simply spinning the run loop once is not
-// enough to ensure completion of a load. Instead, the following pattern is
-// used to ensure that tests see the final state:
-// 1. Post a task to trigger a load (LoadTask/LoadHTMLStringTask/ReloadTask).
-// 2. Enter the run loop.
-// 3. Posted task triggers the load, and starts pumping pending resource
-//    requests using ServeAsyncRequestsTask.
-// 4. TestWebFrameClient watches for didStartLoading/didStopLoading calls,
-//    keeping track of how many loads it thinks are in flight.
-// 5. While ServeAsyncRequestsTask observes TestWebFrameClient to still have
-//    loads in progress, it posts itself back to the run loop.
-// 6. When ServeAsyncRequestsTask notices there are no more loads in progress,
-//    it exits the run loop.
-// 7. At this point, all parsing, resource loads, and layout should be finished.
-TestWebFrameClient* testClientForFrame(WebFrame* frame)
-{
-    return static_cast<TestWebFrameClient*>(toWebLocalFrameImpl(frame)->client());
-}
 
 class QuitTask : public WebThread::Task {
 public:
@@ -86,89 +65,7 @@ public:
     }
 };
 
-class ServeAsyncRequestsTask : public WebThread::Task {
-public:
-    explicit ServeAsyncRequestsTask(TestWebFrameClient* client)
-        : m_client(client)
-    {
-    }
-
-    virtual void run() OVERRIDE
-    {
-        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
-        if (m_client->isLoading())
-            Platform::current()->currentThread()->postTask(new ServeAsyncRequestsTask(m_client));
-        else
-            Platform::current()->currentThread()->exitRunLoop();
-    }
-
-private:
-    TestWebFrameClient* const m_client;
-};
-
-void pumpPendingRequests(WebFrame* frame)
-{
-    Platform::current()->currentThread()->postTask(new ServeAsyncRequestsTask(testClientForFrame(frame)));
-    Platform::current()->currentThread()->enterRunLoop();
-}
-
-class LoadTask : public WebThread::Task {
-public:
-    LoadTask(WebFrame* frame, const WebURLRequest& request)
-        : m_frame(frame)
-        , m_request(request)
-    {
-    }
-
-    virtual void run() OVERRIDE
-    {
-        m_frame->loadRequest(m_request);
-    }
-
-private:
-    WebFrame* const m_frame;
-    const WebURLRequest m_request;
-};
-
-class LoadHTMLStringTask : public WebThread::Task {
-public:
-    LoadHTMLStringTask(WebFrame* frame, const std::string& html, const WebURL& baseURL)
-        : m_frame(frame)
-        , m_html(html)
-        , m_baseURL(baseURL)
-    {
-    }
-
-    virtual void run() OVERRIDE
-    {
-        m_frame->loadHTMLString(WebData(m_html.data(), m_html.size()), m_baseURL);
-    }
-
-private:
-    WebFrame* const m_frame;
-    const std::string m_html;
-    const WebURL m_baseURL;
-};
-
-class ReloadTask : public WebThread::Task {
-public:
-    ReloadTask(WebFrame* frame, bool ignoreCache)
-        : m_frame(frame)
-        , m_ignoreCache(ignoreCache)
-    {
-    }
-
-    virtual void run() OVERRIDE
-    {
-        m_frame->reload(m_ignoreCache);
-    }
-
-private:
-    WebFrame* const m_frame;
-    const bool m_ignoreCache;
-};
-
-TestWebFrameClient* defaultWebFrameClient()
+WebFrameClient* defaultWebFrameClient()
 {
     DEFINE_STATIC_LOCAL(TestWebFrameClient, client, ());
     return &client;
@@ -187,35 +84,9 @@ void loadFrame(WebFrame* frame, const std::string& url)
     WebURLRequest urlRequest;
     urlRequest.initialize();
     urlRequest.setURL(URLTestHelpers::toKURL(url));
-
-    Platform::current()->currentThread()->postTask(new LoadTask(frame, urlRequest));
-    pumpPendingRequests(frame);
+    frame->loadRequest(urlRequest);
 }
 
-void loadHTMLString(WebFrame* frame, const std::string& html, const WebURL& baseURL)
-{
-    Platform::current()->currentThread()->postTask(new LoadHTMLStringTask(frame, html, baseURL));
-    pumpPendingRequests(frame);
-}
-
-void reloadFrame(WebFrame* frame)
-{
-    Platform::current()->currentThread()->postTask(new ReloadTask(frame, false));
-    pumpPendingRequests(frame);
-}
-
-void reloadFrameIgnoringCache(WebFrame* frame)
-{
-    Platform::current()->currentThread()->postTask(new ReloadTask(frame, true));
-    pumpPendingRequests(frame);
-}
-
-void pumpPendingRequestsDoNotUse(WebFrame* frame)
-{
-    pumpPendingRequests(frame);
-}
-
-// FIXME: There's a duplicate implementation in UnitTestHelpers.cpp. Remove one.
 void runPendingTasks()
 {
     // Pending tasks include Timers that have been scheduled.
@@ -234,7 +105,7 @@ WebViewHelper::~WebViewHelper()
     reset();
 }
 
-WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient* webFrameClient, WebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+WebViewImpl* WebViewHelper::initialize(bool enableJavascript, WebFrameClient* webFrameClient, WebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
 {
     reset();
 
@@ -256,11 +127,12 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
     return m_webView;
 }
 
-WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enableJavascript, TestWebFrameClient* webFrameClient, WebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enableJavascript, WebFrameClient* webFrameClient, WebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
 {
     initialize(enableJavascript, webFrameClient, webViewClient, updateSettingsFunc);
 
     loadFrame(webView()->mainFrame(), url);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     return webViewImpl();
 }
@@ -268,14 +140,9 @@ WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enabl
 void WebViewHelper::reset()
 {
     if (m_webView) {
-        ASSERT(!testClientForFrame(m_webView->mainFrame())->isLoading());
         m_webView->close();
         m_webView = 0;
     }
-}
-
-TestWebFrameClient::TestWebFrameClient() : m_loadsInProgress(0)
-{
 }
 
 WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, const WebString& frameName)
@@ -290,17 +157,6 @@ void TestWebFrameClient::frameDetached(WebFrame* frame)
     if (frame->parent())
         frame->parent()->removeChild(frame);
     frame->close();
-}
-
-void TestWebFrameClient::didStartLoading(bool)
-{
-    ++m_loadsInProgress;
-}
-
-void TestWebFrameClient::didStopLoading()
-{
-    ASSERT(m_loadsInProgress > 0);
-    --m_loadsInProgress;
 }
 
 void TestWebViewClient::initializeLayerTreeView()

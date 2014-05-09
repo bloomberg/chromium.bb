@@ -101,7 +101,11 @@ public:
             RegisterMockedUrl(urlRoot, iframeSupportFiles[i]);
         }
 
-        FrameTestHelpers::loadFrame(mainFrame(), url.string().utf8().data());
+        WebURLRequest request;
+        request.initialize();
+        request.setURL(url);
+        mainFrame()->loadRequest(request);
+        serveRequests();
 
         Platform::current()->unitTestSupport()->unregisterMockedURL(url);
     }

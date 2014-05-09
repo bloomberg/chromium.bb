@@ -44,22 +44,7 @@ class WebSettings;
 
 namespace FrameTestHelpers {
 
-class TestWebFrameClient;
-
-// Loads a url into the specified WebFrame for testing purposes. Pumps any
-// pending resource requests, as well as waiting for the threaded parser to
-// finish, before returning.
 void loadFrame(WebFrame*, const std::string& url);
-// Same as above, but for WebFrame::loadHTMLString().
-void loadHTMLString(WebFrame*, const std::string& html, const WebURL& baseURL);
-// Same as above, but for WebFrame::reload().
-void reloadFrame(WebFrame*);
-void reloadFrameIgnoringCache(WebFrame*);
-
-// Pumps pending resource requests while waiting for a frame to load. Don't use
-// this. Use one of the above helpers.
-void pumpPendingRequestsDoNotUse(WebFrame*);
-
 void runPendingTasks();
 
 // Convenience class for handling the lifetime of a WebView and its associated mainframe in tests.
@@ -72,10 +57,10 @@ public:
     // Creates and initializes the WebView. Implicitly calls reset() first. IF a
     // WebFrameClient or a WebViewClient are passed in, they must outlive the
     // WebViewHelper.
-    WebViewImpl* initialize(bool enableJavascript = false, TestWebFrameClient* = 0, WebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+    WebViewImpl* initialize(bool enableJavascript = false, WebFrameClient* = 0, WebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
 
     // Same as initialize() but also performs the initial load of the url.
-    WebViewImpl* initializeAndLoad(const std::string& url, bool enableJavascript = false, TestWebFrameClient* = 0, WebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+    WebViewImpl* initializeAndLoad(const std::string& url, bool enableJavascript = false, WebFrameClient* = 0, WebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
 
     void reset();
 
@@ -90,17 +75,8 @@ private:
 // frames and need further specialization of WebFrameClient behavior should subclass this.
 class TestWebFrameClient : public WebFrameClient {
 public:
-    TestWebFrameClient();
-
     virtual WebFrame* createChildFrame(WebLocalFrame* parent, const WebString& frameName) OVERRIDE;
     virtual void frameDetached(WebFrame*) OVERRIDE;
-    virtual void didStartLoading(bool) OVERRIDE;
-    virtual void didStopLoading() OVERRIDE;
-
-    bool isLoading() { return m_loadsInProgress > 0; }
-
-private:
-    int m_loadsInProgress;
 };
 
 class TestWebViewClient : public WebViewClient {

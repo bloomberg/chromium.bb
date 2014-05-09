@@ -50,6 +50,7 @@
 
 using namespace WebCore;
 using namespace blink;
+using blink::FrameTestHelpers::runPendingTasks;
 using blink::URLTestHelpers::toKURL;
 using blink::URLTestHelpers::registerMockedURLLoad;
 
@@ -106,7 +107,17 @@ protected:
 
     void serialize(const char* url)
     {
-        FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), KURL(m_baseUrl, url).string().utf8().data());
+        WebURLRequest urlRequest;
+        urlRequest.initialize();
+        urlRequest.setURL(KURL(m_baseUrl, url));
+        m_helper.webView()->mainFrame()->loadRequest(urlRequest);
+        // Make sure any pending request get served.
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+        // Some requests get delayed, run the timer.
+        runPendingTasks();
+        // Server the delayed resources.
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+
         PageSerializer serializer(&m_resources);
         serializer.serialize(m_helper.webViewImpl()->mainFrameImpl()->frame()->page());
     }

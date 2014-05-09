@@ -250,9 +250,17 @@ protected:
         URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + fileName), WebString::fromUTF8(fileName.c_str()), WebString::fromUTF8("popup/"), WebString::fromUTF8("text/html"));
     }
 
+    void serveRequests()
+    {
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    }
+
     void loadFrame(WebFrame* frame, const std::string& fileName)
     {
-        FrameTestHelpers::loadFrame(frame, baseURL + fileName);
+        WebURLRequest urlRequest;
+        urlRequest.initialize();
+        urlRequest.setURL(WebURL(toKURL(baseURL + fileName)));
+        frame->loadRequest(urlRequest);
     }
 
     WebViewImpl* webView() const { return m_helper.webViewImpl(); }
@@ -397,6 +405,7 @@ TEST_F(SelectPopupMenuTest, DISABLED_SelectItemEventFire)
     registerMockedURLLoad("select_event.html");
     webView()->settings()->setJavaScriptEnabled(true);
     loadFrame(mainFrame(), "select_event.html");
+    serveRequests();
 
     m_popupMenuClient.setFocusedNode(mainFrame()->frame()->document()->focusedElement());
 
@@ -441,6 +450,7 @@ TEST_F(SelectPopupMenuTest, FLAKY_SelectItemKeyEvent)
     registerMockedURLLoad("select_event.html");
     webView()->settings()->setJavaScriptEnabled(true);
     loadFrame(mainFrame(), "select_event.html");
+    serveRequests();
 
     m_popupMenuClient.setFocusedNode(mainFrame()->frame()->document()->focusedElement());
 
@@ -462,6 +472,7 @@ TEST_F(SelectPopupMenuTest, SelectItemRemoveSelectOnChange)
     registerMockedURLLoad("select_event_remove_on_change.html");
     webView()->settings()->setJavaScriptEnabled(true);
     loadFrame(mainFrame(), "select_event_remove_on_change.html");
+    serveRequests();
 
     m_popupMenuClient.setFocusedNode(mainFrame()->frame()->document()->focusedElement());
 
@@ -483,6 +494,7 @@ TEST_F(SelectPopupMenuTest, SelectItemRemoveSelectOnClick)
     registerMockedURLLoad("select_event_remove_on_click.html");
     webView()->settings()->setJavaScriptEnabled(true);
     loadFrame(mainFrame(), "select_event_remove_on_click.html");
+    serveRequests();
 
     m_popupMenuClient.setFocusedNode(mainFrame()->frame()->document()->focusedElement());
 

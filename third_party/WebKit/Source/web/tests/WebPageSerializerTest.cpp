@@ -79,7 +79,12 @@ protected:
 
     void loadURLInTopFrame(const WebURL& url)
     {
-        FrameTestHelpers::loadFrame(m_helper.webView()->mainFrame(), url.string().utf8());
+        WebURLRequest urlRequest;
+        urlRequest.initialize();
+        urlRequest.setURL(url);
+        m_helper.webView()->mainFrame()->loadRequest(urlRequest);
+        // Make sure any pending request get served.
+        Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
     }
 
     static bool webVectorContains(const WebVector<WebURL>& vector, const char* url)
@@ -155,6 +160,12 @@ TEST_F(WebPageSerializerTest, MultipleFrames)
                           WebString::fromUTF8("awesome.png"));
 
     loadURLInTopFrame(topFrameURL);
+    // OBJECT/EMBED have some delay to start to load their content. The first
+    // serveAsynchronousMockedRequests call in loadURLInTopFrame() finishes
+    // before the start.
+    RefPtrWillBeRawPtr<Document> document = static_cast<PassRefPtrWillBeRawPtr<Document> >(webView()->mainFrame()->document());
+    document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     // Retrieve all resources.
     WebVector<WebURL> frames;
