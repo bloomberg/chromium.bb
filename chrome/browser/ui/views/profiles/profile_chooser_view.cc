@@ -710,7 +710,8 @@ bool ProfileChooserView::HandleKeyEvent(views::Textfield* sender,
 }
 
 views::View* ProfileChooserView::CreateProfileChooserView(
-    AvatarMenu* avatar_menu, TutorialMode last_tutorial_mode) {
+    AvatarMenu* avatar_menu,
+    TutorialMode last_tutorial_mode) {
   // TODO(guohui, noms): the view should be customized based on whether new
   // profile management preview is enabled or not.
 
@@ -730,10 +731,10 @@ views::View* ProfileChooserView::CreateProfileChooserView(
       current_profile_view = CreateCurrentProfileView(item, false);
       if (view_mode_ == BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
         if (is_new_profile_management) {
-          tutorial_view = tutorial_mode_ == TUTORIAL_MODE_SEND_FEEDBACK ?
+          tutorial_view = last_tutorial_mode == TUTORIAL_MODE_SEND_FEEDBACK ?
               CreateSendPreviewFeedbackView() :
               CreatePreviewEnabledTutorialView(
-                  item, tutorial_mode_ == TUTORIAL_MODE_PREVIEW_ENABLED);
+                  item, last_tutorial_mode == TUTORIAL_MODE_PREVIEW_ENABLED);
         } else {
           tutorial_view = CreateNewProfileManagementPreviewView();
         }
