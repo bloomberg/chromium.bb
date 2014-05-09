@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/compositor/no_transport_image_transport_factory.h"
-#include "content/common/host_shared_bitmap_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -25,9 +24,9 @@ void ImageTransportFactory::Initialize() {
   DCHECK(!g_factory || g_initialized_for_unit_tests);
   if (g_initialized_for_unit_tests)
     return;
-  g_factory = new GpuProcessTransportFactory;
-  ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
-  ui::Compositor::SetSharedBitmapManager(HostSharedBitmapManager::current());
+  GpuProcessTransportFactory* factory = new GpuProcessTransportFactory;
+  g_factory = factory;
+  ui::ContextFactory::SetInstance(factory);
 }
 
 void ImageTransportFactory::InitializeForUnitTests(
@@ -40,9 +39,10 @@ void ImageTransportFactory::InitializeForUnitTests(
   if (command_line->HasSwitch(switches::kEnablePixelOutputInTests))
     g_disable_null_draw = new gfx::DisableNullDrawGLBindings;
 
-  g_factory = new NoTransportImageTransportFactory(test_factory.Pass());
-  ui::ContextFactory::SetInstance(g_factory->AsContextFactory());
-  ui::Compositor::SetSharedBitmapManager(HostSharedBitmapManager::current());
+  NoTransportImageTransportFactory* factory =
+      new NoTransportImageTransportFactory(test_factory.Pass());
+  g_factory = factory;
+  ui::ContextFactory::SetInstance(factory->context_factory());
 }
 
 // static

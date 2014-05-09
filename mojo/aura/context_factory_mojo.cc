@@ -59,4 +59,8 @@ void ContextFactoryMojo::RemoveCompositor(ui::Compositor* compositor) {
 
 bool ContextFactoryMojo::DoesCreateTestContexts() { return false; }
 
+cc::SharedBitmapManager* ContextFactoryMojo::GetSharedBitmapManager() {
+  return NULL;
+}
+
 }  // namespace mojo

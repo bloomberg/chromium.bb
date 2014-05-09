@@ -46,9 +46,9 @@ class GpuProcessTransportFactory
   virtual scoped_refptr<cc::ContextProvider>
       SharedMainThreadContextProvider() OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
+  virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
 
   // ImageTransportFactory implementation.
-  virtual ui::ContextFactory* AsContextFactory() OVERRIDE;
   virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() OVERRIDE;
   virtual GLHelper* GetGLHelper() OVERRIDE;
   virtual void AddObserver(ImageTransportFactoryObserver* observer) OVERRIDE;

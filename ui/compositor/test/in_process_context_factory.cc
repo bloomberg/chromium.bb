@@ -5,6 +5,7 @@
 #include "ui/compositor/test/in_process_context_factory.h"
 
 #include "cc/output/output_surface.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -14,7 +15,8 @@
 
 namespace ui {
 
-InProcessContextFactory::InProcessContextFactory() {
+InProcessContextFactory::InProcessContextFactory()
+    : shared_bitmap_manager_(new cc::TestSharedBitmapManager()) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
 }
 
@@ -73,5 +75,9 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
 void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {}
 
 bool InProcessContextFactory::DoesCreateTestContexts() { return false; }
+
+cc::SharedBitmapManager* InProcessContextFactory::GetSharedBitmapManager() {
+  return shared_bitmap_manager_.get();
+}
 
 }  // namespace ui

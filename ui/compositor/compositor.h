@@ -93,6 +93,9 @@ class COMPOSITOR_EXPORT ContextFactory {
   // When true, the factory uses test contexts that do not do real GL
   // operations.
   virtual bool DoesCreateTestContexts() = 0;
+
+  // Gets the shared bitmap manager for software mode.
+  virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
 };
 
 // This class represents a lock on the compositor, that can be used to prevent
@@ -136,7 +139,6 @@ class COMPOSITOR_EXPORT Compositor
   static bool WasInitializedWithThread();
   static scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop();
   static void Terminate();
-  static void SetSharedBitmapManager(cc::SharedBitmapManager* manager);
 
   // Schedules a redraw of the layer tree associated with this compositor.
   void ScheduleDraw();

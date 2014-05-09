@@ -27,6 +27,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/host_shared_bitmap_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -217,8 +218,8 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
 
 bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
 
-ui::ContextFactory* GpuProcessTransportFactory::AsContextFactory() {
-  return this;
+cc::SharedBitmapManager* GpuProcessTransportFactory::GetSharedBitmapManager() {
+  return HostSharedBitmapManager::current();
 }
 
 gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {

@@ -34,10 +34,12 @@ class InProcessContextFactory : public ContextFactory {
       OVERRIDE;
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
+  virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
 
  private:
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       shared_main_thread_contexts_;
+  scoped_ptr<cc::SharedBitmapManager> shared_bitmap_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(InProcessContextFactory);
 };
