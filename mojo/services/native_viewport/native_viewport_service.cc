@@ -36,11 +36,7 @@ class NativeViewportImpl
   NativeViewportImpl()
       : widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false) {}
-  virtual ~NativeViewportImpl() {
-    // Destroy the NativeViewport early on as it may call us back during
-    // destruction and we want to be in a known state.
-    native_viewport_.reset();
-  }
+  virtual ~NativeViewportImpl() {}
 
   virtual void Create(const Rect& bounds) OVERRIDE {
     native_viewport_ =

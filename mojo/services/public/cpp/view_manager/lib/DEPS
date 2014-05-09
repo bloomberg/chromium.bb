@@ -1,5 +1,0 @@
-specific_include_rules = {
-  "view_manager_test_suite.cc": [
-    "+ui/gl",
-  ],
-}

@@ -244,7 +244,6 @@
           'type': 'shared_library',
           'dependencies': [
             '../base/base.gyp:base',
-            '../skia/skia.gyp:skia',
             '../ui/gfx/gfx.gyp:gfx',
             '../ui/gfx/gfx.gyp:gfx_geometry',
             '../ui/gl/gl.gyp:gl',
