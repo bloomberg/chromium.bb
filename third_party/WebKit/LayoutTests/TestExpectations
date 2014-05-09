@@ -14,6 +14,7 @@ crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 
+crbug.com/25293 [ Win Mac Linux ] http/tests/mime/png-image-with-x-png-mime-type.html [ NeedsRebaseline ]
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------
