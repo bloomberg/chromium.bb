@@ -126,7 +126,6 @@ class MockRawChannelOnInitFails : public RawChannel {
 
   // |RawChannel| public methods:
   virtual size_t GetSerializedPlatformHandleSize() const OVERRIDE {
-    CHECK(false);
     return 0;
   }
 
@@ -140,7 +139,7 @@ class MockRawChannelOnInitFails : public RawChannel {
     CHECK(false);
     return IO_FAILED;
   }
-  virtual IOResult WriteNoLock(size_t*) OVERRIDE {
+  virtual IOResult WriteNoLock(size_t*, size_t*) OVERRIDE {
     CHECK(false);
     return IO_FAILED;
   }

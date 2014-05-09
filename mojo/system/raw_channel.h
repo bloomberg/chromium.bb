@@ -136,8 +136,23 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
       size_t size;
     };
 
-    WriteBuffer();
+    explicit WriteBuffer(size_t serialized_platform_handle_size);
     ~WriteBuffer();
+
+    // Returns true if there are (more) platform handles to be sent (from the
+    // front of |message_queue_|).
+    bool HavePlatformHandlesToSend() const;
+    // Gets platform handles to be sent (from the front of |message_queue_|).
+    // This should only be called if |HavePlatformHandlesToSend()| returned
+    // true. There are two components to this: the actual |PlatformHandle|s
+    // (which should be closed once sent) and any additional serialization
+    // information (which will be embedded in the message's data; there are
+    // |GetSerializedPlatformHandleSize()| bytes per handle). Once all platform
+    // handles have been sent, the message data should be written next (see
+    // |GetBuffers()|).
+    void GetPlatformHandlesToSend(size_t* num_platform_handles,
+                                  embedder::PlatformHandle** platform_handles,
+                                  void** serialization_data);
 
     // Gets buffers to be written. These buffers will always come from the front
     // of |message_queue_|. Once they are completely written, the front
@@ -148,12 +163,19 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
    private:
     friend class RawChannel;
 
+    const size_t serialized_platform_handle_size_;
+
     // TODO(vtl): When C++11 is available, switch this to a deque of
     // |scoped_ptr|/|unique_ptr|s.
     std::deque<MessageInTransit*> message_queue_;
-    // The first message may have been partially sent. |offset_| indicates the
-    // position in the first message where to start the next write.
-    size_t offset_;
+    // Platform handles are sent before the message data, but doing so may
+    // require several passes. |platform_handles_offset_| indicates the position
+    // in the first message's vector of platform handles to send next.
+    size_t platform_handles_offset_;
+    // The first message's data may have been partially sent. |data_offset_|
+    // indicates the position in the first message's data to start the next
+    // write.
+    size_t data_offset_;
 
     DISALLOW_COPY_AND_ASSIGN(WriteBuffer);
   };
@@ -177,32 +199,33 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // - the method is called on the I/O thread WITHOUT |write_lock_| held.
   //
   // The implementing subclass must guarantee that:
-  // - |bytes_read| is untouched if the method returns values other than
-  //   IO_SUCCEEDED;
-  // - if the method returns IO_PENDING, |OnReadCompleted()| will be called on
+  // - |bytes_read| is untouched unless |Read()| returns |IO_SUCCEEDED|;
+  // - if the method returns |IO_PENDING|, |OnReadCompleted()| will be called on
   //   the I/O thread to report the result, unless |Shutdown()| is called.
   virtual IOResult Read(size_t* bytes_read) = 0;
   // Similar to |Read()|, except that the implementing subclass must also
   // guarantee that the method doesn't succeed synchronously, i.e., it only
-  // returns IO_FAILED or IO_PENDING.
+  // returns |IO_FAILED| or |IO_PENDING|.
   virtual IOResult ScheduleRead() = 0;
 
   // Writes contents in |write_buffer_no_lock()|.
   // This class guarantees that:
-  // - the area indicated by |GetBuffers()| will stay valid until write
-  //   completion (but please also see the comments for |OnShutdownNoLock()|);
+  // - the |PlatformHandle|s given by |GetPlatformHandlesToSend()| and the
+  //   buffer(s) given by |GetBuffers()| will remain valid until write
+  //   completion (see also the comments for |OnShutdownNoLock()|);
   // - a second write is not started if there is a pending write;
   // - the method is called under |write_lock_|.
   //
   // The implementing subclass must guarantee that:
-  // - |bytes_written| is untouched if the method returns values other than
-  //   IO_SUCCEEDED;
-  // - if the method returns IO_PENDING, |OnWriteCompleted()| will be called on
-  //   the I/O thread to report the result, unless |Shutdown()| is called.
-  virtual IOResult WriteNoLock(size_t* bytes_written) = 0;
+  // - |platform_handles_written| and |bytes_written| are untouched unless
+  //   |WriteNoLock()| returns |IO_SUCCEEDED|;
+  // - if the method returns |IO_PENDING|, |OnWriteCompleted()| will be called
+  //   on the I/O thread to report the result, unless |Shutdown()| is called.
+  virtual IOResult WriteNoLock(size_t* platform_handles_written,
+                               size_t* bytes_written) = 0;
   // Similar to |WriteNoLock()|, except that the implementing subclass must also
   // guarantee that the method doesn't succeed synchronously, i.e., it only
-  // returns IO_FAILED or IO_PENDING.
+  // returns |IO_FAILED| or |IO_PENDING|.
   virtual IOResult ScheduleWriteNoLock() = 0;
 
   // Must be called on the I/O thread WITHOUT |write_lock_| held.
@@ -217,7 +240,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // Must be called on the I/O thread WITHOUT |write_lock_| held.
   void OnReadCompleted(bool result, size_t bytes_read);
   // Must be called on the I/O thread WITHOUT |write_lock_| held.
-  void OnWriteCompleted(bool result, size_t bytes_written);
+  void OnWriteCompleted(bool result,
+                        size_t platform_handles_written,
+                        size_t bytes_written);
 
  private:
   // Calls |delegate_->OnFatalError(fatal_error)|. Must be called on the I/O
@@ -229,7 +254,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // false or any error occurs during the method execution, cancels pending
   // writes and returns false.
   // Must be called only if |write_stopped_| is false and under |write_lock_|.
-  bool OnWriteCompletedNoLock(bool result, size_t bytes_written);
+  bool OnWriteCompletedNoLock(bool result,
+                              size_t platform_handles_written,
+                              size_t bytes_written);
 
   // Set in |Init()| and never changed (hence usable on any thread without
   // locking):

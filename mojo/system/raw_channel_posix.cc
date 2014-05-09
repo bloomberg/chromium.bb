@@ -40,7 +40,8 @@ class RawChannelPosix : public RawChannel,
   // |RawChannel| protected methods:
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
-  virtual IOResult WriteNoLock(size_t* bytes_written) OVERRIDE;
+  virtual IOResult WriteNoLock(size_t* platform_handles_written,
+                               size_t* bytes_written) OVERRIDE;
   virtual IOResult ScheduleWriteNoLock() OVERRIDE;
   virtual bool OnInit() OVERRIDE;
   virtual void OnShutdownNoLock(
@@ -155,49 +156,66 @@ RawChannel::IOResult RawChannelPosix::ScheduleRead() {
   return IO_PENDING;
 }
 
-RawChannel::IOResult RawChannelPosix::WriteNoLock(size_t* bytes_written) {
+RawChannel::IOResult RawChannelPosix::WriteNoLock(
+    size_t* platform_handles_written,
+    size_t* bytes_written) {
   write_lock().AssertAcquired();
 
   DCHECK(!pending_write_);
 
-  std::vector<WriteBuffer::Buffer> buffers;
-  write_buffer_no_lock()->GetBuffers(&buffers);
-  DCHECK(!buffers.empty());
+  if (write_buffer_no_lock()->HavePlatformHandlesToSend()) {
+    size_t num_platform_handles;
+    embedder::PlatformHandle* platform_handles;
+    void* serialization_data;  // Actually unused.
+    write_buffer_no_lock()->GetPlatformHandlesToSend(&num_platform_handles,
+                                                     &platform_handles,
+                                                     &serialization_data);
+    DCHECK_GT(num_platform_handles, 0u);
+    DCHECK(platform_handles);
+    DCHECK(serialization_data);
 
-  ssize_t write_result = -1;
-  if (buffers.size() == 1) {
-    write_result = embedder::PlatformChannelWrite(fd_.get(), buffers[0].addr,
-                                                  buffers[0].size);
+    size_t num_to_send = std::min(num_platform_handles,
+                                  embedder::kPlatformChannelMaxNumHandles);
+    bool succeeded = embedder::PlatformChannelSendHandles(fd_.get(),
+                                                          platform_handles,
+                                                          num_to_send);
+    if (succeeded) {
+      *platform_handles_written = num_to_send;
+      *bytes_written = 0;
+      return IO_SUCCEEDED;
+    }
   } else {
-    // Note that using |writev()|/|sendmsg()| is measurably slower than using
-    // |write()| -- at least in a microbenchmark -- but much faster than using
-    // multiple |write()|s. (|sendmsg()| is also measurably slightly slower than
-    // |writev()|.)
-    //
-    // On Linux, we need to use |sendmsg()| since it's the only way to suppress
-    // |SIGPIPE| (on Mac, this is suppressed on the socket itself using
-    // |setsockopt()|, since |MSG_NOSIGNAL| is not supported -- see
-    // platform_channel_pair_posix.cc).
-    const size_t kMaxBufferCount = 10;
-    iovec iov[kMaxBufferCount];
-    size_t buffer_count = std::min(buffers.size(), kMaxBufferCount);
+    std::vector<WriteBuffer::Buffer> buffers;
+    write_buffer_no_lock()->GetBuffers(&buffers);
+    DCHECK(!buffers.empty());
 
-    for (size_t i = 0; i < buffer_count; ++i) {
-      iov[i].iov_base = const_cast<char*>(buffers[i].addr);
-      iov[i].iov_len = buffers[i].size;
+    ssize_t write_result;
+    if (buffers.size() == 1) {
+      write_result = embedder::PlatformChannelWrite(fd_.get(), buffers[0].addr,
+                                                    buffers[0].size);
+    } else {
+      const size_t kMaxBufferCount = 10;
+      iovec iov[kMaxBufferCount];
+      size_t buffer_count = std::min(buffers.size(), kMaxBufferCount);
+
+      for (size_t i = 0; i < buffer_count; ++i) {
+        iov[i].iov_base = const_cast<char*>(buffers[i].addr);
+        iov[i].iov_len = buffers[i].size;
+      }
+
+      write_result = embedder::PlatformChannelWritev(fd_.get(), iov,
+                                                     buffer_count);
     }
 
-    write_result = embedder::PlatformChannelWritev(fd_.get(), iov,
-                                                   buffer_count);
-  }
-
-  if (write_result >= 0) {
-    *bytes_written = static_cast<size_t>(write_result);
-    return IO_SUCCEEDED;
+    if (write_result >= 0) {
+      *platform_handles_written = 0;
+      *bytes_written = static_cast<size_t>(write_result);
+      return IO_SUCCEEDED;
+    }
   }
 
   if (errno != EAGAIN && errno != EWOULDBLOCK) {
-    PLOG(ERROR) << "write";
+    PLOG(ERROR) << "sendmsg/write/writev";
     return IO_FAILED;
   }
 
@@ -220,9 +238,8 @@ RawChannel::IOResult RawChannelPosix::ScheduleWriteNoLock() {
     return IO_PENDING;
   }
 
-  if (message_loop_for_io()->WatchFileDescriptor(
-      fd_.get().fd, false, base::MessageLoopForIO::WATCH_WRITE,
-      write_watcher_.get(), this)) {
+  if (message_loop_for_io()->WatchFileDescriptor(fd_.get().fd, false,
+          base::MessageLoopForIO::WATCH_WRITE, write_watcher_.get(), this)) {
     pending_write_ = true;
     return IO_PENDING;
   }
@@ -300,6 +317,7 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_for_io());
 
   IOResult result = IO_FAILED;
+  size_t platform_handles_written = 0;
   size_t bytes_written = 0;
   {
     base::AutoLock locker(write_lock());
@@ -307,11 +325,14 @@ void RawChannelPosix::OnFileCanWriteWithoutBlocking(int fd) {
     DCHECK(pending_write_);
 
     pending_write_ = false;
-    result = WriteNoLock(&bytes_written);
+    result = WriteNoLock(&platform_handles_written, &bytes_written);
   }
 
-  if (result != IO_PENDING)
-    OnWriteCompleted(result == IO_SUCCEEDED, bytes_written);
+  if (result != IO_PENDING) {
+    OnWriteCompleted(result == IO_SUCCEEDED,
+                     platform_handles_written,
+                     bytes_written);
+  }
 }
 
 void RawChannelPosix::WaitToWrite() {
@@ -328,7 +349,7 @@ void RawChannelPosix::WaitToWrite() {
       DCHECK(pending_write_);
       pending_write_ = false;
     }
-    OnWriteCompleted(false, 0);
+    OnWriteCompleted(false, 0, 0);
   }
 }
 

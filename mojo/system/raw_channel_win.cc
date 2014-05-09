@@ -162,7 +162,8 @@ class RawChannelWin : public RawChannel {
   // |RawChannel| private methods:
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
-  virtual IOResult WriteNoLock(size_t* bytes_written) OVERRIDE;
+  virtual IOResult WriteNoLock(size_t* platform_handles_written,
+                               size_t* bytes_written) OVERRIDE;
   virtual IOResult ScheduleWriteNoLock() OVERRIDE;
   virtual bool OnInit() OVERRIDE;
   virtual void OnShutdownNoLock(
@@ -331,9 +332,9 @@ void RawChannelWin::RawChannelIOHandler::OnWriteCompleted(DWORD bytes_written,
 
   if (error != ERROR_SUCCESS) {
     LOG(ERROR) << "WriteFile: " << logging::SystemErrorCodeToString(error);
-    owner_->OnWriteCompleted(false, 0);
+    owner_->OnWriteCompleted(false, 0, 0);
   } else {
-    owner_->OnWriteCompleted(true, bytes_written);
+    owner_->OnWriteCompleted(true, 0, bytes_written);
   }
 }
 
@@ -424,11 +425,18 @@ RawChannel::IOResult RawChannelWin::ScheduleRead() {
   return io_result;
 }
 
-RawChannel::IOResult RawChannelWin::WriteNoLock(size_t* bytes_written) {
+RawChannel::IOResult RawChannelWin::WriteNoLock(
+    size_t* platform_handles_written,
+    size_t* bytes_written) {
   write_lock().AssertAcquired();
 
   DCHECK(io_handler_);
   DCHECK(!io_handler_->pending_write_no_lock());
+
+  if (write_buffer_no_lock()->HavePlatformHandlesToSend()) {
+    // TODO(vtl): Implement.
+    NOTIMPLEMENTED();
+  }
 
   std::vector<WriteBuffer::Buffer> buffers;
   write_buffer_no_lock()->GetBuffers(&buffers);
@@ -447,6 +455,7 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(size_t* bytes_written) {
   }
 
   if (result && skip_completion_port_on_success_) {
+    *platform_handles_written = 0;
     *bytes_written = bytes_written_dword;
     return IO_SUCCEEDED;
   }
@@ -470,8 +479,10 @@ RawChannel::IOResult RawChannelWin::ScheduleWriteNoLock() {
   DCHECK(io_handler_);
   DCHECK(!io_handler_->pending_write_no_lock());
 
+  // TODO(vtl): Do something with |platform_handles_written|.
+  size_t platform_handles_written = 0;
   size_t bytes_written = 0;
-  IOResult io_result = WriteNoLock(&bytes_written);
+  IOResult io_result = WriteNoLock(&platform_handles_written, &bytes_written);
   if (io_result == IO_SUCCEEDED) {
     DCHECK(skip_completion_port_on_success_);
 

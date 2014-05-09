@@ -163,6 +163,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
 
   // Gets the transport data buffer (if any).
   const TransportData* transport_data() const { return transport_data_.get(); }
+  TransportData* transport_data() { return transport_data_.get(); }
 
   // Gets the total size of the message (see comment in |Header|, below).
   size_t total_size() const { return header()->total_size; }

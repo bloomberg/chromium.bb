@@ -83,17 +83,20 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   ~TransportData();
 
   const void* buffer() const { return buffer_.get(); }
+  void* buffer() { return buffer_.get(); }
   size_t buffer_size() const { return buffer_size_; }
+
+  uint32_t platform_handle_table_offset() const {
+    return header()->platform_handle_table_offset;
+  }
 
   // Gets attached platform-specific handles; this may return null if there are
   // none. Note that the caller may mutate the set of platform-specific handles.
-  std::vector<embedder::PlatformHandle>* platform_handles() {
+  const std::vector<embedder::PlatformHandle>* platform_handles() const {
     return platform_handles_.get();
   }
-
-  // Returns true if there are platform-specific handles attached.
-  bool has_platform_handles() const {
-    return platform_handles_ && !platform_handles_->empty();
+  std::vector<embedder::PlatformHandle>* platform_handles() {
+    return platform_handles_.get();
   }
 
   // Receive-side functions:
@@ -142,6 +145,10 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
 
   // The maximum total number of platform handles that may be attached.
   static const size_t kMaxPlatformHandles;
+
+  const Header* header() const {
+    return reinterpret_cast<const Header*>(buffer_.get());
+  }
 
   size_t buffer_size_;
   scoped_ptr<char, base::AlignedFreeDeleter> buffer_;  // Never null.
