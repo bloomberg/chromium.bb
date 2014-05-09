@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/hotword_service.h"
@@ -53,6 +52,11 @@
 #if defined(OS_WIN)
 #include "chrome/browser/web_applications/web_app_win.h"
 #endif
+
+
+namespace chrome {
+const char kAppLauncherCategoryTag[] = "AppLauncher";
+}  // namespace chrome
 
 namespace {
 

@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/feedback_uploader.h"
+#include "components/feedback/feedback_uploader.h"
 
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/feedback/feedback_report.h"
+#include "components/feedback/feedback_report.h"
 
 namespace feedback {
 namespace {
@@ -36,11 +36,25 @@ FeedbackUploader::FeedbackUploader(const base::FilePath& path,
       retry_delay_(base::TimeDelta::FromMinutes(kRetryDelayMinutes)),
       url_(kFeedbackPostUrl),
       pool_(pool) {
-  dispatch_callback_ = base::Bind(&FeedbackUploader::DispatchReport,
-                                  AsWeakPtr());
+  Init();
+}
+
+FeedbackUploader::FeedbackUploader(const base::FilePath& path,
+                                   base::SequencedWorkerPool* pool,
+                                   const std::string& url)
+    : report_path_(path.Append(kFeedbackReportPath)),
+      retry_delay_(base::TimeDelta::FromMinutes(kRetryDelayMinutes)),
+      url_(url),
+      pool_(pool) {
+  Init();
 }
 
 FeedbackUploader::~FeedbackUploader() {}
+
+void FeedbackUploader::Init() {
+  dispatch_callback_ = base::Bind(&FeedbackUploader::DispatchReport,
+                                  AsWeakPtr());
+}
 
 void FeedbackUploader::QueueReport(const std::string& data) {
   QueueReportWithDelay(data, base::TimeDelta());

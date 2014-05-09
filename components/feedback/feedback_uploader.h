@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_H_
-#define CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_H_
+#ifndef COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_H_
+#define COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_H_
 
 #include <queue>
 #include <string>
@@ -26,20 +26,28 @@ class FeedbackReport;
 // tried again when it's turn comes up next in the queue.
 class FeedbackUploader : public base::SupportsWeakPtr<FeedbackUploader> {
  public:
-  explicit FeedbackUploader(const base::FilePath& path,
-                            base::SequencedWorkerPool* pool);
+  FeedbackUploader(const base::FilePath& path,
+                   base::SequencedWorkerPool* pool);
+  FeedbackUploader(const base::FilePath& path,
+                   base::SequencedWorkerPool* pool,
+                   const std::string& url);
   virtual ~FeedbackUploader();
 
   // Queues a report for uploading.
-  void QueueReport(const std::string& data);
+  virtual void QueueReport(const std::string& data);
 
   base::FilePath GetFeedbackReportsPath() { return report_path_; }
 
+  bool QueueEmpty() const { return reports_queue_.empty(); }
+
  protected:
   friend class FeedbackUploaderTest;
+
   struct ReportsUploadTimeComparator {
     bool operator()(FeedbackReport* a, FeedbackReport* b) const;
   };
+
+  void Init();
 
   // Dispatches the report to be uploaded.
   virtual void DispatchReport(const std::string& data) = 0;
@@ -74,4 +82,4 @@ class FeedbackUploader : public base::SupportsWeakPtr<FeedbackUploader> {
 
 }  // namespace feedback
 
-#endif  // CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_H_
+#endif  // COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_H_

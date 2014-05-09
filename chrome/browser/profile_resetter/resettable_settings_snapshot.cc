@@ -11,18 +11,20 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/feedback/feedback_data.h"
-#include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/feedback/feedback_data.h"
+#include "components/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+using feedback::FeedbackData;
 
 namespace {
 
@@ -230,7 +232,7 @@ void SendSettingsFeedback(const std::string& report,
   feedback_data->set_description(report);
 
   feedback_data->set_image(make_scoped_ptr(new std::string));
-  feedback_data->set_profile(profile);
+  feedback_data->set_context(profile);
 
   feedback_data->set_page_url("");
   feedback_data->set_user_email("");

@@ -735,9 +735,6 @@ const char kFastStart[]            = "fast-start";
 const char kFlagSwitchesBegin[]             = "flag-switches-begin";
 const char kFlagSwitchesEnd[]               = "flag-switches-end";
 
-// Alternative feedback server to use when submitting user feedback
-const char kFeedbackServer[]                = "feedback-server";
-
 // The file descriptor limit is set to the value of this switch, subject to the
 // OS hard limits. Useful for testing that file descriptor exhaustion is
 // handled gracefully.

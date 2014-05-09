@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_DATA_H_
-#define CHROME_BROWSER_FEEDBACK_FEEDBACK_DATA_H_
+#ifndef COMPONENTS_FEEDBACK_FEEDBACK_DATA_H_
+#define COMPONENTS_FEEDBACK_FEEDBACK_DATA_H_
 
 #include <map>
 #include <string>
@@ -17,7 +17,11 @@ namespace base {
 class FilePath;
 class RefCountedString;
 }
-class Profile;
+namespace content {
+class BrowserContext;
+}
+
+namespace feedback {
 
 class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
  public:
@@ -62,7 +66,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   void SendReport();
 
   // Getters
-  Profile* profile() const { return profile_; }
+  content::BrowserContext* context() const { return context_; }
   const std::string& category_tag() const { return category_tag_; }
   const std::string& page_url() const { return page_url_; }
   const std::string& description() const { return description_; }
@@ -79,9 +83,11 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   std::string* compressed_histograms() const {
     return compressed_histograms_.get();
   }
+  std::string user_agent() const { return user_agent_; }
+  std::string locale() const { return locale_; }
 
   // Setters
-  void set_profile(Profile* profile) { profile_ = profile; }
+  void set_context(content::BrowserContext* context) { context_ = context; }
   void set_category_tag(const std::string& category_tag) {
     category_tag_ = category_tag;
   }
@@ -103,6 +109,10 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
     screenshot_uuid_ = uuid;
   }
   void set_trace_id(int trace_id) { trace_id_ = trace_id; }
+  void set_user_agent(const std::string& user_agent) {
+    user_agent_ = user_agent;
+  }
+  void set_locale(const std::string& locale) { locale_ = locale; }
 
  private:
   friend class base::RefCountedThreadSafe<FeedbackData>;
@@ -112,7 +122,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   void OnGetTraceData(int trace_id,
                       scoped_refptr<base::RefCountedString> trace_data);
 
-  Profile* profile_;
+  content::BrowserContext* context_;
 
   std::string category_tag_;
   std::string page_url_;
@@ -121,6 +131,8 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   scoped_ptr<std::string> image_;
   std::string attached_filename_;
   scoped_ptr<std::string> attached_filedata_;
+  std::string user_agent_;
+  std::string locale_;
 
   std::string attached_file_uuid_;
   std::string screenshot_uuid_;
@@ -143,4 +155,6 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   DISALLOW_COPY_AND_ASSIGN(FeedbackData);
 };
 
-#endif  // CHROME_BROWSER_FEEDBACK_FEEDBACK_DATA_H_
+}  // namespace feedback
+
+#endif  // COMPONENTS_FEEDBACK_FEEDBACK_DATA_H_

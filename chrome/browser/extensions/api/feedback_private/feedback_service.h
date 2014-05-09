@@ -11,9 +11,9 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/blob_reader.h"
-#include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/system_logs/scrubbed_system_logs_fetcher.h"
 #include "chrome/common/extensions/api/feedback_private.h"
+#include "components/feedback/feedback_data.h"
 
 class Profile;
 
@@ -36,7 +36,7 @@ class FeedbackService {
 
   // Sends a feedback report.
   void SendFeedback(Profile* profile,
-                    scoped_refptr<FeedbackData> feedback_data,
+                    scoped_refptr<feedback::FeedbackData> feedback_data,
                     const SendFeedbackCallback& callback);
 
   // Start to gather system information.
@@ -73,7 +73,7 @@ class FeedbackService {
   GetSystemInformationCallback system_information_callback_;
   SendFeedbackCallback send_feedback_callback_;
 
-  scoped_refptr<FeedbackData> feedback_data_;
+  scoped_refptr<feedback::FeedbackData> feedback_data_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackService);
 };

@@ -1,18 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/tracing_manager.h"
+#include "components/feedback/tracing_manager.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/prefs/pref_service.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/feedback/feedback_util.h"
-#include "chrome/common/pref_names.h"
+#include "components/feedback/feedback_util.h"
 #include "content/public/browser/tracing_controller.h"
 
 namespace {

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_CHROME_H_
-#define CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_CHROME_H_
+#ifndef COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_CHROME_H_
+#define COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_CHROME_H_
 
-#include "chrome/browser/feedback/feedback_uploader.h"
-
+#include "components/feedback/feedback_uploader.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -31,4 +30,4 @@ class FeedbackUploaderChrome : public FeedbackUploader,
 
 }  // namespace feedback
 
-#endif  // CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_CHROME_H_
+#endif  // COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_CHROME_H_

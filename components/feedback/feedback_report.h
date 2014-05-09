@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_REPORT_H_
-#define CHROME_BROWSER_FEEDBACK_FEEDBACK_REPORT_H_
+#ifndef COMPONENTS_FEEDBACK_FEEDBACK_REPORT_H_
+#define COMPONENTS_FEEDBACK_FEEDBACK_REPORT_H_
 
 #include <string>
 
@@ -61,4 +61,4 @@ class FeedbackReport : public base::RefCounted<FeedbackReport> {
 
 }  // namespace feedback
 
-#endif  // CHROME_BROWSER_FEEDBACK_FEEDBACK_REPORT_H_
+#endif  // COMPONENTS_FEEDBACK_FEEDBACK_REPORT_H_

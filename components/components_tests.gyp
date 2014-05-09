@@ -92,6 +92,7 @@
             'domain_reliability/test_util.h',
             'domain_reliability/uploader_unittest.cc',
             'domain_reliability/util_unittest.cc',
+            'feedback/feedback_uploader_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
             'json_schema/json_schema_validator_unittest_base.cc',
             'json_schema/json_schema_validator_unittest_base.h',
@@ -223,6 +224,9 @@
 
             # Dependencies of domain_reliability
             'components.gyp:domain_reliability',
+
+            # Dependencies of feedback
+            'components.gyp:feedback_component',
 
             # Dependencies of json_schema
             'components.gyp:json_schema',
@@ -616,7 +620,6 @@
             '../skia/skia.gyp:skia',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
-            '../testing/gmock.gyp:gmock',
           ],
           'include_dirs': [
             '..',

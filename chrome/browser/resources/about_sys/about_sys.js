@@ -149,7 +149,7 @@ function parseSystemLog(text) {
       value = lines[i].substring(delimiter + 1);
 
     // Delimiters are based on kMultilineIndicatorString, kMultilineStartString,
-    // and kMultilineEndString in chrome/browser/feedback/feedback_data.cc.
+    // and kMultilineEndString in components/feedback/feedback_data.cc.
     // If these change, we should check for both the old and new versions.
     if (value == '<multiline>') {
       // Skip start delimiter.

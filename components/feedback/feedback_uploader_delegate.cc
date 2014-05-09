@@ -1,14 +1,13 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/feedback_uploader_delegate.h"
+#include "components/feedback/feedback_uploader_delegate.h"
 
 #include <sstream>
 
 #include "base/logging.h"
 #include "net/url_request/url_fetcher.h"
-#include "url/gurl.h"
 
 namespace feedback {
 namespace {

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/feedback_report.h"
+#include "components/feedback/feedback_report.h"
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/important_file_writer.h"
 #include "base/guid.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "net/base/directory_lister.h"
 
 namespace {
 

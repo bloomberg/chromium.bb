@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/feedback_uploader_chrome.h"
+#include "components/feedback/feedback_uploader_chrome.h"
 
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/feedback/feedback_report.h"
-#include "chrome/browser/feedback/feedback_uploader_delegate.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/feedback/feedback_report.h"
+#include "components/feedback/feedback_switches.h"
+#include "components/feedback/feedback_uploader_delegate.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"

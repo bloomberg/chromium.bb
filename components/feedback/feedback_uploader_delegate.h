@@ -1,15 +1,15 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_DELEGATE_H_
-#define CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_DELEGATE_H_
+#ifndef COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_DELEGATE_H_
+#define COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_DELEGATE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/feedback/feedback_uploader.h"
+#include "components/feedback/feedback_uploader.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
 namespace feedback {
@@ -37,4 +37,4 @@ class FeedbackUploaderDelegate : public net::URLFetcherDelegate {
 
 }  // namespace feedback
 
-#endif  // CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_DELEGATE_H_
+#endif  // COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_DELEGATE_H_

@@ -1,72 +1,25 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/feedback_util.h"
+#include "components/feedback/feedback_util.h"
 
-#include <sstream>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/file_version_info.h"
-#include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/win/windows_version.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
-#include "chrome/browser/feedback/feedback_data.h"
-#include "chrome/browser/feedback/feedback_uploader.h"
-#include "chrome/browser/feedback/feedback_uploader_factory.h"
-#include "chrome/browser/metrics/variations/variations_http_header_provider.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_content_client.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
-#include "components/metrics/metrics_log_manager.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
-#include "net/base/load_flags.h"
-#include "net/http/http_request_headers.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
-#include "third_party/icu/source/common/unicode/locid.h"
+#include "components/feedback/feedback_data.h"
+#include "components/feedback/feedback_uploader.h"
+#include "components/feedback/feedback_uploader_factory.h"
+#include "components/feedback/proto/common.pb.h"
+#include "components/feedback/proto/dom.pb.h"
+#include "components/feedback/proto/extension.pb.h"
+#include "components/feedback/proto/math.pb.h"
 #include "third_party/zlib/google/zip.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
+
+using feedback::FeedbackData;
 
 namespace {
-
-GURL GetTargetTabUrl(int session_id, int index) {
-  Browser* browser = chrome::FindBrowserWithID(session_id);
-  // Sanity checks.
-  if (!browser || index >= browser->tab_strip_model()->count())
-    return GURL();
-
-  if (index >= 0) {
-    content::WebContents* target_tab =
-        browser->tab_strip_model()->GetWebContentsAt(index);
-    if (target_tab)
-      return target_tab->GetURL();
-  }
-
-  return GURL();
-}
 
 const char kPngMimeType[] = "image/png";
 const char kArbitraryMimeType[] = "application/octet-stream";
@@ -107,44 +60,6 @@ void AddAttachment(userfeedback::ExtensionSubmit* feedback_data,
 
 }  // namespace
 
-namespace chrome {
-
-const char kAppLauncherCategoryTag[] = "AppLauncher";
-
-void ShowFeedbackPage(Browser* browser,
-                      const std::string& description_template,
-                      const std::string& category_tag) {
-  GURL page_url;
-  if (browser) {
-    page_url = GetTargetTabUrl(browser->session_id().id(),
-                               browser->tab_strip_model()->active_index());
-  }
-
-  Profile* profile = NULL;
-  if (browser) {
-    profile = browser->profile();
-  } else {
-    profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
-  }
-  if (!profile) {
-    LOG(ERROR) << "Cannot invoke feedback: No profile found!";
-    return;
-  }
-
-  // We do not want to launch on an OTR profile.
-  profile = profile->GetOriginalProfile();
-  DCHECK(profile);
-
-  extensions::FeedbackPrivateAPI* api =
-      extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(profile);
-
-  api->RequestFeedback(description_template,
-                       category_tag,
-                       page_url);
-}
-
-}  // namespace chrome
-
 namespace feedback_util {
 
 void SendReport(scoped_refptr<FeedbackData> data) {
@@ -163,15 +78,12 @@ void SendReport(scoped_refptr<FeedbackData> data) {
   common_data->set_gaia_id(0);
   common_data->set_user_email(data->user_email());
   common_data->set_description(data->description());
-
-  std::string chrome_locale = g_browser_process->GetApplicationLocale();
-  common_data->set_source_description_language(chrome_locale);
+  common_data->set_source_description_language(data->locale());
 
   userfeedback::WebData* web_data = feedback_data.mutable_web_data();
   web_data->set_url(data->page_url());
-  web_data->mutable_navigator()->set_user_agent(GetUserAgent());
+  web_data->mutable_navigator()->set_user_agent(data->user_agent());
 
-  gfx::Rect screen_size;
   if (data->sys_info()) {
     for (FeedbackData::SystemLogsMap::const_iterator i =
         data->sys_info()->begin(); i != data->sys_info()->end(); ++i) {
@@ -245,7 +157,7 @@ void SendReport(scoped_refptr<FeedbackData> data) {
   feedback_data.SerializeToString(&post_body);
 
   feedback::FeedbackUploader *uploader =
-      feedback::FeedbackUploaderFactory::GetForBrowserContext(data->profile());
+      feedback::FeedbackUploaderFactory::GetForBrowserContext(data->context());
   uploader->QueueReport(post_body);
 }
 

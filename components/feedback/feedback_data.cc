@@ -1,28 +1,22 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/feedback_data.h"
+#include "components/feedback/feedback_data.h"
 
 #include "base/file_util.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/feedback/feedback_util.h"
-#include "chrome/browser/feedback/tracing_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "components/feedback/feedback_util.h"
+#include "components/feedback/tracing_manager.h"
 #include "content/public/browser/browser_thread.h"
-
-#if defined(USE_ASH)
-#include "ash/shell.h"
-#include "ash/shell_delegate.h"
-#endif
 
 using content::BrowserThread;
 
+namespace feedback {
 namespace {
 
 const char kMultilineIndicatorString[] = "<multiline>\n";
@@ -113,7 +107,7 @@ bool FeedbackData::BelowCompressionThreshold(const std::string& content) {
   return true;
 }
 
-FeedbackData::FeedbackData() : profile_(NULL),
+FeedbackData::FeedbackData() : context_(NULL),
                                trace_id_(0),
                                feedback_page_data_complete_(false),
                                syslogs_compression_complete_(false),
@@ -276,3 +270,5 @@ void FeedbackData::SendReport() {
     feedback_util::SendReport(this);
   }
 }
+
+}  // namespace feedback

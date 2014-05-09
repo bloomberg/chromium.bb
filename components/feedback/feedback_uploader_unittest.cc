@@ -1,18 +1,22 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/feedback/feedback_uploader.h"
+#include "components/feedback/feedback_uploader.h"
 
 #include <set>
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/feedback/feedback_uploader_chrome.h"
-#include "chrome/browser/feedback/feedback_uploader_factory.h"
-#include "chrome/test/base/testing_profile.h"
+#include "base/stl_util.h"
+#include "components/feedback/feedback_uploader_chrome.h"
+#include "components/feedback/feedback_uploader_factory.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -27,8 +31,7 @@ const base::TimeDelta kRetryDelayForTest =
     base::TimeDelta::FromMilliseconds(100);
 
 KeyedService* CreateFeedbackUploaderService(content::BrowserContext* context) {
-  return new feedback::FeedbackUploaderChrome(
-      Profile::FromBrowserContext(context));
+  return new feedback::FeedbackUploaderChrome(context);
 }
 
 }  // namespace
@@ -39,13 +42,14 @@ class FeedbackUploaderTest : public testing::Test {
  protected:
   FeedbackUploaderTest()
      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-       profile_(new TestingProfile()),
+       context_(new content::TestBrowserContext()),
        dispatched_reports_count_(0),
        expected_reports_(0) {
+    user_prefs::UserPrefs::Set(context_.get(), new TestingPrefServiceSimple());
     FeedbackUploaderFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), &CreateFeedbackUploaderService);
+        context_.get(), &CreateFeedbackUploaderService);
 
-    uploader_ = FeedbackUploaderFactory::GetForBrowserContext(profile_.get());
+    uploader_ = FeedbackUploaderFactory::GetForBrowserContext(context_.get());
     uploader_->setup_for_test(
         base::Bind(&FeedbackUploaderTest::MockDispatchReport,
                    base::Unretained(this)),
@@ -54,7 +58,7 @@ class FeedbackUploaderTest : public testing::Test {
 
   virtual ~FeedbackUploaderTest() {
     FeedbackUploaderFactory::GetInstance()->SetTestingFactory(
-        profile_.get(), NULL);
+        context_.get(), NULL);
   }
 
   void QueueReport(const std::string& data) {
@@ -97,7 +101,7 @@ class FeedbackUploaderTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<content::TestBrowserContext> context_;
 
   FeedbackUploader* uploader_;
 

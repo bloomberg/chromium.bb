@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_FACTORY_H_
-#define CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_FACTORY_H_
+#ifndef COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_FACTORY_H_
+#define COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_FACTORY_H_
 
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -44,4 +44,4 @@ class FeedbackUploaderFactory : public BrowserContextKeyedServiceFactory {
 
 }  // namespace feedback
 
-#endif  // CHROME_BROWSER_FEEDBACK_FEEDBACK_UPLOADER_FACTORY_H_
+#endif  // COMPONENTS_FEEDBACK_FEEDBACK_UPLOADER_FACTORY_H_

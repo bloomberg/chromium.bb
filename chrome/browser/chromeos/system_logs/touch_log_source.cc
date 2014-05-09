@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/process/launch.h"
-#include "chrome/browser/feedback/feedback_util.h"
+#include "components/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

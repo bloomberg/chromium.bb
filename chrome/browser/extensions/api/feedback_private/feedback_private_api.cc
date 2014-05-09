@@ -11,13 +11,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
-#include "chrome/browser/feedback/tracing_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/feedback/tracing_manager.h"
 #include "extensions/browser/event_router.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/url_util.h"
+
+using feedback::FeedbackData;
 
 namespace {
 
@@ -180,7 +182,7 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
 
   // Populate feedback data.
   scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
-  feedback_data->set_profile(GetProfile());
+  feedback_data->set_context(GetProfile());
   feedback_data->set_description(feedback_info.description);
 
   if (feedback_info.category_tag.get())

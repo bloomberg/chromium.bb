@@ -36,7 +36,6 @@
         'debugger',
         'device_policy_proto',
         'drive_proto',
-        'feedback_proto',
         'in_memory_url_index_cache_proto',
         'installer_util',
         'safe_browsing_proto',
