@@ -118,7 +118,8 @@ VolumeManagerCommon.VolumeType = Object.freeze({
   DOWNLOADS: 'downloads',
   REMOVABLE: 'removable',
   ARCHIVE: 'archive',
-  CLOUD_DEVICE: 'cloud_device'
+  CLOUD_DEVICE: 'cloud_device',
+  MTP: 'mtp',
 });
 
 
