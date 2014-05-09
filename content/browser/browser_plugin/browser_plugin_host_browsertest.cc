@@ -451,31 +451,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_EmbedderSameAfterNav) {
   ASSERT_EQ(test_embedder_after_nav, test_embedder());
 }
 
-// This test verifies that hiding the embedder also hides the guest.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, BrowserPluginVisibilityChanged) {
-  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
-
-  // Hide the Browser Plugin.
-  RenderFrameHost* rfh = test_embedder()->web_contents()->GetMainFrame();
-  ExecuteSyncJSFunction(
-      rfh, "document.getElementById('plugin').style.visibility = 'hidden'");
-
-  // Make sure that the guest is hidden.
-  test_guest()->WaitUntilHidden();
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, EmbedderVisibilityChanged) {
-  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, std::string());
-
-  // Hide the embedder.
-  test_embedder()->web_contents()->WasHidden();
-
-  // Make sure that hiding the embedder also hides the guest.
-  test_guest()->WaitUntilHidden();
-}
-
 // Verifies that installing/uninstalling touch-event handlers in the guest
 // plugin correctly updates the touch-event handling state in the embedder.
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {

@@ -122,6 +122,30 @@ class GuestContentBrowserClient : public chrome::ChromeContentBrowserClient {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 };
 
+class WebContentsHiddenObserver : public content::WebContentsObserver {
+ public:
+  WebContentsHiddenObserver(content::WebContents* web_contents,
+                            const base::Closure& hidden_callback)
+      : WebContentsObserver(web_contents),
+        hidden_callback_(hidden_callback),
+        hidden_observed_(true) {
+  }
+
+  // WebContentsObserver.
+  virtual void WasHidden() OVERRIDE {
+    hidden_observed_ = true;
+    hidden_callback_.Run();
+  }
+
+  bool hidden_observed() { return hidden_observed_; }
+
+ private:
+  base::Closure hidden_callback_;
+  bool hidden_observed_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsHiddenObserver);
+};
+
 class InterstitialObserver : public content::WebContentsObserver {
  public:
   InterstitialObserver(content::WebContents* web_contents,
@@ -146,6 +170,18 @@ class InterstitialObserver : public content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
 };
+
+void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
+                               const char* script,
+                               const char* title) {
+  base::string16 expected_title(base::ASCIIToUTF16(title));
+  base::string16 error_title(base::ASCIIToUTF16("error"));
+
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  title_watcher.AlsoWaitForTitle(error_title);
+  EXPECT_TRUE(content::ExecuteScript(web_contents, script));
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
 
 }  // namespace
 
@@ -457,18 +493,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     }
   }
 
-  void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
-                                 const char* script,
-                                 const char* title) {
-    base::string16 expected_title(base::ASCIIToUTF16(title));
-    base::string16 error_title(base::ASCIIToUTF16("error"));
-
-    content::TitleWatcher title_watcher(web_contents, expected_title);
-    title_watcher.AlsoWaitForTitle(error_title);
-    EXPECT_TRUE(content::ExecuteScript(web_contents, script));
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
-
   // Handles |request| by serving a redirect response.
   static scoped_ptr<net::test_server::HttpResponse> RedirectResponseHandler(
       const std::string& path,
@@ -628,6 +652,43 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
       loop_runner->Run();
   }
 
+  void LoadAppWithGuest(const std::string& app_path) {
+    GuestContentBrowserClient new_client;
+    content::ContentBrowserClient* old_client =
+        SetBrowserClientForTesting(&new_client);
+
+    ExtensionTestMessageListener launched_listener("WebViewTest.LAUNCHED",
+                                                   false);
+    launched_listener.set_failure_message("WebViewTest.FAILURE");
+    LoadAndLaunchPlatformApp(app_path.c_str());
+    ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
+
+    guest_web_contents_ = new_client.WaitForGuestCreated();
+    SetBrowserClientForTesting(old_client);
+  }
+
+  void SendMessageToEmbedder(const std::string& message) {
+    EXPECT_TRUE(
+        content::ExecuteScript(
+            GetEmbedderWebContents(),
+            base::StringPrintf("onAppCommand('%s');", message.c_str())));
+  }
+
+  content::WebContents* GetGuestWebContents() {
+    return guest_web_contents_;
+  }
+
+  content::WebContents* GetEmbedderWebContents() {
+    if (!embedder_web_contents_) {
+      embedder_web_contents_ = GetFirstAppWindowWebContents();
+    }
+    return embedder_web_contents_;
+  }
+
+  WebViewTest() : guest_web_contents_(NULL),
+                  embedder_web_contents_(NULL) {
+  }
+
  private:
   bool UsesFakeSpeech() {
     const testing::TestInfo* const test_info =
@@ -640,7 +701,41 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 
   scoped_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
+
+  // Note that these are only set if you launch app using LoadAppWithGuest().
+  content::WebContents* guest_web_contents_;
+  content::WebContents* embedder_web_contents_;
 };
+
+// This test verifies that hiding the guest triggers WebContents::WasHidden().
+IN_PROC_BROWSER_TEST_F(WebViewTest, GuestVisibilityChanged) {
+  LoadAppWithGuest("web_view/visibility_changed");
+
+  scoped_refptr<content::MessageLoopRunner> loop_runner(
+      new content::MessageLoopRunner);
+  WebContentsHiddenObserver observer(GetGuestWebContents(),
+                                     loop_runner->QuitClosure());
+
+  // Handled in platform_apps/web_view/visibility_changed/main.js
+  SendMessageToEmbedder("hide-guest");
+  if (!observer.hidden_observed())
+    loop_runner->Run();
+}
+
+// This test verifies that hiding the embedder also hides the guest.
+IN_PROC_BROWSER_TEST_F(WebViewTest, EmbedderVisibilityChanged) {
+  LoadAppWithGuest("web_view/visibility_changed");
+
+  scoped_refptr<content::MessageLoopRunner> loop_runner(
+      new content::MessageLoopRunner);
+  WebContentsHiddenObserver observer(GetGuestWebContents(),
+                                     loop_runner->QuitClosure());
+
+  // Handled in platform_apps/web_view/visibility_changed/main.js
+  SendMessageToEmbedder("hide-embedder");
+  if (!observer.hidden_observed())
+    loop_runner->Run();
+}
 
 // This test ensures JavaScript errors ("Cannot redefine property") do not
 // happen when a <webview> is removed from DOM and added back.
@@ -1587,20 +1682,10 @@ void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_Basic) {
-  GuestContentBrowserClient new_client;
-  content::ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&new_client);
+  LoadAppWithGuest("web_view/context_menus/basic");
 
-  ExtensionTestMessageListener launched_listener("Launched", false);
-  launched_listener.set_failure_message("TEST_FAILED");
-  LoadAndLaunchPlatformApp("web_view/context_menus/basic");
-  ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
-
-  content::WebContents* guest_web_contents = new_client.WaitForGuestCreated();
-  ASSERT_TRUE(guest_web_contents);
-  SetBrowserClientForTesting(old_client);
-
-  content::WebContents* embedder = GetFirstAppWindowWebContents();
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  content::WebContents* embedder = GetEmbedderWebContents();
   ASSERT_TRUE(embedder);
 
   // 1. Basic property test.

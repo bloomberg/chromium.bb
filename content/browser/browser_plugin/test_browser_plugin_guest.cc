@@ -22,7 +22,6 @@ TestBrowserPluginGuest::TestBrowserPluginGuest(
       focus_observed_(false),
       blur_observed_(false),
       advance_focus_observed_(false),
-      was_hidden_observed_(false),
       input_observed_(false),
       load_stop_observed_(false),
       ime_cancel_observed_(false) {
@@ -121,16 +120,6 @@ void TestBrowserPluginGuest::WaitForAdvanceFocus() {
     return;
   advance_focus_message_loop_runner_ = new MessageLoopRunner();
   advance_focus_message_loop_runner_->Run();
-}
-
-void TestBrowserPluginGuest::WaitUntilHidden() {
-  if (was_hidden_observed_) {
-    was_hidden_observed_ = false;
-    return;
-  }
-  was_hidden_message_loop_runner_ = new MessageLoopRunner();
-  was_hidden_message_loop_runner_->Run();
-  was_hidden_observed_ = false;
 }
 
 void TestBrowserPluginGuest::WaitForInput() {
@@ -237,12 +226,6 @@ void TestBrowserPluginGuest::OnResizeGuest(
   }
 
   BrowserPluginGuest::OnResizeGuest(instance_id, params);
-}
-
-void TestBrowserPluginGuest::WasHidden() {
-  was_hidden_observed_ = true;
-  if (was_hidden_message_loop_runner_)
-    was_hidden_message_loop_runner_->Quit();
 }
 
 }  // namespace content

@@ -201,6 +201,10 @@ function setUpTest(messageCallback) {
     webview.executeScript(
       {file: 'guest.js'},
       function(results) {
+        if (!results || !results.length) {
+          chrome.test.sendMessage('WebViewTest.FAILURE');
+          return;
+        }
         LOG('Script has been injected into webview.');
         // Establish a communication channel with the guest.
         var msg = ['connect'];
@@ -225,7 +229,7 @@ onload = function() {
   chrome.test.getConfig(function(config) {
     setUpTest(function(webview) {
       LOG('Guest load completed.');
-      chrome.test.sendMessage('Launched');
+      chrome.test.sendMessage('WebViewTest.LAUNCHED');
       tester.setWebview(webview);
     });
   });

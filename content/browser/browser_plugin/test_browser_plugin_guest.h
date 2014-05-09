@@ -12,7 +12,6 @@
 
 namespace content {
 
-class RenderProcessHost;
 class RenderViewHost;
 class WebContentsImpl;
 
@@ -40,9 +39,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
       int instance_id,
       const BrowserPluginHostMsg_ResizeGuest_Params& params) OVERRIDE;
 
-  // Overridden from WebContentsObserver.
-  virtual void WasHidden() OVERRIDE;
-
   // Test utilities to wait for a event we are interested in.
   // Waits until UpdateRect message is sent from the guest, meaning it is
   // ready/rendered.
@@ -54,8 +50,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   void WaitForBlur();
   // Waits for focus to move out of this guest.
   void WaitForAdvanceFocus();
-  // Waits until the guest is hidden.
-  void WaitUntilHidden();
   // Waits until guest exits.
   void WaitForExit();
   // Waits until input is observed.
@@ -86,7 +80,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   bool focus_observed_;
   bool blur_observed_;
   bool advance_focus_observed_;
-  bool was_hidden_observed_;
   bool input_observed_;
   bool load_stop_observed_;
   bool ime_cancel_observed_;
@@ -100,7 +93,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   scoped_refptr<MessageLoopRunner> focus_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> blur_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> advance_focus_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> was_hidden_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> input_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> load_stop_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> auto_view_size_message_loop_runner_;
