@@ -4499,6 +4499,8 @@ lower_fullscreen_layer(struct desktop_shell *shell)
 			/* Hide the black view */
 			wl_list_remove(&shsurf->fullscreen.black_view->layer_link);
 			wl_list_init(&shsurf->fullscreen.black_view->layer_link);
+			weston_view_damage_below(shsurf->fullscreen.black_view);
+
 		}
 
 		/* Lower the view to the workspace layer */
