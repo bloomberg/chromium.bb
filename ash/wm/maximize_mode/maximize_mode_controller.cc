@@ -141,10 +141,12 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
   if (maximize_mode_engaged &&
       angle > kFullyOpenAngleErrorTolerance &&
       angle < kExitMaximizeModeAngle) {
-    LeaveMaximizeMode();
+    Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
+    event_blocker_.reset();
   } else if (!maximize_mode_engaged &&
       angle > kEnterMaximizeModeAngle) {
-    EnterMaximizeMode();
+    Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
+    event_blocker_.reset(new MaximizeModeEventBlocker);
   }
 }
 
@@ -152,13 +154,30 @@ void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
   bool maximize_mode_engaged =
       Shell::GetInstance()->IsMaximizeModeWindowManagerEnabled();
 
-  if (!maximize_mode_engaged || rotation_locked_)
-    return;
-
   DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
   gfx::Display::Rotation current_rotation = display_manager->GetDisplayInfo(
       gfx::Display::InternalDisplayId()).rotation();
+
+  // If maximize mode is not engaged, ensure the screen is not rotated and
+  // do not rotate to match the current device orientation.
+  if (!maximize_mode_engaged) {
+    if (current_rotation != gfx::Display::ROTATE_0) {
+      // TODO(flackr): Currently this will prevent setting a manual rotation on
+      // the screen of a device with an accelerometer, this should only set it
+      // back to ROTATE_0 if it was last set by the accelerometer.
+      // Also, SetDisplayRotation will save the setting to the local store,
+      // this should be stored in a way that we can distinguish what the
+      // rotation was set by.
+      display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+                                          gfx::Display::ROTATE_0);
+    }
+    rotation_locked_ = false;
+    return;
+  }
+
+  if (rotation_locked_)
+    return;
 
   // After determining maximize mode state, determine if the screen should
   // be rotated.
@@ -212,31 +231,6 @@ void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
     display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
                                         new_rotation);
   }
-}
-
-void MaximizeModeController::EnterMaximizeMode() {
-  // TODO(jonross): Create a property on the display to track user rotations.
-  // We should lock based on this property. Furthermore we should apply the
-  // lock if the user changes the display settings while we are in maximize
-  // mode. https://crbug.com/369505
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::Rotation current_rotation = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
-  rotation_locked_ =  current_rotation != gfx::Display::ROTATE_0;
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
-  event_blocker_.reset(new MaximizeModeEventBlocker);
-}
-
-void MaximizeModeController::LeaveMaximizeMode() {
-  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  gfx::Display::Rotation current_rotation = display_manager->
-      GetDisplayInfo(gfx::Display::InternalDisplayId()).rotation();
-  if (!rotation_locked_ && current_rotation != gfx::Display::ROTATE_0) {
-    display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
-                                        gfx::Display::ROTATE_0);
-  }
-  Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
-  event_blocker_.reset();
 }
 
 }  // namespace ash
