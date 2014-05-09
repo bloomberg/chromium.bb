@@ -60,7 +60,6 @@
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/third_party/mozilla/url_parse.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -113,8 +112,6 @@ const net::BackoffEntry::Policy kNoBackoffPolicy = {
 };
 
 const char kEmptyUpdateUrlData[] = "";
-
-const char kAuthUserQueryKey[] = "authuser";
 
 int kExpectedLoadFlags =
     net::LOAD_DO_NOT_SEND_COOKIES |
@@ -250,25 +247,6 @@ class NotificationsObserver : public content::NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(NotificationsObserver);
 };
-
-// Extracts the integer value of the |authuser| query parameter. Returns 0 if
-// the parameter is not set.
-int GetAuthUserQueryValue(const GURL& url) {
-  std::string query_string = url.query();
-  url::Component query(0, query_string.length());
-  url::Component key, value;
-  while (
-      url::ExtractQueryKeyValue(query_string.c_str(), &query, &key, &value)) {
-    std::string key_string = query_string.substr(key.begin, key.len);
-    if (key_string == kAuthUserQueryKey) {
-      int user_index = 0;
-      base::StringToInt(query_string.substr(value.begin, value.len),
-                        &user_index);
-      return user_index;
-    }
-  }
-  return 0;
-}
 
 }  // namespace
 
@@ -1104,10 +1082,7 @@ class ExtensionUpdaterTest : public testing::Test {
   // Update a single extension in an environment where the download request
   // initially responds with a 403 status. Expect the fetcher to automatically
   // retry with cookies enabled.
-  void TestSingleProtectedExtensionDownloading(bool use_https,
-                                               bool fail,
-                                               int max_authuser,
-                                               int valid_authuser) {
+  void TestSingleProtectedExtensionDownloading(bool use_https, bool fail) {
     net::TestURLFetcherFactory factory;
     net::TestURLFetcher* fetcher = NULL;
     scoped_ptr<ServiceForDownloadTests> service(
@@ -1160,40 +1135,16 @@ class ExtensionUpdaterTest : public testing::Test {
     }
 
     // Attempt to fetch again after the auth failure.
-    bool succeed = !fail;
     if (fail) {
-      // Do not simulate incremental authuser retries.
-      if (max_authuser == 0) {
-        // Fail and verify that the fetch queue is cleared.
-        fetcher->set_url(test_url);
-        fetcher->set_status(net::URLRequestStatus());
-        fetcher->set_response_code(401);
-        fetcher->delegate()->OnURLFetchComplete(fetcher);
-        RunUntilIdle();
-
-        EXPECT_EQ(0U, updater.downloader_->extensions_queue_.active_request());
-        return;
-      }
-
-      // Simulate incremental authuser retries.
-      for (int user_index = 0; user_index <= max_authuser; ++user_index) {
-        const ExtensionDownloader::ExtensionFetch& fetch =
-            *updater.downloader_->extensions_queue_.active_request();
-        EXPECT_EQ(user_index, GetAuthUserQueryValue(fetch.url));
-        if (user_index == valid_authuser) {
-          succeed = true;
-          break;
-        }
-        fetcher->set_url(fetch.url);
-        fetcher->set_status(net::URLRequestStatus());
-        fetcher->set_response_code(403);
-        fetcher->delegate()->OnURLFetchComplete(fetcher);
-        RunUntilIdle();
-      }
-    }
-
-    // Succeed
-    if (succeed) {
+      // Fail and verify that the fetch queue is cleared.
+      fetcher->set_url(test_url);
+      fetcher->set_status(net::URLRequestStatus());
+      fetcher->set_response_code(403);
+      fetcher->delegate()->OnURLFetchComplete(fetcher);
+      RunUntilIdle();
+      EXPECT_EQ(0U, updater.downloader_->extensions_queue_.active_request());
+    } else {
+      // Succeed
       base::FilePath extension_file_path(FILE_PATH_LITERAL("/whatever"));
       fetcher->set_url(test_url);
       fetcher->set_status(net::URLRequestStatus());
@@ -1634,31 +1585,16 @@ TEST_F(ExtensionUpdaterTest, TestSingleExtensionDownloadingFailurePending) {
   TestSingleExtensionDownloading(true, false, true);
 }
 
-TEST_F(ExtensionUpdaterTest, SingleProtectedExtensionDownloading) {
-  TestSingleProtectedExtensionDownloading(true, false, 0, 0);
+TEST_F(ExtensionUpdaterTest, TestSingleProtectedExtensionDownloading) {
+  TestSingleProtectedExtensionDownloading(true, false);
 }
 
-TEST_F(ExtensionUpdaterTest, SingleProtectedExtensionDownloadingFailure) {
-  TestSingleProtectedExtensionDownloading(true, true, 0, 0);
+TEST_F(ExtensionUpdaterTest, TestSingleProtectedExtensionDownloadingFailure) {
+  TestSingleProtectedExtensionDownloading(true, true);
 }
 
-TEST_F(ExtensionUpdaterTest, SingleProtectedExtensionDownloadingNoHTTPS) {
-  TestSingleProtectedExtensionDownloading(false, false, 0, 0);
-}
-
-TEST_F(ExtensionUpdaterTest,
-       SingleProtectedExtensionDownloadingWithNonDefaultAuthUser1) {
-  TestSingleProtectedExtensionDownloading(true, true, 2, 1);
-}
-
-TEST_F(ExtensionUpdaterTest,
-       SingleProtectedExtensionDownloadingWithNonDefaultAuthUser2) {
-  TestSingleProtectedExtensionDownloading(true, true, 2, 2);
-}
-
-TEST_F(ExtensionUpdaterTest,
-       SingleProtectedExtensionDownloadingAuthUserExhaustionFailure) {
-  TestSingleProtectedExtensionDownloading(true, true, 2, 5);
+TEST_F(ExtensionUpdaterTest, TestSingleProtectedExtensionDownloadingNoHTTPS) {
+  TestSingleProtectedExtensionDownloading(false, false);
 }
 
 TEST_F(ExtensionUpdaterTest, TestMultipleExtensionDownloadingUpdatesFail) {

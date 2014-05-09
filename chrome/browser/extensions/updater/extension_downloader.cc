@@ -16,9 +16,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -76,10 +74,6 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
   false,
 };
 
-const char kAuthUserQueryKey[] = "authuser";
-
-const int kMaxAuthUserValue = 10;
-
 const char kNotFromWebstoreInstallSource[] = "notfromwebstore";
 const char kDefaultInstallSource[] = "";
 
@@ -98,66 +92,8 @@ bool ShouldRetryRequest(const net::URLRequestStatus& status,
                         int response_code) {
   // Retry if the response code is a server error, or the request failed because
   // of network errors as opposed to file errors.
-  return ((response_code >= 500 && status.is_success()) ||
-          status.status() == net::URLRequestStatus::FAILED);
-}
-
-bool ShouldRetryRequestWithCookies(const net::URLRequestStatus& status,
-                                   int response_code,
-                                   bool included_cookies) {
-  if (included_cookies)
-    return false;
-
-  if (status.status() == net::URLRequestStatus::CANCELED)
-    return true;
-
-  // Retry if a 401 or 403 is received.
-  return (status.status() == net::URLRequestStatus::SUCCESS &&
-          (response_code == 401 || response_code == 403));
-}
-
-bool ShouldRetryRequestWithNextUser(const net::URLRequestStatus& status,
-                                    int response_code,
-                                    bool included_cookies) {
-  // Retry if a 403 is received in response to a request including cookies.
-  // Note that receiving a 401 in response to a request which included cookies
-  // should indicate that the |authuser| index was out of bounds for the profile
-  // and therefore Chrome should NOT retry with another index.
-  return (status.status() == net::URLRequestStatus::SUCCESS &&
-          response_code == 403 && included_cookies);
-}
-
-// This parses and updates a URL query such that the value of the |authuser|
-// query parameter is incremented by 1. If parameter was not present in the URL,
-// it will be added with a value of 1. All other query keys and values are
-// preserved as-is. Returns |false| if the user index exceeds a hard-coded
-// maximum.
-bool IncrementAuthUserIndex(GURL* url) {
-  int user_index = 0;
-  std::string old_query = url->query();
-  std::vector<std::string> new_query_parts;
-  url::Component query(0, old_query.length());
-  url::Component key, value;
-  while (url::ExtractQueryKeyValue(old_query.c_str(), &query, &key, &value)) {
-    std::string key_string = old_query.substr(key.begin, key.len);
-    std::string value_string = old_query.substr(value.begin, value.len);
-    if (key_string == kAuthUserQueryKey) {
-      base::StringToInt(value_string, &user_index);
-    } else {
-      new_query_parts.push_back(base::StringPrintf(
-          "%s=%s", key_string.c_str(), value_string.c_str()));
-    }
-  }
-  if (user_index >= kMaxAuthUserValue)
-    return false;
-  new_query_parts.push_back(
-      base::StringPrintf("%s=%d", kAuthUserQueryKey, user_index + 1));
-  std::string new_query_string = JoinString(new_query_parts, '&');
-  url::Component new_query(0, new_query_string.size());
-  url::Replacements<char> replacements;
-  replacements.SetQuery(new_query_string.c_str(), new_query);
-  *url = url->ReplaceComponents(replacements);
-  return true;
+  return (response_code >= 500 && status.is_success()) ||
+         status.status() == net::URLRequestStatus::FAILED;
 }
 
 }  // namespace
@@ -771,23 +707,17 @@ void ExtensionDownloader::OnCRXFetchComplete(
     } else {
       NotifyDelegateDownloadFinished(fetch_data.Pass(), crx_path, true);
     }
-  } else if (ShouldRetryRequestWithCookies(
-                 status,
-                 response_code,
-                 extensions_queue_.active_request()->is_protected)) {
-    // Requeue the fetch with |is_protected| set, enabling cookies.
+  } else if (status.status() == net::URLRequestStatus::SUCCESS &&
+             (response_code == 401 || response_code == 403) &&
+             !extensions_queue_.active_request()->is_protected) {
+    // On 401 or 403, requeue this fetch with cookies enabled.
     extensions_queue_.active_request()->is_protected = true;
-    extensions_queue_.RetryRequest(backoff_delay);
-  } else if (ShouldRetryRequestWithNextUser(
-                 status,
-                 response_code,
-                 extensions_queue_.active_request()->is_protected) &&
-             IncrementAuthUserIndex(&extensions_queue_.active_request()->url)) {
     extensions_queue_.RetryRequest(backoff_delay);
   } else {
     const std::set<int>& request_ids =
         extensions_queue_.active_request()->request_ids;
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[id];
+
     VLOG(1) << "Failed to fetch extension '" << url.possibly_invalid_spec()
             << "' response code:" << response_code;
     if (ShouldRetryRequest(status, response_code) &&
