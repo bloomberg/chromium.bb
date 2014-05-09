@@ -6415,8 +6415,8 @@
    bug_371860
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN24TestingPrefServiceSimpleC1Ev
+   ...
    fun:_ZN8feedback20FeedbackUploaderTestC1Ev
-   fun:_ZN8feedback39FeedbackUploaderTest_QueueMultiple_TestC1Ev
-   fun:_ZN7testing8internal15TestFactoryImplIN8feedback39FeedbackUploaderTest_QueueMultiple_TestEE10CreateTestEv
+   fun:_ZN8feedback*FeedbackUploaderTest*
+   fun:_ZN7testing8internal15TestFactoryImplIN8feedback*
 }
