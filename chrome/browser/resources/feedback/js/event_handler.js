@@ -34,6 +34,10 @@ var whitelistedExtensionIds = [
   'odkaodonbgfohohmklejpjiejmcipmib', // Chrome Remote Desktop QA
   'dokpleeekgeeiehdhmdkeimnkmoifgdd', // Chrome Remote Desktop QA backup
   'ajoainacpilcemgiakehflpbkbfipojk', // Chrome Remote Desktop Apps V2
+  'llohocloplkbhgcfnplnoficdkiechcn', // Play Movies Dev
+  'icljpnebmoleodmchaaajbkpoipfoahp', // Play Movies Nightly
+  'mjekoljodoiapgkggnlmbecndfpbbcch', // Play Movies Beta
+  'gdijeikdkaembjbdobgfkoidjkpbmlkd', // Play Movies Stable
 ];
 
 /**
