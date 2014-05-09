@@ -10,6 +10,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_content_client_initializer.h"
+#include "gpu/config/gpu_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -81,8 +82,11 @@ void ContentTestSuite::Initialize() {
   media::InitializeMediaLibraryForTesting();
   // When running in a child process for Mac sandbox tests, the sandbox exists
   // to initialize GL, so don't do it here.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestChildProcess))
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kTestChildProcess)) {
     gfx::GLSurface::InitializeOneOffForTests();
+    gpu::ApplyGpuDriverBugWorkarounds(CommandLine::ForCurrentProcess());
+  }
 #endif
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();
