@@ -49,9 +49,6 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 
  private:
-  // BrowserWithTestWindowTest override:
-  virtual TestingProfile* CreateProfile() OVERRIDE;
-
   void SetUpHelper();
 };
 

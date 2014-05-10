@@ -112,6 +112,11 @@ class TemplateURLService : public WebDataServiceConsumer,
       scoped_ptr<TemplateURLData>* default_provider_data,
       bool* is_managed);
 
+  // Saves enough of url to |prefs| so that it can be loaded from preferences on
+  // start up.
+  static void SaveDefaultSearchProviderToPrefs(const TemplateURL* url,
+                                               PrefService* prefs);
+
   // Generates a suitable keyword for the specified url, which must be valid.
   // This is guaranteed not to return an empty string, since TemplateURLs should
   // never have an empty keyword.
@@ -134,11 +139,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   static GURL GenerateSearchURLUsingTermsData(
       const TemplateURL* t_url,
       const SearchTermsData& search_terms_data);
-
-  // Saves enough of url to |prefs| so that it can be loaded from preferences on
-  // start up.
-  void SaveDefaultSearchProviderToPrefs(const TemplateURL* url,
-                                        PrefService* prefs) const;
 
   // Returns true if there is no TemplateURL that conflicts with the
   // keyword/url pair, or there is one but it can be replaced. If there is an
@@ -409,12 +409,16 @@ class TemplateURLService : public WebDataServiceConsumer,
                            DontUpdateKeywordSearchForNonReplaceable);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, ChangeGoogleBaseValue);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, MergeDeletesUnusedProviders);
-  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, UniquifyKeyword);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
-                           IsLocalTemplateURLBetter);
+                           CreateSyncDataFromTemplateURL);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
+                           CreateTemplateURLFromSyncData);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, UniquifyKeyword);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
                            ResolveSyncKeywordConflict);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, PreSyncDeletes);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
+                           IsLocalTemplateURLBetter);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, MergeInSyncTemplateURL);
 
   friend class TemplateURLServiceTestUtilBase;
@@ -564,13 +568,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Caller is responsible for notifying observers.
   void RemoveNoNotify(TemplateURL* template_url);
 
-  // Like ResetTemplateURL(), but instead of notifying observers, returns
-  // whether anything has changed.
-  bool ResetTemplateURLNoNotify(TemplateURL* url,
-                                const base::string16& title,
-                                const base::string16& keyword,
-                                const std::string& search_url);
-
   // Notify the observers that the model has changed.  This is done only if the
   // model is loaded.
   void NotifyObservers();
@@ -716,9 +713,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Whether the keywords have been loaded.
   bool loaded_;
 
-  // Set when the web data service fails to load properly.  This prevents
-  // further communication with sync or writing to prefs, so we don't persist
-  // inconsistent state data anywhere.
+  // Did loading fail? This is only valid if loaded_ is true.
   bool load_failed_;
 
   // If non-zero, we're waiting on a load.

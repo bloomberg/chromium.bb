@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "base/metrics/field_trial.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_observer.h"
@@ -26,13 +25,6 @@ namespace chrome {
 namespace {
 
 class BrowserInstantControllerTest : public InstantUnitTestBase {
- public:
-  virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-        "EmbeddedSearch", "Group1 use_cacheable_ntp:1 prefetch_results:1"));
-    InstantUnitTestBase::SetUp();
-  }
-
  protected:
   friend class FakeWebContentsObserver;
 };

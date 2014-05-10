@@ -567,11 +567,6 @@ class TemplateURL {
   // Generates a favicon URL from the specified url.
   static GURL GenerateFaviconURL(const GURL& url);
 
-  // Returns true if |t_url| and |data| are equal in all meaningful respects.
-  // Static to allow either or both params to be NULL.
-  static bool MatchesData(const TemplateURL* t_url,
-                          const TemplateURLData* data);
-
   Profile* profile() { return profile_; }
   const TemplateURLData& data() const { return data_; }
 
@@ -649,9 +644,6 @@ class TemplateURL {
   // Like SupportsReplacement but usable on threads other than the UI thread.
   bool SupportsReplacementUsingTermsData(
       const SearchTermsData& search_terms_data) const;
-
-  // Returns true if any URLRefs use Googe base URLs.
-  bool HasGoogleBaseURLs() const;
 
   // Returns true if this TemplateURL uses Google base URLs and has a keyword
   // of "google.TLD".  We use this to decide whether we can automatically

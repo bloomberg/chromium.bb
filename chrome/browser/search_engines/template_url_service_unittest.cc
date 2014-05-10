@@ -500,7 +500,7 @@ TEST_F(TemplateURLServiceTest, AddSameKeyword) {
   data.safe_for_autoreplace = false;
   TemplateURL* t_url2 = new TemplateURL(test_util_.profile(), data);
   model()->Add(t_url2);
-  VerifyObserverCount(1);
+  VerifyObserverCount(2);
   EXPECT_EQ(t_url2, model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));
   EXPECT_EQ(ASCIIToUTF16("fourth"), t_url2->short_name());
   EXPECT_EQ(ASCIIToUTF16("keyword"), t_url2->keyword());

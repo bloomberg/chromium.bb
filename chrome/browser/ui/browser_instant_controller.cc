@@ -26,8 +26,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
-
-// Helpers --------------------------------------------------------------------
+using base::UserMetricsAction;
 
 namespace {
 
@@ -40,8 +39,8 @@ InstantSearchPrerenderer* GetInstantSearchPrerenderer(Profile* profile) {
 
 }  // namespace
 
-
-// BrowserInstantController ---------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// BrowserInstantController, public:
 
 BrowserInstantController::BrowserInstantController(Browser* browser)
     : browser_(browser),
@@ -120,6 +119,9 @@ void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
     prerenderer->Cancel();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// BrowserInstantController, SearchModelObserver implementation:
+
 void BrowserInstantController::ModelChanged(
     const SearchModel::State& old_state,
     const SearchModel::State& new_state) {
@@ -130,9 +132,9 @@ void BrowserInstantController::ModelChanged(
     // the full story, it's necessary to look at other UMA actions as well,
     // such as tab switches.
     if (new_mode.is_search_results())
-      content::RecordAction(base::UserMetricsAction("InstantExtended.ShowSRP"));
+      content::RecordAction(UserMetricsAction("InstantExtended.ShowSRP"));
     else if (new_mode.is_ntp())
-      content::RecordAction(base::UserMetricsAction("InstantExtended.ShowNTP"));
+      content::RecordAction(UserMetricsAction("InstantExtended.ShowNTP"));
 
     instant_.SearchModeChanged(old_state.mode, new_mode);
   }
@@ -141,7 +143,18 @@ void BrowserInstantController::ModelChanged(
     instant_.InstantSupportChanged(new_state.instant_support);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// BrowserInstantController, InstantServiceObserver implementation:
+
 void BrowserInstantController::DefaultSearchProviderChanged() {
+  ReloadTabsInInstantProcess();
+}
+
+void BrowserInstantController::GoogleURLUpdated() {
+  ReloadTabsInInstantProcess();
+}
+
+void BrowserInstantController::ReloadTabsInInstantProcess() {
   InstantService* instant_service =
       InstantServiceFactory::GetForProfile(profile());
   if (!instant_service)

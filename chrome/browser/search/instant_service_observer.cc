@@ -14,6 +14,9 @@ void InstantServiceObserver::MostVisitedItemsChanged(
 void InstantServiceObserver::DefaultSearchProviderChanged() {
 }
 
+void InstantServiceObserver::GoogleURLUpdated() {
+}
+
 void InstantServiceObserver::OmniboxStartMarginChanged(
     int omnibox_start_margin) {
 }

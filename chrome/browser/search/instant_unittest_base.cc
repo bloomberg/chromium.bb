@@ -5,7 +5,7 @@
 #include "chrome/browser/search/instant_unittest_base.h"
 #include <string>
 
-#include "base/strings/utf_string_conversions.h"
+#include "base/basictypes.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/profiles/profile.h"
@@ -52,7 +52,6 @@ void InstantUnitTestBase::SetUpWithoutQueryExtraction() {
 void InstantUnitTestBase::SetUserSelectedDefaultSearchProvider(
     const std::string& base_url) {
   TemplateURLData data;
-  data.SetKeyword(base::UTF8ToUTF16(base_url));
   data.SetURL(base_url + "url?bar={searchTerms}");
   data.instant_url = base_url +
       "instant?{google:omniboxStartMarginParameter}{google:forceInstantResults}"
@@ -88,16 +87,11 @@ bool InstantUnitTestBase::IsInstantServiceObserver(
   return instant_service_->observers_.HasObserver(observer);
 }
 
-TestingProfile* InstantUnitTestBase::CreateProfile() {
-  TestingProfile* profile = BrowserWithTestWindowTest::CreateProfile();
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile, &TemplateURLServiceFactory::BuildInstanceFor);
-  return profile;
-}
-
 void InstantUnitTestBase::SetUpHelper() {
   BrowserWithTestWindowTest::SetUp();
 
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(), &TemplateURLServiceFactory::BuildInstanceFor);
   template_url_service_ = TemplateURLServiceFactory::GetForProfile(profile());
   ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service_);
 

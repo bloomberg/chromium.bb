@@ -48,12 +48,17 @@ class BrowserInstantController : public SearchModelObserver,
   void TabDeactivated(content::WebContents* contents);
 
  private:
-  // SearchModelObserver:
+  // Overridden from search::SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,
                             const SearchModel::State& new_state) OVERRIDE;
 
-  // InstantServiceObserver:
+  // Overridden from InstantServiceObserver:
   virtual void DefaultSearchProviderChanged() OVERRIDE;
+  virtual void GoogleURLUpdated() OVERRIDE;
+
+  // Reloads the tabs in instant process to ensure that their privileged status
+  // is still valid.
+  void ReloadTabsInInstantProcess();
 
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.
