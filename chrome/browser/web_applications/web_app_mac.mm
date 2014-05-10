@@ -298,6 +298,16 @@ NSImageRep* OverlayImageRep(NSImage* background, NSImageRep* overlay) {
   return canvas.autorelease();
 }
 
+// Helper function to extract the single NSImageRep held in a resource bundle
+// image.
+NSImageRep* ImageRepForResource(int resource_id) {
+  gfx::Image& image =
+      ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+  NSArray* image_reps = [image.AsNSImage() representations];
+  DCHECK_EQ(1u, [image_reps count]);
+  return [image_reps objectAtIndex:0];
+}
+
 // Adds a localized strings file for the Chrome Apps directory using the current
 // locale. OSX will use this for the display name.
 // + Chrome Apps.localized (|apps_directory|)
@@ -325,22 +335,27 @@ void UpdateAppShortcutsSubdirLocalizedName(
   [strings_dict writeToFile:strings_path
                  atomically:YES];
 
-  // Brand the folder with an embossed app launcher logo.
+  base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
+
+  // Use complete assets for the small icon sizes. -[NSWorkspace setIcon:] has a
+  // bug when dealing with named NSImages where it incorrectly handles alpha
+  // premultiplication. This is most noticable with small assets since the 1px
+  // border is a much larger component of the small icons.
+  // See http://crbug.com/305373 for details.
+  [folder_icon_image addRepresentation:ImageRepForResource(IDR_APPS_FOLDER_16)];
+  [folder_icon_image addRepresentation:ImageRepForResource(IDR_APPS_FOLDER_32)];
+
+  // Brand larger folder assets with an embossed app launcher logo to conserve
+  // distro size and for better consistency with changing hue across OSX
+  // versions. The folder is textured, so compresses poorly without this.
   const int kBrandResourceIds[] = {
-    IDR_APPS_FOLDER_OVERLAY_16,
-    IDR_APPS_FOLDER_OVERLAY_32,
     IDR_APPS_FOLDER_OVERLAY_128,
     IDR_APPS_FOLDER_OVERLAY_512,
   };
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   NSImage* base_image = [NSImage imageNamed:NSImageNameFolder];
-  base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
   for (size_t i = 0; i < arraysize(kBrandResourceIds); ++i) {
-    gfx::Image& image_rep = rb.GetNativeImageNamed(kBrandResourceIds[i]);
-    NSArray* image_reps = [image_rep.AsNSImage() representations];
-    DCHECK_EQ(1u, [image_reps count]);
-    NSImageRep* with_overlay = OverlayImageRep(base_image,
-                                               [image_reps objectAtIndex:0]);
+    NSImageRep* with_overlay =
+        OverlayImageRep(base_image, ImageRepForResource(kBrandResourceIds[i]));
     DCHECK(with_overlay);
     if (with_overlay)
       [folder_icon_image addRepresentation:with_overlay];

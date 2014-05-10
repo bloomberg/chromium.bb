@@ -113,8 +113,8 @@
         </if>
       </if>
       <if expr="is_macosx">
-        <include name="IDR_APPS_FOLDER_OVERLAY_16" file="mac/apps_folder_overlay_16.png" type="BINDATA" />
-        <include name="IDR_APPS_FOLDER_OVERLAY_32" file="mac/apps_folder_overlay_32.png" type="BINDATA" />
+        <include name="IDR_APPS_FOLDER_16" file="mac/apps_folder_16.png" type="BINDATA" />
+        <include name="IDR_APPS_FOLDER_32" file="mac/apps_folder_32.png" type="BINDATA" />
         <include name="IDR_APPS_FOLDER_OVERLAY_128" file="mac/apps_folder_overlay_128.png" type="BINDATA" />
         <include name="IDR_APPS_FOLDER_OVERLAY_512" file="mac/apps_folder_overlay_512.png" type="BINDATA" />
       </if>
