@@ -435,13 +435,18 @@ void WebsiteSettings::Init(Profile* profile,
   // weakly encrypted connections.
   site_connection_status_ = SITE_CONNECTION_STATUS_UNKNOWN;
 
-  if (!ssl.cert_id) {
-    // Not HTTPS.
-    DCHECK_EQ(ssl.security_style, content::SECURITY_STYLE_UNAUTHENTICATED);
-    if (ssl.security_style == content::SECURITY_STYLE_UNAUTHENTICATED)
-      site_connection_status_ = SITE_CONNECTION_STATUS_UNENCRYPTED;
-    else
-      site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
+  if (ssl.security_style == content::SECURITY_STYLE_UNKNOWN) {
+    // Page is still loading, so SSL status is not yet available. Say nothing.
+    DCHECK_EQ(ssl.security_bits, -1);
+    site_connection_status_ = SITE_CONNECTION_STATUS_UNENCRYPTED;
+
+    site_connection_details_.assign(l10n_util::GetStringFUTF16(
+        IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
+        subject_name));
+  } else if (ssl.security_style == content::SECURITY_STYLE_UNAUTHENTICATED) {
+    // HTTPS without a certificate, or not HTTPS.
+    DCHECK(!ssl.cert_id);
+    site_connection_status_ = SITE_CONNECTION_STATUS_UNENCRYPTED;
 
     site_connection_details_.assign(l10n_util::GetStringFUTF16(
         IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT,
