@@ -66,8 +66,15 @@ class AutomaticProfileResetterDelegate {
 
   // Returns attributes of the search engine currently set as the default (or
   // an empty dictionary if there is none).
-  // The dictionary is in the same format as persisted to preferences by
-  // DefaultSearchManager::SetUserSelectedDefaultSearchEngine.
+  // The returned attributes correspond in meaning and format to the user
+  // preferences stored by TemplateURLService::SaveDefaultSearchProviderToPrefs,
+  // and will be named after the second path name segment of the respective
+  // preference (i.e. the part after "default_search_provider.").
+  // Note that:
+  //  1.) the "enabled" attribute will not be present, as it is not technically
+  //      an attribute of a search provider,
+  //  2.) "encodings" will be a list of strings, in contrast to a single string
+  //      with tokens delimited by semicolons, but the order will be the same.
   virtual scoped_ptr<base::DictionaryValue>
       GetDefaultSearchProviderDetails() const = 0;
 

@@ -41,52 +41,40 @@ namespace {
 
 scoped_ptr<base::DictionaryValue> BuildSubTreeFromTemplateURL(
     const TemplateURL* template_url) {
+  scoped_ptr<base::DictionaryValue> tree(new base::DictionaryValue);
+  tree->SetString("search_url", template_url->url());
   // If this value contains a placeholder in the pre-populated data, it will
   // have been replaced as it was loaded into a TemplateURL.
   // BuildSubTreeFromTemplateURL works with TemplateURL (not TemplateURLData)
   // in order to maintain this behaviour.
   // TODO(engedy): Confirm the expected behaviour and convert to use
   // TemplateURLData if possible."
-  scoped_ptr<base::DictionaryValue> tree(new base::DictionaryValue);
-  tree->SetString("name", template_url->short_name());
-  tree->SetString("short_name", template_url->short_name());
-  tree->SetString("keyword", template_url->keyword());
-  tree->SetString("search_url", template_url->url());
-  tree->SetString("url", template_url->url());
-  tree->SetString("suggestions_url", template_url->suggestions_url());
+  tree->SetString("search_terms_replacement_key",
+                  template_url->search_terms_replacement_key());
+  tree->SetString("suggest_url", template_url->suggestions_url());
   tree->SetString("instant_url", template_url->instant_url());
   tree->SetString("image_url", template_url->image_url());
   tree->SetString("new_tab_url", template_url->new_tab_url());
   tree->SetString("search_url_post_params",
                   template_url->search_url_post_params());
-  tree->SetString("suggestions_url_post_params",
+  tree->SetString("suggest_url_post_params",
                   template_url->suggestions_url_post_params());
   tree->SetString("instant_url_post_params",
                   template_url->instant_url_post_params());
   tree->SetString("image_url_post_params",
                   template_url->image_url_post_params());
+  tree->SetString("icon_url", template_url->favicon_url().spec());
+  tree->SetString("name", template_url->short_name());
+  tree->SetString("keyword", template_url->keyword());
+  base::ListValue* input_encodings = new base::ListValue;
+  input_encodings->AppendStrings(template_url->input_encodings());
+  tree->Set("encodings", input_encodings);
+  tree->SetString("id", base::Int64ToString(template_url->id()));
+  tree->SetString("prepopulate_id",
+                  base::IntToString(template_url->prepopulate_id()));
   base::ListValue* alternate_urls = new base::ListValue;
   alternate_urls->AppendStrings(template_url->alternate_urls());
   tree->Set("alternate_urls", alternate_urls);
-  tree->SetString("favicon_url", template_url->favicon_url().spec());
-  tree->SetString("originating_url", template_url->originating_url().spec());
-  tree->SetBoolean("safe_for_autoreplace",
-                   template_url->safe_for_autoreplace());
-  base::ListValue* input_encodings = new base::ListValue;
-  input_encodings->AppendStrings(template_url->input_encodings());
-  tree->Set("input_encodings", input_encodings);
-  tree->SetString("id", base::Int64ToString(template_url->id()));
-  tree->SetString("date_created",
-                  base::Int64ToString(
-                      template_url->date_created().ToInternalValue()));
-  tree->SetString("last_modified",
-                  base::Int64ToString(
-                      template_url->last_modified().ToInternalValue()));
-  tree->SetBoolean("created_by_policy", template_url->created_by_policy());
-  tree->SetInteger("usage_count", template_url->usage_count());
-  tree->SetInteger("prepopulate_id", template_url->prepopulate_id());
-  tree->SetString("search_terms_replacement_key",
-                  template_url->search_terms_replacement_key());
   return tree.Pass();
 }
 
