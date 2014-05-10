@@ -1,0 +1,9 @@
+<script>
+    var exceptionName = "";
+    try {
+        screen.lockOrientation("portrait-primary");
+    } catch (ex) {
+        exceptionName = ex.name;
+    }
+    parent.window.postMessage(exceptionName, "*");
+</script>

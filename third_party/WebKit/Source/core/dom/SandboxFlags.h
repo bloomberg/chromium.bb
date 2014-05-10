@@ -44,6 +44,7 @@ enum SandboxFlag {
     SandboxAutomaticFeatures = 1 << 7,
     SandboxPointerLock = 1 << 8,
     SandboxDocumentDomain = 1 << 9,
+    SandboxOrientationLock = 1 << 10, // See https://w3c.github.io/screen-orientation/#dfn-sandboxed-orientation-lock-browsing-context-flag.
     SandboxAll = -1 // Mask with all bits set to 1.
 };
 

@@ -5,6 +5,8 @@
 #include "config.h"
 #include "modules/screen_orientation/ScreenOrientation.h"
 
+#include "bindings/v8/ExceptionState.h"
+#include "core/dom/Document.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Screen.h"
@@ -139,9 +141,17 @@ const AtomicString& ScreenOrientation::orientation(Screen& screen)
     return orientationTypeToString(controller.orientation());
 }
 
-bool ScreenOrientation::lockOrientation(Screen& screen, const AtomicString& lockString)
+bool ScreenOrientation::lockOrientation(Screen& screen, const AtomicString& lockString, ExceptionState& exceptionState)
 {
-    ScreenOrientation::from(screen).lockOrientationAsync(stringToOrientationLock(lockString));
+    ScreenOrientation& screenOrientation = ScreenOrientation::from(screen);
+    Document* document = screenOrientation.document();
+    if (!document)
+        return false;
+    if (document->isSandboxed(SandboxOrientationLock)) {
+        exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-orientation-lock' flag.");
+        return false;
+    }
+    screenOrientation.lockOrientationAsync(stringToOrientationLock(lockString));
     return true;
 }
 

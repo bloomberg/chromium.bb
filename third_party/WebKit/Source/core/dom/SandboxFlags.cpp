@@ -65,6 +65,8 @@ SandboxFlags parseSandboxPolicy(const String& policy, String& invalidTokensError
             flags &= ~SandboxPopups;
         } else if (equalIgnoringCase(sandboxToken, "allow-pointer-lock")) {
             flags &= ~SandboxPointerLock;
+        } else if (equalIgnoringCase(sandboxToken, "allow-orientation-lock")) {
+            flags &= ~SandboxOrientationLock;
         } else {
             if (numberOfTokenErrors)
                 tokenErrors.appendLiteral(", '");

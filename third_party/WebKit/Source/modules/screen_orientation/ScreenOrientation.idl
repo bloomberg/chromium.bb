@@ -24,7 +24,7 @@ enum OrientationLockType {
 ] partial interface Screen {
     readonly attribute OrientationType orientation;
 
-    boolean lockOrientation(OrientationLockType orientation);
+    [RaisesException] boolean lockOrientation(OrientationLockType orientation);
 
     void unlockOrientation();
 };
