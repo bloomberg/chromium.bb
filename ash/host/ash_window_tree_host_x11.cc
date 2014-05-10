@@ -340,7 +340,7 @@ void AshWindowTreeHostX11::TranslateAndDispatchLocatedEvent(
       aura::client::ScreenPositionClient* screen_position_client =
           aura::client::GetScreenPositionClient(root_window);
       gfx::Rect local(bounds().size());
-
+      local.Inset(transformer_helper_.GetHostInsets());
       if (screen_position_client && !local.Contains(event->location())) {
         gfx::Point location(event->location());
         // In order to get the correct point in screen coordinates
