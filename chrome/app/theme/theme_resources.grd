@@ -53,20 +53,23 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_ASK_MEDIA" file="ask_media.png" />
       <if expr="toolkit_views">
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE" file="win/app_window_close.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_H" file="win/app_window_close_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_P" file="win/app_window_close_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_U" file="win/app_window_close_unfocused.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE" file="win/app_window_restore.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_H" file="win/app_window_restore_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_P" file="win/app_window_restore_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE" file="win/app_window_maximize.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_D" file="win/app_window_maximize_disabled.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_H" file="win/app_window_maximize_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_P" file="win/app_window_maximize_active.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE" file="win/app_window_minimize.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_H" file="win/app_window_minimize_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_P" file="win/app_window_minimize_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE" file="common/app_window_close.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_H" file="common/app_window_close_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_P" file="common/app_window_close_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_CLOSE_U" file="common/app_window_close_unfocused.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE" file="common/app_window_restore.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_H" file="common/app_window_restore_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_L" file="common/app_window_restore_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_RESTORE_P" file="common/app_window_restore_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE" file="common/app_window_maximize.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_D" file="common/app_window_maximize_disabled.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_H" file="common/app_window_maximize_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_L" file="common/app_window_maximize_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MAXIMIZE_P" file="common/app_window_maximize_active.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE" file="common/app_window_minimize.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_H" file="common/app_window_minimize_hover.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_L" file="common/app_window_minimize_light.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_WINDOW_MINIMIZE_P" file="common/app_window_minimize_active.png" />
       </if>
       <if expr="use_ash">
         <structure type="chrome_scaled_image" name="IDR_ASH_BROWSER_WINDOW_CONTROL_BACKGROUND_MAXIMIZED_H" file="common/ash/browser_window_control_background_maximized_hover.png" />
