@@ -378,10 +378,15 @@ void AVFoundationMonitorImpl::StartObserverOnDeviceThread() {
   std::set<CrAVCaptureDevice*>::iterator found =
       std::find(monitoredDevices_.begin(), monitoredDevices_.end(), device);
   DCHECK(found != monitoredDevices_.end());
-  [device removeObserver:self
-              forKeyPath:@"suspended"];
-  [device removeObserver:self
-              forKeyPath:@"connected"];
+  // Every so seldom, |device| might be gone when getting here, in that case
+  // removing the observer causes a crash. Try to avoid it by checking sanity of
+  // the |device| via its -observationInfo. http://crbug.com/371271.
+  if ([device observationInfo]) {
+    [device removeObserver:self
+                forKeyPath:@"suspended"];
+    [device removeObserver:self
+                forKeyPath:@"connected"];
+  }
   monitoredDevices_.erase(found);
 }
 
