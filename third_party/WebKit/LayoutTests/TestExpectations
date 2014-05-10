@@ -923,17 +923,6 @@ crbug.com/361940 [ Lion MountainLion Retina Mavericks ] compositing/update-paint
 
 crbug.com/356777 http/tests/history/frameset-repeated-name.html [ Pass Failure ]
 
-crbug.com/361729 fast/repaint/window-resize-fixed-center-background-image.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-media-query.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-no-layout-change1.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-no-layout-change2.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-percent-html.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-percent-width-height.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-positioned-bottom.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-positioned-percent-top.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-vertical-writing-mode.html [ NeedsRebaseline ]
-crbug.com/361729 fast/repaint/window-resize-viewport-percent.html [ NeedsRebaseline ]
-
 # Temporary until the Web Notification API test-runner changes finished.
 crbug.com/349015 fast/notifications/notifications-constructor-with-permission.html [ Failure Pass ]
 
