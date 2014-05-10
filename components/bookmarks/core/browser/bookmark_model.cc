@@ -431,7 +431,7 @@ void BookmarkModel::OnFaviconChanged(const std::set<GURL>& urls) {
 }
 
 void BookmarkModel::SetDateAdded(const BookmarkNode* node,
-                                 base::Time date_added) {
+                                 Time date_added) {
   if (!node) {
     NOTREACHED();
     return;

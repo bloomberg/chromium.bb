@@ -11,13 +11,11 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "components/bookmarks/core/browser/bookmark_client.h"
 #include "components/bookmarks/core/browser/bookmark_match.h"
 #include "components/bookmarks/core/browser/bookmark_node.h"
 #include "components/bookmarks/core/browser/bookmark_utils.h"
-#include "components/query_parser/query_parser.h"
 #include "components/query_parser/snippet.h"
 #include "third_party/icu/source/common/unicode/normalizer2.h"
 

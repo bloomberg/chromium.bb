@@ -6,13 +6,14 @@
 #define COMPONENTS_BOOKMARKS_CORE_BROWSER_BOOKMARK_CLIENT_H_
 
 #include <set>
+#include <utility>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/task/cancelable_task_tracker.h"
 
-class GURL;
 class BookmarkNode;
+class GURL;
 
 namespace base {
 struct UserMetricsAction;

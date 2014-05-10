@@ -12,7 +12,6 @@
 #include "base/i18n/string_search.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
@@ -38,7 +37,7 @@ void CloneBookmarkNodeImpl(BookmarkModel* model,
                            int index_to_add_at,
                            bool reset_node_times) {
   if (element.is_url) {
-    base::Time date_added = reset_node_times ? Time::Now() : element.date_added;
+    Time date_added = reset_node_times ? Time::Now() : element.date_added;
     DCHECK(!date_added.is_null());
 
     model->AddURLWithCreationTimeAndMetaInfo(parent,
@@ -219,7 +218,7 @@ std::vector<const BookmarkNode*> GetMostRecentlyModifiedFolders(
 
   while (iterator.has_next()) {
     const BookmarkNode* parent = iterator.Next();
-    if (parent->is_folder() && parent->date_folder_modified() > base::Time()) {
+    if (parent->is_folder() && parent->date_folder_modified() > Time()) {
       if (max_count == 0) {
         nodes.push_back(parent);
       } else {

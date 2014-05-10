@@ -18,10 +18,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace content {
-class BrowserContext;
-}
-
 // BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
 // BookmarkModel creates a BookmarkLoadDetails and passes it (including
 // ownership) to BookmarkStorage. BookmarkStorage loads the bookmarks (and

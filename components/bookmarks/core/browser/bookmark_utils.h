@@ -14,7 +14,6 @@
 
 class BookmarkModel;
 class BookmarkNode;
-class Profile;
 class GURL;
 
 namespace user_prefs {

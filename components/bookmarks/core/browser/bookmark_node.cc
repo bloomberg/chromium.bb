@@ -4,6 +4,9 @@
 
 #include "components/bookmarks/core/browser/bookmark_node.h"
 
+#include <map>
+#include <string>
+
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 

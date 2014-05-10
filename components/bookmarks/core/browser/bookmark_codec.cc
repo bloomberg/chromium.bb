@@ -351,7 +351,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
   }
 
   node->SetTitle(title);
-  node->set_date_added(base::Time::FromInternalValue(internal_time));
+  node->set_date_added(Time::FromInternalValue(internal_time));
 
   int64 sync_transaction_version = node->sync_transaction_version();
   BookmarkNode::MetaInfoMap meta_info_map;
