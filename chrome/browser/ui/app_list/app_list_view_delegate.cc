@@ -46,6 +46,8 @@
 #endif
 
 #if defined(USE_ASH)
+#include "ash/shell.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "chrome/browser/ui/ash/app_list/app_sync_ui_state_watcher.h"
 #endif
 
@@ -465,6 +467,19 @@ bool AppListViewDelegate::ShouldCenterWindow() const {
   // position is too tall, and doesn't fit in the left-over screen space.
   if (keyboard::IsKeyboardEnabled())
     return true;
+#endif
+
+#if defined(USE_ASH)
+  // If it is at all possible to enter maximize mode in this configuration
+  // (which has a virtual keyboard), we should use the experimental position.
+  // This avoids having the app list change shape and position as the user
+  // enters and exits maximize mode.
+  if (ash::Shell::HasInstance() &&
+      ash::Shell::GetInstance()
+          ->maximize_mode_controller()
+          ->CanEnterMaximizeMode()) {
+    return true;
+  }
 #endif
 
   return false;

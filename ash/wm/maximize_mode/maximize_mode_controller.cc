@@ -5,9 +5,11 @@
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 #include "ash/accelerometer/accelerometer_controller.h"
+#include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_blocker.h"
+#include "base/command_line.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace ash {
@@ -82,7 +84,8 @@ float ClockwiseAngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
 }  // namespace
 
 MaximizeModeController::MaximizeModeController()
-    : rotation_locked_(false) {
+    : rotation_locked_(false),
+      have_seen_accelerometer_data_(false) {
   Shell::GetInstance()->accelerometer_controller()->AddObserver(this);
 }
 
@@ -90,9 +93,21 @@ MaximizeModeController::~MaximizeModeController() {
   Shell::GetInstance()->accelerometer_controller()->RemoveObserver(this);
 }
 
+bool MaximizeModeController::CanEnterMaximizeMode() {
+  // If we have ever seen accelerometer data, then HandleHingeRotation may
+  // trigger maximize mode at some point in the future.
+  // The --enable-touch-view-testing switch can also mean that we may enter
+  // maximize mode.
+  return have_seen_accelerometer_data_ ||
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kAshEnableTouchViewTesting);
+}
+
 void MaximizeModeController::OnAccelerometerUpdated(
     const gfx::Vector3dF& base,
     const gfx::Vector3dF& lid) {
+  have_seen_accelerometer_data_ = true;
+
   // Ignore the reading if it appears unstable. The reading is considered
   // unstable if it deviates too much from gravity and/or the magnitude of the
   // reading from the lid differs too much from the reading from the base.
