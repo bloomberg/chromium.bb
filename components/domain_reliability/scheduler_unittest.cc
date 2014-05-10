@@ -63,6 +63,7 @@ class DomainReliabilitySchedulerTest : public testing::Test {
 
     if (callback_called_ && expected_min == callback_min_
                          && expected_max == callback_max_) {
+      callback_called_ = false;
       return ::testing::AssertionSuccess();
     }
 
@@ -208,6 +209,42 @@ TEST_F(DomainReliabilitySchedulerTest, DetermineCollectorAtUpload) {
   // T = min_delay + retry_interval; collector 0 should be active again.
   ASSERT_TRUE(CheckStartingUpload(0));
   scheduler_->OnUploadComplete(true);
+}
+
+TEST_F(DomainReliabilitySchedulerTest, BeaconWhilePending) {
+  CreateScheduler(1);
+
+  scheduler_->OnBeaconAdded();
+  ASSERT_TRUE(CheckPendingUpload(min_delay(), max_delay()));
+
+  // Second beacon should not call callback again.
+  scheduler_->OnBeaconAdded();
+  ASSERT_TRUE(CheckNoPendingUpload());
+  time_.Advance(min_delay());
+
+  // No pending upload after beacon.
+  ASSERT_TRUE(CheckStartingUpload(0));
+  scheduler_->OnUploadComplete(true);
+  ASSERT_TRUE(CheckNoPendingUpload());
+}
+
+TEST_F(DomainReliabilitySchedulerTest, BeaconWhileUploading) {
+  CreateScheduler(1);
+
+  scheduler_->OnBeaconAdded();
+  ASSERT_TRUE(CheckPendingUpload(min_delay(), max_delay()));
+  time_.Advance(min_delay());
+
+  // If a beacon arrives during the upload, a new upload should be pending.
+  ASSERT_TRUE(CheckStartingUpload(0));
+  scheduler_->OnBeaconAdded();
+  scheduler_->OnUploadComplete(true);
+  ASSERT_TRUE(CheckPendingUpload(min_delay(), max_delay()));
+
+  time_.Advance(min_delay());
+  ASSERT_TRUE(CheckStartingUpload(0));
+  scheduler_->OnUploadComplete(true);
+  ASSERT_TRUE(CheckNoPendingUpload());
 }
 
 }  // namespace domain_reliability

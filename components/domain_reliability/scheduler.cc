@@ -89,6 +89,7 @@ void DomainReliabilityScheduler::OnBeaconAdded() {
 size_t DomainReliabilityScheduler::OnUploadStart() {
   DCHECK(upload_scheduled_);
   DCHECK_EQ(kInvalidCollectorIndex, collector_index_);
+  upload_pending_ = false;
   upload_scheduled_ = false;
   upload_running_ = true;
 
@@ -139,7 +140,6 @@ void DomainReliabilityScheduler::MaybeScheduleUpload() {
   if (!upload_pending_ || upload_scheduled_ || upload_running_)
     return;
 
-  upload_pending_ = false;
   upload_scheduled_ = true;
   old_first_beacon_time_ = first_beacon_time_;
 
