@@ -57,3 +57,17 @@
   )
 )
 
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+(GraphicsLayer
+  (bounds 508.00 516.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 508.00 516.00)
+      (drawsContent 1)
+    )
+  )
+)
+
