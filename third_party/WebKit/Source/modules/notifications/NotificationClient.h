@@ -34,7 +34,7 @@
 
 #include "core/html/VoidCallback.h"
 #include "modules/notifications/NotificationPermissionCallback.h"
-#include "wtf/PassRefPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

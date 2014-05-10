@@ -40,7 +40,6 @@
 #include "platform/text/TextDirection.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

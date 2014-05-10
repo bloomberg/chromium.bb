@@ -34,7 +34,6 @@
 #include "modules/filesystem/EntriesCallback.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "platform/FileSystemType.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 

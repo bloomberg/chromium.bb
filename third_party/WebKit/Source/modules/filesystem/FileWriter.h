@@ -39,7 +39,6 @@
 #include "modules/filesystem/FileWriterBase.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFileWriterClient.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

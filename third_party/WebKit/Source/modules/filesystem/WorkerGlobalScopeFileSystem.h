@@ -29,7 +29,6 @@
 
 #include "modules/filesystem/DOMFileSystemSync.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

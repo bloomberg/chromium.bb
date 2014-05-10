@@ -35,7 +35,6 @@
 #include "modules/filesystem/DOMFileSystem.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

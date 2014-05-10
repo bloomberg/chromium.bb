@@ -26,7 +26,6 @@
 #ifndef DOMWindowFileSystem_h
 #define DOMWindowFileSystem_h
 
-#include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

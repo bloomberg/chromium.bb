@@ -6,7 +6,6 @@
 #define InspectorFrontendHostFileSystem_h
 
 #include "platform/heap/Handle.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
