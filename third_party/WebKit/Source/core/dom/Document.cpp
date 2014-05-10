@@ -718,7 +718,7 @@ DOMImplementation& Document::implementation()
     return *m_implementation;
 }
 
-bool Document::hasManifest() const
+bool Document::hasAppCacheManifest() const
 {
     return isHTMLHtmlElement(documentElement()) && documentElement()->hasAttribute(manifestAttr);
 }
@@ -2462,7 +2462,7 @@ void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionState& excep
         documentElement()->appendChild(newBody.release(), exceptionState);
 }
 
-HTMLHeadElement* Document::head()
+HTMLHeadElement* Document::head() const
 {
     Node* de = documentElement();
     if (!de)
@@ -4690,6 +4690,22 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask)
     for (int i = secondaryIcons.size() - 1; i >= 0; --i)
         iconURLs.append(secondaryIcons[i]);
     return iconURLs;
+}
+
+HTMLLinkElement* Document::linkManifest() const
+{
+    HTMLHeadElement* head = this->head();
+    if (!head)
+        return 0;
+
+    // The first link element with a manifest rel must be used. Others are ignored.
+    for (HTMLLinkElement* linkElement = Traversal<HTMLLinkElement>::firstChild(*head); linkElement; linkElement = Traversal<HTMLLinkElement>::nextSibling(*linkElement)) {
+        if (!linkElement->relAttribute().isManifest())
+            continue;
+        return linkElement;
+    }
+
+    return 0;
 }
 
 void Document::setUseSecureKeyboardEntryWhenActive(bool usesSecureKeyboard)

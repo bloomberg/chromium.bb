@@ -117,6 +117,7 @@ class HTMLIFrameElement;
 class HTMLImport;
 class HTMLImportLoader;
 class HTMLImportsController;
+class HTMLLinkElement;
 class HTMLMapElement;
 class HTMLNameCollection;
 class HTMLScriptElement;
@@ -314,7 +315,8 @@ public:
         return m_documentElement.get();
     }
 
-    bool hasManifest() const;
+    // Returns whether the Document has an AppCache manifest.
+    bool hasAppCacheManifest() const;
 
     Location* location() const;
 
@@ -794,7 +796,7 @@ public:
     HTMLElement* body() const;
     void setBody(PassRefPtr<HTMLElement>, ExceptionState&);
 
-    HTMLHeadElement* head();
+    HTMLHeadElement* head() const;
 
     // Decide which element is to define the viewport's overflow policy. If |rootStyle| is set, use
     // that as the style for the root element, rather than obtaining it on our own. The reason for
@@ -854,6 +856,10 @@ public:
     void setHasNodesWithPlaceholderStyle() { m_hasNodesWithPlaceholderStyle = true; }
 
     Vector<IconURL> iconURLs(int iconTypesMask);
+
+    // Returns the HTMLLinkElement currently in use for the Web Manifest.
+    // Returns null if there is no such element.
+    HTMLLinkElement* linkManifest() const;
 
     void setUseSecureKeyboardEntryWhenActive(bool);
     bool useSecureKeyboardEntryWhenActive() const;

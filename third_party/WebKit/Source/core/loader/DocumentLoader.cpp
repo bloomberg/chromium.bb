@@ -275,7 +275,7 @@ void DocumentLoader::finishedLoading(double finishTime)
     // If the document specified an application cache manifest, it violates the author's intent if we store it in the memory cache
     // and deny the appcache the chance to intercept it in the future, so remove from the memory cache.
     if (m_frame) {
-        if (m_mainResource && m_frame->document()->hasManifest())
+        if (m_mainResource && m_frame->document()->hasAppCacheManifest())
             memoryCache()->remove(m_mainResource.get());
     }
     m_applicationCacheHost->finishedLoadingMainResource();
