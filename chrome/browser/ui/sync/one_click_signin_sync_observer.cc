@@ -81,12 +81,8 @@ void OneClickSigninSyncObserver::OnStateChanged() {
     if (sync_service->sync_initialized() &&
         signin::GetSourceForPromoURL(continue_url_)
             != signin::SOURCE_SETTINGS) {
-      // TODO(isherman): Redirecting after Sync is set up still has some bugs:
-      // http://crbug.com/355885
-      //   Having multiple settings pages open can cause issues.
-      // http://crbug.com/357901
-      //   Selecting anything other than "Sync Everything" when configuring Sync
-      //   prevents the redirect.
+      // TODO(isherman): Having multiple settings pages open can cause issues
+      // redirecting after Sync is set up: http://crbug.com/355885
       LoadContinueUrl();
     }
   }
