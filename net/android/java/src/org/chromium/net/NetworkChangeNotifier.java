@@ -134,7 +134,7 @@ public class NetworkChangeNotifier {
                         }
                     },
                     mContext);
-                mCurrentConnectionType = mAutoDetector.getCurrentConnectionType();
+                updateCurrentConnectionType(mAutoDetector.getCurrentConnectionType());
             }
         } else {
             destroyAutoDetector();
