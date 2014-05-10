@@ -16,7 +16,7 @@ namespace password_manager {
 // PasswordAutofillManager, public:
 
 PasswordAutofillManager::PasswordAutofillManager(
-    password_manager::PasswordManagerClient* password_manager_client,
+    PasswordManagerClient* password_manager_client,
     autofill::AutofillManagerDelegate* autofill_manager_delegate)
     : password_manager_client_(password_manager_client),
       autofill_manager_delegate_(autofill_manager_delegate),

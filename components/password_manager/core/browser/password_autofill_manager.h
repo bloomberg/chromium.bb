@@ -24,7 +24,7 @@ class PasswordManagerClient;
 class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
  public:
   PasswordAutofillManager(
-      password_manager::PasswordManagerClient* password_manager_client,
+      PasswordManagerClient* password_manager_client,
       autofill::AutofillManagerDelegate* autofill_manager_delegate);
   virtual ~PasswordAutofillManager();
 

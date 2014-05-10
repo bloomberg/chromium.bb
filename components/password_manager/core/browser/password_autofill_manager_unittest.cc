@@ -29,41 +29,35 @@ namespace autofill {
 class AutofillPopupDelegate;
 }
 
+namespace password_manager {
+
 namespace {
 
 // TODO(dubroy): Implement a TestPasswordManagerDriver that can be shared by
 // all the tests that need it (crbug.com/352566).
-class MockPasswordManagerDriver
-    : public password_manager::PasswordManagerDriver {
+class MockPasswordManagerDriver : public PasswordManagerDriver {
  public:
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
   MOCK_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_METHOD0(IsOffTheRecord, bool());
-  MOCK_METHOD0(GetPasswordGenerationManager,
-               password_manager::PasswordGenerationManager*());
-  MOCK_METHOD0(GetPasswordManager, password_manager::PasswordManager*());
+  MOCK_METHOD0(GetPasswordGenerationManager, PasswordGenerationManager*());
+  MOCK_METHOD0(GetPasswordManager, PasswordManager*());
   MOCK_METHOD0(GetAutofillManager, autofill::AutofillManager*());
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(autofill::PasswordForm*));
   MOCK_METHOD1(AccountCreationFormsFound,
                void(const std::vector<autofill::FormData>&));
   MOCK_METHOD2(AcceptPasswordAutofillSuggestion,
                void(const base::string16&, const base::string16&));
-  MOCK_METHOD0(GetPasswordAutofillManager,
-               password_manager::PasswordAutofillManager*());
+  MOCK_METHOD0(GetPasswordAutofillManager, PasswordAutofillManager*());
 };
 
-class TestPasswordManagerClient
-    : public password_manager::PasswordManagerClient {
+class TestPasswordManagerClient : public PasswordManagerClient {
  public:
   virtual void PromptUserToSavePassword(
-      password_manager::PasswordFormManager* form_to_save) OVERRIDE {}
-  virtual password_manager::PasswordStore* GetPasswordStore() OVERRIDE {
-    return NULL;
-  }
+      PasswordFormManager* form_to_save) OVERRIDE {}
+  virtual PasswordStore* GetPasswordStore() OVERRIDE { return NULL; }
   virtual PrefService* GetPrefs() OVERRIDE { return NULL; }
-  virtual password_manager::PasswordManagerDriver* GetDriver() OVERRIDE {
-    return &driver_;
-  }
+  virtual PasswordManagerDriver* GetDriver() OVERRIDE { return &driver_; }
   virtual void AuthenticateAutofillAndFillForm(
       scoped_ptr<autofill::PasswordFormFillData> fill_data) OVERRIDE {}
   virtual bool IsPasswordSyncEnabled() OVERRIDE { return false; }
@@ -109,18 +103,16 @@ class PasswordAutofillManagerTest : public testing::Test {
   }
 
   void InitializePasswordAutofillManager(
-      password_manager::PasswordManagerClient* client,
+      PasswordManagerClient* client,
       autofill::AutofillManagerDelegate* autofill_manager_delegate) {
     password_autofill_manager_.reset(
-        new password_manager::PasswordAutofillManager(
-            client, autofill_manager_delegate));
+        new PasswordAutofillManager(client, autofill_manager_delegate));
     password_autofill_manager_->OnAddPasswordFormMapping(username_field_,
                                                          fill_data_);
   }
 
  protected:
-  scoped_ptr<password_manager::PasswordAutofillManager>
-      password_autofill_manager_;
+  scoped_ptr<PasswordAutofillManager> password_autofill_manager_;
 
   autofill::FormFieldData username_field_;
   base::string16 test_username_;
@@ -189,3 +181,5 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
   password_autofill_manager_->DidAcceptSuggestion(
       suggestions[0], autofill::POPUP_ITEM_ID_PASSWORD_ENTRY);
 }
+
+}  // namespace password_manager
