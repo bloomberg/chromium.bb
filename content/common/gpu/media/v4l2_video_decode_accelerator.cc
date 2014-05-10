@@ -649,10 +649,17 @@ bool V4L2VideoDecodeAccelerator::AdvanceFrameFragment(
             break;
           }
           break;
+        case media::H264NALU::kSEIMessage:
         case media::H264NALU::kSPS:
         case media::H264NALU::kPPS:
+        case media::H264NALU::kAUD:
         case media::H264NALU::kEOSeq:
         case media::H264NALU::kEOStream:
+        case media::H264NALU::kReserved14:
+        case media::H264NALU::kReserved15:
+        case media::H264NALU::kReserved16:
+        case media::H264NALU::kReserved17:
+        case media::H264NALU::kReserved18:
           // These unconditionally signal a frame boundary.
           end_of_frame = true;
           break;
