@@ -89,7 +89,7 @@ bool CompositingLayerAssigner::needsOwnBacking(const RenderLayer* layer) const
 CompositingStateTransitionType CompositingLayerAssigner::computeCompositedLayerUpdate(RenderLayer* layer)
 {
     CompositingStateTransitionType update = NoCompositingStateChange;
-    if (!layer->subtreeIsInvisible() && needsOwnBacking(layer)) {
+    if (needsOwnBacking(layer)) {
         if (!layer->hasCompositedLayerMapping()) {
             update = AllocateOwnCompositedLayerMapping;
         }
