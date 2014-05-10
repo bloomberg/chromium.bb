@@ -8,16 +8,20 @@
 }
 
 .buttonbar .combobutton > .action {
+  -webkit-padding-start: 21px;
   background-position: left center;
   background-repeat: no-repeat;
   background-size: 16px 16px;
-  padding-left: 21px;
+}
+
+html[dir='rtl'] .buttonbar .combobutton > .action {
+  background-position: right center;
 }
 
 .buttonbar .combobutton > .trigger {
-  border-left: solid 1px #dcdcdc;
-  margin-left: 8px;
-  margin-right: -8px;
+  -webkit-border-start: solid 1px #dcdcdc;
+  -webkit-margin-end: -8px;
+  -webkit-margin-start: 8px;
   width: 22px;
 }
 

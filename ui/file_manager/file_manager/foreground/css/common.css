@@ -194,6 +194,10 @@ menu.chrome-menu > :not(hr) {
   padding-right: 20px;
 }
 
+html[dir='rtl'] menu.chrome-menu > :not(hr) {
+  background-position: left 10px center;
+}
+
 menu.chrome-menu > .menuitem-button {
   background-position: center;
   background-repeat: no-repeat;
