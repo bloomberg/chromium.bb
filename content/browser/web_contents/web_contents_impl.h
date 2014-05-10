@@ -49,7 +49,6 @@ class BrowserPluginGuestManager;
 class DateTimeChooserAndroid;
 class DownloadItem;
 class InterstitialPageImpl;
-class JavaBridgeDispatcherHostManager;
 class JavaScriptDialogManager;
 class PowerSaveBlocker;
 class RenderViewHost;
@@ -113,10 +112,6 @@ class CONTENT_EXPORT WebContentsImpl
   SavePackage* save_package() const { return save_package_.get(); }
 
 #if defined(OS_ANDROID)
-  JavaBridgeDispatcherHostManager* java_bridge_dispatcher_host_manager() const {
-    return java_bridge_dispatcher_host_manager_.get();
-  }
-
   // In Android WebView, the RenderView needs created even there is no
   // navigation entry, this allows Android WebViews to use
   // javascript: URLs that load into the DOMWindow before the first page
@@ -725,7 +720,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   void OnOpenDateTimeDialog(
       const ViewHostMsg_DateTimeDialogValue_Params& value);
-  void OnJavaBridgeGetChannelHandle(IPC::Message* reply_msg);
 #endif
   void OnPepperPluginHung(int plugin_child_id,
                           const base::FilePath& path,
@@ -919,13 +913,6 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Manages the frame tree of the page and process swaps in each node.
   FrameTree frame_tree_;
-
-#if defined(OS_ANDROID)
-  // Manages injecting Java objects into all RenderViewHosts associated with
-  // this WebContentsImpl.
-  scoped_ptr<JavaBridgeDispatcherHostManager>
-      java_bridge_dispatcher_host_manager_;
-#endif
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;

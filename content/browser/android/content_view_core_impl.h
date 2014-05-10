@@ -31,6 +31,7 @@ class WindowAndroid;
 }
 
 namespace content {
+class JavaBridgeDispatcherHostManager;
 class RenderWidgetHostViewAndroid;
 struct MenuItem;
 
@@ -44,7 +45,8 @@ class ContentViewCoreImpl : public ContentViewCore,
                       jobject obj,
                       WebContents* web_contents,
                       ui::ViewAndroid* view_android,
-                      ui::WindowAndroid* window_android);
+                      ui::WindowAndroid* window_android,
+                      jobject java_bridge_retained_object_set);
 
   // ContentViewCore implementation.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
@@ -184,8 +186,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                               jobject obj,
                               jobject object,
                               jstring name,
-                              jclass safe_annotation_clazz,
-                              jobject retained_object_set);
+                              jclass safe_annotation_clazz);
   void RemoveJavascriptInterface(JNIEnv* env, jobject obj, jstring name);
   int GetNavigationHistory(JNIEnv* env, jobject obj, jobject history);
   void GetDirectedNavigationHistory(JNIEnv* env,
@@ -376,7 +377,12 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   bool geolocation_needs_pause_;
 
+
   bool accessibility_enabled_;
+
+  // Manages injecting Java objects.
+  scoped_ptr<JavaBridgeDispatcherHostManager>
+      java_bridge_dispatcher_host_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentViewCoreImpl);
 };

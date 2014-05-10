@@ -360,6 +360,12 @@ void InterstitialPageImpl::WebContentsDestroyed() {
   OnNavigatingAwayOrTabClosing();
 }
 
+bool InterstitialPageImpl::OnMessageReceived(
+    const IPC::Message& message,
+    RenderFrameHost* render_frame_host) {
+  return OnMessageReceived(message);
+}
+
 bool InterstitialPageImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
                                              const IPC::Message& message) {
   return OnMessageReceived(message);

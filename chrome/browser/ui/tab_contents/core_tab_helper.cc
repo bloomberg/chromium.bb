@@ -188,7 +188,9 @@ void CoreTabHelper::BeforeUnloadDialogCancelled() {
   OnCloseCanceled();
 }
 
-bool CoreTabHelper::OnMessageReceived(const IPC::Message& message) {
+bool CoreTabHelper::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CoreTabHelper, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,

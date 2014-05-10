@@ -49,12 +49,11 @@ class JavaBridgeDispatcherHost
   void RenderFrameDeleted();
 
   void OnGetChannelHandle(IPC::Message* reply_msg);
+  void Send(IPC::Message* msg);
 
  private:
   friend class base::RefCountedThreadSafe<JavaBridgeDispatcherHost>;
   virtual ~JavaBridgeDispatcherHost();
-
-  void Send(IPC::Message* msg);
 
   void GetChannelHandle(IPC::Message* reply_msg);
   void CreateNPVariantParam(NPObject* object, NPVariant_Param* param);
