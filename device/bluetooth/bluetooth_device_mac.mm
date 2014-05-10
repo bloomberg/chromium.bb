@@ -253,7 +253,8 @@ std::string BluetoothDeviceMac::GetDeviceAddress(IOBluetoothDevice* device) {
 std::string BluetoothDeviceMac::NormalizeAddress(const std::string& address) {
   std::string normalized;
   base::ReplaceChars(address, "-", ":", &normalized);
-  StringToUpperASCII(&normalized);
+  // TODO(isherman): Restore StringToUpperASCII(&normalized) call for M37.
+  // http://crbug.com/371014
   return normalized;
 }
 
