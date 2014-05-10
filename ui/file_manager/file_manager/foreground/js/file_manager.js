@@ -810,7 +810,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
 
     this.renameInput_ = this.document_.createElement('input');
-    this.renameInput_.className = 'rename';
+    this.renameInput_.className = 'rename entry-name';
 
     this.renameInput_.addEventListener(
         'keydown', this.onRenameInputKeyDown_.bind(this));

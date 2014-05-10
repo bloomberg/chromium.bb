@@ -798,6 +798,7 @@ filelist.renderFileNameLabel = function(doc, entry) {
   var box = doc.createElement('div');
   box.className = 'filename-label';
   var fileName = doc.createElement('span');
+  fileName.className = 'entry-name';
   fileName.textContent = entry.name;
   box.appendChild(fileName);
 

@@ -33,7 +33,7 @@ NavigationListItem.prototype.decorate = function() {
   this.appendChild(this.iconDiv_);
 
   this.label_ = cr.doc.createElement('div');
-  this.label_.className = 'root-label';
+  this.label_.className = 'root-label entry-name';
   this.appendChild(this.label_);
 
   cr.defineProperty(this, 'lead', cr.PropertyKind.BOOL_ATTR);

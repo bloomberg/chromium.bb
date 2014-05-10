@@ -173,7 +173,7 @@ DirectoryItem.prototype.decorate = function(
       '<div class="tree-row">' +
       ' <span class="expand-icon"></span>' +
       ' <span class="icon"></span>' +
-      ' <span class="label"></span>' +
+      ' <span class="label entry-name"></span>' +
       '</div>' +
       '<div class="tree-children"></div>';
 

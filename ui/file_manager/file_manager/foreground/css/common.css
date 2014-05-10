@@ -377,6 +377,14 @@ div.watch-single-video-icon {
     url('../images/media/2x/watch.png') 2x);
 }
 
+/* Entry names (File names, Folder names, Volume names, ...). */
+/* Their base bidi direction should be ltr even in RTL languages. */
+html[dir='rtl'] .entry-name {
+  direction: ltr;
+  text-align: right;
+  unicode-bidi: embed;
+}
+
 /* Pop-up dialogs. */
 
 .cr-dialog-container {

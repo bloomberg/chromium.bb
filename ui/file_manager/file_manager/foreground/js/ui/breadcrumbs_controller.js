@@ -135,7 +135,7 @@ BreadcrumbsController.prototype.updateInternal_ = function(entries) {
     // Add a component.
     var entry = entries[i];
     var div = doc.createElement('div');
-    div.className = 'breadcrumb-path';
+    div.className = 'breadcrumb-path entry-name';
     div.textContent = util.getEntryLabel(this.volumeManager_, entry);
     div.entry = entry;
     this.bc_.appendChild(div);
