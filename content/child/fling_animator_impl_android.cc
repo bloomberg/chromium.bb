@@ -66,6 +66,11 @@ void FlingAnimatorImpl::CancelFling() {
 
 bool FlingAnimatorImpl::apply(double time,
                               blink::WebGestureCurveTarget* target) {
+  // If the fling has yet to start, simply return and report true to prevent
+  // fling termination.
+  if (time <= 0)
+    return true;
+
   const base::TimeTicks time_ticks =
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(
                               time * base::Time::kMicrosecondsPerSecond);
