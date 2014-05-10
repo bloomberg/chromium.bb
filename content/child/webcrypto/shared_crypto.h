@@ -131,8 +131,8 @@ CONTENT_EXPORT Status
 
 CONTENT_EXPORT Status
     WrapKey(blink::WebCryptoKeyFormat format,
-            const blink::WebCryptoKey& wrapping_key,
             const blink::WebCryptoKey& key_to_wrap,
+            const blink::WebCryptoKey& wrapping_key,
             const blink::WebCryptoAlgorithm& wrapping_algorithm,
             std::vector<uint8>* buffer);
 

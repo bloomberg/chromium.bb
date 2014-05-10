@@ -375,8 +375,8 @@ Status UnwrapKeyRaw(const CryptoData& wrapped_key_data,
   }
 }
 
-Status WrapKeyRaw(const blink::WebCryptoKey& wrapping_key,
-                  const blink::WebCryptoKey& key_to_wrap,
+Status WrapKeyRaw(const blink::WebCryptoKey& key_to_wrap,
+                  const blink::WebCryptoKey& wrapping_key,
                   const blink::WebCryptoAlgorithm& wrapping_algorithm,
                   std::vector<uint8>* buffer) {
   // A raw key is always a symmetric key.
@@ -393,7 +393,7 @@ Status WrapKeyRaw(const blink::WebCryptoKey& wrapping_key,
       if (status.IsError())
         return status;
       return platform::WrapSymKeyAesKw(
-          platform_wrapping_key, platform_key, buffer);
+          platform_key, platform_wrapping_key, buffer);
     }
     case blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5: {
       platform::PublicKey* platform_wrapping_key;
@@ -401,7 +401,7 @@ Status WrapKeyRaw(const blink::WebCryptoKey& wrapping_key,
       if (status.IsError())
         return status;
       return platform::WrapSymKeyRsaEs(
-          platform_wrapping_key, platform_key, buffer);
+          platform_key, platform_wrapping_key, buffer);
     }
     default:
       return Status::ErrorUnsupported();
@@ -484,8 +484,8 @@ Status UnwrapKeyDecryptAndImport(
 
 Status WrapKeyExportAndEncrypt(
     blink::WebCryptoKeyFormat format,
-    const blink::WebCryptoKey& wrapping_key,
     const blink::WebCryptoKey& key_to_wrap,
+    const blink::WebCryptoKey& wrapping_key,
     const blink::WebCryptoAlgorithm& wrapping_algorithm,
     std::vector<uint8>* buffer) {
   std::vector<uint8> exported_data;
@@ -751,8 +751,8 @@ Status VerifySignature(const blink::WebCryptoAlgorithm& algorithm,
 }
 
 Status WrapKey(blink::WebCryptoKeyFormat format,
-               const blink::WebCryptoKey& wrapping_key,
                const blink::WebCryptoKey& key_to_wrap,
+               const blink::WebCryptoKey& wrapping_key,
                const blink::WebCryptoAlgorithm& wrapping_algorithm,
                std::vector<uint8>* buffer) {
   if (!KeyUsageAllows(wrapping_key, blink::WebCryptoKeyUsageWrapKey))
@@ -762,10 +762,10 @@ Status WrapKey(blink::WebCryptoKeyFormat format,
 
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
-      return WrapKeyRaw(wrapping_key, key_to_wrap, wrapping_algorithm, buffer);
+      return WrapKeyRaw(key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
     case blink::WebCryptoKeyFormatJwk:
       return WrapKeyExportAndEncrypt(
-          format, wrapping_key, key_to_wrap, wrapping_algorithm, buffer);
+          format, key_to_wrap, wrapping_key, wrapping_algorithm, buffer);
     case blink::WebCryptoKeyFormatSpki:
     case blink::WebCryptoKeyFormatPkcs8:
       return Status::ErrorUnsupported();  // TODO(padolph)

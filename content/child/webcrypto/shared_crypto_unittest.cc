@@ -2764,8 +2764,8 @@ TEST_F(SharedCryptoTest, MAYBE(AesKwRawSymkeyWrapUnwrapKnownAnswer)) {
     std::vector<uint8> wrapped_key;
     ASSERT_EQ(Status::Success(),
               WrapKey(blink::WebCryptoKeyFormatRaw,
-                      wrapping_key,
                       key,
+                      wrapping_key,
                       wrapping_algorithm,
                       &wrapped_key));
     EXPECT_BYTES_EQ(test_ciphertext, wrapped_key);
@@ -3163,8 +3163,8 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapKnownAnswer)) {
   std::vector<uint8> wrapped_key;
   ASSERT_EQ(Status::Success(),
             WrapKey(blink::WebCryptoKeyFormatRaw,
-                    public_key,
                     key,
+                    public_key,
                     algorithm,
                     &wrapped_key));
 
@@ -3240,8 +3240,8 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapErrors)) {
   std::vector<uint8> wrapped_key;
   EXPECT_EQ(Status::ErrorUnexpectedKeyType(),
             WrapKey(blink::WebCryptoKeyFormatRaw,
-                    private_key,
                     key,
+                    private_key,
                     wrapping_algorithm,
                     &wrapped_key));
 
@@ -3262,8 +3262,8 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsRawSymkeyWrapUnwrapErrors)) {
                       &big_key));
   EXPECT_EQ(Status::ErrorDataTooLarge(),
             WrapKey(blink::WebCryptoKeyFormatRaw,
-                    public_key,
                     big_key,
+                    public_key,
                     wrapping_algorithm,
                     &wrapped_key));
 
@@ -3383,8 +3383,8 @@ TEST_F(SharedCryptoTest, MAYBE(RsaEsJwkSymkeyWrapUnwrapRoundTrip)) {
   std::vector<uint8> wrapped_data;
   ASSERT_EQ(Status::Success(),
             WrapKey(blink::WebCryptoKeyFormatJwk,
-                    public_wrapping_key,
                     key_to_wrap,
+                    public_wrapping_key,
                     wrapping_algorithm,
                     &wrapped_data));
 

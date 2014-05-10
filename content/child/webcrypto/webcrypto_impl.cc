@@ -519,11 +519,9 @@ void DoWrapKeyReply(scoped_ptr<WrapKeyState> state) {
 
 void DoWrapKey(scoped_ptr<WrapKeyState> passed_state) {
   WrapKeyState* state = passed_state.get();
-  // TODO(eroman): The parameter ordering of webcrypto::WrapKey() is
-  //               inconsistent with that of blink::WebCrypto::wrapKey().
   state->status = webcrypto::WrapKey(state->format,
-                                     state->wrapping_key,
                                      state->key,
+                                     state->wrapping_key,
                                      state->wrap_algorithm,
                                      &state->buffer);
 

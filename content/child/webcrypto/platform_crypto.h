@@ -229,10 +229,10 @@ Status ExportKeyPkcs8(PrivateKey* key,
                       std::vector<uint8>* buffer);
 
 // Preconditions:
-//  * |wrapping_key| is non-null
 //  * |key| is non-null
-Status WrapSymKeyAesKw(SymKey* wrapping_key,
-                       SymKey* key,
+//  * |wrapping_key| is non-null
+Status WrapSymKeyAesKw(SymKey* key,
+                       SymKey* wrapping_key,
                        std::vector<uint8>* buffer);
 
 // Unwraps (decrypts) |wrapped_key_data| using AES-KW and places the results in
@@ -263,10 +263,10 @@ Status DecryptAesKw(SymKey* key,
                     std::vector<uint8>* buffer);
 
 // Preconditions:
-//  * |wrapping_key| is non-null
 //  * |key| is non-null
-Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
-                       SymKey* key,
+//  * |wrapping_key| is non-null
+Status WrapSymKeyRsaEs(SymKey* key,
+                       PublicKey* wrapping_key,
                        std::vector<uint8>* buffer);
 
 // Preconditions:

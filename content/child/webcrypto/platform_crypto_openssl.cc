@@ -462,8 +462,8 @@ Status ExportRsaPublicKey(PublicKey* key,
   return Status::ErrorUnsupported();
 }
 
-Status WrapSymKeyAesKw(SymKey* wrapping_key,
-                       SymKey* key,
+Status WrapSymKeyAesKw(SymKey* key,
+                       SymKey* wrapping_key,
                        std::vector<uint8>* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();
@@ -486,8 +486,8 @@ Status DecryptAesKw(SymKey* key,
   return Status::ErrorUnsupported();
 }
 
-Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
-                       SymKey* key,
+Status WrapSymKeyRsaEs(SymKey* key,
+                       PublicKey* wrapping_key,
                        std::vector<uint8>* buffer) {
   // TODO(eroman): http://crbug.com/267888
   return Status::ErrorUnsupported();

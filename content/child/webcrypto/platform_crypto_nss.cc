@@ -1494,8 +1494,8 @@ Status ImportRsaPublicKey(const blink::WebCryptoAlgorithm& algorithm,
   return Status::Success();
 }
 
-Status WrapSymKeyAesKw(SymKey* wrapping_key,
-                       SymKey* key,
+Status WrapSymKeyAesKw(SymKey* key,
+                       SymKey* wrapping_key,
                        std::vector<uint8>* buffer) {
   // The data size must be at least 16 bytes and a multiple of 8 bytes.
   // RFC 3394 does not specify a maximum allowed data length, but since only
@@ -1594,8 +1594,8 @@ Status DecryptAesKw(SymKey* wrapping_key,
   return Status::Success();
 }
 
-Status WrapSymKeyRsaEs(PublicKey* wrapping_key,
-                       SymKey* key,
+Status WrapSymKeyRsaEs(SymKey* key,
+                       PublicKey* wrapping_key,
                        std::vector<uint8>* buffer) {
   // Check the raw length of the key to be wrapped against the max size allowed
   // by the RSA wrapping key. With PKCS#1 v1.5 padding used in this function,
