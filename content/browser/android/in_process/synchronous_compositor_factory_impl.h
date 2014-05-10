@@ -46,11 +46,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   virtual blink::WebGraphicsContext3D* CreateOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes) OVERRIDE;
 
-  // This is called on the renderer compositor impl thread (InitializeHwDraw) in
-  // order to support Android WebView synchronously enable and disable hardware
-  // mode multiple times in the same task.
-  scoped_refptr<cc::ContextProvider>
-      GetOffscreenContextProviderForCompositorThread();
 
   SynchronousInputEventFilter* synchronous_input_event_filter() {
     return &synchronous_input_event_filter_;
@@ -74,12 +69,9 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   scoped_refptr<webkit::gpu::ContextProviderWebContext>
       offscreen_context_for_main_thread_;
-  // This is a pointer to the context owned by
-  // |offscreen_context_for_main_thread_|.
-  gpu::GLInProcessContext* wrapped_gl_context_for_compositor_thread_;
-  scoped_refptr<cc::ContextProvider> offscreen_context_for_compositor_thread_;
 
   scoped_refptr<gpu::InProcessCommandBuffer::Service> service_;
+  scoped_ptr<gpu::GLInProcessContext> share_context_;
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       video_context_provider_;
 

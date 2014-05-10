@@ -93,12 +93,8 @@ bool SynchronousCompositorImpl::InitializeHwDraw(
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
 
-  // Create contexts in this order so that the share group gets passed
-  // along correctly.
-  scoped_refptr<cc::ContextProvider> offscreen_context =
-      g_factory.Get().GetOffscreenContextProviderForCompositorThread();
   scoped_refptr<cc::ContextProvider> onscreen_context =
-  g_factory.Get().CreateOnscreenContextProviderForCompositorThread(surface);
+      g_factory.Get().CreateOnscreenContextProviderForCompositorThread(surface);
 
   bool success = output_surface_->InitializeHwDraw(onscreen_context);
 

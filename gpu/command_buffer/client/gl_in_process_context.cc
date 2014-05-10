@@ -337,25 +337,33 @@ GLInProcessContext* GLInProcessContext::CreateContext(
   return context.release();
 }
 
-// static
-GLInProcessContext* GLInProcessContext::CreateWithSurface(
-    scoped_refptr<gfx::GLSurface> surface,
+GLInProcessContext* GLInProcessContext::Create(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+    scoped_refptr<gfx::GLSurface> surface,
+    bool is_offscreen,
+    gfx::AcceleratedWidget window,
+    const gfx::Size& size,
     GLInProcessContext* share_context,
+    bool use_global_share_group,
     const GLInProcessContextAttribs& attribs,
     gfx::GpuPreference gpu_preference) {
-  scoped_ptr<GLInProcessContextImpl> context(
-      new GLInProcessContextImpl());
-  if (!context->Initialize(
-      surface,
-      surface->IsOffscreen(),
-      false,
-      share_context,
-      gfx::kNullAcceleratedWidget,
-      surface->GetSize(),
-      attribs,
-      gpu_preference,
-      service))
+  DCHECK(!use_global_share_group || !share_context);
+  if (surface.get()) {
+    DCHECK_EQ(surface->IsOffscreen(), is_offscreen);
+    DCHECK(surface->GetSize() == size);
+    DCHECK_EQ(gfx::kNullAcceleratedWidget, window);
+  }
+
+  scoped_ptr<GLInProcessContextImpl> context(new GLInProcessContextImpl());
+  if (!context->Initialize(surface,
+                           is_offscreen,
+                           use_global_share_group,
+                           share_context,
+                           gfx::kNullAcceleratedWidget,
+                           size,
+                           attribs,
+                           gpu_preference,
+                           service))
     return NULL;
 
   return context.release();

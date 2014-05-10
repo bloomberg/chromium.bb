@@ -52,6 +52,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // Create a GLInProcessContext, if |is_offscreen| is true, renders to an
   // offscreen context. |attrib_list| must be NULL or a NONE-terminated list
   // of attribute/value pairs.
+  // TODO(boliu): Fix all callsites to use Create and remove this.
   static GLInProcessContext* CreateContext(
       bool is_offscreen,
       gfx::AcceleratedWidget window,
@@ -60,14 +61,21 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       const GLInProcessContextAttribs& attribs,
       gfx::GpuPreference gpu_preference);
 
-  // Create context with the provided GLSurface. All other arguments match
-  // CreateContext factory above. Can only be called if the command buffer
-  // service runs on the same thread as this client because GLSurface is not
-  // thread safe.
-  static GLInProcessContext* CreateWithSurface(
-      scoped_refptr<gfx::GLSurface> surface,
+  // If |surface| is not NULL, then it must match |is_offscreen| and |size|,
+  // |window| must be gfx::kNullAcceleratedWidget, and the command buffer
+  // service must run on the same thread as this client because GLSurface is
+  // not thread safe. If |surface| is NULL, then the other parameters are used
+  // to correctly create a surface.
+  // Only one of |share_context| and |use_global_share_group| can be used at
+  // the same time.
+  static GLInProcessContext* Create(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
+      scoped_refptr<gfx::GLSurface> surface,
+      bool is_offscreen,
+      gfx::AcceleratedWidget window,
+      const gfx::Size& size,
       GLInProcessContext* share_context,
+      bool use_global_share_group,
       const GLInProcessContextAttribs& attribs,
       gfx::GpuPreference gpu_preference);
 
