@@ -103,14 +103,6 @@ size_t GetMaxTransferBufferUsageBytes(cc::ContextProvider* context_provider) {
       kMaxTransferBufferUsageBytes);
 }
 
-size_t GetMaxRasterTasksUsageBytes(cc::ContextProvider* context_provider) {
-  // Transfer-buffer/raster-tasks limits are different but related. We make
-  // equal here, as this is ideal when using transfer buffers. When not using
-  // transfer buffers we should still limit raster to something similar, to
-  // preserve caching behavior (and limit memory waste when priorities change).
-  return GetMaxTransferBufferUsageBytes(context_provider);
-}
-
 unsigned GetMapImageTextureTarget(cc::ContextProvider* context_provider) {
   if (!context_provider)
     return GL_TEXTURE_2D;
@@ -1904,7 +1896,6 @@ void LayerTreeHostImpl::CreateAndSetTileManager(
                           resource_pool_.get(),
                           raster_worker_pool_->AsRasterizer(),
                           direct_raster_worker_pool_->AsRasterizer(),
-                          GetMaxRasterTasksUsageBytes(context_provider),
                           allow_rasterize_on_demand,
                           rendering_stats_instrumentation_);
 

@@ -51,9 +51,8 @@ class TileManagerPerfTest : public testing::Test {
         false);
     resource_pool_ = ResourcePool::Create(
         resource_provider_.get(), GL_TEXTURE_2D, RGBA_8888);
-    size_t raster_task_limit_bytes = 32 * 1024 * 1024;  // 16-64MB in practice.
-    tile_manager_ = make_scoped_ptr(new FakeTileManager(
-        &tile_manager_client_, resource_pool_.get(), raster_task_limit_bytes));
+    tile_manager_ = make_scoped_ptr(
+        new FakeTileManager(&tile_manager_client_, resource_pool_.get()));
     picture_pile_ = FakePicturePileImpl::CreateInfiniteFilledPile();
   }
 

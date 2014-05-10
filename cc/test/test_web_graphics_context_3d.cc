@@ -67,7 +67,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       next_insert_sync_point_(1),
       last_waited_sync_point_(0),
       bound_buffer_(0),
-      peak_transfer_buffer_memory_used_bytes_(0),
       weak_ptr_factory_(this) {
   CreateNamespace();
 }
@@ -503,10 +502,6 @@ void TestWebGraphicsContext3D::bufferData(GLenum target,
   buffer->size = size;
   if (data != NULL)
     memcpy(buffer->pixels.get(), data, size);
-
-  peak_transfer_buffer_memory_used_bytes_ =
-      std::max(peak_transfer_buffer_memory_used_bytes_,
-               GetTransferBufferMemoryUsedBytes());
 }
 
 void* TestWebGraphicsContext3D::mapBufferCHROMIUM(GLenum target,
@@ -521,10 +516,6 @@ void* TestWebGraphicsContext3D::mapBufferCHROMIUM(GLenum target,
     }
     --times_map_buffer_chromium_succeeds_;
   }
-
-  peak_transfer_buffer_memory_used_bytes_ =
-      std::max(peak_transfer_buffer_memory_used_bytes_,
-               GetTransferBufferMemoryUsedBytes());
 
   return buffers.get(bound_buffer_)->pixels.get();
 }

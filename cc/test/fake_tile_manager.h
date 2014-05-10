@@ -19,9 +19,6 @@ class FakeTileManager : public TileManager {
   FakeTileManager(TileManagerClient* client,
                   ResourcePool* resource_pool,
                   bool allow_on_demand_raster);
-  FakeTileManager(TileManagerClient* client,
-                  ResourcePool* resource_pool,
-                  size_t raster_task_limit_bytes);
   virtual ~FakeTileManager();
 
   bool HasBeenAssignedMemory(Tile* tile);
