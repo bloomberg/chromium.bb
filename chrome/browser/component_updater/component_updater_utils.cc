@@ -4,6 +4,8 @@
 
 #include "chrome/browser/component_updater/component_updater_utils.h"
 
+#include <cmath>
+
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
@@ -24,6 +26,17 @@
 #include "net/url_request/url_request_status.h"
 
 namespace component_updater {
+
+namespace {
+
+// Returns the amount of physical memory in GB, rounded to the nearest GB.
+int GetPhysicalMemoryGB() {
+  const double kOneGB = 1024 * 1024 * 1024;
+  const int64 phys_mem = base::SysInfo::AmountOfPhysicalMemory();
+  return static_cast<int>(std::floor(0.5 + phys_mem / kOneGB));
+}
+
+}  // namespace
 
 std::string BuildProtocolRequest(const std::string& request_body,
                                  const std::string& additional_attributes) {
@@ -62,6 +75,11 @@ std::string BuildProtocolRequest(const std::string& request_body,
     base::StringAppendF(&request, " wow64=\"1\"");
 #endif
   base::StringAppendF(&request, ">");
+
+  // HW platform information.
+  base::StringAppendF(&request,
+                      "<hw physmemory=\"%d\"/>",
+                      GetPhysicalMemoryGB());  // "physmem" in GB.
 
   // OS version and platform information.
   base::StringAppendF(

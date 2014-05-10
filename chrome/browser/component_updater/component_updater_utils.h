@@ -34,6 +34,7 @@ struct CrxUpdateItem;
 //        requestid="{7383396D-B4DD-46E1-9104-AAC6B918E792}"
 //        updaterchannel="canary" arch="x86" nacl_arch="x86-64"
 //        ADDITIONAL ATTRIBUTES>
+//   <hw physmemory="16"/>
 //   <os platform="win" version="6.1" arch="x86"/>
 //   ... REQUEST BODY ...
 // </request>

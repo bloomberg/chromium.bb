@@ -192,6 +192,9 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccess) {
           "app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
           "<updatecheck /><packages><package fp=\"fp1\"/></packages></app>"));
 
+  EXPECT_NE(string::npos,
+            post_interceptor_->GetRequests()[0].find("<hw physmemory="));
+
   // Sanity check the arguments of the callback after parsing.
   EXPECT_EQ(0, error_);
   EXPECT_TRUE(error_message_.empty());
