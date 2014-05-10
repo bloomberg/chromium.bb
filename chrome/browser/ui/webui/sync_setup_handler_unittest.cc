@@ -442,6 +442,19 @@ TEST_F(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
+// Verifies that the sync setup is terminated correctly when the
+// sync is disabled.
+TEST_F(SyncSetupHandlerTest, HandleSetupUIWhenSyncDisabled) {
+  EXPECT_CALL(*mock_pss_, IsManaged()).WillRepeatedly(Return(true));
+  handler_->HandleShowSetupUI(NULL);
+
+  // Sync setup is closed when sync is disabled.
+  EXPECT_EQ(NULL,
+            LoginUIServiceFactory::GetForProfile(
+                profile_.get())->current_login_ui());
+  ASSERT_FALSE(handler_->is_configuring_sync());
+}
+
 // Verifies that the handler correctly handles a cancellation when
 // it is displaying the spinner to the user.
 TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {

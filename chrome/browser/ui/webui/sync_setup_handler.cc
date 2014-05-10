@@ -729,8 +729,11 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
 }
 
 void SyncSetupHandler::HandleShowSetupUI(const base::ListValue* args) {
-  ProfileSyncService* service = GetSyncService();
-  DCHECK(service);
+  if (!GetSyncService()) {
+    DLOG(WARNING) << "Cannot display sync UI when sync is disabled";
+    CloseUI();
+    return;
+  }
 
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(GetProfile());

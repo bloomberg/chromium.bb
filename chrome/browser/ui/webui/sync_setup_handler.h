@@ -61,6 +61,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   friend class SyncSetupHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
                            DisplayConfigureWithBackendDisabledAndCancel);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, HandleSetupUIWhenSyncDisabled);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SelectCustomEncryption);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SuccessfullySetPassphrase);
