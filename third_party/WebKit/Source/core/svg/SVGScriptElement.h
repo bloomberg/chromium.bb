@@ -37,7 +37,7 @@ class SVGScriptElement FINAL
     , public SVGURIReference
     , public ScriptLoaderClient {
 public:
-    static PassRefPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
+    static PassRefPtrWillBeRawPtr<SVGScriptElement> create(Document&, bool wasInsertedByParser);
 
     ScriptLoader* loader() const { return m_loader.get(); }
 

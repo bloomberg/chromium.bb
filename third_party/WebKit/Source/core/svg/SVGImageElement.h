@@ -34,7 +34,7 @@ namespace WebCore {
 class SVGImageElement FINAL : public SVGGraphicsElement,
                               public SVGURIReference {
 public:
-    static PassRefPtr<SVGImageElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGImageElement);
 
     bool currentFrameHasSingleSecurityOrigin() const;
 

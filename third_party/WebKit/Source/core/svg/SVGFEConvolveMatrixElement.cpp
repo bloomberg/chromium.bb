@@ -43,7 +43,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeTyp
     return entries;
 }
 
-inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
+SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feConvolveMatrixTag, document)
     , m_bias(SVGAnimatedNumber::create(this, SVGNames::biasAttr, SVGNumber::create()))
     , m_divisor(SVGAnimatedNumber::create(this, SVGNames::divisorAttr, SVGNumber::create()))
@@ -68,11 +68,6 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document
     addToPropertyMap(m_order);
     addToPropertyMap(m_targetX);
     addToPropertyMap(m_targetY);
-}
-
-PassRefPtr<SVGFEConvolveMatrixElement> SVGFEConvolveMatrixElement::create(Document& document)
-{
-    return adoptRef(new SVGFEConvolveMatrixElement(document));
 }
 
 bool SVGFEConvolveMatrixElement::isSupportedAttribute(const QualifiedName& attrName)

@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-inline SVGFilterElement::SVGFilterElement(Document& document)
+SVGFilterElement::SVGFilterElement(Document& document)
     : SVGElement(SVGNames::filterTag, document)
     , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
@@ -59,11 +59,6 @@ inline SVGFilterElement::SVGFilterElement(Document& document)
     addToPropertyMap(m_filterUnits);
     addToPropertyMap(m_primitiveUnits);
     addToPropertyMap(m_filterRes);
-}
-
-PassRefPtr<SVGFilterElement> SVGFilterElement::create(Document& document)
-{
-    return adoptRef(new SVGFilterElement(document));
 }
 
 void SVGFilterElement::setFilterRes(unsigned x, unsigned y)

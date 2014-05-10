@@ -33,7 +33,7 @@ class RenderObject;
 
 class SVGClipPathElement FINAL : public SVGGraphicsElement {
 public:
-    static PassRefPtr<SVGClipPathElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGClipPathElement);
     SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* clipPathUnits() { return m_clipPathUnits.get(); }
 
     virtual bool supportsFocus() const OVERRIDE { return false; }

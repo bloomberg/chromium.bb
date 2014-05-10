@@ -695,7 +695,7 @@ TEST_F(AnimationAnimationPlayerTest, TimeToNextEffectWhenCancelledBeforeStartRev
 
 TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
 {
-    RefPtr<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
 
     Timing timing;
     RefPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);

@@ -32,7 +32,7 @@ class AffineTransform;
 
 class SVGAnimateTransformElement FINAL : public SVGAnimateElement {
 public:
-    static PassRefPtr<SVGAnimateTransformElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGAnimateTransformElement);
 
     SVGTransformType transformType() const { return m_type; }
 

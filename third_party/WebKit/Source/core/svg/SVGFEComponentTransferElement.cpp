@@ -33,17 +33,12 @@
 
 namespace WebCore {
 
-inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& document)
+SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feComponentTransferTag, document)
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_in1);
-}
-
-PassRefPtr<SVGFEComponentTransferElement> SVGFEComponentTransferElement::create(Document& document)
-{
-    return adoptRef(new SVGFEComponentTransferElement(document));
 }
 
 bool SVGFEComponentTransferElement::isSupportedAttribute(const QualifiedName& attrName)

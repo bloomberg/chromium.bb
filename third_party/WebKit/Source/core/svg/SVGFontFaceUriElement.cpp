@@ -34,15 +34,10 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-inline SVGFontFaceUriElement::SVGFontFaceUriElement(Document& document)
+SVGFontFaceUriElement::SVGFontFaceUriElement(Document& document)
     : SVGElement(font_face_uriTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGFontFaceUriElement> SVGFontFaceUriElement::create(Document& document)
-{
-    return adoptRef(new SVGFontFaceUriElement(document));
 }
 
 SVGFontFaceUriElement::~SVGFontFaceUriElement()

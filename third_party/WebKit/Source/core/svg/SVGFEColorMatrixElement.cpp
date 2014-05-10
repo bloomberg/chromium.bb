@@ -41,7 +41,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<ColorMatrix
     return entries;
 }
 
-inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
+SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feColorMatrixTag, document)
     , m_values(SVGAnimatedNumberList::create(this, SVGNames::valuesAttr, SVGNumberList::create()))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
@@ -52,11 +52,6 @@ inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     addToPropertyMap(m_values);
     addToPropertyMap(m_in1);
     addToPropertyMap(m_type);
-}
-
-PassRefPtr<SVGFEColorMatrixElement> SVGFEColorMatrixElement::create(Document& document)
-{
-    return adoptRef(new SVGFEColorMatrixElement(document));
 }
 
 bool SVGFEColorMatrixElement::isSupportedAttribute(const QualifiedName& attrName)

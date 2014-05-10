@@ -35,7 +35,7 @@ class SVGCursorElement FINAL : public SVGElement,
                                public SVGTests,
                                public SVGURIReference {
 public:
-    static PassRefPtr<SVGCursorElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGCursorElement);
 
     virtual ~SVGCursorElement();
 

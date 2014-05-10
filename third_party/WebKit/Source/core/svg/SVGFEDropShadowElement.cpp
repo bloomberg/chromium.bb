@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
+SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDropShadowTag, document)
     , m_dx(SVGAnimatedNumber::create(this, SVGNames::dxAttr, SVGNumber::create(2)))
     , m_dy(SVGAnimatedNumber::create(this, SVGNames::dyAttr, SVGNumber::create(2)))
@@ -43,11 +43,6 @@ inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
     addToPropertyMap(m_dy);
     addToPropertyMap(m_stdDeviation);
     addToPropertyMap(m_in1);
-}
-
-PassRefPtr<SVGFEDropShadowElement> SVGFEDropShadowElement::create(Document& document)
-{
-    return adoptRef(new SVGFEDropShadowElement(document));
 }
 
 void SVGFEDropShadowElement::setStdDeviation(float x, float y)

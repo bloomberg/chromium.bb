@@ -24,15 +24,10 @@
 
 namespace WebCore {
 
-inline SVGPolygonElement::SVGPolygonElement(Document& document)
+SVGPolygonElement::SVGPolygonElement(Document& document)
     : SVGPolyElement(SVGNames::polygonTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGPolygonElement> SVGPolygonElement::create(Document& document)
-{
-    return adoptRef(new SVGPolygonElement(document));
 }
 
 }

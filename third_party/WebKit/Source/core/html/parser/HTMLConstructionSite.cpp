@@ -716,10 +716,10 @@ void HTMLConstructionSite::takeAllChildren(HTMLStackItem* newParent, HTMLElement
     queueTask(task);
 }
 
-PassRefPtr<Element> HTMLConstructionSite::createElement(AtomicHTMLToken* token, const AtomicString& namespaceURI)
+PassRefPtrWillBeRawPtr<Element> HTMLConstructionSite::createElement(AtomicHTMLToken* token, const AtomicString& namespaceURI)
 {
     QualifiedName tagName(nullAtom, token->name(), namespaceURI);
-    RefPtr<Element> element = ownerDocumentForCurrentNode().createElement(tagName, true);
+    RefPtrWillBeRawPtr<Element> element = ownerDocumentForCurrentNode().createElement(tagName, true);
     setAttributes(element.get(), token, m_parserContentPolicy);
     return element.release();
 }
@@ -740,13 +740,7 @@ PassRefPtrWillBeRawPtr<Element> HTMLConstructionSite::createHTMLElement(AtomicHT
     // FIXME: This can't use HTMLConstructionSite::createElement because we
     // have to pass the current form element.  We should rework form association
     // to occur after construction to allow better code sharing here.
-#if ENABLE(OILPAN)
-    // FIXME: Oilpan: HTMLElementFactory::createHTMLElement should return a raw
-    // pointer.
-    RawPtr<Element> element = HTMLElementFactory::createHTMLElement(token->name(), document, form, true).get();
-#else
-    RefPtr<Element> element = HTMLElementFactory::createHTMLElement(token->name(), document, form, true);
-#endif
+    RefPtrWillBeRawPtr<Element> element = HTMLElementFactory::createHTMLElement(token->name(), document, form, true);
     setAttributes(element.get(), token, m_parserContentPolicy);
     ASSERT(element->isHTMLElement());
     return element.release();
@@ -754,7 +748,7 @@ PassRefPtrWillBeRawPtr<Element> HTMLConstructionSite::createHTMLElement(AtomicHT
 
 PassRefPtr<HTMLStackItem> HTMLConstructionSite::createElementFromSavedToken(HTMLStackItem* item)
 {
-    RefPtr<Element> element;
+    RefPtrWillBeRawPtr<Element> element;
     // NOTE: Moving from item -> token -> item copies the Attribute vector twice!
     AtomicHTMLToken fakeToken(HTMLToken::StartTag, item->localName(), item->attributes());
     if (item->namespaceURI() == HTMLNames::xhtmlNamespaceURI)

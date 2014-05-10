@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGMissingGlyphElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGMissingGlyphElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGMissingGlyphElement);
 
 private:
     explicit SVGMissingGlyphElement(Document&);

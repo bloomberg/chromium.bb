@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-inline SVGMaskElement::SVGMaskElement(Document& document)
+SVGMaskElement::SVGMaskElement(Document& document)
     : SVGElement(SVGNames::maskTag, document)
     , SVGTests(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
@@ -56,11 +56,6 @@ inline SVGMaskElement::SVGMaskElement(Document& document)
     addToPropertyMap(m_height);
     addToPropertyMap(m_maskUnits);
     addToPropertyMap(m_maskContentUnits);
-}
-
-PassRefPtr<SVGMaskElement> SVGMaskElement::create(Document& document)
-{
-    return adoptRef(new SVGMaskElement(document));
 }
 
 bool SVGMaskElement::isSupportedAttribute(const QualifiedName& attrName)

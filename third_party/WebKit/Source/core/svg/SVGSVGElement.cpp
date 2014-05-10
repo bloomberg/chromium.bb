@@ -62,7 +62,7 @@
 
 namespace WebCore {
 
-inline SVGSVGElement::SVGSVGElement(Document& doc)
+SVGSVGElement::SVGSVGElement(Document& doc)
     : SVGGraphicsElement(SVGNames::svgTag, doc)
     , SVGFitToViewBox(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
@@ -84,11 +84,6 @@ inline SVGSVGElement::SVGSVGElement(Document& doc)
     addToPropertyMap(m_height);
 
     UseCounter::count(doc, UseCounter::SVGSVGElement);
-}
-
-PassRefPtr<SVGSVGElement> SVGSVGElement::create(Document& document)
-{
-    return adoptRef(new SVGSVGElement(document));
 }
 
 SVGSVGElement::~SVGSVGElement()

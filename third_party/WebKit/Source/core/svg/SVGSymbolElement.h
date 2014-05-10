@@ -30,7 +30,7 @@ namespace WebCore {
 class SVGSymbolElement FINAL : public SVGElement,
                                public SVGFitToViewBox {
 public:
-    static PassRefPtr<SVGSymbolElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGSymbolElement);
 
 private:
     explicit SVGSymbolElement(Document&);

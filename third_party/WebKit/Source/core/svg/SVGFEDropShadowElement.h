@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGFEDropShadowElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFEDropShadowElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFEDropShadowElement);
 
     void setStdDeviation(float stdDeviationX, float stdDeviationY);
 

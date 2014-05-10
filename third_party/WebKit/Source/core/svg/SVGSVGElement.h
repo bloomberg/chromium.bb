@@ -44,7 +44,7 @@ class SVGSVGElement FINAL : public SVGGraphicsElement,
                             public SVGFitToViewBox,
                             public SVGZoomAndPan {
 public:
-    static PassRefPtr<SVGSVGElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGSVGElement);
 
     using SVGGraphicsElement::ref;
     using SVGGraphicsElement::deref;

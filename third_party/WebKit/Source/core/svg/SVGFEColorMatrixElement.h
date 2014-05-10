@@ -32,7 +32,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<ColorMatrix
 
 class SVGFEColorMatrixElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFEColorMatrixElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFEColorMatrixElement);
 
     SVGAnimatedNumberList* values() { return m_values.get(); }
     SVGAnimatedString* in1() { return m_in1.get(); }

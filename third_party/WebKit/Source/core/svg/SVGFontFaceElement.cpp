@@ -46,7 +46,7 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-inline SVGFontFaceElement::SVGFontFaceElement(Document& document)
+SVGFontFaceElement::SVGFontFaceElement(Document& document)
     : SVGElement(font_faceTag, document)
     , m_fontFaceRule(StyleRuleFontFace::create())
     , m_fontElement(0)
@@ -55,11 +55,6 @@ inline SVGFontFaceElement::SVGFontFaceElement(Document& document)
     ScriptWrappable::init(this);
     RefPtrWillBeRawPtr<MutableStylePropertySet> styleDeclaration = MutableStylePropertySet::create(HTMLStandardMode);
     m_fontFaceRule->setProperties(styleDeclaration.release());
-}
-
-PassRefPtr<SVGFontFaceElement> SVGFontFaceElement::create(Document& document)
-{
-    return adoptRef(new SVGFontFaceElement(document));
 }
 
 static CSSPropertyID cssPropertyIdForFontFaceAttributeName(const QualifiedName& attrName)

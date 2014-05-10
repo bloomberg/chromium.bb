@@ -35,6 +35,7 @@
 #include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/dom/custom/CustomElementUpgradeCandidateMap.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -57,7 +58,7 @@ public:
     // Definitions
     void registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& type, CustomElement::NameSet validNames, ExceptionState&);
 
-    PassRefPtr<Element> createCustomTagElement(Document&, const QualifiedName&);
+    PassRefPtrWillBeRawPtr<Element> createCustomTagElement(Document&, const QualifiedName&);
     static void setIsAttributeAndTypeExtension(Element*, const AtomicString& type);
     static void setTypeExtension(Element*, const AtomicString& type);
 

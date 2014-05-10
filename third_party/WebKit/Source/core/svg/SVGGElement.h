@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGGElement FINAL : public SVGGraphicsElement {
 public:
-    static PassRefPtr<SVGGElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGGElement);
 
 protected:
     explicit SVGGElement(Document&, ConstructionType = CreateSVGElement);

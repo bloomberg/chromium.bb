@@ -30,7 +30,7 @@ namespace WebCore {
 
 class SVGRectElement FINAL : public SVGGeometryElement {
 public:
-    static PassRefPtr<SVGRectElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGRectElement);
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }

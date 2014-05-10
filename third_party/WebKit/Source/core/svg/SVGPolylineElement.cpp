@@ -24,15 +24,10 @@
 
 namespace WebCore {
 
-inline SVGPolylineElement::SVGPolylineElement(Document& document)
+SVGPolylineElement::SVGPolylineElement(Document& document)
     : SVGPolyElement(SVGNames::polylineTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGPolylineElement> SVGPolylineElement::create(Document& document)
-{
-    return adoptRef(new SVGPolylineElement(document));
 }
 
 }

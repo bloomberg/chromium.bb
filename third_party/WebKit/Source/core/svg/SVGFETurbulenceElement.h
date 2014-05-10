@@ -41,7 +41,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<TurbulenceT
 
 class SVGFETurbulenceElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFETurbulenceElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFETurbulenceElement);
 
     SVGAnimatedNumber* baseFrequencyX() { return m_baseFrequency->firstNumber(); }
     SVGAnimatedNumber* baseFrequencyY() { return m_baseFrequency->secondNumber(); }

@@ -72,7 +72,7 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     // We should calculate visible range in list item because inserting new
     // list element will change visibility of list item, e.g. :first-child
     // CSS selector.
-    RefPtr<Element> newList = document().createElement(listNode->tagQName(), false);
+    RefPtrWillBeRawPtr<Element> newList = document().createElement(listNode->tagQName(), false);
     insertNodeBefore(newList, selectedListItem.get());
 
     // We should clone all the children of the list item for indenting purposes. However, in case the current

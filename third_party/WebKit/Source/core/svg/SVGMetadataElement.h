@@ -27,7 +27,7 @@ namespace WebCore {
 
 class SVGMetadataElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGMetadataElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGMetadataElement);
 
 private:
     explicit SVGMetadataElement(Document&);

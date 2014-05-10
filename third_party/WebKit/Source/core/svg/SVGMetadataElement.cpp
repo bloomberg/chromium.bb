@@ -24,15 +24,10 @@
 
 namespace WebCore {
 
-inline SVGMetadataElement::SVGMetadataElement(Document& document)
+SVGMetadataElement::SVGMetadataElement(Document& document)
     : SVGElement(SVGNames::metadataTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGMetadataElement> SVGMetadataElement::create(Document& document)
-{
-    return adoptRef(new SVGMetadataElement(document));
 }
 
 }

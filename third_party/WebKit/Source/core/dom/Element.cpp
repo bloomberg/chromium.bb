@@ -159,9 +159,9 @@ static Attr* findAttrNodeInList(const AttrNodeList& attrNodeList, const Qualifie
     return 0;
 }
 
-PassRefPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
+PassRefPtrWillBeRawPtr<Element> Element::create(const QualifiedName& tagName, Document* document)
 {
-    return adoptRef(new Element(tagName, document, CreateElement));
+    return adoptRefWillBeRefCountedGarbageCollected(new Element(tagName, document, CreateElement));
 }
 
 Element::~Element()

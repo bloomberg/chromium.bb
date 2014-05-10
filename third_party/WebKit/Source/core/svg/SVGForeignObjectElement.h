@@ -30,7 +30,7 @@ namespace WebCore {
 
 class SVGForeignObjectElement FINAL : public SVGGraphicsElement {
 public:
-    static PassRefPtr<SVGForeignObjectElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGForeignObjectElement);
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }

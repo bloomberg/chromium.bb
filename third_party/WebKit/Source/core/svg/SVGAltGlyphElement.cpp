@@ -35,16 +35,11 @@
 
 namespace WebCore {
 
-inline SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
+SVGAltGlyphElement::SVGAltGlyphElement(Document& document)
     : SVGTextPositioningElement(SVGNames::altGlyphTag, document)
     , SVGURIReference(this)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGAltGlyphElement> SVGAltGlyphElement::create(Document& document)
-{
-    return adoptRef(new SVGAltGlyphElement(document));
 }
 
 void SVGAltGlyphElement::setGlyphRef(const AtomicString&, ExceptionState& exceptionState)

@@ -213,7 +213,7 @@ PassRefPtr<XMLDocument> DOMImplementation::createDocument(const AtomicString& na
     doc->setSecurityOrigin(document().securityOrigin()->isolatedCopy());
     doc->setContextFeatures(document().contextFeatures());
 
-    RefPtr<Node> documentElement;
+    RefPtrWillBeRawPtr<Node> documentElement = nullptr;
     if (!qualifiedName.isEmpty()) {
         documentElement = doc->createElementNS(namespaceURI, qualifiedName, exceptionState);
         if (exceptionState.hadException())

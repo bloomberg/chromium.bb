@@ -40,7 +40,7 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-inline SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
+SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
     : SVGAnimationElement(animateMotionTag, document)
     , m_hasToPointAtEndOfDuration(false)
 {
@@ -54,11 +54,6 @@ SVGAnimateMotionElement::~SVGAnimateMotionElement()
     if (targetElement())
         clearAnimatedType(targetElement());
 #endif
-}
-
-PassRefPtr<SVGAnimateMotionElement> SVGAnimateMotionElement::create(Document& document)
-{
-    return adoptRef(new SVGAnimateMotionElement(document));
 }
 
 bool SVGAnimateMotionElement::hasValidAttributeType()

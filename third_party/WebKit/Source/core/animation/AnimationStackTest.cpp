@@ -78,7 +78,7 @@ protected:
 
     RefPtr<Document> document;
     RefPtr<DocumentTimeline> timeline;
-    RefPtr<Element> element;
+    RefPtrWillBePersistent<Element> element;
 };
 
 TEST_F(AnimationAnimationStackTest, ActiveAnimationsSorted)

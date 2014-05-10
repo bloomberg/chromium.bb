@@ -30,15 +30,10 @@
 
 namespace WebCore {
 
-inline SVGGlyphElement::SVGGlyphElement(Document& document)
+SVGGlyphElement::SVGGlyphElement(Document& document)
     : SVGElement(SVGNames::glyphTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGGlyphElement> SVGGlyphElement::create(Document& document)
-{
-    return adoptRef(new SVGGlyphElement(document));
 }
 
 void SVGGlyphElement::invalidateGlyphCache()

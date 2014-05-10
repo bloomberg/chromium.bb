@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGPolylineElement FINAL : public SVGPolyElement {
 public:
-    static PassRefPtr<SVGPolylineElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGPolylineElement);
 
 private:
     explicit SVGPolylineElement(Document&);

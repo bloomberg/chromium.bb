@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-inline SVGGlyphRefElement::SVGGlyphRefElement(Document& document)
+SVGGlyphRefElement::SVGGlyphRefElement(Document& document)
     : SVGElement(SVGNames::glyphRefTag, document)
     , SVGURIReference(this)
     , m_x(0)
@@ -37,11 +37,6 @@ inline SVGGlyphRefElement::SVGGlyphRefElement(Document& document)
     , m_dy(0)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGGlyphRefElement> SVGGlyphRefElement::create(Document& document)
-{
-    return adoptRef(new SVGGlyphRefElement(document));
 }
 
 bool SVGGlyphRefElement::hasValidGlyphElement(AtomicString& glyphName) const

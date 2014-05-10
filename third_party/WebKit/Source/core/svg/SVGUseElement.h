@@ -37,7 +37,7 @@ class SVGUseElement FINAL : public SVGGraphicsElement,
                             public SVGURIReference,
                             public DocumentResourceClient {
 public:
-    static PassRefPtr<SVGUseElement> create(Document&, bool wasInsertedByParser);
+    static PassRefPtrWillBeRawPtr<SVGUseElement> create(Document&, bool wasInsertedByParser);
     virtual ~SVGUseElement();
 
     SVGElementInstance* instanceRoot();

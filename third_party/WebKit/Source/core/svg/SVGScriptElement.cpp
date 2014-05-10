@@ -41,9 +41,9 @@ inline SVGScriptElement::SVGScriptElement(Document& document, bool wasInsertedBy
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGScriptElement> SVGScriptElement::create(Document& document, bool insertedByParser)
+PassRefPtrWillBeRawPtr<SVGScriptElement> SVGScriptElement::create(Document& document, bool insertedByParser)
 {
-    return adoptRef(new SVGScriptElement(document, insertedByParser, false));
+    return adoptRefWillBeRefCountedGarbageCollected(new SVGScriptElement(document, insertedByParser, false));
 }
 
 bool SVGScriptElement::isSupportedAttribute(const QualifiedName& attrName)

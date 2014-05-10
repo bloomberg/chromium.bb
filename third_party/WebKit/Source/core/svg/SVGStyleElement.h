@@ -31,7 +31,7 @@ class SVGStyleElement FINAL : public SVGElement
                             , public StyleElement {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGStyleElement);
 public:
-    static PassRefPtr<SVGStyleElement> create(Document&, bool createdByParser);
+    static PassRefPtrWillBeRawPtr<SVGStyleElement> create(Document&, bool createdByParser);
     virtual ~SVGStyleElement();
 
     using StyleElement::sheet;

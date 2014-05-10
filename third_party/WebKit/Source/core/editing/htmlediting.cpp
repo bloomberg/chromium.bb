@@ -836,12 +836,12 @@ Node* tabSpanNode(const Node* node)
     return isTabSpanTextNode(node) ? node->parentNode() : 0;
 }
 
-PassRefPtr<Element> createTabSpanElement(Document& document, PassRefPtr<Node> prpTabTextNode)
+PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document& document, PassRefPtr<Node> prpTabTextNode)
 {
     RefPtr<Node> tabTextNode = prpTabTextNode;
 
     // Make the span to hold the tab.
-    RefPtr<Element> spanElement = document.createElement(spanTag, false);
+    RefPtrWillBeRawPtr<Element> spanElement = document.createElement(spanTag, false);
     spanElement->setAttribute(classAttr, AppleTabSpanClass);
     spanElement->setAttribute(styleAttr, "white-space:pre");
 
@@ -854,12 +854,12 @@ PassRefPtr<Element> createTabSpanElement(Document& document, PassRefPtr<Node> pr
     return spanElement.release();
 }
 
-PassRefPtr<Element> createTabSpanElement(Document& document, const String& tabText)
+PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document& document, const String& tabText)
 {
     return createTabSpanElement(document, document.createTextNode(tabText));
 }
 
-PassRefPtr<Element> createTabSpanElement(Document& document)
+PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document& document)
 {
     return createTabSpanElement(document, PassRefPtr<Node>());
 }

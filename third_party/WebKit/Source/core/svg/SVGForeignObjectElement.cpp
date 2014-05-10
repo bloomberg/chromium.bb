@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
+SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     : SVGGraphicsElement(SVGNames::foreignObjectTag, document)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_y(SVGAnimatedLength::create(this, SVGNames::yAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
@@ -46,11 +46,6 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     addToPropertyMap(m_height);
 
     UseCounter::count(document, UseCounter::SVGForeignObjectElement);
-}
-
-PassRefPtr<SVGForeignObjectElement> SVGForeignObjectElement::create(Document& document)
-{
-    return adoptRef(new SVGForeignObjectElement(document));
 }
 
 bool SVGForeignObjectElement::isSupportedAttribute(const QualifiedName& attrName)

@@ -275,10 +275,16 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomElement", info.Holder(), info.GetIsolate());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, exceptionState);
+    RefPtrWillBeRawPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
+#if ENABLE(OILPAN)
+    // FIXME: Oilpan: We don't have RawPtr<Eement> version of
+    // v8SetReturnValueFast until Node.idl has WillBeGarbageCollected.
+    v8SetReturnValueFast(info, element.get(), document);
+#else
     v8SetReturnValueFast(info, element.release(), document);
+#endif
 }
 
 } // namespace WebCore

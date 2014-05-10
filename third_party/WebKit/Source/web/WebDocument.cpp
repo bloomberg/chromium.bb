@@ -254,12 +254,7 @@ WebReferrerPolicy WebDocument::referrerPolicy() const
 WebElement WebDocument::createElement(const WebString& tagName)
 {
     TrackExceptionState exceptionState;
-#if ENABLE(OILPAN)
-    // FIXME: Document::createElement should return a raw pointer.
-    WebElement element(unwrap<Document>()->createElement(tagName, exceptionState).get());
-#else
     WebElement element(unwrap<Document>()->createElement(tagName, exceptionState));
-#endif
     if (exceptionState.hadException())
         return WebElement();
     return element;

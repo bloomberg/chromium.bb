@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGSwitchElement FINAL : public SVGGraphicsElement {
 public:
-    static PassRefPtr<SVGSwitchElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGSwitchElement);
 
 private:
     explicit SVGSwitchElement(Document&);

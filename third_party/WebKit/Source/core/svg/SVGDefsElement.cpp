@@ -27,15 +27,10 @@
 
 namespace WebCore {
 
-inline SVGDefsElement::SVGDefsElement(Document& document)
+SVGDefsElement::SVGDefsElement(Document& document)
     : SVGGraphicsElement(SVGNames::defsTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGDefsElement> SVGDefsElement::create(Document& document)
-{
-    return adoptRef(new SVGDefsElement(document));
 }
 
 RenderObject* SVGDefsElement::createRenderer(RenderStyle*)

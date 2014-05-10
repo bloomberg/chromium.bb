@@ -217,10 +217,10 @@ Node* enclosingListChild(Node*);
 
 // Functions returning Element
 
-PassRefPtr<Element> createTabSpanElement(Document&);
-PassRefPtr<Element> createTabSpanElement(Document&, PassRefPtr<Node> tabTextNode);
-PassRefPtr<Element> createTabSpanElement(Document&, const String& tabText);
-PassRefPtr<Element> createBlockPlaceholderElement(Document&);
+PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document&);
+PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document&, PassRefPtr<Node> tabTextNode);
+PassRefPtrWillBeRawPtr<Element> createTabSpanElement(Document&, const String& tabText);
+PassRefPtrWillBeRawPtr<Element> createBlockPlaceholderElement(Document&);
 
 Element* editableRootForPosition(const Position&, EditableType = ContentIsEditable);
 Element* unsplittableElementForPosition(const Position&);

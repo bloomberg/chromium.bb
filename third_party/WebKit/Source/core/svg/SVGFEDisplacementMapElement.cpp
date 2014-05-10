@@ -40,7 +40,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<ChannelSele
     return entries;
 }
 
-inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& document)
+SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feDisplacementMapTag, document)
     , m_scale(SVGAnimatedNumber::create(this, SVGNames::scaleAttr, SVGNumber::create(0)))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
@@ -55,11 +55,6 @@ inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& docume
     addToPropertyMap(m_in2);
     addToPropertyMap(m_xChannelSelector);
     addToPropertyMap(m_yChannelSelector);
-}
-
-PassRefPtr<SVGFEDisplacementMapElement> SVGFEDisplacementMapElement::create(Document& document)
-{
-    return adoptRef(new SVGFEDisplacementMapElement(document));
 }
 
 bool SVGFEDisplacementMapElement::isSupportedAttribute(const QualifiedName& attrName)

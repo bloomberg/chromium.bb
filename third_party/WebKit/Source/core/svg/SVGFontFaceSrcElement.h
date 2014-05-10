@@ -30,7 +30,7 @@ class CSSValueList;
 
 class SVGFontFaceSrcElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGFontFaceSrcElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFontFaceSrcElement);
 
     PassRefPtrWillBeRawPtr<CSSValueList> srcValue() const;
 

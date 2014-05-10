@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-inline SVGImageElement::SVGImageElement(Document& document)
+SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(SVGNames::imageTag, document)
     , SVGURIReference(this)
     , m_x(SVGAnimatedLength::create(this, SVGNames::xAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
@@ -50,11 +50,6 @@ inline SVGImageElement::SVGImageElement(Document& document)
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
     addToPropertyMap(m_preserveAspectRatio);
-}
-
-PassRefPtr<SVGImageElement> SVGImageElement::create(Document& document)
-{
-    return adoptRef(new SVGImageElement(document));
 }
 
 bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const

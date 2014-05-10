@@ -58,11 +58,11 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
         CustomElement::define(*it, definition);
 }
 
-PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName)
+PassRefPtrWillBeRawPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document& document, const QualifiedName& tagName)
 {
     ASSERT(CustomElement::isValidName(tagName.localName()));
 
-    RefPtr<Element> element;
+    RefPtrWillBeRawPtr<Element> element;
 
     if (HTMLNames::xhtmlNamespaceURI == tagName.namespaceURI()) {
         element = HTMLElement::create(tagName, document);

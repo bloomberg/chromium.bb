@@ -32,7 +32,7 @@ class SVGAnimateMotionElement FINAL : public SVGAnimationElement {
 public:
     virtual ~SVGAnimateMotionElement();
 
-    static PassRefPtr<SVGAnimateMotionElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGAnimateMotionElement);
     void updateAnimationPath();
 
 private:

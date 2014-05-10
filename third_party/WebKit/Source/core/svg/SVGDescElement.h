@@ -27,7 +27,7 @@ namespace WebCore {
 
 class SVGDescElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGDescElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGDescElement);
 
 private:
     explicit SVGDescElement(Document&);

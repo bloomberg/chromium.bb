@@ -43,7 +43,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOp
     return entries;
 }
 
-inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
+SVGFECompositeElement::SVGFECompositeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feCompositeTag, document)
     , m_k1(SVGAnimatedNumber::create(this, SVGNames::k1Attr, SVGNumber::create()))
     , m_k2(SVGAnimatedNumber::create(this, SVGNames::k2Attr, SVGNumber::create()))
@@ -62,11 +62,6 @@ inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
     addToPropertyMap(m_in1);
     addToPropertyMap(m_in2);
     addToPropertyMap(m_svgOperator);
-}
-
-PassRefPtr<SVGFECompositeElement> SVGFECompositeElement::create(Document& document)
-{
-    return adoptRef(new SVGFECompositeElement(document));
 }
 
 bool SVGFECompositeElement::isSupportedAttribute(const QualifiedName& attrName)

@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGPolygonElement FINAL : public SVGPolyElement {
 public:
-    static PassRefPtr<SVGPolygonElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGPolygonElement);
 
 private:
     explicit SVGPolygonElement(Document&);

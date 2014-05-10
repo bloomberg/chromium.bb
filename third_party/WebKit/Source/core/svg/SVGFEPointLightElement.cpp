@@ -25,15 +25,10 @@
 
 namespace WebCore {
 
-inline SVGFEPointLightElement::SVGFEPointLightElement(Document& document)
+SVGFEPointLightElement::SVGFEPointLightElement(Document& document)
     : SVGFELightElement(SVGNames::fePointLightTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGFEPointLightElement> SVGFEPointLightElement::create(Document& document)
-{
-    return adoptRef(new SVGFEPointLightElement(document));
 }
 
 PassRefPtr<LightSource> SVGFEPointLightElement::lightSource() const

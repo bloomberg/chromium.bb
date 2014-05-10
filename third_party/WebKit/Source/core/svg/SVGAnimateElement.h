@@ -34,7 +34,7 @@ class SVGAnimatedTypeAnimator;
 
 class SVGAnimateElement : public SVGAnimationElement {
 public:
-    static PassRefPtr<SVGAnimateElement> create(Document&);
+    static PassRefPtrWillBeRawPtr<SVGAnimateElement> create(Document&);
     virtual ~SVGAnimateElement();
 
 protected:

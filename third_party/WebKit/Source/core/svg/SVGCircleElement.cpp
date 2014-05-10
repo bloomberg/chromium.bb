@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-inline SVGCircleElement::SVGCircleElement(Document& document)
+SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(SVGNames::circleTag, document)
     , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
@@ -40,11 +40,6 @@ inline SVGCircleElement::SVGCircleElement(Document& document)
     addToPropertyMap(m_cx);
     addToPropertyMap(m_cy);
     addToPropertyMap(m_r);
-}
-
-PassRefPtr<SVGCircleElement> SVGCircleElement::create(Document& document)
-{
-    return adoptRef(new SVGCircleElement(document));
 }
 
 bool SVGCircleElement::isSupportedAttribute(const QualifiedName& attrName)

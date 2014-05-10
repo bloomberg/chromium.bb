@@ -26,7 +26,7 @@ namespace WebCore {
 
 class SVGFESpotLightElement FINAL : public SVGFELightElement {
 public:
-    static PassRefPtr<SVGFESpotLightElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFESpotLightElement);
 
 private:
     explicit SVGFESpotLightElement(Document&);

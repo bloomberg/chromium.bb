@@ -54,18 +54,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline SVGAElement::SVGAElement(Document& document)
+SVGAElement::SVGAElement(Document& document)
     : SVGGraphicsElement(SVGNames::aTag, document)
     , SVGURIReference(this)
     , m_svgTarget(SVGAnimatedString::create(this, SVGNames::targetAttr, SVGString::create()))
 {
     ScriptWrappable::init(this);
     addToPropertyMap(m_svgTarget);
-}
-
-PassRefPtr<SVGAElement> SVGAElement::create(Document& document)
-{
-    return adoptRef(new SVGAElement(document));
 }
 
 String SVGAElement::title() const

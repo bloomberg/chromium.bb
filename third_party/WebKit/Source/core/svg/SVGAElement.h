@@ -31,7 +31,7 @@ namespace WebCore {
 class SVGAElement FINAL : public SVGGraphicsElement,
                           public SVGURIReference {
 public:
-    static PassRefPtr<SVGAElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGAElement);
     SVGAnimatedString* svgTarget() { return m_svgTarget.get(); }
 
 private:

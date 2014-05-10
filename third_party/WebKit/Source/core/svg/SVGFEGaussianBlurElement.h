@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGFEGaussianBlurElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFEGaussianBlurElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFEGaussianBlurElement);
 
     void setStdDeviation(float stdDeviationX, float stdDeviationY);
 

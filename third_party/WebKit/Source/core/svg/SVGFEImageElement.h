@@ -37,7 +37,7 @@ class SVGFEImageElement FINAL : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
                                 public ImageResourceClient {
 public:
-    static PassRefPtr<SVGFEImageElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFEImageElement);
 
     bool currentFrameHasSingleSecurityOrigin() const;
 

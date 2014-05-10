@@ -1180,7 +1180,7 @@ InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* documen
         return inspectorStyleSheet.get();
 
     TrackExceptionState exceptionState;
-    RefPtr<Element> styleElement = document->createElement("style", exceptionState);
+    RefPtrWillBeRawPtr<Element> styleElement = document->createElement("style", exceptionState);
     if (!exceptionState.hadException())
         styleElement->setAttribute("type", "text/css", exceptionState);
     if (!exceptionState.hadException()) {

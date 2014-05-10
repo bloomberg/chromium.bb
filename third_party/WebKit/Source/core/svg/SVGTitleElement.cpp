@@ -26,15 +26,10 @@
 
 namespace WebCore {
 
-inline SVGTitleElement::SVGTitleElement(Document& document)
+SVGTitleElement::SVGTitleElement(Document& document)
     : SVGElement(SVGNames::titleTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGTitleElement> SVGTitleElement::create(Document& document)
-{
-    return adoptRef(new SVGTitleElement(document));
 }
 
 Node::InsertionNotificationRequest SVGTitleElement::insertedInto(ContainerNode* rootParent)

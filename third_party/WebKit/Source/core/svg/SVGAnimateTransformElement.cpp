@@ -29,16 +29,11 @@
 
 namespace WebCore {
 
-inline SVGAnimateTransformElement::SVGAnimateTransformElement(Document& document)
+SVGAnimateTransformElement::SVGAnimateTransformElement(Document& document)
     : SVGAnimateElement(SVGNames::animateTransformTag, document)
     , m_type(SVG_TRANSFORM_UNKNOWN)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGAnimateTransformElement> SVGAnimateTransformElement::create(Document& document)
-{
-    return adoptRef(new SVGAnimateTransformElement(document));
 }
 
 bool SVGAnimateTransformElement::hasValidAttributeType()

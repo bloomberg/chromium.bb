@@ -30,7 +30,7 @@ namespace WebCore {
 
 class SVGEllipseElement FINAL : public SVGGeometryElement {
 public:
-    static PassRefPtr<SVGEllipseElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGEllipseElement);
 
     SVGAnimatedLength* cx() const { return m_cx.get(); }
     SVGAnimatedLength* cy() const { return m_cy.get(); }

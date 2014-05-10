@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-inline SVGCursorElement::SVGCursorElement(Document& document)
+SVGCursorElement::SVGCursorElement(Document& document)
     : SVGElement(SVGNames::cursorTag, document)
     , SVGTests(this)
     , SVGURIReference(this)
@@ -40,11 +40,6 @@ inline SVGCursorElement::SVGCursorElement(Document& document)
 
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
-}
-
-PassRefPtr<SVGCursorElement> SVGCursorElement::create(Document& document)
-{
-    return adoptRef(new SVGCursorElement(document));
 }
 
 SVGCursorElement::~SVGCursorElement()

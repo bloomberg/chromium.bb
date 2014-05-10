@@ -32,7 +32,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<CompositeOp
 
 class SVGFECompositeElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFECompositeElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFECompositeElement);
 
     SVGAnimatedNumber* k1() { return m_k1.get(); }
     SVGAnimatedNumber* k2() { return m_k2.get(); }

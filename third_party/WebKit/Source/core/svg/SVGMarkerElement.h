@@ -54,7 +54,7 @@ public:
         SVG_MARKER_ORIENT_ANGLE = SVGMarkerOrientAngle
     };
 
-    static PassRefPtr<SVGMarkerElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGMarkerElement);
 
     AffineTransform viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 

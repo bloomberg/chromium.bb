@@ -90,7 +90,7 @@ enum ElementFlags {
 
 class Element : public ContainerNode {
 public:
-    static PassRefPtr<Element> create(const QualifiedName&, Document*);
+    static PassRefPtrWillBeRawPtr<Element> create(const QualifiedName&, Document*);
     virtual ~Element();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(beforecopy);

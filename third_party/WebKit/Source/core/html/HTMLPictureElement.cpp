@@ -17,9 +17,4 @@ HTMLPictureElement::HTMLPictureElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLPictureElement> HTMLPictureElement::create(Document& document)
-{
-    return adoptRef(new HTMLPictureElement(document));
-}
-
 } // namespace

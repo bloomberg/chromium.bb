@@ -49,7 +49,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGTextPath
     return entries;
 }
 
-inline SVGTextPathElement::SVGTextPathElement(Document& document)
+SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(SVGNames::textPathTag, document)
     , SVGURIReference(this)
     , m_startOffset(SVGAnimatedLength::create(this, SVGNames::startOffsetAttr, SVGLength::create(LengthModeOther), AllowNegativeLengths))
@@ -61,11 +61,6 @@ inline SVGTextPathElement::SVGTextPathElement(Document& document)
     addToPropertyMap(m_startOffset);
     addToPropertyMap(m_method);
     addToPropertyMap(m_spacing);
-}
-
-PassRefPtr<SVGTextPathElement> SVGTextPathElement::create(Document& document)
-{
-    return adoptRef(new SVGTextPathElement(document));
 }
 
 SVGTextPathElement::~SVGTextPathElement()

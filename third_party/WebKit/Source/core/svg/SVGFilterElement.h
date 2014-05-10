@@ -38,7 +38,7 @@ namespace WebCore {
 class SVGFilterElement FINAL : public SVGElement,
                                public SVGURIReference {
 public:
-    static PassRefPtr<SVGFilterElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFilterElement);
 
     void setFilterRes(unsigned x, unsigned y);
     void addClient(Node*);

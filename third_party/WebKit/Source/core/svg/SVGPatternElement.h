@@ -41,7 +41,7 @@ class SVGPatternElement FINAL : public SVGElement,
                                 public SVGTests,
                                 public SVGFitToViewBox {
 public:
-    static PassRefPtr<SVGPatternElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGPatternElement);
 
     void collectPatternAttributes(PatternAttributes&) const;
 

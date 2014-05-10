@@ -35,7 +35,7 @@ class StyleRuleFontFace;
 
 class SVGFontFaceElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGFontFaceElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFontFaceElement);
 
     unsigned unitsPerEm() const;
     int xHeight() const;

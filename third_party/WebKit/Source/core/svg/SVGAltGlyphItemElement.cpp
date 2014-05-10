@@ -27,15 +27,10 @@
 
 namespace WebCore {
 
-inline SVGAltGlyphItemElement::SVGAltGlyphItemElement(Document& document)
+SVGAltGlyphItemElement::SVGAltGlyphItemElement(Document& document)
     : SVGElement(SVGNames::altGlyphItemTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGAltGlyphItemElement> SVGAltGlyphItemElement::create(Document& document)
-{
-    return adoptRef(new SVGAltGlyphItemElement(document));
 }
 
 bool SVGAltGlyphItemElement::hasValidGlyphElements(Vector<AtomicString>& glyphNames) const

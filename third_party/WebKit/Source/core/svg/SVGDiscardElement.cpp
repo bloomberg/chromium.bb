@@ -41,11 +41,6 @@ SVGDiscardElement::SVGDiscardElement(Document& document)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGDiscardElement> SVGDiscardElement::create(Document& document)
-{
-    return adoptRef(new SVGDiscardElement(document));
-}
-
 bool SVGDiscardElement::hasValidAttributeType()
 {
     // Even if there is no targetElement, discard is still a valid animation as it has to delete itself.

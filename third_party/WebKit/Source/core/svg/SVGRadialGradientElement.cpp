@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
+SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     : SVGGradientElement(SVGNames::radialGradientTag, document)
     , m_cx(SVGAnimatedLength::create(this, SVGNames::cxAttr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_cy(SVGAnimatedLength::create(this, SVGNames::cyAttr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
@@ -57,11 +57,6 @@ inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     addToPropertyMap(m_fx);
     addToPropertyMap(m_fy);
     addToPropertyMap(m_fr);
-}
-
-PassRefPtr<SVGRadialGradientElement> SVGRadialGradientElement::create(Document& document)
-{
-    return adoptRef(new SVGRadialGradientElement(document));
 }
 
 bool SVGRadialGradientElement::isSupportedAttribute(const QualifiedName& attrName)

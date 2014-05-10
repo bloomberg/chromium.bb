@@ -36,11 +36,6 @@ SVGGElement::SVGGElement(Document& document, ConstructionType constructionType)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGGElement> SVGGElement::create(Document& document)
-{
-    return adoptRef(new SVGGElement(document));
-}
-
 bool SVGGElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());

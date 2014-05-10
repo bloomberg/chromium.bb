@@ -33,7 +33,7 @@ namespace WebCore {
 
 class SVGFESpecularLightingElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFESpecularLightingElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFESpecularLightingElement);
     void lightElementAttributeChanged(const SVGFELightElement*, const QualifiedName&);
 
     SVGAnimatedNumber* specularConstant() { return m_specularConstant.get(); }

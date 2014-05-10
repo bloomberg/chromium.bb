@@ -23,18 +23,19 @@ namespace WebCore {
 
 using namespace {{namespace}}Names;
 
-typedef PassRefPtr<{{namespace}}Element> (*ConstructorFunction)(Document&,
-                                                                {% if namespace == 'HTML' %}
-                                                                HTMLFormElement*,
-                                                                {% endif %}
-                                                                bool createdByParser);
+typedef PassRefPtrWillBeRawPtr<{{namespace}}Element> (*ConstructorFunction)(
+    Document&,
+    {% if namespace == 'HTML' %}
+    HTMLFormElement*,
+    {% endif %}
+    bool createdByParser);
 
 typedef HashMap<AtomicString, ConstructorFunction> FunctionMap;
 
 static FunctionMap* g_constructors = 0;
 
 {% for tag in tags|sort if not tag.noConstructor %}
-static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
+static PassRefPtrWillBeRawPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
     Document& document,
     {% if namespace == 'HTML' %}
     HTMLFormElement* formElement,
@@ -76,7 +77,7 @@ static void create{{namespace}}FunctionMap()
         g_constructors->set(data[i].tag.localName(), data[i].func);
 }
 
-PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(
+PassRefPtrWillBeRawPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(
     const AtomicString& localName,
     Document& document,
     {% if namespace == 'HTML' %}
@@ -90,7 +91,7 @@ PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}
         return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}createdByParser);
 
     if (document.registrationContext() && CustomElement::isValidName(localName)) {
-        RefPtr<Element> element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
+        RefPtrWillBeRawPtr<Element> element = document.registrationContext()->createCustomTagElement(document, QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI));
         ASSERT_WITH_SECURITY_IMPLICATION(element->is{{namespace}}Element());
         return static_pointer_cast<{{namespace}}Element>(element.release());
     }

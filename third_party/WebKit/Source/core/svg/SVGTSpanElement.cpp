@@ -27,15 +27,10 @@
 
 namespace WebCore {
 
-inline SVGTSpanElement::SVGTSpanElement(Document& document)
+SVGTSpanElement::SVGTSpanElement(Document& document)
     : SVGTextPositioningElement(SVGNames::tspanTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGTSpanElement> SVGTSpanElement::create(Document& document)
-{
-    return adoptRef(new SVGTSpanElement(document));
 }
 
 RenderObject* SVGTSpanElement::createRenderer(RenderStyle*)

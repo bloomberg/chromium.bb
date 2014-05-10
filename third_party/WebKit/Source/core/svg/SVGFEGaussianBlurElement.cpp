@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
+SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(SVGNames::feGaussianBlurTag, document)
     , m_stdDeviation(SVGAnimatedNumberOptionalNumber::create(this, SVGNames::stdDeviationAttr, 0, 0))
     , m_in1(SVGAnimatedString::create(this, SVGNames::inAttr, SVGString::create()))
@@ -39,11 +39,6 @@ inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
 
     addToPropertyMap(m_stdDeviation);
     addToPropertyMap(m_in1);
-}
-
-PassRefPtr<SVGFEGaussianBlurElement> SVGFEGaussianBlurElement::create(Document& document)
-{
-    return adoptRef(new SVGFEGaussianBlurElement(document));
 }
 
 void SVGFEGaussianBlurElement::setStdDeviation(float x, float y)

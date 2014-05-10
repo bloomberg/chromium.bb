@@ -53,7 +53,7 @@ class SVGPathSegCurvetoQuadraticSmoothRel;
 
 class SVGPathElement FINAL : public SVGGeometryElement {
 public:
-    static PassRefPtr<SVGPathElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGPathElement);
 
     float getTotalLength();
     PassRefPtr<SVGPointTearOff> getPointAtLength(float distance);

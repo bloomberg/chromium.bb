@@ -475,7 +475,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
 
     if (diff < 0) { // Add dummy elements.
         do {
-            RefPtr<Element> option = document().createElement(optionTag, false);
+            RefPtrWillBeRawPtr<Element> option = document().createElement(optionTag, false);
             ASSERT(option);
             add(toHTMLElement(option), 0, exceptionState);
             if (exceptionState.hadException())

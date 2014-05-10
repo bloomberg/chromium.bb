@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGDefsElement FINAL : public SVGGraphicsElement {
 public:
-    static PassRefPtr<SVGDefsElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGDefsElement);
 
     virtual bool supportsFocus() const OVERRIDE { return false; }
 

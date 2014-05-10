@@ -28,7 +28,7 @@ namespace WebCore {
 
 class SVGFETileElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFETileElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFETileElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
 
 private:

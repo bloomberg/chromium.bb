@@ -1469,10 +1469,9 @@ PassRefPtr<Node> CompositeEditCommand::splitTreeToNode(Node* start, Node* end, b
     return node.release();
 }
 
-PassRefPtr<Element> createBlockPlaceholderElement(Document& document)
+PassRefPtrWillBeRawPtr<Element> createBlockPlaceholderElement(Document& document)
 {
-    RefPtr<Element> breakNode = document.createElement(brTag, false);
-    return breakNode.release();
+    return document.createElement(brTag, false);
 }
 
 } // namespace WebCore

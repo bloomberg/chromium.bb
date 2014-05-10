@@ -33,7 +33,7 @@ namespace WebCore {
 class SVGMaskElement FINAL : public SVGElement,
                              public SVGTests {
 public:
-    static PassRefPtr<SVGMaskElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGMaskElement);
 
     SVGAnimatedLength* x() const { return m_x.get(); }
     SVGAnimatedLength* y() const { return m_y.get(); }

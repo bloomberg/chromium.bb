@@ -29,15 +29,10 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-inline SVGFontFaceFormatElement::SVGFontFaceFormatElement(Document& document)
+SVGFontFaceFormatElement::SVGFontFaceFormatElement(Document& document)
     : SVGElement(font_face_formatTag, document)
 {
     ScriptWrappable::init(this);
-}
-
-PassRefPtr<SVGFontFaceFormatElement> SVGFontFaceFormatElement::create(Document& document)
-{
-    return adoptRef(new SVGFontFaceFormatElement(document));
 }
 
 void SVGFontFaceFormatElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)

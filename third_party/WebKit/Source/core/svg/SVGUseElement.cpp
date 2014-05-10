@@ -66,10 +66,10 @@ inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser
     addToPropertyMap(m_height);
 }
 
-PassRefPtr<SVGUseElement> SVGUseElement::create(Document& document, bool wasInsertedByParser)
+PassRefPtrWillBeRawPtr<SVGUseElement> SVGUseElement::create(Document& document, bool wasInsertedByParser)
 {
     // Always build a user agent #shadow-root for SVGUseElement.
-    RefPtr<SVGUseElement> use = adoptRef(new SVGUseElement(document, wasInsertedByParser));
+    RefPtrWillBeRawPtr<SVGUseElement> use = adoptRefWillBeRefCountedGarbageCollected(new SVGUseElement(document, wasInsertedByParser));
     use->ensureUserAgentShadowRoot();
     return use.release();
 }

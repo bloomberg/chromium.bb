@@ -32,7 +32,7 @@ class CSSFontFaceSrcValue;
 
 class SVGFontFaceUriElement FINAL : public SVGElement, public FontResourceClient {
 public:
-    static PassRefPtr<SVGFontFaceUriElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGFontFaceUriElement);
 
     virtual ~SVGFontFaceUriElement();
 

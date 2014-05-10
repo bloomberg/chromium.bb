@@ -43,9 +43,9 @@ SVGStyleElement::~SVGStyleElement()
 #endif
 }
 
-PassRefPtr<SVGStyleElement> SVGStyleElement::create(Document& document, bool createdByParser)
+PassRefPtrWillBeRawPtr<SVGStyleElement> SVGStyleElement::create(Document& document, bool createdByParser)
 {
-    return adoptRef(new SVGStyleElement(document, createdByParser));
+    return adoptRefWillBeRefCountedGarbageCollected(new SVGStyleElement(document, createdByParser));
 }
 
 bool SVGStyleElement::disabled() const

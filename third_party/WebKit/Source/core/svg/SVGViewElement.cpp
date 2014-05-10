@@ -24,7 +24,7 @@
 
 namespace WebCore {
 
-inline SVGViewElement::SVGViewElement(Document& document)
+SVGViewElement::SVGViewElement(Document& document)
     : SVGElement(SVGNames::viewTag, document)
     , SVGFitToViewBox(this)
     , m_viewTarget(SVGStaticStringList::create(this, SVGNames::viewTargetAttr))
@@ -32,11 +32,6 @@ inline SVGViewElement::SVGViewElement(Document& document)
     ScriptWrappable::init(this);
 
     addToPropertyMap(m_viewTarget);
-}
-
-PassRefPtr<SVGViewElement> SVGViewElement::create(Document& document)
-{
-    return adoptRef(new SVGViewElement(document));
 }
 
 bool SVGViewElement::isSupportedAttribute(const QualifiedName& attrName)

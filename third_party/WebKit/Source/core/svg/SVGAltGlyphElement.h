@@ -36,7 +36,7 @@ class SVGGlyphElement;
 class SVGAltGlyphElement FINAL : public SVGTextPositioningElement,
                                  public SVGURIReference {
 public:
-    static PassRefPtr<SVGAltGlyphElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGAltGlyphElement);
 
     const AtomicString& glyphRef() const;
     void setGlyphRef(const AtomicString&, ExceptionState&);

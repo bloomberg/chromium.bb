@@ -33,7 +33,7 @@ class SVGPathElement;
 class SVGMPathElement FINAL : public SVGElement,
                               public SVGURIReference {
 public:
-    static PassRefPtr<SVGMPathElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGMPathElement);
 
     virtual ~SVGMPathElement();
 

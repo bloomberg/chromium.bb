@@ -28,7 +28,7 @@
 
 namespace WebCore {
 
-inline SVGLineElement::SVGLineElement(Document& document)
+SVGLineElement::SVGLineElement(Document& document)
     : SVGGeometryElement(SVGNames::lineTag, document)
     , m_x1(SVGAnimatedLength::create(this, SVGNames::x1Attr, SVGLength::create(LengthModeWidth), AllowNegativeLengths))
     , m_y1(SVGAnimatedLength::create(this, SVGNames::y1Attr, SVGLength::create(LengthModeHeight), AllowNegativeLengths))
@@ -41,11 +41,6 @@ inline SVGLineElement::SVGLineElement(Document& document)
     addToPropertyMap(m_y1);
     addToPropertyMap(m_x2);
     addToPropertyMap(m_y2);
-}
-
-PassRefPtr<SVGLineElement> SVGLineElement::create(Document& document)
-{
-    return adoptRef(new SVGLineElement(document));
 }
 
 bool SVGLineElement::isSupportedAttribute(const QualifiedName& attrName)

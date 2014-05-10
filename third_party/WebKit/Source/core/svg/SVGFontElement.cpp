@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-inline SVGFontElement::SVGFontElement(Document& document)
+SVGFontElement::SVGFontElement(Document& document)
     : SVGElement(SVGNames::fontTag, document)
     , m_missingGlyph(0)
     , m_isGlyphCacheValid(false)
@@ -42,11 +42,6 @@ inline SVGFontElement::SVGFontElement(Document& document)
     ScriptWrappable::init(this);
 
     UseCounter::count(document, UseCounter::SVGFontElement);
-}
-
-PassRefPtr<SVGFontElement> SVGFontElement::create(Document& document)
-{
-    return adoptRef(new SVGFontElement(document));
 }
 
 void SVGFontElement::invalidateGlyphCache()

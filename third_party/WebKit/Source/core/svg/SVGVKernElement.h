@@ -29,7 +29,7 @@ namespace WebCore {
 
 class SVGVKernElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGVKernElement> create(Document&);
+    DEFINE_NODE_FACTORY(SVGVKernElement);
 
     void buildVerticalKerningPair(KerningPairVector&);
 

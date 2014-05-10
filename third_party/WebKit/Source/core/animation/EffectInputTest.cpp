@@ -28,7 +28,7 @@ protected:
     }
 
     RefPtr<Document> document;
-    RefPtr<Element> element;
+    RefPtrWillBePersistent<Element> element;
     TrackExceptionState exceptionState;
     v8::Isolate* m_isolate;
 
