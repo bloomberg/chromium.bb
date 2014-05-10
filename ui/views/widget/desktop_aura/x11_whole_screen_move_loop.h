@@ -91,6 +91,9 @@ class X11WholeScreenMoveLoop : public ui::PlatformEventDispatcher {
   // pressing escape).
   bool canceled_;
 
+  // Keeps track of whether we still have a pointer grab at the end of the loop.
+  bool has_grab_;
+
   // A Widget is created during the drag if there is an image available to be
   // used during the drag.
   scoped_ptr<Widget> drag_widget_;
