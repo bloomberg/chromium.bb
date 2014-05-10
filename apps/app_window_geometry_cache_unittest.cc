@@ -11,23 +11,38 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-const char kWindowId[] = "windowid";
-const char kWindowId2[] = "windowid2";
 
 using content::BrowserThread;
 
 namespace apps {
 
+namespace {
+const char kWindowId[] = "windowid";
+const char kWindowId2[] = "windowid2";
+
+// Create a very simple extension with id.
+scoped_refptr<extensions::Extension> CreateExtension(const std::string& id) {
+  return extensions::ExtensionBuilder()
+      .SetManifest(extensions::DictionaryBuilder().Set("name", "test").Set(
+          "version", "0.1"))
+      .SetID(id)
+      .Build();
+}
+
+}  // namespace
+
 // Base class for tests.
 class AppWindowGeometryCacheTest : public testing::Test {
  public:
   AppWindowGeometryCacheTest()
-      : ui_thread_(BrowserThread::UI, &ui_message_loop_) {
+      : profile_(new TestingProfile),
+        ui_thread_(BrowserThread::UI, &ui_message_loop_) {
     prefs_.reset(new extensions::TestExtensionPrefs(
         ui_message_loop_.message_loop_proxy().get()));
-    cache_.reset(new AppWindowGeometryCache(&profile_, prefs_->prefs()));
+    cache_.reset(new AppWindowGeometryCache(profile_.get(), prefs_->prefs()));
     cache_->SetSyncDelayForTests(0);
   }
 
@@ -45,7 +60,7 @@ class AppWindowGeometryCacheTest : public testing::Test {
   void UnloadExtension(const std::string& extension_id);
 
  protected:
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
   base::MessageLoopForUI ui_message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<extensions::TestExtensionPrefs> prefs_;
@@ -86,7 +101,12 @@ void AppWindowGeometryCacheTest::LoadExtension(
 
 void AppWindowGeometryCacheTest::UnloadExtension(
     const std::string& extension_id) {
-  cache_->OnExtensionUnloaded(extension_id);
+  scoped_refptr<extensions::Extension> extension =
+      CreateExtension(extension_id);
+  cache_->OnExtensionUnloaded(
+      profile_.get(),
+      extension.get(),
+      extensions::UnloadedExtensionInfo::REASON_DISABLE);
   WaitForSync();
 }
 
