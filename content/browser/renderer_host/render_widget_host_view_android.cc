@@ -1166,6 +1166,7 @@ void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
     return;
   TRACE_EVENT0("input", "RenderWidgetHostViewAndroid::OnSetNeedsFlushInput");
   flush_input_requested_ = true;
+  content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
 }
 
 void RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManagerIfNeeded() {
