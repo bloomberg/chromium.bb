@@ -284,11 +284,8 @@ SkiaBitLocker::~SkiaBitLocker() {
 void SkiaBitLocker::releaseIfNeeded() {
   if (!cgContext_)
     return;
-  if (useDeviceBits_) {
-    bitmap_.unlockPixels();
-  } else {
+  if (useBitmap_) {
     // Find the bits that were drawn to.
-    SkAutoLockPixels lockedPixels(bitmap_);
     const uint32_t* pixelBase
         = reinterpret_cast<uint32_t*>(bitmap_.getPixels());
     int rowPixels = bitmap_.rowBytesAsPixels();
@@ -370,55 +367,53 @@ foundRight:
 }
 
 CGContextRef SkiaBitLocker::cgContext() {
-  SkBaseDevice* device = canvas_->getTopDevice();
-  DCHECK(device);
-  if (!device)
-    return 0;
   releaseIfNeeded(); // This flushes any prior bitmap use
-  const SkBitmap& deviceBits = device->accessBitmap(true);
-  useDeviceBits_ = deviceBits.getPixels();
-  if (useDeviceBits_) {
-    bitmap_ = deviceBits;
-    bitmap_.lockPixels();
+
+  SkIRect clip_bounds;
+  const bool clip_is_empty = !canvas_->getClipDeviceBounds(&clip_bounds);
+
+  SkImageInfo info;
+  size_t row_bytes;
+  SkIPoint origin;
+  void* top_pixels = canvas_->accessTopLayerPixels(&info, &row_bytes, &origin);
+  if (top_pixels && (clip_is_empty || canvas_->isClipRect())) {
+    useBitmap_ = false;
   } else {
-    bitmap_.setConfig(
-        SkBitmap::kARGB_8888_Config, deviceBits.width(), deviceBits.height());
-    bitmap_.allocPixels();
+    useBitmap_ = true;
+    info = SkImageInfo::MakeN32Premul(clip_bounds.width(), clip_bounds.height());
+    origin.set(clip_bounds.x(), clip_bounds.y());
+    CHECK(bitmap_.allocPixels(info));
     bitmap_.eraseColor(0);
+    top_pixels = bitmap_.getPixels();
   }
+
   base::ScopedCFTypeRef<CGColorSpaceRef> colorSpace(
       CGColorSpaceCreateDeviceRGB());
-  cgContext_ = CGBitmapContextCreate(bitmap_.getPixels(), bitmap_.width(),
-    bitmap_.height(), 8, bitmap_.rowBytes(), colorSpace, 
-    kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
+  cgContext_ = CGBitmapContextCreate(top_pixels, info.width(),
+      info.height(), 8, row_bytes, colorSpace,
+      kCGBitmapByteOrder32Host | kCGImageAlphaPremultipliedFirst);
 
   // Apply device matrix.
   CGAffineTransform contentsTransform = CGAffineTransformMakeScale(1, -1);
   contentsTransform = CGAffineTransformTranslate(contentsTransform, 0,
-      -device->height());
+      -info.height());
   CGContextConcatCTM(cgContext_, contentsTransform);
 
-  const SkIPoint& pt = device->getOrigin();
   // Skip applying the clip when not writing directly to device.
   // They're applied in the offscreen case when the bitmap is drawn.
-  if (useDeviceBits_) {
+  if (!useBitmap_) {
       // Apply clip in device coordinates.
       CGMutablePathRef clipPath = CGPathCreateMutable();
-      const SkRegion& clipRgn = canvas_->getTotalClip();
-      if (clipRgn.isEmpty()) {
+      if (clip_is_empty) {
         // CoreGraphics does not consider a newly created path to be empty.
         // Explicitly set it to empty so the subsequent drawing is clipped out.
         // It would be better to make the CGContext hidden if there was a CG
         // call that does that.
         CGPathAddRect(clipPath, 0, CGRectMake(0, 0, 0, 0));
-      }
-      SkRegion::Iterator iter(clipRgn);
-      const SkIPoint& pt = device->getOrigin();
-      for (; !iter.done(); iter.next()) {
-        SkIRect skRect = iter.rect();
-        skRect.offset(-pt);
-        CGRect cgRect = SkIRectToCGRect(skRect);
-        CGPathAddRect(clipPath, 0, cgRect);
+      } else {
+        SkIRect r = clip_bounds;
+        r.offset(-origin);
+        CGPathAddRect(clipPath, 0, SkIRectToCGRect(r));
       }
       CGContextAddPath(cgContext_, clipPath);
       CGContextClip(cgContext_);
@@ -427,7 +422,7 @@ CGContextRef SkiaBitLocker::cgContext() {
 
   // Apply content matrix.
   SkMatrix skMatrix = canvas_->getTotalMatrix();
-  skMatrix.postTranslate(-SkIntToScalar(pt.fX), -SkIntToScalar(pt.fY));
+  skMatrix.postTranslate(-SkIntToScalar(origin.fX), -SkIntToScalar(origin.fY));
   CGAffineTransform affine = SkMatrixToCGAffineTransform(skMatrix);
   CGContextConcatCTM(cgContext_, affine);
   
