@@ -20,6 +20,160 @@
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
 
+// JSON Web Key Format (JWK)
+// http://tools.ietf.org/html/draft-ietf-jose-json-web-key-21
+//
+// A JWK is a simple JSON dictionary with the following entries
+// - "kty" (Key Type) Parameter, REQUIRED
+// - <kty-specific parameters, see below>, REQUIRED
+// - "use" (Key Use) Parameter, OPTIONAL
+// - "key_ops" (Key Operations) Parameter, OPTIONAL
+// - "alg" (Algorithm) Parameter, OPTIONAL
+// - "ext" (Key Exportability), OPTIONAL
+// (all other entries are ignored)
+//
+// OPTIONAL here means that this code does not require the entry to be present
+// in the incoming JWK, because the method input parameters contain similar
+// information. If the optional JWK entry is present, it will be validated
+// against the corresponding input parameter for consistency and combined with
+// it according to rules defined below.
+//
+// Input 'key_data' contains the JWK. To build a Web Crypto Key, the JWK
+// values are parsed out and combined with the method input parameters to
+// build a Web Crypto Key:
+// Web Crypto Key type            <-- (deduced)
+// Web Crypto Key extractable     <-- JWK ext + input extractable
+// Web Crypto Key algorithm       <-- JWK alg + input algorithm
+// Web Crypto Key keyUsage        <-- JWK use, key_ops + input usage_mask
+// Web Crypto Key keying material <-- kty-specific parameters
+//
+// Values for each JWK entry are case-sensitive and defined in
+// http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18.
+// Note that not all values specified by JOSE are handled by this code. Only
+// handled values are listed.
+// - kty (Key Type)
+//   +-------+--------------------------------------------------------------+
+//   | "RSA" | RSA [RFC3447]                                                |
+//   | "oct" | Octet sequence (used to represent symmetric keys)            |
+//   +-------+--------------------------------------------------------------+
+//
+// - key_ops (Key Use Details)
+//   The key_ops field is an array that contains one or more strings from
+//   the table below, and describes the operations for which this key may be
+//   used.
+//   +-------+--------------------------------------------------------------+
+//   | "encrypt"    | encrypt operations                                    |
+//   | "decrypt"    | decrypt operations                                    |
+//   | "sign"       | sign (MAC) operations                                 |
+//   | "verify"     | verify (MAC) operations                               |
+//   | "wrapKey"    | key wrap                                              |
+//   | "unwrapKey"  | key unwrap                                            |
+//   | "deriveKey"  | key derivation                                        |
+//   | "deriveBits" | key derivation TODO(padolph): not currently supported |
+//   +-------+--------------------------------------------------------------+
+//
+// - use (Key Use)
+//   The use field contains a single entry from the table below.
+//   +-------+--------------------------------------------------------------+
+//   | "sig"     | equivalent to key_ops of [sign, verify]                  |
+//   | "enc"     | equivalent to key_ops of [encrypt, decrypt, wrapKey,     |
+//   |           | unwrapKey, deriveKey, deriveBits]                        |
+//   +-------+--------------------------------------------------------------+
+//
+//   NOTE: If both "use" and "key_ops" JWK members are present, the usages
+//   specified by them MUST be consistent.  In particular, the "use" value
+//   "sig" corresponds to "sign" and/or "verify".  The "use" value "enc"
+//   corresponds to all other values defined above.  If "key_ops" values
+//   corresponding to both "sig" and "enc" "use" values are present, the "use"
+//   member SHOULD NOT be present, and if present, its value MUST NOT be
+//   either "sig" or "enc".
+//
+// - ext (Key Exportability)
+//   +-------+--------------------------------------------------------------+
+//   | true  | Key may be exported from the trusted environment             |
+//   | false | Key cannot exit the trusted environment                      |
+//   +-------+--------------------------------------------------------------+
+//
+// - alg (Algorithm)
+//   See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18
+//   +--------------+-------------------------------------------------------+
+//   | Digital Signature or MAC Algorithm                                   |
+//   +--------------+-------------------------------------------------------+
+//   | "HS1"        | HMAC using SHA-1 hash algorithm                       |
+//   | "HS256"      | HMAC using SHA-256 hash algorithm                     |
+//   | "HS384"      | HMAC using SHA-384 hash algorithm                     |
+//   | "HS512"      | HMAC using SHA-512 hash algorithm                     |
+//   | "RS1"        | RSASSA using SHA-1 hash algorithm
+//   | "RS256"      | RSASSA using SHA-256 hash algorithm                   |
+//   | "RS384"      | RSASSA using SHA-384 hash algorithm                   |
+//   | "RS512"      | RSASSA using SHA-512 hash algorithm                   |
+//   +--------------+-------------------------------------------------------|
+//   | Key Management Algorithm                                             |
+//   +--------------+-------------------------------------------------------+
+//   | "RSA1_5"     | RSAES-PKCS1-V1_5 [RFC3447]                            |
+//   | "RSA-OAEP"   | RSAES using Optimal Asymmetric Encryption Padding     |
+//   |              | (OAEP) [RFC3447], with the default parameters         |
+//   |              | specified by RFC3447 in Section A.2.1                 |
+//   | "A128KW"     | Advanced Encryption Standard (AES) Key Wrap Algorithm |
+//   |              | [RFC3394] using 128 bit keys                          |
+//   | "A192KW"     | AES Key Wrap Algorithm using 192 bit keys             |
+//   | "A256KW"     | AES Key Wrap Algorithm using 256 bit keys             |
+//   | "A128GCM"    | AES in Galois/Counter Mode (GCM) [NIST.800-38D] using |
+//   |              | 128 bit keys                                          |
+//   | "A192GCM"    | AES GCM using 192 bit keys                            |
+//   | "A256GCM"    | AES GCM using 256 bit keys                            |
+//   | "A128CBC"    | AES in Cipher Block Chaining Mode (CBC) with PKCS #5  |
+//   |              | padding [NIST.800-38A]                                |
+//   | "A192CBC"    | AES CBC using 192 bit keys                            |
+//   | "A256CBC"    | AES CBC using 256 bit keys                            |
+//   +--------------+-------------------------------------------------------+
+//
+// kty-specific parameters
+// The value of kty determines the type and content of the keying material
+// carried in the JWK to be imported. Currently only two possibilities are
+// supported: a raw key or an RSA public key. RSA private keys are not
+// supported because typical applications seldom need to import a private key,
+// and the large number of JWK parameters required to describe one.
+// - kty == "oct" (symmetric or other raw key)
+//   +-------+--------------------------------------------------------------+
+//   | "k"   | Contains the value of the symmetric (or other single-valued) |
+//   |       | key.  It is represented as the base64url encoding of the     |
+//   |       | octet sequence containing the key value.                     |
+//   +-------+--------------------------------------------------------------+
+// - kty == "RSA" (RSA public key)
+//   +-------+--------------------------------------------------------------+
+//   | "n"   | Contains the modulus value for the RSA public key.  It is    |
+//   |       | represented as the base64url encoding of the value's         |
+//   |       | unsigned big endian representation as an octet sequence.     |
+//   +-------+--------------------------------------------------------------+
+//   | "e"   | Contains the exponent value for the RSA public key.  It is   |
+//   |       | represented as the base64url encoding of the value's         |
+//   |       | unsigned big endian representation as an octet sequence.     |
+//   +-------+--------------------------------------------------------------+
+//
+// Consistency and conflict resolution
+// The 'algorithm', 'extractable', and 'usage_mask' input parameters
+// may be different than the corresponding values inside the JWK. The Web
+// Crypto spec says that if a JWK value is present but is inconsistent with
+// the input value, it is an error and the operation must fail. If no
+// inconsistency is found then the input parameters are used.
+//
+// algorithm
+//   If the JWK algorithm is provided, it must match the web crypto input
+//   algorithm (both the algorithm ID and inner hash if applicable).
+//
+// extractable
+//   If the JWK ext field is true but the input parameter is false, make the
+//   Web Crypto Key non-extractable. Conversely, if the JWK ext field is
+//   false but the input parameter is true, it is an inconsistency. If both
+//   are true or both are false, use that value.
+//
+// usage_mask
+//   The input usage_mask must be a strict subset of the interpreted JWK use
+//   value, else it is judged inconsistent. In all cases the input usage_mask
+//   is used as the final usage_mask.
+//
+
 namespace content {
 
 namespace webcrypto {
@@ -463,169 +617,6 @@ Status ImportKeyJwk(const CryptoData& key_data,
                     bool extractable,
                     blink::WebCryptoKeyUsageMask usage_mask,
                     blink::WebCryptoKey* key) {
-  // TODO(padolph): Generalize this comment to include export, and move to top
-  // of file.
-
-  // The goal of this method is to extract key material and meta data from the
-  // incoming JWK, combine them with the input parameters, and ultimately import
-  // a Web Crypto Key.
-  //
-  // JSON Web Key Format (JWK)
-  // http://tools.ietf.org/html/draft-ietf-jose-json-web-key-21
-  //
-  // A JWK is a simple JSON dictionary with the following entries
-  // - "kty" (Key Type) Parameter, REQUIRED
-  // - <kty-specific parameters, see below>, REQUIRED
-  // - "use" (Key Use) Parameter, OPTIONAL
-  // - "key_ops" (Key Operations) Parameter, OPTIONAL
-  // - "alg" (Algorithm) Parameter, OPTIONAL
-  // - "ext" (Key Exportability), OPTIONAL
-  // (all other entries are ignored)
-  //
-  // OPTIONAL here means that this code does not require the entry to be present
-  // in the incoming JWK, because the method input parameters contain similar
-  // information. If the optional JWK entry is present, it will be validated
-  // against the corresponding input parameter for consistency and combined with
-  // it according to rules defined below. A special case is that the method
-  // input parameter 'algorithm' is also optional. If it is null, the JWK 'alg'
-  // value (if present) is used as a fallback.
-  //
-  // Input 'key_data' contains the JWK. To build a Web Crypto Key, the JWK
-  // values are parsed out and combined with the method input parameters to
-  // build a Web Crypto Key:
-  // Web Crypto Key type            <-- (deduced)
-  // Web Crypto Key extractable     <-- JWK ext + input extractable
-  // Web Crypto Key algorithm       <-- JWK alg + input algorithm
-  // Web Crypto Key keyUsage        <-- JWK use, key_ops + input usage_mask
-  // Web Crypto Key keying material <-- kty-specific parameters
-  //
-  // Values for each JWK entry are case-sensitive and defined in
-  // http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18.
-  // Note that not all values specified by JOSE are handled by this code. Only
-  // handled values are listed.
-  // - kty (Key Type)
-  //   +-------+--------------------------------------------------------------+
-  //   | "RSA" | RSA [RFC3447]                                                |
-  //   | "oct" | Octet sequence (used to represent symmetric keys)            |
-  //   +-------+--------------------------------------------------------------+
-  //
-  // - key_ops (Key Use Details)
-  //   The key_ops field is an array that contains one or more strings from
-  //   the table below, and describes the operations for which this key may be
-  //   used.
-  //   +-------+--------------------------------------------------------------+
-  //   | "encrypt"    | encrypt operations                                    |
-  //   | "decrypt"    | decrypt operations                                    |
-  //   | "sign"       | sign (MAC) operations                                 |
-  //   | "verify"     | verify (MAC) operations                               |
-  //   | "wrapKey"    | key wrap                                              |
-  //   | "unwrapKey"  | key unwrap                                            |
-  //   | "deriveKey"  | key derivation                                        |
-  //   | "deriveBits" | key derivation TODO(padolph): not currently supported |
-  //   +-------+--------------------------------------------------------------+
-  //
-  // - use (Key Use)
-  //   The use field contains a single entry from the table below.
-  //   +-------+--------------------------------------------------------------+
-  //   | "sig"     | equivalent to key_ops of [sign, verify]                  |
-  //   | "enc"     | equivalent to key_ops of [encrypt, decrypt, wrapKey,     |
-  //   |           | unwrapKey, deriveKey, deriveBits]                        |
-  //   +-------+--------------------------------------------------------------+
-  //
-  //   NOTE: If both "use" and "key_ops" JWK members are present, the usages
-  //   specified by them MUST be consistent.  In particular, the "use" value
-  //   "sig" corresponds to "sign" and/or "verify".  The "use" value "enc"
-  //   corresponds to all other values defined above.  If "key_ops" values
-  //   corresponding to both "sig" and "enc" "use" values are present, the "use"
-  //   member SHOULD NOT be present, and if present, its value MUST NOT be
-  //   either "sig" or "enc".
-  //
-  // - ext (Key Exportability)
-  //   +-------+--------------------------------------------------------------+
-  //   | true  | Key may be exported from the trusted environment             |
-  //   | false | Key cannot exit the trusted environment                      |
-  //   +-------+--------------------------------------------------------------+
-  //
-  // - alg (Algorithm)
-  //   See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18
-  //   +--------------+-------------------------------------------------------+
-  //   | Digital Signature or MAC Algorithm                                   |
-  //   +--------------+-------------------------------------------------------+
-  //   | "HS1"        | HMAC using SHA-1 hash algorithm                       |
-  //   | "HS256"      | HMAC using SHA-256 hash algorithm                     |
-  //   | "HS384"      | HMAC using SHA-384 hash algorithm                     |
-  //   | "HS512"      | HMAC using SHA-512 hash algorithm                     |
-  //   | "RS1"        | RSASSA using SHA-1 hash algorithm
-  //   | "RS256"      | RSASSA using SHA-256 hash algorithm                   |
-  //   | "RS384"      | RSASSA using SHA-384 hash algorithm                   |
-  //   | "RS512"      | RSASSA using SHA-512 hash algorithm                   |
-  //   +--------------+-------------------------------------------------------|
-  //   | Key Management Algorithm                                             |
-  //   +--------------+-------------------------------------------------------+
-  //   | "RSA1_5"     | RSAES-PKCS1-V1_5 [RFC3447]                            |
-  //   | "RSA-OAEP"   | RSAES using Optimal Asymmetric Encryption Padding     |
-  //   |              | (OAEP) [RFC3447], with the default parameters         |
-  //   |              | specified by RFC3447 in Section A.2.1                 |
-  //   | "A128KW"     | Advanced Encryption Standard (AES) Key Wrap Algorithm |
-  //   |              | [RFC3394] using 128 bit keys                          |
-  //   | "A192KW"     | AES Key Wrap Algorithm using 192 bit keys             |
-  //   | "A256KW"     | AES Key Wrap Algorithm using 256 bit keys             |
-  //   | "A128GCM"    | AES in Galois/Counter Mode (GCM) [NIST.800-38D] using |
-  //   |              | 128 bit keys                                          |
-  //   | "A192GCM"    | AES GCM using 192 bit keys                            |
-  //   | "A256GCM"    | AES GCM using 256 bit keys                            |
-  //   | "A128CBC"    | AES in Cipher Block Chaining Mode (CBC) with PKCS #5  |
-  //   |              | padding [NIST.800-38A]                                |
-  //   | "A192CBC"    | AES CBC using 192 bit keys                            |
-  //   | "A256CBC"    | AES CBC using 256 bit keys                            |
-  //   +--------------+-------------------------------------------------------+
-  //
-  // kty-specific parameters
-  // The value of kty determines the type and content of the keying material
-  // carried in the JWK to be imported. Currently only two possibilities are
-  // supported: a raw key or an RSA public key. RSA private keys are not
-  // supported because typical applications seldom need to import a private key,
-  // and the large number of JWK parameters required to describe one.
-  // - kty == "oct" (symmetric or other raw key)
-  //   +-------+--------------------------------------------------------------+
-  //   | "k"   | Contains the value of the symmetric (or other single-valued) |
-  //   |       | key.  It is represented as the base64url encoding of the     |
-  //   |       | octet sequence containing the key value.                     |
-  //   +-------+--------------------------------------------------------------+
-  // - kty == "RSA" (RSA public key)
-  //   +-------+--------------------------------------------------------------+
-  //   | "n"   | Contains the modulus value for the RSA public key.  It is    |
-  //   |       | represented as the base64url encoding of the value's         |
-  //   |       | unsigned big endian representation as an octet sequence.     |
-  //   +-------+--------------------------------------------------------------+
-  //   | "e"   | Contains the exponent value for the RSA public key.  It is   |
-  //   |       | represented as the base64url encoding of the value's         |
-  //   |       | unsigned big endian representation as an octet sequence.     |
-  //   +-------+--------------------------------------------------------------+
-  //
-  // Consistency and conflict resolution
-  // The 'algorithm', 'extractable', and 'usage_mask' input parameters
-  // may be different than the corresponding values inside the JWK. The Web
-  // Crypto spec says that if a JWK value is present but is inconsistent with
-  // the input value, it is an error and the operation must fail. If no
-  // inconsistency is found then the input parameters are used.
-  //
-  // algorithm
-  //   If the JWK algorithm is provided, it must match the web crypto input
-  //   algorithm (both the algorithm ID and inner hash if applicable).
-  //
-  // extractable
-  //   If the JWK ext field is true but the input parameter is false, make the
-  //   Web Crypto Key non-extractable. Conversely, if the JWK ext field is
-  //   false but the input parameter is true, it is an inconsistency. If both
-  //   are true or both are false, use that value.
-  //
-  // usage_mask
-  //   The input usage_mask must be a strict subset of the interpreted JWK use
-  //   value, else it is judged inconsistent. In all cases the input usage_mask
-  //   is used as the final usage_mask.
-  //
-
   if (!key_data.byte_length())
     return Status::ErrorImportEmptyKeyData();
   DCHECK(key);
