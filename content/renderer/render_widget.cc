@@ -386,7 +386,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
       is_accelerated_compositing_active_(false),
-      animation_update_pending_(false),
       invalidation_task_posted_(false),
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
@@ -1144,15 +1143,6 @@ void RenderWidget::ClearFocus() {
     webwidget_->setFocus(false);
 }
 
-void RenderWidget::AnimationCallback() {
-  TRACE_EVENT0("renderer", "RenderWidget::AnimationCallback");
-  if (!animation_update_pending_) {
-    TRACE_EVENT0("renderer", "EarlyOut_NoAnimationUpdatePending");
-    return;
-  }
-  FlushPendingInputEventAck();
-}
-
 void RenderWidget::InvalidationCallback() {
   TRACE_EVENT0("renderer", "RenderWidget::InvalidationCallback");
   invalidation_task_posted_ = false;
@@ -1177,13 +1167,6 @@ void RenderWidget::didInvalidateRect(const WebRect& rect) {
 
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
-    return;
-
-  // When GPU rendering, combine pending animations and invalidations into
-  // a single update.
-  if (is_accelerated_compositing_active_ &&
-      animation_update_pending_ &&
-      animation_timer_.IsRunning())
     return;
 
   // Perform updating asynchronously.  This serves two purposes:
@@ -1211,13 +1194,6 @@ void RenderWidget::didScrollRect(int dx, int dy,
 
   // We may not need to schedule another call to DoDeferredUpdate.
   if (invalidation_task_posted_)
-    return;
-
-  // When GPU rendering, combine pending animations and invalidations into
-  // a single update.
-  if (is_accelerated_compositing_active_ &&
-      animation_update_pending_ &&
-      animation_timer_.IsRunning())
     return;
 
   // Perform updating asynchronously.  This serves two purposes:
@@ -1381,18 +1357,6 @@ void RenderWidget::scheduleComposite() {
     // duplicating all that code is less desirable than "faking out" the
     // invalidation path using a magical damage rect.
     didInvalidateRect(WebRect(0, 0, 1, 1));
-  }
-}
-
-void RenderWidget::scheduleAnimation() {
-  if (animation_update_pending_)
-    return;
-
-  TRACE_EVENT0("gpu", "RenderWidget::scheduleAnimation");
-  animation_update_pending_ = true;
-  if (!animation_timer_.IsRunning()) {
-    animation_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(0), this,
-                           &RenderWidget::AnimationCallback);
   }
 }
 

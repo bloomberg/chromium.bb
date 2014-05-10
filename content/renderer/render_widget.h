@@ -133,7 +133,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void didCommitAndDrawCompositorFrame();
   virtual void didCompleteSwapBuffers();
   virtual void scheduleComposite();
-  virtual void scheduleAnimation();
   virtual void didFocus();
   virtual void didBlur();
   virtual void didChangeCursor(const blink::WebCursorInfo&);
@@ -303,7 +302,6 @@ class CONTENT_EXPORT RenderWidget
   // active RenderWidgets.
   void SetSwappedOut(bool is_swapped_out);
 
-  void AnimationCallback();
   void InvalidationCallback();
   void FlushPendingInputEventAck();
   void DoDeferredClose();
@@ -659,8 +657,6 @@ class CONTENT_EXPORT RenderWidget
   // compositor.
   bool is_accelerated_compositing_active_;
 
-  base::OneShotTimer<RenderWidget> animation_timer_;
-  bool animation_update_pending_;
   bool invalidation_task_posted_;
 
   // Stats for legacy software mode
