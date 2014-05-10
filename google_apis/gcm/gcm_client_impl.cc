@@ -83,13 +83,6 @@ enum OutgoingMessageTTLCategory {
   TTL_CATEGORY_COUNT
 };
 
-// MCS endpoints. SSL Key pinning is done automatically due to the *.google.com
-// pinning rule.
-// Note: modifying the endpoints will affect the ability to compare the
-// GCM.CurrentEnpoint histogram across versions.
-const char kMCSEndpointMain[] = "https://mtalk.google.com:5228";
-const char kMCSEndpointFallback[] = "https://mtalk.google.com:443";
-
 const int kMaxRegistrationRetries = 5;
 const char kMessageTypeDataMessage[] = "gcm";
 const char kMessageTypeDeletedMessagesKey[] = "deleted_messages";
@@ -275,8 +268,8 @@ void GCMClientImpl::OnLoadCompleted(scoped_ptr<GCMStore::LoadResult> result) {
 void GCMClientImpl::InitializeMCSClient(
     scoped_ptr<GCMStore::LoadResult> result) {
   std::vector<GURL> endpoints;
-  endpoints.push_back(GURL(kMCSEndpointMain));
-  endpoints.push_back(GURL(kMCSEndpointFallback));
+  endpoints.push_back(gservices_settings_.mcs_main_endpoint());
+  endpoints.push_back(gservices_settings_.mcs_fallback_endpoint());
   connection_factory_ = internals_builder_->BuildConnectionFactory(
       endpoints,
       kDefaultBackoffPolicy,

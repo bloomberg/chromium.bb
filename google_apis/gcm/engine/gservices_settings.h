@@ -47,10 +47,9 @@ class GCM_EXPORT GServicesSettings {
 
   GURL checkin_url() const { return checkin_url_; }
 
-  // TODO(fgorski): Consider returning GURL and use it for validation.
-  std::string mcs_hostname() const { return mcs_hostname_; }
+  GURL mcs_main_endpoint() const { return mcs_main_endpoint_; }
 
-  int mcs_secure_port() const { return mcs_secure_port_; }
+  GURL mcs_fallback_endpoint() const { return mcs_fallback_endpoint_; }
 
   GURL registration_url() const { return registration_url_; }
 
@@ -70,11 +69,11 @@ class GCM_EXPORT GServicesSettings {
   // URL that should be used for checkins.
   GURL checkin_url_;
 
-  // Hostname of the MCS server.
-  std::string mcs_hostname_;
+  // Main MCS endpoint.
+  GURL mcs_main_endpoint_;
 
-  // Secure port to connect to on MCS sever.
-  int mcs_secure_port_;
+  // Fallback MCS endpoint.
+  GURL mcs_fallback_endpoint_;
 
   // URL that should be used for regisrations and unregistrations.
   GURL registration_url_;

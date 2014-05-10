@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 
 namespace {
 // The expected time in seconds between periodic checkins.
@@ -22,10 +23,16 @@ const char kRegistrationURLKey[] = "gcm_registration_url";
 const int64 kDefaultCheckinInterval = 2 * 24 * 60 * 60;  // seconds = 2 days.
 const int64 kMinimumCheckinInterval = 12 * 60 * 60;      // seconds = 12 hours.
 const char kDefaultCheckinURL[] = "https://android.clients.google.com/checkin";
-const char kDefaultMCSHostname[] = "https://mtalk.google.com";
-const int kDefaultMCSSecurePort = 5228;
+const char kDefaultMCSHostname[] = "mtalk.google.com";
+const int kDefaultMCSMainSecurePort = 5228;
+const int kDefaultMCSFallbackSecurePort = 443;
 const char kDefaultRegistrationURL[] =
     "https://android.clients.google.com/c2dm/register3";
+const char kMCSEnpointTemplate[] = "https://%s:%d";
+
+std::string MakeMCSEndpoint(const std::string& mcs_hostname, int port) {
+  return base::StringPrintf(kMCSEnpointTemplate, mcs_hostname.c_str(), port);
+}
 
 }  // namespace
 
@@ -44,8 +51,10 @@ const GURL GServicesSettings::DefaultCheckinURL() {
 GServicesSettings::GServicesSettings()
     : checkin_interval_(base::TimeDelta::FromSeconds(kDefaultCheckinInterval)),
       checkin_url_(kDefaultCheckinURL),
-      mcs_hostname_(kDefaultMCSHostname),
-      mcs_secure_port_(kDefaultMCSSecurePort),
+      mcs_main_endpoint_(MakeMCSEndpoint(kDefaultMCSHostname,
+                                         kDefaultMCSMainSecurePort)),
+      mcs_fallback_endpoint_(MakeMCSEndpoint(kDefaultMCSHostname,
+                                             kDefaultMCSFallbackSecurePort)),
       registration_url_(kDefaultRegistrationURL),
       weak_ptr_factory_(this) {
 }
@@ -88,8 +97,8 @@ std::map<std::string, std::string> GServicesSettings::GetSettingsMap() const {
   settings[kCheckinIntervalKey] =
       base::Int64ToString(checkin_interval_.InSeconds());
   settings[kCheckinURLKey] = checkin_url_.spec();
-  settings[kMCSHostnameKey] = mcs_hostname_;
-  settings[kMCSSecurePortKey] = base::IntToString(mcs_secure_port_);
+  settings[kMCSHostnameKey] = mcs_main_endpoint_.host();
+  settings[kMCSSecurePortKey] = mcs_main_endpoint_.port();
   settings[kRegistrationURLKey] = registration_url_.spec();
   return settings;
 }
@@ -144,6 +153,14 @@ bool GServicesSettings::UpdateSettings(
     return false;
   }
 
+  GURL new_mcs_main_endpoint =
+      GURL(MakeMCSEndpoint(new_mcs_hostname, new_mcs_secure_port));
+  GURL new_mcs_fallback_endpoint =
+      GURL(MakeMCSEndpoint(new_mcs_hostname, kDefaultMCSFallbackSecurePort));
+  if (!new_mcs_main_endpoint.is_valid() ||
+      !new_mcs_fallback_endpoint.is_valid())
+    return false;
+
   GURL new_checkin_url;
   iter = settings.find(kCheckinURLKey);
   if (iter == settings.end()) {
@@ -172,8 +189,8 @@ bool GServicesSettings::UpdateSettings(
 
   // We only update the settings once all of them are correct.
   checkin_interval_ = base::TimeDelta::FromSeconds(new_checkin_interval);
-  mcs_hostname_ = new_mcs_hostname;
-  mcs_secure_port_ = new_mcs_secure_port;
+  mcs_main_endpoint_ = new_mcs_main_endpoint;
+  mcs_fallback_endpoint_ = new_mcs_fallback_endpoint;
   checkin_url_ = new_checkin_url;
   registration_url_ = new_registration_url;
   return true;

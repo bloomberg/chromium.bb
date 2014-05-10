@@ -14,15 +14,13 @@ namespace {
 
 const int64 kAlternativeCheckinInterval = 16 * 60 * 60;
 const char kAlternativeCheckinURL[] = "http://alternative.url/checkin";
-const char kAlternativeMCSHostname[] = "http://alternative.gcm.host";
-const int kAlternativeMCSSecurePort = 443;
+const char kAlternativeMCSHostname[] = "alternative.gcm.host";
+const int kAlternativeMCSSecurePort = 7777;
 const char kAlternativeRegistrationURL[] =
     "http://alternative.url/registration";
 
 const int64 kDefaultCheckinInterval = 2 * 24 * 60 * 60;  // seconds = 2 days.
 const char kDefaultCheckinURL[] = "https://android.clients.google.com/checkin";
-const char kDefaultMCSHostname[] = "https://mtalk.google.com";
-const int kDefaultMCSSecurePort = 5228;
 const char kDefaultRegistrationURL[] =
     "https://android.clients.google.com/c2dm/register3";
 
@@ -74,8 +72,10 @@ void GServicesSettingsTest::CheckAllSetToDefault() {
   EXPECT_EQ(base::TimeDelta::FromSeconds(kDefaultCheckinInterval),
             settings().checkin_interval());
   EXPECT_EQ(GURL(kDefaultCheckinURL), settings().checkin_url());
-  EXPECT_EQ(kDefaultMCSHostname, settings().mcs_hostname());
-  EXPECT_EQ(kDefaultMCSSecurePort, settings().mcs_secure_port());
+  EXPECT_EQ(GURL("https://mtalk.google.com:5228"),
+                 settings().mcs_main_endpoint());
+  EXPECT_EQ(GURL("https://mtalk.google.com:443"),
+                 settings().mcs_fallback_endpoint());
   EXPECT_EQ(GURL(kDefaultRegistrationURL), settings().registration_url());
 }
 
@@ -83,8 +83,10 @@ void GServicesSettingsTest::CheckAllSetToAlternative() {
   EXPECT_EQ(base::TimeDelta::FromSeconds(kAlternativeCheckinInterval),
             settings().checkin_interval());
   EXPECT_EQ(GURL(kAlternativeCheckinURL), settings().checkin_url());
-  EXPECT_EQ(kAlternativeMCSHostname, settings().mcs_hostname());
-  EXPECT_EQ(kAlternativeMCSSecurePort, settings().mcs_secure_port());
+  EXPECT_EQ(GURL("https://alternative.gcm.host:7777"),
+                 settings().mcs_main_endpoint());
+  EXPECT_EQ(GURL("https://alternative.gcm.host:443"),
+                 settings().mcs_fallback_endpoint());
   EXPECT_EQ(GURL(kAlternativeRegistrationURL), settings().registration_url());
 }
 
