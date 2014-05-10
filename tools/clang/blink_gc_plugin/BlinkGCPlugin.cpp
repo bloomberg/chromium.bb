@@ -120,6 +120,10 @@ const char kClassOverridesNew[] =
     "[blink-gc] Garbage collected class %0"
     " is not permitted to override its new operator.";
 
+const char kClassDeclaresPureVirtualTrace[] =
+    "[blink-gc] Garbage collected class %0"
+    " is not permitted to declare a pure-virtual trace method.";
+
 struct BlinkGCPluginOptions {
   BlinkGCPluginOptions() : enable_oilpan(false), dump_graph(false) {}
   bool enable_oilpan;
@@ -570,6 +574,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         diagnostic_.getCustomDiagID(getErrorLevel(), kDerivesNonStackAllocated);
     diag_class_overrides_new_ =
         diagnostic_.getCustomDiagID(getErrorLevel(), kClassOverridesNew);
+    diag_class_declares_pure_virtual_trace_ = diagnostic_.getCustomDiagID(
+        getErrorLevel(), kClassDeclaresPureVirtualTrace);
 
     // Register note messages.
     diag_field_requires_tracing_note_ = diagnostic_.getCustomDiagID(
@@ -692,8 +698,12 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       }
     }
 
-    if (info->RequiresTraceMethod() && !info->GetTraceMethod())
+    if (CXXMethodDecl* trace = info->GetTraceMethod()) {
+      if (trace->isPure())
+        ReportClassDeclaresPureVirtualTrace(info, trace);
+    } else if (info->RequiresTraceMethod()) {
       ReportClassRequiresTraceMethod(info);
+    }
 
     {
       CheckFieldsVisitor visitor(options_);
@@ -1252,6 +1262,15 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     diagnostic_.Report(full_loc, diag_class_overrides_new_) << info->record();
   }
 
+  void ReportClassDeclaresPureVirtualTrace(RecordInfo* info,
+                                           CXXMethodDecl* trace) {
+    SourceLocation loc = trace->getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_class_declares_pure_virtual_trace_)
+        << info->record();
+  }
+
   void NoteManualDispatchMethod(CXXMethodDecl* dispatch) {
     SourceLocation loc = dispatch->getLocStart();
     SourceManager& manager = instance_.getSourceManager();
@@ -1333,6 +1352,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_missing_finalize_dispatch_;
   unsigned diag_derives_non_stack_allocated_;
   unsigned diag_class_overrides_new_;
+  unsigned diag_class_declares_pure_virtual_trace_;
 
   unsigned diag_field_requires_tracing_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;

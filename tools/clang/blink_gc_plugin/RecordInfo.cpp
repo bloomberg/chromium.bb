@@ -272,11 +272,11 @@ RecordInfo::Bases& RecordInfo::GetBases() {
   return *bases_;
 }
 
-bool RecordInfo::InheritsNonPureTrace() {
-  if (CXXMethodDecl* trace = GetTraceMethod())
-    return !trace->isPure();
+bool RecordInfo::InheritsTrace() {
+  if (GetTraceMethod())
+    return true;
   for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
-    if (it->second.info()->InheritsNonPureTrace())
+    if (it->second.info()->InheritsTrace())
       return true;
   }
   return false;
@@ -323,7 +323,7 @@ RecordInfo::Bases* RecordInfo::CollectBases() {
     if (!info)
       continue;
     CXXRecordDecl* base = info->record();
-    TracingStatus status = info->InheritsNonPureTrace()
+    TracingStatus status = info->InheritsTrace()
                                ? TracingStatus::Needed()
                                : TracingStatus::Unneeded();
     bases->insert(std::make_pair(base, BasePoint(spec, info, status)));

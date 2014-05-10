@@ -109,7 +109,7 @@ class RecordInfo {
   Fields* CollectFields();
   Bases* CollectBases();
   void DetermineTracingMethods();
-  bool InheritsNonPureTrace();
+  bool InheritsTrace();
 
   Edge* CreateEdge(const clang::Type* type);
 

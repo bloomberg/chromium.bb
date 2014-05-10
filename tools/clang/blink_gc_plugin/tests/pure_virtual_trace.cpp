@@ -4,11 +4,4 @@
 
 #include "pure_virtual_trace.h"
 
-namespace WebCore {
-
-void C::trace(Visitor* visitor) {
-    visitor->trace(m_a);
-    // Is not required to trace base classes B and A.
-}
-
-}
+// Nothing to define
