@@ -41,7 +41,8 @@ class DataReductionProxySettingsTest
 TEST_F(DataReductionProxySettingsTest, TestAuthenticationInit) {
   AddProxyToCommandLine();
   net::HttpAuthCache cache;
-  DataReductionProxySettings::InitDataReductionAuthentication(&cache);
+  DataReductionProxySettings::InitDataReductionAuthentication(
+      &cache, kDataReductionProxyKey);
   DataReductionProxySettings::DataReductionProxyList proxies =
       DataReductionProxySettings::GetDataReductionProxies();
   for (DataReductionProxySettings::DataReductionProxyList::iterator it =
@@ -120,7 +121,8 @@ TEST_F(DataReductionProxySettingsTest, TestAuthHashGeneration) {
   std::string salted_key = salt + kDataReductionProxyKey + salt;
   base::string16 expected_hash = base::UTF8ToUTF16(base::MD5String(salted_key));
   EXPECT_EQ(expected_hash,
-            DataReductionProxySettings::AuthHashForSalt(8675309));
+            DataReductionProxySettings::AuthHashForSalt(
+                8675309, kDataReductionProxyKey));
 }
 
 // Test that the auth key set by preprocessor directive is not used
@@ -131,7 +133,8 @@ TEST_F(DataReductionProxySettingsTest,
   CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxy, kDataReductionProxy);
   EXPECT_EQ(base::string16(),
-            DataReductionProxySettings::AuthHashForSalt(8675309));
+            DataReductionProxySettings::AuthHashForSalt(
+                8675309, kDataReductionProxyKey));
 }
 
 TEST_F(DataReductionProxySettingsTest, TestIsProxyEnabledOrManaged) {
@@ -207,8 +210,7 @@ TEST_F(DataReductionProxySettingsTest, TestChallengeTokens) {
     auth_info->challenger =
         net::HostPortPair::FromString(kDataReductionProxy);
     auth_info->realm = tests[i].realm;
-    base::string16 token =
-        DataReductionProxySettings::GetTokenForAuthChallenge(auth_info.get());
+    base::string16 token = settings_->GetTokenForAuthChallenge(auth_info.get());
     EXPECT_EQ(tests[i].expected_empty_token, token.empty());
   }
 }

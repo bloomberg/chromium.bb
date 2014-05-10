@@ -105,7 +105,8 @@ void AwLoginDelegate::HandleHttpAuthRequestOnUIThread(
     // auth attempt, because it maintains internal state to cancel if there have
     // been too many attempts.
     if (!drp_auth_handler_.get()) {
-      drp_auth_handler_.reset(new DataReductionProxyAuthRequestHandler());
+      drp_auth_handler_.reset(new DataReductionProxyAuthRequestHandler(
+          drp_settings));
     }
     DCHECK(drp_auth_handler_.get());
     base::string16 user, password;

@@ -50,7 +50,12 @@ void ClearClientCertPreferences(JNIEnv* env, jclass, jobject callback) {
 
 // static
 void SetDataReductionProxyKey(JNIEnv* env, jclass, jstring key) {
-  DataReductionProxySettings::SetKey(ConvertJavaStringToUTF8(env, key));
+  AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
+  DCHECK(browser_context);
+  DataReductionProxySettings* drp_settings =
+      browser_context->GetDataReductionProxySettings();
+  DCHECK(drp_settings);
+  drp_settings->set_key(ConvertJavaStringToUTF8(env, key));
 }
 
 // static

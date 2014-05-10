@@ -464,9 +464,10 @@ void ProfileImplIOData::InitializeInternal(
       network_session_params, main_backend);
   main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(SPDY_PROXY_AUTH_VALUE)
   data_reduction_proxy::DataReductionProxySettings::
-      InitDataReductionProxySession(main_cache->GetSession());
+      InitDataReductionProxySession(main_cache->GetSession(),
+                                    SPDY_PROXY_AUTH_VALUE);
 #endif
 
   if (chrome_browser_net::ShouldUseInMemoryCookiesAndCache()) {

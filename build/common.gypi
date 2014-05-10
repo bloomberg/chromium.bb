@@ -895,10 +895,19 @@
         # By default, use ICU data file (icudtl.dat) on all platforms
         # except when building Android WebView.
         # TODO(jshin): Handle 'use_system_icu' on Linux (Chromium).
+        # Set the data reduction proxy origin for Android Webview.
         ['android_webview_build==0', {
           'icu_use_data_file_flag%' : 1,
+          'spdy_proxy_auth_origin%': '',
+          'data_reduction_proxy_probe_url%': '',
+          'data_reduction_dev_host%': '',
+          'data_reduction_fallback_host%': '',
         }, {
           'icu_use_data_file_flag%' : 0,
+          'spdy_proxy_auth_origin%': 'https://proxy.googlezip.net:443/',
+          'data_reduction_proxy_probe_url%': 'http://check.googlezip.net/connect',
+          'data_reduction_dev_host%': 'http://proxy-dev.googlezip.net:80/',
+          'data_reduction_fallback_host%': 'http://compress.googlezip.net:80/',
         }],
       ],
 

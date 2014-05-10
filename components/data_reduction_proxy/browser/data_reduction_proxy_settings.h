@@ -101,12 +101,20 @@ class DataReductionProxySettings
   // determine if the data reduction proxy is allowed.
   static bool IsIncludedInFieldTrialOrFlags();
 
-  static void SetKey(const std::string& key);
   static void SetAllowed(bool allowed);
   static void SetPromoAllowed(bool promo_allowed);
 
   DataReductionProxySettings();
   virtual ~DataReductionProxySettings();
+
+  // Set and get the key to be used for data reduction proxy authentication.
+  void set_key(const std::string& key) {
+    key_ = key;
+  }
+
+  const std::string& key() const {
+    return key_;
+  }
 
   // Initializes the data reduction proxy with profile and local state prefs,
   // and a |UrlRequestContextGetter| for canary probes. The caller must ensure
@@ -133,9 +141,10 @@ class DataReductionProxySettings
   void SetProxyConfigurator(
       scoped_ptr<DataReductionProxyConfigurator> configurator);
 
-  // If proxy authentication is compiled in, pre-cache authentication
-  // keys for all configured proxies in |session|.
-  static void InitDataReductionProxySession(net::HttpNetworkSession* session);
+  // If proxy authentication is compiled in, pre-cache an authentication
+  // |key| for all configured proxies in |session|.
+  static void InitDataReductionProxySession(net::HttpNetworkSession* session,
+                                            const std::string& key);
 
   // Returns true if the data reduction proxy is allowed to be used. This could
   // return false, for example, if this instance is not part of the field trial,
@@ -168,8 +177,7 @@ class DataReductionProxySettings
   // Returns a UTF16 string suitable for use as an authentication token in
   // response to the challenge represented by |auth_info|. If the token can't
   // be correctly generated for |auth_info|, returns an empty UTF16 string.
-  static base::string16 GetTokenForAuthChallenge(
-      net::AuthChallengeInfo* auth_info);
+  base::string16 GetTokenForAuthChallenge(net::AuthChallengeInfo* auth_info);
 
   // Returns true if the proxy is enabled.
   bool IsDataReductionProxyEnabled();
@@ -286,7 +294,8 @@ class DataReductionProxySettings
 
   // Underlying implementation of InitDataReductionProxySession(), factored
   // out to be testable without creating a full HttpNetworkSession.
-  static void InitDataReductionAuthentication(net::HttpAuthCache* auth_cache);
+  static void InitDataReductionAuthentication(net::HttpAuthCache* auth_cache,
+                                              const std::string& key);
 
   void OnProxyEnabledPrefChange();
 
@@ -301,14 +310,14 @@ class DataReductionProxySettings
   std::string GetProxyCheckURL();
 
   // Returns a UTF16 string that's the hash of the configured authentication
-  // key and |salt|. Returns an empty UTF16 string if no key is configured or
+  // |key| and |salt|. Returns an empty UTF16 string if no key is configured or
   // the data reduction proxy feature isn't available.
-  static base::string16 AuthHashForSalt(int64 salt);
+  static base::string16 AuthHashForSalt(int64 salt, const std::string& key);
 
-  static std::string key_;
   static bool allowed_;
   static bool promo_allowed_;
 
+  std::string key_;
   bool restricted_by_carrier_;
   bool enabled_by_user_;
 

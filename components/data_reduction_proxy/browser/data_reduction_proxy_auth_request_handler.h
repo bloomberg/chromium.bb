@@ -15,6 +15,8 @@ class AuthChallengeInfo;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxySettings;
+
 class DataReductionProxyAuthRequestHandler {
  public:
   enum TryHandleResult {
@@ -23,7 +25,10 @@ class DataReductionProxyAuthRequestHandler {
     TRY_HANDLE_RESULT_CANCEL
   };
 
-  DataReductionProxyAuthRequestHandler();
+  // Constructs an authentication request handler and takes a pointer to a
+  // |settings| object, which must outlive the handler.
+  explicit DataReductionProxyAuthRequestHandler(
+      DataReductionProxySettings* settings);
   virtual ~DataReductionProxyAuthRequestHandler();
 
   // Returns |PROCEED| if the authentication challenge provided is one that the
@@ -64,6 +69,9 @@ class DataReductionProxyAuthRequestHandler {
   // This is used to expire old tokens on back-to-back failures, and distinguish
   // invalidation from repeat failures due to the client not being authorized.
   static int64 auth_token_invalidation_timestamp_;
+
+  // Settings object for the data reduction proxy. Must outlive the handler.
+  DataReductionProxySettings* settings_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyAuthRequestHandler);
 };

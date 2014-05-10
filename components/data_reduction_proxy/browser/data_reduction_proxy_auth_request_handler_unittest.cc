@@ -31,7 +31,8 @@ class TestDataReductionProxyAuthRequestHandler
  public:
   TestDataReductionProxyAuthRequestHandler(int time_step_ms,
                                            int64 initial_time_ms)
-      : time_step_ms_(time_step_ms),
+      : DataReductionProxyAuthRequestHandler(NULL),
+        time_step_ms_(time_step_ms),
         now_(base::TimeTicks() +
              base::TimeDelta::FromMilliseconds(initial_time_ms)) {}
  protected:

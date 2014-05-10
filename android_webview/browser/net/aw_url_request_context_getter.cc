@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_request_interceptor.h"
 #include "android_webview/browser/net/aw_network_delegate.h"
@@ -215,8 +216,18 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
           20 * 1024 * 1024,  // 20M
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
 
+  AwBrowserContext* browser_context = AwBrowserContext::GetDefault();
+  DCHECK(browser_context);
+  DataReductionProxySettings* drp_settings =
+      browser_context->GetDataReductionProxySettings();
+  DCHECK(drp_settings);
+  std::string drp_key = drp_settings->key();
+  // Only precache credentials if a key is available at URLRequestContext
+  // initialization.
+  if (!drp_key.empty()) {
   DataReductionProxySettings::InitDataReductionProxySession(
-      main_cache->GetSession());
+      main_cache->GetSession(), drp_settings->key());
+  }
 
   main_http_factory_.reset(main_cache);
   url_request_context_->set_http_transaction_factory(main_cache);

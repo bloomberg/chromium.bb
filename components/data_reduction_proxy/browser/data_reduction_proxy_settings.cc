@@ -67,7 +67,6 @@ int64 GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
 
 namespace data_reduction_proxy {
 
-std::string DataReductionProxySettings::key_;
 bool DataReductionProxySettings::allowed_;
 bool DataReductionProxySettings::promo_allowed_;
 
@@ -90,11 +89,6 @@ bool DataReductionProxySettings::IsIncludedInFieldTrialOrFlags() {
   return (base::FieldTrialList::FindFullName(
               "DataCompressionProxyRollout") == kEnabled ||
           IsProxyOriginSetOnCommandLine());
-}
-
-// static
-void DataReductionProxySettings::SetKey(const std::string& key) {
-  key_ = key;
 }
 
 // static
@@ -174,25 +168,26 @@ void DataReductionProxySettings::SetProxyConfigurator(
 
 // static
 void DataReductionProxySettings::InitDataReductionProxySession(
-    net::HttpNetworkSession* session) {
-// This is a no-op unless the authentication parameters are compiled in.
-// (even though values for them may be specified on the command line).
-// Authentication will still work if the command line parameters are used,
-// however there will be a round-trip overhead for each challenge/response
-// (typically once per session).
-// TODO(bengr):Pass a configuration struct into DataReductionProxyConfigurator's
-// constructor. The struct would carry everything in the preprocessor flags.
-  if (key_.empty())
+    net::HttpNetworkSession* session,
+    const std::string& key) {
+  // This is a no-op unless the key is set. (even though values for them may be
+  // specified on the command line). Authentication will still work if the
+  // command line parameters are used, however there will be a round-trip
+  // overhead for each challenge/response (typically once per session).
+  // TODO(bengr):Pass a configuration struct into
+  // DataReductionProxyConfigurator's constructor.
+  if (key.empty())
     return;
   DCHECK(session);
   net::HttpAuthCache* auth_cache = session->http_auth_cache();
   DCHECK(auth_cache);
-  InitDataReductionAuthentication(auth_cache);
+  InitDataReductionAuthentication(auth_cache, key);
 }
 
 // static
 void DataReductionProxySettings::InitDataReductionAuthentication(
-    net::HttpAuthCache* auth_cache) {
+    net::HttpAuthCache* auth_cache,
+    const std::string& key) {
   DCHECK(auth_cache);
   int64 timestamp =
       (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds() / 1000;
@@ -215,7 +210,7 @@ void DataReductionProxySettings::InitDataReductionAuthentication(
         rand[0],
         rand[1],
         rand[2]);
-    base::string16 password = AuthHashForSalt(timestamp);
+    base::string16 password = AuthHashForSalt(timestamp, key);
 
     DVLOG(1) << "origin: [" << auth_origin << "] realm: [" << realm
         << "] challenge: [" << challenge << "] password: [" << password << "]";
@@ -310,7 +305,6 @@ bool DataReductionProxySettings::IsAcceptableAuthChallenge(
   return false;
 }
 
-// static
 base::string16 DataReductionProxySettings::GetTokenForAuthChallenge(
     net::AuthChallengeInfo* auth_info) {
   if (auth_info->realm.length() > strlen(kAuthenticationRealmName)) {
@@ -318,7 +312,7 @@ base::string16 DataReductionProxySettings::GetTokenForAuthChallenge(
     std::string realm_suffix =
         auth_info->realm.substr(strlen(kAuthenticationRealmName));
     if (base::StringToInt64(realm_suffix, &salt)) {
-      return AuthHashForSalt(salt);
+      return AuthHashForSalt(salt, key_);
     } else {
       DVLOG(1) << "Unable to parse realm name " << auth_info->realm
                << "into an int for salting.";
@@ -652,11 +646,10 @@ std::string DataReductionProxySettings::GetProxyCheckURL() {
 }
 
 // static
-base::string16 DataReductionProxySettings::AuthHashForSalt(int64 salt) {
-  if (!IsDataReductionProxyAllowed())
-    return base::string16();
-
-  std::string key;
+base::string16 DataReductionProxySettings::AuthHashForSalt(
+    int64 salt,
+    const std::string& key) {
+  std::string active_key;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDataReductionProxy)) {
@@ -665,17 +658,17 @@ base::string16 DataReductionProxySettings::AuthHashForSalt(int64 salt) {
     // Don't expose |key_| to a proxy passed in via the command line.
     if (!command_line.HasSwitch(switches::kDataReductionProxyKey))
       return base::string16();
-    key = command_line.GetSwitchValueASCII(switches::kDataReductionProxyKey);
+    active_key = command_line.GetSwitchValueASCII(
+        switches::kDataReductionProxyKey);
   } else {
-    key = key_;
+    active_key = key;
   }
-
-  DCHECK(!key.empty());
+  DCHECK(!active_key.empty());
 
   std::string salted_key =
       base::StringPrintf("%lld%s%lld",
                          static_cast<long long>(salt),
-                         key.c_str(),
+                         active_key.c_str(),
                          static_cast<long long>(salt));
   return base::UTF8ToUTF16(base::MD5String(salted_key));
 }
