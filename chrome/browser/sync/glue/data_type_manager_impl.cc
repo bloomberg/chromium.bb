@@ -77,7 +77,10 @@ DataTypeManagerImpl::~DataTypeManagerImpl() {}
 
 void DataTypeManagerImpl::Configure(syncer::ModelTypeSet desired_types,
                                     syncer::ConfigureReason reason) {
-  desired_types.PutAll(syncer::CoreTypes());
+  if (reason == syncer::CONFIGURE_REASON_BACKUP_ROLLBACK)
+    desired_types.PutAll(syncer::ControlTypes());
+  else
+    desired_types.PutAll(syncer::CoreTypes());
 
   // Only allow control types and types that have controllers.
   syncer::ModelTypeSet filtered_desired_types;

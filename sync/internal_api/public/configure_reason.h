@@ -32,6 +32,9 @@ enum ConfigureReason {
   // A configuration due to enabling or disabling encrypted types due to
   // cryptographer errors/resolutions.
   CONFIGURE_REASON_CRYPTO,
+
+  // Configure data types for backup/rollback.
+  CONFIGURE_REASON_BACKUP_ROLLBACK,
 };
 
 }  // namespace syncer

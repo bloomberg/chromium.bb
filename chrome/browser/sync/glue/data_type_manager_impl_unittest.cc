@@ -1119,4 +1119,19 @@ TEST_F(SyncDataTypeManagerImplTest, FilterDesiredTypes) {
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
+TEST_F(SyncDataTypeManagerImplTest, ConfigureForBackupRollback) {
+  AddController(BOOKMARKS);
+
+  SetConfigureStartExpectation();
+
+
+  ModelTypeSet expected_types = syncer::ControlTypes();
+  expected_types.Put(BOOKMARKS);
+  configurer_.set_expected_configure_types(expected_types);
+  dtm_->set_priority_types(expected_types);
+
+  dtm_->Configure(ModelTypeSet(BOOKMARKS),
+                  syncer::CONFIGURE_REASON_BACKUP_ROLLBACK);
+}
+
 }  // namespace browser_sync
