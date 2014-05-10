@@ -3212,3 +3212,17 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, Resumption_MultipleAttempts) {
 
   EXPECT_FALSE(DidShowFileChooser());
 }
+
+// The file empty.bin is served with a MIME type of application/octet-stream.
+// The content body is empty. Make sure this case is handled properly and we
+// don't regress on http://crbug.com/320394.
+IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_GZipWithNoContent) {
+  ASSERT_TRUE(test_server()->Start());
+  GURL url(test_server()->GetURL("files/downloads/empty.bin"));
+  // Downloading the same URL twice causes the second request to be served from
+  // cached (with a high probability). This test verifies that that doesn't
+  // happen regardless of whether the request is served via the cache or from
+  // the network.
+  DownloadAndWait(browser(), url);
+  DownloadAndWait(browser(), url);
+}

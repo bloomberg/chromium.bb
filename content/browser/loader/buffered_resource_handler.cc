@@ -459,7 +459,7 @@ bool BufferedResourceHandler::HasSupportingPlugin(bool* stale) {
 }
 
 bool BufferedResourceHandler::CopyReadBufferToNextHandler(int request_id) {
-  if (!bytes_read_)
+  if (!read_buffer_.get())
     return true;
 
   scoped_refptr<net::IOBuffer> buf;

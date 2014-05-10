@@ -92,6 +92,8 @@ class ResourceHandlerStub : public ResourceHandler {
         expect_reads_(true),
         cancel_on_read_completed_(false),
         defer_eof_(false),
+        received_on_will_read_(false),
+        received_eof_(false),
         received_response_completed_(false),
         total_bytes_downloaded_(0) {
   }
@@ -168,29 +170,34 @@ class ResourceHandlerStub : public ResourceHandler {
                           scoped_refptr<net::IOBuffer>* buf,
                           int* buf_size,
                           int min_size) OVERRIDE {
-    if (!expect_reads_) {
-      ADD_FAILURE();
-      return false;
-    }
+    EXPECT_TRUE(expect_reads_);
+    EXPECT_FALSE(received_on_will_read_);
+    EXPECT_FALSE(received_eof_);
+    EXPECT_FALSE(received_response_completed_);
 
     *buf = read_buffer_;
     *buf_size = kReadBufSize;
+    received_on_will_read_ = true;
     return true;
   }
 
   virtual bool OnReadCompleted(int request_id,
                                int bytes_read,
                                bool* defer) OVERRIDE {
-    if (!expect_reads_) {
-      ADD_FAILURE();
-      return false;
+    EXPECT_TRUE(received_on_will_read_);
+    EXPECT_TRUE(expect_reads_);
+    EXPECT_FALSE(received_response_completed_);
+
+    if (bytes_read == 0) {
+      received_eof_ = true;
+      if (defer_eof_) {
+        defer_eof_ = false;
+        *defer = true;
+      }
     }
 
-    if (bytes_read == 0 && defer_eof_) {
-      // Only defer it once; on resumption there will be another EOF.
-      defer_eof_ = false;
-      *defer = true;
-    }
+    // Need another OnWillRead() call before seeing an OnReadCompleted().
+    received_on_will_read_ = false;
 
     return !cancel_on_read_completed_;
   }
@@ -200,14 +207,16 @@ class ResourceHandlerStub : public ResourceHandler {
                                    const std::string& security_info,
                                    bool* defer) OVERRIDE {
     EXPECT_FALSE(received_response_completed_);
+    if (status.is_success() && expect_reads_)
+      EXPECT_TRUE(received_eof_);
+
     received_response_completed_ = true;
     status_ = status;
   }
 
   virtual void OnDataDownloaded(int request_id,
                                 int bytes_downloaded) OVERRIDE {
-    if (expect_reads_)
-      ADD_FAILURE();
+    EXPECT_FALSE(expect_reads_);
     total_bytes_downloaded_ += bytes_downloaded;
   }
 
@@ -221,6 +230,8 @@ class ResourceHandlerStub : public ResourceHandler {
 
   GURL start_url_;
   scoped_refptr<ResourceResponse> response_;
+  bool received_on_will_read_;
+  bool received_eof_;
   bool received_response_completed_;
   net::URLRequestStatus status_;
   int total_bytes_downloaded_;

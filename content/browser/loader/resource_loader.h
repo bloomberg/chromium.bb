@@ -123,6 +123,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
     DEFERRED_NETWORK_START,
     DEFERRED_REDIRECT,
     DEFERRED_READ,
+    DEFERRED_RESPONSE_COMPLETE,
     DEFERRED_FINISH
   };
   DeferredStage deferred_stage_;

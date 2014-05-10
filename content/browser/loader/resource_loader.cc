@@ -168,7 +168,12 @@ void ResourceLoader::MarkAsTransferring() {
 }
 
 void ResourceLoader::CompleteTransfer() {
-  DCHECK_EQ(DEFERRED_READ, deferred_stage_);
+  // Although CrossSiteResourceHandler defers at OnResponseStarted
+  // (DEFERRED_READ), it may be seeing a replay of events via
+  // BufferedResourceHandler, and so the request itself is actually deferred at
+  // a later read stage.
+  DCHECK(DEFERRED_READ == deferred_stage_ ||
+         DEFERRED_RESPONSE_COMPLETE == deferred_stage_);
 
   is_transferring_ = false;
   GetRequestInfo()->cross_site_handler()->ResumeResponse();
@@ -363,7 +368,7 @@ void ResourceLoader::OnReadCompleted(net::URLRequest* unused, int bytes_read) {
   // do nothing until resumed.
   //
   // Note: if bytes_read is 0 (EOF) and the handler defers, resumption will call
-  // Read() on the URLRequest again and get a second EOF.
+  // ResponseCompleted().
   if (is_deferred() || !request_->status().is_success())
     return;
 
@@ -424,6 +429,12 @@ void ResourceLoader::Resume() {
       base::MessageLoop::current()->PostTask(
           FROM_HERE,
           base::Bind(&ResourceLoader::ResumeReading,
+                     weak_ptr_factory_.GetWeakPtr()));
+      break;
+    case DEFERRED_RESPONSE_COMPLETE:
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&ResourceLoader::ResponseCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
       break;
     case DEFERRED_FINISH:
@@ -622,7 +633,8 @@ void ResourceLoader::CompleteRead(int bytes_read) {
   if (!handler_->OnReadCompleted(info->GetRequestID(), bytes_read, &defer)) {
     Cancel();
   } else if (defer) {
-    deferred_stage_ = DEFERRED_READ;  // Read next chunk when resumed.
+    deferred_stage_ =
+        bytes_read > 0 ? DEFERRED_READ : DEFERRED_RESPONSE_COMPLETE;
   }
 
   // Note: the request may still have been cancelled while OnReadCompleted

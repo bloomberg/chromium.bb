@@ -1797,4 +1797,18 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   ASSERT_TRUE(origin_two.ShutdownAndWaitUntilComplete());
 }
 
+// The file empty.bin is served with a MIME type of application/octet-stream.
+// The content body is empty. Make sure this case is handled properly and we
+// don't regress on http://crbug.com/320394.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadGZipWithNoContent) {
+  EmbeddedTestServer test_server;
+  ASSERT_TRUE(test_server.InitializeAndWaitUntilReady());
+
+  GURL url = test_server.GetURL("/empty.bin");
+  test_server.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+
+  NavigateToURLAndWaitForDownload(shell(), url, DownloadItem::COMPLETE);
+  // That's it. This should work without crashing.
+}
+
 }  // namespace content
