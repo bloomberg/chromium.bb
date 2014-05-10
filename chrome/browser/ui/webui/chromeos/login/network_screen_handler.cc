@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -165,6 +166,14 @@ void NetworkScreenHandler::Show() {
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableDemoMode))
     return;
+  if (base::SysInfo::IsRunningOnChromeOS()) {
+    std::string track;
+    // We're running on an actual device; if we cannot find our release track
+    // value or if the track contains "testimage", don't start demo mode.
+    if (!base::SysInfo::GetLsbReleaseValue("CHROMEOS_RELEASE_TRACK", &track) ||
+        track.find("testimage") != std::string::npos)
+      return;
+  }
 
   if (IsDerelict())
     StartIdleDetection();
