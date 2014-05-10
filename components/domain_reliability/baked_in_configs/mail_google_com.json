@@ -1,0 +1,24 @@
+{
+  "config_version": "mail-google-com-v1",
+  "config_valid_until": 1405382400.0,
+  "monitored_domain": "mail.google.com",
+  "collectors": [
+    {
+      "upload_url": "https://clients2.google.com/domainreliability/upload"
+    }
+  ],
+  "monitored_resources": [
+    {
+      "resource_name": "gmail-home",
+      "url_patterns": ["http*://mail.google.com/"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 0.50
+    },
+    {
+      "resource_name": "gmail-other",
+      "url_patterns": ["http*://mail.google.com/*"],
+      "success_sample_rate": 0.05,
+      "failure_sample_rate": 0.50
+    }
+  ]
+}

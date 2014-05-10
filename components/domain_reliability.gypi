@@ -49,6 +49,8 @@
             'baked_in_configs': [
               'domain_reliability/baked_in_configs/apis_google_com.json',
               'domain_reliability/baked_in_configs/ddm_google_com.json',
+              'domain_reliability/baked_in_configs/drive_google_com.json',
+              'domain_reliability/baked_in_configs/mail_google_com.json',
               'domain_reliability/baked_in_configs/ssl_gstatic_com.json',
               'domain_reliability/baked_in_configs/www_google_com.json',
               'domain_reliability/baked_in_configs/www_youtube_com.json',
