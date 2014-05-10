@@ -20,6 +20,7 @@
         '<(DEPTH)/ui/events/events.gyp:events',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
         '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
+        '<(DEPTH)/ui/gfx/ozone/gfx_ozone.gyp:gfx_ozone',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<@(external_ozone_platform_deps)',
         '<@(internal_ozone_platform_deps)',
