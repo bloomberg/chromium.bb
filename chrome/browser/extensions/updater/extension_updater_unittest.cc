@@ -787,8 +787,8 @@ class ExtensionUpdaterTest : public testing::Test {
 
   void TestMultipleManifestDownloading() {
     net::TestURLFetcherFactory factory;
+    factory.set_remove_fetcher_on_delete(true);
     net::TestURLFetcher* fetcher = NULL;
-    NotificationsObserver observer;
     MockService service(prefs_.get());
     MockExtensionDownloaderDelegate delegate;
     ExtensionDownloader downloader(&delegate, service.request_context());
@@ -811,100 +811,118 @@ class ExtensionUpdaterTest : public testing::Test {
         "4444", "4.0", &zeroDays, kEmptyUpdateUrlData, std::string());
 
     // This will start the first fetcher and queue the others. The next in queue
-    // is started as each fetcher receives its response.
+    // is started as each fetcher receives its response. Note that the fetchers
+    // don't necessarily run in the order that they are started from here.
+    GURL fetch1_url = fetch1->full_url();
+    GURL fetch2_url = fetch2->full_url();
+    GURL fetch3_url = fetch3->full_url();
+    GURL fetch4_url = fetch4->full_url();
     downloader.StartUpdateCheck(fetch1.Pass());
     downloader.StartUpdateCheck(fetch2.Pass());
     downloader.StartUpdateCheck(fetch3.Pass());
     downloader.StartUpdateCheck(fetch4.Pass());
     RunUntilIdle();
 
-    // The first fetch will fail.
-    fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
-    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
-    EXPECT_CALL(delegate, OnExtensionDownloadFailed(
-        "1111", ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED, _, _));
-    fetcher->set_url(kUpdateUrl);
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(400);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-    RunUntilIdle();
-    Mock::VerifyAndClearExpectations(&delegate);
+    for (int i = 0; i < 4; ++i) {
+      fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
+      ASSERT_TRUE(fetcher);
+      ASSERT_TRUE(fetcher->delegate());
+      EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
+      EXPECT_FALSE(fetcher->GetOriginalURL().is_empty());
 
-    // The second fetch gets invalid data.
-    const std::string kInvalidXml = "invalid xml";
-    fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
-    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
-    EXPECT_CALL(delegate, OnExtensionDownloadFailed(
-        "2222", ExtensionDownloaderDelegate::MANIFEST_INVALID, _, _))
-        .WillOnce(InvokeWithoutArgs(&delegate,
-                                    &MockExtensionDownloaderDelegate::Quit));
-    fetcher->set_url(kUpdateUrl);
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(kInvalidXml);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-    delegate.Wait();
-    Mock::VerifyAndClearExpectations(&delegate);
+      if (fetcher->GetOriginalURL() == fetch1_url) {
+        // The first fetch will fail.
+        EXPECT_CALL(delegate, OnExtensionDownloadFailed(
+            "1111", ExtensionDownloaderDelegate::MANIFEST_FETCH_FAILED, _, _));
+        fetcher->set_url(kUpdateUrl);
+        fetcher->set_status(net::URLRequestStatus());
+        fetcher->set_response_code(400);
+        fetcher->delegate()->OnURLFetchComplete(fetcher);
+        RunUntilIdle();
+        Mock::VerifyAndClearExpectations(&delegate);
+        fetch1_url = GURL();
+      } else if (fetcher->GetOriginalURL() == fetch2_url) {
+        // The second fetch gets invalid data.
+        const std::string kInvalidXml = "invalid xml";
+        EXPECT_CALL(delegate, OnExtensionDownloadFailed(
+            "2222", ExtensionDownloaderDelegate::MANIFEST_INVALID, _, _))
+            .WillOnce(InvokeWithoutArgs(
+                &delegate,
+                &MockExtensionDownloaderDelegate::Quit));
+        fetcher->set_url(kUpdateUrl);
+        fetcher->set_status(net::URLRequestStatus());
+        fetcher->set_response_code(200);
+        fetcher->SetResponseString(kInvalidXml);
+        fetcher->delegate()->OnURLFetchComplete(fetcher);
+        delegate.Wait();
+        Mock::VerifyAndClearExpectations(&delegate);
+        fetch2_url = GURL();
+      } else if (fetcher->GetOriginalURL() == fetch3_url) {
+        // The third fetcher doesn't have an update available.
+        const std::string kNoUpdate =
+            "<?xml version='1.0' encoding='UTF-8'?>"
+            "<gupdate xmlns='http://www.google.com/update2/response'"
+            "                protocol='2.0'>"
+            " <app appid='3333'>"
+            "  <updatecheck codebase='http://example.com/extension_3.0.0.0.crx'"
+            "               version='3.0.0.0' prodversionmin='3.0.0.0' />"
+            " </app>"
+            "</gupdate>";
+        EXPECT_CALL(delegate, IsExtensionPending("3333"))
+            .WillOnce(Return(false));
+        EXPECT_CALL(delegate, GetExtensionExistingVersion("3333", _))
+            .WillOnce(DoAll(SetArgPointee<1>("3.0.0.0"),
+                            Return(true)));
+        EXPECT_CALL(delegate, OnExtensionDownloadFailed(
+            "3333", ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE, _, _))
+            .WillOnce(InvokeWithoutArgs(
+                &delegate,
+                &MockExtensionDownloaderDelegate::Quit));
+        fetcher->set_url(kUpdateUrl);
+        fetcher->set_status(net::URLRequestStatus());
+        fetcher->set_response_code(200);
+        fetcher->SetResponseString(kNoUpdate);
+        fetcher->delegate()->OnURLFetchComplete(fetcher);
+        delegate.Wait();
+        Mock::VerifyAndClearExpectations(&delegate);
+        fetch3_url = GURL();
+      } else if (fetcher->GetOriginalURL() == fetch4_url) {
+        // The last fetcher has an update.
+        NotificationsObserver observer;
+        const std::string kUpdateAvailable =
+            "<?xml version='1.0' encoding='UTF-8'?>"
+            "<gupdate xmlns='http://www.google.com/update2/response'"
+            "                protocol='2.0'>"
+            " <app appid='4444'>"
+            "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
+            "               version='4.0.42.0' prodversionmin='4.0.42.0' />"
+            " </app>"
+            "</gupdate>";
+        EXPECT_CALL(delegate, IsExtensionPending("4444"))
+            .WillOnce(Return(false));
+        EXPECT_CALL(delegate, GetExtensionExistingVersion("4444", _))
+            .WillOnce(DoAll(SetArgPointee<1>("4.0.0.0"),
+                            Return(true)));
+        fetcher->set_url(kUpdateUrl);
+        fetcher->set_status(net::URLRequestStatus());
+        fetcher->set_response_code(200);
+        fetcher->SetResponseString(kUpdateAvailable);
+        fetcher->delegate()->OnURLFetchComplete(fetcher);
+        observer.Wait();
+        Mock::VerifyAndClearExpectations(&delegate);
 
-    // The third fetcher doesn't have an update available.
-    const std::string kNoUpdate =
-        "<?xml version='1.0' encoding='UTF-8'?>"
-        "<gupdate xmlns='http://www.google.com/update2/response'"
-        "                protocol='2.0'>"
-        " <app appid='3333'>"
-        "  <updatecheck codebase='http://example.com/extension_3.0.0.0.crx'"
-        "               version='3.0.0.0' prodversionmin='3.0.0.0' />"
-        " </app>"
-        "</gupdate>";
-    fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
-    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
-    EXPECT_CALL(delegate, IsExtensionPending("3333")).WillOnce(Return(false));
-    EXPECT_CALL(delegate, GetExtensionExistingVersion("3333", _))
-        .WillOnce(DoAll(SetArgPointee<1>("3.0.0.0"),
-                        Return(true)));
-    EXPECT_CALL(delegate, OnExtensionDownloadFailed(
-        "3333", ExtensionDownloaderDelegate::NO_UPDATE_AVAILABLE, _, _))
-        .WillOnce(InvokeWithoutArgs(&delegate,
-                                    &MockExtensionDownloaderDelegate::Quit));
-    fetcher->set_url(kUpdateUrl);
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(kNoUpdate);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-    delegate.Wait();
-    Mock::VerifyAndClearExpectations(&delegate);
+        // Verify that the downloader decided to update this extension.
+        EXPECT_EQ(1u, observer.UpdatedCount());
+        EXPECT_TRUE(observer.Updated("4444"));
+        fetch4_url = GURL();
+      } else {
+        ADD_FAILURE() << "Unexpected fetch: " << fetcher->GetOriginalURL();
+      }
+    }
 
-    // The last fetcher has an update.
-    const std::string kUpdateAvailable =
-        "<?xml version='1.0' encoding='UTF-8'?>"
-        "<gupdate xmlns='http://www.google.com/update2/response'"
-        "                protocol='2.0'>"
-        " <app appid='4444'>"
-        "  <updatecheck codebase='http://example.com/extension_1.2.3.4.crx'"
-        "               version='4.0.42.0' prodversionmin='4.0.42.0' />"
-        " </app>"
-        "</gupdate>";
     fetcher = factory.GetFetcherByID(ExtensionDownloader::kManifestFetcherId);
-    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
-    EXPECT_TRUE(fetcher->GetLoadFlags() == kExpectedLoadFlags);
-    EXPECT_CALL(delegate, IsExtensionPending("4444")).WillOnce(Return(false));
-    EXPECT_CALL(delegate, GetExtensionExistingVersion("4444", _))
-        .WillOnce(DoAll(SetArgPointee<1>("4.0.0.0"),
-                        Return(true)));
-    fetcher->set_url(kUpdateUrl);
-    fetcher->set_status(net::URLRequestStatus());
-    fetcher->set_response_code(200);
-    fetcher->SetResponseString(kUpdateAvailable);
-    fetcher->delegate()->OnURLFetchComplete(fetcher);
-    observer.Wait();
-    Mock::VerifyAndClearExpectations(&delegate);
-
-    // Verify that the downloader decided to update this extension.
-    EXPECT_EQ(1u, observer.UpdatedCount());
-    EXPECT_TRUE(observer.Updated("4444"));
+    if (fetcher)
+      ADD_FAILURE() << "Unexpected fetch: " << fetcher->GetOriginalURL();
   }
 
   void TestManifestRetryDownloading() {
@@ -1545,15 +1563,7 @@ TEST_F(ExtensionUpdaterTest, TestDetermineUpdatesPending) {
   TestDetermineUpdatesPending();
 }
 
-#if defined(THREAD_SANITIZER) || defined(MEMORY_SANITIZER)
-// This test fails under ThreadSanitizer and MemorySanitizer, which build with
-// libc++ instead of libstdc++.
-#define MAYBE_TestMultipleManifestDownloading \
-    DISABLED_TestMultipleManifestDownloading
-#else
-#define MAYBE_TestMultipleManifestDownloading TestMultipleManifestDownloading
-#endif
-TEST_F(ExtensionUpdaterTest, MAYBE_TestMultipleManifestDownloading) {
+TEST_F(ExtensionUpdaterTest, TestMultipleManifestDownloading) {
   TestMultipleManifestDownloading();
 }
 
