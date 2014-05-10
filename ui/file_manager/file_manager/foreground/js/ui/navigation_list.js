@@ -310,7 +310,7 @@ NavigationList.prototype.activateModelItem_ = function(modelItem) {
         url,
         onEntryResolved,
         function() {
-          // Error, the entry can't be re-resolved. It may happen for shotrcuts
+          // Error, the entry can't be re-resolved. It may happen for shortcuts
           // which targets got removed after resolving the Entry during
           // initialization.
           this.dataModel.onItemNotFoundError(modelItem);

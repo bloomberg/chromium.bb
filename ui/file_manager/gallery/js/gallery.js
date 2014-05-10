@@ -67,14 +67,14 @@ function Gallery(volumeManager) {
 Gallery.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * Tools fade-out timeout im milliseconds.
+ * Tools fade-out timeout in milliseconds.
  * @const
  * @type {number}
  */
 Gallery.FADE_TIMEOUT = 3000;
 
 /**
- * First time tools fade-out timeout im milliseconds.
+ * First time tools fade-out timeout in milliseconds.
  * @const
  * @type {number}
  */

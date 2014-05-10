@@ -159,7 +159,7 @@ PreviewPanel.prototype = {
   set visibilityType(visibilityType) {
     this.visibilityType_ = visibilityType;
     this.updateVisibility_();
-    // Also update the preview area contents, because the update is surpressed
+    // Also update the preview area contents, because the update is suppressed
     // while the visibility is hiding or hidden.
     this.updatePreviewArea_();
   },
@@ -186,7 +186,7 @@ PreviewPanel.prototype.initialize = function() {
   this.element_.addEventListener('webkitTransitionEnd',
                                  this.onTransitionEnd_.bind(this));
   this.updateVisibility_();
-  // Also update the preview area contents, because the update is surpressed
+  // Also update the preview area contents, because the update is suppressed
   // while the visibility is hiding or hidden.
   this.updatePreviewArea_();
 };
@@ -251,7 +251,7 @@ PreviewPanel.prototype.updateVisibility_ = function() {
  * @private
  */
 PreviewPanel.prototype.updatePreviewArea_ = function(breadCrumbsVisible) {
-  // If the previw panel is hiding, does not update the current view.
+  // If the preview panel is hiding, does not update the current view.
   if (!this.visible)
     return;
   var selection = this.selection_;

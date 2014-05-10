@@ -105,7 +105,7 @@ SearchBox.AutocompleteList.prototype.onMouseOver_ = function(event) {
 };
 
 /**
- * ListItem element for autocomple.
+ * ListItem element for autocomplete.
  *
  * @param {HTMLDocument} document Document.
  * @param {Object} item An object representing a suggestion.
@@ -193,7 +193,7 @@ SearchBox.prototype.onIconClick_ = function() {
 SearchBox.prototype.onDragEnter_ = function(event) {
   // For normal elements, they does not accept drag drop by default, and accept
   // it by using event.preventDefault. But input elements accept drag drop
-  // by default. So disalbe the input element here to prohibit drag drop.
+  // by default. So disable the input element here to prohibit drag drop.
   if (event.dataTransfer.types.indexOf('text/plain') === -1)
     this.inputElement.style.pointerEvents = 'none';
 };

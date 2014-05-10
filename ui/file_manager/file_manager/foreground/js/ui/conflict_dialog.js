@@ -91,7 +91,7 @@ ConflictDialog.prototype = {
  *
  * @param {string} fileName Filename that is conflicted.
  * @param {function(ConflictDialog.Result, boolean)} callback Complete
- *     callbak. See also ConflictDialog#callback_.
+ *     callback. See also ConflictDialog#callback_.
  * @return {boolean} True if the dialog can show successfully. False if the
  *     dialog failed to show due to an existing dialog.
  */

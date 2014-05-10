@@ -466,7 +466,7 @@ Mosaic.prototype.onSplice_ = function(event) {
   if (event.removed.length) {
     for (var t = 0; t !== event.removed.length; t++) {
       // If the layout for the tile has not done yet, the parent is null.
-      // And the layout will not be done after onSplice_ becuase it is removed
+      // And the layout will not be done after onSplice_ because it is removed
       // from this.tiles_.
       if (this.tiles_[index + t].parentNode)
         this.removeChild(this.tiles_[index + t]);

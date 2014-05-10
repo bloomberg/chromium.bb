@@ -284,7 +284,7 @@ Cache.prototype.loadImage = function(key, timestamp, onSuccess, onFailure) {
 
     // Check if both entries are available or both unavailable.
     if (!!metadataEntry != !!dataEntry) {
-      console.warn('Incosistent cache database.');
+      console.warn('Inconsistent cache database.');
       onFailure();
       return;
     }

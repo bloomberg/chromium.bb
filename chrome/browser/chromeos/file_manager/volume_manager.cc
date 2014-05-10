@@ -236,6 +236,7 @@ std::string GetMountPointNameForMediaStorage(
 VolumeInfo::VolumeInfo()
     : file_system_id(0),
       type(VOLUME_TYPE_GOOGLE_DRIVE),
+      device_type(chromeos::DEVICE_TYPE_UNKNOWN),
       mount_condition(chromeos::disks::MOUNT_CONDITION_NONE),
       is_parent(false),
       is_read_only(false) {}

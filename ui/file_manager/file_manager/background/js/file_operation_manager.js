@@ -434,8 +434,8 @@ FileOperationManager.Task = function(
   // If directory already exists, we try to make a copy named 'dir (X)',
   // where X is a number. When we do this, all subsequent copies from
   // inside the subtree should be mapped to the new directory name.
-  // For example, if 'dir' was copied as 'dir (1)', then 'dir\file.txt' should
-  // become 'dir (1)\file.txt'.
+  // For example, if 'dir' was copied as 'dir (1)', then 'dir/file.txt' should
+  // become 'dir (1)/file.txt'.
   this.renamedDirectories_ = [];
 };
 

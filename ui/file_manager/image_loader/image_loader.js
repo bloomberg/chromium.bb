@@ -36,7 +36,7 @@ function ImageLoader() {
     });
     initPromises.push(new Promise(this.cache_.initialize.bind(this.cache_)));
 
-    // After all initializatino promises are done, start the worker.
+    // After all initialization promises are done, start the worker.
     Promise.all(initPromises).then(this.worker_.start.bind(this.worker_));
 
     // Listen for mount events, and grant permissions to volumes being mounted.

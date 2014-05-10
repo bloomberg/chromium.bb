@@ -43,7 +43,7 @@
     /**
      * Invoked when the model changed.
      * @param {AudioPlayerModel} oldValue Old Value.
-     * @param {AudioPlayerModel} newValue Nld Value.
+     * @param {AudioPlayerModel} newValue New Value.
      */
     modelChanged: function(oldValue, newValue) {
       this.onVolumeChanged((oldValue || {}).volume, (newValue || {}).volume);
@@ -76,7 +76,7 @@
     width: 32,
 
     /**
-     * Invoked the 'volume' value in the model is changed.
+     * Invoked when the 'volume' value in the model is changed.
      * @param {number} oldValue Old value.
      * @param {number} newValue New value.
      */
@@ -86,7 +86,7 @@
     },
 
     /**
-     * Invoked the 'rawValue' property is changed.
+     * Invoked when the 'rawValue' property is changed.
      * @param {number} oldValue Old value.
      * @param {number} newValue New value.
      */
@@ -96,7 +96,7 @@
     },
 
     /**
-     * Invoked the 'keydown' event is fired.
+     * Invoked when the 'keydown' event is fired.
      * @param {Event} event The event object.
      */
     onKeyDown_: function(event) {

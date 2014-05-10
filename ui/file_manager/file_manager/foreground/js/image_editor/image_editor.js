@@ -788,7 +788,7 @@ ImageEditor.MouseControl.prototype.setDoubleTapCallback = function(callback) {
 };
 
 /**
- * Touch chancel handler.
+ * Touch cancel handler.
  */
 ImageEditor.MouseControl.prototype.onTouchCancel = function() {
   this.dragHandler_ = null;
@@ -1119,7 +1119,7 @@ ImageEditor.Prompt.prototype.setTimer = function(callback, timeout) {
  *
  * @param {string} text The prompt text.
  * @param {number} timeout Timeout in ms.
- * @param {Object} formatArgs varArgs for the formatting fuction.
+ * @param {Object} formatArgs varArgs for the formatting function.
  */
 ImageEditor.Prompt.prototype.show = function(text, timeout, formatArgs) {
   this.showAt.apply(this,

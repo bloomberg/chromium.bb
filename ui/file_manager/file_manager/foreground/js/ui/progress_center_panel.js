@@ -49,7 +49,7 @@ function ProgressCenterItemElement(document) {
  */
 ProgressCenterItemElement.safelySetAnimation_ = function(callback) {
   var requestId = requestAnimationFrame(function() {
-    // The transitoin start properties currently set are rendered at this frame.
+    // The transition start properties currently set are rendered at this frame.
     // And the transition end properties set by the callback is rendered at the
     // next frame.
     requestId = requestAnimationFrame(callback);
@@ -67,9 +67,9 @@ ProgressCenterItemElement.safelySetAnimation_ = function(callback) {
 ProgressCenterItemElement.PROGRESS_ANIMATION_END_EVENT = 'progressAnimationEnd';
 
 /**
- * Decoreates the given element as a progress item.
- * @param {HTMLElement} element Item to be decoreated.
- * @return {ProgressCenterItemElement} Decoreated item.
+ * Decorates the given element as a progress item.
+ * @param {HTMLElement} element Item to be decorated.
+ * @return {ProgressCenterItemElement} Decorated item.
  */
 ProgressCenterItemElement.decorate = function(element) {
   element.__proto__ = ProgressCenterItemElement.prototype;

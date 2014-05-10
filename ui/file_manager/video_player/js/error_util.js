@@ -22,7 +22,7 @@ window.onerror = function() { window.JSErrorCount++; };
  *  - Bind this object
  *
  * @param {Object} thisObject Object to be used as this.
- * @return {function} Wapped function.
+ * @return {function} Wrapped function.
  */
 Function.prototype.wrap = function(thisObject) {
   var func = this;

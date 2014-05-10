@@ -200,7 +200,7 @@ Polymer('audio-player', {
    * list element.
    */
   onReplayCurrentTrack: function() {
-    // Changes the current time back to the beggining, regardless of the current
+    // Changes the current time back to the beginning, regardless of the current
     // status (playing or paused).
     this.audioElement.currentTime = 0;
     this.audioController.time = 0;
@@ -318,7 +318,7 @@ Polymer('audio-player', {
   },
 
   /**
-   * Invoked the 'keydown' event is fired.
+   * Invoked when the 'keydown' event is fired.
    * @param {Event} event The event object.
    */
   onKeyDown_: function(event) {

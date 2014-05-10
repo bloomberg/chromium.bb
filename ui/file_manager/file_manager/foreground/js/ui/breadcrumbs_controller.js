@@ -99,7 +99,7 @@ BreadcrumbsController.prototype.show = function(entry) {
   queue.run(resolveParent.bind(this, entry, null));
 
   queue.run(function(callback) {
-    // If an error was occured, just skip.
+    // If an error occurred, just skip.
     if (error) {
       callback();
       return;

@@ -346,7 +346,7 @@ FileListBannerController.prototype.checkSpaceAndMaybeShowWelcomeBanner_ =
     // minimize the invocation.
     group.add(function(onCompleted) {
       // Current directory must be set, since this code is called after
-      // scaning is completed. However, the volumeInfo may be gone.
+      // scanning is completed. However, the volumeInfo may be gone.
       chrome.fileBrowserPrivate.getSizeStats(
           driveVolume.volumeId,
           function(result) {
