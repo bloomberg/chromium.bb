@@ -88,6 +88,13 @@ class AppWindowFrameView : public views::NonClientFrameView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  // Some button images we use depend on the color of the frame. This
+  // will set these images based on the color of the frame.
+  void SetButtonImagesForFrame();
+
+  // Return the current frame color based on the active state of the window.
+  SkColor CurrentFrameColor();
+
   views::Widget* widget_;
   NativeAppWindow* window_;
   bool draw_frame_;

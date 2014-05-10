@@ -15,6 +15,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
 #include "ui/views/controls/button/image_button.h"
@@ -73,10 +74,8 @@ void AppWindowFrameView::Init() {
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
     AddChildView(close_button_);
+    // STATE_NORMAL images are set in SetButtonImagesForFrame, not here.
     maximize_button_ = new views::ImageButton(this);
-    maximize_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE).ToImageSkia());
     maximize_button_->SetImage(
         views::CustomButton::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_H).ToImageSkia());
@@ -91,9 +90,6 @@ void AppWindowFrameView::Init() {
     AddChildView(maximize_button_);
     restore_button_ = new views::ImageButton(this);
     restore_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE).ToImageSkia());
-    restore_button_->SetImage(
         views::CustomButton::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_H).ToImageSkia());
     restore_button_->SetImage(
@@ -104,9 +100,6 @@ void AppWindowFrameView::Init() {
     AddChildView(restore_button_);
     minimize_button_ = new views::ImageButton(this);
     minimize_button_->SetImage(
-        views::CustomButton::STATE_NORMAL,
-        rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE).ToImageSkia());
-    minimize_button_->SetImage(
         views::CustomButton::STATE_HOVERED,
         rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_H).ToImageSkia());
     minimize_button_->SetImage(
@@ -115,6 +108,8 @@ void AppWindowFrameView::Init() {
     minimize_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
     AddChildView(minimize_button_);
+
+    SetButtonImagesForFrame();
   }
 }
 
@@ -304,14 +299,12 @@ void AppWindowFrameView::OnPaint(gfx::Canvas* canvas) {
         rb.GetNativeImageNamed(IDR_APP_WINDOW_CLOSE_U).ToImageSkia());
   }
 
-  // TODO(jeremya): different look for inactive?
+  SetButtonImagesForFrame();
+  // TODO(benwells): different look for inactive by default.
   SkPaint paint;
   paint.setAntiAlias(false);
   paint.setStyle(SkPaint::kFill_Style);
-  if (widget_->IsActive())
-    paint.setColor(active_frame_color_);
-  else
-    paint.setColor(inactive_frame_color_);
+  paint.setColor(CurrentFrameColor());
   gfx::Path path;
   path.moveTo(0, 0);
   path.lineTo(width(), 0);
@@ -364,6 +357,44 @@ void AppWindowFrameView::ButtonPressed(views::Button* sender,
     widget_->Restore();
   else if (sender == minimize_button_)
     widget_->Minimize();
+}
+
+SkColor AppWindowFrameView::CurrentFrameColor() {
+  return widget_->IsActive() ? active_frame_color_ : inactive_frame_color_;
+}
+
+void AppWindowFrameView::SetButtonImagesForFrame() {
+  DCHECK(draw_frame_);
+
+  // If the frame is dark, we should use the light images so they have
+  // some contrast.
+  unsigned char frame_luma =
+      color_utils::GetLuminanceForColor(CurrentFrameColor());
+  const unsigned char kLuminanceThreshold = 100;
+  bool use_light = frame_luma < kLuminanceThreshold;
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (use_light) {
+    maximize_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE_L).ToImageSkia());
+    restore_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE_L).ToImageSkia());
+    minimize_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE_L).ToImageSkia());
+  } else {
+    maximize_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_MAXIMIZE).ToImageSkia());
+    restore_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_RESTORE).ToImageSkia());
+    minimize_button_->SetImage(
+        views::CustomButton::STATE_NORMAL,
+        rb.GetNativeImageNamed(IDR_APP_WINDOW_MINIMIZE).ToImageSkia());
+  }
 }
 
 }  // namespace apps
