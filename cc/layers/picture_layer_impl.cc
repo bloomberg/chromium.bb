@@ -234,6 +234,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
   // unused can be considered for removal.
   std::vector<PictureLayerTiling*> seen_tilings;
 
+  bool had_checkerboard_quads = false;
   for (PictureLayerTilingSet::CoverageIterator iter(
       tilings_.get(), contents_scale_x(), rect, ideal_contents_scale_);
        iter;
@@ -248,6 +249,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         visible_geometry_rect.width() * visible_geometry_rect.height();
 
     if (!*iter || !iter->IsReadyToDraw()) {
+      had_checkerboard_quads = true;
       if (draw_checkerboard_for_missing_tiles()) {
         scoped_ptr<CheckerboardDrawQuad> quad = CheckerboardDrawQuad::Create();
         SkColor color = DebugColors::DefaultCheckerboardColor();
@@ -341,6 +343,12 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 
     if (seen_tilings.empty() || seen_tilings.back() != iter.CurrentTiling())
       seen_tilings.push_back(iter.CurrentTiling());
+  }
+
+  if (had_checkerboard_quads) {
+    TRACE_EVENT_INSTANT0("cc",
+                         "PictureLayerImpl::AppendQuads checkerboard",
+                         TRACE_EVENT_SCOPE_THREAD);
   }
 
   // Aggressively remove any tilings that are not seen to save memory. Note
