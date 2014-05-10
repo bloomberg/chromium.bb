@@ -1746,6 +1746,7 @@ def CMDsync(parser, args):
       slns[normed] = {
           'revision': d.got_revision,
           'scm': d.used_scm.name if d.used_scm else None,
+          'url': str(d.url) if d.url else None,
       }
     with open(options.output_json, 'wb') as f:
       json.dump({'solutions': slns}, f)
