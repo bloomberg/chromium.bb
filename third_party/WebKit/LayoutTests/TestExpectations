@@ -95,28 +95,6 @@ crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOn
 
 crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-unaffected-by-style-src-2.php [ Crash ]
 crbug.com/371916 [ Debug ] http/tests/security/contentSecurityPolicy/xsl-allowed.php [ Crash ]
-crbug.com/361729 [ Mac ] rubberbanding/overhang-e.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] rubberbanding/overhang-n.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] rubberbanding/overhang-ne.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] rubberbanding/overhang-nw.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] rubberbanding/overhang-s.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] rubberbanding/overhang-se.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] rubberbanding/overhang-sw.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] rubberbanding/overhang-w.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] scrollbars/custom-scrollbar-with-incomplete-style.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla/bugs/bug10633.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla/bugs/bug1188.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla/bugs/bug126742.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla/bugs/bug2479-2.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla/bugs/bug2962.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla/bugs/bug88035-1.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla/bugs/bug88035-2.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] transforms/2d/compound-transforms-vs-containers.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] transforms/2d/hindi-rotated.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] transforms/2d/zoom-menulist.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] transforms/svg-vs-css.xhtml [ NeedsRebaseline ]
-crbug.com/361729 inspector/timeline/timeline-paint.html [ NeedsRebaseline ]
 
 # Pixel tests for RTL iframe scrollbar is erroneous. Cannot observe on actual browser.
 # Temporarily marking the flaky set below as NeedsManualRebaseline, so we can grab results
