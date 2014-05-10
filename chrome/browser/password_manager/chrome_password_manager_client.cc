@@ -36,9 +36,9 @@
 namespace {
 
 bool IsTheHotNewBubbleUIEnabled() {
-  std::string group_name =
-      base::FieldTrialList::FindFullName("PasswordManagerUI");
-
+#if !defined(USE_AURA)
+  return false;
+#endif
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableSavePasswordBubble))
     return false;
@@ -46,6 +46,8 @@ bool IsTheHotNewBubbleUIEnabled() {
   if (command_line->HasSwitch(switches::kEnableSavePasswordBubble))
     return true;
 
+  std::string group_name =
+      base::FieldTrialList::FindFullName("PasswordManagerUI");
   return group_name == "Bubble";
 }
 
