@@ -19,33 +19,39 @@ LoggingImpl::LoggingImpl() {
 LoggingImpl::~LoggingImpl() {}
 
 void LoggingImpl::InsertFrameEvent(const base::TimeTicks& time_of_event,
-                                   CastLoggingEvent event, uint32 rtp_timestamp,
+                                   CastLoggingEvent event,
+                                   EventMediaType event_media_type,
+                                   uint32 rtp_timestamp,
                                    uint32 frame_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  raw_.InsertFrameEvent(time_of_event, event, rtp_timestamp, frame_id);
+  raw_.InsertFrameEvent(time_of_event, event, event_media_type,
+      rtp_timestamp, frame_id);
 }
 
 void LoggingImpl::InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
                                           CastLoggingEvent event,
+                                          EventMediaType event_media_type,
                                           uint32 rtp_timestamp,
                                           uint32 frame_id, int frame_size,
                                           bool key_frame,
                                           int target_bitrate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  raw_.InsertEncodedFrameEvent(time_of_event, event, rtp_timestamp, frame_id,
-                               frame_size, key_frame, target_bitrate);
+  raw_.InsertEncodedFrameEvent(time_of_event, event, event_media_type,
+      rtp_timestamp, frame_id, frame_size, key_frame, target_bitrate);
 }
 
 void LoggingImpl::InsertFrameEventWithDelay(
     const base::TimeTicks& time_of_event, CastLoggingEvent event,
-    uint32 rtp_timestamp, uint32 frame_id, base::TimeDelta delay) {
+    EventMediaType event_media_type, uint32 rtp_timestamp, uint32 frame_id,
+    base::TimeDelta delay) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  raw_.InsertFrameEventWithDelay(time_of_event, event, rtp_timestamp,
-                                 frame_id, delay);
+  raw_.InsertFrameEventWithDelay(time_of_event, event, event_media_type,
+      rtp_timestamp, frame_id, delay);
 }
 
 void LoggingImpl::InsertSinglePacketEvent(const base::TimeTicks& time_of_event,
                                           CastLoggingEvent event,
+                                          EventMediaType event_media_type,
                                           const Packet& packet) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -64,6 +70,7 @@ void LoggingImpl::InsertSinglePacketEvent(const base::TimeTicks& time_of_event,
   // rtp_timestamp is enough - no need for frame_id as well.
   InsertPacketEvent(time_of_event,
                     event,
+                    event_media_type,
                     rtp_timestamp,
                     kFrameIdUnknown,
                     packet_id,
@@ -73,22 +80,25 @@ void LoggingImpl::InsertSinglePacketEvent(const base::TimeTicks& time_of_event,
 
 void LoggingImpl::InsertPacketListEvent(const base::TimeTicks& time_of_event,
                                         CastLoggingEvent event,
+                                        EventMediaType event_media_type,
                                         const PacketList& packets) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (PacketList::const_iterator it = packets.begin(); it != packets.end();
        ++it) {
-    InsertSinglePacketEvent(time_of_event, event, (*it)->data);
+    InsertSinglePacketEvent(time_of_event, event, event_media_type,
+        (*it)->data);
   }
 }
 
 void LoggingImpl::InsertPacketEvent(const base::TimeTicks& time_of_event,
                                     CastLoggingEvent event,
+                                    EventMediaType event_media_type,
                                     uint32 rtp_timestamp, uint32 frame_id,
                                     uint16 packet_id, uint16 max_packet_id,
                                     size_t size) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  raw_.InsertPacketEvent(time_of_event, event, rtp_timestamp, frame_id,
-                         packet_id, max_packet_id, size);
+  raw_.InsertPacketEvent(time_of_event, event, event_media_type,
+      rtp_timestamp, frame_id, packet_id, max_packet_id, size);
 }
 
 void LoggingImpl::AddRawEventSubscriber(RawEventSubscriber* subscriber) {

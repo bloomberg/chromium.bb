@@ -216,6 +216,7 @@ void CastSessionDelegate::LogRawEvents(
        ++it) {
     cast_environment_->Logging()->InsertPacketEvent(it->timestamp,
                                                     it->type,
+                                                    it->media_type,
                                                     it->rtp_timestamp,
                                                     it->frame_id,
                                                     it->packet_id,

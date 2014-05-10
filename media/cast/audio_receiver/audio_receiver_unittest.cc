@@ -141,7 +141,8 @@ TEST_F(AudioReceiverTest, GetOnePacketEncodedFrame) {
   event_subscriber.GetFrameEventsAndReset(&frame_events);
 
   ASSERT_TRUE(!frame_events.empty());
-  EXPECT_EQ(kAudioAckSent, frame_events.begin()->type);
+  EXPECT_EQ(FRAME_ACK_SENT, frame_events.begin()->type);
+  EXPECT_EQ(AUDIO_EVENT, frame_events.begin()->media_type);
   EXPECT_EQ(rtp_header_.frame_id, frame_events.begin()->frame_id);
   EXPECT_EQ(rtp_header_.rtp_timestamp, frame_events.begin()->rtp_timestamp);
 

@@ -109,7 +109,7 @@ void VideoInitializationStatus(CastInitializationStatus status) {
 
 // This is wrapped in a struct because it needs to be put into a std::map.
 typedef struct {
-  int counter[kNumOfLoggingEvents];
+  int counter[kNumOfLoggingEvents+1];
 } LoggingEventCounts;
 
 // Constructs a map from each frame (RTP timestamp) to counts of each event
@@ -638,6 +638,7 @@ class End2EndTest : public ::testing::Test {
          ++it) {
       cast_environment_sender_->Logging()->InsertPacketEvent(it->timestamp,
                                                              it->type,
+                                                             it->media_type,
                                                              it->rtp_timestamp,
                                                              it->frame_id,
                                                              it->packet_id,
@@ -1085,40 +1086,42 @@ TEST_F(End2EndTest, VideoLogging) {
        map_it != event_counter_for_frame.end();
        ++map_it) {
     int total_event_count_for_frame = 0;
-    for (int i = 0; i < kNumOfLoggingEvents; ++i) {
+    for (int i = 0; i <= kNumOfLoggingEvents; ++i) {
       total_event_count_for_frame += map_it->second.counter[i];
     }
 
     int expected_event_count_for_frame = 0;
 
-    EXPECT_EQ(1, map_it->second.counter[kVideoFrameCaptureBegin]);
+    EXPECT_EQ(1, map_it->second.counter[FRAME_CAPTURE_BEGIN]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kVideoFrameCaptureBegin];
+        map_it->second.counter[FRAME_CAPTURE_BEGIN];
 
-    EXPECT_EQ(1, map_it->second.counter[kVideoFrameEncoded]);
+    EXPECT_EQ(1, map_it->second.counter[FRAME_CAPTURE_END]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kVideoFrameEncoded];
+        map_it->second.counter[FRAME_CAPTURE_END];
 
-    EXPECT_EQ(1, map_it->second.counter[kVideoFrameCaptureEnd]);
+    EXPECT_EQ(1, map_it->second.counter[FRAME_ENCODED]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kVideoFrameCaptureEnd];
+        map_it->second.counter[FRAME_ENCODED];
 
-    EXPECT_EQ(1, map_it->second.counter[kVideoRenderDelay]);
-    expected_event_count_for_frame += map_it->second.counter[kVideoRenderDelay];
-
-    EXPECT_EQ(1, map_it->second.counter[kVideoFrameDecoded]);
+    EXPECT_EQ(1, map_it->second.counter[FRAME_DECODED]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kVideoFrameDecoded];
+        map_it->second.counter[FRAME_DECODED];
 
-    // There is no guarantee that kVideoAckSent is loggeed exactly once per
+    EXPECT_EQ(1, map_it->second.counter[FRAME_PLAYOUT]);
+    expected_event_count_for_frame += map_it->second.counter[FRAME_PLAYOUT];
+
+
+    // There is no guarantee that FRAME_ACK_SENT is loggeed exactly once per
     // frame.
-    EXPECT_GT(map_it->second.counter[kVideoAckSent], 0);
-    expected_event_count_for_frame += map_it->second.counter[kVideoAckSent];
+    EXPECT_GT(map_it->second.counter[FRAME_ACK_SENT], 0);
+    expected_event_count_for_frame += map_it->second.counter[FRAME_ACK_SENT];
 
-    // There is no guarantee that kVideoAckReceived is loggeed exactly once per
+    // There is no guarantee that FRAME_ACK_RECEIVED is loggeed exactly once per
     // frame.
-    EXPECT_GT(map_it->second.counter[kVideoAckReceived], 0);
-    expected_event_count_for_frame += map_it->second.counter[kVideoAckReceived];
+    EXPECT_GT(map_it->second.counter[FRAME_ACK_RECEIVED], 0);
+    expected_event_count_for_frame +=
+        map_it->second.counter[FRAME_ACK_RECEIVED];
 
     // Verify that there were no other events logged with respect to this
     // frame.
@@ -1138,14 +1141,14 @@ TEST_F(End2EndTest, VideoLogging) {
        map_it != event_count_for_packet.end();
        ++map_it) {
     int total_event_count_for_packet = 0;
-    for (int i = 0; i < kNumOfLoggingEvents; ++i) {
+    for (int i = 0; i <= kNumOfLoggingEvents; ++i) {
       total_event_count_for_packet += map_it->second.counter[i];
     }
 
     int expected_event_count_for_packet = 0;
-    EXPECT_GT(map_it->second.counter[kVideoPacketReceived], 0);
+    EXPECT_GT(map_it->second.counter[PACKET_RECEIVED], 0);
     expected_event_count_for_packet +=
-        map_it->second.counter[kVideoPacketReceived];
+        map_it->second.counter[PACKET_RECEIVED];
 
     // Verify that there were no other events logged with respect to this
     // packet. (i.e. Total event count = expected event count)
@@ -1197,7 +1200,7 @@ TEST_F(End2EndTest, AudioLogging) {
            event_counter_for_frame.begin();
        it != event_counter_for_frame.end();
        ++it) {
-    encoded_count += it->second.counter[kAudioFrameEncoded];
+    encoded_count += it->second.counter[FRAME_ENCODED];
   }
 
   EXPECT_EQ(num_audio_frames_requested, encoded_count);
@@ -1207,25 +1210,25 @@ TEST_F(End2EndTest, AudioLogging) {
            event_counter_for_frame.begin();
        map_it != event_counter_for_frame.end(); ++map_it) {
     int total_event_count_for_frame = 0;
-    for (int j = 0; j < kNumOfLoggingEvents; ++j)
+    for (int j = 0; j <= kNumOfLoggingEvents; ++j)
       total_event_count_for_frame += map_it->second.counter[j];
 
     int expected_event_count_for_frame = 0;
 
-    EXPECT_EQ(1, map_it->second.counter[kAudioFrameEncoded]);
+    EXPECT_EQ(1, map_it->second.counter[FRAME_ENCODED]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kAudioFrameEncoded];
+        map_it->second.counter[FRAME_ENCODED];
 
-    EXPECT_EQ(1, map_it->second.counter[kAudioPlayoutDelay]);
+    EXPECT_EQ(1, map_it->second.counter[FRAME_PLAYOUT]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kAudioPlayoutDelay];
+        map_it->second.counter[FRAME_PLAYOUT];
 
-    EXPECT_EQ(1, map_it->second.counter[kAudioFrameDecoded]);
+    EXPECT_EQ(1, map_it->second.counter[FRAME_DECODED]);
     expected_event_count_for_frame +=
-        map_it->second.counter[kAudioFrameDecoded];
+        map_it->second.counter[FRAME_DECODED];
 
-    EXPECT_GT(map_it->second.counter[kAudioAckSent], 0);
-    expected_event_count_for_frame += map_it->second.counter[kAudioAckSent];
+    EXPECT_GT(map_it->second.counter[FRAME_ACK_SENT], 0);
+    expected_event_count_for_frame += map_it->second.counter[FRAME_ACK_SENT];
 
     // Verify that there were no other events logged with respect to this frame.
     // (i.e. Total event count = expected event count)

@@ -174,7 +174,7 @@ TEST_F(PacedSenderTest, BasicPace) {
   for (std::vector<PacketEvent>::iterator it = packet_events.begin();
        it != packet_events.end();
        ++it) {
-    if (it->type == kVideoPacketSentToNetwork)
+    if (it->type == PACKET_SENT_TO_NETWORK)
       sent_to_network_event_count++;
     else
       FAIL() << "Got unexpected event type " << CastLoggingToString(it->type);
@@ -254,14 +254,17 @@ TEST_F(PacedSenderTest, PaceWithNack) {
   for (std::vector<PacketEvent>::iterator it = packet_events.begin();
        it != packet_events.end();
        ++it) {
-    if (it->type == kVideoPacketSentToNetwork)
-      video_network_event_count++;
-    else if (it->type == kVideoPacketRetransmitted)
-      video_retransmitted_event_count++;
-    else if (it->type == kAudioPacketSentToNetwork)
-      audio_network_event_count++;
-    else
+    if (it->type == PACKET_SENT_TO_NETWORK) {
+      if (it->media_type == VIDEO_EVENT)
+        video_network_event_count++;
+      else
+        audio_network_event_count++;
+    } else if (it->type == PACKET_RETRANSMITTED) {
+      if (it->media_type == VIDEO_EVENT)
+        video_retransmitted_event_count++;
+    } else {
       FAIL() << "Got unexpected event type " << CastLoggingToString(it->type);
+    }
   }
   EXPECT_EQ(expected_audio_network_event_count, audio_network_event_count);
   EXPECT_EQ(expected_video_network_event_count, video_network_event_count);

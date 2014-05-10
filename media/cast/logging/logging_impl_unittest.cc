@@ -53,7 +53,7 @@ TEST_F(LoggingImplTest, BasicFrameLogging) {
   do {
     now = testing_clock_.NowTicks();
     logging_.InsertFrameEvent(
-        now, kAudioFrameCaptureBegin, rtp_timestamp, frame_id);
+        now, FRAME_CAPTURE_BEGIN, VIDEO_EVENT, rtp_timestamp, frame_id);
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
@@ -84,7 +84,7 @@ TEST_F(LoggingImplTest, FrameLoggingWithSize) {
         base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
     sum_size += static_cast<size_t>(size);
     logging_.InsertEncodedFrameEvent(testing_clock_.NowTicks(),
-                                     kVideoFrameEncoded, rtp_timestamp,
+                                     FRAME_ENCODED, VIDEO_EVENT, rtp_timestamp,
                                      frame_id, size, true, target_bitrate);
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
@@ -112,7 +112,8 @@ TEST_F(LoggingImplTest, FrameLoggingWithDelay) {
                 base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
     logging_.InsertFrameEventWithDelay(
         testing_clock_.NowTicks(),
-        kAudioFrameCaptureBegin,
+        FRAME_CAPTURE_BEGIN,
+        VIDEO_EVENT,
         rtp_timestamp,
         frame_id,
         base::TimeDelta::FromMilliseconds(delay));
@@ -136,21 +137,23 @@ TEST_F(LoggingImplTest, MultipleEventFrameLogging) {
   uint32 num_events = 0u;
   do {
     logging_.InsertFrameEvent(testing_clock_.NowTicks(),
-                              kAudioFrameCaptureBegin,
+                              FRAME_CAPTURE_END,
+                              VIDEO_EVENT,
                               rtp_timestamp,
                               frame_id);
     ++num_events;
     if (frame_id % 2) {
       logging_.InsertEncodedFrameEvent(testing_clock_.NowTicks(),
-                                       kAudioFrameEncoded, rtp_timestamp,
+                                       FRAME_ENCODED, AUDIO_EVENT,
+                                       rtp_timestamp,
                                        frame_id, 1500, true, 0);
     } else if (frame_id % 3) {
-      logging_.InsertFrameEvent(testing_clock_.NowTicks(), kVideoFrameDecoded,
-                                 rtp_timestamp, frame_id);
+      logging_.InsertFrameEvent(testing_clock_.NowTicks(), FRAME_DECODED,
+                                VIDEO_EVENT, rtp_timestamp, frame_id);
     } else {
       logging_.InsertFrameEventWithDelay(
-          testing_clock_.NowTicks(), kVideoRenderDelay, rtp_timestamp, frame_id,
-          base::TimeDelta::FromMilliseconds(20));
+          testing_clock_.NowTicks(), FRAME_PLAYOUT, VIDEO_EVENT,
+          rtp_timestamp, frame_id, base::TimeDelta::FromMilliseconds(20));
     }
     ++num_events;
 
@@ -185,12 +188,13 @@ TEST_F(LoggingImplTest, PacketLogging) {
       latest_time = testing_clock_.NowTicks();
       ++num_packets;
       logging_.InsertPacketEvent(latest_time,
-                                  kDuplicateVideoPacketReceived,
-                                  rtp_timestamp,
-                                  frame_id,
-                                  i,
-                                  kNumPacketsPerFrame,
-                                  size);
+                                 PACKET_RECEIVED,
+                                 VIDEO_EVENT,
+                                 rtp_timestamp,
+                                 frame_id,
+                                 i,
+                                 kNumPacketsPerFrame,
+                                 size);
     }
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(kFrameIntervalMs));
     rtp_timestamp += kFrameIntervalMs * 90;
@@ -211,7 +215,8 @@ TEST_F(LoggingImplTest, MultipleRawEventSubscribers) {
   logging_.AddRawEventSubscriber(&event_subscriber_2);
 
   logging_.InsertFrameEvent(testing_clock_.NowTicks(),
-                            kAudioFrameCaptureBegin,
+                            FRAME_CAPTURE_BEGIN,
+                            VIDEO_EVENT,
                             /*rtp_timestamp*/ 0u,
                             /*frame_id*/ 0u);
 

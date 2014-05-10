@@ -22,49 +22,11 @@ using media::cast::EventMediaType;
 const size_t kMaxFrameEventTimeMapSize = 100;
 const size_t kMaxPacketEventTimeMapSize = 1000;
 
-CastLoggingEvent GetCapturedEvent(EventMediaType media_type) {
-  return media_type == AUDIO_EVENT ?
-      kAudioFrameCaptureBegin : kVideoFrameCaptureBegin;
-}
-
-CastLoggingEvent GetEncodedEvent(EventMediaType media_type) {
-  return media_type == AUDIO_EVENT ? kAudioFrameEncoded : kVideoFrameEncoded;
-}
-
-CastLoggingEvent GetDecodedEvent(EventMediaType media_type) {
-  return media_type == AUDIO_EVENT ? kAudioFrameDecoded : kVideoFrameDecoded;
-}
-
-CastLoggingEvent GetPlayoutEvent(EventMediaType media_type) {
-  return media_type == AUDIO_EVENT ? kAudioPlayoutDelay : kVideoRenderDelay;
-}
-
-CastLoggingEvent GetPacketSentEvent(EventMediaType media_type) {
-  return media_type == AUDIO_EVENT ? kAudioPacketSentToNetwork :
-                                     kVideoPacketSentToNetwork;
-}
-
-CastLoggingEvent GetPacketReceivedEvent(EventMediaType media_type) {
-  return media_type == AUDIO_EVENT ? kAudioPacketReceived :
-                                     kVideoPacketReceived;
-}
-
-CastLoggingEvent GetPacketRetransmittedEvent(EventMediaType media_type) {
-  return media_type == AUDIO_EVENT ? kAudioPacketRetransmitted :
-                                     kVideoPacketRetransmitted;
-}
-
 bool IsReceiverEvent(CastLoggingEvent event) {
-  return event == kAudioFrameDecoded
-      || event == kVideoFrameDecoded
-      || event == kAudioPlayoutDelay
-      || event == kVideoRenderDelay
-      || event == kAudioAckSent
-      || event == kVideoAckSent
-      || event == kAudioPacketReceived
-      || event == kVideoPacketReceived
-      || event == kDuplicateAudioPacketReceived
-      || event == kDuplicateVideoPacketReceived;
+  return event == FRAME_DECODED
+      || event == FRAME_PLAYOUT
+      || event == FRAME_ACK_SENT
+      || event == PACKET_RECEIVED;
 }
 
 }  // namespace
@@ -92,7 +54,7 @@ void StatsEventSubscriber::OnReceiveFrameEvent(const FrameEvent& frame_event) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CastLoggingEvent type = frame_event.type;
-  if (GetEventMediaType(type) != event_media_type_)
+  if (frame_event.media_type != event_media_type_)
     return;
 
   FrameStatsMap::iterator it = frame_stats_.find(type);
@@ -108,9 +70,9 @@ void StatsEventSubscriber::OnReceiveFrameEvent(const FrameEvent& frame_event) {
     it->second.sum_delay += frame_event.delay_delta;
   }
 
-  if (type == GetCapturedEvent(event_media_type_)) {
+  if (type == FRAME_CAPTURE_BEGIN) {
     RecordFrameCapturedTime(frame_event);
-  } else if (type == GetPlayoutEvent(event_media_type_)) {
+  } else if (type == FRAME_PLAYOUT) {
     RecordE2ELatency(frame_event);
   }
 
@@ -123,7 +85,7 @@ void StatsEventSubscriber::OnReceivePacketEvent(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   CastLoggingEvent type = packet_event.type;
-  if (GetEventMediaType(type) != event_media_type_)
+  if (packet_event.media_type != event_media_type_)
     return;
 
   PacketStatsMap::iterator it = packet_stats_.find(type);
@@ -137,10 +99,10 @@ void StatsEventSubscriber::OnReceivePacketEvent(
     it->second.sum_size += packet_event.size;
   }
 
-  if (type == GetPacketSentEvent(event_media_type_) ||
-      type == GetPacketReceivedEvent(event_media_type_)) {
+  if (type == PACKET_SENT_TO_NETWORK ||
+      type == PACKET_RECEIVED) {
     RecordNetworkLatency(packet_event);
-  } else if (type == GetPacketRetransmittedEvent(event_media_type_)) {
+  } else if (type == PACKET_RETRANSMITTED) {
     // We only measure network latency using packets that doesn't have to be
     // retransmitted as there is precisely one sent-receive timestamp pairs.
     ErasePacketSentTime(packet_event);
@@ -210,19 +172,19 @@ void StatsEventSubscriber::GetStatsInternal(StatsMap* stats_map) const {
   base::TimeTicks end_time = clock_->NowTicks();
 
   PopulateFpsStat(
-      end_time, GetCapturedEvent(event_media_type_), CAPTURE_FPS, stats_map);
+      end_time, FRAME_CAPTURE_BEGIN, CAPTURE_FPS, stats_map);
   PopulateFpsStat(
-      end_time, GetEncodedEvent(event_media_type_), ENCODE_FPS, stats_map);
+      end_time, FRAME_ENCODED, ENCODE_FPS, stats_map);
   PopulateFpsStat(
-      end_time, GetDecodedEvent(event_media_type_), DECODE_FPS, stats_map);
+      end_time, FRAME_DECODED, DECODE_FPS, stats_map);
   PopulatePlayoutDelayStat(stats_map);
   PopulateFrameBitrateStat(end_time, stats_map);
   PopulatePacketBitrateStat(end_time,
-                            GetPacketSentEvent(event_media_type_),
+                            PACKET_SENT_TO_NETWORK,
                             TRANSMISSION_KBPS,
                             stats_map);
   PopulatePacketBitrateStat(end_time,
-                            GetPacketRetransmittedEvent(event_media_type_),
+                            PACKET_RETRANSMITTED,
                             RETRANSMISSION_KBPS,
                             stats_map);
   PopulatePacketLossPercentageStat(stats_map);
@@ -324,13 +286,13 @@ void StatsEventSubscriber::RecordNetworkLatency(
     bool match = false;
     base::TimeTicks packet_sent_time;
     base::TimeTicks packet_received_time;
-    if (recorded_type == GetPacketSentEvent(event_media_type_) &&
-        packet_event.type == GetPacketReceivedEvent(event_media_type_)) {
+    if (recorded_type == PACKET_SENT_TO_NETWORK &&
+        packet_event.type == PACKET_RECEIVED) {
       packet_sent_time = value.first;
       packet_received_time = packet_event.timestamp;
       match = true;
-    } else if (recorded_type == GetPacketReceivedEvent(event_media_type_) &&
-        packet_event.type == GetPacketSentEvent(event_media_type_)) {
+    } else if (recorded_type == PACKET_RECEIVED &&
+        packet_event.type == PACKET_SENT_TO_NETWORK) {
       packet_sent_time = packet_event.timestamp;
       packet_received_time = value.first;
       match = true;
@@ -362,8 +324,7 @@ void StatsEventSubscriber::PopulateFpsStat(base::TimeTicks end_time,
 }
 
 void StatsEventSubscriber::PopulatePlayoutDelayStat(StatsMap* stats_map) const {
-  CastLoggingEvent event = GetPlayoutEvent(event_media_type_);
-  FrameStatsMap::const_iterator it = frame_stats_.find(event);
+  FrameStatsMap::const_iterator it = frame_stats_.find(FRAME_PLAYOUT);
   if (it != frame_stats_.end()) {
     double avg_delay_ms = 0.0;
     base::TimeDelta sum_delay = it->second.sum_delay;
@@ -376,8 +337,7 @@ void StatsEventSubscriber::PopulatePlayoutDelayStat(StatsMap* stats_map) const {
 
 void StatsEventSubscriber::PopulateFrameBitrateStat(base::TimeTicks end_time,
                                                     StatsMap* stats_map) const {
-  CastLoggingEvent event = GetEncodedEvent(event_media_type_);
-  FrameStatsMap::const_iterator it = frame_stats_.find(event);
+  FrameStatsMap::const_iterator it = frame_stats_.find(FRAME_ENCODED);
   if (it != frame_stats_.end()) {
     double kbps = 0.0;
     base::TimeDelta duration = end_time - start_time_;
@@ -412,15 +372,12 @@ void StatsEventSubscriber::PopulatePacketLossPercentageStat(
   // (re)transmission was lost.
   // This means the percentage of packet loss is
   // (# of retransmit events) / (# of transmit + retransmit events).
-  CastLoggingEvent packet_sent_event = GetPacketSentEvent(event_media_type_);
-  CastLoggingEvent packet_retransmitted_event =
-      GetPacketRetransmittedEvent(event_media_type_);
   PacketStatsMap::const_iterator sent_it =
-      packet_stats_.find(packet_sent_event);
+      packet_stats_.find(PACKET_SENT_TO_NETWORK);
   if (sent_it == packet_stats_.end())
     return;
   PacketStatsMap::const_iterator retransmitted_it =
-      packet_stats_.find(packet_retransmitted_event);
+      packet_stats_.find(PACKET_RETRANSMITTED);
   int sent_count = sent_it->second.event_counter;
   int retransmitted_count = 0;
   if (retransmitted_it != packet_stats_.end())

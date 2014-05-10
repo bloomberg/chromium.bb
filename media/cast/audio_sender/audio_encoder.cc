@@ -49,7 +49,8 @@ void LogAudioFrameEncodedEvent(
     return;
   }
   cast_environment->Logging()->InsertEncodedFrameEvent(
-      event_time, kAudioFrameEncoded, rtp_timestamp, frame_id,
+      event_time, media::cast::FRAME_ENCODED, media::cast::AUDIO_EVENT,
+      rtp_timestamp, frame_id,
       static_cast<int>(frame_size), /* key_frame - unused */ false,
       /*target_bitrate - unused*/ 0);
 }

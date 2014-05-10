@@ -255,8 +255,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   cast_message.missing_frames_and_packets_[kFrameIdWithLostPackets] =
       missing_packets;
 
-  ReceiverRtcpEventSubscriber event_subscriber(
-      500, ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
+  ReceiverRtcpEventSubscriber event_subscriber(500, VIDEO_EVENT);
   ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
 
   rtcp_sender_->SendRtcpFromRtpReceiver(
@@ -273,21 +272,23 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
 
   p.AddReceiverLog(kSendingSsrc);
   p.AddReceiverFrameLog(kRtpTimestamp, 2, kTimeBaseMs);
-  p.AddReceiverEventLog(0, kVideoAckSent, 0);
-  p.AddReceiverEventLog(kLostPacketId1, kVideoPacketReceived, kTimeDelayMs);
+  p.AddReceiverEventLog(0, FRAME_ACK_SENT, 0);
+  p.AddReceiverEventLog(kLostPacketId1, PACKET_RECEIVED, kTimeDelayMs);
 
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
   FrameEvent frame_event;
   frame_event.rtp_timestamp = kRtpTimestamp;
-  frame_event.type = kVideoAckSent;
+  frame_event.type = FRAME_ACK_SENT;
+  frame_event.media_type = VIDEO_EVENT;
   frame_event.timestamp = testing_clock.NowTicks();
   event_subscriber.OnReceiveFrameEvent(frame_event);
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeDelayMs));
 
   PacketEvent packet_event;
   packet_event.rtp_timestamp = kRtpTimestamp;
-  packet_event.type = kVideoPacketReceived;
+  packet_event.type = PACKET_RECEIVED;
+  packet_event.media_type = VIDEO_EVENT;
   packet_event.timestamp = testing_clock.NowTicks();
   packet_event.packet_id = kLostPacketId1;
   event_subscriber.OnReceivePacketEvent(packet_event);
@@ -335,24 +336,25 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
       kTimeBaseMs + (kRtcpMaxReceiverLogMessages - num_events) * kTimeDelayMs);
   for (int i = 0; i < num_events; i++) {
     p.AddReceiverEventLog(
-        kLostPacketId1, kVideoPacketReceived,
+        kLostPacketId1, PACKET_RECEIVED,
         static_cast<uint16>(kTimeDelayMs * i));
   }
 
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
-  ReceiverRtcpEventSubscriber event_subscriber(
-      500, ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
+  ReceiverRtcpEventSubscriber event_subscriber(500, VIDEO_EVENT);
   FrameEvent frame_event;
   frame_event.rtp_timestamp = kRtpTimestamp;
-  frame_event.type = media::cast::kVideoAckSent;
+  frame_event.type = FRAME_ACK_SENT;
+  frame_event.media_type = VIDEO_EVENT;
   frame_event.timestamp = testing_clock.NowTicks();
   event_subscriber.OnReceiveFrameEvent(frame_event);
 
   for (size_t i = 0; i < kRtcpMaxReceiverLogMessages; ++i) {
     PacketEvent packet_event;
     packet_event.rtp_timestamp = kRtpTimestamp + 2345;
-    packet_event.type = kVideoPacketReceived;
+    packet_event.type = PACKET_RECEIVED;
+    packet_event.media_type = VIDEO_EVENT;
     packet_event.timestamp = testing_clock.NowTicks();
     packet_event.packet_id = kLostPacketId1;
     event_subscriber.OnReceivePacketEvent(packet_event);
@@ -400,17 +402,17 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
        i < kRtcpMaxReceiverLogMessages;
        ++i) {
     p.AddReceiverFrameLog(kRtpTimestamp + i, 1, kTimeBaseMs + i * kTimeDelayMs);
-    p.AddReceiverEventLog(0, kVideoAckSent, 0);
+    p.AddReceiverEventLog(0, FRAME_ACK_SENT, 0);
   }
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
-  ReceiverRtcpEventSubscriber event_subscriber(
-      500, ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
+  ReceiverRtcpEventSubscriber event_subscriber(500, VIDEO_EVENT);
 
   for (size_t i = 0; i < kRtcpMaxReceiverLogMessages; ++i) {
     FrameEvent frame_event;
     frame_event.rtp_timestamp = kRtpTimestamp + static_cast<int>(i);
-    frame_event.type = media::cast::kVideoAckSent;
+    frame_event.type = FRAME_ACK_SENT;
+    frame_event.media_type = VIDEO_EVENT;
     frame_event.timestamp = testing_clock.NowTicks();
     event_subscriber.OnReceiveFrameEvent(frame_event);
     testing_clock.Advance(base::TimeDelta::FromMilliseconds(kTimeDelayMs));
@@ -451,16 +453,16 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOldLogFrames) {
   const int kTimeBetweenEventsMs = 410;
   p.AddReceiverFrameLog(kRtpTimestamp, 10, kTimeBaseMs + kTimeBetweenEventsMs);
   for (int i = 0; i < 10; ++i) {
-    p.AddReceiverEventLog(0, kVideoAckSent, i * kTimeBetweenEventsMs);
+    p.AddReceiverEventLog(0, FRAME_ACK_SENT, i * kTimeBetweenEventsMs);
   }
   test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
-  ReceiverRtcpEventSubscriber event_subscriber(
-      500, ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
+  ReceiverRtcpEventSubscriber event_subscriber(500, VIDEO_EVENT);
   for (int i = 0; i < 11; ++i) {
     FrameEvent frame_event;
     frame_event.rtp_timestamp = kRtpTimestamp;
-    frame_event.type = media::cast::kVideoAckSent;
+    frame_event.type = FRAME_ACK_SENT;
+    frame_event.media_type = VIDEO_EVENT;
     frame_event.timestamp = testing_clock.NowTicks();
     event_subscriber.OnReceiveFrameEvent(frame_event);
     testing_clock.Advance(
@@ -490,8 +492,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportRedundancy) {
   base::SimpleTestTickClock testing_clock;
   testing_clock.Advance(base::TimeDelta::FromMilliseconds(time_base_ms));
 
-  ReceiverRtcpEventSubscriber event_subscriber(
-      500, ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
+  ReceiverRtcpEventSubscriber event_subscriber(500, VIDEO_EVENT);
   size_t packet_count = kReceiveLogMessageHistorySize + 10;
   for (size_t i = 0; i < packet_count; i++) {
     TestRtcpPacketBuilder p;
@@ -506,23 +507,24 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportRedundancy) {
           kRtpTimestamp,
           1,
           time_base_ms - kSecondRedundancyOffset * kTimeBetweenEventsMs);
-      p.AddReceiverEventLog(0, kVideoAckSent, 0);
+      p.AddReceiverEventLog(0, FRAME_ACK_SENT, 0);
     }
     if (i >= kFirstRedundancyOffset) {
       p.AddReceiverFrameLog(
           kRtpTimestamp,
           1,
           time_base_ms - kFirstRedundancyOffset * kTimeBetweenEventsMs);
-      p.AddReceiverEventLog(0, kVideoAckSent, 0);
+      p.AddReceiverEventLog(0, FRAME_ACK_SENT, 0);
     }
     p.AddReceiverFrameLog(kRtpTimestamp, 1, time_base_ms);
-    p.AddReceiverEventLog(0, kVideoAckSent, 0);
+    p.AddReceiverEventLog(0, FRAME_ACK_SENT, 0);
 
     test_transport_.SetExpectedRtcpPacket(p.GetPacket().Pass());
 
     FrameEvent frame_event;
     frame_event.rtp_timestamp = kRtpTimestamp;
-    frame_event.type = media::cast::kVideoAckSent;
+    frame_event.type = FRAME_ACK_SENT;
+    frame_event.media_type = VIDEO_EVENT;
     frame_event.timestamp = testing_clock.NowTicks();
     event_subscriber.OnReceiveFrameEvent(frame_event);
 

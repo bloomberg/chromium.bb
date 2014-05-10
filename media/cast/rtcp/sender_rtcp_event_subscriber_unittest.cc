@@ -47,17 +47,15 @@ class SenderRtcpEventSubscriberTest : public ::testing::Test {
 
 TEST_F(SenderRtcpEventSubscriberTest, InsertEntry) {
   cast_environment_->Logging()->InsertFrameEvent(
-      testing_clock_->NowTicks(), kVideoFrameCaptureBegin, 100u, 1u);
+      testing_clock_->NowTicks(), FRAME_CAPTURE_BEGIN, VIDEO_EVENT, 100u, 1u);
   cast_environment_->Logging()->InsertFrameEvent(
-      testing_clock_->NowTicks(), kVideoFrameCaptureBegin, 200u, 2u);
-  cast_environment_->Logging()->InsertFrameEvent(
-      testing_clock_->NowTicks(), kVideoFrameSentToEncoder, 100u, 1u);
+      testing_clock_->NowTicks(), FRAME_CAPTURE_BEGIN, VIDEO_EVENT, 200u, 2u);
   cast_environment_->Logging()->InsertFrameEvent(testing_clock_->NowTicks(),
-                                                 kVideoFrameEncoded, 100u, 1u);
+                                                 FRAME_ENCODED, VIDEO_EVENT,
+                                                 100u, 1u);
   cast_environment_->Logging()->InsertFrameEvent(testing_clock_->NowTicks(),
-                                                 kVideoFrameEncoded, 300u, 3u);
-  cast_environment_->Logging()->InsertFrameEvent(
-      testing_clock_->NowTicks(), kVideoFrameSentToEncoder, 300u, 3u);
+                                                 FRAME_ENCODED, VIDEO_EVENT,
+                                                 300u, 3u);
 
   RtcpEventMap events;
   event_subscriber_.GetRtcpEventsAndReset(&events);
@@ -66,20 +64,20 @@ TEST_F(SenderRtcpEventSubscriberTest, InsertEntry) {
 
   RtcpEventMap::iterator it = events.begin();
   EXPECT_EQ(100u, it->first);
-  EXPECT_EQ(kVideoFrameEncoded, it->second.type);
+  EXPECT_EQ(FRAME_ENCODED, it->second.type);
 
   ++it;
   EXPECT_EQ(200u, it->first);
-  EXPECT_EQ(kVideoFrameCaptureBegin, it->second.type);
+  EXPECT_EQ(FRAME_CAPTURE_BEGIN, it->second.type);
 
   ++it;
   EXPECT_EQ(300u, it->first);
-  EXPECT_EQ(kVideoFrameEncoded, it->second.type);
+  EXPECT_EQ(FRAME_ENCODED, it->second.type);
 }
 
 TEST_F(SenderRtcpEventSubscriberTest, MapReset) {
   cast_environment_->Logging()->InsertFrameEvent(
-      testing_clock_->NowTicks(), kVideoFrameCaptureBegin, 100u, 1u);
+      testing_clock_->NowTicks(), FRAME_CAPTURE_BEGIN, VIDEO_EVENT, 100u, 1u);
 
   RtcpEventMap events;
   event_subscriber_.GetRtcpEventsAndReset(&events);
@@ -93,7 +91,8 @@ TEST_F(SenderRtcpEventSubscriberTest, MapReset) {
 TEST_F(SenderRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
   for (uint32 i = 1u; i <= 10u; ++i) {
     cast_environment_->Logging()->InsertFrameEvent(
-        testing_clock_->NowTicks(), kVideoFrameCaptureBegin, i * 10, i);
+        testing_clock_->NowTicks(), FRAME_CAPTURE_BEGIN, VIDEO_EVENT,
+        i * 10, i);
   }
 
   RtcpEventMap events;
@@ -105,7 +104,8 @@ TEST_F(SenderRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
 
   for (uint32 i = 1u; i <= 11u; ++i) {
     cast_environment_->Logging()->InsertFrameEvent(
-        testing_clock_->NowTicks(), kVideoFrameCaptureBegin, i * 10, i);
+        testing_clock_->NowTicks(), FRAME_CAPTURE_BEGIN, VIDEO_EVENT,
+        i * 10, i);
   }
 
   event_subscriber_.GetRtcpEventsAndReset(&events);

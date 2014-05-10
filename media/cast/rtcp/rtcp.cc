@@ -68,45 +68,7 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
 
   virtual void OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log)
       OVERRIDE {
-    // Add received log messages into our log system.
-    RtcpReceiverLogMessage::const_iterator it = receiver_log.begin();
-
-    for (; it != receiver_log.end(); ++it) {
-      uint32 rtp_timestamp = it->rtp_timestamp_;
-
-      RtcpReceiverEventLogMessages::const_iterator event_it =
-          it->event_log_messages_.begin();
-      for (; event_it != it->event_log_messages_.end(); ++event_it) {
-        switch (event_it->type) {
-          case kAudioPacketReceived:
-          case kVideoPacketReceived:
-          case kDuplicateAudioPacketReceived:
-          case kDuplicateVideoPacketReceived:
-            cast_environment_->Logging()->InsertPacketEvent(
-                event_it->event_timestamp, event_it->type, rtp_timestamp,
-                kFrameIdUnknown, event_it->packet_id, 0, 0);
-            break;
-          case kAudioAckSent:
-          case kVideoAckSent:
-          case kAudioFrameDecoded:
-          case kVideoFrameDecoded:
-            cast_environment_->Logging()->InsertFrameEvent(
-                event_it->event_timestamp, event_it->type, rtp_timestamp,
-                kFrameIdUnknown);
-            break;
-          case kAudioPlayoutDelay:
-          case kVideoRenderDelay:
-            cast_environment_->Logging()->InsertFrameEventWithDelay(
-                event_it->event_timestamp, event_it->type, rtp_timestamp,
-                kFrameIdUnknown, event_it->delay_delta);
-            break;
-          default:
-            VLOG(2) << "Received log message via RTCP that we did not expect: "
-                    << static_cast<int>(event_it->type);
-            break;
-        }
-      }
-    }
+    rtcp_->OnReceivedReceiverLog(receiver_log);
   }
 
   virtual void OnReceivedSenderLog(
@@ -115,7 +77,7 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
 
     for (; it != sender_log.end(); ++it) {
       uint32 rtp_timestamp = it->rtp_timestamp;
-      CastLoggingEvent log_event = kUnknown;
+      CastLoggingEvent log_event = UNKNOWN;
 
       // These events are provided to know the status of frames that never
       // reached the receiver. The timing information for these events are not
@@ -123,18 +85,13 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
       switch (it->frame_status) {
         case transport::kRtcpSenderFrameStatusDroppedByFlowControl:
           // A frame that have been dropped by the flow control would have
-          // kVideoFrameCaptureBegin as its last event in the log.
-          log_event = kVideoFrameCaptureBegin;
-          break;
-        case transport::kRtcpSenderFrameStatusDroppedByEncoder:
-          // A frame that have been dropped by the encoder would have
-          // kVideoFrameSentToEncoder as its last event in the log.
-          log_event = kVideoFrameSentToEncoder;
+          // FRAME_CAPTURE_BEGIN as its last event in the log.
+          log_event = FRAME_CAPTURE_BEGIN;
           break;
         case transport::kRtcpSenderFrameStatusSentToNetwork:
           // A frame that have be encoded is always sent to the network. We
           // do not add a new log entry for this.
-          log_event = kVideoFrameEncoded;
+          log_event = FRAME_ENCODED;
           break;
         default:
           continue;
@@ -145,7 +102,7 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
       // we need to send in one.
       base::TimeTicks now = cast_environment_->Clock()->NowTicks();
       cast_environment_->Logging()->InsertFrameEvent(
-          now, log_event, rtp_timestamp, kFrameIdUnknown);
+          now, log_event, VIDEO_EVENT, rtp_timestamp, kFrameIdUnknown);
     }
   }
 
@@ -160,7 +117,7 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
            transport::PacedPacketSender* paced_packet_sender,
            RtpReceiverStatistics* rtp_receiver_statistics, RtcpMode rtcp_mode,
            const base::TimeDelta& rtcp_interval, uint32 local_ssrc,
-           uint32 remote_ssrc, const std::string& c_name)
+           uint32 remote_ssrc, const std::string& c_name, bool is_audio)
     : cast_environment_(cast_environment),
       transport_sender_(transport_sender),
       rtcp_interval_(rtcp_interval),
@@ -178,7 +135,8 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       last_received_ntp_seconds_(0),
       last_received_ntp_fraction_(0),
       min_rtt_(base::TimeDelta::FromMilliseconds(kMaxRttMs)),
-      number_of_rtt_in_avg_(0) {
+      number_of_rtt_in_avg_(0),
+      is_audio_(is_audio) {
   rtcp_receiver_.reset(new RtcpReceiver(cast_environment, sender_feedback,
                                         receiver_feedback_.get(),
                                         rtt_feedback_.get(), local_ssrc));
@@ -475,6 +433,43 @@ void Rtcp::UpdateNextTimeToSendRtcp() {
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   next_time_to_send_rtcp_ = now + time_to_next;
+}
+
+void Rtcp::OnReceivedReceiverLog(const RtcpReceiverLogMessage& receiver_log) {
+  // Add received log messages into our log system.
+  RtcpReceiverLogMessage::const_iterator it = receiver_log.begin();
+  EventMediaType media_type = is_audio_ ? AUDIO_EVENT : VIDEO_EVENT;
+  for (; it != receiver_log.end(); ++it) {
+    uint32 rtp_timestamp = it->rtp_timestamp_;
+
+    RtcpReceiverEventLogMessages::const_iterator event_it =
+        it->event_log_messages_.begin();
+    for (; event_it != it->event_log_messages_.end(); ++event_it) {
+      switch (event_it->type) {
+        case PACKET_RECEIVED:
+          cast_environment_->Logging()->InsertPacketEvent(
+              event_it->event_timestamp, event_it->type,
+              media_type, rtp_timestamp,
+              kFrameIdUnknown, event_it->packet_id, 0, 0);
+          break;
+        case FRAME_ACK_SENT:
+        case FRAME_DECODED:
+          cast_environment_->Logging()->InsertFrameEvent(
+              event_it->event_timestamp, event_it->type, media_type,
+              rtp_timestamp, kFrameIdUnknown);
+          break;
+        case FRAME_PLAYOUT:
+          cast_environment_->Logging()->InsertFrameEventWithDelay(
+              event_it->event_timestamp, event_it->type, media_type,
+              rtp_timestamp, kFrameIdUnknown, event_it->delay_delta);
+          break;
+        default:
+          VLOG(2) << "Received log message via RTCP that we did not expect: "
+                  << static_cast<int>(event_it->type);
+          break;
+      }
+    }
+  }
 }
 
 }  // namespace cast

@@ -83,7 +83,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
     DECODE_FPS,
     // Average encode duration in milliseconds.
     // TODO(imcheng): This stat is not populated yet because we do not have
-    // the time when encode started. Record it in kVideoFrameEncoded event.
+    // the time when encode started. Record it in FRAME_ENCODED event.
     AVG_ENCODE_TIME_MS,
     // Average playout delay in milliseconds, with target delay already
     // accounted for. Ideally, every frame should have a playout delay of 0.

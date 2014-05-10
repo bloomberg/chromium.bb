@@ -42,7 +42,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
     }
   }
 
-  void Init(ReceiverRtcpEventSubscriber::Type type) {
+  void Init(EventMediaType type) {
     event_subscriber_.reset(
         new ReceiverRtcpEventSubscriber(kMaxEventEntries, type));
     cast_environment_->Logging()->AddRawEventSubscriber(
@@ -52,35 +52,39 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
   void InsertEvents() {
     // Video events
     cast_environment_->Logging()->InsertFrameEventWithDelay(
-        testing_clock_->NowTicks(), kVideoRenderDelay, /*rtp_timestamp*/ 100u,
-        /*frame_id*/ 2u, base::TimeDelta::FromMilliseconds(kDelayMs));
+        testing_clock_->NowTicks(), FRAME_PLAYOUT, VIDEO_EVENT,
+        /*rtp_timestamp*/ 100u, /*frame_id*/ 2u,
+        base::TimeDelta::FromMilliseconds(kDelayMs));
     cast_environment_->Logging()->InsertFrameEvent(
-        testing_clock_->NowTicks(), kVideoFrameDecoded, /*rtp_timestamp*/ 200u,
-        /*frame_id*/ 1u);
+        testing_clock_->NowTicks(), FRAME_DECODED, VIDEO_EVENT,
+        /*rtp_timestamp*/ 200u, /*frame_id*/ 1u);
     cast_environment_->Logging()->InsertPacketEvent(
-        testing_clock_->NowTicks(), kVideoPacketReceived,
+        testing_clock_->NowTicks(), PACKET_RECEIVED, VIDEO_EVENT,
         /*rtp_timestamp */ 200u, /*frame_id*/ 2u, /*packet_id*/ 1u,
         /*max_packet_id*/ 10u, /*size*/ 1024u);
 
     // Audio events
     cast_environment_->Logging()->InsertFrameEventWithDelay(
-        testing_clock_->NowTicks(), kAudioPlayoutDelay, /*rtp_timestamp*/ 300u,
-        /*frame_id*/ 4u, base::TimeDelta::FromMilliseconds(kDelayMs));
+        testing_clock_->NowTicks(), FRAME_PLAYOUT, AUDIO_EVENT,
+        /*rtp_timestamp*/ 300u, /*frame_id*/ 4u,
+        base::TimeDelta::FromMilliseconds(kDelayMs));
     cast_environment_->Logging()->InsertFrameEvent(
-        testing_clock_->NowTicks(), kAudioFrameDecoded, /*rtp_timestamp*/ 400u,
-        /*frame_id*/ 3u);
+        testing_clock_->NowTicks(), FRAME_DECODED, AUDIO_EVENT,
+        /*rtp_timestamp*/ 400u, /*frame_id*/ 3u);
     cast_environment_->Logging()->InsertPacketEvent(
-        testing_clock_->NowTicks(), kAudioPacketReceived,
+        testing_clock_->NowTicks(), PACKET_RECEIVED, AUDIO_EVENT,
         /*rtp_timestamp */ 400u, /*frame_id*/ 5u, /*packet_id*/ 1u,
         /*max_packet_id*/ 10u, /*size*/ 128u);
 
     // Unrelated events
     cast_environment_->Logging()->InsertFrameEvent(testing_clock_->NowTicks(),
-                                                   kVideoFrameCaptureEnd,
+                                                   FRAME_CAPTURE_END,
+                                                   VIDEO_EVENT,
                                                    /*rtp_timestamp*/ 100u,
                                                    /*frame_id*/ 1u);
     cast_environment_->Logging()->InsertFrameEvent(testing_clock_->NowTicks(),
-                                                   kAudioFrameCaptureEnd,
+                                                   FRAME_CAPTURE_END,
+                                                   AUDIO_EVENT,
                                                    /*rtp_timestamp*/ 100u,
                                                    /*frame_id*/ 1u);
   }
@@ -92,7 +96,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
 };
 
 TEST_F(ReceiverRtcpEventSubscriberTest, LogVideoEvents) {
-  Init(ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
+  Init(VIDEO_EVENT);
 
   InsertEvents();
   ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
@@ -101,7 +105,7 @@ TEST_F(ReceiverRtcpEventSubscriberTest, LogVideoEvents) {
 }
 
 TEST_F(ReceiverRtcpEventSubscriberTest, LogAudioEvents) {
-  Init(ReceiverRtcpEventSubscriber::kAudioEventSubscriber);
+  Init(AUDIO_EVENT);
 
   InsertEvents();
   ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
@@ -110,11 +114,11 @@ TEST_F(ReceiverRtcpEventSubscriberTest, LogAudioEvents) {
 }
 
 TEST_F(ReceiverRtcpEventSubscriberTest, DropEventsWhenSizeExceeded) {
-  Init(ReceiverRtcpEventSubscriber::kVideoEventSubscriber);
+  Init(VIDEO_EVENT);
 
   for (uint32 i = 1u; i <= 10u; ++i) {
     cast_environment_->Logging()->InsertFrameEvent(
-        testing_clock_->NowTicks(), kVideoFrameDecoded,
+        testing_clock_->NowTicks(), FRAME_DECODED, VIDEO_EVENT,
         /*rtp_timestamp*/ i * 10, /*frame_id*/ i);
   }
 

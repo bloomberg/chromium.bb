@@ -682,20 +682,14 @@ void RtcpSender::BuildReceiverLog(
               event_message.type,
               event_message.event_timestamp - event_timestamp_base);
       switch (event_message.type) {
-        case kAudioAckSent:
-        case kVideoAckSent:
-        case kAudioPlayoutDelay:
-        case kAudioFrameDecoded:
-        case kVideoFrameDecoded:
-        case kVideoRenderDelay:
+        case FRAME_ACK_SENT:
+        case FRAME_PLAYOUT:
+        case FRAME_DECODED:
           big_endian_writer.WriteU16(
               static_cast<uint16>(event_message.delay_delta.InMilliseconds()));
           big_endian_writer.WriteU16(event_type_and_timestamp_delta);
           break;
-        case kAudioPacketReceived:
-        case kVideoPacketReceived:
-        case kDuplicateAudioPacketReceived:
-        case kDuplicateVideoPacketReceived:
+        case PACKET_RECEIVED:
           big_endian_writer.WriteU16(event_message.packet_id);
           big_endian_writer.WriteU16(event_type_and_timestamp_delta);
           break;

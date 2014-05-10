@@ -62,7 +62,7 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
     const FrameEvent& frame_event) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!ShouldProcessEvent(frame_event.type))
+  if (event_media_type_ != frame_event.media_type)
     return;
 
   RtpTimestamp relative_rtp_timestamp =
@@ -92,14 +92,14 @@ void EncodingEventSubscriber::OnReceiveFrameEvent(
   event_proto->add_event_timestamp_ms(
       (frame_event.timestamp - base::TimeTicks()).InMilliseconds());
 
-  if (frame_event.type == kAudioFrameEncoded) {
+  if (frame_event.type == FRAME_ENCODED) {
     event_proto->set_encoded_frame_size(frame_event.size);
-  } else if (frame_event.type == kVideoFrameEncoded) {
-    event_proto->set_encoded_frame_size(frame_event.size);
-    event_proto->set_key_frame(frame_event.key_frame);
-    event_proto->set_target_bitrate(frame_event.target_bitrate);
-  } else if (frame_event.type == kAudioPlayoutDelay ||
-             frame_event.type == kVideoRenderDelay) {
+    if (frame_event.media_type == VIDEO_EVENT) {
+      event_proto->set_encoded_frame_size(frame_event.size);
+      event_proto->set_key_frame(frame_event.key_frame);
+      event_proto->set_target_bitrate(frame_event.target_bitrate);
+    }
+  } else if (frame_event.type == FRAME_PLAYOUT) {
     event_proto->set_delay_millis(frame_event.delay_delta.InMilliseconds());
   }
 
@@ -114,7 +114,7 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
     const PacketEvent& packet_event) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!ShouldProcessEvent(packet_event.type))
+  if (event_media_type_ != packet_event.media_type)
     return;
   RtpTimestamp relative_rtp_timestamp =
       GetRelativeRtpTimestamp(packet_event.rtp_timestamp);
@@ -206,10 +206,6 @@ void EncodingEventSubscriber::GetEventsAndReset(LogMetadata* metadata,
   frame_events->swap(frame_event_storage_);
   packet_events->swap(packet_event_storage_);
   Reset();
-}
-
-bool EncodingEventSubscriber::ShouldProcessEvent(CastLoggingEvent event) {
-  return GetEventMediaType(event) == event_media_type_;
 }
 
 void EncodingEventSubscriber::TransferFrameEvents(size_t max_num_entries) {

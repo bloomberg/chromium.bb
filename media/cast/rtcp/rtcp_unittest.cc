@@ -140,7 +140,8 @@ class RtcpPeer : public Rtcp {
              rtcp_interval,
              local_ssrc,
              remote_ssrc,
-             c_name) {}
+             c_name,
+             true) {}
 
   using Rtcp::CheckForWrapAround;
   using Rtcp::OnReceivedLipSyncInfo;
@@ -214,7 +215,8 @@ TEST_F(RtcpTest, TimeToSend) {
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
             kSenderSsrc,
             kReceiverSsrc,
-            kCName);
+            kCName,
+            true);
   receiver_to_sender_.set_rtcp_receiver(&rtcp);
   EXPECT_LE(start_time, rtcp.TimeToSendNextRtcpReport());
   EXPECT_GE(
@@ -235,7 +237,8 @@ TEST_F(RtcpTest, BasicSenderReport) {
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
             kSenderSsrc,
             kReceiverSsrc,
-            kCName);
+            kCName,
+            true);
   sender_to_receiver_.set_rtcp_receiver(&rtcp);
   transport::RtcpSenderLogMessage empty_sender_log;
   rtcp.SendRtcpFromRtpSender(empty_sender_log, rtp_sender_stats_.sender_info());
@@ -251,7 +254,8 @@ TEST_F(RtcpTest, BasicReceiverReport) {
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
             kSenderSsrc,
             kReceiverSsrc,
-            kCName);
+            kCName,
+            true);
   receiver_to_sender_.set_rtcp_receiver(&rtcp);
   rtcp.SendRtcpFromRtpReceiver(NULL, NULL);
 }
@@ -269,7 +273,8 @@ TEST_F(RtcpTest, BasicCast) {
             base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
             kSenderSsrc,
             kSenderSsrc,
-            kCName);
+            kCName,
+            true);
   receiver_to_sender_.set_rtcp_receiver(&rtcp);
   RtcpCastMessage cast_message(kSenderSsrc);
   cast_message.ack_frame_id_ = kAckFrameId;
@@ -295,7 +300,8 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                      kReceiverSsrc,
                      kSenderSsrc,
-                     kCName);
+                     kCName,
+                     true);
 
   // Media sender.
   Rtcp rtcp_sender(cast_environment_,
@@ -307,7 +313,8 @@ TEST_F(RtcpTest, RttReducedSizeRtcp) {
                    base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                    kSenderSsrc,
                    kReceiverSsrc,
-                   kCName);
+                   kCName,
+                   true);
 
   sender_to_receiver_.set_rtcp_receiver(&rtcp_receiver);
   receiver_to_sender_.set_rtcp_receiver(&rtcp_sender);
@@ -352,7 +359,8 @@ TEST_F(RtcpTest, Rtt) {
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                      kReceiverSsrc,
                      kSenderSsrc,
-                     kCName);
+                     kCName,
+                     true);
 
   // Media sender.
   Rtcp rtcp_sender(cast_environment_,
@@ -364,7 +372,8 @@ TEST_F(RtcpTest, Rtt) {
                    base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                    kSenderSsrc,
                    kReceiverSsrc,
-                   kCName);
+                   kCName,
+                   true);
 
   receiver_to_sender_.set_rtcp_receiver(&rtcp_sender);
   sender_to_receiver_.set_rtcp_receiver(&rtcp_receiver);
@@ -447,7 +456,8 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                      base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                      kSenderSsrc,
                      kReceiverSsrc,
-                     kCName);
+                     kCName,
+                     true);
 
   // Media sender.
   Rtcp rtcp_sender(cast_environment_,
@@ -459,7 +469,8 @@ TEST_F(RtcpTest, RttWithPacketLoss) {
                    base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
                    kReceiverSsrc,
                    kSenderSsrc,
-                   kCName);
+                   kCName,
+                   true);
 
   receiver_to_sender_.set_rtcp_receiver(&rtcp_sender);
   sender_to_receiver_.set_rtcp_receiver(&rtcp_receiver);

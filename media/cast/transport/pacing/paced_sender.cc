@@ -21,21 +21,9 @@ static const size_t kPacingMaxBurstsPerFrame = 3;
 static const size_t kTargetBurstSize = 10;
 static const size_t kMaxBurstSize = 20;
 
-using media::cast::CastLoggingEvent;
-
-CastLoggingEvent GetLoggingEvent(bool is_audio, bool retransmit) {
-  if (retransmit) {
-    return is_audio ? media::cast::kAudioPacketRetransmitted
-                    : media::cast::kVideoPacketRetransmitted;
-  } else {
-    return is_audio ? media::cast::kAudioPacketSentToNetwork
-                    : media::cast::kVideoPacketSentToNetwork;
-  }
-}
-
 }  // namespace
 
-
+// static
 PacketKey PacedPacketSender::MakePacketKey(const base::TimeTicks& ticks,
                                            uint32 ssrc,
                                            uint16 packet_id) {
@@ -232,9 +220,11 @@ void PacedSender::LogPacketEvent(const Packet& packet, bool retransmit) {
     return;
   }
 
-  CastLoggingEvent event = GetLoggingEvent(is_audio, retransmit);
-
-  logging_->InsertSinglePacketEvent(clock_->NowTicks(), event, packet);
+  CastLoggingEvent event = retransmit ?
+      PACKET_RETRANSMITTED : PACKET_SENT_TO_NETWORK;
+  EventMediaType media_type = is_audio ? AUDIO_EVENT : VIDEO_EVENT;
+  logging_->InsertSinglePacketEvent(clock_->NowTicks(), event, media_type,
+      packet);
 }
 
 }  // namespace transport

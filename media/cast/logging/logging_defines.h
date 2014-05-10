@@ -19,50 +19,28 @@ static const uint32 kFrameIdUnknown = 0xFFFFFFFF;
 typedef uint32 RtpTimestamp;
 
 enum CastLoggingEvent {
-  kUnknown,
-  // Generic events. These are no longer used.
-  kRttMs,
-  kPacketLoss,
-  kJitterMs,
-  kVideoAckReceived,  // Sender side frame event.
-  kRembBitrate,       // Generic event. No longer used.
+  UNKNOWN,
+  // Sender side frame events.
+  FRAME_CAPTURE_BEGIN,
+  FRAME_CAPTURE_END,
+  FRAME_ENCODED,
+  FRAME_ACK_RECEIVED,
   // Receiver side frame events.
-  kAudioAckSent,
-  kVideoAckSent,
-  // Audio sender.
-  kAudioFrameCaptureBegin,
-  kAudioFrameCaptureEnd,
-  kAudioFrameEncoded,
-  // Audio receiver.
-  kAudioFrameDecoded,
-  kAudioPlayoutDelay,
-  // Video sender.
-  kVideoFrameCaptureBegin,
-  kVideoFrameCaptureEnd,
-  kVideoFrameSentToEncoder,  // Deprecated
-  kVideoFrameEncoded,
-  // Video receiver.
-  kVideoFrameDecoded,
-  kVideoRenderDelay,
-  // Send-side packet events.
-  kAudioPacketSentToNetwork,
-  kVideoPacketSentToNetwork,
-  kAudioPacketRetransmitted,
-  kVideoPacketRetransmitted,
-  // Receive-side packet events.
-  kAudioPacketReceived,
-  kVideoPacketReceived,
-  kDuplicateAudioPacketReceived,
-  kDuplicateVideoPacketReceived,
-  kNumOfLoggingEvents = kDuplicateVideoPacketReceived
+  FRAME_ACK_SENT,
+  FRAME_DECODED,
+  FRAME_PLAYOUT,
+  // Sender side packet events.
+  PACKET_SENT_TO_NETWORK,
+  PACKET_RETRANSMITTED,
+  // Receiver side packet events.
+  PACKET_RECEIVED,
+  kNumOfLoggingEvents = PACKET_RECEIVED
 };
 
 const char* CastLoggingToString(CastLoggingEvent event);
 
 // CastLoggingEvent are classified into one of three following types.
-enum EventMediaType { AUDIO_EVENT, VIDEO_EVENT, OTHER_EVENT };
-
-EventMediaType GetEventMediaType(CastLoggingEvent event);
+enum EventMediaType { AUDIO_EVENT, VIDEO_EVENT, UNKNOWN_EVENT };
 
 struct FrameEvent {
   FrameEvent();
@@ -70,7 +48,8 @@ struct FrameEvent {
 
   RtpTimestamp rtp_timestamp;
   uint32 frame_id;
-  // Size of encoded frame. Only set for kVideoFrameEncoded event.
+
+  // Size of encoded frame. Only set for FRAME_ENCODED event.
   size_t size;
 
   // Time of event logged.
@@ -78,15 +57,16 @@ struct FrameEvent {
 
   CastLoggingEvent type;
 
-  // Render / playout delay. Only set for kAudioPlayoutDelay and
-  // kVideoRenderDelay events.
+  EventMediaType media_type;
+
+  // Render / playout delay. Only set for FRAME_PLAYOUT events.
   base::TimeDelta delay_delta;
 
-  // Whether the frame is a key frame. Only set for kVideoFrameEncoded event.
+  // Whether the frame is a key frame. Only set for video FRAME_ENCODED event.
   bool key_frame;
 
   // The requested target bitrate of the encoder at the time the frame is
-  // encoded. Only set for kVideoFrameEncoded event.
+  // encoded. Only set for video FRAME_ENCODED event.
   int target_bitrate;
 };
 
@@ -103,6 +83,7 @@ struct PacketEvent {
   // Time of event logged.
   base::TimeTicks timestamp;
   CastLoggingEvent type;
+  EventMediaType media_type;
 };
 
 }  // namespace cast

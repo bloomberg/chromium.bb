@@ -78,11 +78,13 @@ TEST_F(EncodingEventSubscriberTest, FrameEventTruncating) {
   // Entry with RTP timestamp 0 should get dropped.
   for (int i = 0; i < 11; i++) {
     cast_environment_->Logging()->InsertFrameEvent(now,
-                                                   kVideoFrameCaptureBegin,
+                                                   FRAME_CAPTURE_BEGIN,
+                                                   VIDEO_EVENT,
                                                    i * 100,
                                                    /*frame_id*/ 0);
     cast_environment_->Logging()->InsertFrameEvent(now,
-                                                   kVideoFrameDecoded,
+                                                   FRAME_DECODED,
+                                                   VIDEO_EVENT,
                                                    i * 100,
                                                    /*frame_id*/ 0);
   }
@@ -102,7 +104,8 @@ TEST_F(EncodingEventSubscriberTest, PacketEventTruncating) {
   // Entry with RTP timestamp 0 should get dropped.
   for (int i = 0; i < 11; i++) {
     cast_environment_->Logging()->InsertPacketEvent(now,
-                                                    kAudioPacketReceived,
+                                                    PACKET_RECEIVED,
+                                                    AUDIO_EVENT,
                                                     /*rtp_timestamp*/ i * 100,
                                                     /*frame_id*/ 0,
                                                     /*packet_id*/ i,
@@ -123,13 +126,15 @@ TEST_F(EncodingEventSubscriberTest, EventFiltering) {
   base::TimeTicks now(testing_clock_->NowTicks());
   RtpTimestamp rtp_timestamp = 100;
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameDecoded,
+                                                 FRAME_DECODED,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
 
   // This is an AUDIO_EVENT and shouldn't be processed by the subscriber.
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kAudioFrameDecoded,
+                                                 FRAME_DECODED,
+                                                 AUDIO_EVENT,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
 
@@ -141,7 +146,7 @@ TEST_F(EncodingEventSubscriberTest, EventFiltering) {
   linked_ptr<AggregatedFrameEvent> frame_event = *it;
 
   ASSERT_EQ(1, frame_event->event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_FRAME_DECODED,
+  EXPECT_EQ(media::cast::proto::FRAME_DECODED,
             frame_event->event_type(0));
 
   GetEventsAndReset();
@@ -153,7 +158,8 @@ TEST_F(EncodingEventSubscriberTest, FrameEvent) {
   Init(VIDEO_EVENT);
   base::TimeTicks now(testing_clock_->NowTicks());
   RtpTimestamp rtp_timestamp = 100;
-  cast_environment_->Logging()->InsertFrameEvent(now, kVideoFrameDecoded,
+  cast_environment_->Logging()->InsertFrameEvent(now, FRAME_DECODED,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
 
@@ -169,7 +175,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEvent) {
   EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_FRAME_DECODED, event->event_type(0));
+  EXPECT_EQ(media::cast::proto::FRAME_DECODED, event->event_type(0));
   ASSERT_EQ(1, event->event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now), event->event_timestamp_ms(0));
 
@@ -186,7 +192,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
   RtpTimestamp rtp_timestamp = 100;
   int delay_ms = 100;
   cast_environment_->Logging()->InsertFrameEventWithDelay(
-      now, kAudioPlayoutDelay, rtp_timestamp,
+      now, FRAME_PLAYOUT, AUDIO_EVENT, rtp_timestamp,
       /*frame_id*/ 0, base::TimeDelta::FromMilliseconds(delay_ms));
 
   GetEventsAndReset();
@@ -201,7 +207,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventDelay) {
   EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->event_type_size());
-  EXPECT_EQ(media::cast::proto::AUDIO_PLAYOUT_DELAY, event->event_type(0));
+  EXPECT_EQ(media::cast::proto::FRAME_PLAYOUT, event->event_type(0));
   ASSERT_EQ(1, event->event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now), event->event_timestamp_ms(0));
 
@@ -218,7 +224,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   bool key_frame = true;
   int target_bitrate = 1024;
   cast_environment_->Logging()->InsertEncodedFrameEvent(
-      now, kVideoFrameEncoded, rtp_timestamp,
+      now, FRAME_ENCODED, VIDEO_EVENT, rtp_timestamp,
       /*frame_id*/ 0, size, key_frame, target_bitrate);
 
   GetEventsAndReset();
@@ -233,7 +239,7 @@ TEST_F(EncodingEventSubscriberTest, FrameEventSize) {
   EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_FRAME_ENCODED, event->event_type(0));
+  EXPECT_EQ(media::cast::proto::FRAME_ENCODED, event->event_type(0));
   ASSERT_EQ(1, event->event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now), event->event_timestamp_ms(0));
 
@@ -250,20 +256,20 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   RtpTimestamp rtp_timestamp2 = 200;
   base::TimeTicks now1(testing_clock_->NowTicks());
   cast_environment_->Logging()->InsertFrameEventWithDelay(
-      now1, kAudioPlayoutDelay, rtp_timestamp1,
+      now1, FRAME_PLAYOUT, AUDIO_EVENT, rtp_timestamp1,
       /*frame_id*/ 0, /*delay*/ base::TimeDelta::FromMilliseconds(100));
 
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
   cast_environment_->Logging()->InsertEncodedFrameEvent(
-      now2, kAudioFrameEncoded, rtp_timestamp2,
+      now2, FRAME_ENCODED, AUDIO_EVENT, rtp_timestamp2,
       /*frame_id*/ 0, /*size*/ 123, /* key_frame - unused */ false,
       /*target_bitrate - unused*/ 0);
 
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now3(testing_clock_->NowTicks());
   cast_environment_->Logging()->InsertFrameEvent(
-      now3, kAudioFrameDecoded, rtp_timestamp1, /*frame_id*/ 0);
+      now3, FRAME_DECODED, AUDIO_EVENT, rtp_timestamp1, /*frame_id*/ 0);
 
   GetEventsAndReset();
 
@@ -277,8 +283,8 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(2, event->event_type_size());
-  EXPECT_EQ(media::cast::proto::AUDIO_PLAYOUT_DELAY, event->event_type(0));
-  EXPECT_EQ(media::cast::proto::AUDIO_FRAME_DECODED, event->event_type(1));
+  EXPECT_EQ(media::cast::proto::FRAME_PLAYOUT, event->event_type(0));
+  EXPECT_EQ(media::cast::proto::FRAME_DECODED, event->event_type(1));
 
   ASSERT_EQ(2, event->event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now1), event->event_timestamp_ms(0));
@@ -294,7 +300,7 @@ TEST_F(EncodingEventSubscriberTest, MultipleFrameEvents) {
   EXPECT_EQ(relative_rtp_timestamp, event->relative_rtp_timestamp());
 
   ASSERT_EQ(1, event->event_type_size());
-  EXPECT_EQ(media::cast::proto::AUDIO_FRAME_ENCODED, event->event_type(0));
+  EXPECT_EQ(media::cast::proto::FRAME_ENCODED, event->event_type(0));
 
   ASSERT_EQ(1, event->event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now2), event->event_timestamp_ms(0));
@@ -309,7 +315,8 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
   int packet_id = 2;
   int size = 100;
   cast_environment_->Logging()->InsertPacketEvent(
-      now, kAudioPacketReceived, rtp_timestamp, /*frame_id*/ 0, packet_id,
+      now, PACKET_RECEIVED, AUDIO_EVENT,
+      rtp_timestamp, /*frame_id*/ 0, packet_id,
       /*max_packet_id*/ 10, size);
 
   GetEventsAndReset();
@@ -327,7 +334,7 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
   const BasePacketEvent& base_event = event->base_packet_event(0);
   EXPECT_EQ(packet_id, base_event.packet_id());
   ASSERT_EQ(1, base_event.event_type_size());
-  EXPECT_EQ(media::cast::proto::AUDIO_PACKET_RECEIVED,
+  EXPECT_EQ(media::cast::proto::PACKET_RECEIVED,
             base_event.event_type(0));
   ASSERT_EQ(1, base_event.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now), base_event.event_timestamp_ms(0));
@@ -344,7 +351,8 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   int packet_id = 2;
   int size = 100;
   cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  kVideoPacketSentToNetwork,
+                                                  PACKET_SENT_TO_NETWORK,
+                                                  VIDEO_EVENT,
                                                   rtp_timestamp,
                                                   /*frame_id*/ 0,
                                                   packet_id,
@@ -354,7 +362,8 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
   cast_environment_->Logging()->InsertPacketEvent(now2,
-                                                  kVideoPacketRetransmitted,
+                                                  PACKET_RETRANSMITTED,
+                                                  VIDEO_EVENT,
                                                   rtp_timestamp,
                                                   /*frame_id*/ 0,
                                                   packet_id,
@@ -376,9 +385,9 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
   const BasePacketEvent& base_event = event->base_packet_event(0);
   EXPECT_EQ(packet_id, base_event.packet_id());
   ASSERT_EQ(2, base_event.event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_NETWORK,
+  EXPECT_EQ(media::cast::proto::PACKET_SENT_TO_NETWORK,
             base_event.event_type(0));
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_RETRANSMITTED,
+  EXPECT_EQ(media::cast::proto::PACKET_RETRANSMITTED,
             base_event.event_type(1));
   ASSERT_EQ(2, base_event.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
@@ -393,7 +402,8 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   int packet_id_2 = 3;
   int size = 100;
   cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  kVideoPacketSentToNetwork,
+                                                  PACKET_SENT_TO_NETWORK,
+                                                  VIDEO_EVENT,
                                                   rtp_timestamp,
                                                   /*frame_id*/ 0,
                                                   packet_id_1,
@@ -403,7 +413,8 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
   cast_environment_->Logging()->InsertPacketEvent(now2,
-                                                  kVideoPacketRetransmitted,
+                                                  PACKET_RETRANSMITTED,
+                                                  VIDEO_EVENT,
                                                   rtp_timestamp,
                                                   /*frame_id*/ 0,
                                                   packet_id_2,
@@ -425,7 +436,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   const BasePacketEvent& base_event = event->base_packet_event(0);
   EXPECT_EQ(packet_id_1, base_event.packet_id());
   ASSERT_EQ(1, base_event.event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_NETWORK,
+  EXPECT_EQ(media::cast::proto::PACKET_SENT_TO_NETWORK,
             base_event.event_type(0));
   ASSERT_EQ(1, base_event.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
@@ -433,7 +444,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
   const BasePacketEvent& base_event_2 = event->base_packet_event(1);
   EXPECT_EQ(packet_id_2, base_event_2.packet_id());
   ASSERT_EQ(1, base_event_2.event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_RETRANSMITTED,
+  EXPECT_EQ(media::cast::proto::PACKET_RETRANSMITTED,
             base_event_2.event_type(0));
   ASSERT_EQ(1, base_event_2.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now2), base_event_2.event_timestamp_ms(0));
@@ -448,7 +459,8 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   int packet_id_2 = 3;
   int size = 100;
   cast_environment_->Logging()->InsertPacketEvent(now1,
-                                                  kVideoPacketSentToNetwork,
+                                                  PACKET_SENT_TO_NETWORK,
+                                                  VIDEO_EVENT,
                                                   rtp_timestamp_1,
                                                   /*frame_id*/ 0,
                                                   packet_id_1,
@@ -458,7 +470,8 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   testing_clock_->Advance(base::TimeDelta::FromMilliseconds(20));
   base::TimeTicks now2(testing_clock_->NowTicks());
   cast_environment_->Logging()->InsertPacketEvent(now2,
-                                                  kVideoPacketRetransmitted,
+                                                  PACKET_RETRANSMITTED,
+                                                  VIDEO_EVENT,
                                                   rtp_timestamp_2,
                                                   /*frame_id*/ 0,
                                                   packet_id_2,
@@ -480,7 +493,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   const BasePacketEvent& base_event = event->base_packet_event(0);
   EXPECT_EQ(packet_id_1, base_event.packet_id());
   ASSERT_EQ(1, base_event.event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_SENT_TO_NETWORK,
+  EXPECT_EQ(media::cast::proto::PACKET_SENT_TO_NETWORK,
             base_event.event_type(0));
   ASSERT_EQ(1, base_event.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
@@ -496,7 +509,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
   const BasePacketEvent& base_event_2 = event->base_packet_event(0);
   EXPECT_EQ(packet_id_2, base_event_2.packet_id());
   ASSERT_EQ(1, base_event_2.event_type_size());
-  EXPECT_EQ(media::cast::proto::VIDEO_PACKET_RETRANSMITTED,
+  EXPECT_EQ(media::cast::proto::PACKET_RETRANSMITTED,
             base_event_2.event_type(0));
   ASSERT_EQ(1, base_event_2.event_timestamp_ms_size());
   EXPECT_EQ(InMilliseconds(now2), base_event_2.event_timestamp_ms(0));
@@ -508,12 +521,14 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
   base::TimeTicks now(testing_clock_->NowTicks());
 
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameCaptureBegin,
+                                                 FRAME_CAPTURE_BEGIN,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
 
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameCaptureEnd,
+                                                 FRAME_CAPTURE_END,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp + 30,
                                                  /*frame_id*/ 1);
 
@@ -531,7 +546,8 @@ TEST_F(EncodingEventSubscriberTest, FirstRtpTimestamp) {
   rtp_timestamp = 67890;
 
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameCaptureBegin,
+                                                 FRAME_CAPTURE_BEGIN,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
   GetEventsAndReset();
@@ -545,13 +561,15 @@ TEST_F(EncodingEventSubscriberTest, RelativeRtpTimestampWrapAround) {
   base::TimeTicks now(testing_clock_->NowTicks());
 
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameCaptureBegin,
+                                                 FRAME_CAPTURE_BEGIN,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp,
                                                  /*frame_id*/ 0);
 
   // RtpTimestamp has now wrapped around.
   cast_environment_->Logging()->InsertFrameEvent(now,
-                                                 kVideoFrameCaptureEnd,
+                                                 FRAME_CAPTURE_END,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp + 30,
                                                  /*frame_id*/ 1);
 
@@ -571,7 +589,8 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   RtpTimestamp rtp_timestamp = 100;
   for (int i = 0; i < kMaxEventsPerProto + 1; i++) {
     cast_environment_->Logging()->InsertFrameEvent(testing_clock_->NowTicks(),
-                                                   kVideoAckReceived,
+                                                   FRAME_ACK_RECEIVED,
+                                                   VIDEO_EVENT,
                                                    rtp_timestamp,
                                                    /*frame_id*/ 0);
     testing_clock_->Advance(base::TimeDelta::FromMilliseconds(30));
@@ -590,7 +609,8 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   for (int i = 0; i < kMaxPacketsPerFrame + 1; i++) {
     cast_environment_->Logging()->InsertPacketEvent(
         testing_clock_->NowTicks(),
-        kVideoPacketRetransmitted,
+        PACKET_SENT_TO_NETWORK,
+        VIDEO_EVENT,
         rtp_timestamp,
         /*frame_id*/ 0,
         i,
@@ -618,7 +638,8 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   for (int j = 0; j < kMaxEventsPerProto + 1; j++) {
     cast_environment_->Logging()->InsertPacketEvent(
         testing_clock_->NowTicks(),
-        kVideoPacketRetransmitted,
+        PACKET_SENT_TO_NETWORK,
+        VIDEO_EVENT,
         rtp_timestamp,
         /*frame_id*/ 0,
         0,

@@ -106,7 +106,8 @@ VideoSender::VideoSender(
                base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
                video_config.rtp_config.ssrc,
                video_config.incoming_feedback_ssrc,
-               video_config.rtcp_c_name));
+               video_config.rtcp_c_name,
+               false));
   rtcp_->SetCastReceiverEventHistorySize(kReceiverRtcpEventHistorySize);
 
   // TODO(pwestin): pass cast_initialization_cb to |video_encoder_|
@@ -144,10 +145,11 @@ void VideoSender::InsertRawVideoFrame(
 
   RtpTimestamp rtp_timestamp = GetVideoRtpTimestamp(capture_time);
   cast_environment_->Logging()->InsertFrameEvent(
-      capture_time, kVideoFrameCaptureBegin, rtp_timestamp, kFrameIdUnknown);
+      capture_time, FRAME_CAPTURE_BEGIN, VIDEO_EVENT,
+      rtp_timestamp, kFrameIdUnknown);
   cast_environment_->Logging()->InsertFrameEvent(
       cast_environment_->Clock()->NowTicks(),
-      kVideoFrameCaptureEnd,
+      FRAME_CAPTURE_END, VIDEO_EVENT,
       rtp_timestamp,
       kFrameIdUnknown);
 
@@ -182,7 +184,7 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   frames_in_encoder_--;
   uint32 frame_id = encoded_frame->frame_id;
   cast_environment_->Logging()->InsertEncodedFrameEvent(
-      last_send_time_, kVideoFrameEncoded, encoded_frame->rtp_timestamp,
+      last_send_time_, FRAME_ENCODED, VIDEO_EVENT, encoded_frame->rtp_timestamp,
       frame_id, static_cast<int>(encoded_frame->data.size()),
       encoded_frame->key_frame, current_requested_bitrate_);
 
@@ -238,21 +240,16 @@ void VideoSender::SendRtcpReport() {
   for (RtcpEventMap::iterator it = rtcp_events.begin(); it != rtcp_events.end();
        ++it) {
     CastLoggingEvent event_type = it->second.type;
-    if (event_type == kVideoFrameCaptureBegin ||
-        event_type == kVideoFrameSentToEncoder ||
-        event_type == kVideoFrameEncoded) {
+    if (event_type == FRAME_CAPTURE_BEGIN ||
+        event_type == FRAME_ENCODED) {
       transport::RtcpSenderFrameLogMessage frame_message;
       frame_message.rtp_timestamp = it->first;
       switch (event_type) {
-        case kVideoFrameCaptureBegin:
+        case FRAME_CAPTURE_BEGIN:
           frame_message.frame_status =
               transport::kRtcpSenderFrameStatusDroppedByFlowControl;
           break;
-        case kVideoFrameSentToEncoder:
-          frame_message.frame_status =
-              transport::kRtcpSenderFrameStatusDroppedByEncoder;
-          break;
-        case kVideoFrameEncoded:
+        case FRAME_ENCODED:
           frame_message.frame_status =
               transport::kRtcpSenderFrameStatusSentToNetwork;
           break;
@@ -433,7 +430,7 @@ void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   RtpTimestamp rtp_timestamp =
       frame_id_to_rtp_timestamp_[acked_frame_id & 0xff];
   cast_environment_->Logging()->InsertFrameEvent(
-      now, kVideoAckReceived, rtp_timestamp, acked_frame_id);
+      now, FRAME_ACK_RECEIVED, VIDEO_EVENT, rtp_timestamp, acked_frame_id);
 
   VLOG(2) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   active_session_ = true;

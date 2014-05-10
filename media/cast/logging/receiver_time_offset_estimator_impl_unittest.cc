@@ -65,7 +65,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
 
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       sender_clock_->NowTicks(),
-      kVideoFrameEncoded,
+      FRAME_ENCODED, VIDEO_EVENT,
       rtp_timestamp,
       frame_id,
       1234,
@@ -76,13 +76,15 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EstimateOffset) {
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(10));
   cast_environment_->Logging()->InsertFrameEvent(
-      receiver_clock_.NowTicks(), kVideoAckSent, rtp_timestamp, frame_id);
+      receiver_clock_.NowTicks(), FRAME_ACK_SENT, VIDEO_EVENT,
+      rtp_timestamp, frame_id);
 
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(30));
   cast_environment_->Logging()->InsertFrameEvent(
-      sender_clock_->NowTicks(), kVideoAckReceived, rtp_timestamp, frame_id);
+      sender_clock_->NowTicks(), FRAME_ACK_RECEIVED, VIDEO_EVENT,
+      rtp_timestamp, frame_id);
 
   EXPECT_TRUE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
@@ -112,7 +114,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
 
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       sender_clock_->NowTicks(),
-      kVideoFrameEncoded,
+      FRAME_ENCODED, VIDEO_EVENT,
       rtp_timestamp,
       frame_id,
       1234,
@@ -127,12 +129,12 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, EventCArrivesBeforeEventB) {
   base::TimeTicks event_c_time = sender_clock_->NowTicks();
 
   cast_environment_->Logging()->InsertFrameEvent(
-      event_c_time, kVideoAckReceived, rtp_timestamp, frame_id);
+      event_c_time, FRAME_ACK_RECEIVED, VIDEO_EVENT, rtp_timestamp, frame_id);
 
   EXPECT_FALSE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
   cast_environment_->Logging()->InsertFrameEvent(
-      event_b_time, kVideoAckSent, rtp_timestamp, frame_id);
+      event_b_time, FRAME_ACK_SENT, VIDEO_EVENT, rtp_timestamp, frame_id);
 
   EXPECT_TRUE(estimator_.GetReceiverOffsetBounds(&lower_bound, &upper_bound));
 
@@ -166,7 +168,7 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       sender_clock_->NowTicks(),
-      kVideoFrameEncoded,
+      FRAME_ENCODED, VIDEO_EVENT,
       rtp_timestamp_a,
       frame_id_a,
       1234,
@@ -176,35 +178,39 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
   AdvanceClocks(base::TimeDelta::FromMilliseconds(10));
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       sender_clock_->NowTicks(),
-      kVideoFrameEncoded,
+      FRAME_ENCODED, VIDEO_EVENT,
       rtp_timestamp_b,
       frame_id_b,
       1234,
       true,
       5678);
   cast_environment_->Logging()->InsertFrameEvent(
-      receiver_clock_.NowTicks(), kVideoAckSent, rtp_timestamp_a, frame_id_a);
+      receiver_clock_.NowTicks(), FRAME_ACK_SENT, VIDEO_EVENT,
+      rtp_timestamp_a, frame_id_a);
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(20));
   cast_environment_->Logging()->InsertFrameEvent(
-      receiver_clock_.NowTicks(), kVideoAckSent, rtp_timestamp_b, frame_id_b);
+      receiver_clock_.NowTicks(), FRAME_ACK_SENT, VIDEO_EVENT,
+      rtp_timestamp_b, frame_id_b);
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(5));
   cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                 kVideoAckReceived,
+                                                 FRAME_ACK_RECEIVED,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp_b,
                                                  frame_id_b);
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(5));
   cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                 kVideoAckReceived,
+                                                 FRAME_ACK_RECEIVED,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp_a,
                                                  frame_id_a);
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(17));
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       sender_clock_->NowTicks(),
-      kVideoFrameEncoded,
+      FRAME_ENCODED, VIDEO_EVENT,
       rtp_timestamp_c,
       frame_id_c,
       1234,
@@ -213,11 +219,13 @@ TEST_F(ReceiverTimeOffsetEstimatorImplTest, MultipleIterations) {
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(3));
   cast_environment_->Logging()->InsertFrameEvent(
-      receiver_clock_.NowTicks(), kVideoAckSent, rtp_timestamp_c, frame_id_c);
+      receiver_clock_.NowTicks(), FRAME_ACK_SENT, VIDEO_EVENT,
+      rtp_timestamp_c, frame_id_c);
 
   AdvanceClocks(base::TimeDelta::FromMilliseconds(30));
   cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                 kVideoAckReceived,
+                                                 FRAME_ACK_RECEIVED,
+                                                 VIDEO_EVENT,
                                                  rtp_timestamp_c,
                                                  frame_id_c);
 

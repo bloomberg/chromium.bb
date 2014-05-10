@@ -72,8 +72,6 @@ class EncodingEventSubscriber : public RawEventSubscriber {
                    linked_ptr<media::cast::proto::AggregatedPacketEvent> >
       PacketEventMap;
 
-  bool ShouldProcessEvent(CastLoggingEvent event);
-
   // Transfer up to |max_num_entries| smallest entries from |frame_event_map_|
   // to |frame_event_storage_|. This helps keep size of |frame_event_map_| small
   // and lookup speed fast.

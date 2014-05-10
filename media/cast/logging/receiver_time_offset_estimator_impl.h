@@ -13,10 +13,10 @@
 namespace media {
 namespace cast {
 
-// This implementation listens to three types of events:
-// 1. kVideoFrameEncoded (sender side)
-// 2. kVideoAckSent (receiver side)
-// 3. kVideoAckReceived (sender side)
+// This implementation listens to three types of video events:
+// 1. FRAME_ENCODED (sender side)
+// 2. FRAME_ACK_SENT (receiver side)
+// 3. FRAME_ACK_RECEIVED (sender side)
 // There is a causal relationship between these events in that these events
 // must happen in order. This class obtains the lower and upper bounds for
 // the offset by taking the difference of timestamps (2) - (1) and (2) - (3),

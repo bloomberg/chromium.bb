@@ -10,13 +10,6 @@
 
 namespace {
 
-bool IsRtcpPacketEvent(media::cast::CastLoggingEvent event_type) {
-  return event_type == media::cast::kAudioPacketReceived ||
-         event_type == media::cast::kVideoPacketReceived ||
-         event_type == media::cast::kDuplicateAudioPacketReceived ||
-         event_type == media::cast::kDuplicateVideoPacketReceived;
-}
-
 media::cast::transport::RtcpSenderFrameStatus
 TranslateToFrameStatusFromWireFormat(uint8 status) {
   switch (status) {
@@ -479,7 +472,7 @@ void RtcpReceiver::HandleApplicationSpecificCastReceiverEventLog(
 
   const uint8 event = rtcp_field.cast_receiver_log.event;
   const CastLoggingEvent event_type = TranslateToLogEventFromWireFormat(event);
-  uint16 packet_id = IsRtcpPacketEvent(event_type) ?
+  uint16 packet_id = event_type == PACKET_RECEIVED ?
       rtcp_field.cast_receiver_log.delay_delta_or_packet_id.packet_id : 0;
   const base::TimeTicks event_timestamp =
       base::TimeTicks() +

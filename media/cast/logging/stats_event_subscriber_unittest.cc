@@ -74,7 +74,8 @@ TEST_F(StatsEventSubscriberTest, Capture) {
   base::TimeTicks start_time = sender_clock_->NowTicks();
   for (int i = 0; i < num_frames; i++) {
     cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                   kVideoFrameCaptureBegin,
+                                                   FRAME_CAPTURE_BEGIN,
+                                                   VIDEO_EVENT,
                                                    rtp_timestamp,
                                                    frame_id);
 
@@ -111,7 +112,7 @@ TEST_F(StatsEventSubscriberTest, Encode) {
     total_size += size;
     cast_environment_->Logging()->InsertEncodedFrameEvent(
         sender_clock_->NowTicks(),
-        kVideoFrameEncoded,
+        FRAME_ENCODED, VIDEO_EVENT,
         rtp_timestamp,
         frame_id,
         size,
@@ -153,7 +154,7 @@ TEST_F(StatsEventSubscriberTest, Decode) {
   base::TimeTicks start_time = sender_clock_->NowTicks();
   for (int i = 0; i < num_frames; i++) {
     cast_environment_->Logging()->InsertFrameEvent(receiver_clock_.NowTicks(),
-                                                   kVideoFrameDecoded,
+                                                   FRAME_DECODED, VIDEO_EVENT,
                                                    rtp_timestamp,
                                                    frame_id);
 
@@ -190,7 +191,8 @@ TEST_F(StatsEventSubscriberTest, PlayoutDelay) {
     total_delay_ms += delay_ms;
     cast_environment_->Logging()->InsertFrameEventWithDelay(
         receiver_clock_.NowTicks(),
-        kVideoRenderDelay,
+        FRAME_PLAYOUT,
+        VIDEO_EVENT,
         rtp_timestamp,
         frame_id,
         delay);
@@ -220,7 +222,8 @@ TEST_F(StatsEventSubscriberTest, E2ELatency) {
   base::TimeDelta total_latency;
   for (int i = 0; i < num_frames; i++) {
     cast_environment_->Logging()->InsertFrameEvent(sender_clock_->NowTicks(),
-                                                   kVideoFrameCaptureBegin,
+                                                   FRAME_CAPTURE_BEGIN,
+                                                   VIDEO_EVENT,
                                                    rtp_timestamp,
                                                    frame_id);
 
@@ -234,7 +237,8 @@ TEST_F(StatsEventSubscriberTest, E2ELatency) {
 
     cast_environment_->Logging()->InsertFrameEventWithDelay(
         receiver_clock_.NowTicks(),
-        kVideoRenderDelay,
+        FRAME_PLAYOUT,
+        VIDEO_EVENT,
         rtp_timestamp,
         frame_id,
         delay);
@@ -274,7 +278,8 @@ TEST_F(StatsEventSubscriberTest, Packets) {
     total_size += size;
 
     cast_environment_->Logging()->InsertPacketEvent(sender_clock_->NowTicks(),
-                                                    kVideoPacketSentToNetwork,
+                                                    PACKET_SENT_TO_NETWORK,
+                                                    VIDEO_EVENT,
                                                     rtp_timestamp,
                                                     0,
                                                     i,
@@ -299,7 +304,8 @@ TEST_F(StatsEventSubscriberTest, Packets) {
     if (i % 2 == 0) {
       cast_environment_->Logging()->InsertPacketEvent(
           receiver_clock_.NowTicks(),
-          kVideoPacketRetransmitted,
+          PACKET_RETRANSMITTED,
+          VIDEO_EVENT,
           rtp_timestamp,
           0,
           i,
@@ -315,7 +321,8 @@ TEST_F(StatsEventSubscriberTest, Packets) {
     if (i % 4 == 0) {
       cast_environment_->Logging()->InsertPacketEvent(
           receiver_clock_.NowTicks(),
-          kVideoPacketRetransmitted,
+          PACKET_RETRANSMITTED,
+          VIDEO_EVENT,
           rtp_timestamp,
           0,
           i,
@@ -331,7 +338,8 @@ TEST_F(StatsEventSubscriberTest, Packets) {
     if (i % 8 == 0) {
       cast_environment_->Logging()->InsertPacketEvent(
           receiver_clock_.NowTicks(),
-          kVideoPacketRetransmitted,
+          PACKET_RETRANSMITTED,
+          VIDEO_EVENT,
           rtp_timestamp,
           0,
           i,
@@ -343,7 +351,8 @@ TEST_F(StatsEventSubscriberTest, Packets) {
     }
 
     cast_environment_->Logging()->InsertPacketEvent(received_time,
-                                                    kVideoPacketReceived,
+                                                    PACKET_RECEIVED,
+                                                    VIDEO_EVENT,
                                                     rtp_timestamp,
                                                     0,
                                                     i,

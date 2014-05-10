@@ -1051,61 +1051,51 @@ bool RtcpParser::ParseExtendedReportDelaySinceLastReceiverReport() {
   return true;
 }
 
+// Converts a log event type to an integer value.
+// NOTE: We have only allocated 4 bits to represent the type of event over the
+// wire. Therefore, this function can only return values from 0 to 15.
 uint8 ConvertEventTypeToWireFormat(CastLoggingEvent event) {
   switch (event) {
-    case kAudioAckSent:
-      return 1;
-    case kAudioPlayoutDelay:
-      return 2;
-    case kAudioFrameDecoded:
-      return 3;
-    case kAudioPacketReceived:
-      return 4;
-    case kVideoAckSent:
-      return 5;
-    case kVideoFrameDecoded:
-      return 6;
-    case kVideoRenderDelay:
-      return 7;
-    case kVideoPacketReceived:
-      return 8;
-    case kDuplicateAudioPacketReceived:
-      return 9;
-    case kDuplicateVideoPacketReceived:
-      return 10;
+    case FRAME_ACK_SENT:
+      return 11;
+    case FRAME_PLAYOUT:
+      return 12;
+    case FRAME_DECODED:
+      return 13;
+    case PACKET_RECEIVED:
+      return 14;
     default:
       return 0;  // Not an interesting event.
   }
 }
 
 CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event) {
+  // TODO(imcheng): Remove the old mappings once they are no longer used.
   switch (event) {
-    case 1:
-      return media::cast::kAudioAckSent;
-    case 2:
-      return media::cast::kAudioPlayoutDelay;
-    case 3:
-      return media::cast::kAudioFrameDecoded;
-    case 4:
-      return media::cast::kAudioPacketReceived;
-    case 5:
-      return media::cast::kVideoAckSent;
-    case 6:
-      return media::cast::kVideoFrameDecoded;
-    case 7:
-      return media::cast::kVideoRenderDelay;
-    case 8:
-      return media::cast::kVideoPacketReceived;
-    case 9:
-      return media::cast::kDuplicateAudioPacketReceived;
-    case 10:
-      return media::cast::kDuplicateVideoPacketReceived;
+    case 1:  // AudioAckSent
+    case 5:  // VideoAckSent
+    case 11:  // Unified
+      return FRAME_ACK_SENT;
+    case 2:  // AudioPlayoutDelay
+    case 7:  // VideoRenderDelay
+    case 12:  // Unified
+      return FRAME_PLAYOUT;
+    case 3:  // AudioFrameDecoded
+    case 6:  // VideoFrameDecoded
+    case 13:  // Unified
+      return FRAME_DECODED;
+    case 4:  // AudioPacketReceived
+    case 8:  // VideoPacketReceived
+    case 14:  // Unified
+      return PACKET_RECEIVED;
+    case 9:  // DuplicateAudioPacketReceived
+    case 10:  // DuplicateVideoPacketReceived
     default:
       // If the sender adds new log messages we will end up here until we add
       // the new messages in the receiver.
       VLOG(1) << "Unexpected log message received: " << static_cast<int>(event);
       NOTREACHED();
-      return media::cast::kUnknown;
+      return UNKNOWN;
   }
 }
 

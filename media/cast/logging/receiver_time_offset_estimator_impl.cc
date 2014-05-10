@@ -25,9 +25,13 @@ ReceiverTimeOffsetEstimatorImpl::~ReceiverTimeOffsetEstimatorImpl() {
 void ReceiverTimeOffsetEstimatorImpl::OnReceiveFrameEvent(
     const FrameEvent& frame_event) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (frame_event.media_type != VIDEO_EVENT)
+    return;
+
   CastLoggingEvent event = frame_event.type;
-  if (event != kVideoFrameEncoded && event != kVideoAckSent &&
-      event != kVideoAckReceived)
+  if (event != FRAME_ENCODED && event != FRAME_ACK_SENT &&
+      event != FRAME_ACK_RECEIVED)
     return;
 
   EventTimesMap::iterator it = event_times_map_.find(frame_event.rtp_timestamp);
@@ -37,7 +41,7 @@ void ReceiverTimeOffsetEstimatorImpl::OnReceiveFrameEvent(
                                                 event_times)).first;
   }
   switch (event) {
-    case kVideoFrameEncoded:
+    case FRAME_ENCODED:
       // Encode is supposed to happen only once. If we see duplicate event,
       // throw away the entry.
       if (it->second.event_a_time.is_null()) {
@@ -47,7 +51,7 @@ void ReceiverTimeOffsetEstimatorImpl::OnReceiveFrameEvent(
         return;
       }
       break;
-    case kVideoAckSent:
+    case FRAME_ACK_SENT:
       if (it->second.event_b_time.is_null()) {
         it->second.event_b_time = frame_event.timestamp;
       } else if (it->second.event_b_time != frame_event.timestamp) {
@@ -57,7 +61,7 @@ void ReceiverTimeOffsetEstimatorImpl::OnReceiveFrameEvent(
         return;
       }
       break;
-    case kVideoAckReceived:
+    case FRAME_ACK_RECEIVED:
       // If there are duplicate ack received events, pick the one with the
       // smallest event timestamp so we can get a better bound.
       if (it->second.event_c_time.is_null()) {

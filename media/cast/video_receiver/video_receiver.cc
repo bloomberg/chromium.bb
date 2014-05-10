@@ -29,8 +29,7 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              transport::PacedPacketSender* const packet_sender)
     : RtpReceiver(cast_environment->Clock(), NULL, &video_config),
       cast_environment_(cast_environment),
-      event_subscriber_(kReceiverRtcpEventHistorySize,
-                        ReceiverRtcpEventSubscriber::kVideoEventSubscriber),
+      event_subscriber_(kReceiverRtcpEventHistorySize, VIDEO_EVENT),
       codec_(video_config.codec),
       target_delay_delta_(
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
@@ -51,7 +50,8 @@ VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
             base::TimeDelta::FromMilliseconds(video_config.rtcp_interval),
             video_config.feedback_ssrc,
             video_config.incoming_ssrc,
-            video_config.rtcp_c_name),
+            video_config.rtcp_c_name,
+            false),
       time_offset_counter_(0),
       time_incoming_packet_updated_(false),
       incoming_rtp_timestamp_(0),
@@ -125,9 +125,9 @@ void VideoReceiver::EmitRawVideoFrame(
   if (video_frame) {
     const base::TimeTicks now = cast_environment->Clock()->NowTicks();
     cast_environment->Logging()->InsertFrameEvent(
-        now, kVideoFrameDecoded, rtp_timestamp, frame_id);
+        now, FRAME_DECODED, VIDEO_EVENT, rtp_timestamp, frame_id);
     cast_environment->Logging()->InsertFrameEventWithDelay(
-        now, kVideoRenderDelay, rtp_timestamp, frame_id,
+        now, FRAME_PLAYOUT, VIDEO_EVENT, rtp_timestamp, frame_id,
         playout_time - now);
     // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
     TRACE_EVENT_INSTANT1(
@@ -329,7 +329,8 @@ void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
       rtp_header.rtp_timestamp;
   cast_environment_->Logging()->InsertPacketEvent(
       now,
-      kVideoPacketReceived,
+      PACKET_RECEIVED,
+      VIDEO_EVENT,
       rtp_header.rtp_timestamp,
       rtp_header.frame_id,
       rtp_header.packet_id,
@@ -339,20 +340,14 @@ void VideoReceiver::OnReceivedPayloadData(const uint8* payload_data,
   bool duplicate = false;
   const bool complete =
       framer_.InsertPacket(payload_data, payload_size, rtp_header, &duplicate);
-  if (duplicate) {
-    cast_environment_->Logging()->InsertPacketEvent(
-        now,
-        kDuplicateVideoPacketReceived,
-        rtp_header.rtp_timestamp,
-        rtp_header.frame_id,
-        rtp_header.packet_id,
-        rtp_header.max_packet_id,
-        payload_size);
-    // Duplicate packets are ignored.
+
+  // Duplicate packets are ignored.
+  if (duplicate)
     return;
-  }
+
+  // Video frame not complete; wait for more packets.
   if (!complete)
-    return;  // Video frame not complete; wait for more packets.
+    return;
 
   EmitAvailableEncodedFrames();
 }
@@ -366,7 +361,8 @@ void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   RtpTimestamp rtp_timestamp =
       frame_id_to_rtp_timestamp_[cast_message.ack_frame_id_ & 0xff];
   cast_environment_->Logging()->InsertFrameEvent(
-      now, kVideoAckSent, rtp_timestamp, cast_message.ack_frame_id_);
+      now, FRAME_ACK_SENT, VIDEO_EVENT,
+      rtp_timestamp, cast_message.ack_frame_id_);
 
   ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
   event_subscriber_.GetRtcpEventsAndReset(&rtcp_events);

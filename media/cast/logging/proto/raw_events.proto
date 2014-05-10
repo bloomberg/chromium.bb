@@ -14,6 +14,8 @@ package media.cast.proto;
 // For compatibility reasons, existing values in this enum must not be changed.
 enum EventType {
   UNKNOWN = 0;
+  
+  // Note: 1-28 are deprecated in favor of unified event types. Do not use.
   // Generic events. No longer used.
   RTT_MS = 1;
   PACKET_LOSS = 2;
@@ -51,6 +53,19 @@ enum EventType {
   VIDEO_PACKET_RECEIVED = 26;
   DUPLICATE_AUDIO_PACKET_RECEIVED = 27;
   DUPLICATE_VIDEO_PACKET_RECEIVED = 28;
+  
+  
+  // New, unified event types.
+  FRAME_CAPTURE_BEGIN = 29;
+  FRAME_CAPTURE_END = 30;
+  FRAME_ENCODED = 31;
+  FRAME_ACK_RECEIVED = 32;
+  FRAME_ACK_SENT = 33;
+  FRAME_DECODED = 34;
+  FRAME_PLAYOUT = 35;
+  PACKET_SENT_TO_NETWORK = 36;
+  PACKET_RETRANSMITTED = 37;
+  PACKET_RECEIVED = 38;
 }
 
 // Each log will contain one |LogMetadata|.
@@ -86,16 +101,16 @@ message AggregatedFrameEvent {
   // and date.
   repeated int64 event_timestamp_ms = 3 [packed = true];
 
-  // Only set if there is a kAudioFrameEncoded and kVideoFrameEncoded event.
+  // Only set if there is a frame encoded event.
   optional int32 encoded_frame_size = 4;
 
-  // Only set if there is a kAudioPlayoutDelay or kVideoRenderDelay event.
+  // Only set if there is a frame playout event.
   optional int32 delay_millis = 5;
 
-  // Only set if there is a kVideoFrameEncoded event.
+  // Only set if there is a video frame encoded event.
   optional bool key_frame = 6;
   
-  // Only set if there is a kVideoFrameEncoded event.
+  // Only set if there is a video frame encoded event.
   optional int32 target_bitrate = 7;
 };
 

@@ -21,7 +21,7 @@ void RtcpCastMessage::Copy(const RtcpCastMessage& cast_message) {
 }
 
 RtcpReceiverEventLogMessage::RtcpReceiverEventLogMessage()
-    : type(kUnknown), packet_id(0u) {}
+    : type(UNKNOWN), packet_id(0u) {}
 RtcpReceiverEventLogMessage::~RtcpReceiverEventLogMessage() {}
 
 RtcpReceiverFrameLogMessage::RtcpReceiverFrameLogMessage(uint32 timestamp)
@@ -42,7 +42,7 @@ RtcpReceiverReferenceTimeReport::RtcpReceiverReferenceTimeReport()
     : remote_ssrc(0u), ntp_seconds(0u), ntp_fraction(0u) {}
 RtcpReceiverReferenceTimeReport::~RtcpReceiverReferenceTimeReport() {}
 
-RtcpEvent::RtcpEvent() : type(kUnknown), packet_id(0u) {}
+RtcpEvent::RtcpEvent() : type(UNKNOWN), packet_id(0u) {}
 RtcpEvent::~RtcpEvent() {}
 
 }  // namespace cast

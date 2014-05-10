@@ -313,7 +313,8 @@ TEST_F(VideoSenderTest, LogAckReceivedEvent) {
   event_subscriber.GetFrameEventsAndReset(&frame_events);
 
   ASSERT_TRUE(!frame_events.empty());
-  EXPECT_EQ(kVideoAckReceived, frame_events.rbegin()->type);
+  EXPECT_EQ(FRAME_ACK_RECEIVED, frame_events.rbegin()->type);
+  EXPECT_EQ(VIDEO_EVENT, frame_events.rbegin()->media_type);
   EXPECT_EQ(num_frames - 1u, frame_events.rbegin()->frame_id);
 
   cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber);

@@ -168,7 +168,7 @@ class AudioReceiver : public RtpReceiver,
   // EmitAvailableEncodedFrames().
   bool is_waiting_for_consecutive_frame_;
 
-  // This mapping allows us to log kAudioAckSent as a frame event. In addition
+  // This mapping allows us to log AUDIO_ACK_SENT as a frame event. In addition
   // it allows the event to be transmitted via RTCP.
   RtpTimestamp frame_id_to_rtp_timestamp_[256];
 

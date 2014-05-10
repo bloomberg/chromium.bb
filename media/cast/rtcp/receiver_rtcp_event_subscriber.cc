@@ -10,10 +10,10 @@ namespace media {
 namespace cast {
 
 ReceiverRtcpEventSubscriber::ReceiverRtcpEventSubscriber(
-    const size_t max_size_to_retain, Type type)
+    const size_t max_size_to_retain, EventMediaType type)
     : max_size_to_retain_(max_size_to_retain), type_(type) {
   DCHECK(max_size_to_retain_ > 0u);
-  DCHECK(type_ == kAudioEventSubscriber || type_ == kVideoEventSubscriber);
+  DCHECK(type_ == AUDIO_EVENT || type_ == VIDEO_EVENT);
 }
 
 ReceiverRtcpEventSubscriber::~ReceiverRtcpEventSubscriber() {
@@ -24,16 +24,13 @@ void ReceiverRtcpEventSubscriber::OnReceiveFrameEvent(
     const FrameEvent& frame_event) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (ShouldProcessEvent(frame_event.type)) {
+  if (ShouldProcessEvent(frame_event.type, frame_event.media_type)) {
     RtcpEvent rtcp_event;
     switch (frame_event.type) {
-      case kAudioPlayoutDelay:
-      case kVideoRenderDelay:
+      case FRAME_PLAYOUT:
         rtcp_event.delay_delta = frame_event.delay_delta;
-      case kAudioFrameDecoded:
-      case kVideoFrameDecoded:
-      case kAudioAckSent:
-      case kVideoAckSent:
+      case FRAME_ACK_SENT:
+      case FRAME_DECODED:
         rtcp_event.type = frame_event.type;
         rtcp_event.timestamp = frame_event.timestamp;
         rtcp_events_.insert(
@@ -53,10 +50,9 @@ void ReceiverRtcpEventSubscriber::OnReceivePacketEvent(
     const PacketEvent& packet_event) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (ShouldProcessEvent(packet_event.type)) {
+  if (ShouldProcessEvent(packet_event.type, packet_event.media_type)) {
     RtcpEvent rtcp_event;
-    if (packet_event.type == kAudioPacketReceived ||
-        packet_event.type == kVideoPacketReceived) {
+    if (packet_event.type == PACKET_RECEIVED) {
       rtcp_event.type = packet_event.type;
       rtcp_event.timestamp = packet_event.timestamp;
       rtcp_event.packet_id = packet_event.packet_id;
@@ -90,18 +86,10 @@ void ReceiverRtcpEventSubscriber::TruncateMapIfNeeded() {
 }
 
 bool ReceiverRtcpEventSubscriber::ShouldProcessEvent(
-    CastLoggingEvent event_type) {
-  if (type_ == kAudioEventSubscriber) {
-    return event_type == kAudioPlayoutDelay ||
-           event_type == kAudioFrameDecoded || event_type == kAudioAckSent ||
-           event_type == kAudioPacketReceived;
-  } else if (type_ == kVideoEventSubscriber) {
-    return event_type == kVideoRenderDelay ||
-           event_type == kVideoFrameDecoded || event_type == kVideoAckSent ||
-           event_type == kVideoPacketReceived;
-  } else {
-    return false;
-  }
+    CastLoggingEvent event_type, EventMediaType event_media_type) {
+  return type_ == event_media_type &&
+      (event_type == FRAME_ACK_SENT || event_type == FRAME_DECODED ||
+       event_type == FRAME_PLAYOUT || event_type == PACKET_RECEIVED);
 }
 
 }  // namespace cast

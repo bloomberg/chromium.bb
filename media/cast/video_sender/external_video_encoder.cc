@@ -31,7 +31,8 @@ void LogFrameEncodedEvent(
     media::cast::RtpTimestamp rtp_timestamp,
     uint32 frame_id) {
   cast_environment->Logging()->InsertFrameEvent(
-      event_time, media::cast::kVideoFrameEncoded, rtp_timestamp, frame_id);
+      event_time, media::cast::FRAME_ENCODED, media::cast::VIDEO_EVENT,
+      rtp_timestamp, frame_id);
 }
 
 // Proxy this call to ExternalVideoEncoder on the cast main thread.

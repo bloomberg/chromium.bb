@@ -26,27 +26,35 @@ class LoggingImpl {
   // Note: All methods below should be called from the same thread.
 
   void InsertFrameEvent(const base::TimeTicks& time_of_event,
-                        CastLoggingEvent event, uint32 rtp_timestamp,
-                        uint32 frame_id);
+                        CastLoggingEvent event, EventMediaType event_media_type,
+                        uint32 rtp_timestamp, uint32 frame_id);
 
   void InsertEncodedFrameEvent(const base::TimeTicks& time_of_event,
-                               CastLoggingEvent event, uint32 rtp_timestamp,
-                               uint32 frame_id, int frame_size, bool key_frame,
+                               CastLoggingEvent event,
+                               EventMediaType event_media_type,
+                               uint32 rtp_timestamp, uint32 frame_id,
+                               int frame_size, bool key_frame,
                                int target_bitrate);
 
   void InsertFrameEventWithDelay(const base::TimeTicks& time_of_event,
-                                 CastLoggingEvent event, uint32 rtp_timestamp,
-                                 uint32 frame_id, base::TimeDelta delay);
+                                 CastLoggingEvent event,
+                                 EventMediaType event_media_type,
+                                 uint32 rtp_timestamp, uint32 frame_id,
+                                 base::TimeDelta delay);
 
   void InsertSinglePacketEvent(const base::TimeTicks& time_of_event,
                                CastLoggingEvent event,
+                               EventMediaType event_media_type,
                                const Packet& packet);
 
   void InsertPacketListEvent(const base::TimeTicks& time_of_event,
-                             CastLoggingEvent event, const PacketList& packets);
+                             CastLoggingEvent event,
+                             EventMediaType event_media_type,
+                             const PacketList& packets);
 
   void InsertPacketEvent(const base::TimeTicks& time_of_event,
-                         CastLoggingEvent event, uint32 rtp_timestamp,
+                         CastLoggingEvent event,
+                         EventMediaType event_media_type, uint32 rtp_timestamp,
                          uint32 frame_id, uint16 packet_id,
                          uint16 max_packet_id, size_t size);
 

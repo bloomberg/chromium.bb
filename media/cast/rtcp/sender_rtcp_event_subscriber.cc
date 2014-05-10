@@ -25,9 +25,10 @@ SenderRtcpEventSubscriber::~SenderRtcpEventSubscriber() {
 void SenderRtcpEventSubscriber::OnReceiveFrameEvent(
     const FrameEvent& frame_event) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (frame_event.type != kVideoFrameCaptureBegin &&
-      frame_event.type != kVideoFrameSentToEncoder &&
-      frame_event.type != kVideoFrameEncoded) {
+  if (frame_event.media_type != VIDEO_EVENT)
+    return;
+  if (frame_event.type != FRAME_CAPTURE_BEGIN &&
+      frame_event.type != FRAME_ENCODED) {
     // Not interested in other events.
     return;
   }
@@ -48,11 +49,11 @@ void SenderRtcpEventSubscriber::OnReceiveFrameEvent(
     // We already have this frame (RTP timestamp) in our map.
     // Only update events that are later in the chain.
     // This is due to that events can be reordered on the wire.
-    if (frame_event.type == kVideoFrameCaptureBegin) {
+    if (frame_event.type == FRAME_CAPTURE_BEGIN) {
       return;  // First event in chain can not be late by definition.
     }
 
-    if (it->second.type == kVideoFrameEncoded) {
+    if (it->second.type == FRAME_ENCODED) {
       return;  // Last event in chain should not be updated.
     }
 

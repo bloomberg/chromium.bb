@@ -20,18 +20,19 @@ using media::cast::proto::LogMetadata;
 namespace {
 
 const media::cast::CastLoggingEvent kVideoFrameEvents[] = {
-    media::cast::kVideoFrameCaptureBegin,  media::cast::kVideoFrameCaptureEnd,
-    media::cast::kVideoFrameSentToEncoder, media::cast::kVideoFrameEncoded,
-    media::cast::kVideoFrameDecoded,       media::cast::kVideoRenderDelay};
+    media::cast::FRAME_CAPTURE_BEGIN,  media::cast::FRAME_CAPTURE_END,
+    media::cast::FRAME_ENCODED, media::cast::FRAME_DECODED,
+    media::cast::FRAME_PLAYOUT };
 
 const media::cast::CastLoggingEvent kVideoPacketEvents[] = {
-    media::cast::kVideoPacketSentToNetwork, media::cast::kVideoPacketReceived};
+    media::cast::PACKET_SENT_TO_NETWORK, media::cast::PACKET_RECEIVED};
 
 // The frame event fields cycle through these numbers.
 const int kEncodedFrameSize[] = {512, 425, 399, 400, 237};
 const int kDelayMillis[] = {15, 4, 8, 42, 23, 16};
 
 const int kMaxSerializedBytes = 10000;
+
 }
 
 namespace media {

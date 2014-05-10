@@ -26,8 +26,7 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              transport::PacedPacketSender* const packet_sender)
     : RtpReceiver(cast_environment->Clock(), &audio_config, NULL),
       cast_environment_(cast_environment),
-      event_subscriber_(kReceiverRtcpEventHistorySize,
-                        ReceiverRtcpEventSubscriber::kAudioEventSubscriber),
+      event_subscriber_(kReceiverRtcpEventHistorySize, AUDIO_EVENT),
       codec_(audio_config.codec),
       frequency_(audio_config.frequency),
       target_delay_delta_(
@@ -46,7 +45,8 @@ AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
             base::TimeDelta::FromMilliseconds(audio_config.rtcp_interval),
             audio_config.feedback_ssrc,
             audio_config.incoming_ssrc,
-            audio_config.rtcp_c_name),
+            audio_config.rtcp_c_name,
+            true),
       is_waiting_for_consecutive_frame_(false),
       weak_factory_(this) {
   if (!audio_config.use_external_decoder)
@@ -84,26 +84,16 @@ void AudioReceiver::OnReceivedPayloadData(const uint8* payload_data,
   frame_id_to_rtp_timestamp_[rtp_header.frame_id & 0xff] =
       rtp_header.rtp_timestamp;
   cast_environment_->Logging()->InsertPacketEvent(
-      now, kAudioPacketReceived, rtp_header.rtp_timestamp,
+      now, PACKET_RECEIVED, AUDIO_EVENT, rtp_header.rtp_timestamp,
       rtp_header.frame_id, rtp_header.packet_id, rtp_header.max_packet_id,
       payload_size);
 
   bool duplicate = false;
   const bool complete =
       framer_.InsertPacket(payload_data, payload_size, rtp_header, &duplicate);
-  if (duplicate) {
-    cast_environment_->Logging()->InsertPacketEvent(
-        now,
-        kDuplicateAudioPacketReceived,
-        rtp_header.rtp_timestamp,
-        rtp_header.frame_id,
-        rtp_header.packet_id,
-        rtp_header.max_packet_id,
-        payload_size);
-    // Duplicate packets are ignored.
-    return;
-  }
-  if (!complete)
+
+  // Duplicate packets are ignored.
+  if (duplicate || !complete)
     return;
 
   EmitAvailableEncodedFrames();
@@ -155,9 +145,9 @@ void AudioReceiver::EmitRawAudioFrame(
   if (audio_bus.get()) {
     const base::TimeTicks now = cast_environment->Clock()->NowTicks();
     cast_environment->Logging()->InsertFrameEvent(
-        now, kAudioFrameDecoded, rtp_timestamp, frame_id);
+        now, FRAME_DECODED, AUDIO_EVENT, rtp_timestamp, frame_id);
     cast_environment->Logging()->InsertFrameEventWithDelay(
-        now, kAudioPlayoutDelay, rtp_timestamp, frame_id,
+        now, FRAME_PLAYOUT, AUDIO_EVENT, rtp_timestamp, frame_id,
         playout_time - now);
   }
   callback.Run(audio_bus.Pass(), playout_time, is_continuous);
@@ -266,7 +256,8 @@ void AudioReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   RtpTimestamp rtp_timestamp =
       frame_id_to_rtp_timestamp_[cast_message.ack_frame_id_ & 0xff];
   cast_environment_->Logging()->InsertFrameEvent(
-      now, kAudioAckSent, rtp_timestamp, cast_message.ack_frame_id_);
+      now, FRAME_ACK_SENT, AUDIO_EVENT, rtp_timestamp,
+      cast_message.ack_frame_id_);
 
   ReceiverRtcpEventSubscriber::RtcpEventMultiMap rtcp_events;
   event_subscriber_.GetRtcpEventsAndReset(&rtcp_events);
