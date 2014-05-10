@@ -178,6 +178,13 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
   base_packet_event_proto->add_event_timestamp_ms(
       (packet_event.timestamp - base::TimeTicks()).InMilliseconds());
 
+  // |base_packet_event_proto| could have been created with a receiver event
+  // which does not have the packet size and we would need to overwrite it when
+  // we see a sender event, which does have the packet size.
+  if (packet_event.size > 0) {
+    base_packet_event_proto->set_size(packet_event.size);
+  }
+
   if (packet_event_map_.size() > kMaxMapSize)
     TransferPacketEvents(kNumMapEntriesToTransfer);
 
