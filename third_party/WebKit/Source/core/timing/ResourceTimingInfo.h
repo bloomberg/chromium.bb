@@ -49,6 +49,9 @@ public:
     void setInitiatorType(const AtomicString& type) { m_type = type; }
     const AtomicString& initiatorType() const { return m_type; }
 
+    void setOriginalTimingAllowOrigin(const AtomicString& originalTimingAllowOrigin) { m_originalTimingAllowOrigin = originalTimingAllowOrigin; }
+    const AtomicString& originalTimingAllowOrigin() const { return m_originalTimingAllowOrigin; }
+
     void setLoadFinishTime(double time) { m_loadFinishTime = time; }
     double loadFinishTime() const { return m_loadFinishTime; }
 
@@ -76,6 +79,7 @@ private:
     }
 
     AtomicString m_type;
+    AtomicString m_originalTimingAllowOrigin;
     double m_initialTime;
     double m_loadFinishTime;
     ResourceRequest m_initialRequest;

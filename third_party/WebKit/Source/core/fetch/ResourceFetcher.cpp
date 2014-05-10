@@ -872,6 +872,12 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(Resource* resource
 
     RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(resource->options().initiatorInfo.name, monotonicallyIncreasingTime());
 
+    if (resource->isCacheValidator()) {
+        const AtomicString& timingAllowOrigin = resource->resourceToRevalidate()->response().httpHeaderField("Timing-Allow-Origin");
+        if (!timingAllowOrigin.isEmpty())
+            info->setOriginalTimingAllowOrigin(timingAllowOrigin);
+    }
+
     if (resource->type() == Resource::MainResource) {
         // <iframe>s should report the initial navigation requested by the parent document, but not subsequent navigations.
         if (frame()->ownerElement() && !frame()->ownerElement()->loadedNonEmptyDocument()) {

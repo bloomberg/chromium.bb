@@ -157,7 +157,7 @@ void Performance::webkitSetResourceTimingBufferSize(unsigned size)
         dispatchEvent(Event::create(EventTypeNames::webkitresourcetimingbufferfull));
 }
 
-static bool passesTimingAllowCheck(const ResourceResponse& response, Document* requestingDocument)
+static bool passesTimingAllowCheck(const ResourceResponse& response, Document* requestingDocument, const AtomicString& originalTimingAllowOrigin)
 {
     AtomicallyInitializedStatic(AtomicString&, timingAllowOrigin = *new AtomicString("timing-allow-origin"));
 
@@ -165,7 +165,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
     if (resourceOrigin->isSameSchemeHostPort(requestingDocument->securityOrigin()))
         return true;
 
-    const AtomicString& timingAllowOriginString = response.httpHeaderField(timingAllowOrigin);
+    const AtomicString& timingAllowOriginString = originalTimingAllowOrigin.isEmpty() ? response.httpHeaderField(timingAllowOrigin) : originalTimingAllowOrigin;
     if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
         return false;
 
@@ -185,11 +185,11 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
 
 static bool allowsTimingRedirect(const Vector<ResourceResponse>& redirectChain, const ResourceResponse& finalResponse, Document* initiatorDocument)
 {
-    if (!passesTimingAllowCheck(finalResponse, initiatorDocument))
+    if (!passesTimingAllowCheck(finalResponse, initiatorDocument, emptyAtom))
         return false;
 
     for (size_t i = 0; i < redirectChain.size(); i++) {
-        if (!passesTimingAllowCheck(redirectChain[i], initiatorDocument))
+        if (!passesTimingAllowCheck(redirectChain[i], initiatorDocument, emptyAtom))
             return false;
     }
 
@@ -202,7 +202,7 @@ void Performance::addResourceTiming(const ResourceTimingInfo& info, Document* in
         return;
 
     const ResourceResponse& finalResponse = info.finalResponse();
-    bool allowTimingDetails = passesTimingAllowCheck(finalResponse, initiatorDocument);
+    bool allowTimingDetails = passesTimingAllowCheck(finalResponse, initiatorDocument, info.originalTimingAllowOrigin());
     double startTime = info.initialTime();
 
     if (info.redirectChain().isEmpty()) {
