@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "description": "Chrome Goodies",
   "manifest_version": 2,
-  "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com; script-src 'self' https://ssl.google-analytics.com",
+  "content_security_policy": "default-src 'self'; connect-src 'self' https://chromeos-registration.googleapis.com",
   "permissions": [
       "alarms",
       "cookies",
@@ -24,10 +24,14 @@
   "web_accessible_resources": [
     "broker.html",
     "broker.js",
-    "not-eligible.html"
+    "not-eligible.html",
+    "not-eligible.js"
   ],
   "background": {
-    "scripts": ["main.js"],
+    "scripts": [
+      "constants.js",
+      "main.js"
+    ],
     "persistent": false
   },
   "externally_connectable": {
