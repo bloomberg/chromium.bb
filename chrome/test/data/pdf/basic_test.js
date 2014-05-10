@@ -22,6 +22,7 @@ var tests = [
       chrome.test.assertTrue(
           String(element.constructor).indexOf(elementNames[i]) != -1);
     }
+    chrome.test.succeed();
   },
 
   /**
@@ -33,15 +34,8 @@ var tests = [
 
     chrome.test.assertTrue(
         plugin.getAttribute('src').indexOf('/pdf/test.pdf') != -1);
+    chrome.test.succeed();
   },
 ];
 
-function runTests() {
-  for (var i = 0; i < tests.length; ++i) {
-    console.log('Running: ' + tests[i].name);
-    tests[i]();
-  }
-  chrome.test.notifyPass();
-}
-
-runTests();
+chrome.test.runTests(tests);

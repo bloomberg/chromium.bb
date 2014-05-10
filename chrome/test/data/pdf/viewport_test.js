@@ -100,6 +100,7 @@ var tests = [
     scrollbars = viewport.documentNeedsScrollbars_(0.5);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
+    chrome.test.succeed();
   },
 
   function testSetZoom() {
@@ -149,6 +150,7 @@ var tests = [
     chrome.test.assertEq('400px', mockSizer.style.height);
     chrome.test.assertEq(150, mockWindow.pageXOffset);
     chrome.test.assertEq(150, mockWindow.pageYOffset);
+    chrome.test.succeed();
   },
 
   function testGetMostVisiblePage() {
@@ -186,6 +188,7 @@ var tests = [
     viewport.setZoom_(2);
     mockWindow.scrollTo(0, 151);
     chrome.test.assertEq(1, viewport.getMostVisiblePage());
+    chrome.test.succeed();
   },
 
   function testFitToWidth() {
@@ -253,6 +256,7 @@ var tests = [
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq('85px', mockSizer.style.width);
     chrome.test.assertEq(1.7, viewport.zoom);
+    chrome.test.succeed();
   },
 
   function testFitToPage() {
@@ -337,6 +341,7 @@ var tests = [
     // The page will be centred because it is less than the document width.
     chrome.test.assertEq(12.5, viewport.position.x);
     chrome.test.assertEq(50, viewport.position.y);
+    chrome.test.succeed();
   },
 
   function testGoToPage() {
@@ -377,6 +382,7 @@ var tests = [
     chrome.test.assertTrue(mockCallback.wasCalled);
     chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(150, viewport.position.y);
+    chrome.test.succeed();
   },
 
   function testGetPageScreenRect() {
@@ -419,15 +425,8 @@ var tests = [
         Viewport.PAGE_SHADOW.left, rect1.width);
     chrome.test.assertEq(200 - Viewport.PAGE_SHADOW.bottom -
         Viewport.PAGE_SHADOW.top, rect1.height);
+    chrome.test.succeed();
   }
 ];
 
-function runTests() {
-  for (var i = 0; i < tests.length; ++i) {
-    console.log('Running: ' + tests[i].name);
-    tests[i]();
-  }
-  chrome.test.notifyPass();
-}
-
-runTests();
+chrome.test.runTests(tests);

@@ -16,15 +16,10 @@ var tests = [
     var sizer = document.getElementById('sizer');
     chrome.test.assertEq(826, sizer.offsetWidth);
     chrome.test.assertEq(1066, sizer.offsetHeight);
-  }
+    chrome.test.succeed();
+  },
 ];
 
-function runTests() {
-  for (var i = 0; i < tests.length; ++i) {
-    console.log('Running: ' + tests[i].name);
-    tests[i]();
-  }
-  chrome.test.notifyPass();
-}
-
-window.addEventListener('pdfload', runTests);
+window.addEventListener('pdfload', function() {
+  chrome.test.runTests(tests);
+});

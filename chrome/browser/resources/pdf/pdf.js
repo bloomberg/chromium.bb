@@ -5,8 +5,8 @@
 'use strict';
 
 <include src="../../../../ui/webui/resources/js/util.js">
-<include src="viewport.js">
 <include src="pdf_scripting_api.js">
+<include src="viewport.js">
 
 /**
  * @return {number} Width of a scrollbar in pixels
@@ -56,8 +56,15 @@ function PDFViewer() {
   // chrome/renderer/printing/print_web_view_helper.cc actually references it.
   this.plugin_.id = 'plugin';
   this.plugin_.type = 'application/x-google-chrome-pdf';
-  this.plugin_.addEventListener('message', this.handleMessage_.bind(this),
+  this.plugin_.addEventListener('message', this.handlePluginMessage_.bind(this),
                                 false);
+
+  // Handle scripting messages from outside the extension that wish to interact
+  // with it. We also send a message indicating that extension has loaded and
+  // is ready to receive messages.
+  window.addEventListener('message', this.handleScriptingMessage_.bind(this),
+                          false);
+  this.sendScriptingMessage_({type: 'readyToReceive'});
 
   // If the viewer is started from a MIME type request, there will be a
   // background page and stream details object with the details of the request.
@@ -84,8 +91,6 @@ function PDFViewer() {
   if (window.top == window)
     this.plugin_.setAttribute('full-frame', '');
   document.body.appendChild(this.plugin_);
-
-  this.messagingHost_ = new PDFMessagingHost(window, this);
 
   this.setupEventListeners_(streamDetails);
 }
@@ -212,8 +217,9 @@ PDFViewer.prototype = {
       // Document load complete.
       var loadEvent = new Event('pdfload');
       window.dispatchEvent(loadEvent);
-      // TODO(raymes): Replace this and other callbacks with events.
-      this.messagingHost_.documentLoaded();
+      this.sendScriptingMessage_({
+        type: 'documentLoaded'
+      });
       if (this.lastViewportPosition_)
         this.viewport_.position = this.lastViewportPosition_;
     }
@@ -237,7 +243,7 @@ PDFViewer.prototype = {
    * An event handler for handling message events received from the plugin.
    * @param {MessageObject} message a message event.
    */
-  handleMessage_: function(message) {
+  handlePluginMessage_: function(message) {
     switch (message.data.type.toString()) {
       case 'documentDimensions':
         this.documentDimensions_ = message.data;
@@ -308,15 +314,14 @@ PDFViewer.prototype = {
     this.toolbar_.style.bottom = toolbarBottom + 'px';
 
     // Update the page indicator.
-    this.pageIndicator_.index = this.viewport_.getMostVisiblePage();
+    var visiblePage = this.viewport_.getMostVisiblePage();
+    this.pageIndicator_.index = visiblePage;
     if (this.documentDimensions_.pageDimensions.length > 1 &&
         hasScrollbars.vertical) {
       this.pageIndicator_.style.visibility = 'visible';
     } else {
       this.pageIndicator_.style.visibility = 'hidden';
     }
-
-    this.messagingHost_.viewportChanged();
 
     var position = this.viewport_.position;
     var zoom = this.viewport_.zoom;
@@ -327,62 +332,73 @@ PDFViewer.prototype = {
       xOffset: position.x,
       yOffset: position.y
     });
+
+    var visiblePageDimensions = this.viewport_.getPageScreenRect(visiblePage);
+    var size = this.viewport_.size;
+    this.sendScriptingMessage_({
+      type: 'viewport',
+      pageX: visiblePageDimensions.x,
+      pageY: visiblePageDimensions.y,
+      pageWidth: visiblePageDimensions.width,
+      viewportWidth: size.width,
+      viewportHeight: size.height,
+    });
   },
 
   /**
-   * Resets the viewer into print preview mode, which is used for Chrome print
-   * preview.
-   * @param {string} url the url of the pdf to load.
-   * @param {boolean} grayscale true if the pdf should be displayed in
-   *     grayscale, false otherwise.
-   * @param {Array.<number>} pageNumbers an array of the number to label each
-   *     page in the document.
-   * @param {boolean} modifiable whether the PDF is modifiable or not.
+   * @private
+   * Handle a scripting message from outside the extension (typically sent by
+   * PDFScriptingAPI in a page containing the extension) to interact with the
+   * plugin.
+   * @param {MessageObject} message the message to handle.
    */
-  resetPrintPreviewMode: function(url,
-                                  grayscale,
-                                  pageNumbers,
-                                  modifiable) {
-    if (!this.inPrintPreviewMode_) {
-      this.inPrintPreviewMode_ = true;
-      this.viewport_.fitToPage();
+  handleScriptingMessage_: function(message) {
+    switch (message.data.type.toString()) {
+      case 'resetPrintPreviewMode':
+        if (!this.inPrintPreviewMode_) {
+          this.inPrintPreviewMode_ = true;
+          this.viewport_.fitToPage();
+        }
+
+        // Stash the scroll location so that it can be restored when the new
+        // document is loaded.
+        this.lastViewportPosition_ = this.viewport_.position;
+
+        // TODO(raymes): Disable these properly in the plugin.
+        var printButton = $('print-button');
+        if (printButton)
+          printButton.parentNode.removeChild(printButton);
+        var saveButton = $('save-button');
+        if (saveButton)
+          saveButton.parentNode.removeChild(saveButton);
+
+        this.pageIndicator_.pageLabels = message.data.pageNumbers;
+
+        this.plugin_.postMessage({
+          type: 'resetPrintPreviewMode',
+          url: message.data.url,
+          grayscale: message.data.grayscale,
+          // If the PDF isn't modifiable we send 0 as the page count so that no
+          // blank placeholder pages get appended to the PDF.
+          pageCount: (message.data.modifiable ?
+                      message.data.pageNumbers.length : 0)
+        });
+        break;
+      case 'loadPreviewPage':
+        this.plugin_.postMessage(message.data);
+        break;
     }
 
-    // Stash the scroll location so that it can be restored when the new
-    // document is loaded.
-    this.lastViewportPosition_ = this.viewport_.position;
-
-    // TODO(raymes): Disable these properly in the plugin.
-    var printButton = $('print-button');
-    if (printButton)
-      printButton.parentNode.removeChild(printButton);
-    var saveButton = $('save-button');
-    if (saveButton)
-      saveButton.parentNode.removeChild(saveButton);
-
-    this.pageIndicator_.pageLabels = pageNumbers;
-
-    this.plugin_.postMessage({
-      type: 'resetPrintPreviewMode',
-      url: url,
-      grayscale: grayscale,
-      // If the PDF isn't modifiable we send 0 as the page count so that no
-      // blank placeholder pages get appended to the PDF.
-      pageCount: (modifiable ? pageNumbers.length : 0)
-    });
   },
 
   /**
-   * Load a page into the document while in print preview mode.
-   * @param {string} url the url of the pdf page to load.
-   * @param {number} index the index of the page to load.
+   * @private
+   * Send a scripting message outside the extension (typically to
+   * PDFScriptingAPI in a page containing the extension).
+   * @param {Object} message the message to send.
    */
-  loadPreviewPage: function(url, index) {
-    this.plugin_.postMessage({
-      type: 'loadPreviewPage',
-      url: url,
-      index: index
-    });
+  sendScriptingMessage_: function(message) {
+    window.parent.postMessage(message, '*');
   },
 
   /**
