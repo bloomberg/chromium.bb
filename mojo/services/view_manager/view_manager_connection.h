@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "mojo/public/cpp/shell/service.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/ids.h"
@@ -24,7 +25,8 @@ class View;
 
 // Manages a connection from the client.
 class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
-    : public ServiceConnection<IViewManager, ViewManagerConnection,
+    : public ServiceConnection<NON_EXPORTED_BASE(IViewManager),
+                               ViewManagerConnection,
                                RootNodeManager>,
       public NodeDelegate {
  public:
