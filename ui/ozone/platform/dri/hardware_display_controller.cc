@@ -40,9 +40,6 @@ HardwareDisplayController::BindSurfaceToController(
     scoped_ptr<DriSurface> surface, drmModeModeInfo mode) {
   CHECK(surface);
 
-  if (!RegisterFramebuffers(surface.get(), mode))
-    return false;
-
   if (!drm_->SetCrtc(crtc_id_,
                      surface->GetFramebufferId(),
                      &connector_id_,
@@ -59,8 +56,6 @@ HardwareDisplayController::BindSurfaceToController(
 }
 
 void HardwareDisplayController::UnbindSurfaceFromController() {
-  if (surface_)
-    UnregisterFramebuffers(surface_.get());
   surface_.reset();
 }
 
@@ -102,35 +97,6 @@ bool HardwareDisplayController::UnsetCursor() {
 
 bool HardwareDisplayController::MoveCursor(const gfx::Point& location) {
   return drm_->MoveCursor(crtc_id_, location.x(), location.y());
-}
-
-bool HardwareDisplayController::RegisterFramebuffers(DriSurface* surface,
-                                                     drmModeModeInfo mode) {
-  // Register the buffers.
-  for (size_t i = 0; i < arraysize(surface->bitmaps_); ++i) {
-    uint32_t fb_id;
-    if (!drm_->AddFramebuffer(
-            mode,
-            surface->bitmaps_[i]->GetColorDepth(),
-            surface->bitmaps_[i]->canvas()->imageInfo().bytesPerPixel() << 3,
-            surface->bitmaps_[i]->stride(),
-            surface->bitmaps_[i]->handle(),
-            &fb_id)) {
-      DLOG(ERROR) << "Failed to register framebuffer: " << strerror(errno);
-      return false;
-    }
-    surface->bitmaps_[i]->set_framebuffer(fb_id);
-  }
-
-  return true;
-}
-
-void HardwareDisplayController::UnregisterFramebuffers(DriSurface* surface) {
-  // Unregister the buffers.
-  for (size_t i = 0; i < arraysize(surface->bitmaps_); ++i) {
-    if (!drm_->RemoveFramebuffer(surface->bitmaps_[i]->framebuffer()))
-      DLOG(ERROR) << "Failed to remove FB: " << strerror(errno);
-  }
 }
 
 }  // namespace ui

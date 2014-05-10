@@ -29,18 +29,11 @@ class OZONE_EXPORT DriBuffer {
   uint32_t framebuffer() const { return framebuffer_; }
   SkCanvas* canvas() { return surface_->getCanvas(); }
 
-  // Return the color depth of a pixel in this buffer.
-  uint8_t GetColorDepth() const;
-
   // Allocates the backing pixels and wraps them in |surface_|. |info| is used
   // to describe the buffer characteristics (size, color format).
   virtual bool Initialize(const SkImageInfo& info);
 
  protected:
-  friend class HardwareDisplayController;
-
-  void set_framebuffer(uint32_t framebuffer) { framebuffer_ = framebuffer; }
-
   DriWrapper* dri_;  // Not owned.
 
   // Wrapper around the native pixel memory.

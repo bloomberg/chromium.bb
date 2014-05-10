@@ -17,6 +17,27 @@ namespace ui {
 
 namespace {
 
+// Modesetting cannot happen from a buffer with transparencies. Return the size
+// of a pixel without alpha.
+uint8_t GetColorDepth(SkColorType type) {
+  switch (type) {
+    case kUnknown_SkColorType:
+    case kAlpha_8_SkColorType:
+      return 0;
+    case kIndex_8_SkColorType:
+      return 8;
+    case kRGB_565_SkColorType:
+      return 16;
+    case kARGB_4444_SkColorType:
+      return 12;
+    case kPMColor_SkColorType:
+      return 24;
+    default:
+      NOTREACHED();
+      return 0;
+  }
+}
+
 void DestroyDumbBuffer(int fd, uint32_t handle) {
   struct drm_mode_destroy_dumb destroy_request;
   destroy_request.handle = handle;
@@ -77,6 +98,9 @@ DriBuffer::~DriBuffer() {
   if (!surface_)
     return;
 
+  if (framebuffer_)
+    dri_->RemoveFramebuffer(framebuffer_);
+
   SkImageInfo info;
   void* pixels = const_cast<void*>(surface_->peekPixels(&info, NULL));
   if (!pixels)
@@ -93,6 +117,17 @@ bool DriBuffer::Initialize(const SkImageInfo& info) {
     return false;
   }
 
+  if (!dri_->AddFramebuffer(info.width(),
+                            info.height(),
+                            GetColorDepth(info.colorType()),
+                            info.bytesPerPixel() << 3,
+                            stride_,
+                            handle_,
+                            &framebuffer_)) {
+    DLOG(ERROR) << "Failed to register framebuffer: " << strerror(errno);
+    return false;
+  }
+
   surface_ = skia::AdoptRef(SkSurface::NewRasterDirect(info, pixels, stride_));
   if (!surface_) {
     DLOG(ERROR) << "Cannot install Skia pixels for drm buffer";
@@ -100,25 +135,6 @@ bool DriBuffer::Initialize(const SkImageInfo& info) {
   }
 
   return true;
-}
-
-uint8_t DriBuffer::GetColorDepth() const {
-  switch (surface_->getCanvas()->imageInfo().colorType()) {
-    case kUnknown_SkColorType:
-    case kAlpha_8_SkColorType:
-      return 0;
-    case kIndex_8_SkColorType:
-      return 8;
-    case kRGB_565_SkColorType:
-      return 16;
-    case kARGB_4444_SkColorType:
-      return 12;
-    case kPMColor_SkColorType:
-      return 24;
-    default:
-      NOTREACHED();
-      return 0;
-  }
 }
 
 }  // namespace ui

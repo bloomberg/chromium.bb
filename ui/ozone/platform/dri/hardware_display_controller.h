@@ -142,9 +142,6 @@ class OZONE_EXPORT HardwareDisplayController {
   };
 
  private:
-  bool RegisterFramebuffers(DriSurface* surface, drmModeModeInfo mode);
-  void UnregisterFramebuffers(DriSurface* surface);
-
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it.
   DriWrapper* drm_;

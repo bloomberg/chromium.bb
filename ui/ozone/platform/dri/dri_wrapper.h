@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/basictypes.h"
+#include "base/macros.h"
 #include "ui/ozone/ozone_export.h"
 
 typedef struct _drmModeConnector drmModeConnector;
@@ -52,7 +52,8 @@ class OZONE_EXPORT DriWrapper {
 
   // Register a buffer with the CRTC. On successful registration, the CRTC will
   // assign a framebuffer ID to |framebuffer|.
-  virtual bool AddFramebuffer(const drmModeModeInfo& mode,
+  virtual bool AddFramebuffer(uint32_t width,
+                              uint32_t height,
                               uint8_t depth,
                               uint8_t bpp,
                               uint32_t stride,

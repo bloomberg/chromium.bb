@@ -65,7 +65,8 @@ class MockDriWrapper : public ui::DriWrapper {
     return true;
   }
 
-  virtual bool AddFramebuffer(const drmModeModeInfo& mode,
+  virtual bool AddFramebuffer(uint32_t width,
+                              uint32_t height,
                               uint8_t depth,
                               uint8_t bpp,
                               uint32_t stride,
@@ -226,22 +227,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
                                                    kDefaultMode));
 
-  EXPECT_EQ(2, drm_->get_add_framebuffer_call_count());
   EXPECT_TRUE(controller_->get_surface() != NULL);
-}
-
-TEST_F(HardwareDisplayControllerTest, CheckStateIfBindingFails) {
-  drm_->set_add_framebuffer_expectation(false);
-
-  scoped_ptr<ui::DriSurface> surface(
-      new MockDriSurface(drm_.get(), kDefaultModeSize));
-
-  EXPECT_TRUE(surface->Initialize());
-  EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass(),
-                                                    kDefaultMode));
-
-  EXPECT_EQ(1, drm_->get_add_framebuffer_call_count());
-  EXPECT_EQ(NULL, controller_->get_surface());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
@@ -278,18 +264,4 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
                                                    kDefaultMode));
   EXPECT_FALSE(controller_->SchedulePageFlip());
-}
-
-TEST_F(HardwareDisplayControllerTest, CheckProperDestruction) {
-  scoped_ptr<ui::DriSurface> surface(
-      new MockDriSurface(drm_.get(), kDefaultModeSize));
-
-  EXPECT_TRUE(surface->Initialize());
-  EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
-                                                   kDefaultMode));
-  EXPECT_TRUE(controller_->get_surface() != NULL);
-
-  controller_.reset();
-
-  EXPECT_EQ(2, drm_->get_remove_framebuffer_call_count());
 }

@@ -27,7 +27,7 @@ const uint32_t kCrtcId = 1;
 
 class MockDriWrapper : public ui::DriWrapper {
  public:
-  MockDriWrapper() : DriWrapper(""), id_(1) { fd_ = kFd; }
+  MockDriWrapper() : DriWrapper("") { fd_ = kFd; }
   virtual ~MockDriWrapper() { fd_ = -1; }
 
   virtual drmModeCrtc* GetCrtc(uint32_t crtc_id) OVERRIDE { return NULL; }
@@ -39,15 +39,13 @@ class MockDriWrapper : public ui::DriWrapper {
   virtual bool SetCrtc(drmModeCrtc* crtc, uint32_t* connectors) OVERRIDE {
     return true;
   }
-  virtual bool AddFramebuffer(const drmModeModeInfo& mode,
+  virtual bool AddFramebuffer(uint32_t width,
+                              uint32_t height,
                               uint8_t depth,
                               uint8_t bpp,
                               uint32_t stride,
                               uint32_t handle,
-                              uint32_t* framebuffer) OVERRIDE {
-    *framebuffer = id_++;
-    return true;
-  }
+                              uint32_t* framebuffer) OVERRIDE { return true; }
   virtual bool RemoveFramebuffer(uint32_t framebuffer) OVERRIDE { return true; }
   virtual bool PageFlip(uint32_t crtc_id,
                         uint32_t framebuffer,
@@ -67,14 +65,17 @@ class MockDriWrapper : public ui::DriWrapper {
   }
 
  private:
-  int id_;
   DISALLOW_COPY_AND_ASSIGN(MockDriWrapper);
 };
 
 class MockDriBuffer : public ui::DriBuffer {
  public:
-  MockDriBuffer(ui::DriWrapper* dri, bool initialize_expectation)
-      : DriBuffer(dri), initialize_expectation_(initialize_expectation) {}
+  MockDriBuffer(ui::DriWrapper* dri,
+                bool initialize_expectation,
+                int framebuffer)
+      : DriBuffer(dri), initialize_expectation_(initialize_expectation) {
+    framebuffer_ = framebuffer;
+  }
   virtual ~MockDriBuffer() {
     surface_.clear();
   }
@@ -98,7 +99,10 @@ class MockDriBuffer : public ui::DriBuffer {
 class MockDriSurface : public ui::DriSurface {
  public:
   MockDriSurface(ui::DriWrapper* dri, const gfx::Size& size)
-      : DriSurface(dri, size), dri_(dri), initialize_expectation_(true) {}
+      : DriSurface(dri, size),
+        dri_(dri),
+        initialize_expectation_(true),
+        framebuffer_(0) {}
   virtual ~MockDriSurface() {}
 
   void set_initialize_expectation(bool state) {
@@ -107,11 +111,12 @@ class MockDriSurface : public ui::DriSurface {
 
  private:
   virtual ui::DriBuffer* CreateBuffer() OVERRIDE {
-    return new MockDriBuffer(dri_, initialize_expectation_);
+    return new MockDriBuffer(dri_, initialize_expectation_, ++framebuffer_);
   }
 
   ui::DriWrapper* dri_;
   bool initialize_expectation_;
+  int framebuffer_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDriSurface);
 };

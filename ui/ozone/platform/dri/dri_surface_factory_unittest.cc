@@ -63,7 +63,8 @@ class MockDriWrapper : public ui::DriWrapper {
     return true;
   }
 
-  virtual bool AddFramebuffer(const drmModeModeInfo& mode,
+  virtual bool AddFramebuffer(uint32_t width,
+                              uint32_t height,
                               uint8_t depth,
                               uint8_t bpp,
                               uint32_t stride,
@@ -267,18 +268,6 @@ TEST_F(DriSurfaceFactoryTest, FailSurfaceInitialization) {
 
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
-
-  gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
-  EXPECT_EQ(kDefaultWidgetHandle, w);
-
-  EXPECT_FALSE(factory_->CreateCanvasForWidget(w));
-}
-
-TEST_F(DriSurfaceFactoryTest, FailBindingSurfaceToController) {
-  EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
-            factory_->InitializeHardware());
-
-  factory_->get_drm()->set_add_framebuffer_expectation(false);
 
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(kDefaultWidgetHandle, w);
