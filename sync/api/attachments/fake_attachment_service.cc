@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "sync/api/attachments/attachment.h"
-#include "sync/api/attachments/fake_attachment_store.h"
-#include "sync/api/attachments/fake_attachment_uploader.h"
+#include "sync/internal_api/public/attachments/fake_attachment_store.h"
+#include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
 namespace syncer {
 

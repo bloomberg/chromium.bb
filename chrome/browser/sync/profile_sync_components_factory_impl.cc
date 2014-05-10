@@ -59,9 +59,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "sync/api/attachments/attachment_service.h"
-#include "sync/api/attachments/fake_attachment_service.h"
-#include "sync/api/attachments/fake_attachment_store.h"
 #include "sync/api/syncable_service.h"
+#include "sync/internal_api/public/attachments/fake_attachment_store.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/storage/settings_sync_util.h"

@@ -10,8 +10,8 @@
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/attachments/attachment_service.h"
 #include "sync/api/attachments/fake_attachment_service.h"
-#include "sync/api/attachments/fake_attachment_uploader.h"
 #include "sync/api/sync_change.h"
+#include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
 using base::AutoLock;
 

@@ -1,5 +1,9 @@
 include_rules = [
-  "+net",
+  "+net/base",
+  "+net/cookies",
+  "+net/http",
+  "+net/test",
+  "+net/url_request",
   "+sync/base",
   "+sync/engine",
   "+sync/js",

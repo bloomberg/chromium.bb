@@ -16,6 +16,8 @@
     '../url/url.gyp:url_lib',
   ],
   'sources': [
+    'internal_api/attachments/fake_attachment_store.cc',
+    'internal_api/attachments/fake_attachment_uploader.cc',
     'internal_api/base_node.cc',
     'internal_api/base_transaction.cc',
     'internal_api/change_record.cc',
@@ -43,6 +45,8 @@
     'internal_api/non_blocking_type_processor.cc',
     'internal_api/protocol_event_buffer.cc',
     'internal_api/protocol_event_buffer.h',
+    'internal_api/public/attachments/fake_attachment_store.h',
+    'internal_api/public/attachments/fake_attachment_uploader.h',
     'internal_api/public/base/ack_handle.cc',
     'internal_api/public/base/ack_handle.h',
     'internal_api/public/base/attachment_id_proto.cc',
