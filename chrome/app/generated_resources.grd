@@ -1175,9 +1175,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_EDIT2" desc="The text label before the cut/copy/paste buttons in the merged menu">
             Edit
           </message>
-          <message name="IDS_UNDO" desc="The text label of the Undo menu item">
-            &amp;Undo
-          </message>
           <message name="IDS_CUT" desc="The text label of the Cut menu item">
             Cu&amp;t
           </message>
@@ -1257,9 +1254,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_UNPIN_FROM_START_SCREEN" desc="In Title Case: The text label of the Unpin from start screen menu item">
             Unpin this Page from Start Screen...
-          </message>
-          <message name="IDS_UNDO" desc="In Title Case: The text label of the Undo menu item">
-            &amp;Undo
           </message>
           <message name="IDS_CUT" desc="In Title Case: The text label of the Cut menu item">
             Cu&amp;t
@@ -5249,9 +5243,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Packaged Apps -->
-      <message name="IDS_APP_LAUNCH_NOT_SIGNED_IN_LINK" desc="Launching app when not signed in link.">
-        https://chrome.google.com/webstore/signin-helper/<ph name="EXTENSION_ID">$1<ex>nckgahadagoaajjgafhacjanaoiihapd</ex></ph>
-      </message>
       <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
         Install app
       </message>
@@ -6692,9 +6683,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE" desc="The button text that disallows the hotword voice search trigger.">
         Cancel
       </message>
-      <message name="IDS_HOTWORD_GENERIC_ERROR_MESSAGE" desc="The default error message text when no additional details are known.">
-        There was a problem downloading this feature.
-      </message>
       <message name="IDS_HOTWORD_RETRY_DOWNLOAD_BUTTON" desc="The button text that retries a failed hotword setup in the settings page.">
         Retry
       </message>
@@ -7126,11 +7114,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <!-- Native Frame menu -->
-      <message name="IDS_ALWAYS_ON_TOP" desc="The optional menu in native frame windows for setting the window to be always on top">
-        Always on top
-      </message>
-
       <!--Tooltip strings-->
       <message name="IDS_TOOLTIP_BACK" desc="The tooltip for back button">
         Click to go back, hold to see history
@@ -7155,9 +7138,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
         Stop loading this page
-      </message>
-      <message name="IDS_TOOLTIP_SCRIPT_BUBBLE" desc="The tooltip for script bubble">
-        View extensions interacting with page
       </message>
       <message name="IDS_TOOLTIP_CLOSE_TAB" desc="The tooltip for the close tab button">
         Close
@@ -7202,10 +7182,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <ph name="ORGNAME">$1<ex>Google, Inc. [US]</ex></ph> <ph name="HOSTNAME">$2<ex>google.com</ex></ph>
       </message>
 
-      <!--Script Bubble-->
-      <message name="IDS_SCRIPT_BUBBLE_HEADLINE" desc="The headline of the script bubble.">
-        Extensions interacting with this page:
-      </message>
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an incognito window">
         <ph name="WINDOW_TITLE">$1</ph> (Incognito)
@@ -7275,9 +7251,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
-      </message>
-      <message name="IDS_ACCNAME_WEB_CONTENTS" desc="The accessible name for the web contents.">
-        Web Contents
       </message>
       <if expr="is_ios">
         <message name="IDS_ACCNAME_CLEAR_TEXT" desc="The accessibility label for the clear text button in the location bar [Length: unlimited].">
@@ -7552,12 +7525,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
         <message name="IDS_FEEDBACK_SEND_REPORT" desc="Text for OK button of the send feedback dialog">
           Send feedback
-        </message>
-        <message name="IDS_FEEDBACK_LAUNCHER_TITLE" desc="Dialog title for app launcher feedback dialog">
-          Send Feedback.
-        </message>
-        <message name="IDS_FEEDBACK_LAUNCHER_DESCRIPTION_LABEL" desc="Label for the description field when asking for app launcher feedback">
-          Tell us what you think of the App Launcher.
         </message>
       </if>
 
@@ -8450,12 +8417,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
         </message>
-        <message name="IDS_TAB_CXMENU_SELECT_BY_DOMAIN" desc="The label of the tab context menu item for selecting tabs with the same domain">
-          Select by domain
-        </message>
-        <message name="IDS_TAB_CXMENU_SELECT_BY_OPENER" desc="The label of the tab context menu item for selecting tabs with the same opener">
-          Select by opener
-        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_NEWTAB" desc="In Title Case: The label of the 'New Tab' Tab context menu item.">
@@ -8493,12 +8454,6 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...
-        </message>
-        <message name="IDS_TAB_CXMENU_SELECT_BY_DOMAIN" desc="The label of the tab context menu item for selecting tabs with the same domain">
-          Select by Domain
-        </message>
-        <message name="IDS_TAB_CXMENU_SELECT_BY_OPENER" desc="The label of the tab context menu item for selecting tabs with the same opener">
-          Select by Opener
         </message>
       </if>
 
@@ -12159,10 +12114,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
 
         <!-- Login dialog strings -->
-        <message name="IDS_SYNC_LOGIN_INTRODUCTION" desc="The message to display at the top of the login dialog">
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> sync makes it easy to share your data (such as bookmarks and settings) between your computers.
-          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> synchronizes your data by storing it online with Google when you sign in with your Google Account.
-        </message>
         <message name="IDS_SYNC_SETUP_TITLE" desc="The title of the Sync Setup overlay.">
           Sign in with your Google Account
         </message>
@@ -12383,9 +12334,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         <message name="IDS_NOTIFICATION_PERMISSION_NO" desc="The label of the 'deny' button on the notification permission infobar.">
           Deny
         </message>
-        <message name="IDS_NOTIFICATION_BALLOON_ENABLE_MESSAGE" desc="Text for the menu option to enable notification permission.">
-          Enable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
-        </message>
         <message name="IDS_NOTIFICATION_WELCOME_BODY" desc="Notification body for the Welcome Notification">
           Stay connected to what you need to know, across all devices.
         </message>
@@ -12403,9 +12351,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
             <ph name="product_name">$1<ex>Chrome</ex></ph> Notifications
           </message>
         </if>
-        <message name="IDS_NOTIFIER_WELCOME_TITLE" desc="Notification title for when a new notifier service is introduced.">
-          <ph name="service_name">$1<ex>Google+</ex></ph> notifications
-        </message>
         <message name="IDS_NOTIFIER_WELCOME_BODY" desc="Notification body for when a new notifier service is introduced.">
           Now on your desktop
         </message>
@@ -12803,11 +12748,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
         </message>
 
       </if>
-
-    <!-- Color chooser dialog default titles (only used on Linux) -->
-    <message name="IDS_SELECT_COLOR_DIALOG_TITLE" desc="The default title for the Select Color color chooser dialog.">
-      Select Color
-    </message>
 
     <!-- Geolocation messages -->
     <if expr="not is_android">
@@ -14112,11 +14052,6 @@ Do you accept?
     </message>
     <message name="IDS_WEBSTORE_RESULT_LAUNCH_APP_TOOLTIP" desc="Tooltip of button on WebStore search result for launching an ephemeral app.">
       Launch app
-    </message>
-
-    <!-- Synced Notification display strings -->
-    <message name="IDS_FIRST_SYNCED_NOTIFICATION_SERVICE_NAME" desc="The name of the first service source for synced notifications.">
-      Google+
     </message>
 
     <!-- Extension Storage Monitor notification strings -->
