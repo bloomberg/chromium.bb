@@ -7,6 +7,7 @@
 
 #include <mach/mach.h>
 
+#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 
@@ -31,7 +32,7 @@
 
 namespace logging {
 
-class MachLogMessage : public logging::LogMessage {
+class BASE_EXPORT MachLogMessage : public logging::LogMessage {
  public:
   MachLogMessage(const char* file_path,
                  int line,
@@ -45,7 +46,7 @@ class MachLogMessage : public logging::LogMessage {
   DISALLOW_COPY_AND_ASSIGN(MachLogMessage);
 };
 
-class BootstrapLogMessage : public logging::LogMessage {
+class BASE_EXPORT BootstrapLogMessage : public logging::LogMessage {
  public:
   BootstrapLogMessage(const char* file_path,
                       int line,
@@ -60,6 +61,12 @@ class BootstrapLogMessage : public logging::LogMessage {
 };
 
 }  // namespace logging
+
+#if defined(NDEBUG)
+#define MACH_DVLOG_IS_ON(verbose_level) 0
+#else
+#define MACH_DVLOG_IS_ON(verbose_level) VLOG_IS_ON(verbose_level)
+#endif
 
 #define MACH_LOG_STREAM(severity, mach_err) \
     COMPACT_GOOGLE_LOG_EX_ ## severity(MachLogMessage, mach_err).stream()
@@ -92,15 +99,17 @@ class BootstrapLogMessage : public logging::LogMessage {
 
 #define MACH_DVLOG(verbose_level, mach_err) \
     LAZY_STREAM(MACH_VLOG_STREAM(verbose_level, mach_err), \
-                DVLOG_IS_ON(verbose_level))
+                MACH_DVLOG_IS_ON(verbose_level))
 #define MACH_DVLOG_IF(verbose_level, condition, mach_err) \
-    LAZY_STREAM(MACH_VLOG_STREAM(verbose_level, mach_err) \
-                DVLOG_IS_ON(verbose_level) && (condition))
+    LAZY_STREAM(MACH_VLOG_STREAM(verbose_level, mach_err), \
+                MACH_DVLOG_IS_ON(verbose_level) && (condition))
 
 #define MACH_DCHECK(condition, mach_err) \
     LAZY_STREAM(MACH_LOG_STREAM(FATAL, mach_err), \
                 DCHECK_IS_ON && !(condition)) \
     << "Check failed: " # condition << ". "
+
+#define BOOTSTRAP_DVLOG_IS_ON MACH_DVLOG_IS_ON
 
 #define BOOTSTRAP_LOG_STREAM(severity, bootstrap_err) \
     COMPACT_GOOGLE_LOG_EX_ ## severity(BootstrapLogMessage, \
@@ -136,10 +145,10 @@ class BootstrapLogMessage : public logging::LogMessage {
 
 #define BOOTSTRAP_DVLOG(verbose_level, bootstrap_err) \
     LAZY_STREAM(BOOTSTRAP_VLOG_STREAM(verbose_level, bootstrap_err), \
-                DVLOG_IS_ON(verbose_level))
+                BOOTSTRAP_DVLOG_IS_ON(verbose_level))
 #define BOOTSTRAP_DVLOG_IF(verbose_level, condition, bootstrap_err) \
-    LAZY_STREAM(BOOTSTRAP_VLOG_STREAM(verbose_level, bootstrap_err) \
-                DVLOG_IS_ON(verbose_level) && (condition))
+    LAZY_STREAM(BOOTSTRAP_VLOG_STREAM(verbose_level, bootstrap_err), \
+                BOOTSTRAP_DVLOG_IS_ON(verbose_level) && (condition))
 
 #define BOOTSTRAP_DCHECK(condition, bootstrap_err) \
     LAZY_STREAM(BOOTSTRAP_LOG_STREAM(FATAL, bootstrap_err), \
