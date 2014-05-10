@@ -6,10 +6,36 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/url_constants.h"
+#include "net/base/escape.h"
 
 namespace content {
+
+class GuestWebContentsObserver
+    : public content::WebContentsObserver {
+ public:
+  explicit GuestWebContentsObserver(WebContents* guest_web_contents)
+      : WebContentsObserver(guest_web_contents),
+        guest_instance_id_(guest_web_contents->GetEmbeddedInstanceID()) {
+  }
+
+  virtual ~GuestWebContentsObserver() {
+  }
+
+  virtual void WebContentsDestroyed() OVERRIDE {
+    TestGuestManagerDelegate::GetInstance()->RemoveGuest(guest_instance_id_);
+    delete this;
+  }
+
+ private:
+  int guest_instance_id_;
+  DISALLOW_COPY_AND_ASSIGN(GuestWebContentsObserver);
+};
 
 TestGuestManagerDelegate::TestGuestManagerDelegate()
     : next_instance_id_(0) {
@@ -23,6 +49,44 @@ TestGuestManagerDelegate* TestGuestManagerDelegate::GetInstance() {
   return Singleton<TestGuestManagerDelegate>::get();
 }
 
+content::WebContents* TestGuestManagerDelegate::CreateGuest(
+    SiteInstance* embedder_site_instance,
+    int instance_id,
+    const std::string& storage_partition_id,
+    bool persist_storage,
+    scoped_ptr<base::DictionaryValue> extra_params) {
+  const GURL& embedder_site_url = embedder_site_instance->GetSiteURL();
+  const std::string& host = embedder_site_url.host();
+
+  std::string url_encoded_partition = net::EscapeQueryParamValue(
+      storage_partition_id, false);
+  GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
+                                     content::kGuestScheme,
+                                     host.c_str(),
+                                     persist_storage ? "persist" : "",
+                                     url_encoded_partition.c_str()));
+
+  // If we already have a webview tag in the same app using the same storage
+  // partition, we should use the same SiteInstance so the existing tag and
+  // the new tag can script each other.
+  SiteInstance* guest_site_instance = GetGuestSiteInstance(guest_site);
+  if (!guest_site_instance) {
+    // Create the SiteInstance in a new BrowsingInstance, which will ensure
+    // that webview tags are also not allowed to send messages across
+    // different partitions.
+    guest_site_instance = SiteInstance::CreateForURL(
+        embedder_site_instance->GetBrowserContext(), guest_site);
+  }
+  WebContents::CreateParams create_params(
+      embedder_site_instance->GetBrowserContext(),
+      guest_site_instance);
+  create_params.guest_instance_id = instance_id;
+  create_params.guest_extra_params.reset(extra_params.release());
+  WebContents* guest_web_contents = WebContents::Create(create_params);
+  AddGuest(instance_id, guest_web_contents);
+  return guest_web_contents;
+}
+
 int TestGuestManagerDelegate::GetNextInstanceID() {
   return ++next_instance_id_;
 }
@@ -33,6 +97,7 @@ void TestGuestManagerDelegate::AddGuest(
   DCHECK(guest_web_contents_by_instance_id_.find(guest_instance_id) ==
          guest_web_contents_by_instance_id_.end());
   guest_web_contents_by_instance_id_[guest_instance_id] = guest_web_contents;
+  new GuestWebContentsObserver(guest_web_contents);
 }
 
 void TestGuestManagerDelegate::RemoveGuest(

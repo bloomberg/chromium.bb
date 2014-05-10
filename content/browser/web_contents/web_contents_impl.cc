@@ -431,31 +431,21 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   WebContentsImpl* new_contents = new WebContentsImpl(
       params.browser_context, opener);
 
+  if (params.guest_instance_id) {
+    scoped_ptr<base::DictionaryValue> extra_params(
+        params.guest_extra_params->DeepCopy());
+    // This makes |new_contents| act as a guest.
+    // For more info, see comment above class BrowserPluginGuest.
+    BrowserPluginGuest::Create(params.guest_instance_id,
+                               params.site_instance,
+                               new_contents,
+                               extra_params.Pass());
+    // We are instantiating a WebContents for browser plugin. Set its subframe
+    // bit to true.
+    new_contents->is_subframe_ = true;
+  }
   new_contents->Init(params);
   return new_contents;
-}
-
-// static
-BrowserPluginGuest* WebContentsImpl::CreateGuest(
-    BrowserContext* browser_context,
-    SiteInstance* site_instance,
-    int guest_instance_id,
-    scoped_ptr<base::DictionaryValue> extra_params) {
-  WebContentsImpl* new_contents = new WebContentsImpl(browser_context, NULL);
-
-  // This makes |new_contents| act as a guest.
-  // For more info, see comment above class BrowserPluginGuest.
-  BrowserPluginGuest::Create(
-      guest_instance_id, site_instance, new_contents, extra_params.Pass());
-
-  WebContents::CreateParams create_params(browser_context, site_instance);
-  new_contents->Init(create_params);
-
-  // We are instantiating a WebContents for browser plugin. Set its subframe bit
-  // to true.
-  new_contents->is_subframe_ = true;
-
-  return new_contents->browser_plugin_guest_.get();
 }
 
 RenderFrameHostManager* WebContentsImpl::GetRenderManagerForTesting() {

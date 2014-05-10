@@ -17,8 +17,7 @@ static jlong CreateNativeWebContents(
   if (incognito)
     profile = profile->GetOffTheRecordProfile();
 
-  content::WebContents::CreateParams params =
-      content::WebContents::CreateParams(profile);
+  content::WebContents::CreateParams params(profile);
   params.initially_hidden = static_cast<bool>(initially_hidden);
   return reinterpret_cast<intptr_t>(content::WebContents::Create(params));
 }

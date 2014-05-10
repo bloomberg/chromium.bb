@@ -25,16 +25,20 @@ class TestBrowserPluginGuestManager : public BrowserPluginGuestManager {
   explicit TestBrowserPluginGuestManager(BrowserContext* context);
   virtual ~TestBrowserPluginGuestManager();
 
+  // Overriden to intercept in test.
+  virtual BrowserPluginGuest* CreateGuest(
+      SiteInstance* embedder_site_instance,
+      int instance_id,
+      const std::string& storage_partition_id,
+      bool persist_storage,
+      scoped_ptr<base::DictionaryValue> extra_params) OVERRIDE;
+
   // Waits until at least one guest is added to the guest manager.
   WebContents* WaitForGuestAdded();
 
  private:
   // BrowserPluginHostTest.ReloadEmbedder needs access to the GuestInstanceMap.
   FRIEND_TEST_ALL_PREFIXES(BrowserPluginHostTest, ReloadEmbedder);
-
-  // Overriden to intercept in test.
-  virtual void AddGuest(int instance_id,
-                        WebContents* guest_web_contents) OVERRIDE;
 
   WebContents* last_guest_added_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;

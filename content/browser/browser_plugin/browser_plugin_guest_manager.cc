@@ -14,13 +14,11 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager_delegate.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
-#include "net/base/escape.h"
 
 namespace content {
 
@@ -70,55 +68,20 @@ int BrowserPluginGuestManager::GetNextInstanceID() {
 BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
     SiteInstance* embedder_site_instance,
     int instance_id,
-    const BrowserPluginHostMsg_Attach_Params& params,
+    const std::string& storage_partition_id,
+    bool persist_storage,
     scoped_ptr<base::DictionaryValue> extra_params) {
-  RenderProcessHost* embedder_process_host =
-      embedder_site_instance->GetProcess();
-  // Validate that the partition id coming from the renderer is valid UTF-8,
-  // since we depend on this in other parts of the code, such as FilePath
-  // creation. If the validation fails, treat it as a bad message and kill the
-  // renderer process.
-  if (!base::IsStringUTF8(params.storage_partition_id)) {
-    content::RecordAction(
-        base::UserMetricsAction("BadMessageTerminate_BPGM"));
-    base::KillProcess(
-        embedder_process_host->GetHandle(),
-        content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+  if (!GetDelegate())
     return NULL;
-  }
+  WebContents* guest_web_contents =
+      GetDelegate()->CreateGuest(embedder_site_instance,
+                                 instance_id,
+                                 storage_partition_id,
+                                 persist_storage,
+                                 extra_params.Pass());
 
-  const GURL& embedder_site_url = embedder_site_instance->GetSiteURL();
-  const std::string& host = embedder_site_url.host();
-
-  std::string url_encoded_partition = net::EscapeQueryParamValue(
-      params.storage_partition_id, false);
-  // The SiteInstance of a given webview tag is based on the fact that it's
-  // a guest process in addition to which platform application the tag
-  // belongs to and what storage partition is in use, rather than the URL
-  // that the tag is being navigated to.
-  GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
-                                     kGuestScheme,
-                                     host.c_str(),
-                                     params.persist_storage ? "persist" : "",
-                                     url_encoded_partition.c_str()));
-
-  // If we already have a webview tag in the same app using the same storage
-  // partition, we should use the same SiteInstance so the existing tag and
-  // the new tag can script each other.
-  SiteInstance* guest_site_instance = GetGuestSiteInstance(guest_site);
-  if (!guest_site_instance) {
-    // Create the SiteInstance in a new BrowsingInstance, which will ensure
-    // that webview tags are also not allowed to send messages across
-    // different partitions.
-    guest_site_instance = SiteInstance::CreateForURL(
-        embedder_site_instance->GetBrowserContext(), guest_site);
-  }
-
-  return WebContentsImpl::CreateGuest(
-      embedder_site_instance->GetBrowserContext(),
-      guest_site_instance,
-      instance_id,
-      extra_params.Pass());
+  return static_cast<WebContentsImpl*>(guest_web_contents)->
+      GetBrowserPluginGuest();
 }
 
 static void BrowserPluginGuestByInstanceIDCallback(
@@ -148,19 +111,6 @@ void BrowserPluginGuestManager::MaybeGetGuestByInstanceIDOrKill(
                  callback));
 }
 
-void BrowserPluginGuestManager::AddGuest(int instance_id,
-                                         WebContents* guest_web_contents) {
-  if (!GetDelegate())
-    return;
-  GetDelegate()->AddGuest(instance_id, guest_web_contents);
-}
-
-void BrowserPluginGuestManager::RemoveGuest(int instance_id) {
-  if (!GetDelegate())
-    return;
-  GetDelegate()->RemoveGuest(instance_id);
-}
-
 static void BrowserPluginGuestMessageCallback(const IPC::Message& message,
                                               BrowserPluginGuest* guest) {
   if (!guest)
@@ -180,13 +130,6 @@ void BrowserPluginGuestManager::OnMessageReceived(const IPC::Message& message,
                                   render_process_id,
                                   base::Bind(&BrowserPluginGuestMessageCallback,
                                              message));
-}
-
-SiteInstance* BrowserPluginGuestManager::GetGuestSiteInstance(
-    const GURL& guest_site) {
-  if (!GetDelegate())
-    return NULL;
-  return GetDelegate()->GetGuestSiteInstance(guest_site);
 }
 
 static bool BrowserPluginGuestCallback(

@@ -4,15 +4,21 @@
 
 #include "content/public/browser/browser_plugin_guest_manager_delegate.h"
 
+#include "base/values.h"
+
 namespace content {
+
+content::WebContents* BrowserPluginGuestManagerDelegate::CreateGuest(
+    SiteInstance* embedder_site_instance,
+    int instance_id,
+    const std::string& storage_partition_id,
+    bool persist_storage,
+    scoped_ptr<base::DictionaryValue> extra_params) {
+  return NULL;
+}
 
 int BrowserPluginGuestManagerDelegate::GetNextInstanceID() {
   return 0;
-}
-
-content::SiteInstance* BrowserPluginGuestManagerDelegate::GetGuestSiteInstance(
-    const GURL& guest_site) {
-  return NULL;
 }
 
 bool BrowserPluginGuestManagerDelegate::ForEachGuest(

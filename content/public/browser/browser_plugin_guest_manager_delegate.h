@@ -5,10 +5,16 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_DELEGATE_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "content/common/content_export.h"
 
 class GURL;
+
+namespace base {
+class DictionaryValue;
+}  // namespace base
 
 namespace content {
 
@@ -21,21 +27,18 @@ class CONTENT_EXPORT BrowserPluginGuestManagerDelegate {
  public:
   virtual ~BrowserPluginGuestManagerDelegate() {}
 
+  // Requests the allocation of a new guest WebContents.
+  virtual content::WebContents* CreateGuest(
+      content::SiteInstance* embedder_site_instance,
+      int instance_id,
+      const std::string& storage_partition_id,
+      bool persist_storage,
+      scoped_ptr<base::DictionaryValue> extra_params);
+
   // Return a new instance ID.
   // TODO(fsamuel): Remove this. Once the instance ID concept is moved
   // entirely out of content and into chrome, this API will be unnecessary.
   virtual int GetNextInstanceID();
-
-  // Adds a new WebContents |guest_web_contents| as a guest.
-  // TODO(fsamuel): Remove this. Once guest WebContents allocation
-  // moves outside of content, this API will be unnecessary.
-  virtual void AddGuest(int guest_instance_id,
-                        WebContents* guest_web_contents) {}
-
-  // Removes a |guest_instance_id| as a valid guest.
-  // TODO(fsamuel): Remove this. Once guest WebContents allocation
-  // moves outside of content, this API will be unnecessary.
-  virtual void RemoveGuest(int guest_instance_id) {}
 
   typedef base::Callback<void(WebContents*)> GuestByInstanceIDCallback;
   // Requests a guest WebContents associated with the provided
@@ -48,12 +51,6 @@ class CONTENT_EXPORT BrowserPluginGuestManagerDelegate {
       int guest_instance_id,
       int embedder_render_process_id,
       const GuestByInstanceIDCallback& callback) {}
-
-  // Returns an existing SiteInstance if the current profile has a guest of the
-  // given |guest_site|.
-  // TODO(fsamuel): Remove this. Once guest WebContents allocation
-  // moves outside of content, this API will be unnecessary.
-  virtual content::SiteInstance* GetGuestSiteInstance(const GURL& guest_site);
 
   // Iterates over all WebContents belonging to a given |embedder_web_contents|,
   // calling |callback| for each. If one of the callbacks returns true, then

@@ -20,17 +20,22 @@ class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
 
   static TestGuestManagerDelegate* GetInstance();
 
+  void AddGuest(int guest_instance_id, WebContents* guest_web_contents);
+  void RemoveGuest(int guest_instance_id);
+  SiteInstance* GetGuestSiteInstance(const GURL& guest_site);
+
   // BrowserPluginGuestManagerDelegate implementation.
+  virtual content::WebContents* CreateGuest(
+      content::SiteInstance* embedder_site_instance,
+      int instance_id,
+      const std::string& storage_partition_id,
+      bool persist_storage,
+      scoped_ptr<base::DictionaryValue> extra_params) OVERRIDE;
   virtual int GetNextInstanceID() OVERRIDE;
-  virtual void AddGuest(int guest_instance_id,
-                        WebContents* guest_web_contents) OVERRIDE;
-  virtual void RemoveGuest(int guest_instance_id) OVERRIDE;
   virtual void MaybeGetGuestByInstanceIDOrKill(
       int guest_instance_id,
       int embedder_render_process_id,
       const GuestByInstanceIDCallback& callback) OVERRIDE;
-  virtual SiteInstance* GetGuestSiteInstance(
-      const GURL& guest_site) OVERRIDE;
   virtual bool ForEachGuest(WebContents* embedder_web_contents,
                             const GuestCallback& callback) OVERRIDE;
 

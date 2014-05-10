@@ -15,6 +15,7 @@ WebContents::CreateParams::CreateParams(BrowserContext* context)
       routing_id(MSG_ROUTING_NONE),
       main_frame_routing_id(MSG_ROUTING_NONE),
       initially_hidden(false),
+      guest_instance_id(0),
       context(NULL) {}
 
 WebContents::CreateParams::CreateParams(
@@ -25,6 +26,10 @@ WebContents::CreateParams::CreateParams(
       routing_id(MSG_ROUTING_NONE),
       main_frame_routing_id(MSG_ROUTING_NONE),
       initially_hidden(false),
+      guest_instance_id(0),
       context(NULL) {}
+
+WebContents::CreateParams::~CreateParams() {
+}
 
 }  // namespace content

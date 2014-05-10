@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_plugin/test_browser_plugin_guest_manager.h"
 
+#include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/test_utils.h"
 
@@ -18,13 +19,22 @@ TestBrowserPluginGuestManager::TestBrowserPluginGuestManager(
 TestBrowserPluginGuestManager::~TestBrowserPluginGuestManager() {
 }
 
-void TestBrowserPluginGuestManager::AddGuest(
+BrowserPluginGuest* TestBrowserPluginGuestManager::CreateGuest(
+    SiteInstance* embedder_site_instance,
     int instance_id,
-    WebContents* guest_web_contents) {
-  BrowserPluginGuestManager::AddGuest(instance_id, guest_web_contents);
-  last_guest_added_ = guest_web_contents;
+    const std::string& storage_partition_id,
+    bool persist_storage,
+    scoped_ptr<base::DictionaryValue> extra_params) {
+  BrowserPluginGuest* guest = BrowserPluginGuestManager::CreateGuest(
+      embedder_site_instance,
+      instance_id,
+      storage_partition_id,
+      persist_storage,
+      extra_params.Pass());
+  last_guest_added_ = guest->GetWebContents();
   if (message_loop_runner_.get())
     message_loop_runner_->Quit();
+  return guest;
 }
 
 WebContents* TestBrowserPluginGuestManager::WaitForGuestAdded() {

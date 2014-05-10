@@ -39,23 +39,33 @@ class GuestViewManager : public content::BrowserPluginGuestManagerDelegate,
       int embedder_render_process_id);
 
   // BrowserPluginGuestManagerDelegate implementation.
+  virtual content::WebContents* CreateGuest(
+      content::SiteInstance* embedder_site_instance,
+      int instance_id,
+      const std::string& storage_partition_id,
+      bool persist_storage,
+      scoped_ptr<base::DictionaryValue> extra_params) OVERRIDE;
   virtual int GetNextInstanceID() OVERRIDE;
-  virtual void AddGuest(int guest_instance_id,
-                        content::WebContents* guest_web_contents) OVERRIDE;
-  virtual void RemoveGuest(int guest_instance_id) OVERRIDE;
   virtual void MaybeGetGuestByInstanceIDOrKill(
       int guest_instance_id,
       int embedder_render_process_id,
       const GuestByInstanceIDCallback& callback) OVERRIDE;
-  virtual content::SiteInstance* GetGuestSiteInstance(
-      const GURL& guest_site) OVERRIDE;
   virtual bool ForEachGuest(content::WebContents* embedder_web_contents,
                             const GuestCallback& callback) OVERRIDE;
 
  private:
+  friend class GuestViewBase;
   friend class GuestWebContentsObserver;
 
+  void AddGuest(int guest_instance_id,
+                content::WebContents* guest_web_contents);
+
+  void RemoveGuest(int guest_instance_id);
+
   void AddRenderProcessHostID(int render_process_host_id);
+
+  content::SiteInstance* GetGuestSiteInstance(
+      const GURL& guest_site);
 
   content::WebContents* GetGuestByInstanceID(
       int guest_instance_id,

@@ -189,10 +189,11 @@ void BrowserPluginEmbedder::OnGuestCallback(
   }
 
   scoped_ptr<base::DictionaryValue> copy_extra_params(extra_params->DeepCopy());
-  guest = guest_manager->CreateGuest(
-      GetWebContents()->GetSiteInstance(),
-      instance_id, params,
-      copy_extra_params.Pass());
+  guest = guest_manager->CreateGuest(GetWebContents()->GetSiteInstance(),
+                                     instance_id,
+                                     params.storage_partition_id,
+                                     params.persist_storage,
+                                     copy_extra_params.Pass());
   if (guest) {
     GetContentClient()->browser()->GuestWebContentsAttached(
         guest->GetWebContents(),

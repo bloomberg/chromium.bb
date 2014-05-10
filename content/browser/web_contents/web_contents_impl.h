@@ -99,13 +99,6 @@ class CONTENT_EXPORT WebContentsImpl
   // opener is closed or the page clears its window.opener.
   WebContentsImpl* opener() const { return opener_; }
 
-  // Creates a WebContents to be used as a browser plugin guest.
-  static BrowserPluginGuest* CreateGuest(
-      BrowserContext* browser_context,
-      content::SiteInstance* site_instance,
-      int guest_instance_id,
-      scoped_ptr<base::DictionaryValue> extra_params);
-
   // Creates a swapped out RenderView. This is used by the browser plugin to
   // create a swapped out RenderView in the embedder render process for the
   // guest, to expose the guest's window object to the embedder.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/guest_view/guest_view_manager.h"
 
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/guest_view/guest_view_base.h"
 #include "chrome/browser/guest_view/guest_view_constants.h"
@@ -13,7 +14,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_system.h"
+#include "net/base/escape.h"
 #include "url/gurl.h"
 
 using content::BrowserContext;
@@ -89,22 +92,59 @@ int GuestViewManager::GetNextInstanceID() {
   return ++current_instance_id_;
 }
 
-void GuestViewManager::AddGuest(int guest_instance_id,
-                                WebContents* guest_web_contents) {
-  DCHECK(guest_web_contents_by_instance_id_.find(guest_instance_id) ==
-         guest_web_contents_by_instance_id_.end());
-  guest_web_contents_by_instance_id_[guest_instance_id] = guest_web_contents;
-  // This will add the RenderProcessHost ID when we get one.
-  new GuestWebContentsObserver(guest_web_contents);
-}
+content::WebContents* GuestViewManager::CreateGuest(
+    content::SiteInstance* embedder_site_instance,
+    int instance_id,
+    const std::string& storage_partition_id,
+    bool persist_storage,
+    scoped_ptr<base::DictionaryValue> extra_params) {
+  content::RenderProcessHost* embedder_process_host =
+      embedder_site_instance->GetProcess();
+  // Validate that the partition id coming from the renderer is valid UTF-8,
+  // since we depend on this in other parts of the code, such as FilePath
+  // creation. If the validation fails, treat it as a bad message and kill the
+  // renderer process.
+  if (!base::IsStringUTF8(storage_partition_id)) {
+    content::RecordAction(
+        base::UserMetricsAction("BadMessageTerminate_BPGM"));
+    base::KillProcess(
+        embedder_process_host->GetHandle(),
+        content::RESULT_CODE_KILLED_BAD_MESSAGE, false);
+    return NULL;
+  }
 
-void GuestViewManager::RemoveGuest(int guest_instance_id) {
-  GuestInstanceMap::iterator it =
-      guest_web_contents_by_instance_id_.find(guest_instance_id);
-  DCHECK(it != guest_web_contents_by_instance_id_.end());
-  render_process_host_id_multiset_.erase(
-      it->second->GetRenderProcessHost()->GetID());
-  guest_web_contents_by_instance_id_.erase(it);
+  const GURL& embedder_site_url = embedder_site_instance->GetSiteURL();
+  const std::string& host = embedder_site_url.host();
+
+  std::string url_encoded_partition = net::EscapeQueryParamValue(
+      storage_partition_id, false);
+  // The SiteInstance of a given webview tag is based on the fact that it's
+  // a guest process in addition to which platform application the tag
+  // belongs to and what storage partition is in use, rather than the URL
+  // that the tag is being navigated to.
+  GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
+                                     content::kGuestScheme,
+                                     host.c_str(),
+                                     persist_storage ? "persist" : "",
+                                     url_encoded_partition.c_str()));
+
+  // If we already have a webview tag in the same app using the same storage
+  // partition, we should use the same SiteInstance so the existing tag and
+  // the new tag can script each other.
+  SiteInstance* guest_site_instance = GetGuestSiteInstance(guest_site);
+  if (!guest_site_instance) {
+    // Create the SiteInstance in a new BrowsingInstance, which will ensure
+    // that webview tags are also not allowed to send messages across
+    // different partitions.
+    guest_site_instance = SiteInstance::CreateForURL(
+        embedder_site_instance->GetBrowserContext(), guest_site);
+  }
+  WebContents::CreateParams create_params(
+      embedder_site_instance->GetBrowserContext(),
+      guest_site_instance);
+  create_params.guest_instance_id = instance_id;
+  create_params.guest_extra_params.reset(extra_params.release());
+  return WebContents::Create(create_params);
 }
 
 void GuestViewManager::MaybeGetGuestByInstanceIDOrKill(
@@ -145,6 +185,24 @@ bool GuestViewManager::ForEachGuest(WebContents* embedder_web_contents,
       return true;
   }
   return false;
+}
+
+void GuestViewManager::AddGuest(int guest_instance_id,
+                                WebContents* guest_web_contents) {
+  DCHECK(guest_web_contents_by_instance_id_.find(guest_instance_id) ==
+         guest_web_contents_by_instance_id_.end());
+  guest_web_contents_by_instance_id_[guest_instance_id] = guest_web_contents;
+  // This will add the RenderProcessHost ID when we get one.
+  new GuestWebContentsObserver(guest_web_contents);
+}
+
+void GuestViewManager::RemoveGuest(int guest_instance_id) {
+  GuestInstanceMap::iterator it =
+      guest_web_contents_by_instance_id_.find(guest_instance_id);
+  DCHECK(it != guest_web_contents_by_instance_id_.end());
+  render_process_host_id_multiset_.erase(
+      it->second->GetRenderProcessHost()->GetID());
+  guest_web_contents_by_instance_id_.erase(it);
 }
 
 void GuestViewManager::AddRenderProcessHostID(int render_process_host_id) {

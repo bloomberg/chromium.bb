@@ -65,18 +65,12 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   // If params.src is present, the new guest will also be navigated to the
   // provided URL. Optionally, the new guest may be attached to a
   // |guest_opener|, and may be attached to a pre-selected |routing_id|.
-  BrowserPluginGuest* CreateGuest(
+  virtual BrowserPluginGuest* CreateGuest(
       SiteInstance* embedder_site_instance,
       int instance_id,
-      const BrowserPluginHostMsg_Attach_Params& params,
+      const std::string& storage_partition_id,
+      bool persist_storage,
       scoped_ptr<base::DictionaryValue> extra_params);
-
-  // Adds a new |guest_web_contents| to the embedder (overridable in test).
-  virtual void AddGuest(int instance_id, WebContents* guest_web_contents);
-
-  // Removes the guest with the given |instance_id| from this
-  // BrowserPluginGuestManager.
-  void RemoveGuest(int instance_id);
 
   typedef base::Callback<void(BrowserPluginGuest*)> GuestByInstanceIDCallback;
   void MaybeGetGuestByInstanceIDOrKill(
@@ -94,10 +88,6 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   friend class TestBrowserPluginGuestManager;
 
   explicit BrowserPluginGuestManager(BrowserContext* context);
-
-  // Returns an existing SiteInstance if the current profile has a guest of the
-  // given |guest_site|.
-  SiteInstance* GetGuestSiteInstance(const GURL& guest_site);
 
   // Static factory instance (always NULL outside of tests).
   static BrowserPluginHostFactory* factory_;

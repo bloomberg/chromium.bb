@@ -221,7 +221,6 @@ BrowserPluginGuest::BrowserPluginGuest(
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
-  GetBrowserPluginGuestManager()->AddGuest(instance_id_, GetWebContents());
 }
 
 bool BrowserPluginGuest::AddMessageToConsole(WebContents* source,
@@ -316,19 +315,19 @@ BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
   // We pull the partition information from the site's URL, which is of the form
   // guest://site/{persist}?{partition_name}.
   const GURL& site_url = GetWebContents()->GetSiteInstance()->GetSiteURL();
-  BrowserPluginHostMsg_Attach_Params attach_params;
-  attach_params.storage_partition_id = site_url.query();
-  attach_params.persist_storage =
-      site_url.path().find("persist") != std::string::npos;
 
   // The new guest gets a copy of this guest's extra params so that the content
   // embedder exposes the same API for this guest as its opener.
   scoped_ptr<base::DictionaryValue> extra_params(
       extra_attach_params_->DeepCopy());
+  const std::string& storage_partition_id = site_url.query();
+  bool persist_storage =
+      site_url.path().find("persist") != std::string::npos;
   BrowserPluginGuest* new_guest =
       guest_manager->CreateGuest(GetWebContents()->GetSiteInstance(),
                                  instance_id,
-                                 attach_params,
+                                 storage_partition_id,
+                                 persist_storage,
                                  extra_params.Pass());
   if (new_guest->delegate_)
     new_guest->delegate_->SetOpener(GetWebContents());
@@ -360,7 +359,6 @@ void BrowserPluginGuest::Destroy() {
   if (!attached() && GetOpener())
     GetOpener()->pending_new_windows_.erase(this);
   DestroyUnattachedWindows();
-  GetBrowserPluginGuestManager()->RemoveGuest(instance_id_);
   delete GetWebContents();
 }
 

@@ -30,6 +30,7 @@
 #endif
 
 namespace base {
+class DictionaryValue;
 class TimeTicks;
 }
 
@@ -82,6 +83,7 @@ class WebContents : public PageNavigator,
  public:
   struct CONTENT_EXPORT CreateParams {
     explicit CreateParams(BrowserContext* context);
+    ~CreateParams();
     CreateParams(BrowserContext* context, SiteInstance* site);
 
     BrowserContext* browser_context;
@@ -100,6 +102,14 @@ class WebContents : public PageNavigator,
 
     // True if the contents should be initially hidden.
     bool initially_hidden;
+
+    // If this instance ID is non-zero then it indicates that this WebContents
+    // should behave as a guest.
+    int guest_instance_id;
+
+    // TODO(fsamuel): This is temporary. Remove this once all guests are created
+    // from the content embedder.
+    scoped_ptr<base::DictionaryValue> guest_extra_params;
 
     // Used to specify the location context which display the new view should
     // belong. This can be NULL if not needed.

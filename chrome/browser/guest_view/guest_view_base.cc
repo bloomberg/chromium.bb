@@ -53,6 +53,8 @@ GuestViewBase::GuestViewBase(WebContents* guest_web_contents,
       weak_ptr_factory_(this) {
   webcontents_guestview_map.Get().insert(
       std::make_pair(guest_web_contents, this));
+  GuestViewManager::FromBrowserContext(browser_context_)->
+      AddGuest(guest_instance_id_, guest_web_contents);
 }
 
 // static
@@ -184,6 +186,9 @@ GuestViewBase::~GuestViewBase() {
   std::pair<int, int> key(embedder_render_process_id_, guest_instance_id_);
 
   webcontents_guestview_map.Get().erase(guest_web_contents());
+
+  GuestViewManager::FromBrowserContext(browser_context_)->
+      RemoveGuest(guest_instance_id_);
 
   pending_events_.clear();
 }
