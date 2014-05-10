@@ -33,12 +33,6 @@
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 
-// This is here due to a Windows API collision; plugin.h through
-// file_downloader.h transitively includes Instance.h which defines a
-// PostMessage method, so this undef must appear before any of those.
-#ifdef PostMessage
-#undef PostMessage
-#endif
 #include "native_client/src/public/imc_types.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/validator/nacl_file_info.h"
@@ -52,6 +46,7 @@
 #include "ppapi/native_client/src/trusted/plugin/pnacl_resources.h"
 #include "ppapi/native_client/src/trusted/plugin/sel_ldr_launcher_chrome.h"
 #include "ppapi/native_client/src/trusted/plugin/srpc_client.h"
+#include "ppapi/native_client/src/trusted/plugin/utility.h"
 #include "ppapi/native_client/src/trusted/weak_ref/call_on_main_thread.h"
 
 namespace plugin {
@@ -226,15 +221,9 @@ void PluginReverseInterface::ShutDown() {
 }
 
 void PluginReverseInterface::DoPostMessage(nacl::string message) {
-  PostMessageResource* continuation = new PostMessageResource(message);
-  CHECK(continuation != NULL);
-  NaClLog(4, "PluginReverseInterface::DoPostMessage(%s)\n", message.c_str());
-  plugin::WeakRefCallOnMainThread(
-      anchor_,
-      0,  /* delay in ms */
-      this,
-      &plugin::PluginReverseInterface::PostMessage_MainThreadContinuation,
-      continuation);
+  std::string full_message = std::string("DEBUG_POSTMESSAGE:") + message;
+  GetNaClInterface()->PostMessageToJavaScript(plugin_->pp_instance(),
+                                              full_message.c_str());
 }
 
 void PluginReverseInterface::StartupInitializationComplete() {
@@ -249,16 +238,6 @@ void PluginReverseInterface::StartupInitializationComplete() {
             "PluginReverseInterface::StartupInitializationComplete:"
             " init_done_cb_ not valid, skipping.\n");
   }
-}
-
-void PluginReverseInterface::PostMessage_MainThreadContinuation(
-    PostMessageResource* p,
-    int32_t err) {
-  UNREFERENCED_PARAMETER(err);
-  NaClLog(4,
-          "PluginReverseInterface::PostMessage_MainThreadContinuation(%s)\n",
-          p->message.c_str());
-  plugin_->PostMessage(std::string("DEBUG_POSTMESSAGE:") + p->message);
 }
 
 // TODO(bsy): OpenManifestEntry should use the manifest to ResolveKey

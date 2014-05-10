@@ -1258,6 +1258,10 @@ void PepperPluginInstanceImpl::SetTextInputType(ui::TextInputType type) {
   render_frame_->PepperTextInputTypeChanged(this);
 }
 
+void PepperPluginInstanceImpl::PostMessageToJavaScript(PP_Var message) {
+  message_channel_->PostMessageToJavaScript(message);
+}
+
 base::string16 PepperPluginInstanceImpl::GetSelectedText(bool html) {
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
@@ -2518,7 +2522,7 @@ void PepperPluginInstanceImpl::ZoomLimitsChanged(PP_Instance instance,
 
 void PepperPluginInstanceImpl::PostMessage(PP_Instance instance,
                                            PP_Var message) {
-  message_channel_->PostMessageToJavaScript(message);
+  PostMessageToJavaScript(message);
 }
 
 PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,

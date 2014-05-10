@@ -76,13 +76,6 @@ struct SelLdrStartParams {
 };
 
 // Callback resources are essentially our continuation state.
-struct PostMessageResource {
- public:
-  explicit PostMessageResource(std::string msg)
-      : message(msg) {}
-  std::string message;
-};
-
 struct OpenManifestEntryResource {
  public:
   OpenManifestEntryResource(const std::string& target_url,
@@ -186,9 +179,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
                               OpenManifestEntryAsyncCallback* callback);
 
  protected:
-  virtual void PostMessage_MainThreadContinuation(PostMessageResource* p,
-                                                  int32_t err);
-
   virtual void OpenManifestEntry_MainThreadContinuation(
       OpenManifestEntryResource* p,
       int32_t err);

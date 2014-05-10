@@ -73,6 +73,7 @@ void FakePepperPluginInstance::SetSelectedText(
 
 void FakePepperPluginInstance::SetLinkUnderCursor(const std::string& url) {}
 void FakePepperPluginInstance::SetTextInputType(ui::TextInputType type) {}
+void FakePepperPluginInstance::PostMessageToJavaScript(PP_Var message) {}
 
 
 }  // namespace content

@@ -114,6 +114,9 @@ class PepperPluginInstance {
 
   // Sets the text input type for this plugin.
   virtual void SetTextInputType(ui::TextInputType type) = 0;
+
+  // Posts a message to the JavaScript object for this instance.
+  virtual void PostMessageToJavaScript(PP_Var message) = 0;
 };
 
 }  // namespace content

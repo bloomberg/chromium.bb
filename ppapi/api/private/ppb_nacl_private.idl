@@ -446,4 +446,10 @@ interface PPB_NaCl_Private {
   // of attributes supported by LLVM in its -mattr= option:
   //   http://llvm.org/docs/CommandGuide/llc.html#cmdoption-mattr
   PP_Var GetCpuFeatureAttrs();
+
+  /* Posts a message to the JavaScript object for the given instance.
+   * This method may be called on any thread.
+   */
+  void PostMessageToJavaScript([in] PP_Instance instance,
+                               [in] str_t message);
 };

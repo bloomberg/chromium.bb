@@ -363,6 +363,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
   virtual void SetLinkUnderCursor(const std::string& url) OVERRIDE;
   virtual void SetTextInputType(ui::TextInputType type) OVERRIDE;
+  virtual void PostMessageToJavaScript(PP_Var message) OVERRIDE;
 
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,

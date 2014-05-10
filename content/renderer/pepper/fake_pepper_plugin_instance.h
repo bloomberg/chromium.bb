@@ -42,6 +42,7 @@ class FakePepperPluginInstance : public PepperPluginInstance {
   virtual void SetSelectedText(const base::string16& selected_text) OVERRIDE;
   virtual void SetLinkUnderCursor(const std::string& url) OVERRIDE;
   virtual void SetTextInputType(ui::TextInputType type) OVERRIDE;
+  virtual void PostMessageToJavaScript(PP_Var message) OVERRIDE;
 
  private:
   GURL gurl_;

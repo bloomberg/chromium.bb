@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue May  6 21:29:20 2014. */
+/* From private/ppb_nacl_private.idl modified Thu May  8 10:24:52 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -435,6 +435,10 @@ struct PPB_NaCl_Private_1_0 {
    * of attributes supported by LLVM in its -mattr= option:
    *   http://llvm.org/docs/CommandGuide/llc.html#cmdoption-mattr */
   struct PP_Var (*GetCpuFeatureAttrs)(void);
+  /* Posts a message to the JavaScript object for the given instance.
+   * This method may be called on any thread.
+   */
+  void (*PostMessageToJavaScript)(PP_Instance instance, const char* message);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

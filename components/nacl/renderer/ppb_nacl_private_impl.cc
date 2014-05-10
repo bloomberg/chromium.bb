@@ -46,6 +46,7 @@
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/var.h"
+#include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -1203,6 +1204,25 @@ PP_Var GetCpuFeatureAttrs() {
       attrs.begin(), attrs.end(), std::string(), CommaAccumulator));
 }
 
+void PostMessageToJavaScriptMainThread(PP_Instance instance,
+                                       const std::string& message) {
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  if (plugin_instance) {
+    PP_Var message_var = ppapi::StringVar::StringToPPVar(message);
+    plugin_instance->PostMessageToJavaScript(message_var);
+    ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(message_var);
+  }
+}
+
+void PostMessageToJavaScript(PP_Instance instance, const char* message) {
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&PostMessageToJavaScriptMainThread,
+                 instance,
+                 std::string(message)));
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1249,7 +1269,8 @@ const PPB_NaCl_Private nacl_interface = {
   &ManifestGetProgramURL,
   &ManifestResolveKey,
   &GetPNaClResourceInfo,
-  &GetCpuFeatureAttrs
+  &GetCpuFeatureAttrs,
+  &PostMessageToJavaScript
 };
 
 }  // namespace
