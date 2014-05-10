@@ -436,7 +436,8 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       PSLMatchingHelper::GetRegistryControlledDomain(signon_realm);
   PSLMatchingHelper::PSLDomainMatchMetric psl_domain_match_metric =
       PSLMatchingHelper::PSL_DOMAIN_MATCH_NONE;
-  if (psl_helper_.ShouldPSLDomainMatchingApply(registered_domain)) {
+  if (form.scheme == PasswordForm::SCHEME_HTML &&
+      psl_helper_.ShouldPSLDomainMatchingApply(registered_domain)) {
     // We are extending the original SQL query with one that includes more
     // possible matches based on public suffix domain matching. Using a regexp
     // here is just an optimization to not have to parse all the stored entries
@@ -480,8 +481,9 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       continue;
     DCHECK(result == ENCRYPTION_RESULT_SUCCESS);
     if (psl_helper_.IsMatchingEnabled()) {
-      if (!PSLMatchingHelper::IsPublicSuffixDomainMatch(new_form->signon_realm,
-                                                         form.signon_realm)) {
+      if (new_form->scheme != PasswordForm::SCHEME_HTML ||
+          !PSLMatchingHelper::IsPublicSuffixDomainMatch(new_form->signon_realm,
+                                                        form.signon_realm)) {
         // The database returned results that should not match. Skipping result.
         continue;
       }

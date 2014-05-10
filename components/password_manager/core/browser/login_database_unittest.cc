@@ -49,6 +49,50 @@ class LoginDatabaseTest : public testing::Test {
     EXPECT_EQ(expected_copy, actual);
   }
 
+  void TestNonHTMLFormPSLMatching(const PasswordForm::Scheme& scheme) {
+    std::vector<PasswordForm*> result;
+
+    base::Time now = base::Time::Now();
+
+    // Simple non-html auth form.
+    PasswordForm non_html_auth;
+    non_html_auth.origin = GURL("http://example.com");
+    non_html_auth.username_value = ASCIIToUTF16("test@gmail.com");
+    non_html_auth.password_value = ASCIIToUTF16("test");
+    non_html_auth.signon_realm = "http://example.com/Realm";
+    non_html_auth.scheme = scheme;
+
+    // Simple password form.
+    PasswordForm html_form(non_html_auth);
+    html_form.action = GURL("http://example.com/login");
+    html_form.username_element = ASCIIToUTF16("username");
+    html_form.username_value = ASCIIToUTF16("test2@gmail.com");
+    html_form.password_element = ASCIIToUTF16("password");
+    html_form.submit_element = ASCIIToUTF16("");
+    html_form.signon_realm = "http://example.com/";
+    html_form.scheme = PasswordForm::SCHEME_HTML;
+
+    // Add them and make sure it is there.
+    EXPECT_TRUE(db_.AddLogin(non_html_auth));
+    EXPECT_TRUE(db_.AddLogin(html_form));
+    EXPECT_TRUE(db_.GetAutofillableLogins(&result));
+    EXPECT_EQ(2U, result.size());
+    delete result[0];
+    delete result[1];
+    result.clear();
+
+    PasswordForm second_non_html_auth(non_html_auth);
+    second_non_html_auth.origin = GURL("http://second.example.com");
+    second_non_html_auth.signon_realm = "http://second.example.com/Realm";
+
+    // This shouldn't match anything.
+    EXPECT_TRUE(db_.GetLogins(second_non_html_auth, &result));
+    EXPECT_EQ(0U, result.size());
+
+    // Clear state.
+    db_.RemoveLoginsCreatedBetween(now, base::Time());
+  }
+
   base::ScopedTempDir temp_dir_;
   base::FilePath file_;
   LoginDatabase db_;
@@ -243,6 +287,14 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   EXPECT_EQ("https://foo.com/", result[0]->original_signon_realm);
   delete result[0];
   result.clear();
+}
+
+TEST_F(LoginDatabaseTest, TestPublicSuffixDisabledForNonHTMLForms) {
+  PSLMatchingHelper::EnablePublicSuffixDomainMatchingForTesting();
+
+  TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_BASIC);
+  TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_DIGEST);
+  TestNonHTMLFormPSLMatching(PasswordForm::SCHEME_OTHER);
 }
 
 TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {

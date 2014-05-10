@@ -324,6 +324,11 @@ class NativeBackendGnomeTest : public testing::Test {
     form_isc_.password_value = UTF8ToUTF16("ihazabukkit");
     form_isc_.submit_element = UTF8ToUTF16("login");
     form_isc_.signon_realm = "http://www.isc.org/";
+
+    other_auth_.origin = GURL("http://www.example.com/");
+    other_auth_.username_value = UTF8ToUTF16("username");
+    other_auth_.password_value = UTF8ToUTF16("pass");
+    other_auth_.signon_realm = "http://www.example.com/Realm";
   }
 
   virtual void TearDown() {
@@ -401,12 +406,13 @@ class NativeBackendGnomeTest : public testing::Test {
     CheckStringAttribute(item, "application", app_string);
   }
 
-  // Saves |credentials| and then gets login for origin and realm |url|. Returns
-  // true when something is found, and in such case copies the result to
+  // Saves |credentials| and then gets logins matching |url| and |scheme|.
+  // Returns true when something is found, and in such case copies the result to
   // |result| when |result| is not NULL. (Note that there can be max. 1 result,
   // derived from |credentials|.)
   bool CheckCredentialAvailability(const PasswordForm& credentials,
                                    const GURL& url,
+                                   const PasswordForm::Scheme& scheme,
                                    PasswordForm* result) {
     NativeBackendGnome backend(321);
     backend.Init();
@@ -421,6 +427,13 @@ class NativeBackendGnomeTest : public testing::Test {
     PasswordForm target_form;
     target_form.origin = url;
     target_form.signon_realm = url.spec();
+    if (scheme != PasswordForm::SCHEME_HTML) {
+      // For non-HTML forms, the realm used for authentication
+      // (http://tools.ietf.org/html/rfc1945#section-10.2) is appended to the
+      // signon_realm. Just use a default value for now.
+      target_form.signon_realm.append("Realm");
+      target_form.scheme = scheme;
+    }
     std::vector<PasswordForm*> form_list;
     BrowserThread::PostTask(
         BrowserThread::DB,
@@ -435,6 +448,7 @@ class NativeBackendGnomeTest : public testing::Test {
     EXPECT_EQ(1u, mock_keyring_items.size());
     if (mock_keyring_items.size() > 0)
       CheckMockKeyringItem(&mock_keyring_items[0], credentials, "chrome-321");
+    mock_keyring_items.clear();
 
     if (form_list.empty())
       return false;
@@ -564,6 +578,21 @@ class NativeBackendGnomeTest : public testing::Test {
     STLDeleteElements(&form_list);
   }
 
+  void CheckMatchingWithScheme(const PasswordForm::Scheme& scheme) {
+    other_auth_.scheme = scheme;
+
+    // Don't match a non-HTML form with an HTML form.
+    EXPECT_FALSE(CheckCredentialAvailability(
+        other_auth_, GURL("http://www.example.com"),
+        PasswordForm::SCHEME_HTML, NULL));
+    // Don't match an HTML form with non-HTML auth form.
+    EXPECT_FALSE(CheckCredentialAvailability(
+        form_google_, GURL("http://www.google.com/"), scheme, NULL));
+    // Don't match two different non-HTML auth forms with different origin.
+    EXPECT_FALSE(CheckCredentialAvailability(
+        other_auth_, GURL("http://first.example.com"), scheme, NULL));
+  }
+
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
@@ -572,6 +601,7 @@ class NativeBackendGnomeTest : public testing::Test {
   PasswordForm form_google_;
   PasswordForm form_facebook_;
   PasswordForm form_isc_;
+  PasswordForm other_auth_;
 };
 
 TEST_F(NativeBackendGnomeTest, BasicAddLogin) {
@@ -623,7 +653,8 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingPositive) {
   const GURL kMobileURL("http://m.facebook.com/");
   password_manager::PSLMatchingHelper helper;
   ASSERT_TRUE(helper.IsMatchingEnabled());
-  EXPECT_TRUE(CheckCredentialAvailability(form_facebook_, kMobileURL, &result));
+  EXPECT_TRUE(CheckCredentialAvailability(
+      form_facebook_, kMobileURL, PasswordForm::SCHEME_HTML, &result));
   EXPECT_EQ(kMobileURL, result.origin);
   EXPECT_EQ(kMobileURL.spec(), result.signon_realm);
 }
@@ -634,7 +665,8 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingNegativeDomainMismatch) {
   password_manager::PSLMatchingHelper helper;
   ASSERT_TRUE(helper.IsMatchingEnabled());
   EXPECT_FALSE(CheckCredentialAvailability(
-      form_facebook_, GURL("http://m-facebook.com/"), NULL));
+      form_facebook_, GURL("http://m-facebook.com/"),
+      PasswordForm::SCHEME_HTML, NULL));
 }
 
 // Test PSL matching is off for domains excluded from it.
@@ -642,7 +674,19 @@ TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledDomains) {
   password_manager::PSLMatchingHelper helper;
   ASSERT_TRUE(helper.IsMatchingEnabled());
   EXPECT_FALSE(CheckCredentialAvailability(
-      form_google_, GURL("http://one.google.com/"), NULL));
+      form_google_, GURL("http://one.google.com/"),
+      PasswordForm::SCHEME_HTML, NULL));
+}
+
+// Make sure PSL matches aren't available for non-HTML forms.
+TEST_F(NativeBackendGnomeTest, PSLMatchingDisabledForNonHTMLForms) {
+  password_manager::PSLMatchingHelper helper;
+  ASSERT_TRUE(helper.IsMatchingEnabled());
+
+  CheckMatchingWithScheme(PasswordForm::SCHEME_BASIC);
+  CheckMatchingWithScheme(PasswordForm::SCHEME_DIGEST);
+  CheckMatchingWithScheme(PasswordForm::SCHEME_OTHER);
+
 }
 
 TEST_F(NativeBackendGnomeTest, PSLUpdatingStrictUpdateLogin) {

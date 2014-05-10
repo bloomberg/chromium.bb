@@ -164,7 +164,9 @@ void ConvertFormList(GList* found,
     if (form) {
       if (lookup_form && form->signon_realm != lookup_form->signon_realm) {
         // This is not an exact match, we try PSL matching.
-        if (!(PSLMatchingHelper::IsPublicSuffixDomainMatch(
+        if (lookup_form->scheme != PasswordForm::SCHEME_HTML ||
+            form->scheme != PasswordForm::SCHEME_HTML ||
+            !(PSLMatchingHelper::IsPublicSuffixDomainMatch(
                 lookup_form->signon_realm, form->signon_realm))) {
           continue;
         }
