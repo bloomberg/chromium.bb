@@ -37,10 +37,15 @@ LOG_FILE_ENV_VAR = "CHROME_REMOTE_DESKTOP_LOG_FILE"
 # list of sizes in this environment variable.
 DEFAULT_SIZES_ENV_VAR = "CHROME_REMOTE_DESKTOP_DEFAULT_DESKTOP_SIZES"
 
-# By default, provide a relatively small size to handle the case where resize-
-# to-client is disabled, and a much larger size to support clients with large
-# or mulitple monitors. These defaults can be overridden in ~/.profile.
+# By default, provide a maximum size that is large enough to support clients
+# with large or multiple monitors. This is a comma-separated list of
+# resolutions that will be made available if the X server supports RANDR. These
+# defaults can be overridden in ~/.profile.
 DEFAULT_SIZES = "1600x1200,3840x1600"
+
+# If RANDR is not available, use a smaller default size. Only a single
+# resolution is supported in this case.
+DEFAULT_SIZE_NO_RANDR = "1600x1200"
 
 SCRIPT_PATH = sys.path[0]
 
@@ -78,6 +83,7 @@ MAX_LAUNCH_FAILURES = SHORT_BACKOFF_THRESHOLD + 10
 g_desktops = []
 g_host_hash = hashlib.md5(socket.gethostname()).hexdigest()
 
+
 def is_supported_platform():
   # Always assume that the system is supported if the config directory or
   # session file exist.
@@ -88,6 +94,19 @@ def is_supported_platform():
   # The host has been tested only on Ubuntu.
   distribution = platform.linux_distribution()
   return (distribution[0]).lower() == 'ubuntu'
+
+
+def get_randr_supporting_x_server():
+  """Returns a path to an X server that supports the RANDR extension, if this
+  is found on the system. Otherwise returns None."""
+  try:
+    xvfb = "/usr/bin/Xvfb-randr"
+    if not os.path.exists(xvfb):
+      xvfb = locate_executable("Xvfb-randr")
+    return xvfb
+  except Exception:
+    return None
+
 
 class Config:
   def __init__(self, path):
@@ -327,15 +346,10 @@ class Desktop:
     max_width = max([width for width, height in self.sizes])
     max_height = max([height for width, height in self.sizes])
 
-    try:
-      # TODO(jamiewalch): This script expects to be installed alongside
-      # Xvfb-randr, but that's no longer the case. Fix this once we have
-      # a Xvfb-randr package that installs somewhere sensible.
-      xvfb = "/usr/bin/Xvfb-randr"
-      if not os.path.exists(xvfb):
-        xvfb = locate_executable("Xvfb-randr")
+    xvfb = get_randr_supporting_x_server()
+    if xvfb:
       self.server_supports_exact_resize = True
-    except Exception:
+    else:
       xvfb = "Xvfb"
       self.server_supports_exact_resize = False
 
@@ -1018,9 +1032,15 @@ Web Store: https://chrome.google.com/remotedesktop"""
     print >> sys.stderr, EPILOG
     return 1
 
+  # If a RANDR-supporting Xvfb is not available, limit the default size to
+  # something more sensible.
+  if get_randr_supporting_x_server():
+    default_sizes = DEFAULT_SIZES
+  else:
+    default_sizes = DEFAULT_SIZE_NO_RANDR
+
   # Collate the list of sizes that XRANDR should support.
   if not options.size:
-    default_sizes = DEFAULT_SIZES
     if os.environ.has_key(DEFAULT_SIZES_ENV_VAR):
       default_sizes = os.environ[DEFAULT_SIZES_ENV_VAR]
     options.size = default_sizes.split(",")
