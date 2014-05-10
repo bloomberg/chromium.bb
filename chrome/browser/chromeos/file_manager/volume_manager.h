@@ -40,17 +40,21 @@ namespace file_manager {
 class MountedDiskMonitor;
 class VolumeManagerObserver;
 
-// This manager manages "Drive" and "Downloads" in addition to disks managed
-// by DiskMountManager.
+// Identifiers for volume types managed by Chrome OS file manager.
 enum VolumeType {
-  VOLUME_TYPE_GOOGLE_DRIVE,
+  VOLUME_TYPE_TESTING = -1,  // Used only in tests.
+  VOLUME_TYPE_GOOGLE_DRIVE = 0,
   VOLUME_TYPE_DOWNLOADS_DIRECTORY,
   VOLUME_TYPE_REMOVABLE_DISK_PARTITION,
   VOLUME_TYPE_MOUNTED_ARCHIVE_FILE,
   VOLUME_TYPE_CLOUD_DEVICE,
   VOLUME_TYPE_PROVIDED,  // File system provided by the FileSystemProvider API.
   VOLUME_TYPE_MTP,
-  VOLUME_TYPE_TESTING
+  // The enum values must be kept in sync with FileManagerVolumeType in
+  // tools/metrics/histograms/histograms.xml. Since enums for histograms are
+  // append-only (for keeping the number consistent across versions), new values
+  // for this enum also has to be always appended at the end (i.e., here).
+  NUM_VOLUME_TYPE,
 };
 
 struct VolumeInfo {

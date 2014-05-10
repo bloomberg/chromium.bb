@@ -168,6 +168,9 @@ void VolumeInfoToVolumeMetadata(
       volume_metadata->volume_type =
           file_browser_private::VOLUME_TYPE_TESTING;
       break;
+    case NUM_VOLUME_TYPE:
+      NOTREACHED();
+      break;
   }
 
   // Fill device_type iff the volume is removable partition.

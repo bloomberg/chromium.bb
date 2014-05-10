@@ -7067,6 +7067,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType">
+  <owner>kinaba@chromium.org</owner>
+  <summary>
+    Chrome OS File Browser: counts the number of times volumes are mounted for
+    each volume type.
+  </summary>
+</histogram>
+
 <histogram name="GCM.CheckinRequestStatus" enum="GCMCheckinRequestStatus">
   <owner>juyik@chromium.org</owner>
   <summary>Status code of the outcome of a GCM checkin request.</summary>
@@ -35191,6 +35199,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="4" label="Open multiple files"/>
   <int value="5" label="Full page"/>
   <int value="6" label="Error"/>
+</enum>
+
+<enum name="FileManagerVolumeType" type="int">
+  <int value="0" label="Google Drive"/>
+  <int value="1" label="Download Folder"/>
+  <int value="2" label="Removable Disk"/>
+  <int value="3" label="Archive File"/>
+  <int value="4" label="Cloud Device"/>
+  <int value="5" label="FileSystemProvider API"/>
+  <int value="6" label="MTP (Media Transfer Protocol) Device"/>
 </enum>
 
 <enum name="FileType" type="int">

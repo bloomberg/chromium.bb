@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
@@ -111,6 +112,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "mtp";
     case VOLUME_TYPE_TESTING:
       return "testing";
+    case NUM_VOLUME_TYPE:
+      break;
   }
   NOTREACHED();
   return "";
@@ -801,8 +804,15 @@ void VolumeManager::DoMountEvent(chromeos::MountError error_code,
     return;
   }
 
-  if (error_code == chromeos::MOUNT_ERROR_NONE || volume_info.mount_condition)
+  if (error_code == chromeos::MOUNT_ERROR_NONE || volume_info.mount_condition) {
     mounted_volumes_[volume_info.volume_id] = volume_info;
+
+    if (!is_remounting) {
+      UMA_HISTOGRAM_ENUMERATION("FileBrowser.VolumeType",
+                                volume_info.type,
+                                NUM_VOLUME_TYPE);
+    }
+  }
 
   FOR_EACH_OBSERVER(VolumeManagerObserver,
                     observers_,
