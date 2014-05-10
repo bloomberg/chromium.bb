@@ -15,7 +15,7 @@
 
 <script>
 var useElement = document.getElementsByTagName("use")[1];
-var element = useElement.instanceRoot.correspondingElement;
+var element = document.getElementById("g");
 
 element.setAttribute("transform", "");
 </script>

@@ -1,6 +1,10 @@
 The instance tree of use element zoomplus:
-
-     id = loupePlus  this = [object SVGElementInstance]  correspondingElement = [object SVGGElement]
-          id = useRim  this = [object SVGElementInstance]  correspondingElement = [object SVGUseElement]
-               id = rim  this = [object SVGElementInstance]  correspondingElement = [object SVGCircleElement]
+      this = [object ShadowRoot]
+           id = loupePlus this = [object SVGGElement]
+                this = [object Text]
+                id = useRim this = [object SVGGElement]
+                     this = [object Text]
+                     this = [object Text]
+                     id = rim this = [object SVGCircleElement]
+                this = [object Text]
 

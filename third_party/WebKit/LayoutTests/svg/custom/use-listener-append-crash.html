@@ -14,7 +14,7 @@
         testRunner.dumpAsText();
 
     leftSquare.addEventListener('mousedown', function() { leftSquare.parentNode.appendChild(leftSquare); });
-    leftSquare.addEventListener('mousedown', function() { leftSquare.instanceRoot.correspondingElement.setAttribute("fill", "green"); });
+    leftSquare.addEventListener('mousedown', function() { document.getElementById("square").setAttribute("fill", "green"); });
 
     if (window.eventSender) {
         eventSender.mouseMoveTo(20, 20);

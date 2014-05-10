@@ -26,21 +26,25 @@
         // makeCrash();
 
         var console = document.getElementById("console");
-        function println(string)
+        function print(string)
         {
-            console.textContent += string + '\n';
+            console.textContent += string;
         }
 
         function printInstanceTree( obj, indent )
         {
             indent += "     ";
-            println(indent + "id = " + obj.correspondingElement.id + "  this = " + obj + "  correspondingElement = " + obj.correspondingElement);
+            print(indent);
+            if (obj.id) { 
+                print(" id = " + obj.id);
+            }
+            print(" this = " + obj + "\n");
             for (var m = obj.firstChild; m != null; m = m.nextSibling ) {
                 printInstanceTree(m, indent);
             }
         }
-        var useobj = document.getElementById("zoomplus").instanceRoot;
-        println("The instance tree of use element zoomplus:\n");
+        var useobj = internals.shadowRoot(document.getElementById("zoomplus"));
+        print("The instance tree of use element zoomplus:\n");
         printInstanceTree(useobj,"");
 
         if (window.testRunner){
