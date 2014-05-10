@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/webstore_inline_installer.h"
@@ -75,6 +76,14 @@ void WebstoreInstallerTest::SetUpInProcessBrowserTestFixture() {
   host_resolver()->AddRule(webstore_domain_, "127.0.0.1");
   host_resolver()->AddRule(verified_domain_, "127.0.0.1");
   host_resolver()->AddRule(unverified_domain_, "127.0.0.1");
+}
+
+void WebstoreInstallerTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
+  ASSERT_TRUE(download_directory_.CreateUniqueTempDir());
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+      browser()->profile());
+  download_prefs->SetDownloadPath(download_directory_.path());
 }
 
 GURL WebstoreInstallerTest::GenerateTestServerUrl(

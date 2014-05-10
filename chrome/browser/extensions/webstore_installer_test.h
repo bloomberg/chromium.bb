@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "url/gurl.h"
 
@@ -25,6 +26,7 @@ class WebstoreInstallerTest : public InProcessBrowserTest {
 
   virtual void SetUpCommandLine(base::CommandLine* command_line) OVERRIDE;
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+  virtual void SetUpOnMainThread() OVERRIDE;
 
  protected:
   GURL GenerateTestServerUrl(const std::string& domain,
@@ -49,6 +51,8 @@ class WebstoreInstallerTest : public InProcessBrowserTest {
   std::string verified_domain_;
   std::string unverified_domain_;
   std::string test_gallery_url_;
+
+  base::ScopedTempDir download_directory_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_WEBSTORE_INSTALLER_TEST_H_
