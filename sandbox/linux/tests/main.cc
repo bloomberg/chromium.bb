@@ -10,9 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
-
-extern const bool kAllowForkWithThreads = false;
-
 namespace {
 
 // Check for leaks in our tests.
