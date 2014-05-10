@@ -5,7 +5,6 @@
 package org.chromium.content.browser.input;
 
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -216,7 +215,7 @@ public class InputDialogContainer {
         int stepTime = (int) step;
 
         if (dialogType == sTextInputTypeDate) {
-            DatePickerDialog dialog = new DatePickerDialog(mContext,
+            ChromeDatePickerDialog dialog = new ChromeDatePickerDialog(mContext,
                     new DateListener(dialogType),
                     year, month, monthDay);
             DateDialogNormalizer.normalize(dialog.getDatePicker(), dialog,
