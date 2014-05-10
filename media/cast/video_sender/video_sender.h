@@ -102,6 +102,8 @@ class VideoSender : public base::NonThreadSafe,
 
   void InitializeTimers();
 
+  void UpdateBitrate(int32 new_bitrate);
+
   base::TimeDelta rtp_max_delay_;
   const int max_frame_rate_;
 
@@ -124,6 +126,10 @@ class VideoSender : public base::NonThreadSafe,
   base::TimeTicks last_checked_skip_count_time_;
   int last_skip_count_;
   int current_requested_bitrate_;
+  // When we get close to the max number of un-acked frames, we set lower
+  // the bitrate drastically to ensure that we catch up. Without this we
+  // risk getting stuck in a catch-up state forever.
+  int current_bitrate_divider_;
   CongestionControl congestion_control_;
 
   // This is a "good enough" mapping for finding the RTP timestamp associated

@@ -65,6 +65,7 @@ VideoSender::VideoSender(
       duplicate_ack_(0),
       last_skip_count_(0),
       current_requested_bitrate_(video_config.start_bitrate),
+      current_bitrate_divider_(1),
       congestion_control_(cast_environment->Clock(),
                           video_config.congestion_control_back_off,
                           video_config.max_bitrate,
@@ -186,7 +187,8 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   cast_environment_->Logging()->InsertEncodedFrameEvent(
       last_send_time_, FRAME_ENCODED, VIDEO_EVENT, encoded_frame->rtp_timestamp,
       frame_id, static_cast<int>(encoded_frame->data.size()),
-      encoded_frame->key_frame, current_requested_bitrate_);
+      encoded_frame->key_frame,
+      current_requested_bitrate_);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT1(
@@ -378,8 +380,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
         cast_feedback.ack_frame_id_) {
       uint32 new_bitrate = 0;
       if (congestion_control_.OnAck(rtt, &new_bitrate)) {
-        video_encoder_->SetBitRate(new_bitrate);
-        current_requested_bitrate_ = new_bitrate;
+        UpdateBitrate(new_bitrate);
       }
     }
     // We only count duplicate ACKs when we have sent newer frames.
@@ -405,8 +406,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
         false, cast_feedback.missing_frames_and_packets_);
     uint32 new_bitrate = 0;
     if (congestion_control_.OnNack(rtt, &new_bitrate)) {
-      video_encoder_->SetBitRate(new_bitrate);
-      current_requested_bitrate_ = new_bitrate;
+      UpdateBitrate(new_bitrate);
     }
   }
   ReceivedAck(cast_feedback.ack_frame_id_);
@@ -442,13 +442,12 @@ void VideoSender::UpdateFramesInFlight() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   if (last_sent_frame_id_ != -1) {
     DCHECK_LE(0, last_sent_frame_id_);
-    uint32 frames_in_flight = 0;
+    int frames_in_flight = 0;
     if (last_acked_frame_id_ != -1) {
       DCHECK_LE(0, last_acked_frame_id_);
-      frames_in_flight = static_cast<uint32>(last_sent_frame_id_) -
-                         static_cast<uint32>(last_acked_frame_id_);
+      frames_in_flight = last_sent_frame_id_ - last_acked_frame_id_;
     } else {
-      frames_in_flight = static_cast<uint32>(last_sent_frame_id_) + 1;
+      frames_in_flight = last_sent_frame_id_ + 1;
     }
     frames_in_flight += frames_in_encoder_;
     VLOG(2) << frames_in_flight
@@ -458,6 +457,12 @@ void VideoSender::UpdateFramesInFlight() {
     if (frames_in_flight >= max_unacked_frames_) {
       video_encoder_->SkipNextFrame(true);
       return;
+    } else if (frames_in_flight > max_unacked_frames_ * 4 / 5) {
+      current_bitrate_divider_ = 3;
+    } else if (frames_in_flight > max_unacked_frames_ * 2 / 3) {
+      current_bitrate_divider_ = 2;
+    } else {
+      current_bitrate_divider_ = 1;
     }
     DCHECK(frames_in_flight <= max_unacked_frames_);
   }
@@ -471,6 +476,14 @@ void VideoSender::ResendFrame(uint32 resend_frame_id) {
   missing_frames_and_packets.insert(std::make_pair(resend_frame_id, missing));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
   transport_sender_->ResendPackets(false, missing_frames_and_packets);
+}
+
+void VideoSender::UpdateBitrate(int new_bitrate) {
+  new_bitrate /= current_bitrate_divider_;
+  // Make sure we don't set the bitrate too insanely low.
+  DCHECK_GT(new_bitrate, 1000);
+  video_encoder_->SetBitRate(new_bitrate);
+  current_requested_bitrate_ = new_bitrate;
 }
 
 }  // namespace cast
