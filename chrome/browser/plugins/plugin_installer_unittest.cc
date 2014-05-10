@@ -25,19 +25,15 @@ class PluginInstallerTest : public ChromeRenderViewHostTestHarness {
   virtual void TearDown() OVERRIDE;
 
   PluginInstaller* installer() { return installer_.get(); }
-  content::DownloadItem::Observer* last_download_item_observer() {
-    return last_download_item_observer_;
-  }
 
   scoped_ptr<content::MockDownloadItem> CreateMockDownloadItem();
 
  private:
   scoped_ptr<PluginInstaller> installer_;
-  content::DownloadItem::Observer* last_download_item_observer_;
 };
 
-PluginInstallerTest::PluginInstallerTest()
-    : last_download_item_observer_(NULL) {}
+PluginInstallerTest::PluginInstallerTest() {
+}
 
 void PluginInstallerTest::SetUp() {
   content::RenderViewHostTestHarness::SetUp();
@@ -53,11 +49,6 @@ scoped_ptr<content::MockDownloadItem>
 PluginInstallerTest::CreateMockDownloadItem() {
   scoped_ptr<content::MockDownloadItem> mock_download_item(
       new testing::StrictMock<content::MockDownloadItem>());
-  ON_CALL(*mock_download_item, AddObserver(_))
-      .WillByDefault(testing::SaveArg<0>(&last_download_item_observer_));
-  ON_CALL(*mock_download_item, RemoveObserver(_)).WillByDefault(
-      testing::Assign(&last_download_item_observer_,
-                      static_cast<content::DownloadItem::Observer*>(NULL)));
   ON_CALL(*mock_download_item, GetState())
       .WillByDefault(testing::Return(content::DownloadItem::IN_PROGRESS));
   return mock_download_item.Pass();
@@ -119,7 +110,6 @@ TEST_F(PluginInstallerTest, StartInstalling_SuccessfulDownload) {
           InvokeOnStartedCallback(download_item.get(),
                                   content::DOWNLOAD_INTERRUPT_REASON_NONE),
           InvokeClosure(run_loop.QuitClosure())));
-  EXPECT_CALL(*download_item, AddObserver(_));
   EXPECT_CALL(*download_item, SetOpenWhenComplete(_));
 
   TestPluginInstallerObserver installer_observer(installer());
@@ -127,14 +117,12 @@ TEST_F(PluginInstallerTest, StartInstalling_SuccessfulDownload) {
       GURL(kTestUrl), web_contents(), &mock_download_manager);
   run_loop.Run();
 
-  ASSERT_TRUE(last_download_item_observer());
   EXPECT_TRUE(installer_observer.download_started());
   EXPECT_FALSE(installer_observer.download_finished());
 
   EXPECT_CALL(*download_item, GetState())
       .WillOnce(testing::Return(content::DownloadItem::COMPLETE));
-  EXPECT_CALL(*download_item, RemoveObserver(_));
-  last_download_item_observer()->OnDownloadUpdated(download_item.get());
+  download_item->NotifyObserversDownloadUpdated();
   EXPECT_TRUE(installer_observer.download_finished());
 }
 
@@ -159,7 +147,6 @@ TEST_F(PluginInstallerTest, StartInstalling_FailedStart) {
       GURL(kTestUrl), web_contents(), &mock_download_manager);
   run_loop.Run();
 
-  EXPECT_FALSE(last_download_item_observer());
   EXPECT_TRUE(installer_observer.download_started());
   EXPECT_FALSE(installer_observer.download_finished());
   EXPECT_EQ("Error 20: NETWORK_FAILED", installer_observer.download_error());
@@ -180,7 +167,6 @@ TEST_F(PluginInstallerTest, StartInstalling_Interrupted) {
           InvokeOnStartedCallback(download_item.get(),
                                   content::DOWNLOAD_INTERRUPT_REASON_NONE),
           InvokeClosure(run_loop.QuitClosure())));
-  EXPECT_CALL(*download_item, AddObserver(_));
   EXPECT_CALL(*download_item, SetOpenWhenComplete(_));
 
   TestPluginInstallerObserver installer_observer(installer());
@@ -188,18 +174,15 @@ TEST_F(PluginInstallerTest, StartInstalling_Interrupted) {
       GURL(kTestUrl), web_contents(), &mock_download_manager);
   run_loop.Run();
 
-  ASSERT_TRUE(last_download_item_observer());
   EXPECT_TRUE(installer_observer.download_started());
   EXPECT_FALSE(installer_observer.download_finished());
 
   EXPECT_CALL(*download_item, GetState())
       .WillOnce(testing::Return(content::DownloadItem::INTERRUPTED));
-  EXPECT_CALL(*download_item, RemoveObserver(_));
   EXPECT_CALL(*download_item, GetLastReason()).WillOnce(
       testing::Return(content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED));
-  last_download_item_observer()->OnDownloadUpdated(download_item.get());
+  download_item->NotifyObserversDownloadUpdated();
 
-  EXPECT_FALSE(last_download_item_observer());
   EXPECT_TRUE(installer_observer.download_started());
   EXPECT_FALSE(installer_observer.download_finished());
   EXPECT_EQ("NETWORK_FAILED", installer_observer.download_error());

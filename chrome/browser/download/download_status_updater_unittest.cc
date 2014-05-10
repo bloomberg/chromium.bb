@@ -54,10 +54,6 @@ class DownloadStatusUpdaterTest : public testing::Test {
   virtual ~DownloadStatusUpdaterTest() {
     for (size_t mgr_idx = 0; mgr_idx < managers_.size(); ++mgr_idx) {
       EXPECT_CALL(*Manager(mgr_idx), RemoveObserver(_));
-      for (size_t item_idx = 0; item_idx < manager_items_[mgr_idx].size();
-           ++item_idx) {
-        EXPECT_CALL(*Item(mgr_idx, item_idx), RemoveObserver(_));
-      }
     }
 
     delete updater_;
@@ -116,8 +112,6 @@ class DownloadStatusUpdaterTest : public testing::Test {
           i < in_progress_count ? content::DownloadItem::IN_PROGRESS
               : content::DownloadItem::CANCELLED;
       EXPECT_CALL(*item, GetState()).WillRepeatedly(Return(state));
-      EXPECT_CALL(*item, AddObserver(_))
-          .WillOnce(Return());
       manager_items_[manager_index].push_back(item);
     }
     EXPECT_CALL(*manager, GetAllDownloads(_))

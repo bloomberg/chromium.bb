@@ -85,7 +85,6 @@ TEST_F(AllDownloadItemNotifierTest,
   items.push_back(&item());
   EXPECT_CALL(manager(), GetAllDownloads(_))
     .WillOnce(SetArgPointee<0>(items));
-  EXPECT_CALL(item(), AddObserver(_));
   SetNotifier();
 
   EXPECT_CALL(observer(), OnDownloadUpdated(&manager(), &item()));
@@ -97,7 +96,6 @@ TEST_F(AllDownloadItemNotifierTest,
   EXPECT_CALL(observer(), OnDownloadRemoved(&manager(), &item()));
   NotifierAsItemObserver()->OnDownloadRemoved(&item());
 
-  EXPECT_CALL(item(), RemoveObserver(NotifierAsItemObserver()));
   EXPECT_CALL(manager(), RemoveObserver(NotifierAsManagerObserver()));
   ClearNotifier();
 }
@@ -107,16 +105,12 @@ TEST_F(AllDownloadItemNotifierTest,
   EXPECT_CALL(manager(), GetAllDownloads(_));
   SetNotifier();
 
-  EXPECT_CALL(item(), AddObserver(NotifierAsItemObserver()));
   EXPECT_CALL(observer(), OnDownloadCreated(&manager(), &item()));
   NotifierAsManagerObserver()->OnDownloadCreated(
       &manager(), &item());
 
   EXPECT_CALL(manager(), RemoveObserver(NotifierAsManagerObserver()));
   NotifierAsManagerObserver()->ManagerGoingDown(&manager());
-
-  EXPECT_CALL(item(), RemoveObserver(NotifierAsItemObserver()));
-  NotifierAsItemObserver()->OnDownloadDestroyed(&item());
 
   ClearNotifier();
 }

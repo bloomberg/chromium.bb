@@ -24,8 +24,7 @@ using ::testing::SaveArg;
 class DownloadDangerPromptTest : public InProcessBrowserTest {
  public:
   DownloadDangerPromptTest()
-    : download_observer_(NULL),
-      prompt_(NULL),
+    : prompt_(NULL),
       expected_action_(DownloadDangerPrompt::CANCEL),
       did_receive_callback_(false) {
   }
@@ -66,19 +65,12 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
 
   content::MockDownloadItem& download() { return download_; }
 
-  content::DownloadItem::Observer* download_observer() {
-    return download_observer_;
-  }
-
   DownloadDangerPrompt* prompt() { return prompt_; }
 
  private:
   void SetUpDownloadItemExpectations() {
     EXPECT_CALL(download_, GetFileNameToReportUser()).WillRepeatedly(Return(
         base::FilePath(FILE_PATH_LITERAL("evil.exe"))));
-    EXPECT_CALL(download_, AddObserver(_))
-        .WillOnce(SaveArg<0>(&download_observer_));
-    EXPECT_CALL(download_, RemoveObserver(Eq(ByRef(download_observer_))));
     EXPECT_CALL(download_, GetDangerType())
         .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL));
   }
@@ -100,7 +92,6 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
   }
 
   content::MockDownloadItem download_;
-  content::DownloadItem::Observer* download_observer_;
   DownloadDangerPrompt* prompt_;
   DownloadDangerPrompt::Action expected_action_;
   bool did_receive_callback_;
@@ -125,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, TestAll) {
   // dialog should DISMISS itself.
   SetUpExpectations(DownloadDangerPrompt::DISMISS);
   EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(false));
-  download_observer()->OnDownloadUpdated(&download());
+  download().NotifyObserversDownloadUpdated();
   VerifyExpectations();
 
   // If the download is in a terminal state then the dialog should DISMISS
@@ -133,7 +124,7 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, TestAll) {
   SetUpExpectations(DownloadDangerPrompt::DISMISS);
   EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(true));
   EXPECT_CALL(download(), IsDone()).WillOnce(Return(true));
-  download_observer()->OnDownloadUpdated(&download());
+  download().NotifyObserversDownloadUpdated();
   VerifyExpectations();
 
   // If the download is dangerous and is not in a terminal state, don't dismiss
@@ -141,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, TestAll) {
   SetUpExpectations(DownloadDangerPrompt::ACCEPT);
   EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(true));
   EXPECT_CALL(download(), IsDone()).WillOnce(Return(false));
-  download_observer()->OnDownloadUpdated(&download());
+  download().NotifyObserversDownloadUpdated();
   SimulatePromptAction(DownloadDangerPrompt::ACCEPT);
   VerifyExpectations();
 

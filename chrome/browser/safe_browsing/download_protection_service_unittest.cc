@@ -365,8 +365,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   GURL referrer("http://www.google.com/");
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_));
-  EXPECT_CALL(item, RemoveObserver(_));
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -383,8 +381,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
   Mock::VerifyAndClearExpectations(&item);
 
   url_chain.push_back(GURL("file://www.google.com/"));
-  EXPECT_CALL(item, AddObserver(_));
-  EXPECT_CALL(item, RemoveObserver(_));
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -417,8 +413,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
   GURL referrer;
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(4);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(4);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -509,8 +503,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadFetchFailed) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_));
-  EXPECT_CALL(item, RemoveObserver(_));
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -555,8 +547,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(6);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(6);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -705,8 +695,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadHTTPS) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(1);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(1);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_exe));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -760,8 +748,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(3);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(3);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_zip));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -844,8 +830,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadCorruptZip) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(1);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(1);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_zip));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -893,8 +877,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(1);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(1);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(a_tmp));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(a_crx));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -937,8 +919,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   std::string remote_address = "10.11.12.13";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(1);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(1);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -1026,8 +1006,6 @@ TEST_F(DownloadProtectionServiceTest,
   std::string remote_address = "10.11.12.13";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(1);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(1);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -1110,8 +1088,6 @@ TEST_F(DownloadProtectionServiceTest,
   std::string remote_address = "10.11.12.13";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(2);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(2);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -1348,8 +1324,6 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
   std::string hash = "hash";
 
   content::MockDownloadItem item;
-  EXPECT_CALL(item, AddObserver(_)).Times(1);
-  EXPECT_CALL(item, RemoveObserver(_)).Times(1);
   EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
   EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
   EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
@@ -1391,39 +1365,36 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadItemDestroyed) {
   base::FilePath final_path(FILE_PATH_LITERAL("a.exe"));
   std::string hash = "hash";
 
-  content::MockDownloadItem item;
-  content::DownloadItem::Observer* observer = NULL;
-  EXPECT_CALL(item, AddObserver(_)).WillOnce(SaveArg<0>(&observer));
-  EXPECT_CALL(item, RemoveObserver(_)).WillOnce(Assign(
-      &observer, static_cast<content::DownloadItem::Observer*>(NULL)));
-  EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
-  EXPECT_CALL(item, GetTargetFilePath()).WillRepeatedly(ReturnRef(final_path));
-  EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
-  EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
-  EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
-  EXPECT_CALL(item, GetTabReferrerUrl())
-      .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
-  EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
-  EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
-  EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
-  EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
+  {
+    content::MockDownloadItem item;
+    EXPECT_CALL(item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path));
+    EXPECT_CALL(item, GetTargetFilePath())
+        .WillRepeatedly(ReturnRef(final_path));
+    EXPECT_CALL(item, GetUrlChain()).WillRepeatedly(ReturnRef(url_chain));
+    EXPECT_CALL(item, GetReferrerUrl()).WillRepeatedly(ReturnRef(referrer));
+    EXPECT_CALL(item, GetTabUrl()).WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+    EXPECT_CALL(item, GetTabReferrerUrl())
+        .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+    EXPECT_CALL(item, GetHash()).WillRepeatedly(ReturnRef(hash));
+    EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(100));
+    EXPECT_CALL(item, HasUserGesture()).WillRepeatedly(Return(true));
+    EXPECT_CALL(item, GetRemoteAddress()).WillRepeatedly(Return(""));
 
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              MatchDownloadWhitelistUrl(_))
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
-  EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageHeaders(tmp_path, _));
+    EXPECT_CALL(*sb_service_->mock_database_manager(),
+                MatchDownloadWhitelistUrl(_))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path, _));
+    EXPECT_CALL(*binary_feature_extractor_.get(),
+                ExtractImageHeaders(tmp_path, _));
 
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::SyncCheckDoneCallback,
-                 base::Unretained(this)));
+    download_service_->CheckClientDownload(
+        &item,
+        base::Bind(&DownloadProtectionServiceTest::SyncCheckDoneCallback,
+                   base::Unretained(this)));
+    // MockDownloadItem going out of scope triggers the OnDownloadDestroyed
+    // notification.
+  }
 
-  ASSERT_TRUE(observer != NULL);
-  observer->OnDownloadDestroyed(&item);
-
-  EXPECT_TRUE(observer == NULL);
   EXPECT_TRUE(IsResult(DownloadProtectionService::SAFE));
 }
 

@@ -198,7 +198,6 @@ class DownloadHistoryTest : public testing::Test {
         manager_(new content::MockDownloadManager()),
         history_(NULL),
         manager_observer_(NULL),
-        item_observer_(NULL),
         download_created_index_(0) {}
   virtual ~DownloadHistoryTest() {
     STLDeleteElements(&items_);
@@ -218,15 +217,6 @@ class DownloadHistoryTest : public testing::Test {
   }
   content::DownloadManager::Observer* manager_observer() {
     return manager_observer_;
-  }
-
-  // Relies on the same object observing all download items.
-  void SetItemObserver(
-      content::DownloadItem::Observer* item_observer) {
-    item_observer_ = item_observer;
-  }
-  content::DownloadItem::Observer* item_observer() {
-    return item_observer_;
   }
 
   void ExpectWillQueryDownloads(scoped_ptr<InfoVector> infos) {
@@ -432,10 +422,6 @@ class DownloadHistoryTest : public testing::Test {
             Return(content::DownloadItem::TARGET_DISPOSITION_OVERWRITE));
     EXPECT_CALL(manager(), GetDownload(id))
         .WillRepeatedly(Return(&item(index)));
-    EXPECT_CALL(item(index), AddObserver(_))
-        .WillOnce(WithArg<0>(
-            Invoke(this, &DownloadHistoryTest::SetItemObserver)));
-    EXPECT_CALL(item(index), RemoveObserver(_));
     EXPECT_CALL(item(index), IsTemporary()).WillRepeatedly(Return(false));
 #if !defined(OS_ANDROID)
     new extensions::DownloadedByExtension(
@@ -458,7 +444,6 @@ class DownloadHistoryTest : public testing::Test {
   FakeHistoryAdapter* history_;
   scoped_ptr<DownloadHistory> download_history_;
   content::DownloadManager::Observer* manager_observer_;
-  content::DownloadItem::Observer* item_observer_;
   size_t download_created_index_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryTest);
@@ -486,14 +471,14 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Load) {
 
   // Pretend that something changed on the item.
   EXPECT_CALL(item(0), GetOpened()).WillRepeatedly(Return(true));
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   info.opened = true;
   ExpectDownloadUpdated(info);
 
   // Pretend that the user removed the item.
   IdSet ids;
   ids.insert(info.id);
-  item_observer()->OnDownloadRemoved(&item(0));
+  item(0).NotifyObserversDownloadRemoved();
   ExpectDownloadsRemoved(ids);
 }
 
@@ -517,14 +502,14 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Create) {
 
   // Pretend that something changed on the item.
   EXPECT_CALL(item(0), GetOpened()).WillRepeatedly(Return(true));
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   info.opened = true;
   ExpectDownloadUpdated(info);
 
   // Pretend that the user removed the item.
   IdSet ids;
   ids.insert(info.id);
-  item_observer()->OnDownloadRemoved(&item(0));
+  item(0).NotifyObserversDownloadRemoved();
   ExpectDownloadsRemoved(ids);
 }
 
@@ -550,72 +535,72 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Update) {
   // current_path
   EXPECT_CALL(item(0), GetFullPath()).WillRepeatedly(ReturnRefOfCopy(new_path));
   info.current_path = new_path;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // target_path
   EXPECT_CALL(item(0), GetTargetFilePath())
       .WillRepeatedly(ReturnRefOfCopy(new_path));
   info.target_path = new_path;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // end_time
   EXPECT_CALL(item(0), GetEndTime()).WillRepeatedly(Return(new_time));
   info.end_time = new_time;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // received_bytes
   EXPECT_CALL(item(0), GetReceivedBytes()).WillRepeatedly(Return(101));
   info.received_bytes = 101;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // total_bytes
   EXPECT_CALL(item(0), GetTotalBytes()).WillRepeatedly(Return(102));
   info.total_bytes = 102;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // etag
   EXPECT_CALL(item(0), GetETag()).WillRepeatedly(ReturnRefOfCopy(new_etag));
   info.etag = new_etag;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // last_modified
   EXPECT_CALL(item(0), GetLastModifiedTime())
       .WillRepeatedly(ReturnRefOfCopy(new_last_modifed));
   info.last_modified = new_last_modifed;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // state
   EXPECT_CALL(item(0), GetState())
       .WillRepeatedly(Return(content::DownloadItem::INTERRUPTED));
   info.state = content::DownloadItem::INTERRUPTED;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // danger_type
   EXPECT_CALL(item(0), GetDangerType())
       .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT));
   info.danger_type = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // interrupt_reason
   EXPECT_CALL(item(0), GetLastReason())
       .WillRepeatedly(Return(content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED));
   info.interrupt_reason = content::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 
   // opened
   EXPECT_CALL(item(0), GetOpened()).WillRepeatedly(Return(true));
   info.opened = true;
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectDownloadUpdated(info);
 }
 
@@ -642,7 +627,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Temporary) {
   // Pretend the item was marked temporary. DownloadHistory should remove it
   // from history and start ignoring it.
   EXPECT_CALL(item(0), IsTemporary()).WillRepeatedly(Return(true));
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   IdSet ids;
   ids.insert(info.id);
   ExpectDownloadsRemoved(ids);
@@ -650,19 +635,19 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Temporary) {
   // Change something that would make DownloadHistory call UpdateDownload if the
   // item weren't temporary.
   EXPECT_CALL(item(0), GetReceivedBytes()).WillRepeatedly(Return(4200));
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   ExpectNoDownloadUpdated();
 
   // Changing a temporary item back to a non-temporary item should make
   // DownloadHistory call CreateDownload.
   EXPECT_CALL(item(0), IsTemporary()).WillRepeatedly(Return(false));
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   info.received_bytes = 4200;
   ExpectDownloadCreated(info);
   EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
 
   EXPECT_CALL(item(0), GetReceivedBytes()).WillRepeatedly(Return(100));
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   info.received_bytes = 100;
   ExpectDownloadUpdated(info);
 }
@@ -690,7 +675,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_RemoveWhileAdding) {
   // Instead of calling RemoveDownloads() immediately, DownloadHistory should
   // add the item's id to removed_while_adding_. Then, ItemAdded should
   // immediately remove the item's record from history.
-  item_observer()->OnDownloadRemoved(&item(0));
+  item(0).NotifyObserversDownloadRemoved();
   EXPECT_CALL(manager(), GetDownload(item(0).GetId()))
     .WillRepeatedly(Return(static_cast<content::DownloadItem*>(NULL)));
   ExpectNoDownloadsRemoved();
@@ -733,8 +718,8 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Multiple) {
   IdSet ids;
   ids.insert(info0.id);
   ids.insert(info1.id);
-  item_observer()->OnDownloadRemoved(&item(0));
-  item_observer()->OnDownloadRemoved(&item(1));
+  item(0).NotifyObserversDownloadRemoved();
+  item(1).NotifyObserversDownloadRemoved();
   ExpectDownloadsRemoved(ids);
 }
 
@@ -757,7 +742,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_CreateFailed) {
   EXPECT_FALSE(DownloadHistory::IsPersisted(&item(0)));
 
   EXPECT_CALL(item(0), GetReceivedBytes()).WillRepeatedly(Return(100));
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
   info.received_bytes = 100;
   ExpectDownloadCreated(info);
   EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));
@@ -785,7 +770,7 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_UpdateWhileAdding) {
 
   // Pretend that something changed on the item.
   EXPECT_CALL(item(0), GetOpened()).WillRepeatedly(Return(true));
-  item_observer()->OnDownloadUpdated(&item(0));
+  item(0).NotifyObserversDownloadUpdated();
 
   FinishCreateDownload();
   EXPECT_TRUE(DownloadHistory::IsPersisted(&item(0)));

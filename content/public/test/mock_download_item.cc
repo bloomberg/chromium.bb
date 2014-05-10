@@ -7,6 +7,29 @@
 namespace content {
 
 MockDownloadItem::MockDownloadItem() {}
-MockDownloadItem::~MockDownloadItem() {}
+
+MockDownloadItem::~MockDownloadItem() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadDestroyed(this));
+}
+
+void MockDownloadItem::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MockDownloadItem::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void MockDownloadItem::NotifyObserversDownloadOpened() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadOpened(this));
+}
+
+void MockDownloadItem::NotifyObserversDownloadRemoved() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadRemoved(this));
+}
+
+void MockDownloadItem::NotifyObserversDownloadUpdated() {
+  FOR_EACH_OBSERVER(Observer, observers_, OnDownloadUpdated(this));
+}
 
 }

@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
 
 #include "base/callback.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
@@ -19,8 +20,20 @@ class MockDownloadItem : public DownloadItem {
  public:
   MockDownloadItem();
   virtual ~MockDownloadItem();
-  MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
-  MOCK_METHOD1(RemoveObserver, void(DownloadItem::Observer*));
+
+  // Management of observer lists is common in tests. So Add/RemoveObserver
+  // methods are not mocks. In addition, any registered observers will receive a
+  // OnDownloadDestroyed() notification when the mock is destroyed.
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
+
+  // Dispatches an OnDownloadOpened() notification to observers.
+  void NotifyObserversDownloadOpened();
+  // Dispatches an OnDownloadRemoved() notification to observers.
+  void NotifyObserversDownloadRemoved();
+  // Dispatches an OnDownloadUpdated() notification to observers.
+  void NotifyObserversDownloadUpdated();
+
   MOCK_METHOD0(UpdateObservers, void());
   MOCK_METHOD0(ValidateDangerousDownload, void());
   MOCK_METHOD1(StealDangerousDownload, void(const AcquireFileCallback&));
@@ -87,6 +100,9 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD1(SetOpened, void(bool));
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
+
+ private:
+  ObserverList<Observer> observers_;
 };
 
 }  // namespace content

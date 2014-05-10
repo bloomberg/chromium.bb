@@ -53,10 +53,6 @@ class DownloadUIControllerTest : public testing::Test {
   // testing::Test
   virtual void SetUp() OVERRIDE;
 
-  // Returns a MockDownloadItem that has AddObserver and RemoveObserver
-  // expectations set up to store the observer in |item_observer_|.
-  scoped_ptr<MockDownloadItem> GetMockDownload();
-
   // Returns a TestDelegate. Invoking NotifyDownloadStarting on the returned
   // delegate results in the DownloadItem* being stored in |received_item_|.
   scoped_ptr<DownloadUIController::Delegate> GetTestDelegate();
@@ -65,13 +61,11 @@ class DownloadUIControllerTest : public testing::Test {
   content::DownloadManager::Observer* manager_observer() {
     return manager_observer_;
   }
-  content::DownloadItem::Observer* item_observer() { return item_observer_; }
   content::DownloadItem* received_item() { return received_item_; }
 
  private:
   scoped_ptr<MockDownloadManager> manager_;
   content::DownloadManager::Observer* manager_observer_;
-  content::DownloadItem::Observer* item_observer_;
   content::DownloadItem* received_item_;
 
   base::WeakPtrFactory<content::DownloadItem*> receiver_factory_;
@@ -79,7 +73,6 @@ class DownloadUIControllerTest : public testing::Test {
 
 DownloadUIControllerTest::DownloadUIControllerTest()
     : manager_observer_(NULL),
-      item_observer_(NULL),
       received_item_(NULL),
       receiver_factory_(&received_item_) {
 }
@@ -94,17 +87,6 @@ void DownloadUIControllerTest::SetUp() {
   EXPECT_CALL(*manager_, GetAllDownloads(_));
 }
 
-scoped_ptr<MockDownloadItem> DownloadUIControllerTest::GetMockDownload() {
-  scoped_ptr<MockDownloadItem> item(
-      new testing::StrictMock<MockDownloadItem>());
-  EXPECT_CALL(*item, AddObserver(_))
-      .WillOnce(SaveArg<0>(&item_observer_));
-  EXPECT_CALL(*item, RemoveObserver(_))
-      .WillOnce(Assign(&item_observer_,
-                       static_cast<content::DownloadItem::Observer*>(NULL)));
-  return item.Pass();
-}
-
 scoped_ptr<DownloadUIController::Delegate>
 DownloadUIControllerTest::GetTestDelegate() {
   scoped_ptr<DownloadUIController::Delegate> delegate(
@@ -116,7 +98,7 @@ DownloadUIControllerTest::GetTestDelegate() {
 // presented to the UI when GetTargetFilePath() returns a non-empty path.
 // I.e. once the download target has been determined.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
-  scoped_ptr<MockDownloadItem> item = GetMockDownload();
+  scoped_ptr<MockDownloadItem> item(new MockDownloadItem);
   DownloadUIController controller(manager(), GetTestDelegate());
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillOnce(ReturnRefOfCopy(base::FilePath()));
@@ -129,12 +111,11 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
   // The destination for the download hasn't been determined yet. It should not
   // be displayed.
   EXPECT_FALSE(received_item());
-  ASSERT_TRUE(item_observer());
 
   // Once the destination has been determined, then it should be displayed.
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillOnce(ReturnRefOfCopy(base::FilePath(FILE_PATH_LITERAL("foo"))));
-  item_observer()->OnDownloadUpdated(item.get());
+  item->NotifyObserversDownloadUpdated();
 
   EXPECT_EQ(static_cast<content::DownloadItem*>(item.get()), received_item());
 }
@@ -143,7 +124,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyBasic) {
 // state should be displayed in the UI immediately without requiring an
 // additional OnDownloadUpdated() notification.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyReadyOnCreate) {
-  scoped_ptr<MockDownloadItem> item = GetMockDownload();
+  scoped_ptr<MockDownloadItem> item(new MockDownloadItem);
   DownloadUIController controller(manager(), GetTestDelegate());
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillOnce(ReturnRefOfCopy(base::FilePath(FILE_PATH_LITERAL("foo"))));
@@ -158,7 +139,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NotifyReadyOnCreate) {
 // History downloads (downloads that are not in IN_PROGRESS on create) should
 // not be displayed on the shelf.
 TEST_F(DownloadUIControllerTest, DownloadUIController_NoNotifyHistory) {
-  scoped_ptr<MockDownloadItem> item = GetMockDownload();
+  scoped_ptr<MockDownloadItem> item(new MockDownloadItem);
   DownloadUIController controller(manager(), GetTestDelegate());
   EXPECT_CALL(*item, GetState())
       .WillRepeatedly(Return(content::DownloadItem::COMPLETE));
@@ -167,7 +148,7 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_NoNotifyHistory) {
   manager_observer()->OnDownloadCreated(manager(), item.get());
   EXPECT_FALSE(received_item());
 
-  item_observer()->OnDownloadUpdated(item.get());
+  item->NotifyObserversDownloadUpdated();
   EXPECT_FALSE(received_item());
 }
 
