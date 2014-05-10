@@ -690,31 +690,19 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
     // If the object has a page or column break value of "before", then we should shift to the top of the next page.
     LayoutUnit result = applyBeforeBreak(child, logicalTopAfterClear);
 
-    if (pageLogicalHeightForOffset(result)) {
-        LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(result, ExcludePageBoundary);
-        LayoutUnit spaceShortage = child->logicalHeight() - remainingLogicalHeight;
-        if (spaceShortage > 0) {
-            // If the child crosses a column boundary, report a break, in case nothing inside it has already
-            // done so. The column balancer needs to know how much it has to stretch the columns to make more
-            // content fit. If no breaks are reported (but do occur), the balancer will have no clue. FIXME:
-            // This should be improved, though, because here we just pretend that the child is
-            // unsplittable. A splittable child, on the other hand, has break opportunities at every position
-            // where there's no child content, border or padding. In other words, we risk stretching more
-            // than necessary.
-            setPageBreak(result, spaceShortage);
-        }
-    }
-
     // For replaced elements and scrolled elements, we want to shift them to the next page if they don't fit on the current one.
     LayoutUnit logicalTopBeforeUnsplittableAdjustment = result;
     LayoutUnit logicalTopAfterUnsplittableAdjustment = adjustForUnsplittableChild(child, result);
 
     LayoutUnit paginationStrut = 0;
     LayoutUnit unsplittableAdjustmentDelta = logicalTopAfterUnsplittableAdjustment - logicalTopBeforeUnsplittableAdjustment;
-    if (unsplittableAdjustmentDelta)
+    LayoutUnit childLogicalHeight = child->logicalHeight();
+    if (unsplittableAdjustmentDelta) {
+        setPageBreak(result, childLogicalHeight - unsplittableAdjustmentDelta);
         paginationStrut = unsplittableAdjustmentDelta;
-    else if (childRenderBlock && childRenderBlock->paginationStrut())
+    } else if (childRenderBlock && childRenderBlock->paginationStrut()) {
         paginationStrut = childRenderBlock->paginationStrut();
+    }
 
     if (paginationStrut) {
         // We are willing to propagate out to our parent block as long as we were at the top of the block prior
@@ -728,6 +716,27 @@ LayoutUnit RenderBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTopA
                 childRenderBlock->setPaginationStrut(0);
         } else {
             result += paginationStrut;
+        }
+    }
+
+    if (!unsplittableAdjustmentDelta) {
+        if (LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(result)) {
+            LayoutUnit remainingLogicalHeight = pageRemainingLogicalHeightForOffset(result, ExcludePageBoundary);
+            LayoutUnit spaceShortage = childLogicalHeight - remainingLogicalHeight;
+            if (spaceShortage > 0) {
+                // If the child crosses a column boundary, report a break, in case nothing inside it
+                // has already done so. The column balancer needs to know how much it has to stretch
+                // the columns to make more content fit. If no breaks are reported (but do occur),
+                // the balancer will have no clue. Only measure the space after the last column
+                // boundary, in case it crosses more than one.
+                LayoutUnit spaceShortageInLastColumn = intMod(spaceShortage, pageLogicalHeight);
+                setPageBreak(result, spaceShortageInLastColumn ? spaceShortageInLastColumn : spaceShortage);
+            } else if (remainingLogicalHeight == pageLogicalHeight && offsetFromLogicalTopOfFirstPage() + child->logicalTop()) {
+                // We're at the very top of a page or column, and it's not the first one. This child
+                // may turn out to be the smallest piece of content that causes a page break, so we
+                // need to report it.
+                setPageBreak(result, childLogicalHeight);
+            }
         }
     }
 
