@@ -423,7 +423,7 @@ class GitBaseTest(BaseTest):
     for k, v in self.FAKE_REPOS.git_hashes[
         self.FAKE_REPOS.TEST_GIT_REPO][1][1].iteritems():
       assert k not in tree
-      tree[k] = v 
+      tree[k] = v
 
     if modified:
       content_lines = tree['chrome/file.cc'].splitlines(True)
@@ -470,7 +470,7 @@ class GitCheckout(GitBaseTest):
     co = self._get_co(None)
     self._check_move(co)
     out = subprocess2.check_output(
-        ['git', 'diff', 'HEAD~', '--name-status'], cwd=co.project_path)
+        ['git', 'diff', '--staged', '--name-status'], cwd=co.project_path)
     out = sorted(out.splitlines())
     expected = sorted(
       [
