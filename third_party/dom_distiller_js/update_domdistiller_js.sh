@@ -12,7 +12,7 @@
 
 (
   dom_distiller_js_path=third_party/dom_distiller_js
-  dom_distiller_js_package=$dom_distiller_js_path/package
+  compiled_js_path=$dom_distiller_js_path/js/domdistiller.js
   readme_chromium=$dom_distiller_js_path/README.chromium
   tmpdir=/tmp/domdistiller-$$
   changes=/tmp/domdistiller.changes
@@ -23,14 +23,13 @@
 
   pushd $tmpdir
   git clone https://code.google.com/p/dom-distiller/ .
+  ant extractjs
   new_gitsha=$(git rev-parse --short=10 HEAD)
   git log --oneline ${curr_gitsha}.. > $changes
-  ant package
   popd
 
-  rm -rf $dom_distiller_js_package
-  mkdir $dom_distiller_js_package
-  cp -rf $tmpdir/out/package/* $dom_distiller_js_package
+  mkdir -p $(dirname $compiled_js_path)
+  cp $tmpdir/out/domdistiller.js $compiled_js_path
   cp $tmpdir/LICENSE $dom_distiller_js_path/
   sed -i "s/Version: [0-9a-f]*/Version: $new_gitsha/" $readme_chromium
 
