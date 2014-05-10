@@ -910,13 +910,13 @@ class StartupWatchDogThread : public base::Watchdog {
     return;
 #else  // Android release: gather stats to figure out when to crash.
     // TODO(rtenneti): Delete this code, after getting data.
-    UMA_HISTOGRAM_TIMES("StartupTimebomm.Alarm.TimeDuration",
+    UMA_HISTOGRAM_TIMES("StartupTimeBomb.Alarm.TimeDuration",
                         base::Time::Now() - start_time_clock_);
-    UMA_HISTOGRAM_TIMES("StartupTimebomm.Alarm.TimeTicksDuration",
+    UMA_HISTOGRAM_TIMES("StartupTimeBomb.Alarm.TimeTicksDuration",
                         base::TimeTicks::Now() - start_time_monotonic_);
     if (base::TimeTicks::IsThreadNowSupported()) {
       UMA_HISTOGRAM_TIMES(
-          "StartupTimebomm.Alarm.ThreadNowDuration",
+          "StartupTimeBomb.Alarm.ThreadNowDuration",
           base::TimeTicks::ThreadNow() - start_time_thread_now_);
     }
     return;

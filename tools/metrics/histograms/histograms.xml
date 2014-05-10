@@ -26692,6 +26692,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="StartupTimeBomb.Alarm" units="milliseconds">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    Time duration measured from the time the startup timebomb was started and
+    when it went off.
+  </summary>
+</histogram>
+
 <histogram name="Suggestions.FailedRequestErrorCode" enum="NetErrorCodes">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -45814,6 +45822,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <suffix name="Full_Handshake" label="Full"/>
   <affected-histogram name="Net.SSL_Connection_Latency"/>
   <affected-histogram name="Net.SSL_Connection_Latency_Google"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="StartupTimeBombAlarm" separator=".">
+  <suffix name="ThreadNowDuration" label="Duration is in thread CPU time."/>
+  <suffix name="TimeDuration" label="Duration is in clock time."/>
+  <suffix name="TimeTicksDuration" label="Duration is in TimeTicks time."/>
+  <affected-histogram name="StartupTimeBomb.Alarm"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SyzygyStartupTime">
