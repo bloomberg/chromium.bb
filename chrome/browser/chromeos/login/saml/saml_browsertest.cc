@@ -418,26 +418,9 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   JsExpect("!$('gaia-signin').classList.contains('saml')");
 }
 
-// Tests the sign-in flow when version 1 of the credentials passing API is used.
-IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPIV1) {
-  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login_v1.html");
-  fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
-  StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
-
-  // Fill-in the SAML IdP form and submit.
-  SetSignFormField("Email", "fake_user");
-  SetSignFormField("Password", "fake_password");
-  ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
-
-  // Login should finish login and a session should start.
-  content::WindowedNotificationObserver(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::NotificationService::AllSources()).Wait();
-}
-
-// Tests the sign-in flow when version 2 of the credentials passing API is used.
-IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPIV2) {
-  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login_v2.html");
+// Tests the sign-in flow when the credentials passing API is used.
+IN_PROC_BROWSER_TEST_F(SamlTest, CredentialPassingAPI) {
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
   fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 

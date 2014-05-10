@@ -10,7 +10,7 @@
             return;
           var response = event.data.response;
           if (response.result != 'initialized' ||
-              response.version != 2 ||
+              response.version != 1 ||
               response.keyTypes.indexOf('KEY_TYPE_PASSWORD_PLAIN') == -1) {
             return;
           }
@@ -22,7 +22,7 @@
         window.setTimeout(function() {
           window.postMessage({
               type: 'gaia_saml_api',
-              call: {method: 'initialize', requestedVersion: 2}}, '/');
+              call: {method: 'initialize', requestedVersion: 1}}, '/');
         }, 0);
       }
 

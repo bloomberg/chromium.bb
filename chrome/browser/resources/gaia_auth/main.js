@@ -25,10 +25,10 @@ Authenticator.MIN_API_VERSION_VERSION = 1;
  * The highest version of the credentials passing API supported.
  * @type {number}
  */
-Authenticator.MAX_API_VERSION_VERSION = 2;
+Authenticator.MAX_API_VERSION_VERSION = 1;
 
 /**
- * The key types supported for credentials passing API 2 and higher.
+ * The key types supported by the credentials passing API.
  * @type {Array} Array of strings.
  */
 Authenticator.API_KEY_TYPES = [
@@ -292,20 +292,6 @@ Authenticator.prototype = {
   onAPICall_: function(msg) {
     var call = msg.call;
     if (call.method == 'initialize') {
-      // TODO(bartfab): There was no |requestedVersion| parameter in version 1
-      // of the API. Remove this code once all consumers have switched to
-      // version 2 or higher.
-      if (!call.hasOwnProperty('requestedVersion')) {
-        if (Authenticator.MIN_API_VERSION_VERSION == 1) {
-          this.apiVersion_ = 1;
-          this.initialized_ = true;
-          this.sendInitializationSuccess_();
-        }
-        // The glue code for API version 1 interprets all responses as success.
-        // Instead of reporting failure, do not send any response at all.
-        return;
-      }
-
       if (!Number.isInteger(call.requestedVersion) ||
           call.requestedVersion < Authenticator.MIN_API_VERSION_VERSION) {
         this.sendInitializationFailure_();
@@ -320,17 +306,13 @@ Authenticator.prototype = {
     }
 
     if (call.method == 'add') {
-      if (this.apiVersion_ > 1 &&
-          Authenticator.API_KEY_TYPES.indexOf(call.keyType) == -1) {
+      if (Authenticator.API_KEY_TYPES.indexOf(call.keyType) == -1) {
         console.error('Authenticator.onAPICall_: unsupported key type');
         return;
       }
       this.apiToken_ = call.token;
       this.email_ = call.user;
-      if (this.apiVersion_ == 1)
-        this.passwordBytes_ = call.password;
-      else
-        this.passwordBytes_ = call.passwordBytes;
+      this.passwordBytes_ = call.passwordBytes;
     } else if (call.method == 'confirm') {
       if (call.token != this.apiToken_)
         console.error('Authenticator.onAPICall_: token mismatch');
@@ -340,14 +322,11 @@ Authenticator.prototype = {
   },
 
   sendInitializationSuccess_: function() {
-    var response = {
+    this.supportChannel_.send({name: 'apiResponse', response: {
       result: 'initialized',
-      version: this.apiVersion_
-    };
-    if (this.apiVersion_ >= 2)
-      response['keyTypes'] = Authenticator.API_KEY_TYPES;
-
-    this.supportChannel_.send({name: 'apiResponse', response: response});
+      version: this.apiVersion_,
+      keyTypes: Authenticator.API_KEY_TYPES
+    }});
   },
 
   sendInitializationFailure_: function() {
