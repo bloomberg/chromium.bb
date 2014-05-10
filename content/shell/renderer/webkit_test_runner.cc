@@ -562,13 +562,10 @@ std::string WebKitTestRunner::dumpHistoryForWindow(WebTestProxyBase* proxy) {
 
 // RenderViewObserver  --------------------------------------------------------
 
-void WebKitTestRunner::DidClearWindowObject(WebLocalFrame* frame,
-                                            int world_id) {
+void WebKitTestRunner::DidClearWindowObject(WebLocalFrame* frame) {
   WebTestingSupport::injectInternalsObject(frame);
-  if (world_id == 0) {
-    ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
-    GCController::Install(frame);
-  }
+  ShellRenderProcessObserver::GetInstance()->test_interfaces()->bindTo(frame);
+  GCController::Install(frame);
 }
 
 bool WebKitTestRunner::OnMessageReceived(const IPC::Message& message) {

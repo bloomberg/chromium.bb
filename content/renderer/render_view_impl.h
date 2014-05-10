@@ -657,7 +657,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   void didCreateDataSource(blink::WebLocalFrame* frame,
                            blink::WebDataSource* datasource);
-  void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
+  void didClearWindowObject(blink::WebLocalFrame* frame);
   void didReceiveTitle(blink::WebLocalFrame* frame,
                        const blink::WebString& title,
                        blink::WebTextDirection direction);

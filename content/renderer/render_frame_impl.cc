@@ -1976,25 +1976,19 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   render_view_->UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
-void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame,
-                                           int world_id) {
+void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
   DCHECK(!frame_ || frame_ == frame);
   // TODO(nasko): Move implementation here. Needed state:
   // * enabled_bindings_
   // * dom_automation_controller_
   // * stats_collection_controller_
 
-  render_view_->didClearWindowObject(frame, world_id);
-
-  // Only install controllers into the main world.
-  if (world_id)
-    return;
+  render_view_->didClearWindowObject(frame);
 
   if (render_view_->GetEnabledBindings() & BINDINGS_POLICY_DOM_AUTOMATION)
     DomAutomationController::Install(this, frame);
 
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
-                    DidClearWindowObject(world_id));
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidClearWindowObject());
 }
 
 void RenderFrameImpl::didCreateDocumentElement(blink::WebLocalFrame* frame) {

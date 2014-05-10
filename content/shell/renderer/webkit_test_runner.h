@@ -43,8 +43,7 @@ class WebKitTestRunner : public RenderViewObserver,
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject(blink::WebLocalFrame* frame,
-                                    int world_id) OVERRIDE;
+  virtual void DidClearWindowObject(blink::WebLocalFrame* frame) OVERRIDE;
   virtual void Navigate(const GURL& url) OVERRIDE;
   virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                         bool is_new_navigation) OVERRIDE;

@@ -274,7 +274,7 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& item,
       blink::WebHistoryCommitType commit_type);
-  virtual void didClearWindowObject(blink::WebLocalFrame* frame, int world_id);
+  virtual void didClearWindowObject(blink::WebLocalFrame* frame);
   virtual void didCreateDocumentElement(blink::WebLocalFrame* frame);
   virtual void didReceiveTitle(blink::WebLocalFrame* frame,
                                const blink::WebString& title,

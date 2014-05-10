@@ -110,8 +110,7 @@ WebUIMojoContextState* WebUIMojo::GetContextState() {
   return context_state ? context_state->state.get() : NULL;
 }
 
-void WebUIMojo::DidClearWindowObject(blink::WebLocalFrame* frame,
-                                     int world_id) {
+void WebUIMojo::DidClearWindowObject(blink::WebLocalFrame* frame) {
   if (frame != render_view()->GetWebView()->mainFrame())
     return;
 

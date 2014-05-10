@@ -31,7 +31,7 @@ class JavaBridgeDispatcher : public RenderFrameObserver {
  private:
   // RenderViewObserver override:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidClearWindowObject(int world_id) OVERRIDE;
+  virtual void DidClearWindowObject() OVERRIDE;
 
   // Message handlers
   void OnAddNamedObject(const base::string16& name,

@@ -17,8 +17,8 @@ ShellRenderViewObserver::ShellRenderViewObserver(RenderView* render_view)
     : RenderViewObserver(render_view) {
 }
 
-void ShellRenderViewObserver::DidClearWindowObject(blink::WebLocalFrame* frame,
-                                                   int world_id) {
+void ShellRenderViewObserver::DidClearWindowObject(
+    blink::WebLocalFrame* frame) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kExposeInternalsForTesting)) {
     blink::WebTestingSupport::injectInternalsObject(frame);

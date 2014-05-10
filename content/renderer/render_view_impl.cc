@@ -2222,13 +2222,9 @@ void RenderViewImpl::FrameDidCommitProvisionalLoad(WebLocalFrame* frame,
   }
 }
 
-void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame, int world_id) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    DidClearWindowObject(frame, world_id));
-
-  // Only install controllers into the main world.
-  if (world_id)
-    return;
+void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame) {
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, DidClearWindowObject(frame));
 
   if (enabled_bindings_& BINDINGS_POLICY_WEB_UI)
     WebUIExtension::Install(frame);
