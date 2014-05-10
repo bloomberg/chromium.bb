@@ -707,10 +707,14 @@ class GitCheckout(CheckoutBase):
     found_files = self._check_output_git(
         ['diff', '--ignore-submodules',
          '--name-only', '--staged']).splitlines(False)
-    assert sorted(patches.filenames) == sorted(found_files), (
-        'Found extra %s locally, %s not patched' % (
-            sorted(set(found_files) - set(patches.filenames)),
-            sorted(set(patches.filenames) - set(found_files))))
+    if sorted(patches.filenames) != sorted(found_files):
+      extra_files = sorted(set(found_files) - set(patches.filenames))
+      unpatched_files = sorted(set(patches.filenames) - set(found_files))
+      if extra_files:
+        print 'Found extra files: %r' % (extra_files,)
+      if unpatched_files:
+        print 'Found unpatched files: %r' % (unpatched_files,)
+
 
   def commit(self, commit_message, user):
     """Commits, updates the commit message and pushes."""
