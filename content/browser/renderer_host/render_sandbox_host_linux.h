@@ -31,7 +31,7 @@ class CONTENT_EXPORT RenderSandboxHostLinux {
     DCHECK(initialized_);
     return pid_;
   }
-  void Init(const std::string& sandbox_path);
+  void Init();
 
  private:
   friend struct DefaultSingletonTraits<RenderSandboxHostLinux>;

@@ -25,7 +25,7 @@ RenderSandboxHostLinux* RenderSandboxHostLinux::GetInstance() {
   return Singleton<RenderSandboxHostLinux>::get();
 }
 
-void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
+void RenderSandboxHostLinux::Init() {
   DCHECK(!initialized_);
   initialized_ = true;
 
@@ -64,7 +64,7 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
     if (IGNORE_EINTR(close(pipefds[1])) < 0)
       DPLOG(ERROR) << "close";
 
-    SandboxIPCProcess handler(child_lifeline_fd, browser_socket, sandbox_path);
+    SandboxIPCProcess handler(child_lifeline_fd, browser_socket);
     handler.Run();
     _exit(0);
   }

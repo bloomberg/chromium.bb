@@ -26,9 +26,7 @@ class SandboxIPCProcess {
   //   point of view of the renderer, it's talking to the browser but this
   //   object actually services the requests.
   // sandbox_cmd: the path of the sandbox executable.
-  SandboxIPCProcess(int lifeline_fd,
-                    int browser_socket,
-                    std::string sandbox_cmd);
+  SandboxIPCProcess(int lifeline_fd, int browser_socket);
   ~SandboxIPCProcess();
 
   void Run();
@@ -65,11 +63,6 @@ class SandboxIPCProcess {
                        PickleIterator iter,
                        const std::vector<base::ScopedFD*>& fds);
 
-  void HandleGetChildWithInode(int fd,
-                               const Pickle& pickle,
-                               PickleIterator iter,
-                               const std::vector<base::ScopedFD*>& fds);
-
   void HandleMakeSharedMemorySegment(int fd,
                                      const Pickle& pickle,
                                      PickleIterator iter,
@@ -86,7 +79,6 @@ class SandboxIPCProcess {
 
   const int lifeline_fd_;
   const int browser_socket_;
-  std::vector<std::string> sandbox_cmd_;
   scoped_ptr<BlinkPlatformImpl> webkit_platform_support_;
   SkTDArray<SkString*> paths_;
 

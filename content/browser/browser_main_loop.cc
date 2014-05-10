@@ -164,7 +164,7 @@ void SetupSandbox(const CommandLine& parsed_command_line) {
   }
 
   // Tickle the sandbox host and zygote host so they fork now.
-  RenderSandboxHostLinux::GetInstance()->Init(sandbox_binary.value());
+  RenderSandboxHostLinux::GetInstance()->Init();
   ZygoteHostImpl::GetInstance()->Init(sandbox_binary.value());
 }
 #endif

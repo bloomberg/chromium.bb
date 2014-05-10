@@ -129,15 +129,8 @@ static void MSCharSetToFontconfig(FcLangSet* langset, unsigned fdwCharSet) {
 
 namespace content {
 
-SandboxIPCProcess::SandboxIPCProcess(int lifeline_fd,
-                                     int browser_socket,
-                                     std::string sandbox_cmd)
+SandboxIPCProcess::SandboxIPCProcess(int lifeline_fd, int browser_socket)
     : lifeline_fd_(lifeline_fd), browser_socket_(browser_socket) {
-  if (!sandbox_cmd.empty()) {
-    sandbox_cmd_.push_back(sandbox_cmd);
-    sandbox_cmd_.push_back(base::kFindInodeSwitch);
-  }
-
   // FontConfig doesn't provide a standard property to control subpixel
   // positioning, so we pass the current setting through to WebKit.
   WebFontInfo::setSubpixelPositioning(
@@ -220,8 +213,6 @@ void SandboxIPCProcess::HandleRequestFromRenderer(int fd) {
     HandleGetFontFamilyForChar(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_LOCALTIME) {
     HandleLocaltime(fd, pickle, iter, fds.get());
-  } else if (kind == LinuxSandbox::METHOD_GET_CHILD_WITH_INODE) {
-    HandleGetChildWithInode(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE) {
     HandleGetStyleForStrike(fd, pickle, iter, fds.get());
   } else if (kind == LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
@@ -400,41 +391,6 @@ void SandboxIPCProcess::HandleLocaltime(
   Pickle reply;
   reply.WriteString(result_string);
   reply.WriteString(time_zone_string);
-  SendRendererReply(fds, reply, -1);
-}
-
-void SandboxIPCProcess::HandleGetChildWithInode(
-    int fd,
-    const Pickle& pickle,
-    PickleIterator iter,
-    const std::vector<base::ScopedFD*>& fds) {
-  // The other side of this call is in zygote_main_linux.cc
-  if (sandbox_cmd_.empty()) {
-    LOG(ERROR) << "Not in the sandbox, this should not be called";
-    return;
-  }
-
-  uint64_t inode;
-  if (!pickle.ReadUInt64(&iter, &inode))
-    return;
-
-  base::ProcessId pid = 0;
-  std::string inode_output;
-
-  std::vector<std::string> sandbox_cmd = sandbox_cmd_;
-  sandbox_cmd.push_back(base::Int64ToString(inode));
-  CommandLine get_inode_cmd(sandbox_cmd);
-  if (base::GetAppOutput(get_inode_cmd, &inode_output))
-    base::StringToInt(inode_output, &pid);
-
-  if (!pid) {
-    // Even though the pid is invalid, we still need to reply to the zygote
-    // and not just return here.
-    LOG(ERROR) << "Could not get pid";
-  }
-
-  Pickle reply;
-  reply.WriteInt(pid);
   SendRendererReply(fds, reply, -1);
 }
 
