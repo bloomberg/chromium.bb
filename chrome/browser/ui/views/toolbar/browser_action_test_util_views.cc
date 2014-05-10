@@ -19,10 +19,8 @@
 namespace {
 
 BrowserActionsContainer* GetContainer(Browser* browser) {
-  BrowserActionsContainer* container =
-      browser->window()->GetBrowserWindowTesting()->GetToolbarView()->
-          browser_actions();
-  return container;
+  return browser->window()->GetBrowserWindowTesting()->GetToolbarView()->
+      browser_actions();
 }
 
 }  // namespace
@@ -39,6 +37,10 @@ ExtensionAction* BrowserActionTestUtil::GetExtensionAction(int index) {
   return extensions::ExtensionActionManager::Get(browser_->profile())->
       GetBrowserAction(*GetContainer(browser_)->GetBrowserActionViewAt(index)->
                        button()->extension());
+}
+
+void BrowserActionTestUtil::InspectPopup(int index) {
+  GetContainer(browser_)->InspectPopup(GetExtensionAction(index));
 }
 
 bool BrowserActionTestUtil::HasIcon(int index) {
@@ -78,8 +80,7 @@ gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
 }
 
 bool BrowserActionTestUtil::HidePopup() {
-  BrowserActionsContainer* container = GetContainer(browser_);
-  container->HidePopup();
+  GetContainer(browser_)->HidePopup();
   return !HasPopup();
 }
 

@@ -158,7 +158,10 @@ void ExtensionPopup::OnWidgetDestroying(views::Widget* widget) {
   aura::Window* bubble_window = GetWidget()->GetNativeWindow();
   aura::client::ActivationClient* activation_client =
       aura::client::GetActivationClient(bubble_window->GetRootWindow());
-  activation_client->RemoveObserver(this);
+  // If the popup was being inspected with devtools and the browser window was
+  // closed, then the root window and activation client are already destroyed.
+  if (activation_client)
+    activation_client->RemoveObserver(this);
 #endif
 }
 

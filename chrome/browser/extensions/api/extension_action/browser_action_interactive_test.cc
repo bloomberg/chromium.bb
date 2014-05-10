@@ -263,5 +263,30 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TabSwitchClosesPopup) {
   EXPECT_FALSE(BrowserActionTestUtil(browser()).HasPopup());
 }
 
+#if defined(TOOLKIT_VIEWS)
+// Test closing the browser while inspecting an extension popup with dev tools.
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, CloseBrowserWithDevTools) {
+  if (!ShouldRunPopupTest())
+    return;
+
+  // Load a first extension that can open a popup.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "browser_action/popup")));
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Open an extension popup by clicking the browser action button.
+  content::WindowedNotificationObserver frame_observer(
+      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+      content::NotificationService::AllSources());
+  BrowserActionTestUtil(browser()).InspectPopup(0);
+  frame_observer.Wait();
+  EXPECT_TRUE(BrowserActionTestUtil(browser()).HasPopup());
+
+  // Close the browser window, this should not cause a crash.
+  chrome::CloseWindow(browser());
+}
+#endif  // TOOLKIT_VIEWS
+
 }  // namespace
 }  // namespace extensions
