@@ -47,6 +47,9 @@ bool ExtractInt(AVDictionaryEntry* tag, const char* expected_key,
   return true;
 }
 
+// Set attached image size limit to 4MB. Chosen arbitrarily.
+const int kAttachedImageSizeLimit = 4 * 1024 * 1024;
+
 }  // namespace
 
 AudioVideoMetadataExtractor::StreamInfo::StreamInfo() {}
@@ -66,7 +69,8 @@ AudioVideoMetadataExtractor::AudioVideoMetadataExtractor()
 AudioVideoMetadataExtractor::~AudioVideoMetadataExtractor() {
 }
 
-bool AudioVideoMetadataExtractor::Extract(DataSource* source) {
+bool AudioVideoMetadataExtractor::Extract(DataSource* source,
+                                          bool extract_attached_images) {
   DCHECK(!extracted_);
 
   bool read_ok = true;
@@ -111,11 +115,23 @@ bool AudioVideoMetadataExtractor::Extract(DataSource* source) {
 
     info.type = avcodec_get_name(stream->codec->codec_id);
 
-    // Extract dimensions of largest stream that's not an attached picture.
+    // Extract dimensions of largest stream that's not an attached image.
     if (stream->codec->width > 0 && stream->codec->width > width_ &&
         stream->codec->height > 0 && stream->codec->height > height_) {
       width_ = stream->codec->width;
       height_ = stream->codec->height;
+    }
+
+    // Extract attached image if requested.
+    if (extract_attached_images &&
+        stream->disposition == AV_DISPOSITION_ATTACHED_PIC &&
+        stream->attached_pic.size > 0 &&
+        stream->attached_pic.size <= kAttachedImageSizeLimit &&
+        stream->attached_pic.data != NULL) {
+      attached_images_bytes_.push_back(std::string());
+      attached_images_bytes_.back().assign(
+          reinterpret_cast<const char*>(stream->attached_pic.data),
+          stream->attached_pic.size);
     }
   }
 
@@ -207,6 +223,12 @@ const std::vector<AudioVideoMetadataExtractor::StreamInfo>&
 AudioVideoMetadataExtractor::stream_infos() const {
   DCHECK(extracted_);
   return stream_infos_;
+}
+
+const std::vector<std::string>&
+AudioVideoMetadataExtractor::attached_images_bytes() const {
+  DCHECK(extracted_);
+  return attached_images_bytes_;
 }
 
 void AudioVideoMetadataExtractor::ExtractDictionary(

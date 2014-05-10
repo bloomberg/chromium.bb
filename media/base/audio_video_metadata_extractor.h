@@ -38,7 +38,7 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
 
   // Returns whether or not the fields were successfully extracted. Should only
   // be called once.
-  bool Extract(DataSource* source);
+  bool Extract(DataSource* source, bool extract_attached_pics);
 
   // Returns -1 if we cannot extract the duration. In seconds.
   double duration() const;
@@ -67,6 +67,10 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   // First element is the container. Subsequent elements are the child streams.
   const StreamInfoVector& stream_infos() const;
 
+  // Empty if Extract call did not request attached images, or if no attached
+  // images were found.
+  const std::vector<std::string>& attached_images_bytes() const;
+
  private:
   void ExtractDictionary(AVDictionary* metadata, TagDictionary* raw_tags);
 
@@ -91,6 +95,8 @@ class MEDIA_EXPORT AudioVideoMetadataExtractor {
   int track_;
 
   StreamInfoVector stream_infos_;
+
+  std::vector<std::string> attached_images_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioVideoMetadataExtractor);
 };

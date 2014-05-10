@@ -4,6 +4,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/sha1.h"
 #include "build/build_config.h"
 #include "media/base/audio_video_metadata_extractor.h"
 #include "media/base/test_data_util.h"
@@ -14,6 +15,7 @@ namespace media {
 
 scoped_ptr<AudioVideoMetadataExtractor> GetExtractor(
     const std::string& filename,
+    bool extract_attached_images,
     bool expected_result,
     double expected_duration,
     int expected_width,
@@ -23,7 +25,7 @@ scoped_ptr<AudioVideoMetadataExtractor> GetExtractor(
 
   scoped_ptr<AudioVideoMetadataExtractor> extractor(
       new AudioVideoMetadataExtractor);
-  bool extracted = extractor->Extract(&source);
+  bool extracted = extractor->Extract(&source, extract_attached_images);
   EXPECT_EQ(expected_result, extracted);
 
   if (!extracted)
@@ -38,12 +40,12 @@ scoped_ptr<AudioVideoMetadataExtractor> GetExtractor(
 }
 
 TEST(AudioVideoMetadataExtractorTest, InvalidFile) {
-  GetExtractor("ten_byte_file", false, 0, -1, -1);
+  GetExtractor("ten_byte_file", true, false, 0, -1, -1);
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioOGG) {
   scoped_ptr<AudioVideoMetadataExtractor> extractor =
-      GetExtractor("9ch.ogg", true, 0, -1, -1);
+      GetExtractor("9ch.ogg", true, true, 0, -1, -1);
   EXPECT_EQ("Processed by SoX", extractor->comment());
 
   EXPECT_EQ("ogg", extractor->stream_infos()[0].type);
@@ -55,11 +57,13 @@ TEST(AudioVideoMetadataExtractorTest, AudioOGG) {
   EXPECT_EQ("vorbis", extractor->stream_infos()[1].type);
   EXPECT_EQ("Processed by SoX",
             extractor->stream_infos()[1].tags.find("COMMENT")->second);
+
+  EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioWAV) {
   scoped_ptr<AudioVideoMetadataExtractor> extractor =
-      GetExtractor("sfx_u8.wav", true, 0, -1, -1);
+      GetExtractor("sfx_u8.wav", true, true, 0, -1, -1);
   EXPECT_EQ("Lavf54.37.100", extractor->encoder());
   EXPECT_EQ("Amadeus Pro", extractor->encoded_by());
 
@@ -74,11 +78,13 @@ TEST(AudioVideoMetadataExtractorTest, AudioWAV) {
 
   EXPECT_EQ("pcm_u8", extractor->stream_infos()[1].type);
   EXPECT_EQ(0u, extractor->stream_infos()[1].tags.size());
+
+  EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
 
 TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
   scoped_ptr<AudioVideoMetadataExtractor> extractor =
-      GetExtractor("bear-320x240-multitrack.webm", true, 2, 320, 240);
+      GetExtractor("bear-320x240-multitrack.webm", true, true, 2, 320, 240);
   EXPECT_EQ("Lavf53.9.0", extractor->encoder());
 
   EXPECT_EQ(6u, extractor->stream_infos().size());
@@ -104,12 +110,14 @@ TEST(AudioVideoMetadataExtractorTest, VideoWebM) {
   EXPECT_EQ(1u, extractor->stream_infos()[5].tags.size());
   EXPECT_EQ("Lavc52.32.0",
             extractor->stream_infos()[5].tags.find("ENCODER")->second);
+
+  EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
 
 #if defined(USE_PROPRIETARY_CODECS)
 TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
   scoped_ptr<AudioVideoMetadataExtractor> extractor =
-      GetExtractor("90rotation.mp4", true, 0, 1920, 1080);
+      GetExtractor("90rotation.mp4", true, true, 0, 1920, 1080);
 
   EXPECT_EQ(90, extractor->rotation());
 
@@ -144,11 +152,13 @@ TEST(AudioVideoMetadataExtractorTest, AndroidRotatedMP4Video) {
   EXPECT_EQ("SoundHandle",
             extractor->stream_infos()[2].tags.find("handler_name")->second);
   EXPECT_EQ("eng", extractor->stream_infos()[2].tags.find("language")->second);
+
+  EXPECT_EQ(0u, extractor->attached_images_bytes().size());
 }
 
 TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
   scoped_ptr<AudioVideoMetadataExtractor> extractor =
-      GetExtractor("id3_png_test.mp3", true, 1, -1, -1);
+      GetExtractor("id3_png_test.mp3", true, true, 1, -1, -1);
 
   EXPECT_EQ("Airbag", extractor->title());
   EXPECT_EQ("Radiohead", extractor->artist());
@@ -181,6 +191,17 @@ TEST(AudioVideoMetadataExtractorTest, AudioMP3) {
   EXPECT_EQ(2u, extractor->stream_infos()[2].tags.size());
   EXPECT_EQ("Other", extractor->stream_infos()[2].tags.find("comment")->second);
   EXPECT_EQ("", extractor->stream_infos()[2].tags.find("title")->second);
+
+  EXPECT_EQ(1u, extractor->attached_images_bytes().size());
+  EXPECT_EQ(155752u, extractor->attached_images_bytes()[0].size());
+
+  EXPECT_EQ("\x89PNG\r\n\x1a\n",
+            extractor->attached_images_bytes()[0].substr(0, 8));
+  EXPECT_EQ("IEND\xae\x42\x60\x82",
+            extractor->attached_images_bytes()[0].substr(
+                extractor->attached_images_bytes()[0].size() - 8, 8));
+  EXPECT_EQ("\xF3\xED\x8F\xC7\xC7\x98\xB9V|p\xC0u!\xB5\x82\xCF\x95\xF0\xCD\xCE",
+            base::SHA1HashString(extractor->attached_images_bytes()[0]));
 }
 #endif
 

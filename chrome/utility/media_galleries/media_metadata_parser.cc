@@ -56,7 +56,8 @@ scoped_ptr<MediaMetadataParser::MediaMetadata> ParseAudioVideoMetadata(
   DCHECK(metadata.get());
   media::AudioVideoMetadataExtractor extractor;
 
-  if (!extractor.Extract(source))
+  // TODO(tommycli): Add attached picture extraction.
+  if (!extractor.Extract(source, false /* extract_attached_pics */))
     return metadata.Pass();
 
   if (extractor.duration() >= 0)
