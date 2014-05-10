@@ -62,7 +62,6 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(
       should_reset_mouse_flags_(false),
       grab_input_window_(None),
       canceled_(false),
-      has_grab_(false),
       weak_factory_(this) {
   last_xmotion_.type = LASTEvent;
 }
@@ -135,11 +134,6 @@ uint32_t X11WholeScreenMoveLoop::DispatchEvent(const ui::PlatformEvent& event) {
         EndMoveLoop();
         return ui::POST_DISPATCH_NONE;
       }
-      break;
-    }
-    case FocusOut: {
-      if (xev->xfocus.mode != NotifyGrab)
-        has_grab_ = false;
       break;
     }
     case GenericEvent: {
@@ -259,11 +253,8 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   // Ungrab before we let go of the window.
   XDisplay* display = gfx::GetXDisplay();
-  // Only ungrab pointer if capture was not switched to another window.
-  if (has_grab_) {
-    XUngrabPointer(display, CurrentTime);
-    XUngrabKeyboard(display, CurrentTime);
-  }
+  XUngrabPointer(display, CurrentTime);
+  XUngrabKeyboard(display, CurrentTime);
 
   // Restore the previous dispatcher.
   nested_dispatcher_.reset();
@@ -304,7 +295,6 @@ bool X11WholeScreenMoveLoop::GrabPointerAndKeyboard(gfx::NativeCursor cursor) {
     DLOG(ERROR) << "Grabbing pointer for dragging failed: "
                 << ui::GetX11ErrorString(display, ret);
   } else {
-    has_grab_ = true;
     XUngrabKeyboard(display, CurrentTime);
     ret = XGrabKeyboard(
         display,
