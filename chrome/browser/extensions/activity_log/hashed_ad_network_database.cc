@@ -31,7 +31,8 @@ const size_t kChecksumHashSize = 32u;
 }  // namespace
 
 HashedAdNetworkDatabase::HashedAdNetworkDatabase(
-    scoped_refptr<base::RefCountedStaticMemory> entries_memory) {
+    scoped_refptr<base::RefCountedStaticMemory> entries_memory)
+    : is_valid_(false) {
   // This can legitimately happen in unit tests.
   if (!entries_memory)
     return;
@@ -67,6 +68,8 @@ HashedAdNetworkDatabase::HashedAdNetworkDatabase(
     memcpy(&value, index, kUrlHashSize);
     entries_.insert(value);
   }
+
+  is_valid_ = true;
 }
 
 HashedAdNetworkDatabase::~HashedAdNetworkDatabase() {}

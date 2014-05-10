@@ -23,9 +23,16 @@ class HashedAdNetworkDatabase : public AdNetworkDatabase {
       scoped_refptr<base::RefCountedStaticMemory> memory);
   virtual ~HashedAdNetworkDatabase();
 
+  bool is_valid() const { return is_valid_; }
+
  private:
   // AdNetworkDatabase implementation.
   virtual bool IsAdNetwork(const GURL& url) const OVERRIDE;
+
+  // Whether or not the database is valid, i.e., has correctly parsed the hash
+  // file. If it is not, it will always return false for IsAdNetwork(), since
+  // it cannot match against known hashes.
+  bool is_valid_;
 
   // The set of partial hashes for known ad networks.
   base::hash_set<int64> entries_;
