@@ -103,6 +103,16 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskQueue::dispatch()
     return accumulatedResult;
 }
 
+bool CustomElementMicrotaskQueue::needsProcessOrStop() const
+{
+    for (size_t i = 0; i < m_queue.size(); ++i) {
+        if (m_queue[i]->needsProcessOrStop())
+            return true;
+    }
+
+    return false;
+}
+
 #if !defined(NDEBUG)
 void CustomElementMicrotaskQueue::show(unsigned indent)
 {

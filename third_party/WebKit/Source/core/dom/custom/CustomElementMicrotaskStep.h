@@ -48,6 +48,7 @@ public:
     };
 
     virtual Result process() = 0;
+    virtual bool needsProcessOrStop() const = 0;
 
 #if !defined(NDEBUG)
     virtual void show(unsigned indent) = 0;

@@ -52,6 +52,7 @@ public:
 
     typedef CustomElementMicrotaskStep::Result Result;
     Result dispatch();
+    bool needsProcessOrStop() const;
 
 #if !defined(NDEBUG)
     void show(unsigned indent);

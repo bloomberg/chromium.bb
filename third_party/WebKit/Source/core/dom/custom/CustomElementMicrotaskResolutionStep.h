@@ -53,6 +53,7 @@ private:
     CustomElementMicrotaskResolutionStep(PassRefPtr<CustomElementRegistrationContext>, PassRefPtr<Element>, const CustomElementDescriptor&);
 
     virtual Result process() OVERRIDE;
+    virtual bool needsProcessOrStop() const OVERRIDE;
 
 #if !defined(NDEBUG)
     virtual void show(unsigned indent) OVERRIDE;

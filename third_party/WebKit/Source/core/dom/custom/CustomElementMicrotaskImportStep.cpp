@@ -85,6 +85,11 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskImportStep::process()
     return result;
 }
 
+bool CustomElementMicrotaskImportStep::needsProcessOrStop() const
+{
+    return shouldStopProcessing() || m_queue->needsProcessOrStop();
+}
+
 #if !defined(NDEBUG)
 void CustomElementMicrotaskImportStep::show(unsigned indent)
 {

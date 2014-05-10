@@ -58,6 +58,11 @@ CustomElementMicrotaskStep::Result CustomElementMicrotaskResolutionStep::process
     return CustomElementMicrotaskStep::ContinueWithRemoving;
 }
 
+bool CustomElementMicrotaskResolutionStep::needsProcessOrStop() const
+{
+    return true;
+}
+
 #if !defined(NDEBUG)
 void CustomElementMicrotaskResolutionStep::show(unsigned indent)
 {
