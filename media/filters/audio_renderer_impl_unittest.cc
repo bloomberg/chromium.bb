@@ -229,17 +229,12 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   void Play() {
-    SCOPED_TRACE("Play()");
-    WaitableMessageLoopEvent event;
-    renderer_->Play(event.GetClosure());
+    renderer_->Play();
     renderer_->SetPlaybackRate(1.0f);
-    event.RunAndWait();
   }
 
   void Pause() {
-    WaitableMessageLoopEvent pause_event;
-    renderer_->Pause(pause_event.GetClosure());
-    pause_event.RunAndWait();
+    renderer_->Pause();
   }
 
   void Seek() {
@@ -766,31 +761,6 @@ TEST_F(AudioRendererImplTest, AbortPendingRead_Preroll) {
   Preroll(1000, PIPELINE_OK);
 }
 
-TEST_F(AudioRendererImplTest, AbortPendingRead_Pause) {
-  Initialize();
-
-  Preroll();
-  Play();
-
-  // Partially drain internal buffer so we get a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
-  WaitForPendingRead();
-
-  // Start pausing.
-  WaitableMessageLoopEvent event;
-  renderer_->Pause(event.GetClosure());
-
-  // Simulate the decoder aborting the pending read.
-  AbortPendingRead();
-  event.RunAndWait();
-
-  Flush();
-
-  // Preroll again to a different timestamp and verify it completed normally.
-  Preroll(1000, PIPELINE_OK);
-}
-
-
 TEST_F(AudioRendererImplTest, AbortPendingRead_Flush) {
   Initialize();
 
@@ -814,30 +784,6 @@ TEST_F(AudioRendererImplTest, AbortPendingRead_Flush) {
   flush_event.RunAndWait();
 
   EXPECT_FALSE(IsReadPending());
-
-  // Preroll again to a different timestamp and verify it completed normally.
-  Preroll(1000, PIPELINE_OK);
-}
-
-TEST_F(AudioRendererImplTest, PendingRead_Pause) {
-  Initialize();
-
-  Preroll();
-  Play();
-
-  // Partially drain internal buffer so we get a pending read.
-  EXPECT_TRUE(ConsumeBufferedData(frames_buffered() / 2, NULL));
-  WaitForPendingRead();
-
-  // Start pausing.
-  WaitableMessageLoopEvent event;
-  renderer_->Pause(event.GetClosure());
-
-  SatisfyPendingRead(kDataSize);
-
-  event.RunAndWait();
-
-  Flush();
 
   // Preroll again to a different timestamp and verify it completed normally.
   Preroll(1000, PIPELINE_OK);

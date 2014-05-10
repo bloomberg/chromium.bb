@@ -34,6 +34,7 @@ class MEDIA_EXPORT SerialRunner {
     Queue();
     ~Queue();
 
+    void Push(const base::Closure& closure);
     void Push(const BoundClosure& bound_fn);
     void Push(const BoundPipelineStatusCB& bound_fn);
 

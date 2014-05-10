@@ -208,8 +208,7 @@ class PipelineTest : public ::testing::Test {
         // Startup sequence.
         EXPECT_CALL(*audio_renderer_, Preroll(base::TimeDelta(), _))
             .WillOnce(RunCallback<1>(PIPELINE_OK));
-        EXPECT_CALL(*audio_renderer_, Play(_))
-            .WillOnce(RunClosure<0>());
+        EXPECT_CALL(*audio_renderer_, Play());
       }
       EXPECT_CALL(callbacks_, OnPrerollCompleted());
     }
@@ -259,16 +258,14 @@ class PipelineTest : public ::testing::Test {
         .WillOnce(RunCallback<1>(PIPELINE_OK));
 
     if (audio_stream_) {
-      EXPECT_CALL(*audio_renderer_, Pause(_))
-          .WillOnce(RunClosure<0>());
+      EXPECT_CALL(*audio_renderer_, Pause());
       EXPECT_CALL(*audio_renderer_, Flush(_))
           .WillOnce(RunClosure<0>());
       EXPECT_CALL(*audio_renderer_, Preroll(seek_time, _))
           .WillOnce(RunCallback<1>(PIPELINE_OK));
       EXPECT_CALL(*audio_renderer_, SetPlaybackRate(_));
       EXPECT_CALL(*audio_renderer_, SetVolume(_));
-      EXPECT_CALL(*audio_renderer_, Play(_))
-          .WillOnce(RunClosure<0>());
+      EXPECT_CALL(*audio_renderer_, Play());
     }
 
     if (video_stream_) {
@@ -669,8 +666,7 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
   // Preroll() isn't called as the demuxer errors out first.
-  EXPECT_CALL(*audio_renderer_, Pause(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*audio_renderer_, Pause());
   EXPECT_CALL(*audio_renderer_, Flush(_))
       .WillOnce(RunClosure<0>());
   EXPECT_CALL(*audio_renderer_, Stop(_))
@@ -724,8 +720,7 @@ TEST_F(PipelineTest, NoMessageDuringTearDownFromError) {
   base::TimeDelta seek_time = base::TimeDelta::FromSeconds(5);
 
   // Seek() isn't called as the demuxer errors out first.
-  EXPECT_CALL(*audio_renderer_, Pause(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*audio_renderer_, Pause());
   EXPECT_CALL(*audio_renderer_, Flush(_))
       .WillOnce(RunClosure<0>());
   EXPECT_CALL(*audio_renderer_, Stop(_))
@@ -815,16 +810,14 @@ TEST_F(PipelineTest, AudioTimeUpdateDuringSeek) {
       .WillOnce(DoAll(InvokeWithoutArgs(&closure, &base::Closure::Run),
                       RunCallback<1>(PIPELINE_OK)));
 
-  EXPECT_CALL(*audio_renderer_, Pause(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*audio_renderer_, Pause());
   EXPECT_CALL(*audio_renderer_, Flush(_))
       .WillOnce(RunClosure<0>());
   EXPECT_CALL(*audio_renderer_, Preroll(seek_time, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
   EXPECT_CALL(*audio_renderer_, SetPlaybackRate(_));
   EXPECT_CALL(*audio_renderer_, SetVolume(_));
-  EXPECT_CALL(*audio_renderer_, Play(_))
-      .WillOnce(RunClosure<0>());
+  EXPECT_CALL(*audio_renderer_, Play());
 
   EXPECT_CALL(callbacks_, OnPrerollCompleted());
   EXPECT_CALL(callbacks_, OnSeek(PIPELINE_OK));
@@ -1010,8 +1003,7 @@ class PipelineTeardownTest : public PipelineTest {
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*audio_renderer_, SetVolume(1.0f));
 
-    EXPECT_CALL(*audio_renderer_, Play(_))
-        .WillOnce(RunClosure<0>());
+    EXPECT_CALL(*audio_renderer_, Play());
     EXPECT_CALL(*video_renderer_, Play(_))
         .WillOnce(RunClosure<0>());
 
@@ -1047,18 +1039,18 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kPausing) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*audio_renderer_, Pause(_))
-            .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb), RunClosure<0>()));
+        EXPECT_CALL(*audio_renderer_, Pause())
+            .WillOnce(Stop(pipeline_.get(), stop_cb));
       } else {
         status = PIPELINE_ERROR_READ;
-        EXPECT_CALL(*audio_renderer_, Pause(_)).WillOnce(
-            DoAll(SetError(pipeline_.get(), status), RunClosure<0>()));
+        EXPECT_CALL(*audio_renderer_, Pause())
+            .WillOnce(SetError(pipeline_.get(), status));
       }
 
       return status;
     }
 
-    EXPECT_CALL(*audio_renderer_, Pause(_)).WillOnce(RunClosure<0>());
+    EXPECT_CALL(*audio_renderer_, Pause());
     EXPECT_CALL(*video_renderer_, Pause(_)).WillOnce(RunClosure<0>());
 
     if (state == kFlushing) {
@@ -1120,12 +1112,12 @@ class PipelineTeardownTest : public PipelineTest {
 
     if (state == kStarting) {
       if (stop_or_error == kStop) {
-        EXPECT_CALL(*audio_renderer_, Play(_))
-            .WillOnce(DoAll(Stop(pipeline_.get(), stop_cb), RunClosure<0>()));
+        EXPECT_CALL(*audio_renderer_, Play())
+            .WillOnce(Stop(pipeline_.get(), stop_cb));
       } else {
         status = PIPELINE_ERROR_READ;
-        EXPECT_CALL(*audio_renderer_, Play(_)).WillOnce(
-            DoAll(SetError(pipeline_.get(), status), RunClosure<0>()));
+        EXPECT_CALL(*audio_renderer_, Play())
+            .WillOnce(SetError(pipeline_.get(), status));
       }
       return status;
     }

@@ -72,8 +72,8 @@ class MEDIA_EXPORT AudioRendererImpl
                           const TimeCB& time_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb) OVERRIDE;
-  virtual void Play(const base::Closure& callback) OVERRIDE;
-  virtual void Pause(const base::Closure& callback) OVERRIDE;
+  virtual void Play() OVERRIDE;
+  virtual void Pause() OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void SetPlaybackRate(float rate) OVERRIDE;

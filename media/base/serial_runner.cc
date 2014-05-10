@@ -12,6 +12,14 @@
 
 namespace media {
 
+// Converts a Closure into a bound function accepting a PipelineStatusCB.
+static void RunClosure(
+    const base::Closure& closure,
+    const PipelineStatusCB& status_cb) {
+  closure.Run();
+  status_cb.Run(PIPELINE_OK);
+}
+
 // Converts a bound function accepting a Closure into a bound function
 // accepting a PipelineStatusCB. Since closures have no way of reporting a
 // status |status_cb| is executed with PIPELINE_OK.
@@ -33,6 +41,10 @@ static void RunOnTaskRunner(
 
 SerialRunner::Queue::Queue() {}
 SerialRunner::Queue::~Queue() {}
+
+void SerialRunner::Queue::Push(const base::Closure& closure) {
+  bound_fns_.push(base::Bind(&RunClosure, closure));
+}
 
 void SerialRunner::Queue::Push(
     const BoundClosure& bound_closure) {

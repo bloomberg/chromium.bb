@@ -73,13 +73,12 @@ AudioRendererImpl::~AudioRendererImpl() {
   DCHECK(!algorithm_.get());
 }
 
-void AudioRendererImpl::Play(const base::Closure& callback) {
+void AudioRendererImpl::Play() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPaused);
   ChangeState_Locked(kPlaying);
-  callback.Run();
   earliest_end_time_ = now_cb_.Run();
 
   if (algorithm_->playback_rate() != 0)
@@ -104,7 +103,7 @@ void AudioRendererImpl::DoPlay_Locked() {
   }
 }
 
-void AudioRendererImpl::Pause(const base::Closure& callback) {
+void AudioRendererImpl::Pause() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -113,8 +112,6 @@ void AudioRendererImpl::Pause(const base::Closure& callback) {
   ChangeState_Locked(kPaused);
 
   DoPause_Locked();
-
-  callback.Run();
 }
 
 void AudioRendererImpl::DoPause_Locked() {

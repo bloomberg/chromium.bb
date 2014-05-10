@@ -47,13 +47,13 @@ class MEDIA_EXPORT AudioRenderer {
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb) = 0;
 
-  // Start audio decoding and rendering at the current playback rate, executing
-  // |callback| when playback is underway.
-  virtual void Play(const base::Closure& callback) = 0;
+  // Signal audio playback to start at the current rate. It is expected that
+  // |time_cb| will eventually start being run with time updates.
+  virtual void Play() = 0;
 
-  // Temporarily suspend decoding and rendering audio, executing |callback| when
-  // playback has been suspended.
-  virtual void Pause(const base::Closure& callback) = 0;
+  // Signal audio playback to stop until further notice. It is expected that
+  // |time_cb| will no longer be run.
+  virtual void Pause() = 0;
 
   // Discard any audio data, executing |callback| when completed.
   virtual void Flush(const base::Closure& callback) = 0;

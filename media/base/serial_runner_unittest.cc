@@ -35,6 +35,20 @@ class SerialRunnerTest : public ::testing::Test {
     called_.push_back(false);
   }
 
+  void PushBoundClosure() {
+    bound_fns_.Push(base::Bind(&SerialRunnerTest::RunBoundClosure,
+                               base::Unretained(this),
+                               called_.size()));
+    called_.push_back(false);
+  }
+
+  void PushClosure() {
+    bound_fns_.Push(base::Bind(&SerialRunnerTest::RunClosure,
+                               base::Unretained(this),
+                               called_.size()));
+    called_.push_back(false);
+  }
+
   // Push a bound function to the queue that will delete the SerialRunner,
   // which should cancel all remaining queued work.
   void PushCancellation() {
@@ -59,6 +73,26 @@ class SerialRunnerTest : public ::testing::Test {
 
     called_[index] = true;
     status_cb.Run(status);
+  }
+
+  void RunBoundClosure(size_t index,
+                       const base::Closure& done_cb) {
+    EXPECT_EQ(index == 0u, inside_start_)
+        << "First bound function should run on same stack as "
+        << "SerialRunner::Run() while all others should not\n"
+        << base::debug::StackTrace().ToString();
+
+    called_[index] = true;
+    done_cb.Run();
+  }
+
+  void RunClosure(size_t index) {
+    EXPECT_EQ(index == 0u, inside_start_)
+        << "First bound function should run on same stack as "
+        << "SerialRunner::Run() while all others should not\n"
+        << base::debug::StackTrace().ToString();
+
+    called_[index] = true;
   }
 
   void StartRunnerInternal(const SerialRunner::Queue& bound_fns) {
@@ -171,6 +205,24 @@ TEST_F(SerialRunnerTest, Multiple_Cancel) {
   EXPECT_TRUE(called(0));
   EXPECT_FALSE(called(1));
   EXPECT_FALSE(done_called());
+}
+
+TEST_F(SerialRunnerTest, BoundClosure) {
+  PushBoundClosure();
+  RunSerialRunner();
+
+  EXPECT_TRUE(called(0));
+  EXPECT_TRUE(done_called());
+  EXPECT_EQ(PIPELINE_OK, done_status());
+}
+
+TEST_F(SerialRunnerTest, Closure) {
+  PushClosure();
+  RunSerialRunner();
+
+  EXPECT_TRUE(called(0));
+  EXPECT_TRUE(done_called());
+  EXPECT_EQ(PIPELINE_OK, done_status());
 }
 
 }  // namespace media
