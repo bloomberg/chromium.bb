@@ -606,7 +606,6 @@
         'browser/bookmarks/bookmark_expanded_state_tracker_unittest.cc',
         'browser/bookmarks/bookmark_html_writer_unittest.cc',
         'browser/bookmarks/bookmark_model_unittest.cc',
-        'browser/bookmarks/bookmark_node_data_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
         'browser/browser_about_handler_unittest.cc',
         'browser/browser_commands_unittest.cc',
@@ -2642,7 +2641,6 @@
           ],
         }, { # else: toolkit_views == 0
           'sources/': [
-            ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
             ['exclude', '^browser/ui/views/'],
             ['exclude', '^../apps/ui/views/'],
             ['exclude', '^../ui/views/'],

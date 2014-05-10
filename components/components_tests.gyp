@@ -278,6 +278,11 @@
             'components.gyp:variations',
           ],
           'conditions': [
+            ['toolkit_views == 1', {
+              'sources': [
+                'bookmarks/core/browser/bookmark_node_data_unittest.cc',
+              ],
+            }],
             ['OS != "ios"', {
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
