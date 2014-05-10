@@ -197,8 +197,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 
   settings->setLayerSquashingEnabled(prefs.layer_squashing_enabled);
 
-  settings->setThreadedHTMLParser(prefs.threaded_html_parser);
-
   // Enable gpu-accelerated compositing always.
   settings->setAcceleratedCompositingEnabled(true);
 
@@ -343,6 +341,7 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setUseSolidColorScrollbars(prefs.use_solid_color_scrollbars);
   settings->setCompositorTouchHitTesting(prefs.compositor_touch_hit_testing);
 
+  settings->setThreadedHTMLParser(true);
   settings->setUseThreadedHTMLParserForDataURLs(true);
 }
 
