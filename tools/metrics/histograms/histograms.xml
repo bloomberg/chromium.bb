@@ -27956,6 +27956,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="SyncFileSystem.RegisterOriginTime" units="milliseconds">
+  <owner>peria@chromium.org</owner>
+  <owner>tzik@chromium.org</owner>
+  <summary>
+    Time elapsed to register a Chrome App to SyncFilesystem. Recorded for each
+    registration request by apps.
+  </summary>
+</histogram>
+
 <histogram name="SyncFileSystem.TrackerNumber">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>

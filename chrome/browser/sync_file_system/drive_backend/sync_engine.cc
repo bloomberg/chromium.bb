@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/metrics/histogram.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
@@ -107,6 +109,14 @@ class SyncEngine::WorkerObserver
 namespace {
 
 void EmptyStatusCallback(SyncStatusCode status) {}
+
+void DidRegisterOrigin(const base::TimeTicks& start_time,
+                       const SyncStatusCallback& callback,
+                       SyncStatusCode status) {
+  base::TimeDelta delta(base::TimeTicks::Now() - start_time);
+  HISTOGRAM_TIMES("SyncFileSystem.RegisterOriginTime", delta);
+  callback.Run(status);
+}
 
 }  // namespace
 
@@ -247,7 +257,10 @@ void SyncEngine::RegisterOrigin(
                  base::Unretained(sync_worker_.get()),
                  origin,
                  RelayCallbackToCurrentThread(
-                     FROM_HERE, callback)));
+                     FROM_HERE,
+                     base::Bind(&DidRegisterOrigin,
+                                base::TimeTicks::Now(),
+                                callback))));
 }
 
 void SyncEngine::EnableOrigin(
