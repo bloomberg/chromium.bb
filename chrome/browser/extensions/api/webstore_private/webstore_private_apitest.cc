@@ -157,6 +157,11 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
             ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
                 profile()));
     ASSERT_TRUE(token_service_);
+
+    ASSERT_TRUE(webstore_install_dir_.CreateUniqueTempDir());
+    webstore_install_dir_copy_ = webstore_install_dir_.path();
+    WebstoreInstaller::SetDownloadDirectoryForTests(
+        &webstore_install_dir_copy_);
   }
 
  protected:
@@ -223,6 +228,10 @@ class ExtensionWebstorePrivateApiTest : public ExtensionApiTest {
   scoped_ptr<base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
 
+  base::ScopedTempDir webstore_install_dir_;
+  // WebstoreInstaller needs a reference to a FilePath when setting the download
+  // directory for testing.
+  base::FilePath webstore_install_dir_copy_;
 };
 
 // Test cases for webstore origin frame blocking.
