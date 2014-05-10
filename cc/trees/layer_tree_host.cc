@@ -348,6 +348,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
                                          max_page_scale_factor_);
   sync_tree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
 
+  sync_tree->SetUseGpuRasterization(UseGpuRasterization());
+
   sync_tree->PassSwapPromises(&swap_promise_list_);
 
   host_impl->SetViewportSize(device_viewport_size_);

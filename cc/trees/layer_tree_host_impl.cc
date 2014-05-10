@@ -1806,12 +1806,11 @@ int LayerTreeHostImpl::memory_allocation_priority_cutoff() const {
 }
 
 void LayerTreeHostImpl::ReleaseTreeResources() {
-  if (active_tree_->root_layer())
-    SendReleaseResourcesRecursive(active_tree_->root_layer());
-  if (pending_tree_ && pending_tree_->root_layer())
-    SendReleaseResourcesRecursive(pending_tree_->root_layer());
-  if (recycle_tree_ && recycle_tree_->root_layer())
-    SendReleaseResourcesRecursive(recycle_tree_->root_layer());
+  active_tree_->ReleaseResources();
+  if (pending_tree_)
+    pending_tree_->ReleaseResources();
+  if (recycle_tree_)
+    recycle_tree_->ReleaseResources();
 
   EvictAllUIResources();
 }
@@ -2881,17 +2880,6 @@ void LayerTreeHostImpl::ActivateAnimations() {
 
 base::TimeDelta LayerTreeHostImpl::LowFrequencyAnimationInterval() const {
   return base::TimeDelta::FromSeconds(1);
-}
-
-void LayerTreeHostImpl::SendReleaseResourcesRecursive(LayerImpl* current) {
-  DCHECK(current);
-  current->ReleaseResources();
-  if (current->mask_layer())
-    SendReleaseResourcesRecursive(current->mask_layer());
-  if (current->replica_layer())
-    SendReleaseResourcesRecursive(current->replica_layer());
-  for (size_t i = 0; i < current->children().size(); ++i)
-    SendReleaseResourcesRecursive(current->children()[i]);
 }
 
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {

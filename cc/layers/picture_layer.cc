@@ -53,7 +53,6 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   }
 
   layer_impl->SetIsMask(is_mask_);
-  layer_impl->SetUseGpuRasterization(layer_tree_host()->UseGpuRasterization());
 
   // Unlike other properties, invalidation must always be set on layer_impl.
   // See PictureLayerImpl::PushPropertiesTo for more details.

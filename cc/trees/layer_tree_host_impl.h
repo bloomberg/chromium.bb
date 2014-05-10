@@ -516,7 +516,6 @@ class CC_EXPORT LayerTreeHostImpl
   // the frame should be drawn.
   DrawSwapReadbackResult::DrawResult CalculateRenderPasses(FrameData* frame);
 
-  void SendReleaseResourcesRecursive(LayerImpl* current);
   bool EnsureRenderSurfaceLayerList();
   void ClearCurrentlyScrollingLayer();
 

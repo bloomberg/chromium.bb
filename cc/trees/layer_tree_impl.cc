@@ -92,6 +92,7 @@ LayerTreeImpl::LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl)
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
       scrolling_layer_id_from_previous_tree_(0),
+      use_gpu_rasterization_(false),
       contents_textures_purged_(false),
       requires_high_res_to_draw_(false),
       viewport_size_invalid_(false),
@@ -109,6 +110,11 @@ LayerTreeImpl::~LayerTreeImpl() {
 }
 
 void LayerTreeImpl::Shutdown() { root_layer_.reset(); }
+
+void LayerTreeImpl::ReleaseResources() {
+  if (root_layer_)
+    ReleaseResourcesRecursive(root_layer_.get());
+}
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   if (inner_viewport_scroll_layer_)
@@ -219,6 +225,8 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_source_frame_number(source_frame_number());
   target_tree->set_background_color(background_color());
   target_tree->set_has_transparent_background(has_transparent_background());
+
+  target_tree->use_gpu_rasterization_ = use_gpu_rasterization();
 
   if (ContentsTexturesPurged())
     target_tree->SetContentsTexturesPurged();
@@ -435,6 +443,14 @@ void LayerTreeImpl::ClearViewportLayers() {
   page_scale_layer_ = NULL;
   inner_viewport_scroll_layer_ = NULL;
   outer_viewport_scroll_layer_ = NULL;
+}
+
+void LayerTreeImpl::SetUseGpuRasterization(bool use_gpu) {
+  if (use_gpu == use_gpu_rasterization_)
+    return;
+
+  use_gpu_rasterization_ = use_gpu;
+  ReleaseResources();
 }
 
 void LayerTreeImpl::UpdateDrawProperties() {
@@ -993,6 +1009,17 @@ const std::vector<LayerImpl*>& LayerTreeImpl::LayersWithCopyOutputRequest()
   DCHECK(IsActiveTree());
 
   return layers_with_copy_output_request_;
+}
+
+void LayerTreeImpl::ReleaseResourcesRecursive(LayerImpl* current) {
+  DCHECK(current);
+  current->ReleaseResources();
+  if (current->mask_layer())
+    ReleaseResourcesRecursive(current->mask_layer());
+  if (current->replica_layer())
+    ReleaseResourcesRecursive(current->replica_layer());
+  for (size_t i = 0; i < current->children().size(); ++i)
+    ReleaseResourcesRecursive(current->children()[i]);
 }
 
 }  // namespace cc

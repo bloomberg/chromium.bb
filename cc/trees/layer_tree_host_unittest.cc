@@ -5053,7 +5053,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
     PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
 
-    EXPECT_FALSE(layer_impl->ShouldUseGpuRasterization());
+    EXPECT_FALSE(layer_impl->use_gpu_rasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -5061,7 +5061,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
     PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
 
-    EXPECT_FALSE(layer_impl->ShouldUseGpuRasterization());
+    EXPECT_FALSE(layer_impl->use_gpu_rasterization());
     EndTest();
   }
 
@@ -5124,7 +5124,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
 
-    EXPECT_FALSE(layer_impl->ShouldUseGpuRasterization());
+    EXPECT_FALSE(layer_impl->use_gpu_rasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -5132,7 +5132,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
 
-    EXPECT_FALSE(layer_impl->ShouldUseGpuRasterization());
+    EXPECT_FALSE(layer_impl->use_gpu_rasterization());
     EndTest();
   }
 
@@ -5195,7 +5195,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
 
-    EXPECT_TRUE(layer_impl->ShouldUseGpuRasterization());
+    EXPECT_TRUE(layer_impl->use_gpu_rasterization());
   }
 
   virtual void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -5203,7 +5203,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     PictureLayerImpl* layer_impl =
         static_cast<PictureLayerImpl*>(root->children()[0]);
 
-    EXPECT_TRUE(layer_impl->ShouldUseGpuRasterization());
+    EXPECT_TRUE(layer_impl->use_gpu_rasterization());
     EndTest();
   }
 

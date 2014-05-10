@@ -59,6 +59,7 @@ class CC_EXPORT LayerTreeImpl {
   virtual ~LayerTreeImpl();
 
   void Shutdown();
+  void ReleaseResources();
 
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
@@ -163,6 +164,9 @@ class CC_EXPORT LayerTreeImpl {
   }
   float sent_page_scale_delta() const { return sent_page_scale_delta_; }
 
+  void SetUseGpuRasterization(bool use_gpu);
+  bool use_gpu_rasterization() const { return use_gpu_rasterization_; }
+
   // Updates draw properties and render surface layer list, as well as tile
   // priorities.
   void UpdateDrawProperties();
@@ -250,6 +254,7 @@ class CC_EXPORT LayerTreeImpl {
 
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
+  void ReleaseResourcesRecursive(LayerImpl* current);
 
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
@@ -286,6 +291,7 @@ class CC_EXPORT LayerTreeImpl {
   // frame. Used for rendering and input event hit testing.
   LayerImplList render_surface_layer_list_;
 
+  bool use_gpu_rasterization_;
   bool contents_textures_purged_;
   bool requires_high_res_to_draw_;
   bool viewport_size_invalid_;
