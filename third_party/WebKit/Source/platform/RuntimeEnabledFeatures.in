@@ -47,6 +47,7 @@ CSS3Text status=experimental
 CSS3TextDecorations status=experimental
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
+DeviceLight status=test
 DeviceMotion status=stable
 DeviceOrientation status=stable
 DialogElement status=experimental

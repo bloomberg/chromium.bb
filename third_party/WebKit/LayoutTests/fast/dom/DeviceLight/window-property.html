@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+description("Tests that the window.DeviceLightEvent and window.ondevicelight properties are present.");
+
+shouldBeTrue("'DeviceLightEvent' in window");
+shouldBeTrue("window.hasOwnProperty('DeviceLightEvent')");
+
+shouldBeTrue("typeof window.ondevicelight == 'object'");
+shouldBeTrue("'ondevicelight' in window");
+
+</script>
+</body>
+</html>

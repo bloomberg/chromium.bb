@@ -78,6 +78,7 @@ PASS oldChildWindow.onclose is newChildWindow.onclose
 PASS oldChildWindow.oncontextmenu is newChildWindow.oncontextmenu
 PASS oldChildWindow.oncuechange is newChildWindow.oncuechange
 PASS oldChildWindow.ondblclick is newChildWindow.ondblclick
+PASS oldChildWindow.ondevicelight is newChildWindow.ondevicelight
 PASS oldChildWindow.ondevicemotion is newChildWindow.ondevicemotion
 PASS oldChildWindow.ondeviceorientation is newChildWindow.ondeviceorientation
 PASS oldChildWindow.ondrag is newChildWindow.ondrag

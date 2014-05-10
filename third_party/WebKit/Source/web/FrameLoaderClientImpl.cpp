@@ -53,6 +53,7 @@
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
 #include "core/rendering/HitTestResult.h"
+#include "modules/device_light/DeviceLightController.h"
 #include "modules/device_orientation/DeviceMotionController.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/gamepad/NavigatorGamepad.h"
@@ -120,6 +121,8 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
         Document* document = m_webFrame->frame()->document();
         if (document) {
             WheelController::from(*document);
+            if (RuntimeEnabledFeatures::deviceLightEnabled())
+                DeviceLightController::from(*document);
             if (RuntimeEnabledFeatures::deviceMotionEnabled())
                 DeviceMotionController::from(*document);
             if (RuntimeEnabledFeatures::deviceOrientationEnabled())
