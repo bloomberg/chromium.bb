@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -50,21 +51,23 @@ class CONTENT_EXPORT VideoSourceHandler {
   // Returns true on success and false on failure.
   bool Close(FrameReaderInterface* reader);
 
-  // Gets the MediaStreamVideoSink associated with |reader|.
-  // Made it public only for testing purpose.
-  MediaStreamVideoSink* GetReceiver(FrameReaderInterface* reader);
-
  private:
+  FRIEND_TEST_ALL_PREFIXES(VideoSourceHandlerTest, OpenClose);
+
   struct SourceInfo {
     SourceInfo(const blink::WebMediaStreamTrack& blink_track,
                FrameReaderInterface* reader);
     ~SourceInfo();
 
     scoped_ptr<PpFrameReceiver> receiver_;
-    blink::WebMediaStreamTrack track_;
   };
 
   typedef std::map<FrameReaderInterface*, SourceInfo*> SourceInfoMap;
+
+  // Deliver VideoFrame to the MediaStreamVideoSink associated with
+  // |reader|. For testing only.
+  void DeliverFrameForTesting(FrameReaderInterface* reader,
+                              const scoped_refptr<media::VideoFrame>& frame);
 
   blink::WebMediaStreamTrack GetFirstVideoTrack(const std::string& url);
 
@@ -79,4 +82,3 @@ class CONTENT_EXPORT VideoSourceHandler {
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_MEDIA_VIDEO_SOURCE_HANDLER_H_
-

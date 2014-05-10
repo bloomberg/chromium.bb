@@ -4,20 +4,32 @@
 
 #include "content/renderer/media/mock_media_stream_video_sink.h"
 
+#include "media/base/bind_to_current_loop.h"
+
 namespace content {
 
 MockMediaStreamVideoSink::MockMediaStreamVideoSink()
     : number_of_frames_(0),
       enabled_(true),
       format_(media::VideoFrame::UNKNOWN),
-      state_(blink::WebMediaStreamSource::ReadyStateLive) {
+      state_(blink::WebMediaStreamSource::ReadyStateLive),
+      weak_factory_(this) {
 }
 
 MockMediaStreamVideoSink::~MockMediaStreamVideoSink() {
 }
 
-void MockMediaStreamVideoSink::OnVideoFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+VideoCaptureDeliverFrameCB
+MockMediaStreamVideoSink::GetDeliverFrameCB() {
+  return media::BindToCurrentLoop(
+      base::Bind(
+          &MockMediaStreamVideoSink::DeliverVideoFrame,
+          weak_factory_.GetWeakPtr()));
+}
+
+void MockMediaStreamVideoSink::DeliverVideoFrame(
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
   ++number_of_frames_;
   format_ = frame->format();
   frame_size_ = frame->natural_size();

@@ -6,7 +6,9 @@
 #define CONTENT_RENDERER_MEDIA_RTC_VIDEO_RENDERER_H_
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/video_frame_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -52,9 +54,10 @@ class CONTENT_EXPORT RTCVideoRenderer
     STOPPED,
   };
 
+  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
+                    const media::VideoCaptureFormat& format);
+
   // VideoTrackSink implementation. Called on the main thread.
-  virtual void OnVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE;
   virtual void OnReadyStateChanged(
       blink::WebMediaStreamSource::ReadyState state) OVERRIDE;
   virtual void OnEnabledChanged(bool enabled) OVERRIDE;
@@ -67,6 +70,7 @@ class CONTENT_EXPORT RTCVideoRenderer
   State state_;
   gfx::Size frame_size_;
   blink::WebMediaStreamTrack video_track_;
+  base::WeakPtrFactory<RTCVideoRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoRenderer);
 };

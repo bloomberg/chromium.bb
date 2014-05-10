@@ -89,9 +89,11 @@ WebRtcVideoTrackAdapter::WebRtcVideoTrackAdapter(
   source_adapter_ = new WebRtcVideoSourceAdapter(video_source,
                                                  capture_adapter);
 
-  MediaStreamVideoTrack::GetVideoTrack(track)->AddSink(
-      this, base::Bind(&WebRtcVideoSourceAdapter::OnVideoFrameOnIO,
-                       source_adapter_));
+  AddToVideoTrack(
+      this,
+      base::Bind(&WebRtcVideoSourceAdapter::OnVideoFrameOnIO,
+                 source_adapter_),
+      web_track_);
 
   DVLOG(3) << "WebRtcVideoTrackAdapter ctor() : is_screencast "
            << is_screencast;
@@ -100,7 +102,7 @@ WebRtcVideoTrackAdapter::WebRtcVideoTrackAdapter(
 WebRtcVideoTrackAdapter::~WebRtcVideoTrackAdapter() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << "WebRtcVideoTrackAdapter dtor().";
-  MediaStreamVideoTrack::GetVideoTrack(web_track_)->RemoveSink(this);
+  RemoveFromVideoTrack(this, web_track_);
 }
 
 void WebRtcVideoTrackAdapter::OnEnabledChanged(bool enabled) {
@@ -109,4 +111,3 @@ void WebRtcVideoTrackAdapter::OnEnabledChanged(bool enabled) {
 }
 
 }  // namespace content
-

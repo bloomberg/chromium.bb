@@ -107,8 +107,8 @@ class MediaStreamVideoSourceTest
                                   30);
 
     MockMediaStreamVideoSink sink;
-    MediaStreamVideoSink::AddToVideoTrack(&sink, track);
-
+    MediaStreamVideoSink::AddToVideoTrack(
+        &sink, sink.GetDeliverFrameCB(), track);
     DeliverVideoFrameAndWaitForRenderer(capture_width, capture_height, &sink);
     EXPECT_EQ(1, sink.number_of_frames());
 
@@ -429,7 +429,8 @@ TEST_F(MediaStreamVideoSourceTest, SourceChangeFrameSize) {
                                 640, 480, 30);
 
   MockMediaStreamVideoSink sink;
-  MediaStreamVideoSink::AddToVideoTrack(&sink, track);
+  MediaStreamVideoSink::AddToVideoTrack(
+      &sink, sink.GetDeliverFrameCB(), track);
   EXPECT_EQ(0, sink.number_of_frames());
   DeliverVideoFrameAndWaitForRenderer(320, 240, &sink);
   EXPECT_EQ(1, sink.number_of_frames());

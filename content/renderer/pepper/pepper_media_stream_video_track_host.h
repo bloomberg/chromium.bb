@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_PEPPER_PEPPER_MEDIA_STREAM_VIDEO_TRACK_HOST_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/pepper/pepper_media_stream_track_host_base.h"
@@ -54,9 +55,8 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   // Sends frame with |index| to |track_|.
   int32_t SendFrameToTrack(int32_t index);
 
-  // MediaStreamVideoSink overrides:
-  virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
-      OVERRIDE;
+  void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame,
+                    const media::VideoCaptureFormat& format);
 
   // MediaStreamVideoSource overrides:
   virtual void GetCurrentSupportedFormats(
@@ -118,6 +118,8 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   // the MediaStreamVideoSource implementation.
   class FrameDeliverer;
   scoped_refptr<FrameDeliverer> frame_deliverer_;
+
+  base::WeakPtrFactory<PepperMediaStreamVideoTrackHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperMediaStreamVideoTrackHost);
 };

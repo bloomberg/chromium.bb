@@ -36,8 +36,13 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
  public:
   VideoDestinationHandlerTest()
      : child_process_(new ChildProcess()),
-       registry_(MockMediaStreamRegistry()) {
-    registry_.Init(kTestStreamUrl);
+       registry_(new MockMediaStreamRegistry()) {
+    registry_->Init(kTestStreamUrl);
+  }
+
+  virtual void TearDown() {
+    registry_.reset();
+    PpapiUnittest::TearDown();
   }
 
   base::MessageLoop* io_message_loop() const {
@@ -46,15 +51,15 @@ class VideoDestinationHandlerTest : public PpapiUnittest {
 
  protected:
   scoped_ptr<ChildProcess> child_process_;
-  MockMediaStreamRegistry registry_;
+  scoped_ptr<MockMediaStreamRegistry> registry_;
 };
 
 TEST_F(VideoDestinationHandlerTest, Open) {
   FrameWriterInterface* frame_writer = NULL;
   // Unknow url will return false.
-  EXPECT_FALSE(VideoDestinationHandler::Open(&registry_,
+  EXPECT_FALSE(VideoDestinationHandler::Open(registry_.get(),
                                              kUnknownStreamUrl, &frame_writer));
-  EXPECT_TRUE(VideoDestinationHandler::Open(&registry_,
+  EXPECT_TRUE(VideoDestinationHandler::Open(registry_.get(),
                                             kTestStreamUrl, &frame_writer));
   // The |frame_writer| is a proxy and is owned by whoever call Open.
   delete frame_writer;
@@ -62,12 +67,12 @@ TEST_F(VideoDestinationHandlerTest, Open) {
 
 TEST_F(VideoDestinationHandlerTest, PutFrame) {
   FrameWriterInterface* frame_writer = NULL;
-  EXPECT_TRUE(VideoDestinationHandler::Open(&registry_,
+  EXPECT_TRUE(VideoDestinationHandler::Open(registry_.get(),
                                             kTestStreamUrl, &frame_writer));
   ASSERT_TRUE(frame_writer);
 
   // Verify the video track has been added.
-  const blink::WebMediaStream test_stream = registry_.test_stream();
+  const blink::WebMediaStream test_stream = registry_->test_stream();
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   test_stream.videoTracks(video_tracks);
   ASSERT_EQ(1u, video_tracks.size());
@@ -78,9 +83,8 @@ TEST_F(VideoDestinationHandlerTest, PutFrame) {
   ASSERT_TRUE(native_track != NULL);
 
   MockMediaStreamVideoSink sink;
-  native_track->AddSink(&sink);
-
-  scoped_refptr<PPB_ImageData_Impl> image(
+  native_track->AddSink(&sink, sink.GetDeliverFrameCB());
+   scoped_refptr<PPB_ImageData_Impl> image(
       new PPB_ImageData_Impl(instance()->pp_instance(),
                              PPB_ImageData_Impl::ForTest()));
   image->Init(PP_IMAGEDATAFORMAT_BGRA_PREMUL, 640, 360, true);

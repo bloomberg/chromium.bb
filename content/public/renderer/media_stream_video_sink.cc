@@ -12,11 +12,12 @@ namespace content {
 
 void MediaStreamVideoSink::AddToVideoTrack(
     MediaStreamVideoSink* sink,
+    const VideoSinkDeliverFrameCB& callback,
     const blink::WebMediaStreamTrack& track) {
   DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, track.source().type());
   MediaStreamVideoTrack* video_track =
       static_cast<MediaStreamVideoTrack*>(track.extraData());
-  video_track->AddSink(sink);
+  video_track->AddSink(sink, callback);
 }
 
 void MediaStreamVideoSink::RemoveFromVideoTrack(

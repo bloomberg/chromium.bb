@@ -9,6 +9,7 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/yuv_convert.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_media_stream_video_track.h"
@@ -240,7 +241,8 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       frame_data_size_(0),
       type_(kRead),
-      output_started_(false) {
+      output_started_(false),
+      weak_factory_(this) {
   DCHECK(!track_.isNull());
 }
 
@@ -255,7 +257,8 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
       plugin_frame_format_(PP_VIDEOFRAME_FORMAT_UNKNOWN),
       frame_data_size_(0),
       type_(kWrite),
-      output_started_(false) {
+      output_started_(false),
+      weak_factory_(this) {
   InitBlinkTrack();
   DCHECK(!track_.isNull());
 }
@@ -312,6 +315,7 @@ void PepperMediaStreamVideoTrackHost::InitBuffers() {
 void PepperMediaStreamVideoTrackHost::OnClose() {
   if (connected_) {
     MediaStreamVideoSink::RemoveFromVideoTrack(this, track_);
+    weak_factory_.InvalidateWeakPtrs();
     connected_ = false;
   }
 }
@@ -376,7 +380,8 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
 }
 
 void PepperMediaStreamVideoTrackHost::OnVideoFrame(
-    const scoped_refptr<VideoFrame>& frame) {
+    const scoped_refptr<VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
   DCHECK(frame);
   // TODO(penghuang): Check |frame->end_of_stream()| and close the track.
   PP_VideoFrame_Format ppformat = ToPpapiFormat(frame->format());
@@ -400,18 +405,18 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
   CHECK_EQ(ppformat, source_frame_format_) << "Frame format is changed.";
 
   gfx::Size size = GetTargetSize(source_frame_size_, plugin_frame_size_);
-  PP_VideoFrame_Format format =
+  ppformat =
       GetTargetFormat(source_frame_format_, plugin_frame_format_);
   ppapi::MediaStreamBuffer::Video* buffer =
       &(buffer_manager()->GetBufferPointer(index)->video);
   buffer->header.size = buffer_manager()->buffer_size();
   buffer->header.type = ppapi::MediaStreamBuffer::TYPE_VIDEO;
   buffer->timestamp = frame->timestamp().InSecondsF();
-  buffer->format = format;
+  buffer->format = ppformat;
   buffer->size.width = size.width();
   buffer->size.height = size.height();
   buffer->data_size = frame_data_size_;
-  ConvertFromMediaVideoFrame(frame, format, size, buffer->data);
+  ConvertFromMediaVideoFrame(frame, ppformat, size, buffer->data);
 
   SendEnqueueBufferMessageToPlugin(index);
 }
@@ -447,7 +452,13 @@ void PepperMediaStreamVideoTrackHost::StopSourceImpl() {
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
   if (!connected_) {
-    MediaStreamVideoSink::AddToVideoTrack(this, track_);
+    MediaStreamVideoSink::AddToVideoTrack(
+        this,
+        media::BindToCurrentLoop(
+            base::Bind(
+                &PepperMediaStreamVideoTrackHost::OnVideoFrame,
+                weak_factory_.GetWeakPtr())),
+        track_);
     connected_ = true;
   }
 }

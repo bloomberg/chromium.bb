@@ -4,8 +4,10 @@
 
 #include <string>
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
+#include "content/common/media/video_capture.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
@@ -49,6 +51,7 @@ class VideoSourceHandlerTest : public ::testing::Test {
   }
 
  protected:
+  base::MessageLoop message_loop_;
   scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<VideoSourceHandler> handler_;
   MockMediaStreamRegistry registry_;
@@ -70,8 +73,7 @@ TEST_F(VideoSourceHandlerTest, OpenClose) {
   captured_frame->set_timestamp(ts);
 
   // The frame is delivered to VideoSourceHandler.
-  MediaStreamVideoSink* receiver = handler_->GetReceiver(&reader);
-  receiver->OnVideoFrame(captured_frame);
+  handler_->DeliverFrameForTesting(&reader, captured_frame);
 
   // Compare |frame| to |captured_frame|.
   const media::VideoFrame* frame = reader.last_frame();
@@ -84,7 +86,6 @@ TEST_F(VideoSourceHandlerTest, OpenClose) {
 
   EXPECT_FALSE(handler_->Close(NULL));
   EXPECT_TRUE(handler_->Close(&reader));
-  EXPECT_TRUE(handler_->GetReceiver(&reader) == NULL);
 }
 
 TEST_F(VideoSourceHandlerTest, OpenWithoutClose) {

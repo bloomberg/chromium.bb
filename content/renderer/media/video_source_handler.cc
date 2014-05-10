@@ -7,10 +7,13 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_registry_interface.h"
+#include "media/base/bind_to_current_loop.h"
+#include "media/video/capture/video_capture_types.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
@@ -23,26 +26,44 @@ namespace content {
 // It can be attached to a FrameReaderInterface to output the received frame.
 class PpFrameReceiver : public MediaStreamVideoSink {
  public:
-  PpFrameReceiver() : reader_(NULL) {}
+  PpFrameReceiver(blink::WebMediaStreamTrack track)
+    : track_(track),
+      reader_(NULL),
+      weak_factory_(this) {
+  }
+
   virtual ~PpFrameReceiver() {}
 
-  // Implements MediaStreamVideoSink.
-  virtual void OnVideoFrame(
-      const scoped_refptr<media::VideoFrame>& frame) OVERRIDE {
-    base::AutoLock auto_lock(lock_);
+  void SetReader(FrameReaderInterface* reader) {
+    if (reader) {
+      DCHECK(!reader_);
+      MediaStreamVideoSink::AddToVideoTrack(
+          this,
+          media::BindToCurrentLoop(
+              base::Bind(
+                  &PpFrameReceiver::OnVideoFrame,
+                  weak_factory_.GetWeakPtr())),
+          track_);
+    } else {
+      DCHECK(reader_);
+      MediaStreamVideoSink::RemoveFromVideoTrack(this, track_);
+      weak_factory_.InvalidateWeakPtrs();
+    }
+    reader_ = reader;
+  }
+
+  void OnVideoFrame(
+      const scoped_refptr<media::VideoFrame>& frame,
+      const media::VideoCaptureFormat& format) {
     if (reader_) {
       reader_->GotFrame(frame);
     }
   }
 
-  void SetReader(FrameReaderInterface* reader) {
-    base::AutoLock auto_lock(lock_);
-    reader_ = reader;
-  }
-
  private:
+  blink::WebMediaStreamTrack track_;
   FrameReaderInterface* reader_;
-  base::Lock lock_;
+  base::WeakPtrFactory<PpFrameReceiver> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PpFrameReceiver);
 };
@@ -109,28 +130,26 @@ blink::WebMediaStreamTrack VideoSourceHandler::GetFirstVideoTrack(
   return video_tracks[0];
 }
 
-MediaStreamVideoSink* VideoSourceHandler::GetReceiver(
-    FrameReaderInterface* reader) {
+void VideoSourceHandler::DeliverFrameForTesting(
+    FrameReaderInterface* reader,
+    const scoped_refptr<media::VideoFrame>& frame) {
   SourceInfoMap::iterator it = reader_to_receiver_.find(reader);
   if (it == reader_to_receiver_.end()) {
-    return NULL;
+    return;
   }
-  return it->second->receiver_.get();
+  PpFrameReceiver* receiver = it->second->receiver_.get();
+  receiver->OnVideoFrame(frame, media::VideoCaptureFormat());
 }
 
 VideoSourceHandler::SourceInfo::SourceInfo(
     const blink::WebMediaStreamTrack& blink_track,
     FrameReaderInterface* reader)
-    : receiver_(new PpFrameReceiver()),
-      track_(blink_track) {
-  MediaStreamVideoSink::AddToVideoTrack(receiver_.get(), track_);
+    : receiver_(new PpFrameReceiver(blink_track)) {
   receiver_->SetReader(reader);
 }
 
 VideoSourceHandler::SourceInfo::~SourceInfo() {
-  MediaStreamVideoSink::RemoveFromVideoTrack(receiver_.get(), track_);
   receiver_->SetReader(NULL);
 }
 
 }  // namespace content
-

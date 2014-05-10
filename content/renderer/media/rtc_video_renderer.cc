@@ -6,6 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 
@@ -22,7 +23,8 @@ RTCVideoRenderer::RTCVideoRenderer(
       message_loop_proxy_(base::MessageLoopProxy::current()),
       state_(STOPPED),
       frame_size_(kMinFrameSize, kMinFrameSize),
-      video_track_(video_track) {
+      video_track_(video_track),
+      weak_factory_(this) {
 }
 
 RTCVideoRenderer::~RTCVideoRenderer() {
@@ -32,7 +34,13 @@ void RTCVideoRenderer::Start() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STOPPED);
 
-  AddToVideoTrack(this, video_track_);
+  AddToVideoTrack(
+      this,
+      media::BindToCurrentLoop(
+          base::Bind(
+              &RTCVideoRenderer::OnVideoFrame,
+              weak_factory_.GetWeakPtr())),
+      video_track_);
   state_ = STARTED;
 
   if (video_track_.source().readyState() ==
@@ -46,6 +54,7 @@ void RTCVideoRenderer::Stop() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(state_ == STARTED || state_ == PAUSED);
   RemoveFromVideoTrack(this, video_track_);
+  weak_factory_.InvalidateWeakPtrs();
   state_ = STOPPED;
   frame_size_.set_width(kMinFrameSize);
   frame_size_.set_height(kMinFrameSize);
@@ -79,7 +88,8 @@ void RTCVideoRenderer::OnEnabledChanged(bool enabled) {
 }
 
 void RTCVideoRenderer::OnVideoFrame(
-    const scoped_refptr<media::VideoFrame>& frame) {
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   if (state_ != STARTED) {
     return;
@@ -104,7 +114,7 @@ void RTCVideoRenderer::RenderSignalingFrame() {
   // originates from a video camera.
   scoped_refptr<media::VideoFrame> video_frame =
       media::VideoFrame::CreateBlackFrame(frame_size_);
-  OnVideoFrame(video_frame);
+  OnVideoFrame(video_frame, media::VideoCaptureFormat());
 }
 
 }  // namespace content

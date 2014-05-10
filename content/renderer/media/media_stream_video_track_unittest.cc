@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_checker_impl.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
@@ -73,8 +77,8 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
   }
 
  private:
-  scoped_ptr<ChildProcess> child_process_;
   base::MessageLoopForUI message_loop_;
+  scoped_ptr<ChildProcess> child_process_;
   blink::WebMediaStreamSource blink_source_;
   // |mock_source_| is owned by |webkit_source_|.
   MockMediaStreamVideoSource* mock_source_;
@@ -84,7 +88,8 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
 TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
   MockMediaStreamVideoSink sink;
   blink::WebMediaStreamTrack track = CreateTrack();
-  MediaStreamVideoSink::AddToVideoTrack(&sink, track);
+  MediaStreamVideoSink::AddToVideoTrack(
+      &sink, sink.GetDeliverFrameCB(), track);
 
   DeliverVideoFrameAndWaitForRenderer(&sink);
   EXPECT_EQ(1, sink.number_of_frames());
@@ -103,10 +108,54 @@ TEST_F(MediaStreamVideoTrackTest, AddAndRemoveSink) {
   EXPECT_EQ(2, sink.number_of_frames());
 }
 
+class CheckThreadHelper {
+ public:
+  CheckThreadHelper(base::Closure callback, bool* correct)
+      : callback_(callback),
+        correct_(correct) {
+  }
+
+  ~CheckThreadHelper() {
+    *correct_ = thread_checker_.CalledOnValidThread();
+    callback_.Run();
+  }
+
+ private:
+  base::Closure callback_;
+  bool* correct_;
+  base::ThreadCheckerImpl thread_checker_;
+};
+
+void CheckThreadVideoFrameReceiver(
+    CheckThreadHelper* helper,
+    const scoped_refptr<media::VideoFrame>& frame,
+    const media::VideoCaptureFormat& format) {
+  // Do nothing.
+}
+
+// Checks that the callback given to the track is reset on the right thread.
+TEST_F(MediaStreamVideoTrackTest, ResetCallbackOnThread) {
+  MockMediaStreamVideoSink sink;
+  blink::WebMediaStreamTrack track = CreateTrack();
+
+  base::RunLoop run_loop;
+  bool correct = false;
+  MediaStreamVideoSink::AddToVideoTrack(
+      &sink,
+      base::Bind(
+          &CheckThreadVideoFrameReceiver,
+          base::Owned(new CheckThreadHelper(run_loop.QuitClosure(), &correct))),
+      track);
+  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
+  run_loop.Run();
+  EXPECT_TRUE(correct) << "Not called on correct thread.";
+}
+
 TEST_F(MediaStreamVideoTrackTest, SetEnabled) {
   MockMediaStreamVideoSink sink;
   blink::WebMediaStreamTrack track = CreateTrack();
-  MediaStreamVideoSink::AddToVideoTrack(&sink, track);
+  MediaStreamVideoSink::AddToVideoTrack(
+      &sink, sink.GetDeliverFrameCB(), track);
 
   MediaStreamVideoTrack* video_track =
       MediaStreamVideoTrack::GetVideoTrack(track);
@@ -137,7 +186,8 @@ TEST_F(MediaStreamVideoTrackTest, SetEnabled) {
 TEST_F(MediaStreamVideoTrackTest, SourceStopped) {
   MockMediaStreamVideoSink sink;
   blink::WebMediaStreamTrack track = CreateTrack();
-  MediaStreamVideoSink::AddToVideoTrack(&sink, track);
+  MediaStreamVideoSink::AddToVideoTrack(
+      &sink, sink.GetDeliverFrameCB(), track);
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink.state());
 
   mock_source()->StopSource();
@@ -148,7 +198,8 @@ TEST_F(MediaStreamVideoTrackTest, SourceStopped) {
 TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
   MockMediaStreamVideoSink sink1;
   blink::WebMediaStreamTrack track1 = CreateTrack();
-  MediaStreamVideoSink::AddToVideoTrack(&sink1, track1);
+  MediaStreamVideoSink::AddToVideoTrack(
+      &sink1, sink1.GetDeliverFrameCB(), track1);
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink1.state());
 
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive,
@@ -156,7 +207,8 @@ TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
 
   MockMediaStreamVideoSink sink2;
   blink::WebMediaStreamTrack track2 = CreateTrack();
-  MediaStreamVideoSink::AddToVideoTrack(&sink2, track2);
+  MediaStreamVideoSink::AddToVideoTrack(
+      &sink2, sink2.GetDeliverFrameCB(), track2);
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateLive, sink2.state());
 
   MediaStreamVideoTrack* native_track1 =

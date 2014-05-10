@@ -200,9 +200,11 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
 }  // namespace
 
 // This class receives MediaStreamTrack events and video frames from a
-// MediaStreamTrack. Video frames are submitted to media::cast::FrameInput.
+// MediaStreamTrack.
 //
-// Threading: Video frames are received on the render thread.
+// Threading: Video frames are received on the IO thread and then
+// forwarded to media::cast::VideoFrameInput through a static method.
+// Member variables of this class are only accessed on the render thread.
 class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
                       public content::MediaStreamVideoSink {
  public:
@@ -222,11 +224,17 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       RemoveFromVideoTrack(this, track_);
   }
 
-  // content::MediaStreamVideoSink implementation.
-  virtual void OnVideoFrame(const scoped_refptr<media::VideoFrame>& frame)
-      OVERRIDE {
-    if (frame->coded_size() != expected_coded_size_) {
-      error_callback_.Run("Video frame resolution does not match config.");
+  // This static method is used to forward video frames to |frame_input|.
+  static void OnVideoFrame(
+      // These parameters are already bound when callback is created.
+      const gfx::Size& expected_coded_size,
+      const CastRtpStream::ErrorCallback& error_callback,
+      const scoped_refptr<media::cast::VideoFrameInput> frame_input,
+      // These parameters are passed for each frame.
+      const scoped_refptr<media::VideoFrame>& frame,
+      const media::VideoCaptureFormat& format) {
+    if (frame->coded_size() != expected_coded_size) {
+      error_callback.Run("Video frame resolution does not match config.");
       return;
     }
 
@@ -234,11 +242,11 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
 
     // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
     TRACE_EVENT_INSTANT2(
-        "mirroring", "MediaStreamVideoSink::OnVideoFrame",
+        "cast_perf_test", "MediaStreamVideoSink::OnVideoFrame",
         TRACE_EVENT_SCOPE_THREAD,
         "timestamp",  now.ToInternalValue(),
         "time_delta", frame->timestamp().ToInternalValue());
-    frame_input_->InsertRawVideoFrame(frame, now);
+    frame_input->InsertRawVideoFrame(frame, now);
   }
 
   // Attach this sink to a video track represented by |track_|.
@@ -247,14 +255,18 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
       const scoped_refptr<media::cast::VideoFrameInput>& frame_input) {
     DCHECK(!sink_added_);
     sink_added_ = true;
-
-    frame_input_ = frame_input;
-    AddToVideoTrack(this, track_);
+    AddToVideoTrack(
+        this,
+        base::Bind(
+            &CastVideoSink::OnVideoFrame,
+            expected_coded_size_,
+            error_callback_,
+            frame_input),
+        track_);
   }
 
  private:
   blink::WebMediaStreamTrack track_;
-  scoped_refptr<media::cast::VideoFrameInput> frame_input_;
   bool sink_added_;
   gfx::Size expected_coded_size_;
   CastRtpStream::ErrorCallback error_callback_;
@@ -266,6 +278,8 @@ class CastVideoSink : public base::SupportsWeakPtr<CastVideoSink>,
 // media::cast::FrameInput.
 //
 // Threading: Audio frames are received on the real-time audio thread.
+// Note that RemoveFromAudioTrack() is synchronous and we have
+// gurantee that there will be no more audio data after calling it.
 class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
                       public content::MediaStreamAudioSink {
  public:
@@ -279,9 +293,9 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
         sink_added_(false),
         error_callback_(error_callback),
         weak_factory_(this),
-        input_preroll_(0),
         output_channels_(output_channels),
-        output_sample_rate_(output_sample_rate) {}
+        output_sample_rate_(output_sample_rate),
+        input_preroll_(0) {}
 
   virtual ~CastAudioSink() {
     if (sink_added_)
@@ -389,15 +403,15 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   CastRtpStream::ErrorCallback error_callback_;
   base::WeakPtrFactory<CastAudioSink> weak_factory_;
 
+  const int output_channels_;
+  const int output_sample_rate_;
+
+  // These member are accessed on the real-time audio time only.
+  scoped_refptr<media::cast::AudioFrameInput> frame_input_;
   scoped_ptr<media::MultiChannelResampler> resampler_;
   scoped_ptr<media::AudioFifo> fifo_;
   scoped_ptr<media::AudioBus> fifo_input_bus_;
   int input_preroll_;
-  const int output_channels_;
-  const int output_sample_rate_;
-
-  // This member is accessed on the real-time audio time.
-  scoped_refptr<media::cast::AudioFrameInput> frame_input_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioSink);
 };

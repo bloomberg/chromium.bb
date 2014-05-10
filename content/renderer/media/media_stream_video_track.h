@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
@@ -48,17 +49,6 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
        bool enabled);
   virtual ~MediaStreamVideoTrack();
 
-  // Add |sink| to receive state changes and video frames on the main render
-  // thread.
-  virtual void AddSink(MediaStreamVideoSink* sink);
-  virtual void RemoveSink(MediaStreamVideoSink* sink);
-
-  // Add |sink| to receive state changes on the main render thread and video
-  // frames in the |callback| method on the IO-thread.
-  virtual void AddSink(MediaStreamSink* sink,
-                       const VideoCaptureDeliverFrameCB& callback);
-  virtual void RemoveSink(MediaStreamSink* sink);
-
   virtual void SetEnabled(bool enabled) OVERRIDE;
   virtual void Stop() OVERRIDE;
 
@@ -73,6 +63,23 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
   base::ThreadChecker thread_checker_;
 
  private:
+  // MediaStreamVideoSink is a friend to allow it to call AddSink() and
+  // RemoveSink().
+  friend class MediaStreamVideoSink;
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamRemoteVideoSourceTest, StartTrack);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamRemoteVideoSourceTest, RemoteTrackStop);
+  FRIEND_TEST_ALL_PREFIXES(VideoDestinationHandlerTest, PutFrame);
+
+  // Add |sink| to receive state changes on the main render thread and video
+  // frames in the |callback| method on the IO-thread.
+  // |callback| will be reset on the render thread.
+  // These two methods are private such that no subclass can intercept and
+  // store the callback. This is important to ensure that we can release
+  // the callback on render thread without reference to it on the IO-thread.
+  void AddSink(MediaStreamVideoSink* sink,
+               const VideoCaptureDeliverFrameCB& callback);
+  void RemoveSink(MediaStreamVideoSink* sink);
+
   // |FrameDeliverer| is an internal helper object used for delivering video
   // frames on the IO-thread using callbacks to all registered tracks.
   class FrameDeliverer;

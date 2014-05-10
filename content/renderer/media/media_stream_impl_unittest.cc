@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream.h"
@@ -167,6 +168,7 @@ class MediaStreamImplTest : public ::testing::Test {
   }
 
  protected:
+  base::MessageLoop message_loop_;
   scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher_;
   scoped_ptr<MediaStreamImplUnderTest> ms_impl_;

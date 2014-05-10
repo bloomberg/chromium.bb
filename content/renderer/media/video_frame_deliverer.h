@@ -30,9 +30,10 @@ class VideoFrameDeliverer
   // Add |callback| to receive video frames on the IO-thread.
   // Must be called on the main render thread.
   void AddCallback(void* id, const VideoCaptureDeliverFrameCB& callback);
+
   // Removes |callback| associated with |id| from receiving video frames if |id|
   // has been added. It is ok to call RemoveCallback even if the |id| has not
-  // been added.
+  // been added. Note that the added callback will be reset on the main thread.
   // Must be called on the main render thread.
   void RemoveCallback(void* id);
 
@@ -48,8 +49,11 @@ class VideoFrameDeliverer
 
  protected:
   void AddCallbackOnIO(void* id, const VideoCaptureDeliverFrameCB& callback);
+
+  // Callback will be removed and then reset on the designated message loop.
   // It is ok to call RemoveCallback even if |id| has not been added.
-  void RemoveCallbackOnIO(void* id);
+  void RemoveCallbackOnIO(
+      void* id, const scoped_refptr<base::MessageLoopProxy>& message_loop);
 
  protected:
   virtual ~VideoFrameDeliverer();

@@ -8,6 +8,11 @@
 #include "base/location.h"
 
 namespace content {
+namespace {
+void ResetCallback(scoped_ptr<VideoCaptureDeliverFrameCB> callback) {
+  // |callback| will be deleted when this exits.
+}
+}  // namespace
 
 VideoFrameDeliverer::VideoFrameDeliverer(
     const scoped_refptr<base::MessageLoopProxy>& io_message_loop)
@@ -41,15 +46,25 @@ void VideoFrameDeliverer::RemoveCallback(void* id) {
   io_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&VideoFrameDeliverer::RemoveCallbackOnIO,
-                 this, id));
+                 this, id, base::MessageLoopProxy::current()));
 }
 
-void VideoFrameDeliverer::RemoveCallbackOnIO(void* id) {
+void VideoFrameDeliverer::RemoveCallbackOnIO(
+    void* id, const scoped_refptr<base::MessageLoopProxy>& message_loop) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   std::vector<VideoIdCallbackPair>::iterator it = callbacks_.begin();
   for (; it != callbacks_.end(); ++it) {
     if (it->first == id) {
-      callbacks_.erase(it);
+      // Callback is copied to heap and then deleted on the target thread.
+      // The following code ensures that the callback is not referenced on
+      // the stack.
+      scoped_ptr<VideoCaptureDeliverFrameCB> callback;
+      {
+        callback.reset(new VideoCaptureDeliverFrameCB(it->second));
+        callbacks_.erase(it);
+      }
+      message_loop->PostTask(
+          FROM_HERE, base::Bind(&ResetCallback, base::Passed(&callback)));
       return;
     }
   }
