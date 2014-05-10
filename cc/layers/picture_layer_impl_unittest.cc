@@ -909,6 +909,50 @@ TEST_F(PictureLayerImplTest, PinchGestureTilings) {
                   active_layer_->tilings()->tiling_at(0)->contents_scale());
 }
 
+TEST_F(PictureLayerImplTest, SnappedTilingDuringZoom) {
+  gfx::Size tile_size(300, 300);
+  gfx::Size layer_bounds(2600, 3800);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  // Set up the high and low res tilings before pinch zoom.
+  SetupTrees(pending_pile, active_pile);
+  EXPECT_EQ(0u, active_layer_->tilings()->num_tilings());
+  SetContentsScaleOnBothLayers(0.24f, 1.0f, 0.24f, 1.0f, false);
+  EXPECT_EQ(2u, active_layer_->tilings()->num_tilings());
+  EXPECT_FLOAT_EQ(0.24f,
+                  active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_FLOAT_EQ(0.0625f,
+                  active_layer_->tilings()->tiling_at(1)->contents_scale());
+
+  // Start a pinch gesture.
+  host_impl_.PinchGestureBegin();
+
+  // Zoom out by a small amount. We should create a tiling at half
+  // the scale (1/kMaxScaleRatioDuringPinch).
+  SetContentsScaleOnBothLayers(0.2f, 1.0f, 0.2f, 1.0f, false);
+  EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
+  EXPECT_FLOAT_EQ(0.24f,
+                  active_layer_->tilings()->tiling_at(0)->contents_scale());
+  EXPECT_FLOAT_EQ(0.12f,
+                  active_layer_->tilings()->tiling_at(1)->contents_scale());
+  EXPECT_FLOAT_EQ(0.0625,
+                  active_layer_->tilings()->tiling_at(2)->contents_scale());
+
+  // Zoom out further, close to our low-res scale factor. We should
+  // use that tiling as high-res, and not create a new tiling.
+  SetContentsScaleOnBothLayers(0.1f, 1.0f, 0.1f, 1.0f, false);
+  EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
+
+  // Zoom in. 0.125(desired_scale) should be snapped to 0.12 during zoom-in
+  // because 0.125(desired_scale) is within the ratio(1.2)
+  SetContentsScaleOnBothLayers(0.5f, 1.0f, 0.5f, 1.0f, false);
+  EXPECT_EQ(3u, active_layer_->tilings()->num_tilings());
+}
+
 TEST_F(PictureLayerImplTest, CleanUpTilings) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(1300, 1900);
