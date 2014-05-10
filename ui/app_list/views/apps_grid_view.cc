@@ -477,6 +477,10 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
   if (!delegate_)
     return;
 
+  // Folders can't be integrated with the OS.
+  if (IsFolderItem(drag_view_->item()))
+    return;
+
   // Favor the drag and drop host over native win32 drag. For the Win8/ash
   // launcher we want to have ashes drag and drop over win32's.
   if (drag_and_drop_host_)
