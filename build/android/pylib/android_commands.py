@@ -1160,12 +1160,6 @@ class AndroidCommands(object):
 
     This is less efficient than SetFileContents.
     """
-    # TODO(skyostil): Remove this once it has been through all the bots.
-    for file_name in (AndroidCommands._TEMP_FILE_BASE_FMT,
-                      AndroidCommands._TEMP_SCRIPT_FILE_BASE_FMT):
-      self.RunShellCommand('rm ' + self.GetExternalStorage() + '/' +
-                           file_name.replace('%d', '*'))
-
     temp_file = self._GetDeviceTempFileName(AndroidCommands._TEMP_FILE_BASE_FMT)
     temp_script = self._GetDeviceTempFileName(
         AndroidCommands._TEMP_SCRIPT_FILE_BASE_FMT)
