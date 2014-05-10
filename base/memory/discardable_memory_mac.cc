@@ -33,15 +33,15 @@ class DiscardableMemoryMac : public DiscardableMemory {
 
   bool Initialize() {
     DCHECK_EQ(memory_.size(), 0u);
-    mach_vm_address_t address = 0;
-    kern_return_t ret = mach_vm_allocate(mach_task_self(),
-                                         &address,
-                                         size_,
-                                         VM_FLAGS_PURGABLE |
-                                             VM_FLAGS_ANYWHERE |
-                                             kDiscardableMemoryTag);
+    vm_address_t address = 0;
+    kern_return_t ret = vm_allocate(mach_task_self(),
+                                    &address,
+                                    size_,
+                                    VM_FLAGS_PURGABLE |
+                                        VM_FLAGS_ANYWHERE |
+                                        kDiscardableMemoryTag);
     if (ret != KERN_SUCCESS) {
-      MACH_DLOG(ERROR, ret) << "mach_vm_allocate";
+      MACH_DLOG(ERROR, ret) << "vm_allocate";
       return false;
     }
 
@@ -55,16 +55,16 @@ class DiscardableMemoryMac : public DiscardableMemory {
 
   virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
     kern_return_t ret;
-    MACH_DCHECK((ret = mach_vm_protect(mach_task_self(),
-                                       memory_.address(),
-                                       memory_.size(),
-                                       FALSE,
-                                       VM_PROT_DEFAULT)) == KERN_SUCCESS, ret);
+    MACH_DCHECK((ret = vm_protect(mach_task_self(),
+                                  memory_.address(),
+                                  memory_.size(),
+                                  FALSE,
+                                  VM_PROT_DEFAULT)) == KERN_SUCCESS, ret);
     int state = VM_PURGABLE_NONVOLATILE;
-    ret = mach_vm_purgable_control(mach_task_self(),
-                                   memory_.address(),
-                                   VM_PURGABLE_SET_STATE,
-                                   &state);
+    ret = vm_purgable_control(mach_task_self(),
+                              memory_.address(),
+                              VM_PURGABLE_SET_STATE,
+                              &state);
     if (ret != KERN_SUCCESS)
       return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 
@@ -74,16 +74,16 @@ class DiscardableMemoryMac : public DiscardableMemory {
 
   virtual void Unlock() OVERRIDE {
     int state = VM_PURGABLE_VOLATILE | VM_VOLATILE_GROUP_DEFAULT;
-    kern_return_t ret = mach_vm_purgable_control(mach_task_self(),
-                                                 memory_.address(),
-                                                 VM_PURGABLE_SET_STATE,
-                                                 &state);
-    MACH_DLOG_IF(ERROR, ret != KERN_SUCCESS, ret) << "mach_vm_purgable_control";
-    MACH_DCHECK((ret = mach_vm_protect(mach_task_self(),
-                                       memory_.address(),
-                                       memory_.size(),
-                                       FALSE,
-                                       VM_PROT_NONE)) == KERN_SUCCESS, ret);
+    kern_return_t ret = vm_purgable_control(mach_task_self(),
+                                            memory_.address(),
+                                            VM_PURGABLE_SET_STATE,
+                                            &state);
+    MACH_DLOG_IF(ERROR, ret != KERN_SUCCESS, ret) << "vm_purgable_control";
+    MACH_DCHECK((ret = vm_protect(mach_task_self(),
+                                  memory_.address(),
+                                  memory_.size(),
+                                  FALSE,
+                                  VM_PROT_NONE)) == KERN_SUCCESS, ret);
   }
 
   virtual void* Memory() const OVERRIDE {
@@ -159,7 +159,7 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 // static
 void DiscardableMemory::PurgeForTesting() {
   int state = 0;
-  mach_vm_purgable_control(mach_task_self(), 0, VM_PURGABLE_PURGE_ALL, &state);
+  vm_purgable_control(mach_task_self(), 0, VM_PURGABLE_PURGE_ALL, &state);
   internal::DiscardableMemoryEmulated::PurgeForTesting();
 }
 
