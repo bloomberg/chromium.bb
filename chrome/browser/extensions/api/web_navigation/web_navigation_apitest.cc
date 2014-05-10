@@ -5,6 +5,7 @@
 #include <list>
 #include <set>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_browsertest.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -321,6 +323,12 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, ServerRedirect) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, Download) {
+  base::ScopedTempDir download_directory;
+  ASSERT_TRUE(download_directory.CreateUniqueTempDir());
+  DownloadPrefs* download_prefs =
+      DownloadPrefs::FromBrowserContext(browser()->profile());
+  download_prefs->SetDownloadPath(download_directory.path());
+
   DownloadTestObserverNotInProgress download_observer(
       content::BrowserContext::GetDownloadManager(profile()), 1);
   download_observer.StartObserving();

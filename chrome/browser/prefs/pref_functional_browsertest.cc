@@ -44,26 +44,15 @@ class PrefsFunctionalTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
   ASSERT_TRUE(test_server()->Start());
+  base::ScopedTempDir new_download_dir;
+  ASSERT_TRUE(new_download_dir.CreateUniqueTempDir());
 
-  DownloadManager* download_manager =
-      BrowserContext::GetDownloadManager(browser()->profile());
-  base::FilePath download_dir =
-      (DownloadPrefs::FromDownloadManager(download_manager))->DownloadPath();
-  base::FilePath new_download_dir = download_dir.AppendASCII("my_downloads");
   base::FilePath downloaded_pkg =
-      new_download_dir.AppendASCII("a_zip_file.zip");
+      new_download_dir.path().AppendASCII("a_zip_file.zip");
 
-  // If the directory exists, delete it.
-  if (base::PathExists(new_download_dir)) {
-    base::DeleteFile(new_download_dir, true);
-  }
-
-  // Create the new downloads directory.
-  base::CreateDirectory(new_download_dir);
   // Set pref to download in new_download_dir.
   browser()->profile()->GetPrefs()->SetFilePath(
-      prefs::kDownloadDefaultDirectory,
-      new_download_dir);
+      prefs::kDownloadDefaultDirectory, new_download_dir.path());
 
   // Create a downloads observer.
   scoped_ptr<content::DownloadTestObserver> downloads_observer(

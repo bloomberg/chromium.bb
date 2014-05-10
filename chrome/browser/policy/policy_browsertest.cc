@@ -1692,6 +1692,12 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
   const GURL referrer_url(URLRequestMockHTTPJob::GetMockUrl(
       base::FilePath(FILE_PATH_LITERAL("policy/*"))));
 
+  base::ScopedTempDir download_directory;
+  ASSERT_TRUE(download_directory.CreateUniqueTempDir());
+  DownloadPrefs* download_prefs =
+      DownloadPrefs::FromBrowserContext(browser()->profile());
+  download_prefs->SetDownloadPath(download_directory.path());
+
   const GURL download_page_url(URLRequestMockHTTPJob::GetMockUrl(base::FilePath(
       FILE_PATH_LITERAL("policy/extension_install_sources_test.html"))));
   ui_test_utils::NavigateToURL(browser(), download_page_url);
