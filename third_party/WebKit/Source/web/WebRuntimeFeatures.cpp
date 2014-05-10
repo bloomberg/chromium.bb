@@ -281,4 +281,9 @@ void WebRuntimeFeatures::enablePreciseMemoryInfo(bool enable)
     RuntimeEnabledFeatures::setPreciseMemoryInfoEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableLayerSquashing(bool enable)
+{
+    RuntimeEnabledFeatures::setLayerSquashingEnabled(enable);
+}
+
 } // namespace blink
