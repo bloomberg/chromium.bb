@@ -12,10 +12,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
-#include "base/platform_file.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
@@ -46,10 +46,11 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   virtual ~DebugDaemonClientImpl() {}
 
   // DebugDaemonClient override.
-  virtual void GetDebugLogs(base::PlatformFile file,
+  virtual void GetDebugLogs(base::File file,
                             const GetDebugLogsCallback& callback) OVERRIDE {
 
-    dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor(file);
+    dbus::FileDescriptor* file_descriptor = new dbus::FileDescriptor;
+    file_descriptor->PutValue(file.TakePlatformFile());
     // Punt descriptor validity check to a worker thread; on return we'll
     // issue the D-Bus request to stop tracing and collect results.
     base::WorkerPool::PostTaskAndReply(

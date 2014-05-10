@@ -21,7 +21,7 @@ FakeDebugDaemonClient::~FakeDebugDaemonClient() {}
 
 void FakeDebugDaemonClient::Init(dbus::Bus* bus) {}
 
-void FakeDebugDaemonClient::GetDebugLogs(base::PlatformFile file,
+void FakeDebugDaemonClient::GetDebugLogs(base::File file,
                                          const GetDebugLogsCallback& callback) {
   callback.Run(false);
 }

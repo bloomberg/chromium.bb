@@ -19,7 +19,7 @@ class FakeDebugDaemonClient : public DebugDaemonClient {
   virtual ~FakeDebugDaemonClient();
 
   virtual void Init(dbus::Bus* bus) OVERRIDE;
-  virtual void GetDebugLogs(base::PlatformFile file,
+  virtual void GetDebugLogs(base::File file,
                             const GetDebugLogsCallback& callback) OVERRIDE;
   virtual void SetDebugMode(const std::string& subsystem,
                             const SetDebugModeCallback& callback) OVERRIDE;
