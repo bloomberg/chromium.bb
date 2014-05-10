@@ -7,9 +7,11 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 
 class ChromeBrowserMainParts;
+class ChromeBrowserMetricsServiceObserver;
 
 namespace chrome {
 void AddMetricsExtraParts(ChromeBrowserMainParts* main_parts);
@@ -26,6 +28,9 @@ class ChromeBrowserMainExtraPartsMetrics : public ChromeBrowserMainExtraParts {
   virtual void PostBrowserStart() OVERRIDE;
 
  private:
+  // Observe and log histograms on new metric logs.
+  scoped_ptr<ChromeBrowserMetricsServiceObserver> metrics_service_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsMetrics);
 };
 

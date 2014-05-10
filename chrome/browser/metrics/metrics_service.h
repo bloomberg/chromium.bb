@@ -18,9 +18,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/user_metrics.h"
+#include "base/observer_list.h"
 #include "base/process/kill.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/metrics_log.h"
+#include "chrome/browser/metrics/metrics_service_observer.h"
 #include "chrome/browser/metrics/tracking_synchronizer_observer.h"
 #include "chrome/common/metrics/metrics_service_base.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -36,6 +39,7 @@
 #include "chrome/browser/chromeos/external_metrics.h"
 #endif
 
+class ChromeBrowserMetricsServiceObserver;
 class MetricsReportingScheduler;
 class PrefService;
 class PrefRegistrySimple;
@@ -364,6 +368,11 @@ class MetricsService
   // Set up client ID, session ID, etc.
   void InitializeMetricsState();
 
+  // Registers/unregisters |observer| to receive MetricsLog notifications.
+  void AddObserver(MetricsServiceObserver* observer);
+  void RemoveObserver(MetricsServiceObserver* observer);
+  void NotifyOnDidCreateMetricsLog();
+
   // Schedule the next save of LocalState information.  This is called
   // automatically by the task that performs each save to schedule the next one.
   void ScheduleNextStateSave();
@@ -585,7 +594,15 @@ class MetricsService
   // Field trial groups that map to Chrome configuration states.
   SyntheticTrialGroups synthetic_trial_groups_;
 
+  ObserverList<MetricsServiceObserver> observers_;
+
+  // Confirms single-threaded access to |observers_| in debug builds.
+  base::ThreadChecker thread_checker_;
+
+  friend class MetricsServiceHelper;
+
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
+  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, MetricsServiceObserver);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
                            PermutedEntropyCacheClearedWhenLowEntropyReset);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
@@ -593,12 +610,13 @@ class MetricsService
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
 
-// This class limits and documents access to the IsMetricsReportingEnabled() and
-// IsCrashReportingEnabled() methods. Since these methods are private, each user
-// has to be explicitly declared as a 'friend' below.
+// This class limits and documents access to metrics service helper methods.
+// Since these methods are private, each user has to be explicitly declared
+// as a 'friend' below.
 class MetricsServiceHelper {
  private:
   friend bool prerender::IsOmniboxEnabled(Profile* profile);
+  friend class ::ChromeBrowserMetricsServiceObserver;
   friend class ChromeRenderMessageFilter;
   friend class ::CrashesDOMHandler;
   friend class extensions::ExtensionDownloader;
@@ -619,6 +637,11 @@ class MetricsServiceHelper {
   // level for Android and ChromeOS, and otherwise is the same as
   // IsMetricsReportingEnabled for desktop Chrome.
   static bool IsCrashReportingEnabled();
+
+  // Registers/unregisters |observer| to receive MetricsLog notifications
+  // from metrics service.
+  static void AddMetricsServiceObserver(MetricsServiceObserver* observer);
+  static void RemoveMetricsServiceObserver(MetricsServiceObserver* observer);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(MetricsServiceHelper);
 };

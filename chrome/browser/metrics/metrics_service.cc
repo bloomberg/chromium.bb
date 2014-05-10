@@ -1040,6 +1040,7 @@ void MetricsService::ReceivedProfilerData(
     initial_metrics_log_.reset(
         new MetricsLog(state_manager_->client_id(), session_id_,
                        MetricsLog::ONGOING_LOG));
+    NotifyOnDidCreateMetricsLog();
   }
 
   initial_metrics_log_->RecordProfilerData(process_data, process_type);
@@ -1071,6 +1072,22 @@ void MetricsService::GetUptimes(PrefService* pref,
     metrics_uptime += incremental_time_secs;
     pref->SetInt64(prefs::kUninstallMetricsUptimeSec, metrics_uptime);
   }
+}
+
+void MetricsService::AddObserver(MetricsServiceObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.AddObserver(observer);
+}
+
+void MetricsService::RemoveObserver(MetricsServiceObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observers_.RemoveObserver(observer);
+}
+
+void MetricsService::NotifyOnDidCreateMetricsLog() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(
+      MetricsServiceObserver, observers_, OnDidCreateMetricsLog());
 }
 
 //------------------------------------------------------------------------------
@@ -1108,6 +1125,7 @@ void MetricsService::OpenNewLog() {
   log_manager_.BeginLoggingWithLog(
       new MetricsLog(state_manager_->client_id(), session_id_,
                      MetricsLog::ONGOING_LOG));
+  NotifyOnDidCreateMetricsLog();
   if (state_ == INITIALIZED) {
     // We only need to schedule that run once.
     state_ = INIT_TASK_SCHEDULED;
@@ -1405,6 +1423,10 @@ void MetricsService::PrepareInitialStabilityLog() {
   scoped_ptr<MetricsLog> initial_stability_log(
       new MetricsLog(state_manager_->client_id(), session_id_,
                      MetricsLog::INITIAL_STABILITY_LOG));
+
+  // Do not call NotifyOnDidCreateMetricsLog here because the stability
+  // log describes stats from the _previous_ session.
+
   if (!initial_stability_log->LoadSavedEnvironmentFromPrefs())
     return;
   initial_stability_log->RecordStabilityMetrics(base::TimeDelta(),
@@ -1933,4 +1955,18 @@ bool MetricsServiceHelper::IsCrashReportingEnabled() {
 #else
   return false;
 #endif
+}
+
+void MetricsServiceHelper::AddMetricsServiceObserver(
+    MetricsServiceObserver* observer) {
+  MetricsService* metrics_service = g_browser_process->metrics_service();
+  if (metrics_service)
+    metrics_service->AddObserver(observer);
+}
+
+void MetricsServiceHelper::RemoveMetricsServiceObserver(
+    MetricsServiceObserver* observer) {
+  MetricsService* metrics_service = g_browser_process->metrics_service();
+  if (metrics_service)
+    metrics_service->RemoveObserver(observer);
 }

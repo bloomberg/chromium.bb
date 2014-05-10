@@ -10772,15 +10772,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
 
-<histogram name="NCN.NetworkOperatorMCCMNC_ConnectionChange">
+<histogram name="NCN.NetworkOperatorMCCMNC">
   <owner>bolian@chromium.org</owner>
   <owner>bengr@google.com</owner>
   <owner>marq@google.com</owner>
   <summary>
     The MCC (mobile country code) and MNC (mobile network code) of the network
-    operator when the network connection is changed to a mobile network. Value
-    zero means the connection is changed to a non-mobile network or the operator
-    code is unknown.
+    operator when a new metrics log is created or when the network connection is
+    changed. A value of zero means a non-mobile network or the operator code is
+    unknown.
   </summary>
 </histogram>
 

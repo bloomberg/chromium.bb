@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/threading/platform_thread.h"
+#include "chrome/browser/metrics/metrics_service_observer.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -143,6 +144,22 @@ class MetricsServiceTest : public testing::Test {
   scoped_ptr<metrics::MetricsStateManager> metrics_state_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceTest);
+};
+
+class TestMetricsServiceObserver : public MetricsServiceObserver {
+ public:
+  TestMetricsServiceObserver(): observed_(0) {}
+  virtual ~TestMetricsServiceObserver() {}
+
+  virtual void OnDidCreateMetricsLog() OVERRIDE {
+    ++observed_;
+  }
+  int observed() const { return observed_; }
+
+ private:
+  int observed_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestMetricsServiceObserver);
 };
 
 }  // namespace
@@ -312,4 +329,35 @@ TEST_F(MetricsServiceTest, CrashReportingEnabled) {
   // Chromium branded browsers never have crash reporting enabled.
   EXPECT_FALSE(MetricsServiceHelper::IsCrashReportingEnabled());
 #endif  // defined(GOOGLE_CHROME_BUILD)
+}
+
+TEST_F(MetricsServiceTest, MetricsServiceObserver) {
+  MetricsService service(GetMetricsStateManager());
+  TestMetricsServiceObserver observer1;
+  TestMetricsServiceObserver observer2;
+
+  service.AddObserver(&observer1);
+  EXPECT_EQ(0, observer1.observed());
+  EXPECT_EQ(0, observer2.observed());
+
+  service.OpenNewLog();
+  EXPECT_EQ(1, observer1.observed());
+  EXPECT_EQ(0, observer2.observed());
+  service.log_manager_.FinishCurrentLog();
+
+  service.AddObserver(&observer2);
+
+  service.OpenNewLog();
+  EXPECT_EQ(2, observer1.observed());
+  EXPECT_EQ(1, observer2.observed());
+  service.log_manager_.FinishCurrentLog();
+
+  service.RemoveObserver(&observer1);
+
+  service.OpenNewLog();
+  EXPECT_EQ(2, observer1.observed());
+  EXPECT_EQ(2, observer2.observed());
+  service.log_manager_.FinishCurrentLog();
+
+  service.RemoveObserver(&observer2);
 }

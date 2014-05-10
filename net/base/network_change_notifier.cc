@@ -235,22 +235,7 @@ class HistogramWatcher
       UMA_HISTOGRAM_MEDIUM_TIMES("NCN.OfflineChange", state_duration);
     }
 
-#if defined(OS_ANDROID)
-    // On a connection type change to 2/3/4G, log the network operator MCC/MNC.
-    // Log zero in other cases.
-    unsigned mcc_mnc = 0;
-    if (type == NetworkChangeNotifier::CONNECTION_2G ||
-        type == NetworkChangeNotifier::CONNECTION_3G ||
-        type == NetworkChangeNotifier::CONNECTION_4G) {
-      // Log zero if not perfectly converted.
-      if (!base::StringToUint(
-          net::android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
-        mcc_mnc = 0;
-      }
-    }
-    UMA_HISTOGRAM_SPARSE_SLOWLY(
-        "NCN.NetworkOperatorMCCMNC_ConnectionChange", mcc_mnc);
-#endif
+    NetworkChangeNotifier::LogOperatorCodeHistogram(type);
 
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "NCN.IPAddressChangeToConnectionTypeChange",
@@ -592,6 +577,25 @@ void NetworkChangeNotifier::ShutdownHistogramWatcher() {
   if (!g_network_change_notifier)
     return;
   g_network_change_notifier->histogram_watcher_.reset();
+}
+
+// static
+void NetworkChangeNotifier::LogOperatorCodeHistogram(ConnectionType type) {
+#if defined(OS_ANDROID)
+  // On a connection type change to 2/3/4G, log the network operator MCC/MNC.
+  // Log zero in other cases.
+  unsigned mcc_mnc = 0;
+  if (type == NetworkChangeNotifier::CONNECTION_2G ||
+      type == NetworkChangeNotifier::CONNECTION_3G ||
+      type == NetworkChangeNotifier::CONNECTION_4G) {
+    // Log zero if not perfectly converted.
+    if (!base::StringToUint(
+        net::android::GetTelephonyNetworkOperator(), &mcc_mnc)) {
+      mcc_mnc = 0;
+    }
+  }
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NCN.NetworkOperatorMCCMNC", mcc_mnc);
+#endif
 }
 
 #if defined(OS_LINUX)

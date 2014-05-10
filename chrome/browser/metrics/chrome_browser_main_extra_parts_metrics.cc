@@ -17,6 +17,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
+#include "chrome/browser/chrome_browser_metrics_service_observer.h"
 #include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/shell_integration.h"
 #include "content/public/browser/browser_thread.h"
@@ -154,6 +155,12 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
       FROM_HERE,
       base::Bind(&RecordStartupMetricsOnBlockingPool),
       base::TimeDelta::FromSeconds(kStartupMetricsGatheringDelaySeconds));
+
+  // Create the metrics log observer.
+  // We only need this for Android for now.
+#if defined(ANDROID)
+  metrics_service_observer_.reset(new ChromeBrowserMetricsServiceObserver());
+#endif
 }
 
 namespace chrome {
