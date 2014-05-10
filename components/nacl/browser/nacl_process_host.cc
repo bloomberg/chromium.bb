@@ -654,6 +654,8 @@ bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER_DELAY_REPLY(
           NaClProcessMsg_AttachDebugExceptionHandler,
           OnAttachDebugExceptionHandler)
+      IPC_MESSAGE_HANDLER(NaClProcessHostMsg_DebugStubPortSelected,
+                          OnDebugStubPortSelected)
 #endif
       IPC_MESSAGE_HANDLER(NaClProcessHostMsg_PpapiChannelsCreated,
                           OnPpapiChannelsCreated)
@@ -755,12 +757,20 @@ void NaClProcessHost::SendMessageToRenderer(
   }
 }
 
+void NaClProcessHost::SetDebugStubPort(uint16_t port) {
+  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
+  if (nacl_browser->HasGdbDebugStubPortListener()) {
+    nacl_browser->FireGdbDebugStubPortOpened(port);
+  }
+  // Set debug stub port on the process object.
+  process_->SetNaClDebugStubPort(port);
+}
+
+#if defined(OS_POSIX)
 // TCP port we chose for NaCl debug stub. It can be any other number.
 static const int kInitialDebugStubPort = 4014;
 
-#if defined(OS_POSIX)
 net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
-  NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
   net::SocketDescriptor s = net::kInvalidSocket;
   // We always try to allocate the default port first. If this fails, we then
   // allocate any available port.
@@ -772,12 +782,8 @@ net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
     s = net::TCPListenSocket::CreateAndBindAnyPort("127.0.0.1", &port);
   }
   if (s != net::kInvalidSocket) {
-    if (nacl_browser->HasGdbDebugStubPortListener()) {
-      nacl_browser->FireGdbDebugStubPortOpened(port);
-    }
+    SetDebugStubPort(port);
   }
-  // Set debug stub port on the process object.
-  process_->SetNaClDebugStubPort(port);
   if (s == net::kInvalidSocket) {
     LOG(ERROR) << "failed to open socket for debug stub";
     return net::kInvalidSocket;
@@ -791,6 +797,13 @@ net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
     return net::kInvalidSocket;
   }
   return s;
+}
+#endif
+
+#if defined(OS_WIN)
+void NaClProcessHost::OnDebugStubPortSelected(uint16_t debug_stub_port) {
+  CHECK(!uses_nonsfi_mode_);
+  SetDebugStubPort(debug_stub_port);
 }
 #endif
 

@@ -109,6 +109,10 @@ int AttachDebugExceptionHandler(const void* info, size_t info_size) {
   return result;
 }
 
+void DebugStubPortSelectedHandler(uint16_t port) {
+  g_listener->Send(new NaClProcessHostMsg_DebugStubPortSelected(port));
+}
+
 #endif
 
 // Creates the PPAPI IPC channel between the NaCl IRT and the host
@@ -464,6 +468,8 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #if defined(OS_WIN)
   args->broker_duplicate_handle_func = BrokerDuplicateHandle;
   args->attach_debug_exception_handler_func = AttachDebugExceptionHandler;
+  args->debug_stub_server_port_selected_handler_func =
+      DebugStubPortSelectedHandler;
 #endif
 #if defined(OS_LINUX)
   args->prereserved_sandbox_size = prereserved_sandbox_size_;

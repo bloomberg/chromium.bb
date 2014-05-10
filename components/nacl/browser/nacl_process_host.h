@@ -106,12 +106,22 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
 
   bool LaunchNaClGdb();
 
+  // Mark the process as using a particular GDB debug stub port and notify
+  // listeners.
+  void SetDebugStubPort(uint16_t port);
+
 #if defined(OS_POSIX)
   // Create bound TCP socket in the browser process so that the NaCl GDB debug
   // stub can use it to accept incoming connections even when the Chrome sandbox
   // is enabled.
   net::SocketDescriptor GetDebugStubSocketHandle();
 #endif
+
+#if defined(OS_WIN)
+  // Called when the debug stub port has been selected.
+  void OnDebugStubPortSelected(uint16_t debug_stub_port);
+#endif
+
   bool LaunchSelLdr();
 
   // BrowserChildProcessHostDelegate implementation:
