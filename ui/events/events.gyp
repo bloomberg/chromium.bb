@@ -39,8 +39,6 @@
         'events_base_export.h',
         'gesture_event_details.cc',
         'gesture_event_details.h',
-        'gestures/gesture_configuration.cc',
-        'gestures/gesture_configuration.h',
         'keycodes/keyboard_code_conversion.cc',
         'keycodes/keyboard_code_conversion.h',
         'keycodes/keyboard_code_conversion_android.cc',
@@ -80,7 +78,6 @@
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         'events_base',
-        'gesture_detection',
       ],
       'defines': [
         'EVENTS_IMPLEMENTATION',
@@ -109,18 +106,16 @@
         'event_utils.h',
         'events_export.h',
         'events_stub.cc',
+        'gestures/gesture_configuration.cc',
+        'gestures/gesture_configuration.h',
         'gestures/gesture_point.cc',
         'gestures/gesture_point.h',
-        'gestures/gesture_provider_aura.cc',
-        'gestures/gesture_provider_aura.h',
         'gestures/gesture_recognizer.h',
         'gestures/gesture_recognizer_impl.cc',
         'gestures/gesture_recognizer_impl.h',
         'gestures/gesture_sequence.cc',
         'gestures/gesture_sequence.h',
         'gestures/gesture_types.h',
-        'gestures/motion_event_aura.cc',
-        'gestures/motion_event_aura.h',
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
         'ozone/device/device_event.cc',
@@ -176,24 +171,6 @@
         'linux/text_edit_key_bindings_delegate_auralinux.h',
       ],
       'conditions': [
-        ['use_aura==0', {
-          'sources!': [
-            'gestures/gesture_point.cc',
-            'gestures/gesture_point.h',
-            'gestures/gesture_provider_aura.cc',
-            'gestures/gesture_provider_aura.h',
-            'gestures/gesture_recognizer.h',
-            'gestures/gesture_recognizer_impl.cc',
-            'gestures/gesture_recognizer_impl.h',
-            'gestures/gesture_sequence.cc',
-            'gestures/gesture_sequence.h',
-            'gestures/gesture_types.h',
-            'gestures/motion_event_aura.cc',
-            'gestures/motion_event_aura.h',
-            'gestures/velocity_calculator.cc',
-            'gestures/velocity_calculator.h',
-          ],
-        }],
         # We explicitly enumerate the platforms we _do_ provide native cracking
         # for here.
         ['OS=="win" or OS=="mac" or use_x11==1 or use_ozone==1', {
@@ -276,9 +253,6 @@
         'gesture_detection/bitset_32.h',
         'gesture_detection/filtered_gesture_provider.cc',
         'gesture_detection/filtered_gesture_provider.h',
-        'gesture_detection/gesture_config_helper.h',
-        'gesture_detection/gesture_config_helper_android.cc',
-        'gesture_detection/gesture_config_helper_aura.cc',
         'gesture_detection/gesture_detection_export.h',
         'gesture_detection/gesture_detector.cc',
         'gesture_detection/gesture_detector.h',
@@ -286,6 +260,9 @@
         'gesture_detection/gesture_event_data.h',
         'gesture_detection/gesture_event_data_packet.cc',
         'gesture_detection/gesture_event_data_packet.h',
+        'gesture_detection/gesture_config_helper.h',
+        'gesture_detection/gesture_config_helper_aura.cc',
+        'gesture_detection/gesture_config_helper_android.cc',
         'gesture_detection/gesture_provider.cc',
         'gesture_detection/gesture_provider.h',
         'gesture_detection/motion_event.h',
@@ -301,6 +278,11 @@
         'gesture_detection/velocity_tracker.h',
       ],
       'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            'events'
+          ],
+        }],
         ['use_aura!=1 and OS!="android"', {
           'sources': [
             'gesture_detection/gesture_config_helper.cc',
@@ -358,7 +340,7 @@
         'events',
         'events_base',
         'events_test_support',
-        'gesture_detection',
+        'gesture_detection'
       ],
       'sources': [
         'cocoa/events_mac_unittest.mm',
@@ -366,7 +348,6 @@
         'event_processor_unittest.cc',
         'event_rewriter_unittest.cc',
         'event_unittest.cc',
-        'gestures/motion_event_aura_unittest.cc',
         'gestures/velocity_calculator_unittest.cc',
         'gesture_detection/bitset_32_unittest.cc',
         'gesture_detection/gesture_provider_unittest.cc',
@@ -382,12 +363,6 @@
         'x/events_x_unittest.cc',
       ],
       'conditions': [
-        ['use_aura==0', {
-          'sources!': [
-            'gestures/motion_event_aura_unittest.cc',
-            'gestures/velocity_calculator_unittest.cc',
-          ],
-        }],
         ['OS=="linux" and use_allocator!="none"', {
           'dependencies': [
             '<(DEPTH)/base/allocator/allocator.gyp:allocator',

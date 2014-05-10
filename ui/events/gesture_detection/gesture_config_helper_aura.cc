@@ -2,12 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MSVC++ requires this to be set before any other includes to get M_PI.
-#define _USE_MATH_DEFINES
-
 #include "ui/events/gesture_detection/gesture_config_helper.h"
-
-#include <cmath>
 
 #include "ui/events/gestures/gesture_configuration.h"
 #include "ui/gfx/screen.h"
@@ -35,8 +30,7 @@ GestureDetector::Config DefaultGestureDetectorConfig() {
   config.swipe_enabled = true;
   config.minimum_swipe_velocity = GestureConfiguration::min_swipe_speed();
   config.maximum_swipe_deviation_angle =
-      atan2(1.f, GestureConfiguration::max_swipe_deviation_ratio()) * 180.0f /
-      static_cast<float>(M_PI);
+      atan2(1.f, GestureConfiguration::max_swipe_deviation_ratio());
 
   return config;
 }
@@ -46,7 +40,8 @@ ScaleGestureDetector::Config DefaultScaleGestureDetectorConfig() {
 
   config.gesture_detector_config = DefaultGestureDetectorConfig();
   config.min_scaling_touch_major = GestureConfiguration::default_radius() * 2;
-  config.min_scaling_span = GestureConfiguration::min_scaling_span_in_pixels();
+  config.min_scaling_span =
+      GestureConfiguration::min_distance_for_pinch_scroll_in_pixels();
   return config;
 }
 

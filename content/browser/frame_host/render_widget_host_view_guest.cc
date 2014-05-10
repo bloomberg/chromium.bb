@@ -500,7 +500,7 @@ bool RenderWidgetHostViewGuest::CanDispatchToConsumer(
   return true;
 }
 
-void RenderWidgetHostViewGuest::DispatchGestureEvent(
+void RenderWidgetHostViewGuest::DispatchPostponedGestureEvent(
     ui::GestureEvent* event) {
   ForwardGestureEventToRenderer(event);
 }
