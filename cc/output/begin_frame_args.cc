@@ -35,20 +35,6 @@ BeginFrameArgs BeginFrameArgs::CreateForSynchronousCompositor() {
                         DefaultInterval());
 }
 
-BeginFrameArgs BeginFrameArgs::CreateForTesting() {
-  base::TimeTicks now = gfx::FrameTime::Now();
-  return BeginFrameArgs(now,
-                        now + (DefaultInterval() / 2),
-                        DefaultInterval());
-}
-
-BeginFrameArgs BeginFrameArgs::CreateExpiredForTesting() {
-  base::TimeTicks now = gfx::FrameTime::Now();
-  return BeginFrameArgs(now,
-                        now - DefaultInterval(),
-                        DefaultInterval());
-}
-
 // This is a hard-coded deadline adjustment that assumes 60Hz, to be used in
 // cases where a good estimated draw time is not known. Using 1/3 of the vsync
 // as the default adjustment gives the Browser the last 1/3 of a frame to

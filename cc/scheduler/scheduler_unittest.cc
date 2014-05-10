@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -213,7 +214,7 @@ void InitializeOutputSurfaceAndFirstCommit(Scheduler* scheduler,
   scheduler->NotifyReadyToCommit();
   // Go through the motions to draw the commit.
   if (client_initiates_begin_frame)
-    scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+    scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   else
     client->task_runner().RunPendingTasks();  // Run posted BeginFrame.
 
@@ -225,7 +226,7 @@ void InitializeOutputSurfaceAndFirstCommit(Scheduler* scheduler,
   // We need another BeginImplFrame so Scheduler calls
   // SetNeedsBeginFrame(false).
   if (client_initiates_begin_frame)
-    scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+    scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   else
     client->task_runner().RunPendingTasks();  // Run posted BeginFrame.
 
@@ -267,7 +268,7 @@ TEST(SchedulerTest, RequestCommit) {
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrame", client);
   client.Reset();
 
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -289,7 +290,7 @@ TEST(SchedulerTest, RequestCommit) {
   client.Reset();
 
   // BeginImplFrame should prepare the draw.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -305,7 +306,7 @@ TEST(SchedulerTest, RequestCommit) {
 
   // The following BeginImplFrame deadline should SetNeedsBeginFrame(false)
   // to avoid excessive toggles.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   client.Reset();
@@ -333,7 +334,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   EXPECT_SINGLE_ACTION("SetNeedsBeginFrame", client);
 
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -363,7 +364,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   client.Reset();
   // Since another commit is needed, the next BeginImplFrame should initiate
   // the second commit.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -385,7 +386,7 @@ TEST(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
 
   // On the next BeginImplFrame, verify we go back to a quiescent state and
   // no longer request BeginImplFrames.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_FALSE(client.needs_begin_frame());
   client.Reset();
@@ -434,13 +435,13 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
   EXPECT_EQ(0, client.num_draws());
 
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
   EXPECT_TRUE(scheduler->RedrawPending());
   EXPECT_TRUE(client.needs_begin_frame());
 
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -448,7 +449,7 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
 
   // We stop requesting BeginImplFrames after a BeginImplFrame where we don't
   // swap.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -474,7 +475,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   EXPECT_EQ(0, client.num_draws());
 
   // Fail the draw.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
 
@@ -485,7 +486,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
 
   // Fail the draw again.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(2, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
@@ -494,7 +495,7 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
 
   // Draw successfully.
   client.SetDrawWillHappen(true);
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(3, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
@@ -555,7 +556,7 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
 
   client.SetNeedsCommitOnNextDraw();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.SetNeedsCommitOnNextDraw();
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
@@ -564,7 +565,7 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
   scheduler->NotifyBeginMainFrameStarted();
   scheduler->NotifyReadyToCommit();
 
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(2, client.num_draws());
 
@@ -574,7 +575,7 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
 
   // We stop requesting BeginImplFrames after a BeginImplFrame where we don't
   // swap.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(2, client.num_draws());
   EXPECT_FALSE(scheduler->RedrawPending());
@@ -601,7 +602,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   EXPECT_EQ(0, client.num_draws());
 
   // Fail the draw.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
 
@@ -612,7 +613,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   EXPECT_TRUE(client.needs_begin_frame());
 
   // Fail the draw again.
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
 
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(2, client.num_draws());
@@ -622,7 +623,7 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
 
   // Draw successfully.
   client.SetDrawWillHappen(true);
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(3, client.num_draws());
   EXPECT_TRUE(scheduler->CommitPending());
@@ -647,7 +648,7 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
 
   // Draw successfully, this starts a new frame.
   client.SetNeedsCommitOnNextDraw();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(1, client.num_draws());
 
@@ -658,7 +659,7 @@ TEST(SchedulerTest, NoSwapWhenDrawFails) {
   // Fail to draw, this should not start a frame.
   client.SetDrawWillHappen(false);
   client.SetNeedsCommitOnNextDraw();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(2, client.num_draws());
 }
@@ -744,7 +745,7 @@ TEST(SchedulerTest, ManageTiles) {
   // We have no immediate actions to perform, so the BeginImplFrame should post
   // the deadline task.
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -772,7 +773,7 @@ TEST(SchedulerTest, ManageTiles) {
   // We have no immediate actions to perform, so the BeginImplFrame should post
   // the deadline task.
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -793,7 +794,7 @@ TEST(SchedulerTest, ManageTiles) {
 
   // We need a BeginImplFrame where we don't swap to go idle.
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   client.Reset();
@@ -814,7 +815,7 @@ TEST(SchedulerTest, ManageTiles) {
 
   // BeginImplFrame. There will be no draw, only ManageTiles.
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
   client.Reset();
@@ -840,7 +841,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsManageTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -862,7 +863,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsManageTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -885,7 +886,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsManageTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -908,7 +909,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsManageTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -927,7 +928,7 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   scheduler->SetNeedsManageTiles();
   scheduler->SetNeedsRedraw();
   client.Reset();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
   EXPECT_ACTION("ScheduledActionAnimate", client, 1, 2);
   EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
@@ -956,7 +957,7 @@ TEST(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
 
   client.Reset();
   scheduler->SetNeedsRedraw();
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
 
   // The deadline should be zero since there is no work other than drawing
   // pending.
@@ -1012,7 +1013,7 @@ void MainFrameInHighLatencyMode(int64 begin_main_frame_to_commit_estimate_in_ms,
   client.Reset();
   scheduler->SetNeedsCommit();
   EXPECT_FALSE(scheduler->MainThreadIsInHighLatencyMode());
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_FALSE(scheduler->MainThreadIsInHighLatencyMode());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_TRUE(scheduler->MainThreadIsInHighLatencyMode());
@@ -1024,7 +1025,7 @@ void MainFrameInHighLatencyMode(int64 begin_main_frame_to_commit_estimate_in_ms,
   client.Reset();
   scheduler->SetNeedsCommit();
   EXPECT_TRUE(scheduler->MainThreadIsInHighLatencyMode());
-  scheduler->BeginFrame(BeginFrameArgs::CreateForTesting());
+  scheduler->BeginFrame(CreateBeginFrameArgsForTesting());
   EXPECT_TRUE(scheduler->MainThreadIsInHighLatencyMode());
   client.task_runner().RunPendingTasks();  // Run posted deadline.
   EXPECT_EQ(scheduler->MainThreadIsInHighLatencyMode(),
@@ -1081,7 +1082,7 @@ TEST(SchedulerTest, PollForCommitCompletion) {
   scheduler->NotifyReadyToCommit();
   scheduler->SetNeedsRedraw();
 
-  BeginFrameArgs frame_args = BeginFrameArgs::CreateForTesting();
+  BeginFrameArgs frame_args = CreateBeginFrameArgsForTesting();
   frame_args.interval = base::TimeDelta::FromMilliseconds(1000);
   scheduler->BeginFrame(frame_args);
 
@@ -1154,7 +1155,7 @@ TEST(SchedulerTest, BeginRetroFrame) {
 
   // Create a BeginFrame with a long deadline to avoid race conditions.
   // This is the first BeginFrame, which will be handled immediately.
-  BeginFrameArgs args = BeginFrameArgs::CreateForTesting();
+  BeginFrameArgs args = CreateBeginFrameArgsForTesting();
   args.deadline += base::TimeDelta::FromHours(1);
   scheduler->BeginFrame(args);
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
@@ -1233,7 +1234,7 @@ TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
 
   // Create a BeginFrame with a long deadline to avoid race conditions.
   // This is the first BeginFrame, which will be handled immediately.
-  BeginFrameArgs args = BeginFrameArgs::CreateForTesting();
+  BeginFrameArgs args = CreateBeginFrameArgsForTesting();
   args.deadline += base::TimeDelta::FromHours(1);
   scheduler->BeginFrame(args);
   EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);

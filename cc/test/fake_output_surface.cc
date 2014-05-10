@@ -9,6 +9,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/returned_resource.h"
+#include "cc/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -98,7 +99,7 @@ void FakeOutputSurface::SetNeedsBeginFrame(bool enable) {
 }
 
 void FakeOutputSurface::OnBeginFrame() {
-  client_->BeginFrame(BeginFrameArgs::CreateForTesting());
+  client_->BeginFrame(CreateBeginFrameArgsForTesting());
 }
 
 

@@ -20,8 +20,6 @@ struct CC_EXPORT BeginFrameArgs {
                                base::TimeTicks deadline,
                                base::TimeDelta interval);
   static BeginFrameArgs CreateForSynchronousCompositor();
-  static BeginFrameArgs CreateForTesting();
-  static BeginFrameArgs CreateExpiredForTesting();
 
   // This is the default delta that will be used to adjust the deadline when
   // proper draw-time estimations are not yet available.

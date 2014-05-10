@@ -8,6 +8,7 @@
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
+#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/scheduler_test_common.h"
@@ -45,7 +46,7 @@ class TestOutputSurface : public OutputSurface {
   }
 
   void BeginFrameForTesting() {
-    client_->BeginFrame(BeginFrameArgs::CreateExpiredForTesting());
+    client_->BeginFrame(CreateExpiredBeginFrameArgsForTesting());
   }
 
   void DidSwapBuffersForTesting() { client_->DidSwapBuffers(); }
