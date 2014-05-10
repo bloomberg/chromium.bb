@@ -27,7 +27,9 @@ namespace {
 ACTION_TEMPLATE(InvokeUsbTransferCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p1)) {
-  ::std::tr1::get<k>(args).Run(p1, new net::IOBuffer(1), 1);
+  net::IOBuffer* io_buffer = new net::IOBuffer(1);
+  memset(io_buffer->data(), 0, 1);  // Avoid uninitialized reads.
+  ::std::tr1::get<k>(args).Run(p1, io_buffer, 1);
 }
 
 // MSVC erroneously thinks that at least one of the arguments for the transfer
