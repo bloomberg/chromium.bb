@@ -4,12 +4,6 @@
 
 #include "base/mac/scoped_mach_vm.h"
 
-#if defined(OS_IOS)
-#define mach_vm_address_t vm_address_t
-#define mach_vm_size_t vm_size_t
-#define mach_vm_deallocate vm_deallocate
-#endif  // OS_IOS
-
 namespace base {
 namespace mac {
 

@@ -24,7 +24,6 @@
 #include "base/mac/authorization_util.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_logging.h"
-#include "base/mac/mach_logging.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_authorizationref.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -82,7 +81,7 @@ io_service_t CopyHDIXDriveServiceForMedia(io_service_t media) {
                                         kIORegistryIterateParents,
                                     &iterator_ref);
   if (kr != KERN_SUCCESS) {
-    MACH_LOG(ERROR, kr) << "IORegistryEntryCreateIterator";
+    LOG(ERROR) << "IORegistryEntryCreateIterator: " << kr;
     return IO_OBJECT_NULL;
   }
   base::mac::ScopedIOObject<io_iterator_t> iterator(iterator_ref);
@@ -208,7 +207,7 @@ bool IsPathOnReadOnlyDiskImage(const char path[],
                                                   match_dict,
                                                   &iterator_ref);
   if (kr != KERN_SUCCESS) {
-    MACH_LOG(ERROR, kr) << "IOServiceGetMatchingServices";
+    LOG(ERROR) << "IOServiceGetMatchingServices: " << kr;
     return false;
   }
   base::mac::ScopedIOObject<io_iterator_t> iterator(iterator_ref);

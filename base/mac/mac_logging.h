@@ -5,8 +5,6 @@
 #ifndef BASE_MAC_MAC_LOGGING_H_
 #define BASE_MAC_MAC_LOGGING_H_
 
-#include "base/base_export.h"
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 
@@ -45,12 +43,6 @@ class BASE_EXPORT OSStatusLogMessage : public logging::LogMessage {
 
 }  // namespace logging
 
-#if defined(NDEBUG)
-#define MAC_DVLOG_IS_ON(verbose_level) 0
-#else
-#define MAC_DVLOG_IS_ON(verbose_level) VLOG_IS_ON(verbose_level)
-#endif
-
 #define OSSTATUS_LOG_STREAM(severity, status) \
     COMPACT_GOOGLE_LOG_EX_ ## severity(OSStatusLogMessage, status).stream()
 #define OSSTATUS_VLOG_STREAM(verbose_level, status) \
@@ -82,10 +74,10 @@ class BASE_EXPORT OSStatusLogMessage : public logging::LogMessage {
 
 #define OSSTATUS_DVLOG(verbose_level, status) \
     LAZY_STREAM(OSSTATUS_VLOG_STREAM(verbose_level, status), \
-                MAC_DVLOG_IS_ON(verbose_level))
+                DVLOG_IS_ON(verbose_level))
 #define OSSTATUS_DVLOG_IF(verbose_level, condition, status) \
-    LAZY_STREAM(OSSTATUS_VLOG_STREAM(verbose_level, status), \
-                MAC_DVLOG_IS_ON(verbose_level) && (condition))
+    LAZY_STREAM(OSSTATUS_VLOG_STREAM(verbose_level, status) \
+                DVLOG_IS_ON(verbose_level) && (condition))
 
 #define OSSTATUS_DCHECK(condition, status) \
     LAZY_STREAM(OSSTATUS_LOG_STREAM(FATAL, status), \

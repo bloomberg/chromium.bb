@@ -16,7 +16,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/mach_logging.h"
 #include "base/scoped_clear_errno.h"
 #include "third_party/apple_apsl/CFBase.h"
 #include "third_party/apple_apsl/malloc.h"
@@ -223,12 +222,10 @@ void DeprotectMallocZone(ChromeMallocZone* default_zone,
                      reinterpret_cast<vm_region_info_t>(&info),
                      &count,
                      &unused);
-  MACH_CHECK(result == KERN_SUCCESS, result) << "mach_vm_region";
+  CHECK(result == KERN_SUCCESS);
 
-  // The kernel always returns a null object for VM_REGION_BASIC_INFO_64, but
-  // balance it with a deallocate in case this ever changes. See 10.9.2
-  // xnu-2422.90.20/osfmk/vm/vm_map.c vm_map_region.
-  mach_port_deallocate(mach_task_self(), unused);
+  result = mach_port_deallocate(mach_task_self(), unused);
+  CHECK(result == KERN_SUCCESS);
 
   // Does the region fully enclose the zone pointers? Possibly unwarranted
   // simplification used: using the size of a full version 8 malloc zone rather
@@ -251,7 +248,7 @@ void DeprotectMallocZone(ChromeMallocZone* default_zone,
                              *reprotection_length,
                              false,
                              info.protection | VM_PROT_WRITE);
-    MACH_CHECK(result == KERN_SUCCESS, result) << "mach_vm_protect";
+    CHECK(result == KERN_SUCCESS);
   }
 }
 
@@ -649,7 +646,7 @@ void EnableTerminationOnOutOfMemory() {
                                            default_reprotection_length,
                                            false,
                                            default_reprotection_value);
-    MACH_CHECK(result == KERN_SUCCESS, result) << "mach_vm_protect";
+    CHECK(result == KERN_SUCCESS);
   }
 
   if (purgeable_reprotection_start) {
@@ -658,7 +655,7 @@ void EnableTerminationOnOutOfMemory() {
                                            purgeable_reprotection_length,
                                            false,
                                            purgeable_reprotection_value);
-    MACH_CHECK(result == KERN_SUCCESS, result) << "mach_vm_protect";
+    CHECK(result == KERN_SUCCESS);
   }
 #endif
 
