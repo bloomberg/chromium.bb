@@ -33,17 +33,6 @@
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
-    <request name="desktop_ready" since="2">
-      <description summary="desktop is ready to be shown">
-	Tell the server, that enough desktop elements have been drawn
-	to make the desktop look ready for use. During start-up, the
-	server can wait for this request with a black screen before
-	starting to fade in the desktop, for instance. If the client
-	parts of a desktop take a long time to initialize, we avoid
-	showing temporary garbage.
-      </description>
-    </request>
-
     <!-- We'll fold most of wl_shell into this interface and then
          they'll share the configure event.  -->
     <event name="configure">
@@ -91,6 +80,20 @@
 
       <entry name="busy" value="11"/>
     </enum>
+
+    <!-- Version 2 additions -->
+
+    <request name="desktop_ready" since="2">
+      <description summary="desktop is ready to be shown">
+	Tell the server, that enough desktop elements have been drawn
+	to make the desktop look ready for use. During start-up, the
+	server can wait for this request with a black screen before
+	starting to fade in the desktop, for instance. If the client
+	parts of a desktop take a long time to initialize, we avoid
+	showing temporary garbage.
+      </description>
+    </request>
+
   </interface>
 
   <interface name="screensaver" version="1">
