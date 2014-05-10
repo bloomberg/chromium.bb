@@ -33,7 +33,7 @@ void MergePacketEvent(const AggregatedPacketEvent& from,
     const BasePacketEvent& from_base_event = from.base_packet_event(i);
     bool merged = false;
     for (int j = 0; j < to->base_packet_event_size(); j++) {
-      BasePacketEvent* to_base_event = to->mutable_base_packet_event(i);
+      BasePacketEvent* to_base_event = to->mutable_base_packet_event(j);
       if (from_base_event.packet_id() == to_base_event->packet_id()) {
         to_base_event->MergeFrom(from_base_event);
         merged = true;
@@ -51,12 +51,14 @@ void MergeFrameEvent(const AggregatedFrameEvent& from,
     linked_ptr<AggregatedFrameEvent> to) {
   to->mutable_event_type()->MergeFrom(from.event_type());
   to->mutable_event_timestamp_ms()->MergeFrom(from.event_timestamp_ms());
-  if (!to->has_encoded_frame_size())
+  if (!to->has_encoded_frame_size() && from.has_encoded_frame_size())
     to->set_encoded_frame_size(from.encoded_frame_size());
-  if (!to->has_delay_millis())
+  if (!to->has_delay_millis() && from.has_delay_millis())
     to->set_delay_millis(from.delay_millis());
-  if (!to->has_key_frame())
+  if (!to->has_key_frame() && from.has_key_frame())
     to->set_key_frame(from.key_frame());
+  if (!to->has_target_bitrate() && from.has_target_bitrate())
+    to->set_target_bitrate(from.target_bitrate());
 }
 
 bool PopulateDeserializedLog(base::BigEndianReader* reader,
