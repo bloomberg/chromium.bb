@@ -14,6 +14,8 @@
 
 namespace net {
 
+extern const char* const kCharsetLatin1;
+
 // Converts |text| using |charset| to UTF-8, and writes it to |output|.
 // On failure, returns false and |output| is cleared.
 bool ConvertToUtf8(const std::string& text, const char* charset,
@@ -24,19 +26,16 @@ bool ConvertToUtf8(const std::string& text, const char* charset,
 bool ConvertToUtf8AndNormalize(const std::string& text, const char* charset,
                                std::string* output);
 
-// Converts |text| encoded in Latin-1 to UTF-8, normalizes the result, and
-// writes it to |output|.  On failure, returns false and |output| is cleared.
-bool ConvertLatin1ToUtf8AndNormalize(const std::string& text,
-                                     std::string* output);
-
 // Converts |text| using |charset| to UTF-16, and writes it to |output|.
 // On failure, returns false and |output| is cleared.
 bool ConvertToUTF16(const std::string& text, const char* charset,
                     base::string16* output);
 
-// Converts |text| encoded in Latin-1 to UTF-16, and writes it to |output|.
-// On failure, returns false and |output| is cleared.
-bool ConvertLatin1ToUTF16(const std::string& text, base::string16* output);
+// Converts |text| using |charset| to UTF-16, and writes it to |output|.
+// Any characters that can not be converted are replaced with U+FFFD.
+bool ConvertToUTF16WithSubstitutions(const std::string& text,
+                                     const char* charset,
+                                     base::string16* output);
 
 }  // namespace net
 

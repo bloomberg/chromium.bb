@@ -43,8 +43,10 @@ bool ParseRealm(const HttpAuthChallengeTokenizer& tokenizer,
     if (!LowerCaseEqualsASCII(parameters.name(), "realm"))
       continue;
 
-    if (!net::ConvertLatin1ToUtf8AndNormalize(parameters.value(), realm))
+    if (!net::ConvertToUtf8AndNormalize(parameters.value(), kCharsetLatin1,
+                                        realm)) {
       return false;
+    }
   }
   return parameters.valid();
 }

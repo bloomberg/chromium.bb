@@ -11,6 +11,8 @@
 
 namespace net {
 
+const char* const kCharsetLatin1 = base::kCodepageLatin1;
+
 bool ConvertToUtf8(const std::string& text, const char* charset,
                    std::string* output) {
   output->clear();
@@ -43,20 +45,18 @@ bool ConvertToUtf8AndNormalize(const std::string& text, const char* charset,
   return base::ConvertToUtf8AndNormalize(text,  charset, output);
 }
 
-bool ConvertLatin1ToUtf8AndNormalize(const std::string& text,
-                                    std::string* output) {
-  return net::ConvertToUtf8AndNormalize(text,  base::kCodepageLatin1, output);
-}
-
 bool ConvertToUTF16(const std::string& text, const char* charset,
                     base::string16* output) {
   return base::CodepageToUTF16(text, charset,
                                base::OnStringConversionError::FAIL, output);
 }
 
-bool ConvertLatin1ToUTF16(const std::string& text, base::string16* output) {
-  return base::CodepageToUTF16(text, base::kCodepageLatin1,
-                               base::OnStringConversionError::FAIL, output);
+bool ConvertToUTF16WithSubstitutions(const std::string& text,
+                                     const char* charset,
+                                     base::string16* output) {
+  return base::CodepageToUTF16(text, charset,
+                               base::OnStringConversionError::SUBSTITUTE,
+                               output);
 }
 
 }  // namespace net

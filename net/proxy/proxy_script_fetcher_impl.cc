@@ -5,7 +5,6 @@
 #include "net/proxy/proxy_script_fetcher_impl.h"
 
 #include "base/compiler_specific.h"
-#include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
@@ -13,6 +12,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_string_util.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
@@ -56,18 +56,15 @@ void ConvertResponseToUTF16(const std::string& charset,
 
   if (charset.empty()) {
     // Assume ISO-8859-1 if no charset was specified.
-    codepage = base::kCodepageLatin1;
+    codepage = kCharsetLatin1;
   } else {
     // Otherwise trust the charset that was provided.
     codepage = charset.c_str();
   }
 
-  // We will be generous in the conversion -- if any characters lie
-  // outside of |charset| (i.e. invalid), then substitute them with
-  // U+FFFD rather than failing.
-  base::CodepageToUTF16(bytes, codepage,
-                        base::OnStringConversionError::SUBSTITUTE,
-                        utf16);
+  // Be generous in the conversion -- if any characters lie outside of |charset|
+  // (i.e. invalid), then substitute them with U+FFFD rather than failing.
+  ConvertToUTF16WithSubstitutions(bytes, codepage, utf16);
 }
 
 }  // namespace

@@ -15,6 +15,10 @@
 #include "net/cert/x509_util_android.h"
 #include "net/proxy/proxy_config_service_android.h"
 
+#if defined(USE_ICU_ALTERNATIVES)
+#include "net/base/net_string_util_icu_alternatives_android.h"
+#endif
+
 namespace net {
 namespace android {
 
@@ -28,6 +32,9 @@ static base::android::RegistrationMethod kNetRegisteredMethods[] = {
     net::NetworkChangeNotifierAndroid::Register },
   { "ProxyConfigService", net::ProxyConfigServiceAndroid::Register },
   { "X509Util", net::RegisterX509Util },
+#if defined(USE_ICU_ALTERNATIVES)
+  { "NetStringUtils", net::RegisterNetStringUtils }
+#endif
 };
 
 bool RegisterJni(JNIEnv* env) {

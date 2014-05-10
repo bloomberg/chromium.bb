@@ -438,6 +438,16 @@
             ],
           },
         ],
+        [ 'use_icu_alternatives_on_android == 1', {
+            'sources!': [
+              'base/net_string_util_icu.cc',
+            ],
+            'sources': [
+              'base/net_string_util_icu_alternatives_android.cc',
+              'base/net_string_util_icu_alternatives_android.h',
+            ],
+          },
+        ],
       ],
       'target_conditions': [
         # These source files are excluded by default platform rules, but they
@@ -1430,6 +1440,14 @@
             'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../build/jni_generator.gypi' ],
+
+          'conditions': [
+            ['use_icu_alternatives_on_android==1', {
+              'sources': [
+                'android/java/src/org/chromium/net/NetStringUtil.java',
+              ],
+            }],
+          ],
         },
         {
           'target_name': 'net_test_jni_headers',

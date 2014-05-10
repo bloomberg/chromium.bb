@@ -44,10 +44,6 @@ specific_include_rules = {
     "+third_party/icu/source/common/unicode/ucnv.h"
   ],
 
-  # Only use icu for string conversions.
-  "proxy_script_fetcher_impl\.cc": [
-    "+base/i18n/icu_string_conversions.h",
-  ],
   "websocket_channel\.h": [
     "+base/i18n",
   ],
