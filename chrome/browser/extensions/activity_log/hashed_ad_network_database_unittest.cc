@@ -49,7 +49,6 @@ const size_t kDataResourceSize = kChecksumSize + kAdNetworkHostHashesTotalSize;
 class HashedAdNetworkDatabaseUnitTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE;
-  virtual void TearDown() OVERRIDE;
 
  private:
   // Generate a piece of memory with a hash structure identical to the real one,
@@ -67,11 +66,6 @@ void HashedAdNetworkDatabaseUnitTest::SetUp() {
   GenerateMockMemory();
   AdNetworkDatabase::SetForTesting(
       scoped_ptr<AdNetworkDatabase>(new HashedAdNetworkDatabase(memory_)));
-}
-
-void HashedAdNetworkDatabaseUnitTest::TearDown() {
-  // Reset the database.
-  AdNetworkDatabase::SetForTesting(scoped_ptr<AdNetworkDatabase>());
 }
 
 void HashedAdNetworkDatabaseUnitTest::GenerateMockMemory() {
@@ -100,9 +94,6 @@ void HashedAdNetworkDatabaseUnitTest::GenerateMockMemory() {
   memory_ = new base::RefCountedStaticMemory(raw_data_, kDataResourceSize);
 };
 
-// Test that the logic for the Ad Network Database works. That is, the hashing
-// scheme works, correctly reports when URLs are present in the database,
-// treats hosts and sumdomains correctly, etc.
 TEST_F(HashedAdNetworkDatabaseUnitTest, HashedAdNetworkDatabaseTest) {
   const AdNetworkDatabase* database = AdNetworkDatabase::Get();
   ASSERT_TRUE(database);
@@ -137,25 +128,6 @@ TEST_F(HashedAdNetworkDatabaseUnitTest, HashedAdNetworkDatabaseTest) {
       database->IsAdNetwork(GURL("file:///usr/someone/files/file.html")));
   EXPECT_FALSE(database->IsAdNetwork(
       GURL("chrome-extension://aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")));
-}
-
-// Test that the HashAdNetworkDatabse test works with the real file. For
-// security and privacy purposes, we cannot verify that real URLs are
-// recognized. However, we can at least verify that the file is recognized and
-// parsed.
-TEST(HashedAdNetworkDatabaseWithRealFileUnitTest,
-     HashedAdNetworkDatabaseRealFileTest) {
-  // This constructs the database, and, since we didn't mock up any memory, it
-  // uses the real file.
-  const AdNetworkDatabase* database = AdNetworkDatabase::Get();
-  ASSERT_TRUE(database);
-  const HashedAdNetworkDatabase* hashed_database =
-      static_cast<const HashedAdNetworkDatabase*>(database);
-  EXPECT_TRUE(hashed_database->is_valid());
-
-  // We can also safely assume that a made-up url is not in the database.
-  EXPECT_FALSE(database->IsAdNetwork(
-      GURL("http://www.this-is-definitely-not-a-real-site.orarealtld")));
 }
 
 }  // namespace extensions
