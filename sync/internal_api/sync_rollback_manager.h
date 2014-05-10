@@ -47,6 +47,8 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManager : public SyncRollbackManagerBase {
   // Deletes specified entries in local model.
   SyncerError DeleteOnWorkerThread(ModelType type, std::vector<int64> handles);
 
+  void NotifyRollbackDone();
+
   std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker> > workers_;
 
   SyncManager::ChangeDelegate* change_delegate_;

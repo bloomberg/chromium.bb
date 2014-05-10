@@ -332,6 +332,10 @@ void SyncRollbackManagerBase::InitBookmarkFolder(const std::string& folder) {
   entry.PutSpecifics(specifics);
 }
 
+ObserverList<SyncManager::Observer>* SyncRollbackManagerBase::GetObservers() {
+  return &observers_;
+}
+
 void SyncRollbackManagerBase::RegisterDirectoryTypeDebugInfoObserver(
     syncer::TypeDebugInfoObserver* observer) {}
 

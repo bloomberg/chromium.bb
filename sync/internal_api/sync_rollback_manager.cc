@@ -67,8 +67,12 @@ void SyncRollbackManager::Init(
 
 void SyncRollbackManager::StartSyncingNormally(
     const ModelSafeRoutingInfo& routing_info){
-  std::map<ModelType, syncable::Directory::Metahandles> to_delete;
+  if (rollback_ready_types_.Empty()) {
+    NotifyRollbackDone();
+    return;
+  }
 
+  std::map<ModelType, syncable::Directory::Metahandles> to_delete;
   {
     WriteTransaction trans(FROM_HERE, GetUserShare());
     syncable::Directory::Metahandles unsynced;
@@ -100,6 +104,8 @@ void SyncRollbackManager::StartSyncingNormally(
                    base::Unretained(this),
                    it->first, it->second));
   }
+
+  NotifyRollbackDone();
 }
 
 SyncerError SyncRollbackManager::DeleteOnWorkerThread(
@@ -128,6 +134,13 @@ SyncerError SyncRollbackManager::DeleteOnWorkerThread(
 
   change_delegate_->OnChangesComplete(type);
   return SYNCER_OK;
+}
+
+void SyncRollbackManager::NotifyRollbackDone() {
+  SyncProtocolError error;
+  error.action = ROLLBACK_DONE;
+  FOR_EACH_OBSERVER(SyncManager::Observer, *GetObservers(),
+                    OnActionableError(error));
 }
 
 }  // namespace syncer

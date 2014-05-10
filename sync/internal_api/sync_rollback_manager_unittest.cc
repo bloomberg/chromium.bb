@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "sync/internal_api/public/read_node.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/test/test_internal_components_factory.h"
 #include "sync/internal_api/public/write_node.h"
 #include "sync/internal_api/public/write_transaction.h"
@@ -20,6 +21,7 @@
 using ::testing::_;
 using ::testing::DoDefault;
 using ::testing::Invoke;
+using ::testing::Truly;
 using ::testing::WithArgs;
 
 namespace syncer {
@@ -61,13 +63,25 @@ class TestChangeDelegate : public SyncManager::ChangeDelegate {
   std::set<int64> expected_deletes_;
 };
 
-class SyncRollbackManagerTest : public testing::Test {
+class SyncRollbackManagerTest : public testing::Test,
+                                public SyncManager::Observer {
  protected:
   virtual void SetUp() OVERRIDE {
     CHECK(temp_dir_.CreateUniqueTempDir());
 
     worker_ = new FakeModelWorker(GROUP_UI);
   }
+
+  MOCK_METHOD1(OnSyncCycleCompleted,
+               void(const sessions::SyncSessionSnapshot&));
+  MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));
+  MOCK_METHOD4(OnInitializationComplete,
+      void(const WeakHandle<JsBackend>&,
+           const WeakHandle<DataTypeDebugInfoListener>&,
+           bool, ModelTypeSet));
+  MOCK_METHOD1(OnActionableError, void(const SyncProtocolError&));
+  MOCK_METHOD1(OnMigrationRequested, void(ModelTypeSet));;
+  MOCK_METHOD1(OnProtocolEvent, void(const ProtocolEvent&));
 
   void OnConfigDone(bool success) {
     EXPECT_TRUE(success);
@@ -88,6 +102,7 @@ class SyncRollbackManagerTest : public testing::Test {
 
   void InitManager(SyncManager* manager, ModelTypeSet types,
                    TestChangeDelegate* delegate) {
+    manager->AddObserver(this);
     TestInternalComponentsFactory factory(InternalComponentsFactory::Switches(),
                                           STORAGE_ON_DISK);
 
@@ -131,6 +146,10 @@ class SyncRollbackManagerTest : public testing::Test {
   base::MessageLoop loop_;    // Needed for WeakHandle
 };
 
+bool IsRollbackDoneAction(SyncProtocolError e) {
+  return e.action == syncer::ROLLBACK_DONE;
+}
+
 TEST_F(SyncRollbackManagerTest, RollbackBasic) {
   PrepopulateDb(PREFERENCES, "pref1");
 
@@ -147,6 +166,7 @@ TEST_F(SyncRollbackManagerTest, RollbackBasic) {
       .Times(1)
       .WillOnce(DoDefault());
   EXPECT_CALL(delegate, OnChangesComplete(_)).Times(1);
+  EXPECT_CALL(*this, OnActionableError(Truly(IsRollbackDoneAction))).Times(1);
 
   ModelSafeRoutingInfo routing_info;
   routing_info[PREFERENCES] = GROUP_UI;

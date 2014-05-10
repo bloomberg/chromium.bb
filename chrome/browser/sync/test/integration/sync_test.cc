@@ -976,6 +976,7 @@ sync_pb::SyncEnums::Action GetClientToServerResponseAction(
       return sync_pb::SyncEnums::DISABLE_SYNC_ON_CLIENT;
     case syncer::STOP_SYNC_FOR_DISABLED_ACCOUNT:
     case syncer::DISABLE_SYNC_AND_ROLLBACK:
+    case syncer::ROLLBACK_DONE:
       NOTREACHED();   // No corresponding proto action for these. Shouldn't
                       // test.
       return sync_pb::SyncEnums::UNKNOWN_ACTION;

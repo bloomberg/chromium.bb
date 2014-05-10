@@ -113,6 +113,9 @@ class SYNC_EXPORT_PRIVATE SyncRollbackManagerBase :
       const syncable::ImmutableWriteTransactionInfo& write_transaction_info,
       ModelTypeSet models_with_changes) OVERRIDE;
 
+ protected:
+  ObserverList<SyncManager::Observer>* GetObservers();
+
   virtual void RegisterDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) OVERRIDE;
   virtual void UnregisterDirectoryTypeDebugInfoObserver(
