@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 #include "cpp/include/libaddressinput/util/scoped_ptr.h"
+#include "third_party/icu/source/common/unicode/errorcode.h"
+#include "third_party/icu/source/common/unicode/locid.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
 namespace i18n {
@@ -17,7 +21,9 @@ class ChromeStringCanonicalizer : public StringCanonicalizer {
  public:
   ChromeStringCanonicalizer()
       : error_code_(U_ZERO_ERROR),
-        collator_(icu::Collator::createInstance(error_code_)) {
+        collator_(
+            icu::Collator::createInstance(
+                icu::Locale::getRoot(), error_code_)) {
     collator_->setStrength(icu::Collator::PRIMARY);
     DCHECK(U_SUCCESS(error_code_));
   }
