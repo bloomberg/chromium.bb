@@ -27,6 +27,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/nacl_browser.h"
+#include "components/nacl/browser/nacl_browser_delegate.h"
 #include "components/nacl/browser/nacl_host_message_filter.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_host_messages.h"
@@ -430,15 +431,23 @@ void NaClProcessHost::Launch(
   }
 
   if (uses_nonsfi_mode_) {
+    bool nonsfi_mode_forced_by_command_line = false;
+    bool nonsfi_mode_allowed = false;
 #if defined(OS_LINUX)
-    const bool kNonSFIModeSupported = true;
-#else
-    const bool kNonSFIModeSupported = false;
+    nonsfi_mode_forced_by_command_line =
+        cmd->HasSwitch(switches::kEnableNaClNonSfiMode);
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+    nonsfi_mode_allowed = NaClBrowser::GetDelegate()->IsNonSfiModeAllowed(
+        nacl_host_message_filter->profile_directory(), manifest_url_);
 #endif
-    if (!kNonSFIModeSupported ||
-        !cmd->HasSwitch(switches::kEnableNaClNonSfiMode)) {
-      SendErrorToRenderer("NaCl non-SFI mode works only on Linux with"
-                          " --enable-nacl-nonsfi-mode specified");
+#endif
+    bool nonsfi_mode_enabled =
+        nonsfi_mode_forced_by_command_line || nonsfi_mode_allowed;
+
+    if (!nonsfi_mode_enabled) {
+      SendErrorToRenderer(
+          "NaCl non-SFI mode is not available for this platform"
+          " and NaCl module.");
       delete this;
       return;
     }

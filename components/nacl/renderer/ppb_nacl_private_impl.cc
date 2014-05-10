@@ -524,7 +524,13 @@ int32_t GetNumberOfProcessors() {
 }
 
 PP_Bool IsNonSFIModeEnabled() {
-#if defined(OS_LINUX)
+// Note that this only indicates whether non-sfi mode *can* run for a given
+// platform and if nonsfi manifest entries are preferred.  There can be other
+// restrictions which prevent a particular module from launching.  See
+// NaClProcessHost::Launch which makes the final determination.
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  return PP_TRUE;
+#elif defined(OS_LINUX)
   return PP_FromBool(CommandLine::ForCurrentProcess()->HasSwitch(
                          switches::kEnableNaClNonSfiMode));
 #else

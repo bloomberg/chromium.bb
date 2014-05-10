@@ -59,3 +59,9 @@ content::BrowserPpapiHost::OnKeepaliveCallback
 TestNaClBrowserDelegate::GetOnKeepaliveCallback() {
   return content::BrowserPpapiHost::OnKeepaliveCallback();
 }
+
+bool TestNaClBrowserDelegate::IsNonSfiModeAllowed(
+    const base::FilePath& profile_directory,
+    const GURL& manifest_url) {
+  return false;
+}

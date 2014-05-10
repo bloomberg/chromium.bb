@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/pepper_permission_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
@@ -33,6 +34,13 @@
 using extensions::SharedModuleInfo;
 
 namespace {
+
+// These are temporarily needed for testing non-sfi mode on ChromeOS without
+// passing command-line arguments to Chrome.
+const char* const kAllowedNonSfiOrigins[] = {
+    "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see http://crbug.com/355141
+    "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see http://crbug.com/355141
+};
 
 // Handles an extension's NaCl process transitioning in or out of idle state by
 // relaying the state to the extension's process manager.
@@ -108,6 +116,9 @@ NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
     ProfileManager* profile_manager)
     : profile_manager_(profile_manager), inverse_debug_patterns_(false) {
   DCHECK(profile_manager_);
+  for (size_t i = 0; i < arraysize(kAllowedNonSfiOrigins); ++i) {
+    allowed_nonsfi_origins_.insert(kAllowedNonSfiOrigins[i]);
+  }
 }
 
 NaClBrowserDelegateImpl::~NaClBrowserDelegateImpl() {
@@ -210,15 +221,8 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
     bool use_blocking_api,
     const base::FilePath& profile_directory,
     base::FilePath* file_path) {
-  // Get the profile associated with the renderer.
-  Profile* profile = profile_manager_->GetProfileByPath(profile_directory);
-  if (!profile)
-    return false;
-
   scoped_refptr<extensions::InfoMap> extension_info_map =
-      extensions::ExtensionSystem::Get(profile)->info_map();
-  DCHECK(extension_info_map);
-
+      GetExtensionInfoMap(profile_directory);
   // Check that the URL is recognized by the extension system.
   const extensions::Extension* extension =
       extension_info_map->extensions().GetExtensionOrAppByURL(file_url);
@@ -278,4 +282,24 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
 content::BrowserPpapiHost::OnKeepaliveCallback
 NaClBrowserDelegateImpl::GetOnKeepaliveCallback() {
   return base::Bind(&OnKeepalive);
+}
+
+bool NaClBrowserDelegateImpl::IsNonSfiModeAllowed(
+    const base::FilePath& profile_directory,
+    const GURL& manifest_url) {
+  const extensions::ExtensionSet* extension_set =
+      &GetExtensionInfoMap(profile_directory)->extensions();
+  return chrome::IsExtensionOrSharedModuleWhitelisted(
+      manifest_url, extension_set, allowed_nonsfi_origins_);
+}
+
+scoped_refptr<extensions::InfoMap> NaClBrowserDelegateImpl::GetExtensionInfoMap(
+    const base::FilePath& profile_directory) {
+  // Get the profile associated with the renderer.
+  Profile* profile = profile_manager_->GetProfileByPath(profile_directory);
+  DCHECK(profile);
+  scoped_refptr<extensions::InfoMap> extension_info_map =
+      extensions::ExtensionSystem::Get(profile)->info_map();
+  DCHECK(extension_info_map);
+  return extension_info_map;
 }

@@ -1872,6 +1872,7 @@
         'common/net/url_fixer_upper_unittest.cc',
         'common/net/x509_certificate_model_unittest.cc',
         'common/partial_circular_buffer_unittest.cc',
+        'common/pepper_permission_util_unittest.cc',
         'common/pref_names_util_unittest.cc',
         'common/search_urls_unittest.cc',
         'common/service_process_util_unittest.cc',

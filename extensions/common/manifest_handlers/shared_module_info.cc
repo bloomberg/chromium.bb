@@ -86,6 +86,11 @@ bool SharedModuleInfo::IsExportAllowed(const Extension* extension,
 // static
 bool SharedModuleInfo::IsExportAllowedByWhitelist(const Extension* extension,
                                                   const std::string& other_id) {
+  // Sanity check. In case the caller did not check |extension| to make sure it
+  // is a shared module, we do not want it to appear that the extension with
+  // |other_id| importing |extension| is valid.
+  if (!SharedModuleInfo::IsSharedModule(extension))
+    return false;
   const SharedModuleInfo& info = GetSharedModuleInfo(extension);
   if (info.export_whitelist_.empty())
     return true;

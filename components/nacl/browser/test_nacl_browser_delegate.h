@@ -40,6 +40,8 @@ class TestNaClBrowserDelegate : public NaClBrowserDelegate {
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) OVERRIDE;
   virtual content::BrowserPpapiHost::OnKeepaliveCallback
       GetOnKeepaliveCallback() OVERRIDE;
+  virtual bool IsNonSfiModeAllowed(const base::FilePath& profile_directory,
+                                   const GURL& manifest_url) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestNaClBrowserDelegate);

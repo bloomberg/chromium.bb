@@ -17,6 +17,7 @@
 
 using extensions::Extension;
 using extensions::Manifest;
+using extensions::SharedModuleInfo;
 
 namespace chrome {
 
@@ -49,20 +50,25 @@ bool IsExtensionOrSharedModuleWhitelisted(
   // is whitelisted.
   const Extension* extension = extension_set ? extension_set->GetByID(host)
                                              : NULL;
-  if (extension) {
-    typedef std::vector<extensions::SharedModuleInfo::ImportInfo>
-        ImportInfoVector;
-    const ImportInfoVector& imports =
-        extensions::SharedModuleInfo::GetImports(extension);
-    for (ImportInfoVector::const_iterator it = imports.begin();
-         it != imports.end(); ++it) {
-      const Extension* imported_extension = extension_set->GetByID(
-          it->extension_id);
-      if (imported_extension &&
-          extensions::SharedModuleInfo::IsSharedModule(imported_extension) &&
-          HostIsInSet(it->extension_id, whitelist)) {
-        return true;
-      }
+  if (!extension)
+    return false;
+
+  typedef std::vector<SharedModuleInfo::ImportInfo> ImportInfoVector;
+  const ImportInfoVector& imports = SharedModuleInfo::GetImports(extension);
+  for (ImportInfoVector::const_iterator it = imports.begin();
+       it != imports.end();
+       ++it) {
+    const Extension* imported_extension =
+        extension_set->GetByID(it->extension_id);
+    if (imported_extension &&
+        SharedModuleInfo::IsSharedModule(imported_extension) &&
+        // We check the whitelist explicitly even though the extension should
+        // never have been allowed to be installed in the first place if this
+        // fails.  See SharedModuleService::CheckImports for details.
+        SharedModuleInfo::IsExportAllowedByWhitelist(imported_extension,
+                                                     host) &&
+        HostIsInSet(it->extension_id, whitelist)) {
+      return true;
     }
   }
 
