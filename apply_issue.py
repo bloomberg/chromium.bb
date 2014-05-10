@@ -85,6 +85,8 @@ def main():
   parser.add_option('-f', '--force', action='store_true',
                     help='Really run apply_issue, even if .update.flag '
                          'is detected.')
+  parser.add_option('-b', '--base_ref', help='Base git ref to patch on top of, '
+                    'used for verification.')
   parser.add_option('--whitelist', action='append', default=[],
                     help='Patch only specified file(s).')
   parser.add_option('--blacklist', action='append', default=[],
@@ -203,7 +205,8 @@ def main():
   if scm_type == 'svn':
     scm_obj = checkout.SvnCheckout(full_dir, None, None, None, None)
   elif scm_type == 'git':
-    scm_obj = checkout.GitCheckout(full_dir, None, None, None, None)
+    scm_obj = checkout.GitCheckout(full_dir, None, None, None, None,
+                                   base_ref=options.base_ref,)
   elif scm_type == None:
     scm_obj = checkout.RawCheckout(full_dir, None, None)
   else:
@@ -220,7 +223,10 @@ def main():
 
   print('\nApplying the patch.')
   try:
-    scm_obj.apply_patch(patchset, verbose=True)
+    scm_obj.apply_patch(
+        patchset, verbose=True,
+        email=properties.get('owner_email', 'chrome-bot@chromium.org'),
+        name=properties.get('owner', 'chrome-bot'))
   except checkout.PatchApplicationFailed, e:
     print(str(e))
     print('CWD=%s' % os.getcwd())

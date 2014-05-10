@@ -131,7 +131,8 @@ class CheckoutBase(object):
     """
     raise NotImplementedError()
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     """Applies a patch and returns the list of modified files.
 
     This function should throw patch.UnsupportedPatchFormat or
@@ -165,7 +166,8 @@ class RawCheckout(CheckoutBase):
     """Stubbed out."""
     pass
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     """Ignores svn properties."""
     post_processors = post_processors or self.post_processors or []
     for p in patches:
@@ -349,7 +351,8 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
           (self.project_name, self.project_path))
     return self._revert(revision)
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     post_processors = post_processors or self.post_processors or []
     for p in patches:
       stdout = []
@@ -553,8 +556,9 @@ class SvnCheckout(CheckoutBase, SvnMixIn):
 class GitCheckout(CheckoutBase):
   """Manages a git checkout."""
   def __init__(self, root_dir, project_name, remote_branch, git_url,
-      commit_user, post_processors=None):
+      commit_user, post_processors=None, base_ref=None):
     super(GitCheckout, self).__init__(root_dir, project_name, post_processors)
+    self.base_ref = base_ref
     self.git_url = git_url
     self.commit_user = commit_user
     self.remote_branch = remote_branch
@@ -627,10 +631,11 @@ class GitCheckout(CheckoutBase):
     """Gets the current revision (in unicode) from the local branch."""
     return unicode(self._check_output_git(['rev-parse', 'HEAD']).strip())
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     """Applies a patch on 'working_branch' and switches to it.
 
-    The changes remain staged on the current branch.
+    Also commits the changes on the local branch.
 
     Ignores svn properties and raise an exception on unexpected ones.
     """
@@ -704,9 +709,22 @@ class GitCheckout(CheckoutBase):
               ' '.join(e.cmd),
               align_stdout(stdout),
               align_stdout([getattr(e, 'stdout', '')])))
+    # Once all the patches are processed and added to the index, commit the
+    # index.
+    cmd = ['commit', '-m', 'Committed patch']
+    if name and email:
+      cmd = ['-c', 'user.email=%s' % email, '-c', 'user.name=%s' % name] + cmd
+    if verbose:
+      cmd.append('--verbose')
+    self._check_call_git(cmd)
+    if self.base_ref:
+      base_ref = self.base_ref
+    else:
+      base_ref = '%s/%s' % (self.remote,
+                            self.remote_branch or self.master_branch)
     found_files = self._check_output_git(
-        ['diff', '--ignore-submodules',
-         '--name-only', '--staged']).splitlines(False)
+        ['diff', base_ref, '--ignore-submodules',
+         '--name-only']).splitlines(False)
     assert sorted(patches.filenames) == sorted(found_files), (
         'Found extra %s locally, %s not patched' % (
             sorted(set(found_files) - set(patches.filenames)),
@@ -714,15 +732,13 @@ class GitCheckout(CheckoutBase):
 
   def commit(self, commit_message, user):
     """Commits, updates the commit message and pushes."""
-    # TODO(hinoka): CQ no longer uses this, I think its deprecated.
-    #               Delete this.
     assert self.commit_user
     assert isinstance(commit_message, unicode)
     current_branch = self._check_output_git(
         ['rev-parse', '--abbrev-ref', 'HEAD']).strip()
     assert current_branch == self.working_branch
 
-    commit_cmd = ['commit', '-m', commit_message]
+    commit_cmd = ['commit', '--amend', '-m', commit_message]
     if user and user != self.commit_user:
       # We do not have the first or last name of the user, grab the username
       # from the email and call it the original author's name.
@@ -810,7 +826,8 @@ class ReadOnlyCheckout(object):
   def get_settings(self, key):
     return self.checkout.get_settings(key)
 
-  def apply_patch(self, patches, post_processors=None, verbose=False):
+  def apply_patch(self, patches, post_processors=None, verbose=False,
+                  name=None, email=None):
     return self.checkout.apply_patch(
         patches, post_processors or self.post_processors, verbose)
 
