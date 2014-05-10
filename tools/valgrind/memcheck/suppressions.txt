@@ -6420,3 +6420,16 @@
    fun:_ZN8feedback*FeedbackUploaderTest*
    fun:_ZN7testing8internal15TestFactoryImplIN8feedback*
 }
+{
+   bug_372143
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN2ui12_GLOBAL__N_121CreateGestureProviderEPNS_25GestureProviderAuraClientE
+   fun:_ZN2ui21GestureRecognizerImpl29GetGestureProviderForConsumerEPNS_15GestureConsumerE
+   fun:_ZN2ui21GestureRecognizerImpl27ProcessTouchEventForGestureERKNS_10TouchEventENS_11EventResultEPNS_15GestureConsumerE
+   fun:_ZN4aura21WindowEventDispatcher17PostDispatchEventEPN2ui11EventTargetERKNS1_5EventE
+   fun:_ZN2ui23EventDispatcherDelegate13DispatchEventEPNS_11EventTargetEPNS_5EventE
+   fun:_ZN2ui14EventProcessor17OnEventFromSourceEPNS_5EventE
+   fun:_ZN4aura4test12AuraTestBase34DispatchEventUsingWindowDispatcherEPN2ui5EventE
+}
