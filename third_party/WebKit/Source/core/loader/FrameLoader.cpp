@@ -284,11 +284,11 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
     m_currentItem->setFormInfoFromRequest(isPushOrReplaceState ? ResourceRequest() : m_documentLoader->request());
 }
 
-static HistoryCommitType loadTypeToCommitType(FrameLoadType type, bool isValidHistoryURL)
+static HistoryCommitType loadTypeToCommitType(FrameLoadType type)
 {
     switch (type) {
     case FrameLoadTypeStandard:
-        return isValidHistoryURL ? StandardCommit : HistoryInertCommit;
+        return StandardCommit;
     case FrameLoadTypeInitialInChildFrame:
         return InitialCommitInChildFrame;
     case FrameLoadTypeBackForward:
@@ -304,8 +304,11 @@ void FrameLoader::receivedFirstData()
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
 
-    bool isValidHistoryURL = !m_documentLoader->urlForHistory().isEmpty() && (!opener() || m_currentItem || !m_documentLoader->originalRequest().url().isEmpty());
-    HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType, isValidHistoryURL);
+    HistoryCommitType historyCommitType = loadTypeToCommitType(m_loadType);
+    if (historyCommitType == StandardCommit && (m_documentLoader->urlForHistory().isEmpty() || (opener() && !m_currentItem && m_documentLoader->originalRequest().url().isEmpty())))
+        historyCommitType = HistoryInertCommit;
+    else if (historyCommitType == InitialCommitInChildFrame && MixedContentChecker::isMixedContent(m_frame->tree().top()->document()->securityOrigin(), m_documentLoader->url()))
+        historyCommitType = HistoryInertCommit;
     setHistoryItemStateForCommit(historyCommitType);
 
     if (!m_stateMachine.committedMultipleRealLoads() && m_loadType == FrameLoadTypeStandard)
