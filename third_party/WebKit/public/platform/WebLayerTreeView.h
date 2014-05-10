@@ -107,14 +107,6 @@ public:
     // Relays the end of a fling animation.
     virtual void didStopFlinging() { }
 
-    // Composites and attempts to read back the result into the provided
-    // buffer. If it wasn't possible, e.g. due to context lost, will return
-    // false. Pixel format is 32bit (RGBA), and the provided buffer must be
-    // large enough contain viewportSize().width() * viewportSize().height()
-    // pixels. The WebLayerTreeView does not assume ownership of the buffer.
-    // The buffer is not modified if the false is returned.
-    virtual bool compositeAndReadback(void *pixels, const WebRect&) = 0;
-
     // The caller is responsible for keeping the WebCompositeAndReadbackAsyncCallback
     // object alive until it is called.
     virtual void compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback*) { }
