@@ -43,9 +43,10 @@ class FeedbackUploaderTest : public testing::Test {
   FeedbackUploaderTest()
      : ui_thread_(content::BrowserThread::UI, &message_loop_),
        context_(new content::TestBrowserContext()),
+       prefs_(new TestingPrefServiceSimple()),
        dispatched_reports_count_(0),
        expected_reports_(0) {
-    user_prefs::UserPrefs::Set(context_.get(), new TestingPrefServiceSimple());
+    user_prefs::UserPrefs::Set(context_.get(), prefs_.get());
     FeedbackUploaderFactory::GetInstance()->SetTestingFactory(
         context_.get(), &CreateFeedbackUploaderService);
 
@@ -102,6 +103,7 @@ class FeedbackUploaderTest : public testing::Test {
   scoped_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<content::TestBrowserContext> context_;
+  scoped_ptr<PrefService> prefs_;
 
   FeedbackUploader* uploader_;
 
