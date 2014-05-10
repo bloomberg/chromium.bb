@@ -99,7 +99,7 @@ void DefaultSearchManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(
       kDefaultSearchProviderDataPrefName,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 // static

@@ -156,7 +156,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // TemplateURLs that support replacement are returned.
   void FindMatchingKeywords(const base::string16& prefix,
                             bool support_replacement_only,
-                            TemplateURLVector* matches);
+                            TemplateURLVector* matches) const;
 
   // Looks up |keyword| and returns the element it maps to.  Returns NULL if
   // the keyword was not found.
@@ -276,7 +276,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   // revved: all existing prepopulated entries are checked against the current
   // prepopulate data, any now-extraneous safe_for_autoreplace() entries are
   // removed, any existing engines are reset to the provided data (except for
-  // user-edited names or keywords), and any new prepopulated engines are
+  // user-edited names or keywords), and any new prepopulated anegines are
   // added.
   //
   // After this, the default search engine is reset to the default entry in the
@@ -670,11 +670,11 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns a new TemplateURL for the given extension.
   TemplateURL* CreateTemplateURLForExtension(
-      const ExtensionKeyword& extension_keyword);
+      const ExtensionKeyword& extension_keyword) const;
 
   // Returns the TemplateURL associated with |extension_id|, if any.
   TemplateURL* FindTemplateURLForExtension(const std::string& extension_id,
-                                           TemplateURL::Type type);
+                                           TemplateURL::Type type) const;
 
   // Finds the most recently-installed NORMAL_CONTROLLED_BY_EXTENSION engine
   // that supports replacement and wants to be default, if any.
@@ -727,7 +727,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   std::vector<history::URLVisitedDetails> visits_to_add_;
 
   // Once loaded, the default search provider.  This is a pointer to a
-  // TemplateURL owned by |template_urls_|.
+  // TemplateURL owned by template_urls_.
   TemplateURL* default_search_provider_;
 
   // The initial search provider extracted from preferences. This is only valid
@@ -781,8 +781,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Stores a list of callbacks to be run after TemplateURLService has loaded.
   base::CallbackList<void(void)> on_loaded_callbacks_;
 
-  // Helper class to manage the default search engine.
-  DefaultSearchManager default_search_manager_;
+  // Helper class to manage the default search engine. This will be NULL when
+  // using the testing-specific constructor.
+  scoped_ptr<DefaultSearchManager> default_search_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TemplateURLService);
 };

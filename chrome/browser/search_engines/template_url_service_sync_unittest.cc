@@ -1881,9 +1881,9 @@ TEST_F(TemplateURLServiceSyncTest, PreSyncUpdates) {
   // updated time.
   TemplateURL* added_turl = model()->GetTemplateURLForKeyword(
       ASCIIToUTF16(kNewKeyword));
-  ASSERT_TRUE(added_turl);
   base::Time new_timestamp = added_turl->last_modified();
   EXPECT_GE(new_timestamp, pre_merge_time);
+  ASSERT_TRUE(added_turl);
   std::string sync_guid = added_turl->sync_guid();
 
   // Bring down a copy of the prepopulate engine from Sync with the old values,
