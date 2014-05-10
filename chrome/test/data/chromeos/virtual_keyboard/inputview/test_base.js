@@ -9,6 +9,17 @@ var mockTimer;
 var setComposition;
 
 var DEFAULT_CONTEXT_ID = 1;
+var CAPSLOCK_ID = "OsLeft";
+
+/**
+ * Key alignments.
+ * @enum {string}
+ */
+var Alignment = {
+  LEFT: 'left',
+  RIGHT: 'right',
+  CENTER: 'center'
+};
 
 /**
  * Create mocks for the virtualKeyboardPrivate API. Any tests that trigger API
@@ -17,10 +28,9 @@ var DEFAULT_CONTEXT_ID = 1;
 function setUp() {
   mockController = new MockController();
   mockTimer = new MockTimer();
-
   mockTimer.install();
-  mockController.createFunctionMock(chrome.input.ime, 'commitText');
 
+  mockController.createFunctionMock(chrome.input.ime, 'commitText');
   var validateCommit = function(index, expected, observed) {
     // Only consider the first argument, the details object.
     var expectedEvent = expected[0];
@@ -30,6 +40,7 @@ function setUp() {
                  'Mismatched commit text.');
   };
   chrome.input.ime.commitText.validateCall = validateCommit;
+
   setComposition = chrome.input.ime.setComposition;
   // Mocks setComposition manually to immediately callback. The mock controller
   // does not support callback functions.
@@ -56,7 +67,9 @@ function tearDown() {
  * @return {Object} The key.
  */
 function getKey(char) {
-  return document.querySelector('#Key' + char.toUpperCase())
+  var key = document.querySelector('#Key' + char.toUpperCase());
+  assertTrue(!!key, "Cannot find key: " + char);
+  return key;
 }
 
 /**
@@ -70,7 +83,21 @@ function generateMouseEvent(target, type) {
 }
 
 /**
- * Mocks a character type using the mouse.
+ * Mocks a key type using the mouse.
+ * @param {Object} key The key to click on.
+ */
+function mockMouseTypeOnKey(key) {
+  generateMouseEvent(key, 'mouseover');
+  generateMouseEvent(key, 'mousedown');
+  generateMouseEvent(key, 'mouseup');
+  generateMouseEvent(key, 'click');
+  generateMouseEvent(key, 'mouseover');
+  generateMouseEvent(key, 'mouseout');
+}
+
+/**
+ * Mocks a character type using the mouse. Expects the character will be
+ * committed.
  * @param {String} char The character to type.
  */
 function mockMouseType(char) {
@@ -80,14 +107,54 @@ function mockMouseType(char) {
     text: char,
   });
   var key = getKey(char);
-  if (!key) {
-    console.error("Cannot find key: " + char);
-    return;
+  mockMouseTypeOnKey(key);
+}
+
+/**
+ * Generates a touch event and dispatches it on the target.
+ * @param target {Object} The target of the event.
+ * @param type {String} The type of the touch event.
+ */
+function generateTouchEvent(target, type) {
+  var e = document.createEvent('UIEvents');
+  e.initEvent(type, true, true);
+  target.dispatchEvent(e);
+}
+
+/**
+ * Mocks a character type using touch.
+ * @param {String} char The character to type.
+ */
+function mockTouchType(char) {
+  var send = chrome.input.ime.commitText;
+  send.addExpectation({
+    contextId: DEFAULT_CONTEXT_ID,
+    text: char,
+  });
+  var key = getKey(char);
+  generateTouchEvent(key, 'touchstart');
+  generateTouchEvent(key, 'touchend');
+}
+
+/**
+ * Retrieves the shift key from the current keyset.
+ * @param {Alignment} align The alignment of the shift key.
+ * @return {Object} The key.
+ */
+function getShiftKey(align) {
+  var id;
+  switch(align) {
+    case Alignment.LEFT:
+      id = 'ShiftLeft';
+      break;
+    case Alignment.RIGHT:
+      id = 'ShiftRight';
+      break;
+    default:
+      break;
   }
-  generateMouseEvent(key, 'mouseover');
-  generateMouseEvent(key, 'mousedown');
-  generateMouseEvent(key, 'mouseup');
-  generateMouseEvent(key, 'click');
-  generateMouseEvent(key, 'mouseover');
-  generateMouseEvent(key, 'mouseout');
+  assertTrue(!!id, "Invalid shift alignment option: " + align);
+  var shift = document.querySelector('#' + id);
+  assertTrue(!!shift, "Cannot find shift key with alignment: " + align);
+  return shift;
 }

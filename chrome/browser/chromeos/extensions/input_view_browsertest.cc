@@ -80,3 +80,9 @@ IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, TypingTest) {
   ASSERT_FALSE(id.empty());
   RunTest(base::FilePath("typing_test.js"), InputViewConfig(id));
 }
+
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, KeysetTransitionTest) {
+  std::string id = InstallIMEExtension();
+  ASSERT_FALSE(id.empty());
+  RunTest(base::FilePath("keyset_transition_test.js"), InputViewConfig(id));
+}

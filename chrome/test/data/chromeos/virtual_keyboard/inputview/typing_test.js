@@ -8,8 +8,11 @@
  * Tests typing in the lowercase keyset.
  */
 function testLowercaseKeyset() {
+  // Mouse events.
   mockMouseType('l');
   mockMouseType('p');
-  mockMouseType('e');
-  mockMouseType('f');
+
+  // Touch events.
+  mockTouchType('l');
+  mockTouchType('p');
 }
