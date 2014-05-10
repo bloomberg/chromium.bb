@@ -209,6 +209,22 @@ class HttpServerTest : public testing::Test,
   size_t quit_after_request_count_;
 };
 
+class WebSocketTest : public HttpServerTest {
+  virtual void OnHttpRequest(int connection_id,
+                             const HttpServerRequestInfo& info) OVERRIDE {
+    NOTREACHED();
+  }
+
+  virtual void OnWebSocketRequest(int connection_id,
+                                  const HttpServerRequestInfo& info) OVERRIDE {
+    HttpServerTest::OnHttpRequest(connection_id, info);
+  }
+
+  virtual void OnWebSocketMessage(int connection_id,
+                                  const std::string& data) OVERRIDE {
+  }
+};
+
 TEST_F(HttpServerTest, Request) {
   TestHttpClient client;
   ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
@@ -253,6 +269,71 @@ TEST_F(HttpServerTest, RequestWithHeaders) {
   }
 }
 
+TEST_F(HttpServerTest, RequestWithDuplicateHeaders) {
+  TestHttpClient client;
+  ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
+  const char* kHeaders[][3] = {
+      {"FirstHeader", ": ", "1"},
+      {"DuplicateHeader", ": ", "2"},
+      {"MiddleHeader", ": ", "3"},
+      {"DuplicateHeader", ": ", "4"},
+      {"LastHeader", ": ", "5"},
+  };
+  std::string headers;
+  for (size_t i = 0; i < arraysize(kHeaders); ++i) {
+    headers +=
+        std::string(kHeaders[i][0]) + kHeaders[i][1] + kHeaders[i][2] + "\r\n";
+  }
+
+  client.Send("GET /test HTTP/1.1\r\n" + headers + "\r\n");
+  ASSERT_TRUE(RunUntilRequestsReceived(1));
+  ASSERT_EQ("", GetRequest(0).data);
+
+  for (size_t i = 0; i < arraysize(kHeaders); ++i) {
+    std::string field = StringToLowerASCII(std::string(kHeaders[i][0]));
+    std::string value = (field == "duplicateheader") ? "2,4" : kHeaders[i][2];
+    ASSERT_EQ(1u, GetRequest(0).headers.count(field)) << field;
+    ASSERT_EQ(value, GetRequest(0).headers[field]) << kHeaders[i][0];
+  }
+}
+
+TEST_F(HttpServerTest, HasHeaderValueTest) {
+  TestHttpClient client;
+  ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
+  const char* kHeaders[] = {
+      "Header: Abcd",
+      "HeaderWithNoWhitespace:E",
+      "HeaderWithWhitespace   :  \t   f \t  ",
+      "DuplicateHeader: g",
+      "HeaderWithComma: h, i ,j",
+      "DuplicateHeader: k",
+      "EmptyHeader:",
+      "EmptyHeaderWithWhitespace:  \t  ",
+      "HeaderWithNonASCII:  \xf7",
+  };
+  std::string headers;
+  for (size_t i = 0; i < arraysize(kHeaders); ++i) {
+    headers += std::string(kHeaders[i]) + "\r\n";
+  }
+
+  client.Send("GET /test HTTP/1.1\r\n" + headers + "\r\n");
+  ASSERT_TRUE(RunUntilRequestsReceived(1));
+  ASSERT_EQ("", GetRequest(0).data);
+
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("header", "abcd"));
+  ASSERT_FALSE(GetRequest(0).HasHeaderValue("header", "bc"));
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("headerwithnowhitespace", "e"));
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("headerwithwhitespace", "f"));
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("duplicateheader", "g"));
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("headerwithcomma", "h"));
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("headerwithcomma", "i"));
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("headerwithcomma", "j"));
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("duplicateheader", "k"));
+  ASSERT_FALSE(GetRequest(0).HasHeaderValue("emptyheader", "x"));
+  ASSERT_FALSE(GetRequest(0).HasHeaderValue("emptyheaderwithwhitespace", "x"));
+  ASSERT_TRUE(GetRequest(0).HasHeaderValue("headerwithnonascii", "\xf7"));
+}
+
 TEST_F(HttpServerTest, RequestWithBody) {
   TestHttpClient client;
   ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
@@ -268,6 +349,19 @@ TEST_F(HttpServerTest, RequestWithBody) {
   ASSERT_EQ(body.length(), GetRequest(0).data.length());
   ASSERT_EQ('a', body[0]);
   ASSERT_EQ('c', *body.rbegin());
+}
+
+TEST_F(WebSocketTest, RequestWebSocket) {
+  TestHttpClient client;
+  ASSERT_EQ(OK, client.ConnectAndWait(server_address_));
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "Sec-WebSocket-Version: 8\r\n"
+      "Sec-WebSocket-Key: key\r\n"
+      "\r\n");
+  ASSERT_TRUE(RunUntilRequestsReceived(1));
 }
 
 TEST_F(HttpServerTest, RequestWithTooLargeBody) {

@@ -142,8 +142,7 @@ void HttpServer::DidRead(StreamListenSocket* socket,
     // Sets peer address if exists.
     socket->GetPeerAddress(&request.peer);
 
-    std::string connection_header = request.GetHeaderValue("connection");
-    if (connection_header == "Upgrade") {
+    if (request.HasHeaderValue("connection", "upgrade")) {
       connection->web_socket_.reset(WebSocket::CreateWebSocket(connection,
                                                                request,
                                                                &pos));
@@ -205,7 +204,7 @@ HttpServer::~HttpServer() {
 
 // Input character types.
 enum header_parse_inputs {
-  INPUT_SPACE,
+  INPUT_LWS,
   INPUT_CR,
   INPUT_LF,
   INPUT_COLON,
@@ -244,7 +243,8 @@ int parser_state[MAX_STATES][MAX_INPUTS] = {
 int charToInput(char ch) {
   switch(ch) {
     case ' ':
-      return INPUT_SPACE;
+    case '\t':
+      return INPUT_LWS;
     case '\r':
       return INPUT_CR;
     case '\n':
@@ -270,6 +270,7 @@ bool HttpServer::ParseHeaders(HttpConnection* connection,
     int next_state = parser_state[state][input];
 
     bool transition = (next_state != state);
+    HttpServerRequestInfo::HeadersMap::iterator it;
     if (transition) {
       // Do any actions based on state transitions.
       switch (state) {
@@ -292,9 +293,15 @@ bool HttpServer::ParseHeaders(HttpConnection* connection,
           break;
         case ST_VALUE:
           base::TrimWhitespaceASCII(buffer, base::TRIM_LEADING, &header_value);
-          // TODO(mbelshe): Deal better with duplicate headers
-          DCHECK(info->headers.find(header_name) == info->headers.end());
-          info->headers[header_name] = header_value;
+          it = info->headers.find(header_name);
+          // See last paragraph ("Multiple message-header fields...")
+          // of www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+          if (it == info->headers.end()) {
+            info->headers[header_name] = header_value;
+          } else {
+            it->second.append(",");
+            it->second.append(header_value);
+          }
           buffer.clear();
           break;
         case ST_SEPARATOR:

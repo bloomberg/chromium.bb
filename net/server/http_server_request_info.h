@@ -25,6 +25,12 @@ class HttpServerRequestInfo {
   // lower case.
   std::string GetHeaderValue(const std::string& header_name) const;
 
+  // Checks for item in comma-separated header value for given header name.
+  // Both |header_name| and |header_value| should be lower case.
+  bool HasHeaderValue(
+      const std::string& header_name,
+      const std::string& header_value) const;
+
   // Request peer address.
   IPEndPoint peer;
 
