@@ -16,11 +16,6 @@
 #include "url/gurl.h"
 #include "url/url_parse.h"
 
-namespace {
-  class URLFixerUpperTest : public testing::Test {
-  };
-};
-
 namespace url {
 
 std::ostream& operator<<(std::ostream& os, const Component& part) {
@@ -197,6 +192,8 @@ static const SegmentCase segment_cases[] = {
   },
 };
 
+typedef testing::Test URLFixerUpperTest;
+
 TEST(URLFixerUpperTest, SegmentURL) {
   std::string result;
   url::Parsed parts;
@@ -247,117 +244,105 @@ static bool IsMatchingFileURL(const std::string& url,
 
 struct FixupCase {
   const std::string input;
-  const std::string desired_tld;
   const std::string output;
 } fixup_cases[] = {
-  {"www.google.com", "", "http://www.google.com/"},
-  {" www.google.com     ", "", "http://www.google.com/"},
-  {" foo.com/asdf  bar", "", "http://foo.com/asdf%20%20bar"},
-  {"..www.google.com..", "", "http://www.google.com./"},
-  {"http://......", "", "http://....../"},
-  {"http://host.com:ninety-two/", "", "http://host.com:ninety-two/"},
-  {"http://host.com:ninety-two?foo", "", "http://host.com:ninety-two/?foo"},
-  {"google.com:123", "", "http://google.com:123/"},
-  {"about:", "", "chrome://version/"},
-  {"about:foo", "", "chrome://foo/"},
-  {"about:version", "", "chrome://version/"},
-  {"about:usr:pwd@hst/pth?qry#ref", "", "chrome://usr:pwd@hst/pth?qry#ref"},
-  {"about://usr:pwd@hst/pth?qry#ref", "", "chrome://usr:pwd@hst/pth?qry#ref"},
-  {"chrome:usr:pwd@hst/pth?qry#ref", "", "chrome://usr:pwd@hst/pth?qry#ref"},
-  {"chrome://usr:pwd@hst/pth?qry#ref", "", "chrome://usr:pwd@hst/pth?qry#ref"},
-  {"www:123", "", "http://www:123/"},
-  {"   www:123", "", "http://www:123/"},
-  {"www.google.com?foo", "", "http://www.google.com/?foo"},
-  {"www.google.com#foo", "", "http://www.google.com/#foo"},
-  {"www.google.com?", "", "http://www.google.com/?"},
-  {"www.google.com#", "", "http://www.google.com/#"},
-  {"www.google.com:123?foo#bar", "", "http://www.google.com:123/?foo#bar"},
-  {"user@www.google.com", "", "http://user@www.google.com/"},
-  {"\xE6\xB0\xB4.com" , "", "http://xn--1rw.com/"},
+  {"www.google.com", "http://www.google.com/"},
+  {" www.google.com     ", "http://www.google.com/"},
+  {" foo.com/asdf  bar", "http://foo.com/asdf%20%20bar"},
+  {"..www.google.com..", "http://www.google.com./"},
+  {"http://......", "http://....../"},
+  {"http://host.com:ninety-two/", "http://host.com:ninety-two/"},
+  {"http://host.com:ninety-two?foo", "http://host.com:ninety-two/?foo"},
+  {"google.com:123", "http://google.com:123/"},
+  {"about:", "chrome://version/"},
+  {"about:foo", "chrome://foo/"},
+  {"about:version", "chrome://version/"},
+  {"about:blank", "about:blank"},
+  {"about:usr:pwd@hst/pth?qry#ref", "chrome://usr:pwd@hst/pth?qry#ref"},
+  {"about://usr:pwd@hst/pth?qry#ref", "chrome://usr:pwd@hst/pth?qry#ref"},
+  {"chrome:usr:pwd@hst/pth?qry#ref", "chrome://usr:pwd@hst/pth?qry#ref"},
+  {"chrome://usr:pwd@hst/pth?qry#ref", "chrome://usr:pwd@hst/pth?qry#ref"},
+  {"www:123", "http://www:123/"},
+  {"   www:123", "http://www:123/"},
+  {"www.google.com?foo", "http://www.google.com/?foo"},
+  {"www.google.com#foo", "http://www.google.com/#foo"},
+  {"www.google.com?", "http://www.google.com/?"},
+  {"www.google.com#", "http://www.google.com/#"},
+  {"www.google.com:123?foo#bar", "http://www.google.com:123/?foo#bar"},
+  {"user@www.google.com", "http://user@www.google.com/"},
+  {"\xE6\xB0\xB4.com", "http://xn--1rw.com/"},
   // It would be better if this next case got treated as http, but I don't see
   // a clean way to guess this isn't the new-and-exciting "user" scheme.
-  {"user:passwd@www.google.com:8080/", "", "user:passwd@www.google.com:8080/"},
-  // {"file:///c:/foo/bar%20baz.txt", "", "file:///C:/foo/bar%20baz.txt"},
-  {"ftp.google.com", "", "ftp://ftp.google.com/"},
-  {"    ftp.google.com", "", "ftp://ftp.google.com/"},
-  {"FTP.GooGle.com", "", "ftp://ftp.google.com/"},
-  {"ftpblah.google.com", "", "http://ftpblah.google.com/"},
-  {"ftp", "", "http://ftp/"},
-  {"google.ftp.com", "", "http://google.ftp.com/"},
+  {"user:passwd@www.google.com:8080/", "user:passwd@www.google.com:8080/"},
+  // {"file:///c:/foo/bar%20baz.txt", "file:///C:/foo/bar%20baz.txt"},
+  {"ftp.google.com", "ftp://ftp.google.com/"},
+  {"    ftp.google.com", "ftp://ftp.google.com/"},
+  {"FTP.GooGle.com", "ftp://ftp.google.com/"},
+  {"ftpblah.google.com", "http://ftpblah.google.com/"},
+  {"ftp", "http://ftp/"},
+  {"google.ftp.com", "http://google.ftp.com/"},
   // URLs which end with 0x85 (NEL in ISO-8859).
-  { "http://google.com/search?q=\xd0\x85", "",
-    "http://google.com/search?q=%D0%85"
-  },
-  { "http://google.com/search?q=\xec\x97\x85", "",
-    "http://google.com/search?q=%EC%97%85"
-  },
-  { "http://google.com/search?q=\xf0\x90\x80\x85", "",
-    "http://google.com/search?q=%F0%90%80%85"
-  },
+  {"http://foo.com/s?q=\xd0\x85", "http://foo.com/s?q=%D0%85"},
+  {"http://foo.com/s?q=\xec\x97\x85", "http://foo.com/s?q=%EC%97%85"},
+  {"http://foo.com/s?q=\xf0\x90\x80\x85", "http://foo.com/s?q=%F0%90%80%85"},
   // URLs which end with 0xA0 (non-break space in ISO-8859).
-  { "http://google.com/search?q=\xd0\xa0", "",
-    "http://google.com/search?q=%D0%A0"
-  },
-  { "http://google.com/search?q=\xec\x97\xa0", "",
-    "http://google.com/search?q=%EC%97%A0"
-  },
-  { "http://google.com/search?q=\xf0\x90\x80\xa0", "",
-    "http://google.com/search?q=%F0%90%80%A0"
-  },
+  {"http://foo.com/s?q=\xd0\xa0", "http://foo.com/s?q=%D0%A0"},
+  {"http://foo.com/s?q=\xec\x97\xa0", "http://foo.com/s?q=%EC%97%A0"},
+  {"http://foo.com/s?q=\xf0\x90\x80\xa0", "http://foo.com/s?q=%F0%90%80%A0"},
   // URLs containing IPv6 literals.
-  {"[2001:db8::2]", "", "http://[2001:db8::2]/"},
-  {"[::]:80", "", "http://[::]/"},
-  {"[::]:80/path", "", "http://[::]/path"},
-  {"[::]:180/path", "", "http://[::]:180/path"},
+  {"[2001:db8::2]", "http://[2001:db8::2]/"},
+  {"[::]:80", "http://[::]/"},
+  {"[::]:80/path", "http://[::]/path"},
+  {"[::]:180/path", "http://[::]:180/path"},
   // TODO(pmarks): Maybe we should parse bare IPv6 literals someday.
-  {"::1", "", "::1"},
+  {"::1", "::1"},
   // Semicolon as scheme separator for standard schemes.
-  {"http;//www.google.com/", "", "http://www.google.com/"},
-  {"about;chrome", "", "chrome://chrome/"},
+  {"http;//www.google.com/", "http://www.google.com/"},
+  {"about;chrome", "chrome://chrome/"},
   // Semicolon left as-is for non-standard schemes.
-  {"whatsup;//fool", "", "whatsup://fool"},
+  {"whatsup;//fool", "whatsup://fool"},
   // Semicolon left as-is in URL itself.
-  {"http://host/port?query;moar", "", "http://host/port?query;moar"},
+  {"http://host/port?query;moar", "http://host/port?query;moar"},
   // Fewer slashes than expected.
-  {"http;www.google.com/", "", "http://www.google.com/"},
-  {"http;/www.google.com/", "", "http://www.google.com/"},
+  {"http;www.google.com/", "http://www.google.com/"},
+  {"http;/www.google.com/", "http://www.google.com/"},
   // Semicolon at start.
-  {";http://www.google.com/", "", "http://%3Bhttp//www.google.com/"},
+  {";http://www.google.com/", "http://%3Bhttp//www.google.com/"},
 };
 
 TEST(URLFixerUpperTest, FixupURL) {
   for (size_t i = 0; i < arraysize(fixup_cases); ++i) {
     FixupCase value = fixup_cases[i];
-    EXPECT_EQ(value.output, URLFixerUpper::FixupURL(value.input,
-        value.desired_tld).possibly_invalid_spec())
+    EXPECT_EQ(value.output,
+        URLFixerUpper::FixupURL(value.input, "").possibly_invalid_spec())
         << "input: " << value.input;
   }
 
-  // Check the TLD-appending functionality
+  // Check the TLD-appending functionality.
   FixupCase tld_cases[] = {
-    {"google", "com", "http://www.google.com/"},
-    {"google.", "com", "http://www.google.com/"},
-    {"google..", "com", "http://www.google.com/"},
-    {".google", "com", "http://www.google.com/"},
-    {"www.google", "com", "http://www.google.com/"},
-    {"google.com", "com", "http://google.com/"},
-    {"http://google", "com", "http://www.google.com/"},
-    {"..google..", "com", "http://www.google.com/"},
-    {"http://www.google", "com", "http://www.google.com/"},
-    {"9999999999999999", "com", "http://www.9999999999999999.com/"},
-    {"google/foo", "com", "http://www.google.com/foo"},
-    {"google.com/foo", "com", "http://google.com/foo"},
-    {"google/?foo=.com", "com", "http://www.google.com/?foo=.com"},
-    {"www.google/?foo=www.", "com", "http://www.google.com/?foo=www."},
-    {"google.com/?foo=.com", "com", "http://google.com/?foo=.com"},
-    {"http://www.google.com", "com", "http://www.google.com/"},
-    {"google:123", "com", "http://www.google.com:123/"},
-    {"http://google:123", "com", "http://www.google.com:123/"},
+    {"google", "http://www.google.com/"},
+    {"google.", "http://www.google.com/"},
+    {"google..", "http://www.google.com/"},
+    {".google", "http://www.google.com/"},
+    {"www.google", "http://www.google.com/"},
+    {"google.com", "http://google.com/"},
+    {"http://google", "http://www.google.com/"},
+    {"..google..", "http://www.google.com/"},
+    {"http://www.google", "http://www.google.com/"},
+    {"9999999999999999", "http://www.9999999999999999.com/"},
+    {"google/foo", "http://www.google.com/foo"},
+    {"google.com/foo", "http://google.com/foo"},
+    {"google/?foo=.com", "http://www.google.com/?foo=.com"},
+    {"www.google/?foo=www.", "http://www.google.com/?foo=www."},
+    {"google.com/?foo=.com", "http://google.com/?foo=.com"},
+    {"http://www.google.com", "http://www.google.com/"},
+    {"google:123", "http://www.google.com:123/"},
+    {"http://google:123", "http://www.google.com:123/"},
   };
   for (size_t i = 0; i < arraysize(tld_cases); ++i) {
     FixupCase value = tld_cases[i];
-    EXPECT_EQ(value.output, URLFixerUpper::FixupURL(value.input,
-        value.desired_tld).possibly_invalid_spec());
+    EXPECT_EQ(value.output,
+        URLFixerUpper::FixupURL(value.input, "com").possibly_invalid_spec());
   }
 }
 
@@ -378,12 +363,7 @@ TEST(URLFixerUpperTest, FixupFile) {
   GURL golden(net::FilePathToFileURL(original));
 
   // c:\foo\bar.txt -> file:///c:/foo/bar.txt (basic)
-#if defined(OS_WIN)
-  GURL fixedup(URLFixerUpper::FixupURL(base::WideToUTF8(original.value()),
-                                       std::string()));
-#elif defined(OS_POSIX)
-  GURL fixedup(URLFixerUpper::FixupURL(original.value(), std::string()));
-#endif
+  GURL fixedup(URLFixerUpper::FixupURL(original.AsUTF8Unsafe(), std::string()));
   EXPECT_EQ(golden, fixedup);
 
   // TODO(port): Make some equivalent tests for posix.
@@ -394,36 +374,32 @@ TEST(URLFixerUpperTest, FixupFile) {
   cur[1] = '|';
   EXPECT_EQ(golden, URLFixerUpper::FixupURL(cur, std::string()));
 
-  FixupCase file_cases[] = {
-    {"c:\\This%20is a non-existent file.txt", "",
-     "file:///C:/This%2520is%20a%20non-existent%20file.txt"},
+  FixupCase cases[] = {
+    {"c:\\Non-existent%20file.txt", "file:///C:/Non-existent%2520file.txt"},
 
     // \\foo\bar.txt -> file://foo/bar.txt
     // UNC paths, this file won't exist, but since there are no escapes, it
     // should be returned just converted to a file: URL.
-    {"\\\\SomeNonexistentHost\\foo\\bar.txt", "",
-     "file://somenonexistenthost/foo/bar.txt"},
+    {"\\\\NonexistentHost\\foo\\bar.txt", "file://nonexistenthost/foo/bar.txt"},
     // We do this strictly, like IE8, which only accepts this form using
     // backslashes and not forward ones.  Turning "//foo" into "http" matches
     // Firefox and IE, silly though it may seem (it falls out of adding "http"
     // as the default protocol if you haven't entered one).
-    {"//SomeNonexistentHost\\foo/bar.txt", "",
-     "http://somenonexistenthost/foo/bar.txt"},
-    {"file:///C:/foo/bar", "", "file:///C:/foo/bar"},
+    {"//NonexistentHost\\foo/bar.txt", "http://nonexistenthost/foo/bar.txt"},
+    {"file:///C:/foo/bar", "file:///C:/foo/bar"},
 
     // Much of the work here comes from GURL's canonicalization stage.
-    {"file://C:/foo/bar", "", "file:///C:/foo/bar"},
-    {"file:c:", "", "file:///C:/"},
-    {"file:c:WINDOWS", "", "file:///C:/WINDOWS"},
-    {"file:c|Program Files", "", "file:///C:/Program%20Files"},
-    {"file:/file", "", "file://file/"},
-    {"file:////////c:\\foo", "", "file:///C:/foo"},
-    {"file://server/folder/file", "", "file://server/folder/file"},
+    {"file://C:/foo/bar", "file:///C:/foo/bar"},
+    {"file:c:", "file:///C:/"},
+    {"file:c:WINDOWS", "file:///C:/WINDOWS"},
+    {"file:c|Program Files", "file:///C:/Program%20Files"},
+    {"file:/file", "file://file/"},
+    {"file:////////c:\\foo", "file:///C:/foo"},
+    {"file://server/folder/file", "file://server/folder/file"},
 
     // These are fixups we don't do, but could consider:
-    //
-    //   {"file:///foo:/bar", "", "file://foo/bar"},
-    //   {"file:/\\/server\\folder/file", "", "file://server/folder/file"},
+    //   {"file:///foo:/bar", "file://foo/bar"},
+    //   {"file:/\\/server\\folder/file", "file://server/folder/file"},
   };
 #elif defined(OS_POSIX)
 
@@ -433,30 +409,25 @@ TEST(URLFixerUpperTest, FixupFile) {
 #define HOME "/home/"
 #endif
   URLFixerUpper::home_directory_override = "/foo";
-  FixupCase file_cases[] = {
+  FixupCase cases[] = {
     // File URLs go through GURL, which tries to escape intelligently.
-    {"/This%20is a non-existent file.txt", "",
-     "file:///This%2520is%20a%20non-existent%20file.txt"},
+    {"/A%20non-existent file.txt", "file:///A%2520non-existent%20file.txt"},
     // A plain "/" refers to the root.
-    {"/", "",
-     "file:///"},
+    {"/", "file:///"},
 
     // These rely on the above home_directory_override.
-    {"~", "",
-     "file:///foo"},
-    {"~/bar", "",
-     "file:///foo/bar"},
+    {"~", "file:///foo"},
+    {"~/bar", "file:///foo/bar"},
 
     // References to other users' homedirs.
-    {"~foo", "",
-     "file://" HOME "foo"},
-    {"~x/blah", "",
-     "file://" HOME "x/blah"},
+    {"~foo", "file://" HOME "foo"},
+    {"~x/blah", "file://" HOME "x/blah"},
   };
 #endif
-  for (size_t i = 0; i < arraysize(file_cases); i++) {
-    EXPECT_EQ(file_cases[i].output, URLFixerUpper::FixupURL(file_cases[i].input,
-        file_cases[i].desired_tld).possibly_invalid_spec());
+
+  for (size_t i = 0; i < arraysize(cases); i++) {
+    EXPECT_EQ(cases[i].output,
+        URLFixerUpper::FixupURL(cases[i].input, "").possibly_invalid_spec());
   }
 
   EXPECT_TRUE(base::DeleteFile(original, false));
