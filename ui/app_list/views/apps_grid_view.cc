@@ -1715,6 +1715,11 @@ void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
                                                const Index& target) {
   DCHECK(IsDraggingForReparentInRootLevelGridView());
 
+  AppListItemView* target_view =
+      static_cast<AppListItemView*>(GetViewAtSlotOnCurrentPage(target.slot));
+  if (!target_view)
+    return;
+
   // Make change to data model.
   item_list_->RemoveObserver(this);
 
@@ -1730,8 +1735,6 @@ void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
   if (source_folder->ChildItemCount() == 1u)
     DeleteItemViewAtIndex(view_model_.GetIndexOfView(activated_item_view()));
 
-  AppListItemView* target_view =
-      static_cast<AppListItemView*>(GetViewAtSlotOnCurrentPage(target.slot));
   AppListItem* target_item = target_view->item();
 
   // Move item to the target folder.
