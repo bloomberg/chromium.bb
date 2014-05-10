@@ -1344,26 +1344,12 @@ DELEGATE_TO_GL_4R(createImageCHROMIUM,
                   WGC3Denum,
                   WGC3Duint);
 
-WGC3Duint WebGraphicsContext3DCommandBufferImpl::createImageCHROMIUM(
-    WGC3Dsizei width,
-    WGC3Dsizei height,
-    WGC3Denum internalformat) {
-  return gl_->CreateImageCHROMIUM(
-      width, height, internalformat, GL_IMAGE_MAP_CHROMIUM);
-}
-
 DELEGATE_TO_GL_1(destroyImageCHROMIUM, DestroyImageCHROMIUM, WGC3Duint);
 
 DELEGATE_TO_GL_3(getImageParameterivCHROMIUM, GetImageParameterivCHROMIUM,
                  WGC3Duint, WGC3Denum, GLint*);
 
 DELEGATE_TO_GL_1R(mapImageCHROMIUM, MapImageCHROMIUM, WGC3Duint, void*);
-
-void* WebGraphicsContext3DCommandBufferImpl::mapImageCHROMIUM(
-    WGC3Duint image_id,
-    WGC3Denum access) {
-  return gl_->MapImageCHROMIUM(image_id);
-}
 
 DELEGATE_TO_GL_1(unmapImageCHROMIUM, UnmapImageCHROMIUM, WGC3Duint);
 
