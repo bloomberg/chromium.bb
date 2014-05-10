@@ -99,25 +99,25 @@ class FakeSchedulerClient : public SchedulerClient {
   // SchedulerClient implementation.
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE {
     actions_.push_back("SetNeedsBeginFrame");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
     needs_begin_frame_ = enable;
   }
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) OVERRIDE {
     actions_.push_back("WillBeginImplFrame");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
   }
   virtual void ScheduledActionSendBeginMainFrame() OVERRIDE {
     actions_.push_back("ScheduledActionSendBeginMainFrame");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
   }
   virtual void ScheduledActionAnimate() OVERRIDE {
     actions_.push_back("ScheduledActionAnimate");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
   }
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
       OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapIfPossible");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
     num_draws_++;
     bool did_readback = false;
     DrawSwapReadbackResult::DrawResult result =
@@ -138,7 +138,7 @@ class FakeSchedulerClient : public SchedulerClient {
   }
   virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndSwapForced");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
     bool did_request_swap = swap_will_happen_if_draw_happens_;
     bool did_readback = false;
     return DrawSwapReadbackResult(
@@ -146,7 +146,7 @@ class FakeSchedulerClient : public SchedulerClient {
   }
   virtual DrawSwapReadbackResult ScheduledActionDrawAndReadback() OVERRIDE {
     actions_.push_back("ScheduledActionDrawAndReadback");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
     bool did_request_swap = false;
     bool did_readback = true;
     return DrawSwapReadbackResult(
@@ -154,23 +154,23 @@ class FakeSchedulerClient : public SchedulerClient {
   }
   virtual void ScheduledActionCommit() OVERRIDE {
     actions_.push_back("ScheduledActionCommit");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
   }
   virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE {
     actions_.push_back("ScheduledActionUpdateVisibleTiles");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
   }
   virtual void ScheduledActionActivatePendingTree() OVERRIDE {
     actions_.push_back("ScheduledActionActivatePendingTree");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
   }
   virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
     actions_.push_back("ScheduledActionBeginOutputSurfaceCreation");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
   }
   virtual void ScheduledActionManageTiles() OVERRIDE {
     actions_.push_back("ScheduledActionManageTiles");
-    states_.push_back(scheduler_->StateAsValue().release());
+    states_.push_back(scheduler_->AsValue().release());
   }
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {
     if (log_anticipated_draw_time_change_)
@@ -1115,7 +1115,7 @@ TEST(SchedulerTest, PollForCommitCompletion) {
   for (int i = 0; i < 3; ++i) {
     EXPECT_EQ((frame_args.interval * 2).InMicroseconds(),
               client.task_runner().NextPendingTaskDelay().InMicroseconds())
-        << *scheduler->StateAsValue();
+        << *scheduler->AsValue();
     client.task_runner().RunPendingTasks();
     EXPECT_GT(client.num_actions_(), actions_so_far);
     EXPECT_STREQ(client.Action(client.num_actions_() - 1),
@@ -1128,7 +1128,7 @@ TEST(SchedulerTest, PollForCommitCompletion) {
   for (int i = 0; i < 3; ++i) {
     EXPECT_EQ((frame_args.interval * 2).InMicroseconds(),
               client.task_runner().NextPendingTaskDelay().InMicroseconds())
-        << *scheduler->StateAsValue();
+        << *scheduler->AsValue();
     client.task_runner().RunPendingTasks();
     EXPECT_GT(client.num_actions_(), actions_so_far);
     EXPECT_STREQ(client.Action(client.num_actions_() - 1),

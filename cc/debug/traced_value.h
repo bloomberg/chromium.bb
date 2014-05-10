@@ -46,6 +46,17 @@ class TracedValue : public base::debug::ConvertableToTraceFormat {
   DISALLOW_COPY_AND_ASSIGN(TracedValue);
 };
 
+template <class T>
+static scoped_refptr<base::debug::ConvertableToTraceFormat> ToTrace(T* t) {
+  return TracedValue::FromValue(t->AsValue().release());
+}
+
+template <class T>
+static scoped_refptr<base::debug::ConvertableToTraceFormat> ToTrace(
+    const T& t) {
+  return ToTrace(&t);
+}
+
 }  // namespace cc
 
 #endif  // CC_DEBUG_TRACED_VALUE_H_

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/json/json_writer.h"
 #include "cc/output/begin_frame_args.h"
 #include "ui/gfx/frame_time.h"
 
@@ -25,6 +26,15 @@ BeginFrameArgs BeginFrameArgs::Create(base::TimeTicks frame_time,
                                       base::TimeTicks deadline,
                                       base::TimeDelta interval) {
   return BeginFrameArgs(frame_time, deadline, interval);
+}
+
+scoped_ptr<base::Value> BeginFrameArgs::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+  state->SetString("type", "BeginFrameArgs");
+  state->SetDouble("frame_time_us", frame_time.ToInternalValue());
+  state->SetDouble("deadline_us", deadline.ToInternalValue());
+  state->SetDouble("interval_us", interval.InMicroseconds());
+  return state.PassAs<base::Value>();
 }
 
 BeginFrameArgs BeginFrameArgs::CreateForSynchronousCompositor() {

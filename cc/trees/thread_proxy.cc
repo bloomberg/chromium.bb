@@ -1530,16 +1530,16 @@ void ThreadProxy::CommitPendingOnImplThreadForTesting(
   request->completion.Signal();
 }
 
-scoped_ptr<base::Value> ThreadProxy::SchedulerStateAsValueForTesting() {
+scoped_ptr<base::Value> ThreadProxy::SchedulerAsValueForTesting() {
   if (IsImplThread())
-    return impl().scheduler->StateAsValue().Pass();
+    return impl().scheduler->AsValue().Pass();
 
   SchedulerStateRequest scheduler_state_request;
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     Proxy::ImplThreadTaskRunner()->PostTask(
         FROM_HERE,
-        base::Bind(&ThreadProxy::SchedulerStateAsValueOnImplThreadForTesting,
+        base::Bind(&ThreadProxy::SchedulerAsValueOnImplThreadForTesting,
                    impl_thread_weak_ptr_,
                    &scheduler_state_request));
     scheduler_state_request.completion.Wait();
@@ -1547,10 +1547,10 @@ scoped_ptr<base::Value> ThreadProxy::SchedulerStateAsValueForTesting() {
   return scheduler_state_request.state.Pass();
 }
 
-void ThreadProxy::SchedulerStateAsValueOnImplThreadForTesting(
+void ThreadProxy::SchedulerAsValueOnImplThreadForTesting(
     SchedulerStateRequest* request) {
   DCHECK(IsImplThread());
-  request->state = impl().scheduler->StateAsValue();
+  request->state = impl().scheduler->AsValue();
   request->completion.Signal();
 }
 

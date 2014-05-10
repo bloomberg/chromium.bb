@@ -394,7 +394,7 @@ void Scheduler::SetupPollingMechanisms(bool needs_begin_frame) {
 // If the scheduler is busy, we queue the BeginFrame to be handled later as
 // a BeginRetroFrame.
 void Scheduler::BeginFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT1("cc", "Scheduler::BeginFrame", "frame_time", args.frame_time);
+  TRACE_EVENT1("cc", "Scheduler::BeginFrame", "args", ToTrace(args));
   DCHECK(settings_.throttle_frame_production);
 
   bool should_defer_begin_frame;
@@ -488,8 +488,7 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
 // for a BeginMainFrame+activation to complete before it times out and draws
 // any asynchronous animation and scroll/pinch updates.
 void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
-  TRACE_EVENT1(
-      "cc", "Scheduler::BeginImplFrame", "frame_time", args.frame_time);
+  TRACE_EVENT1("cc", "Scheduler::BeginImplFrame", "args", ToTrace(args));
   DCHECK(state_machine_.begin_impl_frame_state() ==
          SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
   DCHECK(state_machine_.HasInitializedOutputSurface());
@@ -630,7 +629,7 @@ void Scheduler::ProcessScheduledActions() {
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
                  "SchedulerStateMachine",
                  "state",
-                 TracedValue::FromValue(StateAsValue().release()));
+                 ToTrace(this));
     state_machine_.UpdateState(action);
     base::AutoReset<SchedulerStateMachine::Action>
         mark_inside_action(&inside_action_, action);
@@ -687,7 +686,7 @@ bool Scheduler::WillDrawIfNeeded() const {
   return !state_machine_.PendingDrawsShouldBeAborted();
 }
 
-scoped_ptr<base::Value> Scheduler::StateAsValue() const {
+scoped_ptr<base::Value> Scheduler::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
   state->Set("state_machine", state_machine_.AsValue().release());
 
@@ -713,6 +712,9 @@ scoped_ptr<base::Value> Scheduler::StateAsValue() const {
                               !poll_for_draw_triggers_task_.IsCancelled());
   scheduler_state->SetBoolean("advance_commit_state_task_",
                               !advance_commit_state_task_.IsCancelled());
+  scheduler_state->Set("begin_impl_frame_args",
+                       begin_impl_frame_args_.AsValue().release());
+
   state->Set("scheduler_state", scheduler_state.release());
 
   scoped_ptr<base::DictionaryValue> client_state(new base::DictionaryValue);
@@ -742,7 +744,7 @@ bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
       "time_left_after_drawing_ms",
       (begin_impl_frame_args_.deadline - estimated_draw_time).InMillisecondsF(),
       "state",
-      TracedValue::FromValue(StateAsValue().release()));
+      ToTrace(this));
 
   return estimated_draw_time < begin_impl_frame_args_.deadline;
 }

@@ -137,7 +137,7 @@ class CC_EXPORT Scheduler {
   void PollForAnticipatedDrawTriggers();
   void PollToAdvanceCommitState();
 
-  scoped_ptr<base::Value> StateAsValue() const;
+  scoped_ptr<base::Value> AsValue() const;
 
   bool IsInsideAction(SchedulerStateMachine::Action action) {
     return inside_action_ == action;
