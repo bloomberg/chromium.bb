@@ -5,7 +5,6 @@
 #include "base/memory/discardable_memory.h"
 
 #include <mach/mach.h>
-#include <mach/mach_vm.h>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
