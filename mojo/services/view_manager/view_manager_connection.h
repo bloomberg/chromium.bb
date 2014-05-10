@@ -23,10 +23,16 @@ class Node;
 class RootNodeManager;
 class View;
 
+#if defined(OS_WIN)
+// Equivalent of NON_EXPORTED_BASE which does not work with the template snafu
+// below.
+#pragma warning(push)
+#pragma warning(disable : 4275)
+#endif
+
 // Manages a connection from the client.
 class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
-    : public ServiceConnection<NON_EXPORTED_BASE(IViewManager),
-                               ViewManagerConnection,
+    : public ServiceConnection<IViewManager, ViewManagerConnection,
                                RootNodeManager>,
       public NodeDelegate {
  public:
@@ -127,6 +133,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnection);
 };
+
+#if defined(OS_WIN)
+#pragma warning(pop)
+#endif
 
 }  // namespace view_manager
 }  // namespace services
