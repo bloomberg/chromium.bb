@@ -181,7 +181,8 @@ void InputRouterImpl::SendGestureEvent(
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event))
     return;
 
-  touch_event_queue_.OnGestureScrollEvent(gesture_event);
+  if (gesture_event.event.sourceDevice == WebGestureEvent::Touchscreen)
+    touch_event_queue_.OnGestureScrollEvent(gesture_event);
 
   if (!IsInOverscrollGesture() &&
       !gesture_event_queue_.ShouldForward(gesture_event)) {

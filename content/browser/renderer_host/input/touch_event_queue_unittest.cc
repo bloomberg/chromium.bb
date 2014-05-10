@@ -35,6 +35,7 @@ class TouchEventQueueTest : public testing::Test,
         acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN),
         slop_length_dips_(0),
+        slop_includes_boundary_(true),
         touch_scrolling_mode_(TouchEventQueue::TOUCH_SCROLLING_MODE_DEFAULT) {}
 
   virtual ~TouchEventQueueTest() {}
@@ -80,6 +81,8 @@ class TouchEventQueueTest : public testing::Test,
     TouchEventQueue::Config config;
     config.touch_scrolling_mode = touch_scrolling_mode_;
     config.touchmove_slop_suppression_length_dips = slop_length_dips_;
+    config.touchmove_slop_suppression_region_includes_boundary =
+        slop_includes_boundary_;
     return config;
   }
 
@@ -88,8 +91,10 @@ class TouchEventQueueTest : public testing::Test,
     ResetQueueWithConfig(CreateConfig());
   }
 
-  void SetUpForTouchMoveSlopTesting(double slop_length_dips) {
+  void SetUpForTouchMoveSlopTesting(double slop_length_dips,
+                                    bool slop_includes_boundary) {
     slop_length_dips_ = slop_length_dips;
+    slop_includes_boundary_ = slop_includes_boundary;
     ResetQueueWithConfig(CreateConfig());
   }
 
@@ -248,6 +253,7 @@ class TouchEventQueueTest : public testing::Test,
   scoped_ptr<WebGestureEvent> followup_gesture_event_;
   scoped_ptr<InputEventAckState> sync_ack_result_;
   double slop_length_dips_;
+  bool slop_includes_boundary_;
   TouchEventQueue::TouchScrollingMode touch_scrolling_mode_;
   base::MessageLoopForUI message_loop_;
 };
@@ -1347,12 +1353,13 @@ TEST_F(TouchEventQueueTest, NoCancelOnTouchTimeoutWithoutConsumer) {
   EXPECT_EQ(0U, GetAndResetAckedEventCount());
 }
 
-// Tests that TouchMove's are dropped if within the slop suppression region
-// for an unconsumed TouchStart
-TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
+// Tests that TouchMove's are dropped if within the boundary-inclusive slop
+// suppression region for an unconsumed TouchStart.
+TEST_F(TouchEventQueueTest, TouchMoveSuppressionIncludingSlopBoundary) {
   const double kSlopLengthDips = 10.;
   const double kHalfSlopLengthDips = kSlopLengthDips / 2;
-  SetUpForTouchMoveSlopTesting(kSlopLengthDips);
+  const bool slop_includes_boundary = true;
+  SetUpForTouchMoveSlopTesting(kSlopLengthDips, slop_includes_boundary);
 
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
@@ -1374,6 +1381,18 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
 
   MoveTouchPoint(0, -kHalfSlopLengthDips, 0);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+
+  MoveTouchPoint(0, -kSlopLengthDips, 0);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+
+  MoveTouchPoint(0, 0, kSlopLengthDips);
   EXPECT_EQ(0U, queued_event_count());
   EXPECT_EQ(0U, GetAndResetSentEventCount());
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
@@ -1420,12 +1439,57 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithinSlopRegion) {
   EXPECT_EQ(1U, GetAndResetAckedEventCount());
 }
 
+// Tests that TouchMove's are dropped if within the boundary-exclusive slop
+// suppression region for an unconsumed TouchStart.
+TEST_F(TouchEventQueueTest, TouchMoveSuppressionExcludingSlopBoundary) {
+  const double kSlopLengthDips = 10.;
+  const double kHalfSlopLengthDips = kSlopLengthDips / 2;
+  const bool slop_includes_boundary = false;
+  SetUpForTouchMoveSlopTesting(kSlopLengthDips, slop_includes_boundary);
+
+  // Queue a TouchStart.
+  PressTouchPoint(0, 0);
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  ASSERT_EQ(1U, GetAndResetSentEventCount());
+  ASSERT_EQ(1U, GetAndResetAckedEventCount());
+
+  // TouchMove's within the region should be suppressed.
+  MoveTouchPoint(0, 0, kHalfSlopLengthDips);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+
+  MoveTouchPoint(0, kSlopLengthDips - 0.2f, 0);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_EQ(0U, GetAndResetSentEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, acked_event_state());
+
+  // As soon as a TouchMove reaches the (Euclidean) slop distance, no more
+  // TouchMove's should be suppressed.
+  MoveTouchPoint(0, kSlopLengthDips, 0);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+
+  MoveTouchPoint(0, kHalfSlopLengthDips, 0);
+  EXPECT_EQ(1U, queued_event_count());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_EQ(0U, GetAndResetAckedEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+}
+
 // Tests that TouchMove's are not dropped within the slop suppression region if
 // the touchstart was consumed.
 TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
   const double kSlopLengthDips = 10.;
   const double kHalfSlopLengthDips = kSlopLengthDips / 2;
-  SetUpForTouchMoveSlopTesting(kSlopLengthDips);
+  const bool slop_includes_boundary = true;
+  SetUpForTouchMoveSlopTesting(kSlopLengthDips, slop_includes_boundary);
 
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
@@ -1446,7 +1510,9 @@ TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterTouchConsumed) {
 TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithDIPScaling) {
   const float kSlopLengthPixels = 7.f;
   const float kDPIScale = 3.f;
-  SetUpForTouchMoveSlopTesting(kSlopLengthPixels / kDPIScale);
+  const bool slop_includes_boundary = true;
+  SetUpForTouchMoveSlopTesting(kSlopLengthPixels / kDPIScale,
+                               slop_includes_boundary);
 
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
@@ -1486,7 +1552,8 @@ TEST_F(TouchEventQueueTest, TouchMoveSuppressionWithDIPScaling) {
 TEST_F(TouchEventQueueTest, NoTouchMoveSuppressionAfterMultiTouch) {
   const double kSlopLengthDips = 10.;
   const double kHalfSlopLengthDips = kSlopLengthDips / 2;
-  SetUpForTouchMoveSlopTesting(kSlopLengthDips);
+  const bool slop_includes_boundary = true;
+  SetUpForTouchMoveSlopTesting(kSlopLengthDips, slop_includes_boundary);
 
   // Queue a TouchStart.
   PressTouchPoint(0, 0);
@@ -1833,8 +1900,14 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithAckTimeout) {
   PressTouchPoint(0, 0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
   EXPECT_TRUE(IsTimeoutRunning());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_FALSE(IsTimeoutRunning());
 
   // The start of a scroll gesture should trigger async touch event dispatch.
+  MoveTouchPoint(0, 1, 1);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+  EXPECT_TRUE(IsTimeoutRunning());
   WebGestureEvent followup_scroll;
   followup_scroll.type = WebInputEvent::GestureScrollBegin;
   SetFollowupEvent(followup_scroll);
@@ -1907,8 +1980,12 @@ TEST_F(TouchEventQueueTest, AsyncTouchWithTouchCancelAfterAck) {
 
   PressTouchPoint(0, 0);
   EXPECT_EQ(1U, GetAndResetSentEventCount());
+  SendTouchEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
 
   // The start of a scroll gesture should trigger async touch event dispatch.
+  MoveTouchPoint(0, 1, 1);
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
   WebGestureEvent followup_scroll;
   followup_scroll.type = WebInputEvent::GestureScrollBegin;
   SetFollowupEvent(followup_scroll);

@@ -60,6 +60,8 @@ TouchEventQueue::Config GetTouchEventQueueConfig() {
 
   config.touchmove_slop_suppression_length_dips =
       ui::GestureConfiguration::max_touch_move_in_pixels_for_click();
+  // TODO(jdduke): Remove when unified GR enabled, crbug.com/332418.
+  config.touchmove_slop_suppression_region_includes_boundary = false;
 
   return config;
 }

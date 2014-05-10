@@ -204,6 +204,10 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
       suppressing_touchmoves_ = slop_suppression_length_dips_squared_ != 0;
     }
 
+    if (event.type == WebInputEvent::TouchEnd ||
+        event.type == WebInputEvent::TouchCancel)
+      suppressing_touchmoves_ = false;
+
     if (event.type != WebInputEvent::TouchMove)
       return false;
 
@@ -226,6 +230,8 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
     if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
       suppressing_touchmoves_ = false;
   }
+
+  bool suppressing_touchmoves() const { return suppressing_touchmoves_; }
 
  private:
   double slop_suppression_length_dips_squared_;
@@ -322,6 +328,7 @@ class CoalescedWebTouchEvent {
 
 TouchEventQueue::Config::Config()
     : touchmove_slop_suppression_length_dips(0),
+      touchmove_slop_suppression_region_includes_boundary(true),
       touch_scrolling_mode(TOUCH_SCROLLING_MODE_DEFAULT),
       touch_ack_timeout_delay(base::TimeDelta::FromMilliseconds(200)),
       touch_ack_timeout_supported(false) {
@@ -335,7 +342,10 @@ TouchEventQueue::TouchEventQueue(TouchEventQueueClient* client,
       touch_filtering_state_(TOUCH_FILTERING_STATE_DEFAULT),
       ack_timeout_enabled_(config.touch_ack_timeout_supported),
       touchmove_slop_suppressor_(new TouchMoveSlopSuppressor(
-          config.touchmove_slop_suppression_length_dips + kSlopEpsilon)),
+          config.touchmove_slop_suppression_length_dips +
+          (config.touchmove_slop_suppression_region_includes_boundary
+               ? kSlopEpsilon
+               : -kSlopEpsilon))),
       send_touch_events_async_(false),
       needs_async_touchmove_for_outer_slop_region_(false),
       last_sent_touch_timestamp_sec_(0),
@@ -526,6 +536,12 @@ void TouchEventQueue::OnGestureScrollEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   if (gesture_event.event.type != blink::WebInputEvent::GestureScrollBegin)
     return;
+
+  if (touch_filtering_state_ != DROP_ALL_TOUCHES &&
+      touch_filtering_state_ != DROP_TOUCHES_IN_SEQUENCE) {
+    DCHECK(!touchmove_slop_suppressor_->suppressing_touchmoves())
+        << "The renderer should be offered a touchmove before scrolling begins";
+  }
 
   if (touch_scrolling_mode_ == TOUCH_SCROLLING_MODE_ASYNC_TOUCHMOVE) {
     if (touch_filtering_state_ != DROP_ALL_TOUCHES &&
