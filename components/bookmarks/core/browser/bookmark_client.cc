@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+bool BookmarkClient::PreferTouchIcon() {
+  return false;
+}
+
 base::CancelableTaskTracker::TaskId BookmarkClient::GetFaviconImageForURL(
     const GURL& page_url,
     int icon_types,

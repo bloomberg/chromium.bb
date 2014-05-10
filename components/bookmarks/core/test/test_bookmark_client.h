@@ -23,7 +23,6 @@ class TestBookmarkClient : public BookmarkClient {
 
  private:
   // BookmarkClient:
-  virtual bool PreferTouchIcon() OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkClient);

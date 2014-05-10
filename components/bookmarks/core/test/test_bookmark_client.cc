@@ -15,10 +15,6 @@ scoped_ptr<BookmarkModel> TestBookmarkClient::CreateModel(bool index_urls) {
   return bookmark_model.Pass();
 }
 
-bool TestBookmarkClient::PreferTouchIcon() {
-  return false;
-}
-
 void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
 }
 
