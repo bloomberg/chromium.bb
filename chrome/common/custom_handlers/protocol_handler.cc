@@ -10,27 +10,24 @@
 
 
 ProtocolHandler::ProtocolHandler(const std::string& protocol,
-                                 const GURL& url,
-                                 const base::string16& title)
+                                 const GURL& url)
     : protocol_(protocol),
-      url_(url),
-      title_(title) {
+      url_(url) {
 }
 
 ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     const std::string& protocol,
-    const GURL& url,
-    const base::string16& title) {
+    const GURL& url) {
   std::string lower_protocol = StringToLowerASCII(protocol);
-  return ProtocolHandler(lower_protocol, url, title);
+  return ProtocolHandler(lower_protocol, url);
 }
 
 ProtocolHandler::ProtocolHandler() {
 }
 
 bool ProtocolHandler::IsValidDict(const base::DictionaryValue* value) {
-  return value->HasKey("protocol") && value->HasKey("url") &&
-    value->HasKey("title");
+  // Note that "title" parameter is ignored.
+  return value->HasKey("protocol") && value->HasKey("url");
 }
 
 bool ProtocolHandler::IsSameOrigin(
@@ -49,11 +46,9 @@ ProtocolHandler ProtocolHandler::CreateProtocolHandler(
     return EmptyProtocolHandler();
   }
   std::string protocol, url;
-  base::string16 title;
   value->GetString("protocol", &protocol);
   value->GetString("url", &url);
-  value->GetString("title", &title);
-  return ProtocolHandler::CreateProtocolHandler(protocol, GURL(url), title);
+  return ProtocolHandler::CreateProtocolHandler(protocol, GURL(url));
 }
 
 GURL ProtocolHandler::TranslateUrl(const GURL& url) const {
@@ -67,7 +62,6 @@ base::DictionaryValue* ProtocolHandler::Encode() const {
   base::DictionaryValue* d = new base::DictionaryValue();
   d->Set("protocol", new base::StringValue(protocol_));
   d->Set("url", new base::StringValue(url_.spec()));
-  d->Set("title", new base::StringValue(title_));
   return d;
 }
 
@@ -75,15 +69,12 @@ base::DictionaryValue* ProtocolHandler::Encode() const {
 std::string ProtocolHandler::ToString() const {
   return "{ protocol=" + protocol_ +
          ", url=" + url_.spec() +
-         ", title=" + base::UTF16ToASCII(title_) +
          " }";
 }
 #endif
 
 bool ProtocolHandler::operator==(const ProtocolHandler& other) const {
-  return protocol_ == other.protocol_ &&
-    url_ == other.url_ &&
-    title_ == other.title_;
+  return protocol_ == other.protocol_ && url_ == other.url_;
 }
 
 bool ProtocolHandler::IsEquivalent(const ProtocolHandler& other) const {
@@ -91,5 +82,5 @@ bool ProtocolHandler::IsEquivalent(const ProtocolHandler& other) const {
 }
 
 bool ProtocolHandler::operator<(const ProtocolHandler& other) const {
-  return title_ < other.title_;
+  return url_ < other.url_;
 }

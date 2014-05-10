@@ -1617,7 +1617,6 @@ bool Browser::IsFullscreenForTabOrPending(
 void Browser::RegisterProtocolHandler(WebContents* web_contents,
                                       const std::string& protocol,
                                       const GURL& url,
-                                      const base::string16& title,
                                       bool user_gesture) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -1625,7 +1624,7 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
     return;
 
   ProtocolHandler handler =
-      ProtocolHandler::CreateProtocolHandler(protocol, url, title);
+      ProtocolHandler::CreateProtocolHandler(protocol, url);
 
   ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForProfile(profile);

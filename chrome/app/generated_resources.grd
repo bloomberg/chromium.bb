@@ -12175,19 +12175,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
           https:////mail.google.com//mail//?extsrc=mailto&amp;url=%s
         </message>
 
-        <!-- The name for the Google mailto service. -->
-        <message name="IDS_GOOGLE_MAILTO_HANDLER_NAME">
-          Google.com Mail
-        </message>
-
         <!-- The URL for the Google webcal service. -->
         <message name="IDS_GOOGLE_WEBCAL_HANDLER_URL">
           https:////www.google.com//calendar//render?cid=%s
-        </message>
-
-        <!-- The name for the Google webcal service. -->
-        <message name="IDS_GOOGLE_WEBCAL_HANDLER_NAME">
-          Google Calendar
         </message>
       </if>
 
@@ -13114,10 +13104,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       web calendar
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
-      Allow <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> (<ph name="HANDLER_HOSTNAME">$2<ex>google.com</ex></ph>) to open all <ph name="PROTOCOL">$3<ex>search</ex></ph> links?
+      Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links?
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE" desc="The message to display when asking a user to confirm the registration of a protocol handler.">
-      Allow <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph> (<ph name="HANDLER_HOSTNAME">$2<ex>google.com</ex></ph>) to open all <ph name="PROTOCOL">$3<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$4<ex>Elgoog Search</ex></ph>?
+      Allow <ph name="HANDLER_HOSTNAME">$1<ex>google.com</ex></ph> to open all <ph name="PROTOCOL">$2<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$3<ex>Elgoog Search</ex></ph>?
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_FRAGMENT" desc="The permission fragment to display when asking a user to confirm the registration of a protocol handler in a permission bubble. Follows a prompt 'This site would like to:'.">
       <ph name="PROTOCOL">$3<ex>search</ex></ph> links
@@ -13126,10 +13116,10 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <ph name="PROTOCOL">$3<ex>search</ex></ph> links instead of <ph name="REPLACED_HANDLER_TITLE">$4<ex>Elgoog Search</ex></ph>
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT" desc="Text to show for the accept button for the register protocol handler request infobar.">
-      Use <ph name="HANDLER_TITLE">$1<ex>Google Search</ex></ph>
+      Allow
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_DENY" desc="Text to show for the deny button for the register protocol handler request infobar.">
-      No
+      Deny
     </message>
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_IGNORE" desc="Text to show for an ignore prompt for a register protocol handler registration request.">
       Ignore

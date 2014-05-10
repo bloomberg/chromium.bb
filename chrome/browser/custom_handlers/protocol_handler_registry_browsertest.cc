@@ -46,10 +46,9 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
   }
 
   void AddProtocolHandler(const std::string& protocol,
-                          const GURL& url,
-                          const base::string16& title) {
-    ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(
-          protocol, url, title);
+                          const GURL& url) {
+    ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(protocol,
+                                                                     url);
     ProtocolHandlerRegistry* registry =
         ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
     // Fake that this registration is happening on profile startup. Otherwise
@@ -69,8 +68,7 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 
   AddProtocolHandler(std::string("web+search"),
-                     GURL("http://www.google.com/%s"),
-                     base::UTF8ToUTF16(std::string("Test handler")));
+                     GURL("http://www.google.com/%s"));
   GURL url("web+search:testing");
   ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
@@ -82,8 +80,7 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
   ASSERT_TRUE(test_server()->Start());
   GURL handler_url = test_server()->GetURL("files/custom_handler_foo.html");
-  AddProtocolHandler("foo", handler_url,
-                     base::UTF8ToUTF16(std::string("Test foo Handler")));
+  AddProtocolHandler("foo", handler_url);
 
   ui_test_utils::NavigateToURL(browser(), GURL("foo:test"));
 

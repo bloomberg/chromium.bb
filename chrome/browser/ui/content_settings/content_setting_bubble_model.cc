@@ -1031,23 +1031,22 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
     protocol = base::UTF8ToUTF16(pending_handler_.protocol());
   }
 
+  // Note that we ignore the |title| parameter.
   if (previous_handler_.IsEmpty()) {
     set_title(l10n_util::GetStringFUTF8(
         IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
-        pending_handler_.title(),
         base::UTF8ToUTF16(pending_handler_.url().host()),
         protocol));
   } else {
     set_title(l10n_util::GetStringFUTF8(
         IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
-        pending_handler_.title(),
         base::UTF8ToUTF16(pending_handler_.url().host()),
-        protocol, previous_handler_.title()));
+        protocol,
+        base::UTF8ToUTF16(previous_handler_.url().host())));
   }
 
   std::string radio_allow_label =
-      l10n_util::GetStringFUTF8(IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT,
-                                pending_handler_.title());
+      l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT);
   std::string radio_deny_label =
       l10n_util::GetStringUTF8(IDS_REGISTER_PROTOCOL_HANDLER_DENY);
   std::string radio_ignore_label =

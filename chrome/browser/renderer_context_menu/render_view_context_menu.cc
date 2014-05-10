@@ -1064,7 +1064,7 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
   for (size_t i = 0; i < handlers.size() && i <= max; i++) {
     protocol_handler_submenu_model_.AddItem(
         IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST + i,
-        handlers[i].title());
+        base::UTF8ToUTF16(handlers[i].url().host()));
   }
   protocol_handler_submenu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   protocol_handler_submenu_model_.AddItem(

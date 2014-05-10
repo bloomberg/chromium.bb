@@ -46,23 +46,28 @@ base::string16
 RegisterProtocolHandlerPermissionRequest::GetMessageText() const {
   ProtocolHandler old_handler = registry_->GetHandlerFor(handler_.protocol());
   return old_handler.IsEmpty() ?
-      l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
-          handler_.title(), base::UTF8ToUTF16(handler_.url().host()),
+      l10n_util::GetStringFUTF16(
+          IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
+          base::UTF8ToUTF16(handler_.url().host()),
           GetProtocolName(handler_)) :
-      l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
-          handler_.title(), base::UTF8ToUTF16(handler_.url().host()),
-          GetProtocolName(handler_), old_handler.title());
+      l10n_util::GetStringFUTF16(
+          IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
+          base::UTF8ToUTF16(handler_.url().host()),
+          GetProtocolName(handler_),
+          base::UTF8ToUTF16(old_handler.url().host()));
 }
 
 base::string16
 RegisterProtocolHandlerPermissionRequest::GetMessageTextFragment() const {
   ProtocolHandler old_handler = registry_->GetHandlerFor(handler_.protocol());
   return old_handler.IsEmpty() ?
-      l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_FRAGMENT,
+      l10n_util::GetStringFUTF16(
+          IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_FRAGMENT,
           GetProtocolName(handler_)) :
       l10n_util::GetStringFUTF16(
           IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE_FRAGMENT,
-          GetProtocolName(handler_), old_handler.title());
+          GetProtocolName(handler_),
+          base::UTF8ToUTF16(old_handler.url().host()));
 }
 
 bool RegisterProtocolHandlerPermissionRequest::HasUserGesture() const {

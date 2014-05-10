@@ -2657,7 +2657,7 @@ void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
   if (policy->IsPseudoScheme(protocol))
     return;
 
-  delegate_->RegisterProtocolHandler(this, protocol, url, title, user_gesture);
+  delegate_->RegisterProtocolHandler(this, protocol, url, user_gesture);
 }
 
 void WebContentsImpl::OnFindReply(int request_id,

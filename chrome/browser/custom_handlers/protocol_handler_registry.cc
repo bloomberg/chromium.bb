@@ -418,13 +418,11 @@ void ProtocolHandlerRegistry::InstallDefaultsForChromeOS() {
   AddPredefinedHandler(
       ProtocolHandler::CreateProtocolHandler(
           "mailto",
-          GURL(l10n_util::GetStringUTF8(IDS_GOOGLE_MAILTO_HANDLER_URL)),
-          l10n_util::GetStringUTF16(IDS_GOOGLE_MAILTO_HANDLER_NAME)));
+          GURL(l10n_util::GetStringUTF8(IDS_GOOGLE_MAILTO_HANDLER_URL))));
   AddPredefinedHandler(
       ProtocolHandler::CreateProtocolHandler(
           "webcal",
-          GURL(l10n_util::GetStringUTF8(IDS_GOOGLE_WEBCAL_HANDLER_URL)),
-          l10n_util::GetStringUTF16(IDS_GOOGLE_WEBCAL_HANDLER_NAME)));
+          GURL(l10n_util::GetStringUTF8(IDS_GOOGLE_WEBCAL_HANDLER_URL))));
 #else
   NOTREACHED();  // this method should only ever be called in chromeos.
 #endif

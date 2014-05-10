@@ -377,7 +377,6 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void RegisterProtocolHandler(WebContents* web_contents,
                                        const std::string& protocol,
                                        const GURL& url,
-                                       const base::string16& title,
                                        bool user_gesture) {}
 
   // Result of string search in the page. This includes the number of matches

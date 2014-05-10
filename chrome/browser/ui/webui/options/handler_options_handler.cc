@@ -99,7 +99,7 @@ static void GetHandlersAsListValue(
     base::ListValue* handlerValue = new base::ListValue();
     handlerValue->Append(new base::StringValue(handler->protocol()));
     handlerValue->Append(new base::StringValue(handler->url().spec()));
-    handlerValue->Append(new base::StringValue(handler->title()));
+    handlerValue->Append(new base::StringValue(handler->url().host()));
     handler_list->Append(handlerValue);
   }
 }
@@ -199,14 +199,11 @@ ProtocolHandler HandlerOptionsHandler::ParseHandlerFromArgs(
     const base::ListValue* args) const {
   base::string16 protocol;
   base::string16 url;
-  base::string16 title;
-  bool ok = args->GetString(0, &protocol) && args->GetString(1, &url) &&
-    args->GetString(2, &title);
+  bool ok = args->GetString(0, &protocol) && args->GetString(1, &url);
   if (!ok)
     return ProtocolHandler::EmptyProtocolHandler();
   return ProtocolHandler::CreateProtocolHandler(base::UTF16ToUTF8(protocol),
-                                                GURL(base::UTF16ToUTF8(url)),
-                                                title);
+                                                GURL(base::UTF16ToUTF8(url)));
 }
 
 void HandlerOptionsHandler::Observe(

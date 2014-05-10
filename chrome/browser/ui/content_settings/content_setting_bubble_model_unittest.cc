@@ -559,8 +559,8 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->set_pending_protocol_handler(
-      ProtocolHandler::CreateProtocolHandler("mailto",
-          GURL("http://www.toplevel.example/"), base::ASCIIToUTF16("Handler")));
+      ProtocolHandler::CreateProtocolHandler(
+          "mailto", GURL("http://www.toplevel.example/")));
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
           NULL, web_contents(), profile(), NULL,
@@ -613,8 +613,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
-      "mailto", GURL("http://www.toplevel.example/"),
-      base::ASCIIToUTF16("Handler"));
+      "mailto", GURL("http://www.toplevel.example/"));
   content_settings->set_pending_protocol_handler(test_handler);
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
@@ -633,7 +632,6 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     ASSERT_FALSE(handler.IsEmpty());
-    EXPECT_EQ(base::ASCIIToUTF16("Handler"), handler.title());
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               content_settings->pending_protocol_handler_setting());
   }
@@ -662,7 +660,6 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     ASSERT_FALSE(handler.IsEmpty());
-    EXPECT_EQ(base::ASCIIToUTF16("Handler"), handler.title());
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               content_settings->pending_protocol_handler_setting());
     EXPECT_FALSE(registry.IsIgnored(test_handler));

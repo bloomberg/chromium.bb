@@ -13,7 +13,7 @@ cr.define('options', function() {
    * Creates a new ignored protocol / content handler list item.
    *
    * Accepts values in the form
-   *   ['mailto', 'http://www.thesite.com/%s', 'The title of the protocol'],
+   *   ['mailto', 'http://www.thesite.com/%s', 'www.thesite.com'],
    * @param {Object} entry A dictionary describing the handlers for a given
    *     protocol.
    * @constructor
@@ -40,12 +40,12 @@ cr.define('options', function() {
       protocolElement.className = 'handlers-type-column';
       this.contentElement_.appendChild(protocolElement);
 
-      // Site title.
-      var titleElement = document.createElement('div');
-      titleElement.textContent = this.dataItem[2];
-      titleElement.className = 'handlers-site-column';
-      titleElement.title = this.dataItem[1];
-      this.contentElement_.appendChild(titleElement);
+      // Host name.
+      var hostElement = document.createElement('div');
+      hostElement.textContent = this.dataItem[2];
+      hostElement.className = 'handlers-site-column';
+      hostElement.title = this.dataItem[1];
+      this.contentElement_.appendChild(hostElement);
     },
   };
 
@@ -90,7 +90,7 @@ cr.define('options', function() {
    * Accepts values in the form
    * { protocol: 'mailto',
    *   handlers: [
-   *     ['mailto', 'http://www.thesite.com/%s', 'The title of the protocol'],
+   *     ['mailto', 'http://www.thesite.com/%s', 'www.thesite.com'],
    *     ...,
    *   ],
    * }

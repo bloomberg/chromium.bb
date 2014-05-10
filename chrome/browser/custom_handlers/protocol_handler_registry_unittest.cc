@@ -320,16 +320,13 @@ class ProtocolHandlerRegistryTest : public testing::Test {
   }
 
   ProtocolHandler CreateProtocolHandler(const std::string& protocol,
-                                        const GURL& url,
-                                        const std::string& title) {
-    return ProtocolHandler::CreateProtocolHandler(protocol, url,
-        base::UTF8ToUTF16(title));
+                                        const GURL& url) {
+    return ProtocolHandler::CreateProtocolHandler(protocol, url);
   }
 
   ProtocolHandler CreateProtocolHandler(const std::string& protocol,
-      const std::string& name) {
-    return CreateProtocolHandler(protocol, GURL("http://" + name + "/%s"),
-        name);
+                                        const std::string& name) {
+    return CreateProtocolHandler(protocol, GURL("http://" + name + "/%s"));
   }
 
   void RecreateRegistry(bool initialize) {
@@ -356,7 +353,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
     CHECK(profile_->GetPrefs());
     SetUpRegistry(true);
     test_protocol_handler_ =
-        CreateProtocolHandler("test", GURL("http://test.com/%s"), "Test");
+        CreateProtocolHandler("test", GURL("http://test.com/%s"));
   }
 
   virtual void TearDown() {
@@ -448,10 +445,8 @@ TEST_F(ProtocolHandlerRegistryTest, IgnoreProtocolHandler) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, IgnoreEquivalentProtocolHandler) {
-  ProtocolHandler ph1 = CreateProtocolHandler("test", GURL("http://test/%s"),
-                                              "test1");
-  ProtocolHandler ph2 = CreateProtocolHandler("test", GURL("http://test/%s"),
-                                              "test2");
+  ProtocolHandler ph1 = CreateProtocolHandler("test", GURL("http://test/%s"));
+  ProtocolHandler ph2 = CreateProtocolHandler("test", GURL("http://test/%s"));
 
   registry()->OnIgnoreRegisterProtocolHandler(ph1);
   ASSERT_TRUE(registry()->IsIgnored(ph1));
@@ -588,10 +583,8 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsRegistered) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestIsEquivalentRegistered) {
-  ProtocolHandler ph1 = CreateProtocolHandler("test", GURL("http://test/%s"),
-                                              "test1");
-  ProtocolHandler ph2 = CreateProtocolHandler("test", GURL("http://test/%s"),
-                                              "test2");
+  ProtocolHandler ph1 = CreateProtocolHandler("test", GURL("http://test/%s"));
+  ProtocolHandler ph2 = CreateProtocolHandler("test", GURL("http://test/%s"));
   registry()->OnAcceptRegisterProtocolHandler(ph1);
 
   ASSERT_TRUE(registry()->IsRegistered(ph1));
@@ -599,14 +592,10 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsEquivalentRegistered) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestSilentlyRegisterHandler) {
-  ProtocolHandler ph1 = CreateProtocolHandler("test", GURL("http://test/%s"),
-                                              "test1");
-  ProtocolHandler ph2 = CreateProtocolHandler("test", GURL("http://test/%s"),
-                                              "test2");
-  ProtocolHandler ph3 = CreateProtocolHandler("ignore", GURL("http://test/%s"),
-                                              "ignore1");
-  ProtocolHandler ph4 = CreateProtocolHandler("ignore", GURL("http://test/%s"),
-                                              "ignore2");
+  ProtocolHandler ph1 = CreateProtocolHandler("test", GURL("http://test/1/%s"));
+  ProtocolHandler ph2 = CreateProtocolHandler("test", GURL("http://test/2/%s"));
+  ProtocolHandler ph3 = CreateProtocolHandler("ignore", GURL("http://test/%s"));
+  ProtocolHandler ph4 = CreateProtocolHandler("ignore", GURL("http://test/%s"));
 
   ASSERT_FALSE(registry()->SilentlyHandleRegisterHandlerRequest(ph1));
   ASSERT_FALSE(registry()->IsRegistered(ph1));
@@ -859,10 +848,10 @@ TEST_F(ProtocolHandlerRegistryTest, TestLoadEnabledGetsPropogatedToIO) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestReplaceHandler) {
-  ProtocolHandler ph1 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/%s"), "test1");
-  ProtocolHandler ph2 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/updated-url/%s"), "test2");
+  ProtocolHandler ph1 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/%s"));
+  ProtocolHandler ph2 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/updated-url/%s"));
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   ASSERT_TRUE(registry()->AttemptReplace(ph2));
   const ProtocolHandler& handler(registry()->GetHandlerFor("mailto"));
@@ -870,12 +859,12 @@ TEST_F(ProtocolHandlerRegistryTest, TestReplaceHandler) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestReplaceNonDefaultHandler) {
-  ProtocolHandler ph1 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/%s"), "test1");
-  ProtocolHandler ph2 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/updated-url/%s"), "test2");
-  ProtocolHandler ph3 = CreateProtocolHandler("mailto",
-      GURL("http://else.com/%s"), "test3");
+  ProtocolHandler ph1 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/%s"));
+  ProtocolHandler ph2 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/updated-url/%s"));
+  ProtocolHandler ph3 =
+      CreateProtocolHandler("mailto", GURL("http://else.com/%s"));
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->OnAcceptRegisterProtocolHandler(ph3);
   ASSERT_TRUE(registry()->AttemptReplace(ph2));
@@ -884,12 +873,12 @@ TEST_F(ProtocolHandlerRegistryTest, TestReplaceNonDefaultHandler) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestReplaceRemovesStaleHandlers) {
-  ProtocolHandler ph1 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/%s"), "test1");
-  ProtocolHandler ph2 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/updated-url/%s"), "test2");
-  ProtocolHandler ph3 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/third/%s"), "test");
+  ProtocolHandler ph1 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/%s"));
+  ProtocolHandler ph2 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/updated-url/%s"));
+  ProtocolHandler ph3 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/third/%s"));
   registry()->OnAcceptRegisterProtocolHandler(ph1);
   registry()->OnAcceptRegisterProtocolHandler(ph2);
 
@@ -902,12 +891,12 @@ TEST_F(ProtocolHandlerRegistryTest, TestReplaceRemovesStaleHandlers) {
 }
 
 TEST_F(ProtocolHandlerRegistryTest, TestIsSameOrigin) {
-  ProtocolHandler ph1 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/%s"), "test1");
-  ProtocolHandler ph2 = CreateProtocolHandler("mailto",
-      GURL("http://test.com/updated-url/%s"), "test2");
-  ProtocolHandler ph3 = CreateProtocolHandler("mailto",
-      GURL("http://other.com/%s"), "test");
+  ProtocolHandler ph1 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/%s"));
+  ProtocolHandler ph2 =
+      CreateProtocolHandler("mailto", GURL("http://test.com/updated-url/%s"));
+  ProtocolHandler ph3 =
+      CreateProtocolHandler("mailto", GURL("http://other.com/%s"));
   ASSERT_EQ(ph1.url().GetOrigin() == ph2.url().GetOrigin(),
       ph1.IsSameOrigin(ph2));
   ASSERT_EQ(ph1.url().GetOrigin() == ph2.url().GetOrigin(),
@@ -920,8 +909,8 @@ TEST_F(ProtocolHandlerRegistryTest, TestIsSameOrigin) {
 
 TEST_F(ProtocolHandlerRegistryTest, MAYBE_TestInstallDefaultHandler) {
   RecreateRegistry(false);
-  registry()->AddPredefinedHandler(CreateProtocolHandler(
-      "test", GURL("http://test.com/%s"), "Test"));
+  registry()->AddPredefinedHandler(
+      CreateProtocolHandler("test", GURL("http://test.com/%s")));
   registry()->InitProtocolSettings();
   std::vector<std::string> protocols;
   registry()->GetRegisteredProtocols(&protocols);
