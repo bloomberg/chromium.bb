@@ -253,6 +253,10 @@ class MEDIA_EXPORT AudioInputController
   void DoSetAutomaticGainControl(bool enabled);
   void DoOnData(scoped_ptr<uint8[]> data, uint32 size);
 
+  // Method to check if we get recorded data after a stream was started,
+  // and log the result to UMA.
+  void FirstCheckForNoData();
+
   // Method which ensures that OnError() is triggered when data recording
   // times out. Called on the audio thread.
   void DoCheckForNoData();

@@ -8789,6 +8789,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Measures the time taken for AudioInputController::</summary>
 </histogram>
 
+<histogram name="Media.AudioInputControllerCaptureStartupSuccess"
+    enum="BooleanSuccess">
+  <summary>
+    Whether capture started successfully after an input stream startup was
+    requested.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioInputDeviceManager" units="ms">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Measures the time taken for AudioInputDeviceManager::</summary>

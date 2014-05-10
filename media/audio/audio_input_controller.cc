@@ -212,12 +212,12 @@ void AudioInputController::DoCreateForStream(
   enable_nodata_timer = true;
 
   if (enable_nodata_timer) {
-    // Create the data timer which will call DoCheckForNoData(). The timer
+    // Create the data timer which will call FirstCheckForNoData(). The timer
     // is started in DoRecord() and restarted in each DoCheckForNoData()
     // callback.
     no_data_timer_.reset(new base::Timer(
         FROM_HERE, base::TimeDelta::FromSeconds(kTimerInitialIntervalSeconds),
-        base::Bind(&AudioInputController::DoCheckForNoData,
+        base::Bind(&AudioInputController::FirstCheckForNoData,
                    base::Unretained(this)), false));
   } else {
     DVLOG(1) << "Disabled: timer check for no data.";
@@ -247,7 +247,7 @@ void AudioInputController::DoRecord() {
 
   if (no_data_timer_) {
     // Start the data timer. Once |kTimerResetIntervalSeconds| have passed,
-    // a callback to DoCheckForNoData() is made.
+    // a callback to FirstCheckForNoData() is made.
     no_data_timer_->Reset();
   }
 
@@ -318,6 +318,13 @@ void AudioInputController::DoSetAutomaticGainControl(bool enabled) {
   stream_->SetAutomaticGainControl(enabled);
 }
 
+void AudioInputController::FirstCheckForNoData() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  UMA_HISTOGRAM_BOOLEAN("Media.AudioInputControllerCaptureStartupSuccess",
+                        GetDataIsActive());
+  DoCheckForNoData();
+}
+
 void AudioInputController::DoCheckForNoData() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -347,6 +354,10 @@ void AudioInputController::OnData(AudioInputStream* stream,
                                   uint32 size,
                                   uint32 hardware_delay_bytes,
                                   double volume) {
+  // Mark data as active to ensure that the periodic calls to
+  // DoCheckForNoData() does not report an error to the event handler.
+  SetDataIsActive(true);
+
   {
     base::AutoLock auto_lock(lock_);
     if (state_ != RECORDING)
@@ -360,10 +371,6 @@ void AudioInputController::OnData(AudioInputStream* stream,
     prev_key_down_count_ = current_count;
     DVLOG_IF(6, key_pressed) << "Detected keypress.";
   }
-
-  // Mark data as active to ensure that the periodic calls to
-  // DoCheckForNoData() does not report an error to the event handler.
-  SetDataIsActive(true);
 
   // Use SharedMemory and SyncSocket if the client has created a SyncWriter.
   // Used by all low-latency clients except WebSpeech.
