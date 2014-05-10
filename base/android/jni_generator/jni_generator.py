@@ -359,11 +359,11 @@ def ExtractNatives(contents, ptr_type):
   contents = contents.replace('\n', '')
   natives = []
   re_native = re.compile(r'(@NativeClassQualifiedName'
-                         '\(\"(?P<native_class_name>.*?)\"\))?\s*'
-                         '(@NativeCall(\(\"(?P<java_class_name>.*?)\"\)))?\s*'
-                         '(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*?native '
-                         '(?P<return_type>\S*?) '
-                         '(?P<name>native\w+?)\((?P<params>.*?)\);')
+                         '\(\"(?P<native_class_name>.*?)\"\)\s+)?'
+                         '(@NativeCall(\(\"(?P<java_class_name>.*?)\"\))\s+)?'
+                         '(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*native '
+                         '(?P<return_type>\S*) '
+                         '(?P<name>native\w+)\((?P<params>.*?)\);')
   for match in re.finditer(re_native, contents):
     native = NativeMethod(
         static='static' in match.group('qualifiers'),
