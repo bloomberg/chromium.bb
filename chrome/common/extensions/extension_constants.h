@@ -282,6 +282,10 @@ extern const char kAppStateReadyToRun[];
 // The path part of the file system url used for media file systems.
 extern const char kMediaFileSystemPathPart[];
 
+// The key used for signing some pieces of data from the webstore.
+extern const uint8 kWebstoreSignaturesPublicKey[];
+extern const int kWebstoreSignaturesPublicKeySize;
+
 }  // namespace extension_misc
 
 namespace extensions {

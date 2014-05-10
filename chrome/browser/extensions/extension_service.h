@@ -24,7 +24,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_function_histogram_value.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/external_provider_interface.h"
@@ -127,8 +126,7 @@ class ExtensionService
     : public ExtensionServiceInterface,
       public extensions::ExternalProviderInterface::VisitorInterface,
       public content::NotificationObserver,
-      public extensions::Blacklist::Observer,
-      public extensions::ContentVerifierObserver {
+      public extensions::Blacklist::Observer {
  public:
   // Attempts to uninstall an extension from a given ExtensionService. Returns
   // true iff the target extension exists.
@@ -472,9 +470,6 @@ class ExtensionService
       const base::Closure& callback) {
     external_updates_finished_callback_ = callback;
   }
-
-  // ContentVerifierObserver implementation.
-  virtual void ContentVerifyFailed(const std::string& extension_id) OVERRIDE;
 
   // Adds/Removes update observers.
   void AddUpdateObserver(extensions::UpdateObserver* observer);

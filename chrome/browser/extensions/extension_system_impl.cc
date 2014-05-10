@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
@@ -36,6 +37,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/content_verifier.h"
+#include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
@@ -139,11 +141,44 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 
-static bool ShouldVerifyExtensionContent(const Extension* extension) {
-  return ((extension->is_extension() || extension->is_legacy_packaged_app()) &&
-          ManifestURL::UpdatesFromGallery(extension) &&
-          Manifest::IsAutoUpdateableLocation(extension->location()));
-}
+namespace {
+
+class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
+ public:
+  explicit ContentVerifierDelegateImpl(ExtensionService* service)
+      : service_(service->AsWeakPtr()) {}
+
+  virtual ~ContentVerifierDelegateImpl() {}
+
+  virtual bool ShouldBeVerified(const Extension& extension) OVERRIDE {
+    return ((extension.is_extension() || extension.is_legacy_packaged_app()) &&
+            ManifestURL::UpdatesFromGallery(&extension) &&
+            Manifest::IsAutoUpdateableLocation(extension.location()));
+  }
+
+  virtual const ContentVerifierKey& PublicKey() OVERRIDE {
+    static ContentVerifierKey key(
+        extension_misc::kWebstoreSignaturesPublicKey,
+        extension_misc::kWebstoreSignaturesPublicKeySize);
+    return key;
+  }
+
+  virtual GURL GetSignatureFetchUrl(const std::string& extension_id,
+                                    const base::Version& version) OVERRIDE {
+    return GURL();
+  }
+
+  virtual void VerifyFailed(const std::string& extension_id) OVERRIDE {
+    if (service_)
+      service_->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
+  }
+
+ private:
+  base::WeakPtr<ExtensionService> service_;
+  DISALLOW_COPY_AND_ASSIGN(ContentVerifierDelegateImpl);
+};
+
+}  // namespace
 
 void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -179,9 +214,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
     install_verifier_.reset(
         new InstallVerifier(ExtensionPrefs::Get(profile_), profile_));
     install_verifier_->Init();
-    ContentVerifierFilter filter = base::Bind(&ShouldVerifyExtensionContent);
-    content_verifier_ = new ContentVerifier(profile_, filter);
-    content_verifier_->AddObserver(extension_service_.get());
+    content_verifier_ = new ContentVerifier(
+        profile_, new ContentVerifierDelegateImpl(extension_service_.get()));
     content_verifier_->Start();
     info_map()->SetContentVerifier(content_verifier_.get());
 
@@ -256,12 +290,8 @@ void ExtensionSystemImpl::Shared::Shutdown() {
     extension_warning_service_->RemoveObserver(
         extension_warning_badge_service_.get());
   }
-  if (content_verifier_) {
-    if (extension_service_)
-      content_verifier_->RemoveObserver(extension_service_.get());
+  if (content_verifier_)
     content_verifier_->Shutdown();
-  }
-
   if (extension_service_)
     extension_service_->Shutdown();
 }

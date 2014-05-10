@@ -9,6 +9,9 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
+#include "extensions/browser/content_hash_reader.h"
 
 namespace extensions {
 
@@ -18,9 +21,15 @@ ContentVerifyJob::TestDelegate* g_test_delegate = NULL;
 
 }  // namespace
 
-ContentVerifyJob::ContentVerifyJob(const std::string& extension_id,
+ContentVerifyJob::ContentVerifyJob(ContentHashReader* hash_reader,
                                    const FailureCallback& failure_callback)
-    : extension_id_(extension_id), failure_callback_(failure_callback) {
+    : done_reading_(false),
+      hashes_ready_(false),
+      total_bytes_read_(0),
+      current_block_(0),
+      current_hash_byte_count_(0),
+      hash_reader_(hash_reader),
+      failure_callback_(failure_callback) {
   // It's ok for this object to be constructed on a different thread from where
   // it's used.
   thread_checker_.DetachFromThread();
@@ -31,27 +40,98 @@ ContentVerifyJob::~ContentVerifyJob() {
 
 void ContentVerifyJob::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&ContentHashReader::Init, hash_reader_),
+      base::Bind(&ContentVerifyJob::OnHashesReady, this));
 }
 
 void ContentVerifyJob::BytesRead(int count, const char* data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (g_test_delegate) {
     FailureReason reason =
-        g_test_delegate->BytesRead(extension_id_, count, data);
+        g_test_delegate->BytesRead(hash_reader_->extension_id(), count, data);
     if (reason != NONE)
       return DispatchFailureCallback(reason);
+  }
+  if (!hashes_ready_) {
+    queue_.append(data, count);
+    return;
+  }
+  DCHECK_GE(count, 0);
+  int bytes_added = 0;
+
+  while (bytes_added < count) {
+    if (current_block_ >= hash_reader_->block_count())
+      return DispatchFailureCallback(HASH_MISMATCH);
+
+    if (!current_hash_.get()) {
+      current_hash_byte_count_ = 0;
+      current_hash_.reset(
+          crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+    }
+    // Compute how many bytes we should hash, and add them to the current hash.
+    int bytes_to_hash =
+        std::min(hash_reader_->block_size() - current_hash_byte_count_,
+                 count - bytes_added);
+    current_hash_->Update(data + bytes_added, bytes_to_hash);
+    bytes_added += bytes_to_hash;
+    current_hash_byte_count_ += bytes_to_hash;
+    total_bytes_read_ += bytes_to_hash;
+
+    // If we finished reading a block worth of data, finish computing the hash
+    // for it and make sure the expected hash matches.
+    if (current_hash_byte_count_ == hash_reader_->block_size())
+      FinishBlock();
   }
 }
 
 void ContentVerifyJob::DoneReading() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (g_test_delegate) {
-    FailureReason reason = g_test_delegate->DoneReading(extension_id_);
+    FailureReason reason =
+        g_test_delegate->DoneReading(hash_reader_->extension_id());
     if (reason != NONE) {
       DispatchFailureCallback(reason);
       return;
     }
   }
+  done_reading_ = true;
+  if (hashes_ready_)
+    FinishBlock();
+}
+
+void ContentVerifyJob::FinishBlock() {
+  if (current_hash_byte_count_ <= 0)
+    return;
+  std::string final(crypto::kSHA256Length, 0);
+  current_hash_->Finish(string_as_array(&final), final.size());
+
+  const std::string* expected_hash = NULL;
+  if (!hash_reader_->GetHashForBlock(current_block_, &expected_hash))
+    return DispatchFailureCallback(HASH_MISMATCH);
+
+  if (*expected_hash != final)
+    return DispatchFailureCallback(HASH_MISMATCH);
+
+  current_hash_.reset();
+  current_hash_byte_count_ = 0;
+  current_block_++;
+}
+
+void ContentVerifyJob::OnHashesReady(bool success) {
+  if (!success)
+    return DispatchFailureCallback(NO_HASHES);
+
+  hashes_ready_ = true;
+  if (!queue_.empty()) {
+    std::string tmp;
+    queue_.swap(tmp);
+    BytesRead(tmp.size(), string_as_array(&tmp));
+  }
+  if (done_reading_)
+    FinishBlock();
 }
 
 // static

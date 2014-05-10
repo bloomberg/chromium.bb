@@ -10,6 +10,9 @@
 #include "base/files/file_path.h"
 #include "base/metrics/field_trial.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/content_hash_fetcher.h"
+#include "extensions/browser/content_hash_reader.h"
+#include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
 
@@ -22,70 +25,75 @@ const char kExperimentName[] = "ExtensionContentVerification";
 namespace extensions {
 
 ContentVerifier::ContentVerifier(content::BrowserContext* context,
-                                 const ContentVerifierFilter& filter)
+                                 ContentVerifierDelegate* delegate)
     : mode_(GetMode()),
-      filter_(filter),
       context_(context),
-      observers_(new ObserverListThreadSafe<ContentVerifierObserver>) {
+      delegate_(delegate),
+      fetcher_(new ContentHashFetcher(context, delegate)) {
 }
 
 ContentVerifier::~ContentVerifier() {
 }
 
 void ContentVerifier::Start() {
+  if (mode_ >= BOOTSTRAP)
+    fetcher_->Start();
 }
 
 void ContentVerifier::Shutdown() {
-  filter_.Reset();
+  fetcher_.reset();
+  delegate_.reset();
 }
 
 ContentVerifyJob* ContentVerifier::CreateJobFor(
     const std::string& extension_id,
     const base::FilePath& extension_root,
     const base::FilePath& relative_path) {
-  if (filter_.is_null())
+  if (!delegate_)
     return NULL;
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
   const Extension* extension =
       registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
 
-  if (!extension || !filter_.Run(extension))
+  if (!extension || !delegate_->ShouldBeVerified(*extension) ||
+      !extension->version())
     return NULL;
 
   return new ContentVerifyJob(
-      extension_id,
+      new ContentHashReader(extension_id,
+                            *extension->version(),
+                            extension_root,
+                            relative_path,
+                            delegate_->PublicKey()),
       base::Bind(&ContentVerifier::VerifyFailed, this, extension->id()));
 }
 
 void ContentVerifier::VerifyFailed(const std::string& extension_id,
                                    ContentVerifyJob::FailureReason reason) {
-  if (mode_ < ENFORCE)
-    return;
-
-  if (reason == ContentVerifyJob::NO_HASHES && mode_ < ENFORCE_STRICT) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&ContentVerifier::RequestFetch, this, extension_id));
+        base::Bind(&ContentVerifier::VerifyFailed, this, extension_id, reason));
     return;
   }
 
-  // The magic of ObserverListThreadSafe will make sure that observers get
-  // called on the same threads that they called AddObserver on.
-  observers_->Notify(&ContentVerifierObserver::ContentVerifyFailed,
-                     extension_id);
-}
+  if (!delegate_ || mode_ < ENFORCE)
+    return;
 
-void ContentVerifier::AddObserver(ContentVerifierObserver* observer) {
-  observers_->AddObserver(observer);
-}
-
-void ContentVerifier::RemoveObserver(ContentVerifierObserver* observer) {
-  observers_->RemoveObserver(observer);
-}
-
-void ContentVerifier::RequestFetch(const std::string& extension_id) {
+  if (reason == ContentVerifyJob::NO_HASHES && mode_ < ENFORCE_STRICT &&
+      fetcher_.get()) {
+    // If we failed because there were no hashes yet for this extension, just
+    // request some.
+    ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
+    const Extension* extension =
+        registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+    if (extension)
+      fetcher_->DoFetch(extension);
+    return;
+  }
+  delegate_->VerifyFailed(extension_id);
 }
 
 // static

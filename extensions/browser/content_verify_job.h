@@ -16,6 +16,10 @@ namespace base {
 class FilePath;
 }
 
+namespace crypto {
+class SecureHash;
+}
+
 namespace extensions {
 
 class ContentHashReader;
@@ -39,11 +43,7 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   typedef base::Callback<void(FailureReason)> FailureCallback;
 
   // The |failure_callback| will be called at most once if there was a failure.
-  //
-  // IMPORTANT NOTE: this class is still a stub right now - in the future this
-  // constructor will also be passed information to let it lookup expected
-  // block hashes for the file being read.
-  ContentVerifyJob(const std::string& extension_id,
+  ContentVerifyJob(ContentHashReader* hash_reader,
                    const FailureCallback& failure_callback);
 
   // This begins the process of getting expected hashes, so it should be called
@@ -80,10 +80,40 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   virtual ~ContentVerifyJob();
   friend class base::RefCountedThreadSafe<ContentVerifyJob>;
 
+  // Called each time we're done adding bytes for the current block, and are
+  // ready to finish the hash operation for those bytes and make sure it matches
+  // what was expected for that block.
+  void FinishBlock();
+
+  // Dispatches the failure callback with the given reason.
   void DispatchFailureCallback(FailureReason reason);
 
-  // The id of the extension for the file being verified.
-  std::string extension_id_;
+  // Called when our ContentHashReader has finished initializing.
+  void OnHashesReady(bool success);
+
+  // Indicates whether the caller has told us they are done calling BytesRead.
+  bool done_reading_;
+
+  // Set to true once hash_reader_ has read its expected hashes.
+  bool hashes_ready_;
+
+  // While we're waiting for the callback from the ContentHashReader, we need
+  // to queue up bytes any bytes that are read.
+  std::string queue_;
+
+  // The total bytes we've read.
+  int64 total_bytes_read_;
+
+  // The index of the block we're currently on.
+  int current_block_;
+
+  // The hash we're building up for the bytes of |current_block_|.
+  scoped_ptr<crypto::SecureHash> current_hash_;
+
+  // The number of bytes we've already input into |current_hash_|.
+  int current_hash_byte_count_;
+
+  scoped_refptr<ContentHashReader> hash_reader_;
 
   // Called once if verification fails.
   FailureCallback failure_callback_;
