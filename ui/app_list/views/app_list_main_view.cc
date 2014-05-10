@@ -38,6 +38,8 @@ const int kInnerPadding = 1;
 // The maximum allowed time to wait for icon loading in milliseconds.
 const int kMaxIconLoadingWaitTimeInMs = 50;
 
+const int kContentsViewIndex = 1;
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +109,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
 void AppListMainView::AddContentsView() {
   contents_view_ = new ContentsView(
       this, pagination_model_, model_, delegate_);
-  AddChildView(contents_view_);
+  AddChildViewAt(contents_view_, kContentsViewIndex);
 
   search_box_view_->set_contents_view(contents_view_);
 
