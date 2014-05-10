@@ -25,9 +25,6 @@ class MEDIA_EXPORT DemuxerAndroid {
   // Must be called prior to calling any other methods.
   virtual void Initialize(DemuxerAndroidClient* client) = 0;
 
-  // Called to request the current audio/video decoder configurations.
-  virtual void RequestDemuxerConfigs() = 0;
-
   // Called to request additional data from the demuxer.
   virtual void RequestDemuxerData(media::DemuxerStream::Type type) = 0;
 
@@ -44,12 +41,7 @@ class MEDIA_EXPORT DemuxerAndroid {
 // Defines the client callback interface.
 class MEDIA_EXPORT DemuxerAndroidClient {
  public:
-  // Called in response to RequestDemuxerConfigs() and also when the demuxer has
-  // initialized.
-  //
-  // TODO(scherkus): Perhaps clients should be required to call
-  // RequestDemuxerConfigs() to initialize themselves instead of the demuxer
-  // calling this method without being prompted.
+  // Called when the demuxer has initialized.
   virtual void OnDemuxerConfigsAvailable(const DemuxerConfigs& params) = 0;
 
   // Called in response to RequestDemuxerData().

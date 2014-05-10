@@ -168,6 +168,9 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   // resync with audio and starts decoding.
   void OnPrefetchDone();
 
+  // Sets the demuxer configs for audio or video stream.
+  void SetDemuxerConfigs(const DemuxerConfigs& configs, bool is_audio);
+
   // Test-only method to setup hook for the completion of the next decode cycle.
   // This callback state is cleared when it is next run.
   // Prevent usage creep by only calling this from the

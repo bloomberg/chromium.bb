@@ -97,9 +97,6 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // Called when DemuxerStreamPlayer needs to read data from ChunkDemuxer.
   void OnReadFromDemuxer(media::DemuxerStream::Type type);
 
-  // Called when the player needs the new config data from ChunkDemuxer.
-  void OnMediaConfigRequest();
-
   // Called by the Destroyer to destroy an instance of this object.
   void Destroy();
 
@@ -182,6 +179,11 @@ class MediaSourceDelegate : public media::DemuxerHost {
   // |seeking_lock_| must be held by caller.
   base::TimeDelta FindBufferedBrowserSeekTime_Locked(
       const base::TimeDelta& seek_time) const;
+
+  // Get the demuxer configs for a particular stream identified by |is_audio|.
+  // Returns true on success, of false otherwise.
+  bool GetDemuxerConfigFromStream(media::DemuxerConfigs* configs,
+                                  bool is_audio);
 
   RendererDemuxerAndroid* demuxer_client_;
   int demuxer_client_id_;

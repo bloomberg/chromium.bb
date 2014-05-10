@@ -102,7 +102,7 @@ void MediaDecoderJob::Prefetch(const base::Closure& prefetch_cb) {
   RequestData(prefetch_cb);
 }
 
-bool MediaDecoderJob::Decode(
+scoped_ptr<DemuxerConfigs> MediaDecoderJob::Decode(
     base::TimeTicks start_time_ticks,
     base::TimeDelta start_presentation_timestamp,
     const DecoderCallback& callback) {
@@ -117,18 +117,19 @@ bool MediaDecoderJob::Decode(
                            base::Unretained(this),
                            start_time_ticks,
                            start_presentation_timestamp));
-    return true;
+    return scoped_ptr<DemuxerConfigs>();
   }
 
   if (DemuxerStream::kConfigChanged == CurrentAccessUnit().status) {
-    // Clear received data because we need to handle a config change.
     decode_cb_.Reset();
-    ClearData();
-    return false;
+    size_t index = CurrentReceivedDataChunkIndex();
+    CHECK_EQ(1u, received_data_[index].demuxer_configs.size());
+    return scoped_ptr<DemuxerConfigs>(new DemuxerConfigs(
+        received_data_[index].demuxer_configs[0]));
   }
 
   DecodeCurrentAccessUnit(start_time_ticks, start_presentation_timestamp);
-  return true;
+  return scoped_ptr<DemuxerConfigs>();
 }
 
 void MediaDecoderJob::StopDecode() {
@@ -462,9 +463,13 @@ void MediaDecoderJob::OnDecodeCompleted(
 const AccessUnit& MediaDecoderJob::CurrentAccessUnit() const {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(HasData());
-  int index = NoAccessUnitsRemainingInChunk(true) ?
-      inactive_demuxer_data_index() : current_demuxer_data_index_;
+  size_t index = CurrentReceivedDataChunkIndex();
   return received_data_[index].access_units[access_unit_index_[index]];
+}
+
+size_t MediaDecoderJob::CurrentReceivedDataChunkIndex() const {
+  return NoAccessUnitsRemainingInChunk(true) ?
+      inactive_demuxer_data_index() : current_demuxer_data_index_;
 }
 
 bool MediaDecoderJob::NoAccessUnitsRemainingInChunk(

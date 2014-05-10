@@ -26,11 +26,6 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
     demuxer_->AddDemuxerClient(demuxer_client_id_, client);
   }
 
-  virtual void RequestDemuxerConfigs() OVERRIDE {
-    DCHECK(ClientIDExists()) << demuxer_client_id_;
-    demuxer_->Send(new MediaPlayerMsg_MediaConfigRequest(demuxer_client_id_));
-  }
-
   virtual void RequestDemuxerData(media::DemuxerStream::Type type) OVERRIDE {
     DCHECK(ClientIDExists()) << demuxer_client_id_;
     demuxer_->Send(new MediaPlayerMsg_ReadFromDemuxer(

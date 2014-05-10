@@ -54,13 +54,16 @@ class MediaDecoderJob {
   // Called by MediaSourcePlayer to decode some data.
   // |callback| - Run when decode operation has completed.
   //
-  // Returns true if the next decode was started and |callback| will be
-  // called when the decode operation is complete.
-  // Returns false if a config change is needed. |callback| is ignored
-  // and will not be called.
-  bool Decode(base::TimeTicks start_time_ticks,
-              base::TimeDelta start_presentation_timestamp,
-              const DecoderCallback& callback);
+  // Returns a scoped pointer to a DemuxerConfig if a config change is detected,
+  // or an empty scoped pointer otherwise. In the case of requiring further data
+  // before commencing decode, an empty scoped pointer will also be returned
+  // although config change may be the next received access unit. |callback|
+  // will be called when the decode operation is complete. If a config change
+  // is detected, |callback| is ignored and will not be called.
+  scoped_ptr<DemuxerConfigs> Decode(
+      base::TimeTicks start_time_ticks,
+      base::TimeDelta start_presentation_timestamp,
+      const DecoderCallback& callback);
 
   // Called to stop the last Decode() early.
   // If the decoder is in the process of decoding the next frame, then
@@ -146,6 +149,9 @@ class MediaDecoderJob {
 
   // Helper function to get the current access unit that is being decoded.
   const AccessUnit& CurrentAccessUnit() const;
+
+  // Helper function to get the current data chunk index that is being decoded.
+  size_t CurrentReceivedDataChunkIndex() const;
 
   // Check whether a chunk has no remaining access units to decode. If
   // |is_active_chunk| is true, this function returns whether decoder has

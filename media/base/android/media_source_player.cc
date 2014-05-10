@@ -19,7 +19,7 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 #include "media/base/android/video_decoder_job.h"
-#include "media/base/buffers.h"
+
 
 namespace media {
 
@@ -297,40 +297,21 @@ void MediaSourcePlayer::StartInternal() {
 void MediaSourcePlayer::OnDemuxerConfigsAvailable(
     const DemuxerConfigs& configs) {
   DVLOG(1) << __FUNCTION__;
+  DCHECK(!HasAudio() && !HasVideo());
   duration_ = configs.duration;
   clock_.SetDuration(duration_);
 
-  audio_codec_ = configs.audio_codec;
-  num_channels_ = configs.audio_channels;
-  sampling_rate_ = configs.audio_sampling_rate;
-  is_audio_encrypted_ = configs.is_audio_encrypted;
-  audio_extra_data_ = configs.audio_extra_data;
-  video_codec_ = configs.video_codec;
-  width_ = configs.video_size.width();
-  height_ = configs.video_size.height();
-  is_video_encrypted_ = configs.is_video_encrypted;
+  SetDemuxerConfigs(configs, true);
+  SetDemuxerConfigs(configs, false);
 
   manager()->OnMediaMetadataChanged(
       player_id(), duration_, width_, height_, true);
-
-  if (IsEventPending(CONFIG_CHANGE_EVENT_PENDING)) {
-    if (reconfig_audio_decoder_)
-      ConfigureAudioDecoderJob();
-
-    if (reconfig_video_decoder_)
-      ConfigureVideoDecoderJob();
-
-    ClearPendingEvent(CONFIG_CHANGE_EVENT_PENDING);
-
-    // Resume decoding after the config change if we are still playing.
-    if (playing_)
-      StartInternal();
-  }
 }
 
 void MediaSourcePlayer::OnDemuxerDataAvailable(const DemuxerData& data) {
   DVLOG(1) << __FUNCTION__ << "(" << data.type << ")";
   DCHECK_LT(0u, data.access_units.size());
+  CHECK_GE(1u, data.demuxer_configs.size());
 
   if (has_pending_audio_data_request_ && data.type == DemuxerStream::AUDIO) {
     has_pending_audio_data_request_ = false;
@@ -496,8 +477,16 @@ void MediaSourcePlayer::ProcessPendingEvents() {
   if (IsEventPending(CONFIG_CHANGE_EVENT_PENDING)) {
     DVLOG(1) << __FUNCTION__ << " : Handling CONFIG_CHANGE_EVENT.";
     DCHECK(reconfig_audio_decoder_ || reconfig_video_decoder_);
-    demuxer_->RequestDemuxerConfigs();
-    return;
+    manager()->OnMediaMetadataChanged(
+         player_id(), duration_, width_, height_, true);
+
+    if (reconfig_audio_decoder_)
+      ConfigureAudioDecoderJob();
+
+    if (reconfig_video_decoder_)
+      ConfigureVideoDecoderJob();
+
+    ClearPendingEvent(CONFIG_CHANGE_EVENT_PENDING);
   }
 
   if (IsEventPending(SURFACE_CHANGE_EVENT_PENDING)) {
@@ -524,7 +513,6 @@ void MediaSourcePlayer::ProcessPendingEvents() {
 
     DCHECK(audio_decoder_job_ || AudioFinished());
     DCHECK(video_decoder_job_ || VideoFinished());
-
     int count = (AudioFinished() ? 0 : 1) + (VideoFinished() ? 0 : 1);
 
     // It is possible that all streams have finished decode, yet starvation
@@ -649,12 +637,13 @@ void MediaSourcePlayer::MediaDecoderCallback(
       start_time_ticks_ = base::TimeTicks::Now();
   }
 
-  if (is_audio) {
+  if (is_audio)
     DecodeMoreAudio();
-    return;
-  }
+  else
+    DecodeMoreVideo();
 
-  DecodeMoreVideo();
+  if (IsEventPending(CONFIG_CHANGE_EVENT_PENDING))
+    ProcessPendingEvents();
 }
 
 void MediaSourcePlayer::DecodeMoreAudio() {
@@ -662,21 +651,22 @@ void MediaSourcePlayer::DecodeMoreAudio() {
   DCHECK(!audio_decoder_job_->is_decoding());
   DCHECK(!AudioFinished());
 
-  if (audio_decoder_job_->Decode(
-          start_time_ticks_,
-          start_presentation_timestamp_,
-          base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
-                     weak_factory_.GetWeakPtr(),
-                     true))) {
+  scoped_ptr<DemuxerConfigs> configs(audio_decoder_job_->Decode(
+      start_time_ticks_,
+      start_presentation_timestamp_,
+      base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
+                 weak_factory_.GetWeakPtr(),
+                 true)));
+  if (!configs) {
     TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreAudio",
                              audio_decoder_job_.get());
     return;
   }
 
   // Failed to start the next decode.
-  // Wait for demuxer ready message.
   DCHECK(!reconfig_audio_decoder_);
   reconfig_audio_decoder_ = true;
+  SetDemuxerConfigs(*configs, true);
 
   // Config change may have just been detected on the other stream. If so,
   // don't send a duplicate demuxer config request.
@@ -686,7 +676,6 @@ void MediaSourcePlayer::DecodeMoreAudio() {
   }
 
   SetPendingEvent(CONFIG_CHANGE_EVENT_PENDING);
-  ProcessPendingEvents();
 }
 
 void MediaSourcePlayer::DecodeMoreVideo() {
@@ -694,26 +683,26 @@ void MediaSourcePlayer::DecodeMoreVideo() {
   DCHECK(!video_decoder_job_->is_decoding());
   DCHECK(!VideoFinished());
 
-  if (video_decoder_job_->Decode(
-          start_time_ticks_,
-          start_presentation_timestamp_,
-          base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
-                     weak_factory_.GetWeakPtr(),
-                     false))) {
+  scoped_ptr<DemuxerConfigs> configs(video_decoder_job_->Decode(
+      start_time_ticks_,
+      start_presentation_timestamp_,
+      base::Bind(&MediaSourcePlayer::MediaDecoderCallback,
+                 weak_factory_.GetWeakPtr(),
+                 false)));
+  if (!configs) {
     TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSourcePlayer::DecodeMoreVideo",
                              video_decoder_job_.get());
     return;
   }
 
   // Failed to start the next decode.
-  // Wait for demuxer ready message.
-
   // After this detection of video config change, next video data received
   // will begin with I-frame.
   next_video_data_is_iframe_ = true;
 
   DCHECK(!reconfig_video_decoder_);
   reconfig_video_decoder_ = true;
+  SetDemuxerConfigs(*configs, false);
 
   // Config change may have just been detected on the other stream. If so,
   // don't send a duplicate demuxer config request.
@@ -723,7 +712,6 @@ void MediaSourcePlayer::DecodeMoreVideo() {
   }
 
   SetPendingEvent(CONFIG_CHANGE_EVENT_PENDING);
-  ProcessPendingEvents();
 }
 
 void MediaSourcePlayer::PlaybackCompleted(bool is_audio) {
@@ -974,6 +962,9 @@ void MediaSourcePlayer::OnPrefetchDone() {
 
   if (!VideoFinished())
     DecodeMoreVideo();
+
+  if (IsEventPending(CONFIG_CHANGE_EVENT_PENDING))
+    ProcessPendingEvents();
 }
 
 const char* MediaSourcePlayer::GetEventName(PendingEventFlags event) {
@@ -1012,6 +1003,22 @@ void MediaSourcePlayer::ClearPendingEvent(PendingEventFlags event) {
   DCHECK(IsEventPending(event)) << GetEventName(event);
 
   pending_event_ &= ~event;
+}
+
+void MediaSourcePlayer::SetDemuxerConfigs(const DemuxerConfigs& configs,
+                                          bool is_audio) {
+  if (is_audio) {
+    audio_codec_ = configs.audio_codec;
+    num_channels_ = configs.audio_channels;
+    sampling_rate_ = configs.audio_sampling_rate;
+    is_audio_encrypted_ = configs.is_audio_encrypted;
+    audio_extra_data_ = configs.audio_extra_data;
+  } else {
+    video_codec_ = configs.video_codec;
+    width_ = configs.video_size.width();
+    height_ = configs.video_size.height();
+    is_video_encrypted_ = configs.is_video_encrypted;
+  }
 }
 
 }  // namespace media

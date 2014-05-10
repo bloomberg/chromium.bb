@@ -70,7 +70,6 @@ class RendererDemuxerAndroid : public IPC::MessageFilter {
   void OnDemuxerSeekRequest(int demuxer_client_id,
                             const base::TimeDelta& time_to_seek,
                             bool is_browser_seek);
-  void OnMediaConfigRequest(int demuxer_client_id);
 
   base::AtomicSequenceNumber next_demuxer_client_id_;
 

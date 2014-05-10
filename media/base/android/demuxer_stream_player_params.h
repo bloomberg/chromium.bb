@@ -54,6 +54,12 @@ struct MEDIA_EXPORT DemuxerData {
 
   DemuxerStream::Type type;
   std::vector<AccessUnit> access_units;
+  // If the last entry in |access_units| has a status equal to |kConfigChanged|,
+  // a corresponding DemuxerConfigs is added into this vector. The
+  // DemuxerConfigs should only contain information of the stream that is
+  // specified by |type|. This solves the issue that we need multiple IPCs when
+  // demuxer configs change.
+  std::vector<DemuxerConfigs> demuxer_configs;
 };
 
 };  // namespace media
