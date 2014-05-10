@@ -316,7 +316,7 @@ deps_os = {
         'src/third_party/chromite':
             Var('git_url') + '/chromiumos/chromite.git@63193a4393f6e964bfca992bfb03e40183554f7d',
         'src/third_party/cros_system_api':
-            Var('git_url') + '/chromiumos/platform/system_api.git@826b4567a5f3b01e2f52022759990dac56c14ea6',
+            Var('git_url') + '/chromiumos/platform/system_api.git@5b855c05cbbd9d4dcd7430fa58e73a296d038047',
         'src/third_party/fontconfig/src':
             Var('git_url') + '/external/fontconfig.git@f16c3118e25546c1b749f9823c51827a60aeb5c1',
         'src/third_party/freetype2/src':
