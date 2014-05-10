@@ -64,6 +64,8 @@ class AwBrowserContext : public content::BrowserContext,
   static AwBrowserContext* FromWebContents(
       content::WebContents* web_contents);
 
+  static void SetDataReductionProxyEnabled(bool enabled);
+
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
   void PreMainMessageLoopRun();
 
@@ -132,6 +134,8 @@ class AwBrowserContext : public content::BrowserContext,
       const scoped_refptr<URLEnumerator>& enumerator) OVERRIDE;
 
  private:
+  static bool data_reduction_proxy_enabled_;
+
   // The file path where data for this context is persisted.
   base::FilePath context_storage_path_;
 
