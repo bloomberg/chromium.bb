@@ -2435,22 +2435,24 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     var label = item.querySelector('.filename-label');
     var input = this.renameInput_;
+    var currentEntry = this.currentList_.dataModel.item(item.listIndex);
 
     input.value = label.textContent;
     item.setAttribute('renaming', '');
     label.parentNode.appendChild(input);
     input.focus();
+
     var selectionEnd = input.value.lastIndexOf('.');
-    if (selectionEnd == -1) {
-      input.select();
-    } else {
+    if (currentEntry.isFile && selectionEnd !== -1) {
       input.selectionStart = 0;
       input.selectionEnd = selectionEnd;
+    } else {
+      input.select();
     }
 
     // This has to be set late in the process so we don't handle spurious
     // blur events.
-    input.currentEntry = this.currentList_.dataModel.item(item.listIndex);
+    input.currentEntry = currentEntry;
     this.table_.startBatchUpdates();
     this.grid_.startBatchUpdates();
   };
