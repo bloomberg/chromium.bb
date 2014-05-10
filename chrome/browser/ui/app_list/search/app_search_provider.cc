@@ -105,7 +105,14 @@ void AppSearchProvider::RefreshApps() {
 void AppSearchProvider::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& detaila) {
-  RefreshApps();
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+      RefreshApps();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace app_list
