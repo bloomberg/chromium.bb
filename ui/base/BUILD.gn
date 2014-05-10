@@ -226,8 +226,8 @@ component("ui_base") {
     "view_prop.cc",
     "view_prop.h",
     # TODO(tfarina): Uncomment these when http://crbug.com/367591 is fixed.
-    #"webui/jstemplate_builder.cc",
-    #"webui/jstemplate_builder.h",
+    "webui/jstemplate_builder.cc",
+    "webui/jstemplate_builder.h",
     #"webui/web_ui_util.cc",
     #"webui/web_ui_util.h",
     "win/accessibility_ids_win.h",
@@ -286,6 +286,7 @@ component("ui_base") {
     "//third_party/icu",
     "//ui/base/strings",
     "//ui/resources",
+    "//ui/webui/resources",
     "//url",
   ]
 
