@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // These includes will be processed at build time by grit.
-<include src="../../../../third_party/dom_distiller_js/js/domdistiller.js"/>
+<include src="../../../../third_party/dom_distiller_js/package/js/domdistiller.js"/>
 
 // Extracts long-form content from a page and returns an array where the first
 // element is the article title, the second element is HTML containing the
