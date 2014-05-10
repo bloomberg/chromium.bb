@@ -31,6 +31,8 @@ const char kErrorReadCharacteristicValueFailedFormat[] =
 const char kErrorServiceNotFoundFormat[] = "Service with ID \"%s\" not found.";
 const char kErrorPlatformNotSupported[] =
     "This operation is not supported on the current platform";
+const char kErrorWriteCharacteristicValueFailedFormat[] =
+    "Failed to write value of characteristic with ID \"%s\".";
 
 extensions::BluetoothLowEnergyEventRouter* GetEventRouter(
     BrowserContext* context) {
@@ -365,10 +367,53 @@ void BluetoothLowEnergyReadCharacteristicValueFunction::ErrorCallback() {
 }
 
 bool BluetoothLowEnergyWriteCharacteristicValueFunction::DoWork() {
-  // TODO(armansito): Implement.
-  SetError("Call not supported.");
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::WriteCharacteristicValue::Params> params(
+      apibtle::WriteCharacteristicValue::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  instance_id_ = params->characteristic_id;
+  std::vector<uint8> value(params->value.begin(), params->value.end());
+
+  if (!event_router->WriteCharacteristicValue(
+          instance_id_,
+          value,
+          base::Bind(&BluetoothLowEnergyWriteCharacteristicValueFunction::
+                         SuccessCallback,
+                     this),
+          base::Bind(&BluetoothLowEnergyWriteCharacteristicValueFunction::
+                         ErrorCallback,
+                     this))) {
+    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
+                                instance_id_.c_str()));
+    SendResponse(false);
+    return false;
+  }
+
+  return true;
+}
+
+void BluetoothLowEnergyWriteCharacteristicValueFunction::SuccessCallback() {
+  results_ = apibtle::WriteCharacteristicValue::Results::Create();
+  SendResponse(true);
+}
+
+void BluetoothLowEnergyWriteCharacteristicValueFunction::ErrorCallback() {
+  SetError(base::StringPrintf(kErrorWriteCharacteristicValueFailedFormat,
+                              instance_id_.c_str()));
   SendResponse(false);
-  return false;
 }
 
 bool BluetoothLowEnergyReadDescriptorValueFunction::DoWork() {

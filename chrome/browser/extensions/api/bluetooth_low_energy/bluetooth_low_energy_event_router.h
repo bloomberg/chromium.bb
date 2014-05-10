@@ -111,6 +111,15 @@ class BluetoothLowEnergyEventRouter
                                const base::Closure& callback,
                                const base::Closure& error_callback);
 
+  // Sends a request to write the value of the characteristic with instance ID
+  // |instance_id|, with value |value|. Returns false, if no such characteristic
+  // is known. Otherwise, returns true and invokes |callback| on success and
+  // |error_callback| on failure.
+  bool WriteCharacteristicValue(const std::string& instance_id,
+                                const std::vector<uint8>& value,
+                                const base::Closure& callback,
+                                const base::Closure& error_callback);
+
   // Initializes the adapter for testing. Used by unit tests only.
   void SetAdapterForTesting(device::BluetoothAdapter* adapter);
 

@@ -26,7 +26,9 @@ using device::MockBluetoothGattService;
 using extensions::BluetoothLowEnergyEventRouter;
 using testing::Invoke;
 using testing::Return;
+using testing::ReturnRef;
 using testing::ReturnRefOfCopy;
+using testing::SaveArg;
 using testing::_;
 
 namespace utils = extension_function_test_utils;
@@ -175,6 +177,18 @@ void ReadValueSuccessCallback(
 void ReadValueErrorCallback(
     const base::Callback<void(const std::vector<uint8>&)>& callback,
     const base::Closure& error_callback) {
+  error_callback.Run();
+}
+
+void WriteValueSuccessCallback(const std::vector<uint8>& value,
+                               const base::Closure& callback,
+                               const base::Closure& error_callback) {
+  callback.Run();
+}
+
+void WriteValueErrorCallback(const std::vector<uint8>& value,
+                             const base::Closure& callback,
+                             const base::Closure& error_callback) {
   error_callback.Run();
 }
 
@@ -541,6 +555,48 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, ReadCharacteristicValue) {
   ExtensionTestMessageListener listener("ready", true);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "bluetooth_low_energy/read_characteristic_value")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  event_router()->GattCharacteristicRemoved(service0_.get(), chrc0_.get());
+  event_router()->GattServiceRemoved(device_.get(), service0_.get());
+  event_router()->DeviceRemoved(mock_adapter_, device_.get());
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, WriteCharacteristicValue) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  event_router()->DeviceAdded(mock_adapter_, device_.get());
+  event_router()->GattServiceAdded(device_.get(), service0_.get());
+  event_router()->GattCharacteristicAdded(service0_.get(), chrc0_.get());
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(_))
+      .Times(3)
+      .WillRepeatedly(Return(device_.get()));
+
+  EXPECT_CALL(*device_, GetGattService(kTestServiceId0))
+      .Times(3)
+      .WillRepeatedly(Return(service0_.get()));
+
+  EXPECT_CALL(*service0_, GetCharacteristic(kTestCharacteristicId0))
+      .Times(3)
+      .WillRepeatedly(Return(chrc0_.get()));
+
+  std::vector<uint8> write_value;
+  EXPECT_CALL(*chrc0_, WriteRemoteCharacteristic(_, _, _))
+      .Times(2)
+      .WillOnce(Invoke(&WriteValueErrorCallback))
+      .WillOnce(
+          DoAll(SaveArg<0>(&write_value), Invoke(&WriteValueSuccessCallback)));
+  EXPECT_CALL(*chrc0_, GetValue()).Times(1).WillOnce(ReturnRef(write_value));
+
+  ExtensionTestMessageListener listener("ready", true);
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
+      "bluetooth_low_energy/write_characteristic_value")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
   listener.Reply("go");

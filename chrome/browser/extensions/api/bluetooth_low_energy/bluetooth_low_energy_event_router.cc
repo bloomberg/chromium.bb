@@ -343,6 +343,28 @@ bool BluetoothLowEnergyEventRouter::ReadCharacteristicValue(
   return true;
 }
 
+bool BluetoothLowEnergyEventRouter::WriteCharacteristicValue(
+    const std::string& instance_id,
+    const std::vector<uint8>& value,
+    const base::Closure& callback,
+    const base::Closure& error_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!adapter_) {
+    VLOG(1) << "BluetoothAdapter not ready.";
+    return false;
+  }
+
+  BluetoothGattCharacteristic* characteristic =
+      FindCharacteristicById(instance_id);
+  if (!characteristic) {
+    VLOG(1) << "Characteristic not found: " << instance_id;
+    return false;
+  }
+
+  characteristic->WriteRemoteCharacteristic(value, callback, error_callback);
+  return true;
+}
+
 void BluetoothLowEnergyEventRouter::SetAdapterForTesting(
     device::BluetoothAdapter* adapter) {
   adapter_ = adapter;
