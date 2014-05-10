@@ -2740,6 +2740,7 @@ driver-install-python() {
 }
 
 feature-version-file-install() {
+  local install_root=$1
   # Scons tests can check this version number to decide whether to
   # enable tests for toolchain bug fixes or new features.  This allows
   # tests to be enabled on the toolchain buildbots/trybots before the
@@ -2748,7 +2749,7 @@ feature-version-file-install() {
   #
   # If you are adding a test that depends on a toolchain change, you
   # can increment this version number manually.
-  echo 5 > "${INSTALL_ROOT}/FEATURE_VERSION"
+  echo 5 > "${install_root}/FEATURE_VERSION"
 }
 
 # The driver is a simple python script which changes its behavior
@@ -2792,7 +2793,7 @@ HOST_ARCH=${HOST_ARCH}""" > "${destdir}"/driver.conf
   # of the drivers themselves.
   DumpAllRevisions > "${destdir}/REV"
 
-  feature-version-file-install
+  feature-version-file-install ${INSTALL_ROOT}
 }
 
 #@ driver-install-translator - Install driver scripts for translator component
@@ -2802,6 +2803,8 @@ driver-install-translator() {
   driver-install-python "${destdir}" pnacl-translate.py pnacl-nativeld.py
 
   echo """HAS_FRONTEND=0""" > "${destdir}"/driver.conf
+
+  feature-version-file-install ${INSTALL_TRANSLATOR}
 }
 
 ######################################################################
