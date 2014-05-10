@@ -5,12 +5,14 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -692,10 +694,39 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(chrome::BrowserIterator().done());
 }
 
+INSTANTIATE_TEST_CASE_P(BrowserCloseManagerBrowserTest,
+                        BrowserCloseManagerBrowserTest,
+                        testing::Bool());
+
+class BrowserCloseManagerWithDownloadsBrowserTest :
+  public BrowserCloseManagerBrowserTest {
+ public:
+  BrowserCloseManagerWithDownloadsBrowserTest() {}
+  virtual ~BrowserCloseManagerWithDownloadsBrowserTest() {}
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    BrowserCloseManagerBrowserTest::SetUpOnMainThread();
+    ASSERT_TRUE(scoped_download_directory_.CreateUniqueTempDir());
+  }
+
+  void SetDownloadPathForProfile(Profile* profile) {
+    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(profile);
+    download_prefs->SetDownloadPath(download_path());
+  }
+
+  const base::FilePath& download_path() const {
+    return scoped_download_directory_.path();
+  }
+
+ private:
+  base::ScopedTempDir scoped_download_directory_;
+};
+
 // Test shutdown with a DANGEROUS_URL download undecided.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
     TestWithDangerousUrlDownload) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  SetDownloadPathForProfile(browser()->profile());
 
   // Set up the fake delegate that forces the download to be malicious.
   scoped_ptr<TestDownloadManagerDelegate> test_delegate(
@@ -737,8 +768,10 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
 }
 
 // Test shutdown with a download in progress.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestWithDownloads) {
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
+                       TestWithDownloads) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  SetDownloadPathForProfile(browser()->profile());
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   content::TestNavigationObserver navigation_observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
@@ -765,7 +798,7 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestWithDownloads) {
 
 // Test shutdown with a download in progress from one profile, where the only
 // open windows are for another profile.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
                        TestWithDownloadsFromDifferentProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath path =
@@ -778,6 +811,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   Browser* other_profile_browser = CreateBrowser(other_profile);
 
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  SetDownloadPathForProfile(browser()->profile());
+  SetDownloadPathForProfile(other_profile);
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   {
     RepeatedNotificationObserver close_observer(
@@ -816,9 +851,10 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
 
 // Test shutdown with downloads in progress and beforeunload handlers.
 // Disabled, see http://crbug.com/315754.
-IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerWithDownloadsBrowserTest,
                        DISABLED_TestBeforeUnloadAndDownloads) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  SetDownloadPathForProfile(browser()->profile());
   ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/beforeunload.html")));
@@ -842,8 +878,8 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(chrome::BrowserIterator().done());
 }
 
-INSTANTIATE_TEST_CASE_P(BrowserCloseManagerBrowserTest,
-                        BrowserCloseManagerBrowserTest,
+INSTANTIATE_TEST_CASE_P(BrowserCloseManagerWithDownloadsBrowserTest,
+                        BrowserCloseManagerWithDownloadsBrowserTest,
                         testing::Bool());
 
 class BrowserCloseManagerWithBackgroundModeBrowserTest
