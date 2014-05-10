@@ -855,9 +855,9 @@ class GLHelperTest : public testing::Test {
       for (int x = 0; x < w; ++x) {
         bool on_grid = (y_on_grid || ((x % grid_pitch) < grid_width));
 
-        if (bmp.getConfig() == SkBitmap::kARGB_8888_Config) {
+        if (bmp.config() == SkBitmap::kARGB_8888_Config) {
           *bmp.getAddr32(x, y) = (on_grid ? grid_color : background_color);
-        } else if (bmp.getConfig() == SkBitmap::kRGB_565_Config) {
+        } else if (bmp.config() == SkBitmap::kRGB_565_Config) {
           *bmp.getAddr16(x, y) = (on_grid ? grid_color : background_color);
         }
       }
@@ -879,9 +879,9 @@ class GLHelperTest : public testing::Test {
         bool x_bit = (((x / rect_w) & 0x1) == 0);
 
         bool use_color2 = (x_bit != y_bit);  // xor
-        if (bmp.getConfig() == SkBitmap::kARGB_8888_Config) {
+        if (bmp.config() == SkBitmap::kARGB_8888_Config) {
           *bmp.getAddr32(x, y) = (use_color2 ? color2 : color1);
-        } else if (bmp.getConfig() == SkBitmap::kRGB_565_Config) {
+        } else if (bmp.config() == SkBitmap::kRGB_565_Config) {
           *bmp.getAddr16(x, y) = (use_color2 ? color2 : color1);
         }
       }
@@ -930,7 +930,7 @@ class GLHelperTest : public testing::Test {
         LOG(ERROR) << "Bitmap geometry check failure";
         return false;
     }
-    if (bmp1.getConfig() != bmp2.getConfig())
+    if (bmp1.config() != bmp2.config())
       return false;
 
     SkAutoLockPixels lock1(bmp1);
@@ -943,7 +943,7 @@ class GLHelperTest : public testing::Test {
       for (int x = 0; x < bmp1.width(); ++x) {
         if (!ColorsClose(bmp1.getColor(x,y),
                          bmp2.getColor(x,y),
-                         bmp1.getConfig())) {
+                         bmp1.config())) {
           LOG(ERROR) << "Bitmap color comparision failure";
           return false;
         }

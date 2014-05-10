@@ -443,18 +443,6 @@ class GFX_EXPORT Canvas {
   bool IntersectsClipRectInt(int x, int y, int w, int h);
   bool IntersectsClipRect(const Rect& rect);
 
-  // Returns the image rep which best matches the canvas |image_scale_|.
-  // Returns a null image rep if |image| contains no image reps.
-  // Builds mip map for returned image rep if necessary.
-  //
-  // An optional additional user defined scale can be provided.
-  const ImageSkiaRep& GetImageRepToPaint(const ImageSkia& image) const;
-  const ImageSkiaRep& GetImageRepToPaint(
-      const ImageSkia& image,
-      float image_scale,
-      float user_defined_scale_factor_x,
-      float user_defined_scale_factor_y) const;
-
   // Helper for the DrawImageInt functions declared above. The |pixel|
   // parameter if true indicates that the bounds and the image are to
   // be assumed to be in pixels, i.e. no scaling needs to be performed.

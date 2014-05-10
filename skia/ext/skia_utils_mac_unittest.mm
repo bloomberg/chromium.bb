@@ -52,9 +52,9 @@ SkBitmap SkiaUtilsMacTest::CreateSkBitmap(int width, int height,
   bitmap.allocPixels();
 
   if (isred)
-    bitmap.eraseRGB(0xff, 0, 0);
+    bitmap.eraseARGB(0xff, 0xff, 0, 0);
   else
-    bitmap.eraseRGB(0, 0, 0xff);
+    bitmap.eraseARGB(0xff, 0, 0, 0xff);
 
   return bitmap;
 }

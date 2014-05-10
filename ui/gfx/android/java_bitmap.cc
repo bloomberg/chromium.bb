@@ -82,7 +82,7 @@ ScopedJavaLocalRef<jobject> CreateJavaBitmapFromAndroidResource(
 ScopedJavaLocalRef<jobject> ConvertToJavaBitmap(const SkBitmap* skbitmap) {
   DCHECK(skbitmap);
   DCHECK(!skbitmap->isNull());
-  SkBitmap::Config bitmap_config = skbitmap->getConfig();
+  SkBitmap::Config bitmap_config = skbitmap->config();
   DCHECK((bitmap_config == SkBitmap::kRGB_565_Config) ||
          (bitmap_config == SkBitmap::kARGB_8888_Config));
   ScopedJavaLocalRef<jobject> jbitmap = CreateJavaBitmap(

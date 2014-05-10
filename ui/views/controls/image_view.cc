@@ -224,7 +224,7 @@ void ImageView::OnPaintImage(gfx::Canvas* canvas) {
   if (image_bounds.size() != gfx::Size(image_.width(), image_.height())) {
     // Resize case
     SkPaint paint;
-    paint.setFilterBitmap(true);
+    paint.setFilterLevel(SkPaint::kLow_FilterLevel);
     canvas->DrawImageInt(image_, 0, 0, image_.width(), image_.height(),
         image_bounds.x(), image_bounds.y(), image_bounds.width(),
         image_bounds.height(), true, paint);

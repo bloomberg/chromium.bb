@@ -194,7 +194,7 @@ SkBitmap ScaleBitmapWithSkia(const SkBitmap& src,
   canvas.scale(static_cast<double>(result.width()) / cropped_src.width(),
                static_cast<double>(result.height()) / cropped_src.height());
   SkPaint paint;
-  paint.setFilterBitmap(true);  // Use bilinear filtering.
+  paint.setFilterLevel(SkPaint::kLow_FilterLevel);  // Use bilinear filtering.
   canvas.drawBitmap(cropped_src, 0, 0, &paint);
 
   return result;

@@ -340,7 +340,7 @@ void SkCanvasVideoRenderer::Paint(media::VideoFrame* video_frame,
   }
 
   // Do a slower paint using |last_frame_|.
-  paint.setFilterBitmap(true);
+  paint.setFilterLevel(SkPaint::kLow_FilterLevel);
   canvas->drawBitmapRect(last_frame_, NULL, dest, &paint);
 }
 

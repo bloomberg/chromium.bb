@@ -58,7 +58,7 @@ ImageSkia* GetErrorImageSkia() {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
   bitmap.allocPixels();
-  bitmap.eraseRGB(0xff, 0, 0);
+  bitmap.eraseARGB(0xff, 0xff, 0, 0);
   return new gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f));
 }
 

@@ -335,7 +335,7 @@ void Canvas::DrawImageInt(const ImageSkia& image,
                           int x,
                           int y,
                           const SkPaint& paint) {
-  const ImageSkiaRep& image_rep = GetImageRepToPaint(image);
+  const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
   if (image_rep.is_null())
     return;
   const SkBitmap& bitmap = image_rep.sk_bitmap();
@@ -441,7 +441,7 @@ void Canvas::DrawImageInPath(const ImageSkia& image,
                              int y,
                              const SkPath& path,
                              const SkPaint& paint) {
-  const ImageSkiaRep& image_rep = GetImageRepToPaint(image);
+  const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
   if (image_rep.is_null())
     return;
 
@@ -504,8 +504,7 @@ void Canvas::TileImageInt(const ImageSkia& image,
   if (!IntersectsClipRectInt(dest_x, dest_y, w, h))
     return;
 
-  const ImageSkiaRep& image_rep = GetImageRepToPaint(
-      image, image_scale_, tile_scale_x, tile_scale_y);
+  const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
   if (image_rep.is_null())
     return;
 
@@ -562,32 +561,6 @@ bool Canvas::IntersectsClipRect(const Rect& rect) {
                                rect.width(), rect.height());
 }
 
-const ImageSkiaRep& Canvas::GetImageRepToPaint(const ImageSkia& image) const {
-  return GetImageRepToPaint(image, image_scale_, 1.0f, 1.0f);
-}
-
-const ImageSkiaRep& Canvas::GetImageRepToPaint(
-    const ImageSkia& image,
-    float image_scale,
-    float user_additional_scale_x,
-    float user_additional_scale_y) const {
-  const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale);
-
-  if (!image_rep.is_null()) {
-    SkMatrix m = canvas_->getTotalMatrix();
-    float scale_x = SkScalarToFloat(SkScalarAbs(m.getScaleX())) *
-        user_additional_scale_x;
-    float scale_y = SkScalarToFloat(SkScalarAbs(m.getScaleY())) *
-        user_additional_scale_y;
-
-    float bitmap_scale = image_rep.scale();
-    if (scale_x < bitmap_scale || scale_y < bitmap_scale)
-      const_cast<SkBitmap&>(image_rep.sk_bitmap()).buildMipMap();
-  }
-
-  return image_rep;
-}
-
 void Canvas::DrawImageIntHelper(const ImageSkia& image,
                                 int src_x,
                                 int src_y,
@@ -614,8 +587,7 @@ void Canvas::DrawImageIntHelper(const ImageSkia& image,
   float user_scale_x = static_cast<float>(dest_w) / src_w;
   float user_scale_y = static_cast<float>(dest_h) / src_h;
 
-  const ImageSkiaRep& image_rep = GetImageRepToPaint(image,
-      image_scale, user_scale_x, user_scale_y);
+  const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale);
   if (image_rep.is_null())
     return;
 
@@ -654,7 +626,8 @@ void Canvas::DrawImageIntHelper(const ImageSkia& image,
   // Set up our paint to use the shader & release our reference (now just owned
   // by the paint).
   SkPaint p(paint);
-  p.setFilterBitmap(filter);
+  p.setFilterLevel(filter ? SkPaint::kLow_FilterLevel
+                          : SkPaint::kNone_FilterLevel);
   p.setShader(shader.get());
 
   // The rect will be filled by the bitmap.

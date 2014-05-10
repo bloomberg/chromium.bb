@@ -107,7 +107,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, PrepareSourceBitmap) {
   SkBitmap source;
   source.setConfig(SkBitmap::kARGB_8888_Config, 800, 600);
   source.allocPixels();
-  source.eraseRGB(50, 150, 200);
+  source.eraseARGB(255, 50, 150, 200);
   SkBitmap result = ContentBasedThumbnailingAlgorithm::PrepareSourceBitmap(
       source, thumbnail_size, context.get());
   EXPECT_EQ(CLIP_RESULT_SOURCE_SAME_AS_TARGET, context->clip_result);

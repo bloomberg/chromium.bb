@@ -472,7 +472,7 @@ TEST_F(ImageTest, SkBitmapConversionPreservesOrientation) {
   const int height = 50;
   SkBitmap bitmap;
   bitmap.allocN32Pixels(width, height);
-  bitmap.eraseRGB(0, 255, 0);
+  bitmap.eraseARGB(255, 0, 255, 0);
 
   // Paint the upper half of the image in red (lower half is in green).
   SkCanvas canvas(bitmap);

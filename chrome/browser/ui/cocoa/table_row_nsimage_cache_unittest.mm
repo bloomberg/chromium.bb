@@ -33,7 +33,7 @@ SkBitmap MakeImage(int width, int height) {
   SkBitmap image;
   image.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   EXPECT_TRUE(image.allocPixels());
-  image.eraseRGB(255, 0, 0);
+  image.eraseARGB(255, 255, 0, 0);
   return image;
 }
 

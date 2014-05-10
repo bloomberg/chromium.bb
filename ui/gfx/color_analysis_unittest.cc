@@ -279,7 +279,7 @@ TEST_F(ColorAnalysisTest, ComputeColorCovarianceTrivial) {
   EXPECT_EQ(gfx::Matrix3F::Zeros(),
             color_utils::ComputeColorCovariance(bitmap));
   bitmap.allocPixels();
-  bitmap.eraseRGB(50, 150, 200);
+  bitmap.eraseARGB(255, 50, 150, 200);
   gfx::Matrix3F covariance = color_utils::ComputeColorCovariance(bitmap);
   // The answer should be all zeros.
   EXPECT_TRUE(covariance == gfx::Matrix3F::Zeros());
@@ -315,7 +315,7 @@ TEST_F(ColorAnalysisTest, ApplyColorReductionSingleColor) {
 
   source.allocPixels();
   result.allocPixels();
-  source.eraseRGB(50, 150, 200);
+  source.eraseARGB(255, 50, 150, 200);
 
   gfx::Vector3dF transform(1.0f, .5f, 0.1f);
   // This transform, if not scaled, should result in GL=145.
@@ -436,7 +436,7 @@ TEST_F(ColorAnalysisTest, ComputePrincipalComponentImageNotComputable) {
 
   source.allocPixels();
   result.allocPixels();
-  source.eraseRGB(50, 150, 200);
+  source.eraseARGB(255, 50, 150, 200);
 
   // This computation should fail since all colors always vary together.
   EXPECT_FALSE(color_utils::ComputePrincipalComponentImage(source, &result));

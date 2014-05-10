@@ -84,7 +84,7 @@ bool PickleImage(Pickle* pickle, const gfx::ImageSkia& image) {
     pickle->WriteInt(it->pixel_width());
     pickle->WriteInt(it->pixel_height());
     ImageFormat format = NONE;
-    if (!ConfigToFormat(it->sk_bitmap().getConfig(), &format))
+    if (!ConfigToFormat(it->sk_bitmap().config(), &format))
       return false;
     pickle->WriteInt(static_cast<int>(format));
     int size = static_cast<int>(it->sk_bitmap().getSafeSize());

@@ -56,7 +56,7 @@ const SkBitmap CreateBitmap(int width, int height) {
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   bitmap.allocPixels();
-  bitmap.eraseRGB(0, 255, 0);
+  bitmap.eraseARGB(255, 0, 255, 0);
   return bitmap;
 }
 

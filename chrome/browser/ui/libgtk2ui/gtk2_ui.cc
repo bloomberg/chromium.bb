@@ -1035,7 +1035,8 @@ SkBitmap Gtk2UI::GenerateGtkThemeBitmap(int id) const {
       bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                        kToolbarImageWidth, kToolbarImageHeight);
       bitmap.allocPixels();
-      bitmap.eraseRGB(color->red >> 8, color->green >> 8, color->blue >> 8);
+      bitmap.eraseARGB(0xff, color->red >> 8, color->green >> 8,
+                       color->blue >> 8);
       return bitmap;
     }
     case IDR_THEME_TAB_BACKGROUND:
