@@ -13,6 +13,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -126,7 +127,7 @@ bool IsIdEntryKey(const leveldb::Slice& key) {
 }
 
 // Converts leveldb::Status to DBInitStatus.
-DBInitStatus LevelDBStatusToDBInitStatus(const leveldb::Status status) {
+DBInitStatus LevelDBStatusToDBInitStatus(const leveldb::Status& status) {
   if (status.ok())
     return DB_INIT_SUCCESS;
   if (status.IsNotFound())
@@ -136,6 +137,17 @@ DBInitStatus LevelDBStatusToDBInitStatus(const leveldb::Status status) {
   if (status.IsIOError())
     return DB_INIT_IO_ERROR;
   return DB_INIT_FAILED;
+}
+
+// Converts leveldb::Status to FileError.
+FileError LevelDBStatusToFileError(const leveldb::Status& status) {
+  if (status.ok())
+    return FILE_ERROR_OK;
+  if (status.IsNotFound())
+    return FILE_ERROR_NOT_FOUND;
+  if (leveldb_env::IndicatesDiskFull(status))
+    return FILE_ERROR_NO_LOCAL_SPACE;
+  return FILE_ERROR_FAILED;
 }
 
 ResourceMetadataHeader GetDefaultHeaderEntry() {
@@ -439,7 +451,7 @@ bool ResourceMetadataStorage::Initialize() {
     // Check the validity of existing DB.
     int db_version = -1;
     ResourceMetadataHeader header;
-    if (GetHeader(&header))
+    if (GetHeader(&header) == FILE_ERROR_OK)
       db_version = header.version();
 
     bool should_discard_db = true;
@@ -481,8 +493,9 @@ bool ResourceMetadataStorage::Initialize() {
     if (status.ok()) {
       resource_map_.reset(db);
 
-      if (PutHeader(GetDefaultHeaderEntry()) &&  // Set up header.
-          MoveIfPossible(preserved_resource_map_path,  // Trash the old DB.
+      // Set up header and trash the old DB.
+      if (PutHeader(GetDefaultHeaderEntry()) == FILE_ERROR_OK &&
+          MoveIfPossible(preserved_resource_map_path,
                          trashed_resource_map_path)) {
         init_result = open_existing_result == DB_INIT_NOT_FOUND ?
             DB_INIT_CREATED_NEW_DB : DB_INIT_REPLACED_EXISTING_DB_WITH_NEW_DB;
@@ -569,30 +582,34 @@ void ResourceMetadataStorage::RecoverCacheInfoFromTrashedResourceMap(
   }
 }
 
-bool ResourceMetadataStorage::SetLargestChangestamp(
+FileError ResourceMetadataStorage::SetLargestChangestamp(
     int64 largest_changestamp) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   ResourceMetadataHeader header;
-  if (!GetHeader(&header)) {
+  FileError error = GetHeader(&header);
+  if (error != FILE_ERROR_OK) {
     DLOG(ERROR) << "Failed to get the header.";
-    return false;
+    return error;
   }
   header.set_largest_changestamp(largest_changestamp);
   return PutHeader(header);
 }
 
-int64 ResourceMetadataStorage::GetLargestChangestamp() {
+FileError ResourceMetadataStorage::GetLargestChangestamp(
+    int64* largest_changestamp) {
   base::ThreadRestrictions::AssertIOAllowed();
   ResourceMetadataHeader header;
-  if (!GetHeader(&header)) {
+  FileError error = GetHeader(&header);
+  if (error != FILE_ERROR_OK) {
     DLOG(ERROR) << "Failed to get the header.";
-    return 0;
+    return error;
   }
-  return header.largest_changestamp();
+  *largest_changestamp = header.largest_changestamp();
+  return FILE_ERROR_OK;
 }
 
-bool ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
+FileError ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   const std::string& id = entry.local_id();
@@ -604,11 +621,11 @@ bool ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
                                               leveldb::Slice(id),
                                               &serialized_entry);
   if (!status.ok() && !status.IsNotFound())  // Unexpected errors.
-    return false;
+    return LevelDBStatusToFileError(status);
 
   ResourceEntry old_entry;
   if (status.ok() && !old_entry.ParseFromString(serialized_entry))
-    return false;
+    return FILE_ERROR_FAILED;
 
   // Construct write batch.
   leveldb::WriteBatch batch;
@@ -636,16 +653,16 @@ bool ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
   // Put the entry itself.
   if (!entry.SerializeToString(&serialized_entry)) {
     DLOG(ERROR) << "Failed to serialize the entry: " << id;
-    return false;
+    return FILE_ERROR_FAILED;
   }
   batch.Put(id, serialized_entry);
 
   status = resource_map_->Write(leveldb::WriteOptions(), &batch);
-  return status.ok();
+  return LevelDBStatusToFileError(status);
 }
 
-bool ResourceMetadataStorage::GetEntry(const std::string& id,
-                                       ResourceEntry* out_entry) {
+FileError ResourceMetadataStorage::GetEntry(const std::string& id,
+                                            ResourceEntry* out_entry) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!id.empty());
 
@@ -653,16 +670,20 @@ bool ResourceMetadataStorage::GetEntry(const std::string& id,
   const leveldb::Status status = resource_map_->Get(leveldb::ReadOptions(),
                                                     leveldb::Slice(id),
                                                     &serialized_entry);
-  return status.ok() && out_entry->ParseFromString(serialized_entry);
+  if (!status.ok())
+    return LevelDBStatusToFileError(status);
+  return out_entry->ParseFromString(serialized_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-bool ResourceMetadataStorage::RemoveEntry(const std::string& id) {
+FileError ResourceMetadataStorage::RemoveEntry(const std::string& id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!id.empty());
 
   ResourceEntry entry;
-  if (!GetEntry(id, &entry))
-    return false;
+  FileError error = GetEntry(id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   leveldb::WriteBatch batch;
 
@@ -679,7 +700,7 @@ bool ResourceMetadataStorage::RemoveEntry(const std::string& id) {
 
   const leveldb::Status status = resource_map_->Write(leveldb::WriteOptions(),
                                                       &batch);
-  return status.ok();
+  return LevelDBStatusToFileError(status);
 }
 
 scoped_ptr<ResourceMetadataStorage::Iterator>
@@ -691,21 +712,24 @@ ResourceMetadataStorage::GetIterator() {
   return make_scoped_ptr(new Iterator(it.Pass()));
 }
 
-std::string ResourceMetadataStorage::GetChild(const std::string& parent_id,
-                                              const std::string& child_name) {
+FileError ResourceMetadataStorage::GetChild(const std::string& parent_id,
+                                            const std::string& child_name,
+                                            std::string* child_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!parent_id.empty());
   DCHECK(!child_name.empty());
 
-  std::string child_id;
-  resource_map_->Get(leveldb::ReadOptions(),
-                     leveldb::Slice(GetChildEntryKey(parent_id, child_name)),
-                     &child_id);
-  return child_id;
+  const leveldb::Status status =
+      resource_map_->Get(
+          leveldb::ReadOptions(),
+          leveldb::Slice(GetChildEntryKey(parent_id, child_name)),
+          child_id);
+  return LevelDBStatusToFileError(status);
 }
 
-void ResourceMetadataStorage::GetChildren(const std::string& parent_id,
-                                          std::vector<std::string>* children) {
+FileError ResourceMetadataStorage::GetChildren(
+    const std::string& parent_id,
+    std::vector<std::string>* children) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!parent_id.empty());
 
@@ -718,29 +742,29 @@ void ResourceMetadataStorage::GetChildren(const std::string& parent_id,
     if (IsChildEntryKey(it->key()))
       children->push_back(it->value().ToString());
   }
-  DCHECK(it->status().ok());
+  return LevelDBStatusToFileError(it->status());
 }
 
-bool ResourceMetadataStorage::PutCacheEntry(const std::string& id,
-                                            const FileCacheEntry& entry) {
+FileError ResourceMetadataStorage::PutCacheEntry(const std::string& id,
+                                                 const FileCacheEntry& entry) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!id.empty());
 
   std::string serialized_entry;
   if (!entry.SerializeToString(&serialized_entry)) {
     DLOG(ERROR) << "Failed to serialize the entry.";
-    return false;
+    return FILE_ERROR_FAILED;
   }
 
   const leveldb::Status status = resource_map_->Put(
       leveldb::WriteOptions(),
       leveldb::Slice(GetCacheEntryKey(id)),
       leveldb::Slice(serialized_entry));
-  return status.ok();
+  return LevelDBStatusToFileError(status);
 }
 
-bool ResourceMetadataStorage::GetCacheEntry(const std::string& id,
-                                            FileCacheEntry* out_entry) {
+FileError ResourceMetadataStorage::GetCacheEntry(const std::string& id,
+                                                 FileCacheEntry* out_entry) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!id.empty());
 
@@ -749,17 +773,20 @@ bool ResourceMetadataStorage::GetCacheEntry(const std::string& id,
       leveldb::ReadOptions(),
       leveldb::Slice(GetCacheEntryKey(id)),
       &serialized_entry);
-  return status.ok() && out_entry->ParseFromString(serialized_entry);
+  if (!status.ok())
+    return LevelDBStatusToFileError(status);
+  return out_entry->ParseFromString(serialized_entry) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-bool ResourceMetadataStorage::RemoveCacheEntry(const std::string& id) {
+FileError ResourceMetadataStorage::RemoveCacheEntry(const std::string& id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!id.empty());
 
   const leveldb::Status status = resource_map_->Delete(
       leveldb::WriteOptions(),
       leveldb::Slice(GetCacheEntryKey(id)));
-  return status.ok();
+  return LevelDBStatusToFileError(status);
 }
 
 scoped_ptr<ResourceMetadataStorage::CacheEntryIterator>
@@ -776,7 +803,7 @@ ResourceMetadataStorage::RecoveredCacheInfo::RecoveredCacheInfo()
 
 ResourceMetadataStorage::RecoveredCacheInfo::~RecoveredCacheInfo() {}
 
-bool ResourceMetadataStorage::GetIdByResourceId(
+FileError ResourceMetadataStorage::GetIdByResourceId(
     const std::string& resource_id,
     std::string* out_id) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -786,7 +813,7 @@ bool ResourceMetadataStorage::GetIdByResourceId(
       leveldb::ReadOptions(),
       leveldb::Slice(GetIdEntryKey(resource_id)),
       out_id);
-  return status.ok();
+  return LevelDBStatusToFileError(status);
 }
 
 ResourceMetadataStorage::~ResourceMetadataStorage() {
@@ -811,24 +838,24 @@ std::string ResourceMetadataStorage::GetChildEntryKey(
   return key;
 }
 
-bool ResourceMetadataStorage::PutHeader(
+FileError ResourceMetadataStorage::PutHeader(
     const ResourceMetadataHeader& header) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string serialized_header;
   if (!header.SerializeToString(&serialized_header)) {
     DLOG(ERROR) << "Failed to serialize the header";
-    return false;
+    return FILE_ERROR_FAILED;
   }
 
   const leveldb::Status status = resource_map_->Put(
       leveldb::WriteOptions(),
       leveldb::Slice(GetHeaderDBKey()),
       leveldb::Slice(serialized_header));
-  return status.ok();
+  return LevelDBStatusToFileError(status);
 }
 
-bool ResourceMetadataStorage::GetHeader(ResourceMetadataHeader* header) {
+FileError ResourceMetadataStorage::GetHeader(ResourceMetadataHeader* header) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string serialized_header;
@@ -836,7 +863,10 @@ bool ResourceMetadataStorage::GetHeader(ResourceMetadataHeader* header) {
       leveldb::ReadOptions(),
       leveldb::Slice(GetHeaderDBKey()),
       &serialized_header);
-  return status.ok() && header->ParseFromString(serialized_header);
+  if (!status.ok())
+    return LevelDBStatusToFileError(status);
+  return header->ParseFromString(serialized_header) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 bool ResourceMetadataStorage::CheckValidity() {

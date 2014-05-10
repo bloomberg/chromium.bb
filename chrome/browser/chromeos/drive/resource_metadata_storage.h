@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 
 namespace base {
@@ -139,45 +140,47 @@ class ResourceMetadataStorage {
   void RecoverCacheInfoFromTrashedResourceMap(RecoveredCacheInfoMap* out_info);
 
   // Sets the largest changestamp.
-  bool SetLargestChangestamp(int64 largest_changestamp);
+  FileError SetLargestChangestamp(int64 largest_changestamp);
 
   // Gets the largest changestamp.
-  int64 GetLargestChangestamp();
+  FileError GetLargestChangestamp(int64* largest_changestamp);
 
   // Puts the entry to this storage.
-  bool PutEntry(const ResourceEntry& entry);
+  FileError PutEntry(const ResourceEntry& entry);
 
   // Gets an entry stored in this storage.
-  bool GetEntry(const std::string& id, ResourceEntry* out_entry);
+  FileError GetEntry(const std::string& id, ResourceEntry* out_entry);
 
   // Removes an entry from this storage.
-  bool RemoveEntry(const std::string& id);
+  FileError RemoveEntry(const std::string& id);
 
   // Returns an object to iterate over entries stored in this storage.
   scoped_ptr<Iterator> GetIterator();
 
   // Returns the ID of the parent's child.
-  std::string GetChild(const std::string& parent_id,
-                       const std::string& child_name);
+  FileError GetChild(const std::string& parent_id,
+                     const std::string& child_name,
+                     std::string* child_id);
 
   // Returns the IDs of the parent's children.
-  void GetChildren(const std::string& parent_id,
-                   std::vector<std::string>* children);
+  FileError GetChildren(const std::string& parent_id,
+                        std::vector<std::string>* children);
 
   // Puts the cache entry to this storage.
-  bool PutCacheEntry(const std::string& id, const FileCacheEntry& entry);
+  FileError PutCacheEntry(const std::string& id, const FileCacheEntry& entry);
 
   // Gets a cache entry stored in this storage.
-  bool GetCacheEntry(const std::string& id, FileCacheEntry* out_entry);
+  FileError GetCacheEntry(const std::string& id, FileCacheEntry* out_entry);
 
   // Removes a cache entry from this storage.
-  bool RemoveCacheEntry(const std::string& id);
+  FileError RemoveCacheEntry(const std::string& id);
 
   // Returns an object to iterate over cache entries stored in this storage.
   scoped_ptr<CacheEntryIterator> GetCacheEntryIterator();
 
   // Returns the local ID associated with the given resource ID.
-  bool GetIdByResourceId(const std::string& resource_id, std::string* out_id);
+  FileError GetIdByResourceId(const std::string& resource_id,
+                              std::string* out_id);
 
  private:
   friend class ResourceMetadataStorageTest;
@@ -193,10 +196,10 @@ class ResourceMetadataStorage {
                                       const std::string& child_name);
 
   // Puts header.
-  bool PutHeader(const ResourceMetadataHeader& header);
+  FileError PutHeader(const ResourceMetadataHeader& header);
 
   // Gets header.
-  bool GetHeader(ResourceMetadataHeader* out_header);
+  FileError GetHeader(ResourceMetadataHeader* out_header);
 
   // Checks validity of the data.
   bool CheckValidity();

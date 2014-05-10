@@ -38,13 +38,21 @@ std::string GetUniquifiedName(const std::string& name, int uniquifier) {
 
 // Returns true when there is no entry with the specified name under the parent
 // other than the specified entry.
-bool EntryCanUseName(ResourceMetadataStorage* storage,
-                     const std::string& parent_local_id,
-                     const std::string& local_id,
-                     const std::string& base_name) {
-  const std::string existing_entry_id = storage->GetChild(parent_local_id,
-                                                          base_name);
-  return existing_entry_id.empty() || existing_entry_id == local_id;
+FileError EntryCanUseName(ResourceMetadataStorage* storage,
+                          const std::string& parent_local_id,
+                          const std::string& local_id,
+                          const std::string& base_name,
+                          bool* result) {
+  std::string existing_entry_id;
+  FileError error = storage->GetChild(parent_local_id, base_name,
+                                      &existing_entry_id);
+  if (error == FILE_ERROR_OK)
+    *result = existing_entry_id == local_id;
+  else if (error == FILE_ERROR_NOT_FOUND)
+    *result = true;
+  else
+    return error;
+  return FILE_ERROR_OK;
 }
 
 }  // namespace
@@ -59,14 +67,7 @@ ResourceMetadata::ResourceMetadata(
 
 FileError ResourceMetadata::Initialize() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
-    return FILE_ERROR_NO_LOCAL_SPACE;
-
-  if (!SetUpDefaultEntries())
-    return FILE_ERROR_FAILED;
-
-  return FILE_ERROR_OK;
+  return SetUpDefaultEntries();
 }
 
 void ResourceMetadata::Destroy() {
@@ -84,84 +85,112 @@ FileError ResourceMetadata::Reset() {
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  if (!storage_->SetLargestChangestamp(0))
-    return FILE_ERROR_FAILED;
+  FileError error = storage_->SetLargestChangestamp(0);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   // Remove all root entries.
   scoped_ptr<Iterator> it = GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
     if (it->GetValue().parent_local_id().empty()) {
-      if (!RemoveEntryRecursively(it->GetID()))
-        return FILE_ERROR_FAILED;
+      error = RemoveEntryRecursively(it->GetID());
+      if (error != FILE_ERROR_OK)
+        return error;
     }
   }
   if (it->HasError())
     return FILE_ERROR_FAILED;
 
-  if (!SetUpDefaultEntries())
-    return FILE_ERROR_FAILED;
-
-  return FILE_ERROR_OK;
+  return SetUpDefaultEntries();
 }
 
 ResourceMetadata::~ResourceMetadata() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
-bool ResourceMetadata::SetUpDefaultEntries() {
+FileError ResourceMetadata::SetUpDefaultEntries() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // Initialize "/drive", "/drive/other", "drive/trash" and "drive/root".
+  // Initialize "/drive".
   ResourceEntry entry;
-  if (!storage_->GetEntry(util::kDriveGrandRootLocalId, &entry)) {
+  FileError error = storage_->GetEntry(util::kDriveGrandRootLocalId, &entry);
+  if (error == FILE_ERROR_NOT_FOUND) {
     ResourceEntry root;
     root.mutable_file_info()->set_is_directory(true);
     root.set_local_id(util::kDriveGrandRootLocalId);
     root.set_title(util::kDriveGrandRootDirName);
     root.set_base_name(util::kDriveGrandRootDirName);
-    if (!storage_->PutEntry(root))
-      return false;
-  } else if (!entry.resource_id().empty()) {
-    // Old implementations used kDriveGrandRootLocalId as a resource ID.
-    entry.clear_resource_id();
-    if (!storage_->PutEntry(entry))
-      return false;
+    error = storage_->PutEntry(root);
+    if (error != FILE_ERROR_OK)
+      return error;
+  } else if (error == FILE_ERROR_OK) {
+    if (!entry.resource_id().empty()) {
+      // Old implementations used kDriveGrandRootLocalId as a resource ID.
+      entry.clear_resource_id();
+      error = storage_->PutEntry(entry);
+      if (error != FILE_ERROR_OK)
+        return error;
+    }
+  } else {
+    return error;
   }
-  if (!storage_->GetEntry(util::kDriveOtherDirLocalId, &entry)) {
+
+  // Initialize "/drive/other".
+  error = storage_->GetEntry(util::kDriveOtherDirLocalId, &entry);
+  if (error == FILE_ERROR_NOT_FOUND) {
     ResourceEntry other_dir;
     other_dir.mutable_file_info()->set_is_directory(true);
     other_dir.set_local_id(util::kDriveOtherDirLocalId);
     other_dir.set_parent_local_id(util::kDriveGrandRootLocalId);
     other_dir.set_title(util::kDriveOtherDirName);
-    if (!PutEntryUnderDirectory(other_dir))
-      return false;
-  } else if (!entry.resource_id().empty()) {
-    // Old implementations used kDriveOtherDirLocalId as a resource ID.
-    entry.clear_resource_id();
-    if (!storage_->PutEntry(entry))
-      return false;
+    error = PutEntryUnderDirectory(other_dir);
+    if (error != FILE_ERROR_OK)
+      return error;
+  } else if (error == FILE_ERROR_OK) {
+    if (!entry.resource_id().empty()) {
+      // Old implementations used kDriveOtherDirLocalId as a resource ID.
+      entry.clear_resource_id();
+      error = storage_->PutEntry(entry);
+      if (error != FILE_ERROR_OK)
+        return error;
+    }
+  } else {
+    return error;
   }
-  if (!storage_->GetEntry(util::kDriveTrashDirLocalId, &entry)) {
+
+  // Initialize "drive/trash".
+  error = storage_->GetEntry(util::kDriveTrashDirLocalId, &entry);
+  if (error == FILE_ERROR_NOT_FOUND) {
     ResourceEntry trash_dir;
     trash_dir.mutable_file_info()->set_is_directory(true);
     trash_dir.set_local_id(util::kDriveTrashDirLocalId);
     trash_dir.set_parent_local_id(util::kDriveGrandRootLocalId);
     trash_dir.set_title(util::kDriveTrashDirName);
-    if (!PutEntryUnderDirectory(trash_dir))
-      return false;
+    error = PutEntryUnderDirectory(trash_dir);
+    if (error != FILE_ERROR_OK)
+      return error;
+  } else if (error != FILE_ERROR_OK) {
+    return error;
   }
-  if (storage_->GetChild(util::kDriveGrandRootLocalId,
-                         util::kDriveMyDriveRootDirName).empty()) {
+
+  // Initialize "drive/root".
+  std::string child_id;
+  error = storage_->GetChild(
+      util::kDriveGrandRootLocalId, util::kDriveMyDriveRootDirName, &child_id);
+  if (error == FILE_ERROR_NOT_FOUND) {
     ResourceEntry mydrive;
     mydrive.mutable_file_info()->set_is_directory(true);
     mydrive.set_parent_local_id(util::kDriveGrandRootLocalId);
     mydrive.set_title(util::kDriveMyDriveRootDirName);
 
     std::string local_id;
-    if (AddEntry(mydrive, &local_id) != FILE_ERROR_OK)
-      return false;
+    error = AddEntry(mydrive, &local_id);
+    if (error != FILE_ERROR_OK)
+      return error;
+  } else if (error != FILE_ERROR_OK) {
+    return error;
   }
-  return true;
+  return FILE_ERROR_OK;
 }
 
 void ResourceMetadata::DestroyOnBlockingPool() {
@@ -171,7 +200,9 @@ void ResourceMetadata::DestroyOnBlockingPool() {
 
 int64 ResourceMetadata::GetLargestChangestamp() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  return storage_->GetLargestChangestamp();
+  int64 value = 0;
+  storage_->GetLargestChangestamp(&value);
+  return value;
 }
 
 FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
@@ -180,8 +211,7 @@ FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  return storage_->SetLargestChangestamp(value) ?
-      FILE_ERROR_OK : FILE_ERROR_FAILED;
+  return storage_->SetLargestChangestamp(value);
 }
 
 FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,
@@ -193,27 +223,37 @@ FileError ResourceMetadata::AddEntry(const ResourceEntry& entry,
     return FILE_ERROR_NO_LOCAL_SPACE;
 
   ResourceEntry parent;
-  if (!storage_->GetEntry(entry.parent_local_id(), &parent) ||
-      !parent.file_info().is_directory())
-    return FILE_ERROR_NOT_FOUND;
+  FileError error = storage_->GetEntry(entry.parent_local_id(), &parent);
+  if (error != FILE_ERROR_OK)
+    return error;
+  if (!parent.file_info().is_directory())
+    return FILE_ERROR_NOT_A_DIRECTORY;
 
   // Multiple entries with the same resource ID should not be present.
   std::string local_id;
   ResourceEntry existing_entry;
-  if (!entry.resource_id().empty() &&
-      storage_->GetIdByResourceId(entry.resource_id(), &local_id) &&
-      storage_->GetEntry(local_id, &existing_entry))
-    return FILE_ERROR_EXISTS;
+  if (!entry.resource_id().empty()) {
+    error = storage_->GetIdByResourceId(entry.resource_id(), &local_id);
+    if (error == FILE_ERROR_OK)
+      error = storage_->GetEntry(local_id, &existing_entry);
+
+    if (error == FILE_ERROR_OK)
+      return FILE_ERROR_EXISTS;
+    else if (error != FILE_ERROR_NOT_FOUND)
+      return error;
+  }
 
   // Generate unique local ID when needed.
-  while (local_id.empty() || storage_->GetEntry(local_id, &existing_entry))
+  // We don't check for ID collisions as its probability is extremely low.
+  if (local_id.empty())
     local_id = base::GenerateGUID();
 
   ResourceEntry new_entry(entry);
   new_entry.set_local_id(local_id);
 
-  if (!PutEntryUnderDirectory(new_entry))
-    return FILE_ERROR_FAILED;
+  error = PutEntryUnderDirectory(new_entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   *out_id = local_id;
   return FILE_ERROR_OK;
@@ -232,12 +272,11 @@ FileError ResourceMetadata::RemoveEntry(const std::string& id) {
     return FILE_ERROR_ACCESS_DENIED;
 
   ResourceEntry entry;
-  if (!storage_->GetEntry(id, &entry))
-    return FILE_ERROR_NOT_FOUND;
+  FileError error = storage_->GetEntry(id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
-  if (!RemoveEntryRecursively(id))
-    return FILE_ERROR_FAILED;
-  return FILE_ERROR_OK;
+  return RemoveEntryRecursively(id);
 }
 
 FileError ResourceMetadata::GetResourceEntryById(const std::string& id,
@@ -246,8 +285,7 @@ FileError ResourceMetadata::GetResourceEntryById(const std::string& id,
   DCHECK(!id.empty());
   DCHECK(out_entry);
 
-  return storage_->GetEntry(id, out_entry) ?
-      FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
+  return storage_->GetEntry(id, out_entry);
 }
 
 FileError ResourceMetadata::GetResourceEntryByPath(const base::FilePath& path,
@@ -291,12 +329,15 @@ FileError ResourceMetadata::ReadDirectoryById(
     return FILE_ERROR_NOT_A_DIRECTORY;
 
   std::vector<std::string> children;
-  storage_->GetChildren(id, &children);
+  error = storage_->GetChildren(id, &children);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   ResourceEntryVector entries(children.size());
   for (size_t i = 0; i < children.size(); ++i) {
-    if (!storage_->GetEntry(children[i], &entries[i]))
-      return FILE_ERROR_FAILED;
+    error = storage_->GetEntry(children[i], &entries[i]);
+    if (error != FILE_ERROR_OK)
+      return error;
   }
   out_entries->swap(entries);
   return FILE_ERROR_OK;
@@ -309,8 +350,9 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
     return FILE_ERROR_NO_LOCAL_SPACE;
 
   ResourceEntry old_entry;
-  if (!storage_->GetEntry(entry.local_id(), &old_entry))
-    return FILE_ERROR_NOT_FOUND;
+  FileError error = storage_->GetEntry(entry.local_id(), &old_entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   if (old_entry.parent_local_id().empty() ||  // Reject root.
       old_entry.file_info().is_directory() !=  // Reject incompatible input.
@@ -337,16 +379,15 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
 
   // Make sure that the new parent exists and it is a directory.
   ResourceEntry new_parent;
-  if (!storage_->GetEntry(entry.parent_local_id(), &new_parent))
-    return FILE_ERROR_NOT_FOUND;
+  error = storage_->GetEntry(entry.parent_local_id(), &new_parent);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   if (!new_parent.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
   // Remove from the old parent and add it to the new parent with the new data.
-  if (!PutEntryUnderDirectory(entry))
-    return FILE_ERROR_FAILED;
-  return FILE_ERROR_OK;
+  return PutEntryUnderDirectory(entry);
 }
 
 void ResourceMetadata::GetSubDirectoriesRecursively(
@@ -355,11 +396,13 @@ void ResourceMetadata::GetSubDirectoriesRecursively(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   std::vector<std::string> children;
-  storage_->GetChildren(id, &children);
+  if (storage_->GetChildren(id, &children) != FILE_ERROR_OK)
+    return;
   for (size_t i = 0; i < children.size(); ++i) {
     ResourceEntry entry;
-    if (storage_->GetEntry(children[i], &entry) &&
-        entry.file_info().is_directory()) {
+    if (storage_->GetEntry(children[i], &entry) != FILE_ERROR_OK)
+      return;
+    if (entry.file_info().is_directory()) {
       sub_directories->insert(GetFilePath(children[i]));
       GetSubDirectoriesRecursively(children[i], sub_directories);
     }
@@ -369,7 +412,9 @@ void ResourceMetadata::GetSubDirectoriesRecursively(
 std::string ResourceMetadata::GetChildId(const std::string& parent_local_id,
                                          const std::string& base_name) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  return storage_->GetChild(parent_local_id, base_name);
+  std::string child_local_id;
+  storage_->GetChild(parent_local_id, base_name, &child_local_id);
+  return child_local_id;
 }
 
 scoped_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
@@ -383,7 +428,7 @@ base::FilePath ResourceMetadata::GetFilePath(const std::string& id) {
 
   base::FilePath path;
   ResourceEntry entry;
-  if (storage_->GetEntry(id, &entry)) {
+  if (storage_->GetEntry(id, &entry) == FILE_ERROR_OK) {
     if (!entry.parent_local_id().empty()) {
       path = GetFilePath(entry.parent_local_id());
     } else if (entry.local_id() != util::kDriveGrandRootLocalId) {
@@ -409,9 +454,11 @@ FileError ResourceMetadata::GetIdByPath(const base::FilePath& file_path,
   std::string id = util::kDriveGrandRootLocalId;
   for (size_t i = 1; i < components.size(); ++i) {
     const std::string component = base::FilePath(components[i]).AsUTF8Unsafe();
-    id = storage_->GetChild(id, component);
-    if (id.empty())
-      return FILE_ERROR_NOT_FOUND;
+    std::string child_id;
+    FileError error = storage_->GetChild(id, component, &child_id);
+    if (error != FILE_ERROR_OK)
+      return error;
+    id = child_id;
   }
   *out_id = id;
   return FILE_ERROR_OK;
@@ -420,23 +467,26 @@ FileError ResourceMetadata::GetIdByPath(const base::FilePath& file_path,
 FileError ResourceMetadata::GetIdByResourceId(const std::string& resource_id,
                                               std::string* out_local_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  return storage_->GetIdByResourceId(resource_id, out_local_id) ?
-      FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
+  return storage_->GetIdByResourceId(resource_id, out_local_id);
 }
 
-bool ResourceMetadata::PutEntryUnderDirectory(const ResourceEntry& entry) {
+FileError ResourceMetadata::PutEntryUnderDirectory(const ResourceEntry& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!entry.local_id().empty());
   DCHECK(!entry.parent_local_id().empty());
 
+  std::string base_name;
+  FileError error = GetDeduplicatedBaseName(entry, &base_name);
+  if (error != FILE_ERROR_OK)
+    return error;
   ResourceEntry updated_entry(entry);
-  updated_entry.set_base_name(GetDeduplicatedBaseName(updated_entry));
+  updated_entry.set_base_name(base_name);
   return storage_->PutEntry(updated_entry);
 }
 
-std::string ResourceMetadata::GetDeduplicatedBaseName(
-    const ResourceEntry& entry) {
+FileError ResourceMetadata::GetDeduplicatedBaseName(
+    const ResourceEntry& entry,
+    std::string* base_name) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!entry.parent_local_id().empty());
   DCHECK(!entry.title().empty());
@@ -444,24 +494,31 @@ std::string ResourceMetadata::GetDeduplicatedBaseName(
   // The entry name may have been changed due to prior name de-duplication.
   // We need to first restore the file name based on the title before going
   // through name de-duplication again when it is added to another directory.
-  std::string base_name = entry.title();
+  *base_name = entry.title();
   if (entry.has_file_specific_info() &&
       entry.file_specific_info().is_hosted_document()) {
-    base_name += entry.file_specific_info().document_extension();
+    *base_name += entry.file_specific_info().document_extension();
   }
-  base_name = util::NormalizeFileName(base_name);
+  *base_name = util::NormalizeFileName(*base_name);
 
   // If |base_name| is not used, just return it.
-  if (EntryCanUseName(storage_, entry.parent_local_id(), entry.local_id(),
-                      base_name))
-    return base_name;
+  bool can_use_name = false;
+  FileError error = EntryCanUseName(storage_, entry.parent_local_id(),
+                                    entry.local_id(), *base_name,
+                                    &can_use_name);
+  if (error != FILE_ERROR_OK || can_use_name)
+    return error;
 
   // Find an unused number with binary search.
   int smallest_known_unused_modifier = 1;
   while (true) {
-    if (EntryCanUseName(storage_, entry.parent_local_id(), entry.local_id(),
-                        GetUniquifiedName(base_name,
-                                          smallest_known_unused_modifier)))
+    error = EntryCanUseName(storage_, entry.parent_local_id(), entry.local_id(),
+                            GetUniquifiedName(*base_name,
+                                              smallest_known_unused_modifier),
+                            &can_use_name);
+    if (error != FILE_ERROR_OK)
+      return error;
+    if (can_use_name)
       break;
 
     const int delta = base::RandInt(1, smallest_known_unused_modifier);
@@ -477,29 +534,36 @@ std::string ResourceMetadata::GetDeduplicatedBaseName(
     const int modifier = largest_known_used_modifier +
         (smallest_known_unused_modifier - largest_known_used_modifier) / 2;
 
-    if (EntryCanUseName(storage_, entry.parent_local_id(), entry.local_id(),
-                        GetUniquifiedName(base_name, modifier))) {
+    error = EntryCanUseName(storage_, entry.parent_local_id(), entry.local_id(),
+                            GetUniquifiedName(*base_name, modifier),
+                            &can_use_name);
+    if (error != FILE_ERROR_OK)
+      return error;
+    if (can_use_name) {
       smallest_known_unused_modifier = modifier;
     } else {
       largest_known_used_modifier = modifier;
     }
   }
-  return GetUniquifiedName(base_name, smallest_known_unused_modifier);
+  *base_name = GetUniquifiedName(*base_name, smallest_known_unused_modifier);
+  return FILE_ERROR_OK;
 }
 
-bool ResourceMetadata::RemoveEntryRecursively(const std::string& id) {
+FileError ResourceMetadata::RemoveEntryRecursively(const std::string& id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   ResourceEntry entry;
-  if (!storage_->GetEntry(id, &entry))
-    return false;
+  FileError error = storage_->GetEntry(id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   if (entry.file_info().is_directory()) {
     std::vector<std::string> children;
     storage_->GetChildren(id, &children);
     for (size_t i = 0; i < children.size(); ++i) {
-      if (!RemoveEntryRecursively(children[i]))
-        return false;
+      error = RemoveEntryRecursively(children[i]);
+      if (error != FILE_ERROR_OK)
+        return error;
     }
   }
   return storage_->RemoveEntry(id);

@@ -106,7 +106,7 @@ class ResourceMetadata {
   ~ResourceMetadata();
 
   // Sets up entries which should be present by default.
-  bool SetUpDefaultEntries();
+  FileError SetUpDefaultEntries();
 
   // Used to implement Destroy().
   void DestroyOnBlockingPool();
@@ -115,13 +115,14 @@ class ResourceMetadata {
   // parent if there is. This method will also do name de-duplication to ensure
   // that the exposed presentation path does not have naming conflicts. Two
   // files with the same name "Foo" will be renamed to "Foo (1)" and "Foo (2)".
-  bool PutEntryUnderDirectory(const ResourceEntry& entry);
+  FileError PutEntryUnderDirectory(const ResourceEntry& entry);
 
   // Returns an unused base name for |entry|.
-  std::string GetDeduplicatedBaseName(const ResourceEntry& entry);
+  FileError GetDeduplicatedBaseName(const ResourceEntry& entry,
+                                    std::string* base_name);
 
   // Removes the entry and its descendants.
-  bool RemoveEntryRecursively(const std::string& id);
+  FileError RemoveEntryRecursively(const std::string& id);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
