@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
+#include "base/memory/scoped_vector.h"
+#include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -94,6 +96,11 @@ class ManagePasswordsUIController
   // OnBlacklistBlockedAutofill(). Protected, not private, so we can mess with
   // the value in ManagePasswordsUIControllerMock.
   autofill::PasswordFormMap password_form_map_;
+
+  // We create copies of PasswordForm objects that come in via OnLoginsChanged()
+  // and store them in this vector as well as in |password_form_map_| to ensure
+  // that we destroy them correctly.
+  ScopedVector<autofill::PasswordForm> new_password_forms_;
 
   // The current state of the password manager. Protected so we can manipulate
   // the value in tests.
