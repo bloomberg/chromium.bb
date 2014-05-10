@@ -60,7 +60,7 @@ void VideoRendererImpl::Play(const base::Closure& callback) {
 void VideoRendererImpl::Pause(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-  DCHECK(state_ != kUninitialized || state_ == kError);
+  DCHECK_NE(state_, kUninitialized);
   state_ = kPaused;
   callback.Run();
 }
@@ -212,12 +212,7 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
   state_ = kFlushed;
 
   // Create our video thread.
-  if (!base::PlatformThread::Create(0, this, &thread_)) {
-    NOTREACHED() << "Video thread creation failed";
-    state_ = kError;
-    base::ResetAndReturn(&init_cb_).Run(PIPELINE_ERROR_INITIALIZATION_FAILED);
-    return;
-  }
+  CHECK(base::PlatformThread::Create(0, this, &thread_));
 
 #if defined(OS_WIN)
   // Bump up our priority so our sleeping is more accurate.
@@ -363,7 +358,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
 
   // Already-queued VideoFrameStream ReadCB's can fire after various state
   // transitions have happened; in that case just drop those frames immediately.
-  if (state_ == kStopped || state_ == kError || state_ == kFlushing)
+  if (state_ == kStopped || state_ == kFlushing)
     return;
 
   if (!frame.get()) {
@@ -468,7 +463,6 @@ void VideoRendererImpl::AttemptRead_Locked() {
     case kFlushing:
     case kFlushed:
     case kStopped:
-    case kError:
       return;
   }
 }

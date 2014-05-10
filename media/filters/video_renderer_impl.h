@@ -154,7 +154,7 @@ class MEDIA_EXPORT VideoRendererImpl
   base::ConditionVariable frame_available_;
 
   // State transition Diagram of this class:
-  //       [kUninitialized] -------> [kError]
+  //       [kUninitialized]
   //              |
   //              | Initialize()
   //        [kInitializing]
@@ -173,7 +173,7 @@ class MEDIA_EXPORT VideoRendererImpl
   //   |                           Pause()          ^ Pause()
   //   |                                            |
   //   +-----> [kStopped]                 [Any state other than]
-  //                                      [kUninitialized/kError]
+  //                                      [   kUninitialized   ]
 
   // Simple state tracking variable.
   enum State {
@@ -186,7 +186,6 @@ class MEDIA_EXPORT VideoRendererImpl
     kPrerolling,
     kPlaying,
     kStopped,
-    kError,
   };
   State state_;
 
