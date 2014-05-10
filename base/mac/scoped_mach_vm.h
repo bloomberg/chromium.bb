@@ -6,13 +6,24 @@
 #define BASE_MAC_SCOPED_MACH_VM_H_
 
 #include <mach/mach.h>
-#include <mach/mach_vm.h>
 
 #include <algorithm>
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "build/build_config.h"
+
+#if !defined(OS_IOS)
+#include <mach/mach_vm.h>
+#else  // OS_IOS
+// mach_vm.h is forbidden on iOS, but the routines in vm_map.h are a suitable
+// substitute.
+#include <mach/vm_map.h>
+#define mach_vm_address_t vm_address_t
+#define mach_vm_size_t vm_size_t
+#define mach_vm_deallocate vm_deallocate
+#endif  // OS_IOS
 
 // Use ScopedMachVM to supervise ownership of pages in the current process
 // through the Mach VM subsystem. Pages allocated with mach_vm_allocate can be
@@ -90,5 +101,11 @@ class BASE_EXPORT ScopedMachVM {
 
 }  // namespace mac
 }  // namespace base
+
+#if defined(OS_IOS)
+#undef mach_vm_address_t
+#undef mach_vm_size_t
+#undef mach_vm_deallocate
+#endif  // OS_IOS
 
 #endif  // BASE_MAC_SCOPED_MACH_VM_H_
