@@ -1324,3 +1324,22 @@ TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
   result = url.url_ref().ReplaceSearchTerms(search_terms_args);
   EXPECT_EQ("http://www.google.com/?bmbp=1&q=foo", result);
 }
+
+#if defined(OS_ANDROID)
+TEST_F(TemplateURLTest, AnswersHasVersion) {
+  TemplateURLData data;
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://bar/");
+  data.SetURL("http://bar/search?q={searchTerms}&{google:searchVersion}xssi=t");
+
+  TemplateURL url(NULL, data);
+  TemplateURLRef::SearchTermsArgs search_terms_args(ASCIIToUTF16("foo"));
+  std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args);
+  EXPECT_EQ("http://bar/search?q=foo&xssi=t", result);
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAnswersInSuggest);
+  TemplateURL url2(NULL, data);
+  result = url2.url_ref().ReplaceSearchTerms(search_terms_args);
+  EXPECT_EQ("http://bar/search?q=foo&gs_rn=42&xssi=t", result);
+}
+#endif
