@@ -151,17 +151,6 @@ crbug.com/330083 w3c/web-platform-tests/shadow-dom/styles/test-010.html [ Failur
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-003.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/shadow-dom/user-interaction/focus-navigation/test-004.html [ Failure ]
 
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/marvin/backgr_position-table-column-group.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/marvin/backgr_position-table-column.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/marvin/backgr_position-table-row-group.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/marvin/backgr_position-table-row.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/marvin/table_overflow_dirty_reflow_tbody.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/marvin/table_overflow_style_reflow_row_sibling.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/marvin/table_overflow_style_reflow_tbody_sibling.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/other/empty_cells.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] tables/mozilla_expected_failures/other/test4.html [ NeedsRebaseline ]
-crbug.com/361729 [ Mac ] transforms/2d/transform-fixed-container.html [ NeedsRebaseline ]
-
 # New W3C failures (dpranke@ to triage)
 crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-allowed-chars.html [ Failure ]
