@@ -63,4 +63,8 @@ cc::SharedBitmapManager* ContextFactoryMojo::GetSharedBitmapManager() {
   return NULL;
 }
 
+base::MessageLoopProxy* ContextFactoryMojo::GetCompositorMessageLoop() {
+  return NULL;
+}
+
 }  // namespace mojo

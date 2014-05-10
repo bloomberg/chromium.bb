@@ -6,7 +6,6 @@
 
 #include "ui/aura/env_observer.h"
 #include "ui/aura/input_state_lookup.h"
-#include "ui/compositor/compositor.h"
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/platform/platform_event_source.h"
 
@@ -26,8 +25,6 @@ Env::Env()
 
 Env::~Env() {
   FOR_EACH_OBSERVER(EnvObserver, observers_, OnWillDestroyEnv());
-
-  ui::Compositor::Terminate();
 }
 
 //static
@@ -68,8 +65,6 @@ bool Env::IsMouseButtonDown() const {
 // Env, private:
 
 void Env::Init(bool create_event_source) {
-  ui::Compositor::Initialize();
-
   if (create_event_source && !ui::PlatformEventSource::GetInstance())
     event_source_ = ui::PlatformEventSource::CreateDefault();
 }

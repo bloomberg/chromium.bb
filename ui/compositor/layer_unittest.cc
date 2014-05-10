@@ -91,7 +91,6 @@ class LayerWithRealCompositorTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     bool enable_pixel_output = true;
     InitializeContextFactoryForTests(enable_pixel_output);
-    Compositor::Initialize();
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
     compositor_host_.reset(TestCompositorHost::Create(host_bounds));
@@ -101,7 +100,6 @@ class LayerWithRealCompositorTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     compositor_host_.reset();
     TerminateContextFactoryForTests();
-    Compositor::Terminate();
   }
 
   Compositor* GetCompositor() { return compositor_host_->GetCompositor(); }
@@ -400,7 +398,6 @@ class LayerWithDelegateTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     bool enable_pixel_output = false;
     InitializeContextFactoryForTests(enable_pixel_output);
-    Compositor::Initialize();
 
     const gfx::Rect host_bounds(1000, 1000);
     compositor_host_.reset(TestCompositorHost::Create(host_bounds));
@@ -410,7 +407,6 @@ class LayerWithDelegateTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     compositor_host_.reset();
     TerminateContextFactoryForTests();
-    Compositor::Terminate();
   }
 
   Compositor* compositor() { return compositor_host_->GetCompositor(); }

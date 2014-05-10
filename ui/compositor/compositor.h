@@ -96,6 +96,10 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   // Gets the shared bitmap manager for software mode.
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() = 0;
+
+  // Gets the compositor message loop, or NULL if not using threaded
+  // compositing.
+  virtual base::MessageLoopProxy* GetCompositorMessageLoop() = 0;
 };
 
 // This class represents a lock on the compositor, that can be used to prevent
@@ -134,11 +138,6 @@ class COMPOSITOR_EXPORT Compositor
  public:
   explicit Compositor(gfx::AcceleratedWidget widget);
   virtual ~Compositor();
-
-  static void Initialize();
-  static bool WasInitializedWithThread();
-  static scoped_refptr<base::MessageLoopProxy> GetCompositorMessageLoop();
-  static void Terminate();
 
   // Schedules a redraw of the layer tree associated with this compositor.
   void ScheduleDraw();
@@ -265,6 +264,7 @@ class COMPOSITOR_EXPORT Compositor
   gfx::AcceleratedWidget widget_;
   scoped_refptr<cc::Layer> root_web_layer_;
   scoped_ptr<cc::LayerTreeHost> host_;
+  scoped_refptr<base::MessageLoopProxy> compositor_thread_loop_;
 
   // The manager of vsync parameters for this compositor.
   scoped_refptr<CompositorVSyncManager> vsync_manager_;

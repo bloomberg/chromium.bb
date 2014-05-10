@@ -4,8 +4,11 @@
 
 #include "ui/compositor/test/in_process_context_factory.h"
 
+#include "base/command_line.h"
+#include "base/threading/thread.h"
 #include "cc/output/output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -18,6 +21,16 @@ namespace ui {
 InProcessContextFactory::InProcessContextFactory()
     : shared_bitmap_manager_(new cc::TestSharedBitmapManager()) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone);
+#if defined(OS_CHROMEOS)
+  bool use_thread = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUIDisableThreadedCompositing);
+#else
+  bool use_thread = false;
+#endif
+  if (use_thread) {
+    compositor_thread_.reset(new base::Thread("Browser Compositor"));
+    compositor_thread_->Start();
+  }
 }
 
 InProcessContextFactory::~InProcessContextFactory() {}
@@ -78,6 +91,12 @@ bool InProcessContextFactory::DoesCreateTestContexts() { return false; }
 
 cc::SharedBitmapManager* InProcessContextFactory::GetSharedBitmapManager() {
   return shared_bitmap_manager_.get();
+}
+
+base::MessageLoopProxy* InProcessContextFactory::GetCompositorMessageLoop() {
+  if (!compositor_thread_)
+    return NULL;
+  return compositor_thread_->message_loop_proxy();
 }
 
 }  // namespace ui

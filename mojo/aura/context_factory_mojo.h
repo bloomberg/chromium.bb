@@ -36,6 +36,7 @@ class ContextFactoryMojo : public ui::ContextFactory {
   virtual void RemoveCompositor(ui::Compositor* compositor) OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
+  virtual base::MessageLoopProxy* GetCompositorMessageLoop() OVERRIDE;
 
  private:
   scoped_refptr<webkit::gpu::ContextProviderInProcess>

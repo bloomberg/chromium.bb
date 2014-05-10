@@ -15,6 +15,10 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/compositor/compositor.h"
 
+namespace base {
+class Thread;
+}
+
 namespace content {
 class BrowserCompositorOutputSurface;
 class BrowserCompositorOutputSurfaceProxy;
@@ -47,6 +51,7 @@ class GpuProcessTransportFactory
       SharedMainThreadContextProvider() OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
+  virtual base::MessageLoopProxy* GetCompositorMessageLoop() OVERRIDE;
 
   // ImageTransportFactory implementation.
   virtual ui::ContextFactory* GetContextFactory() OVERRIDE;
@@ -67,6 +72,7 @@ class GpuProcessTransportFactory
   void OnLostMainThreadSharedContext();
 
   typedef std::map<ui::Compositor*, PerCompositorData*> PerCompositorDataMap;
+  scoped_ptr<base::Thread> compositor_thread_;
   PerCompositorDataMap per_compositor_data_;
   scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
   scoped_ptr<GLHelper> gl_helper_;

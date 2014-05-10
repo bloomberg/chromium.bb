@@ -100,7 +100,6 @@ SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
   ui::InitializeContextFactoryForTests(enable_pixel_output_);
-  ui::Compositor::Initialize();
 
   surface_factory_.reset(new MockSurfaceFactoryOzone());
   gfx::SurfaceFactoryOzone::SetInstance(surface_factory_.get());
@@ -120,7 +119,6 @@ void SoftwareOutputDeviceOzoneTest::TearDown() {
   compositor_.reset();
   surface_factory_.reset();
   ui::TerminateContextFactoryForTests();
-  ui::Compositor::Terminate();
 }
 
 class SoftwareOutputDeviceOzonePixelTest

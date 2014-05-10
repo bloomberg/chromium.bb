@@ -91,7 +91,6 @@ SoftwareBrowserCompositorOutputSurfaceTest::
 void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
   bool enable_pixel_output = false;
   ui::InitializeContextFactoryForTests(enable_pixel_output);
-  ui::Compositor::Initialize();
 
   compositor_.reset(new ui::Compositor(gfx::kNullAcceleratedWidget));
   surface_proxy_ =
@@ -106,7 +105,6 @@ void SoftwareBrowserCompositorOutputSurfaceTest::TearDown() {
 
   surface_map_.Clear();
   ui::TerminateContextFactoryForTests();
-  ui::Compositor::Terminate();
 }
 
 scoped_ptr<content::BrowserCompositorOutputSurface>

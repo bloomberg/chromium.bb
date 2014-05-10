@@ -17,10 +17,11 @@ ReflectorImpl::ReflectorImpl(
     ui::Compositor* mirrored_compositor,
     ui::Layer* mirroring_layer,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
+    base::MessageLoopProxy* compositor_thread_loop,
     int surface_id)
     : impl_unsafe_(output_surface_map),
       main_unsafe_(mirrored_compositor, mirroring_layer),
-      impl_message_loop_(ui::Compositor::GetCompositorMessageLoop()),
+      impl_message_loop_(compositor_thread_loop),
       main_message_loop_(base::MessageLoopProxy::current()),
       surface_id_(surface_id) {
   GLHelper* helper = ImageTransportFactory::GetInstance()->GetGLHelper();

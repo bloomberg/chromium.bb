@@ -37,6 +37,7 @@ class ReflectorImpl : public base::SupportsWeakPtr<ReflectorImpl>,
       ui::Compositor* mirrored_compositor,
       ui::Layer* mirroring_layer,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
+      base::MessageLoopProxy* compositor_thread_loop,
       int surface_id);
 
   ui::Compositor* mirrored_compositor() {

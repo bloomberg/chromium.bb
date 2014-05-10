@@ -7,6 +7,10 @@
 
 #include "ui/compositor/compositor.h"
 
+namespace base {
+class Thread;
+}
+
 namespace webkit {
 namespace gpu {
 class ContextProviderInProcess;
@@ -35,8 +39,10 @@ class InProcessContextFactory : public ContextFactory {
   virtual void RemoveCompositor(Compositor* compositor) OVERRIDE;
   virtual bool DoesCreateTestContexts() OVERRIDE;
   virtual cc::SharedBitmapManager* GetSharedBitmapManager() OVERRIDE;
+  virtual base::MessageLoopProxy* GetCompositorMessageLoop() OVERRIDE;
 
  private:
+  scoped_ptr<base::Thread> compositor_thread_;
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       shared_main_thread_contexts_;
   scoped_ptr<cc::SharedBitmapManager> shared_bitmap_manager_;
