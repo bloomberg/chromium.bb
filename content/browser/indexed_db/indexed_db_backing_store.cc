@@ -602,6 +602,8 @@ IndexedDBBackingStore::~IndexedDBBackingStore() {
       policy->RevokeAllPermissionsForFile(*iter, blob_path_);
     }
   }
+  STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
+                                       incognito_blob_map_.end());
   // db_'s destructor uses comparator_. The order of destruction is important.
   db_.reset();
   comparator_.reset();
@@ -1016,7 +1018,8 @@ std::vector<base::string16> IndexedDBBackingStore::GetDatabaseNames(
        *s = it->Next()) {
     StringPiece slice(it->Key());
     DatabaseNameKey database_name_key;
-    if (!DatabaseNameKey::Decode(&slice, &database_name_key)) {
+    if (!DatabaseNameKey::Decode(&slice, &database_name_key) ||
+        !slice.empty()) {
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_DATABASE_NAMES);
       continue;
     }
@@ -1256,9 +1259,10 @@ leveldb::Status IndexedDBBackingStore::GetObjectStores(
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     StringPiece slice(it->Key());
     ObjectStoreMetaDataKey meta_data_key;
-    bool ok = ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key);
+    bool ok =
+        ObjectStoreMetaDataKey::Decode(&slice, &meta_data_key) && slice.empty();
     DCHECK(ok);
-    if (meta_data_key.MetaDataType() != ObjectStoreMetaDataKey::NAME) {
+    if (!ok || meta_data_key.MetaDataType() != ObjectStoreMetaDataKey::NAME) {
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_OBJECT_STORES);
       // Possible stale metadata, but don't fail the load.
       s = it->Next();
@@ -1764,7 +1768,7 @@ leveldb::Status IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
        s = it->Next()) {
     StringPiece slice(it->Key());
     ObjectStoreDataKey data_key;
-    if (!ObjectStoreDataKey::Decode(&slice, &data_key)) {
+    if (!ObjectStoreDataKey::Decode(&slice, &data_key) || !slice.empty()) {
       INTERNAL_READ_ERROR_UNTESTED(GET_KEY_GENERATOR_CURRENT_NUMBER);
       return InternalInconsistencyStatus();
     }
@@ -3399,17 +3403,28 @@ IndexedDBBackingStore::OpenIndexCursor(
 
 IndexedDBBackingStore::Transaction::Transaction(
     IndexedDBBackingStore* backing_store)
-    : backing_store_(backing_store), database_id_(-1) {}
+    : backing_store_(backing_store), database_id_(-1) {
+}
 
 IndexedDBBackingStore::Transaction::~Transaction() {
   STLDeleteContainerPairSecondPointers(
       blob_change_map_.begin(), blob_change_map_.end());
+  STLDeleteContainerPairSecondPointers(incognito_blob_map_.begin(),
+                                       incognito_blob_map_.end());
 }
 
 void IndexedDBBackingStore::Transaction::Begin() {
   IDB_TRACE("IndexedDBBackingStore::Transaction::Begin");
   DCHECK(!transaction_.get());
   transaction_ = new LevelDBTransaction(backing_store_->db_.get());
+
+  // If incognito, this snapshots blobs just as the above transaction_
+  // constructor snapshots the leveldb.
+  BlobChangeMap::const_iterator iter;
+  for (iter = backing_store_->incognito_blob_map_.begin();
+       iter != backing_store_->incognito_blob_map_.end();
+       ++iter)
+    incognito_blob_map_[iter->first] = iter->second->Clone().release();
 }
 
 leveldb::Status IndexedDBBackingStore::Transaction::Commit() {
@@ -3417,6 +3432,23 @@ leveldb::Status IndexedDBBackingStore::Transaction::Commit() {
   DCHECK(transaction_.get());
   leveldb::Status s = transaction_->Commit();
   transaction_ = NULL;
+
+  if (s.ok() && backing_store_->is_incognito() && !blob_change_map_.empty()) {
+    BlobChangeMap& target_map = backing_store_->incognito_blob_map_;
+    BlobChangeMap::iterator iter;
+    for (iter = blob_change_map_.begin(); iter != blob_change_map_.end();
+         ++iter) {
+      BlobChangeMap::iterator target_record = target_map.find(iter->first);
+      if (target_record != target_map.end()) {
+        delete target_record->second;
+        target_map.erase(target_record);
+      }
+      if (iter->second) {
+        target_map[iter->first] = iter->second;
+        iter->second = NULL;
+      }
+    }
+  }
   if (!s.ok())
     INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
   return s;
@@ -3479,26 +3511,39 @@ void IndexedDBBackingStore::Transaction::Rollback() {
   transaction_ = NULL;
 }
 
-IndexedDBBackingStore::Transaction::BlobChangeRecord::BlobChangeRecord(
-    const std::string& key, int64 object_store_id)
+IndexedDBBackingStore::BlobChangeRecord::BlobChangeRecord(
+    const std::string& key,
+    int64 object_store_id)
     : key_(key), object_store_id_(object_store_id) {
 }
 
-IndexedDBBackingStore::Transaction::BlobChangeRecord::~BlobChangeRecord() {
+IndexedDBBackingStore::BlobChangeRecord::~BlobChangeRecord() {
 }
 
-void IndexedDBBackingStore::Transaction::BlobChangeRecord::SetBlobInfo(
+void IndexedDBBackingStore::BlobChangeRecord::SetBlobInfo(
     std::vector<IndexedDBBlobInfo>* blob_info) {
   blob_info_.clear();
   if (blob_info)
     blob_info_.swap(*blob_info);
 }
 
-void IndexedDBBackingStore::Transaction::BlobChangeRecord::SetHandles(
+void IndexedDBBackingStore::BlobChangeRecord::SetHandles(
     ScopedVector<webkit_blob::BlobDataHandle>* handles) {
   handles_.clear();
   if (handles)
     handles_.swap(*handles);
+}
+
+scoped_ptr<IndexedDBBackingStore::BlobChangeRecord>
+IndexedDBBackingStore::BlobChangeRecord::Clone() const {
+  scoped_ptr<IndexedDBBackingStore::BlobChangeRecord> record(
+      new BlobChangeRecord(key_, object_store_id_));
+  record->blob_info_ = blob_info_;
+
+  ScopedVector<webkit_blob::BlobDataHandle>::const_iterator iter;
+  for (iter = handles_.begin(); iter != handles_.end(); ++iter)
+    record->handles_.push_back(new webkit_blob::BlobDataHandle(**iter));
+  return record.Pass();
 }
 
 // This is storing an info, even if empty, even if the previous key had no blob
@@ -3508,19 +3553,19 @@ void IndexedDBBackingStore::Transaction::BlobChangeRecord::SetHandles(
 void IndexedDBBackingStore::Transaction::PutBlobInfo(
     int64 database_id,
     int64 object_store_id,
-    const std::string& key,
+    const std::string& object_store_data_key,
     std::vector<IndexedDBBlobInfo>* blob_info,
     ScopedVector<webkit_blob::BlobDataHandle>* handles) {
-  DCHECK_GT(key.size(), 0UL);
+  DCHECK_GT(object_store_data_key.size(), 0UL);
   if (database_id_ < 0)
     database_id_ = database_id;
   DCHECK_EQ(database_id_, database_id);
 
-  BlobChangeMap::iterator it = blob_change_map_.find(key);
+  BlobChangeMap::iterator it = blob_change_map_.find(object_store_data_key);
   BlobChangeRecord* record = NULL;
   if (it == blob_change_map_.end()) {
-    record = new BlobChangeRecord(key, object_store_id);
-    blob_change_map_[key] = record;
+    record = new BlobChangeRecord(object_store_data_key, object_store_id);
+    blob_change_map_[object_store_data_key] = record;
   } else {
     record = it->second;
   }

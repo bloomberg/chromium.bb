@@ -107,7 +107,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       base::TaskRunner* task_runner);
   static scoped_refptr<IndexedDBBackingStore> OpenInMemory(
       const GURL& origin_url,
-      LevelDBFactory* level_db_factory,
+      LevelDBFactory* leveldb_factory,
       base::TaskRunner* task_runner);
 
   void GrantChildProcessPermissions(int child_process_id);
@@ -357,6 +357,29 @@ class CONTENT_EXPORT IndexedDBBackingStore
       indexed_db::CursorDirection,
       leveldb::Status*);
 
+  class BlobChangeRecord {
+   public:
+    BlobChangeRecord(const std::string& key, int64 object_store_id);
+    ~BlobChangeRecord();
+    const std::string& key() const { return key_; }
+    int64 object_store_id() const { return object_store_id_; }
+    void SetBlobInfo(std::vector<IndexedDBBlobInfo>* blob_info);
+    std::vector<IndexedDBBlobInfo>& mutable_blob_info() { return blob_info_; }
+    const std::vector<IndexedDBBlobInfo>& blob_info() const {
+      return blob_info_;
+    }
+    void SetHandles(ScopedVector<webkit_blob::BlobDataHandle>* handles);
+    scoped_ptr<BlobChangeRecord> Clone() const;
+
+   private:
+    std::string key_;
+    int64 object_store_id_;
+    std::vector<IndexedDBBlobInfo> blob_info_;
+    ScopedVector<webkit_blob::BlobDataHandle> handles_;
+    DISALLOW_COPY_AND_ASSIGN(BlobChangeRecord);
+  };
+  typedef std::map<std::string, BlobChangeRecord*> BlobChangeMap;
+
   class Transaction {
    public:
     explicit Transaction(IndexedDBBackingStore* backing_store);
@@ -424,24 +447,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     typedef std::vector<WriteDescriptor> WriteDescriptorVec;
 
    private:
-    class BlobChangeRecord {
-     public:
-      BlobChangeRecord(const std::string& key, int64 object_store_id);
-      ~BlobChangeRecord();
-      const std::string& key() const { return key_; }
-      int64 object_store_id() const { return object_store_id_; }
-      void SetBlobInfo(std::vector<IndexedDBBlobInfo>* blob_info);
-      std::vector<IndexedDBBlobInfo>& mutable_blob_info() { return blob_info_; }
-      void SetHandles(ScopedVector<webkit_blob::BlobDataHandle>* handles);
-
-     private:
-      std::string key_;
-      int64 object_store_id_;
-      std::vector<IndexedDBBlobInfo> blob_info_;
-      ScopedVector<webkit_blob::BlobDataHandle> handles_;
-    };
     class BlobWriteCallbackWrapper;
-    typedef std::map<std::string, BlobChangeRecord*> BlobChangeMap;
 
     // The callback will be called eventually on success or failure.
     void WriteNewBlobs(BlobEntryKeyValuePairVec& new_blob_entries,
@@ -451,6 +457,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
     IndexedDBBackingStore* backing_store_;
     scoped_refptr<LevelDBTransaction> transaction_;
     BlobChangeMap blob_change_map_;
+    BlobChangeMap incognito_blob_map_;
     int64 database_id_;
     scoped_refptr<ChainedBlobWriter> chained_blob_writer_;
   };
@@ -465,6 +472,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
                         base::TaskRunner* task_runner);
   virtual ~IndexedDBBackingStore();
   friend class base::RefCounted<IndexedDBBackingStore>;
+
+  bool is_incognito() const { return !indexed_db_factory_; }
 
   virtual bool WriteBlobFile(
       int64 database_id,
@@ -518,6 +527,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   net::URLRequestContext* request_context_;
   base::TaskRunner* task_runner_;
   std::set<int> child_process_ids_granted_;
+  BlobChangeMap incognito_blob_map_;
   base::OneShotTimer<IndexedDBBackingStore> journal_cleaning_timer_;
 
   scoped_ptr<LevelDBDatabase> db_;
