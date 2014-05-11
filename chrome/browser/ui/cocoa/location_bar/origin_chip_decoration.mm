@@ -13,6 +13,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -33,6 +34,10 @@ const CGFloat kOuterRightPadding = 3;
 // The target icon size - smaller icons will be centered, and larger icons will
 // be scaled down.
 const CGFloat kIconSize = 19;
+
+// The info-bubble point should look like it points to the bottom of the lock
+// icon. Determined with Pixie.app.
+const CGFloat kPageInfoBubblePointYOffset = 2.0;
 
 const ui::NinePartImageIds kNormalImages[3] = {
   IMAGE_GRID(IDR_ORIGIN_CHIP_NORMAL),
@@ -60,12 +65,16 @@ const ui::NinePartImageIds kEVImages[3] = {
 
 }  // namespace
 
-OriginChipDecoration::OriginChipDecoration(LocationBarViewMac* owner)
+OriginChipDecoration::OriginChipDecoration(
+    LocationBarViewMac* owner,
+    LocationIconDecoration* location_icon)
     : ButtonDecoration(kNormalImages[0], IDR_LOCATION_BAR_HTTP,
                        kNormalImages[1], IDR_LOCATION_BAR_HTTP,
                        kNormalImages[2], IDR_LOCATION_BAR_HTTP, 0),
       attributes_([[NSMutableDictionary alloc] init]),
+      icon_rect_(NSZeroRect),
       info_(this, owner->browser()->profile()),
+      location_icon_(location_icon),
       owner_(owner) {
   DCHECK(owner_);
   [attributes_ setObject:GetFont() forKey:NSFontAttributeName];
@@ -85,7 +94,7 @@ OriginChipDecoration::~OriginChipDecoration() {
 }
 
 void OriginChipDecoration::Update() {
-  if (!ShouldShow()) {
+  if (!owner_->GetToolbarModel()->ShouldShowOriginChip()) {
     SetVisible(false);
     return;
   } else {
@@ -124,6 +133,10 @@ void OriginChipDecoration::Update() {
   SetIcon(info_.icon());
 }
 
+bool OriginChipDecoration::PreventFocus(NSPoint location) const {
+  return NSPointInRect(location, icon_rect_) ? true : false;
+}
+
 CGFloat OriginChipDecoration::GetWidthForSpace(CGFloat width) {
   if (!GetIconImage() || [label_ length] == 0)
     return kOmittedWidth;
@@ -160,19 +173,19 @@ void OriginChipDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     icon_x_trailing_offset = std::floor(icon_x_trailing_offset);
   }
 
-  NSRect icon_rect = NSMakeRect(kInnerLeftPadding + icon_x_leading_offset,
-                                icon_y_inset, icon_width, icon_height);
-  [icon drawInRect:icon_rect
+  icon_rect_ = NSMakeRect(kInnerLeftPadding + icon_x_leading_offset,
+                          icon_y_inset, icon_width, icon_height);
+
+  [icon drawInRect:icon_rect_
           fromRect:NSZeroRect
          operation:NSCompositeSourceOver
           fraction:1.0
     respectFlipped:YES
              hints:nil];
 
-  NSRect label_rect =
-      NSMakeRect(NSMaxX(icon_rect) + icon_x_trailing_offset + kIconLabelPadding,
-                 0, [label_ sizeWithAttributes:attributes_].width,
-                 frame.size.height);
+  NSRect label_rect = NSMakeRect(
+      NSMaxX(icon_rect_) + icon_x_trailing_offset + kIconLabelPadding,
+      0, [label_ sizeWithAttributes:attributes_].width, frame.size.height);
   DrawLabel(label_, attributes_, label_rect);
 }
 
@@ -180,13 +193,21 @@ NSString* OriginChipDecoration::GetToolTip() {
   return base::SysUTF16ToNSString(info_.Tooltip());
 }
 
-bool OriginChipDecoration::OnMousePressed(NSRect frame) {
-  // TODO(macourteau): reveal the permissions bubble if the click was inside the
-  // icon's bounds - otherwise, show the URL.
+bool OriginChipDecoration::OnMousePressed(NSRect frame, NSPoint location) {
+  // Reveal the permissions bubble if the click was inside the icon's bounds;
+  // otherwise, show the URL.
+  if (NSPointInRect(location, icon_rect_))
+    return location_icon_->OnMousePressed(frame, location);
+
   UMA_HISTOGRAM_COUNTS("OriginChip.Pressed", 1);
   content::RecordAction(base::UserMetricsAction("OriginChipPress"));
   owner_->GetOmniboxView()->ShowURL();
   return true;
+}
+
+NSPoint OriginChipDecoration::GetBubblePointInFrame(NSRect frame) {
+  return NSMakePoint(NSMidX(icon_rect_),
+                     NSMaxY(icon_rect_) - kPageInfoBubblePointYOffset);
 }
 
 void OriginChipDecoration::OnExtensionIconImageChanged(
@@ -207,12 +228,6 @@ void OriginChipDecoration::OnSafeBrowsingHit(
 void OriginChipDecoration::OnSafeBrowsingMatch(
     const SafeBrowsingUIManager::UnsafeResource& resource) {
   Update();
-}
-
-bool OriginChipDecoration::ShouldShow() const {
-  return chrome::ShouldDisplayOriginChip() ||
-      (owner_->GetToolbarModel()->WouldOmitURLDueToOriginChip() &&
-       owner_->GetToolbarModel()->origin_chip_enabled());
 }
 
 CGFloat OriginChipDecoration::GetChipWidth() const {

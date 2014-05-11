@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/toolbar/origin_chip_info.h"
 
 class LocationBarViewMac;
+class LocationIconDecoration;
 
 namespace content {
 class WebContents;
@@ -26,17 +27,22 @@ class OriginChipDecoration : public ButtonDecoration,
                              public extensions::IconImage::Observer,
                              public SafeBrowsingUIManager::Observer {
  public:
-  explicit OriginChipDecoration(LocationBarViewMac* owner);
+  OriginChipDecoration(LocationBarViewMac* owner,
+                       LocationIconDecoration* location_icon);
   virtual ~OriginChipDecoration();
 
   // Updates the origin chip's content, and display state.
   void Update();
 
+  // Implement |ButtonDecoration|.
+  virtual bool PreventFocus(NSPoint location) const OVERRIDE;
+
   // Implement |LocationBarDecoration|.
   virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
+  virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
   // Implement |IconImage::Observer|.
   virtual void OnExtensionIconImageChanged(
@@ -49,9 +55,6 @@ class OriginChipDecoration : public ButtonDecoration,
       const SafeBrowsingUIManager::UnsafeResource& resource) OVERRIDE;
 
  private:
-  // Returns whether the origin chip should be shown or not.
-  bool ShouldShow() const;
-
   // Returns the width required to display the chip's contents.
   CGFloat GetChipWidth() const;
 
@@ -62,11 +65,18 @@ class OriginChipDecoration : public ButtonDecoration,
   // extension.
   base::scoped_nsobject<NSImage> extension_icon_;
 
+  // The rectangle where the icon was last drawn. Used for hit testing to
+  // display the permissions bubble.
+  NSRect icon_rect_;
+
   // Manages information to be displayed on the origin chip.
   OriginChipInfo info_;
 
   // The label currently displayed in the chip.
   base::scoped_nsobject<NSString> label_;
+
+  // The location icon decoration. Weak.
+  LocationIconDecoration* location_icon_;
 
   // The control view that owns this. Weak.
   LocationBarViewMac* owner_;

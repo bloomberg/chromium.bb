@@ -36,7 +36,7 @@ class MockDecoration : public LocationBarDecoration {
 
   virtual void DrawInFrame(NSRect frame, NSView* control_view) { ; }
   MOCK_METHOD0(AcceptsMousePress, bool());
-  MOCK_METHOD1(OnMousePressed, bool(NSRect frame));
+  MOCK_METHOD2(OnMousePressed, bool(NSRect frame, NSPoint location));
   MOCK_METHOD0(GetMenu, NSMenu*());
 };
 
@@ -51,7 +51,7 @@ class MockButtonDecoration : public ButtonDecoration {
                          IDR_OMNIBOX_SEARCH_BUTTON_LOUPE,
                          3) {}
   void Hide() { SetVisible(false); }
-  MOCK_METHOD1(OnMousePressed, bool(NSRect frame));
+  MOCK_METHOD2(OnMousePressed, bool(NSRect frame, NSPoint location));
 };
 
 // Mock up an incrementing event number.
@@ -575,7 +575,7 @@ TEST_F(AutocompleteTextFieldTest, LeftDecorationMouseDown) {
   // mouse-up.
   [NSApp postEvent:upEvent atStart:YES];
 
-  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_))
+  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_, _))
       .WillOnce(Return(true));
   [field_ mouseDown:downEvent];
 
@@ -589,7 +589,7 @@ TEST_F(AutocompleteTextFieldTest, LeftDecorationMouseDown) {
   downEvent = Event(field_, location, NSLeftMouseDown, 1);
   upEvent = Event(field_, location, NSLeftMouseUp, 1);
   [NSApp postEvent:upEvent atStart:YES];
-  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_))
+  EXPECT_CALL(mock_left_decoration_, OnMousePressed(_, _))
       .WillOnce(Return(true));
   [field_ mouseDown:downEvent];
 
@@ -623,7 +623,7 @@ TEST_F(AutocompleteTextFieldTest, RightDecorationMouseDown) {
   // mouse-up.
   [NSApp postEvent:upEvent atStart:YES];
 
-  EXPECT_CALL(mock_right_decoration_, OnMousePressed(_))
+  EXPECT_CALL(mock_right_decoration_, OnMousePressed(_, _))
       .WillOnce(Return(true));
   [field_ mouseDown:downEvent];
 }
@@ -809,7 +809,8 @@ TEST_F(AutocompleteTextFieldObserverTest, ButtonDecorationFocus) {
   EXPECT_CALL(field_observer_, OnMouseDown(_));
 
   // Still expect an OnMousePressed on the button.
-  EXPECT_CALL(mock_button, OnMousePressed(_)).WillOnce(testing::Return(true));
+  EXPECT_CALL(mock_button, OnMousePressed(_, _))
+      .WillOnce(testing::Return(true));
 
   // Get click point for button decoration.
   NSRect button_rect =

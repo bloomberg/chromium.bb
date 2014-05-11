@@ -60,7 +60,7 @@ NSPasteboard* LocationBarDecoration::GetDragPasteboard() {
   return nil;
 }
 
-bool LocationBarDecoration::OnMousePressed(NSRect frame) {
+bool LocationBarDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   return false;
 }
 

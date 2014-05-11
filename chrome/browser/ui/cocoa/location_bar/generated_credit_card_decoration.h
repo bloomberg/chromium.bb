@@ -31,7 +31,7 @@ class GeneratedCreditCardDecoration : public ImageDecoration {
   // N.B. - this is identical to LocationBarDecorationView's OnClick
   // and canHandleClick.
   virtual bool AcceptsMousePress() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
   virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 
  private:

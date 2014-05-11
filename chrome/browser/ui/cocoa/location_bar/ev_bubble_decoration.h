@@ -36,7 +36,7 @@ class EVBubbleDecoration : public BubbleDecoration {
   virtual NSPasteboard* GetDragPasteboard() OVERRIDE;
   virtual NSImage* GetDragImage() OVERRIDE;
   virtual NSRect GetDragImageFrame(NSRect frame) OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 

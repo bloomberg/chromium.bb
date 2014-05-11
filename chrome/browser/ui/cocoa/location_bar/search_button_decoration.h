@@ -21,7 +21,7 @@ class SearchButtonDecoration : public ButtonDecoration {
   // Implement |LocationBarDecoration|.
   virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
 
  private:
   // The control view that owns this. Weak.

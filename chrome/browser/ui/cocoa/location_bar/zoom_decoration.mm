@@ -95,7 +95,7 @@ bool ZoomDecoration::AcceptsMousePress() {
   return true;
 }
 
-bool ZoomDecoration::OnMousePressed(NSRect frame) {
+bool ZoomDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   if (bubble_)
     CloseBubble();
   else

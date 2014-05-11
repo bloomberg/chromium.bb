@@ -84,7 +84,7 @@ bool PageActionDecoration::AcceptsMousePress() {
 
 // Either notify listeners or show a popup depending on the Page
 // Action.
-bool PageActionDecoration::OnMousePressed(NSRect frame) {
+bool PageActionDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   return ActivatePageAction(frame);
 }
 

@@ -38,7 +38,8 @@ bool GeneratedCreditCardDecoration::AcceptsMousePress() {
   return controller && !controller->IsHiding();
 }
 
-bool GeneratedCreditCardDecoration::OnMousePressed(NSRect frame) {
+bool GeneratedCreditCardDecoration::OnMousePressed(NSRect frame,
+                                                   NSPoint location) {
   GeneratedCreditCardBubbleController* controller = GetController();
   if (!controller)
     return false;

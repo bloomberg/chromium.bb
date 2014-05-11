@@ -34,7 +34,7 @@ class ContentSettingDecoration : public ImageDecoration {
 
   // Overridden from |LocationBarDecoration|
   virtual bool AcceptsMousePress() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
   virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;

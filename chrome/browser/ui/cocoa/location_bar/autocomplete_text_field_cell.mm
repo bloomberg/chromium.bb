@@ -501,31 +501,40 @@ size_t CalculatePositionsInFrame(
 
     // Track the mouse until the user releases the button.
     [self trackMouse:theEvent
-              inRect:cellFrame
+              inRect:decorationRect
               ofView:controlView
         untilMouseUp:YES];
 
+    const NSPoint mouseLocation = [[NSApp currentEvent] locationInWindow];
+    const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
+
     // Post delayed focus notification, if necessary.
-    if (focusEvent.get())
+    if (focusEvent.get() && !button->PreventFocus(point))
       [self focusNotificationFor:focusEvent ofView:controlView];
+    focusEvent.reset();
 
     // Set the proper state (hover or normal) once the mouse has been released,
     // and call |OnMousePressed| if the button was released while the mouse was
     // within the bounds of the button.
-    const NSPoint mouseLocation = [[NSApp currentEvent] locationInWindow];
-    const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
     if (NSMouseInRect(point, decorationRect, [controlView isFlipped])) {
       button->SetButtonState(ButtonDecoration::kButtonStateHover);
       [controlView setNeedsDisplay:YES];
-      handled = decoration->AsButtonDecoration()->OnMousePressed(
-          [self frameForDecoration:decoration inFrame:cellFrame]);
+      handled = decoration->OnMousePressed(
+          [self frameForDecoration:decoration inFrame:cellFrame],
+          NSMakePoint(point.x - decorationRect.origin.x,
+                      point.y - decorationRect.origin.y));
     } else {
       button->SetButtonState(ButtonDecoration::kButtonStateNormal);
       [controlView setNeedsDisplay:YES];
       handled = true;
     }
   } else {
-    handled = decoration->OnMousePressed(decorationRect);
+    const NSPoint mouseLocation = [theEvent locationInWindow];
+    const NSPoint point = [controlView convertPoint:mouseLocation fromView:nil];
+    handled = decoration->OnMousePressed(
+        decorationRect,
+        NSMakePoint(point.x - decorationRect.origin.x,
+                    point.y - decorationRect.origin.y));
   }
 
   return handled ? YES : NO;

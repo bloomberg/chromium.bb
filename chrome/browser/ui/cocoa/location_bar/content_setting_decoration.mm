@@ -263,7 +263,7 @@ bool ContentSettingDecoration::AcceptsMousePress() {
   return true;
 }
 
-bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
+bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   // Get host. This should be shared on linux/win/osx medium-term.
   Browser* browser = owner_->browser();
   WebContents* web_contents = owner_->GetWebContents();

@@ -51,6 +51,7 @@ ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate)
 ToolbarModelImpl::~ToolbarModelImpl() {
 }
 
+// static
 ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
       content::WebContents* web_contents) {
   if (!web_contents)
@@ -92,6 +93,19 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
       NOTREACHED();
       return NONE;
   }
+}
+
+// static
+base::string16 ToolbarModelImpl::GetEVCertName(
+    const net::X509Certificate& cert) {
+  // EV are required to have an organization name and country.
+  DCHECK(!cert.subject().organization_names.empty());
+  DCHECK(!cert.subject().country_name.empty());
+
+  return l10n_util::GetStringFUTF16(
+      IDS_SECURE_CONNECTION_EV,
+      base::UTF8ToUTF16(cert.subject().organization_names[0]),
+      base::UTF8ToUTF16(cert.subject().country_name));
 }
 
 // ToolbarModelImpl Implementation.
@@ -154,83 +168,9 @@ GURL ToolbarModelImpl::GetURL() const {
   return GURL(content::kAboutBlankURL);
 }
 
-bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
-  const char kInterstitialShownKey[] = "interstitial_shown";
-
-  // When users type URLs and hit enter, continue to show those URLs until
-  // the navigation commits or an interstitial is shown, because having the
-  // omnibox clear immediately feels like the input was ignored.
-  NavigationController* navigation_controller = GetNavigationController();
-  if (navigation_controller) {
-    NavigationEntry* pending_entry = navigation_controller->GetPendingEntry();
-    if (pending_entry) {
-      const NavigationEntry* visible_entry =
-          navigation_controller->GetVisibleEntry();
-      base::string16 unused;
-      // Keep track that we've shown the origin chip on an interstitial so it
-      // can be shown even after the interstitial was dismissed, to avoid
-      // showing the chip, removing it and then showing it again.
-      if (visible_entry &&
-          visible_entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL &&
-          !pending_entry->GetExtraData(kInterstitialShownKey, &unused))
-        pending_entry->SetExtraData(kInterstitialShownKey, base::string16());
-      const content::PageTransition transition_type =
-          pending_entry->GetTransitionType();
-      if ((transition_type & content::PAGE_TRANSITION_TYPED) != 0 &&
-          !pending_entry->GetExtraData(kInterstitialShownKey, &unused))
-        return false;
-    }
-  }
-
-  if (!delegate_->InTabbedBrowser() || !ShouldDisplayURL() ||
-      !url_replacement_enabled())
-    return false;
-
-  if (chrome::ShouldDisplayOriginChip())
-    return true;
-
-  const chrome::OriginChipV2Condition chip_condition =
-      chrome::GetOriginChipV2Condition();
-  return (chip_condition != chrome::ORIGIN_CHIP_V2_DISABLED) &&
-      ((chip_condition != chrome::ORIGIN_CHIP_V2_ON_SRP) ||
-       WouldPerformSearchTermReplacement(false));
-}
-
 bool ToolbarModelImpl::WouldPerformSearchTermReplacement(
     bool ignore_editing) const {
   return !GetSearchTerms(ignore_editing).empty();
-}
-
-bool ToolbarModelImpl::ShouldDisplayURL() const {
-  // Note: The order here is important.
-  // - The WebUI test must come before the extension scheme test because there
-  //   can be WebUIs that have extension schemes (e.g. the bookmark manager). In
-  //   that case, we should prefer what the WebUI instance says.
-  // - The view-source test must come before the NTP test because of the case
-  //   of view-source:chrome://newtab, which should display its URL despite what
-  //   chrome://newtab says.
-  NavigationController* controller = GetNavigationController();
-  NavigationEntry* entry = controller ? controller->GetVisibleEntry() : NULL;
-  if (entry) {
-    if (entry->IsViewSourceMode() ||
-        entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
-      return true;
-    }
-
-    GURL url = entry->GetURL();
-    GURL virtual_url = entry->GetVirtualURL();
-    if (url.SchemeIs(content::kChromeUIScheme) ||
-        virtual_url.SchemeIs(content::kChromeUIScheme)) {
-      if (!url.SchemeIs(content::kChromeUIScheme))
-        url = virtual_url;
-      return url.host() != chrome::kChromeUINewTabHost;
-    }
-  }
-
-  if (chrome::IsInstantNTP(delegate_->GetActiveWebContents()))
-    return false;
-
-  return true;
 }
 
 ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
@@ -281,20 +221,75 @@ base::string16 ToolbarModelImpl::GetEVCertName() const {
   return GetEVCertName(*cert.get());
 }
 
-// static
-base::string16 ToolbarModelImpl::GetEVCertName(
-    const net::X509Certificate& cert) {
-  // EV are required to have an organization name and country.
-  if (cert.subject().organization_names.empty() ||
-      cert.subject().country_name.empty()) {
-    NOTREACHED();
-    return base::string16();
+bool ToolbarModelImpl::ShouldDisplayURL() const {
+  // Note: The order here is important.
+  // - The WebUI test must come before the extension scheme test because there
+  //   can be WebUIs that have extension schemes (e.g. the bookmark manager). In
+  //   that case, we should prefer what the WebUI instance says.
+  // - The view-source test must come before the NTP test because of the case
+  //   of view-source:chrome://newtab, which should display its URL despite what
+  //   chrome://newtab says.
+  NavigationController* controller = GetNavigationController();
+  NavigationEntry* entry = controller ? controller->GetVisibleEntry() : NULL;
+  if (entry) {
+    if (entry->IsViewSourceMode() ||
+        entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL) {
+      return true;
+    }
+
+    GURL url = entry->GetURL();
+    GURL virtual_url = entry->GetVirtualURL();
+    if (url.SchemeIs(content::kChromeUIScheme) ||
+        virtual_url.SchemeIs(content::kChromeUIScheme)) {
+      if (!url.SchemeIs(content::kChromeUIScheme))
+        url = virtual_url;
+      return url.host() != chrome::kChromeUINewTabHost;
+    }
   }
 
-  return l10n_util::GetStringFUTF16(
-      IDS_SECURE_CONNECTION_EV,
-      base::UTF8ToUTF16(cert.subject().organization_names[0]),
-      base::UTF8ToUTF16(cert.subject().country_name));
+  return !chrome::IsInstantNTP(delegate_->GetActiveWebContents());
+}
+
+bool ToolbarModelImpl::WouldOmitURLDueToOriginChip() const {
+  const char kInterstitialShownKey[] = "interstitial_shown";
+
+  // When users type URLs and hit enter, continue to show those URLs until
+  // the navigation commits or an interstitial is shown, because having the
+  // omnibox clear immediately feels like the input was ignored.
+  NavigationController* navigation_controller = GetNavigationController();
+  if (navigation_controller) {
+    NavigationEntry* pending_entry = navigation_controller->GetPendingEntry();
+    if (pending_entry) {
+      const NavigationEntry* visible_entry =
+          navigation_controller->GetVisibleEntry();
+      base::string16 unused;
+      // Keep track that we've shown the origin chip on an interstitial so it
+      // can be shown even after the interstitial was dismissed, to avoid
+      // showing the chip, removing it and then showing it again.
+      if (visible_entry &&
+          visible_entry->GetPageType() == content::PAGE_TYPE_INTERSTITIAL &&
+          !pending_entry->GetExtraData(kInterstitialShownKey, &unused))
+        pending_entry->SetExtraData(kInterstitialShownKey, base::string16());
+      const content::PageTransition transition_type =
+          pending_entry->GetTransitionType();
+      if ((transition_type & content::PAGE_TRANSITION_TYPED) != 0 &&
+          !pending_entry->GetExtraData(kInterstitialShownKey, &unused))
+        return false;
+    }
+  }
+
+  if (!delegate_->InTabbedBrowser() || !ShouldDisplayURL() ||
+      !url_replacement_enabled())
+    return false;
+
+  if (chrome::ShouldDisplayOriginChip())
+    return true;
+
+  const chrome::OriginChipV2Condition chip_condition =
+      chrome::GetOriginChipV2Condition();
+  return (chip_condition != chrome::ORIGIN_CHIP_V2_DISABLED) &&
+      ((chip_condition != chrome::ORIGIN_CHIP_V2_ON_SRP) ||
+       WouldPerformSearchTermReplacement(false));
 }
 
 NavigationController* ToolbarModelImpl::GetNavigationController() const {

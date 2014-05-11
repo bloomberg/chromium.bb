@@ -64,6 +64,10 @@ ButtonDecoration::ButtonState ButtonDecoration::GetButtonState() const {
   return state_;
 }
 
+bool ButtonDecoration::PreventFocus(NSPoint location) const {
+  return false;
+}
+
 void ButtonDecoration::SetIcon(ButtonState state, int icon_id) {
   switch (state) {
     case kButtonStateNormal:
@@ -169,7 +173,7 @@ bool ButtonDecoration::IsDraggable() {
   return false;
 }
 
-bool ButtonDecoration::OnMousePressed(NSRect frame) {
+bool ButtonDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   return false;
 }
 

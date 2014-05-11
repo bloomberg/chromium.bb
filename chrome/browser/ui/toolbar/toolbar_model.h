@@ -97,6 +97,10 @@ class ToolbarModel {
   // wouldn't have displayed a URL to begin with (e.g. for the NTP).
   virtual bool WouldOmitURLDueToOriginChip() const = 0;
 
+  // Returns true if the origin should be shown based on the current state of
+  // the ToolbarModel.
+  bool ShouldShowOriginChip() const;
+
   // Whether the text in the omnibox is currently being edited.
   void set_input_in_progress(bool input_in_progress) {
     input_in_progress_ = input_in_progress;

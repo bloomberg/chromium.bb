@@ -717,7 +717,7 @@ void LocationBarView::Layout() {
     return;
 
   animated_host_label_->SetVisible(false);
-  origin_chip_view_->SetVisible(origin_chip_view_->ShouldShow());
+  origin_chip_view_->SetVisible(GetToolbarModel()->ShouldShowOriginChip());
   selected_keyword_view_->SetVisible(false);
   location_icon_view_->SetVisible(false);
   ev_bubble_view_->SetVisible(false);

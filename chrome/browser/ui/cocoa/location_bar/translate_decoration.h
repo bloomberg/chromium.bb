@@ -25,7 +25,7 @@ class TranslateDecoration : public ImageDecoration {
 
   // Implement |LocationBarDecoration|
   virtual bool AcceptsMousePress() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
   virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;
 

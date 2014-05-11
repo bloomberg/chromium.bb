@@ -45,7 +45,6 @@ class ToolbarModelImpl : public ToolbarModel {
   virtual base::string16 GetFormattedURL() const OVERRIDE;
   virtual base::string16 GetCorpusNameForMobile() const OVERRIDE;
   virtual GURL GetURL() const OVERRIDE;
-  virtual bool WouldOmitURLDueToOriginChip() const OVERRIDE;
   virtual bool WouldPerformSearchTermReplacement(
       bool ignore_editing) const OVERRIDE;
   virtual SecurityLevel GetSecurityLevel(bool ignore_editing) const OVERRIDE;
@@ -53,6 +52,7 @@ class ToolbarModelImpl : public ToolbarModel {
   virtual int GetIconForSecurityLevel(SecurityLevel level) const OVERRIDE;
   virtual base::string16 GetEVCertName() const OVERRIDE;
   virtual bool ShouldDisplayURL() const OVERRIDE;
+  virtual bool WouldOmitURLDueToOriginChip() const OVERRIDE;
 
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved.

@@ -169,12 +169,6 @@ OriginChipView::~OriginChipView() {
     sb_service->ui_manager()->RemoveObserver(this);
 }
 
-bool OriginChipView::ShouldShow() {
-  return chrome::ShouldDisplayOriginChipV2() &&
-      location_bar_view_->GetToolbarModel()->WouldOmitURLDueToOriginChip() &&
-      location_bar_view_->GetToolbarModel()->origin_chip_enabled();
-}
-
 void OriginChipView::Update(content::WebContents* web_contents) {
   if (!web_contents)
     return;

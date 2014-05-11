@@ -112,8 +112,8 @@ NSRect EVBubbleDecoration::GetDragImageFrame(NSRect frame) {
   return GetImageRectInFrame(frame);
 }
 
-bool EVBubbleDecoration::OnMousePressed(NSRect frame) {
-  return location_icon_->OnMousePressed(frame);
+bool EVBubbleDecoration::OnMousePressed(NSRect frame, NSPoint location) {
+  return location_icon_->OnMousePressed(frame, location);
 }
 
 bool EVBubbleDecoration::AcceptsMousePress() {

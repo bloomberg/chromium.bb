@@ -23,7 +23,7 @@ bool MicSearchDecoration::AcceptsMousePress() {
   return true;
 }
 
-bool MicSearchDecoration::OnMousePressed(NSRect frame) {
+bool MicSearchDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   command_updater_->ExecuteCommand(IDC_TOGGLE_SPEECH_INPUT);
   return true;
 }

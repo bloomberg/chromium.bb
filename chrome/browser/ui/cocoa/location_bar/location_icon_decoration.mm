@@ -6,6 +6,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -94,10 +95,21 @@ bool LocationIconDecoration::AcceptsMousePress() {
   return true;
 }
 
-bool LocationIconDecoration::OnMousePressed(NSRect frame) {
+bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
+  // TODO(macourteau): this code (for displaying the page info bubble) should be
+  // pulled out into LocationBarViewMac (or maybe even further), as other
+  // decorations currently depend on this decoration only to show the page info
+  // bubble.
+
   // Do not show page info if the user has been editing the location
-  // bar, or the location bar is at the NTP.
-  if (owner_->GetOmniboxView()->IsEditingOrEmpty())
+  // bar, or the location bar is at the NTP. However, if the origin chip is
+  // enabled, the omnibox will be empty by default, so the page info should be
+  // shown in those cases as well.
+  if ((chrome::ShouldDisplayOriginChipV2() &&
+       owner_->GetOmniboxView()->model() &&
+       owner_->GetOmniboxView()->model()->user_input_in_progress()) ||
+      (!chrome::ShouldDisplayOriginChipV2() &&
+       owner_->GetOmniboxView()->IsEditingOrEmpty()))
     return true;
 
   WebContents* tab = owner_->GetWebContents();

@@ -39,12 +39,6 @@ class OriginChipView : public views::LabelButton,
                  const gfx::FontList& font_list);
   virtual ~OriginChipView();
 
-  // Returns true if the origin chip should be visible.  This will always be
-  // true if the original origin chip experiment is enabled.  If the V2
-  // experiment is enabled this is true if the chip hasn't been hidden by
-  // clicking on it or interacting with the Omnibox.
-  bool ShouldShow();
-
   // Recalculates the contents of the Origin Chip based on the displayed tab.
   void Update(content::WebContents* tab);
 

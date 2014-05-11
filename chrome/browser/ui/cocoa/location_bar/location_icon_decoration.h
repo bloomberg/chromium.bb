@@ -26,7 +26,7 @@ class LocationIconDecoration : public ImageDecoration {
   virtual NSRect GetDragImageFrame(NSRect frame) OVERRIDE;
 
   // Show the page info panel on click.
-  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual NSString* GetToolTip() OVERRIDE;
   virtual NSPoint GetBubblePointInFrame(NSRect frame) OVERRIDE;

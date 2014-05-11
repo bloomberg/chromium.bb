@@ -47,7 +47,7 @@ void SearchButtonDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   ButtonDecoration::DrawInFrame(frame, control_view);
 }
 
-bool SearchButtonDecoration::OnMousePressed(NSRect frame) {
+bool SearchButtonDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   owner_->GetOmniboxView()->model()->AcceptInput(
       owner_->GetWindowOpenDisposition(), false);
   return true;

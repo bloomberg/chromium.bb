@@ -32,7 +32,7 @@ bool TranslateDecoration::AcceptsMousePress() {
   return true;
 }
 
-bool TranslateDecoration::OnMousePressed(NSRect frame) {
+bool TranslateDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   command_updater_->ExecuteCommand(IDC_TRANSLATE_PAGE);
   return true;
 }

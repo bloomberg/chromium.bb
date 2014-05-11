@@ -38,6 +38,10 @@ class ButtonDecoration : public LocationBarDecoration {
   void SetButtonState(ButtonState state);
   ButtonState GetButtonState() const;
 
+  // Whether a click on this decoration should prevent focusing of the omnibox
+  // or not.
+  virtual bool PreventFocus(NSPoint location) const;
+
   // Changes the icon for the specified button state only.
   void SetIcon(ButtonState state, int icon_id);
 
@@ -57,7 +61,7 @@ class ButtonDecoration : public LocationBarDecoration {
   virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
   virtual bool AcceptsMousePress() OVERRIDE;
   virtual bool IsDraggable() OVERRIDE;
-  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame, NSPoint location) OVERRIDE;
   virtual ButtonDecoration* AsButtonDecoration() OVERRIDE;
 
  private:

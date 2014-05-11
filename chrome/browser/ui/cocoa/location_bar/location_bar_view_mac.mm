@@ -164,7 +164,8 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
       !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)];
 
   if (chrome::ShouldDisplayOriginChipV2())
-    origin_chip_decoration_.reset(new OriginChipDecoration(this));
+    origin_chip_decoration_.reset(new OriginChipDecoration(
+        this, location_icon_decoration_.get()));
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
@@ -305,7 +306,7 @@ ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
 void LocationBarViewMac::TestPageActionPressed(size_t index) {
   DCHECK_LT(index, page_action_decorations_.size());
   if (index < page_action_decorations_.size())
-    page_action_decorations_[index]->OnMousePressed(NSZeroRect);
+    page_action_decorations_[index]->OnMousePressed(NSZeroRect, NSZeroPoint);
 }
 
 bool LocationBarViewMac::GetBookmarkStarVisibility() {
@@ -362,7 +363,9 @@ NSPoint LocationBarViewMac::GetTranslateBubblePoint() const {
 }
 
 NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
-  if (ev_bubble_decoration_->IsVisible()) {
+  if (origin_chip_decoration_ && origin_chip_decoration_->IsVisible()) {
+    return [field_ bubblePointForDecoration:origin_chip_decoration_.get()];
+  } else if (ev_bubble_decoration_->IsVisible()) {
     return [field_ bubblePointForDecoration:ev_bubble_decoration_.get()];
   } else {
     return [field_ bubblePointForDecoration:location_icon_decoration_.get()];

@@ -48,7 +48,7 @@ bool StarDecoration::AcceptsMousePress() {
   return true;
 }
 
-bool StarDecoration::OnMousePressed(NSRect frame) {
+bool StarDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
   return true;
 }

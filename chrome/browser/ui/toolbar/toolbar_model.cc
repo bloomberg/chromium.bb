@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 
+#include "chrome/browser/search/search.h"
+
 ToolbarModel::ToolbarModel()
     : input_in_progress_(false),
       origin_chip_enabled_(true),
@@ -16,4 +18,10 @@ ToolbarModel::~ToolbarModel() {
 bool ToolbarModel::WouldReplaceURL() const {
   return WouldOmitURLDueToOriginChip() ||
       WouldPerformSearchTermReplacement(false);
+}
+
+bool ToolbarModel::ShouldShowOriginChip() const {
+  return chrome::ShouldDisplayOriginChipV2() &&
+      WouldOmitURLDueToOriginChip() &&
+      origin_chip_enabled();
 }
