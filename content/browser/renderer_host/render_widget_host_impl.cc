@@ -183,7 +183,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_unresponsive_(false),
       in_flight_event_count_(0),
       in_get_backing_store_(false),
-      abort_get_backing_store_(false),
       view_being_painted_(false),
       ignore_input_events_(false),
       input_method_active_(false),
@@ -467,7 +466,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                                 msg_is_ok = OnSwapCompositorFrame(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopFlinging, OnFlingingStopped)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateIsDelayed, OnUpdateIsDelayed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnBlur)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
@@ -828,10 +826,8 @@ void RenderWidgetHostImpl::WaitForSurface() {
 
       // Break now if we got a backing store or accelerated surface of the
       // correct size.
-      if (view_->HasAcceleratedSurface(view_size) || abort_get_backing_store_) {
-        abort_get_backing_store_ = false;
+      if (view_->HasAcceleratedSurface(view_size))
         return;
-      }
     } else {
       TRACE_EVENT0("renderer_host", "WaitForSurface::Timeout");
       break;
@@ -1572,11 +1568,6 @@ void RenderWidgetHostImpl::OnUpdateRect(
   // MPArch.RWH_TotalPaintTime.
   TimeDelta delta = TimeTicks::Now() - paint_start;
   UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
-}
-
-void RenderWidgetHostImpl::OnUpdateIsDelayed() {
-  if (in_get_backing_store_)
-    abort_get_backing_store_ = true;
 }
 
 void RenderWidgetHostImpl::DidUpdateBackingStore(

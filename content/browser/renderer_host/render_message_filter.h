@@ -260,7 +260,6 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCompletedOpenChannelToNpapiPlugin(
       OpenChannelToNpapiPluginCallback* client);
 
-  void OnUpdateIsDelayed(const IPC::Message& msg);
   void OnAre3DAPIsBlocked(int render_view_id,
                           const GURL& top_origin_url,
                           ThreeDAPIType requester,

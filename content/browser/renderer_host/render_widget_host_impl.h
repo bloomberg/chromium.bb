@@ -637,7 +637,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool OnSwapCompositorFrame(const IPC::Message& message);
   void OnFlingingStopped();
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
-  void OnUpdateIsDelayed();
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   virtual void OnFocus();
   virtual void OnBlur();
@@ -819,9 +818,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Flag to detect recursive calls to GetBackingStore().
   bool in_get_backing_store_;
-
-  // Flag to trigger the GetBackingStore method to abort early.
-  bool abort_get_backing_store_;
 
   // Set when we call DidPaintRect/DidScrollRect on the view.
   bool view_being_painted_;
