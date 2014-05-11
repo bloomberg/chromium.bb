@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/common/cancelable_request.h"
-#include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/page_usage_data.h"
 
