@@ -6433,3 +6433,13 @@
    fun:_ZN2ui14EventProcessor17OnEventFromSourceEPNS_5EventE
    fun:_ZN4aura4test12AuraTestBase34DispatchEventUsingWindowDispatcherEPN2ui5EventE
 }
+{
+   bug_372226
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7WebCore13PinchViewport5resetEv
+   ...
+   fun:_ZN7WebCore13PinchViewportC1ERNS_9FrameHostE
+   ...
+   fun:_ZN7WebCore9FrameHostC1ERNS_4PageE
+}
