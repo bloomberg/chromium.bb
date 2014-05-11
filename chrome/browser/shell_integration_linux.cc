@@ -5,7 +5,11 @@
 #include "chrome/browser/shell_integration_linux.h"
 
 #include <fcntl.h>
+
+#if defined(USE_GLIB)
 #include <glib.h>
+#endif
+
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -444,6 +448,7 @@ ShellIntegration::DefaultWebClientState GetIsDefaultWebClient(
 // Get the value of NoDisplay from the [Desktop Entry] section of a .desktop
 // file, given in |shortcut_contents|. If the key is not found, returns false.
 bool GetNoDisplayFromDesktopFile(const std::string& shortcut_contents) {
+#if defined(USE_GLIB)
   // An empty file causes a crash with glib <= 2.32, so special case here.
   if (shortcut_contents.empty())
     return false;
@@ -472,6 +477,10 @@ bool GetNoDisplayFromDesktopFile(const std::string& shortcut_contents) {
 
   g_key_file_free(key_file);
   return nodisplay;
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
 }
 
 // Gets the path to the Chrome executable or wrapper script.
@@ -778,6 +787,7 @@ std::string GetDesktopFileContentsForCommand(
     const std::string& icon_name,
     const std::string& categories,
     bool no_display) {
+#if defined(USE_GLIB)
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
   std::string output_buffer = std::string(kXdgOpenShebang) + "\n";
@@ -844,10 +854,15 @@ std::string GetDesktopFileContentsForCommand(
 
   g_key_file_free(key_file);
   return output_buffer;
+#else
+  NOTIMPLEMENTED();
+  return std::string("");
+#endif
 }
 
 std::string GetDirectoryFileContents(const base::string16& title,
                                      const std::string& icon_name) {
+#if defined(USE_GLIB)
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
   GKeyFile* key_file = g_key_file_new();
 
@@ -879,6 +894,10 @@ std::string GetDirectoryFileContents(const base::string16& title,
 
   g_key_file_free(key_file);
   return output_buffer;
+#else
+  NOTIMPLEMENTED();
+  return std::string("");
+#endif
 }
 
 bool CreateDesktopShortcut(
