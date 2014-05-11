@@ -4271,9 +4271,11 @@ TEST_P(GestureRecognizerTest, GestureEventFlagsPassedFromTouchEvent) {
   EXPECT_NE(default_flags, delegate->flags());
 }
 
+// TODO - re-enable these tests once memory management issues have been sorted
+// out. See crbug.com/371990.
 INSTANTIATE_TEST_CASE_P(GestureRecognizer,
                         GestureRecognizerTest,
-                        ::testing::Bool());
+                        ::testing::Values(false));
 
 }  // namespace test
 }  // namespace aura
