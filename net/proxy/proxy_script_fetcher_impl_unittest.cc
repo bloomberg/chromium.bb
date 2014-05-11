@@ -91,6 +91,7 @@ class RequestContext : public URLRequestContext {
   URLRequestContextStorage storage_;
 };
 
+#if !defined(DISABLE_FILE_SUPPORT)
 // Get a file:// url relative to net/data/proxy/proxy_script_fetcher_unittest.
 GURL GetTestFileUrl(const std::string& relpath) {
   base::FilePath path;
@@ -101,6 +102,7 @@ GURL GetTestFileUrl(const std::string& relpath) {
   GURL base_url = FilePathToFileURL(path);
   return GURL(base_url.spec() + "/" + relpath);
 }
+#endif  // !defined(DISABLE_FILE_SUPPORT)
 
 // Really simple NetworkDelegate so we can allow local file access on ChromeOS
 // without introducing layering violations.  Also causes a test failure if a
@@ -352,7 +354,9 @@ TEST_F(ProxyScriptFetcherImplTest, TooLarge) {
   // These two URLs are the same file, but are http:// vs file://
   GURL urls[] = {
     test_server_.GetURL("files/large-pac.nsproxy"),
+#if !defined(DISABLE_FILE_SUPPORT)
     GetTestFileUrl("large-pac.nsproxy")
+#endif
   };
 
   // Try fetching URLs that are 101 bytes large. We should abort the request

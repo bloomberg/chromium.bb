@@ -30,7 +30,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/capturing_net_log.h"
-#include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -77,6 +76,7 @@
 #include "testing/platform_test.h"
 
 #if !defined(DISABLE_FILE_SUPPORT)
+#include "net/base/filename_util.h"
 #include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_file_dir_job.h"
 #endif
@@ -697,6 +697,7 @@ TEST_F(URLRequestTest, DataURLImageTest) {
   }
 }
 
+#if !defined(DISABLE_FILE_SUPPORT)
 TEST_F(URLRequestTest, FileTest) {
   base::FilePath app_path;
   PathService::Get(base::FILE_EXE, &app_path);
@@ -895,80 +896,6 @@ TEST_F(URLRequestTest, AllowFileURLs) {
   }
 }
 
-TEST_F(URLRequestTest, InvalidUrlTest) {
-  TestDelegate d;
-  {
-    URLRequest r(GURL("invalid url"), DEFAULT_PRIORITY, &d, &default_context_);
-
-    r.Start();
-    EXPECT_TRUE(r.is_pending());
-
-    base::RunLoop().Run();
-    EXPECT_TRUE(d.request_failed());
-  }
-}
-
-#if defined(OS_WIN)
-TEST_F(URLRequestTest, ResolveShortcutTest) {
-  base::FilePath app_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
-  app_path = app_path.AppendASCII("net");
-  app_path = app_path.AppendASCII("data");
-  app_path = app_path.AppendASCII("url_request_unittest");
-  app_path = app_path.AppendASCII("with-headers.html");
-
-  std::wstring lnk_path = app_path.value() + L".lnk";
-
-  base::win::ScopedCOMInitializer com_initializer;
-
-  // Temporarily create a shortcut for test
-  {
-    base::win::ScopedComPtr<IShellLink> shell;
-    ASSERT_TRUE(SUCCEEDED(shell.CreateInstance(CLSID_ShellLink, NULL,
-                                               CLSCTX_INPROC_SERVER)));
-    base::win::ScopedComPtr<IPersistFile> persist;
-    ASSERT_TRUE(SUCCEEDED(shell.QueryInterface(persist.Receive())));
-    EXPECT_TRUE(SUCCEEDED(shell->SetPath(app_path.value().c_str())));
-    EXPECT_TRUE(SUCCEEDED(shell->SetDescription(L"ResolveShortcutTest")));
-    EXPECT_TRUE(SUCCEEDED(persist->Save(lnk_path.c_str(), TRUE)));
-  }
-
-  TestDelegate d;
-  {
-    URLRequest r(FilePathToFileURL(base::FilePath(lnk_path)),
-                 DEFAULT_PRIORITY,
-                 &d,
-                 &default_context_);
-
-    r.Start();
-    EXPECT_TRUE(r.is_pending());
-
-    base::RunLoop().Run();
-
-    WIN32_FILE_ATTRIBUTE_DATA data;
-    GetFileAttributesEx(app_path.value().c_str(),
-                        GetFileExInfoStandard, &data);
-    HANDLE file = CreateFile(app_path.value().c_str(), GENERIC_READ,
-                             FILE_SHARE_READ, NULL, OPEN_EXISTING,
-                             FILE_ATTRIBUTE_NORMAL, NULL);
-    EXPECT_NE(INVALID_HANDLE_VALUE, file);
-    scoped_ptr<char[]> buffer(new char[data.nFileSizeLow]);
-    DWORD read_size;
-    BOOL result;
-    result = ReadFile(file, buffer.get(), data.nFileSizeLow,
-                      &read_size, NULL);
-    std::string content(buffer.get(), read_size);
-    CloseHandle(file);
-
-    EXPECT_TRUE(!r.is_pending());
-    EXPECT_EQ(1, d.received_redirect_count());
-    EXPECT_EQ(content, d.data_received());
-  }
-
-  // Clean the shortcut
-  DeleteFile(lnk_path.c_str());
-}
-#endif  // defined(OS_WIN)
 
 TEST_F(URLRequestTest, FileDirCancelTest) {
   // Put in mock resource provider.
@@ -1067,7 +994,84 @@ TEST_F(URLRequestTest, FileDirRedirectSingleSlash) {
   ASSERT_EQ(1, d.received_redirect_count());
   ASSERT_FALSE(req.status().is_success());
 }
-#endif
+#endif  // defined(OS_WIN)
+
+#endif  // !defined(DISABLE_FILE_SUPPORT)
+
+TEST_F(URLRequestTest, InvalidUrlTest) {
+  TestDelegate d;
+  {
+    URLRequest r(GURL("invalid url"), DEFAULT_PRIORITY, &d, &default_context_);
+
+    r.Start();
+    EXPECT_TRUE(r.is_pending());
+
+    base::RunLoop().Run();
+    EXPECT_TRUE(d.request_failed());
+  }
+}
+
+#if defined(OS_WIN)
+TEST_F(URLRequestTest, ResolveShortcutTest) {
+  base::FilePath app_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &app_path);
+  app_path = app_path.AppendASCII("net");
+  app_path = app_path.AppendASCII("data");
+  app_path = app_path.AppendASCII("url_request_unittest");
+  app_path = app_path.AppendASCII("with-headers.html");
+
+  std::wstring lnk_path = app_path.value() + L".lnk";
+
+  base::win::ScopedCOMInitializer com_initializer;
+
+  // Temporarily create a shortcut for test
+  {
+    base::win::ScopedComPtr<IShellLink> shell;
+    ASSERT_TRUE(SUCCEEDED(shell.CreateInstance(CLSID_ShellLink, NULL,
+                                               CLSCTX_INPROC_SERVER)));
+    base::win::ScopedComPtr<IPersistFile> persist;
+    ASSERT_TRUE(SUCCEEDED(shell.QueryInterface(persist.Receive())));
+    EXPECT_TRUE(SUCCEEDED(shell->SetPath(app_path.value().c_str())));
+    EXPECT_TRUE(SUCCEEDED(shell->SetDescription(L"ResolveShortcutTest")));
+    EXPECT_TRUE(SUCCEEDED(persist->Save(lnk_path.c_str(), TRUE)));
+  }
+
+  TestDelegate d;
+  {
+    URLRequest r(FilePathToFileURL(base::FilePath(lnk_path)),
+                 DEFAULT_PRIORITY,
+                 &d,
+                 &default_context_);
+
+    r.Start();
+    EXPECT_TRUE(r.is_pending());
+
+    base::RunLoop().Run();
+
+    WIN32_FILE_ATTRIBUTE_DATA data;
+    GetFileAttributesEx(app_path.value().c_str(),
+                        GetFileExInfoStandard, &data);
+    HANDLE file = CreateFile(app_path.value().c_str(), GENERIC_READ,
+                             FILE_SHARE_READ, NULL, OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL, NULL);
+    EXPECT_NE(INVALID_HANDLE_VALUE, file);
+    scoped_ptr<char[]> buffer(new char[data.nFileSizeLow]);
+    DWORD read_size;
+    BOOL result;
+    result = ReadFile(file, buffer.get(), data.nFileSizeLow,
+                      &read_size, NULL);
+    std::string content(buffer.get(), read_size);
+    CloseHandle(file);
+
+    EXPECT_TRUE(!r.is_pending());
+    EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_EQ(content, d.data_received());
+  }
+
+  // Clean the shortcut
+  DeleteFile(lnk_path.c_str());
+}
+#endif  // defined(OS_WIN)
 
 // Custom URLRequestJobs for use with interceptor tests
 class RestartTestJob : public URLRequestTestJob {

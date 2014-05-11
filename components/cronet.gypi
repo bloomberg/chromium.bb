@@ -89,7 +89,17 @@
             '-landroid',
             '-Wl,--gc-sections',
             '-Wl,--exclude-libs,ALL'
-          ]
+          ],
+          'conditions': [
+            [ 'use_icu_alternatives_on_android == 1', {
+                'dependencies!': [
+                  '../base/base.gyp:base_i18n',
+                  '../third_party/icu/icu.gyp:icui18n',
+                  '../third_party/icu/icu.gyp:icuuc',
+                ]
+              },
+            ],
+          ],
         },
         {
           'target_name': 'cronet',
