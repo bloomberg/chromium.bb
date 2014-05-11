@@ -108,6 +108,20 @@ static NSString* const NSWindowDidChangeBackingPropertiesNotification =
 
 #endif  // 10.7
 
+// Declare things that are part of the 10.9 SDK.
+#if !defined(MAC_OS_X_VERSION_10_9) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_9
+enum {
+   NSWindowOcclusionStateVisible = 1UL << 1,
+};
+typedef NSUInteger NSWindowOcclusionState;
+
+@interface NSWindow (MavericksAPI)
+- (NSWindowOcclusionState)occlusionState;
+@end
+
+#endif  // 10.9
+
 // This method will return YES for OS X versions 10.7.3 and later, and NO
 // otherwise.
 // Used to prevent a crash when building with the 10.7 SDK and accessing the
@@ -1431,6 +1445,20 @@ void RenderWidgetHostViewMac::CompositorSwapBuffers(
       base::debug::SetCrashKeyValue(kCrashKey, value);
     }
     return;
+  }
+
+  // If the window is occluded, then this frame's display call may be severely
+  // throttled. This is a good thing, unless tab capture may be active,
+  // because the broadcast will be inappropriately throttled.
+  // http://crbug.com/350410
+  NSWindow* window = [cocoa_view_ window];
+  if (window && [window respondsToSelector:@selector(occlusionState)]) {
+    bool window_is_occluded =
+        !([window occlusionState] & NSWindowOcclusionStateVisible);
+    // Note that we aggressively ack even if this particular frame is not being
+    // captured.
+    if (window_is_occluded && frame_subscriber_)
+      scoped_ack.Reset();
   }
 
   // If we reach here, then the frame will be displayed by a future draw
