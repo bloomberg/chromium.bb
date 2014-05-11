@@ -146,13 +146,6 @@ class VideoRendererImplTest : public ::testing::Test {
     event.RunAndWaitForStatus(expected);
   }
 
-  void Pause() {
-    SCOPED_TRACE("Pause()");
-    WaitableMessageLoopEvent event;
-    renderer_->Pause(event.GetClosure());
-    event.RunAndWait();
-  }
-
   void Flush() {
     SCOPED_TRACE("Flush()");
     WaitableMessageLoopEvent event;
@@ -168,7 +161,6 @@ class VideoRendererImplTest : public ::testing::Test {
   }
 
   void Shutdown() {
-    Pause();
     Flush();
     Stop();
   }
@@ -396,7 +388,6 @@ TEST_F(VideoRendererImplTest, StopWhileInitializing) {
 
 TEST_F(VideoRendererImplTest, StopWhileFlushing) {
   Initialize();
-  Pause();
   renderer_->Flush(base::Bind(&ExpectNotCalled, PIPELINE_OK));
   Stop();
 
@@ -525,9 +516,7 @@ TEST_F(VideoRendererImplTest, Rebuffer) {
   AdvanceTimeInMs(50);
   WaitForPendingRead();
 
-  // Simulate a Pause/Preroll/Play rebuffer sequence.
-  Pause();
-
+  // Simulate a Preroll/Play rebuffer sequence.
   WaitableMessageLoopEvent event;
   renderer_->Preroll(kNoTimestamp(),
                      event.GetPipelineStatusCB());
@@ -559,9 +548,8 @@ TEST_F(VideoRendererImplTest, Rebuffer_AlreadyHaveEnoughFrames) {
   SatisfyPendingRead();
   Play();
 
-  // Simulate a Pause/Preroll/Play rebuffer sequence.
-  Pause();
-
+  // Simulate a Preroll/Play rebuffer sequence.
+  //
   // TODO(scherkus): We shouldn't display the next ready frame in a rebuffer
   // situation, see http://crbug.com/365516
   EXPECT_CALL(mock_display_cb_, Display(_)).Times(AtLeast(1));
@@ -606,7 +594,6 @@ TEST_F(VideoRendererImplTest, AbortPendingRead_Playing) {
   QueueFrames("abort");
   SatisfyPendingRead();
 
-  Pause();
   Flush();
   QueueFrames("60 70 80 90");
   EXPECT_CALL(mock_display_cb_, Display(HasTimestamp(60)));
@@ -624,7 +611,6 @@ TEST_F(VideoRendererImplTest, AbortPendingRead_Flush) {
   // Check that there is an outstanding Read() request.
   EXPECT_TRUE(IsReadPending());
 
-  Pause();
   Flush();
   Shutdown();
 }

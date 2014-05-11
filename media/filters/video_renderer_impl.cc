@@ -57,18 +57,10 @@ void VideoRendererImpl::Play(const base::Closure& callback) {
   callback.Run();
 }
 
-void VideoRendererImpl::Pause(const base::Closure& callback) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  base::AutoLock auto_lock(lock_);
-  DCHECK_NE(state_, kUninitialized);
-  state_ = kPaused;
-  callback.Run();
-}
-
 void VideoRendererImpl::Flush(const base::Closure& callback) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-  DCHECK_EQ(state_, kPaused);
+  DCHECK_NE(state_, kUninitialized);
   flush_cb_ = callback;
   state_ = kFlushing;
 
@@ -128,7 +120,7 @@ void VideoRendererImpl::Preroll(base::TimeDelta time,
   base::AutoLock auto_lock(lock_);
   DCHECK(!cb.is_null());
   DCHECK(preroll_cb_.is_null());
-  DCHECK(state_ == kFlushed || state_== kPaused) << "state_ " << state_;
+  DCHECK(state_ == kFlushed || state_ == kPlaying) << "state_ " << state_;
 
   if (state_ == kFlushed) {
     DCHECK(time != kNoTimestamp());
@@ -449,7 +441,6 @@ void VideoRendererImpl::AttemptRead_Locked() {
   }
 
   switch (state_) {
-    case kPaused:
     case kPrerolling:
     case kPrerolled:
     case kPlaying:

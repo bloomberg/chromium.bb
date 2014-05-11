@@ -269,8 +269,6 @@ class PipelineTest : public ::testing::Test {
     }
 
     if (video_stream_) {
-      EXPECT_CALL(*video_renderer_, Pause(_))
-          .WillOnce(RunClosure<0>());
       EXPECT_CALL(*video_renderer_, Flush(_))
           .WillOnce(RunClosure<0>());
       EXPECT_CALL(*video_renderer_, Preroll(seek_time, _))
@@ -1051,7 +1049,6 @@ class PipelineTeardownTest : public PipelineTest {
     }
 
     EXPECT_CALL(*audio_renderer_, Pause());
-    EXPECT_CALL(*video_renderer_, Pause(_)).WillOnce(RunClosure<0>());
 
     if (state == kFlushing) {
       if (stop_or_error == kStop) {

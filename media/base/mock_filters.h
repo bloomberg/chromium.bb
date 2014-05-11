@@ -123,7 +123,6 @@ class MockVideoRenderer : public VideoRenderer {
                                 const TimeDeltaCB& get_time_cb,
                                 const TimeDeltaCB& get_duration_cb));
   MOCK_METHOD1(Play, void(const base::Closure& callback));
-  MOCK_METHOD1(Pause, void(const base::Closure& callback));
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD2(Preroll, void(base::TimeDelta time, const PipelineStatusCB& cb));
   MOCK_METHOD1(Stop, void(const base::Closure& callback));

@@ -486,10 +486,6 @@ void Pipeline::DoSeek(
     bound_fns.Push(base::Bind(
         &AudioRenderer::Pause, base::Unretained(audio_renderer_.get())));
   }
-  if (video_renderer_) {
-    bound_fns.Push(base::Bind(
-        &VideoRenderer::Pause, base::Unretained(video_renderer_.get())));
-  }
   if (text_renderer_) {
     bound_fns.Push(base::Bind(
         &TextRenderer::Pause, base::Unretained(text_renderer_.get())));
