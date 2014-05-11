@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_private_api.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
 
 namespace image_writer_api = extensions::api::image_writer_private;
@@ -29,6 +31,8 @@ class BrowserContext;
 }
 
 namespace extensions {
+class ExtensionRegistry;
+
 namespace image_writer {
 
 class Operation;
@@ -37,6 +41,7 @@ class Operation;
 // and message routing.
 class OperationManager : public BrowserContextKeyedAPI,
                          public content::NotificationObserver,
+                         public extensions::ExtensionRegistryObserver,
                          public base::SupportsWeakPtr<OperationManager> {
  public:
   typedef std::string ExtensionId;
@@ -85,18 +90,22 @@ class OperationManager : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<OperationManager>* GetFactoryInstance();
   static OperationManager* Get(content::BrowserContext* context);
 
-  Profile* profile() { return profile_; }
-
  private:
 
   static const char* service_name() {
     return "OperationManager";
   }
 
-  // NotificationObserver
+  // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   Operation* GetOperation(const ExtensionId& extension_id);
   void DeleteOperation(const ExtensionId& extension_id);
@@ -104,9 +113,13 @@ class OperationManager : public BrowserContextKeyedAPI,
   friend class BrowserContextKeyedAPIFactory<OperationManager>;
   typedef std::map<ExtensionId, scoped_refptr<Operation> > OperationMap;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
   OperationMap operations_;
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension unloaded notification.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   base::WeakPtrFactory<OperationManager> weak_factory_;
 

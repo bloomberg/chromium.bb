@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/destroy_partitions_operation.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
+#include "chrome/test/base/testing_profile.h"
 
 namespace extensions {
 namespace image_writer {
@@ -19,7 +20,8 @@ class ImageWriterDestroyPartitionsOperationTest
     : public ImageWriterUnitTestBase {};
 
 TEST_F(ImageWriterDestroyPartitionsOperationTest, EndToEnd) {
-  MockOperationManager manager;
+  TestingProfile profile;
+  MockOperationManager manager(&profile);
   scoped_refptr<FakeImageWriterClient> client = FakeImageWriterClient::Create();
 
   scoped_refptr<DestroyPartitionsOperation> operation(

@@ -65,6 +65,8 @@ class OperationForTest : public Operation {
 
 class ImageWriterOperationTest : public ImageWriterUnitTestBase {
  protected:
+  ImageWriterOperationTest()
+      : profile_(new TestingProfile), manager_(profile_.get()) {}
   virtual void SetUp() OVERRIDE {
     ImageWriterUnitTestBase::SetUp();
 
@@ -96,6 +98,8 @@ class ImageWriterOperationTest : public ImageWriterUnitTestBase {
 
   base::FilePath image_path_;
   base::FilePath zip_file_;
+
+  scoped_ptr<TestingProfile> profile_;
 
   MockOperationManager manager_;
   scoped_refptr<FakeImageWriterClient> client_;

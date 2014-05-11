@@ -9,9 +9,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
 
@@ -24,6 +26,7 @@ class NotificationRegistrar;
 
 namespace extensions {
 class BrowserContextKeyedAPI;
+class ExtensionRegistry;
 
 struct EventListenerInfo;
 
@@ -54,7 +57,7 @@ class SignedInDevicesChangeObserver
 };
 
 class SignedInDevicesManager : public BrowserContextKeyedAPI,
-                               public content::NotificationObserver,
+                               public ExtensionRegistryObserver,
                                public EventRouter::Observer {
  public:
   // Default constructor used for testing.
@@ -66,10 +69,11 @@ class SignedInDevicesManager : public BrowserContextKeyedAPI,
   static BrowserContextKeyedAPIFactory<SignedInDevicesManager>*
       GetFactoryInstance();
 
-  // NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
   // EventRouter::Observer:
   virtual void OnListenerAdded(const EventListenerInfo& details) OVERRIDE;
@@ -87,8 +91,11 @@ class SignedInDevicesManager : public BrowserContextKeyedAPI,
   void RemoveChangeObserverForExtension(const std::string& extension_id);
 
   Profile* const profile_;
-  content::NotificationRegistrar registrar_;
   ScopedVector<SignedInDevicesChangeObserver> change_observers_;
+
+  // Listen to extension unloaded notification.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   FRIEND_TEST_ALL_PREFIXES(SignedInDevicesManager, UpdateListener);
 

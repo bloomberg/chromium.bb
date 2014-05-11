@@ -18,6 +18,7 @@
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace image_writer_api = extensions::api::image_writer_private;
 
@@ -27,17 +28,20 @@ namespace image_writer {
 using content::BrowserThread;
 
 OperationManager::OperationManager(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)), weak_factory_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<Profile>(profile_));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                 content::Source<Profile>(profile_));
+    : browser_context_(context),
+      extension_registry_observer_(this),
+      weak_factory_(this) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+                 content::Source<Profile>(profile));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+                 content::Source<Profile>(profile));
 }
 
 OperationManager::~OperationManager() {
@@ -69,7 +73,7 @@ void OperationManager::StartWriteFromUrl(
   scoped_refptr<Operation> operation(
       new WriteFromUrlOperation(weak_factory_.GetWeakPtr(),
                                 extension_id,
-                                profile_->GetRequestContext(),
+                                browser_context_->GetRequestContext(),
                                 url,
                                 hash,
                                 device_path));
@@ -149,7 +153,7 @@ void OperationManager::OnProgress(const ExtensionId& extension_id,
   scoped_ptr<Event> event(new Event(
       image_writer_api::OnWriteProgress::kEventName, args.Pass()));
 
-  EventRouter::Get(profile_)
+  EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -160,7 +164,7 @@ void OperationManager::OnComplete(const ExtensionId& extension_id) {
   scoped_ptr<Event> event(new Event(
       image_writer_api::OnWriteComplete::kEventName, args.Pass()));
 
-  EventRouter::Get(profile_)
+  EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
 
   DeleteOperation(extension_id);
@@ -183,7 +187,7 @@ void OperationManager::OnError(const ExtensionId& extension_id,
   scoped_ptr<Event> event(new Event(
       image_writer_api::OnWriteError::kEventName, args.Pass()));
 
-  EventRouter::Get(profile_)
+  EventRouter::Get(browser_context_)
       ->DispatchEventToExtension(extension_id, event.Pass());
 
   DeleteOperation(extension_id);
@@ -204,18 +208,17 @@ void OperationManager::DeleteOperation(const ExtensionId& extension_id) {
   }
 }
 
+void OperationManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  DeleteOperation(extension->id());
+}
+
 void OperationManager::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
-      DeleteOperation(content::Details<const Extension>(details).ptr()->id());
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      DeleteOperation(content::Details<const Extension>(details).ptr()->id());
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
       DeleteOperation(content::Details<const Extension>(details).ptr()->id());
       break;

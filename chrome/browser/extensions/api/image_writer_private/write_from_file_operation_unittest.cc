@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/browser/extensions/api/image_writer_private/write_from_file_operation.h"
+#include "chrome/test/base/testing_profile.h"
 
 namespace extensions {
 namespace image_writer {
@@ -15,25 +16,29 @@ using testing::AnyNumber;
 using testing::AtLeast;
 
 class ImageWriterFromFileTest : public ImageWriterUnitTestBase {
+ protected:
+  ImageWriterFromFileTest()
+      : profile_(new TestingProfile), manager_(profile_.get()) {}
+  scoped_ptr<TestingProfile> profile_;
+  MockOperationManager manager_;
 };
 
 TEST_F(ImageWriterFromFileTest, InvalidFile) {
-  MockOperationManager manager;
-
-  scoped_refptr<WriteFromFileOperation> op = new WriteFromFileOperation(
-    manager.AsWeakPtr(),
-    kDummyExtensionId,
-    test_image_path_,
-    test_device_path_.AsUTF8Unsafe());
+  scoped_refptr<WriteFromFileOperation> op =
+      new WriteFromFileOperation(manager_.AsWeakPtr(),
+                                 kDummyExtensionId,
+                                 test_image_path_,
+                                 test_device_path_.AsUTF8Unsafe());
 
   base::DeleteFile(test_image_path_, false);
 
-  EXPECT_CALL(manager, OnProgress(kDummyExtensionId, _, _)).Times(0);
-  EXPECT_CALL(manager, OnComplete(kDummyExtensionId)).Times(0);
-  EXPECT_CALL(manager, OnError(kDummyExtensionId,
-                               image_writer_api::STAGE_UNKNOWN,
-                               0,
-                               error::kImageInvalid)).Times(1);
+  EXPECT_CALL(manager_, OnProgress(kDummyExtensionId, _, _)).Times(0);
+  EXPECT_CALL(manager_, OnComplete(kDummyExtensionId)).Times(0);
+  EXPECT_CALL(manager_,
+              OnError(kDummyExtensionId,
+                      image_writer_api::STAGE_UNKNOWN,
+                      0,
+                      error::kImageInvalid)).Times(1);
 
   op->Start();
 
@@ -42,10 +47,8 @@ TEST_F(ImageWriterFromFileTest, InvalidFile) {
 
 // Runs the entire WriteFromFile operation.
 TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
-  MockOperationManager manager;
-
   scoped_refptr<WriteFromFileOperation> op =
-      new WriteFromFileOperation(manager.AsWeakPtr(),
+      new WriteFromFileOperation(manager_.AsWeakPtr(),
                                  kDummyExtensionId,
                                  test_image_path_,
                                  test_device_path_.AsUTF8Unsafe());
@@ -54,34 +57,34 @@ TEST_F(ImageWriterFromFileTest, WriteFromFileEndToEnd) {
   op->SetUtilityClientForTesting(client);
 #endif
 
-  EXPECT_CALL(manager,
+  EXPECT_CALL(manager_,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, _))
       .Times(AnyNumber());
-  EXPECT_CALL(manager,
+  EXPECT_CALL(manager_,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, 0))
       .Times(AtLeast(1));
-  EXPECT_CALL(manager,
+  EXPECT_CALL(manager_,
               OnProgress(kDummyExtensionId, image_writer_api::STAGE_WRITE, 100))
       .Times(AtLeast(1));
 
 #if !defined(OS_CHROMEOS)
   // Chrome OS doesn't verify.
   EXPECT_CALL(
-      manager,
+      manager_,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, _))
       .Times(AnyNumber());
   EXPECT_CALL(
-      manager,
+      manager_,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, 0))
       .Times(AtLeast(1));
   EXPECT_CALL(
-      manager,
+      manager_,
       OnProgress(kDummyExtensionId, image_writer_api::STAGE_VERIFYWRITE, 100))
       .Times(AtLeast(1));
 #endif
 
-  EXPECT_CALL(manager, OnComplete(kDummyExtensionId)).Times(1);
-  EXPECT_CALL(manager, OnError(kDummyExtensionId, _, _, _)).Times(0);
+  EXPECT_CALL(manager_, OnComplete(kDummyExtensionId)).Times(1);
+  EXPECT_CALL(manager_, OnError(kDummyExtensionId, _, _, _)).Times(0);
 
   op->Start();
 
