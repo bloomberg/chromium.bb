@@ -10,6 +10,9 @@
 #include "chrome/common/chrome_content_client.h"
 #include "content/public/app/content_main_delegate.h"
 
+template <typename>
+class ScopedVector;
+
 namespace base {
 class CommandLine;
 }
@@ -36,7 +39,8 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   virtual bool DelaySandboxInitialization(
       const std::string& process_type) OVERRIDE;
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-  virtual content::ZygoteForkDelegate* ZygoteStarting() OVERRIDE;
+  virtual void ZygoteStarting(
+      ScopedVector<content::ZygoteForkDelegate>* delegates) OVERRIDE;
   virtual void ZygoteForked() OVERRIDE;
 #endif
   virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;

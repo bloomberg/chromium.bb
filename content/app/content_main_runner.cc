@@ -16,6 +16,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/metrics/stats_table.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -298,9 +299,9 @@ int RunZygote(const MainFunctionParams& main_function_params,
     { switches::kUtilityProcess,     UtilityMain },
   };
 
-  scoped_ptr<ZygoteForkDelegate> zygote_fork_delegate;
+  ScopedVector<ZygoteForkDelegate> zygote_fork_delegates;
   if (delegate) {
-    zygote_fork_delegate.reset(delegate->ZygoteStarting());
+    delegate->ZygoteStarting(&zygote_fork_delegates);
     // Each Renderer we spawn will re-attempt initialization of the media
     // libraries, at which point failure will be detected and handled, so
     // we do not need to cope with initialization failures here.
@@ -310,7 +311,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
   }
 
   // This function call can return multiple times, once per fork().
-  if (!ZygoteMain(main_function_params, zygote_fork_delegate.get()))
+  if (!ZygoteMain(main_function_params, zygote_fork_delegates.Pass()))
     return 1;
 
   if (delegate) delegate->ZygoteForked();

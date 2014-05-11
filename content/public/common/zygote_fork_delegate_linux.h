@@ -33,8 +33,10 @@ class ZygoteForkDelegate {
   // layer-1 sandbox such as the setuid sandbox.
   virtual void Init(int sandboxdesc, bool enable_layer1_sandbox) = 0;
 
-  // After Init, supply a UMA_HISTOGRAM_ENUMERATION the delegate
-  // would like to supply on the first fork.
+  // After Init, supply a UMA_HISTOGRAM_ENUMERATION the delegate would like
+  // reported to the browser process.  (Note: Because these reports are
+  // piggy-backed onto fork responses that don't otherwise contain UMA reports,
+  // this method may not be called until much later.)
   virtual void InitialUMA(std::string* uma_name,
                           int* uma_sample,
                           int* uma_boundary_value) = 0;

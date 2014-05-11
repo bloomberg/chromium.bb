@@ -855,11 +855,10 @@ bool ChromeMainDelegate::DelaySandboxInitialization(
       process_type == switches::kRelauncherProcess;
 }
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
-content::ZygoteForkDelegate* ChromeMainDelegate::ZygoteStarting() {
-#if defined(DISABLE_NACL)
-  return NULL;
-#else
-  return new NaClForkDelegate();
+void ChromeMainDelegate::ZygoteStarting(
+    ScopedVector<content::ZygoteForkDelegate>* delegates) {
+#if !defined(DISABLE_NACL)
+  delegates->push_back(new NaClForkDelegate());
 #endif
 }
 

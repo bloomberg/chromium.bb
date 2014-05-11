@@ -16,6 +16,7 @@
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_vector.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
@@ -57,8 +58,8 @@ void CreatePipe(base::ScopedFD* read_pipe, base::ScopedFD* write_pipe) {
   write_pipe->reset(raw_pipe[1]);
 }
 
-void KillAndReap(pid_t pid, bool use_helper) {
-  if (use_helper) {
+void KillAndReap(pid_t pid, ZygoteForkDelegate* helper) {
+  if (helper) {
     // Helper children may be forked in another PID namespace, so |pid| might
     // be meaningless to us; or we just might not be able to directly send it
     // signals.  So we can't kill it.
@@ -76,17 +77,10 @@ void KillAndReap(pid_t pid, bool use_helper) {
 
 }  // namespace
 
-Zygote::Zygote(int sandbox_flags,
-               ZygoteForkDelegate* helper)
+Zygote::Zygote(int sandbox_flags, ScopedVector<ZygoteForkDelegate> helpers)
     : sandbox_flags_(sandbox_flags),
-      helper_(helper),
-      initial_uma_sample_(0),
-      initial_uma_boundary_value_(0) {
-  if (helper_) {
-    helper_->InitialUMA(&initial_uma_name_,
-                        &initial_uma_sample_,
-                        &initial_uma_boundary_value_);
-  }
+      helpers_(helpers.Pass()),
+      initial_uma_index_(0) {
 }
 
 Zygote::~Zygote() {
@@ -265,9 +259,8 @@ bool Zygote::GetTerminationStatus(base::ProcessHandle real_pid,
   // We know about |real_pid|.
   const base::ProcessHandle child = child_info.internal_pid;
   if (child_info.started_from_helper) {
-    // Let the helper handle the request.
-    DCHECK(helper_);
-    if (!helper_->GetTerminationStatus(child, known_dead, status, exit_code)) {
+    if (!child_info.started_from_helper->GetTerminationStatus(
+            child, known_dead, status, exit_code)) {
       return false;
     }
   } else {
@@ -330,14 +323,19 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
                             std::string* uma_name,
                             int* uma_sample,
                             int* uma_boundary_value) {
-  const bool use_helper = (helper_ && helper_->CanHelp(process_type,
-                                                       uma_name,
-                                                       uma_sample,
-                                                       uma_boundary_value));
+  ZygoteForkDelegate* helper = NULL;
+  for (ScopedVector<ZygoteForkDelegate>::iterator i = helpers_.begin();
+       i != helpers_.end();
+       ++i) {
+    if ((*i)->CanHelp(process_type, uma_name, uma_sample, uma_boundary_value)) {
+      helper = *i;
+      break;
+    }
+  }
 
   base::ScopedFD read_pipe, write_pipe;
   base::ProcessId pid = 0;
-  if (use_helper) {
+  if (helper) {
     int ipc_channel_fd = LookUpFd(fd_mapping, kPrimaryIPCChannel);
     if (ipc_channel_fd < 0) {
       DLOG(ERROR) << "Failed to find kPrimaryIPCChannel in FD mapping";
@@ -346,7 +344,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     std::vector<int> fds;
     fds.push_back(ipc_channel_fd);  // kBrowserFDIndex
     fds.push_back(pid_oracle.get());  // kPIDOracleFDIndex
-    pid = helper_->Fork(process_type, fds, channel_id);
+    pid = helper->Fork(process_type, fds, channel_id);
 
     // Helpers should never return in the child process.
     CHECK_NE(pid, 0);
@@ -416,16 +414,16 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
   // If we successfully forked a child, but it crashed without sending
   // a message to the browser, the browser won't have found its PID.
   if (real_pid < 0) {
-    KillAndReap(pid, use_helper);
+    KillAndReap(pid, helper);
     return -1;
   }
 
   // If we're not using a helper, send the PID back to the child process.
-  if (!use_helper) {
+  if (!helper) {
     ssize_t written =
         HANDLE_EINTR(write(write_pipe.get(), &real_pid, sizeof(real_pid)));
     if (written != sizeof(real_pid)) {
-      KillAndReap(pid, use_helper);
+      KillAndReap(pid, helper);
       return -1;
     }
   }
@@ -436,7 +434,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     NOTREACHED();
   }
   process_info_map_[real_pid].internal_pid = pid;
-  process_info_map_[real_pid].started_from_helper = use_helper;
+  process_info_map_[real_pid].started_from_helper = helper;
 
   return real_pid;
 }
@@ -538,14 +536,11 @@ bool Zygote::HandleForkRequest(int fd,
       pickle, iter, fds.Pass(), &uma_name, &uma_sample, &uma_boundary_value);
   if (child_pid == 0)
     return true;
-  if (uma_name.empty()) {
-    // There is no UMA report from this particular fork.
-    // Use the initial UMA report if any, and clear that record for next time.
-    // Note the swap method here is the efficient way to do this, since
-    // we know uma_name is empty.
-    uma_name.swap(initial_uma_name_);
-    uma_sample = initial_uma_sample_;
-    uma_boundary_value = initial_uma_boundary_value_;
+  // If there's no UMA report for this particular fork, then check if any
+  // helpers have an initial UMA report for us to send instead.
+  while (uma_name.empty() && initial_uma_index_ < helpers_.size()) {
+    helpers_[initial_uma_index_++]->InitialUMA(
+        &uma_name, &uma_sample, &uma_boundary_value);
   }
   // Must always send reply, as ZygoteHost blocks while waiting for it.
   Pickle reply_pickle;

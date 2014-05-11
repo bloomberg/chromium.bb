@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/linux_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -442,7 +443,7 @@ static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
 }
 
 bool ZygoteMain(const MainFunctionParams& params,
-                ZygoteForkDelegate* forkdelegate) {
+                ScopedVector<ZygoteForkDelegate> fork_delegates) {
   g_am_zygote_or_renderer = true;
   sandbox::InitLibcUrandomOverrides();
 
@@ -462,11 +463,12 @@ bool ZygoteMain(const MainFunctionParams& params,
                                     std::vector<int>()));
   }
 
-  if (forkdelegate != NULL) {
-    VLOG(1) << "ZygoteMain: initializing fork delegate";
-    forkdelegate->Init(GetSandboxFD(), must_enable_setuid_sandbox);
-  } else {
-    VLOG(1) << "ZygoteMain: fork delegate is NULL";
+  VLOG(1) << "ZygoteMain: initializing " << fork_delegates.size()
+          << " fork delegates";
+  for (ScopedVector<ZygoteForkDelegate>::iterator i = fork_delegates.begin();
+       i != fork_delegates.end();
+       ++i) {
+    (*i)->Init(GetSandboxFD(), must_enable_setuid_sandbox);
   }
 
   // Turn on the first layer of the sandbox if the configuration warrants it.
@@ -476,7 +478,7 @@ bool ZygoteMain(const MainFunctionParams& params,
   bool setuid_sandbox_engaged = sandbox_flags & kSandboxLinuxSUID;
   CHECK_EQ(must_enable_setuid_sandbox, setuid_sandbox_engaged);
 
-  Zygote zygote(sandbox_flags, forkdelegate);
+  Zygote zygote(sandbox_flags, fork_delegates.Pass());
   // This function call can return multiple times, once per fork().
   return zygote.ProcessRequests();
 }

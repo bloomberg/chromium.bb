@@ -10,6 +10,9 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
+template <typename>
+class ScopedVector;
+
 namespace content {
 
 class ContentBrowserClient;
@@ -65,8 +68,9 @@ class CONTENT_EXPORT ContentMainDelegate {
 
 #elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_IOS)
   // Tells the embedder that the zygote process is starting, and allows it to
-  // specify a zygote delegate if it wishes.
-  virtual ZygoteForkDelegate* ZygoteStarting();
+  // specify one or more zygote delegates if it wishes by storing them in
+  // |*delegates|.
+  virtual void ZygoteStarting(ScopedVector<ZygoteForkDelegate>* delegates);
 
   // Called every time the zygote process forks.
   virtual void ZygoteForked() {}

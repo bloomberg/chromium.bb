@@ -5,6 +5,8 @@
 #ifndef CONTENT_ZYGOTE_ZYGOTE_H_
 #define CONTENT_ZYGOTE_ZYGOTE_H_
 
+#include <stddef.h>
+
 #include <string>
 
 #include "base/containers/small_map.h"
@@ -26,8 +28,7 @@ class ZygoteForkDelegate;
 // runs it.
 class Zygote {
  public:
-  Zygote(int sandbox_flags,
-         ZygoteForkDelegate* helper);
+  Zygote(int sandbox_flags, ScopedVector<ZygoteForkDelegate> helpers);
   ~Zygote();
 
   bool ProcessRequests();
@@ -36,9 +37,8 @@ class Zygote {
   struct ZygoteProcessInfo {
     // Pid from inside the Zygote's PID namespace.
     base::ProcessHandle internal_pid;
-    // Keeps track of whether or not a process was started from a fork
-    // delegate helper.
-    bool started_from_helper;
+    // Keeps track of which fork delegate helper the process was started from.
+    ZygoteForkDelegate* started_from_helper;
   };
   typedef base::SmallMap< std::map<base::ProcessHandle, ZygoteProcessInfo> >
       ZygoteProcessMap;
@@ -119,13 +119,10 @@ class Zygote {
   ZygoteProcessMap process_info_map_;
 
   const int sandbox_flags_;
-  ZygoteForkDelegate* helper_;
+  ScopedVector<ZygoteForkDelegate> helpers_;
 
-  // These might be set by helper_->InitialUMA. They supply a UMA enumeration
-  // sample we should report on the first fork.
-  std::string initial_uma_name_;
-  int initial_uma_sample_;
-  int initial_uma_boundary_value_;
+  // Count of how many fork delegates for which we've invoked InitialUMA().
+  size_t initial_uma_index_;
 };
 
 }  // namespace content
