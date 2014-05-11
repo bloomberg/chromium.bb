@@ -34,6 +34,7 @@ class LegacySilkBenchmark(ThreadTimesKeySilkCases):
   def GetName(cls):
     return "silk.key_silk_cases"
 
+
 class ThreadTimesFastPathMobileSites(test.Test):
   """Measures timeline metrics while performing smoothness action on
   key mobile sites labeled with fast-path tag.
@@ -42,11 +43,13 @@ class ThreadTimesFastPathMobileSites(test.Test):
   page_set = 'page_sets/key_mobile_sites.py'
   options = {'page_label_filter' : 'fastpath'}
 
-class LegacyFastPathBenchmark(ThreadTimesFastPathMobileSites):
-  """Same as thread_times.fast_path_mobile_sites but with the old name."""
-  @classmethod
-  def GetName(cls):
-    return "fast_path.key_mobile_sites"
+
+class ThreadTimesCompositorCases(test.Test):
+  """Measures timeline metrics while performing smoothness action on
+  tough compositor cases.
+  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
+  test = thread_times.ThreadTimes
+  page_set = 'page_sets/tough_compositor_cases.py'
 
 
 @test.Enabled('android')
