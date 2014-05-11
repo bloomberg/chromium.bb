@@ -31,7 +31,7 @@
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
         # Need dev-tools related resources in shell_resources.pak and
         # devtools_resources.pak.
-        '<(DEPTH)/content/content_shell_and_tests.gyp:generate_content_shell_resources',
+        '<(DEPTH)/content/content_shell_and_tests.gyp:content_shell_resources',
         '<(DEPTH)/content/browser/devtools/devtools_resources.gyp:devtools_resources',
         '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
         '<(DEPTH)/ui/base/strings/ui_strings.gyp:ui_strings',
