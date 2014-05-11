@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_lock_state_controller_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
@@ -67,32 +68,6 @@ void HideBackground() {
 }
 
 } // namespace
-
-// Fake implementation of PowerButtonControllerDelegate that just logs requests
-// to lock the screen and shut down the device.
-class TestLockStateControllerDelegate : public LockStateControllerDelegate {
- public:
-  TestLockStateControllerDelegate()
-      : num_lock_requests_(0),
-        num_shutdown_requests_(0) {}
-
-  int num_lock_requests() const { return num_lock_requests_; }
-  int num_shutdown_requests() const { return num_shutdown_requests_; }
-
-  // LockStateControllerDelegate implementation.
-  virtual void RequestLockScreen() OVERRIDE {
-    num_lock_requests_++;
-  }
-  virtual void RequestShutdown() OVERRIDE {
-    num_shutdown_requests_++;
-  }
-
- private:
-  int num_lock_requests_;
-  int num_shutdown_requests_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestLockStateControllerDelegate);
-};
 
 class LockStateControllerTest : public AshTestBase {
  public:

@@ -814,6 +814,8 @@
         'test/status_area_widget_test_helper.h',
         'test/test_activation_delegate.cc',
         'test/test_activation_delegate.h',
+        'test/test_lock_state_controller_delegate.cc',
+        'test/test_lock_state_controller_delegate.h',
         'test/test_screenshot_delegate.cc',
         'test/test_screenshot_delegate.cc',
         'test/test_session_state_delegate.cc',

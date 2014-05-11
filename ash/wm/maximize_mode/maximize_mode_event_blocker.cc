@@ -63,7 +63,11 @@ ui::EventTarget* BlockKeyboardAndTouchpadTargeter::FindTargetForEvent(
       // (i.e. F9 and F10)  from the device's keyboard. https://crbug.com/368669
       ui::KeyEvent* key_event = static_cast<ui::KeyEvent*>(event);
       if (key_event->key_code() != ui::VKEY_VOLUME_DOWN &&
-          key_event->key_code() != ui::VKEY_VOLUME_UP) {
+          key_event->key_code() != ui::VKEY_VOLUME_UP
+#if defined(OS_CHROMEOS)
+          && key_event->key_code() != ui::VKEY_POWER
+#endif
+          ) {
         return NULL;
       }
     }

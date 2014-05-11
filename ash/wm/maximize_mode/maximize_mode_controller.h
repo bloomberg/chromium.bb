@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 
+namespace ui {
+class EventHandler;
+}
+
 namespace ash {
 
 class MaximizeModeEventBlocker;
@@ -53,9 +57,12 @@ class ASH_EXPORT MaximizeModeController : public AccelerometerObserver {
   // screen.
   void HandleScreenRotation(const gfx::Vector3dF& lid);
 
-  // An event handler which traps mouse and keyboard events while maximize
-  // mode is engaged.
+  // An event targeter controller which traps mouse and keyboard events while
+  // maximize mode is engaged.
   scoped_ptr<MaximizeModeEventBlocker> event_blocker_;
+
+  // An event handler used to detect screenshot actions while in maximize mode.
+  scoped_ptr<ui::EventHandler> event_handler_;
 
   // When true calls to OnAccelerometerUpdated will not rotate the display.
   bool rotation_locked_;

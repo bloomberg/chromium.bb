@@ -4,12 +4,18 @@
 
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
+#include "ash/accelerators/accelerator_controller.h"
+#include "ash/accelerators/accelerator_table.h"
 #include "ash/accelerometer/accelerometer_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_blocker.h"
 #include "base/command_line.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/events/event.h"
+#include "ui/events/event_handler.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace ash {
@@ -80,6 +86,47 @@ float ClockwiseAngleBetweenVectorsInDegrees(const gfx::Vector3dF& base,
     angle = 360.0f - angle;
   return angle;
 }
+
+#if defined(OS_CHROMEOS)
+
+// An event handler which listens for a volume down + power keypress and
+// triggers a screenshot when this is seen.
+class ScreenshotActionHandler : public ui::EventHandler {
+ public:
+  ScreenshotActionHandler();
+  virtual ~ScreenshotActionHandler();
+
+  // ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
+
+ private:
+  bool volume_down_pressed_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScreenshotActionHandler);
+};
+
+ScreenshotActionHandler::ScreenshotActionHandler()
+    : volume_down_pressed_(false) {
+  Shell::GetInstance()->PrependPreTargetHandler(this);
+}
+
+ScreenshotActionHandler::~ScreenshotActionHandler() {
+  Shell::GetInstance()->RemovePreTargetHandler(this);
+}
+
+void ScreenshotActionHandler::OnKeyEvent(ui::KeyEvent* event) {
+  if (event->key_code() == ui::VKEY_VOLUME_DOWN) {
+    volume_down_pressed_ = event->type() == ui::ET_KEY_PRESSED ||
+                           event->type() == ui::ET_TRANSLATED_KEY_PRESS;
+  } else if (volume_down_pressed_ &&
+             event->key_code() == ui::VKEY_POWER &&
+             event->type() == ui::ET_KEY_PRESSED) {
+    Shell::GetInstance()->accelerator_controller()->PerformAction(
+        ash::TAKE_SCREENSHOT, ui::Accelerator());
+  }
+}
+
+#endif  // OS_CHROMEOS
 
 }  // namespace
 
@@ -158,10 +205,14 @@ void MaximizeModeController::HandleHingeRotation(const gfx::Vector3dF& base,
       angle < kExitMaximizeModeAngle) {
     Shell::GetInstance()->EnableMaximizeModeWindowManager(false);
     event_blocker_.reset();
+    event_handler_.reset();
   } else if (!maximize_mode_engaged &&
       angle > kEnterMaximizeModeAngle) {
     Shell::GetInstance()->EnableMaximizeModeWindowManager(true);
     event_blocker_.reset(new MaximizeModeEventBlocker);
+#if defined(OS_CHROMEOS)
+    event_handler_.reset(new ScreenshotActionHandler);
+#endif
   }
 }
 
