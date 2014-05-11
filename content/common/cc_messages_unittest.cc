@@ -267,7 +267,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   arbitrary_filters1.Append(FilterOperation::CreateGrayscaleFilter(
       arbitrary_float1));
   skia::RefPtr<SkImageFilter> arbitrary_filter = skia::AdoptRef(
-    new SkBlurImageFilter(arbitrary_sigma, arbitrary_sigma));
+      SkBlurImageFilter::Create(arbitrary_sigma, arbitrary_sigma));
   arbitrary_filters1.Append(
       cc::FilterOperation::CreateReferenceFilter(arbitrary_filter));
 

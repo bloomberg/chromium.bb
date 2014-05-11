@@ -176,7 +176,7 @@ class ImageFilterClippedPixelTest : public LayerTreeHostFiltersPixelTest {
     // This filter does a red-blue swap, so the foreground becomes blue.
     matrix[2] = matrix[6] = matrix[10] = matrix[18] = SK_Scalar1;
     skia::RefPtr<SkColorFilter> colorFilter(
-        skia::AdoptRef(new SkColorMatrixFilter(matrix)));
+        skia::AdoptRef(SkColorMatrixFilter::Create(matrix)));
     // We filter only the bottom 200x100 pixels of the foreground.
     SkImageFilter::CropRect crop_rect(SkRect::MakeXYWH(0, 100, 200, 100));
     skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(

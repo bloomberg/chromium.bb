@@ -812,8 +812,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   matrix[13] = matrix[14] = 0;
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
-  skia::RefPtr<SkColorFilter> colorFilter(skia::AdoptRef(
-      new SkColorMatrixFilter(matrix)));
+  skia::RefPtr<SkColorFilter> colorFilter(
+      skia::AdoptRef(SkColorMatrixFilter::Create(matrix)));
   skia::RefPtr<SkImageFilter> filter =
       skia::AdoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), NULL));
   FilterOperations filters;
@@ -1057,8 +1057,8 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   matrix[14] = 1.5f;
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
-  skia::RefPtr<SkColorFilter> colorFilter(skia::AdoptRef(
-      new SkColorMatrixFilter(matrix)));
+  skia::RefPtr<SkColorFilter> colorFilter(
+      skia::AdoptRef(SkColorMatrixFilter::Create(matrix)));
   skia::RefPtr<SkImageFilter> filter =
       skia::AdoptRef(SkColorFilterImageFilter::Create(colorFilter.get(), NULL));
   FilterOperations filters;

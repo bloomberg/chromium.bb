@@ -505,10 +505,10 @@ TEST(FilterOperationsTest, BlendSaturatingBrightnessWithNull) {
 }
 
 TEST(FilterOperationsTest, BlendReferenceFilters) {
-  skia::RefPtr<SkImageFilter> from_filter = skia::AdoptRef(
-      new SkBlurImageFilter(1.f, 1.f));
-  skia::RefPtr<SkImageFilter> to_filter = skia::AdoptRef(
-      new SkBlurImageFilter(2.f, 2.f));
+  skia::RefPtr<SkImageFilter> from_filter =
+      skia::AdoptRef(SkBlurImageFilter::Create(1.f, 1.f));
+  skia::RefPtr<SkImageFilter> to_filter =
+      skia::AdoptRef(SkBlurImageFilter::Create(2.f, 2.f));
   FilterOperation from = FilterOperation::CreateReferenceFilter(from_filter);
   FilterOperation to = FilterOperation::CreateReferenceFilter(to_filter);
 
@@ -526,8 +526,8 @@ TEST(FilterOperationsTest, BlendReferenceFilters) {
 }
 
 TEST(FilterOperationsTest, BlendReferenceWithNull) {
-  skia::RefPtr<SkImageFilter> image_filter = skia::AdoptRef(
-      new SkBlurImageFilter(1.f, 1.f));
+  skia::RefPtr<SkImageFilter> image_filter =
+      skia::AdoptRef(SkBlurImageFilter::Create(1.f, 1.f));
   FilterOperation filter = FilterOperation::CreateReferenceFilter(image_filter);
   FilterOperation null_filter =
       FilterOperation::CreateReferenceFilter(skia::RefPtr<SkImageFilter>());

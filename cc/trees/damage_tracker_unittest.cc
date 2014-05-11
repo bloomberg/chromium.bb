@@ -540,9 +540,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForImageFilter) {
   // Allow us to set damage on child too.
   child->SetDrawsContent(true);
 
-  skia::RefPtr<SkImageFilter> filter =
-          skia::AdoptRef(new SkBlurImageFilter(SkIntToScalar(2),
-                                               SkIntToScalar(2)));
+  skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
+      SkBlurImageFilter::Create(SkIntToScalar(2), SkIntToScalar(2)));
   FilterOperations filters;
   filters.Append(FilterOperation::CreateReferenceFilter(filter));
 

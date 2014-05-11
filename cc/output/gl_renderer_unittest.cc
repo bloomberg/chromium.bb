@@ -1315,7 +1315,7 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   matrix[15] = matrix[16] = matrix[17] = matrix[19] = 0;
   matrix[18] = 1;
   skia::RefPtr<SkColorFilter> color_filter(
-      skia::AdoptRef(new SkColorMatrixFilter(matrix)));
+      skia::AdoptRef(SkColorMatrixFilter::Create(matrix)));
   skia::RefPtr<SkImageFilter> filter = skia::AdoptRef(
       SkColorFilterImageFilter::Create(color_filter.get(), NULL));
   FilterOperations filters;
