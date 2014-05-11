@@ -5,10 +5,10 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "9d8a5d5c11468571c5e7f9931d5c1dcd145be4e6",
+          "hash": "08b8ba631d3647e39452d5efaef9fb099815f98d",
           "name": "pnacl-toolchain.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13154/naclsdk_pnacl_linux_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13166/naclsdk_pnacl_linux_x86.tgz"
         }
       ],
       "version": 1
@@ -17,10 +17,10 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "971a09d64dd31476ff41147a952feceb62db3bf3",
+          "hash": "94297d19959b81abfa92874d83484f73ad416c84",
           "name": "pnacl-toolchain.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13154/naclsdk_pnacl_mac_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13166/naclsdk_pnacl_mac_x86.tgz"
         }
       ],
       "version": 1
@@ -29,15 +29,15 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "bd6e50cddaf0e7677a06779c180e16cd742b1ebf",
+          "hash": "4dabd104f15ac0996edf5e69979a3d95393a3622",
           "name": "pnacl-toolchain.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13154/naclsdk_pnacl_win_x86.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-archive2/toolchain/13166/naclsdk_pnacl_win_x86.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": 13154,
-  "revision_hash": "045a7adbe81aa082b2315758d211a72e476b12f7"
+  "revision": 13166,
+  "revision_hash": "d72fc5a19159134cdb5ca5f34048a46bbbc1629c"
 }
