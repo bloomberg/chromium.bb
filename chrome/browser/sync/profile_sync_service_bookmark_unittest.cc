@@ -725,6 +725,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   }
 
  protected:
+  TestingProfile profile_;
   BookmarkModel* model_;
   syncer::TestUserShare test_user_share_;
   scoped_ptr<BookmarkChangeProcessor> change_processor_;
@@ -740,8 +741,6 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   syncer::SyncMergeResult local_merge_result_;
   syncer::SyncMergeResult syncer_merge_result_;
-
-  TestingProfile profile_;
 };
 
 TEST_F(ProfileSyncServiceBookmarkTest, InitialState) {
@@ -2134,6 +2133,39 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, PersistenceError) {
 
   // Upon association, bookmarks should fail to associate.
   EXPECT_FALSE(AssociateModels());
+}
+
+// It's possible for update/add calls from the bookmark model to be out of
+// order, or asynchronous. Handle that without triggering an error.
+TEST_F(ProfileSyncServiceBookmarkTest, UpdateThenAdd) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
+  StartSync();
+
+  EXPECT_TRUE(other_bookmarks_id());
+  EXPECT_TRUE(bookmark_bar_id());
+  EXPECT_TRUE(mobile_bookmarks_id());
+
+  ExpectModelMatch();
+
+  // Now destroy the change processor then add a bookmark, to simulate
+  // missing the Update call.
+  change_processor_.reset();
+  const BookmarkNode* node = model_->AddURL(model_->bookmark_bar_node(),
+                                            0,
+                                            base::ASCIIToUTF16("title"),
+                                            GURL("http://www.url.com"));
+
+  // Recreate the change processor then update that bookmark. Sync should
+  // receive the update call and gracefully treat that as if it were an add.
+  change_processor_.reset(new BookmarkChangeProcessor(
+      &profile_, model_associator_.get(), &mock_error_handler_));
+  change_processor_->Start(test_user_share_.user_share());
+  model_->SetTitle(node, base::ASCIIToUTF16("title2"));
+  ExpectModelMatch();
+
+  // Then simulate the add call arriving late.
+  change_processor_->BookmarkNodeAdded(model_, model_->bookmark_bar_node(), 0);
+  ExpectModelMatch();
 }
 
 }  // namespace
