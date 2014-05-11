@@ -36,8 +36,10 @@ vorbis-packet-3  - timestamp: 2902ms, duration: 0ms
 
 // Encrypted Files
 bear-1280x720-a_frag-cenc.mp4 - A fragmented MP4 version of the audio track of bear-1280x720.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
+bear-1280x720-a_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the audio track of bear-1280x720.mp4 encrypted (ISO CENC) using key ID [1] and key [2] with key rotation [3].
 bear-1280x720-a_frag-cenc_clear-all.mp4 - Same as bear-1280x720-a_frag-cenc.mp4 but no fragments are encrypted.
 bear-1280x720-v_frag-cenc.mp4 - A fragmented MP4 version of the video track of bear-1280x720.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
+bear-1280x720-v_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the video track of bear-1280x720.mp4 encrypted (ISO CENC) using key ID [1] and key [2] with key rotation [3].
 bear-1280x720-v_frag-cenc_clear-all.mp4 - Same as bear-1280x720-v_frag-cenc.mp4 but no fragments are encrypted.
 bear-1280x720-a_frag-cenc_missing-saiz-saio.mp4 - An invalid file similar to bear-1280x720-a_frag-cenc.mp4 but has no saiz and saio boxes. To save space, it has only one encrypted sample.
 bear-320x240-16x9-aspect-av_enc-av.webm - bear-320x240-16x9-aspect.webm with audio & video encrypted using key ID [1] and key [2]
@@ -46,10 +48,15 @@ bear-320x240-av_enc-av_clear-1s.webm - Same as bear-320x240-av_enc-av.webm but w
 bear-320x240-av_enc-av_clear-all.webm - Same as bear-320x240-av_enc-av.webm but with no frames encrypted.
 bear-640x360-av_enc-av.webm - bear-640x360.webm with audio & video encrypted using key ID [1] and key [2].
 bear-640x360-a_frag-cenc.mp4 - A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
+bear-640x360-a_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the audio track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2] with key rotation [3].
 bear-640x360-v_frag-cenc.mp4 - A fragmented MP4 version of the video track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2].
+bear-640x360-v_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the video track of bear-640x360.mp4 encrypted (ISO CENC) using key ID [1] and key [2] with key rotation [3].
 
 [1] 30313233343536373839303132333435
 [2] ebdd62f16814d27b68ef122afce4ae3c
+[3] KeyIds and Keys are created by left rotating key ID [1] and key [2] using
+    std::rotate for every new crypto period. This is only for testing. The
+    actual key rotation algorithm is often much more complicated.
 
 // Container Tests (additional containers derived from bear.ogv)
 bear.ac3    -- created using "avconv -i bear.ogv -f ac3 -b 192k bear.ac3".
