@@ -108,6 +108,7 @@
             'os_crypt/keychain_password_mac_unittest.mm',
             'os_crypt/os_crypt_unittest.cc',
             'password_manager/core/browser/browser_save_password_progress_logger_unittest.cc',
+            'password_manager/core/browser/log_router_unittest.cc',
             'password_manager/core/browser/login_database_unittest.cc',
             'password_manager/core/browser/password_autofill_manager_unittest.cc',
             'password_manager/core/browser/password_form_manager_unittest.cc',
