@@ -4,6 +4,7 @@
 
 #include "apps/shell/app/shell_main_delegate.h"
 
+#include "apps/shell/browser/default_shell_browser_main_delegate.h"
 #include "apps/shell/browser/shell_content_browser_client.h"
 #include "apps/shell/common/shell_content_client.h"
 #include "apps/shell/renderer/shell_content_renderer_client.h"
@@ -65,7 +66,8 @@ void ShellMainDelegate::PreSandboxStartup() {
 }
 
 content::ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(new apps::ShellContentBrowserClient);
+  browser_client_.reset(
+      new apps::ShellContentBrowserClient(CreateShellBrowserMainDelegate()));
   return browser_client_.get();
 }
 
@@ -73,6 +75,10 @@ content::ContentRendererClient*
 ShellMainDelegate::CreateContentRendererClient() {
   renderer_client_.reset(new ShellContentRendererClient);
   return renderer_client_.get();
+}
+
+ShellBrowserMainDelegate* ShellMainDelegate::CreateShellBrowserMainDelegate() {
+  return new DefaultShellBrowserMainDelegate();
 }
 
 // static

@@ -225,6 +225,11 @@
             '../apps/shell/app_shell.gyp:*',
           ],
         }],
+        ['chromeos==1', {
+          'dependencies': [
+            '../athena/main/athena_main.gyp:*',
+          ],
+        }],
       ],
     }, # target_name: All
     {
@@ -1202,6 +1207,7 @@
             ['chromeos==1', {
               'dependencies': [
                 '../chromeos/chromeos.gyp:chromeos_unittests',
+                '../athena/main/athena_main.gyp:*',
               ],
             }],
             ['use_ozone==1', {

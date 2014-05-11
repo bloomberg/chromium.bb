@@ -1,2 +1,6 @@
 # Please do not add dependency to chrome/ and its subdirectories
 
+include_rules = [
+  # Components within athena must state their dependencies explicitly.
+  "-athena",
+]

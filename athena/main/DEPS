@@ -1,0 +1,5 @@
+include_rules = [
+  "+apps/shell/app",
+  "+apps/shell/browser",
+  "+content/public/app",
+]

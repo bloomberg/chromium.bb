@@ -19,12 +19,14 @@ class Extension;
 }
 
 namespace apps {
+class ShellBrowserMainDelegate;
 class ShellBrowserMainParts;
 
 // Content module browser process support for app_shell.
 class ShellContentBrowserClient : public content::ContentBrowserClient {
  public:
-  ShellContentBrowserClient();
+  explicit ShellContentBrowserClient(
+      ShellBrowserMainDelegate* browser_main_delegate);
   virtual ~ShellContentBrowserClient();
 
   // Returns the single instance.
@@ -63,6 +65,9 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
 
   // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* browser_main_parts_;
+
+  // Owned by ShellBrowserMainParts.
+  ShellBrowserMainDelegate* browser_main_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellContentBrowserClient);
 };
