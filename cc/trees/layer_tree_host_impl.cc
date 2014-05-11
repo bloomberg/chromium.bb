@@ -1770,13 +1770,13 @@ void LayerTreeHostImpl::SetNeedsRedraw() {
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
   ManagedMemoryPolicy actual = cached_managed_memory_policy_;
-  // TODO(ernstm): NICE_TO_HAVE is currently triggered for forced GPU
-  // rasterization only. Change the trigger to LTHI::UseGpuRasterization, once
-  // that is implemented.
+  bool any_tree_use_gpu_rasterization =
+      (active_tree_ && active_tree_->use_gpu_rasterization()) ||
+      (pending_tree_ && pending_tree_->use_gpu_rasterization());
   if (debug_state_.rasterize_only_visible_content) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_REQUIRED_ONLY;
-  } else if (settings_.gpu_rasterization_forced) {
+  } else if (any_tree_use_gpu_rasterization) {
     actual.priority_cutoff_when_visible =
         gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
   }

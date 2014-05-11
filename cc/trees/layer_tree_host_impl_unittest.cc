@@ -5767,9 +5767,9 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   int nothing_cutoff_value = ManagedMemoryPolicy::PriorityCutoffToValue(
       gpu::MemoryAllocation::CUTOFF_ALLOW_NOTHING);
 
-  // GPU rasterization should be disabled by default.
-  EXPECT_FALSE(host_impl_->settings().gpu_rasterization_enabled);
-  EXPECT_FALSE(host_impl_->settings().gpu_rasterization_forced);
+  // GPU rasterization should be disabled by default on the tree(s)
+  EXPECT_FALSE(host_impl_->active_tree()->use_gpu_rasterization());
+  EXPECT_TRUE(host_impl_->pending_tree() == NULL);
 
   host_impl_->SetVisible(true);
   host_impl_->SetMemoryPolicy(policy1);
@@ -5784,13 +5784,13 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
   EXPECT_EQ(everything_cutoff_value, current_priority_cutoff_value_);
 
-  // Now enable GPU rasterization and test if we get required only cutoff,
+  // Now enable GPU rasterization and test if we get nice to have cutoff,
   // when visible.
   LayerTreeSettings settings;
-  settings.gpu_rasterization_forced = true;
+  settings.gpu_rasterization_enabled = true;
   host_impl_ = LayerTreeHostImpl::Create(
       settings, this, &proxy_, &stats_instrumentation_, NULL, 0);
-
+  host_impl_->active_tree()->SetUseGpuRasterization(true);
   host_impl_->SetVisible(true);
   host_impl_->SetMemoryPolicy(policy1);
   EXPECT_EQ(policy1.bytes_limit_when_visible, current_limit_bytes_);
