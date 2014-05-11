@@ -51,6 +51,7 @@
 #include "sync/protocol/search_engine_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 typedef SearchHostToURLsMap::TemplateURLSet TemplateURLSet;
 typedef TemplateURLService::SyncDataMap SyncDataMap;
@@ -265,8 +266,7 @@ TemplateURLService::TemplateURLService(Profile* profile)
       pending_synced_default_search_(false),
       dsp_change_origin_(DSP_CHANGE_OTHER),
       default_search_manager_(
-          new DefaultSearchManager(GetPrefs(),
-                                   DefaultSearchManager::ObserverCallback())) {
+          GetPrefs(), DefaultSearchManager::ObserverCallback()) {
   DCHECK(profile_);
   Init(NULL, 0);
 }
@@ -286,7 +286,9 @@ TemplateURLService::TemplateURLService(const Initializer* initializers,
       models_associated_(false),
       processing_syncer_changes_(false),
       pending_synced_default_search_(false),
-      dsp_change_origin_(DSP_CHANGE_OTHER) {
+      dsp_change_origin_(DSP_CHANGE_OTHER),
+      default_search_manager_(
+          GetPrefs(), DefaultSearchManager::ObserverCallback()) {
   Init(initializers, count);
 }
 
@@ -572,7 +574,7 @@ bool TemplateURLService::CanReplaceKeyword(
 void TemplateURLService::FindMatchingKeywords(
     const base::string16& prefix,
     bool support_replacement_only,
-    TemplateURLVector* matches) const {
+    TemplateURLVector* matches) {
   // Sanity check args.
   if (prefix.empty())
     return;
@@ -809,12 +811,10 @@ bool TemplateURLService::CanMakeDefault(const TemplateURL* url) {
 void TemplateURLService::SetUserSelectedDefaultSearchProvider(
     TemplateURL* url) {
   SetDefaultSearchProvider(url);
-  if (default_search_manager_) {
-    if (url)
-      default_search_manager_->SetUserSelectedDefaultSearchEngine(url->data());
-    else
-      default_search_manager_->ClearUserSelectedDefaultSearchEngine();
-  }
+  if (url)
+    default_search_manager_.SetUserSelectedDefaultSearchEngine(url->data());
+  else
+    default_search_manager_.ClearUserSelectedDefaultSearchEngine();
 }
 
 TemplateURL* TemplateURLService::GetDefaultSearchProvider() {
@@ -1167,7 +1167,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         new_changes.push_back(syncer::SyncChange(FROM_HERE,
                                                  syncer::SyncChange::ACTION_ADD,
                                                  sync_data));
-        // Ignore the delete attempt. This means we never end up reseting the
+        // Ignore the delete attempt. This means we never end up resetting the
         // default search provider due to an ACTION_DELETE from sync.
         continue;
       }
@@ -2686,7 +2686,7 @@ void TemplateURLService::EnsureDefaultSearchProviderExists() {
 }
 
 TemplateURL* TemplateURLService::CreateTemplateURLForExtension(
-    const ExtensionKeyword& extension_keyword) const {
+    const ExtensionKeyword& extension_keyword) {
   TemplateURLData data;
   data.short_name = base::UTF8ToUTF16(extension_keyword.extension_name);
   data.SetKeyword(base::UTF8ToUTF16(extension_keyword.extension_keyword));
@@ -2699,7 +2699,7 @@ TemplateURL* TemplateURLService::CreateTemplateURLForExtension(
 
 TemplateURL* TemplateURLService::FindTemplateURLForExtension(
     const std::string& extension_id,
-    TemplateURL::Type type) const {
+    TemplateURL::Type type) {
   DCHECK_NE(TemplateURL::NORMAL, type);
   for (TemplateURLVector::const_iterator i = template_urls_.begin();
        i != template_urls_.end(); ++i) {
