@@ -208,35 +208,6 @@ public class InsertionHandleTest extends ContentShellTestBase {
         assertTrue(handle.getPositionX() < dragToX - 100);
     }
 
-    /**
-     * Tests insertion handle visibility relative to the clipping rectangle.
-     * This is currently not implemented using dragHandleTo, because of issues with
-     * http://crbug.com/169648.
-     */
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
-    public void testInsertionHandleVisiblity() throws Throwable {
-        launchWithUrl(TEXTAREA_DATA_URL);
-        clickNodeToShowInsertionHandle(TEXTAREA_ID);
-
-        InsertionHandleController ihc = getContentViewCore().getInsertionHandleControllerForTest();
-        HandleView handle = ihc.getHandleViewForTest();
-
-        assertTrue(handle.isPositionVisible());
-
-        ihc.setVisibleClippingRectangle(
-                handle.getAdjustedPositionX() + 1, handle.getAdjustedPositionY() + 1,
-                handle.getAdjustedPositionX() + 100, handle.getAdjustedPositionY() + 100);
-
-        assertFalse(handle.isPositionVisible());
-
-        ihc.setVisibleClippingRectangle(
-                handle.getAdjustedPositionX() - 1, handle.getAdjustedPositionY() - 1,
-                handle.getAdjustedPositionX() + 1, handle.getAdjustedPositionY() + 1);
-
-        assertTrue(handle.isPositionVisible());
-    }
-
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();

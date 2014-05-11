@@ -13,7 +13,7 @@ import org.chromium.content.browser.PositionObserver;
 /**
  * CursorController for selecting a range of text.
  */
-public abstract class SelectionHandleController extends CursorController {
+public abstract class SelectionHandleController implements CursorController {
 
     // The following constants match the ones in
     // third_party/WebKit/public/web/WebTextDirection.h

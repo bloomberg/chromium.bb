@@ -681,20 +681,6 @@ void ContentViewCoreImpl::OnSelectionBoundsChanged(
                                                 params.is_anchor_first);
 }
 
-void ContentViewCoreImpl::OnSelectionRootBoundsChanged(
-    const gfx::Rect& bounds) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-
-  ScopedJavaLocalRef<jobject> rect_object(CreateJavaRect(env, bounds));
-  Java_ContentViewCore_setSelectionRootBounds(env,
-                                              obj.obj(),
-                                              rect_object.obj());
-}
-
 void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);

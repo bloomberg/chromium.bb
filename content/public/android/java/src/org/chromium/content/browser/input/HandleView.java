@@ -18,8 +18,6 @@ import android.view.ViewParent;
 import android.view.animation.AnimationUtils;
 import android.widget.PopupWindow;
 
-import com.google.common.annotations.VisibleForTesting;
-
 import org.chromium.content.browser.PositionObserver;
 
 /**
@@ -232,8 +230,7 @@ public class HandleView extends View {
         return mContainer.isShowing();
     }
 
-    @VisibleForTesting
-    boolean isPositionVisible() {
+    private boolean isPositionVisible() {
         // Always show a dragging handle.
         if (mIsDragging) {
             return true;
@@ -253,17 +250,8 @@ public class HandleView extends View {
         final int posX = getContainerPositionX() + (int) mHotspotX;
         final int posY = getContainerPositionY() + (int) mHotspotY;
 
-        boolean result = posX >= clip.left && posX <= clip.right &&
+        return posX >= clip.left && posX <= clip.right &&
                 posY >= clip.top && posY <= clip.bottom;
-
-        final Rect clippingRect = mController.getVisibleClippingRectangle();
-        if (result && clippingRect != null) {
-            // We need to clip against the visible areas as supplied by Blink,
-            // e.g. textaread and text input elements.
-            return clippingRect.contains(getAdjustedPositionX(), getAdjustedPositionY());
-        }
-
-        return result;
     }
 
     // x and y are in physical pixels.

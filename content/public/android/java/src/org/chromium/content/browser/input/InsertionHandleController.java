@@ -23,7 +23,7 @@ import org.chromium.content.browser.PositionObserver;
 /**
  * CursorController for inserting text at the cursor position.
  */
-public abstract class InsertionHandleController extends CursorController {
+public abstract class InsertionHandleController implements CursorController {
 
     /** The handle view, lazily created when first shown */
     private HandleView mHandle;

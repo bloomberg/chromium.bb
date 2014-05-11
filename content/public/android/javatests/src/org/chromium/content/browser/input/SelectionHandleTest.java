@@ -5,7 +5,6 @@
 package org.chromium.content.browser.input;
 
 import android.graphics.Point;
-import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.SystemClock;
 import android.test.FlakyTest;
@@ -29,10 +28,6 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.concurrent.Callable;
 
-/**
- * Tests for the selection handles that allow to select text in both editable and non-editable
- * elements.
- */
 public class SelectionHandleTest extends ContentShellTestBase {
     private static final String META_DISABLE_ZOOM =
         "<meta name=\"viewport\" content=\"" +
@@ -156,76 +151,6 @@ public class SelectionHandleTest extends ContentShellTestBase {
         doSelectionHandleTest(TestPageType.EDITABLE);
     }
 
-    /**
-     * Verifies that the visibility of handles is correct when visible clipping
-     * rectangle is set.
-     */
-    @MediumTest
-    @Feature({ "TextSelection" })
-    public void testEditableSelectionHandlesStartNotVisibleEndVisible() throws Throwable {
-        doSelectionHandleTestVisibility(TestPageType.EDITABLE, false, true, new PointF(.5f, .5f),
-                new PointF(0,1));
-    }
-
-    @MediumTest
-    @Feature({ "TextSelection" })
-    public void testEditableSelectionHandlesStartVisibleEndNotVisible() throws Throwable {
-        doSelectionHandleTestVisibility(TestPageType.EDITABLE, true, false, new PointF(1,0),
-                new PointF(.5f, .5f));
-    }
-
-    @MediumTest
-    @Feature({ "TextSelection" })
-    public void testEditableSelectionHandlesStartVisibleEndVisible() throws Throwable {
-        doSelectionHandleTestVisibility(TestPageType.EDITABLE, true, true, new PointF(1, 0),
-                new PointF(0,1));
-    }
-
-    @MediumTest
-    @Feature({ "TextSelection" })
-    public void testEditableSelectionHandlesStartNotVisibleEndNotVisible() throws Throwable {
-        doSelectionHandleTestVisibility(TestPageType.EDITABLE, false, false, new PointF(1,0),
-                new PointF(1, 0));
-    }
-
-    private void doSelectionHandleTestVisibility(TestPageType pageType,
-            boolean startHandleVisible, boolean endHandleVisible,
-            PointF affineTopLeft, PointF affineBottomRight) throws Throwable {
-        launchWithUrl(pageType.dataUrl);
-
-        clickNodeToShowSelectionHandles(pageType.nodeId);
-        assertWaitForSelectionEditableEquals(pageType.selectionShouldBeEditable);
-
-        HandleView startHandle = getStartHandle();
-        HandleView endHandle = getEndHandle();
-
-        Rect nodeWindowBounds = getNodeBoundsPix(pageType.nodeId);
-
-        int visibleBoundsLeftX = Math.round(affineTopLeft.x * nodeWindowBounds.left
-                + affineTopLeft.y * nodeWindowBounds.right);
-        int visibleBoundsTopY = Math.round(affineTopLeft.x * nodeWindowBounds.top
-                + affineTopLeft.y * nodeWindowBounds.bottom);
-
-        int visibleBoundsRightX = Math.round(affineBottomRight.x * nodeWindowBounds.left
-                + affineBottomRight.y * nodeWindowBounds.right);
-        int visibleBoundsBottomY = Math.round(affineBottomRight.x * nodeWindowBounds.top
-                + affineBottomRight.y * nodeWindowBounds.bottom);
-
-        getContentViewCore().getSelectionHandleControllerForTest().setVisibleClippingRectangle(
-                visibleBoundsLeftX, visibleBoundsTopY, visibleBoundsRightX, visibleBoundsBottomY);
-
-        int leftX = (nodeWindowBounds.left + nodeWindowBounds.centerX()) / 2;
-        int rightX = (nodeWindowBounds.right + nodeWindowBounds.centerX()) / 2;
-
-        int topY = (nodeWindowBounds.top + nodeWindowBounds.centerY()) / 2;
-        int bottomY = (nodeWindowBounds.bottom + nodeWindowBounds.centerY()) / 2;
-
-        dragHandleAndCheckSelectionChange(startHandle, leftX, topY, -1, 0, startHandleVisible);
-        dragHandleAndCheckSelectionChange(endHandle, rightX, bottomY, 0, 1, endHandleVisible);
-
-        clickToDismissHandles();
-    }
-
     private void doSelectionHandleTest(TestPageType pageType) throws Throwable {
         launchWithUrl(pageType.dataUrl);
 
@@ -246,25 +171,23 @@ public class SelectionHandleTest extends ContentShellTestBase {
         int bottomY = (nodeWindowBounds.bottom + nodeWindowBounds.centerY()) / 2;
 
         // Drag start handle up and to the left. The selection start should decrease.
-        dragHandleAndCheckSelectionChange(startHandle, leftX, topY, -1, 0, true);
+        dragHandleAndCheckSelectionChange(startHandle, leftX, topY, -1, 0);
         // Drag end handle down and to the right. The selection end should increase.
-        dragHandleAndCheckSelectionChange(endHandle, rightX, bottomY, 0, 1, true);
+        dragHandleAndCheckSelectionChange(endHandle, rightX, bottomY, 0, 1);
         // Drag start handle back to the middle. The selection start should increase.
-        dragHandleAndCheckSelectionChange(startHandle, centerX, centerY, 1, 0, true);
+        dragHandleAndCheckSelectionChange(startHandle, centerX, centerY, 1, 0);
         // Drag end handle up and to the left past the start handle. Both selection start and end
         // should decrease.
-        dragHandleAndCheckSelectionChange(endHandle, leftX, topY, -1, -1, true);
+        dragHandleAndCheckSelectionChange(endHandle, leftX, topY, -1, -1);
         // Drag start handle down and to the right past the end handle. Both selection start and end
         // should increase.
-        dragHandleAndCheckSelectionChange(startHandle, rightX, bottomY, 1, 1, true);
+        dragHandleAndCheckSelectionChange(startHandle, rightX, bottomY, 1, 1);
 
         clickToDismissHandles();
     }
 
-    private void dragHandleAndCheckSelectionChange(final HandleView handle,
-            final int dragToX, final int dragToY,
-            final int expectedStartChange, final int expectedEndChange,
-            final boolean expectedHandleVisible) throws Throwable {
+    private void dragHandleAndCheckSelectionChange(HandleView handle, int dragToX, int dragToY,
+            final int expectedStartChange, final int expectedEndChange) throws Throwable {
         String initialText = getContentViewCore().getSelectedText();
         final int initialSelectionEnd = getSelectionEnd();
         final int initialSelectionStart = getSelectionStart();
@@ -287,8 +210,6 @@ public class SelectionHandleTest extends ContentShellTestBase {
                     if (expectedEndChange != 0) {
                         if ((int) Math.signum(endChange) != expectedEndChange) return false;
                     }
-
-                    if (expectedHandleVisible != handle.isPositionVisible()) return false;
 
                     return true;
                 }
