@@ -191,12 +191,14 @@ struct SerializeObject {
 // 18: Add referrer policy.
 // 19: Remove target frame id, which was a bad idea, and original url string,
 //         which is no longer used.
+// 20: Add pinch viewport scroll offset, the offset of the pinched zoomed
+//     viewport within the unzoomed main frame.
 //
 // NOTE: If the version is -1, then the pickle contains only a URL string.
 // See ReadPageState.
 //
 const int kMinVersion = 11;
-const int kCurrentVersion = 19;
+const int kCurrentVersion = 20;
 
 // A bunch of convenience functions to read/write to SerializeObjects.  The
 // de-serializers assume the input data will be in the correct format and fall
@@ -510,6 +512,8 @@ void WriteFrameState(
   WriteInteger64(state.item_sequence_number, obj);
   WriteInteger64(state.document_sequence_number, obj);
   WriteInteger(state.referrer_policy, obj);
+  WriteReal(state.pinch_viewport_scroll_offset.x(), obj);
+  WriteReal(state.pinch_viewport_scroll_offset.y(), obj);
 
   bool has_state_object = !state.state_object.is_null();
   WriteBoolean(has_state_object, obj);
@@ -570,6 +574,14 @@ void ReadFrameState(SerializeObject* obj, bool is_top,
   if (obj->version >= 18) {
     state->referrer_policy =
         static_cast<blink::WebReferrerPolicy>(ReadInteger(obj));
+  }
+
+  if (obj->version >= 20) {
+    double x = ReadReal(obj);
+    double y = ReadReal(obj);
+    state->pinch_viewport_scroll_offset = gfx::PointF(x, y);
+  } else {
+    state->pinch_viewport_scroll_offset = gfx::PointF(-1, -1);
   }
 
   bool has_state_object = ReadBoolean(obj);

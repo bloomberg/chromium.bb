@@ -7,6 +7,7 @@
 #include "content/common/page_state_serialization.h"
 #include "content/public/common/page_state.h"
 #include "content/renderer/history_entry.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -88,6 +89,7 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
   state->target = item.target();
   if (!item.stateObject().isNull())
     state->state_object = item.stateObject().toString();
+  state->pinch_viewport_scroll_offset = item.pinchViewportScrollOffset();
   state->scroll_offset = item.scrollOffset();
   state->item_sequence_number = item.itemSequenceNumber();
   state->document_sequence_number =
@@ -131,6 +133,7 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
         WebSerializedScriptValue::fromString(state.state_object));
   }
   item.setDocumentState(state.document_state);
+  item.setPinchViewportScrollOffset(state.pinch_viewport_scroll_offset);
   item.setScrollOffset(state.scroll_offset);
   item.setPageScaleFactor(state.page_scale_factor);
 
