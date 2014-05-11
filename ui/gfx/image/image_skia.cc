@@ -102,6 +102,24 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
     return (read_only_ && !source_.get()) || CalledOnValidThread();
   }
 
+  // Add a new representation. This checks if the scale of the added image
+  // is not 1.0f, and mark the existing rep as scaled to make
+  // the image high DPI aware.
+  void AddRepresentation(const ImageSkiaRep& image) {
+    if (image.scale() != 1.0f) {
+      for (ImageSkia::ImageSkiaReps::iterator it = image_reps_.begin();
+           it < image_reps_.end();
+           ++it) {
+        if (it->unscaled()) {
+          DCHECK_EQ(1.0f, it->scale());
+          it->SetScaled();
+          break;
+        }
+      }
+    }
+    image_reps_.push_back(image);
+  }
+
   // Returns the iterator of the image rep whose density best matches
   // |scale|. If the image for the |scale| doesn't exist in the storage and
   // |storage| is set, it fetches new image by calling
@@ -240,7 +258,7 @@ float ImageSkia::GetMaxSupportedScale() {
 
 // static
 ImageSkia ImageSkia::CreateFrom1xBitmap(const SkBitmap& bitmap) {
-  return ImageSkia(ImageSkiaRep(bitmap, 1.0f));
+  return ImageSkia(ImageSkiaRep(bitmap, 0.0f));
 }
 
 scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {
@@ -278,7 +296,9 @@ void ImageSkia::AddRepresentation(const ImageSkiaRep& image_rep) {
     Init(image_rep);
   } else {
     CHECK(CanModify());
-    storage_->image_reps().push_back(image_rep);
+    // If someone is adding ImageSkia explicitly, check if we should
+    // make the image high DPI aware.
+    storage_->AddRepresentation(image_rep);
   }
 }
 

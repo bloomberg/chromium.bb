@@ -579,6 +579,7 @@ TEST_F(ResourceBundleImageTest, MAYBE_FallbackToNone) {
 
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
   EXPECT_EQ(1u, image_skia->image_reps().size());
+  EXPECT_TRUE(image_skia->image_reps()[0].unscaled());
   EXPECT_EQ(ui::SCALE_FACTOR_100P,
             GetSupportedScaleFactor(image_skia->image_reps()[0].scale()));
 }

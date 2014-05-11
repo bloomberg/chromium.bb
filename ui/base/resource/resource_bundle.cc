@@ -105,6 +105,13 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
     ScaleFactor scale_factor = GetSupportedScaleFactor(scale);
     bool found = rb_->LoadBitmap(resource_id_, &scale_factor,
                                  &image, &fell_back_to_1x);
+    // If the resource is in the package with SCALE_FACTOR_NONE, it
+    // can be used in any scale factor. The image is maked as "unscaled"
+    // so that the ImageSkia do not automatically scale.
+    bool unscaled = scale_factor == ui::SCALE_FACTOR_NONE;
+    if (unscaled)
+      scale_factor = ui::SCALE_FACTOR_100P;
+
     if (!found)
       return gfx::ImageSkiaRep();
 
@@ -115,12 +122,12 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
           skia::ImageOperations::RESIZE_LANCZOS3,
           gfx::ToCeiledInt(image.width() * scale),
           gfx::ToCeiledInt(image.height() * scale));
-    } else {
+    } else if (!unscaled) {
       image = PlatformScaleImage(image,
                                  ui::GetScaleForScaleFactor(scale_factor),
                                  scale);
     }
-    return gfx::ImageSkiaRep(image, scale);
+    return gfx::ImageSkiaRep(image, unscaled ? 0.0f : scale);
   }
 
  private:
@@ -728,13 +735,10 @@ bool ResourceBundle::LoadBitmap(int resource_id,
                                 bool* fell_back_to_1x) const {
   DCHECK(fell_back_to_1x);
   for (size_t i = 0; i < data_packs_.size(); ++i) {
-    // If the resource is in the package with SCALE_FACTOR_NONE, it
-    // can be used in any scale factor, but set 100P in ImageSkia so
-    // that it will be scaled property.
     if (data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE &&
         LoadBitmap(*data_packs_[i], resource_id, bitmap, fell_back_to_1x)) {
-      *scale_factor = ui::SCALE_FACTOR_100P;
       DCHECK(!*fell_back_to_1x);
+      *scale_factor = ui::SCALE_FACTOR_NONE;
       return true;
     }
     if (data_packs_[i]->GetScaleFactor() == *scale_factor &&

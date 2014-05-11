@@ -375,4 +375,19 @@ TEST(ImageSkiaTest, SourceOnThreadTest) {
 // Just in case we ever get lumped together with other compilation units.
 #undef ENABLE_NON_THREAD_SAFE
 
+TEST(ImageSkiaTest, Unscaled) {
+  SkBitmap bitmap;
+
+  // An ImageSkia created with 1x bitmap is unscaled.
+  ImageSkia image_skia = ImageSkia::CreateFrom1xBitmap(bitmap);
+  EXPECT_TRUE(image_skia.GetRepresentation(1.0f).unscaled());
+  ImageSkiaRep rep_2x(Size(100, 100), 2.0f);
+
+  // When reps for other scales are added, the unscaled image
+  // becomes scaled.
+  image_skia.AddRepresentation(rep_2x);
+  EXPECT_FALSE(image_skia.GetRepresentation(1.0f).unscaled());
+  EXPECT_FALSE(image_skia.GetRepresentation(2.0f).unscaled());
+}
+
 }  // namespace gfx
