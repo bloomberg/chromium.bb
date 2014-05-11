@@ -4,51 +4,39 @@
 
 #include "chrome/browser/search/instant_service.h"
 
-#include <vector>
-
-#include "base/logging.h"
-#include "base/prefs/pref_service.h"
-#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/most_visited_tiles_experiment.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
-#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
+#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
-#include "net/url_request/url_request.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/sys_color_change_listener.h"
-#include "url/gurl.h"
 
-using content::BrowserThread;
 
 namespace {
 
@@ -68,11 +56,31 @@ RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
 
 InstantService::InstantService(Profile* profile)
     : profile_(profile),
+      template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       omnibox_start_margin_(chrome::kDisableStartMargin),
       weak_ptr_factory_(this) {
-  // Stub for unit tests.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
+  // The initialization below depends on a typical set of browser threads. Skip
+  // it if we are running in a unit test without the full suite.
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI))
     return;
+
+  // This depends on the existence of the typical browser threads. Therefore it
+  // is only instantiated here (after the check for a UI thread above).
+  instant_io_context_ = new InstantIOContext();
+
+  previous_google_base_url_ =
+      GURL(UIThreadSearchTermsData(profile).GoogleBaseURLValue());
+
+  // TemplateURLService is NULL by default in tests.
+  if (template_url_service_) {
+    template_url_service_->AddObserver(this);
+    const TemplateURL* default_search_provider =
+        template_url_service_->GetDefaultSearchProvider();
+    if (default_search_provider) {
+      previous_default_search_provider_.reset(
+          new TemplateURLData(default_search_provider->data()));
+    }
+  }
 
   ResetInstantSearchPrerenderer();
 
@@ -89,11 +97,10 @@ InstantService::InstantService(Profile* profile)
                    chrome::NOTIFICATION_TOP_SITES_CHANGED,
                    content::Source<history::TopSites>(top_sites));
   }
-  instant_io_context_ = new InstantIOContext();
 
   if (profile_ && profile_->GetResourceContext()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
         base::Bind(&InstantIOContext::SetUserDataOnIO,
                    profile->GetResourceContext(), instant_io_context_));
   }
@@ -122,29 +129,21 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
   content::URLDataSource::Add(
       profile_, new suggestions::SuggestionsSource(profile_));
-
-  profile_pref_registrar_.Init(profile_->GetPrefs());
-  profile_pref_registrar_.Add(
-      prefs::kDefaultSearchProviderID,
-      base::Bind(&InstantService::OnDefaultSearchProviderChanged,
-                 base::Unretained(this)));
-
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
 InstantService::~InstantService() {
+  if (template_url_service_)
+    template_url_service_->RemoveObserver(this);
 }
 
 void InstantService::AddInstantProcess(int process_id) {
   process_ids_.insert(process_id);
 
   if (instant_io_context_.get()) {
-    BrowserThread::PostTask(BrowserThread::IO,
-                            FROM_HERE,
-                            base::Bind(&InstantIOContext::AddInstantProcessOnIO,
-                                       instant_io_context_,
-                                       process_id));
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&InstantIOContext::AddInstantProcessOnIO,
+                   instant_io_context_, process_id));
   }
 }
 
@@ -201,9 +200,8 @@ void InstantService::Shutdown() {
   process_ids_.clear();
 
   if (instant_io_context_.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
         base::Bind(&InstantIOContext::ClearInstantProcessesOnIO,
                    instant_io_context_));
   }
@@ -237,12 +235,6 @@ void InstantService::Observe(int type,
       break;
     }
 #endif  // defined(ENABLE_THEMES)
-    case chrome::NOTIFICATION_GOOGLE_URL_UPDATED: {
-      OnGoogleURLUpdated(
-          content::Source<Profile>(source).ptr(),
-          content::Details<GoogleURLTracker::UpdatedDetails>(details).ptr());
-      break;
-    }
     default:
       NOTREACHED() << "Unexpected notification type in InstantService.";
   }
@@ -263,12 +255,10 @@ void InstantService::OnRendererProcessTerminated(int process_id) {
   process_ids_.erase(process_id);
 
   if (instant_io_context_.get()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
         base::Bind(&InstantIOContext::RemoveInstantProcessOnIO,
-                   instant_io_context_,
-                   process_id));
+                   instant_io_context_, process_id));
   }
 }
 
@@ -403,47 +393,33 @@ void InstantService::OnThemeChanged(ThemeService* theme_service) {
                     ThemeInfoChanged(*theme_info_));
 }
 
-void InstantService::OnGoogleURLUpdated(
-    Profile* profile,
-    GoogleURLTracker::UpdatedDetails* details) {
-  GURL last_prompted_url(
-      profile->GetPrefs()->GetString(prefs::kLastPromptedGoogleURL));
-
-  // See GoogleURLTracker::OnURLFetchComplete().
-  // last_prompted_url.is_empty() indicates very first run of Chrome. So there
-  // is no need to notify, as there won't be any old state.
-  if (last_prompted_url.is_empty())
-    return;
-
-  ResetInstantSearchPrerenderer();
-
-  // Only the scheme changed. Ignore it since we do not prompt the user in this
-  // case.
-  if (net::StripWWWFromHost(details->first) ==
-      net::StripWWWFromHost(details->second))
-    return;
-
-  FOR_EACH_OBSERVER(InstantServiceObserver, observers_, GoogleURLUpdated());
-}
-
-void InstantService::OnDefaultSearchProviderChanged(
-    const std::string& pref_name) {
-  DCHECK_EQ(pref_name, std::string(prefs::kDefaultSearchProviderID));
-  const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
-      profile_)->GetDefaultSearchProvider();
-  if (!template_url) {
-    // A NULL |template_url| could mean either this notification is sent during
-    // the browser start up operation or the user now has no default search
-    // provider. There is no way for the user to reach this state using the
-    // Chrome settings. Only explicitly poking at the DB or bugs in the Sync
-    // could cause that, neither of which we support.
-    return;
+void InstantService::OnTemplateURLServiceChanged() {
+  // Check whether the default search provider was changed.
+  const TemplateURL* template_url =
+      template_url_service_->GetDefaultSearchProvider();
+  bool default_search_provider_changed = !TemplateURL::MatchesData(
+      template_url, previous_default_search_provider_.get());
+  if (default_search_provider_changed) {
+    previous_default_search_provider_.reset(
+        template_url ? new TemplateURLData(template_url->data()) : NULL);
   }
 
-  ResetInstantSearchPrerenderer();
+  // Note that, even if the TemplateURL for the Default Search Provider has not
+  // changed, the effective URLs might change if they reference the Google base
+  // URL. The TemplateURLService will notify us when the effective URL changes
+  // in this way but it's up to us to do the work to check both.
+  GURL google_base_url(UIThreadSearchTermsData(profile_).GoogleBaseURLValue());
+  if (google_base_url != previous_google_base_url_) {
+    previous_google_base_url_ = google_base_url;
+    if (template_url && template_url->HasGoogleBaseURLs())
+      default_search_provider_changed = true;
+  }
 
-  FOR_EACH_OBSERVER(
-      InstantServiceObserver, observers_, DefaultSearchProviderChanged());
+  if (default_search_provider_changed) {
+    ResetInstantSearchPrerenderer();
+    FOR_EACH_OBSERVER(InstantServiceObserver, observers_,
+                      DefaultSearchProviderChanged());
+  }
 }
 
 void InstantService::ResetInstantSearchPrerenderer() {
@@ -451,8 +427,6 @@ void InstantService::ResetInstantSearchPrerenderer() {
     return;
 
   GURL url(chrome::GetSearchResultPrefetchBaseURL(profile_));
-  if (url.is_valid())
-    instant_prerenderer_.reset(new InstantSearchPrerenderer(profile_, url));
-  else
-    instant_prerenderer_.reset();
+  instant_prerenderer_.reset(
+      url.is_valid() ? new InstantSearchPrerenderer(profile_, url) : NULL);
 }

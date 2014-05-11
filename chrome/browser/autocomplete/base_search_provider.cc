@@ -34,6 +34,7 @@
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -97,10 +98,10 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
       this));
   deletion_fetcher_->SetRequestContext(profile->GetRequestContext());
   deletion_fetcher_->Start();
-};
+}
 
 SuggestionDeletionHandler::~SuggestionDeletionHandler() {
-};
+}
 
 void SuggestionDeletionHandler::OnURLFetchComplete(
     const net::URLFetcher* source) {
@@ -108,7 +109,7 @@ void SuggestionDeletionHandler::OnURLFetchComplete(
   callback_.Run(
       source->GetStatus().is_success() && (source->GetResponseCode() == 200),
       this);
-};
+}
 
 // BaseSearchProvider ---------------------------------------------------------
 

@@ -57,32 +57,6 @@ typedef TemplateURLService::SyncDataMap SyncDataMap;
 
 namespace {
 
-bool TemplateURLMatchesData(const TemplateURL* url1,
-                            const TemplateURLData* url2) {
-  if (!url1 || !url2)
-    return !url1 && !url2;
-
-  return (url1->short_name() == url2->short_name) &&
-         url1->HasSameKeywordAs(*url2) &&
-         (url1->url() == url2->url()) &&
-         (url1->suggestions_url() == url2->suggestions_url) &&
-         (url1->instant_url() == url2->instant_url) &&
-         (url1->image_url() == url2->image_url) &&
-         (url1->new_tab_url() == url2->new_tab_url) &&
-         (url1->search_url_post_params() == url2->search_url_post_params) &&
-         (url1->suggestions_url_post_params() ==
-          url2->suggestions_url_post_params) &&
-         (url1->instant_url_post_params() == url2->instant_url_post_params) &&
-         (url1->image_url_post_params() == url2->image_url_post_params) &&
-         (url1->favicon_url() == url2->favicon_url) &&
-         (url1->safe_for_autoreplace() == url2->safe_for_autoreplace) &&
-         (url1->show_in_default_list() == url2->show_in_default_list) &&
-         (url1->input_encodings() == url2->input_encodings) &&
-         (url1->alternate_urls() == url2->alternate_urls) &&
-         (url1->search_terms_replacement_key() ==
-          url2->search_terms_replacement_key);
-}
-
 const char kFirstPotentialEngineHistogramName[] =
     "Search.FirstPotentialEngineCalled";
 
@@ -420,79 +394,6 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
 }
 
 // static
-void TemplateURLService::SaveDefaultSearchProviderToPrefs(
-    const TemplateURL* t_url, PrefService* prefs) {
-  if (!prefs)
-    return;
-
-  bool enabled = false;
-  std::string search_url;
-  std::string suggest_url;
-  std::string instant_url;
-  std::string image_url;
-  std::string new_tab_url;
-  std::string search_url_post_params;
-  std::string suggest_url_post_params;
-  std::string instant_url_post_params;
-  std::string image_url_post_params;
-  std::string icon_url;
-  std::string encodings;
-  std::string short_name;
-  std::string keyword;
-  std::string id_string;
-  std::string prepopulate_id;
-  base::ListValue alternate_urls;
-  std::string search_terms_replacement_key;
-  if (t_url) {
-    DCHECK_EQ(TemplateURL::NORMAL, t_url->GetType());
-    enabled = true;
-    search_url = t_url->url();
-    suggest_url = t_url->suggestions_url();
-    instant_url = t_url->instant_url();
-    image_url = t_url->image_url();
-    new_tab_url = t_url->new_tab_url();
-    search_url_post_params = t_url->search_url_post_params();
-    suggest_url_post_params = t_url->suggestions_url_post_params();
-    instant_url_post_params = t_url->instant_url_post_params();
-    image_url_post_params = t_url->image_url_post_params();
-    GURL icon_gurl = t_url->favicon_url();
-    if (!icon_gurl.is_empty())
-      icon_url = icon_gurl.spec();
-    encodings = JoinString(t_url->input_encodings(), ';');
-    short_name = base::UTF16ToUTF8(t_url->short_name());
-    keyword = base::UTF16ToUTF8(t_url->keyword());
-    id_string = base::Int64ToString(t_url->id());
-    prepopulate_id = base::Int64ToString(t_url->prepopulate_id());
-    for (size_t i = 0; i < t_url->alternate_urls().size(); ++i)
-      alternate_urls.AppendString(t_url->alternate_urls()[i]);
-    search_terms_replacement_key = t_url->search_terms_replacement_key();
-  }
-  prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, enabled);
-  prefs->SetString(prefs::kDefaultSearchProviderSearchURL, search_url);
-  prefs->SetString(prefs::kDefaultSearchProviderSuggestURL, suggest_url);
-  prefs->SetString(prefs::kDefaultSearchProviderInstantURL, instant_url);
-  prefs->SetString(prefs::kDefaultSearchProviderImageURL, image_url);
-  prefs->SetString(prefs::kDefaultSearchProviderNewTabURL, new_tab_url);
-  prefs->SetString(prefs::kDefaultSearchProviderSearchURLPostParams,
-                   search_url_post_params);
-  prefs->SetString(prefs::kDefaultSearchProviderSuggestURLPostParams,
-                   suggest_url_post_params);
-  prefs->SetString(prefs::kDefaultSearchProviderInstantURLPostParams,
-                   instant_url_post_params);
-  prefs->SetString(prefs::kDefaultSearchProviderImageURLPostParams,
-                   image_url_post_params);
-  prefs->SetString(prefs::kDefaultSearchProviderIconURL, icon_url);
-  prefs->SetString(prefs::kDefaultSearchProviderEncodings, encodings);
-  prefs->SetString(prefs::kDefaultSearchProviderName, short_name);
-  prefs->SetString(prefs::kDefaultSearchProviderKeyword, keyword);
-  prefs->SetString(prefs::kDefaultSearchProviderID, id_string);
-  prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID, prepopulate_id);
-  prefs->Set(prefs::kDefaultSearchProviderAlternateURLs, alternate_urls);
-  prefs->SetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
-      search_terms_replacement_key);
-}
-
-// static
 base::string16 TemplateURLService::GenerateKeyword(const GURL& url) {
   DCHECK(url.is_valid());
   // Strip "www." off the front of the keyword; otherwise the keyword won't work
@@ -568,6 +469,79 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
       TemplateURLRef::SearchTermsArgs(
           base::ASCIIToUTF16("blah.blah.blah.blah.blah")),
       search_terms_data, NULL));
+}
+
+void TemplateURLService::SaveDefaultSearchProviderToPrefs(
+    const TemplateURL* t_url,
+    PrefService* prefs) const {
+  if (!prefs || load_failed_)
+    return;
+
+  bool enabled = false;
+  std::string search_url;
+  std::string suggest_url;
+  std::string instant_url;
+  std::string image_url;
+  std::string new_tab_url;
+  std::string search_url_post_params;
+  std::string suggest_url_post_params;
+  std::string instant_url_post_params;
+  std::string image_url_post_params;
+  std::string icon_url;
+  std::string encodings;
+  std::string short_name;
+  std::string keyword;
+  std::string id_string;
+  std::string prepopulate_id;
+  base::ListValue alternate_urls;
+  std::string search_terms_replacement_key;
+  if (t_url) {
+    DCHECK_EQ(TemplateURL::NORMAL, t_url->GetType());
+    enabled = true;
+    search_url = t_url->url();
+    suggest_url = t_url->suggestions_url();
+    instant_url = t_url->instant_url();
+    image_url = t_url->image_url();
+    new_tab_url = t_url->new_tab_url();
+    search_url_post_params = t_url->search_url_post_params();
+    suggest_url_post_params = t_url->suggestions_url_post_params();
+    instant_url_post_params = t_url->instant_url_post_params();
+    image_url_post_params = t_url->image_url_post_params();
+    GURL icon_gurl = t_url->favicon_url();
+    if (!icon_gurl.is_empty())
+      icon_url = icon_gurl.spec();
+    encodings = JoinString(t_url->input_encodings(), ';');
+    short_name = base::UTF16ToUTF8(t_url->short_name());
+    keyword = base::UTF16ToUTF8(t_url->keyword());
+    id_string = base::Int64ToString(t_url->id());
+    prepopulate_id = base::Int64ToString(t_url->prepopulate_id());
+    for (size_t i = 0; i < t_url->alternate_urls().size(); ++i)
+      alternate_urls.AppendString(t_url->alternate_urls()[i]);
+    search_terms_replacement_key = t_url->search_terms_replacement_key();
+  }
+  prefs->SetBoolean(prefs::kDefaultSearchProviderEnabled, enabled);
+  prefs->SetString(prefs::kDefaultSearchProviderSearchURL, search_url);
+  prefs->SetString(prefs::kDefaultSearchProviderSuggestURL, suggest_url);
+  prefs->SetString(prefs::kDefaultSearchProviderInstantURL, instant_url);
+  prefs->SetString(prefs::kDefaultSearchProviderImageURL, image_url);
+  prefs->SetString(prefs::kDefaultSearchProviderNewTabURL, new_tab_url);
+  prefs->SetString(prefs::kDefaultSearchProviderSearchURLPostParams,
+                   search_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderSuggestURLPostParams,
+                   suggest_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderInstantURLPostParams,
+                   instant_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderImageURLPostParams,
+                   image_url_post_params);
+  prefs->SetString(prefs::kDefaultSearchProviderIconURL, icon_url);
+  prefs->SetString(prefs::kDefaultSearchProviderEncodings, encodings);
+  prefs->SetString(prefs::kDefaultSearchProviderName, short_name);
+  prefs->SetString(prefs::kDefaultSearchProviderKeyword, keyword);
+  prefs->SetString(prefs::kDefaultSearchProviderID, id_string);
+  prefs->SetString(prefs::kDefaultSearchProviderPrepopulateID, prepopulate_id);
+  prefs->Set(prefs::kDefaultSearchProviderAlternateURLs, alternate_urls);
+  prefs->SetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
+      search_terms_replacement_key);
 }
 
 bool TemplateURLService::CanReplaceKeyword(
@@ -812,31 +786,15 @@ void TemplateURLService::IncrementUsageCount(TemplateURL* url) {
     return;
   ++url->data_.usage_count;
 
-  if (service_.get())
-    service_.get()->UpdateKeyword(url->data());
+  if (service_)
+    service_->UpdateKeyword(url->data());
 }
 
 void TemplateURLService::ResetTemplateURL(TemplateURL* url,
                                           const base::string16& title,
                                           const base::string16& keyword,
                                           const std::string& search_url) {
-  if (!loaded_)
-    return;
-  DCHECK(!keyword.empty());
-  DCHECK(!search_url.empty());
-  TemplateURLData data(url->data());
-  data.short_name = title;
-  data.SetKeyword(keyword);
-  if (search_url != data.url()) {
-    data.SetURL(search_url);
-    // The urls have changed, reset the favicon url.
-    data.favicon_url = GURL();
-  }
-  data.safe_for_autoreplace = false;
-  data.last_modified = time_provider_();
-  TemplateURL new_url(url->profile(), data);
-  UIThreadSearchTermsData search_terms_data(url->profile());
-  if (UpdateNoNotify(url, new_url, search_terms_data))
+  if (ResetTemplateURLNoNotify(url, title, keyword, search_url))
     NotifyObservers();
 }
 
@@ -860,10 +818,8 @@ void TemplateURLService::SetUserSelectedDefaultSearchProvider(
 }
 
 TemplateURL* TemplateURLService::GetDefaultSearchProvider() {
-  if (loaded_ && !load_failed_)
-    return default_search_provider_;
-  // We're not loaded, rely on the default search provider stored in prefs.
-  return initial_default_search_provider_.get();
+  return (loaded_ && !load_failed_) ?
+      default_search_provider_ : initial_default_search_provider_.get();
 }
 
 bool TemplateURLService::IsSearchResultsPageFromDefaultSearchProvider(
@@ -974,11 +930,10 @@ void TemplateURLService::Load() {
   if (loaded_ || load_handle_)
     return;
 
-  if (!service_.get()) {
+  if (!service_)
     service_ = WebDataService::FromBrowserContext(profile_);
-  }
 
-  if (service_.get()) {
+  if (service_) {
     load_handle_ = service_->GetKeywords(this);
   } else {
     ChangeToLoadedState();
@@ -1005,6 +960,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
     // Results are null if the database went away or (most likely) wasn't
     // loaded.
     load_failed_ = true;
+    service_ = NULL;
     ChangeToLoadedState();
     on_loaded_callbacks_.Notify();
     return;
@@ -1282,6 +1238,15 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
   DCHECK(sync_processor.get());
   DCHECK(sync_error_factory.get());
   syncer::SyncMergeResult merge_result(type);
+
+  // Disable sync if we failed to load.
+  if (load_failed_) {
+    merge_result.set_error(syncer::SyncError(
+        FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+        "Local database load failed.", syncer::SEARCH_ENGINES));
+    return merge_result;
+  }
+
   sync_processor_ = sync_processor.Pass();
   sync_error_factory_ = sync_error_factory.Pass();
 
@@ -1671,8 +1636,8 @@ void TemplateURLService::Init(const Initializer* initializers,
 
   // Request a server check for the correct Google URL if Google is the
   // default search engine and not in headless mode.
-  if (profile_ && initial_default_search_provider_.get() &&
-      initial_default_search_provider_->url_ref().HasGoogleBaseURLs()) {
+  if (profile_ && initial_default_search_provider_ &&
+      initial_default_search_provider_->HasGoogleBaseURLs()) {
     scoped_ptr<base::Environment> env(base::Environment::Create());
     if (!env->HasVar(env_vars::kHeadless))
       GoogleURLTracker::RequestServerCheck(profile_, false);
@@ -1887,7 +1852,7 @@ bool TemplateURLService::UpdateNoNotify(
   if (!existing_turl->sync_guid().empty())
     guid_to_template_map_[existing_turl->sync_guid()] = existing_turl;
 
-  if (service_.get())
+  if (service_)
     service_->UpdateKeyword(existing_turl->data());
 
   // Inform sync of the update.
@@ -1990,8 +1955,7 @@ void TemplateURLService::GoogleBaseURLChanged(const GURL& old_base_url) {
   for (TemplateURLVector::iterator i(template_urls_.begin());
        i != template_urls_.end(); ++i) {
     TemplateURL* t_url = *i;
-    if (t_url->url_ref().HasGoogleBaseURLs() ||
-        t_url->suggestions_url_ref().HasGoogleBaseURLs()) {
+    if (t_url->HasGoogleBaseURLs()) {
       TemplateURL updated_turl(t_url->profile(), t_url->data());
       updated_turl.ResetKeywordIfNecessary(false);
       KeywordToTemplateMap::const_iterator existing_entry =
@@ -2060,13 +2024,12 @@ void TemplateURLService::UpdateDefaultSearch() {
     // The default was managed and remains managed.  Update the default only
     // if it has changed; we don't want to respond to changes triggered by
     // SaveDefaultSearchProviderToPrefs.
-    if (TemplateURLMatchesData(default_search_provider_,
-                               new_default_from_prefs.get()))
+    if (TemplateURL::MatchesData(default_search_provider_,
+                                 new_default_from_prefs.get()))
       return;
     if (!new_default_from_prefs) {
-      // default_search_provider_ can't be NULL otherwise
-      // TemplateURLMatchesData would have returned true.  Remove this now
-      // invalid value.
+      // |default_search_provider_| can't be NULL or MatchesData() would have
+      // returned true.  Remove this now invalid value.
       TemplateURL* old_default = default_search_provider_;
       bool success = SetDefaultSearchProviderNoNotify(NULL);
       DCHECK(success);
@@ -2176,10 +2139,10 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
     // Don't mark the url as edited, otherwise we won't be able to rev the
     // template urls we ship with.
     url->data_.show_in_default_list = true;
-    if (service_.get() && (url->GetType() == TemplateURL::NORMAL))
+    if (service_ && (url->GetType() == TemplateURL::NORMAL))
       service_->UpdateKeyword(url->data());
 
-    if (url->url_ref().HasGoogleBaseURLs()) {
+    if (url->HasGoogleBaseURLs()) {
       GoogleURLTracker::RequestServerCheck(profile_, false);
 #if defined(ENABLE_RLZ)
       RLZTracker::RecordProductEvent(rlz_lib::CHROME,
@@ -2211,7 +2174,7 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
     }
   }
 
-  if (service_.get())
+  if (service_)
     service_->SetDefaultSearchProviderID(url ? url->id() : 0);
 
   // Inform sync the change to the show_in_default_list flag.
@@ -2252,9 +2215,9 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
     } else {
       base::string16 new_keyword =
           UniquifyKeyword(*existing_keyword_turl, false);
-      ResetTemplateURL(existing_keyword_turl,
-                       existing_keyword_turl->short_name(), new_keyword,
-                       existing_keyword_turl->url());
+      ResetTemplateURLNoNotify(existing_keyword_turl,
+                               existing_keyword_turl->short_name(), new_keyword,
+                               existing_keyword_turl->url());
     }
   }
   template_urls_.push_back(template_url);
@@ -2263,7 +2226,7 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
   if (newly_adding &&
       (template_url->GetType() !=
           TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION)) {
-    if (service_.get())
+    if (service_)
       service_->AddKeyword(template_url->data());
 
     // Inform sync of the addition. Note that this will assign a GUID to
@@ -2290,7 +2253,7 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
   template_urls_.erase(i);
 
   if (template_url->GetType() != TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) {
-    if (service_.get())
+    if (service_)
       service_->RemoveKeyword(template_url->id());
 
     // Inform sync of the deletion.
@@ -2313,6 +2276,30 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
 
   // We own the TemplateURL and need to delete it.
   delete template_url;
+}
+
+bool TemplateURLService::ResetTemplateURLNoNotify(
+    TemplateURL* url,
+    const base::string16& title,
+    const base::string16& keyword,
+    const std::string& search_url) {
+  if (!loaded_)
+    return false;
+  DCHECK(!keyword.empty());
+  DCHECK(!search_url.empty());
+  TemplateURLData data(url->data());
+  data.short_name = title;
+  data.SetKeyword(keyword);
+  if (search_url != data.url()) {
+    data.SetURL(search_url);
+    // The urls have changed, reset the favicon url.
+    data.favicon_url = GURL();
+  }
+  data.safe_for_autoreplace = false;
+  data.last_modified = time_provider_();
+  TemplateURL new_url(url->profile(), data);
+  UIThreadSearchTermsData search_terms_data(url->profile());
+  return UpdateNoNotify(url, new_url, search_terms_data);
 }
 
 void TemplateURLService::NotifyObservers() {
@@ -2343,7 +2330,7 @@ void TemplateURLService::RemoveProvidersCreatedByPolicy(
     if (template_url->created_by_policy()) {
       if (template_url == *default_search_provider &&
           is_default_search_managed_ &&
-          TemplateURLMatchesData(template_url, default_from_prefs)) {
+          TemplateURL::MatchesData(template_url, default_from_prefs)) {
         // If the database specified a default search provider that was set
         // by policy, and the default search provider from the preferences
         // is also set by policy and they are the same, keep the entry in the
@@ -2360,7 +2347,7 @@ void TemplateURLService::RemoveProvidersCreatedByPolicy(
         *default_search_provider = NULL;
 
       i = template_urls->erase(i);
-      if (service_.get())
+      if (service_)
         service_->RemoveKeyword(template_url->id());
       delete template_url;
     } else {
@@ -2584,7 +2571,7 @@ void TemplateURLService::PatchMissingSyncGUIDs(
         (template_url->GetType() !=
             TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION)) {
       template_url->data_.sync_guid = base::GenerateGUID();
-      if (service_.get())
+      if (service_)
         service_->UpdateKeyword(template_url->data());
     }
   }
@@ -2613,8 +2600,8 @@ void TemplateURLService::AddTemplateURLsAndSetupDefaultEngine(
   if (is_default_search_managed_) {
     SetTemplateURLs(template_urls);
 
-    if (TemplateURLMatchesData(default_search_provider,
-                               default_from_prefs.get())) {
+    if (TemplateURL::MatchesData(default_search_provider,
+                                 default_from_prefs.get())) {
       // The value from the preferences was previously stored in the database.
       // Reuse it.
     } else {

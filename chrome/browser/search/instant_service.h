@@ -5,44 +5,37 @@
 #ifndef CHROME_BROWSER_SEARCH_INSTANT_SERVICE_H_
 #define CHROME_BROWSER_SEARCH_INSTANT_SERVICE_H_
 
-#include <map>
 #include <set>
-#include <string>
 #include <vector>
 
-#include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
-#include "chrome/common/instant_types.h"
+#include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "url/gurl.h"
 
-class GURL;
 class InstantIOContext;
+struct InstantMostVisitedItem;
+class InstantSearchPrerenderer;
 class InstantServiceObserver;
-class InstantTestBase;
-class InstantServiceTest;
 class Profile;
+struct TemplateURLData;
+class TemplateURLService;
+struct ThemeBackgroundInfo;
 class ThemeService;
 
 namespace content {
 class RenderProcessHost;
 }
 
-namespace net {
-class URLRequest;
-}
-
 // Tracks render process host IDs that are associated with Instant.
 class InstantService : public KeyedService,
-                       public content::NotificationObserver {
+                       public content::NotificationObserver,
+                       public TemplateURLServiceObserver {
  public:
   explicit InstantService(Profile* profile);
   virtual ~InstantService();
@@ -108,15 +101,22 @@ class InstantService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_SearchesFromFakebox);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
-  FRIEND_TEST_ALL_PREFIXES(InstantServiceTest, SendsSearchURLsToRenderer);
+  FRIEND_TEST_ALL_PREFIXES(InstantServiceEnabledTest,
+                           SendsSearchURLsToRenderer);
 
-  // Overridden from KeyedService:
+  // KeyedService:
   virtual void Shutdown() OVERRIDE;
 
-  // Overridden from content::NotificationObserver:
+  // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // TemplateURLServiceObserver:
+  // Caches the previous value of the Default Search Provider and the Google
+  // base URL to filter out changes other than those affecting the Default
+  // Search Provider.
+  virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
   // Called when a renderer process is terminated.
   void OnRendererProcessTerminated(int process_id);
@@ -132,14 +132,13 @@ class InstantService : public KeyedService,
   // Theme changed notification handler.
   void OnThemeChanged(ThemeService* theme_service);
 
-  void OnGoogleURLUpdated(Profile* profile,
-                          GoogleURLTracker::UpdatedDetails* details);
-
-  void OnDefaultSearchProviderChanged(const std::string& pref_name);
-
   void ResetInstantSearchPrerenderer();
 
   Profile* const profile_;
+
+  // The TemplateURLService that we are observing. It will outlive this
+  // InstantService due to the dependency declared in InstantServiceFactory.
+  TemplateURLService* template_url_service_;
 
   // The process ids associated with Instant processes.
   std::set<int> process_ids_;
@@ -158,8 +157,6 @@ class InstantService : public KeyedService,
 
   content::NotificationRegistrar registrar_;
 
-  PrefChangeRegistrar profile_pref_registrar_;
-
   scoped_refptr<InstantIOContext> instant_io_context_;
 
   // Set to NULL if the default search provider does not support Instant.
@@ -167,6 +164,11 @@ class InstantService : public KeyedService,
 
   // Used for Top Sites async retrieval.
   base::WeakPtrFactory<InstantService> weak_ptr_factory_;
+
+  // Used to check whether notifications from TemplateURLService indicate a
+  // change that affects the default search provider.
+  scoped_ptr<TemplateURLData> previous_default_search_provider_;
+  GURL previous_google_base_url_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantService);
 };
