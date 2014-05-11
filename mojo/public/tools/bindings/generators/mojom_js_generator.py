@@ -36,9 +36,9 @@ def JavaScriptDefaultValue(field):
   if field.kind in mojom.PRIMITIVES:
     return _kind_to_javascript_default_value[field.kind]
   if isinstance(field.kind, mojom.Struct):
-    return "null";
+    return "null"
   if isinstance(field.kind, mojom.Array):
-    return "[]";
+    return "[]"
   if isinstance(field.kind, mojom.Interface):
     return _kind_to_javascript_default_value[mojom.MSGPIPE]
   if isinstance(field.kind, mojom.Enum):
@@ -48,11 +48,11 @@ def JavaScriptDefaultValue(field):
 def JavaScriptPayloadSize(packed):
   packed_fields = packed.packed_fields
   if not packed_fields:
-    return 0;
+    return 0
   last_field = packed_fields[-1]
   offset = last_field.offset + last_field.size
   pad = pack.GetPad(offset, 8)
-  return offset + pad;
+  return offset + pad
 
 
 _kind_to_codec_type = {
@@ -92,11 +92,11 @@ def CodecType(kind):
 
 def JavaScriptDecodeSnippet(kind):
   if kind in mojom.PRIMITIVES:
-    return "decodeStruct(%s)" % CodecType(kind);
+    return "decodeStruct(%s)" % CodecType(kind)
   if isinstance(kind, mojom.Struct):
-    return "decodeStructPointer(%s)" % CodecType(kind.name);
+    return "decodeStructPointer(%s)" % CodecType(kind.name)
   if isinstance(kind, mojom.Array):
-    return "decodeArrayPointer(%s)" % CodecType(kind.kind);
+    return "decodeArrayPointer(%s)" % CodecType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return JavaScriptDecodeSnippet(mojom.MSGPIPE)
   if isinstance(kind, mojom.Enum):
@@ -105,28 +105,29 @@ def JavaScriptDecodeSnippet(kind):
 
 def JavaScriptEncodeSnippet(kind):
   if kind in mojom.PRIMITIVES:
-    return "encodeStruct(%s, " % CodecType(kind);
+    return "encodeStruct(%s, " % CodecType(kind)
   if isinstance(kind, mojom.Struct):
-    return "encodeStructPointer(%s, " % CodecType(kind.name);
+    return "encodeStructPointer(%s, " % CodecType(kind.name)
   if isinstance(kind, mojom.Array):
-    return "encodeArrayPointer(%s, " % CodecType(kind.kind);
+    return "encodeArrayPointer(%s, " % CodecType(kind.kind)
   if isinstance(kind, mojom.Interface):
     return JavaScriptEncodeSnippet(mojom.MSGPIPE)
   if isinstance(kind, mojom.Enum):
     return JavaScriptEncodeSnippet(mojom.INT32)
 
+
 def TranslateConstants(token, module):
-  if isinstance(token, mojom.Constant):
-    # Enum constants are constructed like:
-    # NamespaceUid.Struct_Enum.FIELD_NAME
+  if isinstance(token, (mojom.EnumValue, mojom.NamedValue)):
+    # Both variable and enum constants are constructed like:
+    # NamespaceUid.Struct[.Enum].CONSTANT_NAME
     name = []
     if token.imported_from:
       name.append(token.imported_from["unique_name"])
     if token.parent_kind:
-      name.append(token.parent_kind.name + "_" + token.name[0])
-    else:
-      name.append(token.name[0])
-    name.append(token.name[1])
+      name.append(token.parent_kind.name)
+    if isinstance(token, mojom.EnumValue):
+      name.append(token.enum_name)
+    name.append(token.name)
     return ".".join(name)
   return token
 

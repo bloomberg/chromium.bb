@@ -22,6 +22,11 @@
 namespace {{namespace}} {
 {%- endfor %}
 
+{#--- Constants #}
+{%  for constant in module.constants %}
+extern const {{constant.kind|cpp_pod_type}} {{constant.name}};
+{%- endfor %}
+
 {#--- Enums #}
 {%  for enum in enums %}
 {%    include "enum_declaration.tmpl" %}

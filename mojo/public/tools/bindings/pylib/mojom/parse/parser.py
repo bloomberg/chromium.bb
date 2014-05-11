@@ -101,7 +101,8 @@ class Parser(object):
   def p_definition(self, p):
     """definition : struct
                   | interface
-                  | enum"""
+                  | enum
+                  | const"""
     p[0] = p[1]
 
   def p_attribute_section(self, p):
@@ -131,6 +132,7 @@ class Parser(object):
   def p_struct_body(self, p):
     """struct_body : field struct_body
                    | enum struct_body
+                   | const struct_body
                    | """
     if len(p) > 1:
       p[0] = _ListFromConcat(p[1], p[2])
@@ -154,6 +156,7 @@ class Parser(object):
   def p_interface_body(self, p):
     """interface_body : method interface_body
                       | enum interface_body
+                      | const interface_body
                       | """
     if len(p) > 1:
       p[0] = _ListFromConcat(p[1], p[2])
@@ -242,6 +245,10 @@ class Parser(object):
       p[0] = ('ENUM_FIELD', p[1], None)
     else:
       p[0] = ('ENUM_FIELD', p[1], p[3])
+
+  def p_const(self, p):
+    """const : CONST typename NAME EQUALS expression SEMI"""
+    p[0] = ('CONST', p[2], p[3], p[5])
 
   ### Expressions ###
 

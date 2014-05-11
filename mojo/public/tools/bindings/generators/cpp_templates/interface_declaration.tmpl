@@ -15,6 +15,11 @@ class {{interface.name}} {
   typedef mojo::NoInterface Client_;
 {% endif %}
 
+{#--- Constants #}
+{%- for constant in interface.constants %}
+  static const {{constant.kind|cpp_pod_type}} {{constant.name}};
+{%- endfor %}
+
 {#--- Enums #}
 {%- for enum in interface.enums %}
 {%    macro enum_def() %}{% include "enum_declaration.tmpl" %}{% endmacro %}

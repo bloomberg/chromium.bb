@@ -60,18 +60,31 @@ PRIMITIVES = (
 )
 
 
-class Constant(object):
-  def __init__(self, module, enum, field):
+class NamedValue(object):
+  def __init__(self, module, parent_kind, name):
     self.module = module
     self.namespace = module.namespace
-    self.parent_kind = enum.parent_kind
-    self.name = [enum.name, field.name]
+    self.parent_kind = parent_kind
+    self.name = name
     self.imported_from = None
 
   def GetSpec(self):
     return (self.namespace + '.' +
-        (self.parent_kind and (self.parent_kind.name + '.') or "") + \
-        self.name[1])
+        (self.parent_kind and (self.parent_kind.name + '.') or "") +
+        self.name)
+
+
+class EnumValue(NamedValue):
+  def __init__(self, module, enum, field):
+    NamedValue.__init__(self, module, enum.parent_kind, field.name)
+    self.enum_name = enum.name
+
+
+class Constant(object):
+  def __init__(self, name=None, kind=None, value=None):
+    self.name = name
+    self.kind = kind
+    self.value = value
 
 
 class Field(object):

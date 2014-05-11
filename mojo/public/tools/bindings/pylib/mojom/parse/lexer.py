@@ -67,6 +67,7 @@ class Lexer(object):
     'STRUCT',
     'INTERFACE',
     'ENUM',
+    'CONST',
   )
 
   keyword_map = {}

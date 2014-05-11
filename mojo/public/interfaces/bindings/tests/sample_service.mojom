@@ -8,6 +8,8 @@ import "sample_import2.mojom"
 [JavaPackage="org.chromium.mojo.bindings.test"]
 module sample {
 
+const uint8 kThree = 3;
+
 struct Bar {
   enum Type {
     TYPE_VERTICAL = 1 << 0,
@@ -23,7 +25,8 @@ struct Bar {
 
 [RequiredFields=7]
 struct Foo {
-  string name = "Fooby" @8;
+  const string kFooby = "Fooby";
+  string name = kFooby @8;
   int32 x @0;
   int32 y @1;
   bool a = true @2;
@@ -31,7 +34,7 @@ struct Foo {
   bool c @4;
   Bar bar @5;
   Bar[] extra_bars @7;
-  uint8[] data = [1,2,3] @6;
+  uint8[] data = [1,2,kThree] @6;
   handle<message_pipe> source @9;
   handle<data_pipe_consumer>[] input_streams @10;
   handle<data_pipe_producer>[] output_streams @11;
@@ -59,6 +62,7 @@ interface Service {
     BAZ_REGULAR = 0,
     BAZ_EXTRA
   };
+  const uint8 kFavoriteBaz = 1;
   Frobinate@0(Foo foo @0, BazOptions baz @1, Port port @2);
 };
 

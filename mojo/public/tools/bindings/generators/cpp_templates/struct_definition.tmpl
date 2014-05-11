@@ -1,5 +1,6 @@
 {%- import "struct_macros.tmpl" as struct_macros %}
 {%- set class_name = struct.name ~ "_Data" %}
+
 // static
 {{class_name}}* {{class_name}}::New(mojo::Buffer* buf, mojo::Buffer::Destructor dtor) {
   return new (buf->Allocate(sizeof({{class_name}}), dtor)) {{class_name}}();

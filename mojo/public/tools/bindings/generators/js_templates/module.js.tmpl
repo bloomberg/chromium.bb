@@ -14,9 +14,14 @@ define("{{module.path}}", [
 {%- endfor -%}
 ) {
 
+{#--- Constants #}
+{%  for constant in module.constants %}
+  var {{constant.name}} = {{constant.value|expression_to_text(module)}};
+{%- endfor %}
+
 {#--- Enums #}
-{%  from "enum_definition.tmpl" import enum_def -%}
-{%  for enum in enums %}
+{%- from "enum_definition.tmpl" import enum_def %}
+{%- for enum in enums %}
   var {{ enum_def(enum.name, enum, module) }}
 {%-  endfor %}
 
@@ -31,6 +36,9 @@ define("{{module.path}}", [
 {%- endfor %}
 
   var exports = {};
+{%  for constant in module.constants %}
+  exports.{{constant.name}} = {{constant.name}};
+{%- endfor %}
 {%- for enum in enums %}
   exports.{{enum.name}} = {{enum.name}};
 {%- endfor %}

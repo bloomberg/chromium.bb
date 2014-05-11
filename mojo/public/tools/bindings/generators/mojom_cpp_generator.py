@@ -57,6 +57,11 @@ def GetCppType(kind):
     return "mojo::internal::String_Data*"
   return _kind_to_cpp_type[kind]
 
+def GetCppPodType(kind):
+  if kind.spec == 's':
+    return "char*"
+  return _kind_to_cpp_type[kind]
+
 def GetCppArrayArgWrapperType(kind):
   if isinstance(kind, (mojom.Struct, mojom.Enum)):
     return GetNameForKind(kind)
@@ -148,15 +153,15 @@ def IsStructWithHandles(struct):
   return False
 
 def TranslateConstants(token, module):
-  if isinstance(token, mojom.Constant):
-    # Enum constants are constructed like:
-    # Namespace::Struct::FIELD_NAME
+  if isinstance(token, (mojom.NamedValue, mojom.EnumValue)):
+    # Both variable and enum constants are constructed like:
+    # Namespace::Struct::CONSTANT_NAME
     name = []
     if token.imported_from:
       name.extend(NamespaceToArray(token.namespace))
     if token.parent_kind:
       name.append(token.parent_kind.name)
-    name.append(token.name[1])
+    name.append(token.name)
     return "::".join(name)
   return token
 
@@ -173,8 +178,9 @@ class Generator(generator.Generator):
   cpp_filters = {
     "cpp_const_wrapper_type": GetCppConstWrapperType,
     "cpp_field_type": GetCppFieldType,
-    "cpp_type": GetCppType,
+    "cpp_pod_type": GetCppPodType,
     "cpp_result_type": GetCppResultWrapperType,
+    "cpp_type": GetCppType,
     "cpp_wrapper_type": GetCppWrapperType,
     "expression_to_text": ExpressionToText,
     "get_pad": pack.GetPad,

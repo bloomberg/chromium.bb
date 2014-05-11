@@ -109,3 +109,9 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
   {{enum_def("%sProxy.%s"|format(interface.name, enum.name), enum, module)}}
   {{interface.name}}Stub.{{enum.name}} = {{interface.name}}Proxy.{{enum.name}};
 {%-  endfor %}
+
+{#--- Constants. #}
+{%  for constant in interface.constants %}
+  {{interface.name}}Proxy.{{constant.name}} = {{constant.value|expression_to_text(module)}};
+  {{interface.name}}Stub.{{constant.name}} = {{interface.name}}Proxy.{{constant.name}};
+{%  endfor %}

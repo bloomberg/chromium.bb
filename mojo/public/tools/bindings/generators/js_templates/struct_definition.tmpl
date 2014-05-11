@@ -40,15 +40,23 @@ tmp{{depth}}.{{subfield.name}} = {{result}};
 {%- endmacro %}
 
 {#--- Begin #}
-{#--- Enums. We must define these before the constructor because they
-      may be used there. Later, we alias these to be class static variables. #}
+  function {{struct.name}}() {
+    this.initDefaults_();
+  }
+
+{#--- Enums #}
 {%- from "enum_definition.tmpl" import enum_def %}
 {%  for enum in struct.enums %}
-  var {{enum_def("%s_%s"|format(struct.name, enum.name), enum, module)}}
+  {{enum_def("%s.%s"|format(struct.name, enum.name), enum, module)}}
 {%  endfor %}
 
-{#--- Constructor #}
-  function {{struct.name}}() {
+{#--- Constants #}
+{%  for constant in struct.constants %}
+  {{struct.name}}.{{constant.name}} = {{constant.value|expression_to_text(module)}};
+{%  endfor %}
+
+{#--- Set up defaults #}
+  {{struct.name}}.prototype.initDefaults_ = function() {
 {%- for packed_field in struct.packed.packed_fields %}
 {%- if packed_field.field.default %}
 {%-   filter indent(4) %}
@@ -60,12 +68,7 @@ this.{{packed_field.field.name}} = {{result}};
     this.{{packed_field.field.name}} = {{packed_field.field|default_value}};
 {%- endif %}
 {%- endfor %}
-  }
-
-{#--- Alias any Struct_Enum enums to Struct.Enum #}
-{%  for enum in struct.enums %}
-  {{struct.name}}.{{enum.name}} = {{struct.name}}_{{enum.name}};
-{%- endfor %}
+  };
 
 {#--- Encoding and decoding #}
 

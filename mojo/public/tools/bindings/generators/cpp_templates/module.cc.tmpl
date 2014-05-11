@@ -15,6 +15,12 @@
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {
 {%- endfor %}
+
+{#--- Constants #}
+{%  for constant in module.constants %}
+const {{constant.kind|cpp_pod_type}} {{constant.name}} = {{constant.value|expression_to_text(module)}};
+{%- endfor %}
+
 namespace internal {
 namespace {
 
@@ -49,6 +55,13 @@ const uint32_t {{method_name}} = {{method.ordinal}};
 {%- endfor %}
 
 }  // namespace internal
+
+{#--- Struct Constants #}
+{%- for struct in structs %}
+{%     for constant in struct.constants %}
+const {{constant.kind|cpp_pod_type}} {{struct.name}}::{{constant.name}} = {{constant.value|expression_to_text(module)}};
+{%-   endfor %}
+{%- endfor %}
 
 {#--- Struct builder definitions #}
 {%- for struct in structs %}

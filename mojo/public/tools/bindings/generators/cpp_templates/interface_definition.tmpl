@@ -59,6 +59,13 @@ params->{{param.name}}()
   builder.Finish(&message);
 {%- endmacro %}
 
+{#--- Begin #}
+
+{#--- Constants #}
+{%  for constant in interface.constants %}
+const {{constant.kind|cpp_pod_type}} {{interface.name}}::{{constant.name}} = {{constant.value|expression_to_text(module)}};
+{%- endfor %}
+
 {#--- ForwardToCallback definition #}
 {%- for method in interface.methods -%}
 {%-   if method.response_parameters != None %}
