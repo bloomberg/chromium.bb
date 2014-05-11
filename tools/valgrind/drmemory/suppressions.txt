@@ -505,3 +505,10 @@ USER32.dll!CharPrevW
 USER32.dll!DispatchMessageW
 base.dll!base::MessagePumpForUI::ProcessMessageHelper
 base.dll!base::MessagePumpForUI::ProcessNextWindowsMessage
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/372177
+NPCTRL.dll!DllGetClassObject
+NPCTRL.dll!DllGetClassObject
+NPCTRL.dll!DllGetClassObject
+NPCTRL.dll!DllGetClassObject
