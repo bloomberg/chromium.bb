@@ -5,6 +5,7 @@
 #include "mojo/bindings/js/waiting_callback.h"
 
 #include "gin/per_context_data.h"
+#include "mojo/public/cpp/environment/default_async_waiter.h"
 
 namespace mojo {
 namespace js {
@@ -19,6 +20,34 @@ v8::Handle<v8::String> GetHiddenPropertyName(v8::Isolate* isolate) {
 
 gin::WrapperInfo WaitingCallback::kWrapperInfo = { gin::kEmbedderNativeGin };
 
+// static
+gin::Handle<WaitingCallback> WaitingCallback::Create(
+    v8::Isolate* isolate,
+    v8::Handle<v8::Function> callback,
+    mojo::Handle handle,
+    MojoWaitFlags flags) {
+  gin::Handle<WaitingCallback> waiting_callback =
+      gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
+  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
+  waiting_callback->wait_id_ = waiter->AsyncWait(
+      waiter,
+      handle.value(),
+      flags,
+      MOJO_DEADLINE_INDEFINITE,
+      &WaitingCallback::CallOnHandleReady,
+      waiting_callback.get());
+  return waiting_callback;
+}
+
+void WaitingCallback::Cancel() {
+  if (!wait_id_)
+    return;
+
+  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter();
+  waiter->CancelWait(waiter, wait_id_);
+  wait_id_ = 0;
+}
+
 WaitingCallback::WaitingCallback(v8::Isolate* isolate,
                                  v8::Handle<v8::Function> callback)
       : wait_id_() {
@@ -28,12 +57,7 @@ WaitingCallback::WaitingCallback(v8::Isolate* isolate,
 }
 
 WaitingCallback::~WaitingCallback() {
-  DCHECK(!wait_id_) << "Waiting callback was destroyed before being cancelled.";
-}
-
-gin::Handle<WaitingCallback> WaitingCallback::Create(
-    v8::Isolate* isolate, v8::Handle<v8::Function> callback) {
-  return gin::CreateHandle(isolate, new WaitingCallback(isolate, callback));
+  Cancel();
 }
 
 // static

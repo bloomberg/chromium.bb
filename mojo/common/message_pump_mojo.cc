@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/common/message_pump_mojo_handler.h"
@@ -154,14 +155,17 @@ void MessagePumpMojo::DoInternalWork(const RunState& run_state, bool block) {
         wait_state.handles[index]);
   } else {
     switch (result) {
-      case MOJO_RESULT_INVALID_ARGUMENT:
+      case MOJO_RESULT_CANCELLED:
       case MOJO_RESULT_FAILED_PRECONDITION:
+      case MOJO_RESULT_INVALID_ARGUMENT:
         RemoveFirstInvalidHandle(wait_state);
         break;
       case MOJO_RESULT_DEADLINE_EXCEEDED:
         break;
       default:
-        NOTREACHED();
+        base::debug::Alias(&result);
+        // Unexpected result is likely fatal, crash so we can determine cause.
+        CHECK(false);
     }
   }
 
@@ -187,7 +191,8 @@ void MessagePumpMojo::RemoveFirstInvalidHandle(const WaitState& wait_state) {
     const MojoResult result =
         Wait(wait_state.handles[i], wait_state.wait_flags[i], 0);
     if (result == MOJO_RESULT_INVALID_ARGUMENT ||
-        result == MOJO_RESULT_FAILED_PRECONDITION) {
+        result == MOJO_RESULT_FAILED_PRECONDITION ||
+        result == MOJO_RESULT_CANCELLED) {
       // Remove the handle first, this way if OnHandleError() tries to remove
       // the handle our iterator isn't invalidated.
       DCHECK(handlers_.find(wait_state.handles[i]) != handlers_.end());

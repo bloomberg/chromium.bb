@@ -9,6 +9,7 @@
 #include "gin/runner.h"
 #include "gin/wrappable.h"
 #include "mojo/public/c/environment/async_waiter.h"
+#include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace js {
@@ -17,24 +18,26 @@ class WaitingCallback : public gin::Wrappable<WaitingCallback> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
+  // Creates a new WaitingCallback.
   static gin::Handle<WaitingCallback> Create(
-      v8::Isolate* isolate, v8::Handle<v8::Function> callback);
+      v8::Isolate* isolate,
+      v8::Handle<v8::Function> callback,
+      mojo::Handle handle,
+      MojoWaitFlags flags);
 
-  MojoAsyncWaitID wait_id() const {
-    return wait_id_;
-  }
-
-  void set_wait_id(MojoAsyncWaitID wait_id) {
-    wait_id_ = wait_id;
-  }
-
-  // MojoAsyncWaitCallback
-  static void CallOnHandleReady(void* closure, MojoResult result);
+  // Cancels the callback. Does nothing if a callback is not pending. This is
+  // implicitly invoked from the destructor but can be explicitly invoked as
+  // necessary.
+  void Cancel();
 
  private:
   WaitingCallback(v8::Isolate* isolate, v8::Handle<v8::Function> callback);
   virtual ~WaitingCallback();
 
+  // Callback from MojoAsyncWaiter. |closure| is the WaitingCallback.
+  static void CallOnHandleReady(void* closure, MojoResult result);
+
+  // Invoked from CallOnHandleReady() (CallOnHandleReady() must be static).
   void OnHandleReady(MojoResult result);
 
   base::WeakPtr<gin::Runner> runner_;
