@@ -2107,6 +2107,7 @@ TEST(HttpResponseHeadersTest, GetProxyBypassInfo) {
               data_reduction_proxy_info.bypass_all);
   }
 }
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 TEST(HttpResponseHeadersTest, IsDataReductionProxyResponse) {
   const struct {
@@ -2182,6 +2183,7 @@ TEST(HttpResponseHeadersTest, IsDataReductionProxyResponse) {
   }
 }
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
 TEST(HttpResponseHeadersTest, GetDataReductionProxyBypassEventType) {
   const struct {
      const char* headers;

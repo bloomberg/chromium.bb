@@ -24,6 +24,7 @@
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/url_pattern.h"
 #include "net/base/url_util.h"
+#include "net/http/http_response_headers.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -31,10 +32,6 @@
 #include "third_party/WebKit/public/web/WebPerformance.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
-
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-#include "net/http/http_response_headers.h"
-#endif
 
 using blink::WebDataSource;
 using blink::WebFrame;
@@ -199,7 +196,6 @@ bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
 // TODO(bengr): Plumb the hostname of the proxy and check if it matches
 // |SPDY_PROXY_AUTH_ORIGIN|.
 bool DataReductionProxyWasUsed(WebFrame* frame) {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
   if (!document_state->was_fetched_via_proxy())
@@ -216,9 +212,6 @@ bool DataReductionProxyWasUsed(WebFrame* frame) {
   scoped_refptr<net::HttpResponseHeaders> response_headers(
       new net::HttpResponseHeaders(headers));
   return response_headers->IsDataReductionProxyResponse();
-#else
-  return false;
-#endif
 }
 
 // Returns true if the provided URL is a referrer string that came from

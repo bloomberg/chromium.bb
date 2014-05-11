@@ -294,11 +294,11 @@ class NET_EXPORT HttpResponseHeaders
   ProxyService::DataReductionProxyBypassEventType
   GetDataReductionProxyBypassEventType(
       DataReductionProxyInfo* proxy_info) const;
+#endif
 
   // Returns true if response headers contain the data reduction proxy Via
   // header value.
   bool IsDataReductionProxyResponse() const;
-#endif
 
   // Creates a Value for use with the NetLog containing the response headers.
   base::Value* NetLogCallback(NetLog::LogLevel log_level) const;

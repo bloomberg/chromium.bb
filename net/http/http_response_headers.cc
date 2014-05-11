@@ -1451,6 +1451,7 @@ bool HttpResponseHeaders::GetDataReductionProxyInfo(
   }
   return false;
 }
+#endif  // SPDY_PROXY_AUTH_ORIGIN
 
 bool HttpResponseHeaders::IsDataReductionProxyResponse() const {
   const size_t kVersionSize = 4;
@@ -1479,6 +1480,7 @@ bool HttpResponseHeaders::IsDataReductionProxyResponse() const {
   return false;
 }
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
 ProxyService::DataReductionProxyBypassEventType
 HttpResponseHeaders::GetDataReductionProxyBypassEventType(
     DataReductionProxyInfo* data_reduction_proxy_info) const {
