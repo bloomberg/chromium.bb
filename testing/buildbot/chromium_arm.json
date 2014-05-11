@@ -1,0 +1,10 @@
+[
+  {
+    "description": ["These tests will be run on an ARM device, which is fairly",
+                    "slow, that's why we run a much smaller set of tests.",
+                    "We run NaCl tests specifically because NaCl contains",
+                    "a lot of architecture-specific code"],
+    "test": "browser_tests",
+    "args": "--gtest-filter='*NaCl*'"
+  }
+]
