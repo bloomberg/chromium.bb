@@ -178,6 +178,8 @@ TEST_F(AccountReconcilorTest, SigninManagerRegistration) {
   signin_manager()->OnExternalSigninCompleted(kTestEmail);
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction());
+
   signin_manager()->SignOut();
   ASSERT_FALSE(reconcilor->IsRegisteredWithTokenService());
 }
