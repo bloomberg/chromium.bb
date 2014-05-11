@@ -629,7 +629,7 @@ void VTTCue::calculateDisplayParameters()
             else
                 m_displayPosition.first = 100 - m_textPosition - m_displaySize / 2;
             break;
-        case NumberOfAlignments:
+        default:
             ASSERT_NOT_REACHED();
         }
     } else {
@@ -646,7 +646,7 @@ void VTTCue::calculateDisplayParameters()
         case Middle:
             m_displayPosition.second = m_textPosition - m_displaySize / 2;
             break;
-        case NumberOfAlignments:
+        default:
             ASSERT_NOT_REACHED();
         }
     }
