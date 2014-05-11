@@ -124,6 +124,8 @@ TEST_F(SigninErrorNotifierTest, NoErrorAuthStatusProviders) {
   ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
 }
 
+#if !defined(OS_WIN)
+// Disabled on Win due to flake. http://crbug.com/372236
 TEST_F(SigninErrorNotifierTest, ErrorAuthStatusProvider) {
   {
     FakeAuthStatusProvider provider(error_controller_);
@@ -140,6 +142,7 @@ TEST_F(SigninErrorNotifierTest, ErrorAuthStatusProvider) {
   // All providers should be removed now.
   ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
 }
+#endif
 
 TEST_F(SigninErrorNotifierTest, AuthStatusProviderErrorTransition) {
   {
@@ -177,6 +180,8 @@ TEST_F(SigninErrorNotifierTest, AuthStatusProviderErrorTransition) {
   }
 }
 
+#if !defined(OS_WIN)
+// Disabled on Win due to flake. http://crbug.com/372236
 // Verify that SigninErrorNotifier ignores certain errors.
 TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
   typedef struct {
@@ -216,6 +221,7 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
     }
   }
 }
+#endif
 
 }  // namespace test
 }  // namespace ash
