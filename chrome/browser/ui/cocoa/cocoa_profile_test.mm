@@ -49,10 +49,6 @@ void CocoaProfileTest::SetUp() {
   profile_ = profile_manager_.CreateTestingProfile("default");
   ASSERT_TRUE(profile_);
 
-  profile_->CreateBookmarkModel(true);
-  test::WaitForBookmarkModelToLoad(
-      BookmarkModelFactory::GetForProfile(profile_));
-
   // TODO(shess): These are needed in case someone creates a browser
   // window off of browser_.  pkasting indicates that other
   // platforms use a stub |BrowserWindow| and thus don't need to do
@@ -62,6 +58,10 @@ void CocoaProfileTest::SetUp() {
       profile_, &TemplateURLServiceFactory::BuildInstanceFor);
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_, &AutocompleteClassifierFactory::BuildInstanceFor);
+
+  profile_->CreateBookmarkModel(true);
+  test::WaitForBookmarkModelToLoad(
+      BookmarkModelFactory::GetForProfile(profile_));
 
   browser_.reset(CreateBrowser());
   ASSERT_TRUE(browser_.get());

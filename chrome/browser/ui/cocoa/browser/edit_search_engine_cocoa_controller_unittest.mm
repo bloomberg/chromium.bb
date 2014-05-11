@@ -84,8 +84,6 @@ class EditSearchEngineControllerTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(profile());
 
-    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile(), &TemplateURLServiceFactory::BuildInstanceFor);
     controller_ =
        [[FakeEditSearchEngineController alloc] initWithProfile:profile()
                                                       delegate:nil

@@ -51,8 +51,9 @@ bool EditSearchEngineController::IsURLValid(
   // If this is going to be the default search engine, it must support
   // replacement.
   if (!template_ref.SupportsReplacement() &&
-      (template_url_ == TemplateURLServiceFactory::GetForProfile(profile_)->
-          GetDefaultSearchProvider()))
+      template_url_ &&
+      template_url_ == TemplateURLServiceFactory::GetForProfile(profile_)->
+          GetDefaultSearchProvider())
     return false;
 
   // Replace any search term with a placeholder string and make sure the
