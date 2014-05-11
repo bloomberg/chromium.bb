@@ -4,8 +4,11 @@
 
 #include "cc/output/software_renderer.h"
 
+#include "base/run_loop.h"
 #include "cc/layers/quad_sink.h"
 #include "cc/output/compositor_frame_metadata.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/output/software_output_device.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -49,6 +52,35 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
 
   // RendererClient implementation.
   virtual void SetFullRootLayerDamage() OVERRIDE {}
+
+  scoped_ptr<SkBitmap> DrawAndCopyOutput(RenderPassList* list,
+                                         float device_scale_factor,
+                                         gfx::Rect device_viewport_rect) {
+    scoped_ptr<SkBitmap> bitmap_result;
+    base::RunLoop loop;
+
+    list->back()->copy_requests.push_back(
+        CopyOutputRequest::CreateBitmapRequest(
+            base::Bind(&SoftwareRendererTest::SaveBitmapResult,
+                       base::Unretained(&bitmap_result),
+                       loop.QuitClosure())));
+
+    renderer()->DrawFrame(list,
+                          device_scale_factor,
+                          device_viewport_rect,
+                          device_viewport_rect,
+                          false);
+    loop.Run();
+    return bitmap_result.Pass();
+  }
+
+  static void SaveBitmapResult(scoped_ptr<SkBitmap>* bitmap_result,
+                               const base::Closure& quit_closure,
+                               scoped_ptr<CopyOutputResult> result) {
+    DCHECK(result->HasBitmap());
+    *bitmap_result = result->TakeBitmap();
+    quit_closure.Run();
+  }
 
  protected:
   LayerTreeSettings settings_;
@@ -96,25 +128,18 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(outer_size);
-  renderer()->DrawFrame(&list,
-                        device_scale_factor,
-                        device_viewport_rect,
-                        device_viewport_rect,
-                        false);
+  scoped_ptr<SkBitmap> output =
+      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+  EXPECT_EQ(outer_rect.width(), output->info().fWidth);
+  EXPECT_EQ(outer_rect.width(), output->info().fHeight);
 
-  SkBitmap output;
-  output.setConfig(
-      SkBitmap::kARGB_8888_Config, outer_rect.width(), outer_rect.height());
-  output.allocPixels();
-  renderer()->GetFramebufferPixels(output.getPixels(), outer_rect);
-
-  EXPECT_EQ(SK_ColorYELLOW, output.getColor(0, 0));
+  EXPECT_EQ(SK_ColorYELLOW, output->getColor(0, 0));
   EXPECT_EQ(SK_ColorYELLOW,
-            output.getColor(outer_size.width() - 1, outer_size.height() - 1));
-  EXPECT_EQ(SK_ColorYELLOW, output.getColor(1, 1));
-  EXPECT_EQ(SK_ColorCYAN, output.getColor(1, 2));
+            output->getColor(outer_size.width() - 1, outer_size.height() - 1));
+  EXPECT_EQ(SK_ColorYELLOW, output->getColor(1, 1));
+  EXPECT_EQ(SK_ColorCYAN, output->getColor(1, 2));
   EXPECT_EQ(SK_ColorCYAN,
-            output.getColor(inner_size.width() - 1, inner_size.height() - 1));
+            output->getColor(inner_size.width() - 1, inner_size.height() - 1));
 }
 
 TEST_F(SoftwareRendererTest, TileQuad) {
@@ -200,24 +225,17 @@ TEST_F(SoftwareRendererTest, TileQuad) {
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(outer_size);
-  renderer()->DrawFrame(&list,
-                        device_scale_factor,
-                        device_viewport_rect,
-                        device_viewport_rect,
-                        false);
+  scoped_ptr<SkBitmap> output =
+      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+  EXPECT_EQ(outer_rect.width(), output->info().fWidth);
+  EXPECT_EQ(outer_rect.width(), output->info().fHeight);
 
-  SkBitmap output;
-  output.setConfig(
-      SkBitmap::kARGB_8888_Config, outer_size.width(), outer_size.height());
-  output.allocPixels();
-  renderer()->GetFramebufferPixels(output.getPixels(), outer_rect);
-
-  EXPECT_EQ(SK_ColorYELLOW, output.getColor(0, 0));
+  EXPECT_EQ(SK_ColorYELLOW, output->getColor(0, 0));
   EXPECT_EQ(SK_ColorYELLOW,
-            output.getColor(outer_size.width() - 1, outer_size.height() - 1));
-  EXPECT_EQ(SK_ColorCYAN, output.getColor(1, 1));
+            output->getColor(outer_size.width() - 1, outer_size.height() - 1));
+  EXPECT_EQ(SK_ColorCYAN, output->getColor(1, 1));
   EXPECT_EQ(SK_ColorCYAN,
-            output.getColor(inner_size.width() - 1, inner_size.height() - 1));
+            output->getColor(inner_size.width() - 1, inner_size.height() - 1));
 }
 
 TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
@@ -281,70 +299,57 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
 
   float device_scale_factor = 1.f;
   gfx::Rect device_viewport_rect(tile_size);
-  renderer()->DrawFrame(&list,
-                        device_scale_factor,
-                        device_viewport_rect,
-                        device_viewport_rect,
-                        false);
-
-  SkBitmap output;
-  output.setConfig(
-      SkBitmap::kARGB_8888_Config, tile_size.width(), tile_size.height());
-  output.allocPixels();
-  renderer()->GetFramebufferPixels(output.getPixels(), tile_rect);
+  scoped_ptr<SkBitmap> output =
+      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+  EXPECT_EQ(tile_rect.width(), output->info().fWidth);
+  EXPECT_EQ(tile_rect.width(), output->info().fHeight);
 
   // Check portion of tile not in visible rect isn't drawn.
   const unsigned int kTransparent = SK_ColorTRANSPARENT;
-  EXPECT_EQ(kTransparent, output.getColor(0, 0));
+  EXPECT_EQ(kTransparent, output->getColor(0, 0));
   EXPECT_EQ(kTransparent,
-            output.getColor(tile_rect.width() - 1, tile_rect.height() - 1));
+            output->getColor(tile_rect.width() - 1, tile_rect.height() - 1));
   EXPECT_EQ(kTransparent,
-            output.getColor(visible_rect.x() - 1, visible_rect.y() - 1));
+            output->getColor(visible_rect.x() - 1, visible_rect.y() - 1));
   EXPECT_EQ(kTransparent,
-            output.getColor(visible_rect.right(), visible_rect.bottom()));
+            output->getColor(visible_rect.right(), visible_rect.bottom()));
   // Ensure visible part is drawn correctly.
-  EXPECT_EQ(SK_ColorCYAN, output.getColor(visible_rect.x(), visible_rect.y()));
+  EXPECT_EQ(SK_ColorCYAN, output->getColor(visible_rect.x(), visible_rect.y()));
   EXPECT_EQ(
       SK_ColorCYAN,
-      output.getColor(visible_rect.right() - 2, visible_rect.bottom() - 2));
+      output->getColor(visible_rect.right() - 2, visible_rect.bottom() - 2));
   // Ensure last visible line is correct.
   EXPECT_EQ(
       SK_ColorYELLOW,
-      output.getColor(visible_rect.right() - 1, visible_rect.bottom() - 1));
+      output->getColor(visible_rect.right() - 1, visible_rect.bottom() - 1));
 }
 
 TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
   float device_scale_factor = 1.f;
-  gfx::Rect viewport_rect(0, 0, 100, 100);
+  gfx::Rect device_viewport_rect(0, 0, 100, 100);
 
   settings_.should_clear_root_render_pass = false;
   InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   RenderPassList list;
 
-  SkBitmap output;
-  output.setConfig(SkBitmap::kARGB_8888_Config,
-                   viewport_rect.width(),
-                   viewport_rect.height());
-  output.allocPixels();
-
   // Draw a fullscreen green quad in a first frame.
   RenderPass::Id root_clear_pass_id(1, 0);
   TestRenderPass* root_clear_pass = AddRenderPass(
-      &list, root_clear_pass_id, viewport_rect, gfx::Transform());
-  AddQuad(root_clear_pass, viewport_rect, SK_ColorGREEN);
+      &list, root_clear_pass_id, device_viewport_rect, gfx::Transform());
+  AddQuad(root_clear_pass, device_viewport_rect, SK_ColorGREEN);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list,
-                        device_scale_factor,
-                        viewport_rect,
-                        viewport_rect,
-                        false);
-  renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
-  EXPECT_EQ(SK_ColorGREEN, output.getColor(0, 0));
+  scoped_ptr<SkBitmap> output =
+      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+  EXPECT_EQ(device_viewport_rect.width(), output->info().fWidth);
+  EXPECT_EQ(device_viewport_rect.width(), output->info().fHeight);
+
+  EXPECT_EQ(SK_ColorGREEN, output->getColor(0, 0));
   EXPECT_EQ(SK_ColorGREEN,
-      output.getColor(viewport_rect.width() - 1, viewport_rect.height() - 1));
+            output->getColor(device_viewport_rect.width() - 1,
+                             device_viewport_rect.height() - 1));
 
   list.clear();
 
@@ -354,40 +359,34 @@ TEST_F(SoftwareRendererTest, ShouldClearRootRenderPass) {
 
   RenderPass::Id root_smaller_pass_id(2, 0);
   TestRenderPass* root_smaller_pass = AddRenderPass(
-      &list, root_smaller_pass_id, viewport_rect, gfx::Transform());
+      &list, root_smaller_pass_id, device_viewport_rect, gfx::Transform());
   AddQuad(root_smaller_pass, smaller_rect, SK_ColorMAGENTA);
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list,
-                        device_scale_factor,
-                        viewport_rect,
-                        viewport_rect,
-                        false);
-  renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
+
+  output = DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+  EXPECT_EQ(device_viewport_rect.width(), output->info().fWidth);
+  EXPECT_EQ(device_viewport_rect.width(), output->info().fHeight);
 
   // If we didn't clear, the borders should still be green.
-  EXPECT_EQ(SK_ColorGREEN, output.getColor(0, 0));
+  EXPECT_EQ(SK_ColorGREEN, output->getColor(0, 0));
   EXPECT_EQ(SK_ColorGREEN,
-      output.getColor(viewport_rect.width() - 1, viewport_rect.height() - 1));
+            output->getColor(device_viewport_rect.width() - 1,
+                             device_viewport_rect.height() - 1));
 
   EXPECT_EQ(SK_ColorMAGENTA,
-            output.getColor(smaller_rect.x(), smaller_rect.y()));
-  EXPECT_EQ(SK_ColorMAGENTA,
-      output.getColor(smaller_rect.right() - 1, smaller_rect.bottom() - 1));
+            output->getColor(smaller_rect.x(), smaller_rect.y()));
+  EXPECT_EQ(
+      SK_ColorMAGENTA,
+      output->getColor(smaller_rect.right() - 1, smaller_rect.bottom() - 1));
 }
 
 TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
   float device_scale_factor = 1.f;
-  gfx::Rect viewport_rect(0, 0, 100, 100);
+  gfx::Rect device_viewport_rect(0, 0, 100, 100);
   InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   RenderPassList list;
-
-  SkBitmap output;
-  output.setConfig(SkBitmap::kARGB_8888_Config,
-                   viewport_rect.width(),
-                   viewport_rect.height());
-  output.allocPixels();
 
   // Pass drawn as inner quad is magenta.
   gfx::Rect smaller_rect(20, 20, 60, 60);
@@ -398,40 +397,40 @@ TEST_F(SoftwareRendererTest, RenderPassVisibleRect) {
 
   // Root pass is green.
   RenderPass::Id root_clear_pass_id(1, 0);
-  TestRenderPass* root_clear_pass =
-      AddRenderPass(&list, root_clear_pass_id, viewport_rect, gfx::Transform());
+  TestRenderPass* root_clear_pass = AddRenderPass(
+      &list, root_clear_pass_id, device_viewport_rect, gfx::Transform());
   AddRenderPassQuad(root_clear_pass, smaller_pass);
-  AddQuad(root_clear_pass, viewport_rect, SK_ColorGREEN);
+  AddQuad(root_clear_pass, device_viewport_rect, SK_ColorGREEN);
 
   // Interior pass quad has smaller visible rect.
   gfx::Rect interior_visible_rect(30, 30, 40, 40);
   root_clear_pass->quad_list[0]->visible_rect = interior_visible_rect;
 
   renderer()->DecideRenderPassAllocationsForFrame(list);
-  renderer()->DrawFrame(&list,
-                        device_scale_factor,
-                        viewport_rect,
-                        viewport_rect,
-                        false);
-  renderer()->GetFramebufferPixels(output.getPixels(), viewport_rect);
 
-  EXPECT_EQ(SK_ColorGREEN, output.getColor(0, 0));
-  EXPECT_EQ(
-      SK_ColorGREEN,
-      output.getColor(viewport_rect.width() - 1, viewport_rect.height() - 1));
+  scoped_ptr<SkBitmap> output =
+      DrawAndCopyOutput(&list, device_scale_factor, device_viewport_rect);
+  EXPECT_EQ(device_viewport_rect.width(), output->info().fWidth);
+  EXPECT_EQ(device_viewport_rect.width(), output->info().fHeight);
+
+  EXPECT_EQ(SK_ColorGREEN, output->getColor(0, 0));
+  EXPECT_EQ(SK_ColorGREEN,
+            output->getColor(device_viewport_rect.width() - 1,
+                             device_viewport_rect.height() - 1));
 
   // Part outside visible rect should remain green.
-  EXPECT_EQ(SK_ColorGREEN, output.getColor(smaller_rect.x(), smaller_rect.y()));
+  EXPECT_EQ(SK_ColorGREEN,
+            output->getColor(smaller_rect.x(), smaller_rect.y()));
   EXPECT_EQ(
       SK_ColorGREEN,
-      output.getColor(smaller_rect.right() - 1, smaller_rect.bottom() - 1));
+      output->getColor(smaller_rect.right() - 1, smaller_rect.bottom() - 1));
 
   EXPECT_EQ(
       SK_ColorMAGENTA,
-      output.getColor(interior_visible_rect.x(), interior_visible_rect.y()));
+      output->getColor(interior_visible_rect.x(), interior_visible_rect.y()));
   EXPECT_EQ(SK_ColorMAGENTA,
-            output.getColor(interior_visible_rect.right() - 1,
-                            interior_visible_rect.bottom() - 1));
+            output->getColor(interior_visible_rect.right() - 1,
+                             interior_visible_rect.bottom() - 1));
 }
 
 }  // namespace
