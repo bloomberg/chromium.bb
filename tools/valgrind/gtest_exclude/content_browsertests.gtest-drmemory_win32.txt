@@ -65,5 +65,10 @@ WebContentsViewAuraTest.ContentWindowClose
 WebKitBrowserTest.PrerenderNoCrash
 WebKitBrowserTest.XsltBadImport
 WebKitBrowserTest.AbortOnEnd
-WebRtcBrowserTests_WebRtcBrowserTest.AddTwoMediaStreamsToOnePC_1
+WebRtcBrowserTests/WebRtcBrowserTest.AddTwoMediaStreamsToOnePC_1
 WorkerTest.SharedWorkerHttpAuth
+#drm-i#1528-c#6
+ResourceFetcherTests.ResourceFetcherDownload
+Http/MediaTest.VideoTulipWebm/0
+RenderViewImplTest.ReloadWhileSwappedOut
+SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
