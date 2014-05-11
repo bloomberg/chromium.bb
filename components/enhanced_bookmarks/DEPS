@@ -1,0 +1,11 @@
+include_rules = [
+  "+components/bookmarks/core",
+  "+sql",
+  "+ui",
+]
+
+specific_include_rules = {
+  "image_store_unittest\.cc": [
+    "+third_party/skia"
+  ],
+}

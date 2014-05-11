@@ -92,6 +92,7 @@
             'domain_reliability/test_util.h',
             'domain_reliability/uploader_unittest.cc',
             'domain_reliability/util_unittest.cc',
+            'enhanced_bookmarks/image_store_unittest.cc',
             'feedback/feedback_uploader_unittest.cc',
             'invalidation/invalidation_logger_unittest.cc',
             'json_schema/json_schema_validator_unittest.cc',
@@ -206,7 +207,7 @@
             # Dependencies of bookmarks
             'components.gyp:bookmarks_core_browser',
             'components.gyp:bookmarks_core_test_support',
-            
+
             # Dependencies of captive_portal
             'components.gyp:captive_portal_test_support',
             '../net/net.gyp:net_test_support',
@@ -226,6 +227,10 @@
 
             # Dependencies of domain_reliability
             'components.gyp:domain_reliability',
+
+            # Dependencies of enhanced_bookmarks
+            'components.gyp:enhanced_bookmarks',
+            'components.gyp:enhanced_bookmarks_test_support',
 
             # Dependencies of feedback
             'components.gyp:feedback_component',

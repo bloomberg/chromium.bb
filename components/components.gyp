@@ -20,6 +20,7 @@
     'data_reduction_proxy.gypi',
     'dom_distiller.gypi',
     'domain_reliability.gypi',
+    'enhanced_bookmarks.gypi',
     'favicon.gypi',
     'favicon_base.gypi',
     'feedback.gypi',  # crbug.com/368738

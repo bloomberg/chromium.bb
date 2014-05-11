@@ -45825,6 +45825,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram_suffixes name="SqliteDatabases" separator=".">
   <suffix name="Activity" label="Activity"/>
   <suffix name="AppCache" label="AppCache"/>
+  <suffix name="BookmarkImages" label="BookmarkImages"/>
   <suffix name="Cookie" label="Cookie"/>
   <suffix name="DatabaseTracker" label="DatabaseTracker"/>
   <suffix name="DomainBoundCerts" label="DomainBoundCerts"/>
