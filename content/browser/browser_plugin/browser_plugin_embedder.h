@@ -32,7 +32,7 @@ class Point;
 namespace content {
 
 class BrowserPluginGuest;
-class BrowserPluginGuestManager;
+class BrowserPluginGuestManagerDelegate;
 class BrowserPluginHostFactory;
 class RenderWidgetHostImpl;
 class WebContentsImpl;
@@ -88,21 +88,21 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   explicit BrowserPluginEmbedder(WebContentsImpl* web_contents);
 
-  BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
+  BrowserPluginGuestManagerDelegate* GetBrowserPluginGuestManager() const;
 
-  bool DidSendScreenRectsCallback(BrowserPluginGuest* guest);
+  bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
 
-  bool SetZoomLevelCallback(double level, BrowserPluginGuest* guest);
+  bool SetZoomLevelCallback(double level, WebContents* guest_web_contents);
 
   bool UnlockMouseIfNecessaryCallback(const NativeWebKeyboardEvent& event,
-                                      BrowserPluginGuest* guest);
+                                      WebContents* guest);
 
   // Called by the content embedder when a guest exists with the provided
   // |instance_id|.
   void OnGuestCallback(int instance_id,
                        const BrowserPluginHostMsg_Attach_Params& params,
                        const base::DictionaryValue* extra_params,
-                       BrowserPluginGuest* guest);
+                       WebContents* guest_web_contents);
 
   // Message handlers.
 

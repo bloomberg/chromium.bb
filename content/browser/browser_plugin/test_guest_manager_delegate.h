@@ -12,6 +12,9 @@
 
 namespace content {
 
+class MessageLoopRunner;
+class WebContentsImpl;
+
 // This class is temporary until BrowserPluginHostTest.* tests are entirely
 // moved out of content.
 class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
@@ -23,6 +26,9 @@ class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
   void AddGuest(int guest_instance_id, WebContents* guest_web_contents);
   void RemoveGuest(int guest_instance_id);
   SiteInstance* GetGuestSiteInstance(const GURL& guest_site);
+
+  // Waits until at least one guest is added to this guest manager.
+  WebContentsImpl* WaitForGuestAdded();
 
   // BrowserPluginGuestManagerDelegate implementation.
   virtual content::WebContents* CreateGuest(
@@ -42,11 +48,13 @@ class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
  private:
   friend struct DefaultSingletonTraits<TestGuestManagerDelegate>;
   TestGuestManagerDelegate();
+
   // Contains guests' WebContents, mapping from their instance ids.
   typedef std::map<int, WebContents*> GuestInstanceMap;
   GuestInstanceMap guest_web_contents_by_instance_id_;
-
+  WebContentsImpl* last_guest_added_;
   int next_instance_id_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestGuestManagerDelegate);
 };

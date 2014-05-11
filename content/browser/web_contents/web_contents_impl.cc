@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
-#include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
@@ -58,6 +57,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
@@ -1414,8 +1414,7 @@ void WebContentsImpl::CreateNewWindow(
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
     int instance_id =
-        BrowserPluginGuestManager::FromBrowserContext(GetBrowserContext())->
-            GetNextInstanceID();
+        GetBrowserContext()->GetGuestManagerDelegate()->GetNextInstanceID();
     WebContentsImpl* new_contents_impl =
         static_cast<WebContentsImpl*>(new_contents);
     BrowserPluginGuest::CreateWithOpener(instance_id,

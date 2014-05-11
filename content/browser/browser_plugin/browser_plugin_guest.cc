@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
-#include "content/browser/browser_plugin/browser_plugin_guest_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -30,6 +29,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -111,12 +111,16 @@ class BrowserPluginGuest::NewWindowRequest : public PermissionRequest {
   virtual ~NewWindowRequest() {}
 
   void RespondInternal(bool should_allow,
-                       BrowserPluginGuest* guest) {
-    if (!guest) {
+                       WebContents* guest_web_contents) {
+    if (!guest_web_contents) {
       VLOG(0) << "Guest not found. Instance ID: " << instance_id_;
       return;
     }
 
+    BrowserPluginGuest* guest =
+        static_cast<WebContentsImpl*>(guest_web_contents)->
+            GetBrowserPluginGuest();
+    DCHECK(guest);
     // If we do not destroy the guest then we allow the new window.
     if (!should_allow)
       guest->Destroy();
@@ -306,7 +310,8 @@ void BrowserPluginGuest::RequestPermission(
 
 BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
     const OpenURLParams& params) {
-  BrowserPluginGuestManager* guest_manager = GetBrowserPluginGuestManager();
+  BrowserPluginGuestManagerDelegate* guest_manager =
+      GetBrowserPluginGuestManager();
 
   // Allocate a new instance ID for the new guest.
   int instance_id = guest_manager->GetNextInstanceID();
@@ -323,12 +328,15 @@ BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
   const std::string& storage_partition_id = site_url.query();
   bool persist_storage =
       site_url.path().find("persist") != std::string::npos;
-  BrowserPluginGuest* new_guest =
+  WebContents* new_guest_web_contents =
       guest_manager->CreateGuest(GetWebContents()->GetSiteInstance(),
                                  instance_id,
                                  storage_partition_id,
                                  persist_storage,
                                  extra_params.Pass());
+  BrowserPluginGuest* new_guest =
+      static_cast<WebContentsImpl*>(new_guest_web_contents)->
+          GetBrowserPluginGuest();
   if (new_guest->delegate_)
     new_guest->delegate_->SetOpener(GetWebContents());
 
@@ -574,10 +582,9 @@ void BrowserPluginGuest::CopyFromCompositingSurface(
           copy_request_id_, src_subrect, dst_size));
 }
 
-BrowserPluginGuestManager*
+BrowserPluginGuestManagerDelegate*
 BrowserPluginGuest::GetBrowserPluginGuestManager() const {
-  return BrowserPluginGuestManager::FromBrowserContext(
-      GetWebContents()->GetBrowserContext());
+  return GetWebContents()->GetBrowserContext()->GetGuestManagerDelegate();
 }
 
 // screen.

@@ -8,10 +8,12 @@
 #include "base/memory/singleton.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/escape.h"
 
 namespace content {
@@ -38,7 +40,8 @@ class GuestWebContentsObserver
 };
 
 TestGuestManagerDelegate::TestGuestManagerDelegate()
-    : next_instance_id_(0) {
+    : last_guest_added_(NULL),
+      next_instance_id_(0) {
 }
 
 TestGuestManagerDelegate::~TestGuestManagerDelegate() {
@@ -47,6 +50,21 @@ TestGuestManagerDelegate::~TestGuestManagerDelegate() {
 // static.
 TestGuestManagerDelegate* TestGuestManagerDelegate::GetInstance() {
   return Singleton<TestGuestManagerDelegate>::get();
+}
+
+WebContentsImpl* TestGuestManagerDelegate::WaitForGuestAdded() {
+  // Check if guests were already created.
+  if (last_guest_added_) {
+    WebContentsImpl* last_guest_added = last_guest_added_;
+    last_guest_added_ = NULL;
+    return last_guest_added;
+  }
+  // Wait otherwise.
+  message_loop_runner_ = new MessageLoopRunner();
+  message_loop_runner_->Run();
+  WebContentsImpl* last_guest_added = last_guest_added_;
+  last_guest_added_ = NULL;
+  return last_guest_added;
 }
 
 content::WebContents* TestGuestManagerDelegate::CreateGuest(
@@ -98,6 +116,9 @@ void TestGuestManagerDelegate::AddGuest(
          guest_web_contents_by_instance_id_.end());
   guest_web_contents_by_instance_id_[guest_instance_id] = guest_web_contents;
   new GuestWebContentsObserver(guest_web_contents);
+  last_guest_added_ = static_cast<WebContentsImpl*>(guest_web_contents);
+  if (message_loop_runner_)
+    message_loop_runner_->Quit();
 }
 
 void TestGuestManagerDelegate::RemoveGuest(

@@ -12,7 +12,6 @@ struct FrameHostMsg_BuffersSwappedACK_Params;
 namespace content {
 
 class BrowserContext;
-class BrowserPluginGuestManager;
 
 // This class filters out incoming IPC messages for the guest renderer process
 // on the IPC thread before other message filters handle them.
@@ -34,7 +33,7 @@ class BrowserPluginMessageFilter : public BrowserMessageFilter {
 
   virtual ~BrowserPluginMessageFilter();
 
-  BrowserPluginGuestManager* GetBrowserPluginGuestManager();
+  void ForwardMessageToGuest(const IPC::Message& message);
 
   void OnSwapBuffersACK(const FrameHostMsg_BuffersSwappedACK_Params& params);
 
