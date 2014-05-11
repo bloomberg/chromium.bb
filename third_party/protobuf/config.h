@@ -1,29 +1,69 @@
+/* Modified for Chromium to support stlport and libc++ adaptively */
 /* config.h.  Generated from config.h.in by configure.  */
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* the name of <hash_set> */
-#define HASH_MAP_CLASS hash_map
+/* We want to detect which header files to include for the unordered (hash)
+   collections standardized in C++11 but first introduced as part of TR1.
+   Specifically, we want to avoid including ext/ headers when using libc++ as
+   it will generate noisy build warnings.
 
-/* the location of <hash_map> */
+   We take a several-tier approach. First, attempt to use clang's __has_include
+   and test for libc++'s configuration header. If that isn't available, include
+   <new> which will define libc++'s version macro (if using libc++).
+
+   There are no really good alternative headers that do less work. For example,
+   ciso646 and cstdbool and commonly recommended, but they both have issues.
+   The first has side effects with MSVC, and the second does not exists on Apple
+   platforms (the system libstdc++ is too old).
+
+   This dynamic check is necessary to allow using this normally dynamically
+   generated header with Chromium's many supported build configurations. It
+   should be expanded to import the right header on other platforms as
+   desired. */
+
+#if defined(__has_include)
+#if __has_include(<__config>)
+#include <__config>
+#else // __has_include(<__config>)
+#include <new>
+#endif // __has_include(<__config>)
+#endif // defined(__has_include)
+
+/* the name of <hash_map> */
+#if defined(_LIBCPP_VERSION)
+#define HASH_MAP_CLASS unordered_map
+#else
+#define HASH_MAP_CLASS hash_map
+#endif
+
+/* the location of <unordered_map> or <hash_map> */
 #if defined(USE_STLPORT)
 #define HASH_MAP_H <hash_map>
+#elif defined(_LIBCPP_VERSION)
+#define HASH_MAP_H <unordered_map>
 #else
 #define HASH_MAP_H <ext/hash_map>
 #endif
 
 /* the namespace of hash_map/hash_set */
-#if defined(USE_STLPORT)
+#if defined(USE_STLPORT) || defined(_LIBCPP_VERSION)
 #define HASH_NAMESPACE std
 #else
 #define HASH_NAMESPACE __gnu_cxx
 #endif
 
 /* the name of <hash_set> */
+#if defined(_LIBCPP_VERSION)
+#define HASH_SET_CLASS unordered_set
+#else
 #define HASH_SET_CLASS hash_set
+#endif
 
-/* the location of <hash_set> */
+/* the location of <unordered_set> or <hash_set> */
 #if defined(USE_STLPORT)
 #define HASH_SET_H <hash_set>
+#elif defined(_LIBCPP_VERSION)
+#define HASH_SET_H <unordered_set>
 #else
 #define HASH_SET_H <ext/hash_set>
 #endif
