@@ -121,13 +121,17 @@ function createMostVisitedLink(params, href, title, text, provider) {
   // working (those with schemes different from http and https). Therefore,
   // navigateContentWindow is being used in order to get all schemes working.
   link.addEventListener('click', function handleNavigation(e) {
-    e.preventDefault();
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
     if ('pos' in params && isFinite(params.pos)) {
       ntpApiHandle.logMostVisitedNavigation(parseInt(params.pos, 10),
                                             provider || '');
     }
-    ntpApiHandle.navigateContentWindow(href, getDispositionFromEvent(e));
+    var isServerSuggestion = 'url' in params;
+    if (!isServerSuggestion) {
+      e.preventDefault();
+      ntpApiHandle.navigateContentWindow(href, getDispositionFromEvent(e));
+    }
+    // Else follow <a> normally, so transition type would be LINK.
   });
 
   return link;
