@@ -68,7 +68,9 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
       uploader_(
-          DomainReliabilityUploader::Create(url_request_context_getter_)) {
+          DomainReliabilityUploader::Create(url_request_context_getter_)),
+      was_cleared_(false),
+      cleared_mode_(MAX_CLEAR_MODE) {
   DCHECK(OnIOThread());
 }
 
@@ -87,13 +89,15 @@ DomainReliabilityMonitor::DomainReliabilityMonitor(
           DomainReliabilityScheduler::Params::GetFromFieldTrialsOrDefaults()),
       dispatcher_(time_.get()),
       uploader_(
-          DomainReliabilityUploader::Create(url_request_context_getter_)) {
+          DomainReliabilityUploader::Create(url_request_context_getter_)),
+      was_cleared_(false),
+      cleared_mode_(MAX_CLEAR_MODE) {
   DCHECK(OnIOThread());
 }
 
 DomainReliabilityMonitor::~DomainReliabilityMonitor() {
   DCHECK(OnIOThread());
-  STLDeleteContainerPairSecondPointers(contexts_.begin(), contexts_.end());
+  ClearContexts();
 }
 
 void DomainReliabilityMonitor::AddBakedInConfigs() {
@@ -128,6 +132,28 @@ void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
     // A request was just using the network, so now is a good time to run any
     // pending and eligible uploads.
     dispatcher_.RunEligibleTasks();
+  }
+}
+
+void DomainReliabilityMonitor::ClearBrowsingData(
+   DomainReliabilityClearMode mode) {
+  DCHECK(OnIOThread());
+
+  was_cleared_ = true;
+  cleared_mode_ = mode;
+
+  switch (mode) {
+    case CLEAR_BEACONS: {
+      ContextMap::const_iterator it;
+      for (it = contexts_.begin(); it != contexts_.end(); ++it)
+        it->second->ClearBeacons();
+      break;
+    };
+    case CLEAR_CONTEXTS:
+      ClearContexts();
+      break;
+    case MAX_CLEAR_MODE:
+      NOTREACHED();
   }
 }
 
@@ -177,6 +203,12 @@ DomainReliabilityContext* DomainReliabilityMonitor::AddContext(
   DCHECK(map_it.second);
 
   return map_it.first->second;
+}
+
+void DomainReliabilityMonitor::ClearContexts() {
+  STLDeleteContainerPairSecondPointers(
+      contexts_.begin(), contexts_.end());
+  contexts_.clear();
 }
 
 void DomainReliabilityMonitor::OnRequestLegComplete(

@@ -23,6 +23,7 @@
         'domain_reliability/baked_in_configs.h',
         'domain_reliability/beacon.cc',
         'domain_reliability/beacon.h',
+        'domain_reliability/clear_mode.h',
         'domain_reliability/config.cc',
         'domain_reliability/config.h',
         'domain_reliability/context.cc',

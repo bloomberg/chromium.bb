@@ -55,6 +55,7 @@
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/domain_reliability/monitor.h"
 #include "components/password_manager/core/browser/password_store.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/attestation/attestation_constants.h"
@@ -189,6 +190,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_cache_(false),
       waiting_for_clear_content_licenses_(false),
       waiting_for_clear_cookies_count_(0),
+      waiting_for_clear_domain_reliability_monitor_(false),
       waiting_for_clear_form_(false),
       waiting_for_clear_history_(false),
       waiting_for_clear_hostname_resolution_cache_(false),
@@ -673,6 +675,20 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       delete_begin_,
       base::Bind(&BrowsingDataRemover::OnClearedNetworkingHistory,
                  base::Unretained(this)));
+
+  if (remove_mask & (REMOVE_COOKIES | REMOVE_HISTORY)) {
+    domain_reliability::DomainReliabilityClearMode mode;
+    if (remove_mask & REMOVE_COOKIES)
+      mode = domain_reliability::CLEAR_CONTEXTS;
+    else
+      mode = domain_reliability::CLEAR_BEACONS;
+
+    waiting_for_clear_domain_reliability_monitor_ = true;
+    profile_->ClearDomainReliabilityMonitor(
+        mode,
+        base::Bind(&BrowsingDataRemover::OnClearedDomainReliabilityMonitor,
+                   base::Unretained(this)));
+  }
 }
 
 void BrowsingDataRemover::AddObserver(Observer* observer) {
@@ -725,6 +741,7 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_autofill_origin_urls_ &&
          !waiting_for_clear_cache_ && !waiting_for_clear_nacl_cache_ &&
          !waiting_for_clear_cookies_count_ && !waiting_for_clear_history_ &&
+         !waiting_for_clear_domain_reliability_monitor_ &&
          !waiting_for_clear_logged_in_predictor_ &&
          !waiting_for_clear_networking_history_ &&
          !waiting_for_clear_server_bound_certs_ &&
@@ -1131,3 +1148,9 @@ void BrowsingDataRemover::OnClearedWebRtcLogs() {
   NotifyAndDeleteIfDone();
 }
 #endif
+
+void BrowsingDataRemover::OnClearedDomainReliabilityMonitor() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  waiting_for_clear_domain_reliability_monitor_ = false;
+  NotifyAndDeleteIfDone();
+}

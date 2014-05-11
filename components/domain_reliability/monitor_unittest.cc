@@ -288,6 +288,44 @@ TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
   EXPECT_EQ(num_baked_in_configs + 1, monitor_.contexts_size_for_testing());
 }
 
+TEST_F(DomainReliabilityMonitorTest, ClearBeacons) {
+  // Initially the monitor should have just the test context, with no beacons.
+  EXPECT_EQ(1u, monitor_.contexts_size_for_testing());
+  EXPECT_EQ(0u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 0u));
+  EXPECT_EQ(0u, CountPendingBeacons(kNeverReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kNeverReportIndex, 0u, 0u));
+
+  // Add a beacon.
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  OnRequestLegComplete(request);
+
+  // Make sure it was added.
+  EXPECT_EQ(1u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 1u, 0u));
+
+  monitor_.ClearBrowsingData(CLEAR_BEACONS);
+
+  // Make sure the beacon was cleared, but not the contexts.
+  EXPECT_EQ(1u, monitor_.contexts_size_for_testing());
+  EXPECT_EQ(0u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 0u));
+  EXPECT_EQ(0u, CountPendingBeacons(kNeverReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kNeverReportIndex, 0u, 0u));
+}
+
+
+TEST_F(DomainReliabilityMonitorTest, ClearContexts) {
+  // Initially the monitor should have just the test context.
+  EXPECT_EQ(1u, monitor_.contexts_size_for_testing());
+
+  monitor_.ClearBrowsingData(CLEAR_CONTEXTS);
+
+  // Clearing contexts should leave the monitor with none.
+  EXPECT_EQ(0u, monitor_.contexts_size_for_testing());
+}
+
 }  // namespace
 
 }  // namespace domain_reliability

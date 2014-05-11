@@ -893,6 +893,14 @@ void TestingProfile::ClearNetworkingHistorySince(
   }
 }
 
+void TestingProfile::ClearDomainReliabilityMonitor(
+    domain_reliability::DomainReliabilityClearMode mode,
+    const base::Closure& completion) {
+  if (!completion.is_null()) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, completion);
+  }
+}
+
 GURL TestingProfile::GetHomePage() {
   return GURL(chrome::kChromeUINewTabURL);
 }

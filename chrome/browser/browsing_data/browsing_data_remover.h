@@ -375,6 +375,8 @@ class BrowsingDataRemover
   void OnClearedWebRtcLogs();
 #endif
 
+  void OnClearedDomainReliabilityMonitor();
+
   // Returns true if we're all done.
   bool AllDone();
 
@@ -422,6 +424,7 @@ class BrowsingDataRemover
   bool waiting_for_clear_content_licenses_;
   // Non-zero if waiting for cookies to be cleared.
   int waiting_for_clear_cookies_count_;
+  bool waiting_for_clear_domain_reliability_monitor_;
   bool waiting_for_clear_form_;
   bool waiting_for_clear_history_;
   bool waiting_for_clear_hostname_resolution_cache_;

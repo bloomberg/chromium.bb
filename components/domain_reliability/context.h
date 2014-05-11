@@ -43,6 +43,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   // but will increment one of the request counters in any case.
   void OnBeacon(const GURL& url, const DomainReliabilityBeacon& beacon);
 
+  // Called to clear browsing data, since beacons are like browsing history.
+  void ClearBeacons();
+
   void GetQueuedDataForTesting(
       size_t resource_index,
       std::vector<DomainReliabilityBeacon>* beacons_out,

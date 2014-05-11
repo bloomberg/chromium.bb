@@ -169,6 +169,21 @@ void DomainReliabilityContext::OnBeacon(const GURL& url,
   UMA_HISTOGRAM_BOOLEAN("DomainReliability.OnBeaconDidEvict", evicted);
 }
 
+void DomainReliabilityContext::ClearBeacons() {
+  ResourceStateVector::iterator it;
+  for (it = states_.begin(); it != states_.end(); ++it) {
+    ResourceState* state = *it;
+    state->beacons.clear();
+    state->successful_requests = 0;
+    state->failed_requests = 0;
+    state->uploading_beacons_size = 0;
+    state->uploading_successful_requests = 0;
+    state->uploading_failed_requests = 0;
+  }
+  beacon_count_ = 0;
+  uploading_beacon_count_ = 0;
+}
+
 void DomainReliabilityContext::GetQueuedDataForTesting(
     size_t resource_index,
     std::vector<DomainReliabilityBeacon>* beacons_out,

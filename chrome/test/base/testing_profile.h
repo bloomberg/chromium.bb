@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/domain_reliability/clear_mode.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace content {
@@ -182,7 +183,7 @@ class TestingProfile : public Profile {
   // Shuts down and nulls out the reference to TopSites.
   void DestroyTopSites();
 
-  // Creates the BookmkarBarModel. If not invoked the bookmark bar model is
+  // Creates the BookmarkBarModel. If not invoked the bookmark bar model is
   // NULL. If |delete_file| is true, the bookmarks file is deleted first, then
   // the model is created. As TestingProfile deletes the directory containing
   // the files used by HistoryService, the boolean only matters if you're
@@ -347,6 +348,9 @@ class TestingProfile : public Profile {
   virtual chrome_browser_net::Predictor* GetNetworkPredictor() OVERRIDE;
   virtual void ClearNetworkingHistorySince(
       base::Time time,
+      const base::Closure& completion) OVERRIDE;
+  virtual void ClearDomainReliabilityMonitor(
+      domain_reliability::DomainReliabilityClearMode mode,
       const base::Closure& completion) OVERRIDE;
   virtual GURL GetHomePage() OVERRIDE;
 

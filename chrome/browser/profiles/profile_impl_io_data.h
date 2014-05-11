@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "components/domain_reliability/clear_mode.h"
 #include "content/public/browser/cookie_store_factory.h"
 
 namespace chrome_browser_net {
@@ -94,6 +95,14 @@ class ProfileImplIOData : public ProfileIOData {
     // it will be posted on the UI thread once the removal process completes.
     void ClearNetworkingHistorySince(base::Time time,
                                      const base::Closure& completion);
+
+    // Clears part or all of the state of the Domain Reliability Monitor. If
+    // |clear_contexts| is true, clears the (site-provided) contexts, which are
+    // cookie-esque; if it is false, clears only the (logged) beacons within
+    // them, which are history-esque.
+    void ClearDomainReliabilityMonitor(
+        domain_reliability::DomainReliabilityClearMode mode,
+        const base::Closure& completion);
 
    private:
     typedef std::map<StoragePartitionDescriptor,
@@ -195,6 +204,10 @@ class ProfileImplIOData : public ProfileIOData {
   // it will be posted on the UI thread once the removal process completes.
   void ClearNetworkingHistorySinceOnIOThread(base::Time time,
                                              const base::Closure& completion);
+
+  void ClearDomainReliabilityMonitorOnIOThread(
+      domain_reliability::DomainReliabilityClearMode mode,
+      const base::Closure& completion);
 
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;

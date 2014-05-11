@@ -310,6 +310,21 @@ void ProfileImplIOData::Handle::ClearNetworkingHistorySince(
           completion));
 }
 
+void ProfileImplIOData::Handle::ClearDomainReliabilityMonitor(
+    domain_reliability::DomainReliabilityClearMode mode,
+    const base::Closure& completion) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  LazyInitialize();
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &ProfileImplIOData::ClearDomainReliabilityMonitorOnIOThread,
+          base::Unretained(io_data_),
+          mode,
+          completion));
+}
+
 void ProfileImplIOData::Handle::LazyInitialize() const {
   if (initialized_)
     return;
@@ -743,4 +758,16 @@ void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(
   transport_security_state()->DeleteAllDynamicDataSince(time);
   DCHECK(http_server_properties_manager_);
   http_server_properties_manager_->Clear(completion);
+}
+
+void ProfileImplIOData::ClearDomainReliabilityMonitorOnIOThread(
+    domain_reliability::DomainReliabilityClearMode mode,
+    const base::Closure& completion) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(initialized());
+
+  if (domain_reliability_monitor_)
+    domain_reliability_monitor_->ClearBrowsingData(mode);
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, completion);
 }

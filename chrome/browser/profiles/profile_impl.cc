@@ -1243,9 +1243,16 @@ chrome_browser_net::Predictor* ProfileImpl::GetNetworkPredictor() {
   return predictor_;
 }
 
-void ProfileImpl::ClearNetworkingHistorySince(base::Time time,
-                                              const base::Closure& completion) {
+void ProfileImpl::ClearNetworkingHistorySince(
+    base::Time time,
+    const base::Closure& completion) {
   io_data_.ClearNetworkingHistorySince(time, completion);
+}
+
+void ProfileImpl::ClearDomainReliabilityMonitor(
+    domain_reliability::DomainReliabilityClearMode mode,
+    const base::Closure& completion) {
+  io_data_.ClearDomainReliabilityMonitor(mode, completion);
 }
 
 GURL ProfileImpl::GetHomePage() {
