@@ -555,6 +555,9 @@ void VTTCue::calculateDisplayParameters()
     // Steps 10.2, 10.3
     m_displayDirection = determineTextDirection(m_vttNodeTree.get());
 
+    if (m_displayDirection == CSSValueRtl)
+        UseCounter::count(document(), UseCounter::VTTCueRenderRtl);
+
     // 10.4 If the text track cue writing direction is horizontal, then let
     // block-flow be 'tb'. Otherwise, if the text track cue writing direction is
     // vertical growing left, then let block-flow be 'lr'. Otherwise, the text
