@@ -931,14 +931,6 @@
           ],
         },
         {
-          # TODO(dpranke): Update the bots to refer to 'chromium_builder_asan'.
-          'target_name': 'chromium_builder_asan_mac',
-          'type': 'none',
-          'dependencies': [
-            'chromium_builder_asan'
-          ],
-        },
-        {
           'target_name': 'chromium_builder_dbg_valgrind_mac',
           'type': 'none',
           'dependencies': [
