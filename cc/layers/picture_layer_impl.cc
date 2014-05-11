@@ -1034,11 +1034,6 @@ bool PictureLayerImpl::ShouldAdjustRasterScale(
   if (was_animating_transform_to_screen_ != animating_transform_to_screen)
     return true;
 
-  if (animating_transform_to_screen &&
-      raster_contents_scale_ != ideal_contents_scale_ &&
-      use_gpu_rasterization())
-    return true;
-
   bool is_pinching = layer_tree_impl()->PinchGestureActive();
   if (is_pinching && raster_page_scale_) {
     // We change our raster scale when it is:
@@ -1133,10 +1128,10 @@ void PictureLayerImpl::RecalculateRasterScales(
   raster_contents_scale_ =
       std::max(raster_contents_scale_, MinimumContentsScale());
 
-  // If we're not re-rasterizing during animation, rasterize at the maximum
+  // Since we're not re-rasterizing during animation, rasterize at the maximum
   // scale that will occur during the animation, if the maximum scale is
   // known.
-  if (animating_transform_to_screen && !use_gpu_rasterization()) {
+  if (animating_transform_to_screen) {
     if (maximum_animation_contents_scale > 0.f) {
       raster_contents_scale_ =
           std::max(raster_contents_scale_, maximum_animation_contents_scale);
