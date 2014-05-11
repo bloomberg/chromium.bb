@@ -1320,34 +1320,6 @@ void RenderViewImpl::OnPauseVideo() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Tell the embedding application that the title of the active page has changed
-void RenderViewImpl::UpdateTitle(WebFrame* frame,
-                                 const base::string16& title,
-                                 WebTextDirection title_direction) {
-  // Ignore all but top level navigations.
-  if (frame->parent())
-    return;
-
-  base::debug::TraceLog::GetInstance()->UpdateProcessLabel(
-      routing_id_, base::UTF16ToUTF8(title));
-
-  base::string16 shortened_title = title.substr(0, kMaxTitleChars);
-  Send(new ViewHostMsg_UpdateTitle(routing_id_, page_id_, shortened_title,
-                                   title_direction));
-}
-
-void RenderViewImpl::UpdateEncoding(WebFrame* frame,
-                                    const std::string& encoding_name) {
-  // Only update main frame's encoding_name.
-  if (webview()->mainFrame() == frame &&
-      last_encoding_name_ != encoding_name) {
-    // Save the encoding name for later comparing.
-    last_encoding_name_ = encoding_name;
-
-    Send(new ViewHostMsg_UpdateEncoding(routing_id_, last_encoding_name_));
-  }
-}
-
 // Sends the last committed session history state to the browser so it will be
 // saved before we navigate to a new page. This must be called *before* the
 // page ID has been updated so we know what it was.
@@ -2239,15 +2211,6 @@ void RenderViewImpl::didClearWindowObject(WebLocalFrame* frame) {
 
   if (command_line.HasSwitch(switches::kEnableMemoryBenchmarking))
     MemoryBenchmarkingExtension::Install(frame);
-}
-
-void RenderViewImpl::didReceiveTitle(WebLocalFrame* frame,
-                                     const WebString& title,
-                                     WebTextDirection direction) {
-  UpdateTitle(frame, title, direction);
-
-  // Also check whether we have new encoding name.
-  UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
 void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,

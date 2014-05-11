@@ -29,6 +29,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "url/gurl.h"
@@ -105,6 +106,20 @@ class DesktopNotificationDelegateImpl : public DesktopNotificationDelegate {
   int render_frame_id_;
   int notification_id_;
 };
+
+// Translate a WebKit text direction into a base::i18n one.
+base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
+    blink::WebTextDirection dir) {
+  switch (dir) {
+    case blink::WebTextDirectionLeftToRight:
+      return base::i18n::LEFT_TO_RIGHT;
+    case blink::WebTextDirectionRightToLeft:
+      return base::i18n::RIGHT_TO_LEFT;
+    default:
+      NOTREACHED();
+      return base::i18n::UNKNOWN_DIRECTION;
+  }
+}
 
 }  // namespace
 
@@ -293,6 +308,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAccessInitialDocument,
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisownOpener, OnDidDisownOpener)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_RequestPermission,
                         OnRequestDesktopNotificationPermission)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Show,
@@ -693,6 +710,28 @@ void RenderFrameHostImpl::OnDidDisownOpener() {
   // This message is only sent for top-level frames. TODO(avi): when frame tree
   // mirroring works correctly, add a check here to enforce it.
   delegate_->DidDisownOpener(this);
+}
+
+void RenderFrameHostImpl::OnUpdateTitle(
+    int32 page_id,
+    const base::string16& title,
+    blink::WebTextDirection title_direction) {
+  // This message is only sent for top-level frames. TODO(avi): when frame tree
+  // mirroring works correctly, add a check here to enforce it.
+  if (title.length() > kMaxTitleChars) {
+    NOTREACHED() << "Renderer sent too many characters in title.";
+    return;
+  }
+
+  delegate_->UpdateTitle(this, page_id, title,
+                         WebTextDirectionToChromeTextDirection(
+                             title_direction));
+}
+
+void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
+  // This message is only sent for top-level frames. TODO(avi): when frame tree
+  // mirroring works correctly, add a check here to enforce it.
+  delegate_->UpdateEncoding(this, encoding_name);
 }
 
 void RenderFrameHostImpl::SetPendingShutdown(const base::Closure& on_swap_out) {

@@ -109,20 +109,6 @@ using blink::WebPluginAction;
 namespace content {
 namespace {
 
-// Translate a WebKit text direction into a base::i18n one.
-base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
-    blink::WebTextDirection dir) {
-  switch (dir) {
-    case blink::WebTextDirectionLeftToRight:
-      return base::i18n::LEFT_TO_RIGHT;
-    case blink::WebTextDirectionRightToLeft:
-      return base::i18n::RIGHT_TO_LEFT;
-    default:
-      NOTREACHED();
-      return base::i18n::UNKNOWN_DIRECTION;
-  }
-}
-
 #if defined(OS_WIN)
 
 const int kVirtualKeyboardDisplayWaitTimeoutMs = 100;
@@ -993,8 +979,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTitle, OnUpdateTitle)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateEncoding, OnUpdateEncoding)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTargetURL, OnUpdateTargetURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateInspectorSetting,
                         OnUpdateInspectorSetting)
@@ -1181,24 +1165,6 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
   }
 
   delegate_->UpdateState(this, page_id, state);
-}
-
-void RenderViewHostImpl::OnUpdateTitle(
-    int32 page_id,
-    const base::string16& title,
-    blink::WebTextDirection title_direction) {
-  if (title.length() > kMaxTitleChars) {
-    NOTREACHED() << "Renderer sent too many characters in title.";
-    return;
-  }
-
-  delegate_->UpdateTitle(this, page_id, title,
-                         WebTextDirectionToChromeTextDirection(
-                             title_direction));
-}
-
-void RenderViewHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
-  delegate_->UpdateEncoding(this, encoding_name);
 }
 
 void RenderViewHostImpl::OnUpdateTargetURL(int32 page_id, const GURL& url) {

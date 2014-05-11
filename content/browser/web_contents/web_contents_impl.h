@@ -343,6 +343,12 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void DidDisownOpener(RenderFrameHost* render_frame_host) OVERRIDE;
   virtual void DocumentOnLoadCompleted(
       RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void UpdateTitle(RenderFrameHost* render_frame_host,
+                           int32 page_id,
+                           const base::string16& title,
+                           base::i18n::TextDirection title_direction) OVERRIDE;
+  virtual void UpdateEncoding(RenderFrameHost* render_frame_host,
+                              const std::string& encoding) OVERRIDE;
   virtual WebContents* GetAsWebContents() OVERRIDE;
   virtual bool IsNeverVisible() OVERRIDE;
 
@@ -363,12 +369,6 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void UpdateState(RenderViewHost* render_view_host,
                            int32 page_id,
                            const PageState& page_state) OVERRIDE;
-  virtual void UpdateTitle(RenderViewHost* render_view_host,
-                           int32 page_id,
-                           const base::string16& title,
-                           base::i18n::TextDirection title_direction) OVERRIDE;
-  virtual void UpdateEncoding(RenderViewHost* render_view_host,
-                              const std::string& encoding) OVERRIDE;
   virtual void UpdateTargetURL(int32 page_id, const GURL& url) OVERRIDE;
   virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RequestMove(const gfx::Rect& new_bounds) OVERRIDE;
@@ -953,8 +953,11 @@ class CONTENT_EXPORT WebContentsImpl
   // used to check whether we can do something for some special contents.
   std::string contents_mime_type_;
 
-  // Character encoding.
-  std::string encoding_;
+  // The last reported character encoding, not canonicalized.
+  std::string last_reported_encoding_;
+
+  // The canonicalized character encoding.
+  std::string canonical_encoding_;
 
   // True if this is a secure page which displayed insecure content.
   bool displayed_insecure_content_;

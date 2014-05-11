@@ -441,6 +441,18 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidAccessInitialDocument)
 // the window. Sent for top-level frames.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidDisownOpener)
 
+// Changes the title for the page in the UI when the page is navigated or the
+// title changes. Sent for top-level frames.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_UpdateTitle,
+                    int32 /* page_id */,
+                    base::string16 /* title */,
+                    blink::WebTextDirection /* title direction */)
+
+// Change the encoding name of the page in UI when the page has detected
+// proper encoding name. Sent for top-level frames.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateEncoding,
+                    std::string /* new encoding name */)
+
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.
 // An instance of browser that has an automation host listening to it can

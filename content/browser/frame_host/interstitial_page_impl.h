@@ -115,6 +115,10 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual bool OnMessageReceived(RenderFrameHost* render_frame_host,
                                  const IPC::Message& message) OVERRIDE;
   virtual void RenderFrameCreated(RenderFrameHost* render_frame_host) OVERRIDE;
+  virtual void UpdateTitle(RenderFrameHost* render_frame_host,
+                           int32 page_id,
+                           const base::string16& title,
+                           base::i18n::TextDirection title_direction) OVERRIDE;
 
   // RenderViewHostDelegate implementation:
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
@@ -124,10 +128,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   virtual void RenderViewTerminated(RenderViewHost* render_view_host,
                                     base::TerminationStatus status,
                                     int error_code) OVERRIDE;
-  virtual void UpdateTitle(RenderViewHost* render_view_host,
-                           int32 page_id,
-                           const base::string16& title,
-                           base::i18n::TextDirection title_direction) OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const OVERRIDE;
   virtual WebPreferences GetWebkitPrefs() OVERRIDE;

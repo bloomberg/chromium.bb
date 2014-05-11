@@ -17,6 +17,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/page_transition_types.h"
+#include "third_party/WebKit/public/web/WebTextDirection.h"
 
 class GURL;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
@@ -226,6 +227,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   void OnCancelDesktopNotification(int notification_id);
   void OnDidAccessInitialDocument();
   void OnDidDisownOpener();
+  void OnUpdateTitle(int32 page_id,
+                     const base::string16& title,
+                     blink::WebTextDirection title_direction);
+  void OnUpdateEncoding(const std::string& encoding);
 
   // Returns whether the given URL is allowed to commit in the current process.
   // This is a more conservative check than RenderProcessHost::FilterURL, since

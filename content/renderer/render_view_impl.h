@@ -658,9 +658,6 @@ class CONTENT_EXPORT RenderViewImpl
   void didCreateDataSource(blink::WebLocalFrame* frame,
                            blink::WebDataSource* datasource);
   void didClearWindowObject(blink::WebLocalFrame* frame);
-  void didReceiveTitle(blink::WebLocalFrame* frame,
-                       const blink::WebString& title,
-                       blink::WebTextDirection direction);
   void didChangeIcon(blink::WebLocalFrame*, blink::WebIconURL::Type);
   void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   void didChangeScrollOffset(blink::WebLocalFrame* frame);
@@ -674,26 +671,8 @@ class CONTENT_EXPORT RenderViewImpl
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
 
-  void UpdateTitle(blink::WebFrame* frame, const base::string16& title,
-                   blink::WebTextDirection title_direction);
   void UpdateSessionHistory(blink::WebFrame* frame);
   void SendUpdateState(HistoryEntry* entry);
-
-  // Update current main frame's encoding and send it to browser window.
-  // Since we want to let users see the right encoding info from menu
-  // before finishing loading, we call the UpdateEncoding in
-  // a) function:DidCommitLoadForFrame. When this function is called,
-  // that means we have got first data. In here we try to get encoding
-  // of page if it has been specified in http header.
-  // b) function:DidReceiveTitle. When this function is called,
-  // that means we have got specified title. Because in most of webpages,
-  // title tags will follow meta tags. In here we try to get encoding of
-  // page if it has been specified in meta tag.
-  // c) function:DidFinishDocumentLoadForFrame. When this function is
-  // called, that means we have got whole html page. In here we should
-  // finally get right encoding of page.
-  void UpdateEncoding(blink::WebFrame* frame,
-                      const std::string& encoding_name);
 
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
@@ -1017,11 +996,6 @@ class CONTENT_EXPORT RenderViewImpl
   // restored from a previous session.  This lets us detect attempts to
   // navigate to stale entries that have been cropped from our history.
   std::vector<int32> history_page_ids_;
-
-  // Page info -----------------------------------------------------------------
-
-  // The last gotten main frame's encoding.
-  std::string last_encoding_name_;
 
   // UI state ------------------------------------------------------------------
 

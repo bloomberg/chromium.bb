@@ -1973,7 +1973,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   UpdateURL(frame);
 
   // Check whether we have new encoding name.
-  render_view_->UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
+  UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
 void RenderFrameImpl::didClearWindowObject(blink::WebLocalFrame* frame) {
@@ -2013,8 +2013,20 @@ void RenderFrameImpl::didReceiveTitle(blink::WebLocalFrame* frame,
                                       const blink::WebString& title,
                                       blink::WebTextDirection direction) {
   DCHECK(!frame_ || frame_ == frame);
-  // TODO(nasko): Investigate wheather implementation should move here.
-  render_view_->didReceiveTitle(frame, title, direction);
+  // Ignore all but top level navigations.
+  if (!frame->parent()) {
+    base::string16 title16 = title;
+    base::debug::TraceLog::GetInstance()->UpdateProcessLabel(
+        routing_id_, base::UTF16ToUTF8(title16));
+
+    base::string16 shortened_title = title16.substr(0, kMaxTitleChars);
+    Send(new FrameHostMsg_UpdateTitle(routing_id_,
+                                      render_view_->page_id_,
+                                      shortened_title, direction));
+  }
+
+  // Also check whether we have new encoding name.
+  UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
 void RenderFrameImpl::didChangeIcon(blink::WebLocalFrame* frame,
@@ -2037,7 +2049,7 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidFinishDocumentLoad());
 
   // Check whether we have new encoding name.
-  render_view_->UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
+  UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
 }
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
@@ -3299,6 +3311,13 @@ void RenderFrameImpl::OpenURL(WebFrame* frame,
   }
 
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
+}
+
+void RenderFrameImpl::UpdateEncoding(WebFrame* frame,
+                                     const std::string& encoding_name) {
+  // Only update main frame's encoding_name.
+  if (!frame->parent())
+    Send(new FrameHostMsg_UpdateEncoding(routing_id_, encoding_name));
 }
 
 void RenderFrameImpl::SyncSelectionIfRequired() {

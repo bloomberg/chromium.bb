@@ -867,7 +867,7 @@ std::set<GURL> WebContentsImpl::GetSitesInTab() const {
 }
 
 const std::string& WebContentsImpl::GetEncoding() const {
-  return encoding_;
+  return canonical_encoding_;
 }
 
 bool WebContentsImpl::DisplayedInsecureContent() const {
@@ -2086,7 +2086,7 @@ void WebContentsImpl::SetOverrideEncoding(const std::string& encoding) {
 }
 
 void WebContentsImpl::ResetOverrideEncoding() {
-  encoding_.clear();
+  canonical_encoding_.clear();
   Send(new ViewMsg_ResetPageEncodingToDefault(GetRoutingID()));
 }
 
@@ -3331,39 +3331,6 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
   controller_.NotifyEntryChanged(entry, entry_index);
 }
 
-void WebContentsImpl::UpdateTitle(RenderViewHost* rvh,
-                                  int32 page_id,
-                                  const base::string16& title,
-                                  base::i18n::TextDirection title_direction) {
-  // If we have a title, that's a pretty good indication that we've started
-  // getting useful data.
-  SetNotWaitingForResponse();
-
-  // Try to find the navigation entry, which might not be the current one.
-  // For example, it might be from a pending RVH for the pending entry.
-  NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
-      rvh->GetSiteInstance(), page_id);
-
-  // We can handle title updates when we don't have an entry in
-  // UpdateTitleForEntry, but only if the update is from the current RVH.
-  if (!entry && rvh != GetRenderViewHost())
-    return;
-
-  // TODO(evan): make use of title_direction.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  if (!UpdateTitleForEntry(entry, title))
-    return;
-
-  // Broadcast notifications when the UI should be updated.
-  if (entry == controller_.GetEntryAtOffset(0))
-    NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
-}
-
-void WebContentsImpl::UpdateEncoding(RenderViewHost* render_view_host,
-                                     const std::string& encoding) {
-  SetEncoding(encoding);
-}
-
 void WebContentsImpl::UpdateTargetURL(int32 page_id, const GURL& url) {
   if (delegate_)
     delegate_->UpdateTargetURL(this, page_id, url);
@@ -3480,6 +3447,42 @@ void WebContentsImpl::DocumentOnLoadCompleted(
       NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       Source<WebContents>(this),
       NotificationService::NoDetails());
+}
+
+void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
+                                  int32 page_id,
+                                  const base::string16& title,
+                                  base::i18n::TextDirection title_direction) {
+  RenderViewHost* rvh = render_frame_host->GetRenderViewHost();
+
+  // If we have a title, that's a pretty good indication that we've started
+  // getting useful data.
+  SetNotWaitingForResponse();
+
+  // Try to find the navigation entry, which might not be the current one.
+  // For example, it might be from a pending RVH for the pending entry.
+  NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
+      rvh->GetSiteInstance(), page_id);
+
+  // We can handle title updates when we don't have an entry in
+  // UpdateTitleForEntry, but only if the update is from the current RVH.
+  // TODO(avi): Change to make decisions based on the RenderFrameHost.
+  if (!entry && rvh != GetRenderViewHost())
+    return;
+
+  // TODO(evan): make use of title_direction.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
+  if (!UpdateTitleForEntry(entry, title))
+    return;
+
+  // Broadcast notifications when the UI should be updated.
+  if (entry == controller_.GetEntryAtOffset(0))
+    NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
+}
+
+void WebContentsImpl::UpdateEncoding(RenderFrameHost* render_frame_host,
+                                     const std::string& encoding) {
+  SetEncoding(encoding);
 }
 
 void WebContentsImpl::DocumentAvailableInMainFrame(
@@ -3888,7 +3891,11 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
 }
 
 void WebContentsImpl::SetEncoding(const std::string& encoding) {
-  encoding_ = GetContentClient()->browser()->
+  if (encoding == last_reported_encoding_)
+    return;
+  last_reported_encoding_ = encoding;
+
+  canonical_encoding_ = GetContentClient()->browser()->
       GetCanonicalEncodingNameByAliasName(encoding);
 }
 

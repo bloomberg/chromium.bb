@@ -1126,18 +1126,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateState,
                     int32 /* page_id */,
                     content::PageState /* state */)
 
-// Changes the title for the page in the UI when the page is navigated or the
-// title changes.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_UpdateTitle,
-                    int32 /* page_id */,
-                    base::string16 /* title */,
-                    blink::WebTextDirection /* title direction */)
-
-// Change the encoding name of the page in UI when the page has detected
-// proper encoding name.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateEncoding,
-                    std::string /* new encoding name */)
-
 // Notifies the browser that we want to show a destination url for a potential
 // action (e.g. when the user is hovering over a link).
 IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateTargetURL,

@@ -24,7 +24,6 @@
 #include "third_party/WebKit/public/web/WebAXEnums.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
-#include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/window_open_disposition.h"
@@ -482,10 +481,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnRenderViewReady();
   void OnRenderProcessGone(int status, int error_code);
   void OnUpdateState(int32 page_id, const PageState& state);
-  void OnUpdateTitle(int32 page_id,
-                     const base::string16& title,
-                     blink::WebTextDirection title_direction);
-  void OnUpdateEncoding(const std::string& encoding);
   void OnUpdateTargetURL(int32 page_id, const GURL& url);
   void OnClose();
   void OnRequestMove(const gfx::Rect& pos);

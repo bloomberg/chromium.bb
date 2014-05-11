@@ -330,7 +330,7 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   LoadCommittedDetails details;
   cont.RendererDidNavigate(main_test_rfh(), params, &details);
 
-  contents()->UpdateTitle(rvh(), 0,
+  contents()->UpdateTitle(main_test_rfh(), 0,
                           base::ASCIIToUTF16("    Lots O' Whitespace\n"),
                           base::i18n::LEFT_TO_RIGHT);
   EXPECT_EQ(base::ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());

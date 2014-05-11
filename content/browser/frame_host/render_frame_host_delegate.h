@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "base/i18n/rtl.h"
 #include "content/common/content_export.h"
 #include "content/public/common/javascript_message_type.h"
 
@@ -90,6 +91,18 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // The onload handler in the frame has completed. Only called for the top-
   // level frame.
   virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) {}
+
+  // The page's title was changed and should be updated. Only called for the
+  // top-level frame.
+  virtual void UpdateTitle(RenderFrameHost* render_frame_host,
+                           int32 page_id,
+                           const base::string16& title,
+                           base::i18n::TextDirection title_direction) {}
+
+  // The page's encoding was changed and should be updated. Only called for the
+  // top-level frame.
+  virtual void UpdateEncoding(RenderFrameHost* render_frame_host,
+                              const std::string& encoding) {}
 
   // Return this object cast to a WebContents, if it is one. If the object is
   // not a WebContents, returns NULL.

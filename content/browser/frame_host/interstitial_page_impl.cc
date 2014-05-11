@@ -402,6 +402,42 @@ void InterstitialPageImpl::RenderFrameCreated(
       render_frame_host);
 }
 
+void InterstitialPageImpl::UpdateTitle(
+    RenderFrameHost* render_frame_host,
+    int32 page_id,
+    const base::string16& title,
+    base::i18n::TextDirection title_direction) {
+  if (!enabled())
+    return;
+
+  RenderViewHost* render_view_host = render_frame_host->GetRenderViewHost();
+  DCHECK(render_view_host == render_view_host_);
+  NavigationEntry* entry = controller_->GetVisibleEntry();
+  if (!entry) {
+    // Crash reports from the field indicate this can be NULL.
+    // This is unexpected as InterstitialPages constructed with the
+    // new_navigation flag set to true create a transient navigation entry
+    // (that is returned as the active entry). And the only case so far of
+    // interstitial created with that flag set to false is with the
+    // SafeBrowsingBlockingPage, when the resource triggering the interstitial
+    // is a sub-resource, meaning the main page has already been loaded and a
+    // navigation entry should have been created.
+    NOTREACHED();
+    return;
+  }
+
+  // If this interstitial is shown on an existing navigation entry, we'll need
+  // to remember its title so we can revert to it when hidden.
+  if (!new_navigation_ && !should_revert_web_contents_title_) {
+    original_web_contents_title_ = entry->GetTitle();
+    should_revert_web_contents_title_ = true;
+  }
+  // TODO(evan): make use of title_direction.
+  // http://code.google.com/p/chromium/issues/detail?id=27094
+  entry->SetTitle(title);
+  controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
+}
+
 RenderViewHostDelegateView* InterstitialPageImpl::GetDelegateView() {
   return rvh_delegate_view_.get();
 }
@@ -464,41 +500,6 @@ void InterstitialPageImpl::DidNavigate(
   web_contents_was_loading_ = controller_->delegate()->IsLoading();
   controller_->delegate()->SetIsLoading(
       controller_->delegate()->GetRenderViewHost(), false, true, NULL);
-}
-
-void InterstitialPageImpl::UpdateTitle(
-    RenderViewHost* render_view_host,
-    int32 page_id,
-    const base::string16& title,
-    base::i18n::TextDirection title_direction) {
-  if (!enabled())
-    return;
-
-  DCHECK(render_view_host == render_view_host_);
-  NavigationEntry* entry = controller_->GetVisibleEntry();
-  if (!entry) {
-    // Crash reports from the field indicate this can be NULL.
-    // This is unexpected as InterstitialPages constructed with the
-    // new_navigation flag set to true create a transient navigation entry
-    // (that is returned as the active entry). And the only case so far of
-    // interstitial created with that flag set to false is with the
-    // SafeBrowsingBlockingPage, when the resource triggering the interstitial
-    // is a sub-resource, meaning the main page has already been loaded and a
-    // navigation entry should have been created.
-    NOTREACHED();
-    return;
-  }
-
-  // If this interstitial is shown on an existing navigation entry, we'll need
-  // to remember its title so we can revert to it when hidden.
-  if (!new_navigation_ && !should_revert_web_contents_title_) {
-    original_web_contents_title_ = entry->GetTitle();
-    should_revert_web_contents_title_ = true;
-  }
-  // TODO(evan): make use of title_direction.
-  // http://code.google.com/p/chromium/issues/detail?id=27094
-  entry->SetTitle(title);
-  controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
 }
 
 RendererPreferences InterstitialPageImpl::GetRendererPrefs(
