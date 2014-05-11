@@ -194,6 +194,10 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
   ExecutingScriptsMap extensions_executing_scripts;
 
+  blink::WebFrame* top_frame = frame->top();
+  content::RenderView* top_render_view =
+      content::RenderView::FromWebView(top_frame->view());
+
   for (size_t i = 0; i < scripts_.size(); ++i) {
     std::vector<WebScriptSource> sources;
     UserScript* script = scripts_[i];
@@ -214,7 +218,7 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     const int kNoProcessId = -1;
     if (!PermissionsData::CanExecuteScriptOnPage(extension,
                                                  data_source_url,
-                                                 frame->top()->document().url(),
+                                                 top_frame->document().url(),
                                                  kNoTabId,
                                                  script,
                                                  kNoProcessId,
@@ -234,6 +238,15 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     }
 
     if (script->run_location() == location) {
+      // TODO(rdevlin.cronin): Right now, this is just a notification, but soon
+      // we should block without user consent.
+      if (PermissionsData::RequiresActionForScriptExecution(extension)) {
+        top_render_view->Send(
+            new ExtensionHostMsg_NotifyExtensionScriptExecution(
+                top_render_view->GetRoutingID(),
+                extension->id(),
+                top_render_view->GetPageId()));
+      }
       num_scripts += script->js_scripts().size();
       for (size_t j = 0; j < script->js_scripts().size(); ++j) {
         UserScript::File& file = script->js_scripts()[j];
@@ -282,13 +295,10 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
 
   // Notify the browser if any extensions are now executing scripts.
   if (!extensions_executing_scripts.empty()) {
-    blink::WebFrame* top_frame = frame->top();
-    content::RenderView* render_view =
-        content::RenderView::FromWebView(top_frame->view());
-    render_view->Send(new ExtensionHostMsg_ContentScriptsExecuting(
-        render_view->GetRoutingID(),
+    top_render_view->Send(new ExtensionHostMsg_ContentScriptsExecuting(
+        top_render_view->GetRoutingID(),
         extensions_executing_scripts,
-        render_view->GetPageId(),
+        top_render_view->GetPageId(),
         ScriptContext::GetDataSourceURLForFrame(top_frame)));
   }
 

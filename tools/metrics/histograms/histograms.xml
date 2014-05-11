@@ -5725,6 +5725,40 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ActiveScriptController.PreventableAdInjectors"
+    units="Extension Count">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of extensions per page that injected an ad and could have been
+    stopped if the user had declined script injection. This is related to the
+    ActivityLog metrics, ExtensionActivity.Ad*. Recorded upon page close or
+    navigation.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ActiveScriptController.ShownActiveScriptsOnPage"
+    units="Number of Actions">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of extensions which would display an Active Script Running
+    indiciation to the user. Recorded at page close.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.ActiveScriptController.UnpreventableAdInjectors"
+    units="Extension Count">
+  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of extensions per page that injected an ad and that could not
+    have been stopped through script injection permission. This is related to
+    the ActivityLog metrics, ExtensionActivity.Ad*. Recorded upon page close or
+    navigation.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.AllocatePortIdPairOverflow">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -7053,6 +7087,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType">
+  <owner>kinaba@chromium.org</owner>
+  <summary>
+    Chrome OS File Browser: counts the number of times volumes are mounted for
+    each volume type.
+  </summary>
+</histogram>
+
 <histogram name="GCM.APICallUnregister">
   <owner>jianli@chromium.org</owner>
   <summary>Number of times when gcm.unregister API is called.</summary>
@@ -7064,14 +7106,6 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Length of time taken to complete a GCM checkin request successfully. If the
     checkin is retried multiple times, the length of time is counted for the
     last successful retry.
-  </summary>
-</histogram>
-
-<histogram name="FileBrowser.VolumeType" enum="FileManagerVolumeType">
-  <owner>kinaba@chromium.org</owner>
-  <summary>
-    Chrome OS File Browser: counts the number of times volumes are mounted for
-    each volume type.
   </summary>
 </histogram>
 

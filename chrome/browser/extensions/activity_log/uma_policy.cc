@@ -7,8 +7,11 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/ad_network_database.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -40,6 +43,9 @@ const int kCreatedObject      = 1 << UmaPolicy::CREATED_OBJECT;
 const int kAdInjected         = 1 << UmaPolicy::AD_INJECTED;
 const int kAdRemoved          = 1 << UmaPolicy::AD_REMOVED;
 const int kAdReplaced         = 1 << UmaPolicy::AD_REPLACED;
+
+// A mask of all the ad injection flags.
+const int kAnyAdActivity = kAdInjected | kAdRemoved | kAdReplaced;
 
 }  // namespace
 
@@ -159,34 +165,49 @@ int UmaPolicy::MatchActionToStatus(scoped_refptr<Action> action) {
       break;
     case Action::NUM_INJECTION_TYPES:
       NOTREACHED();
-  };
+  }
 
   return ret_bit;
 }
 
-void UmaPolicy::HistogramOnClose(const std::string& url) {
+void UmaPolicy::HistogramOnClose(const std::string& cleaned_url,
+                                 content::WebContents* web_contents) {
   // Let's try to avoid histogramming useless URLs.
-  if (url.empty() || url == content::kAboutBlankURL ||
-      url == chrome::kChromeUINewTabURL)
+  if (cleaned_url.empty() || cleaned_url == content::kAboutBlankURL ||
+      cleaned_url == chrome::kChromeUINewTabURL)
     return;
 
   int statuses[MAX_STATUS - 1];
   std::memset(statuses, 0, sizeof(statuses));
 
-  SiteMap::iterator site_lookup = url_status_.find(url);
-  ExtensionMap exts = site_lookup->second;
-  ExtensionMap::iterator ext_iter;
-  for (ext_iter = exts.begin(); ext_iter != exts.end(); ++ext_iter) {
+  // |web_contents| can be NULL in unit tests.
+  TabHelper* tab_helper =
+      web_contents ? TabHelper::FromWebContents(web_contents) : NULL;
+  ActiveScriptController* active_script_controller =
+      tab_helper && tab_helper->location_bar_controller() ?
+          tab_helper->location_bar_controller()->active_script_controller() :
+          NULL;
+  SiteMap::iterator site_lookup = url_status_.find(cleaned_url);
+  const ExtensionMap& exts = site_lookup->second;
+  std::vector<std::string> ad_injectors;
+  for (ExtensionMap::const_iterator ext_iter = exts.begin();
+       ext_iter != exts.end();
+       ++ext_iter) {
     if (ext_iter->first == kNumberOfTabs)
       continue;
     for (int i = NONE + 1; i < MAX_STATUS; ++i) {
       if (ext_iter->second & (1 << i))
         statuses[i-1]++;
     }
+
+    if ((ext_iter->second & kAnyAdActivity) && active_script_controller)
+      ad_injectors.push_back(ext_iter->first);
   }
+  if (active_script_controller)
+    active_script_controller->OnAdInjectionDetected(ad_injectors);
 
   std::string prefix = "ExtensionActivity.";
-  if (GURL(url).host() != "www.google.com") {
+  if (GURL(cleaned_url).host() != "www.google.com") {
     UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(CONTENT_SCRIPT),
                              statuses[CONTENT_SCRIPT - 1]);
     UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(READ_DOM),
@@ -292,7 +313,7 @@ void UmaPolicy::TabChangedAt(content::WebContents* contents,
 
   // Is this an existing tab whose URL has changed.
   if (tab_it != tab_list_.end()) {
-    CleanupClosedPage(tab_it->second);
+    CleanupClosedPage(tab_it->second, contents);
     tab_list_.erase(tab_id);
   }
 
@@ -319,21 +340,22 @@ void UmaPolicy::TabClosingAt(TabStripModel* tab_strip_model,
   if (tab_it != tab_list_.end())
     tab_list_.erase(tab_id);
 
-  CleanupClosedPage(url);
+  CleanupClosedPage(url, contents);
 }
 
 void UmaPolicy::SetupOpenedPage(const std::string& url) {
   url_status_[url][kNumberOfTabs]++;
 }
 
-void UmaPolicy::CleanupClosedPage(const std::string& url) {
-  SiteMap::iterator old_site_lookup = url_status_.find(url);
+void UmaPolicy::CleanupClosedPage(const std::string& cleaned_url,
+                                  content::WebContents* web_contents) {
+  SiteMap::iterator old_site_lookup = url_status_.find(cleaned_url);
   if (old_site_lookup == url_status_.end())
     return;
   old_site_lookup->second[kNumberOfTabs]--;
   if (old_site_lookup->second[kNumberOfTabs] == 0) {
-    HistogramOnClose(url);
-    url_status_.erase(url);
+    HistogramOnClose(cleaned_url, web_contents);
+    url_status_.erase(cleaned_url);
   }
 }
 

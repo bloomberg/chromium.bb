@@ -999,6 +999,7 @@
         'browser/download/download_started_animation_browsertest.cc',
         'browser/download/save_page_browsertest.cc',
         'browser/errorpage_browsertest.cc',
+        'browser/extensions/active_script_controller_browsertest.cc',
         'browser/extensions/active_tab_apitest.cc',
         'browser/extensions/activity_log/activity_log_browsertest.cc',
         'browser/extensions/activity_log/ad_injection_browsertest.cc',

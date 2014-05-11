@@ -96,10 +96,12 @@ class UmaPolicy : public ActivityLogPolicy,
   void SetupOpenedPage(const std::string& url);
 
   // When a page is closing, remove it from the SiteMap url_status_.
-  void CleanupClosedPage(const std::string& url);
+  void CleanupClosedPage(const std::string& cleaned_url,
+                         content::WebContents* web_contents);
 
   // When a page is closing, save statistics about the page to histograms.
-  void HistogramOnClose(const std::string& url);
+  void HistogramOnClose(const std::string& cleaned_url,
+                        content::WebContents* web_contents);
 
   // Standardizes the way URLs are treated.
   static std::string CleanURL(const GURL& gurl);

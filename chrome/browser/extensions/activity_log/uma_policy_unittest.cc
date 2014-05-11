@@ -89,8 +89,8 @@ TEST_F(UmaPolicyTest, MatchActionToStatusTest) {
 TEST_F(UmaPolicyTest, SiteUrlTest) {
   UmaPolicy* policy = new UmaPolicy(profile_.get());
 
-  const std::string site0 = "http://www.zzz.com";
-  const std::string site1 = "http://www.foo.com";
+  const std::string site0 = "http://www.zzz.com/";
+  const std::string site1 = "http://www.foo.com/";
   const std::string site2 = "http://www.google.com#a";
   const std::string site3 = "http://www.google.com#bb";
 
@@ -109,10 +109,10 @@ TEST_F(UmaPolicyTest, SiteUrlTest) {
   ASSERT_EQ(3, policy->url_status()[site3][UmaPolicy::kNumberOfTabs]);
 
   // Remove some sites.
-  policy->CleanupClosedPage(site0);
-  policy->CleanupClosedPage(site2);
-  policy->CleanupClosedPage(site2);
-  policy->CleanupClosedPage(site3);
+  policy->CleanupClosedPage(site0, NULL);
+  policy->CleanupClosedPage(site2, NULL);
+  policy->CleanupClosedPage(site2, NULL);
+  policy->CleanupClosedPage(site3, NULL);
 
   // Check that the removal worked.
   ASSERT_EQ(2u, policy->url_status().size());

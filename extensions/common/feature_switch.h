@@ -25,6 +25,7 @@ class FeatureSwitch {
   static FeatureSwitch* prompt_for_external_extensions();
   static FeatureSwitch* error_console();
   static FeatureSwitch* enable_override_bookmarks_ui();
+  static FeatureSwitch* scripts_require_action();
 
   enum DefaultValue {
     DEFAULT_ENABLED,

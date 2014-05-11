@@ -445,7 +445,7 @@ void ExtensionActionStorageManager::OnExtensionLoaded(
                    AsWeakPtr(),
                    extension->id()));
   }
-};
+}
 
 void ExtensionActionStorageManager::Observe(
     int type,
@@ -632,8 +632,7 @@ void ExtensionActionFunction::NotifyBrowserActionChange() {
 }
 
 void ExtensionActionFunction::NotifyLocationBarChange() {
-  TabHelper::FromWebContents(contents_)->
-      location_bar_controller()->NotifyChange();
+  LocationBarController::NotifyChange(contents_);
 }
 
 void ExtensionActionFunction::NotifySystemIndicatorChange() {
@@ -909,8 +908,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   // Set visibility and broadcast notifications that the UI should be updated.
   page_action->SetIsVisible(tab_id, enable);
   page_action->SetTitle(tab_id, title);
-  extensions::TabHelper::FromWebContents(contents)->
-      location_bar_controller()->NotifyChange();
+  extensions::LocationBarController::NotifyChange(contents);
 
   return true;
 }

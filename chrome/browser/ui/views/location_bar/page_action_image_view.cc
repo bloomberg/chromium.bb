@@ -93,7 +93,7 @@ void PageActionImageView::ExecuteAction(
   LocationBarController* controller =
       extensions_tab_helper->location_bar_controller();
 
-  switch (controller->OnClicked(page_action_->extension_id(), 1)) {
+  switch (controller->OnClicked(page_action_)) {
     case LocationBarController::ACTION_NONE:
       break;
 

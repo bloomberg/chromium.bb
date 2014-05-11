@@ -569,6 +569,10 @@ IPC_MESSAGE_ROUTED3(ExtensionHostMsg_ContentScriptsExecuting,
                     int32 /* page_id of the _topmost_ frame */,
                     GURL /* url of the _topmost_ frame */)
 
+IPC_MESSAGE_ROUTED2(ExtensionHostMsg_NotifyExtensionScriptExecution,
+                    std::string /* extension id */,
+                    int /* page id */)
+
 // Sent by the renderer when a web page is checking if its app is installed.
 IPC_MESSAGE_ROUTED3(ExtensionHostMsg_GetAppInstallState,
                     GURL /* requestor_url */,

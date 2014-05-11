@@ -177,6 +177,10 @@ class PermissionsData {
                                     int tab_id,
                                     std::string* error);
 
+  // Returns true if the user should be alerted that the |extension| is running
+  // a script.
+  static bool RequiresActionForScriptExecution(const Extension* extension);
+
   // Parse the permissions of a given extension in the initialization process.
   bool ParsePermissions(Extension* extension, base::string16* error);
 

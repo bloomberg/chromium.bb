@@ -104,8 +104,7 @@ bool PageActionDecoration::ActivatePageAction(NSRect frame) {
       extensions::TabHelper::FromWebContents(web_contents)->
           location_bar_controller();
 
-  // 1 is left click.
-  switch (controller->OnClicked(page_action_->extension_id(), 1)) {
+  switch (controller->OnClicked(page_action_)) {
     case LocationBarController::ACTION_NONE:
       break;
 

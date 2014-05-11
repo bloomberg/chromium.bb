@@ -560,6 +560,14 @@ bool PermissionsData::CanCaptureVisiblePage(const Extension* extension,
   return false;
 }
 
+// static
+bool PermissionsData::RequiresActionForScriptExecution(
+    const Extension* extension) {
+  // For now, the user should be notified when an extension with all hosts
+  // permission tries to execute a script on a page.
+  return HasEffectiveAccessToAllHosts(extension);
+}
+
 bool PermissionsData::ParsePermissions(Extension* extension,
                                        base::string16* error) {
   initial_required_permissions_.reset(new InitialPermissions);

@@ -59,6 +59,9 @@ const char kForceDevModeHighlighting[] = "force-dev-mode-highlighting";
 // Enables setting global commands through the Extensions Commands API.
 const char kGlobalCommands[] = "global-commands";
 
+// Notify the user and require consent for extensions running scripts.
+const char kScriptsRequireAction[] = "scripts-require-action";
+
 // Makes component extensions appear in chrome://settings/extensions.
 const char kShowComponentExtensionOptions[] =
     "show-component-extension-options";

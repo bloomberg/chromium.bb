@@ -9,14 +9,11 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -29,111 +26,71 @@ base::LazyInstance<std::set<Profile*> > g_reported_for_profiles =
     LAZY_INSTANCE_INITIALIZER;
 
 PageActionController::PageActionController(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {}
+    : web_contents_(web_contents) {
+}
 
-PageActionController::~PageActionController() {}
+PageActionController::~PageActionController() {
+}
 
-std::vector<ExtensionAction*> PageActionController::GetCurrentActions() const {
-  ExtensionRegistry* registry = GetExtensionRegistry();
-  if (!registry)
-    return std::vector<ExtensionAction*>();
-
-  // Accumulate the list of all page actions to display.
-  std::vector<ExtensionAction*> current_actions;
-
-  ExtensionActionManager* extension_action_manager =
-      ExtensionActionManager::Get(GetProfile());
-
-  const ExtensionSet& enabled_set = registry->enabled_extensions();
-  for (ExtensionSet::const_iterator i = enabled_set.begin();
-       i != enabled_set.end();
-       ++i) {
-    ExtensionAction* action =
-        extension_action_manager->GetPageAction(*i->get());
-    if (action)
-      current_actions.push_back(action);
-  }
-
-  if (!g_reported_for_profiles.Get().count(GetProfile())) {
-    UMA_HISTOGRAM_COUNTS_100("PageActionController.ExtensionsWithPageActions",
-                             current_actions.size());
-    g_reported_for_profiles.Get().insert(GetProfile());
-  }
-
-  return current_actions;
+ExtensionAction* PageActionController::GetActionForExtension(
+    const Extension* extension) {
+  return ExtensionActionManager::Get(GetProfile())->GetPageAction(*extension);
 }
 
 LocationBarController::Action PageActionController::OnClicked(
-    const std::string& extension_id, int mouse_button) {
-  ExtensionRegistry* registry = GetExtensionRegistry();
-  if (!registry)
-    return ACTION_NONE;
-
-  const Extension* extension =
-      registry->enabled_extensions().GetByID(extension_id);
-  CHECK(extension);
+    const Extension* extension) {
   ExtensionAction* page_action =
       ExtensionActionManager::Get(GetProfile())->GetPageAction(*extension);
   CHECK(page_action);
-  int tab_id = ExtensionTabUtil::GetTabId(web_contents());
 
-  extensions::TabHelper::FromWebContents(web_contents())->
+  int tab_id = SessionID::IdForTab(web_contents_);
+  TabHelper::FromWebContents(web_contents_)->
       active_tab_permission_granter()->GrantIfRequested(extension);
 
-  switch (mouse_button) {
-    case 1:  // left
-    case 2:  // middle
-      if (page_action->HasPopup(tab_id))
-        return ACTION_SHOW_POPUP;
+  if (page_action->HasPopup(tab_id))
+    return LocationBarController::ACTION_SHOW_POPUP;
 
-      ExtensionActionAPI::PageActionExecuted(
-          GetProfile(), *page_action, tab_id,
-          web_contents()->GetURL().spec(), mouse_button);
-      return ACTION_NONE;
+  ExtensionActionAPI::PageActionExecuted(
+      web_contents_->GetBrowserContext(),
+      *page_action,
+      tab_id,
+      web_contents_->GetLastCommittedURL().spec(),
+      1 /* Button indication. We only ever pass left-click. */);
 
-    case 3:  // right
-      return extension->ShowConfigureContextMenus() ?
-          ACTION_SHOW_CONTEXT_MENU : ACTION_NONE;
+  return LocationBarController::ACTION_NONE;
+}
+
+void PageActionController::OnNavigated() {
+  const ExtensionSet& extensions =
+      ExtensionRegistry::Get(web_contents_->GetBrowserContext())
+          ->enabled_extensions();
+  int tab_id = SessionID::IdForTab(web_contents_);
+  size_t num_current_actions = 0u;
+  for (ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end();
+       ++iter) {
+    ExtensionAction* action = GetActionForExtension(*iter);
+    if (action) {
+      action->ClearAllValuesForTab(tab_id);
+      ++num_current_actions;
+    }
   }
 
-  return ACTION_NONE;
-}
-
-void PageActionController::NotifyChange() {
-  web_contents()->NotifyNavigationStateChanged(
-      content::INVALIDATE_TYPE_PAGE_ACTIONS);
-}
-
-void PageActionController::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (details.is_in_page)
-    return;
-
-  const std::vector<ExtensionAction*> current_actions = GetCurrentActions();
-
-  if (current_actions.empty())
-    return;
-
-  for (size_t i = 0; i < current_actions.size(); ++i) {
-    current_actions[i]->ClearAllValuesForTab(
-        SessionID::IdForTab(web_contents()));
+  Profile* profile = GetProfile();
+  // Report the number of page actions for this profile, if we haven't already.
+  // TODO(rdevlin.cronin): This is wrong. Instead, it should record the number
+  // of page actions displayed per page.
+  if (!g_reported_for_profiles.Get().count(profile)) {
+    UMA_HISTOGRAM_COUNTS_100("PageActionController.ExtensionsWithPageActions",
+                             num_current_actions);
+    g_reported_for_profiles.Get().insert(profile);
   }
 
-  NotifyChange();
+  LocationBarController::NotifyChange(web_contents_);
 }
 
-Profile* PageActionController::GetProfile() const {
-  content::WebContents* web_contents = this->web_contents();
-  if (web_contents)
-    return Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
-  return NULL;
-}
-
-ExtensionRegistry* PageActionController::GetExtensionRegistry() const {
-  Profile* profile = this->GetProfile();
-  return profile ? ExtensionRegistry::Get(profile) : NULL;
+Profile* PageActionController::GetProfile() {
+  return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 }  // namespace extensions
