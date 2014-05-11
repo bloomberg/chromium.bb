@@ -80,8 +80,6 @@ int GetIndex(DomainReliabilityConfig* config, const char* url_string) {
   return config->GetResourceIndexForUrl(GURL(url_string));
 }
 
-}  // namespace
-
 class DomainReliabilityConfigTest : public testing::Test { };
 
 TEST_F(DomainReliabilityConfigTest, IsValid) {
@@ -209,4 +207,5 @@ TEST_F(DomainReliabilityConfigTest, FromJSON) {
       config->collectors[0]->upload_url);
 }
 
+}  // namespace
 }  // namespace domain_reliability

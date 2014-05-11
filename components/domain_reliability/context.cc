@@ -141,9 +141,9 @@ void DomainReliabilityContext::OnBeacon(const GURL& url,
     return;
   DCHECK_GT(states_.size(), index);
 
+  bool success = (beacon.status == "ok");
+
   ResourceState* state = states_[index];
-  bool success = beacon.http_response_code >= 200 &&
-                 beacon.http_response_code < 400;
   if (success)
     ++state->successful_requests;
   else

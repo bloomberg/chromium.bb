@@ -17,8 +17,8 @@
 #include "components/domain_reliability/scheduler.h"
 #include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/load_timing_info.h"
+#include "net/http/http_response_info.h"
 #include "net/url_request/url_request_status.h"
 
 namespace net {
@@ -69,15 +69,13 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor {
     explicit RequestInfo(const net::URLRequest& request);
     ~RequestInfo();
 
-    bool DefinitelyReachedNetwork() const;
+    bool AccessedNetwork() const;
 
     GURL url;
     net::URLRequestStatus status;
-    int response_code;
-    net::HostPortPair socket_address;
-    net::LoadTimingInfo load_timing_info;
-    bool was_cached;
+    net::HttpResponseInfo response_info;
     int load_flags;
+    net::LoadTimingInfo load_timing_info;
     bool is_upload;
   };
 

@@ -11,10 +11,11 @@
 #include "components/domain_reliability/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace domain_reliability {
+namespace {
+
 using base::TimeDelta;
 using base::TimeTicks;
-
-namespace domain_reliability {
 
 class DomainReliabilitySchedulerTest : public testing::Test {
  public:
@@ -247,4 +248,5 @@ TEST_F(DomainReliabilitySchedulerTest, BeaconWhileUploading) {
   ASSERT_TRUE(CheckNoPendingUpload());
 }
 
+}  // namespace
 }  // namespace domain_reliability

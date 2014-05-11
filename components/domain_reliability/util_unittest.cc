@@ -8,10 +8,11 @@
 #include "components/domain_reliability/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace domain_reliability {
+namespace {
+
 using base::TimeDelta;
 using base::TimeTicks;
-
-namespace domain_reliability {
 
 class DomainReliabilityMockTimeTest : public testing::Test {
  protected:
@@ -120,4 +121,5 @@ TEST_F(DomainReliabilityMockTimeTest, TimerReentrantStart) {
   EXPECT_FALSE(timer->IsRunning());
 }
 
+}  // namespace
 }  // namespace domain_reliability

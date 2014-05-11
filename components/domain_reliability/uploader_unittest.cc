@@ -18,6 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace domain_reliability {
+namespace {
 
 class DomainReliabilityUploaderTest : public testing::Test {
  protected:
@@ -105,4 +106,5 @@ TEST_F(DomainReliabilityUploaderTest, FailedUpload) {
   EXPECT_FALSE(upload_successful_[0]);
 }
 
+}  // namespace
 }  // namespace domain_reliability

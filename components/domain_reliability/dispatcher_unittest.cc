@@ -8,10 +8,11 @@
 #include "components/domain_reliability/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace domain_reliability {
+namespace {
+
 using base::TimeDelta;
 using base::TimeTicks;
-
-namespace domain_reliability {
 
 class DomainReliabilityDispatcherTest : public testing::Test {
  public:
@@ -58,4 +59,5 @@ TEST_F(DomainReliabilityDispatcherTest, TaskRunsAtDeadline) {
   EXPECT_TRUE(callback.called());
 }
 
+}  // namespace
 }  // namespace domain_reliability

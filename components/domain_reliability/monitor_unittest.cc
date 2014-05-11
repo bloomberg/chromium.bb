@@ -16,7 +16,10 @@
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -24,7 +27,58 @@
 
 namespace domain_reliability {
 
+namespace {
+
 typedef std::vector<DomainReliabilityBeacon> BeaconVector;
+
+static const size_t kAlwaysReportIndex = 0u;
+static const size_t kNeverReportIndex = 1u;
+
+scoped_refptr<net::HttpResponseHeaders> MakeHttpResponseHeaders(
+    const std::string& headers) {
+  return scoped_refptr<net::HttpResponseHeaders>(
+      new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
+          headers.c_str(), headers.length())));
+}
+
+static scoped_ptr<const DomainReliabilityConfig> MakeConfig() {
+  DomainReliabilityConfig* config = new DomainReliabilityConfig();
+
+  DomainReliabilityConfig::Resource* resource;
+
+  resource = new DomainReliabilityConfig::Resource();
+  resource->name = "always_report";
+  resource->url_patterns.push_back(
+      new std::string("http://example/always_report"));
+  resource->success_sample_rate = 1.0;
+  resource->failure_sample_rate = 1.0;
+  EXPECT_TRUE(resource->IsValid());
+  config->resources.push_back(resource);
+
+  resource = new DomainReliabilityConfig::Resource();
+  resource->name = "never_report";
+  resource->url_patterns.push_back(
+      new std::string("http://example/never_report"));
+  resource->success_sample_rate = 0.0;
+  resource->failure_sample_rate = 0.0;
+  EXPECT_TRUE(resource->IsValid());
+  config->resources.push_back(resource);
+
+  DomainReliabilityConfig::Collector* collector;
+  collector = new DomainReliabilityConfig::Collector();
+  collector->upload_url = GURL("https://example/upload");
+  EXPECT_TRUE(collector->IsValid());
+  config->collectors.push_back(collector);
+
+  config->version = "1";
+  config->valid_until = 1234567890.0;
+  config->domain = "example";
+  EXPECT_TRUE(config->IsValid());
+
+  return scoped_ptr<const DomainReliabilityConfig>(config);
+}
+
+}  // namespace
 
 class DomainReliabilityMonitorTest : public testing::Test {
  protected:
@@ -38,64 +92,42 @@ class DomainReliabilityMonitorTest : public testing::Test {
         monitor_(url_request_context_getter_->GetURLRequestContext(),
                  "test-reporter",
                  scoped_ptr<MockableTime>(time_)),
-        context_(monitor_.AddContextForTesting(CreateConfig())) {}
+        context_(monitor_.AddContextForTesting(MakeConfig())) {}
 
-  static scoped_ptr<const DomainReliabilityConfig> CreateConfig() {
-    DomainReliabilityConfig* config = new DomainReliabilityConfig();
-
-    DomainReliabilityConfig::Resource* resource;
-
-    resource = new DomainReliabilityConfig::Resource();
-    resource->name = "always_report";
-    resource->url_patterns.push_back(
-        new std::string("http://example/always_report"));
-    resource->success_sample_rate = 1.0;
-    resource->failure_sample_rate = 1.0;
-    EXPECT_TRUE(resource->IsValid());
-    config->resources.push_back(resource);
-
-    resource = new DomainReliabilityConfig::Resource();
-    resource->name = "never_report";
-    resource->url_patterns.push_back(
-        new std::string("http://example/never_report"));
-    resource->success_sample_rate = 0.0;
-    resource->failure_sample_rate = 0.0;
-    EXPECT_TRUE(resource->IsValid());
-    config->resources.push_back(resource);
-
-    DomainReliabilityConfig::Collector* collector;
-    collector = new DomainReliabilityConfig::Collector();
-    collector->upload_url = GURL("https://example/upload");
-    EXPECT_TRUE(collector->IsValid());
-    config->collectors.push_back(collector);
-
-    config->version = "1";
-    config->valid_until = 1234567890.0;
-    config->domain = "example";
-    EXPECT_TRUE(config->IsValid());
-
-    return scoped_ptr<const DomainReliabilityConfig>(config);
-  }
-
-  RequestInfo MakeRequestInfo() {
+  static RequestInfo MakeRequestInfo() {
     RequestInfo request;
     request.status = net::URLRequestStatus();
-    request.response_code = 200;
-    request.was_cached = false;
+    request.status.set_status(net::URLRequestStatus::SUCCESS);
+    request.status.set_error(net::OK);
+    request.response_info.socket_address =
+        net::HostPortPair::FromString("12.34.56.78:80");
+    request.response_info.headers = MakeHttpResponseHeaders(
+        "HTTP/1.1 200 OK\n\n");
+    request.response_info.network_accessed = true;
+    request.response_info.was_fetched_via_proxy = false;
     request.load_flags = 0;
     request.is_upload = false;
     return request;
   }
 
-  bool CheckNoBeacons(size_t index) {
-    BeaconVector beacons;
-    unsigned successful, failed;
-    context_->GetQueuedDataForTesting(index, &beacons, &successful, &failed);
-    return beacons.empty() && successful == 0 && failed == 0;
-  }
-
   void OnRequestLegComplete(const RequestInfo& info) {
     monitor_.OnRequestLegComplete(info);
+  }
+
+  size_t CountPendingBeacons(size_t index) {
+    BeaconVector beacons;
+    context_->GetQueuedDataForTesting(index, &beacons, NULL, NULL);
+    return beacons.size();
+  }
+
+  bool CheckRequestCounts(size_t index,
+                          uint32 expected_successful,
+                          uint32 expected_failed) {
+    uint32 successful, failed;
+    context_->GetQueuedDataForTesting(index, NULL, &successful, &failed);
+    EXPECT_EQ(expected_successful, successful);
+    EXPECT_EQ(expected_failed, failed);
+    return expected_successful == successful && expected_failed == failed;
   }
 
   content::TestBrowserThreadBundle bundle_;
@@ -106,49 +138,138 @@ class DomainReliabilityMonitorTest : public testing::Test {
   DomainReliabilityMonitor::RequestInfo request_;
 };
 
+namespace {
+
 TEST_F(DomainReliabilityMonitorTest, Create) {
-  EXPECT_TRUE(CheckNoBeacons(0));
-  EXPECT_TRUE(CheckNoBeacons(1));
+  EXPECT_EQ(0u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 0u));
+  EXPECT_EQ(0u, CountPendingBeacons(kNeverReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kNeverReportIndex, 0u, 0u));
 }
 
-TEST_F(DomainReliabilityMonitorTest, NoContextRequest) {
+TEST_F(DomainReliabilityMonitorTest, NoContext) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://no-context/");
   OnRequestLegComplete(request);
 
-  EXPECT_TRUE(CheckNoBeacons(0));
-  EXPECT_TRUE(CheckNoBeacons(1));
+  EXPECT_EQ(0u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 0u));
+  EXPECT_EQ(0u, CountPendingBeacons(kNeverReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kNeverReportIndex, 0u, 0u));
 }
 
-TEST_F(DomainReliabilityMonitorTest, ContextRequest) {
+TEST_F(DomainReliabilityMonitorTest, NotReported) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/never_report");
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(0u, CountPendingBeacons(kNeverReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kNeverReportIndex, 1u, 0u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, NetworkFailure) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.status.set_status(net::URLRequestStatus::FAILED);
+  request.status.set_error(net::ERR_CONNECTION_RESET);
+  request.response_info.headers = NULL;
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(1u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 1u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, ServerFailure) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.response_info.headers =
+      MakeHttpResponseHeaders("HTTP/1.1 500 :(\n\n");
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(1u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 1u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, NotReportedFailure) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/never_report");
+  request.status.set_status(net::URLRequestStatus::FAILED);
+  request.status.set_error(net::ERR_CONNECTION_RESET);
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(0u, CountPendingBeacons(kNeverReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kNeverReportIndex, 0u, 1u));
+}
+
+TEST_F(DomainReliabilityMonitorTest, Request) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/always_report");
   OnRequestLegComplete(request);
 
-  BeaconVector beacons;
-  context_->GetQueuedDataForTesting(0, &beacons, NULL, NULL);
-  EXPECT_EQ(1u, beacons.size());
-  EXPECT_TRUE(CheckNoBeacons(1));
+  EXPECT_EQ(1u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 1u, 0u));
 }
 
-TEST_F(DomainReliabilityMonitorTest, ContextRequestWithDoNotSendCookies) {
+// Make sure the monitor does not log requests that did not access the network.
+TEST_F(DomainReliabilityMonitorTest, DidNotAccessNetwork) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.response_info.network_accessed = false;
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(0u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 0u));
+}
+
+// Make sure the monitor does not log requests that don't send cookies.
+TEST_F(DomainReliabilityMonitorTest, DoNotSendCookies) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/always_report");
   request.load_flags = net::LOAD_DO_NOT_SEND_COOKIES;
   OnRequestLegComplete(request);
 
-  EXPECT_TRUE(CheckNoBeacons(0));
-  EXPECT_TRUE(CheckNoBeacons(1));
+  EXPECT_EQ(0u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 0u));
 }
 
-TEST_F(DomainReliabilityMonitorTest, ContextRequestThatIsUpload) {
+// Make sure the monitor does not log upload requests.
+TEST_F(DomainReliabilityMonitorTest, IsUpload) {
   RequestInfo request = MakeRequestInfo();
   request.url = GURL("http://example/always_report");
   request.is_upload = true;
   OnRequestLegComplete(request);
 
-  EXPECT_TRUE(CheckNoBeacons(0));
-  EXPECT_TRUE(CheckNoBeacons(1));
+  EXPECT_EQ(0u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 0u));
+}
+
+// Make sure the monitor does not log a network-local error.
+TEST_F(DomainReliabilityMonitorTest, LocalError) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.status.set_status(net::URLRequestStatus::FAILED);
+  request.status.set_error(net::ERR_PROXY_CONNECTION_FAILED);
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(0u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 0u, 0u));
+}
+
+// Make sure the monitor does not log the proxy's IP if one was used.
+TEST_F(DomainReliabilityMonitorTest, WasFetchedViaProxy) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.response_info.socket_address =
+      net::HostPortPair::FromString("127.0.0.1:3128");
+  request.response_info.was_fetched_via_proxy = true;
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(1u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 1u, 0u));
+
+  BeaconVector beacons;
+  context_->GetQueuedDataForTesting(kAlwaysReportIndex, &beacons, NULL, NULL);
+  EXPECT_TRUE(beacons[0].server_ip.empty());
 }
 
 TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
@@ -166,5 +287,7 @@ TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
   // test one added in the test constructor.
   EXPECT_EQ(num_baked_in_configs + 1, monitor_.contexts_size_for_testing());
 }
+
+}  // namespace
 
 }  // namespace domain_reliability

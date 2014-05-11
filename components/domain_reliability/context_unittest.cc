@@ -33,8 +33,6 @@ DomainReliabilityBeacon MakeBeacon(MockableTime* time) {
   return beacon;
 }
 
-}  // namespace
-
 class DomainReliabilityContextTest : public testing::Test {
  protected:
   DomainReliabilityContextTest()
@@ -211,4 +209,5 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   CallUploadCallback(true);
 }
 
+}  // namespace
 }  // namespace domain_reliability

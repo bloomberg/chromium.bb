@@ -12,6 +12,7 @@
 #include "components/domain_reliability/baked_in_configs.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -122,7 +123,7 @@ void DomainReliabilityMonitor::OnCompleted(net::URLRequest* request,
   if (!started)
     return;
   RequestInfo request_info(*request);
-  if (request_info.DefinitelyReachedNetwork()) {
+  if (request_info.AccessedNetwork()) {
     OnRequestLegComplete(request_info);
     // A request was just using the network, so now is a good time to run any
     // pending and eligible uploads.
@@ -141,21 +142,17 @@ DomainReliabilityMonitor::RequestInfo::RequestInfo(
     const net::URLRequest& request)
     : url(request.url()),
       status(request.status()),
-      response_code(-1),
-      socket_address(request.GetSocketAddress()),
-      was_cached(request.was_cached()),
+      response_info(request.response_info()),
       load_flags(request.load_flags()),
       is_upload(DomainReliabilityUploader::URLRequestIsUpload(request)) {
   request.GetLoadTimingInfo(&load_timing_info);
-  // Can't get response code of a canceled request -- there's no transaction.
-  if (status.status() != net::URLRequestStatus::CANCELED)
-    response_code = request.GetResponseCode();
 }
 
 DomainReliabilityMonitor::RequestInfo::~RequestInfo() {}
 
-bool DomainReliabilityMonitor::RequestInfo::DefinitelyReachedNetwork() const {
-  return status.status() != net::URLRequestStatus::CANCELED && !was_cached;
+bool DomainReliabilityMonitor::RequestInfo::AccessedNetwork() const {
+  return status.status() != net::URLRequestStatus::CANCELED &&
+     response_info.network_accessed;
 }
 
 DomainReliabilityContext* DomainReliabilityMonitor::AddContext(
@@ -184,41 +181,42 @@ DomainReliabilityContext* DomainReliabilityMonitor::AddContext(
 
 void DomainReliabilityMonitor::OnRequestLegComplete(
     const RequestInfo& request) {
-  if (!request.DefinitelyReachedNetwork())
-    return;
-
-  // Don't monitor requests that are not sending cookies, since sending a beacon
-  // for such requests may allow the server to correlate that request with the
-  // user (by correlating a particular config).
-  if (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES)
-    return;
-
-  // Don't monitor requests that were, themselves, Domain Reliability uploads,
-  // to avoid infinite chains of uploads.
-  if (request.is_upload)
-    return;
-
-  ContextMap::iterator it = contexts_.find(request.url.host());
-  if (it == contexts_.end())
-    return;
-  DomainReliabilityContext* context = it->second;
-
+  int response_code;
+  if (request.response_info.headers)
+    response_code = request.response_info.headers->response_code();
+  else
+    response_code = -1;
+  ContextMap::iterator context_it;
   std::string beacon_status;
-  bool got_status = GetDomainReliabilityBeaconStatus(
-      request.status.error(),
-      request.response_code,
-      &beacon_status);
-  if (!got_status)
+
+  // Ignore requests where:
+  // 1. There is no context for the request host.
+  // 2. The request did not access the network.
+  // 3. The request is not supposed to send cookies (to avoid associating the
+  //    request with any potentially unique data in the config).
+  // 4. The request was itself a Domain Reliability upload (to avoid loops).
+  // 5. There is no defined beacon status for the error or HTTP response code
+  //    (to avoid leaking network-local errors).
+  if ((context_it = contexts_.find(request.url.host())) == contexts_.end() ||
+      !request.AccessedNetwork() ||
+      (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES) ||
+      request.is_upload ||
+      !GetDomainReliabilityBeaconStatus(
+          request.status.error(), response_code, &beacon_status)) {
     return;
+  }
 
   DomainReliabilityBeacon beacon;
   beacon.status = beacon_status;
   beacon.chrome_error = request.status.error();
-  beacon.server_ip = request.socket_address.host();
-  beacon.http_response_code = request.response_code;
+  if (!request.response_info.was_fetched_via_proxy)
+    beacon.server_ip = request.response_info.socket_address.host();
+  else
+    beacon.server_ip.clear();
+  beacon.http_response_code = response_code;
   beacon.start_time = request.load_timing_info.request_start;
   beacon.elapsed = time_->NowTicks() - beacon.start_time;
-  context->OnBeacon(request.url, beacon);
+  context_it->second->OnBeacon(request.url, beacon);
 }
 
 }  // namespace domain_reliability
