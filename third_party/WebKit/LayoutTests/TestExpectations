@@ -996,3 +996,5 @@ crbug.com/370906 fast/dom/StyleSheet/gc-declaration-parent-rule.html [ Failure ]
 
 crbug.com/371276 [ Linux ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 crbug.com/371276 [ Linux ] virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
+
+crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]

@@ -49,30 +49,36 @@ class ResourceHandle;
 class ResourceRequest;
 class ResourceResponse;
 
-// This class triggers asynchronous loads independent of LocalFrame staying alive (i.e., auditing pingbacks).
-// Since nothing depends on resources loaded through this class, we just want
-// to allow the load to live long enough to ensure the message was actually sent.
-// Therefore, as soon as a callback is received from the ResourceHandle, this class
-// will cancel the load and delete itself.
-class PingLoader FINAL : public PageLifecycleObserver, private blink::WebURLLoaderClient {
-    WTF_MAKE_NONCOPYABLE(PingLoader); WTF_MAKE_FAST_ALLOCATED;
+// Issue an asynchronous, one-directional request at some resources, ignoring
+// any response. The request is made independent of any LocalFrame staying alive,
+// and must only stay alive until the transmission has completed successfully
+// (or not -- errors are not propagated back either.) Upon transmission, the
+// the load is cancelled and the loader cancels itself.
+//
+// The ping loader is used by audit pings, beacon transmissions and image loads
+// during page unloading.
+//
+class PingLoader : public PageLifecycleObserver, private blink::WebURLLoaderClient {
+    WTF_MAKE_NONCOPYABLE(PingLoader);
+    WTF_MAKE_FAST_ALLOCATED;
 public:
+    virtual ~PingLoader();
+
     enum ViolationReportType {
         ContentSecurityPolicyViolationReport,
         XSSAuditorViolationReport
     };
 
     static void loadImage(LocalFrame*, const KURL& url);
-    static void sendPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
+    static void sendLinkAuditPing(LocalFrame*, const KURL& pingURL, const KURL& destinationURL);
     static void sendViolationReport(LocalFrame*, const KURL& reportURL, PassRefPtr<FormData> report, ViolationReportType);
 
-    virtual ~PingLoader();
-
-private:
+protected:
     PingLoader(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials);
 
     static void start(LocalFrame*, ResourceRequest&, const FetchInitiatorInfo&, StoredCredentials = AllowStoredCredentials);
 
+private:
     virtual void didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse&) OVERRIDE;
     virtual void didReceiveData(blink::WebURLLoader*, const char*, int, int) OVERRIDE;
     virtual void didFinishLoading(blink::WebURLLoader*, double, int64_t) OVERRIDE;
@@ -88,4 +94,4 @@ private:
 
 }
 
-#endif
+#endif // PingLoader_h

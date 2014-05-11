@@ -189,6 +189,7 @@
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
       'battery/NavigatorBattery.idl',
+      'beacon/NavigatorBeacon.idl',
       'crypto/WindowCrypto.idl',
       'crypto/WorkerGlobalScopeCrypto.idl',
       'device_light/WindowDeviceLight.idl',
@@ -265,6 +266,8 @@
       'battery/BatteryStatus.h',
       'battery/NavigatorBattery.cpp',
       'battery/NavigatorBattery.h',
+      'beacon/NavigatorBeacon.cpp',
+      'beacon/NavigatorBeacon.h',
       'crypto/AesKeyAlgorithm.cpp',
       'crypto/AesKeyAlgorithm.h',
       'crypto/Crypto.cpp',

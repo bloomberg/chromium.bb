@@ -352,7 +352,7 @@ void HTMLAnchorElement::sendPings(const KURL& destinationURL)
 
     SpaceSplitString pingURLs(pingValue, false);
     for (unsigned i = 0; i < pingURLs.size(); i++)
-        PingLoader::sendPing(document().frame(), document().completeURL(pingURLs[i]), destinationURL);
+        PingLoader::sendLinkAuditPing(document().frame(), document().completeURL(pingURLs[i]), destinationURL);
 }
 
 void HTMLAnchorElement::handleClick(Event* event)

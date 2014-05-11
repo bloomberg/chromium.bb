@@ -1314,6 +1314,8 @@
             'inspector/WorkerInspectorController.h',
             'inspector/WorkerRuntimeAgent.cpp',
             'inspector/WorkerRuntimeAgent.h',
+            'loader/BeaconLoader.cpp',
+            'loader/BeaconLoader.h',
             'loader/CookieJar.cpp',
             'loader/CrossOriginPreflightResultCache.cpp',
             'loader/DocumentLoadTiming.cpp',

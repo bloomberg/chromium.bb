@@ -278,3 +278,13 @@ scriptEnabled initial=false, invalidate=ScriptEnable
 # multiplied by the font scale factor when performing text autosizing of
 # websites that do not set an explicit viewport description.
 deviceScaleAdjustment type=double, initial=1.0, invalidate=TextAutosizing
+
+# This value indicates the maximum number of bytes a document is allowed
+# to transmit in Beacons (via navigator.sendBeacon()) -- Beacons are
+# intended to be smaller payloads transmitted as a page is unloading, not
+# a general (one-way) network transmission API.
+# The spec ( https://dvcs.w3.org/hg/webperf/raw-file/tip/specs/Beacon/Overview.html )
+# does not proscribe an upper limit, but allows for it -- the underlying
+# API will return 'false' in that case.
+maxBeaconTransmission type=int, initial=16384
+

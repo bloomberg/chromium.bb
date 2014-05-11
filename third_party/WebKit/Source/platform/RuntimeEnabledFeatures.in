@@ -18,6 +18,7 @@
 ApplicationCache status=stable
 AuthorShadowDOMForAnyElement
 BatteryStatus status=experimental
+Beacon status=experimental
 
 // This feature is deprecated and we are evangalizing affected sites.
 // See https://crbug.com/346236 for current status.

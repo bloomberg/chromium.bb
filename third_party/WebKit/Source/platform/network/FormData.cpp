@@ -162,4 +162,29 @@ String FormData::flattenToString() const
     return Latin1Encoding().decode(reinterpret_cast<const char*>(bytes.data()), bytes.size());
 }
 
+unsigned long long FormData::sizeInBytes() const
+{
+    unsigned size = 0;
+    size_t n = m_elements.size();
+    for (size_t i = 0; i < n; ++i) {
+        const FormDataElement& e = m_elements[i];
+        switch (e.m_type) {
+        case FormDataElement::data:
+            size += e.m_data.size();
+            break;
+        case FormDataElement::encodedFile:
+            size += e.m_fileLength - e.m_fileStart;
+            break;
+        case FormDataElement::encodedBlob:
+            if (e.m_optionalBlobDataHandle)
+                size += e.m_optionalBlobDataHandle->size();
+            break;
+        case FormDataElement::encodedFileSystemURL:
+            size += e.m_fileLength - e.m_fileStart;
+            break;
+        }
+    }
+    return size;
+}
+
 } // namespace WebCore

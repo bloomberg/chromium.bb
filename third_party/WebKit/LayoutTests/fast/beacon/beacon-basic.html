@@ -1,0 +1,11 @@
+<!DOCTYPE HTML>
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Exercising the Beacon API");
+
+shouldBeTrue("Object.getPrototypeOf(navigator).hasOwnProperty('sendBeacon')");
+shouldBeEqualToString("typeof navigator.sendBeacon", "function");
+shouldThrow("navigator.sendBeacon()");
+shouldThrow("navigator.sendBeacon('http:')");
+shouldThrow("navigator.sendBeacon('javascript:alert(1);')");
+</script>

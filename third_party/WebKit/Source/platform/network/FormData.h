@@ -136,6 +136,9 @@ public:
         return FormURLEncoded;
     }
 
+    // Size of the elements making up the FormData.
+    unsigned long long sizeInBytes() const;
+
 private:
     FormData();
     FormData(const FormData&);

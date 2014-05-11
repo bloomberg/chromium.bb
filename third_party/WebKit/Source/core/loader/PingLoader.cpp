@@ -43,7 +43,6 @@
 #include "core/loader/UniqueIdentifier.h"
 #include "core/page/Page.h"
 #include "platform/exported/WrappedResourceRequest.h"
-#include "platform/network/FormData.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -74,7 +73,7 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing
-void PingLoader::sendPing(LocalFrame* frame, const KURL& pingURL, const KURL& destinationURL)
+void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const KURL& destinationURL)
 {
     ResourceRequest request(pingURL);
     request.setTargetType(ResourceRequest::TargetIsPing);
@@ -164,7 +163,7 @@ void PingLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLRes
     delete this;
 }
 
-void PingLoader::didReceiveData(blink::WebURLLoader*, const char* data, int dataLength, int encodedDataLength)
+void PingLoader::didReceiveData(blink::WebURLLoader*, const char*, int, int)
 {
     if (Page* page = this->page()) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceFinish", "data", InspectorResourceFinishEvent::data(m_identifier, 0, true));

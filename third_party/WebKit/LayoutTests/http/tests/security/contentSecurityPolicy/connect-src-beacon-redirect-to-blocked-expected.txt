@@ -1,0 +1,12 @@
+Verify that a CSP connect-src directive blocks redirects.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS navigator.sendBeacon("resources/redir.php?url=http://127.0.0.1:8080/navigation/resources/save-beacon.php%3Fname%3Dcsp-redirect-blocked", "ping"); is true
+PASS Beacon not sent
+PASS 
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
