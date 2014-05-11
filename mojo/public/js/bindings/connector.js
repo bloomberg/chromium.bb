@@ -24,9 +24,9 @@ define("mojo/public/js/bindings/connector", [
       support.cancelWait(this.readWaitCookie_);
       this.readWaitCookie_ = null;
     }
-    if (this.handle_ != core.kInvalidHandle) {
+    if (this.handle_ != null) {
       core.close(this.handle_);
-      this.handle_ = core.kInvalidHandle;
+      this.handle_ = null;
     }
   };
 

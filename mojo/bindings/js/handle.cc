@@ -17,12 +17,19 @@ HandleWrapper::~HandleWrapper() {
 
 v8::Handle<v8::Value> Converter<mojo::Handle>::ToV8(v8::Isolate* isolate,
                                                     const mojo::Handle& val) {
+  if (!val.is_valid())
+    return v8::Null(isolate);
   return HandleWrapper::Create(isolate, val.value()).ToV8();
 }
 
 bool Converter<mojo::Handle>::FromV8(v8::Isolate* isolate,
                                      v8::Handle<v8::Value> val,
                                      mojo::Handle* out) {
+  if (val->IsNull()) {
+    *out = mojo::Handle();
+    return true;
+  }
+
   gin::Handle<HandleWrapper> handle;
   if (!Converter<gin::Handle<HandleWrapper> >::FromV8(isolate, val, &handle))
     return false;

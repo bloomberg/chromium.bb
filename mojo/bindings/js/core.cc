@@ -220,10 +220,6 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
         .SetMethod("writeData", WriteData)
         .SetMethod("readData", ReadData)
 
-        // TODO(vtl): Change name of "kInvalidHandle", now that there's no such
-        // C++ constant?
-        .SetValue("kInvalidHandle", mojo::Handle())
-
         .SetValue("RESULT_OK", MOJO_RESULT_OK)
         .SetValue("RESULT_CANCELLED", MOJO_RESULT_CANCELLED)
         .SetValue("RESULT_UNKNOWN", MOJO_RESULT_UNKNOWN)

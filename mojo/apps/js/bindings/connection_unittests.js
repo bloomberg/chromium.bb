@@ -174,7 +174,7 @@ define([
     var foo = new sample_service.Foo();
     foo.bar = new sample_service.Bar();
     // TODO(darin): crbug.com/357043: pass null in place of |foo| here.
-    connection1.remote.frobinate(foo, true, core.kInvalidHandle);
+    connection1.remote.frobinate(foo, true, null);
 
     // Write failures are not reported.
     expect(connection1.encounteredError()).toBeFalsy();

@@ -45,6 +45,31 @@ struct Converter<mojo::Handle> {
                      mojo::Handle* out);
 };
 
+// We need to specialize the normal gin::Handle converter in order to handle
+// converting |null| to a wrapper for an empty mojo::Handle.
+template<>
+struct Converter<gin::Handle<gin::HandleWrapper> > {
+  static v8::Handle<v8::Value> ToV8(
+        v8::Isolate* isolate, const gin::Handle<gin::HandleWrapper>& val) {
+    return val.ToV8();
+  }
+
+  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
+                     gin::Handle<gin::HandleWrapper>* out) {
+    if (val->IsNull()) {
+      *out = HandleWrapper::Create(isolate, MOJO_HANDLE_INVALID);
+      return true;
+    }
+
+    gin::HandleWrapper* object = NULL;
+    if (!Converter<gin::HandleWrapper*>::FromV8(isolate, val, &object)) {
+      return false;
+    }
+    *out = gin::Handle<gin::HandleWrapper>(val, object);
+    return true;
+  }
+};
+
 }  // namespace gin
 
 #endif  // MOJO_BINDINGS_JS_HANDLE_H_
