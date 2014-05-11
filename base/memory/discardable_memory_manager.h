@@ -67,7 +67,8 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryManager {
  public:
   typedef DiscardableMemoryManagerAllocation Allocation;
 
-  DiscardableMemoryManager();
+  DiscardableMemoryManager(size_t memory_limit,
+                           size_t bytes_to_keep_under_moderate_pressure);
   ~DiscardableMemoryManager();
 
   // Call this to register memory pressure listener. Must be called on a thread

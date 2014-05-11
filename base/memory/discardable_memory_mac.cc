@@ -9,80 +9,123 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/discardable_memory_emulated.h"
 #include "base/memory/discardable_memory_malloc.h"
+#include "base/memory/discardable_memory_manager.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace base {
 namespace {
+
+// For Mac, have the DiscardableMemoryManager trigger userspace eviction when
+// address space usage gets too high (e.g. 512 MBytes).
+const size_t kMacMemoryLimit = 512 * 1024 * 1024;
+
+struct SharedState {
+  SharedState() : manager(kMacMemoryLimit, kMacMemoryLimit) {}
+
+  internal::DiscardableMemoryManager manager;
+};
+LazyInstance<SharedState>::Leaky g_shared_state = LAZY_INSTANCE_INITIALIZER;
 
 // The VM subsystem allows tagging of memory and 240-255 is reserved for
 // application use (see mach/vm_statistics.h). Pick 252 (after chromium's atomic
 // weight of ~52).
 const int kDiscardableMemoryTag = VM_MAKE_TAG(252);
 
-class DiscardableMemoryMac : public DiscardableMemory {
+class DiscardableMemoryMac
+    : public DiscardableMemory,
+      public internal::DiscardableMemoryManagerAllocation {
  public:
-  explicit DiscardableMemoryMac(size_t size)
-      : buffer_(0),
-        size_(size) {
+  explicit DiscardableMemoryMac(size_t bytes)
+      : buffer_(0), bytes_(bytes), is_locked_(false) {
+    g_shared_state.Pointer()->manager.Register(this, bytes);
   }
 
-  bool Initialize() {
-    kern_return_t ret = vm_allocate(mach_task_self(),
-                                    &buffer_,
-                                    size_,
-                                    VM_FLAGS_PURGABLE |
-                                    VM_FLAGS_ANYWHERE |
-                                    kDiscardableMemoryTag);
-    if (ret != KERN_SUCCESS) {
-      DLOG(ERROR) << "vm_allocate() failed";
-      return false;
-    }
-
-    return true;
-  }
+  bool Initialize() { return Lock() == DISCARDABLE_MEMORY_LOCK_STATUS_PURGED; }
 
   virtual ~DiscardableMemoryMac() {
+    if (is_locked_)
+      Unlock();
+    g_shared_state.Pointer()->manager.Unregister(this);
     if (buffer_)
-      vm_deallocate(mach_task_self(), buffer_, size_);
+      vm_deallocate(mach_task_self(), buffer_, bytes_);
   }
 
+  // Overridden from DiscardableMemory:
   virtual DiscardableMemoryLockStatus Lock() OVERRIDE {
-    DCHECK_EQ(0, mprotect(reinterpret_cast<void*>(buffer_),
-                          size_,
-                          PROT_READ | PROT_WRITE));
+    DCHECK(!is_locked_);
+
+    bool purged = false;
+    if (!g_shared_state.Pointer()->manager.AcquireLock(this, &purged))
+      return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
+
+    is_locked_ = true;
+    return purged ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
+                  : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
+  }
+  virtual void Unlock() OVERRIDE {
+    DCHECK(is_locked_);
+    g_shared_state.Pointer()->manager.ReleaseLock(this);
+    is_locked_ = false;
+  }
+  virtual void* Memory() const OVERRIDE {
+    DCHECK(is_locked_);
+    return reinterpret_cast<void*>(buffer_);
+  }
+
+  // Overridden from internal::DiscardableMemoryManagerAllocation:
+  virtual bool AllocateAndAcquireLock() OVERRIDE {
+    bool persistent = true;
+    if (!buffer_) {
+      kern_return_t ret = vm_allocate(
+          mach_task_self(),
+          &buffer_,
+          bytes_,
+          VM_FLAGS_PURGABLE | VM_FLAGS_ANYWHERE | kDiscardableMemoryTag);
+      CHECK_EQ(KERN_SUCCESS, ret) << "wm_allocate() failed.";
+      persistent = false;
+    }
+#if !defined(NDEBUG)
+    int status = mprotect(
+        reinterpret_cast<void*>(buffer_), bytes_, PROT_READ | PROT_WRITE);
+    DCHECK_EQ(0, status);
+#endif
     int state = VM_PURGABLE_NONVOLATILE;
     kern_return_t ret = vm_purgable_control(mach_task_self(),
                                             buffer_,
                                             VM_PURGABLE_SET_STATE,
                                             &state);
-    if (ret != KERN_SUCCESS)
-      return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
-
-    return state & VM_PURGABLE_EMPTY ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
-                                     : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
+    CHECK_EQ(KERN_SUCCESS, ret) << "Failed to lock memory.";
+    if (state & VM_PURGABLE_EMPTY)
+      persistent = false;
+    return persistent;
   }
-
-  virtual void Unlock() OVERRIDE {
+  virtual void ReleaseLock() OVERRIDE {
     int state = VM_PURGABLE_VOLATILE | VM_VOLATILE_GROUP_DEFAULT;
     kern_return_t ret = vm_purgable_control(mach_task_self(),
                                             buffer_,
                                             VM_PURGABLE_SET_STATE,
                                             &state);
-    DCHECK_EQ(0, mprotect(reinterpret_cast<void*>(buffer_), size_, PROT_NONE));
-    if (ret != KERN_SUCCESS)
-      DLOG(ERROR) << "Failed to unlock memory.";
+    CHECK_EQ(KERN_SUCCESS, ret) << "Failed to unlock memory.";
+#if !defined(NDEBUG)
+    int status = mprotect(reinterpret_cast<void*>(buffer_), bytes_, PROT_NONE);
+    DCHECK_EQ(0, status);
+#endif
   }
-
-  virtual void* Memory() const OVERRIDE {
-    return reinterpret_cast<void*>(buffer_);
+  virtual void Purge() OVERRIDE {
+    if (buffer_) {
+      vm_deallocate(mach_task_self(), buffer_, bytes_);
+      buffer_ = 0;
+    }
   }
 
  private:
   vm_address_t buffer_;
-  const size_t size_;
+  const size_t bytes_;
+  bool is_locked_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryMac);
 };

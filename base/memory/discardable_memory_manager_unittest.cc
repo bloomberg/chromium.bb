@@ -42,9 +42,16 @@ class TestAllocationImpl : public internal::DiscardableMemoryManagerAllocation {
   bool is_locked_;
 };
 
+// Tests can assume that the default limit is at least 1024. Tests that rely on
+// something else needs to explicit set the limit.
+const size_t kDefaultMemoryLimit = 1024;
+const size_t kDefaultBytesToKeepUnderModeratePressure = kDefaultMemoryLimit;
+
 class DiscardableMemoryManagerTestBase {
  public:
-  DiscardableMemoryManagerTestBase() {
+  DiscardableMemoryManagerTestBase()
+      : manager_(kDefaultMemoryLimit,
+                 kDefaultBytesToKeepUnderModeratePressure) {
     manager_.RegisterMemoryPressureListener();
   }
 

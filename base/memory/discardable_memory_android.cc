@@ -19,31 +19,27 @@ namespace {
 
 const char kAshmemAllocatorName[] = "DiscardableMemoryAshmemAllocator";
 
-// When ashmem is used, have the DiscardableMemoryManager trigger userspace
-// eviction when address space usage gets too high (e.g. 512 MBytes).
-const size_t kAshmemMaxAddressSpaceUsage = 512 * 1024 * 1024;
+// For Ashmem, have the DiscardableMemoryManager trigger userspace eviction
+// when address space usage gets too high (e.g. 512 MBytes).
+const size_t kAshmemMemoryLimit = 512 * 1024 * 1024;
 
-// Holds the state used for ashmem allocations.
-struct AshmemGlobalContext {
-  AshmemGlobalContext()
-      : allocator(kAshmemAllocatorName,
-                  GetOptimalAshmemRegionSizeForAllocator()) {
-    manager.SetMemoryLimit(kAshmemMaxAddressSpaceUsage);
-  }
+size_t GetOptimalAshmemRegionSizeForAllocator() {
+  // Note that this may do some I/O (without hitting the disk though) so it
+  // should not be called on the critical path.
+  return base::android::SysUtils::AmountOfPhysicalMemoryKB() * 1024 / 8;
+}
 
-  internal::DiscardableMemoryAshmemAllocator allocator;
+// Holds the shared state used for allocations.
+struct SharedState {
+  SharedState()
+      : manager(kAshmemMemoryLimit, kAshmemMemoryLimit),
+        allocator(kAshmemAllocatorName,
+                  GetOptimalAshmemRegionSizeForAllocator()) {}
+
   internal::DiscardableMemoryManager manager;
-
- private:
-  // Returns 64 MBytes for a 512 MBytes device, 128 MBytes for 1024 MBytes...
-  static size_t GetOptimalAshmemRegionSizeForAllocator() {
-    // Note that this may do some I/O (without hitting the disk though) so it
-    // should not be called on the critical path.
-    return base::android::SysUtils::AmountOfPhysicalMemoryKB() * 1024 / 8;
-  }
+  internal::DiscardableMemoryAshmemAllocator allocator;
 };
-
-LazyInstance<AshmemGlobalContext>::Leaky g_context = LAZY_INSTANCE_INITIALIZER;
+LazyInstance<SharedState>::Leaky g_shared_state = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -76,10 +72,10 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
     case DISCARDABLE_MEMORY_TYPE_MAC:
       return scoped_ptr<DiscardableMemory>();
     case DISCARDABLE_MEMORY_TYPE_ASHMEM: {
-      AshmemGlobalContext* const global_context = g_context.Pointer();
+      SharedState* const shared_state = g_shared_state.Pointer();
       scoped_ptr<internal::DiscardableMemoryAshmem> memory(
           new internal::DiscardableMemoryAshmem(
-              size, &global_context->allocator, &global_context->manager));
+              size, &shared_state->allocator, &shared_state->manager));
       if (!memory->Initialize())
         return scoped_ptr<DiscardableMemory>();
 
@@ -109,7 +105,7 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemoryWithType(
 
 // static
 void DiscardableMemory::PurgeForTesting() {
-  g_context.Pointer()->manager.PurgeAll();
+  g_shared_state.Pointer()->manager.PurgeAll();
   internal::DiscardableMemoryEmulated::PurgeForTesting();
 }
 
