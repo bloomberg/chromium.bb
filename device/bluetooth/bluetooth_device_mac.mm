@@ -222,6 +222,12 @@ void BluetoothDeviceMac::ClearOutOfBandPairingData(
   NOTIMPLEMENTED();
 }
 
+void BluetoothDeviceMac::StartConnectionMonitor(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 int BluetoothDeviceMac::GetHostTransmitPower(
     BluetoothHCITransmitPowerLevelType power_level_type) const {
   IOBluetoothHostController* controller =

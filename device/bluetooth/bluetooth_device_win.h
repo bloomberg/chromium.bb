@@ -79,6 +79,9 @@ class BluetoothDeviceWin : public BluetoothDevice {
   virtual void ClearOutOfBandPairingData(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StartConnectionMonitor(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
 
   // Used by BluetoothProfileWin to retrieve the service record for the given
   // |uuid|.

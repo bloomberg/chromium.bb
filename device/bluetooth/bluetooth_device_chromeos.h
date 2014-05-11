@@ -82,6 +82,9 @@ class BluetoothDeviceChromeOS
   virtual void ClearOutOfBandPairingData(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StartConnectionMonitor(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related
@@ -170,6 +173,13 @@ class BluetoothDeviceChromeOS
       const std::string& error_name,
       const std::string& error_message);
 
+  // Called by dbus:: on completion of the D-Bus method call to start the
+  // connection monitor.
+  void OnStartConnectionMonitor(const base::Closure& callback);
+  void OnStartConnectionMonitorError(const ErrorCallback& error_callback,
+                                     const std::string& error_name,
+                                     const std::string& error_message);
+
   // Returns the object path of the device; used by BluetoothAdapterChromeOS
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
@@ -184,6 +194,10 @@ class BluetoothDeviceChromeOS
 
   // Number of ongoing calls to Connect().
   int num_connecting_calls_;
+
+  // True if the connection monitor has been started, tracking the connection
+  // RSSI and TX power.
+  bool connection_monitor_started_;
 
   // UI thread task runner and socket thread object used to create sockets.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;

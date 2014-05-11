@@ -73,6 +73,9 @@ class BluetoothDeviceMac : public BluetoothDevice {
   virtual void ClearOutOfBandPairingData(
       const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StartConnectionMonitor(
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
 
   // Returns the Bluetooth address for the |device|. The returned address has a
   // normalized format (see below).

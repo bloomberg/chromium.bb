@@ -69,6 +69,14 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   virtual void CancelPairing(const dbus::ObjectPath& object_path,
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StartConnectionMonitor(
+      const dbus::ObjectPath& object_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
+  virtual void StopConnectionMonitor(
+      const dbus::ObjectPath& object_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) OVERRIDE;
 
   void SetSimulationIntervalMs(int interval_ms);
 
@@ -192,8 +200,8 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
       const dbus::ObjectPath& object_path,
       Properties* properties);
 
-  // Updates the RSSI property of fake device with object path |object_path|
-  // to |rssi|, if the fake device exists.
+  // Updates the inquiry RSSI property of fake device with object path
+  // |object_path| to |rssi|, if the fake device exists.
   void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16 rssi);
 
   void PinCodeCallback(
@@ -242,6 +250,7 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   uint32_t discovery_simulation_step_;
   uint32_t incoming_pairing_simulation_step_;
   bool pairing_cancelled_;
+  bool connection_monitor_started_;
 };
 
 }  // namespace chromeos

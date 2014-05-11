@@ -234,6 +234,12 @@ void BluetoothDeviceWin::ClearOutOfBandPairingData(
   NOTIMPLEMENTED();
 }
 
+void BluetoothDeviceWin::StartConnectionMonitor(
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 const BluetoothServiceRecord* BluetoothDeviceWin::GetServiceRecord(
     const device::BluetoothUUID& uuid) const {
   for (ServiceRecordList::const_iterator iter = service_record_list_.begin();

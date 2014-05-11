@@ -76,8 +76,23 @@ class CHROMEOS_EXPORT BluetoothDeviceClient : public DBusClient {
     // Remote Device ID information in Linux kernel modalias format. Read-only.
     dbus::Property<std::string> modalias;
 
-    // Received signal strength indicator. Read-only.
+    // Received signal strength indicator that is set when the device is
+    // discovered during inquiry. Read-only.
     dbus::Property<int16> rssi;
+
+    // Received signal strength indicator when a connection is open to the
+    // device. This property is not set unless connection monitor is enabled.
+    // Read-only.
+    dbus::Property<int16> connection_rssi;
+
+    // The transmit power level of the host when a connection is open
+    // to the device. This property is not set unless connection monitor is
+    // enabled. Read-only.
+    dbus::Property<int16> connection_tx_power;
+
+    // The maximum transmit power level of the host that can be set
+    // when connected to the device. Read-only.
+    dbus::Property<int16> connection_tx_power_max;
 
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
@@ -168,6 +183,19 @@ class CHROMEOS_EXPORT BluetoothDeviceClient : public DBusClient {
   virtual void CancelPairing(const dbus::ObjectPath& object_path,
                              const base::Closure& callback,
                              const ErrorCallback& error_callback) = 0;
+
+  // Starts connection monitor for the device with object path
+  // |object_path|. Connection monitor is a mode the connection properties,
+  // RSSI and TX power are tracked and updated when they change.
+  virtual void StartConnectionMonitor(const dbus::ObjectPath& object_path,
+                                      const base::Closure& callback,
+                                      const ErrorCallback& error_callback) = 0;
+
+  // Stops connection monitor for the device with object path
+  // |object_path|.
+  virtual void StopConnectionMonitor(const dbus::ObjectPath& object_path,
+                                     const base::Closure& callback,
+                                     const ErrorCallback& error_callback) = 0;
 
   // Creates the instance.
   static BluetoothDeviceClient* Create();

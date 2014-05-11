@@ -404,6 +404,12 @@ class BluetoothDevice {
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 
+  // Starts monitoring the connection properties, RSSI and TX power. These
+  // properties will be tracked, and updated when their values change. Exactly
+  // one of |callback| or |error_callback| will be run.
+  virtual void StartConnectionMonitor(const base::Closure& callback,
+                                      const ErrorCallback& error_callback) = 0;
+
   // Returns the list of discovered GATT services.
   virtual std::vector<BluetoothGattService*> GetGattServices() const;
 
