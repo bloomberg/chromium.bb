@@ -86,6 +86,10 @@ Scheduler::Scheduler(
       inside_process_scheduled_actions_(false),
       inside_action_(SchedulerStateMachine::ACTION_NONE),
       weak_factory_(this) {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
+               "Scheduler::Scheduler",
+               "settings",
+               ToTrace(settings_));
   DCHECK(client_);
   DCHECK(!state_machine_.BeginFrameNeeded());
   if (settings_.main_frame_before_activation_enabled) {

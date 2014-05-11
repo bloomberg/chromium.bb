@@ -19,4 +19,23 @@ SchedulerSettings::SchedulerSettings()
 
 SchedulerSettings::~SchedulerSettings() {}
 
+scoped_ptr<base::Value> SchedulerSettings::AsValue() const {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+  state->SetBoolean("begin_frame_scheduling_enabled",
+                    begin_frame_scheduling_enabled);
+  state->SetBoolean("main_frame_before_draw_enabled",
+                    main_frame_before_draw_enabled);
+  state->SetBoolean("main_frame_before_activation_enabled",
+                    main_frame_before_activation_enabled);
+  state->SetBoolean("impl_side_painting", impl_side_painting);
+  state->SetBoolean("timeout_and_draw_when_animation_checkerboards",
+                    timeout_and_draw_when_animation_checkerboards);
+  state->SetInteger("maximum_number_of_failed_draws_before_draw_is_forced_",
+                    maximum_number_of_failed_draws_before_draw_is_forced_);
+  state->SetBoolean("using_synchronous_renderer_compositor",
+                    using_synchronous_renderer_compositor);
+  state->SetBoolean("throttle_frame_production", throttle_frame_production);
+  return state.PassAs<base::Value>();
+}
+
 }  // namespace cc

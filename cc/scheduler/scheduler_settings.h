@@ -5,6 +5,8 @@
 #ifndef CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 #define CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "base/values.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -22,6 +24,8 @@ class CC_EXPORT SchedulerSettings {
   int maximum_number_of_failed_draws_before_draw_is_forced_;
   bool using_synchronous_renderer_compositor;
   bool throttle_frame_production;
+
+  scoped_ptr<base::Value> AsValue() const;
 };
 
 }  // namespace cc
