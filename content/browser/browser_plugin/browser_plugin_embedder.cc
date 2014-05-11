@@ -14,7 +14,7 @@
 #include "content/common/drag_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
@@ -66,9 +66,9 @@ WebContentsImpl* BrowserPluginEmbedder::GetWebContents() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }
 
-BrowserPluginGuestManagerDelegate*
+BrowserPluginGuestManager*
 BrowserPluginEmbedder::GetBrowserPluginGuestManager() const {
-  return GetWebContents()->GetBrowserContext()->GetGuestManagerDelegate();
+  return GetWebContents()->GetBrowserContext()->GetGuestManager();
 }
 
 bool BrowserPluginEmbedder::DidSendScreenRectsCallback(

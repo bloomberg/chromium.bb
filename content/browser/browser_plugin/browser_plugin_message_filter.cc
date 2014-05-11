@@ -13,7 +13,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 
@@ -83,7 +83,7 @@ void BrowserPluginMessageFilter::ForwardMessageToGuest(
   PickleIterator iter(message);
   bool success = iter.ReadInt(&instance_id);
   DCHECK(success);
-  host->GetBrowserContext()->GetGuestManagerDelegate()->
+  host->GetBrowserContext()->GetGuestManager()->
       MaybeGetGuestByInstanceIDOrKill(
           instance_id,
           render_process_id_,

@@ -828,8 +828,7 @@ TestingProfile::GetGeolocationPermissionContext() {
   return ChromeGeolocationPermissionContextFactory::GetForProfile(this);
 }
 
-content::BrowserPluginGuestManagerDelegate*
-    TestingProfile::GetGuestManagerDelegate() {
+content::BrowserPluginGuestManager* TestingProfile::GetGuestManager() {
   return GuestViewManager::FromBrowserContext(this);
 }
 

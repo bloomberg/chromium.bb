@@ -14,7 +14,7 @@
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest.h"
 #include "content/browser/browser_plugin/test_browser_plugin_guest_delegate.h"
-#include "content/browser/browser_plugin/test_guest_manager_delegate.h"
+#include "content/browser/browser_plugin/test_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
@@ -266,8 +266,8 @@ class BrowserPluginHostTest : public ContentBrowserTest {
         shell()->web_contents());
     static_cast<ShellBrowserContext*>(
         embedder_web_contents->GetBrowserContext())->
-            set_guest_manager_delegate_for_testing(
-                TestGuestManagerDelegate::GetInstance());
+            set_guest_manager_for_testing(
+                TestGuestManager::GetInstance());
     RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
         embedder_web_contents->GetRenderViewHost());
     RenderFrameHost* rfh = embedder_web_contents->GetMainFrame();
@@ -295,9 +295,8 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     ASSERT_TRUE(test_embedder_);
 
     test_guest_manager_ =
-        static_cast<TestGuestManagerDelegate*>(
-            embedder_web_contents->GetBrowserContext()->
-                GetGuestManagerDelegate());
+        static_cast<TestGuestManager*>(
+            embedder_web_contents->GetBrowserContext()->GetGuestManager());
 
     WebContentsImpl* test_guest_web_contents =
         test_guest_manager_->WaitForGuestAdded();
@@ -309,14 +308,14 @@ class BrowserPluginHostTest : public ContentBrowserTest {
 
   TestBrowserPluginEmbedder* test_embedder() const { return test_embedder_; }
   TestBrowserPluginGuest* test_guest() const { return test_guest_; }
-  TestGuestManagerDelegate* test_guest_manager() const {
+  TestGuestManager* test_guest_manager() const {
     return test_guest_manager_;
   }
 
  private:
   TestBrowserPluginEmbedder* test_embedder_;
   TestBrowserPluginGuest* test_guest_;
-  TestGuestManagerDelegate* test_guest_manager_;
+  TestGuestManager* test_guest_manager_;
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostTest);
 };
 

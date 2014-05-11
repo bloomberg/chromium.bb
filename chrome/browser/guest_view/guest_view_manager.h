@@ -9,7 +9,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 
@@ -21,7 +21,7 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-class GuestViewManager : public content::BrowserPluginGuestManagerDelegate,
+class GuestViewManager : public content::BrowserPluginGuestManager,
                          public base::SupportsUserData::Data {
  public:
   explicit GuestViewManager(content::BrowserContext* context);
@@ -38,7 +38,7 @@ class GuestViewManager : public content::BrowserPluginGuestManagerDelegate,
       int guest_instance_id,
       int embedder_render_process_id);
 
-  // BrowserPluginGuestManagerDelegate implementation.
+  // BrowserPluginGuestManager implementation.
   virtual content::WebContents* CreateGuest(
       content::SiteInstance* embedder_site_instance,
       int instance_id,

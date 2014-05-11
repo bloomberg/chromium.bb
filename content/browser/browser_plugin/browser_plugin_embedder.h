@@ -32,7 +32,7 @@ class Point;
 namespace content {
 
 class BrowserPluginGuest;
-class BrowserPluginGuestManagerDelegate;
+class BrowserPluginGuestManager;
 class BrowserPluginHostFactory;
 class RenderWidgetHostImpl;
 class WebContentsImpl;
@@ -88,7 +88,7 @@ class CONTENT_EXPORT BrowserPluginEmbedder : public WebContentsObserver {
 
   explicit BrowserPluginEmbedder(WebContentsImpl* web_contents);
 
-  BrowserPluginGuestManagerDelegate* GetBrowserPluginGuestManager() const;
+  BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
   bool DidSendScreenRectsCallback(WebContents* guest_web_contents);
 

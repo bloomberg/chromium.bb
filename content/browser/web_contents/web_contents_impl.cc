@@ -57,7 +57,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
@@ -1414,7 +1414,7 @@ void WebContentsImpl::CreateNewWindow(
     // This makes |new_contents| act as a guest.
     // For more info, see comment above class BrowserPluginGuest.
     int instance_id =
-        GetBrowserContext()->GetGuestManagerDelegate()->GetNextInstanceID();
+        GetBrowserContext()->GetGuestManager()->GetNextInstanceID();
     WebContentsImpl* new_contents_impl =
         static_cast<WebContentsImpl*>(new_contents);
     BrowserPluginGuest::CreateWithOpener(instance_id,

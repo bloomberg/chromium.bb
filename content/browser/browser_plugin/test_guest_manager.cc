@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/browser_plugin/test_guest_manager_delegate.h"
+#include "content/browser/browser_plugin/test_guest_manager.h"
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -19,7 +19,7 @@
 namespace content {
 
 class GuestWebContentsObserver
-    : public content::WebContentsObserver {
+    : public WebContentsObserver {
  public:
   explicit GuestWebContentsObserver(WebContents* guest_web_contents)
       : WebContentsObserver(guest_web_contents),
@@ -30,7 +30,7 @@ class GuestWebContentsObserver
   }
 
   virtual void WebContentsDestroyed() OVERRIDE {
-    TestGuestManagerDelegate::GetInstance()->RemoveGuest(guest_instance_id_);
+    TestGuestManager::GetInstance()->RemoveGuest(guest_instance_id_);
     delete this;
   }
 
@@ -39,20 +39,20 @@ class GuestWebContentsObserver
   DISALLOW_COPY_AND_ASSIGN(GuestWebContentsObserver);
 };
 
-TestGuestManagerDelegate::TestGuestManagerDelegate()
+TestGuestManager::TestGuestManager()
     : last_guest_added_(NULL),
       next_instance_id_(0) {
 }
 
-TestGuestManagerDelegate::~TestGuestManagerDelegate() {
+TestGuestManager::~TestGuestManager() {
 }
 
 // static.
-TestGuestManagerDelegate* TestGuestManagerDelegate::GetInstance() {
-  return Singleton<TestGuestManagerDelegate>::get();
+TestGuestManager* TestGuestManager::GetInstance() {
+  return Singleton<TestGuestManager>::get();
 }
 
-WebContentsImpl* TestGuestManagerDelegate::WaitForGuestAdded() {
+WebContentsImpl* TestGuestManager::WaitForGuestAdded() {
   // Check if guests were already created.
   if (last_guest_added_) {
     WebContentsImpl* last_guest_added = last_guest_added_;
@@ -67,7 +67,7 @@ WebContentsImpl* TestGuestManagerDelegate::WaitForGuestAdded() {
   return last_guest_added;
 }
 
-content::WebContents* TestGuestManagerDelegate::CreateGuest(
+WebContents* TestGuestManager::CreateGuest(
     SiteInstance* embedder_site_instance,
     int instance_id,
     const std::string& storage_partition_id,
@@ -79,7 +79,7 @@ content::WebContents* TestGuestManagerDelegate::CreateGuest(
   std::string url_encoded_partition = net::EscapeQueryParamValue(
       storage_partition_id, false);
   GURL guest_site(base::StringPrintf("%s://%s/%s?%s",
-                                     content::kGuestScheme,
+                                     kGuestScheme,
                                      host.c_str(),
                                      persist_storage ? "persist" : "",
                                      url_encoded_partition.c_str()));
@@ -105,11 +105,11 @@ content::WebContents* TestGuestManagerDelegate::CreateGuest(
   return guest_web_contents;
 }
 
-int TestGuestManagerDelegate::GetNextInstanceID() {
+int TestGuestManager::GetNextInstanceID() {
   return ++next_instance_id_;
 }
 
-void TestGuestManagerDelegate::AddGuest(
+void TestGuestManager::AddGuest(
     int guest_instance_id,
     WebContents* guest_web_contents) {
   DCHECK(guest_web_contents_by_instance_id_.find(guest_instance_id) ==
@@ -121,7 +121,7 @@ void TestGuestManagerDelegate::AddGuest(
     message_loop_runner_->Quit();
 }
 
-void TestGuestManagerDelegate::RemoveGuest(
+void TestGuestManager::RemoveGuest(
     int guest_instance_id) {
   GuestInstanceMap::iterator it =
       guest_web_contents_by_instance_id_.find(guest_instance_id);
@@ -129,7 +129,7 @@ void TestGuestManagerDelegate::RemoveGuest(
   guest_web_contents_by_instance_id_.erase(it);
 }
 
-void TestGuestManagerDelegate::MaybeGetGuestByInstanceIDOrKill(
+void TestGuestManager::MaybeGetGuestByInstanceIDOrKill(
     int guest_instance_id,
     int embedder_render_process_id,
     const GuestByInstanceIDCallback& callback) {
@@ -142,7 +142,7 @@ void TestGuestManagerDelegate::MaybeGetGuestByInstanceIDOrKill(
   callback.Run(it->second);
 }
 
-SiteInstance* TestGuestManagerDelegate::GetGuestSiteInstance(
+SiteInstance* TestGuestManager::GetGuestSiteInstance(
   const GURL& guest_site) {
   for (GuestInstanceMap::const_iterator it =
        guest_web_contents_by_instance_id_.begin();
@@ -153,7 +153,7 @@ SiteInstance* TestGuestManagerDelegate::GetGuestSiteInstance(
   return NULL;
 }
 
-bool TestGuestManagerDelegate::ForEachGuest(
+bool TestGuestManager::ForEachGuest(
     WebContents* embedder_web_contents,
     const GuestCallback& callback) {
   for (GuestInstanceMap::iterator it =

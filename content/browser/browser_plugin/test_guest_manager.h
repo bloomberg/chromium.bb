@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BROWSER_PLUGIN_TEST_GUEST_MANAGER_DELEGATE_H_
-#define CONTENT_BROWSER_BROWSER_PLUGIN_TEST_GUEST_MANAGER_DELEGATE_H_
+#ifndef CONTENT_BROWSER_BROWSER_PLUGIN_TEST_GUEST_MANAGER_H_
+#define CONTENT_BROWSER_BROWSER_PLUGIN_TEST_GUEST_MANAGER_H_
 
 #include <map>
 
 #include "base/memory/singleton.h"
-#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 
 namespace content {
 
@@ -17,11 +17,11 @@ class WebContentsImpl;
 
 // This class is temporary until BrowserPluginHostTest.* tests are entirely
 // moved out of content.
-class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
+class TestGuestManager : public BrowserPluginGuestManager {
  public:
-  virtual ~TestGuestManagerDelegate();
+  virtual ~TestGuestManager();
 
-  static TestGuestManagerDelegate* GetInstance();
+  static TestGuestManager* GetInstance();
 
   void AddGuest(int guest_instance_id, WebContents* guest_web_contents);
   void RemoveGuest(int guest_instance_id);
@@ -30,9 +30,9 @@ class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
   // Waits until at least one guest is added to this guest manager.
   WebContentsImpl* WaitForGuestAdded();
 
-  // BrowserPluginGuestManagerDelegate implementation.
-  virtual content::WebContents* CreateGuest(
-      content::SiteInstance* embedder_site_instance,
+  // BrowserPluginGuestManager implementation.
+  virtual WebContents* CreateGuest(
+      SiteInstance* embedder_site_instance,
       int instance_id,
       const std::string& storage_partition_id,
       bool persist_storage,
@@ -46,8 +46,8 @@ class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
                             const GuestCallback& callback) OVERRIDE;
 
  private:
-  friend struct DefaultSingletonTraits<TestGuestManagerDelegate>;
-  TestGuestManagerDelegate();
+  friend struct DefaultSingletonTraits<TestGuestManager>;
+  TestGuestManager();
 
   // Contains guests' WebContents, mapping from their instance ids.
   typedef std::map<int, WebContents*> GuestInstanceMap;
@@ -56,9 +56,9 @@ class TestGuestManagerDelegate : public BrowserPluginGuestManagerDelegate {
   int next_instance_id_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestGuestManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestGuestManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BROWSER_PLUGIN_TEST_GUEST_MANAGER_DELEGATE_H_
+#endif  // CONTENT_BROWSER_BROWSER_PLUGIN_TEST_GUEST_MANAGER_H_

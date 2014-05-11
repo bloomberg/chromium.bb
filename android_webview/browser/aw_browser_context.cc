@@ -286,8 +286,7 @@ AwBrowserContext::GetGeolocationPermissionContext() {
   return geolocation_permission_context_.get();
 }
 
-content::BrowserPluginGuestManagerDelegate*
-AwBrowserContext::GetGuestManagerDelegate() {
+content::BrowserPluginGuestManager* AwBrowserContext::GetGuestManager() {
   return NULL;
 }
 

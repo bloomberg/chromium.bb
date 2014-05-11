@@ -29,7 +29,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -310,7 +310,7 @@ void BrowserPluginGuest::RequestPermission(
 
 BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
     const OpenURLParams& params) {
-  BrowserPluginGuestManagerDelegate* guest_manager =
+  BrowserPluginGuestManager* guest_manager =
       GetBrowserPluginGuestManager();
 
   // Allocate a new instance ID for the new guest.
@@ -582,9 +582,9 @@ void BrowserPluginGuest::CopyFromCompositingSurface(
           copy_request_id_, src_subrect, dst_size));
 }
 
-BrowserPluginGuestManagerDelegate*
+BrowserPluginGuestManager*
 BrowserPluginGuest::GetBrowserPluginGuestManager() const {
-  return GetWebContents()->GetBrowserContext()->GetGuestManagerDelegate();
+  return GetWebContents()->GetBrowserContext()->GetGuestManager();
 }
 
 // screen.

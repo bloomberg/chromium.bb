@@ -94,8 +94,7 @@ FakeProfile::GetGeolocationPermissionContext() {
   return NULL;
 }
 
-content::BrowserPluginGuestManagerDelegate*
-FakeProfile::GetGuestManagerDelegate() {
+content::BrowserPluginGuestManager* FakeProfile::GetGuestManager() {
   return NULL;
 }
 

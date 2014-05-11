@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_DELEGATE_H_
-#define CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_DELEGATE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_H_
+#define CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_H_
 
 #include <string>
 
@@ -21,11 +21,11 @@ namespace content {
 class SiteInstance;
 class WebContents;
 
-// A BrowserPluginGuestManagerDelegate offloads guest management and routing
+// A BrowserPluginGuestManager offloads guest management and routing
 // operations outside of the content layer.
-class CONTENT_EXPORT BrowserPluginGuestManagerDelegate {
+class CONTENT_EXPORT BrowserPluginGuestManager {
  public:
-  virtual ~BrowserPluginGuestManagerDelegate() {}
+  virtual ~BrowserPluginGuestManager() {}
 
   // Requests the allocation of a new guest WebContents.
   virtual content::WebContents* CreateGuest(
@@ -62,4 +62,4 @@ class CONTENT_EXPORT BrowserPluginGuestManagerDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_DELEGATE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_MANAGER_H_

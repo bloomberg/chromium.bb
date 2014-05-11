@@ -424,8 +424,8 @@ content::GeolocationPermissionContext*
   return ChromeGeolocationPermissionContextFactory::GetForProfile(this);
 }
 
-content::BrowserPluginGuestManagerDelegate*
-    OffTheRecordProfileImpl::GetGuestManagerDelegate() {
+content::BrowserPluginGuestManager*
+    OffTheRecordProfileImpl::GetGuestManager() {
   return GuestViewManager::FromBrowserContext(this);
 }
 

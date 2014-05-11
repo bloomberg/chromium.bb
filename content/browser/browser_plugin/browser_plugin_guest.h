@@ -59,7 +59,7 @@ class Range;
 
 namespace content {
 
-class BrowserPluginGuestManagerDelegate;
+class BrowserPluginGuestManager;
 class BrowserPluginHostFactory;
 class RenderWidgetHostView;
 class SiteInstance;
@@ -150,7 +150,7 @@ class CONTENT_EXPORT BrowserPluginGuest
       gfx::Size dst_size,
       const base::Callback<void(bool, const SkBitmap&)>& callback);
 
-  BrowserPluginGuestManagerDelegate* GetBrowserPluginGuestManager() const;
+  BrowserPluginGuestManager* GetBrowserPluginGuestManager() const;
 
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(

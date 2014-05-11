@@ -143,8 +143,7 @@ GeolocationPermissionContext*
   return NULL;
 }
 
-BrowserPluginGuestManagerDelegate*
-    TestBrowserContext::GetGuestManagerDelegate() {
+BrowserPluginGuestManager* TestBrowserContext::GetGuestManager() {
   return NULL;
 }
 

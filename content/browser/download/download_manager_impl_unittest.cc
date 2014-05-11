@@ -432,8 +432,7 @@ class MockBrowserContext : public BrowserContext {
   MOCK_METHOD0(GetDownloadManagerDelegate, DownloadManagerDelegate*());
   MOCK_METHOD0(GetGeolocationPermissionContext,
                GeolocationPermissionContext* ());
-  MOCK_METHOD0(GetGuestManagerDelegate,
-               BrowserPluginGuestManagerDelegate* ());
+  MOCK_METHOD0(GetGuestManager, BrowserPluginGuestManager* ());
   MOCK_METHOD0(GetSpecialStoragePolicy, quota::SpecialStoragePolicy*());
 };
 

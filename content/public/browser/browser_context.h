@@ -31,7 +31,7 @@ class SpecialStoragePolicy;
 
 namespace content {
 
-class BrowserPluginGuestManagerDelegate;
+class BrowserPluginGuestManager;
 class DownloadManager;
 class DownloadManagerDelegate;
 class GeolocationPermissionContext;
@@ -170,9 +170,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   // return NULL, in which case geolocation requests will always be allowed.
   virtual GeolocationPermissionContext* GetGeolocationPermissionContext() = 0;
 
-  // Returns the guest manager delegate for this context.
-  virtual content::BrowserPluginGuestManagerDelegate*
-      GetGuestManagerDelegate() = 0;
+  // Returns the guest manager for this context.
+  virtual BrowserPluginGuestManager* GetGuestManager() = 0;
 
   // Returns a special storage policy implementation, or NULL.
   virtual quota::SpecialStoragePolicy* GetSpecialStoragePolicy() = 0;

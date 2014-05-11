@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/browser_plugin_guest_manager_delegate.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 
 #include "base/values.h"
 
 namespace content {
 
-content::WebContents* BrowserPluginGuestManagerDelegate::CreateGuest(
+content::WebContents* BrowserPluginGuestManager::CreateGuest(
     SiteInstance* embedder_site_instance,
     int instance_id,
     const std::string& storage_partition_id,
@@ -17,11 +17,11 @@ content::WebContents* BrowserPluginGuestManagerDelegate::CreateGuest(
   return NULL;
 }
 
-int BrowserPluginGuestManagerDelegate::GetNextInstanceID() {
+int BrowserPluginGuestManager::GetNextInstanceID() {
   return 0;
 }
 
-bool BrowserPluginGuestManagerDelegate::ForEachGuest(
+bool BrowserPluginGuestManager::ForEachGuest(
     WebContents* embedder_web_contents,
     const GuestCallback& callback) {
   return false;
