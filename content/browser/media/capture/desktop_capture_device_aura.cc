@@ -19,6 +19,7 @@
 #include "media/video/capture/video_capture_types.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
@@ -458,6 +459,8 @@ gfx::Point DesktopVideoCaptureMachine::UpdateCursorState(
   }
 
   gfx::Point cursor_position = aura::Env::GetInstance()->last_mouse_location();
+  aura::client::GetScreenPositionClient(desktop_window_->GetRootWindow())->
+      ConvertPointFromScreen(desktop_window_, &cursor_position);
   const gfx::Point hot_point_in_dip = ui::ConvertPointToDIP(
       desktop_layer_, cursor_hot_point_);
   cursor_position.Offset(-desktop_bounds.x() - hot_point_in_dip.x(),
