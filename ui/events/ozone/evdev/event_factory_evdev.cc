@@ -156,7 +156,7 @@ EventFactoryEvdev::EventFactoryEvdev(
 EventFactoryEvdev::~EventFactoryEvdev() { STLDeleteValues(&converters_); }
 
 void EventFactoryEvdev::DispatchUiEvent(Event* event) {
-  EventFactoryOzone::DispatchEvent(event);
+  DispatchEvent(event);
 }
 
 void EventFactoryEvdev::AttachInputDevice(

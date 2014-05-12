@@ -15,6 +15,7 @@
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
 #include "ui/events/ozone/event_factory_ozone.h"
+#include "ui/events/platform/platform_event_source.h"
 
 namespace ui {
 
@@ -22,8 +23,9 @@ class CursorDelegateEvdev;
 class DeviceManager;
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
-class EVENTS_EXPORT EventFactoryEvdev
-    : public EventFactoryOzone, DeviceEventObserver {
+class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone,
+                                        public DeviceEventObserver,
+                                        public PlatformEventSource {
  public:
   EventFactoryEvdev();
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
