@@ -149,6 +149,7 @@ void DeviceSettingsProvider::OwnershipStatusChanged() {
     // immediate.
     DCHECK(!store_callback_factory_.HasWeakPtrs());
 
+    trusted_status_ = TEMPORARILY_UNTRUSTED;
     // Apply the locally-accumulated device settings on top of the initial
     // settings from the service and write back the result.
     if (device_settings_service_->device_settings()) {

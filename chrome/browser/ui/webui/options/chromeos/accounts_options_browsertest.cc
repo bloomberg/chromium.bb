@@ -121,9 +121,7 @@ IN_PROC_BROWSER_TEST_F(AccountsOptionsTest, PRE_MultiProfilesAccountsOptions) {
   StartupUtils::MarkOobeCompleted();
 }
 
-// TODO(pastarmovj): Enable this test once https://crbug.com/362430 is fixed.
-IN_PROC_BROWSER_TEST_F(AccountsOptionsTest,
-                       DISABLED_MultiProfilesAccountsOptions) {
+IN_PROC_BROWSER_TEST_F(AccountsOptionsTest, MultiProfilesAccountsOptions) {
   LoginUser(kTestUsers[0]);
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
