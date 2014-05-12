@@ -13366,7 +13366,7 @@ After you create a new supervised user, you can manage their settings at any tim
         Choose a supervised user to add to this device.
       </message>
       <message name="IDS_CREATE_NEW_USER_LINK" desc="The text for the 'Create a new user' link button. The button takes the user back from the dialog for importing an existing supervised user to the user creation dialog.">
-        Create a new user
+        Create a new supervised user
       </message>
       <message name="IDS_IMPORT_EXISTING_MANAGED_USER_OK" desc="Text on the button to confirm importing an existing supervised user.">
         Import supervised user
