@@ -172,7 +172,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
   // Return true if loading progress has been made since the last time this
   // method was called.
-  bool DidLoadingProgress() const;
+  bool DidLoadingProgress();
 
   // Gets the current pipeline statistics.
   PipelineStatistics GetStatistics() const;
@@ -345,7 +345,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
 
   // True when AddBufferedTimeRange() has been called more recently than
   // DidLoadingProgress().
-  mutable bool did_loading_progress_;
+  bool did_loading_progress_;
 
   // Current volume level (from 0.0f to 1.0f).  This value is set immediately
   // via SetVolume() and a task is dispatched on the task runner to notify the

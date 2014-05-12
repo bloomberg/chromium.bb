@@ -47,7 +47,7 @@ void BufferedDataSourceHostImpl::AddBufferedTimeRanges(
   }
 }
 
-bool BufferedDataSourceHostImpl::DidLoadingProgress() const {
+bool BufferedDataSourceHostImpl::DidLoadingProgress() {
   bool ret = did_loading_progress_;
   did_loading_progress_ = false;
   return ret;

@@ -316,6 +316,11 @@ bool WebMediaPlayerMS::didLoadingProgress() const {
   return true;
 }
 
+bool WebMediaPlayerMS::didLoadingProgress() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return true;
+}
+
 void WebMediaPlayerMS::paint(WebCanvas* canvas,
                              const WebRect& rect,
                              unsigned char alpha) {

@@ -29,9 +29,7 @@ class CONTENT_EXPORT BufferedDataSourceHostImpl
       media::Ranges<base::TimeDelta>* buffered_time_ranges,
       base::TimeDelta media_duration);
 
-  // TODO(sandersd): Change this to non-const along with Pipeline's version.
-  // http://crbug.com/360251
-  bool DidLoadingProgress() const;
+  bool DidLoadingProgress();
 
  private:
   // Total size of the data source.
@@ -42,7 +40,7 @@ class CONTENT_EXPORT BufferedDataSourceHostImpl
 
   // True when AddBufferedByteRange() has been called more recently than
   // DidLoadingProgress().
-  mutable bool did_loading_progress_;
+  bool did_loading_progress_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSourceHostImpl);
 };

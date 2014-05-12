@@ -169,7 +169,7 @@ TimeDelta Pipeline::GetMediaDuration() const {
   return clock_->Duration();
 }
 
-bool Pipeline::DidLoadingProgress() const {
+bool Pipeline::DidLoadingProgress() {
   base::AutoLock auto_lock(lock_);
   bool ret = did_loading_progress_;
   did_loading_progress_ = false;

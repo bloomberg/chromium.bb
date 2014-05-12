@@ -132,7 +132,10 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual double timelineOffset() const;
   virtual double currentTime() const;
 
+  // TODO(sandersd): Remove const version.
+  // http://crbug.com/360251
   virtual bool didLoadingProgress() const;
+  virtual bool didLoadingProgress();
 
   // Internal states of loading and network.
   virtual blink::WebMediaPlayer::NetworkState networkState() const;
@@ -331,7 +334,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   base::TimeDelta seek_time_;
 
   // Whether loading has progressed since the last call to didLoadingProgress.
-  mutable bool did_loading_progress_;
+  bool did_loading_progress_;
 
   // Manager for managing this object and for delegating method calls on
   // Render Thread.

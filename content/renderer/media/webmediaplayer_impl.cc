@@ -538,6 +538,10 @@ double WebMediaPlayerImpl::maxTimeSeekable() const {
 }
 
 bool WebMediaPlayerImpl::didLoadingProgress() const {
+  return const_cast<WebMediaPlayerImpl*>(this)->didLoadingProgress();
+}
+
+bool WebMediaPlayerImpl::didLoadingProgress() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   bool pipeline_progress = pipeline_.DidLoadingProgress();
   bool data_progress = buffered_data_source_host_.DidLoadingProgress();
