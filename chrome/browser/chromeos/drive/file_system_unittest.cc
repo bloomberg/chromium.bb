@@ -789,7 +789,8 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(entry->local_id(), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(entry->local_id(), &cache_entry));
   EXPECT_TRUE(cache_entry.is_pinned());
   EXPECT_TRUE(cache_entry.is_present());
 
@@ -800,7 +801,8 @@ TEST_F(FileSystemTest, PinAndUnpin) {
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  EXPECT_TRUE(cache_->GetCacheEntry(entry->local_id(), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(entry->local_id(), &cache_entry));
   EXPECT_FALSE(cache_entry.is_pinned());
 
   // Pinned file gets synced and it results in entry state changes.
@@ -835,7 +837,8 @@ TEST_F(FileSystemTest, PinAndUnpin_NotSynced) {
 
   // No cache file available because the sync was cancelled by Unpin().
   FileCacheEntry cache_entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(entry->local_id(), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            cache_->GetCacheEntry(entry->local_id(), &cache_entry));
 }
 
 TEST_F(FileSystemTest, GetAvailableSpace) {

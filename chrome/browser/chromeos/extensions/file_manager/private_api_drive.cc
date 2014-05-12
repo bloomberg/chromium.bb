@@ -319,16 +319,20 @@ class SingleDriveEntryPropertiesGetter {
                    GetWeakPtr()));
   }
 
-  void CacheStateReceived(bool /* success */,
+  void CacheStateReceived(drive::FileError error,
                           const drive::FileCacheEntry& cache_entry) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    // In case of an error (i.e. success is false), cache_entry.is_*() all
-    // returns false.
-    properties_->is_pinned.reset(new bool(cache_entry.is_pinned()));
-    properties_->is_present.reset(new bool(cache_entry.is_present()));
-
-    CompleteGetFileProperties(drive::FILE_ERROR_OK);
+    if (error == drive::FILE_ERROR_OK) {
+      properties_->is_pinned.reset(new bool(cache_entry.is_pinned()));
+      properties_->is_present.reset(new bool(cache_entry.is_present()));
+    } else if (error == drive::FILE_ERROR_NOT_FOUND) {
+      // NOT_FOUND is not an error, return OK instead.
+      error = drive::FILE_ERROR_OK;
+      properties_->is_pinned.reset(new bool(false));
+      properties_->is_present.reset(new bool(false));
+    }
+    CompleteGetFileProperties(error);
   }
 
   void CompleteGetFileProperties(drive::FileError error) {

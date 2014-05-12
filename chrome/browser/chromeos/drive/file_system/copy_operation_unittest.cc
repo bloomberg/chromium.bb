@@ -62,7 +62,6 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
   EXPECT_EQ(1U, observer()->updated_local_ids().count(
       GetLocalId(remote_dest_path)));
   FileCacheEntry cache_entry;
-  bool found = false;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,
@@ -70,9 +69,9 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_RegularFile) {
                  base::Unretained(cache()),
                  GetLocalId(remote_dest_path),
                  &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&found));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
-  EXPECT_TRUE(found);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
 
@@ -107,15 +106,14 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_Overwrite) {
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_dest_path, &entry));
   EXPECT_EQ(1U, observer()->updated_local_ids().count(entry.local_id()));
   FileCacheEntry cache_entry;
-  bool found = false;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,
       base::Bind(&internal::FileCache::GetCacheEntry,
                  base::Unretained(cache()), entry.local_id(), &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&found));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
-  EXPECT_TRUE(found);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
 
@@ -351,7 +349,6 @@ TEST_F(CopyOperationTest, CopyDirtyFile) {
   EXPECT_TRUE(observer()->get_changed_paths().count(dest_path.DirName()));
 
   // Copied cache file should be dirty.
-  bool success = false;
   FileCacheEntry cache_entry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
@@ -360,9 +357,9 @@ TEST_F(CopyOperationTest, CopyDirtyFile) {
                  base::Unretained(cache()),
                  dest_entry.local_id(),
                  &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&success));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
-  EXPECT_TRUE(success);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(cache_entry.is_dirty());
 
   // File contents should match.

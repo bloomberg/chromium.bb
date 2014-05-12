@@ -55,7 +55,9 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
     return error;
 
   FileCacheEntry cache_entry;
-  cache->GetCacheEntry(local_id, &cache_entry);
+  error = cache->GetCacheEntry(local_id, &cache_entry);
+  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
+    return error;
   if (!local_state->entry.file_info().is_directory() &&
       !cache_entry.is_present() && local_state->entry.resource_id().empty()) {
     // Locally created file with no cache file, store an empty file.
@@ -66,8 +68,9 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
                          FileCache::FILE_OPERATION_MOVE);
     if (error != FILE_ERROR_OK)
       return error;
-    if (!cache->GetCacheEntry(local_id, &cache_entry))
-      return FILE_ERROR_NOT_FOUND;
+    error = cache->GetCacheEntry(local_id, &cache_entry);
+    if (error != FILE_ERROR_OK)
+      return error;
   }
 
   // Check if content update is needed or not.
@@ -77,8 +80,9 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
       error = cache->UpdateMd5(local_id);
       if (error != FILE_ERROR_OK)
         return error;
-      if (!cache->GetCacheEntry(local_id, &cache_entry))
-        return FILE_ERROR_NOT_FOUND;
+      error = cache->GetCacheEntry(local_id, &cache_entry);
+      if (error != FILE_ERROR_OK)
+        return error;
     }
 
     if (cache_entry.md5() == local_state->entry.file_specific_info().md5()) {
@@ -163,8 +167,10 @@ FileError FinishUpdate(ResourceMetadata* metadata,
 
   // Clear dirty bit unless the file has been edited during update.
   FileCacheEntry cache_entry;
-  if (cache->GetCacheEntry(local_id, &cache_entry) &&
-      cache_entry.is_dirty() &&
+  error = cache->GetCacheEntry(local_id, &cache_entry);
+  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
+    return error;
+  if (cache_entry.is_dirty() &&
       cache_entry.md5() == entry.file_specific_info().md5()) {
     error = cache->ClearDirty(local_id);
     if (error != FILE_ERROR_OK)

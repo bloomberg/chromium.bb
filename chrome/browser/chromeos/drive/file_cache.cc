@@ -71,10 +71,11 @@ bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
   return cache_file_directory_.IsParent(path);
 }
 
-bool FileCache::GetCacheEntry(const std::string& id, FileCacheEntry* entry) {
+FileError FileCache::GetCacheEntry(const std::string& id,
+                                   FileCacheEntry* entry) {
   DCHECK(entry);
   AssertOnSequencedWorkerPool();
-  return storage_->GetCacheEntry(id, entry) == FILE_ERROR_OK;
+  return storage_->GetCacheEntry(id, entry);
 }
 
 scoped_ptr<FileCache::Iterator> FileCache::GetIterator() {

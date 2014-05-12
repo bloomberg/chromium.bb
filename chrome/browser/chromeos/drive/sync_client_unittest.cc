@@ -276,17 +276,21 @@ TEST_F(SyncClientTest, StartProcessingBacklog) {
 
   FileCacheEntry cache_entry;
   // Pinned files get downloaded.
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("bar"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("bar"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("baz"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("baz"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 
   // Dirty file gets uploaded.
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_dirty());
 
   // Removed entry is not found.
@@ -318,7 +322,8 @@ TEST_F(SyncClientTest, AddFetchTask) {
   base::RunLoop().RunUntilIdle();
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 }
 
@@ -330,7 +335,8 @@ TEST_F(SyncClientTest, AddFetchTaskAndCancelled) {
 
   // The file should be unpinned if the user wants the download to be cancelled.
   FileCacheEntry cache_entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
 }
 
 TEST_F(SyncClientTest, RemoveFetchTask) {
@@ -344,13 +350,16 @@ TEST_F(SyncClientTest, RemoveFetchTask) {
 
   // Only "bar" should be fetched.
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_present());
 
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("bar"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("bar"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
 
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("baz"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("baz"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_present());
 
 }
@@ -397,9 +406,11 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
 
   // Not yet fetched nor uploaded.
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_present());
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_dirty());
 
   // Switch to online.
@@ -409,9 +420,11 @@ TEST_F(SyncClientTest, RetryOnDisconnection) {
   base::RunLoop().RunUntilIdle();
 
   // Fetched and uploaded.
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("foo"), &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->GetCacheEntry(GetLocalId("dirty"), &cache_entry));
   EXPECT_FALSE(cache_entry.is_dirty());
 }
 

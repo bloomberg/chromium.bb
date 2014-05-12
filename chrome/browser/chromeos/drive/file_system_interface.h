@@ -125,9 +125,7 @@ typedef base::Callback<void(FileError error,
     MarkMountedCallback;
 
 // Callback for GetCacheEntry.
-// |success| indicates if the operation was successful.
-// |cache_entry| is the obtained cache entry.
-typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
+typedef base::Callback<void(FileError error, const FileCacheEntry& cache_entry)>
     GetCacheEntryCallback;
 
 // Used to get file path.

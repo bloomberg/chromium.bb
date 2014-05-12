@@ -92,7 +92,6 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_Exist) {
   EXPECT_EQ(src_entry.resource_id(), entry->resource_id());
 
   // Checks that it presents in cache and marked dirty.
-  bool success = false;
   FileCacheEntry cache_entry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
@@ -101,9 +100,9 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_Exist) {
                  base::Unretained(cache()),
                  GetLocalId(drive_path),
                  &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&success));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
-  EXPECT_TRUE(success);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
 

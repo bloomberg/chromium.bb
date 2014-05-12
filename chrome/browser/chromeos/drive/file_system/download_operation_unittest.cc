@@ -145,7 +145,6 @@ TEST_F(DownloadOperationTest,
 
   // The cache entry should be removed in order to free up space.
   FileCacheEntry cache_entry;
-  bool result = true;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
       FROM_HERE,
@@ -153,9 +152,9 @@ TEST_F(DownloadOperationTest,
                  base::Unretained(cache()),
                  "<id>",
                  &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&result));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
-  ASSERT_FALSE(result);
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
 }
 
 TEST_F(DownloadOperationTest,

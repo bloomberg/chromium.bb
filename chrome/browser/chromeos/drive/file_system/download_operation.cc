@@ -119,8 +119,10 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   }
 
   FileCacheEntry cache_entry;
-  if (!cache->GetCacheEntry(local_id, &cache_entry) ||
-      !cache_entry.is_present()) {  // This file has no cache file.
+  error = cache->GetCacheEntry(local_id, &cache_entry);
+  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
+    return error;
+  if (!cache_entry.is_present()) {  // This file has no cache file.
     if (!entry->resource_id().empty()) {
       // This entry exists on the server, leave |cache_file_path| empty to
       // start download.
@@ -139,8 +141,9 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     if (error != FILE_ERROR_OK)
       return error;
 
-    if (!cache->GetCacheEntry(local_id, &cache_entry))
-      return FILE_ERROR_NOT_FOUND;
+    error = cache->GetCacheEntry(local_id, &cache_entry);
+    if (error != FILE_ERROR_OK)
+      return error;
   }
 
   // Leave |cache_file_path| empty when the stored file is obsolete and has no
@@ -232,7 +235,10 @@ FileError UpdateLocalStateForDownloadFile(
 
   // Do not overwrite locally edited file with server side contents.
   FileCacheEntry cache_entry;
-  if (cache->GetCacheEntry(local_id, &cache_entry) && cache_entry.is_dirty())
+  error = cache->GetCacheEntry(local_id, &cache_entry);
+  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
+    return error;
+  if (cache_entry.is_dirty())
     return FILE_ERROR_IN_USE;
 
   // Here the download is completed successfully, so store it into the cache.

@@ -64,8 +64,11 @@ FileError GetLocallyStoredResourceEntry(
 
   // When cache is not found, use the original resource entry as is.
   FileCacheEntry cache_entry;
-  if (!cache->GetCacheEntry(local_id, &cache_entry))
+  error = cache->GetCacheEntry(local_id, &cache_entry);
+  if (error == FILE_ERROR_NOT_FOUND)
     return FILE_ERROR_OK;
+  if (error != FILE_ERROR_OK)
+    return error;
 
   // When cache is non-dirty and obsolete (old hash), use the original entry.
   if (!cache_entry.is_dirty() &&
@@ -155,13 +158,14 @@ void RunMarkMountedCallback(const MarkMountedCallback& callback,
 }
 
 // Used to implement GetCacheEntry.
-bool GetCacheEntryInternal(internal::ResourceMetadata* resource_metadata,
-                                 internal::FileCache* cache,
-                                 const base::FilePath& drive_file_path,
-                                 FileCacheEntry* cache_entry) {
+FileError GetCacheEntryInternal(internal::ResourceMetadata* resource_metadata,
+                                internal::FileCache* cache,
+                                const base::FilePath& drive_file_path,
+                                FileCacheEntry* cache_entry) {
   std::string id;
-  if (resource_metadata->GetIdByPath(drive_file_path, &id) != FILE_ERROR_OK)
-    return false;
+  FileError error = resource_metadata->GetIdByPath(drive_file_path, &id);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   return cache->GetCacheEntry(id, cache_entry);
 }
@@ -169,9 +173,9 @@ bool GetCacheEntryInternal(internal::ResourceMetadata* resource_metadata,
 // Runs the callback with arguments.
 void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
                               const FileCacheEntry* cache_entry,
-                              bool success) {
+                              FileError error) {
   DCHECK(!callback.is_null());
-  callback.Run(success, *cache_entry);
+  callback.Run(error, *cache_entry);
 }
 
 // Callback for ResourceMetadata::GetLargestChangestamp.

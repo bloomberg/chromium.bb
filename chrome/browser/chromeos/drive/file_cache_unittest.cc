@@ -173,10 +173,10 @@ TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
 
   // Only 'temporary' file gets removed.
   FileCacheEntry entry;
-  EXPECT_FALSE(cache_->GetCacheEntry(id_tmp, &entry));
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, cache_->GetCacheEntry(id_tmp, &entry));
   EXPECT_FALSE(base::PathExists(tmp_path));
 
-  EXPECT_TRUE(cache_->GetCacheEntry(id_pinned, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id_pinned, &entry));
   EXPECT_TRUE(base::PathExists(pinned_path));
 
   // Returns false when disk space cannot be freed.
@@ -245,7 +245,7 @@ TEST_F(FileCacheTest, Store) {
       id, md5, src_file_path, FileCache::FILE_OPERATION_COPY));
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_EQ(md5, cache_entry.md5());
 
@@ -262,7 +262,7 @@ TEST_F(FileCacheTest, Store) {
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
       id, std::string(), src_file_path, FileCache::FILE_OPERATION_COPY));
 
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &cache_entry));
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.md5().empty());
   EXPECT_TRUE(cache_entry.is_dirty());
@@ -287,32 +287,33 @@ TEST_F(FileCacheTest, PinAndUnpin) {
       id, md5, src_file_path, FileCache::FILE_OPERATION_COPY));
 
   FileCacheEntry cache_entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &cache_entry));
   EXPECT_FALSE(cache_entry.is_pinned());
 
   // Pin the existing file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(id));
 
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &cache_entry));
   EXPECT_TRUE(cache_entry.is_pinned());
 
   // Unpin the file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Unpin(id));
 
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &cache_entry));
   EXPECT_FALSE(cache_entry.is_pinned());
 
   // Pin a non-present file.
   std::string id_non_present = "id_non_present";
   EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(id_non_present));
 
-  EXPECT_TRUE(cache_->GetCacheEntry(id_non_present, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id_non_present, &cache_entry));
   EXPECT_TRUE(cache_entry.is_pinned());
 
   // Unpin the previously pinned non-existent file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Unpin(id_non_present));
 
-  EXPECT_FALSE(cache_->GetCacheEntry(id_non_present, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
+            cache_->GetCacheEntry(id_non_present, &cache_entry));
 
   // Unpin a file that doesn't exist in cache and is not pinned.
   EXPECT_EQ(FILE_ERROR_NOT_FOUND, cache_->Unpin("id_non_existent"));
@@ -356,7 +357,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
   // Entry is not dirty nor opened.
   EXPECT_FALSE(cache_->IsOpenedForWrite(id));
   FileCacheEntry entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &entry));
   EXPECT_FALSE(entry.is_dirty());
 
   // Open (1).
@@ -365,7 +366,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
   EXPECT_TRUE(cache_->IsOpenedForWrite(id));
 
   // Entry is dirty.
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &entry));
   EXPECT_TRUE(entry.is_dirty());
 
   // Open (2).
@@ -414,12 +415,12 @@ TEST_F(FileCacheTest, UpdateMd5) {
 
   // MD5 was cleared by OpenForWrite().
   FileCacheEntry entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &entry));
   EXPECT_TRUE(entry.md5().empty());
 
   // Update MD5.
   EXPECT_EQ(FILE_ERROR_OK, cache_->UpdateMd5(id));
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &entry));
   EXPECT_EQ(base::MD5String(contents_after), entry.md5());
 }
 
@@ -438,7 +439,7 @@ TEST_F(FileCacheTest, ClearDirty) {
 
   // Entry is dirty.
   FileCacheEntry entry;
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &entry));
   EXPECT_TRUE(entry.is_dirty());
 
   // Cannot clear the dirty bit of an opened entry.
@@ -449,7 +450,7 @@ TEST_F(FileCacheTest, ClearDirty) {
   EXPECT_EQ(FILE_ERROR_OK, cache_->ClearDirty(id));
 
   // Entry is not dirty.
-  EXPECT_TRUE(cache_->GetCacheEntry(id, &entry));
+  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &entry));
   EXPECT_FALSE(entry.is_dirty());
 }
 
@@ -526,13 +527,13 @@ TEST_F(FileCacheTest, ClearAll) {
 
   // Verify that the cache entry is created.
   FileCacheEntry cache_entry;
-  ASSERT_TRUE(cache_->GetCacheEntry(id, &cache_entry));
+  ASSERT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(id, &cache_entry));
 
   // Clear cache.
   EXPECT_TRUE(cache_->ClearAll());
 
   // Verify that the cache is removed.
-  EXPECT_FALSE(cache_->GetCacheEntry(id, &cache_entry));
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, cache_->GetCacheEntry(id, &cache_entry));
   EXPECT_TRUE(base::IsDirectoryEmpty(cache_files_dir_));
 }
 

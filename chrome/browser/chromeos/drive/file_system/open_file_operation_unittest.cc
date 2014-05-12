@@ -163,7 +163,6 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
   close_callback.Run();
   EXPECT_EQ(1U, observer()->updated_local_ids().count(src_entry.local_id()));
 
-  bool success = false;
   FileCacheEntry cache_entry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner(),
@@ -172,9 +171,9 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
                  base::Unretained(cache()),
                  src_entry.local_id(),
                  &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&success));
+      google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
-  EXPECT_TRUE(success);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_TRUE(cache_entry.is_present());
   EXPECT_TRUE(cache_entry.is_dirty());
 }

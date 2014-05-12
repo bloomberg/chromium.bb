@@ -70,7 +70,7 @@ class FileCache {
 
   // Gets the cache entry for file corresponding to |id| and returns true if
   // entry exists in cache map.
-  bool GetCacheEntry(const std::string& id, FileCacheEntry* entry);
+  FileError GetCacheEntry(const std::string& id, FileCacheEntry* entry);
 
   // Returns an object to iterate over entries.
   scoped_ptr<Iterator> GetIterator();
