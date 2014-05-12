@@ -621,7 +621,7 @@ void Canvas::DrawImageIntHelper(const ImageSkia& image,
       image_rep,
       SkShader::kRepeat_TileMode,
       shader_scale,
-      pixel ? 1.0f : image_scale);
+      pixel ? 1.0f : image_rep.scale());
 
   // Set up our paint to use the shader & release our reference (now just owned
   // by the paint).
