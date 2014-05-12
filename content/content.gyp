@@ -421,6 +421,7 @@
             '../ui/android/ui_android.gyp:ui_java',
             'common_aidl',
             'content_common',
+            'content_strings_grd',
             'gesture_event_type_java',
             'page_transition_types_java',
             'popup_item_type_java',
@@ -434,7 +435,6 @@
             'has_java_resources': 1,
             'R_package': 'org.chromium.content',
             'R_package_relpath': 'org/chromium/content',
-            'java_strings_grd': 'android_content_strings.grd',
           },
           'conditions': [
             ['android_webview_build == 0', {
@@ -445,6 +445,16 @@
             }],
           ],
           'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'content_strings_grd',
+          'type': 'none',
+          'variables': {
+            'grd_file': '../content/public/android/java/strings/android_content_strings.grd',
+          },
+          'includes': [
+            '../build/java_strings_grd.gypi',
+          ],
         },
         {
           'target_name': 'gesture_event_type_java',

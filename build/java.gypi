@@ -39,8 +39,6 @@
 #  R_package - The java package in which the R class (which maps resources to
 #    integer IDs) should be generated, e.g. org.chromium.content.
 #  R_package_relpath - Same as R_package, but replace each '.' with '/'.
-#  java_strings_grd - The name of the grd file from which to generate localized
-#    strings.xml files, if any.
 #  res_extra_dirs - A list of extra directories containing Android resources.
 #    These directories may be generated at build time.
 #  res_extra_files - A list of the files in res_extra_dirs.
@@ -66,7 +64,6 @@
     'generated_src_dirs': ['>@(generated_R_dirs)'],
     'generated_R_dirs': [],
     'has_java_resources%': 0,
-    'java_strings_grd%': '',
     'res_extra_dirs': [],
     'res_extra_files': [],
     'res_v14_verify_only%': 0,
@@ -150,28 +147,6 @@
           'additional_R_text_files': ['<(R_text_file)'],
         },
       },
-      'conditions': [
-        ['java_strings_grd != ""', {
-          'variables': {
-            'res_grit_dir': '<(intermediate_dir)/res_grit',
-            'res_input_dirs': ['<(res_grit_dir)'],
-            'grit_grd_file': '<(java_in_dir)/strings/<(java_strings_grd)',
-            'resource_input_paths': ['<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(res_grit_dir)" <(grit_grd_file))'],
-          },
-          'actions': [
-            {
-              'action_name': 'generate_localized_strings_xml',
-              'variables': {
-                'grit_additional_defines': ['-E', 'ANDROID_JAVA_TAGGED_ONLY=false'],
-                'grit_out_dir': '<(res_grit_dir)',
-                # resource_ids is unneeded since we don't generate .h headers.
-                'grit_resource_ids': '',
-              },
-              'includes': ['../build/grit_action.gypi'],
-            },
-          ],
-        }],
-      ],
       'actions': [
         # Generate R.java and crunch image resources.
         {

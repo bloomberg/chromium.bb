@@ -33,12 +33,12 @@
             '../content/content.gyp:screen_orientation_values_java',
             '../content/content.gyp:speech_recognition_error_java',
             '../media/media.gyp:media_android_imageformat_list',
-            '../net/net.gyp:certificate_mime_types_java',
             '../net/net.gyp:cert_verify_status_android_java',
+            '../net/net.gyp:certificate_mime_types_java',
             '../net/net.gyp:net_errors_java',
             '../net/net.gyp:private_key_types_java',
-            '../ui/android/ui_android.gyp:window_open_disposition_java',
             '../ui/android/ui_android.gyp:bitmap_format_java',
+            '../ui/android/ui_android.gyp:window_open_disposition_java',
           ],
         }],
         [ 'android_webview_build==1 and use_system_skia==0', {
@@ -254,6 +254,18 @@
             'java_in_dir': '../android_webview/java',
           },
           'includes': [ '../build/java.gypi' ],
+        },
+      ],
+     }, { # android_webview_build==1
+      'targets': [
+        {
+          'target_name': 'android_webview_strings',
+          'type': 'none',
+          'android_unmangled_name': 1,
+          'dependencies': [
+            '../content/content.gyp:content_strings_grd',
+            '../ui/android/ui_android.gyp:ui_strings_grd',
+          ],
         },
       ],
     }],

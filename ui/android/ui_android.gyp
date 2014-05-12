@@ -39,14 +39,24 @@
         'has_java_resources': 1,
         'R_package': 'org.chromium.ui',
         'R_package_relpath': 'org/chromium/ui',
-        'java_strings_grd': 'android_ui_strings.grd',
       },
       'dependencies': [
         '../../base/base.gyp:base_java',
-        'window_open_disposition_java',
         'bitmap_format_java',
+        'ui_strings_grd',
+        'window_open_disposition_java',
       ],
       'includes': [ '../../build/java.gypi' ],
+    },
+    {
+      'target_name': 'ui_strings_grd',
+      'type': 'none',
+      'variables': {
+        'grd_file': '../../ui/android/java/strings/android_ui_strings.grd',
+      },
+      'includes': [
+        '../../build/java_strings_grd.gypi',
+      ],
     },
   ],
 }

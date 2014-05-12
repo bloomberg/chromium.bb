@@ -44,8 +44,6 @@
 #  resource_dir - The directory for resources.
 #  R_package - A custom Java package to generate the resource file R.java in.
 #    By default, the package given in AndroidManifest.xml will be used.
-#  java_strings_grd - The name of the grd file from which to generate localized
-#    strings.xml files, if any.
 #  use_chromium_linker - Enable the content dynamic linker that allows sharing the
 #    RELRO section of the native libraries between the different processes.
 #  enable_chromium_linker_tests - Enable the content dynamic linker test support
@@ -70,7 +68,6 @@
     'additional_res_dirs': [],
     'additional_res_packages': [],
     'is_test_apk%': 0,
-    'java_strings_grd%': '',
     'resource_input_paths': [],
     'intermediate_dir': '<(PRODUCT_DIR)/<(_target_name)',
     'asset_location%': '<(intermediate_dir)/assets',
@@ -390,29 +387,6 @@
             'output_apk_path': '<(final_apk_path)',
           },
           'includes': [ 'android/finalize_apk_action.gypi']
-        },
-      ],
-    }],
-    ['java_strings_grd != ""', {
-      'variables': {
-        'res_grit_dir': '<(SHARED_INTERMEDIATE_DIR)/<(package_name)_apk/res_grit',
-        'additional_res_dirs': ['<(res_grit_dir)'],
-        # grit_grd_file is used by grit_action.gypi, included below.
-        'grit_grd_file': '<(java_in_dir)/strings/<(java_strings_grd)',
-        'resource_input_paths': [
-          '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(res_grit_dir)" <(grit_grd_file))'
-        ],
-      },
-      'actions': [
-        {
-          'action_name': 'generate_localized_strings_xml',
-          'variables': {
-            'grit_additional_defines': ['-E', 'ANDROID_JAVA_TAGGED_ONLY=false'],
-            'grit_out_dir': '<(res_grit_dir)',
-            # resource_ids is unneeded since we don't generate .h headers.
-            'grit_resource_ids': '',
-          },
-          'includes': ['../build/grit_action.gypi'],
         },
       ],
     }],
