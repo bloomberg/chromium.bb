@@ -610,7 +610,7 @@ void AndroidUsbDevice::TransferError(UsbTransferStatus status) {
 void AndroidUsbDevice::TerminateIfReleased(
     scoped_refptr<UsbDeviceHandle> usb_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (usb_handle->device())
+  if (usb_handle->GetDevice())
     return;
   message_loop_->PostTask(FROM_HERE,
                           base::Bind(&AndroidUsbDevice::Terminate, this));

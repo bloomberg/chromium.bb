@@ -464,15 +464,15 @@ UsbAsyncApiFunction::GetDeviceHandleOrCompleteWithError(
     return NULL;
   }
 
-  if (!resource->device() || !resource->device()->device()) {
+  if (!resource->device() || !resource->device()->GetDevice()) {
     CompleteWithError(kErrorDisconnect);
     manager_->Remove(extension_->id(), input_device_handle.handle);
     return NULL;
   }
 
-  if (resource->device()->device()->vendor_id() !=
+  if (resource->device()->GetDevice()->vendor_id() !=
           input_device_handle.vendor_id ||
-      resource->device()->device()->product_id() !=
+      resource->device()->GetDevice()->product_id() !=
           input_device_handle.product_id) {
     CompleteWithError(kErrorNoDevice);
     return NULL;
@@ -721,8 +721,8 @@ void UsbOpenDeviceFunction::AsyncWorkStart() {
 
   SetResult(PopulateConnectionHandle(
       manager_->Add(new UsbDeviceResource(extension_->id(), handle_)),
-      handle_->device()->vendor_id(),
-      handle_->device()->product_id()));
+      handle_->GetDevice()->vendor_id(),
+      handle_->GetDevice()->product_id()));
   AsyncWorkCompleted();
 }
 
@@ -745,7 +745,7 @@ void UsbListInterfacesFunction::AsyncWorkStart() {
     return;
 
   scoped_refptr<UsbConfigDescriptor> config =
-      device_handle->device()->ListInterfaces();
+      device_handle->GetDevice()->ListInterfaces();
 
   if (!config) {
     SetError(kErrorCannotListInterfaces);

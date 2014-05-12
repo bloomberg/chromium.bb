@@ -16,23 +16,9 @@
 #include "components/usb_service/usb_service_export.h"
 #include "net/base/io_buffer.h"
 
-struct libusb_device_handle;
-struct libusb_iso_packet_descriptor;
-struct libusb_transfer;
-
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace usb_service {
 
-class UsbContext;
-class UsbConfigDescriptor;
 class UsbDevice;
-
-typedef libusb_device_handle* PlatformUsbDeviceHandle;
-typedef libusb_iso_packet_descriptor* PlatformUsbIsoPacketDescriptor;
-typedef libusb_transfer* PlatformUsbTransferHandle;
 
 enum UsbTransferStatus {
   USB_TRANSFER_COMPLETED = 0,
@@ -56,24 +42,23 @@ class USB_SERVICE_EXPORT UsbDeviceHandle
   enum TransferRequestType { STANDARD, CLASS, VENDOR, RESERVED };
   enum TransferRecipient { DEVICE, INTERFACE, ENDPOINT, OTHER };
 
-  scoped_refptr<UsbDevice> device() const;
-  PlatformUsbDeviceHandle handle() const { return handle_; }
+  virtual scoped_refptr<UsbDevice> GetDevice() const = 0;
 
   // Notifies UsbDevice to drop the reference of this object; cancels all the
   // flying transfers.
   // It is possible that the object has no other reference after this call. So
   // if it is called using a raw pointer, it could be invalidated.
   // The platform device handle will be closed when UsbDeviceHandle destructs.
-  virtual void Close();
+  virtual void Close() = 0;
 
   // Device manipulation operations. These methods are blocking and must be
   // called on FILE thread.
-  virtual bool ClaimInterface(const int interface_number);
-  virtual bool ReleaseInterface(const int interface_number);
+  virtual bool ClaimInterface(const int interface_number) = 0;
+  virtual bool ReleaseInterface(const int interface_number) = 0;
   virtual bool SetInterfaceAlternateSetting(const int interface_number,
-                                            const int alternate_setting);
-  virtual bool ResetDevice();
-  virtual bool GetSerial(base::string16* serial);
+                                            const int alternate_setting) = 0;
+  virtual bool ResetDevice() = 0;
+  virtual bool GetSerial(base::string16* serial) = 0;
 
   // Async IO. Can be called on any thread.
   virtual void ControlTransfer(const UsbEndpointDirection direction,
@@ -85,21 +70,21 @@ class USB_SERVICE_EXPORT UsbDeviceHandle
                                net::IOBuffer* buffer,
                                const size_t length,
                                const unsigned int timeout,
-                               const UsbTransferCallback& callback);
+                               const UsbTransferCallback& callback) = 0;
 
   virtual void BulkTransfer(const UsbEndpointDirection direction,
                             const uint8 endpoint,
                             net::IOBuffer* buffer,
                             const size_t length,
                             const unsigned int timeout,
-                            const UsbTransferCallback& callback);
+                            const UsbTransferCallback& callback) = 0;
 
   virtual void InterruptTransfer(const UsbEndpointDirection direction,
                                  const uint8 endpoint,
                                  net::IOBuffer* buffer,
                                  const size_t length,
                                  const unsigned int timeout,
-                                 const UsbTransferCallback& callback);
+                                 const UsbTransferCallback& callback) = 0;
 
   virtual void IsochronousTransfer(const UsbEndpointDirection direction,
                                    const uint8 endpoint,
@@ -108,75 +93,14 @@ class USB_SERVICE_EXPORT UsbDeviceHandle
                                    const unsigned int packets,
                                    const unsigned int packet_length,
                                    const unsigned int timeout,
-                                   const UsbTransferCallback& callback);
+                                   const UsbTransferCallback& callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<UsbDeviceHandle>;
-  friend class UsbDeviceImpl;
 
-  // This constructor is called by UsbDevice.
-  UsbDeviceHandle(scoped_refptr<UsbContext> context,
-                  UsbDevice* device,
-                  PlatformUsbDeviceHandle handle,
-                  scoped_refptr<UsbConfigDescriptor> interfaces);
+  UsbDeviceHandle() {};
 
-  // This constructor variant is for use in testing only.
-  UsbDeviceHandle();
-  virtual ~UsbDeviceHandle();
-
-  UsbDevice* device_;
-
- private:
-  friend void HandleTransferCompletion(PlatformUsbTransferHandle handle);
-
-  class InterfaceClaimer;
-  struct Transfer;
-
-  // Refresh endpoint_map_ after ClaimInterface, ReleaseInterface and
-  // SetInterfaceAlternateSetting.
-  void RefreshEndpointMap();
-
-  // Look up the claimed interface by endpoint. Return NULL if the interface
-  // of the endpoint is not found.
-  scoped_refptr<InterfaceClaimer> GetClaimedInterfaceForEndpoint(
-      unsigned char endpoint);
-
-  // Submits a transfer and starts tracking it. Retains the buffer and copies
-  // the completion callback until the transfer finishes, whereupon it invokes
-  // the callback then releases the buffer.
-  void SubmitTransfer(PlatformUsbTransferHandle handle,
-                      UsbTransferType transfer_type,
-                      net::IOBuffer* buffer,
-                      const size_t length,
-                      scoped_refptr<base::MessageLoopProxy> message_loop_proxy,
-                      const UsbTransferCallback& callback);
-
-  // Invokes the callbacks associated with a given transfer, and removes it from
-  // the in-flight transfer set.
-  void TransferComplete(PlatformUsbTransferHandle transfer);
-
-  // Informs the object to drop internal references.
-  void InternalClose();
-
-  PlatformUsbDeviceHandle handle_;
-
-  scoped_refptr<UsbConfigDescriptor> interfaces_;
-
-  typedef std::map<int, scoped_refptr<InterfaceClaimer> > ClaimedInterfaceMap;
-  ClaimedInterfaceMap claimed_interfaces_;
-
-  typedef std::map<PlatformUsbTransferHandle, Transfer> TransferMap;
-  TransferMap transfers_;
-
-  // A map from endpoints to interfaces
-  typedef std::map<int, int> EndpointMap;
-  EndpointMap endpoint_map_;
-
-  // Retain the UsbContext so that the platform context will not be destroyed
-  // before this handle.
-  scoped_refptr<UsbContext> context_;
-
-  base::ThreadChecker thread_checker_;
+  virtual ~UsbDeviceHandle() {};
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandle);
 };
