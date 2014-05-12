@@ -105,7 +105,10 @@ IN_PROC_BROWSER_TEST_F(ResetTest, ShowAndCancel) {
   JSExpect("!document.querySelector('#reset.hidden')");
   CloseResetScreen();
   JSExpect("!!document.querySelector('#reset.hidden')");
-  EXPECT_EQ(1, update_engine_client_->can_rollback_call_count());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRollbackOption)) {
+    EXPECT_EQ(1, update_engine_client_->can_rollback_call_count());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ResetTest, PRE_RestartBeforePowerwash) {
@@ -177,15 +180,18 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ShortcutInvokedCases) {
   CloseResetScreen();
   OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
 
-  // rollback available and checked
-  InvokeResetScreen();
-  ASSERT_TRUE(content::ExecuteScript(
-      web_contents(),
-      "$('reset-rollback-checkbox').checked = true;"));
-  ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
-  EXPECT_EQ(2, session_manager_client_->start_device_wipe_call_count());
-  EXPECT_EQ(1, update_engine_client_->rollback_call_count());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRollbackOption)) {
+    // rollback available and checked
+    InvokeResetScreen();
+    ASSERT_TRUE(content::ExecuteScript(
+        web_contents(),
+        "$('reset-rollback-checkbox').checked = true;"));
+    ClickResetButton();
+    EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+    EXPECT_EQ(2, session_manager_client_->start_device_wipe_call_count());
+    EXPECT_EQ(1, update_engine_client_->rollback_call_count());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_PowerwashRequested) {
@@ -220,14 +226,18 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   EXPECT_EQ(0, update_engine_client_->rollback_call_count());
   JSExpect("!$('reset').classList.contains('revert-promise')");
   ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
-  EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
-  EXPECT_EQ(1, update_engine_client_->rollback_call_count());
-  JSExpect("$('reset').classList.contains('revert-promise')");
-  UpdateEngineClient::Status error_update_status;
-  error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
-  update_engine_client_->NotifyObserversThatStatusChanged(error_update_status);
-  OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRollbackOption)) {
+    EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+    EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
+    EXPECT_EQ(1, update_engine_client_->rollback_call_count());
+    JSExpect("$('reset').classList.contains('revert-promise')");
+    UpdateEngineClient::Status error_update_status;
+    error_update_status.status = UpdateEngineClient::UPDATE_STATUS_ERROR;
+    update_engine_client_->NotifyObserversThatStatusChanged(
+        error_update_status);
+    OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest,
@@ -239,17 +249,20 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, SuccessOnRollbackRequested) {
-  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
-  ClickResetButton();
-  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
-  EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
-  EXPECT_EQ(1, update_engine_client_->rollback_call_count());
-  UpdateEngineClient::Status ready_for_reboot_status;
-  ready_for_reboot_status.status =
-      UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
-  update_engine_client_->NotifyObserversThatStatusChanged(
-      ready_for_reboot_status);
-  EXPECT_EQ(1, power_manager_client_->num_request_restart_calls());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRollbackOption)) {
+    OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+    ClickResetButton();
+    EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+    EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
+    EXPECT_EQ(1, update_engine_client_->rollback_call_count());
+    UpdateEngineClient::Status ready_for_reboot_status;
+    ready_for_reboot_status.status =
+        UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+    update_engine_client_->NotifyObserversThatStatusChanged(
+        ready_for_reboot_status);
+    EXPECT_EQ(1, power_manager_client_->num_request_restart_calls());
+  }
 }
 
 

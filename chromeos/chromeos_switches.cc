@@ -90,6 +90,9 @@ const char kEnableTouchpadThreeFingerClick[]
 // than the kiosk app mode.
 const char kEnableKioskMode[]               = "enable-kiosk-mode";
 
+// Enables rollback option for resetting ChromeOS.
+const char kEnableRollbackOption[]          = "enable-rollback-option";
+
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
 

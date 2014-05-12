@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/reset/metrics.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -102,7 +101,11 @@ void ResetScreenHandler::Show() {
   rollback_available_ = false;
   if (!restart_required_)  // First exec after boot.
     reboot_was_requested_ = prefs->GetBoolean(prefs::kFactoryResetRequested);
-  if (!restart_required_ && reboot_was_requested_) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableRollbackOption)) {
+    rollback_available_ = false;
+    ShowWithParams();
+  } else if (!restart_required_ && reboot_was_requested_) {
     // First exec after boot.
     rollback_available_ = prefs->GetBoolean(prefs::kRollbackRequested);
     ShowWithParams();
@@ -231,6 +234,7 @@ void ResetScreenHandler::HandleOnLearnMore() {
 
 void ResetScreenHandler::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
+  VLOG(1) << "Update status change to " << status.status;
   if (status.status == UpdateEngineClient::UPDATE_STATUS_ERROR) {
     // Show error screen.
     base::DictionaryValue params;

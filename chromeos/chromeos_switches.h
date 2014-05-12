@@ -40,6 +40,7 @@ CHROMEOS_EXPORT extern const char kEchoExtensionPath[];
 CHROMEOS_EXPORT extern const char kEnableCarrierSwitching[];
 CHROMEOS_EXPORT extern const char kEnableConsumerManagement[];
 CHROMEOS_EXPORT extern const char kEnableFileManagerMTP[];
+CHROMEOS_EXPORT extern const char kEnableRollbackOption[];
 CHROMEOS_EXPORT extern const char kEnableHIDDetectionOnOOBE[];
 CHROMEOS_EXPORT extern const char kEnableKioskMode[];
 CHROMEOS_EXPORT extern const char kEnableNetworkPortalNotification[];
