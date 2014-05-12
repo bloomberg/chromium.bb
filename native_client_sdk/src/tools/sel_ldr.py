@@ -32,6 +32,22 @@ def Log(msg):
 Log.verbose = False
 
 
+def FindQemu():
+  qemu_locations = [os.path.join(SCRIPT_DIR, 'qemu_arm'),
+                    os.path.join(SCRIPT_DIR, 'qemu-arm')]
+  qemu_locations += [os.path.join(path, 'qemu_arm')
+                     for path in os.environ["PATH"].split(os.pathsep)]
+  qemu_locations += [os.path.join(path, 'qemu-arm')
+                     for path in os.environ["PATH"].split(os.pathsep)]
+  # See if qemu is in any of these locations.
+  qemu_bin = None
+  for loc in qemu_locations:
+    if os.path.isfile(loc) and os.access(loc, os.X_OK):
+      qemu_bin = loc
+      break
+  return qemu_bin
+
+
 def main(argv):
   usage = 'Usage: %prog [options] <.nexe>'
   epilog = 'Example: sel_ldr.py my_nexe.nexe'
@@ -69,8 +85,8 @@ def main(argv):
 
   arch, dynamic = create_nmf.ParseElfHeader(nexe)
 
-  if arch == 'arm':
-    raise Error('Cannot run ARM executables under sel_ldr')
+  if arch == 'arm' and osname != 'linux':
+    raise Error('Cannot run ARM executables under sel_ldr on ' + osname)
 
   arch_suffix = arch.replace('-', '_')
 
@@ -98,6 +114,19 @@ def main(argv):
 
   if not options.verbose:
     cmd += ['-l', os.devnull]
+
+  if arch == 'arm':
+    # Use the QEMU arm emulator if available.
+    qemu_bin = FindQemu()
+    if qemu_bin:
+      qemu = [qemu_bin, '-cpu', 'cortex-a8', '-L',
+              os.path.abspath(os.path.join(NACL_SDK_ROOT, 'toolchain',
+                                           'linux_arm_trusted'))]
+      # '-Q' disables platform qualification, allowing arm binaries to run.
+      cmd = qemu + cmd + ['-Q']
+    else:
+      raise Error('Cannot run ARM executables under sel_ldr without an emulator'
+                  '. Try installing QEMU (http://wiki.qemu.org/).')
 
   if dynamic:
     if options.debug_libs:
