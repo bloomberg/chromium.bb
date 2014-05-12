@@ -31,9 +31,7 @@ class SyncCoreProxyImplTest : public ::testing::Test {
     core_.reset();
   }
 
-  SyncCoreProxy* GetProxy() {
-    return &core_proxy_;
-  }
+  scoped_ptr<SyncCoreProxy> GetProxy() { return core_proxy_.Clone(); }
 
  private:
   base::MessageLoop loop_;

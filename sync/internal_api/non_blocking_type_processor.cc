@@ -11,10 +11,12 @@
 namespace syncer {
 
 NonBlockingTypeProcessor::NonBlockingTypeProcessor(ModelType type)
-  : type_(type),
-    is_preferred_(false),
-    is_connected_(false),
-    weak_ptr_factory_(this) {}
+    : type_(type),
+      is_preferred_(false),
+      is_connected_(false),
+      weak_ptr_factory_for_ui_(this),
+      weak_ptr_factory_for_sync_(this) {
+}
 
 NonBlockingTypeProcessor::~NonBlockingTypeProcessor() {
 }
@@ -34,10 +36,14 @@ ModelType NonBlockingTypeProcessor::GetModelType() const {
   return type_;
 }
 
-void NonBlockingTypeProcessor::Enable(SyncCoreProxy* core_proxy) {
+void NonBlockingTypeProcessor::Enable(
+    scoped_ptr<SyncCoreProxy> sync_core_proxy) {
   DCHECK(CalledOnValidThread());
+  DVLOG(1) << "Asked to enable " << ModelTypeToString(type_);
   is_preferred_ = true;
-  core_proxy->ConnectTypeToCore(GetModelType(), AsWeakPtr());
+  sync_core_proxy_ = sync_core_proxy.Pass();
+  sync_core_proxy_->ConnectTypeToCore(GetModelType(),
+                                      weak_ptr_factory_for_sync_.GetWeakPtr());
 }
 
 void NonBlockingTypeProcessor::Disable() {
@@ -48,20 +54,30 @@ void NonBlockingTypeProcessor::Disable() {
 
 void NonBlockingTypeProcessor::Disconnect() {
   DCHECK(CalledOnValidThread());
+  DVLOG(1) << "Asked to disconnect " << ModelTypeToString(type_);
   is_connected_ = false;
+
+  if (sync_core_proxy_) {
+    sync_core_proxy_->Disconnect(GetModelType());
+    sync_core_proxy_.reset();
+  }
+
+  weak_ptr_factory_for_sync_.InvalidateWeakPtrs();
   core_ = base::WeakPtr<NonBlockingTypeProcessorCore>();
   sync_thread_ = scoped_refptr<base::SequencedTaskRunner>();
 }
 
-base::WeakPtr<NonBlockingTypeProcessor> NonBlockingTypeProcessor::AsWeakPtr() {
+base::WeakPtr<NonBlockingTypeProcessor>
+NonBlockingTypeProcessor::AsWeakPtrForUI() {
   DCHECK(CalledOnValidThread());
-  return weak_ptr_factory_.GetWeakPtr();
+  return weak_ptr_factory_for_ui_.GetWeakPtr();
 }
 
 void NonBlockingTypeProcessor::OnConnect(
     base::WeakPtr<NonBlockingTypeProcessorCore> core,
     scoped_refptr<base::SequencedTaskRunner> sync_thread) {
   DCHECK(CalledOnValidThread());
+  DVLOG(1) << "Successfully connected " << ModelTypeToString(type_);
   is_connected_ = true;
   core_ = core;
   sync_thread_ = sync_thread;

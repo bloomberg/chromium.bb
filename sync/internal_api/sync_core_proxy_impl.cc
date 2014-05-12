@@ -32,6 +32,11 @@ void SyncCoreProxyImpl::ConnectTypeToCore(
                  type_processor));
 }
 
+void SyncCoreProxyImpl::Disconnect(ModelType type) {
+  sync_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SyncCore::Disconnect, sync_core_, type));
+}
+
 scoped_ptr<SyncCoreProxy> SyncCoreProxyImpl::Clone() const {
   return scoped_ptr<SyncCoreProxy>(
       new SyncCoreProxyImpl(sync_task_runner_, sync_core_));

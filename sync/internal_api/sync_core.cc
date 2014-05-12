@@ -25,6 +25,10 @@ void SyncCore::ConnectSyncTypeToCore(
   model_type_registry_->InitializeNonBlockingType(type, task_runner, processor);
 }
 
+void SyncCore::Disconnect(ModelType type) {
+  model_type_registry_->RemoveNonBlockingType(type);
+}
+
 base::WeakPtr<SyncCore> SyncCore::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }

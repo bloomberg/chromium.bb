@@ -16,6 +16,10 @@ void NullSyncCoreProxy::ConnectTypeToCore(
   NOTREACHED() << "NullSyncCoreProxy is not meant to be used";
 }
 
+void NullSyncCoreProxy::Disconnect(syncer::ModelType type) {
+  NOTREACHED() << "NullSyncCoreProxy is not meant to be used";
+}
+
 scoped_ptr<SyncCoreProxy> NullSyncCoreProxy::Clone() const {
   return scoped_ptr<SyncCoreProxy>(new NullSyncCoreProxy());
 }

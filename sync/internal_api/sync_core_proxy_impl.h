@@ -40,6 +40,9 @@ class SYNC_EXPORT_PRIVATE SyncCoreProxyImpl : public SyncCoreProxy {
       syncer::ModelType type,
       base::WeakPtr<NonBlockingTypeProcessor> type_processor) OVERRIDE;
 
+  // Disables syncing for the given type on the sync thread.
+  virtual void Disconnect(syncer::ModelType type) OVERRIDE;
+
   virtual scoped_ptr<SyncCoreProxy> Clone() const OVERRIDE;
 
  private:

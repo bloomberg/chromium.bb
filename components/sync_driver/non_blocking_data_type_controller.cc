@@ -84,11 +84,10 @@ void NonBlockingDataTypeController::SendEnableSignal() {
   DCHECK_EQ(ENABLED, GetDesiredState());
   DVLOG(1) << "Enabling non-blocking sync type " << ModelTypeToString(type_);
 
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&syncer::NonBlockingTypeProcessor::Enable,
-                 processor_,
-                 base::Owned(proxy_->Clone().release())));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&syncer::NonBlockingTypeProcessor::Enable,
+                                    processor_,
+                                    base::Passed(proxy_->Clone())));
   current_state_ = ENABLED;
 }
 

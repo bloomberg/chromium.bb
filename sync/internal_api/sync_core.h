@@ -36,6 +36,17 @@ class SYNC_EXPORT_PRIVATE SyncCore {
     scoped_refptr<base::SequencedTaskRunner> datatype_task_runner,
     base::WeakPtr<NonBlockingTypeProcessor> sync_client);
 
+  // Disconnects the syncer from the model and stops syncing the type.
+  //
+  // By the time this is called, the model thread should have already
+  // invalidated the WeakPtr it sent to us in the connect request.  Any
+  // messages sent to that NonBlockingTypeProcessor will not be recived.
+  //
+  // This is the sync thread's chance to clear state associated with the type.
+  // It also causes the syncer to stop requesting updates for this type, and to
+  // abort any in-progress commit requests.
+  void Disconnect(ModelType type);
+
   base::WeakPtr<SyncCore> AsWeakPtr();
 
  private:

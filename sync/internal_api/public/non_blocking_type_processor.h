@@ -43,7 +43,7 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   ModelType GetModelType() const;
 
   // Starts the handshake with the sync thread.
-  void Enable(SyncCoreProxy* core_proxy);
+  void Enable(scoped_ptr<SyncCoreProxy> core_proxy);
 
   // Severs all ties to the sync thread and may delete local sync state.
   // Another call to Enable() can be used to re-establish this connection.
@@ -57,7 +57,9 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   void OnConnect(base::WeakPtr<NonBlockingTypeProcessorCore> core,
                  scoped_refptr<base::SequencedTaskRunner> sync_thread);
 
-  base::WeakPtr<NonBlockingTypeProcessor> AsWeakPtr();
+  // Returns the long-lived WeakPtr that is intended to be registered with the
+  // ProfileSyncService.
+  base::WeakPtr<NonBlockingTypeProcessor> AsWeakPtrForUI();
 
  private:
   ModelType type_;
@@ -71,10 +73,20 @@ class SYNC_EXPORT_PRIVATE NonBlockingTypeProcessor : base::NonThreadSafe {
   // SyncCoreProxy.
   bool is_connected_;
 
+  // Our link to data type management on the sync thread.
+  // Used for enabling and disabling sync for this type.
+  scoped_ptr<SyncCoreProxy> sync_core_proxy_;
+
   base::WeakPtr<NonBlockingTypeProcessorCore> core_;
   scoped_refptr<base::SequencedTaskRunner> sync_thread_;
 
-  base::WeakPtrFactory<NonBlockingTypeProcessor> weak_ptr_factory_;
+  // We use two different WeakPtrFactories because we want the pointers they
+  // issue to have different lifetimes.  When asked to disconnect from the sync
+  // thread, we want to make sure that no tasks generated as part of the
+  // now-obsolete connection to affect us.  But we also want the WeakPtr we
+  // sent to the UI thread to remain valid.
+  base::WeakPtrFactory<NonBlockingTypeProcessor> weak_ptr_factory_for_ui_;
+  base::WeakPtrFactory<NonBlockingTypeProcessor> weak_ptr_factory_for_sync_;
 };
 
 }  // namespace syncer

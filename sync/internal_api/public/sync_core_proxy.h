@@ -27,6 +27,13 @@ class SYNC_EXPORT_PRIVATE SyncCoreProxy {
       syncer::ModelType type,
       base::WeakPtr<NonBlockingTypeProcessor> type_processor) = 0;
 
+  // Tells the syncer that we're no longer interested in syncing this type.
+  //
+  // Once this takes effect, the syncer can assume that it will no longer
+  // receive commit requests for this type.  It should also stop requesting
+  // and applying updates for this type, too.
+  virtual void Disconnect(syncer::ModelType type) = 0;
+
   // Creates a clone of this SyncCoreProxy.
   virtual scoped_ptr<SyncCoreProxy> Clone() const = 0;
 };
