@@ -117,7 +117,9 @@ void ProgressTracker::progressStarted()
 
 void ProgressTracker::progressCompleted()
 {
-    ASSERT(m_inProgress);
+    if (!m_inProgress)
+        return;
+
     m_inProgress = false;
     if (!m_finalProgressChangedSent) {
         m_progressValue = 1;

@@ -461,6 +461,8 @@ void FrameLoader::checkCompleted()
 
     // OK, completed.
     m_isComplete = true;
+    if (m_frame->isMainFrame())
+        m_progressTracker->progressCompleted();
     m_frame->document()->setReadyState(Document::Complete);
     if (m_frame->document()->loadEventStillNeeded())
         m_frame->document()->implicitClose();
