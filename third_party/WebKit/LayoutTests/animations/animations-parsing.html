@@ -39,9 +39,9 @@ shouldBe("computedStyle.webkitAnimationName", "'none'");
 
 style.animationName = "none, none";
 shouldBe("style.animationName", "'none, none'");
-shouldBe("computedStyle.animationName", "'none'");
+shouldBe("computedStyle.animationName", "'none, none'");
 shouldBe("style.webkitAnimationName", "'none, none'");
-shouldBe("computedStyle.webkitAnimationName", "'none'");
+shouldBe("computedStyle.webkitAnimationName", "'none, none'");
 
 style.animationName = "myAnim";
 shouldBe("style.animationName", "'myAnim'");

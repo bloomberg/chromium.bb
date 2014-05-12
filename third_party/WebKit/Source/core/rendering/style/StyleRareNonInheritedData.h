@@ -44,7 +44,8 @@
 namespace WebCore {
 
 class ContentData;
-class CSSAnimationDataList;
+class CSSAnimationData;
+class CSSTransitionData;
 class LengthSize;
 class ShadowList;
 class StyleDeprecatedFlexibleBoxData;
@@ -121,8 +122,8 @@ public:
 
     RefPtr<StyleReflection> m_boxReflect;
 
-    OwnPtrWillBePersistent<CSSAnimationDataList> m_animations;
-    OwnPtrWillBePersistent<CSSAnimationDataList> m_transitions;
+    OwnPtrWillBePersistent<CSSAnimationData> m_animations;
+    OwnPtrWillBePersistent<CSSTransitionData> m_transitions;
 
     FillLayer m_mask;
     NinePieceImage m_maskBoxImage;

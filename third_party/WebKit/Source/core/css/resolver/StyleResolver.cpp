@@ -712,24 +712,14 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* element, const 
     state.setStyle(RenderStyle::clone(&elementStyle));
     state.setLineHeightValue(0);
 
-    // Make sure that the CSSAnimationData for the animation to which this
-    // keyframe belongs is first in the list. This makes sure that if the
-    // animation-timing-function property is set for this keyframe, it will be
-    // applied to the correct CSSAnimationData object. Note that objects other
-    // than the first in the list are ignored when reading the timing function
-    // value. See KeyframeValue::timingFunction().
-    CSSAnimationDataList* animations = state.style()->accessAnimations();
-    ASSERT(animations && !animations->isEmpty());
-    while (animations->animation(0)->name() != animationName)
-        animations->remove(0);
-    ASSERT(!animations->isEmpty() && animations->animation(0)->name() == animationName);
-
     state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
 
     // We don't need to bother with !important. Since there is only ever one
     // decl, there's nothing to override. So just add the first properties.
+    // We also don't need to bother with animation properties since the only
+    // relevant one is animation-timing-function and we special-case that in
+    // CSSAnimations.cpp
     bool inheritedOnly = false;
-    applyMatchedProperties<AnimationProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
     applyMatchedProperties<HighPriorityProperties>(state, result, false, 0, result.matchedProperties.size() - 1, inheritedOnly);
 
     // If our font got dirtied, go ahead and update it now.
@@ -1024,8 +1014,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* 
     ASSERT(animatingElement == element || !animatingElement || animatingElement->parentOrShadowHostElement() == element);
 
     if (!(animatingElement && animatingElement->hasActiveAnimations())
-        && !(state.style()->transitions() && !state.style()->transitions()->isEmpty())
-        && !(state.style()->animations() && !state.style()->animations()->isEmpty()))
+        && !state.style()->transitions() && !state.style()->animations())
         return false;
 
     state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *element, *state.style(), state.parentStyle(), this));
@@ -1364,12 +1353,6 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
     applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<AnimationProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
-
-    // Match transition-property / animation-name length by trimming and
-    // lengthening other transition / animation property lists
-    // FIXME: This is wrong because we shouldn't affect the computed values
-    state.style()->adjustAnimations();
-    state.style()->adjustTransitions();
 
     // Now we have all of the matched rules in the appropriate order. Walk the rules and apply
     // high-priority properties first, i.e., those properties that other properties depend on.

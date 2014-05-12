@@ -57,8 +57,6 @@ public:
     const RenderStyle* style() const { return m_style.get(); }
     void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
 
-    static TimingFunction* timingFunction(const RenderStyle& keyframeStyle);
-
 private:
     double m_key;
     HashSet<CSSPropertyID> m_properties; // The properties specified in this keyframe.

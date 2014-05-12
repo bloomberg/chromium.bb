@@ -312,11 +312,9 @@ enum QuoteType {
 
 enum EBorderFit { BorderFitBorder, BorderFitLines };
 
-enum EAnimationFillMode { AnimationFillModeNone, AnimationFillModeForwards, AnimationFillModeBackwards, AnimationFillModeBoth };
-
 enum EAnimPlayState {
-    AnimPlayStatePlaying = 0x0,
-    AnimPlayStatePaused = 0x1
+    AnimPlayStatePlaying,
+    AnimPlayStatePaused
 };
 
 enum EWhiteSpace {

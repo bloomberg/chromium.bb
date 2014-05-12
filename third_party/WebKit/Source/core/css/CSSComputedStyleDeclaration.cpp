@@ -937,52 +937,66 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForGridPosition(const GridPosition&
         list->append(cssValuePool().createValue(position.namedGridLine(), CSSPrimitiveValue::CSS_STRING));
     return list;
 }
-static PassRefPtrWillBeRawPtr<CSSValue> createTransitionPropertyValue(const CSSAnimationData* animation)
+
+static PassRefPtrWillBeRawPtr<CSSValue> createTransitionPropertyValue(CSSTransitionData::TransitionProperty property)
 {
-    RefPtrWillBeRawPtr<CSSValue> propertyValue = nullptr;
-    if (animation->animationMode() == CSSAnimationData::AnimateNone)
-        propertyValue = cssValuePool().createIdentifierValue(CSSValueNone);
-    else if (animation->animationMode() == CSSAnimationData::AnimateAll)
-        propertyValue = cssValuePool().createIdentifierValue(CSSValueAll);
-    else
-        propertyValue = cssValuePool().createValue(getPropertyNameString(animation->property()), CSSPrimitiveValue::CSS_STRING);
-    return propertyValue.release();
+    if (property.propertyType == CSSTransitionData::TransitionNone)
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+    if (property.propertyType == CSSTransitionData::TransitionAll)
+        return cssValuePool().createIdentifierValue(CSSValueAll);
+    ASSERT(property.propertyType == CSSTransitionData::TransitionSingleProperty);
+    return cssValuePool().createValue(getPropertyNameString(property.propertyId), CSSPrimitiveValue::CSS_STRING);
 }
-static PassRefPtrWillBeRawPtr<CSSValue> valueForTransitionProperty(const CSSAnimationDataList* animList)
+
+static PassRefPtrWillBeRawPtr<CSSValue> valueForTransitionProperty(const CSSTransitionData* transitionData)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    if (animList) {
-        for (size_t i = 0; i < animList->size(); ++i)
-            list->append(createTransitionPropertyValue(animList->animation(i)));
-    } else
+    if (transitionData) {
+        for (size_t i = 0; i < transitionData->propertyList().size(); ++i)
+            list->append(createTransitionPropertyValue(transitionData->propertyList()[i]));
+    } else {
         list->append(cssValuePool().createIdentifierValue(CSSValueAll));
-    return list.release();
-}
-
-static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDelay(const CSSAnimationDataList* animList)
-{
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    if (animList) {
-        for (size_t i = 0; i < animList->size(); ++i)
-            list->append(cssValuePool().createValue(animList->animation(i)->delay(), CSSPrimitiveValue::CSS_S));
-    } else {
-        // Note that initialAnimationDelay() is used for both transitions and animations
-        list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationDelay(), CSSPrimitiveValue::CSS_S));
     }
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDuration(const CSSAnimationDataList* animList)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDelay(const CSSTimingData* timingData)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    if (animList) {
-        for (size_t i = 0; i < animList->size(); ++i)
-            list->append(cssValuePool().createValue(animList->animation(i)->duration(), CSSPrimitiveValue::CSS_S));
+    if (timingData) {
+        for (size_t i = 0; i < timingData->delayList().size(); ++i)
+            list->append(cssValuePool().createValue(timingData->delayList()[i], CSSPrimitiveValue::CSS_S));
     } else {
-        // Note that initialAnimationDuration() is used for both transitions and animations
-        list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationDuration(), CSSPrimitiveValue::CSS_S));
+        list->append(cssValuePool().createValue(CSSTimingData::initialDelay(), CSSPrimitiveValue::CSS_S));
     }
     return list.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDuration(const CSSTimingData* timingData)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    if (timingData) {
+        for (size_t i = 0; i < timingData->durationList().size(); ++i)
+            list->append(cssValuePool().createValue(timingData->durationList()[i], CSSPrimitiveValue::CSS_S));
+    } else {
+        list->append(cssValuePool().createValue(CSSTimingData::initialDuration(), CSSPrimitiveValue::CSS_S));
+    }
+    return list.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationIterationCount(double iterationCount)
+{
+    if (iterationCount == std::numeric_limits<double>::infinity())
+        return cssValuePool().createIdentifierValue(CSSValueInfinite);
+    return cssValuePool().createValue(iterationCount, CSSPrimitiveValue::CSS_NUMBER);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationPlayState(EAnimPlayState playState)
+{
+    if (playState == AnimPlayStatePlaying)
+        return cssValuePool().createIdentifierValue(CSSValueRunning);
+    ASSERT(playState == AnimPlayStatePaused);
+    return cssValuePool().createIdentifierValue(CSSValuePaused);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFunction* timingFunction)
@@ -1041,28 +1055,28 @@ static PassRefPtrWillBeRawPtr<CSSValue> createTimingFunctionValue(const TimingFu
     }
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationTimingFunction(const CSSAnimationDataList* animList)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationTimingFunction(const CSSTimingData* timingData)
 {
     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    if (animList) {
-        for (size_t i = 0; i < animList->size(); ++i)
-            list->append(createTimingFunctionValue(animList->animation(i)->timingFunction()));
-    } else
-        // Note that initialAnimationTimingFunction() is used for both transitions and animations
-        list->append(createTimingFunctionValue(CSSAnimationData::initialAnimationTimingFunction().get()));
+    if (timingData) {
+        for (size_t i = 0; i < timingData->timingFunctionList().size(); ++i)
+            list->append(createTimingFunctionValue(timingData->timingFunctionList()[i].get()));
+    } else {
+        list->append(createTimingFunctionValue(CSSTimingData::initialTimingFunction().get()));
+    }
     return list.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationFillMode(unsigned fillMode)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationFillMode(Timing::FillMode fillMode)
 {
     switch (fillMode) {
-    case AnimationFillModeNone:
+    case Timing::FillModeNone:
         return cssValuePool().createIdentifierValue(CSSValueNone);
-    case AnimationFillModeForwards:
+    case Timing::FillModeForwards:
         return cssValuePool().createIdentifierValue(CSSValueForwards);
-    case AnimationFillModeBackwards:
+    case Timing::FillModeBackwards:
         return cssValuePool().createIdentifierValue(CSSValueBackwards);
-    case AnimationFillModeBoth:
+    case Timing::FillModeBoth:
         return cssValuePool().createIdentifierValue(CSSValueBoth);
     default:
         ASSERT_NOT_REACHED();
@@ -1070,16 +1084,16 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationFillMode(unsigned fillM
     }
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDirection(CSSAnimationData::AnimationDirection direction)
+static PassRefPtrWillBeRawPtr<CSSValue> valueForAnimationDirection(Timing::PlaybackDirection direction)
 {
     switch (direction) {
-    case CSSAnimationData::AnimationDirectionNormal:
+    case Timing::PlaybackDirectionNormal:
         return cssValuePool().createIdentifierValue(CSSValueNormal);
-    case CSSAnimationData::AnimationDirectionAlternate:
+    case Timing::PlaybackDirectionAlternate:
         return cssValuePool().createIdentifierValue(CSSValueAlternate);
-    case CSSAnimationData::AnimationDirectionReverse:
+    case Timing::PlaybackDirectionReverse:
         return cssValuePool().createIdentifierValue(CSSValueReverse);
-    case CSSAnimationData::AnimationDirectionAlternateReverse:
+    case Timing::PlaybackDirectionAlternateReverse:
         return cssValuePool().createIdentifierValue(CSSValueAlternateReverse);
     default:
         ASSERT_NOT_REACHED();
@@ -2362,12 +2376,13 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationDirection: {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const CSSAnimationDataList* t = style->animations();
-            if (t) {
-                for (size_t i = 0; i < t->size(); ++i)
-                    list->append(valueForAnimationDirection(t->animation(i)->direction()));
-            } else
+            const CSSAnimationData* animationData = style->animations();
+            if (animationData) {
+                for (size_t i = 0; i < animationData->directionList().size(); ++i)
+                    list->append(valueForAnimationDirection(animationData->directionList()[i]));
+            } else {
                 list->append(cssValuePool().createIdentifierValue(CSSValueNormal));
+            }
             return list.release();
         }
         case CSSPropertyAnimationDuration:
@@ -2378,58 +2393,52 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationFillMode: {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const CSSAnimationDataList* t = style->animations();
-            if (t) {
-                for (size_t i = 0; i < t->size(); ++i)
-                    list->append(valueForAnimationFillMode(t->animation(i)->fillMode()));
-            } else
+            const CSSAnimationData* animationData = style->animations();
+            if (animationData) {
+                for (size_t i = 0; i < animationData->fillModeList().size(); ++i)
+                    list->append(valueForAnimationFillMode(animationData->fillModeList()[i]));
+            } else {
                 list->append(cssValuePool().createIdentifierValue(CSSValueNone));
+            }
             return list.release();
         }
         case CSSPropertyAnimationIterationCount:
             ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationIterationCount: {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const CSSAnimationDataList* t = style->animations();
-            if (t) {
-                for (size_t i = 0; i < t->size(); ++i) {
-                    double iterationCount = t->animation(i)->iterationCount();
-                    if (iterationCount == CSSAnimationData::IterationCountInfinite)
-                        list->append(cssValuePool().createIdentifierValue(CSSValueInfinite));
-                    else
-                        list->append(cssValuePool().createValue(iterationCount, CSSPrimitiveValue::CSS_NUMBER));
-                }
-            } else
-                list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationIterationCount(), CSSPrimitiveValue::CSS_NUMBER));
+            const CSSAnimationData* animationData = style->animations();
+            if (animationData) {
+                for (size_t i = 0; i < animationData->iterationCountList().size(); ++i)
+                    list->append(valueForAnimationIterationCount(animationData->iterationCountList()[i]));
+            } else {
+                list->append(cssValuePool().createValue(CSSAnimationData::initialIterationCount(), CSSPrimitiveValue::CSS_NUMBER));
+            }
             return list.release();
         }
         case CSSPropertyAnimationName:
             ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationName: {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const CSSAnimationDataList* t = style->animations();
-            if (t) {
-                for (size_t i = 0; i < t->size(); ++i)
-                    list->append(cssValuePool().createValue(t->animation(i)->name(), CSSPrimitiveValue::CSS_STRING));
-            } else
+            const CSSAnimationData* animationData = style->animations();
+            if (animationData) {
+                for (size_t i = 0; i < animationData->nameList().size(); ++i)
+                    list->append(cssValuePool().createValue(animationData->nameList()[i], CSSPrimitiveValue::CSS_STRING));
+            } else {
                 list->append(cssValuePool().createIdentifierValue(CSSValueNone));
+            }
             return list.release();
         }
         case CSSPropertyAnimationPlayState:
             ASSERT(RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled());
         case CSSPropertyWebkitAnimationPlayState: {
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-            const CSSAnimationDataList* t = style->animations();
-            if (t) {
-                for (size_t i = 0; i < t->size(); ++i) {
-                    int prop = t->animation(i)->playState();
-                    if (prop == AnimPlayStatePlaying)
-                        list->append(cssValuePool().createIdentifierValue(CSSValueRunning));
-                    else
-                        list->append(cssValuePool().createIdentifierValue(CSSValuePaused));
-                }
-            } else
+            const CSSAnimationData* animationData = style->animations();
+            if (animationData) {
+                for (size_t i = 0; i < animationData->playStateList().size(); ++i)
+                    list->append(valueForAnimationPlayState(animationData->playStateList()[i]));
+            } else {
                 list->append(cssValuePool().createIdentifierValue(CSSValueRunning));
+            }
             return list.release();
         }
         case CSSPropertyAnimationTimingFunction:
@@ -2438,26 +2447,19 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return valueForAnimationTimingFunction(style->animations());
         case CSSPropertyAnimation:
         case CSSPropertyWebkitAnimation: {
-            const CSSAnimationDataList* animations = style->animations();
-            if (animations) {
+            const CSSAnimationData* animationData = style->animations();
+            if (animationData) {
                 RefPtrWillBeRawPtr<CSSValueList> animationsList = CSSValueList::createCommaSeparated();
-                for (size_t i = 0; i < animations->size(); ++i) {
+                for (size_t i = 0; i < animationData->nameList().size(); ++i) {
                     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-                    const CSSAnimationData* animation = animations->animation(i);
-                    list->append(cssValuePool().createValue(animation->name(), CSSPrimitiveValue::CSS_STRING));
-                    list->append(cssValuePool().createValue(animation->duration(), CSSPrimitiveValue::CSS_S));
-                    list->append(createTimingFunctionValue(animation->timingFunction()));
-                    list->append(cssValuePool().createValue(animation->delay(), CSSPrimitiveValue::CSS_S));
-                    if (animation->iterationCount() == CSSAnimationData::IterationCountInfinite)
-                        list->append(cssValuePool().createIdentifierValue(CSSValueInfinite));
-                    else
-                        list->append(cssValuePool().createValue(animation->iterationCount(), CSSPrimitiveValue::CSS_NUMBER));
-                    list->append(valueForAnimationDirection(animation->direction()));
-                    list->append(valueForAnimationFillMode(animation->fillMode()));
-                    if (animation->playState() == AnimPlayStatePaused)
-                        list->append(cssValuePool().createIdentifierValue(CSSValuePaused));
-                    else
-                        list->append(cssValuePool().createIdentifierValue(CSSValueRunning));
+                    list->append(cssValuePool().createValue(animationData->nameList()[i], CSSPrimitiveValue::CSS_STRING));
+                    list->append(cssValuePool().createValue(CSSTimingData::getRepeated(animationData->durationList(), i), CSSPrimitiveValue::CSS_S));
+                    list->append(createTimingFunctionValue(CSSTimingData::getRepeated(animationData->timingFunctionList(), i).get()));
+                    list->append(cssValuePool().createValue(CSSTimingData::getRepeated(animationData->delayList(), i), CSSPrimitiveValue::CSS_S));
+                    list->append(valueForAnimationIterationCount(CSSTimingData::getRepeated(animationData->iterationCountList(), i)));
+                    list->append(valueForAnimationDirection(CSSTimingData::getRepeated(animationData->directionList(), i)));
+                    list->append(valueForAnimationFillMode(CSSTimingData::getRepeated(animationData->fillModeList(), i)));
+                    list->append(valueForAnimationPlayState(CSSTimingData::getRepeated(animationData->playStateList(), i)));
                     animationsList->append(list);
                 }
                 return animationsList.release();
@@ -2466,12 +2468,12 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
             // animation-name default value.
             list->append(cssValuePool().createIdentifierValue(CSSValueNone));
-            list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationDuration(), CSSPrimitiveValue::CSS_S));
-            list->append(createTimingFunctionValue(CSSAnimationData::initialAnimationTimingFunction().get()));
-            list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationDelay(), CSSPrimitiveValue::CSS_S));
-            list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationIterationCount(), CSSPrimitiveValue::CSS_NUMBER));
-            list->append(valueForAnimationDirection(CSSAnimationData::initialAnimationDirection()));
-            list->append(valueForAnimationFillMode(CSSAnimationData::initialAnimationFillMode()));
+            list->append(cssValuePool().createValue(CSSAnimationData::initialDuration(), CSSPrimitiveValue::CSS_S));
+            list->append(createTimingFunctionValue(CSSAnimationData::initialTimingFunction().get()));
+            list->append(cssValuePool().createValue(CSSAnimationData::initialDelay(), CSSPrimitiveValue::CSS_S));
+            list->append(cssValuePool().createValue(CSSAnimationData::initialIterationCount(), CSSPrimitiveValue::CSS_NUMBER));
+            list->append(valueForAnimationDirection(CSSAnimationData::initialDirection()));
+            list->append(valueForAnimationFillMode(CSSAnimationData::initialFillMode()));
             // Initial animation-play-state.
             list->append(cssValuePool().createIdentifierValue(CSSValueRunning));
             return list.release();
@@ -2609,16 +2611,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             return valueForAnimationTimingFunction(style->transitions());
         case CSSPropertyTransition:
         case CSSPropertyWebkitTransition: {
-            const CSSAnimationDataList* animList = style->transitions();
-            if (animList) {
+            const CSSTransitionData* transitionData = style->transitions();
+            if (transitionData) {
                 RefPtrWillBeRawPtr<CSSValueList> transitionsList = CSSValueList::createCommaSeparated();
-                for (size_t i = 0; i < animList->size(); ++i) {
+                for (size_t i = 0; i < transitionData->propertyList().size(); ++i) {
                     RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
-                    const CSSAnimationData* animation = animList->animation(i);
-                    list->append(createTransitionPropertyValue(animation));
-                    list->append(cssValuePool().createValue(animation->duration(), CSSPrimitiveValue::CSS_S));
-                    list->append(createTimingFunctionValue(animation->timingFunction()));
-                    list->append(cssValuePool().createValue(animation->delay(), CSSPrimitiveValue::CSS_S));
+                    list->append(createTransitionPropertyValue(transitionData->propertyList()[i]));
+                    list->append(cssValuePool().createValue(CSSTimingData::getRepeated(transitionData->durationList(), i), CSSPrimitiveValue::CSS_S));
+                    list->append(createTimingFunctionValue(CSSTimingData::getRepeated(transitionData->timingFunctionList(), i).get()));
+                    list->append(cssValuePool().createValue(CSSTimingData::getRepeated(transitionData->delayList(), i), CSSPrimitiveValue::CSS_S));
                     transitionsList->append(list);
                 }
                 return transitionsList.release();
@@ -2627,9 +2628,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValu
             RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
             // transition-property default value.
             list->append(cssValuePool().createIdentifierValue(CSSValueAll));
-            list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationDuration(), CSSPrimitiveValue::CSS_S));
-            list->append(createTimingFunctionValue(CSSAnimationData::initialAnimationTimingFunction().get()));
-            list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationDelay(), CSSPrimitiveValue::CSS_S));
+            list->append(cssValuePool().createValue(CSSTransitionData::initialDuration(), CSSPrimitiveValue::CSS_S));
+            list->append(createTimingFunctionValue(CSSTransitionData::initialTimingFunction().get()));
+            list->append(cssValuePool().createValue(CSSTransitionData::initialDelay(), CSSPrimitiveValue::CSS_S));
             return list.release();
         }
         case CSSPropertyPointerEvents:

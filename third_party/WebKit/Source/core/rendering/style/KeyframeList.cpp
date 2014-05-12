@@ -28,13 +28,6 @@
 
 namespace WebCore {
 
-TimingFunction* KeyframeValue::timingFunction(const RenderStyle& keyframeStyle)
-{
-    const CSSAnimationDataList* animations = keyframeStyle.animations();
-    ASSERT(animations && !animations->isEmpty());
-    return animations->animation(0)->timingFunction();
-}
-
 KeyframeList::~KeyframeList()
 {
     clear();

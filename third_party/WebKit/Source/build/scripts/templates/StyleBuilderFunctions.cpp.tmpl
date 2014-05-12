@@ -10,7 +10,6 @@
 #include "StyleBuilderFunctions.h"
 
 #include "CSSValueKeywords.h"
-#include "core/animation/css/CSSAnimationDataList.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/Pair.h"
@@ -79,76 +78,47 @@ namespace WebCore {
 {% endfor %}
 
 {% macro apply_animation(property_id, attribute, animation) %}
+{% set vector = attribute|lower_first + "List()" %}
 {{declare_initial_function(property_id)}}
 {
-    CSSAnimationDataList* list = state.style()->access{{animation}}();
-    if (list->isEmpty())
-        list->append(CSSAnimationData::create());
-    list->animation(0)->set{{attribute}}(CSSAnimationData::initialAnimation{{attribute}}());
-        {% if property_id == 'CSSPropertyWebkitTransitionProperty' %}
-        list->animation(0)->setAnimationMode(CSSAnimationData::AnimateAll);
-        {% endif %}
-    for (size_t i = 1; i < list->size(); ++i)
-        list->animation(i)->clear{{attribute}}();
+    CSS{{animation}}Data& data = state.style()->access{{animation}}s();
+    data.{{vector}}.clear();
+    data.{{vector}}.append(CSS{{animation}}Data::initial{{attribute}}());
 }
 
 {{declare_inherit_function(property_id)}}
 {
-    CSSAnimationDataList* list = state.style()->access{{animation}}();
-    const CSSAnimationDataList* parentList = state.parentStyle()->{{animation|lower}}();
-    size_t i = 0, parentSize = parentList ? parentList->size() : 0;
-    for ( ; i < parentSize && parentList->animation(i)->is{{attribute}}Set(); ++i) {
-        ASSERT(list->size() >= i);
-        if (list->size() == i)
-            list->append(CSSAnimationData::create());
-        list->animation(i)->set{{attribute}}(parentList->animation(i)->{{attribute|lower_first}}());
-            {% if property_id == 'CSSPropertyWebkitTransitionProperty' %}
-            list->animation(i)->setAnimationMode(parentList->animation(i)->animationMode());
-            {% endif %}
-    }
-
-    // Reset any remaining animations to not have the property set.
-    for ( ; i < list->size(); ++i)
-        list->animation(i)->clear{{attribute}}();
+    const CSS{{animation}}Data* parentData = state.parentStyle()->{{animation|lower}}s();
+    if (!parentData)
+        applyInitial{{property_id}}(state);
+    else
+        state.style()->access{{animation}}s().{{vector}} = parentData->{{vector}};
 }
 
 {{declare_value_function(property_id)}}
 {
-    CSSAnimationDataList* list = state.style()->access{{animation}}();
-    size_t childIndex = 0;
+    CSS{{animation}}Data& data = state.style()->access{{animation}}s();
+    data.{{vector}}.clear();
     if (value->isValueList()) {
-        // Walk each value and put it into an animation, creating new animations as needed.
-        for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-            ASSERT(list->size() >= childIndex);
-            if (list->size() == childIndex)
-                list->append(CSSAnimationData::create());
-            state.styleMap().mapAnimation{{attribute}}(list->animation(childIndex), i.value());
-            ++childIndex;
-        }
+        for (CSSValueListIterator i = value; i.hasMore(); i.advance())
+            data.{{vector}}.append(state.styleMap().mapAnimation{{attribute}}(i.value()));
     } else {
-        if (list->isEmpty())
-            list->append(CSSAnimationData::create());
-        state.styleMap().mapAnimation{{attribute}}(list->animation(childIndex), value);
-        childIndex = 1;
-    }
-    for ( ; childIndex < list->size(); ++childIndex) {
-        // Reset all remaining animations to not have the property set.
-        list->animation(childIndex)->clear{{attribute}}();
+        data.{{vector}}.append(state.styleMap().mapAnimation{{attribute}}(value));
     }
 }
 {% endmacro %}
-{{apply_animation('CSSPropertyWebkitAnimationDelay', 'Delay', 'Animations')}}
-{{apply_animation('CSSPropertyWebkitAnimationDirection', 'Direction', 'Animations')}}
-{{apply_animation('CSSPropertyWebkitAnimationDuration', 'Duration', 'Animations')}}
-{{apply_animation('CSSPropertyWebkitAnimationFillMode', 'FillMode', 'Animations')}}
-{{apply_animation('CSSPropertyWebkitAnimationIterationCount', 'IterationCount', 'Animations')}}
-{{apply_animation('CSSPropertyWebkitAnimationName', 'Name', 'Animations')}}
-{{apply_animation('CSSPropertyWebkitAnimationPlayState', 'PlayState', 'Animations')}}
-{{apply_animation('CSSPropertyWebkitAnimationTimingFunction', 'TimingFunction', 'Animations')}}
-{{apply_animation('CSSPropertyWebkitTransitionDelay', 'Delay', 'Transitions')}}
-{{apply_animation('CSSPropertyWebkitTransitionDuration', 'Duration', 'Transitions')}}
-{{apply_animation('CSSPropertyWebkitTransitionProperty', 'Property', 'Transitions')}}
-{{apply_animation('CSSPropertyWebkitTransitionTimingFunction', 'TimingFunction', 'Transitions')}}
+{{apply_animation('CSSPropertyWebkitAnimationDelay', 'Delay', 'Animation')}}
+{{apply_animation('CSSPropertyWebkitAnimationDirection', 'Direction', 'Animation')}}
+{{apply_animation('CSSPropertyWebkitAnimationDuration', 'Duration', 'Animation')}}
+{{apply_animation('CSSPropertyWebkitAnimationFillMode', 'FillMode', 'Animation')}}
+{{apply_animation('CSSPropertyWebkitAnimationIterationCount', 'IterationCount', 'Animation')}}
+{{apply_animation('CSSPropertyWebkitAnimationName', 'Name', 'Animation')}}
+{{apply_animation('CSSPropertyWebkitAnimationPlayState', 'PlayState', 'Animation')}}
+{{apply_animation('CSSPropertyWebkitAnimationTimingFunction', 'TimingFunction', 'Animation')}}
+{{apply_animation('CSSPropertyWebkitTransitionDelay', 'Delay', 'Transition')}}
+{{apply_animation('CSSPropertyWebkitTransitionDuration', 'Duration', 'Transition')}}
+{{apply_animation('CSSPropertyWebkitTransitionProperty', 'Property', 'Transition')}}
+{{apply_animation('CSSPropertyWebkitTransitionTimingFunction', 'TimingFunction', 'Transition')}}
 
 {% macro apply_auto(property_id, auto_getter=none, auto_setter=none, auto_identity='CSSValueAuto', compute_length=false) %}
 {% set property = properties[property_id] %}

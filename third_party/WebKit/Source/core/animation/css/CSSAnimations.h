@@ -35,7 +35,6 @@
 #include "core/animation/AnimationPlayer.h"
 #include "core/animation/InertAnimation.h"
 #include "core/animation/Interpolation.h"
-#include "core/animation/css/CSSAnimationData.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/rendering/style/RenderStyleConstants.h"
@@ -45,6 +44,7 @@
 
 namespace WebCore {
 
+class CSSTransitionData;
 class Element;
 class StylePropertyShorthand;
 class StyleResolver;
@@ -202,7 +202,7 @@ private:
 
     static void calculateAnimationUpdate(CSSAnimationUpdate*, Element*, const Element& parentElement, const RenderStyle&, RenderStyle* parentStyle, StyleResolver*);
     static void calculateTransitionUpdate(CSSAnimationUpdate*, const Element*, const RenderStyle&);
-    static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSAnimationData*, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
+    static void calculateTransitionUpdateForProperty(CSSPropertyID, const CSSTransitionData&, size_t transitionIndex, const RenderStyle& oldStyle, const RenderStyle&, const TransitionMap* activeTransitions, CSSAnimationUpdate*, const Element*);
 
     static void calculateAnimationActiveInterpolations(CSSAnimationUpdate*, const Element*, double timelineCurrentTime);
     static void calculateTransitionActiveInterpolations(CSSAnimationUpdate*, const Element*, double timelineCurrentTime);

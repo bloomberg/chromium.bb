@@ -101,7 +101,7 @@ PassRefPtrWillBeRawPtr<AnimationEffect> EffectInput::convert(Element* element, c
         if (keyframeDictionaryVector[i].get("easing", timingFunctionString)) {
             RefPtrWillBeRawPtr<CSSValue> timingFunctionValue = BisonCSSParser::parseAnimationTimingFunctionValue(timingFunctionString);
             if (timingFunctionValue)
-                keyframe->setEasing(CSSToStyleMap::animationTimingFunction(timingFunctionValue.get(), false));
+                keyframe->setEasing(CSSToStyleMap::mapAnimationTimingFunction(timingFunctionValue.get(), true));
         }
 
         Vector<String> keyframeProperties;

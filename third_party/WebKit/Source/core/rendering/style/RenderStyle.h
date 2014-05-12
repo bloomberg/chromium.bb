@@ -26,7 +26,8 @@
 #define RenderStyle_h
 
 #include "CSSPropertyNames.h"
-#include "core/animation/css/CSSAnimationDataList.h"
+#include "core/animation/css/CSSAnimationData.h"
+#include "core/animation/css/CSSTransitionData.h"
 #include "core/css/CSSLineBoxContainValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/rendering/style/BorderValue.h"
@@ -903,13 +904,11 @@ public:
 
     // Apple-specific property getter methods
     EPointerEvents pointerEvents() const { return static_cast<EPointerEvents>(inherited_flags._pointerEvents); }
-    const CSSAnimationDataList* animations() const { return rareNonInheritedData->m_animations.get(); }
-    const CSSAnimationDataList* transitions() const { return rareNonInheritedData->m_transitions.get(); }
+    const CSSAnimationData* animations() const { return rareNonInheritedData->m_animations.get(); }
+    const CSSTransitionData* transitions() const { return rareNonInheritedData->m_transitions.get(); }
 
-    CSSAnimationDataList* accessAnimations();
-    CSSAnimationDataList* accessTransitions();
-
-    bool hasAnimations() const { return rareNonInheritedData->m_animations && rareNonInheritedData->m_animations->size() > 0; }
+    CSSAnimationData& accessAnimations();
+    CSSTransitionData& accessTransitions();
 
     ETransformStyle3D transformStyle3D() const { return static_cast<ETransformStyle3D>(rareNonInheritedData->m_transformStyle3D); }
     bool preserves3D() const { return rareNonInheritedData->m_transformStyle3D == TransformStyle3DPreserve3D; }
@@ -1368,9 +1367,6 @@ public:
     {
         rareNonInheritedData.access()->m_transitions.clear();
     }
-
-    void adjustAnimations();
-    void adjustTransitions();
 
     void setTransformStyle3D(ETransformStyle3D b) { SET_VAR(rareNonInheritedData, m_transformStyle3D, b); }
     void setBackfaceVisibility(EBackfaceVisibility b) { SET_VAR(rareNonInheritedData, m_backfaceVisibility, b); }

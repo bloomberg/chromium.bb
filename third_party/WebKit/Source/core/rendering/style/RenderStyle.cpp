@@ -1101,76 +1101,18 @@ const AtomicString& RenderStyle::textEmphasisMarkString() const
     return nullAtom;
 }
 
-void RenderStyle::adjustAnimations()
-{
-    CSSAnimationDataList* animationList = rareNonInheritedData->m_animations.get();
-    if (!animationList)
-        return;
-
-    // Get rid of empty animations and anything beyond them
-    for (size_t i = 0; i < animationList->size(); ++i) {
-        if (animationList->animation(i)->isEmpty()) {
-            animationList->resize(i);
-            break;
-        }
-    }
-
-    if (animationList->isEmpty()) {
-        clearAnimations();
-        return;
-    }
-
-    // Repeat patterns into layers that don't have some properties set.
-    animationList->fillUnsetProperties();
-}
-
-void RenderStyle::adjustTransitions()
-{
-    CSSAnimationDataList* transitionList = rareNonInheritedData->m_transitions.get();
-    if (!transitionList)
-        return;
-
-    // Get rid of empty transitions and anything beyond them
-    for (size_t i = 0; i < transitionList->size(); ++i) {
-        if (transitionList->animation(i)->isEmpty()) {
-            transitionList->resize(i);
-            break;
-        }
-    }
-
-    if (transitionList->isEmpty()) {
-        clearTransitions();
-        return;
-    }
-
-    // Repeat patterns into layers that don't have some properties set.
-    transitionList->fillUnsetProperties();
-
-    // Make sure there are no duplicate properties. This is an O(n^2) algorithm
-    // but the lists tend to be very short, so it is probably ok
-    for (size_t i = 0; i < transitionList->size(); ++i) {
-        for (size_t j = i+1; j < transitionList->size(); ++j) {
-            if (transitionList->animation(i)->property() == transitionList->animation(j)->property()) {
-                // toss i
-                transitionList->remove(i);
-                j = i;
-            }
-        }
-    }
-}
-
-CSSAnimationDataList* RenderStyle::accessAnimations()
+CSSAnimationData& RenderStyle::accessAnimations()
 {
     if (!rareNonInheritedData.access()->m_animations)
-        rareNonInheritedData.access()->m_animations = adoptPtrWillBeNoop(new CSSAnimationDataList());
-    return rareNonInheritedData->m_animations.get();
+        rareNonInheritedData.access()->m_animations = CSSAnimationData::create();
+    return *rareNonInheritedData->m_animations;
 }
 
-CSSAnimationDataList* RenderStyle::accessTransitions()
+CSSTransitionData& RenderStyle::accessTransitions()
 {
     if (!rareNonInheritedData.access()->m_transitions)
-        rareNonInheritedData.access()->m_transitions = adoptPtrWillBeNoop(new CSSAnimationDataList());
-    return rareNonInheritedData->m_transitions.get();
+        rareNonInheritedData.access()->m_transitions = CSSTransitionData::create();
+    return *rareNonInheritedData->m_transitions;
 }
 
 const Font& RenderStyle::font() const { return inherited->font; }
