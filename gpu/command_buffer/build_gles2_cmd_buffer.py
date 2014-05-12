@@ -1238,7 +1238,6 @@ _PEPPER_INTERFACES = [
 # impl_decl:    Whether or not to generate the GLES2Implementation declaration
 #               for this command.
 # needs_size:   If true a data_size field is added to the command.
-# data_type:    The type of data the command uses. For PUTn or PUT types.
 # count:        The number of units per element. For PUTn or PUT types.
 # unit_test:    If False no service side unit test will be generated.
 # client_test:  If False no client side unit test will be generated.
@@ -1359,7 +1358,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoConsumeTextureCHROMIUM',
     'impl_func': False,
     'type': 'PUT',
-    'data_type': 'GLbyte',
     'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'client_test': False,
@@ -1953,7 +1951,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoProduceTextureCHROMIUM',
     'impl_func': False,
     'type': 'PUT',
-    'data_type': 'GLbyte',
     'count': 64,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
     'client_test': False,
@@ -2071,7 +2068,6 @@ _FUNCTION_INFO = {
   },
   'TexParameterfv': {
     'type': 'PUT',
-    'data_type': 'GLfloat',
     'data_value': 'GL_NEAREST',
     'count': 1,
     'decoder_func': 'DoTexParameterfv',
@@ -2080,7 +2076,6 @@ _FUNCTION_INFO = {
   },
   'TexParameteriv': {
     'type': 'PUT',
-    'data_type': 'GLint',
     'data_value': 'GL_NEAREST',
     'count': 1,
     'decoder_func': 'DoTexParameteriv',
@@ -2097,78 +2092,67 @@ _FUNCTION_INFO = {
                 'GLenumTextureFormat format, GLenumPixelType type, '
                 'const void* pixels, GLboolean internal'
   },
-  'Uniform1f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 1},
+  'Uniform1f': {'type': 'PUTXn', 'count': 1},
   'Uniform1fv': {
     'type': 'PUTn',
-    'data_type': 'GLfloat',
     'count': 1,
     'decoder_func': 'DoUniform1fv',
   },
   'Uniform1i': {'decoder_func': 'DoUniform1i', 'unit_test': False},
   'Uniform1iv': {
     'type': 'PUTn',
-    'data_type': 'GLint',
     'count': 1,
     'decoder_func': 'DoUniform1iv',
     'unit_test': False,
   },
-  'Uniform2i': {'type': 'PUTXn', 'data_type': 'GLint', 'count': 2},
-  'Uniform2f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 2},
+  'Uniform2i': {'type': 'PUTXn', 'count': 2},
+  'Uniform2f': {'type': 'PUTXn', 'count': 2},
   'Uniform2fv': {
     'type': 'PUTn',
-    'data_type': 'GLfloat',
     'count': 2,
     'decoder_func': 'DoUniform2fv',
   },
   'Uniform2iv': {
     'type': 'PUTn',
-    'data_type': 'GLint',
     'count': 2,
     'decoder_func': 'DoUniform2iv',
   },
-  'Uniform3i': {'type': 'PUTXn', 'data_type': 'GLint', 'count': 3},
-  'Uniform3f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 3},
+  'Uniform3i': {'type': 'PUTXn', 'count': 3},
+  'Uniform3f': {'type': 'PUTXn', 'count': 3},
   'Uniform3fv': {
     'type': 'PUTn',
-    'data_type': 'GLfloat',
     'count': 3,
     'decoder_func': 'DoUniform3fv',
   },
   'Uniform3iv': {
     'type': 'PUTn',
-    'data_type': 'GLint',
     'count': 3,
     'decoder_func': 'DoUniform3iv',
   },
-  'Uniform4i': {'type': 'PUTXn', 'data_type': 'GLint', 'count': 4},
-  'Uniform4f': {'type': 'PUTXn', 'data_type': 'GLfloat', 'count': 4},
+  'Uniform4i': {'type': 'PUTXn', 'count': 4},
+  'Uniform4f': {'type': 'PUTXn', 'count': 4},
   'Uniform4fv': {
     'type': 'PUTn',
-    'data_type': 'GLfloat',
     'count': 4,
     'decoder_func': 'DoUniform4fv',
   },
   'Uniform4iv': {
     'type': 'PUTn',
-    'data_type': 'GLint',
     'count': 4,
     'decoder_func': 'DoUniform4iv',
   },
   'UniformMatrix2fv': {
     'type': 'PUTn',
-    'data_type': 'GLfloat',
     'count': 4,
     'decoder_func': 'DoUniformMatrix2fv',
   },
   'UniformMatrix3fv': {
     'type': 'PUTn',
-    'data_type': 'GLfloat',
     'count': 9,
     'decoder_func': 'DoUniformMatrix3fv',
   },
   'UniformMatrix4fv': {
     'type': 'PUTn',
-    'data_type': 'GLfloat',
     'count': 16,
     'decoder_func': 'DoUniformMatrix4fv',
   },
@@ -2206,28 +2190,24 @@ _FUNCTION_INFO = {
   'VertexAttrib1f': {'decoder_func': 'DoVertexAttrib1f'},
   'VertexAttrib1fv': {
     'type': 'PUT',
-    'data_type': 'GLfloat',
     'count': 1,
     'decoder_func': 'DoVertexAttrib1fv',
   },
   'VertexAttrib2f': {'decoder_func': 'DoVertexAttrib2f'},
   'VertexAttrib2fv': {
     'type': 'PUT',
-    'data_type': 'GLfloat',
     'count': 2,
     'decoder_func': 'DoVertexAttrib2fv',
   },
   'VertexAttrib3f': {'decoder_func': 'DoVertexAttrib3f'},
   'VertexAttrib3fv': {
     'type': 'PUT',
-    'data_type': 'GLfloat',
     'count': 3,
     'decoder_func': 'DoVertexAttrib3fv',
   },
   'VertexAttrib4f': {'decoder_func': 'DoVertexAttrib4f'},
   'VertexAttrib4fv': {
     'type': 'PUT',
-    'data_type': 'GLfloat',
     'count': 4,
     'decoder_func': 'DoVertexAttrib4fv',
   },
@@ -2312,7 +2292,6 @@ _FUNCTION_INFO = {
   'DrawBuffersEXT': {
     'type': 'PUTn',
     'decoder_func': 'DoDrawBuffersEXT',
-    'data_type': 'GLenum',
     'count': 1,
     'client_test': False,
     'unit_test': False,
@@ -2533,7 +2512,6 @@ _FUNCTION_INFO = {
   'DiscardFramebufferEXT': {
     'type': 'PUTn',
     'count': 1,
-    'data_type': 'GLenum',
     'cmd_args': 'GLenum target, GLsizei count, '
         'const GLenum* attachments',
     'decoder_func': 'DoDiscardFramebufferEXT',
@@ -4730,12 +4708,35 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 """
     self.WriteInvalidUnitTest(func, file, invalid_test)
 
-
-class PUTHandler(TypeHandler):
-  """Handler for glTexParameter_v, glVertexAttrib_v functions."""
+class ArrayArgTypeHandler(TypeHandler):
+  """Base class for type handlers that handle args that are arrays"""
 
   def __init__(self):
     TypeHandler.__init__(self)
+
+  def GetArrayType(self, func):
+    """Returns the type of the element in the element array being PUT to."""
+    for arg in func.GetOriginalArgs():
+      if arg.IsPointer():
+        element_type = arg.GetPointedType()
+        return element_type
+
+    # Special case: array type handler is used for a function that is forwarded
+    # to the actual array type implementation
+    element_type = func.GetOriginalArgs()[-1].type
+    assert all(arg.type == element_type \
+               for arg in func.GetOriginalArgs()[-self.GetArrayCount(func):])
+    return element_type
+
+  def GetArrayCount(self, func):
+    """Returns the count of the elements in the array being PUT to."""
+    return func.GetInfo('count')
+
+class PUTHandler(ArrayArgTypeHandler):
+  """Handler for glTexParameter_v, glVertexAttrib_v functions."""
+
+  def __init__(self):
+    ArrayArgTypeHandler.__init__(self)
 
   def WriteServiceUnitTest(self, func, file):
     """Writes the service unit test for a command."""
@@ -4759,7 +4760,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 }
 """
     extra = {
-      'data_type': func.GetInfo('data_type'),
+      'data_type': self.GetArrayType(func),
       'data_value': func.GetInfo('data_value') or '0',
       'expected_call': expected_call,
     }
@@ -4801,8 +4802,8 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
       gl_any_strings.append("_")
     extra = {
       'data_ref': ("*" if func.GetInfo('first_element_only') else ""),
-      'data_type': func.GetInfo('data_type'),
-      'data_count': func.GetInfo('count'),
+      'data_type': self.GetArrayType(func),
+      'data_count': self.GetArrayCount(func),
       'data_value': func.GetInfo('data_value') or '0',
       'gl_args': ", ".join(gl_arg_strings),
       'gl_any_args': ", ".join(gl_any_strings),
@@ -4829,7 +4830,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     return error::kOutOfBounds;
   }
 """
-    file.Write(code % (func.info.data_type, func.info.count))
+    file.Write(code % (self.GetArrayType(func), self.GetArrayCount(func)))
     if func.is_immediate:
       file.Write("  if (data_size > immediate_data_size) {\n")
       file.Write("    return error::kOutOfBounds;\n")
@@ -4848,7 +4849,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     self.WriteClientGLCallLog(func, file)
     last_arg_name = func.GetLastOriginalArg().name
     values_str = ' << ", " << '.join(
-        ["%s[%d]" % (last_arg_name, ndx) for ndx in range(0, func.info.count)])
+        ["%s[%d]" % (last_arg_name, ndx) \
+         for ndx in range(0, self.GetArrayCount(func))])
     file.Write('  GPU_CLIENT_LOG("values: " << %s);\n' % values_str)
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
@@ -4888,8 +4890,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
       gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
     file.Write(code % {
           'name': func.name,
-          'type': func.GetInfo('data_type'),
-          'count': func.GetInfo('count'),
+          'type': self.GetArrayType(func),
+          'count': self.GetArrayCount(func),
           'args': ", ".join(gl_arg_strings),
           'cmd_args': ", ".join(cmd_arg_strings),
         })
@@ -4899,7 +4901,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     file.Write("  static uint32_t ComputeDataSize() {\n")
     file.Write("    return static_cast<uint32_t>(\n")
     file.Write("        sizeof(%s) * %d);  // NOLINT\n" %
-               (func.info.data_type, func.info.count))
+               (self.GetArrayType(func), self.GetArrayCount(func)))
     file.Write("  }\n")
     file.Write("\n")
     file.Write("  static uint32_t ComputeSize() {\n")
@@ -4969,10 +4971,10 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     """Overrriden from TypeHandler."""
     file.Write("TEST_F(GLES2FormatTest, %s) {\n" % func.name)
     file.Write("  const int kSomeBaseValueToTestWith = 51;\n")
-    file.Write("  static %s data[] = {\n" % func.info.data_type)
-    for v in range(0, func.info.count):
+    file.Write("  static %s data[] = {\n" % self.GetArrayType(func))
+    for v in range(0, self.GetArrayCount(func)):
       file.Write("    static_cast<%s>(kSomeBaseValueToTestWith + %d),\n" %
-                 (func.info.data_type, v))
+                 (self.GetArrayType(func), v))
     file.Write("  };\n")
     file.Write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
                (func.name, func.name))
@@ -5000,15 +5002,15 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     file.Write("\n")
 
 
-class PUTnHandler(TypeHandler):
+class PUTnHandler(ArrayArgTypeHandler):
   """Handler for PUTn 'glUniform__v' type functions."""
 
   def __init__(self):
-    TypeHandler.__init__(self)
+    ArrayArgTypeHandler.__init__(self)
 
   def WriteServiceUnitTest(self, func, file):
     """Overridden from TypeHandler."""
-    TypeHandler.WriteServiceUnitTest(self, func, file)
+    ArrayArgTypeHandler.WriteServiceUnitTest(self, func, file)
 
     valid_test = """
 TEST_P(%(test_name)s, %(name)sValidArgsCountTooLarge) {
@@ -5068,8 +5070,8 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
       gl_any_strings.append("_")
       arg_strings.append(arg.GetValidArg(func, count, 0))
     extra = {
-      'data_type': func.GetInfo('data_type'),
-      'data_count': func.GetInfo('count'),
+      'data_type': self.GetArrayType(func),
+      'data_count': self.GetArrayCount(func),
       'args': ", ".join(arg_strings),
       'gl_args': ", ".join(gl_arg_strings),
       'gl_any_args': ", ".join(gl_any_strings),
@@ -5096,7 +5098,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     return error::kOutOfBounds;
   }
 """
-    file.Write(code % (func.info.data_type, func.info.count))
+    file.Write(code % (self.GetArrayType(func), self.GetArrayCount(func)))
     if func.is_immediate:
       file.Write("  if (data_size > immediate_data_size) {\n")
       file.Write("    return error::kOutOfBounds;\n")
@@ -5116,8 +5118,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 """)
     values_str = ' << ", " << '.join(
         ["%s[%d + i * %d]" % (
-            last_arg_name, ndx, func.info.count) for ndx in range(
-                0, func.info.count)])
+            last_arg_name, ndx, self.GetArrayCount(func)) for ndx in range(
+                0, self.GetArrayCount(func))])
     file.Write('       GPU_CLIENT_LOG("  " << i << ": " << %s);\n' % values_str)
     file.Write("    }\n  });\n")
     for arg in func.GetOriginalArgs():
@@ -5160,8 +5162,8 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
         count_param = int(arg.GetValidClientSideArg(func, count, 0))
     file.Write(code % {
           'name': func.name,
-          'type': func.GetInfo('data_type'),
-          'count': func.GetInfo('count'),
+          'type': self.GetArrayType(func),
+          'count': self.GetArrayCount(func),
           'args': ", ".join(gl_arg_strings),
           'cmd_args': ", ".join(cmd_arg_strings),
           'count_param': count_param,
@@ -5172,7 +5174,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     file.Write("  static uint32_t ComputeDataSize(GLsizei count) {\n")
     file.Write("    return static_cast<uint32_t>(\n")
     file.Write("        sizeof(%s) * %d * count);  // NOLINT\n" %
-               (func.info.data_type, func.info.count))
+               (self.GetArrayType(func), self.GetArrayCount(func)))
     file.Write("  }\n")
     file.Write("\n")
     file.Write("  static uint32_t ComputeSize(GLsizei count) {\n")
@@ -5247,17 +5249,17 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
         count_param = int(arg.GetValidClientSideArg(func, value, 0))
     file.Write("TEST_F(GLES2FormatTest, %s) {\n" % func.name)
     file.Write("  const int kSomeBaseValueToTestWith = 51;\n")
-    file.Write("  static %s data[] = {\n" % func.info.data_type)
-    for v in range(0, func.info.count * count_param):
+    file.Write("  static %s data[] = {\n" % self.GetArrayType(func))
+    for v in range(0, self.GetArrayCount(func) * count_param):
       file.Write("    static_cast<%s>(kSomeBaseValueToTestWith + %d),\n" %
-                 (func.info.data_type, v))
+                 (self.GetArrayType(func), v))
     file.Write("  };\n")
     file.Write("  cmds::%s& cmd = *GetBufferAs<cmds::%s>();\n" %
                (func.name, func.name))
     file.Write("  const GLsizei kNumElements = %d;\n" % count_param)
     file.Write("  const size_t kExpectedCmdSize =\n")
     file.Write("      sizeof(cmd) + kNumElements * sizeof(%s) * %d;\n" %
-               (func.info.data_type, func.info.count))
+               (self.GetArrayType(func), self.GetArrayCount(func)))
     file.Write("  void* next_cmd = cmd.Set(\n")
     file.Write("      &cmd")
     for value, arg in enumerate(args):
@@ -5278,10 +5280,10 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
     file.Write("\n")
 
 
-class PUTXnHandler(TypeHandler):
+class PUTXnHandler(ArrayArgTypeHandler):
   """Handler for glUniform?f functions."""
   def __init__(self):
-    TypeHandler.__init__(self)
+    ArrayArgTypeHandler.__init__(self)
 
   def WriteHandlerImplementation(self, func, file):
     """Overrriden from TypeHandler."""
@@ -5290,15 +5292,15 @@ class PUTXnHandler(TypeHandler):
 """
     values = ""
     args = func.GetOriginalArgs()
-    count = int(func.GetInfo('count'))
+    count = int(self.GetArrayCount(func))
     num_args = len(args)
     for ii in range(count):
       values += "%s, " % args[len(args) - count + ii].name
 
     file.Write(code % {
         'name': func.name,
-        'count': func.GetInfo('count'),
-        'type': func.GetInfo('data_type'),
+        'count': self.GetArrayCount(func),
+        'type': self.GetArrayType(func),
         'location': args[0].name,
         'args': func.MakeOriginalArgString(""),
         'values': values,
@@ -5320,7 +5322,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
     local_args = "%s, 1, _" % args[0].GetValidGLArg(func, 0, 0)
     self.WriteValidUnitTest(func, file, valid_test, {
         'name': func.name,
-        'count': func.GetInfo('count'),
+        'count': self.GetArrayCount(func),
         'local_args': local_args,
       })
 
@@ -5335,7 +5337,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 """
     self.WriteInvalidUnitTest(func, file, invalid_test, {
         'name': func.GetInfo('name'),
-        'count': func.GetInfo('count'),
+        'count': self.GetArrayCount(func),
       })
 
 
@@ -6115,6 +6117,14 @@ class ImmediatePointerArgument(Argument):
   def __init__(self, name, type):
     Argument.__init__(self, name, type)
 
+  def IsPointer(self):
+    return True
+
+  def GetPointedType(self):
+    match = re.match('(const\s+)?(?P<element_type>[\w]+)\s*\*', self.type)
+    assert match
+    return match.groupdict()['element_type']
+
   def AddCmdArgs(self, args):
     """Overridden from Argument."""
     pass
@@ -6187,6 +6197,11 @@ class PointerArgument(Argument):
   def IsPointer(self):
     """Returns true if argument is a pointer."""
     return True
+
+  def GetPointedType(self):
+    match = re.match('(const\s+)?(?P<element_type>[\w]+)\s*\*', self.type)
+    assert match
+    return match.groupdict()['element_type']
 
   def GetValidArg(self, func, offset, index):
     """Overridden from Argument."""
