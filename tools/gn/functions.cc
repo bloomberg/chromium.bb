@@ -638,6 +638,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(Action, true)
     INSERT_FUNCTION(ActionForEach, true)
     INSERT_FUNCTION(Component, true)
+    INSERT_FUNCTION(Copy, true)
     INSERT_FUNCTION(Executable, true)
     INSERT_FUNCTION(Group, true)
     INSERT_FUNCTION(SharedLibrary, true)
@@ -647,7 +648,6 @@ struct FunctionInfoInitializer {
 
     INSERT_FUNCTION(Assert, false)
     INSERT_FUNCTION(Config, false)
-    INSERT_FUNCTION(Copy, false)
     INSERT_FUNCTION(DeclareArgs, false)
     INSERT_FUNCTION(Defined, false)
     INSERT_FUNCTION(ExecScript, false)
