@@ -1114,13 +1114,35 @@ PP_Bool GetPNaClResourceInfo(PP_Instance instance,
     return PP_FALSE;
   }
 
-  const int kBufferSize = 1 << 20;
-  scoped_ptr<char[]> buffer(new char[kBufferSize]);
-  if (base::ReadPlatformFile(file, 0, buffer.get(), kBufferSize) < 0) {
+  base::PlatformFileInfo file_info;
+  if (!GetPlatformFileInfo(file, &file_info)) {
     load_manager->ReportLoadError(
         PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
-        std::string("PnaclResources::ReadResourceInfo reading failed for: ") +
+        std::string("GetPNaClResourceInfo, GetFileInfo failed for: ") +
             filename);
+    return PP_FALSE;
+  }
+
+  if (file_info.size > 1 << 20) {
+    load_manager->ReportLoadError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        std::string("GetPNaClResourceInfo, file too large: ") + filename);
+    return PP_FALSE;
+  }
+
+  scoped_ptr<char[]> buffer(new char[file_info.size]);
+  if (buffer.get() == NULL) {
+    load_manager->ReportLoadError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        std::string("GetPNaClResourceInfo, couldn't allocate for: ") +
+            filename);
+    return PP_FALSE;
+  }
+
+  if (base::ReadPlatformFile(file, 0, buffer.get(), file_info.size) < 0) {
+    load_manager->ReportLoadError(
+        PP_NACL_ERROR_PNACL_RESOURCE_FETCH,
+        std::string("GetPNaClResourceInfo, reading failed for: ") + filename);
     return PP_FALSE;
   }
 
