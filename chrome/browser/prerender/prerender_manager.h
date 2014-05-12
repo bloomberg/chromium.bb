@@ -621,12 +621,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void DestroyAndMarkMatchCompleteAsUsed(PrerenderContents* prerender_contents,
                                          FinalStatus final_status);
 
-  // Record a final status of a prerendered page in a histogram.
+  // Records the final status a prerender in the case that a PrerenderContents
+  // was never created, and also adds a PrerenderHistory entry.
   // This is a helper function which will ultimately call
   // RecordFinalStatusWthMatchCompleteStatus, using MATCH_COMPLETE_DEFAULT.
-  void RecordFinalStatus(Origin origin,
-                         uint8 experiment_id,
-                         FinalStatus final_status) const;
+  void RecordFinalStatusWithoutCreatingPrerenderContents(
+      const GURL& url, Origin origin, uint8 experiment_id,
+      FinalStatus final_status) const;
 
   // Returns whether prerendering is currently enabled for this manager.
   // Must be called on the UI thread.

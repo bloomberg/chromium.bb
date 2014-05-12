@@ -1249,7 +1249,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
 
   if (PrerenderData* preexisting_prerender_data =
           FindPrerenderData(url, session_storage_namespace)) {
-    RecordFinalStatus(origin, experiment, FINAL_STATUS_DUPLICATE);
+    RecordFinalStatusWithoutCreatingPrerenderContents(
+        url, origin, experiment, FINAL_STATUS_DUPLICATE);
     return new PrerenderHandle(preexisting_prerender_data);
   }
 
@@ -1267,7 +1268,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
   if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost(
           profile_, url) &&
       !content::RenderProcessHost::run_renderer_in_process()) {
-    RecordFinalStatus(origin, experiment, FINAL_STATUS_TOO_MANY_PROCESSES);
+    RecordFinalStatusWithoutCreatingPrerenderContents(
+        url, origin, experiment, FINAL_STATUS_TOO_MANY_PROCESSES);
     return NULL;
   }
 
@@ -1276,7 +1278,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
     // Cancel the prerender. We could add it to the pending prerender list but
     // this doesn't make sense as the next prerender request will be triggered
     // by a navigation and is unlikely to be the same site.
-    RecordFinalStatus(origin, experiment, FINAL_STATUS_RATE_LIMIT_EXCEEDED);
+    RecordFinalStatusWithoutCreatingPrerenderContents(
+        url, origin, experiment, FINAL_STATUS_RATE_LIMIT_EXCEEDED);
     return NULL;
   }
 
@@ -1563,9 +1566,11 @@ void PrerenderManager::DestroyAndMarkMatchCompleteAsUsed(
   prerender_contents->Destroy(final_status);
 }
 
-void PrerenderManager::RecordFinalStatus(Origin origin,
-                                         uint8 experiment_id,
-                                         FinalStatus final_status) const {
+void PrerenderManager::RecordFinalStatusWithoutCreatingPrerenderContents(
+    const GURL& url, Origin origin, uint8 experiment_id,
+    FinalStatus final_status) const {
+  PrerenderHistory::Entry entry(url, final_status, origin, base::Time::Now());
+  prerender_history_->AddEntry(entry);
   RecordFinalStatusWithMatchCompleteStatus(
       origin, experiment_id,
       PrerenderContents::MATCH_COMPLETE_DEFAULT,
