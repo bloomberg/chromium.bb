@@ -779,8 +779,12 @@ def _SendChangeGerrit(bot_spec, options):
 
   change_id = GetChangeId(head_sha)
 
-  # Check that the uploaded revision matches the local one.
-  changes = gerrit_util.GetChangeCurrentRevision(gerrit_host, change_id)
+  try:
+    # Check that the uploaded revision matches the local one.
+    changes = gerrit_util.GetChangeCurrentRevision(gerrit_host, change_id)
+  except gerrit_util.GerritAuthenticationError, e:
+    raise NoTryServerAccess(e.message)
+
   assert len(changes) <= 1, 'Multiple changes with id %s' % change_id
   if not changes:
     raise Error('A change %s was not found on the server. Was it uploaded?' %

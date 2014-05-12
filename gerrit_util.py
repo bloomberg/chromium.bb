@@ -14,6 +14,7 @@ import json
 import logging
 import netrc
 import os
+import re
 import time
 import urllib
 from cStringIO import StringIO
@@ -36,6 +37,10 @@ class GerritError(Exception):
     super(GerritError, self).__init__(*args, **kwargs)
     self.http_status = http_status
     self.message = '(%d) %s' % (self.http_status, self.message)
+
+
+class GerritAuthenticationError(GerritError):
+  """Exception class for authentication errors during Gerrit communication."""
 
 
 def _QueryString(param_dict, first_param=None):
@@ -115,6 +120,17 @@ def ReadHttpResponse(conn, expect_status=200, ignore_404=True):
   sleep_time = 0.5
   for idx in range(TRY_LIMIT):
     response = conn.getresponse()
+
+    # Check if this is an authentication issue.
+    www_authenticate = response.getheader('www-authenticate')
+    if (response.status in (httplib.UNAUTHORIZED, httplib.FOUND) and
+        www_authenticate):
+      auth_match = re.search('realm="([^"]+)"', www_authenticate, re.I)
+      host = auth_match.group(1) if auth_match else conn.req_host
+      reason = ('Authentication failed. Please make sure your .netrc file '
+                'has credentials for %s' % host)
+      raise GerritAuthenticationError(response.status, reason)
+
     # If response.status < 500 then the result is final; break retry loop.
     if response.status < 500:
       break
