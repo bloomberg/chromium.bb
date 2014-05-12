@@ -136,6 +136,8 @@
         'views/signin_view.h',
         'views/speech_view.cc',
         'views/speech_view.h',
+        'views/start_page_view.cc',
+        'views/start_page_view.h',
         'views/top_icon_animation_view.cc',
         'views/top_icon_animation_view.h',
       ],

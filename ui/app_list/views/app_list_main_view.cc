@@ -167,6 +167,17 @@ void AppListMainView::ModelChanged() {
   Layout();
 }
 
+void AppListMainView::OnContentsViewShowStateChanged() {
+  search_box_view_->SetVisible(contents_view_->show_state() !=
+                               ContentsView::SHOW_START_PAGE);
+}
+
+void AppListMainView::OnStartPageSearchButtonPressed() {
+  search_box_view_->SetVisible(true);
+  search_box_view_->search_box()->SetText(base::string16());
+  search_box_view_->RequestFocus();
+}
+
 void AppListMainView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);

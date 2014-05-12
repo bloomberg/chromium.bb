@@ -16,6 +16,7 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
+#include "ui/app_list/views/start_page_view.h"
 #include "ui/events/event.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/view_model.h"
@@ -28,6 +29,7 @@ namespace {
 // Indexes of interesting views in ViewModel of ContentsView.
 const int kIndexAppsContainer = 0;
 const int kIndexSearchResults = 1;
+const int kIndexStartPage = 2;
 
 const int kMinMouseWheelToSwitchPage = 20;
 const int kMinScrollToSwitchPage = 20;
@@ -44,6 +46,10 @@ SearchResultListView* GetSearchResultListView(views::ViewModel* model) {
       model->view_at(kIndexSearchResults));
 }
 
+StartPageView* GetStartPageView(views::ViewModel* model) {
+  return static_cast<StartPageView*>(model->view_at(kIndexStartPage));
+}
+
 }  // namespace
 
 ContentsView::ContentsView(AppListMainView* app_list_main_view,
@@ -52,6 +58,7 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
                            AppListViewDelegate* view_delegate)
     : show_state_(SHOW_APPS),
       pagination_model_(pagination_model),
+      app_list_main_view_(app_list_main_view),
       view_model_(new views::ViewModel),
       bounds_animator_(new views::BoundsAnimator(this)) {
   DCHECK(model);
@@ -68,6 +75,15 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
       app_list_main_view, view_delegate);
   AddChildView(search_results_view);
   view_model_->Add(search_results_view, kIndexSearchResults);
+
+  if (app_list::switches::IsExperimentalAppListEnabled()) {
+    content::WebContents* start_page_contents =
+        view_delegate->GetStartPageContents();
+    StartPageView* start_page_view =
+        new StartPageView(app_list_main_view, start_page_contents);
+    AddChildView(start_page_view);
+    view_model_->Add(start_page_view, kIndexStartPage);
+  }
 
   GetSearchResultListView(view_model_.get())->SetResults(model->results());
 }
@@ -107,6 +123,12 @@ void ContentsView::ShowStateChanged() {
     results_view->SetSelectedIndex(0);
   results_view->UpdateAutoLaunchState();
 
+  // Notify parent AppListMainView of show state change.
+  app_list_main_view_->OnContentsViewShowStateChanged();
+
+  if (show_state_ == SHOW_START_PAGE)
+    GetStartPageView(view_model_.get())->Reset();
+
   AnimateToIdealBounds();
 }
 
@@ -123,6 +145,9 @@ void ContentsView::CalculateIdealBounds() {
         break;
       case SHOW_SEARCH_RESULTS:
         incoming_view_index = kIndexSearchResults;
+        break;
+      case SHOW_START_PAGE:
+        incoming_view_index = kIndexStartPage;
         break;
       default:
         NOTREACHED();
@@ -206,6 +231,8 @@ bool ContentsView::OnKeyPressed(const ui::KeyEvent& event) {
       return GetAppsContainerView(view_model_.get())->OnKeyPressed(event);
     case SHOW_SEARCH_RESULTS:
       return GetSearchResultListView(view_model_.get())->OnKeyPressed(event);
+    case SHOW_START_PAGE:
+      return GetStartPageView(view_model_.get())->OnKeyPressed(event);
     default:
       NOTREACHED() << "Unknown show state " << show_state_;
   }

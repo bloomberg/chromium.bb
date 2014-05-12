@@ -20,8 +20,8 @@ namespace app_list {
 StartPageService* StartPageServiceFactory::GetForProfile(Profile* profile) {
   if (!app_list::switches::IsExperimentalAppListEnabled() &&
       !app_list::switches::IsVoiceSearchEnabled()) {
-      return NULL;
-    }
+    return NULL;
+  }
 
   return static_cast<StartPageService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
