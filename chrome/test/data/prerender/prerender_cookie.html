@@ -1,0 +1,41 @@
+<html>
+<meta http-equiv="expires" content="0">
+<script src="prerender_events_common.js"></script>
+<script>
+ function GetCookie(cookieName) {
+   var re = RegExp(cookieName + '=([^;]*)');
+   var result = re.exec(document.cookie);
+   if (result)
+     return result[1];
+   return "";
+ }
+
+ function SetCookie(cookieName, cookieValue) {
+    var exp = "Tue, 31 Dec 2030 23:59:59 GMT";
+    if (cookieValue == "")
+      exp = "Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = cookieName + "=" + cookieValue + "; expires=" + exp;
+ }
+
+ function DidPrerenderPass() {
+   // If the prerender did not set a value, everything's fine.
+   if (ExtractGetParameterBadlyAndInsecurely('set', 0) == 0)
+     return true;
+
+   // If the prerender set a cookie, querying it again should yield the same
+   // value that was set during the request.
+   var cookieName = ExtractGetParameterBadlyAndInsecurely('key', "");
+   var cookieValue = ExtractGetParameterBadlyAndInsecurely('value', "");
+   return GetCookie(cookieName) == cookieValue;
+ }
+
+ if (ExtractGetParameterBadlyAndInsecurely('set', 0) != 0) {
+    var cookieName = ExtractGetParameterBadlyAndInsecurely('key', "");
+    var cookieValue = ExtractGetParameterBadlyAndInsecurely('value', "");
+    SetCookie(cookieName, cookieValue);
+ }
+
+ document.write(document.cookie);
+
+</script>
+<body></body></html>

@@ -1591,6 +1591,8 @@
         'browser/prefs/tracked/tracked_split_preference.h',
         'browser/prerender/external_prerender_handler_android.cc',
         'browser/prerender/external_prerender_handler_android.h',
+        'browser/prerender/prerender_cookie_store.cc',
+        'browser/prerender/prerender_cookie_store.h',
         'browser/prerender/prerender_condition.h',
         'browser/prerender/prerender_config.cc',
         'browser/prerender/prerender_config.h',

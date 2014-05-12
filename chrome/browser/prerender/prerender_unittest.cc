@@ -52,7 +52,8 @@ class DummyPrerenderContents : public PrerenderContents {
   virtual void StartPrerendering(
       int ALLOW_UNUSED creator_child_id,
       const gfx::Size& ALLOW_UNUSED size,
-      content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace)
+      content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace,
+      net::URLRequestContextGetter* ALLOW_UNUSED request_context)
       OVERRIDE;
 
   virtual bool GetChildId(int* child_id) const OVERRIDE {
@@ -101,6 +102,7 @@ class UnitTestPrerenderManager : public PrerenderManager {
         time_ticks_(TimeTicks::Now()),
         prerender_tracker_(prerender_tracker) {
     set_rate_limit_enabled(false);
+    OnCookieStoreLoaded();
   }
 
   virtual ~UnitTestPrerenderManager() {
@@ -229,6 +231,11 @@ class UnitTestPrerenderManager : public PrerenderManager {
     prerender_contents_map_.erase(std::make_pair(child_id, route_id));
   }
 
+ protected:
+  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE {
+    return NULL;
+  }
+
  private:
   void SetNextPrerenderContents(DummyPrerenderContents* prerender_contents) {
     CHECK(!next_prerender_contents_.get());
@@ -296,7 +303,8 @@ DummyPrerenderContents::~DummyPrerenderContents() {
 void DummyPrerenderContents::StartPrerendering(
     int ALLOW_UNUSED creator_child_id,
     const gfx::Size& ALLOW_UNUSED size,
-    content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace) {
+    content::SessionStorageNamespace* ALLOW_UNUSED session_storage_namespace,
+    net::URLRequestContextGetter* ALLOW_UNUSED request_context) {
   // In the base PrerenderContents implementation, StartPrerendering will
   // be called even when the PrerenderManager is part of the control group,
   // but it will early exit before actually creating a new RenderView if

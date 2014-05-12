@@ -97,6 +97,8 @@ void MockCookieMonsterDelegate::OnCookieChanged(
   changes_.push_back(notification);
 }
 
+void MockCookieMonsterDelegate::OnLoaded() {}
+
 MockCookieMonsterDelegate::~MockCookieMonsterDelegate() {}
 
 CanonicalCookie BuildCanonicalCookie(const std::string& key,
