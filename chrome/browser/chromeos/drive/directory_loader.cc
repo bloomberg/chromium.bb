@@ -55,8 +55,7 @@ FileError CheckLocalState(ResourceMetadata* resource_metadata,
     return error;
 
   // Get the local changestamp.
-  *local_changestamp = resource_metadata->GetLargestChangestamp();
-  return FILE_ERROR_OK;
+  return resource_metadata->GetLargestChangestamp(local_changestamp);
 }
 
 FileError UpdateChangestamp(ResourceMetadata* resource_metadata,
@@ -79,9 +78,8 @@ FileError UpdateChangestamp(ResourceMetadata* resource_metadata,
     return error;
 
   // Get the directory path.
-  *directory_path = resource_metadata->GetFilePath(
-      directory_fetch_info.local_id());
-  return FILE_ERROR_OK;
+  return resource_metadata->GetFilePath(directory_fetch_info.local_id(),
+                                        directory_path);
 }
 
 }  // namespace

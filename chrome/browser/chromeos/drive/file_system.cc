@@ -179,11 +179,12 @@ void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
 void OnGetLargestChangestamp(
     FileSystemMetadata metadata,  // Will be modified.
     const GetFilesystemMetadataCallback& callback,
-    int64 largest_changestamp) {
+    const int64* largest_changestamp,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  metadata.largest_changestamp = largest_changestamp;
+  metadata.largest_changestamp = *largest_changestamp;
   callback.Run(metadata);
 }
 
@@ -215,9 +216,9 @@ FileError GetPathFromResourceIdOnBlockingPool(
   std::string local_id;
   const FileError error =
       resource_metadata->GetIdByResourceId(resource_id, &local_id);
-  *file_path = error == FILE_ERROR_OK ?
-      resource_metadata->GetFilePath(local_id) : base::FilePath();
-  return error;
+  if (error != FILE_ERROR_OK)
+    return error;
+  return resource_metadata->GetFilePath(local_id, file_path);
 }
 
 // Part of GetPathFromResourceId().
@@ -820,25 +821,29 @@ void FileSystem::OnEntryUpdatedByOperation(const std::string& local_id) {
 
 void FileSystem::OnDriveSyncError(file_system::DriveSyncErrorType type,
                                   const std::string& local_id) {
+  base::FilePath* file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::GetFilePath,
                  base::Unretained(resource_metadata_),
-                 local_id),
+                 local_id,
+                 file_path),
       base::Bind(&FileSystem::OnDriveSyncErrorAfterGetFilePath,
                  weak_ptr_factory_.GetWeakPtr(),
-                 type));
+                 type,
+                 base::Owned(file_path)));
 }
 
 void FileSystem::OnDriveSyncErrorAfterGetFilePath(
     file_system::DriveSyncErrorType type,
-    const base::FilePath& path) {
-  if (path.empty())
+    const base::FilePath* file_path,
+    FileError error) {
+  if (error != FILE_ERROR_OK)
     return;
   FOR_EACH_OBSERVER(FileSystemObserver,
                     observers_,
-                    OnDriveSyncError(type, path));
+                    OnDriveSyncError(type, *file_path));
 }
 
 void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {
@@ -876,12 +881,14 @@ void FileSystem::GetMetadata(
   metadata.last_update_check_time = last_update_check_time_;
   metadata.last_update_check_error = last_update_check_error_;
 
+  int64* largest_changestamp = new int64(0);
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&internal::ResourceMetadata::GetLargestChangestamp,
-                 base::Unretained(resource_metadata_)),
-      base::Bind(&OnGetLargestChangestamp, metadata, callback));
+                 base::Unretained(resource_metadata_), largest_changestamp),
+      base::Bind(&OnGetLargestChangestamp, metadata, callback,
+                 base::Owned(largest_changestamp)));
 }
 
 void FileSystem::MarkCacheFileAsMounted(

@@ -50,9 +50,9 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  local_state->drive_file_path = metadata->GetFilePath(local_id);
-  if (local_state->drive_file_path.empty())
-    return FILE_ERROR_NOT_FOUND;
+  error = metadata->GetFilePath(local_id, &local_state->drive_file_path);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   FileCacheEntry cache_entry;
   cache->GetCacheEntry(local_id, &cache_entry);
@@ -123,8 +123,10 @@ FileError FinishUpdate(ResourceMetadata* metadata,
   switch (error) {
     case FILE_ERROR_OK:
       if (existing_local_id != local_id) {
-        base::FilePath existing_entry_path =
-            metadata->GetFilePath(existing_local_id);
+        base::FilePath existing_entry_path;
+        error = metadata->GetFilePath(existing_local_id, &existing_entry_path);
+        if (error != FILE_ERROR_OK)
+          return error;
         error = metadata->RemoveEntry(existing_local_id);
         if (error != FILE_ERROR_OK)
           return error;

@@ -274,9 +274,10 @@ FileError SearchMetadataOnBlockingPool(ResourceMetadata* resource_metadata,
     // The path field of entries in result_candidates are empty at this point,
     // because we don't want to run the expensive metadata DB look up except for
     // the final results. Hence, here we fill the part.
-    base::FilePath path = resource_metadata->GetFilePath(candidate.local_id);
-    if (path.empty())
-      return FILE_ERROR_FAILED;
+    base::FilePath path;
+    error = resource_metadata->GetFilePath(candidate.local_id, &path);
+    if (error != FILE_ERROR_OK)
+      return error;
     bool is_directory = candidate.entry.file_info().is_directory();
     results->push_back(MetadataSearchResult(
         path, is_directory, candidate.highlighted_base_name));

@@ -187,10 +187,10 @@ FileError UpdateLocalStateForServerSideOperation(
   if (error == FILE_ERROR_EXISTS)
     error = metadata->GetIdByResourceId(entry.resource_id(), &local_id);
 
-  if (error == FILE_ERROR_OK)
-    *file_path = metadata->GetFilePath(local_id);
+  if (error != FILE_ERROR_OK)
+    return error;
 
-  return error;
+  return metadata->GetFilePath(local_id, file_path);
 }
 
 // Stores the file at |local_file_path| to the cache as a content of entry at
@@ -263,9 +263,9 @@ FileError LocalWorkForTransferJsonGdocFile(
     entry.set_metadata_edit_state(ResourceEntry::DIRTY);
     entry.set_modification_date(base::Time::Now().ToInternalValue());
     error = metadata->RefreshEntry(entry);
-    if (error == FILE_ERROR_OK)
-      params->changed_path = metadata->GetFilePath(local_id);
-    return error;
+    if (error != FILE_ERROR_OK)
+      return error;
+    return metadata->GetFilePath(local_id, &params->changed_path);
   }
 
   params->location_type = HAS_PARENT;

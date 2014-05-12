@@ -48,7 +48,7 @@ class ResourceMetadata {
   FileError Reset();
 
   // Returns the largest changestamp.
-  int64 GetLargestChangestamp();
+  FileError GetLargestChangestamp(int64* out_value);
 
   // Sets the largest changestamp.
   FileError SetLargestChangestamp(int64 value);
@@ -79,20 +79,22 @@ class ResourceMetadata {
   FileError RefreshEntry(const ResourceEntry& entry);
 
   // Recursively gets directories under the entry pointed to by |id|.
-  void GetSubDirectoriesRecursively(const std::string& id,
-                                    std::set<base::FilePath>* sub_directories);
+  FileError GetSubDirectoriesRecursively(
+      const std::string& id,
+      std::set<base::FilePath>* sub_directories);
 
   // Returns the id of the resource named |base_name| directly under
   // the directory with |parent_local_id|.
   // If not found, empty string will be returned.
-  std::string GetChildId(const std::string& parent_local_id,
-                         const std::string& base_name);
+  FileError GetChildId(const std::string& parent_local_id,
+                       const std::string& base_name,
+                       std::string* out_child_id);
 
   // Returns an object to iterate over entries.
   scoped_ptr<Iterator> GetIterator();
 
   // Returns virtual file path of the entry.
-  base::FilePath GetFilePath(const std::string& id);
+  FileError GetFilePath(const std::string& id, base::FilePath* out_file_path);
 
   // Returns ID of the entry at the given path.
   FileError GetIdByPath(const base::FilePath& file_path, std::string* out_id);

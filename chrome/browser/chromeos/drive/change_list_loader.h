@@ -163,7 +163,8 @@ class ChangeListLoader {
   // Starts the resource metadata loading and calls |callback| when it's done.
   void Load(const FileOperationCallback& callback);
   void LoadAfterGetLargestChangestamp(bool is_initial_load,
-                                      int64 local_changestamp);
+                                      const int64* local_changestamp,
+                                      FileError error);
   void LoadAfterGetAboutResource(
       int64 local_changestamp,
       google_apis::GDataErrorCode status,

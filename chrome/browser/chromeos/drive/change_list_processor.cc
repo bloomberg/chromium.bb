@@ -354,8 +354,7 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
               new_entry.directory_specific_info().changestamp());
           error = resource_metadata_->RefreshEntry(new_entry);
         }
-        DVLOG(1) << "Change was discarded for: "
-                 << resource_metadata_->GetFilePath(local_id).value();
+        DVLOG(1) << "Change was discarded for: " << entry.resource_id();
       }
       break;
     case FILE_ERROR_NOT_FOUND: {  // Adding a new entry.
@@ -458,7 +457,7 @@ void ChangeListProcessor::UpdateChangedDirs(const ResourceEntry& entry) {
   base::FilePath file_path;
   if (resource_metadata_->GetIdByResourceId(
           entry.resource_id(), &local_id) == FILE_ERROR_OK)
-    file_path = resource_metadata_->GetFilePath(local_id);
+    resource_metadata_->GetFilePath(local_id, &file_path);
 
   if (!file_path.empty()) {
     // Notify parent.

@@ -49,7 +49,7 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  *changed_directory_path = metadata->GetFilePath(*local_id).DirName();
+  *changed_directory_path = path.DirName();
 
   // Move to the trash.
   entry.set_parent_local_id(util::kDriveTrashDirLocalId);

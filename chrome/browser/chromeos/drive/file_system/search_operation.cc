@@ -67,9 +67,11 @@ FileError ResolveSearchResultOnBlockingPool(
     }
     if (error != FILE_ERROR_OK)
       return error;
-    result->push_back(
-        SearchResultInfo(resource_metadata->GetFilePath(local_id),
-                         entry.file_info().is_directory()));
+    base::FilePath path;
+    error = resource_metadata->GetFilePath(local_id, &path);
+    if (error != FILE_ERROR_OK)
+      return error;
+    result->push_back(SearchResultInfo(path, entry.file_info().is_directory()));
   }
 
   return FILE_ERROR_OK;

@@ -160,7 +160,9 @@ TEST_F(ChangeListLoaderTest, Load) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  EXPECT_LT(0, metadata_->GetLargestChangestamp());
+  int64 changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_LT(0, changestamp);
   EXPECT_EQ(1, drive_service_->resource_list_load_count());
   EXPECT_EQ(1, drive_service_->about_resource_load_count());
   EXPECT_EQ(1, observer.initial_load_complete_count());
@@ -211,8 +213,9 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   EXPECT_EQ(1, observer.initial_load_complete_count());
 
   // Update should be checked by Load().
-  EXPECT_EQ(drive_service_->about_resource().largest_change_id(),
-            metadata_->GetLargestChangestamp());
+  int64 changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_EQ(drive_service_->about_resource().largest_change_id(), changestamp);
   EXPECT_EQ(1, drive_service_->change_list_load_count());
   EXPECT_EQ(1, observer.load_from_server_complete_count());
   EXPECT_EQ(1U, observer.changed_directories().count(
@@ -235,7 +238,9 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_FAILED,
             check_for_updates_error);  // Callback was not run.
-  EXPECT_EQ(0, metadata_->GetLargestChangestamp());
+  int64 changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_EQ(0, changestamp);
   EXPECT_EQ(0, drive_service_->resource_list_load_count());
   EXPECT_EQ(0, drive_service_->about_resource_load_count());
 
@@ -254,10 +259,13 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
   EXPECT_EQ(FILE_ERROR_OK, load_error);
   EXPECT_EQ(FILE_ERROR_OK, check_for_updates_error);
-  EXPECT_LT(0, metadata_->GetLargestChangestamp());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_LT(0, changestamp);
   EXPECT_EQ(1, drive_service_->resource_list_load_count());
 
-  int64 previous_changestamp = metadata_->GetLargestChangestamp();
+  int64 previous_changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK,
+            metadata_->GetLargestChangestamp(&previous_changestamp));
   // CheckForUpdates() results in no update.
   change_list_loader_->CheckForUpdates(
       google_apis::test_util::CreateCopyResultCallback(
@@ -265,7 +273,8 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  EXPECT_EQ(previous_changestamp, metadata_->GetLargestChangestamp());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_EQ(previous_changestamp, changestamp);
 
   // Add a file to the service.
   scoped_ptr<google_apis::ResourceEntry> gdata_entry = AddNewFile("New File");
@@ -279,7 +288,8 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  EXPECT_LT(previous_changestamp, metadata_->GetLargestChangestamp());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
+  EXPECT_LT(previous_changestamp, changestamp);
   EXPECT_EQ(1, observer.load_from_server_complete_count());
   EXPECT_EQ(1U, observer.changed_directories().count(
       util::GetDriveMyDriveRootPath()));

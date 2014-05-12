@@ -352,21 +352,31 @@ void ChangeListLoader::Load(const FileOperationCallback& callback) {
     return;
 
   // Check the current status of local metadata, and start loading if needed.
+  int64* local_changestamp = new int64(0);
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&ResourceMetadata::GetLargestChangestamp,
-                 base::Unretained(resource_metadata_)),
+                 base::Unretained(resource_metadata_),
+                 local_changestamp),
       base::Bind(&ChangeListLoader::LoadAfterGetLargestChangestamp,
                  weak_ptr_factory_.GetWeakPtr(),
-                 is_initial_load));
+                 is_initial_load,
+                 base::Owned(local_changestamp)));
 }
 
-void ChangeListLoader::LoadAfterGetLargestChangestamp(bool is_initial_load,
-                                                      int64 local_changestamp) {
+void ChangeListLoader::LoadAfterGetLargestChangestamp(
+    bool is_initial_load,
+    const int64* local_changestamp,
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (is_initial_load && local_changestamp > 0) {
+  if (error != FILE_ERROR_OK) {
+    OnChangeListLoadComplete(error);
+    return;
+  }
+
+  if (is_initial_load && *local_changestamp > 0) {
     // The local data is usable. Flush callbacks to tell loading was successful.
     OnChangeListLoadComplete(FILE_ERROR_OK);
 
@@ -379,7 +389,7 @@ void ChangeListLoader::LoadAfterGetLargestChangestamp(bool is_initial_load,
   about_resource_loader_->UpdateAboutResource(
       base::Bind(&ChangeListLoader::LoadAfterGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(),
-                 local_changestamp));
+                 *local_changestamp));
 }
 
 void ChangeListLoader::LoadAfterGetAboutResource(

@@ -223,7 +223,7 @@ class SyncClientTest : public testing::Test {
         base::MessageLoopProxy::current().get(), &observer_, metadata_.get(),
         cache_.get());
     remove_operation.Remove(
-        metadata_->GetFilePath(GetLocalId("removed")),
+        util::GetDriveMyDriveRootPath().AppendASCII("removed"),
         false,  // is_recursive
         google_apis::test_util::CreateCopyResultCallback(&error));
     base::RunLoop().RunUntilIdle();
@@ -233,7 +233,7 @@ class SyncClientTest : public testing::Test {
     file_system::MoveOperation move_operation(
         base::MessageLoopProxy::current().get(), &observer_, metadata_.get());
     move_operation.Move(
-        metadata_->GetFilePath(GetLocalId("moved")),
+        util::GetDriveMyDriveRootPath().AppendASCII("moved"),
         util::GetDriveMyDriveRootPath().AppendASCII("moved_new_title"),
         google_apis::test_util::CreateCopyResultCallback(&error));
     base::RunLoop().RunUntilIdle();

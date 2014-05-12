@@ -46,8 +46,13 @@ FileError CreateDirectoryRecursively(
   if (error != FILE_ERROR_OK)
     return error;
 
+  base::FilePath path;
+  error = metadata->GetFilePath(local_id, &path);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   updated_local_ids->insert(local_id);
-  changed_directories->insert(metadata->GetFilePath(local_id).DirName());
+  changed_directories->insert(path.DirName());
 
   if (remaining_path.empty())  // All directories are created successfully.
     return FILE_ERROR_OK;
@@ -73,9 +78,13 @@ FileError UpdateLocalState(internal::ResourceMetadata* metadata,
   base::FilePath existing_deepest_path(components[0]);
   std::string local_id = util::kDriveGrandRootLocalId;
   for (size_t i = 1; i < components.size(); ++i) {
-    std::string child_local_id = metadata->GetChildId(local_id, components[i]);
-    if (child_local_id.empty())
+    std::string child_local_id;
+    FileError error =
+        metadata->GetChildId(local_id, components[i], &child_local_id);
+    if (error == FILE_ERROR_NOT_FOUND)
       break;
+    if (error != FILE_ERROR_OK)
+      return error;
     existing_deepest_path = existing_deepest_path.Append(components[i]);
     local_id = child_local_id;
   }

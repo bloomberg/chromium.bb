@@ -242,7 +242,8 @@ class FileSystem : public FileSystemInterface,
   // Part of OnDriveSyncError().
   virtual void OnDriveSyncErrorAfterGetFilePath(
       file_system::DriveSyncErrorType type,
-      const base::FilePath& fiepath);
+      const base::FilePath* file_path,
+      FileError error);
 
   // Used to get Drive related preferences.
   PrefService* pref_service_;

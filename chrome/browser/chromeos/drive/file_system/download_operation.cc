@@ -183,7 +183,9 @@ FileError CheckPreConditionForEnsureFileDownloadedByLocalId(
     base::FilePath* cache_file_path,
     base::FilePath* temp_download_file_path,
     ResourceEntry* entry) {
-  *drive_file_path = params.metadata->GetFilePath(local_id);
+  FileError error = params.metadata->GetFilePath(local_id, drive_file_path);
+  if (error != FILE_ERROR_OK)
+    return error;
   return CheckPreConditionForEnsureFileDownloaded(
       params.metadata, params.cache, params.temporary_file_directory, local_id,
       entry, cache_file_path, temp_download_file_path);

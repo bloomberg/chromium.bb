@@ -40,7 +40,10 @@ FileError FinishRevert(ResourceMetadata* metadata,
       return error;
   }
 
-  const base::FilePath original_path = metadata->GetFilePath(local_id);
+  base::FilePath original_path;
+  error = metadata->GetFilePath(local_id, &original_path);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   if (entry.deleted()) {
     error = metadata->RemoveEntry(local_id);
@@ -59,7 +62,11 @@ FileError FinishRevert(ResourceMetadata* metadata,
     if (error != FILE_ERROR_OK)
       return error;
 
-    changed_directories->insert(metadata->GetFilePath(entry.parent_local_id()));
+    base::FilePath new_parent_path;
+    error = metadata->GetFilePath(entry.parent_local_id(), &new_parent_path);
+    if (error != FILE_ERROR_OK)
+      return error;
+    changed_directories->insert(new_parent_path);
     changed_directories->insert(original_path.DirName());
   }
   return FILE_ERROR_OK;

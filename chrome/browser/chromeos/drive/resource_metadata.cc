@@ -198,11 +198,9 @@ void ResourceMetadata::DestroyOnBlockingPool() {
   delete this;
 }
 
-int64 ResourceMetadata::GetLargestChangestamp() {
+FileError ResourceMetadata::GetLargestChangestamp(int64* out_value) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  int64 value = 0;
-  storage_->GetLargestChangestamp(&value);
-  return value;
+  return storage_->GetLargestChangestamp(out_value);
 }
 
 FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
@@ -390,31 +388,37 @@ FileError ResourceMetadata::RefreshEntry(const ResourceEntry& entry) {
   return PutEntryUnderDirectory(entry);
 }
 
-void ResourceMetadata::GetSubDirectoriesRecursively(
+FileError ResourceMetadata::GetSubDirectoriesRecursively(
     const std::string& id,
     std::set<base::FilePath>* sub_directories) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   std::vector<std::string> children;
-  if (storage_->GetChildren(id, &children) != FILE_ERROR_OK)
-    return;
+  FileError error = storage_->GetChildren(id, &children);
+  if (error != FILE_ERROR_OK)
+    return error;
   for (size_t i = 0; i < children.size(); ++i) {
     ResourceEntry entry;
-    if (storage_->GetEntry(children[i], &entry) != FILE_ERROR_OK)
-      return;
+    error = storage_->GetEntry(children[i], &entry);
+    if (error != FILE_ERROR_OK)
+      return error;
     if (entry.file_info().is_directory()) {
-      sub_directories->insert(GetFilePath(children[i]));
+      base::FilePath path;
+      error = GetFilePath(children[i], &path);
+      if (error != FILE_ERROR_OK)
+        return error;
+      sub_directories->insert(path);
       GetSubDirectoriesRecursively(children[i], sub_directories);
     }
   }
+  return FILE_ERROR_OK;
 }
 
-std::string ResourceMetadata::GetChildId(const std::string& parent_local_id,
-                                         const std::string& base_name) {
+FileError ResourceMetadata::GetChildId(const std::string& parent_local_id,
+                                       const std::string& base_name,
+                                       std::string* out_child_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-  std::string child_local_id;
-  storage_->GetChild(parent_local_id, base_name, &child_local_id);
-  return child_local_id;
+  return storage_->GetChild(parent_local_id, base_name, out_child_id);
 }
 
 scoped_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
@@ -423,21 +427,27 @@ scoped_ptr<ResourceMetadata::Iterator> ResourceMetadata::GetIterator() {
   return storage_->GetIterator();
 }
 
-base::FilePath ResourceMetadata::GetFilePath(const std::string& id) {
+FileError ResourceMetadata::GetFilePath(const std::string& id,
+                                        base::FilePath* out_file_path) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  base::FilePath path;
   ResourceEntry entry;
-  if (storage_->GetEntry(id, &entry) == FILE_ERROR_OK) {
-    if (!entry.parent_local_id().empty()) {
-      path = GetFilePath(entry.parent_local_id());
-    } else if (entry.local_id() != util::kDriveGrandRootLocalId) {
-      DVLOG(1) << "Entries not under the grand root don't have paths.";
-      return base::FilePath();
-    }
-    path = path.Append(base::FilePath::FromUTF8Unsafe(entry.base_name()));
+  FileError error = storage_->GetEntry(id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  base::FilePath path;
+  if (!entry.parent_local_id().empty()) {
+    error = GetFilePath(entry.parent_local_id(), &path);
+    if (error != FILE_ERROR_OK)
+      return error;
+  } else if (entry.local_id() != util::kDriveGrandRootLocalId) {
+    DVLOG(1) << "Entries not under the grand root don't have paths.";
+    return FILE_ERROR_NOT_FOUND;
   }
-  return path;
+  path = path.Append(base::FilePath::FromUTF8Unsafe(entry.base_name()));
+  *out_file_path = path;
+  return FILE_ERROR_OK;
 }
 
 FileError ResourceMetadata::GetIdByPath(const base::FilePath& file_path,
@@ -559,7 +569,9 @@ FileError ResourceMetadata::RemoveEntryRecursively(const std::string& id) {
 
   if (entry.file_info().is_directory()) {
     std::vector<std::string> children;
-    storage_->GetChildren(id, &children);
+    error = storage_->GetChildren(id, &children);
+    if (error != FILE_ERROR_OK)
+      return error;
     for (size_t i = 0; i < children.size(); ++i) {
       error = RemoveEntryRecursively(children[i]);
       if (error != FILE_ERROR_OK)
