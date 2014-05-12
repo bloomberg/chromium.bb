@@ -122,12 +122,6 @@ bool WebLayerTreeViewImplForTesting::commitRequested() const {
 
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}
 
-bool WebLayerTreeViewImplForTesting::compositeAndReadback(
-    void* pixels, const WebRect& rect_in_device_viewport) {
-  return layer_tree_host_->CompositeAndReadback(pixels,
-                                                rect_in_device_viewport);
-}
-
 void WebLayerTreeViewImplForTesting::finishAllRendering() {
   layer_tree_host_->FinishAllRendering();
 }

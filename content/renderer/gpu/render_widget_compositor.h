@@ -100,7 +100,6 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   virtual void setNeedsAnimate();
   virtual bool commitRequested() const;
   virtual void didStopFlinging();
-  virtual bool compositeAndReadback(void *pixels, const blink::WebRect& rect);
   virtual void compositeAndReadbackAsync(
       blink::WebCompositeAndReadbackAsyncCallback* callback);
   virtual void finishAllRendering();

@@ -559,12 +559,6 @@ void RenderWidgetCompositor::clearViewportLayers() {
                                            scoped_refptr<cc::Layer>());
 }
 
-bool RenderWidgetCompositor::compositeAndReadback(
-    void *pixels, const WebRect& rect_in_device_viewport) {
-  return layer_tree_host_->CompositeAndReadback(pixels,
-                                                rect_in_device_viewport);
-}
-
 void CompositeAndReadbackAsyncCallback(
     blink::WebCompositeAndReadbackAsyncCallback* callback,
     scoped_ptr<cc::CopyOutputResult> result) {
