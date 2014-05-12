@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/extensions/extension_install_ui_default.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/browser_thread.h"
@@ -245,9 +243,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
     bool use_bubble = false;
 
 #if defined(TOOLKIT_VIEWS)  || defined(OS_MACOSX)
-    CommandLine* cmdline = CommandLine::ForCurrentProcess();
-    use_bubble = (use_app_installed_bubble_ ||
-                  cmdline->HasSwitch(switches::kAppsNewInstallBubble));
+    use_bubble = use_app_installed_bubble_;
 #endif
 
     if (IsAppLauncherEnabled()) {

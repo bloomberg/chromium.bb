@@ -684,13 +684,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableAppWindowControls)
   },
   {
-    "apps-new-install-bubble",
-    IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_NAME,
-    IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kAppsNewInstallBubble)
-  },
-  {
     "disable-hyperlink-auditing",
     IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_NAME,
     IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_DESCRIPTION,

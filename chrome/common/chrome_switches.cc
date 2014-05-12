@@ -100,9 +100,6 @@ const char kAppModeAuthCode[]               = "app-mode-auth-code";
 // Value of OAuth2 refresh token for --force-app-mode.
 const char kAppModeOAuth2Token[]            = "app-mode-oauth-token";
 
-// Whether to always use the new app install bubble when installing an app.
-const char kAppsNewInstallBubble[]          = "apps-new-install-bubble";
-
 // Experimental native frame support for packaged apps.
 const char kAppsUseNativeFrame[]            = "apps-use-native-frame";
 

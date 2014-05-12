@@ -5668,12 +5668,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SCRIPT_BUBBLE_DESCRIPTION" desc="Description of the 'Script Bubble' lab.">
         Enable or disable the "Script Bubble" experimental toolbar UI.
       </message>
-      <message name="IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_NAME" desc="Name of the 'New Apps Install Bubble' lab">
-        New Apps Install Bubble
-      </message>
-      <message name="IDS_FLAGS_APPS_NEW_INSTALL_BUBBLE_DESCRIPTION" desc="Description of the 'New Apps Install Bubble' lab">
-        When installing an app, always show a bubble pointing at the new tab page button on the tabstrip instead of opening a new tab page.
-      </message>
       <message name="IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_NAME" desc="Name of the 'Disable hyperlink auditing' lab.">
         Disable hyperlink auditing
       </message>
