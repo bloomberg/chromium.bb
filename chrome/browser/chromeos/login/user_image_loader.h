@@ -36,11 +36,12 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
       ImageDecoder::ImageCodec image_codec,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
-  // Load an image in the background and call |loaded_cb| with the result. If
-  // |size| is positive, the image is cropped to a square and shrunk so that it
-  // does not exceed |size|x|size|. The first variant of this method reads the
-  // image from |filepath| on disk, the second processes |data| read into memory
-  // already.
+  // Load an image in the background and call |loaded_cb| with the resulting
+  // UserImage (which may be empty in case of error). If |pixels_per_side| is
+  // positive, the image is cropped to a square and shrunk so that it does not
+  // exceed |pixels_per_side|x|pixels_per_side|. The first variant of this
+  // method reads the image from |filepath| on disk, the second processes |data|
+  // read into memory already.
   void Start(const std::string& filepath,
              int pixels_per_side,
              const LoadedCallback& loaded_cb);

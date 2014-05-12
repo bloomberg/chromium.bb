@@ -67,10 +67,11 @@ void UserImageLoader::ReadAndDecodeImage(const ImageInfo& image_info) {
   DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   scoped_ptr<std::string> data(new std::string);
-  const bool success =
-      base::ReadFileToString(base::FilePath(image_info.file_path), data.get());
-  DCHECK(success);
+  if (!base::ReadFileToString(base::FilePath(image_info.file_path), data.get()))
+    LOG(ERROR) << "Failed to read image " << image_info.file_path;
 
+  // In case ReadFileToString() fails, |data| is empty and DecodeImage() calls
+  // back to OnDecodeImageFailed().
   DecodeImage(data.Pass(), image_info);
 }
 
