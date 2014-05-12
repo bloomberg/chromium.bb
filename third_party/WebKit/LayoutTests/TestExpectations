@@ -1003,3 +1003,10 @@ crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-re
 
 crbug.com/372260 [ Debug ] virtual/serviceworker/http/tests/serviceworker/postmessage-msgport-to-client.html [ Pass Crash ]
 crbug.com/372260 [ Release ] virtual/serviceworker/http/tests/serviceworker/postmessage-msgport-to-client.html [ Pass Timeout ]
+
+crbug.com/372516 [ Win7 ] virtual/windows-directwrite/fast/text/decorations-with-text-combine.html [ NeedsRebaseline ]
+crbug.com/372516 [ Win7 ] virtual/windows-directwrite/fast/text/line-breaks.html [ NeedsRebaseline ]
+crbug.com/372516 [ Win7 ] virtual/windows-directwrite/fast/text/international/rtl-white-space-pre-wrap.html [ NeedsRebaseline ]
+crbug.com/372516 [ Win7 ] virtual/windows-directwrite/fast/text/stroking-decorations.html [ NeedsRebaseline ]
+crbug.com/372516 [ Win7 ] virtual/windows-directwrite/fast/text/trailing-white-space-2.html [ NeedsRebaseline ]
+crbug.com/372516 [ Win7 ] virtual/windows-directwrite/fast/text/trailing-white-space.html [ NeedsRebaseline ]
