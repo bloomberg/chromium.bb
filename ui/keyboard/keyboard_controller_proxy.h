@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/media_stream_request.h"
+#include "ui/aura/window_observer.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/keyboard/keyboard_export.h"
 
@@ -24,12 +25,15 @@ class Rect;
 namespace ui {
 class InputMethod;
 }
+namespace wm {
+class Shadow;
+}
 
 namespace keyboard {
 
 // A proxy used by the KeyboardController to get access to the virtual
 // keyboard window.
-class KEYBOARD_EXPORT KeyboardControllerProxy {
+class KEYBOARD_EXPORT KeyboardControllerProxy : public aura::WindowObserver {
  public:
   class TestApi {
    public:
@@ -108,6 +112,12 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // loading the keyboard page.
   virtual void SetupWebContents(content::WebContents* contents);
 
+  // aura::WindowObserver overrides:
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
+
  private:
   friend class TestApi;
 
@@ -120,6 +130,7 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   const GURL default_url_;
 
   scoped_ptr<content::WebContents> keyboard_contents_;
+  scoped_ptr<wm::Shadow> shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerProxy);
 };

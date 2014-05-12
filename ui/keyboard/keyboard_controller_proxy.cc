@@ -18,6 +18,7 @@
 #include "ui/keyboard/keyboard_constants.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/wm/core/shadow.h"
 
 namespace {
 
@@ -119,6 +120,7 @@ aura::Window* KeyboardControllerProxy::GetKeyboardWindow() {
     keyboard_contents_->SetDelegate(new KeyboardContentsDelegate(this));
     SetupWebContents(keyboard_contents_.get());
     LoadContents(GetVirtualKeyboardUrl());
+    keyboard_contents_->GetNativeView()->AddObserver(this);
   }
 
   return keyboard_contents_->GetNativeView();
@@ -161,6 +163,26 @@ void KeyboardControllerProxy::ReloadKeyboardIfNeeded() {
 }
 
 void KeyboardControllerProxy::SetupWebContents(content::WebContents* contents) {
+}
+
+void KeyboardControllerProxy::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  if (!shadow_) {
+    shadow_.reset(new wm::Shadow());
+    shadow_->Init(wm::Shadow::STYLE_ACTIVE);
+    shadow_->layer()->SetVisible(true);
+    DCHECK(keyboard_contents_->GetNativeView()->parent());
+    keyboard_contents_->GetNativeView()->parent()->layer()->Add(
+        shadow_->layer());
+  }
+
+  shadow_->SetContentBounds(new_bounds);
+}
+
+void KeyboardControllerProxy::OnWindowDestroyed(aura::Window* window) {
+  window->RemoveObserver(this);
 }
 
 }  // namespace keyboard
