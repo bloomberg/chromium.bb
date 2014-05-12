@@ -580,8 +580,10 @@ crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 # Mac has overlay scrollbars depending on external settings.
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320-2x.html [ Failure ]
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320.html [ Failure ]
+crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320-only-viewport.html [ Failure ]
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980-2x.html [ Failure ]
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980.html [ Failure ]
+crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980-only-viewport.html [ Failure ]
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-restore.html [ Failure ]
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-small.html [ Failure ]
 

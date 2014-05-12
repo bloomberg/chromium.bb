@@ -73,14 +73,14 @@
       },
 
       function checkAutosizedWithoutDeviceMetrics(next) {
-        PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: false, fitWindow: false, textAutosizing: true}, function() {
+        PageAgent.clearDeviceMetricsOverride(function() {
           assertAutosizingResult(true, next);
         });
       },
 
       function checkNotAutosizedWithoutDeviceMetrics(next) {
         InspectorTest.evaluateInPage("forceAutosizing(false)", function() {
-          PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, emulateViewport: false, fitWindow: false, textAutosizing: true}, function() {
+          PageAgent.clearDeviceMetricsOverride(function() {
             assertAutosizingResult(false, next);
           });
         });

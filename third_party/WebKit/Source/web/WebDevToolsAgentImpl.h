@@ -105,7 +105,8 @@ public:
     virtual void sendMessageToFrontend(PassRefPtr<WebCore::JSONObject> message) OVERRIDE;
     virtual void flush() OVERRIDE;
 
-    virtual void overrideDeviceMetrics(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow) OVERRIDE;
+    virtual void setDeviceMetricsOverride(int width, int height, float deviceScaleFactor, bool emulateViewport, bool fitWindow) OVERRIDE;
+    virtual void clearDeviceMetricsOverride() OVERRIDE;
     virtual void setTouchEventEmulationEnabled(bool) OVERRIDE;
 
     virtual void getAllocatedObjects(HashSet<const void*>&) OVERRIDE;

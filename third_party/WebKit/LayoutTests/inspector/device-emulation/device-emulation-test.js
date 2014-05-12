@@ -46,7 +46,7 @@ window.matchMedia = window.matchMedia || (function(doc, undefined){
 
 var results;
 
-function dumpMetrics()
+function dumpMetrics(full)
 {
     results = [];
     writeResult("Device:", "");
@@ -58,37 +58,45 @@ function dumpMetrics()
     testMQOrientation();
     testJS("window.orientation", "");
 
-    testMQDimension("resolution", null, "dpi");
-    testMQDevicePixelRatio(window.devicePixelRatio);
-    testJS("window.devicePixelRatio", "");
+    if (full) {
+        testMQDimension("resolution", null, "dpi");
+        testMQDevicePixelRatio(window.devicePixelRatio);
+        testJS("window.devicePixelRatio", "");
+    }
 
     writeResult("Widths:", "");
 
-    testMQDimension("device-width", screen.width);
-    testJS("screen.width");
-    testJS("screen.availWidth");
-    testJS("window.outerWidth");
-    testJS("window.innerWidth");
-    testMQDimension("width", document.documentElement.clientWidth);
+    if (full) {
+        testMQDimension("device-width", screen.width);
+        testJS("screen.width");
+        testJS("screen.availWidth");
+        testJS("window.outerWidth");
+        testJS("window.innerWidth");
+        testMQDimension("width", document.documentElement.clientWidth);
+    }
     testJS("document.documentElement.clientWidth");
     testJS("document.documentElement.offsetWidth");
     testJS("document.documentElement.scrollWidth");
-    testJS("document.body.clientWidth");
+    if (full)
+        testJS("document.body.clientWidth");
     testJS("document.body.offsetWidth");
     testJS("document.body.scrollWidth");
 
     writeResult("Heights:", "");
 
-    testMQDimension("device-height", screen.height);
-    testJS("screen.height");
-    testJS("screen.availHeight");
-    testJS("window.outerHeight");
-    testJS("window.innerHeight");
-    testMQDimension("height", document.documentElement.clientHeight);
+    if (full) {
+        testMQDimension("device-height", screen.height);
+        testJS("screen.height");
+        testJS("screen.availHeight");
+        testJS("window.outerHeight");
+        testJS("window.innerHeight");
+        testMQDimension("height", document.documentElement.clientHeight);
+    }
     testJS("document.documentElement.clientHeight");
     testJS("document.documentElement.offsetHeight");
     testJS("document.documentElement.scrollHeight");
-    testJS("document.body.clientHeight");
+    if (full)
+        testJS("document.body.clientHeight");
     testJS("document.body.offsetHeight");
     testJS("document.body.scrollHeight");
 
@@ -172,15 +180,18 @@ function writeResult(key, val)
 
 var initialize_DeviceEmulationTest = function() {
 
-InspectorTest.getPageMetrics = function(callback)
+InspectorTest.getPageMetrics = function(full, callback)
 {
-    InspectorTest.evaluateInPage("dumpMetrics()", callback);
+    InspectorTest.evaluateInPage("dumpMetrics(" + full + ")", callback);
 }
 
-InspectorTest.applyEmulationAndReload = function(width, height, deviceScaleFactor, viewport, callback)
+InspectorTest.applyEmulationAndReload = function(enabled, width, height, deviceScaleFactor, viewport, callback)
 {
     InspectorTest.addSniffer(WebInspector.overridesSupport, "_deviceMetricsOverrideAppliedForTest", emulateCallback);
-    WebInspector.overridesSupport.emulateDevice(width + "x" + height + "x" + deviceScaleFactor + "x0x0", "");
+    if (enabled)
+        WebInspector.overridesSupport.emulateDevice(width + "x" + height + "x" + deviceScaleFactor + "x0x0", "");
+    else
+        WebInspector.overridesSupport.reset();
 
     function emulateCallback()
     {
@@ -194,7 +205,8 @@ InspectorTest.applyEmulationAndReload = function(width, height, deviceScaleFacto
 InspectorTest.emulateAndGetMetrics = function(width, height, deviceScaleFactor, viewport, callback)
 {
     InspectorTest._deviceEmulationResults.push("Emulating device: " + width + "x" + height + "x" + deviceScaleFactor + " viewport='" + viewport + "'");
-    InspectorTest.applyEmulationAndReload(width, height, deviceScaleFactor, viewport, InspectorTest.getPageMetrics.bind(InspectorTest, printMetrics));
+    var full = !!width && !!height && !!deviceScaleFactor;
+    InspectorTest.applyEmulationAndReload(true, width, height, deviceScaleFactor, viewport, InspectorTest.getPageMetrics.bind(InspectorTest, full, printMetrics));
 
     function printMetrics(metrics)
     {

@@ -106,6 +106,7 @@ public:
     virtual void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const bool* optionalCaseSensitive, const bool* optionalIsRegex, RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> >&) OVERRIDE;
     virtual void setDocumentContent(ErrorString*, const String& frameId, const String& html) OVERRIDE;
     virtual void setDeviceMetricsOverride(ErrorString*, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, const bool* optionalTextAutosizing, const double* optionalFontScaleFactor) OVERRIDE;
+    virtual void clearDeviceMetricsOverride(ErrorString*) OVERRIDE;
     virtual void setShowPaintRects(ErrorString*, bool show) OVERRIDE;
     virtual void setShowDebugBorders(ErrorString*, bool show) OVERRIDE;
     virtual void setShowFPSCounter(ErrorString*, bool show) OVERRIDE;
@@ -166,8 +167,9 @@ private:
     static void resourceContent(ErrorString*, LocalFrame*, const KURL&, String* result, bool* base64Encoded);
 
     InspectorPageAgent(Page*, InjectedScriptManager*, InspectorClient*, InspectorOverlay*);
-    bool deviceMetricsChanged(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizing);
-    void updateViewMetrics(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizingEnabled);
+    bool deviceMetricsChanged(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizing);
+    void updateViewMetricsFromState();
+    void updateViewMetrics(bool enabled, int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizingEnabled);
     void updateTouchEventEmulationInPage(bool);
     bool forceCompositingMode(ErrorString*);
 

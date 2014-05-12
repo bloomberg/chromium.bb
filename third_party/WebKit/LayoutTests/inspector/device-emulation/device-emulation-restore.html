@@ -25,7 +25,7 @@ function test()
     InspectorTest._deviceEmulationResults = [];
     var originalMetrics;
 
-    InspectorTest.applyEmulationAndReload(0, 0, 1, "none", InspectorTest.getPageMetrics.bind(InspectorTest, saveMetrics));
+    InspectorTest.applyEmulationAndReload(false, 0, 0, 1, "none", InspectorTest.getPageMetrics.bind(InspectorTest, true, saveMetrics));
 
     function saveMetrics(metrics)
     {
@@ -46,7 +46,7 @@ function test()
             InspectorTest.completeTest();
         }
 
-        InspectorTest.applyEmulationAndReload(0, 0, 1, "none", InspectorTest.getPageMetrics.bind(InspectorTest, callback));
+        InspectorTest.applyEmulationAndReload(false, 0, 0, 1, "none", InspectorTest.getPageMetrics.bind(InspectorTest, true, callback));
     }
 }
 </script>
