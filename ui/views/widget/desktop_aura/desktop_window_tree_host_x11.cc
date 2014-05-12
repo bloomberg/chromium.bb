@@ -499,6 +499,8 @@ void DesktopWindowTreeHostX11::Maximize() {
   SetWMSpecState(true,
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
+  if (IsMinimized())
+    ShowWindowWithState(ui::SHOW_STATE_NORMAL);
 }
 
 void DesktopWindowTreeHostX11::Minimize() {
@@ -510,6 +512,8 @@ void DesktopWindowTreeHostX11::Restore() {
   SetWMSpecState(false,
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_VERT"),
                  atom_cache_.GetAtom("_NET_WM_STATE_MAXIMIZED_HORZ"));
+  if (IsMinimized())
+    ShowWindowWithState(ui::SHOW_STATE_NORMAL);
 }
 
 bool DesktopWindowTreeHostX11::IsMaximized() const {
