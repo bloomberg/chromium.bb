@@ -530,3 +530,23 @@ USER32.dll!ReleaseDC
 *!mojo::ServiceManager::~ServiceManager
 *!mojo::shell::Context::~Context
 *!base::DeleteHelper<>::DoDelete
+
+HANDLE LEAK
+name=http://crbug.com/372585
+system call NtUserCreateWindowEx
+...
+USER32.dll!CreateWindowExW
+gfx.dll!gfx::WindowImpl::Init
+mojo_native_viewport_service.dll!mojo::services::NativeViewportWin::Init
+mojo_native_viewport_service.dll!mojo::services::NativeViewportImpl::Create
+mojo_native_viewport_service.dll!mojo::NativeViewportStub::Accept
+mojo_native_viewport_service.dll!mojo::internal::Router::HandleIncomingMessage
+mojo_native_viewport_service.dll!mojo::internal::MessageHeaderValidator::Accept
+mojo_native_viewport_service.dll!mojo::ReadAndDispatchMessage
+...
+base.dll!base::MessageLoop::RunTask
+base.dll!base::MessageLoop::DeferOrRunPendingTask
+base.dll!base::MessageLoop::DoWork
+base.dll!base::MessagePumpDefault::Run
+...
+base.dll!base::Thread::ThreadMain
