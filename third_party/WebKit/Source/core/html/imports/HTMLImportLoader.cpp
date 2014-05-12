@@ -182,22 +182,20 @@ void HTMLImportLoader::didFinishLoading()
     ASSERT(!m_importedDocument || !m_importedDocument->parsing());
 }
 
+void HTMLImportLoader::moveToFirst(HTMLImportChild* import)
+{
+    size_t position = m_imports.find(import);
+    ASSERT(kNotFound != position);
+    m_imports.remove(position);
+    m_imports.insert(0, import);
+}
+
 void HTMLImportLoader::addImport(HTMLImportChild* import)
 {
     ASSERT(kNotFound == m_imports.find(import));
 
-    // Ensuring firstImport() manages all children that is loaded by the document.
-    //
-    // FIXME:
-    //   This is a design flaw.
-    //   Import children should be managed by HTMLImportLoader, not by HTMLImport.
-    if (!m_imports.isEmpty() && import->precedes(firstImport())) {
-        import->takeChildrenFrom(firstImport());
-        m_imports.insert(0, import);
-    } else {
-        m_imports.append(import);
-    }
-
+    m_imports.append(import);
+    import->normalize();
     if (isDone())
         import->didFinishLoading();
 }

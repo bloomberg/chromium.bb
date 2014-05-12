@@ -102,6 +102,7 @@ HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImport*
 HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChildClient* client, FetchRequest request)
 {
     ASSERT(!request.url().isEmpty() && request.url().isValid());
+    ASSERT(parent == this || toHTMLImportChild(parent)->loader()->isFirstImport(toHTMLImportChild(parent)));
 
     if (findLinkFor(request.url())) {
         HTMLImportChild* child = createChild(request.url(), parent, client);

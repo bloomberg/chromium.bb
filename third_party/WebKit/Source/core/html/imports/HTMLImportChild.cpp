@@ -214,12 +214,29 @@ HTMLLinkElement* HTMLImportChild::link() const
     return m_client->link();
 }
 
+// Ensuring following invariants against the import tree:
+// - HTMLImportChild::firstImport() is the "first import" of the DFS order of the import tree.
+// - The "first import" manages all the children that is loaded by the document.
+void HTMLImportChild::normalize()
+{
+    if (!loader()->isFirstImport(this) && this->precedes(loader()->firstImport())) {
+        HTMLImportChild* oldFirst = loader()->firstImport();
+        loader()->moveToFirst(this);
+        takeChildrenFrom(oldFirst);
+    }
+
+    for (HTMLImport* child = firstChild(); child; child = child->next())
+        toHTMLImportChild(child)->normalize();
+}
+
 #if !defined(NDEBUG)
 void HTMLImportChild::showThis()
 {
+    bool isFirst = loader() ? loader()->isFirstImport(this) : false;
     HTMLImport::showThis();
-    fprintf(stderr, " loader=%p step=%p sync=%s url=%s",
+    fprintf(stderr, " loader=%p first=%d, step=%p sync=%s url=%s",
         m_loader,
+        isFirst,
         m_customElementMicrotaskStep.get(),
         isSync() ? "Y" : "N",
         url().string().utf8().data());

@@ -88,6 +88,7 @@ public:
     void didFinishLoading();
     void didFinishUpgradingCustomElements();
     bool isLoaded() const;
+    void normalize();
 
 private:
     // RawResourceOwner doing nothing.
