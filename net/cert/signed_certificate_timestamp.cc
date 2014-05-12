@@ -89,6 +89,12 @@ DigitallySigned::DigitallySigned() {}
 
 DigitallySigned::~DigitallySigned() {}
 
+bool DigitallySigned::SignatureParametersMatch(
+    HashAlgorithm other_hash_algorithm,
+    SignatureAlgorithm other_signature_algorithm) const {
+  return (hash_algorithm == other_hash_algorithm) &&
+         (signature_algorithm == other_signature_algorithm);
+}
 }  // namespace ct
 
 }  // namespace net

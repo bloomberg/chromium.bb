@@ -34,6 +34,9 @@ const size_t kTbsCertificateLengthBytes = 3;
 const size_t kSCTListLengthBytes = 2;
 const size_t kSerializedSCTLengthBytes = 2;
 
+// Members of digitally-signed struct of a STH
+const size_t kTreeSizeLength = 8;
+
 enum SignatureType {
   SIGNATURE_TYPE_CERTIFICATE_TIMESTAMP = 0,
   TREE_HASH = 1,
@@ -285,6 +288,12 @@ bool EncodeLogEntry(const LogEntry& input, std::string* output) {
   return false;
 }
 
+static void WriteTimeSinceEpoch(const base::Time& timestamp,
+                                std::string* output) {
+  base::TimeDelta time_since_epoch = timestamp - base::Time::UnixEpoch();
+  WriteUint(kTimestampLength, time_since_epoch.InMilliseconds(), output);
+}
+
 bool EncodeV1SCTSignedData(const base::Time& timestamp,
                            const std::string& serialized_log_entry,
                            const std::string& extensions,
@@ -293,13 +302,22 @@ bool EncodeV1SCTSignedData(const base::Time& timestamp,
             output);
   WriteUint(kSignatureTypeLength, SIGNATURE_TYPE_CERTIFICATE_TIMESTAMP,
             output);
-  base::TimeDelta time_since_epoch = timestamp - base::Time::UnixEpoch();
-  WriteUint(kTimestampLength, time_since_epoch.InMilliseconds(),
-            output);
+  WriteTimeSinceEpoch(timestamp, output);
   // NOTE: serialized_log_entry must already be serialized and contain the
   // length as the prefix.
   WriteEncodedBytes(serialized_log_entry, output);
   return WriteVariableBytes(kExtensionsLengthBytes, extensions, output);
+}
+
+void EncodeTreeHeadSignature(const SignedTreeHead& signed_tree_head,
+                             std::string* output) {
+  WriteUint(kVersionLength, signed_tree_head.version, output);
+  WriteUint(kSignatureTypeLength, TREE_HASH, output);
+  WriteTimeSinceEpoch(signed_tree_head.timestamp, output);
+  WriteUint(kTreeSizeLength, signed_tree_head.tree_size, output);
+  WriteEncodedBytes(
+      base::StringPiece(signed_tree_head.sha256_root_hash, kSthRootHashLength),
+      output);
 }
 
 bool DecodeSCTList(base::StringPiece* input,

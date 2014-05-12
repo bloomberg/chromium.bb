@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "net/cert/ct_serialization.h"
+#include "net/cert/signed_tree_head.h"
 
 namespace net {
 
@@ -26,17 +27,8 @@ bool CTLogVerifier::Verify(const ct::LogEntry& entry,
     return false;
   }
 
-  if (sct.signature.hash_algorithm != hash_algorithm_) {
-    DVLOG(1) << "Mismatched hash algorithm. Expected " << hash_algorithm_
-             << ", got " << sct.signature.hash_algorithm << ".";
+  if (!SignatureParametersMatch(sct.signature))
     return false;
-  }
-
-  if (sct.signature.signature_algorithm != signature_algorithm_) {
-    DVLOG(1) << "Mismatched sig algorithm. Expected " << signature_algorithm_
-             << ", got " << sct.signature.signature_algorithm << ".";
-    return false;
-  }
 
   std::string serialized_log_entry;
   if (!ct::EncodeLogEntry(entry, &serialized_log_entry)) {
@@ -51,6 +43,35 @@ bool CTLogVerifier::Verify(const ct::LogEntry& entry,
   }
 
   return VerifySignature(serialized_data, sct.signature.signature_data);
+}
+
+bool CTLogVerifier::SetSignedTreeHead(
+    scoped_ptr<ct::SignedTreeHead> signed_tree_head) {
+  if (!SignatureParametersMatch(signed_tree_head->signature))
+    return false;
+
+  std::string serialized_data;
+  ct::EncodeTreeHeadSignature(*signed_tree_head.get(), &serialized_data);
+  if (VerifySignature(serialized_data,
+                      signed_tree_head->signature.signature_data)) {
+    signed_tree_head_.reset(signed_tree_head.release());
+    return true;
+  }
+  return false;
+}
+
+bool CTLogVerifier::SignatureParametersMatch(
+    const ct::DigitallySigned& signature) {
+  if (!signature.SignatureParametersMatch(hash_algorithm_,
+                                          signature_algorithm_)) {
+    DVLOG(1) << "Mismatched hash or signature algorithm. Hash: "
+             << hash_algorithm_ << " vs " << signature.hash_algorithm
+             << " Signature: " << signature_algorithm_ << " vs "
+             << signature.signature_algorithm << ".";
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace net

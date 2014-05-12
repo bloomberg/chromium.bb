@@ -15,6 +15,7 @@ namespace ct {
 
 struct LogEntry;
 struct SignedCertificateTimestamp;
+struct SignedTreeHead;
 
 // Note: unless specified otherwise, all test data is taken from Certificate
 // Transparency test data repository.
@@ -61,6 +62,12 @@ std::string GetDerEncodedFakeOCSPResponseCert();
 
 // The issuer of the previous cert.
 std::string GetDerEncodedFakeOCSPResponseIssuerCert();
+
+// A sample, valid STH
+void GetSignedTreeHead(SignedTreeHead* sth);
+
+// The SHA256 root hash for the sample STH
+std::string GetSampleSTHSHA256RootHash();
 
 }  // namespace ct
 

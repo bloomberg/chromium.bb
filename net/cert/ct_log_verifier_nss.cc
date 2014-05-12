@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "crypto/nss_util.h"
 #include "crypto/sha2.h"
-#include "net/cert/signed_certificate_timestamp.h"
+#include "net/cert/signed_tree_head.h"
 
 namespace net {
 

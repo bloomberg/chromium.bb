@@ -66,6 +66,12 @@ struct NET_EXPORT_PRIVATE DigitallySigned {
   DigitallySigned();
   ~DigitallySigned();
 
+  // Returns true if |other_hash_algorithm| and |other_signature_algorithm|
+  // match this DigitallySigned hash and signature algorithms.
+  bool SignatureParametersMatch(
+      HashAlgorithm other_hash_algorithm,
+      SignatureAlgorithm other_signature_algorithm) const;
+
   HashAlgorithm hash_algorithm;
   SignatureAlgorithm signature_algorithm;
   // 'signature' field.

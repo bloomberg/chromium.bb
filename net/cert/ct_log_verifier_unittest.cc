@@ -8,6 +8,7 @@
 
 #include "base/time/time.h"
 #include "net/cert/signed_certificate_timestamp.h"
+#include "net/cert/signed_tree_head.h"
 #include "net/test/ct_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,6 +74,19 @@ TEST_F(CTLogVerifierTest, FailsInvalidLogID) {
   cert_sct->log_id.assign(cert_sct->log_id.size(), '\0');
 
   EXPECT_FALSE(log_->Verify(cert_entry, *cert_sct));
+}
+
+TEST_F(CTLogVerifierTest, SetsValidSTH) {
+  scoped_ptr<ct::SignedTreeHead> sth(new ct::SignedTreeHead());
+  ct::GetSignedTreeHead(sth.get());
+  ASSERT_TRUE(log_->SetSignedTreeHead(sth.Pass()));
+}
+
+TEST_F(CTLogVerifierTest, DoesNotSetInvalidSTH) {
+  scoped_ptr<ct::SignedTreeHead> sth(new ct::SignedTreeHead());
+  ct::GetSignedTreeHead(sth.get());
+  sth->sha256_root_hash[0] = '\x0';
+  ASSERT_FALSE(log_->SetSignedTreeHead(sth.Pass()));
 }
 
 }  // namespace net

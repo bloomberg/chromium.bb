@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "crypto/openssl_util.h"
 #include "crypto/sha2.h"
+#include "net/cert/signed_tree_head.h"
 
 namespace net {
 

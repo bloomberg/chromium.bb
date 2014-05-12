@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/cert/signed_certificate_timestamp.h"
+#include "net/cert/signed_tree_head.h"
 
 namespace net {
 
@@ -46,6 +47,13 @@ NET_EXPORT_PRIVATE bool EncodeV1SCTSignedData(
     const base::Time& timestamp,
     const std::string& serialized_log_entry,
     const std::string& extensions,
+    std::string* output);
+
+// Encodes the data signed by a Signed Tree Head (STH) |signed_tree_head| into
+// |output|. The signature included in the |signed_tree_head| can then be
+// verified over these bytes.
+NET_EXPORT_PRIVATE void EncodeTreeHeadSignature(
+    const SignedTreeHead& signed_tree_head,
     std::string* output);
 
 // Decode a list of Signed Certificate Timestamps

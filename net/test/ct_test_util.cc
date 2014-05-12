@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/signed_certificate_timestamp.h"
+#include "net/cert/signed_tree_head.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {
@@ -154,6 +155,14 @@ const char kFakeOCSPResponseIssuerCert[] =
 
 const char kFakeOCSPExtensionValue[] = "74657374";  // "test"
 
+// For the sample STH
+const char kSampleSTHSHA256RootHash[] =
+    "726467216167397babca293dca398e4ce6b621b18b9bc42f30c900d1f92ac1e4";
+const char kSampleSTHTreeHeadSignature[] =
+    "0403004730450220365a91a2a88f2b9332f41d8959fa7086da7e6d634b7b089bc9da066426"
+    "6c7a20022100e38464f3c0fd066257b982074f7ac87655e0c8f714768a050b4be9a7b441cb"
+    "d3";
+
 }  // namespace
 
 void GetX509CertLogEntry(LogEntry* entry) {
@@ -238,6 +247,24 @@ std::string GetDerEncodedFakeOCSPResponseCert() {
 
 std::string GetDerEncodedFakeOCSPResponseIssuerCert() {
   return HexToBytes(kFakeOCSPResponseIssuerCert);
+}
+
+std::string GetSampleSTHSHA256RootHash() {
+  return HexToBytes(kSampleSTHSHA256RootHash);
+}
+
+// A sample, valid STH
+void GetSignedTreeHead(SignedTreeHead* sth) {
+  sth->version = SignedTreeHead::V1;
+  sth->timestamp = base::Time::UnixEpoch() +
+                   base::TimeDelta::FromMilliseconds(1396877277237);
+  sth->tree_size = 21u;
+  std::string sha256_root_hash = GetSampleSTHSHA256RootHash();
+  memcpy(sth->sha256_root_hash, sha256_root_hash.c_str(), kSthRootHashLength);
+
+  std::string tree_head_signature = HexToBytes(kSampleSTHTreeHeadSignature);
+  base::StringPiece sp(tree_head_signature);
+  DecodeDigitallySigned(&sp, &(sth->signature));
 }
 
 }  // namespace ct

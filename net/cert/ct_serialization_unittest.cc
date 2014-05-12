@@ -162,5 +162,23 @@ TEST_F(CtSerializationTest, FailsDecodingInvalidSignedCertificateTimestamp) {
       ct::DecodeSignedCertificateTimestamp(&invalid_length_sct, &sct));
 }
 
+TEST_F(CtSerializationTest, EncodesValidSignedTreeHead) {
+  ct::SignedTreeHead signed_tree_head;
+  GetSignedTreeHead(&signed_tree_head);
+
+  std::string encoded;
+  ct::EncodeTreeHeadSignature(signed_tree_head, &encoded);
+  // Expected size is 50 bytes:
+  // Byte 0 is version, byte 1 is signature type
+  // Bytes 2-9 are timestamp
+  // Bytes 10-17 are tree size
+  // Bytes 18-49 are sha256 root hash
+  ASSERT_EQ(50u, encoded.length());
+  std::string expected_buffer(
+      "\x0\x1\x0\x0\x1\x45\x3c\x5f\xb8\x35\x0\x0\x0\x0\x0\x0\x0\x15", 18);
+  expected_buffer.append(ct::GetSampleSTHSHA256RootHash());
+  ASSERT_EQ(expected_buffer, encoded);
+}
+
 }  // namespace net
 
