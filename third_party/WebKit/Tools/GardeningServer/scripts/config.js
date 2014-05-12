@@ -64,9 +64,8 @@ config = {
         return base.underscoredBuilderName(builderName);
     },
     builderApplies: function(builderName) {
-        // FIXME: Remove the Perf check once the bots are gone.
         return builderName.indexOf('GPU') == -1 &&
-               builderName.indexOf('Perf') == -1;
+               builderName.indexOf('Oilpan') == -1;
     },
     useLocalResults: !!base.getURLParameter('useLocalResults') || false,
 };
