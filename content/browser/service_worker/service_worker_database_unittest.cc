@@ -27,21 +27,11 @@ struct AvailableIds {
   ~AvailableIds() {}
 };
 
-// TODO(nhiroki): Refactor tests using this helper.
 GURL URL(const GURL& origin, const std::string& path) {
   EXPECT_TRUE(origin.is_valid());
   GURL out(origin.GetOrigin().spec() + path);
   EXPECT_TRUE(out.is_valid());
   return out;
-}
-
-// TODO(nhiroki): Remove this.
-Resource CreateResource(int64 resource_id, const std::string& url) {
-  Resource resource;
-  resource.resource_id = resource_id;
-  resource.url = GURL(url);
-  EXPECT_TRUE(resource.url.is_valid());
-  return resource;
 }
 
 Resource CreateResource(int64 resource_id, const GURL& url) {
@@ -137,9 +127,11 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   ASSERT_TRUE(database_dir.CreateUniqueTempDir());
   scoped_ptr<ServiceWorkerDatabase> database(
       CreateDatabase(database_dir.path()));
-  AvailableIds ids;
+
+  GURL origin("http://example.com");
 
   // The database has never been used, so returns initial values.
+  AvailableIds ids;
   EXPECT_TRUE(database->GetNextAvailableIds(
       &ids.reg_id, &ids.ver_id, &ids.res_id));
   EXPECT_EQ(0, ids.reg_id);
@@ -157,8 +149,8 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   std::vector<Resource> resources;
   RegistrationData data1;
   data1.registration_id = 100;
-  data1.scope = GURL("http://example.com/foo");
-  data1.script = GURL("http://example.com/script1.js");
+  data1.scope = URL(origin, "/foo");
+  data1.script = URL(origin, "/script1.js");
   data1.version_id = 200;
   ASSERT_TRUE(database->WriteRegistration(data1, resources));
 
@@ -172,8 +164,8 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   // bump the next available ids.
   RegistrationData data2;
   data2.registration_id = 10;
-  data2.scope = GURL("http://example.com/bar");
-  data2.script = GURL("http://example.com/script2.js");
+  data2.scope = URL(origin, "/bar");
+  data2.script = URL(origin, "/script2.js");
   data2.version_id = 20;
   ASSERT_TRUE(database->WriteRegistration(data2, resources));
 
@@ -196,35 +188,35 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
 
   std::vector<Resource> resources;
 
+  GURL origin1("http://example.com");
   RegistrationData data1;
   data1.registration_id = 123;
-  data1.scope = GURL("http://example.com/foo");
-  data1.script = GURL("http://example.com/script1.js");
+  data1.scope = URL(origin1, "/foo");
+  data1.script = URL(origin1, "/script1.js");
   data1.version_id = 456;
-  GURL origin1 = data1.script.GetOrigin();
   ASSERT_TRUE(database->WriteRegistration(data1, resources));
 
+  GURL origin2("https://www.example.com");
   RegistrationData data2;
   data2.registration_id = 234;
-  data2.scope = GURL("https://www.example.com/bar");
-  data2.script = GURL("https://www.example.com/script2.js");
+  data2.scope = URL(origin2, "/bar");
+  data2.script = URL(origin2, "/script2.js");
   data2.version_id = 567;
-  GURL origin2 = data2.script.GetOrigin();
   ASSERT_TRUE(database->WriteRegistration(data2, resources));
 
+  GURL origin3("https://example.org");
   RegistrationData data3;
   data3.registration_id = 345;
-  data3.scope = GURL("https://example.org/hoge");
-  data3.script = GURL("https://example.org/script3.js");
+  data3.scope = URL(origin3, "/hoge");
+  data3.script = URL(origin3, "/script3.js");
   data3.version_id = 678;
-  GURL origin3 = data3.script.GetOrigin();
   ASSERT_TRUE(database->WriteRegistration(data3, resources));
 
   // |origin3| has two registrations.
   RegistrationData data4;
   data4.registration_id = 456;
-  data4.scope = GURL("https://example.org/fuga");
-  data4.script = GURL("https://example.org/script4.js");
+  data4.scope = URL(origin3, "/fuga");
+  data4.script = URL(origin3, "/script4.js");
   data4.version_id = 789;
   ASSERT_EQ(origin3, data4.scope.GetOrigin());
   ASSERT_TRUE(database->WriteRegistration(data4, resources));
@@ -260,44 +252,47 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
 TEST(ServiceWorkerDatabaseTest, GetRegistrationsForOrigin) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
-  GURL origin("https://example.org");
+  GURL origin1("http://example.com");
+  GURL origin2("https://www.example.com");
+  GURL origin3("https://example.org");
+
   std::vector<RegistrationData> registrations;
-  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin, &registrations));
+  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin1, &registrations));
   EXPECT_TRUE(registrations.empty());
 
   std::vector<Resource> resources;
 
   RegistrationData data1;
   data1.registration_id = 100;
-  data1.scope = GURL("http://example.com/foo");
-  data1.script = GURL("http://example.com/script1.js");
+  data1.scope = URL(origin1, "/foo");
+  data1.script = URL(origin1, "/script1.js");
   data1.version_id = 1000;
   ASSERT_TRUE(database->WriteRegistration(data1, resources));
 
   RegistrationData data2;
   data2.registration_id = 200;
-  data2.scope = GURL("https://www.example.com/bar");
-  data2.script = GURL("https://www.example.com/script2.js");
+  data2.scope = URL(origin2, "/bar");
+  data2.script = URL(origin2, "/script2.js");
   data2.version_id = 2000;
   ASSERT_TRUE(database->WriteRegistration(data2, resources));
 
   RegistrationData data3;
   data3.registration_id = 300;
-  data3.scope = GURL("https://example.org/hoge");
-  data3.script = GURL("https://example.org/script3.js");
+  data3.scope = URL(origin3, "/hoge");
+  data3.script = URL(origin3, "/script3.js");
   data3.version_id = 3000;
   ASSERT_TRUE(database->WriteRegistration(data3, resources));
 
-  // Same origin with |data3|.
+  // |origin3| has two registrations.
   RegistrationData data4;
   data4.registration_id = 400;
-  data4.scope = GURL("https://example.org/fuga");
-  data4.script = GURL("https://example.org/script4.js");
+  data4.scope = URL(origin3, "/fuga");
+  data4.script = URL(origin3, "/script4.js");
   data4.version_id = 4000;
   ASSERT_TRUE(database->WriteRegistration(data4, resources));
 
   registrations.clear();
-  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin, &registrations));
+  EXPECT_TRUE(database->GetRegistrationsForOrigin(origin3, &registrations));
   EXPECT_EQ(2U, registrations.size());
   VerifyRegistrationData(data3, registrations[0]);
   VerifyRegistrationData(data4, registrations[1]);
@@ -312,32 +307,35 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
 
   std::vector<Resource> resources;
 
+  GURL origin1("http://www1.example.com");
   RegistrationData data1;
   data1.registration_id = 100;
-  data1.scope = GURL("http://www1.example.com/foo");
-  data1.script = GURL("http://www1.example.com/script1.js");
+  data1.scope = URL(origin1, "/foo");
+  data1.script = URL(origin1, "/script1.js");
   data1.version_id = 1000;
   ASSERT_TRUE(database->WriteRegistration(data1, resources));
 
+  GURL origin2("http://www2.example.com");
   RegistrationData data2;
   data2.registration_id = 200;
-  data2.scope = GURL("http://www2.example.com/bar");
-  data2.script = GURL("http://www2.example.com/script2.js");
+  data2.scope = URL(origin2, "/bar");
+  data2.script = URL(origin2, "/script2.js");
   data2.version_id = 2000;
   ASSERT_TRUE(database->WriteRegistration(data2, resources));
 
+  GURL origin3("http://www3.example.com");
   RegistrationData data3;
   data3.registration_id = 300;
-  data3.scope = GURL("http://www3.example.com/hoge");
-  data3.script = GURL("http://www3.example.com/script3.js");
+  data3.scope = URL(origin3, "/hoge");
+  data3.script = URL(origin3, "/script3.js");
   data3.version_id = 3000;
   ASSERT_TRUE(database->WriteRegistration(data3, resources));
 
-  // Same origin with |data3|.
+  // |origin3| has two registrations.
   RegistrationData data4;
   data4.registration_id = 400;
-  data4.scope = GURL("http://www4.example.com/fuga");
-  data4.script = GURL("http://www4.example.com/script4.js");
+  data4.scope = URL(origin3, "/fuga");
+  data4.script = URL(origin3, "/script4.js");
   data4.version_id = 4000;
   ASSERT_TRUE(database->WriteRegistration(data4, resources));
 
@@ -356,15 +354,15 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
 TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
+  GURL origin("http://example.com");
   RegistrationData data;
   data.registration_id = 100;
-  data.scope = GURL("http://example.com/foo");
-  data.script = GURL("http://example.com/script.js");
+  data.scope = URL(origin, "/foo");
+  data.script = URL(origin, "/script.js");
   data.version_id = 200;
-  GURL origin = data.scope.GetOrigin();
 
-  Resource resource1 = CreateResource(1, "http://example.com/resource1");
-  Resource resource2 = CreateResource(2, "http://example.com/resource2");
+  Resource resource1 = CreateResource(1, URL(origin, "/resource1"));
+  Resource resource2 = CreateResource(2, URL(origin, "/resource2"));
 
   std::vector<Resource> resources;
   resources.push_back(resource1);
@@ -416,15 +414,15 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
 TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
+  GURL origin("http://example.com");
   RegistrationData data;
   data.registration_id = 100;
-  data.scope = GURL("http://example.com/foo");
-  data.script = GURL("http://example.com/script.js");
+  data.scope = URL(origin, "/foo");
+  data.script = URL(origin, "/script.js");
   data.version_id = 200;
-  GURL origin = data.scope.GetOrigin();
 
-  Resource resource1 = CreateResource(1, "http://example.com/resource1");
-  Resource resource2 = CreateResource(2, "http://example.com/resource2");
+  Resource resource1 = CreateResource(1, URL(origin, "/resource1"));
+  Resource resource2 = CreateResource(2, URL(origin, "/resource2"));
 
   std::vector<Resource> resources1;
   resources1.push_back(resource1);
@@ -443,8 +441,8 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   // Update the registration.
   RegistrationData updated_data = data;
   updated_data.version_id = data.version_id + 1;
-  Resource resource3 = CreateResource(3, "http://example.com/resource3");
-  Resource resource4 = CreateResource(4, "http://example.com/resource4");
+  Resource resource3 = CreateResource(3, URL(origin, "/resource3"));
+  Resource resource4 = CreateResource(4, URL(origin, "/resource4"));
   std::vector<Resource> resources2;
   resources2.push_back(resource3);
   resources2.push_back(resource4);
@@ -469,16 +467,18 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
 TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
+  GURL origin("http://example.com");
+
   // Add registration1.
   RegistrationData data1;
   data1.registration_id = 100;
-  data1.scope = GURL("http://example.com/foo");
-  data1.script = GURL("http://example.com/script1.js");
+  data1.scope = URL(origin, "/foo");
+  data1.script = URL(origin, "/script1.js");
   data1.version_id = 200;
   GURL origin1 = data1.scope.GetOrigin();
 
-  Resource resource1 = CreateResource(1, "http://example.com/resource1");
-  Resource resource2 = CreateResource(2, "http://example.com/resource2");
+  Resource resource1 = CreateResource(1, URL(origin, "/resource1"));
+  Resource resource2 = CreateResource(2, URL(origin, "/resource2"));
 
   std::vector<Resource> resources1;
   resources1.push_back(resource1);
@@ -488,13 +488,13 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   // Add registration2.
   RegistrationData data2;
   data2.registration_id = 101;
-  data2.scope = GURL("http://example.com/bar");
-  data2.script = GURL("http://example.com/script2.js");
+  data2.scope = URL(origin, "/bar");
+  data2.script = URL(origin, "/script2.js");
   data2.version_id = 201;
   GURL origin2 = data2.scope.GetOrigin();
 
-  Resource resource3 = CreateResource(3, "http://example.com/resource3");
-  Resource resource4 = CreateResource(4, "http://example.com/resource4");
+  Resource resource3 = CreateResource(3, URL(origin, "/resource3"));
+  Resource resource4 = CreateResource(4, URL(origin, "/resource4"));
 
   std::vector<Resource> resources2;
   resources2.push_back(resource3);
@@ -505,14 +505,14 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   RegistrationData data_out;
   std::vector<Resource> resources_out;
   EXPECT_TRUE(database->ReadRegistration(
-      data1.registration_id, origin1, &data_out, &resources_out));
+      data1.registration_id, origin, &data_out, &resources_out));
   VerifyRegistrationData(data1, data_out);
   VerifyResourceRecords(resources1, resources_out);
 
   // Make sure that registration2 is also stored.
   resources_out.clear();
   EXPECT_TRUE(database->ReadRegistration(
-      data2.registration_id, origin2, &data_out, &resources_out));
+      data2.registration_id, origin, &data_out, &resources_out));
   VerifyRegistrationData(data2, data_out);
   VerifyResourceRecords(resources2, resources_out);
 
@@ -521,12 +521,12 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   EXPECT_TRUE(purgeable_resource_ids.empty());
 
   // Delete registration1.
-  EXPECT_TRUE(database->DeleteRegistration(data1.registration_id, origin1));
+  EXPECT_TRUE(database->DeleteRegistration(data1.registration_id, origin));
 
   // Make sure that registration1 is gone.
   resources_out.clear();
   EXPECT_FALSE(database->ReadRegistration(
-      data1.registration_id, origin1, &data_out, &resources_out));
+      data1.registration_id, origin, &data_out, &resources_out));
   EXPECT_TRUE(resources_out.empty());
 
   purgeable_resource_ids.clear();
@@ -538,7 +538,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   // Make sure that registration2 is still alive.
   resources_out.clear();
   EXPECT_TRUE(database->ReadRegistration(
-      data2.registration_id, origin2, &data_out, &resources_out));
+      data2.registration_id, origin, &data_out, &resources_out));
   VerifyRegistrationData(data2, data_out);
   VerifyResourceRecords(resources2, resources_out);
 }
