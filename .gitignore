@@ -2,10 +2,12 @@
 *.jpg
 *.la
 *.lo
+*.log
 *.o
 *.pc
 *.so
 *.swp
+*.trs
 *~
 ctags
 cscope.out
@@ -21,6 +23,7 @@ cscope.out
 /config.status
 /configure
 /libtool
+/logs
 /stamp-h1
 /test-driver
 /weston.ini
