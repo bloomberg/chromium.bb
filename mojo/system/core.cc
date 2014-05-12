@@ -74,20 +74,6 @@ namespace system {
 //    - Locks at the "INF" level may not have any locks taken while they are
 //      held.
 
-Core::HandleTableEntry::HandleTableEntry()
-    : busy(false) {
-}
-
-Core::HandleTableEntry::HandleTableEntry(
-    const scoped_refptr<Dispatcher>& dispatcher)
-    : dispatcher(dispatcher),
-      busy(false) {
-}
-
-Core::HandleTableEntry::~HandleTableEntry() {
-  DCHECK(!busy);
-}
-
 Core::Core() {
 }
 

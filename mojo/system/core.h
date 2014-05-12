@@ -93,31 +93,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
  private:
   friend bool internal::ShutdownCheckNoLeaks(Core*);
-  // The |busy| member is used only to deal with functions (in particular
-  // |WriteMessage()|) that want to hold on to a dispatcher and later remove it
-  // from the handle table, without holding on to the handle table lock.
-  //
-  // For example, if |WriteMessage()| is called with a handle to be sent, (under
-  // the handle table lock) it must first check that that handle is not busy (if
-  // it is busy, then it fails with |MOJO_RESULT_BUSY|) and then marks it as
-  // busy. To avoid deadlock, it should also try to acquire the locks for all
-  // the dispatchers for the handles that it is sending (and fail with
-  // |MOJO_RESULT_BUSY| if the attempt fails). At this point, it can release the
-  // handle table lock.
-  //
-  // If |Close()| is simultaneously called on that handle, it too checks if the
-  // handle is marked busy. If it is, it fails (with |MOJO_RESULT_BUSY|). This
-  // prevents |WriteMessage()| from sending a handle that has been closed (or
-  // learning about this too late).
-  struct HandleTableEntry {
-    HandleTableEntry();
-    explicit HandleTableEntry(const scoped_refptr<Dispatcher>& dispatcher);
-    ~HandleTableEntry();
-
-    scoped_refptr<Dispatcher> dispatcher;
-    bool busy;
-  };
-  typedef base::hash_map<MojoHandle, HandleTableEntry> HandleTableMap;
 
   // Looks up the dispatcher for the given handle. Returns null if the handle is
   // invalid.
