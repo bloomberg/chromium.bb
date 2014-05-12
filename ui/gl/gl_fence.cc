@@ -161,14 +161,14 @@ gfx::GLFence* CreateFence(bool flush) {
   DCHECK(gfx::GLContext::GetCurrent())
       << "Trying to create fence with no context";
 
-#if !defined(OS_MACOSX)
-  if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync)
-    return new EGLFenceSync(flush);
-#endif
   // Prefer ARB_sync which supports server-side wait.
   if (gfx::g_driver_gl.ext.b_GL_ARB_sync ||
       gfx::GLContext::GetCurrent()->GetVersionInfo()->is_es3)
     return new GLFenceARBSync(flush);
+#if !defined(OS_MACOSX)
+  if (gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync)
+    return new EGLFenceSync(flush);
+#endif
   if (gfx::g_driver_gl.ext.b_GL_NV_fence)
     return new GLFenceNVFence(flush);
   return NULL;

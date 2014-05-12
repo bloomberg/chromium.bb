@@ -397,21 +397,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       ]
     },
     {
-      "id": 29,
-      "cr_bugs": [278606],
-      "description": "Testing fences is broken on Qualcomm.",
-      "os": {
-        "type": "android"
-      },
-      "gl_vendor": {
-        "op": "beginwith",
-        "value": "Qualcomm"
-      },
-      "features": [
-        "disable_async_readpixels"
-      ]
-    },
-    {
       "id": 30,
       "cr_bugs": [237931],
       "description": "Multisampling is buggy on OSX when multiple monitors are connected",
