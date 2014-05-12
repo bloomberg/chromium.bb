@@ -1036,3 +1036,17 @@ class MainTest(unittest.TestCase):
             self.assertEqual(res, test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
         finally:
             run_webkit_tests.run = orig_run_fn
+
+    def test_buildbot_results_are_printed_on_early_exit(self):
+        # unused args pylint: disable=W0613
+        stdout = StringIO.StringIO()
+        stderr = StringIO.StringIO()
+        res = run_webkit_tests.main(['--platform', 'test', '--exit-after-n-failures', '1',
+                                     'failures/unexpected/missing_text.html',
+                                     'failures/unexpected/missing_image.html'],
+                                    stdout, stderr)
+        self.assertEqual(res, test_run_results.EARLY_EXIT_STATUS)
+        self.assertEqual(stdout.getvalue(),
+                ('\n'
+                 'Regressions: Unexpected missing results (1)\n'
+                 '  failures/unexpected/missing_image.html [ Missing ]\n\n'))

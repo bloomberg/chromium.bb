@@ -71,7 +71,9 @@ def main(argv, stdout, stderr):
 
     try:
         run_details = run(port, options, args, stderr)
-        if run_details.exit_code not in test_run_results.ERROR_CODES and not run_details.initial_results.keyboard_interrupted:
+        if ((run_details.exit_code not in test_run_results.ERROR_CODES or
+             run_details.exit_code == test_run_results.EARLY_EXIT_STATUS) and
+            not run_details.initial_results.keyboard_interrupted):
             bot_printer = buildbot_results.BuildBotPrinter(stdout, options.debug_rwt_logging)
             bot_printer.print_results(run_details)
 
