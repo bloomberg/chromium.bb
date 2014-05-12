@@ -1424,6 +1424,8 @@ void FrameLoader::dispatchDidClearWindowObjectInMainWorld()
     if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
 
+    // FIXME: Why isn't the inspector notified of this?
+
     m_client->dispatchDidClearWindowObjectInMainWorld();
 }
 
