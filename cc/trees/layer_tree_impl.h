@@ -252,6 +252,14 @@ class CC_EXPORT LayerTreeImpl {
     return render_surface_layer_list_id_;
   }
 
+  LayerImpl* FindFirstScrollingLayerThatIsHitByPoint(
+      const gfx::PointF& screen_space_point);
+
+  LayerImpl* FindLayerThatIsHitByPoint(const gfx::PointF& screen_space_point);
+
+  LayerImpl* FindLayerThatIsHitByPointInTouchHandlerRegion(
+      const gfx::PointF& screen_space_point);
+
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
   void ReleaseResourcesRecursive(LayerImpl* current);

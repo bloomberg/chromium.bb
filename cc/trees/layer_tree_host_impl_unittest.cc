@@ -6078,7 +6078,7 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownScrollAncestorMismatch) {
   occluder_layer->SetDrawsContent(true);
   occluder_layer->SetBounds(content_size);
   occluder_layer->SetContentBounds(content_size);
-  occluder_layer->SetPosition(gfx::PointF());
+  occluder_layer->SetPosition(gfx::PointF(-10.f, -10.f));
   occluder_layer->SetAnchorPoint(gfx::PointF());
 
   int child_scroll_clip_layer_id = 7;
@@ -6089,7 +6089,7 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownScrollAncestorMismatch) {
   scoped_ptr<LayerImpl> child_scroll = CreateScrollableLayer(
       child_scroll_layer_id, content_size, child_scroll_clip.get());
 
-  child_scroll->SetDrawsContent(false);
+  child_scroll->SetPosition(gfx::PointF(10.f, 10.f));
 
   child_scroll->AddChild(occluder_layer.Pass());
   scroll_layer->AddChild(child_scroll.Pass());
@@ -6098,6 +6098,95 @@ TEST_F(LayerTreeHostImplTest, ScrollUnknownScrollAncestorMismatch) {
 
   EXPECT_EQ(InputHandler::ScrollUnknown,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollInvisibleScroller) {
+  gfx::Size content_size(100, 100);
+  SetupScrollAndContentsLayers(content_size);
+
+  LayerImpl* root = host_impl_->active_tree()->LayerById(1);
+
+  int scroll_layer_id = 2;
+  LayerImpl* scroll_layer =
+      host_impl_->active_tree()->LayerById(scroll_layer_id);
+
+  int child_scroll_layer_id = 7;
+  scoped_ptr<LayerImpl> child_scroll =
+      CreateScrollableLayer(child_scroll_layer_id, content_size, root);
+  child_scroll->SetDrawsContent(false);
+
+  scroll_layer->AddChild(child_scroll.Pass());
+
+  DrawFrame();
+
+  // We should not have scrolled |child_scroll| even though we technically "hit"
+  // it. The reason for this is that if the scrolling the scroll would not move
+  // any layer that is a drawn RSLL member, then we can ignore the hit.
+  //
+  // Why ScrollStarted? In this case, it's because we've bubbled out and started
+  // overscrolling the inner viewport.
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+
+  EXPECT_EQ(2, host_impl_->CurrentlyScrollingLayer()->id());
+}
+
+TEST_F(LayerTreeHostImplTest, ScrollInvisibleScrollerWithVisibleScrollChild) {
+  // This test case is very similar to the one above with one key difference:
+  // the invisible scroller has a scroll child that is indeed draw contents.
+  // If we attempt to initiate a gesture scroll off of the visible scroll child
+  // we should still start the scroll child.
+  gfx::Size content_size(100, 100);
+  SetupScrollAndContentsLayers(content_size);
+
+  LayerImpl* root = host_impl_->active_tree()->LayerById(1);
+
+  int scroll_layer_id = 2;
+  LayerImpl* scroll_layer =
+      host_impl_->active_tree()->LayerById(scroll_layer_id);
+
+  int scroll_child_id = 6;
+  scoped_ptr<LayerImpl> scroll_child =
+      LayerImpl::Create(host_impl_->active_tree(), scroll_child_id);
+  scroll_child->SetDrawsContent(true);
+  scroll_child->SetBounds(content_size);
+  scroll_child->SetContentBounds(content_size);
+  // Move the scroll child so it's not hit by our test point.
+  scroll_child->SetPosition(gfx::PointF(10.f, 10.f));
+  scroll_child->SetAnchorPoint(gfx::PointF());
+
+  int invisible_scroll_layer_id = 7;
+  scoped_ptr<LayerImpl> invisible_scroll =
+      CreateScrollableLayer(invisible_scroll_layer_id, content_size, root);
+  invisible_scroll->SetDrawsContent(false);
+
+  int container_id = 8;
+  scoped_ptr<LayerImpl> container =
+      LayerImpl::Create(host_impl_->active_tree(), container_id);
+
+  scoped_ptr<std::set<LayerImpl*> > scroll_children(new std::set<LayerImpl*>());
+  scroll_children->insert(scroll_child.get());
+  invisible_scroll->SetScrollChildren(scroll_children.release());
+
+  scroll_child->SetScrollParent(invisible_scroll.get());
+
+  container->AddChild(invisible_scroll.Pass());
+  container->AddChild(scroll_child.Pass());
+
+  scroll_layer->AddChild(container.Pass());
+
+  DrawFrame();
+
+  // We should not have scrolled |child_scroll| even though we technically "hit"
+  // it. The reason for this is that if the scrolling the scroll would not move
+  // any layer that is a drawn RSLL member, then we can ignore the hit.
+  //
+  // Why ScrollStarted? In this case, it's because we've bubbled out and started
+  // overscrolling the inner viewport.
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
+
+  EXPECT_EQ(7, host_impl_->CurrentlyScrollingLayer()->id());
 }
 
 // Make sure LatencyInfo carried by LatencyInfoSwapPromise are passed

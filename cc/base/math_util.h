@@ -144,6 +144,11 @@ class CC_EXPORT MathUtil {
   static gfx::PointF ProjectPoint(const gfx::Transform& transform,
                                   const gfx::PointF& point,
                                   bool* clipped);
+  // Identical to the above function, but coerces the homogeneous coordinate to
+  // a 3d rather than a 2d point.
+  static gfx::Point3F ProjectPoint3D(const gfx::Transform& transform,
+                                     const gfx::PointF& point,
+                                     bool* clipped);
 
   static gfx::Vector2dF ComputeTransform2dScaleComponents(const gfx::Transform&,
                                                           float fallbackValue);

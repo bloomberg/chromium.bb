@@ -483,8 +483,8 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   gfx::PointF device_viewport_point =
       gfx::ScalePoint(viewport_point, device_scale_factor_);
 
-  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-      device_viewport_point, active_tree_->RenderSurfaceLayerList());
+  LayerImpl* layer_impl =
+      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
   bool scroll_on_main_thread = false;
   LayerImpl* scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
@@ -503,9 +503,9 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(
       gfx::ScalePoint(viewport_point, device_scale_factor_);
 
   LayerImpl* layer_impl =
-      LayerTreeHostCommon::FindLayerThatIsHitByPointInTouchHandlerRegion(
-          device_viewport_point,
-          active_tree_->RenderSurfaceLayerList());
+      active_tree_->FindLayerThatIsHitByPointInTouchHandlerRegion(
+          device_viewport_point);
+
   return layer_impl != NULL;
 }
 
@@ -2206,14 +2206,13 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
                                                       device_scale_factor_);
-  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-      device_viewport_point,
-      active_tree_->RenderSurfaceLayerList());
+  LayerImpl* layer_impl =
+      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
   if (layer_impl) {
     LayerImpl* scroll_layer_impl =
-        LayerTreeHostCommon::FindFirstScrollingLayerThatIsHitByPoint(
-            device_viewport_point, active_tree_->RenderSurfaceLayerList());
+        active_tree_->FindFirstScrollingLayerThatIsHitByPoint(
+            device_viewport_point);
     if (scroll_layer_impl && !HasScrollAncestor(layer_impl, scroll_layer_impl))
       return ScrollUnknown;
   }
@@ -2573,10 +2572,8 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
 
   gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
                                                       device_scale_factor_);
-
-  LayerImpl* layer_impl = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-      device_viewport_point,
-      active_tree_->RenderSurfaceLayerList());
+  LayerImpl* layer_impl =
+      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
   if (HandleMouseOverScrollbar(layer_impl, device_viewport_point))
     return;
 
