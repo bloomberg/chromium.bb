@@ -68,7 +68,7 @@ private:
         int screenArea;
     };
 
-    typedef HashMap<unsigned long, OwnPtr<ResourceAndVisibility> > ImageResourceMap;
+    typedef HashMap<unsigned long, OwnPtr<ResourceAndVisibility>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned> > ImageResourceMap;
     ImageResourceMap m_imageResources;
 
     typedef HashSet<RenderObject*> RenderObjectSet;
