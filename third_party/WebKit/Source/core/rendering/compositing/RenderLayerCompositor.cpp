@@ -44,6 +44,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorNodeIds.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
@@ -1192,6 +1193,7 @@ void RenderLayerCompositor::ensureRootLayer()
         IntRect overflowRect = m_renderView.pixelSnappedLayoutOverflowRect();
         m_rootContentLayer->setSize(FloatSize(overflowRect.maxX(), overflowRect.maxY()));
         m_rootContentLayer->setPosition(FloatPoint());
+        m_rootContentLayer->setOwnerNodeId(InspectorNodeIds::idForNode(m_renderView.generatingNode()));
 
         // Need to clip to prevent transformed content showing outside this frame
         m_rootContentLayer->setMasksToBounds(true);

@@ -38,6 +38,7 @@ void GraphicsLayerDebugInfo::appendAsTraceFormat(blink::WebString* out) const
     appendLayoutRects(jsonObject.get());
     appendCompositingReasons(jsonObject.get());
     appendDebugName(jsonObject.get());
+    appendOwnerNodeId(jsonObject.get());
     *out = jsonObject->toJSONString();
 }
 
@@ -47,6 +48,7 @@ GraphicsLayerDebugInfo* GraphicsLayerDebugInfo::clone() const
     for (size_t i = 0; i < m_currentLayoutRects.size(); ++i)
         toReturn->currentLayoutRects().append(m_currentLayoutRects[i]);
     toReturn->setCompositingReasons(m_compositingReasons);
+    toReturn->setOwnerNodeId(m_ownerNodeId);
     return toReturn;
 }
 
@@ -84,6 +86,14 @@ void GraphicsLayerDebugInfo::appendDebugName(JSONObject* jsonObject) const
         return;
 
     jsonObject->setString("layer_name", m_debugName);
+}
+
+void GraphicsLayerDebugInfo::appendOwnerNodeId(JSONObject* jsonObject) const
+{
+    if (!m_ownerNodeId)
+        return;
+
+    jsonObject->setNumber("owner_node", m_ownerNodeId);
 }
 
 } // namespace WebCore

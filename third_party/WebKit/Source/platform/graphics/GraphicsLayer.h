@@ -97,6 +97,7 @@ public:
 
     void setCompositingReasons(CompositingReasons);
     CompositingReasons compositingReasons() const { return m_debugInfo.compositingReasons(); }
+    void setOwnerNodeId(int);
 
     GraphicsLayer* parent() const { return m_parent; };
     void setParent(GraphicsLayer*); // Internal use only.

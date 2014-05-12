@@ -778,6 +778,11 @@ void GraphicsLayer::setCompositingReasons(CompositingReasons reasons)
     m_debugInfo.setCompositingReasons(reasons);
 }
 
+void GraphicsLayer::setOwnerNodeId(int nodeId)
+{
+    m_debugInfo.setOwnerNodeId(nodeId);
+}
+
 void GraphicsLayer::setPosition(const FloatPoint& point)
 {
     m_position = point;

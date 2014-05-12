@@ -36,6 +36,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/page/Chrome.h"
 #include "core/frame/FrameView.h"
@@ -217,6 +218,8 @@ PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(Compositin
     OwnPtr<GraphicsLayer> graphicsLayer = GraphicsLayer::create(graphicsLayerFactory, this);
 
     graphicsLayer->setCompositingReasons(reasons);
+    if (Node* owningNode = m_owningLayer.renderer()->generatingNode())
+        graphicsLayer->setOwnerNodeId(InspectorNodeIds::idForNode(owningNode));
 
     return graphicsLayer.release();
 }
