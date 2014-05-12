@@ -41,6 +41,7 @@ void NavigateToUrlWithAccountsReferrer(const GURL& url) {
 
   chrome::NavigateParams params(
       browser, url, content::PAGE_TRANSITION_AUTO_TOPLEVEL);
+  params.disposition = NEW_FOREGROUND_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   params.referrer = content::Referrer();
   params.referrer.url = GURL(kAccountsUrl);
