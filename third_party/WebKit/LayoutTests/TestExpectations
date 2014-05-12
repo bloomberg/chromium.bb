@@ -811,6 +811,7 @@ crbug.com/349523 [ Win ] webaudio/dynamicscompressor-simple.html [ Failure ]
 crbug.com/349523 [ Win ] webaudio/realtimeanalyser-fft-scaling.html [ Failure ]
 crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Missing ]
 crbug.com/372425 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe.html [ Pass Failure ]
+crbug.com/372428 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-window-open.html [ Pass Failure ]
 
 crbug.com/361940 [ Lion MountainLion Retina Mavericks ] compositing/update-paint-phases.html [ Failure ]
 
