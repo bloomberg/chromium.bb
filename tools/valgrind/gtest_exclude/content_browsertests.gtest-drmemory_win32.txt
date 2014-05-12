@@ -72,3 +72,5 @@ ResourceFetcherTests.ResourceFetcherDownload
 Http/MediaTest.VideoTulipWebm/0
 RenderViewImplTest.ReloadWhileSwappedOut
 SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
+#drm-i#1528-c#7
+IndexedDBBrowserTest.ConnectionsClosedOnTabClose
