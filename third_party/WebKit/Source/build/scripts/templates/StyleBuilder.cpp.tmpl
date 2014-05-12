@@ -14,7 +14,8 @@ namespace WebCore {
 
 bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
     switch(property) {
-    {% for property_id, property in properties.items() if not property.direction_aware %}
+    {% for property_id, property in properties.items()
+          if not property.direction_aware and not property.skip %}
     {% set used_property = properties[property.use_handlers_for] or property %}
     {% set used_property_id = used_property.property_id %}
     case {{property_id}}:
@@ -36,6 +37,10 @@ bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& sta
         applyProperty(resolvedProperty, state, value);
         return true;
     }
+    {% for property_id, property in properties.items() if property.skip %}
+    case {{property_id}}:
+    {% endfor %}
+        return true;
     default:
         return false;
     }

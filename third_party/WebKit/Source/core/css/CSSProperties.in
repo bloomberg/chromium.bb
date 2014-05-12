@@ -330,3 +330,42 @@ writing-mode svg, type_name=SVGWritingMode
 -webkit-min-logical-height direction_aware
 -webkit-max-logical-width direction_aware
 -webkit-max-logical-height direction_aware
+
+// FIXME: We should look over these and see if some should actually be
+// marked as unreachable.
+animation-delay skip
+animation-direction skip
+animation-duration skip
+animation-fill-mode skip
+animation-iteration-count skip
+animation-name skip
+animation-play-state skip
+animation-timing-function skip
+transition-delay skip
+transition-duration skip
+transition-property skip
+transition-timing-function skip
+font-stretch skip
+page skip
+src skip
+text-line-through-color skip
+text-line-through-mode skip
+text-line-through-style skip
+text-line-through-width skip
+text-overline-color skip
+text-overline-mode skip
+text-overline-style skip
+text-overline-width skip
+text-underline-color skip
+text-underline-mode skip
+text-underline-style skip
+text-underline-width skip
+unicode-range skip
+-webkit-font-size-delta skip
+-webkit-text-decorations-in-effect skip
+max-zoom skip
+min-zoom skip
+user-zoom skip
+orientation skip
+enable-background skip
+invalid skip
