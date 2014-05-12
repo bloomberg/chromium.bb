@@ -5155,6 +5155,20 @@
         ],
       },
     }],
+    # We need a special case to handle the android webview build on mac because
+    # the host gcc there doesn't accept this flag, but the target gcc may
+    # require it.
+    ['gcc_version>=48 and android_webview_build==1 and host_os=="mac"', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags!': [
+              '-Wno-unused-local-typedefs',
+            ],
+          }],
+        ],
+      },
+    }],
     ['clang==1 and ((OS!="mac" and OS!="ios") or clang_xcode==0) '
         'and OS!="win"', {
       'make_global_settings': [
