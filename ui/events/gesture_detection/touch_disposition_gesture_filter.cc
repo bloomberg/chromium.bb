@@ -17,15 +17,16 @@ COMPILE_ASSERT(ET_GESTURE_TYPE_END - ET_GESTURE_TYPE_START < 32,
 
 GestureEventData CreateGesture(EventType type,
                                int motion_event_id,
-                               const base::TimeTicks& timestamp) {
+                               const base::TimeTicks& timestamp,
+                               const gfx::PointF& location) {
   GestureEventDetails details(type, 0, 0);
   return GestureEventData(type,
                           motion_event_id,
                           timestamp,
-                          0,
-                          0,
+                          location.x(),
+                          location.y(),
                           1,
-                          gfx::RectF(0, 0, 0, 0),
+                          gfx::RectF(location.x(), location.y(), 0, 0),
                           details);
 }
 
@@ -129,11 +130,14 @@ TouchDispositionGestureFilter::TouchDispositionGestureFilter(
       needs_tap_ending_event_(false),
       needs_show_press_event_(false),
       needs_fling_ending_event_(false),
-      needs_scroll_ending_event_(false) {
+      needs_scroll_ending_event_(false),
+      packet_being_sent_(NULL) {
   DCHECK(client_);
 }
 
-TouchDispositionGestureFilter::~TouchDispositionGestureFilter() {}
+TouchDispositionGestureFilter::~TouchDispositionGestureFilter() {
+  DCHECK(!packet_being_sent_);
+}
 
 TouchDispositionGestureFilter::PacketResult
 TouchDispositionGestureFilter::OnGesturePacket(
@@ -205,10 +209,12 @@ bool TouchDispositionGestureFilter::IsEmpty() const {
 
 void TouchDispositionGestureFilter::FilterAndSendPacket(
     const GestureEventDataPacket& packet) {
+  base::AutoReset<const GestureEventDataPacket*> packet_being_sent(
+      &packet_being_sent_, &packet);
   if (packet.gesture_source() == GestureEventDataPacket::TOUCH_SEQUENCE_START) {
-    CancelTapIfNecessary(packet.timestamp());
-    EndScrollIfNecessary(packet.timestamp());
-    CancelFlingIfNecessary(packet.timestamp());
+    CancelTapIfNecessary();
+    EndScrollIfNecessary();
+    CancelFlingIfNecessary();
   }
 
   for (size_t i = 0; i < packet.gesture_count(); ++i) {
@@ -216,7 +222,7 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
     DCHECK(ET_GESTURE_TYPE_START <= gesture.type &&
            gesture.type <= ET_GESTURE_TYPE_END);
     if (state_.Filter(gesture.type)) {
-      CancelTapIfNecessary(gesture.time);
+      CancelTapIfNecessary();
       continue;
     }
     SendGesture(gesture);
@@ -224,11 +230,11 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
 
   if (packet.gesture_source() ==
       GestureEventDataPacket::TOUCH_SEQUENCE_CANCEL) {
-    EndScrollIfNecessary(packet.timestamp());
-    CancelTapIfNecessary(packet.timestamp());
+    EndScrollIfNecessary();
+    CancelTapIfNecessary();
   } else if (packet.gesture_source() ==
              GestureEventDataPacket::TOUCH_SEQUENCE_END) {
-    EndScrollIfNecessary(packet.timestamp());
+    EndScrollIfNecessary();
   }
 }
 
@@ -239,8 +245,8 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
     case ET_GESTURE_LONG_TAP:
       if (!needs_tap_ending_event_)
         return;
-      CancelTapIfNecessary(event.time);
-      CancelFlingIfNecessary(event.time);
+      CancelTapIfNecessary();
+      CancelFlingIfNecessary();
       break;
     case ET_GESTURE_TAP_DOWN:
       DCHECK(!needs_tap_ending_event_);
@@ -254,7 +260,7 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
       needs_show_press_event_ = false;
       break;
     case ET_GESTURE_DOUBLE_TAP:
-      CancelTapIfNecessary(event.time);
+      CancelTapIfNecessary();
       needs_show_press_event_ = false;
       break;
     case ET_GESTURE_TAP:
@@ -271,9 +277,9 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
       needs_tap_ending_event_ = false;
       break;
     case ET_GESTURE_SCROLL_BEGIN:
-      CancelTapIfNecessary(event.time);
-      CancelFlingIfNecessary(event.time);
-      EndScrollIfNecessary(event.time);
+      CancelTapIfNecessary();
+      CancelFlingIfNecessary();
+      EndScrollIfNecessary();
       ending_event_motion_event_id_ = event.motion_event_id;
       needs_scroll_ending_event_ = true;
       break;
@@ -281,7 +287,7 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
       needs_scroll_ending_event_ = false;
       break;
     case ET_SCROLL_FLING_START:
-      CancelFlingIfNecessary(event.time);
+      CancelFlingIfNecessary();
       ending_event_motion_event_id_ = event.motion_event_id;
       needs_fling_ending_event_ = true;
       needs_scroll_ending_event_ = false;
@@ -295,33 +301,39 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
   client_->ForwardGestureEvent(event);
 }
 
-void TouchDispositionGestureFilter::CancelTapIfNecessary(
-    const base::TimeTicks& timestamp) {
-  if (!needs_tap_ending_event_)
+void TouchDispositionGestureFilter::CancelTapIfNecessary() {
+  DCHECK(packet_being_sent_);
+  if (!needs_tap_ending_event_ || !packet_being_sent_)
     return;
 
-  SendGesture(CreateGesture(
-      ET_GESTURE_TAP_CANCEL, ending_event_motion_event_id_, timestamp));
+  SendGesture(CreateGesture(ET_GESTURE_TAP_CANCEL,
+                            ending_event_motion_event_id_,
+                            packet_being_sent_->timestamp(),
+                            packet_being_sent_->touch_location()));
   DCHECK(!needs_tap_ending_event_);
 }
 
-void TouchDispositionGestureFilter::CancelFlingIfNecessary(
-    const base::TimeTicks& timestamp) {
-  if (!needs_fling_ending_event_)
+void TouchDispositionGestureFilter::CancelFlingIfNecessary() {
+  DCHECK(packet_being_sent_);
+  if (!needs_fling_ending_event_ || !packet_being_sent_)
     return;
 
-  SendGesture(CreateGesture(
-      ET_SCROLL_FLING_CANCEL, ending_event_motion_event_id_, timestamp));
+  SendGesture(CreateGesture(ET_SCROLL_FLING_CANCEL,
+                            ending_event_motion_event_id_,
+                            packet_being_sent_->timestamp(),
+                            packet_being_sent_->touch_location()));
   DCHECK(!needs_fling_ending_event_);
 }
 
-void TouchDispositionGestureFilter::EndScrollIfNecessary(
-    const base::TimeTicks& timestamp) {
-  if (!needs_scroll_ending_event_)
+void TouchDispositionGestureFilter::EndScrollIfNecessary() {
+  DCHECK(packet_being_sent_);
+  if (!needs_scroll_ending_event_ || !packet_being_sent_)
     return;
 
-  SendGesture(CreateGesture(
-      ET_GESTURE_SCROLL_END, ending_event_motion_event_id_, timestamp));
+  SendGesture(CreateGesture(ET_GESTURE_SCROLL_END,
+                            ending_event_motion_event_id_,
+                            packet_being_sent_->timestamp(),
+                            packet_being_sent_->touch_location()));
   DCHECK(!needs_scroll_ending_event_);
 }
 

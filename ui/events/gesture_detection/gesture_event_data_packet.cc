@@ -36,8 +36,12 @@ GestureEventDataPacket::GestureEventDataPacket()
     : gesture_count_(0), gesture_source_(UNDEFINED) {}
 
 GestureEventDataPacket::GestureEventDataPacket(base::TimeTicks timestamp,
-                                               GestureSource source)
-    : timestamp_(timestamp), gesture_count_(0), gesture_source_(source) {
+                                               GestureSource source,
+                                               gfx::PointF touch_location)
+    : timestamp_(timestamp),
+      gesture_count_(0),
+      touch_location_(touch_location),
+      gesture_source_(source) {
   DCHECK_NE(gesture_source_, UNDEFINED);
 }
 
@@ -45,6 +49,7 @@ GestureEventDataPacket::GestureEventDataPacket(
     const GestureEventDataPacket& other)
     : timestamp_(other.timestamp_),
       gesture_count_(other.gesture_count_),
+      touch_location_(other.touch_location_),
       gesture_source_(other.gesture_source_) {
   std::copy(other.gestures_, other.gestures_ + other.gesture_count_, gestures_);
 }
@@ -56,6 +61,7 @@ GestureEventDataPacket& GestureEventDataPacket::operator=(
   timestamp_ = other.timestamp_;
   gesture_count_ = other.gesture_count_;
   gesture_source_ = other.gesture_source_;
+  touch_location_ = other.touch_location_;
   std::copy(other.gestures_, other.gestures_ + other.gesture_count_, gestures_);
   return *this;
 }
@@ -68,12 +74,15 @@ void GestureEventDataPacket::Push(const GestureEventData& gesture) {
 
 GestureEventDataPacket GestureEventDataPacket::FromTouch(
     const ui::MotionEvent& touch) {
-  return GestureEventDataPacket(touch.GetEventTime(), ToGestureSource(touch));
+  return GestureEventDataPacket(touch.GetEventTime(),
+                                ToGestureSource(touch),
+                                gfx::PointF(touch.GetX(), touch.GetY()));
 }
 
 GestureEventDataPacket GestureEventDataPacket::FromTouchTimeout(
     const GestureEventData& gesture) {
-  GestureEventDataPacket packet(gesture.time, TOUCH_TIMEOUT);
+  GestureEventDataPacket packet(
+      gesture.time, TOUCH_TIMEOUT, gfx::PointF(gesture.x, gesture.y));
   packet.Push(gesture);
   return packet;
 }

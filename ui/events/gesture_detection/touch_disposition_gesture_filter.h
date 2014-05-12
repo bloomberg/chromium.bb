@@ -78,9 +78,9 @@ class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
 
   void FilterAndSendPacket(const GestureEventDataPacket& packet);
   void SendGesture(const GestureEventData& gesture);
-  void CancelTapIfNecessary(const base::TimeTicks& timestamp);
-  void CancelFlingIfNecessary(const base::TimeTicks& timestamp);
-  void EndScrollIfNecessary(const base::TimeTicks& timestamp);
+  void CancelTapIfNecessary();
+  void CancelFlingIfNecessary();
+  void EndScrollIfNecessary();
   void PopGestureSequence();
   GestureSequence& Head();
   GestureSequence& Tail();
@@ -98,6 +98,8 @@ class GESTURE_DETECTION_EXPORT TouchDispositionGestureFilter {
   bool needs_show_press_event_;
   bool needs_fling_ending_event_;
   bool needs_scroll_ending_event_;
+  // Only valid in the scope of |FilterAndSendPacket()|.
+  const GestureEventDataPacket* packet_being_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchDispositionGestureFilter);
 };
