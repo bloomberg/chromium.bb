@@ -95,14 +95,49 @@ enum Status {
 };
 
 // This must be consistent with MediaKeyError defined in the spec:
-// https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#error-codes
-// The error codes are in the process of changing. For now, support the minimum
-// required set with backwards compatible values.
+// https://dvcs.w3.org/hg/html-media/raw-file/eme-v0.1b/encrypted-media/encrypted-media.html#error-codes
+// Support the minimum required set with backwards compatible values.
 enum MediaKeyError {
-  kUnknownError = 1,
-  kClientError = 2,
-  kOutputError = 4
+  kPrefixedUnknownError = 1,
+  kPrefixedClientError = 2,
+  kPrefixedOutputError = 4
 };
+
+// This must at least contain the exceptions defined in the spec:
+// https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#exceptions
+// The following starts with the list of DOM4 exceptions from:
+// http://www.w3.org/TR/dom/#domexception
+// Some DOM4 exceptions are not included as they are not expected to be used.
+enum Error {
+  kNoModificationAllowedError = 7,
+  kNotFoundError = 8,
+  kNotSupportedError = 9,
+  kInvalidStateError = 11,
+  kSyntaxError = 12,
+  kInvalidModificationError = 13,
+  kInvalidAccessError = 15,
+  kSecurityError = 18,
+  kAbortError = 20,
+  kQuotaExceededError = 22,
+  kTimeoutError = 23,
+
+  // Additional exceptions that don't have assigned codes.
+  // There are other non-EME-specific values, not included in this list.
+  kUnknownError = 30,
+  kDataError = 31,
+  kVersionError = 32,
+  kNotReadableError = 33,
+  kOperationError = 34,
+
+  // Additional values from previous EME versions. They currently have no
+  // matching DOMException.
+  kClientError = 100,
+  kOutputError = 101
+};
+
+// Time is defined as the number of seconds since the
+// Epoch (00:00:00 UTC, January 1, 1970).
+typedef double Time;
 
 // An input buffer can be split into several continuous subsamples.
 // A SubsampleEntry specifies the number of clear and cipher bytes in each
@@ -577,6 +612,13 @@ class ContentDecryptionModule_5 {
       uint32_t promise_id,
       const char* web_session_id, uint32_t web_session_id_length) = 0;
 
+  // Provides a server certificate to be used to encrypt messages to the
+  // license server.
+  virtual void SetServerCertificate(
+      uint32_t promise_id,
+      const uint8_t* server_certificate_data,
+      uint32_t server_certificate_data_size) = 0;
+
   // Performs scheduled operation with |context| when the timer fires.
   virtual void TimerExpired(void* context) = 0;
 
@@ -808,8 +850,8 @@ class Host_5 {
   // from now with |context|.
   virtual void SetTimer(int64_t delay_ms, void* context) = 0;
 
-  // Returns the current epoch wall time in seconds.
-  virtual double GetCurrentWallTimeInSeconds() = 0;
+  // Returns the current wall time in seconds.
+  virtual Time GetCurrentTime() = 0;
 
   // Called by the CDM when a session is created or loaded and the value for the
   // MediaKeySession's sessionId attribute is available (|web_session_id|).
@@ -828,11 +870,11 @@ class Host_5 {
 
   // Called by the CDM when an error occurs as a result of one of the
   // ContentDecryptionModule calls that accept a |promise_id|.
-  // |error_name| must be specified, |error_message| and |system_code|
+  // |error| must be specified, |error_message| and |system_code|
   // are optional. Length parameters should not include null termination.
   virtual void OnRejectPromise(
       uint32_t promise_id,
-      const char* error_name, uint32_t error_name_length,
+      Error error,
       uint32_t system_code,
       const char* error_message, uint32_t error_message_length) = 0;
 
@@ -843,24 +885,45 @@ class Host_5 {
       const char* message, uint32_t message_length,
       const char* destination_url, uint32_t destination_url_length) = 0;
 
+  // Called by the CDM when there has been a change in usable keys for
+  // session |web_session_id|. |has_additional_usable_key| should be set if a
+  // key is newly usable (e.g. new key available, previously expired key has
+  // been renewed, etc.) and the browser should attempt to resume playback.
+  // Length parameter should not include null termination.
+  virtual void OnSessionKeysChange(
+      const char* web_session_id, uint32_t web_session_id_length,
+      bool has_additional_usable_key) = 0;
+
+  // Called by the CDM when there has been a change in the expiration time for
+  // session |web_session_id|. This can happen as the result of an Update() call
+  // or some other event. If this happens as a result of a call to Update(),
+  // it must be called before resolving the Update() promise. |new_expiry_time|
+  // can be 0 to represent "undefined". Length parameter should not include
+  // null termination.
+  virtual void OnExpirationChange(
+      const char* web_session_id, uint32_t web_session_id_length,
+      Time new_expiry_time) = 0;
+
   // Called by the CDM when session |web_session_id| is ready.
   // Note: "ready" event is deprecated. This is only used for the prefixed EME
   // API's "keyAdded" event. Drop this when we deprecate prefixed EME API.
+  // Length parameter should not include null termination.
   virtual void OnSessionReady(
       const char* web_session_id, uint32_t web_session_id_length) = 0;
 
-  // Called by the CDM when session |web_session_id| is closed.
+  // Called by the CDM when session |web_session_id| is closed. Length
+  // parameter should not include null termination.
   virtual void OnSessionClosed(
       const char* web_session_id, uint32_t web_session_id_length) = 0;
 
   // Called by the CDM when an error occurs in session |web_session_id|
   // unrelated to one of the ContentDecryptionModule calls that accept a
-  // |promise_id|. |error_name| must be specified, |error_message| and
+  // |promise_id|. |error| must be specified, |error_message| and
   // |system_code| are optional. Length parameters should not include null
   // termination.
   virtual void OnSessionError(
       const char* web_session_id, uint32_t web_session_id_length,
-      const char* error_name, uint32_t error_name_length,
+      Error error,
       uint32_t system_code,
       const char* error_message, uint32_t error_message_length) = 0;
 
