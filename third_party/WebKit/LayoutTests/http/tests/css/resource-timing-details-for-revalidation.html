@@ -16,15 +16,19 @@ if (window.testRunner)
 var entry;
 if (location.hash == '#check') {
     document.fonts.ready().then(function() {
-        entry = performance.getEntriesByName('http://localhost:8080/css/resources/cors-ahem.php')[0];
-        shouldBeTrue('entry.domainLookupStart > 0');
-        if (window.testRunner)
-            testRunner.notifyDone();
+        setTimeout(function() {
+            entry = performance.getEntriesByName('http://localhost:8080/css/resources/cors-ahem.php')[0];
+            shouldBeTrue('entry.domainLookupStart > 0');
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }, 10);
     });
 } else {
     document.fonts.ready().then(function() {
-        location.hash = 'check';
-        location.reload();
+        setTimeout(function() {
+            location.hash = 'check';
+            location.reload();
+        }, 10);
     });
 }
 </script>
