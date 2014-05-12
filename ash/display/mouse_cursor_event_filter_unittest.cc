@@ -28,7 +28,7 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
 
   bool WarpMouseCursorIfNecessary(aura::Window* target_root,
                                   gfx::Point point_in_screen) {
-    bool is_warped = event_filter()->WarpMouseCursorIfNecessary(
+    bool is_warped = event_filter()->WarpMouseCursorIfNecessaryForTest(
         target_root, point_in_screen);
     event_filter()->reset_was_mouse_warped_for_test();
     return is_warped;
@@ -43,7 +43,7 @@ class MouseCursorEventFilterTest : public test::AshTestBase {
                            location, 0, 0);
     ui::Event::DispatcherApi(&pressed).set_target(drag_source_root);
     event_filter()->OnMouseEvent(&pressed);
-    bool is_warped = event_filter()->WarpMouseCursorIfNecessary(
+    bool is_warped = event_filter()->WarpMouseCursorIfNecessaryForTest(
         target_root, point_in_screen);
     event_filter()->reset_was_mouse_warped_for_test();
 
@@ -127,16 +127,19 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
             aura::Env::GetInstance()->last_mouse_location().ToString());
 
   // Touch the left edge of the secondary root window. Pointer should warp
-  // because 1px left of (0, 499) is inside the primary root window.
-  EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[1],
-                                         gfx::Point(500, 499)));
-  EXPECT_EQ("498,499",  // by 2px.
+  // because 1px left of (0, 480) is inside the primary root window.
+  EXPECT_TRUE(
+      WarpMouseCursorIfNecessary(root_windows[1], gfx::Point(500, 480)));
+  EXPECT_EQ("498,480",  // by 2px.
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
 
 // Verifies if the mouse pointer correctly moves between displays with
 // different scale factors.
 TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
+  if (MouseCursorEventFilter::IsMouseWarpInNativeCoordsEnabled())
+    return;
+
   if (!SupportsMultipleDisplays())
     return;
 
@@ -179,7 +182,46 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }
 
+// Verifies if the mouse pointer correctly moves between displays with
+// different scale factors. In native coords mode, there is no
+// difference between drag and move.
+TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
+  if (!MouseCursorEventFilter::IsMouseWarpInNativeCoordsEnabled())
+    return;
+
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("500x500,600x600*2");
+
+  ASSERT_EQ(DisplayLayout::RIGHT,
+            Shell::GetInstance()
+                ->display_manager()
+                ->GetCurrentDisplayLayout()
+                .position);
+
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
+
+  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessaryForTest(
+      root_windows[0], gfx::Point(499, 123)));
+  EXPECT_EQ("500,123",
+            aura::Env::GetInstance()->last_mouse_location().ToString());
+
+  event_filter()->reset_was_mouse_warped_for_test();
+
+  // Touch the edge of 2nd display again and make sure it warps to
+  // 1st dislay.
+  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessaryForTest(
+      root_windows[1], gfx::Point(500, 123)));
+  EXPECT_EQ("498,123",
+            aura::Env::GetInstance()->last_mouse_location().ToString());
+}
+
 TEST_F(MouseCursorEventFilterTest, DoNotWarpTwice) {
+  if (MouseCursorEventFilter::IsMouseWarpInNativeCoordsEnabled())
+    return;
+
   if (!SupportsMultipleDisplays())
     return;
 
@@ -189,20 +231,20 @@ TEST_F(MouseCursorEventFilterTest, DoNotWarpTwice) {
   aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(623, 123));
 
   // Touch the right edge of the primary root window. Pointer should warp.
-  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessary(root_windows[0],
-                                                         gfx::Point(499, 11)));
+  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessaryForTest(
+      root_windows[0], gfx::Point(499, 11)));
   EXPECT_EQ("501,11",  // by 2px.
             aura::Env::GetInstance()->last_mouse_location().ToString());
 
   // Touch the left edge of the secondary root window immediately. This should
   // be ignored.
-  EXPECT_FALSE(event_filter()->WarpMouseCursorIfNecessary(root_windows[1],
-                                                          gfx::Point(500, 11)));
+  EXPECT_FALSE(event_filter()->WarpMouseCursorIfNecessaryForTest(
+      root_windows[1], gfx::Point(500, 11)));
 
   // Touch the left edge of the secondary root window again, pointer should
   // warp for this time.
-  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessary(root_windows[1],
-                                                         gfx::Point(500, 11)));
+  EXPECT_TRUE(event_filter()->WarpMouseCursorIfNecessaryForTest(
+      root_windows[1], gfx::Point(500, 11)));
   EXPECT_EQ("498,11",  // by 2px.
             aura::Env::GetInstance()->last_mouse_location().ToString());
 }

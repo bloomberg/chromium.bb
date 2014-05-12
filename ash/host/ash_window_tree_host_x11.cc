@@ -254,6 +254,10 @@ void AshWindowTreeHostX11::SetRootWindowTransformer(
   }
 }
 
+gfx::Insets AshWindowTreeHostX11::GetHostInsets() const {
+  return transformer_helper_.GetHostInsets();
+}
+
 aura::WindowTreeHost* AshWindowTreeHostX11::AsWindowTreeHost() { return this; }
 
 void AshWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {

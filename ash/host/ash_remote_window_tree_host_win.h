@@ -35,6 +35,7 @@ class ASH_EXPORT AshRemoteWindowTreeHostWin
   virtual void UnConfineCursor() OVERRIDE;
   virtual void SetRootWindowTransformer(
       scoped_ptr<RootWindowTransformer> transformer) OVERRIDE;
+  virtual gfx::Insets GetHostInsets() const OVERRIDE;
   virtual aura::WindowTreeHost* AsWindowTreeHost() OVERRIDE;
 
   // WindowTreeHostWin:

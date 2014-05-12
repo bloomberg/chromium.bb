@@ -71,6 +71,9 @@ class ASH_EXPORT AshWindowTreeHostWin : public AshWindowTreeHost,
       scoped_ptr<RootWindowTransformer> transformer) {
     transformer_helper_.SetRootWindowTransformer(transformer.Pass());
   }
+  virtual gfx::Insets GetHostInsets() const OVERRIDE {
+    return transformer_helper_.GetHostInsets();
+  }
   virtual aura::WindowTreeHost* AsWindowTreeHost() OVERRIDE { return this; }
 
   // WindowTreeHostWin:

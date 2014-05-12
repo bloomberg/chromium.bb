@@ -5,6 +5,7 @@
 #include "ash/wm/immersive_fullscreen_controller.h"
 
 #include "ash/display/display_manager.h"
+#include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
@@ -540,8 +541,12 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
   // edge even though the mouse is warped to the secondary display.
   event_generator.MoveMouseTo(x, y_top_edge);
   EXPECT_TRUE(top_edge_hover_timer_running());
-  EXPECT_NE(y_top_edge,
-            aura::Env::GetInstance()->last_mouse_location().y());
+
+  // TODO(oshima): Provide a test API to handle mouse warp more easily.
+  if (!MouseCursorEventFilter::IsMouseWarpInNativeCoordsEnabled()) {
+    EXPECT_NE(y_top_edge,
+              aura::Env::GetInstance()->last_mouse_location().y());
+  }
 
   // The timer should continue running if the user overshoots the top edge
   // a bit.

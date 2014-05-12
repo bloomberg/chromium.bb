@@ -14,6 +14,7 @@ class WindowTreeHost;
 }
 
 namespace gfx {
+class Insets;
 class Rect;
 }
 
@@ -40,6 +41,8 @@ class ASH_EXPORT AshWindowTreeHost {
 
   virtual void SetRootWindowTransformer(
       scoped_ptr<RootWindowTransformer> transformer) = 0;
+
+  virtual gfx::Insets GetHostInsets() const = 0;
 
   virtual aura::WindowTreeHost* AsWindowTreeHost() = 0;
 };

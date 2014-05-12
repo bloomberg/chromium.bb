@@ -47,6 +47,10 @@ void AshRemoteWindowTreeHostWin::SetRootWindowTransformer(
   transformer_helper_.SetRootWindowTransformer(transformer.Pass());
 }
 
+gfx::Insets AshRemoteWindowTreeHostWin::GetHostInsets() const {
+  return gfx::Insets();
+}
+
 aura::WindowTreeHost* AshRemoteWindowTreeHostWin::AsWindowTreeHost() {
   return this;
 }

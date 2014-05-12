@@ -663,8 +663,7 @@ Shell::~Shell() {
   RemovePostTargetHandler(toplevel_window_event_handler_.get());
   RemovePreTargetHandler(system_gesture_filter_.get());
   RemovePreTargetHandler(keyboard_metrics_filter_.get());
-  if (mouse_cursor_filter_)
-    RemovePreTargetHandler(mouse_cursor_filter_.get());
+  RemovePreTargetHandler(mouse_cursor_filter_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
@@ -755,6 +754,7 @@ Shell::~Shell() {
   resolution_notification_controller_.reset();
 #endif
   desktop_background_controller_.reset();
+  mouse_cursor_filter_.reset();
 
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction

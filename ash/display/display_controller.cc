@@ -247,8 +247,6 @@ void DisplayController::Start() {
       new VirtualKeyboardWindowController);
   Shell::GetScreen()->AddObserver(this);
   Shell::GetInstance()->display_manager()->set_delegate(this);
-
-  FOR_EACH_OBSERVER(Observer, observers_, OnDisplaysInitialized());
 }
 
 void DisplayController::Shutdown() {
@@ -294,6 +292,8 @@ void DisplayController::InitDisplays() {
     }
   }
   UpdateHostWindowNames();
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnDisplaysInitialized());
 }
 
 void DisplayController::AddObserver(Observer* observer) {

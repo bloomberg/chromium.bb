@@ -14,6 +14,7 @@
 
 namespace ash {
 class RootWindowTransformer;
+class MouseCursorEventFilter;
 
 class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
                                         public aura::WindowTreeHostX11,
@@ -29,6 +30,7 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   virtual void UnConfineCursor() OVERRIDE;
   virtual void SetRootWindowTransformer(
       scoped_ptr<RootWindowTransformer> transformer) OVERRIDE;
+  virtual gfx::Insets GetHostInsets() const OVERRIDE;
   virtual aura::WindowTreeHost* AsWindowTreeHost() OVERRIDE;
 
   // aura::WindowTreehost:

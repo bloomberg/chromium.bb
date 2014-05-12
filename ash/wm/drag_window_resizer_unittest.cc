@@ -125,8 +125,8 @@ class DragWindowResizerTest : public test::AshTestBase {
                                   const gfx::Point& point_in_screen) {
     MouseCursorEventFilter* event_filter =
         Shell::GetInstance()->mouse_cursor_filter();
-    bool is_warped = event_filter->WarpMouseCursorIfNecessary(target_root,
-                                                              point_in_screen);
+    bool is_warped = event_filter->WarpMouseCursorIfNecessaryForTest(
+        target_root, point_in_screen);
     event_filter->reset_was_mouse_warped_for_test();
     return is_warped;
   }
