@@ -64,6 +64,7 @@ namespace WebCore {
 
 PinchViewport::PinchViewport(FrameHost& owner)
     : m_frameHost(owner)
+    , m_scale(1)
 {
     reset();
 }
