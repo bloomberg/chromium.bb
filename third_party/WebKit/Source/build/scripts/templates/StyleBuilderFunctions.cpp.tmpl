@@ -505,4 +505,68 @@ namespace WebCore {
 }
 {% endmacro %}
 {{apply_value_shape('CSSPropertyShapeOutside')}}
+
+{% macro apply_alignment(property_id, alignment_type) %}
+{{declare_value_function(property_id)}}
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (Pair* pairValue = primitiveValue->getPairValue()) {
+        state.style()->set{{alignment_type}}(*pairValue->first());
+        state.style()->set{{alignment_type}}OverflowAlignment(*pairValue->second());
+    } else {
+        state.style()->set{{alignment_type}}(*primitiveValue);
+        // FIXME: We should clear the overflow-alignment mode here and probably
+        // also set it in the initial and inherit handlers
+    }
+}
+{% endmacro %}
+{{apply_alignment('CSSPropertyJustifySelf', 'JustifySelf')}}
+{{apply_alignment('CSSPropertyAlignItems', 'AlignItems')}}
+{{apply_alignment('CSSPropertyAlignSelf', 'AlignSelf')}}
+
+{% macro apply_svg_paint(property_id, paint_type) %}
+{% set property = properties[property_id] %}
+{{declare_initial_function(property_id)}}
+{
+    {{set_value(property)}}(
+        SVGRenderStyle::initial{{paint_type}}Type(),
+        SVGRenderStyle::initial{{paint_type}}Color(),
+        SVGRenderStyle::initial{{paint_type}}Uri(),
+        state.applyPropertyToRegularStyle(),
+        state.applyPropertyToVisitedLinkStyle());
+}
+
+{{declare_inherit_function(property_id)}}
+{
+    const SVGRenderStyle* svgParentStyle = state.parentStyle()->svgStyle();
+    {{set_value(property)}}(
+        svgParentStyle->{{paint_type|lower_first}}Type(),
+        svgParentStyle->{{paint_type|lower_first}}Color(),
+        svgParentStyle->{{paint_type|lower_first}}Uri(),
+        state.applyPropertyToRegularStyle(),
+        state.applyPropertyToVisitedLinkStyle());
+}
+
+{{declare_value_function(property_id)}}
+{
+    if (value->isSVGPaint()) {
+        SVGPaint* svgPaint = toSVGPaint(value);
+
+        Color color;
+        if (svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR
+                || svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR)
+            color = state.style()->color();
+        else
+            color = svgPaint->color();
+
+        {{set_value(property)}}(svgPaint->paintType(),
+            color,
+            svgPaint->uri(),
+            state.applyPropertyToRegularStyle(),
+            state.applyPropertyToVisitedLinkStyle());
+    }
+}
+{% endmacro %}
+{{apply_svg_paint('CSSPropertyFill', 'FillPaint')}}
+{{apply_svg_paint('CSSPropertyStroke', 'StrokePaint')}}
 } // namespace WebCore

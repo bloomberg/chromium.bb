@@ -5,6 +5,8 @@
 // Note: Mandatory blank line to skip parameter parsing phase
 
 align-content
+align-items custom_value
+align-self custom_value
 background-attachment custom_all
 background-blend-mode custom_all
 background-clip custom_all
@@ -78,6 +80,7 @@ height type_name=Length, initial=initialSize, converter=convertLengthSizing
 justify-content
 image-rendering
 isolation
+justify-self custom_value
 left type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
 letter-spacing type_name=float, initial=initialLetterWordSpacing, converter=convertSpacing
 line-height getter=specifiedLineHeight, custom_value
@@ -271,6 +274,7 @@ color-interpolation svg
 color-interpolation-filters svg, type_name=EColorInterpolation
 color-rendering svg
 dominant-baseline svg
+fill svg, setter=setFillPaint, custom_all
 fill-opacity svg, type_name=float, converter=convertNumberOrPercentage
 fill-rule svg, type_name=WindRule
 filter svg, type_name=String, name_for_methods=FilterResource, converter=convertFragmentIdentifier
@@ -288,6 +292,7 @@ paint-order svg, converter=convertPaintOrder
 shape-rendering svg
 stop-color svg, converter=convertSVGColor
 stop-opacity svg, type_name=float, converter=convertNumberOrPercentage
+stroke svg, setter=setStrokePaint, custom_all
 stroke-dasharray svg, name_for_methods=StrokeDashArray, converter=convertStrokeDasharray
 stroke-dashoffset svg, type_name=SVGLength, name_for_methods=StrokeDashOffset, converter=convertSVGLength
 stroke-linecap svg, type_name=LineCap, name_for_methods=CapStyle

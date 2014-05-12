@@ -1104,17 +1104,6 @@ if (isInitial) { \
     return; \
 }
 
-static Color colorFromSVGPaintCSSValue(SVGPaint* svgPaint, const Color& fgColor)
-{
-    Color color;
-    if (svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_CURRENTCOLOR
-        || svgPaint->paintType() == SVGPaint::SVG_PAINTTYPE_URI_CURRENTCOLOR)
-        color = fgColor;
-    else
-        color = svgPaint->color();
-    return color;
-}
-
 static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
 {
     switch (id) {
@@ -1482,42 +1471,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         return;
     }
 
-    case CSSPropertyJustifySelf: {
-        HANDLE_INHERIT_AND_INITIAL(justifySelf, JustifySelf);
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        if (Pair* pairValue = primitiveValue->getPairValue()) {
-            state.style()->setJustifySelf(*pairValue->first());
-            state.style()->setJustifySelfOverflowAlignment(*pairValue->second());
-        } else {
-            state.style()->setJustifySelf(*primitiveValue);
-        }
-        return;
-    }
-
-    case CSSPropertyAlignSelf: {
-        HANDLE_INHERIT_AND_INITIAL(alignSelf, AlignSelf);
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        if (Pair* pairValue = primitiveValue->getPairValue()) {
-            state.style()->setAlignSelf(*pairValue->first());
-            state.style()->setAlignSelfOverflowAlignment(*pairValue->second());
-        } else {
-            state.style()->setAlignSelf(*primitiveValue);
-        }
-        return;
-    }
-
-    case CSSPropertyAlignItems: {
-        HANDLE_INHERIT_AND_INITIAL(alignItems, AlignItems);
-        CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-        if (Pair* pairValue = primitiveValue->getPairValue()) {
-            state.style()->setAlignItems(*pairValue->first());
-            state.style()->setAlignItemsOverflowAlignment(*pairValue->second());
-        } else {
-            state.style()->setAlignItems(*primitiveValue);
-        }
-        return;
-    }
-
     // These properties are aliased and we already applied the property on the prefixed version.
     case CSSPropertyAnimationDelay:
     case CSSPropertyAnimationDirection:
@@ -1821,6 +1774,11 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitTextStrokeWidth:
     case CSSPropertyWebkitLineBoxContain:
     case CSSPropertyWebkitBoxReflect:
+    case CSSPropertyJustifySelf:
+    case CSSPropertyAlignSelf:
+    case CSSPropertyAlignItems:
+    case CSSPropertyFill:
+    case CSSPropertyStroke:
         ASSERT_NOT_REACHED();
         return;
     // Only used in @viewport rules
@@ -1859,42 +1817,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         break;
     }
     // end of ident only properties
-    case CSSPropertyFill:
-    {
-        SVGRenderStyle* svgStyle = state.style()->accessSVGStyle();
-        if (isInherit) {
-            const SVGRenderStyle* svgParentStyle = state.parentStyle()->svgStyle();
-            svgStyle->setFillPaint(svgParentStyle->fillPaintType(), svgParentStyle->fillPaintColor(), svgParentStyle->fillPaintUri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
-            return;
-        }
-        if (isInitial) {
-            svgStyle->setFillPaint(SVGRenderStyle::initialFillPaintType(), SVGRenderStyle::initialFillPaintColor(), SVGRenderStyle::initialFillPaintUri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
-            return;
-        }
-        if (value->isSVGPaint()) {
-            SVGPaint* svgPaint = toSVGPaint(value);
-            svgStyle->setFillPaint(svgPaint->paintType(), colorFromSVGPaintCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
-        }
-        break;
-    }
-    case CSSPropertyStroke:
-    {
-        SVGRenderStyle* svgStyle = state.style()->accessSVGStyle();
-        if (isInherit) {
-            const SVGRenderStyle* svgParentStyle = state.parentStyle()->svgStyle();
-            svgStyle->setStrokePaint(svgParentStyle->strokePaintType(), svgParentStyle->strokePaintColor(), svgParentStyle->strokePaintUri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
-            return;
-        }
-        if (isInitial) {
-            svgStyle->setStrokePaint(SVGRenderStyle::initialStrokePaintType(), SVGRenderStyle::initialStrokePaintColor(), SVGRenderStyle::initialStrokePaintUri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
-            return;
-        }
-        if (value->isSVGPaint()) {
-            SVGPaint* svgPaint = toSVGPaint(value);
-            svgStyle->setStrokePaint(svgPaint->paintType(), colorFromSVGPaintCSSValue(svgPaint, state.style()->color()), svgPaint->uri(), state.applyPropertyToRegularStyle(), state.applyPropertyToVisitedLinkStyle());
-        }
-        break;
-    }
     case CSSPropertyEnableBackground:
         // Silently ignoring this property for now
         // http://bugs.webkit.org/show_bug.cgi?id=6022
