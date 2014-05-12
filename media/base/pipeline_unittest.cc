@@ -860,7 +860,6 @@ class PipelineTeardownTest : public PipelineTest {
     kFlushing,
     kSeeking,
     kPrerolling,
-    kStarting,
     kPlaying,
   };
 
@@ -885,7 +884,6 @@ class PipelineTeardownTest : public PipelineTest {
       case kFlushing:
       case kSeeking:
       case kPrerolling:
-      case kStarting:
         DoInitialize(state, stop_or_error);
         DoSeek(state, stop_or_error);
         break;
@@ -1107,18 +1105,6 @@ class PipelineTeardownTest : public PipelineTest {
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
     EXPECT_CALL(*audio_renderer_, SetVolume(1.0f));
 
-    if (state == kStarting) {
-      if (stop_or_error == kStop) {
-        EXPECT_CALL(*audio_renderer_, Play())
-            .WillOnce(Stop(pipeline_.get(), stop_cb));
-      } else {
-        status = PIPELINE_ERROR_READ;
-        EXPECT_CALL(*audio_renderer_, Play())
-            .WillOnce(SetError(pipeline_.get(), status));
-      }
-      return status;
-    }
-
     NOTREACHED() << "State not supported: " << state;
     return status;
   }
@@ -1168,7 +1154,6 @@ INSTANTIATE_TEARDOWN_TEST(Stop, Pausing);
 INSTANTIATE_TEARDOWN_TEST(Stop, Flushing);
 INSTANTIATE_TEARDOWN_TEST(Stop, Seeking);
 INSTANTIATE_TEARDOWN_TEST(Stop, Prerolling);
-INSTANTIATE_TEARDOWN_TEST(Stop, Starting);
 INSTANTIATE_TEARDOWN_TEST(Stop, Playing);
 
 INSTANTIATE_TEARDOWN_TEST(Error, InitDemuxer);
@@ -1178,7 +1163,6 @@ INSTANTIATE_TEARDOWN_TEST(Error, Pausing);
 INSTANTIATE_TEARDOWN_TEST(Error, Flushing);
 INSTANTIATE_TEARDOWN_TEST(Error, Seeking);
 INSTANTIATE_TEARDOWN_TEST(Error, Prerolling);
-INSTANTIATE_TEARDOWN_TEST(Error, Starting);
 INSTANTIATE_TEARDOWN_TEST(Error, Playing);
 
 INSTANTIATE_TEARDOWN_TEST(ErrorAndStop, Playing);

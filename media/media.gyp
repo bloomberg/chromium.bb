@@ -248,6 +248,7 @@
         'base/bit_reader_core.cc',
         'base/bit_reader_core.h',
         'base/bitstream_buffer.h',
+        'base/buffering_state.h',
         'base/buffers.h',
         'base/byte_queue.cc',
         'base/byte_queue.h',

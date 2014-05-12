@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/default_tick_clock.h"
 #include "media/base/audio_renderer.h"
+#include "media/base/buffering_state.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
@@ -58,14 +59,13 @@ typedef base::Callback<void(PipelineMetadata)> PipelineMetadataCB;
 //   [ InitXXX (for each filter) ]      [ Stopping ]
 //         |                                 |
 //         V                                 V
-//   [ InitPreroll ]                    [ Stopped ]
+//   [ InitPrerolling ]                 [ Stopped ]
 //         |
 //         V
-//   [ Starting ] <-- [ Seeking ]
+//   [ Playing ] <-- [ Seeking ]
 //         |               ^
-//         V               |
-//   [ Started ] ----------'
-//                 Seek()
+//         `---------------'
+//              Seek()
 //
 // Initialization is a series of state transitions from "Created" through each
 // filter initialization state.  When all filter initialization states have
@@ -194,8 +194,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
     kInitVideoRenderer,
     kInitPrerolling,
     kSeeking,
-    kStarting,
-    kStarted,
+    kPlaying,
     kStopping,
     kStopped,
   };
@@ -305,16 +304,27 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // indepentent from seeking.
   void DoSeek(base::TimeDelta seek_timestamp, const PipelineStatusCB& done_cb);
 
-  // Updates playback rate and volume and initiates an asynchronous play call
-  // sequence executing |done_cb| with the final status when completed.
-  void DoPlay(const PipelineStatusCB& done_cb);
-
   // Initiates an asynchronous pause-flush-stop call sequence executing
   // |done_cb| when completed.
   void DoStop(const PipelineStatusCB& done_cb);
   void OnStopCompleted(PipelineStatus status);
 
   void OnAudioUnderflow();
+
+  // Collection of callback methods and helpers for tracking changes in
+  // buffering state and transition from paused/underflow states and playing
+  // states.
+  //
+  // While in the kPlaying state:
+  //   - A waiting to non-waiting transition indicates preroll has completed
+  //     and StartPlayback() should be called
+  //   - A non-waiting to waiting transition indicates underflow has occurred
+  //     and StartWaitingForEnoughData() should be called
+  void BufferingStateChanged(BufferingState* buffering_state,
+                             BufferingState new_buffering_state);
+  bool WaitingForEnoughData() const;
+  void StartWaitingForEnoughData();
+  void StartPlayback();
 
   void StartClockIfWaitingForTimeUpdate_Locked();
 
@@ -376,6 +386,9 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   bool audio_ended_;
   bool video_ended_;
   bool text_ended_;
+
+  BufferingState audio_buffering_state_;
+  BufferingState video_buffering_state_;
 
   // Temporary callback used for Start() and Seek().
   PipelineStatusCB seek_cb_;
