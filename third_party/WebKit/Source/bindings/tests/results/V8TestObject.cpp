@@ -6852,6 +6852,58 @@ static void overloadedMethodJMethodCallback(const v8::FunctionCallbackInfo<v8::V
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void overloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeErrorForMethod("overloadedMethodK", "TestObject", 1, info.Length(), info.GetIsolate());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID(TestInterfaceImplementation*, testInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    impl->overloadedMethodK(testInterfaceArg);
+}
+
+static void overloadedMethodK2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeErrorForMethod("overloadedMethodK", "TestObject", 1, info.Length(), info.GetIsolate());
+        return;
+    }
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    impl->overloadedMethodK(testInterfaceEmptyArg);
+}
+
+static void overloadedMethodKMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    switch (info.Length()) {
+    case 1:
+        if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
+            overloadedMethodK1Method(info);
+            return;
+        }
+        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+            overloadedMethodK2Method(info);
+            return;
+        }
+        break;
+    }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodK", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+}
+
+static void overloadedMethodKMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::overloadedMethodKMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void overloadedPerWorldBindingsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
@@ -8543,6 +8595,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"overloadedMethodH", TestObjectV8Internal::overloadedMethodHMethodCallback, 0, 0},
     {"overloadedMethodI", TestObjectV8Internal::overloadedMethodIMethodCallback, 0, 1},
     {"overloadedMethodJ", TestObjectV8Internal::overloadedMethodJMethodCallback, 0, 1},
+    {"overloadedMethodK", TestObjectV8Internal::overloadedMethodKMethodCallback, 0, 1},
     {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0},
     {"voidMethodClampUnsignedShortArg", TestObjectV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1},
     {"voidMethodClampUnsignedLongArg", TestObjectV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1},

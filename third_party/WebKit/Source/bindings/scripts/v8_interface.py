@@ -329,15 +329,13 @@ def generate_overloads_by_type(methods):
                           if method['name'] in overloaded_method_names]
 
     # Group by name (generally will be defined together, but not necessarily)
-    method_overloads = sort_and_groupby(overloaded_methods, itemgetter('name'))
+    method_overloads = dict(sort_and_groupby(overloaded_methods,
+                                             itemgetter('name')))
 
     # Add overload information only to overloaded methods, so template code can
     # easily verify if a function is overloaded
     for name, overloads in method_overloads.iteritems():
         effective_overloads_by_length = effective_overload_set_by_length(overloads)
-        for effective_overloads in effective_overloads_by_length.itervalues():
-            # To test, compute but discard result
-            distinguishing_argument_index(effective_overloads)
 
         for index, method in enumerate(overloads, 1):
             method.update({
@@ -346,18 +344,68 @@ def generate_overloads_by_type(methods):
                     overload_resolution_expression(method),
             })
 
+        # FIXME: temporary flag so can switch incrementally
+        is_use_spec_algorithm = False
+        # Use spec algorithm if:
+        # * all type lists have the same length,
+        # * all distinguishing types are (non-nullable) wrapper types,
+        # * all distinguishing types are distinct.
+        if len(effective_overloads_by_length) == 1:
+            effective_overloads = effective_overloads_by_length[0][1]
+            index = distinguishing_argument_index(effective_overloads)
+            type_lists = [effective_overload[1]
+                          for effective_overload in effective_overloads]
+            distinguishing_argument_types = [type_list[index]
+                                             for type_list in type_lists]
+            distinguishing_argument_type_names = [
+                idl_type.name for idl_type in distinguishing_argument_types]
+            if (all((distinguishing_argument_type.is_wrapper_type and
+                     not distinguishing_argument_type.is_nullable)
+                    for distinguishing_argument_type in distinguishing_argument_types) and
+                len(set(distinguishing_argument_type_names)) == len(distinguishing_argument_type_names)):
+                is_use_spec_algorithm = True
+
         # Resolution function is generated after last overloaded function;
         # package necessary information into |method.overloads| for that method.
         minimum_number_of_required_arguments = min(
             method['number_of_required_arguments'] for method in overloads)
         overloads[-1]['overloads'] = {
+            'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
             'has_exception_state': bool(minimum_number_of_required_arguments),
+            'is_use_spec_algorithm': is_use_spec_algorithm,
+            'length_index_arguments_methods':
+                length_index_arguments_methods(effective_overloads_by_length),
+            # 1. Let maxarg be the length of the longest type list of the
+            # entries in S.
+            'maxarg': max(i for i, _ in effective_overloads_by_length),
+            'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
             'methods': overloads,
             'minimum_number_of_required_arguments': minimum_number_of_required_arguments,
             'name': name,
-            'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
-            'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         }
+
+
+def length_index_arguments_methods(effective_overloads_by_length):
+    """Returns list of distinguishing argument and associated method, by length.
+
+    This builds the main data structure for the overload resolution loop.
+    For a given argument length, check argument at distinguishing argument
+    index: if it is compatible with type required by an overloaded method,
+    resolve to that method.
+
+    Returns:
+        [(length, index, [(argument, method)])]
+    """
+    def compute_arguments_methods(length, effective_overloads):
+        index = distinguishing_argument_index(effective_overloads)
+        methods = [effective_overload[0]
+                   for effective_overload in effective_overloads]
+        arguments = [method['arguments'][index] for method in methods]
+        return length, index, zip(arguments, methods)
+
+    return [compute_arguments_methods(length, effective_overloads)
+            for length, effective_overloads in effective_overloads_by_length
+            if len(effective_overloads) > 1]
 
 
 def effective_overload_set(F):
@@ -455,7 +503,7 @@ def effective_overload_set_by_length(overloads):
         return len(entry[1])
 
     effective_overloads = effective_overload_set(overloads)
-    return sort_and_groupby(effective_overloads, type_list_length)
+    return list(sort_and_groupby(effective_overloads, type_list_length))
 
 
 def distinguishing_argument_index(entries):
@@ -635,9 +683,9 @@ def common_value(dicts, key):
 
 
 def sort_and_groupby(l, key=None):
-    """Returns a dict of {key: list}, sorting and grouping input list by key."""
+    """Returns a generator of (key, list), sorting and grouping list by key."""
     l.sort(key=key)
-    return dict((k, list(g)) for k, g in itertools.groupby(l, key))
+    return ((k, list(g)) for k, g in itertools.groupby(l, key))
 
 
 ################################################################################

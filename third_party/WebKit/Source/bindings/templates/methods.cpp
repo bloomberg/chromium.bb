@@ -287,6 +287,35 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {% if overloads.deprecate_all_as %}
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{overloads.deprecate_all_as}});
     {% endif %}
+    {% if overloads.is_use_spec_algorithm %}
+    {# FIXME: 2. Initialize argcount to be min(maxarg, n). #}
+    {# switch (std::min({{overloads.maxarg}}, info.Length())) { #}
+    switch (info.Length()) {
+    {# 3. Remove from S all entries whose type list is not of length argcount. #}
+    {% for length, index, arguments_methods in overloads.length_index_arguments_methods %}
+    case {{length}}:
+        {# 10. If i = d, then: #}
+        {# 1. Let V be argi.
+              Note: This is the argument that will be used to resolve which
+                    overload is selected. #}
+        {# (We represent argi as info[{{index}}].) #}
+        {# FIXME: add counters (from below) #}
+        {% for argument, method in arguments_methods
+            if argument.is_wrapper_type %}
+        {# 4. Otherwise: if V is a platform object – but not a platform array
+              object – and there is an entry in S that has one of the following
+              types at position i of its type list, #}
+        {# • an interface type that V implements #}
+        {# (We distinguish wrapper types from built-in interface types.) #}
+        if (V8{{argument.idl_type}}::hasInstance(info[{{index}}], info.GetIsolate())) {
+            {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
+            return;
+        }
+        {% endfor %}
+        break;
+    {% endfor %}
+    }
+    {% else %}{# overloads.is_use_spec_algorithm #}
     {% for method in overloads.methods %}
     if ({{method.overload_resolution_expression}}) {
         {% if method.measure_as and not overloads.measure_all_as %}
@@ -299,6 +328,8 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         return;
     }
     {% endfor %}
+    {% endif %}{# overloads.is_use_spec_algorithm #}
+    {# No match, throw error #}
     {% if overloads.minimum_number_of_required_arguments %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < {{overloads.minimum_number_of_required_arguments}})) {

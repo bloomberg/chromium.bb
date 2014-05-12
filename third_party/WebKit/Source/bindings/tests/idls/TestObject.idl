@@ -406,6 +406,8 @@ interface TestObject {
     void overloadedMethodI(double doubleArg);
     void overloadedMethodJ(long longArg);
     void overloadedMethodJ([Default=Null] TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
+    void overloadedMethodK(TestInterface testInterfaceArg);
+    void overloadedMethodK(TestInterfaceEmpty testInterfaceEmptyArg);
 
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();
