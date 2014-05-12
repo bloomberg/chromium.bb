@@ -828,7 +828,7 @@ LA_LOG_COMPILER = $(srcdir)/tests/weston-tests-env
 WESTON_LOG_COMPILER = $(srcdir)/tests/weston-tests-env
 
 clean-local:
-	-rm -rf tests/logs
+	-rm -rf logs
 
 # To remove when automake 1.11 support is dropped
 export abs_builddir
