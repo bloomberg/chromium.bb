@@ -610,6 +610,7 @@
           'threading/thread_id_name_manager.cc',
           'threading/thread_id_name_manager.h',
           'threading/thread_local.h',
+          'threading/thread_local_android.cc',
           'threading/thread_local_posix.cc',
           'threading/thread_local_storage.cc',
           'threading/thread_local_storage.h',

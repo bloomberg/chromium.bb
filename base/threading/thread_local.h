@@ -26,6 +26,9 @@
 // you must of course properly deal with safety and race conditions.  This
 // means a function-level static initializer is generally inappropiate.
 //
+// In Android, the system TLS is limited, the implementation is backed with
+// ThreadLocalStorage.
+//
 // Example usage:
 //   // My class is logically attached to a single thread.  We cache a pointer
 //   // on the thread it was created on, so we can implement current().
@@ -50,6 +53,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/threading/thread_local_storage.h"
 
 #if defined(OS_POSIX)
 #include <pthread.h>
@@ -62,6 +66,8 @@ namespace internal {
 struct BASE_EXPORT ThreadLocalPlatform {
 #if defined(OS_WIN)
   typedef unsigned long SlotType;
+#elif defined(OS_ANDROID)
+  typedef ThreadLocalStorage::StaticSlot SlotType;
 #elif defined(OS_POSIX)
   typedef pthread_key_t SlotType;
 #endif
