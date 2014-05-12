@@ -81,8 +81,9 @@ gfx::Size BrowserActionView::GetPreferredSize() {
                    BrowserActionsContainer::IconHeight());
 }
 
-void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
-  View::PaintChildren(canvas);
+void BrowserActionView::PaintChildren(gfx::Canvas* canvas,
+                                      const views::CullSet& cull_set) {
+  View::PaintChildren(canvas, cull_set);
   ExtensionAction* action = button()->browser_action();
   int tab_id = delegate_->GetCurrentTabId();
   if (tab_id >= 0)

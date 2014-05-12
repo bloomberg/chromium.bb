@@ -1433,14 +1433,15 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // inner shadow which should be drawn over the contents.
 }
 
-void LocationBarView::PaintChildren(gfx::Canvas* canvas) {
+void LocationBarView::PaintChildren(gfx::Canvas* canvas,
+                                    const views::CullSet& cull_set) {
   // Paint all the children except for the origin chip and the search button,
   // which will be painted after the border.
   for (int i = 0, count = child_count(); i < count; ++i) {
     if (!child_at(i)->layer() &&
         (child_at(i) != origin_chip_view_) &&
         (child_at(i) != search_button_))
-      child_at(i)->Paint(canvas);
+      child_at(i)->Paint(canvas, cull_set);
   }
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
@@ -1459,8 +1460,8 @@ void LocationBarView::PaintChildren(gfx::Canvas* canvas) {
 
   // The origin chip and the search button must be painted after the border so
   // that the border shadow is not drawn over them.
-  origin_chip_view_->Paint(canvas);
-  search_button_->Paint(canvas);
+  origin_chip_view_->Paint(canvas, cull_set);
+  search_button_->Paint(canvas, cull_set);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

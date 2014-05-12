@@ -1139,7 +1139,8 @@ void TabStrip::Layout() {
   DoLayout();
 }
 
-void TabStrip::PaintChildren(gfx::Canvas* canvas) {
+void TabStrip::PaintChildren(gfx::Canvas* canvas,
+                             const views::CullSet& cull_set) {
   // The view order doesn't match the paint order (tabs_ contains the tab
   // ordering). Additionally we need to paint the tabs that are closing in
   // |tabs_closing_map_|.
@@ -1165,7 +1166,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   if (inactive_tab_alpha < 255)
     canvas->SaveLayerAlpha(inactive_tab_alpha);
 
-  PaintClosingTabs(canvas, tab_count());
+  PaintClosingTabs(canvas, tab_count(), cull_set);
 
   for (int i = tab_count() - 1; i >= 0; --i) {
     Tab* tab = tab_at(i);
@@ -1182,7 +1183,7 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
     } else if (!tab->IsActive()) {
       if (!tab->IsSelected()) {
         if (!stacking)
-          tab->Paint(canvas);
+          tab->Paint(canvas, cull_set);
       } else {
         selected_tabs.push_back(tab);
       }
@@ -1190,19 +1191,19 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
       active_tab = tab;
       active_tab_index = i;
     }
-    PaintClosingTabs(canvas, i);
+    PaintClosingTabs(canvas, i, cull_set);
   }
 
   // Draw from the left and then the right if we're in touch mode.
   if (stacking && active_tab_index >= 0) {
     for (int i = 0; i < active_tab_index; ++i) {
       Tab* tab = tab_at(i);
-      tab->Paint(canvas);
+      tab->Paint(canvas, cull_set);
     }
 
     for (int i = tab_count() - 1; i > active_tab_index; --i) {
       Tab* tab = tab_at(i);
-      tab->Paint(canvas);
+      tab->Paint(canvas, cull_set);
     }
   }
   if (inactive_tab_alpha < 255)
@@ -1226,26 +1227,26 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
   // Now selected but not active. We don't want these dimmed if using native
   // frame, so they're painted after initial pass.
   for (size_t i = 0; i < selected_tabs.size(); ++i)
-    selected_tabs[i]->Paint(canvas);
+    selected_tabs[i]->Paint(canvas, cull_set);
 
   // Next comes the active tab.
   if (active_tab && !is_dragging)
-    active_tab->Paint(canvas);
+    active_tab->Paint(canvas, cull_set);
 
   // Paint the New Tab button.
   if (inactive_tab_alpha < 255)
     canvas->SaveLayerAlpha(inactive_tab_alpha);
-  newtab_button_->Paint(canvas);
+  newtab_button_->Paint(canvas, cull_set);
   if (inactive_tab_alpha < 255)
     canvas->Restore();
 
   // And the dragged tabs.
   for (size_t i = 0; i < tabs_dragging.size(); ++i)
-    tabs_dragging[i]->Paint(canvas);
+    tabs_dragging[i]->Paint(canvas, cull_set);
 
   // If the active tab is being dragged, it goes last.
   if (active_tab && is_dragging)
-    active_tab->Paint(canvas);
+    active_tab->Paint(canvas, cull_set);
 }
 
 const char* TabStrip::GetClassName() const {
@@ -1975,14 +1976,16 @@ TabDragController* TabStrip::ReleaseDragController() {
   return drag_controller_.release();
 }
 
-void TabStrip::PaintClosingTabs(gfx::Canvas* canvas, int index) {
+void TabStrip::PaintClosingTabs(gfx::Canvas* canvas,
+                                int index,
+                                const views::CullSet& cull_set) {
   if (tabs_closing_map_.find(index) == tabs_closing_map_.end())
     return;
 
   const std::vector<Tab*>& tabs = tabs_closing_map_[index];
   for (std::vector<Tab*>::const_reverse_iterator i(tabs.rbegin());
        i != tabs.rend(); ++i) {
-    (*i)->Paint(canvas);
+    (*i)->Paint(canvas, cull_set);
   }
 }
 

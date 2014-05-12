@@ -25,6 +25,6 @@ void TopContainerView::OnPaintBackground(gfx::Canvas* canvas) {
     // window controls) being painted underneath them. Clip rect has already
     // been set to the bounds of this view, so just paint the frame.
     views::View* frame = browser_view_->frame()->GetFrameView();
-    frame->Paint(canvas);
+    frame->Paint(canvas, views::CullSet());
   }
 }

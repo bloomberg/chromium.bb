@@ -82,7 +82,8 @@ class PageActionImageView : public views::ImageView,
 
  private:
   // Overridden from View.
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas,
+                             const views::CullSet& cull_set) OVERRIDE;
 
   // Shows the popup, with the given URL.
   void ShowPopupWithURL(const GURL& popup_url,

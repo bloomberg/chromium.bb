@@ -177,8 +177,9 @@ ui::TextInputClient* SubmenuView::GetTextInputClient() {
   return &prefix_selector_;
 }
 
-void SubmenuView::PaintChildren(gfx::Canvas* canvas) {
-  View::PaintChildren(canvas);
+void SubmenuView::PaintChildren(gfx::Canvas* canvas,
+                                const views::CullSet& cull_set) {
+  View::PaintChildren(canvas, cull_set);
 
   if (drop_item_ && drop_position_ != MenuDelegate::DROP_ON)
     PaintDropIndicator(canvas, drop_item_, drop_position_);

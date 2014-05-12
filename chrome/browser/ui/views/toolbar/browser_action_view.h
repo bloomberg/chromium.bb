@@ -78,7 +78,8 @@ class BrowserActionView : public views::View {
 
  protected:
   // Overridden from views::View to paint the badge on top of children.
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual void PaintChildren(gfx::Canvas* canvas,
+                             const views::CullSet& cull_set) OVERRIDE;
 
  private:
   // The Browser object this view is associated with.

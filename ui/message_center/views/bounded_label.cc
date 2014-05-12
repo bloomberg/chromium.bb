@@ -335,9 +335,9 @@ int BoundedLabel::GetHeightForWidth(int width) {
          label_->GetSizeForWidthAndLines(width, line_limit_).height() : 0;
 }
 
-void BoundedLabel::Paint(gfx::Canvas* canvas) {
+void BoundedLabel::Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) {
   if (visible())
-    label_->Paint(canvas);
+    label_->Paint(canvas, cull_set);
 }
 
 bool BoundedLabel::HitTestRect(const gfx::Rect& rect) const {
