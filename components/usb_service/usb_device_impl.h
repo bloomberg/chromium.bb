@@ -13,6 +13,7 @@
 #include "components/usb_service/usb_device.h"
 
 struct libusb_device;
+struct libusb_config_descriptor;
 
 namespace usb_service {
 
@@ -20,6 +21,7 @@ class UsbDeviceHandle;
 class UsbContext;
 
 typedef libusb_device* PlatformUsbDevice;
+typedef libusb_config_descriptor* PlatformUsbConfigDescriptor;
 
 class UsbDeviceImpl : public UsbDevice {
  public:

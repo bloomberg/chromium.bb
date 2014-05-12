@@ -19,6 +19,7 @@ using usb_service::UsbConfigDescriptor;
 using usb_service::UsbDevice;
 using usb_service::UsbDeviceHandle;
 using usb_service::UsbEndpointDirection;
+using usb_service::UsbInterfaceDescriptor;
 using usb_service::UsbService;
 using usb_service::UsbTransferCallback;
 
@@ -95,6 +96,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
 class MockUsbConfigDescriptor : public UsbConfigDescriptor {
  public:
   MOCK_CONST_METHOD0(GetNumInterfaces, size_t());
+  MOCK_CONST_METHOD1(GetInterface,
+                     scoped_refptr<const UsbInterfaceDescriptor>(size_t index));
 
  protected:
   virtual ~MockUsbConfigDescriptor() {}

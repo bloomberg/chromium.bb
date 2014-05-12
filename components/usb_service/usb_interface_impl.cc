@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/usb_service/usb_interface.h"
+#include "components/usb_service/usb_interface_impl.h"
 
 #include "base/logging.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
 namespace usb_service {
 
-UsbEndpointDescriptor::UsbEndpointDescriptor(
+UsbEndpointDescriptorImpl::UsbEndpointDescriptorImpl(
     scoped_refptr<const UsbConfigDescriptor> config,
     PlatformUsbEndpointDescriptor descriptor)
     : config_(config), descriptor_(descriptor) {
 }
 
-UsbEndpointDescriptor::~UsbEndpointDescriptor() {
+UsbEndpointDescriptorImpl::~UsbEndpointDescriptorImpl() {
 }
 
-int UsbEndpointDescriptor::GetAddress() const {
+int UsbEndpointDescriptorImpl::GetAddress() const {
   return descriptor_->bEndpointAddress & LIBUSB_ENDPOINT_ADDRESS_MASK;
 }
 
-UsbEndpointDirection UsbEndpointDescriptor::GetDirection() const {
+UsbEndpointDirection UsbEndpointDescriptorImpl::GetDirection() const {
   switch (descriptor_->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK) {
     case LIBUSB_ENDPOINT_IN:
       return USB_DIRECTION_INBOUND;
@@ -34,11 +34,12 @@ UsbEndpointDirection UsbEndpointDescriptor::GetDirection() const {
   }
 }
 
-int UsbEndpointDescriptor::GetMaximumPacketSize() const {
+int UsbEndpointDescriptorImpl::GetMaximumPacketSize() const {
   return descriptor_->wMaxPacketSize;
 }
 
-UsbSynchronizationType UsbEndpointDescriptor::GetSynchronizationType() const {
+UsbSynchronizationType
+    UsbEndpointDescriptorImpl::GetSynchronizationType() const {
   switch (descriptor_->bmAttributes & LIBUSB_ISO_SYNC_TYPE_MASK) {
     case LIBUSB_ISO_SYNC_TYPE_NONE:
       return USB_SYNCHRONIZATION_NONE;
@@ -54,7 +55,7 @@ UsbSynchronizationType UsbEndpointDescriptor::GetSynchronizationType() const {
   }
 }
 
-UsbTransferType UsbEndpointDescriptor::GetTransferType() const {
+UsbTransferType UsbEndpointDescriptorImpl::GetTransferType() const {
   switch (descriptor_->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) {
     case LIBUSB_TRANSFER_TYPE_CONTROL:
       return USB_TRANSFER_CONTROL;
@@ -70,7 +71,7 @@ UsbTransferType UsbEndpointDescriptor::GetTransferType() const {
   }
 }
 
-UsbUsageType UsbEndpointDescriptor::GetUsageType() const {
+UsbUsageType UsbEndpointDescriptorImpl::GetUsageType() const {
   switch (descriptor_->bmAttributes & LIBUSB_ISO_USAGE_TYPE_MASK) {
     case LIBUSB_ISO_USAGE_TYPE_DATA:
       return USB_USAGE_DATA;
@@ -84,91 +85,84 @@ UsbUsageType UsbEndpointDescriptor::GetUsageType() const {
   }
 }
 
-int UsbEndpointDescriptor::GetPollingInterval() const {
+int UsbEndpointDescriptorImpl::GetPollingInterval() const {
   return descriptor_->bInterval;
 }
 
-UsbInterfaceAltSettingDescriptor::UsbInterfaceAltSettingDescriptor(
+UsbInterfaceAltSettingDescriptorImpl::UsbInterfaceAltSettingDescriptorImpl(
     scoped_refptr<const UsbConfigDescriptor> config,
     PlatformUsbInterfaceDescriptor descriptor)
     : config_(config), descriptor_(descriptor) {
 }
 
-UsbInterfaceAltSettingDescriptor::~UsbInterfaceAltSettingDescriptor() {
+UsbInterfaceAltSettingDescriptorImpl::~UsbInterfaceAltSettingDescriptorImpl() {
 }
 
-size_t UsbInterfaceAltSettingDescriptor::GetNumEndpoints() const {
+size_t UsbInterfaceAltSettingDescriptorImpl::GetNumEndpoints() const {
   return descriptor_->bNumEndpoints;
 }
 
 scoped_refptr<const UsbEndpointDescriptor>
-UsbInterfaceAltSettingDescriptor::GetEndpoint(size_t index) const {
-  return new UsbEndpointDescriptor(config_, &descriptor_->endpoint[index]);
+UsbInterfaceAltSettingDescriptorImpl::GetEndpoint(size_t index) const {
+  return new UsbEndpointDescriptorImpl(config_, &descriptor_->endpoint[index]);
 }
 
-int UsbInterfaceAltSettingDescriptor::GetInterfaceNumber() const {
+int UsbInterfaceAltSettingDescriptorImpl::GetInterfaceNumber() const {
   return descriptor_->bInterfaceNumber;
 }
 
-int UsbInterfaceAltSettingDescriptor::GetAlternateSetting() const {
+int UsbInterfaceAltSettingDescriptorImpl::GetAlternateSetting() const {
   return descriptor_->bAlternateSetting;
 }
 
-int UsbInterfaceAltSettingDescriptor::GetInterfaceClass() const {
+int UsbInterfaceAltSettingDescriptorImpl::GetInterfaceClass() const {
   return descriptor_->bInterfaceClass;
 }
 
-int UsbInterfaceAltSettingDescriptor::GetInterfaceSubclass() const {
+int UsbInterfaceAltSettingDescriptorImpl::GetInterfaceSubclass() const {
   return descriptor_->bInterfaceSubClass;
 }
 
-int UsbInterfaceAltSettingDescriptor::GetInterfaceProtocol() const {
+int UsbInterfaceAltSettingDescriptorImpl::GetInterfaceProtocol() const {
   return descriptor_->bInterfaceProtocol;
 }
 
-UsbInterfaceDescriptor::UsbInterfaceDescriptor(
+UsbInterfaceDescriptorImpl::UsbInterfaceDescriptorImpl(
     scoped_refptr<const UsbConfigDescriptor> config,
     PlatformUsbInterface usbInterface)
     : config_(config), interface_(usbInterface) {
 }
 
-UsbInterfaceDescriptor::~UsbInterfaceDescriptor() {
+UsbInterfaceDescriptorImpl::~UsbInterfaceDescriptorImpl() {
 }
 
-size_t UsbInterfaceDescriptor::GetNumAltSettings() const {
+size_t UsbInterfaceDescriptorImpl::GetNumAltSettings() const {
   return interface_->num_altsetting;
 }
 
 scoped_refptr<const UsbInterfaceAltSettingDescriptor>
-UsbInterfaceDescriptor::GetAltSetting(size_t index) const {
-  return new UsbInterfaceAltSettingDescriptor(config_,
-                                              &interface_->altsetting[index]);
+UsbInterfaceDescriptorImpl::GetAltSetting(size_t index) const {
+  return new UsbInterfaceAltSettingDescriptorImpl(
+      config_, &interface_->altsetting[index]);
 }
 
-UsbConfigDescriptor::UsbConfigDescriptor(PlatformUsbConfigDescriptor config)
+UsbConfigDescriptorImpl::UsbConfigDescriptorImpl(
+    PlatformUsbConfigDescriptor config)
     : config_(config) {
+  DCHECK(config);
 }
 
-// TODO(zvorygin): Used for tests only. Should be removed when
-// all interfaces are extracted properly.
-UsbConfigDescriptor::UsbConfigDescriptor() {
-  config_ = NULL;
+UsbConfigDescriptorImpl::~UsbConfigDescriptorImpl() {
+  libusb_free_config_descriptor(config_);
 }
 
-UsbConfigDescriptor::~UsbConfigDescriptor() {
-  if (config_ != NULL) {
-    libusb_free_config_descriptor(config_);
-    config_ = NULL;
-  }
-}
-
-size_t UsbConfigDescriptor::GetNumInterfaces() const {
+size_t UsbConfigDescriptorImpl::GetNumInterfaces() const {
   return config_->bNumInterfaces;
 }
 
-scoped_refptr<const UsbInterfaceDescriptor> UsbConfigDescriptor::GetInterface(
-    size_t index) const {
-  return new UsbInterfaceDescriptor(this, &config_->interface[index]);
+scoped_refptr<const UsbInterfaceDescriptor>
+    UsbConfigDescriptorImpl::GetInterface(size_t index) const {
+  return new UsbInterfaceDescriptorImpl(this, &config_->interface[index]);
 }
 
 }  // namespace usb_service

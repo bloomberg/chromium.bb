@@ -8,17 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/usb_service/usb_service_export.h"
 
-struct libusb_config_descriptor;
-struct libusb_endpoint_descriptor;
-struct libusb_interface;
-struct libusb_interface_descriptor;
-
 namespace usb_service {
-
-typedef libusb_config_descriptor* PlatformUsbConfigDescriptor;
-typedef const libusb_endpoint_descriptor* PlatformUsbEndpointDescriptor;
-typedef const libusb_interface* PlatformUsbInterface;
-typedef const libusb_interface_descriptor* PlatformUsbInterfaceDescriptor;
 
 enum UsbTransferType {
   USB_TRANSFER_CONTROL = 0,
@@ -45,32 +35,22 @@ enum UsbUsageType {
   USB_USAGE_EXPLICIT_FEEDBACK
 };
 
-class UsbDevice;
-class UsbConfigDescriptor;
-class UsbInterfaceDescriptor;
-class UsbInterfaceAltSettingDescriptor;
-
 class USB_SERVICE_EXPORT UsbEndpointDescriptor
     : public base::RefCounted<const UsbEndpointDescriptor> {
  public:
-  int GetAddress() const;
-  UsbEndpointDirection GetDirection() const;
-  int GetMaximumPacketSize() const;
-  UsbSynchronizationType GetSynchronizationType() const;
-  UsbTransferType GetTransferType() const;
-  UsbUsageType GetUsageType() const;
-  int GetPollingInterval() const;
+  virtual int GetAddress() const = 0;
+  virtual UsbEndpointDirection GetDirection() const = 0;
+  virtual int GetMaximumPacketSize() const = 0;
+  virtual UsbSynchronizationType GetSynchronizationType() const = 0;
+  virtual UsbTransferType GetTransferType() const = 0;
+  virtual UsbUsageType GetUsageType() const = 0;
+  virtual int GetPollingInterval() const = 0;
 
- private:
+ protected:
   friend class base::RefCounted<const UsbEndpointDescriptor>;
-  friend class UsbInterfaceAltSettingDescriptor;
 
-  UsbEndpointDescriptor(scoped_refptr<const UsbConfigDescriptor> config,
-                        PlatformUsbEndpointDescriptor descriptor);
-  ~UsbEndpointDescriptor();
-
-  scoped_refptr<const UsbConfigDescriptor> config_;
-  PlatformUsbEndpointDescriptor descriptor_;
+  UsbEndpointDescriptor() {};
+  virtual ~UsbEndpointDescriptor() {};
 
   DISALLOW_COPY_AND_ASSIGN(UsbEndpointDescriptor);
 };
@@ -78,26 +58,21 @@ class USB_SERVICE_EXPORT UsbEndpointDescriptor
 class USB_SERVICE_EXPORT UsbInterfaceAltSettingDescriptor
     : public base::RefCounted<const UsbInterfaceAltSettingDescriptor> {
  public:
-  size_t GetNumEndpoints() const;
-  scoped_refptr<const UsbEndpointDescriptor> GetEndpoint(size_t index) const;
+  virtual size_t GetNumEndpoints() const = 0;
+  virtual scoped_refptr<const UsbEndpointDescriptor> GetEndpoint(
+      size_t index) const = 0;
 
-  int GetInterfaceNumber() const;
-  int GetAlternateSetting() const;
-  int GetInterfaceClass() const;
-  int GetInterfaceSubclass() const;
-  int GetInterfaceProtocol() const;
+  virtual int GetInterfaceNumber() const = 0;
+  virtual int GetAlternateSetting() const = 0;
+  virtual int GetInterfaceClass() const = 0;
+  virtual int GetInterfaceSubclass() const = 0;
+  virtual int GetInterfaceProtocol() const = 0;
 
- private:
+ protected:
   friend class base::RefCounted<const UsbInterfaceAltSettingDescriptor>;
-  friend class UsbInterfaceDescriptor;
 
-  UsbInterfaceAltSettingDescriptor(
-      scoped_refptr<const UsbConfigDescriptor> config,
-      PlatformUsbInterfaceDescriptor descriptor);
-  ~UsbInterfaceAltSettingDescriptor();
-
-  scoped_refptr<const UsbConfigDescriptor> config_;
-  PlatformUsbInterfaceDescriptor descriptor_;
+  UsbInterfaceAltSettingDescriptor() {};
+  virtual ~UsbInterfaceAltSettingDescriptor() {};
 
   DISALLOW_COPY_AND_ASSIGN(UsbInterfaceAltSettingDescriptor);
 };
@@ -105,20 +80,15 @@ class USB_SERVICE_EXPORT UsbInterfaceAltSettingDescriptor
 class USB_SERVICE_EXPORT UsbInterfaceDescriptor
     : public base::RefCounted<const UsbInterfaceDescriptor> {
  public:
-  size_t GetNumAltSettings() const;
-  scoped_refptr<const UsbInterfaceAltSettingDescriptor> GetAltSetting(
-      size_t index) const;
+  virtual size_t GetNumAltSettings() const = 0;
+  virtual scoped_refptr<const UsbInterfaceAltSettingDescriptor> GetAltSetting(
+      size_t index) const = 0;
 
- private:
+ protected:
   friend class base::RefCounted<const UsbInterfaceDescriptor>;
-  friend class UsbConfigDescriptor;
 
-  UsbInterfaceDescriptor(scoped_refptr<const UsbConfigDescriptor> config,
-                         PlatformUsbInterface usbInterface);
-  ~UsbInterfaceDescriptor();
-
-  scoped_refptr<const UsbConfigDescriptor> config_;
-  PlatformUsbInterface interface_;
+  UsbInterfaceDescriptor() {};
+  virtual ~UsbInterfaceDescriptor() {};
 
   DISALLOW_COPY_AND_ASSIGN(UsbInterfaceDescriptor);
 };
@@ -126,22 +96,15 @@ class USB_SERVICE_EXPORT UsbInterfaceDescriptor
 class USB_SERVICE_EXPORT UsbConfigDescriptor
     : public base::RefCounted<UsbConfigDescriptor> {
  public:
-  virtual size_t GetNumInterfaces() const;
+  virtual size_t GetNumInterfaces() const = 0;
   virtual scoped_refptr<const UsbInterfaceDescriptor> GetInterface(
-      size_t index) const;
+      size_t index) const = 0;
 
  protected:
-  // Constructor called in test only
-  UsbConfigDescriptor();
-  virtual ~UsbConfigDescriptor();
-
- private:
   friend class base::RefCounted<UsbConfigDescriptor>;
-  friend class UsbDeviceImpl;
 
-  explicit UsbConfigDescriptor(PlatformUsbConfigDescriptor config);
-
-  PlatformUsbConfigDescriptor config_;
+  UsbConfigDescriptor() {};
+  virtual ~UsbConfigDescriptor() {};
 
   DISALLOW_COPY_AND_ASSIGN(UsbConfigDescriptor);
 };

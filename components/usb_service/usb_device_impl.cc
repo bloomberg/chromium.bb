@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "components/usb_service/usb_context.h"
 #include "components/usb_service/usb_device_handle.h"
+#include "components/usb_service/usb_interface_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/libusb/src/libusb/libusb.h"
 
@@ -126,7 +127,7 @@ scoped_refptr<UsbConfigDescriptor> UsbDeviceImpl::ListInterfaces() {
   const int list_result =
       libusb_get_active_config_descriptor(platform_device_, &platform_config);
   if (list_result == 0)
-    return new UsbConfigDescriptor(platform_config);
+    return new UsbConfigDescriptorImpl(platform_config);
 
   return NULL;
 }
