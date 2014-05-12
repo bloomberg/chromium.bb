@@ -46,6 +46,8 @@ public:
 
     virtual bool canContainRangeEndPoint() const OVERRIDE { return false; }
 
+    virtual void trace(Visitor*) OVERRIDE;
+
 private:
     explicit HTMLProgressElement(Document&);
     virtual ~HTMLProgressElement();
@@ -65,7 +67,7 @@ private:
     virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
     bool isDeterminate() const;
 
-    ProgressValueElement* m_value;
+    RawPtrWillBeMember<ProgressValueElement> m_value;
 };
 
 } // namespace

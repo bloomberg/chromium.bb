@@ -41,7 +41,7 @@ const double HTMLProgressElement::InvalidPosition = -2;
 
 HTMLProgressElement::HTMLProgressElement(Document& document)
     : LabelableElement(progressTag, document)
-    , m_value(0)
+    , m_value(nullptr)
 {
     ScriptWrappable::init(this);
 }
@@ -150,13 +150,13 @@ void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
-    RefPtr<ProgressInnerElement> inner = ProgressInnerElement::create(document());
+    RefPtrWillBeRawPtr<ProgressInnerElement> inner = ProgressInnerElement::create(document());
     inner->setShadowPseudoId(AtomicString("-webkit-progress-inner-element", AtomicString::ConstructFromLiteral));
     root.appendChild(inner);
 
-    RefPtr<ProgressBarElement> bar = ProgressBarElement::create(document());
+    RefPtrWillBeRawPtr<ProgressBarElement> bar = ProgressBarElement::create(document());
     bar->setShadowPseudoId(AtomicString("-webkit-progress-bar", AtomicString::ConstructFromLiteral));
-    RefPtr<ProgressValueElement> value = ProgressValueElement::create(document());
+    RefPtrWillBeRawPtr<ProgressValueElement> value = ProgressValueElement::create(document());
     m_value = value.get();
     m_value->setShadowPseudoId(AtomicString("-webkit-progress-value", AtomicString::ConstructFromLiteral));
     m_value->setWidthPercentage(HTMLProgressElement::IndeterminatePosition * 100);
@@ -168,6 +168,12 @@ void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 bool HTMLProgressElement::shouldAppearIndeterminate() const
 {
     return !isDeterminate();
+}
+
+void HTMLProgressElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_value);
+    LabelableElement::trace(visitor);
 }
 
 } // namespace
