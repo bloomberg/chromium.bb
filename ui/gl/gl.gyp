@@ -222,7 +222,7 @@
             '<(DEPTH)/build/linux/system.gyp:x11',
             '<(DEPTH)/build/linux/system.gyp:xcomposite',
             '<(DEPTH)/build/linux/system.gyp:xext',
-            '<(DEPTH)/ui/gfx/gfx.gyp:gfx_x11',
+            '<(DEPTH)/ui/gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
         ['OS=="win"', {

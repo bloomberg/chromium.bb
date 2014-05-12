@@ -63,7 +63,7 @@
         ['use_x11==1', {
           'dependencies': [
             '../../build/linux/system.gyp:x11',
-            '../gfx/gfx.gyp:gfx_x11',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
       ],
@@ -192,7 +192,7 @@
           ],
           'dependencies': [
             '../../build/linux/system.gyp:x11',
-            '../gfx/gfx.gyp:gfx_x11',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
         ['use_glib==1', {
@@ -317,7 +317,7 @@
         ['use_x11==1', {
           'dependencies': [
             '../../build/linux/system.gyp:x11',
-            '../gfx/gfx.gyp:gfx_x11',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
         ['OS=="ios"', {

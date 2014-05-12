@@ -211,7 +211,7 @@
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
-            '../gfx/gfx.gyp:gfx_x11',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
       ]
@@ -244,7 +244,7 @@
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
-            '../gfx/gfx.gyp:gfx_x11',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
       ]
