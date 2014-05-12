@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -143,6 +145,12 @@ void TestURLFetcher::SetAutomaticallyRetryOnNetworkChanges(int max_retries) {
 void TestURLFetcher::SaveResponseToFileAtPath(
     const base::FilePath& file_path,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
+  SetResponseFilePath(file_path);
+  // Asynchronous IO is not supported, so file_task_runner is ignored.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  const size_t written_bytes = base::WriteFile(
+      file_path, fake_response_string_.c_str(), fake_response_string_.size());
+  DCHECK_EQ(written_bytes, fake_response_string_.size());
 }
 
 void TestURLFetcher::SaveResponseToTemporaryFile(
@@ -151,6 +159,12 @@ void TestURLFetcher::SaveResponseToTemporaryFile(
 
 void TestURLFetcher::SaveResponseWithWriter(
     scoped_ptr<URLFetcherResponseWriter> response_writer) {
+  // In class URLFetcherCore this method is called by all three:
+  // GetResponseAsString() / SaveResponseToFileAtPath() /
+  // SaveResponseToTemporaryFile(). But here (in TestURLFetcher), this method
+  // is never used by any of these three methods. So, file writing is expected
+  // to be done in SaveResponseToFileAtPath(), and this method supports only
+  // URLFetcherStringWriter (for testing of this method only).
   if (fake_response_destination_ == STRING) {
     response_writer_ = response_writer.Pass();
     int response = response_writer_->Initialize(CompletionCallback());
@@ -164,8 +178,13 @@ void TestURLFetcher::SaveResponseWithWriter(
     DCHECK_EQ(static_cast<int>(fake_response_string_.size()), response);
     response = response_writer_->Finish(CompletionCallback());
     DCHECK_EQ(OK, response);
-  } else {
+  } else if (fake_response_destination_ == TEMP_FILE) {
+    // SaveResponseToFileAtPath() should be called instead of this method to
+    // save file. Asynchronous file writing using URLFetcherFileWriter is not
+    // supported.
     NOTIMPLEMENTED();
+  } else {
+    NOTREACHED();
   }
 }
 

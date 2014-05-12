@@ -121,6 +121,7 @@ class WallpaperManager: public content::NotificationObserver {
     virtual ~Observer() {}
     virtual void OnWallpaperAnimationFinished(const std::string& user_id) = 0;
     virtual void OnUpdateWallpaperForTesting() {}
+    virtual void OnPendingListEmptyForTesting() {}
   };
 
   // This is "wallpaper either scheduled to load, or loading right now".
@@ -340,6 +341,9 @@ class WallpaperManager: public content::NotificationObserver {
                                      const base::FilePath& downloaded_file,
                                      const base::FilePath& resized_directory);
 
+  // Returns queue size.
+  size_t GetPendingListSizeForTesting() const;
+
  private:
   friend class TestApi;
   friend class WallpaperManagerBrowserTest;
@@ -478,6 +482,9 @@ class WallpaperManager: public content::NotificationObserver {
   // Returns pending_inactive_ or creates new PendingWallpaper if necessary.
   PendingWallpaper* GetPendingWallpaper(const std::string& user_id,
                                         bool delayed);
+
+  // This is called by PendingWallpaper when load is finished.
+  void RemovePendingWallpaperFromList(PendingWallpaper* pending);
 
   // Calculate delay for next wallpaper load.
   // It is usually average wallpaper load time.

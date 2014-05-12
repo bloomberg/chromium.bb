@@ -430,15 +430,7 @@ void WallpaperManager::PendingWallpaper::OnWallpaperSet() {
   }
 
   // Destroy self.
-  DCHECK(manager->loading_.size() > 0);
-
-  for (WallpaperManager::PendingList::iterator i = manager->loading_.begin();
-       i != manager->loading_.end();
-       ++i)
-    if (i->get() == this) {
-      manager->loading_.erase(i);
-      break;
-    }
+  manager->RemovePendingWallpaperFromList(this);
 }
 
 // WallpaperManager, public: ---------------------------------------------------
@@ -1771,6 +1763,22 @@ WallpaperManager::PendingWallpaper* WallpaperManager::GetPendingWallpaper(
   return pending_inactive_;
 }
 
+void WallpaperManager::RemovePendingWallpaperFromList(
+    PendingWallpaper* pending) {
+  DCHECK(loading_.size() > 0);
+  for (WallpaperManager::PendingList::iterator i = loading_.begin();
+       i != loading_.end();
+       ++i) {
+    if (i->get() == pending) {
+      loading_.erase(i);
+      break;
+    }
+  }
+
+  if (loading_.empty())
+    FOR_EACH_OBSERVER(Observer, observers_, OnPendingListEmptyForTesting());
+}
+
 void WallpaperManager::SetCustomizedDefaultWallpaper(
     const GURL& wallpaper_url,
     const base::FilePath& downloaded_file,
@@ -1804,6 +1812,10 @@ void WallpaperManager::SetCustomizedDefaultWallpaper(
           FROM_HERE, check_file_exists, on_checked_closure)) {
     LOG(WARNING) << "Failed to start check CheckCustomizedWallpaperFilesExist.";
   }
+}
+
+size_t WallpaperManager::GetPendingListSizeForTesting() const {
+  return loading_.size();
 }
 
 void WallpaperManager::SetDefaultWallpaperPathsFromCommandLine(

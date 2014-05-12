@@ -72,6 +72,7 @@ CustomizationWallpaperDownloader::CustomizationWallpaperDownloader(
       wallpaper_temporary_file_(wallpaper_downloaded_file.value() +
                                 kTemporarySuffix),
       retries_(0),
+      retry_delay_(base::TimeDelta::FromSeconds(kRetrySleepSeconds)),
       on_wallpaper_fetch_completed_(on_wallpaper_fetch_completed),
       weak_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -105,14 +106,14 @@ void CustomizationWallpaperDownloader::Retry() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ++retries_;
 
-  const double delay_seconds =
-      std::min(kMaxRetrySleepSeconds,
-               static_cast<double>(retries_) * retries_ * kRetrySleepSeconds);
-  const base::TimeDelta delay =
-      base::TimeDelta::FromSeconds(lround(delay_seconds));
+  const double delay_seconds = std::min(
+      kMaxRetrySleepSeconds,
+      static_cast<double>(retries_) * retries_ * retry_delay_.InSecondsF());
+  const base::TimeDelta delay = base::TimeDelta::FromSecondsD(delay_seconds);
 
   VLOG(1) << "Schedule Customized Wallpaper download in " << delay.InSecondsF()
           << " seconds (retry = " << retries_ << ").";
+  retry_current_delay_ = delay;
   request_scheduled_.Start(
       FROM_HERE, delay, this, &CustomizationWallpaperDownloader::StartRequest);
 }

@@ -52,6 +52,15 @@ class CustomizationWallpaperDownloader : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
+  // This is called in tests to modify (lower) retry delay.
+  void set_retry_delay_for_testing(base::TimeDelta value) {
+    retry_delay_ = value;
+  }
+
+  base::TimeDelta retry_current_delay_for_testing() const {
+    return retry_current_delay_;
+  }
+
  private:
   // Start new request.
   void StartRequest();
@@ -88,6 +97,13 @@ class CustomizationWallpaperDownloader : public net::URLFetcherDelegate {
 
   // Number of download retries (first attempt is not counted as retry).
   size_t retries_;
+
+  // Sleep between retry requests (increasing, see Retry() method for details).
+  // Non-constant value for tests.
+  base::TimeDelta retry_delay_;
+
+  // Retry delay of the last attempt. For testing only.
+  base::TimeDelta retry_current_delay_;
 
   // Callback supplied by caller.
   base::Callback<void(bool success, const GURL&)> on_wallpaper_fetch_completed_;

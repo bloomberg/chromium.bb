@@ -194,8 +194,16 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   static base::FilePath GetCustomizedWallpaperCacheDir();
   static base::FilePath GetCustomizedWallpaperDownloadedFileName();
 
+  CustomizationWallpaperDownloader* wallpaper_downloader_for_testing() {
+    return wallpaper_downloader_.get();
+  }
+
  private:
   friend struct DefaultSingletonTraits<ServicesCustomizationDocument>;
+  FRIEND_TEST_ALL_PREFIXES(CustomizationWallpaperDownloaderBrowserTest,
+                           OEMWallpaperIsPresent);
+  FRIEND_TEST_ALL_PREFIXES(CustomizationWallpaperDownloaderBrowserTest,
+                           OEMWallpaperRetryFetch);
 
   typedef std::vector<base::WeakPtr<ServicesCustomizationExternalLoader> >
       ExternalLoaders;

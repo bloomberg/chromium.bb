@@ -170,6 +170,7 @@ _BANNED_CPP_FUNCTIONS = (
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_message_filter\.cc$",
         r"^mojo[\\\/]system[\\\/]raw_shared_buffer_posix\.cc$",
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
+        r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
       ),
     ),
     (
