@@ -3322,7 +3322,7 @@ void WebViewImpl::inspectElementAt(const WebPoint& point)
     if (point.x == -1 || point.y == -1) {
         m_page->inspectorController().inspect(0);
     } else {
-        HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent | HitTestRequest::IgnorePointerEventsNone;
+        HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
         HitTestRequest request(hitType);
 
         FrameView* frameView = m_page->mainFrame()->view();
