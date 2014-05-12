@@ -1381,7 +1381,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     }
     case CSSPropertyInvalid:
         return;
-    // Directional properties are resolved by resolveDirectionAwareProperty() before the switch.
     case CSSPropertyWebkitBorderEndColor:
     case CSSPropertyWebkitBorderEndStyle:
     case CSSPropertyWebkitBorderEndWidth:
@@ -1412,11 +1411,8 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitMinLogicalHeight:
     case CSSPropertyWebkitMaxLogicalWidth:
     case CSSPropertyWebkitMaxLogicalHeight:
-    {
-        CSSPropertyID newId = CSSProperty::resolveDirectionAwareProperty(id, state.style()->direction(), state.style()->writingMode());
-        ASSERT(newId != id);
-        return applyProperty(newId, state, value);
-    }
+        ASSERT_NOT_REACHED();
+        return;
     case CSSPropertyFontStretch:
     case CSSPropertyPage:
     case CSSPropertyTextLineThroughColor:

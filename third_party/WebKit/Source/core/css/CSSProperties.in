@@ -303,3 +303,30 @@ stroke-width svg, type_name=SVGLength, converter=convertSVGLength
 text-anchor svg
 vector-effect svg
 writing-mode svg, type_name=SVGWritingMode
+
+-webkit-border-end-color direction_aware
+-webkit-border-end-style direction_aware
+-webkit-border-end-width direction_aware
+-webkit-border-start-color direction_aware
+-webkit-border-start-style direction_aware
+-webkit-border-start-width direction_aware
+-webkit-border-before-color direction_aware
+-webkit-border-before-style direction_aware
+-webkit-border-before-width direction_aware
+-webkit-border-after-color direction_aware
+-webkit-border-after-style direction_aware
+-webkit-border-after-width direction_aware
+-webkit-margin-end direction_aware
+-webkit-margin-start direction_aware
+-webkit-margin-before direction_aware
+-webkit-margin-after direction_aware
+-webkit-padding-end direction_aware
+-webkit-padding-start direction_aware
+-webkit-padding-before direction_aware
+-webkit-padding-after direction_aware
+-webkit-logical-width direction_aware
+-webkit-logical-height direction_aware
+-webkit-min-logical-width direction_aware
+-webkit-min-logical-height direction_aware
+-webkit-max-logical-width direction_aware
+-webkit-max-logical-height direction_aware

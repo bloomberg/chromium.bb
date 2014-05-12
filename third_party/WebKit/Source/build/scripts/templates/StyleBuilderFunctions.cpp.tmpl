@@ -36,7 +36,7 @@ state.style()->{{property.setter}}
 
 namespace WebCore {
 
-{% for property_id, property in properties.items() if not property.use_handlers_for %}
+{% for property_id, property in properties.items() if property.should_declare_functions %}
 {% set apply_type = property.apply_type %}
 {% if not property.custom_initial %}
 {{declare_initial_function(property_id)}}
