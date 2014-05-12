@@ -344,7 +344,7 @@ def DeleteDraft(host, change, msg=''):
       raise
   else:
     raise GOBError(
-        'Unexpectedly received a 200 http status while deleting draft %r'
+        200, 'Unexpectedly received a 200 http status while deleting draft %r'
         % change)
 
 
@@ -390,8 +390,8 @@ def RemoveReviewers(host, change, remove=None):
         raise
     else:
       raise GOBError(
-          'Unexpectedly received a 200 http status while deleting reviewer "%s"'
-          ' from change %s' % (r, change))
+          200, 'Unexpectedly received a 200 http status while deleting'
+               ' reviewer "%s" from change %s' % (r, change))
 
 
 def SetReview(host, change, revision='current', msg=None, labels=None,
@@ -408,6 +408,8 @@ def SetReview(host, change, revision='current', msg=None, labels=None,
   if notify:
     body['notify'] = notify
   response = FetchUrlJson(host, path, reqtype='POST', body=body)
+  if not response:
+    raise GOBError(404, 'CL %s not found in %s' % (change, host))
   if labels:
     for key, val in labels.iteritems():
       if ('labels' not in response or key not in response['labels'] or
