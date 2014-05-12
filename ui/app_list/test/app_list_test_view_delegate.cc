@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/signin_delegate.h"
 #include "ui/app_list/test/app_list_test_model.h"
@@ -130,7 +131,7 @@ const AppListViewDelegate::Users& AppListTestViewDelegate::GetUsers() const {
 }
 
 bool AppListTestViewDelegate::ShouldCenterWindow() const {
-  return false;
+  return app_list::switches::IsCenteredAppListEnabled();
 }
 
 void AppListTestViewDelegate::ReplaceTestModel(int item_count) {
