@@ -54,20 +54,6 @@ using content::WebContentsImpl;
 const char kHTMLForGuest[] =
     "data:text/html,<html><body>hello world</body></html>";
 
-const char kHTMLForGuestTouchHandler[] =
-    "data:text/html,<html><body><div id=\"touch\">With touch</div></body>"
-    "<script type=\"text/javascript\">"
-    "function handler() {}"
-    "function InstallTouchHandler() { "
-    "  document.getElementById(\"touch\").addEventListener(\"touchstart\", "
-    "     handler);"
-    "}"
-    "function UninstallTouchHandler() { "
-    "  document.getElementById(\"touch\").removeEventListener(\"touchstart\", "
-    "     handler);"
-    "}"
-    "</script></html>";
-
 const char kHTMLForGuestAcceptDrag[] =
     "data:text/html,<html><body>"
     "<script>"
@@ -159,47 +145,6 @@ class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
   friend struct DefaultSingletonTraits<TestShortHangTimeoutGuestFactory>;
 
   DISALLOW_COPY_AND_ASSIGN(TestShortHangTimeoutGuestFactory);
-};
-
-// A transparent observer that can be used to verify that a RenderViewHost
-// received a specific message.
-class MessageObserver : public WebContentsObserver {
- public:
-  MessageObserver(WebContents* web_contents, uint32 message_id)
-      : WebContentsObserver(web_contents),
-        message_id_(message_id),
-        message_received_(false) {
-  }
-
-  virtual ~MessageObserver() {}
-
-  void WaitUntilMessageReceived() {
-    if (message_received_)
-      return;
-    message_loop_runner_ = new MessageLoopRunner();
-    message_loop_runner_->Run();
-  }
-
-  void ResetState() {
-    message_received_ = false;
-  }
-
-  // IPC::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-    if (message.type() == message_id_) {
-      message_received_ = true;
-      if (message_loop_runner_)
-        message_loop_runner_->Quit();
-    }
-    return false;
-  }
-
- private:
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-  uint32 message_id_;
-  bool message_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageObserver);
 };
 
 class BrowserPluginHostTest : public ContentBrowserTest {
@@ -422,36 +367,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_EmbedderSameAfterNav) {
           embedder_web_contents->GetBrowserPluginEmbedder());
   // Embedder must not change in web_contents.
   ASSERT_EQ(test_embedder_after_nav, test_embedder());
-}
-
-// Verifies that installing/uninstalling touch-event handlers in the guest
-// plugin correctly updates the touch-event handling state in the embedder.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AcceptTouchEvents) {
-  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(
-      kEmbedderURL, kHTMLForGuestTouchHandler, true, std::string());
-
-  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
-      test_embedder()->web_contents()->GetRenderViewHost());
-  // The embedder should not have any touch event handlers at this point.
-  EXPECT_FALSE(rvh->has_touch_handler());
-
-  // Install the touch handler in the guest. This should cause the embedder to
-  // start listening for touch events too.
-  MessageObserver observer(test_embedder()->web_contents(),
-                           ViewHostMsg_HasTouchEventHandlers::ID);
-  ExecuteSyncJSFunction(test_guest()->web_contents()->GetMainFrame(),
-                        "InstallTouchHandler();");
-  observer.WaitUntilMessageReceived();
-  EXPECT_TRUE(rvh->has_touch_handler());
-
-  // Uninstalling the touch-handler in guest should cause the embedder to stop
-  // listening for touch events.
-  observer.ResetState();
-  ExecuteSyncJSFunction(test_guest()->web_contents()->GetMainFrame(),
-                        "UninstallTouchHandler();");
-  observer.WaitUntilMessageReceived();
-  EXPECT_FALSE(rvh->has_touch_handler());
 }
 
 // This tests verifies that reloading the embedder does not crash the browser

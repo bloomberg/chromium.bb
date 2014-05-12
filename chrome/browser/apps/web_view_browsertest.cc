@@ -29,6 +29,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/fake_speech_recognition_manager.h"
+#include "content/public/test/test_renderer_host.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -674,6 +675,23 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
             base::StringPrintf("onAppCommand('%s');", message.c_str())));
   }
 
+  void SendMessageToGuestAndWait(const std::string& message,
+                                 const std::string& wait_message) {
+    scoped_ptr<ExtensionTestMessageListener> listener;
+    if (!wait_message.empty()) {
+      listener.reset(new ExtensionTestMessageListener(wait_message, false));
+    }
+
+    EXPECT_TRUE(
+        content::ExecuteScript(
+            GetGuestWebContents(),
+            base::StringPrintf("onAppCommand('%s');", message.c_str())));
+
+    if (listener) {
+      ASSERT_TRUE(listener->WaitUntilSatisfied());
+    }
+  }
+
   content::WebContents* GetGuestWebContents() {
     return guest_web_contents_;
   }
@@ -735,6 +753,34 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, EmbedderVisibilityChanged) {
   SendMessageToEmbedder("hide-embedder");
   if (!observer.hidden_observed())
     loop_runner->Run();
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, AcceptTouchEvents) {
+  LoadAppWithGuest("web_view/accept_touch_events");
+
+  content::RenderViewHost* embedder_rvh =
+      GetEmbedderWebContents()->GetRenderViewHost();
+
+  bool embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_FALSE(embedder_has_touch_handler);
+
+  SendMessageToGuestAndWait("install-touch-handler", "installed-touch-handler");
+
+  // Note that we need to wait for the installed/registered touch handler to
+  // appear in browser process before querying |embedder_rvh|.
+  // In practice, since we do a roundrtip from browser process to guest and
+  // back, this is sufficient.
+  embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_TRUE(embedder_has_touch_handler);
+
+  SendMessageToGuestAndWait("uninstall-touch-handler",
+                            "uninstalled-touch-handler");
+  // Same as the note above about waiting.
+  embedder_has_touch_handler =
+      content::RenderViewHostTester::HasTouchEventHandler(embedder_rvh);
+  EXPECT_FALSE(embedder_has_touch_handler);
 }
 
 // This test ensures JavaScript errors ("Cannot redefine property") do not
