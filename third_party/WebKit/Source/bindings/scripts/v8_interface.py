@@ -336,6 +336,8 @@ def generate_overloads_by_type(methods):
     # easily verify if a function is overloaded
     for name, overloads in method_overloads.iteritems():
         effective_overloads_by_length = effective_overload_set_by_length(overloads)
+        minimum_number_of_required_arguments = min(
+            method['number_of_required_arguments'] for method in overloads)
 
         for index, method in enumerate(overloads, 1):
             method.update({
@@ -343,6 +345,9 @@ def generate_overloads_by_type(methods):
                 'overload_resolution_expression':
                     overload_resolution_expression(method),
             })
+            # Overloaded methods have length checked during overload, and
+            # a single check for required arguments afterwards.
+            del method['number_of_required_arguments']
 
         # FIXME: temporary flag so can switch incrementally
         is_use_spec_algorithm = False
@@ -367,8 +372,6 @@ def generate_overloads_by_type(methods):
 
         # Resolution function is generated after last overloaded function;
         # package necessary information into |method.overloads| for that method.
-        minimum_number_of_required_arguments = min(
-            method['number_of_required_arguments'] for method in overloads)
         overloads[-1]['overloads'] = {
             'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
             'has_exception_state': bool(minimum_number_of_required_arguments),

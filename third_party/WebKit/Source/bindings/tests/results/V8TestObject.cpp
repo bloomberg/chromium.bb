@@ -6372,10 +6372,6 @@ static void voidMethodVariadicTestInterfaceWillBeGarbageCollectedArgMethodCallba
 static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedMethodA(longArg);
@@ -6384,10 +6380,6 @@ static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 2)) {
-        throwArityTypeError(exceptionState, 2, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg1, toInt32(info[0], exceptionState), exceptionState);
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg2, toInt32(info[1], exceptionState), exceptionState);
@@ -6423,10 +6415,6 @@ static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedMethodB(longArg);
@@ -6435,10 +6423,6 @@ static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(bool, booleanArg, info[0]->BooleanValue());
     if (UNLIKELY(info.Length() <= 1)) {
@@ -6478,10 +6462,6 @@ static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedMethodC(longArg);
@@ -6490,10 +6470,6 @@ static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(bool, booleanArg, info[0]->BooleanValue());
     TONATIVE_VOID(Vector<int>, longArgs, toNativeArguments<int>(info, 1));
@@ -6529,10 +6505,6 @@ static void overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedMethodD(longArg);
@@ -6540,10 +6512,6 @@ static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodD", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->overloadedMethodD(testInterfaceEmptyArg);
@@ -6578,10 +6546,6 @@ static void overloadedMethodDMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedMethodE(longArg);
@@ -6589,10 +6553,6 @@ static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodE", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(Vector<int>, longArrayArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
     impl->overloadedMethodE(longArrayArg);
@@ -6627,10 +6587,6 @@ static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedMethodF(longArg);
@@ -6638,10 +6594,6 @@ static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodF", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->overloadedMethodF(testInterfaceEmptyOrNullArg);
@@ -6681,10 +6633,6 @@ static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodG", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TOSTRING_VOID(V8StringResource<>, legacyOverloadStringStringArg, info[0]);
     impl->overloadedMethodG(legacyOverloadStringStringArg);
@@ -6718,10 +6666,6 @@ static void overloadedMethodH1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodH", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     if (info.Length() <= 0 || !info[0]->IsFunction()) {
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
@@ -6753,10 +6697,6 @@ static void overloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodI1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodI", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(Dictionary, dictionaryArg, Dictionary(info[0], info.GetIsolate()));
     if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
@@ -6768,10 +6708,6 @@ static void overloadedMethodI1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodI", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
     impl->overloadedMethodI(doubleArg);
@@ -6806,10 +6742,6 @@ static void overloadedMethodIMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodJ1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodJ", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedMethodJ(longArg);
@@ -6817,10 +6749,6 @@ static void overloadedMethodJ1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodJ", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->overloadedMethodJ(testInterfaceEmptyOrNullArg);
@@ -6854,10 +6782,6 @@ static void overloadedMethodJMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodK", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(TestInterfaceImplementation*, testInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->overloadedMethodK(testInterfaceArg);
@@ -6865,10 +6789,6 @@ static void overloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodK2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("overloadedMethodK", "TestObject", 1, info.Length(), info.GetIsolate());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     impl->overloadedMethodK(testInterfaceEmptyArg);
@@ -6919,10 +6839,6 @@ static void overloadedPerWorldBindingsMethod1MethodForMainWorld(const v8::Functi
 static void overloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedPerWorldBindingsMethod(longArg);
@@ -6951,10 +6867,6 @@ static void overloadedPerWorldBindingsMethodMethodCallback(const v8::FunctionCal
 static void overloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     impl->overloadedPerWorldBindingsMethod(longArg);
@@ -6983,10 +6895,6 @@ static void overloadedPerWorldBindingsMethodMethodCallbackForMainWorld(const v8:
 static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     TestObject::overloadedStaticMethod(longArg);
 }
@@ -6994,10 +6902,6 @@ static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Val
 static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 2)) {
-        throwArityTypeError(exceptionState, 2, info.Length());
-        return;
-    }
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg1, toInt32(info[0], exceptionState), exceptionState);
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg2, toInt32(info[1], exceptionState), exceptionState);
     TestObject::overloadedStaticMethod(longArg1, longArg2);
@@ -7485,10 +7389,6 @@ static void DeprecateAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8
 static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
     impl->DeprecateAsOverloadedMethod(arg);
@@ -7525,10 +7425,6 @@ static void DeprecateAsSameValueOverloadedMethod1Method(const v8::FunctionCallba
 static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
     impl->DeprecateAsSameValueOverloadedMethod(arg);
@@ -7564,10 +7460,6 @@ static void measureAsOverloadedMethod1Method(const v8::FunctionCallbackInfo<v8::
 static void measureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
     impl->measureAsOverloadedMethod(arg);
@@ -7604,10 +7496,6 @@ static void measureAsSameValueOverloadedMethod1Method(const v8::FunctionCallback
 static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
     impl->measureAsSameValueOverloadedMethod(arg);
@@ -7643,10 +7531,6 @@ static void deprecateAsMeasureAsSameValueOverloadedMethod1Method(const v8::Funct
 static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
     impl->deprecateAsMeasureAsSameValueOverloadedMethod(arg);
@@ -7684,10 +7568,6 @@ static void deprecateAsSameValueMeasureAsOverloadedMethod1Method(const v8::Funct
 static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
     impl->deprecateAsSameValueMeasureAsOverloadedMethod(arg);
@@ -7725,10 +7605,6 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(const 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
     TestObject* impl = V8TestObject::toNative(info.Holder());
     TONATIVE_VOID_EXCEPTIONSTATE(int, arg, toInt32(info[0], exceptionState), exceptionState);
     impl->deprecateAsSameValueMeasureAsSameValueOverloadedMethod(arg);
