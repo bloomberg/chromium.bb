@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "google_apis/gaia/gaia_constants.h"
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_constants.h"
@@ -39,4 +40,13 @@ std::string ManagedUserSigninManagerWrapper::GetAccountIdToUse() const {
     return managed_users::kManagedUserPseudoEmail;
 #endif
   return auth_account;
+}
+
+std::string ManagedUserSigninManagerWrapper::GetSyncScopeToUse() const {
+#if defined(ENABLE_MANAGED_USERS)
+  const std::string& auth_account = original_->GetAuthenticatedAccountId();
+  if (auth_account.empty() && profile_->IsManaged())
+    return GaiaConstants::kChromeSyncManagedOAuth2Scope;
+#endif
+  return GaiaConstants::kChromeSyncOAuth2Scope;
 }

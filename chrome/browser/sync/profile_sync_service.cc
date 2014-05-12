@@ -69,7 +69,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "grit/generated_resources.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -86,10 +85,6 @@
 #include "sync/util/cryptographer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
-
-#if defined(ENABLE_MANAGED_USERS)
-#include "chrome/browser/managed_mode/managed_user_constants.h"
-#endif
 
 #if defined(OS_ANDROID)
 #include "sync/internal_api/public/read_transaction.h"
@@ -1976,11 +1971,7 @@ void ProfileSyncService::RequestAccessToken() {
     return;
   request_access_token_retry_timer_.Stop();
   OAuth2TokenService::ScopeSet oauth2_scopes;
-  if (profile_->IsManaged()) {
-    oauth2_scopes.insert(GaiaConstants::kChromeSyncManagedOAuth2Scope);
-  } else {
-    oauth2_scopes.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  }
+  oauth2_scopes.insert(signin_->GetSyncScopeToUse());
 
   // Invalidate previous token, otherwise token service will return the same
   // token again.

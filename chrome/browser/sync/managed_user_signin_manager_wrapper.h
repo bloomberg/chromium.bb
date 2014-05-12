@@ -26,6 +26,8 @@ class ManagedUserSigninManagerWrapper {
   virtual std::string GetEffectiveUsername() const;
   virtual std::string GetAccountIdToUse() const;
 
+  virtual std::string GetSyncScopeToUse() const;
+
   SigninManagerBase* GetOriginal();
 
  private:
