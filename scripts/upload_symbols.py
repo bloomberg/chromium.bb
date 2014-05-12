@@ -737,10 +737,16 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
 
       # Drain the queue so we don't hang when we finish.
       try:
-        while dedupe_queue.get_nowait():
-          pass
-      except Queue.Empty:
-        pass
+        cros_build_lib.Warning('draining the notify queue manually')
+        with timeout_util.Timeout(60):
+          try:
+            while dedupe_queue.get_nowait():
+              pass
+          except Queue.Empty:
+            pass
+      except timeout_util.TimeoutError:
+        cros_build_lib.Warning('draining the notify queue failed; trashing it')
+        dedupe_queue.cancel_join_thread()
 
   cros_build_lib.Info('uploaded %i symbols (%i were deduped) which took: %s',
                       counters.uploaded_count, counters.deduped_count,
