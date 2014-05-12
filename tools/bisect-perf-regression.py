@@ -2077,9 +2077,6 @@ class BisectPerformanceMetrics(object):
       }
       return (fake_results, success_code)
 
-    if IsWindows():
-      command_to_run = command_to_run.replace('/', r'\\')
-
     args = shlex.split(command_to_run)
 
     if not self._GenerateProfileIfNecessary(args):
