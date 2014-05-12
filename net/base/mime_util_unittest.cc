@@ -8,6 +8,10 @@
 #include "net/base/mime_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 namespace net {
 
 TEST(MimeUtilTest, ExtensionTest) {
@@ -187,6 +191,60 @@ TEST(MimeUtilTest, MatchesMimeType) {
   EXPECT_TRUE(MatchesMimeType("ab*cd", "abxxxcd"));
   EXPECT_TRUE(MatchesMimeType("ab*cd", "abx/xcd"));
   EXPECT_TRUE(MatchesMimeType("ab/*cd", "ab/xxxcd"));
+}
+
+TEST(MimeUtilTest, CommonMediaMimeType) {
+#if defined(OS_ANDROID)
+  bool HLSSupported;
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 14)
+    HLSSupported = false;
+  else
+    HLSSupported = true;
+#endif
+
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/webm"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/webm"));
+
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/wav"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-wav"));
+
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/ogg"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("application/ogg"));
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/ogg"));
+  EXPECT_EQ(HLSSupported, IsSupportedMediaMimeType("application/x-mpegurl"));
+  EXPECT_EQ(HLSSupported,
+            IsSupportedMediaMimeType("application/vnd.apple.mpegurl"));
+#else
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/ogg"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("application/x-mpegurl"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("application/vnd.apple.mpegurl"));
+#endif  // OS_ANDROID
+
+#if defined(USE_PROPRIETARY_CODECS)
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/mp4"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-m4a"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/mp4"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("video/x-m4v"));
+
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/mp3"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/x-mp3"));
+  EXPECT_TRUE(IsSupportedMediaMimeType("audio/mpeg"));
+#else
+  EXPECT_FALSE(IsSupportedMediaMimeType("audio/mp4"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-m4a"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/mp4"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/x-m4v"));
+
+  EXPECT_FALSE(IsSupportedMediaMimeType("audio/mp3"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("audio/x-mp3"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("audio/mpeg"));
+#endif  // USE_PROPRIETARY_CODECS
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/mp3"));
+
+  EXPECT_FALSE(IsSupportedMediaMimeType("video/unknown"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("audio/unknown"));
+  EXPECT_FALSE(IsSupportedMediaMimeType("unknown/unknown"));
 }
 
 // Note: codecs should only be a list of 2 or fewer; hence the restriction of
