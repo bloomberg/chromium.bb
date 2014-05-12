@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
@@ -18,14 +19,12 @@ namespace test {
 class TraySessionLengthLimitTest;
 }
 
-namespace tray {
-class RemainingSessionTimeTrayView;
-}
+class LabelTrayView;
 
 // Adds a countdown timer to the system tray if the session length is limited.
 class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
                                           public SessionLengthLimitObserver {
- public:
+public:
   enum LimitState {
     LIMIT_NONE,
     LIMIT_SET,
@@ -36,33 +35,40 @@ class ASH_EXPORT TraySessionLengthLimit : public SystemTrayItem,
   virtual ~TraySessionLengthLimit();
 
   // SystemTrayItem:
-  virtual views::View* CreateTrayView(user::LoginStatus status) OVERRIDE;
-  virtual void DestroyTrayView() OVERRIDE;
-  virtual void UpdateAfterShelfAlignmentChange(
-      ShelfAlignment alignment) OVERRIDE;
+  virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;
+  virtual void DestroyDefaultView() OVERRIDE;
 
   // SessionLengthLimitObserver:
   virtual void OnSessionStartTimeChanged() OVERRIDE;
   virtual void OnSessionLengthLimitChanged() OVERRIDE;
-
-  LimitState GetLimitState() const;
-  base::TimeDelta GetRemainingSessionTime() const;
 
  private:
   friend class test::TraySessionLengthLimitTest;
 
   static const char kNotificationId[];
 
+  // Update state, notification and tray bubble view.  Called by the
+  // RepeatingTimer in regular intervals and also by OnSession*Changed().
   void Update();
 
-  bool IsTrayViewVisibleForTest();
+  // Recalculate |limit_state_| and |remaining_session_time_|.
+  void UpdateState();
 
-  tray::RemainingSessionTimeTrayView* tray_view_;
+  void UpdateNotification();
+  void UpdateTrayBubbleView() const;
 
-  LimitState limit_state_;
+  // These require that the state has been updated before.
+  base::string16 ComposeNotificationMessage() const;
+  base::string16 ComposeTrayBubbleMessage() const;
+
   base::TimeTicks session_start_time_;
-  base::TimeDelta limit_;
+  base::TimeDelta time_limit_;
   base::TimeDelta remaining_session_time_;
+
+  LimitState limit_state_;       // Current state.
+  LimitState last_limit_state_;  // State of last notification update.
+
+  LabelTrayView* tray_bubble_view_;
   scoped_ptr<base::RepeatingTimer<TraySessionLengthLimit> > timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySessionLengthLimit);

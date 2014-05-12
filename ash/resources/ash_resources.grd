@@ -143,7 +143,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE_DARK" file="cros/status/status_power_small_all_dark_fluctuating.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE" file="cros/status/status_screenshare.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SCREENSHARE_DARK" file="cros/status/status_screenshare_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SESSION_LENGTH_LIMIT_TIMER" file="cros/status/status_session_length_limit_timer.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SETTINGS" file="cros/status/status_settings.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="cros/status/status_shutdown.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="cros/status/status_shutdown_hover.png" />
@@ -155,6 +154,7 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER" file="cros/notification/notification_low_power_charger.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_DISPLAY" file="cros/notification/display_notification_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_BUBBLE_SESSION_LENGTH_LIMIT" file="cros/status/status_session_length_timer.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ENTERPRISE" file="cros/status/status_managed.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_MANAGED_USER" file="cros/status/status_managed_mode_user.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_1X" file="cros/network/statusbar_network_1x.png" />
@@ -188,6 +188,7 @@
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN" file="cros/network/statusbar_vpn_dark.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE" file="cros/network/statusbar_network_vpn_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NETWORK_WIRED" file="cros/network/statusbar_wired.png" />
+        <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_NOTIFICATION_SESSION_LENGTH_LIMIT" file="cros/notification/notification_session_length_timer.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_RECORDING" file="cros/status/status_recording.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_RECORDING_RED" file="cros/status/status_recording_red.png" />
         <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_VIRTUAL_KEYBOARD" file="cros/status/status_virtual_keyboard.png" />

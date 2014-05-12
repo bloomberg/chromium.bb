@@ -59,15 +59,11 @@ class TraySessionLengthLimitTest : public AshTestBase {
 
   void RemoveNotification() {
     message_center::MessageCenter::Get()->RemoveNotification(
-        TraySessionLengthLimit::kNotificationId, true /* by_user */);
+        TraySessionLengthLimit::kNotificationId, false /* by_user */);
   }
 
   TraySessionLengthLimit* tray_session_length_limit() {
     return tray_session_length_limit_;
-  }
-
-  bool IsTrayViewVisible() {
-    return tray_session_length_limit_->IsTrayViewVisibleForTest();
   }
 
  private:
@@ -76,41 +72,6 @@ class TraySessionLengthLimitTest : public AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(TraySessionLengthLimitTest);
 };
-
-TEST_F(TraySessionLengthLimitTest, TrayView) {
-  // No session limit.
-  EXPECT_FALSE(IsTrayViewVisible());
-
-  // Limit is 15 min.
-  UpdateSessionLengthLimitInMin(15);
-  EXPECT_EQ(TraySessionLengthLimit::LIMIT_SET,
-            tray_session_length_limit()->GetLimitState());
-  EXPECT_TRUE(IsTrayViewVisible());
-
-  // Limit is 3 min.
-  UpdateSessionLengthLimitInMin(3);
-  EXPECT_EQ(TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
-            tray_session_length_limit()->GetLimitState());
-  EXPECT_TRUE(IsTrayViewVisible());
-
-  // Nothing left.
-  UpdateSessionLengthLimitInMin(0);
-  EXPECT_EQ(TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
-            tray_session_length_limit()->GetLimitState());
-  EXPECT_TRUE(IsTrayViewVisible());
-
-  // Checks the behavior in case the limit goes negative.
-  UpdateSessionLengthLimitInMin(-5);
-  EXPECT_EQ(TraySessionLengthLimit::LIMIT_EXPIRING_SOON,
-            tray_session_length_limit()->GetLimitState());
-  EXPECT_TRUE(IsTrayViewVisible());
-
-  // Clears the session length limit, the TrayView should get invisible.
-  ClearSessionLengthLimit();
-  ASSERT_EQ(TraySessionLengthLimit::LIMIT_NONE,
-            tray_session_length_limit()->GetLimitState());
-  EXPECT_FALSE(IsTrayViewVisible());
-}
 
 TEST_F(TraySessionLengthLimitTest, Notification) {
   // No notifications when no session limit.
@@ -121,7 +82,7 @@ TEST_F(TraySessionLengthLimitTest, Notification) {
   message_center::Notification* notification = GetNotification();
   EXPECT_TRUE(notification);
   EXPECT_EQ(message_center::SYSTEM_PRIORITY, notification->priority());
-  base::string16 first_content = notification->title();
+  base::string16 first_content = notification->message();
   // Should read the content.
   EXPECT_TRUE(notification->rich_notification_data().
               should_make_spoken_feedback_for_popup_updates);
@@ -132,7 +93,7 @@ TEST_F(TraySessionLengthLimitTest, Notification) {
   EXPECT_TRUE(notification);
   EXPECT_EQ(message_center::SYSTEM_PRIORITY, notification->priority());
   // The content should be updated.
-  EXPECT_NE(first_content, notification->title());
+  EXPECT_NE(first_content, notification->message());
   // Should NOT read, because just update the remaining time.
   EXPECT_FALSE(notification->rich_notification_data().
                should_make_spoken_feedback_for_popup_updates);
@@ -146,15 +107,14 @@ TEST_F(TraySessionLengthLimitTest, Notification) {
   EXPECT_TRUE(notification->rich_notification_data().
               should_make_spoken_feedback_for_popup_updates);
 
-  // Session length limit is updated to longer. This should not read the
-  // notification content again.
+  // Session length limit is updated to longer: 15 min.
   UpdateSessionLengthLimitInMin(15);
   notification = GetNotification();
   EXPECT_TRUE(notification);
   EXPECT_EQ(message_center::SYSTEM_PRIORITY, notification->priority());
-  // Should not read again because the state has changed to longer.
-  EXPECT_FALSE(notification->rich_notification_data().
-               should_make_spoken_feedback_for_popup_updates);
+  // Should read again because an increase of the remaining time is noteworthy.
+  EXPECT_TRUE(notification->rich_notification_data().
+              should_make_spoken_feedback_for_popup_updates);
 
   // Clears the limit: the notification should be gone.
   ClearSessionLengthLimit();
@@ -162,32 +122,37 @@ TEST_F(TraySessionLengthLimitTest, Notification) {
 }
 
 TEST_F(TraySessionLengthLimitTest, RemoveNotification) {
+  message_center::Notification* notification;
+
   // Limit is 15 min.
   UpdateSessionLengthLimitInMin(15);
-  EXPECT_TRUE(GetNotification());
-
-  // Limit is 14 min.
-  UpdateSessionLengthLimitInMin(14);
   EXPECT_TRUE(GetNotification());
 
   // Removes the notification.
   RemoveNotification();
   EXPECT_FALSE(GetNotification());
 
-  // Limit is 13 min. The notification should not re-appear.
-  UpdateSessionLengthLimitInMin(13);
+  // Limit is 10 min. The notification should not re-appear.
+  UpdateSessionLengthLimitInMin(10);
   EXPECT_FALSE(GetNotification());
 
-  // Limit is 3 min. The notification should re-appear because of state change.
+  // Limit is 3 min. The notification should re-appear and should be re-read
+  // because of state change.
   UpdateSessionLengthLimitInMin(3);
-  EXPECT_TRUE(GetNotification());
+  notification = GetNotification();
+  EXPECT_TRUE(notification);
+  EXPECT_TRUE(notification->rich_notification_data().
+              should_make_spoken_feedback_for_popup_updates);
 
   RemoveNotification();
 
-  // Session length limit is updated to longer state. This should not re-appear
-  // the notification.
+  // Session length limit is updated to longer state. Notification should
+  // re-appear and be re-read.
   UpdateSessionLengthLimitInMin(15);
-  EXPECT_FALSE(GetNotification());
+  notification = GetNotification();
+  EXPECT_TRUE(notification);
+  EXPECT_TRUE(notification->rich_notification_data().
+              should_make_spoken_feedback_for_popup_updates);
 }
 
 }  // namespace test
