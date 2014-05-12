@@ -108,10 +108,6 @@ class ProfilePrefStoreManager {
   // if |kPlatformSupportsPreferenceTracking|.
   scoped_ptr<PrefHashStoreImpl> GetPrefHashStoreImpl();
 
-  // Returns a PrefHashStore that is a copy of the current state of the real
-  // hash store.
-  scoped_ptr<PrefHashStore> CopyPrefHashStore();
-
   const base::FilePath profile_path_;
   const std::vector<PrefHashFilter::TrackedPreferenceMetadata>
       tracking_configuration_;

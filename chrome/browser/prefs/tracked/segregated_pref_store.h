@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_PREFS_TRACKED_SEGREGATED_PREF_STORE_H_
 
 #include <set>
+#include <string>
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -41,8 +41,7 @@ class SegregatedPrefStore : public PersistentPrefStore {
   SegregatedPrefStore(
       const scoped_refptr<PersistentPrefStore>& default_pref_store,
       const scoped_refptr<PersistentPrefStore>& selected_pref_store,
-      const std::set<std::string>& selected_pref_names,
-      const base::Closure& on_initialization);
+      const std::set<std::string>& selected_pref_names);
 
   // PrefStore implementation
   virtual void AddObserver(Observer* observer) OVERRIDE;
@@ -89,20 +88,14 @@ class SegregatedPrefStore : public PersistentPrefStore {
 
   virtual ~SegregatedPrefStore();
 
-  // Returns |selected_pref_store| if |key| is selected or a value is present
-  // in |selected_pref_store|. This could happen if |key| was previously
-  // selected.
-  const PersistentPrefStore* StoreForKey(const std::string& key) const;
-
-  // Returns |selected_pref_store| if |key| is selected. If |key| is
-  // unselected but has a value in |selected_pref_store|, moves the value to
-  // |default_pref_store| before returning |default_pref_store|.
+  // Returns |selected_pref_store| if |key| is selected and |default_pref_store|
+  // otherwise.
   PersistentPrefStore* StoreForKey(const std::string& key);
+  const PersistentPrefStore* StoreForKey(const std::string& key) const;
 
   scoped_refptr<PersistentPrefStore> default_pref_store_;
   scoped_refptr<PersistentPrefStore> selected_pref_store_;
   std::set<std::string> selected_preference_names_;
-  base::Closure on_initialization_;
 
   scoped_ptr<PersistentPrefStore::ReadErrorDelegate> read_error_delegate_;
   ObserverList<PrefStore::Observer, true> observers_;

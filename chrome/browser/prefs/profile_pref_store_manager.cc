@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/profile_pref_store_manager.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/prefs/pref_hash_store_impl.h"
 #include "chrome/browser/prefs/tracked/pref_service_hash_store_contents.h"
 #include "chrome/browser/prefs/tracked/segregated_pref_store.h"
+#include "chrome/browser/prefs/tracked/tracked_preferences_migration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -243,24 +245,11 @@ void ProfilePrefStoreManager::ResetAllPrefHashStores(PrefService* local_state) {
 
 //  static
 base::Time ProfilePrefStoreManager::GetResetTime(PrefService* pref_service) {
-  // It's a bit of a coincidence that this (and ClearResetTime) work(s). The
-  // PrefHashFilter attached to the protected pref store will store the reset
-  // time directly in the protected pref store without going through the
-  // SegregatedPrefStore.
-
-  // PrefHashFilter::GetResetTime will read the value through the pref service,
-  // and thus through the SegregatedPrefStore. Even though it's not listed as
-  // "protected" it will be read from the protected store preferentially to the
-  // (NULL) value in the unprotected pref store.
   return PrefHashFilter::GetResetTime(pref_service);
 }
 
 // static
 void ProfilePrefStoreManager::ClearResetTime(PrefService* pref_service) {
-  // PrefHashFilter::ClearResetTime will clear the value through the pref
-  // service, and thus through the SegregatedPrefStore. Since it's not listed as
-  // "protected" it will be migrated from the protected store to the unprotected
-  // pref store before being deleted from the latter.
   PrefHashFilter::ClearResetTime(pref_service);
 }
 
@@ -283,6 +272,7 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
   std::vector<PrefHashFilter::TrackedPreferenceMetadata>
       protected_configuration;
   std::set<std::string> protected_pref_names;
+  std::set<std::string> unprotected_pref_names;
   for (std::vector<PrefHashFilter::TrackedPreferenceMetadata>::const_iterator
            it = tracking_configuration_.begin();
        it != tracking_configuration_.end();
@@ -292,41 +282,49 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
       protected_pref_names.insert(it->name);
     } else {
       unprotected_configuration.push_back(*it);
+      unprotected_pref_names.insert(it->name);
     }
   }
 
-  scoped_ptr<PrefFilter> unprotected_pref_hash_filter(
+  scoped_ptr<PrefHashFilter> unprotected_pref_hash_filter(
       new PrefHashFilter(GetPrefHashStoreImpl().PassAs<PrefHashStore>(),
                          unprotected_configuration,
                          reporting_ids_count_));
-  scoped_ptr<PrefFilter> protected_pref_hash_filter(
+  scoped_ptr<PrefHashFilter> protected_pref_hash_filter(
       new PrefHashFilter(GetPrefHashStoreImpl().PassAs<PrefHashStore>(),
                          protected_configuration,
                          reporting_ids_count_));
 
-  scoped_refptr<PersistentPrefStore> unprotected_pref_store(
+  PrefHashFilter* raw_unprotected_pref_hash_filter =
+      unprotected_pref_hash_filter.get();
+  PrefHashFilter* raw_protected_pref_hash_filter =
+      protected_pref_hash_filter.get();
+
+  scoped_refptr<JsonPrefStore> unprotected_pref_store(
       new JsonPrefStore(GetPrefFilePathFromProfilePath(profile_path_),
                         io_task_runner,
-                        unprotected_pref_hash_filter.Pass()));
-  scoped_refptr<PersistentPrefStore> protected_pref_store(new JsonPrefStore(
+                        unprotected_pref_hash_filter.PassAs<PrefFilter>()));
+  scoped_refptr<JsonPrefStore> protected_pref_store(new JsonPrefStore(
       profile_path_.Append(chrome::kProtectedPreferencesFilename),
       io_task_runner,
-      protected_pref_hash_filter.Pass()));
+      protected_pref_hash_filter.PassAs<PrefFilter>()));
 
-  // The on_initialized callback is used to migrate newly protected values from
-  // the main Preferences store to the Protected Preferences store. It is also
-  // responsible for the initial migration to a two-store model.
-  return new SegregatedPrefStore(
-      unprotected_pref_store,
-      protected_pref_store,
+  SetupTrackedPreferencesMigration(
+      unprotected_pref_names,
       protected_pref_names,
-      base::Bind(&PrefHashFilter::MigrateValues,
-                 base::Owned(new PrefHashFilter(
-                     CopyPrefHashStore(),
-                     protected_configuration,
-                     reporting_ids_count_)),
-                 unprotected_pref_store,
-                 protected_pref_store));
+      base::Bind(&JsonPrefStore::RemoveValueSilently,
+                 unprotected_pref_store->AsWeakPtr()),
+      base::Bind(&JsonPrefStore::RemoveValueSilently,
+                 protected_pref_store->AsWeakPtr()),
+      base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteCallback,
+                 unprotected_pref_store->AsWeakPtr()),
+      base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteCallback,
+                 protected_pref_store->AsWeakPtr()),
+      raw_unprotected_pref_hash_filter,
+      raw_protected_pref_hash_filter);
+
+  return new SegregatedPrefStore(unprotected_pref_store, protected_pref_store,
+                                 protected_pref_names);
 }
 
 void ProfilePrefStoreManager::UpdateProfileHashStoreIfRequired(
@@ -409,16 +407,4 @@ scoped_ptr<PrefHashStoreImpl> ProfilePrefStoreManager::GetPrefHashStoreImpl() {
       device_id_,
       scoped_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
           profile_path_.AsUTF8Unsafe(), local_state_))));
-}
-
-scoped_ptr<PrefHashStore> ProfilePrefStoreManager::CopyPrefHashStore() {
-  DCHECK(kPlatformSupportsPreferenceTracking);
-
-  PrefServiceHashStoreContents real_contents(profile_path_.AsUTF8Unsafe(),
-                                             local_state_);
-  return scoped_ptr<PrefHashStore>(new PrefHashStoreImpl(
-      seed_,
-      device_id_,
-      scoped_ptr<HashStoreContents>(
-          new DictionaryHashStoreContents(real_contents))));
 }

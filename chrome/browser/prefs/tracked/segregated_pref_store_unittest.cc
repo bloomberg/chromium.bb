@@ -57,8 +57,7 @@ class MockReadErrorDelegate : public PersistentPrefStore::ReadErrorDelegate {
 class SegregatedPrefStoreTest : public testing::Test {
  public:
   SegregatedPrefStoreTest()
-      : initialization_callback_invoked_(false),
-        read_error_delegate_data_(false,
+      : read_error_delegate_data_(false,
                                   PersistentPrefStore::PREF_READ_ERROR_NONE),
         read_error_delegate_(
             new MockReadErrorDelegate(&read_error_delegate_data_)) {}
@@ -73,9 +72,7 @@ class SegregatedPrefStoreTest : public testing::Test {
     segregated_store_ = new SegregatedPrefStore(
         default_store_,
         selected_store_,
-        selected_pref_names,
-        base::Bind(&SegregatedPrefStoreTest::InitializationCallback,
-                   base::Unretained(this)));
+        selected_pref_names);
 
     segregated_store_->AddObserver(&observer_);
   }
@@ -92,7 +89,6 @@ class SegregatedPrefStoreTest : public testing::Test {
   }
 
   PrefStoreObserverMock observer_;
-  bool initialization_callback_invoked_;
 
   scoped_refptr<TestingPrefStore> default_store_;
   scoped_refptr<TestingPrefStore> selected_store_;
@@ -101,12 +97,6 @@ class SegregatedPrefStoreTest : public testing::Test {
   MockReadErrorDelegate::Data read_error_delegate_data_;
 
  private:
-  void InitializationCallback() {
-    EXPECT_FALSE(observer_.initialized);
-    EXPECT_FALSE(initialization_callback_invoked_);
-    initialization_callback_invoked_ = true;
-  }
-
   scoped_ptr<MockReadErrorDelegate> read_error_delegate_;
 };
 
@@ -155,26 +145,9 @@ TEST_F(SegregatedPrefStoreTest, ReadValues) {
   ASSERT_TRUE(segregated_store_->GetValue(kUnselectedPref, NULL));
 }
 
-TEST_F(SegregatedPrefStoreTest, PreviouslySelected) {
-  selected_store_->SetValue(kUnselectedPref, new base::StringValue(kValue1));
-  segregated_store_->ReadPrefs();
-  // It will read from the selected store.
-  ASSERT_TRUE(segregated_store_->GetValue(kUnselectedPref, NULL));
-  ASSERT_TRUE(selected_store_->GetValue(kUnselectedPref, NULL));
-  ASSERT_FALSE(default_store_->GetValue(kUnselectedPref, NULL));
-
-  // But when we update the value...
-  segregated_store_->SetValue(kUnselectedPref, new base::StringValue(kValue2));
-  // ...it will be migrated.
-  ASSERT_TRUE(segregated_store_->GetValue(kUnselectedPref, NULL));
-  ASSERT_FALSE(selected_store_->GetValue(kUnselectedPref, NULL));
-  ASSERT_TRUE(default_store_->GetValue(kUnselectedPref, NULL));
-}
-
 TEST_F(SegregatedPrefStoreTest, Observer) {
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE,
             segregated_store_->ReadPrefs());
-  EXPECT_TRUE(initialization_callback_invoked_);
   EXPECT_TRUE(observer_.initialized);
   EXPECT_TRUE(observer_.initialization_success);
   EXPECT_TRUE(observer_.changed_keys.empty());

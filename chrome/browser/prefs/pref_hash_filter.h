@@ -7,18 +7,15 @@
 
 #include <map>
 #include <set>
-#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_filter.h"
+#include "chrome/browser/prefs/interceptable_pref_filter.h"
 #include "chrome/browser/prefs/pref_hash_store.h"
 #include "chrome/browser/prefs/tracked/tracked_preference.h"
 
-class PersistentPrefStore;
 class PrefService;
 class PrefStore;
 
@@ -35,7 +32,7 @@ class PrefRegistrySyncable;
 // Intercepts preference values as they are loaded from disk and verifies them
 // using a PrefHashStore. Keeps the PrefHashStore contents up to date as values
 // are changed.
-class PrefHashFilter : public PrefFilter {
+class PrefHashFilter : public InterceptablePrefFilter {
  public:
   enum EnforcementLevel {
     NO_ENFORCEMENT,
@@ -84,23 +81,23 @@ class PrefHashFilter : public PrefFilter {
   // |pref_store|.
   void Initialize(const PrefStore& pref_store);
 
-  // Migrates protected values from |source| to |destination|. Values are
-  // migrated if they are protected according to this filter's configuration,
-  // the corresponding key has no value in |destination|, and the value in
-  // |source| is trusted according to this filter's PrefHashStore. Regardless of
-  // the state of |destination| or the trust status, the protected values will
-  // be removed from |source|.
-  void MigrateValues(PersistentPrefStore* source,
-                     PersistentPrefStore* destination);
-
-  // PrefFilter implementation.
-  virtual bool FilterOnLoad(base::DictionaryValue* pref_store_contents)
-      OVERRIDE;
+  // PrefFilter remaining implementation.
   virtual void FilterUpdate(const std::string& path) OVERRIDE;
   virtual void FilterSerializeData(
       const base::DictionaryValue* pref_store_contents) OVERRIDE;
 
  private:
+  // InterceptablePrefFilter implementation.
+  virtual void FinalizeFilterOnLoad(
+      const PostFilterOnLoadCallback& post_filter_on_load_callback,
+      scoped_ptr<base::DictionaryValue> pref_store_contents,
+      bool prefs_altered) OVERRIDE;
+
+  // Callback to be invoked only once (and subsequently reset) on the next
+  // FilterOnLoad event. It will be allowed to modify the |prefs| handed to
+  // FilterOnLoad before handing them back to this PrefHashFilter.
+  FilterOnLoadInterceptor filter_on_load_interceptor_;
+
   // A map of paths to TrackedPreferences; this map owns this individual
   // TrackedPreference objects.
   typedef base::ScopedPtrHashMap<std::string, TrackedPreference>

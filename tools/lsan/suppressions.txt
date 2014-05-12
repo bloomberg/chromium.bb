@@ -115,4 +115,7 @@ leak:LoginUtilsBlockingLoginTest_EnterpriseLoginBlocksForEnterpriseUser
 leak:LoginUtilsParamTest
 leak:LoginUtilsTest::SetUp
 
+# http://crbug.com/371974
+leak:base::ImportantFileWriter::PostWriteTask
+
 # PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
