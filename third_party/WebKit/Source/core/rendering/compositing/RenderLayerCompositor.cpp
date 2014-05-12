@@ -346,6 +346,38 @@ bool RenderLayerCompositor::hasUnresolvedDirtyBits()
     return m_needsToRecomputeCompositingRequirements || compositingLayersNeedRebuild() || m_needsUpdateCompositingRequirementsState || m_pendingUpdateType != CompositingUpdateNone;
 }
 
+void RenderLayerCompositor::applyOverlayFullscreenVideoAdjustment()
+{
+    if (!m_rootContentLayer)
+        return;
+
+    bool isMainFrame = m_renderView.frame()->isMainFrame();
+    RenderVideo* video = findFullscreenVideoRenderer(m_renderView.document());
+    if (!video || !video->hasCompositedLayerMapping()) {
+        if (isMainFrame) {
+            GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer();
+            if (backgroundLayer && !backgroundLayer->parent())
+                rootFixedBackgroundsChanged();
+        }
+        return;
+    }
+
+    GraphicsLayer* videoLayer = video->compositedLayerMapping()->mainGraphicsLayer();
+
+    // The fullscreen video has layer position equal to its enclosing frame's scroll position because fullscreen container is fixed-positioned.
+    // We should reset layer position here since we are going to reattach the layer at the very top level.
+    videoLayer->setPosition(IntPoint());
+
+    // Only steal fullscreen video layer and clear all other layers if we are the main frame.
+    if (!isMainFrame)
+        return;
+
+    m_rootContentLayer->removeAllChildren();
+    m_overflowControlsHostLayer->addChild(videoLayer);
+    if (GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer())
+        backgroundLayer->removeFromParent();
+}
+
 void RenderLayerCompositor::updateIfNeeded()
 {
     {
@@ -439,25 +471,13 @@ void RenderLayerCompositor::updateIfNeeded()
             GraphicsLayerUpdater().rebuildTree(*updateRoot, childList);
         }
 
-        // Host the document layer in the RenderView's root layer.
-        if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && m_renderView.frame()->isMainFrame()) {
-            RenderVideo* video = findFullscreenVideoRenderer(m_renderView.document());
-            GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer();
-            if (video && video->hasCompositedLayerMapping()) {
-                childList.clear();
-                childList.append(video->compositedLayerMapping()->mainGraphicsLayer());
-                if (backgroundLayer && backgroundLayer->parent())
-                    backgroundLayer->removeFromParent();
-            } else {
-                if (backgroundLayer && !backgroundLayer->parent())
-                    rootFixedBackgroundsChanged();
-            }
-        }
-
         if (childList.isEmpty())
             destroyRootLayer();
         else
             m_rootContentLayer->setChildren(childList);
+
+        if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled())
+            applyOverlayFullscreenVideoAdjustment();
     }
 
     if (m_needsUpdateFixedBackground) {
