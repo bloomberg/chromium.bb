@@ -1,7 +1,7 @@
-layer at (0,0) size 800x600
+layer at (0,0) size 800x625
   RenderView at (0,0) size 800x600
-layer at (0,0) size 800x436
-  RenderBlock {HTML} at (0,0) size 800x436
+layer at (0,0) size 800x625
+  RenderBlock {HTML} at (0,0) size 800x625
     RenderBody {BODY} at (0,0) size 800x368
       RenderBlock {DIV} at (0,0) size 800x368
         RenderText {#text} at (0,0) size 783x368
@@ -13,10 +13,13 @@ layer at (0,0) size 800x436
           text run at (0,230) width 719: "inside the LI, which hasn't entered layout yet"
           text run at (0,276) width 732: "when the list marker is autosized (causing the"
           text run at (0,322) width 304: "autosizer to crash)."
-      RenderBlock (floating) {UL} at (0,384) size 800x36
-        RenderListItem {LI} at (40,0) size 760x36
-          RenderBlock {DIV} at (0,0) size 760x36
-            RenderListMarker at (-17,0) size 7x18: bullet
-            RenderText {#text} at (0,0) size 744x36
-              text run at (0,0) width 744: "List item list item list item list item list item list item list item list item list item list item list item list item list item list item"
-              text run at (0,18) width 473: "list item list item list item list item list item list item list item list item list item"
+      RenderBlock (floating) {UL} at (0,384) size 800x225
+        RenderListItem {LI} at (40,0) size 760x225
+          RenderBlock {DIV} at (0,0) size 760x225
+            RenderListMarker at (-31,0) size 14x45: bullet
+            RenderText {#text} at (0,0) size 754x225
+              text run at (0,0) width 745: "List item list item list item list item list item list"
+              text run at (0,45) width 754: "item list item list item list item list item list item"
+              text run at (0,90) width 733: "list item list item list item list item list item list"
+              text run at (0,135) width 754: "item list item list item list item list item list item"
+              text run at (0,180) width 127: "list item"

@@ -857,10 +857,11 @@ float FastTextAutosizer::widthFromBlock(const RenderBlock* block)
 {
     RELEASE_ASSERT(block);
     RELEASE_ASSERT(block->style());
-    if (block->isTable()) {
+    if (block->isTable() || block->isListItem()) {
         RenderBlock* containingBlock = block->containingBlock();
         // containingBlock should only be null in detached subtrees.
-        RELEASE_ASSERT(block->containingBlock());
+        if (!containingBlock)
+            return 0;
         if (block->style()->logicalWidth().isSpecified())
             return floatValueForLength(block->style()->logicalWidth(), containingBlock->contentLogicalWidth().toFloat());
         return containingBlock->contentLogicalWidth().toFloat();
