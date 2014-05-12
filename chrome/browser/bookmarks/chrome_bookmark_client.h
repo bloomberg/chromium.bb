@@ -40,6 +40,7 @@ class ChromeBookmarkClient : public BookmarkClient,
   virtual void GetTypedCountForNodes(
       const NodeSet& nodes,
       NodeTypedCountPairs* node_typed_count_pairs) OVERRIDE;
+  virtual bool IsPermanentNodeVisible(int node_type) OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
 
   // content::NotificationObserver:

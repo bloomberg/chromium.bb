@@ -11,6 +11,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/format_macros.h"
 #include "base/location.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/undo/bookmark_undo_service.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "chrome/browser/undo/bookmark_undo_utils.h"
+#include "components/bookmarks/core/browser/bookmark_client.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
@@ -233,9 +235,17 @@ void BookmarkModelAssociator::UpdatePermanentNodeVisibility() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(bookmark_model_->loaded());
 
-  bookmark_model_->SetPermanentNodeVisible(
-      BookmarkNode::MOBILE,
-      id_map_.find(bookmark_model_->mobile_node()->id()) != id_map_.end());
+  BookmarkNode::Type bookmark_node_types[] = {
+    BookmarkNode::BOOKMARK_BAR,
+    BookmarkNode::OTHER_NODE,
+    BookmarkNode::MOBILE,
+  };
+  for (size_t i = 0; i < arraysize(bookmark_node_types); ++i) {
+    int64 id = bookmark_model_->PermanentNode(bookmark_node_types[i])->id();
+    bookmark_model_->SetPermanentNodeVisible(
+      bookmark_node_types[i],
+      id_map_.find(id) != id_map_.end());
+  }
 }
 
 syncer::SyncError BookmarkModelAssociator::DisassociateModels() {

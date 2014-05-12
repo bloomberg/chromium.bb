@@ -250,8 +250,13 @@ class BookmarkModel : public BookmarkService {
     return expanded_state_tracker_.get();
   }
 
-  // Sets the visibility of one of the permanent nodes. This is set by sync.
+  // Sets the visibility of one of the permanent nodes (unless the node must
+  // always be visible, see |BookmarkClient::IsPermanentNodeVisible| for more
+  // details). This is set by sync.
   void SetPermanentNodeVisible(BookmarkNode::Type type, bool value);
+
+  // Returns the permanent node of type |type|.
+  const BookmarkPermanentNode* PermanentNode(BookmarkNode::Type type);
 
   // Sets/deletes meta info of |node|.
   void SetNodeMetaInfo(const BookmarkNode* node,
@@ -372,8 +377,8 @@ class BookmarkModel : public BookmarkService {
   // Whether the initial set of data has been loaded.
   bool loaded_;
 
-  // The root node. This contains the bookmark bar node and the 'other' node as
-  // children.
+  // The root node. This contains the bookmark bar node, the 'other' node and
+  // the mobile node as children.
   BookmarkNode root_;
 
   BookmarkPermanentNode* bookmark_bar_node_;

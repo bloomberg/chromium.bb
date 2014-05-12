@@ -4,6 +4,7 @@
 
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_changed_details.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
+#include "components/bookmarks/core/browser/bookmark_node.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
@@ -99,6 +101,17 @@ void ChromeBookmarkClient::GetTypedCountForNodes(
 
 void ChromeBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
   content::RecordAction(action);
+}
+
+bool ChromeBookmarkClient::IsPermanentNodeVisible(int node_type) {
+  DCHECK(node_type == BookmarkNode::BOOKMARK_BAR ||
+         node_type == BookmarkNode::OTHER_NODE ||
+         node_type == BookmarkNode::MOBILE);
+#if !defined(OS_IOS)
+  return node_type != BookmarkNode::MOBILE;
+#else
+  return node_type == BookmarkNode::MOBILE;
+#endif
 }
 
 void ChromeBookmarkClient::Observe(

@@ -23,6 +23,7 @@ class TestBookmarkClient : public BookmarkClient {
 
  private:
   // BookmarkClient:
+  virtual bool IsPermanentNodeVisible(int node_type) OVERRIDE;
   virtual void RecordAction(const base::UserMetricsAction& action) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkClient);

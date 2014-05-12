@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/string_compare.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "components/bookmarks/core/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/core/browser/bookmark_index.h"
@@ -32,6 +33,32 @@ namespace {
 BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
 }
+
+// Helper to get a mutable permanent bookmark node.
+BookmarkPermanentNode* AsMutable(const BookmarkPermanentNode* node) {
+  return const_cast<BookmarkPermanentNode*>(node);
+}
+
+// Comparator used when sorting permanent nodes. Nodes that are initially
+// visible are sorted before nodes that are initially hidden.
+class VisibilityComparator
+    : public std::binary_function<const BookmarkPermanentNode*,
+                                  const BookmarkPermanentNode*,
+                                  bool> {
+ public:
+  explicit VisibilityComparator(BookmarkClient* client) : client_(client) {}
+
+  // Returns true if |n1| preceeds |n2|.
+  bool operator()(const BookmarkPermanentNode* n1,
+                  const BookmarkPermanentNode* n2) {
+    bool n1_visible = client_->IsPermanentNodeVisible(n1->type());
+    bool n2_visible = client_->IsPermanentNodeVisible(n2->type());
+    return n1_visible != n2_visible && n1_visible;
+  }
+
+ private:
+  BookmarkClient* client_;
+};
 
 // Comparator used when sorting bookmarks. Folders are sorted first, then
 // bookmarks.
@@ -658,19 +685,23 @@ void BookmarkModel::ClearStore() {
 
 void BookmarkModel::SetPermanentNodeVisible(BookmarkNode::Type type,
                                             bool value) {
+  AsMutable(PermanentNode(type))->set_visible(
+      value || client_->IsPermanentNodeVisible(type));
+}
+
+const BookmarkPermanentNode* BookmarkModel::PermanentNode(
+    BookmarkNode::Type type) {
   DCHECK(loaded_);
   switch (type) {
     case BookmarkNode::BOOKMARK_BAR:
-      bookmark_bar_node_->set_visible(value);
-      break;
+      return bookmark_bar_node_;
     case BookmarkNode::OTHER_NODE:
-      other_node_->set_visible(value);
-      break;
+      return other_node_;
     case BookmarkNode::MOBILE:
-      mobile_node_->set_visible(value);
-      break;
+      return mobile_node_;
     default:
       NOTREACHED();
+      return NULL;
   }
 }
 
@@ -725,10 +756,17 @@ void BookmarkModel::DoneLoading(scoped_ptr<BookmarkLoadDetails> details) {
   index_.reset(details->release_index());
 
   // WARNING: order is important here, various places assume the order is
-  // constant.
-  root_.Add(bookmark_bar_node_, 0);
-  root_.Add(other_node_, 1);
-  root_.Add(mobile_node_, 2);
+  // constant (but can vary between embedders with the initial visibility
+  // of permanent nodes).
+  BookmarkPermanentNode* root_children[] = {
+      bookmark_bar_node_, other_node_, mobile_node_,
+  };
+  std::stable_sort(root_children,
+                   root_children + arraysize(root_children),
+                   VisibilityComparator(client_));
+  for (size_t i = 0; i < arraysize(root_children); ++i) {
+    root_.Add(root_children[i], static_cast<int>(i));
+  }
 
   root_.SetMetaInfoMap(details->model_meta_info_map());
   root_.set_sync_transaction_version(details->model_sync_transaction_version());
@@ -842,8 +880,7 @@ BookmarkPermanentNode* BookmarkModel::CreatePermanentNode(
          type == BookmarkNode::MOBILE);
   BookmarkPermanentNode* node =
       new BookmarkPermanentNode(generate_next_node_id());
-  if (type == BookmarkNode::MOBILE)
-    node->set_visible(false);  // Mobile node is initially hidden.
+  node->set_visible(client_->IsPermanentNodeVisible(type));
 
   int title_id;
   switch (type) {

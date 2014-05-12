@@ -62,6 +62,10 @@ class BookmarkClient {
       const NodeSet& nodes,
       NodeTypedCountPairs* node_typed_count_pairs);
 
+  // Returns whether the embedder wants permanent node of type |node_type|
+  // to always be visible or to only show them when not empty.
+  virtual bool IsPermanentNodeVisible(int node_type) = 0;
+
   // Wrapper around RecordAction defined in base/metrics/user_metrics.h
   // that ensure that the action is posted from the correct thread.
   virtual void RecordAction(const base::UserMetricsAction& action) = 0;
