@@ -39,9 +39,10 @@ OAuth2TokenFetcher::OAuth2TokenFetcher(
 OAuth2TokenFetcher::~OAuth2TokenFetcher() {
 }
 
-void OAuth2TokenFetcher::StartExchangeFromCookies() {
+void OAuth2TokenFetcher::StartExchangeFromCookies(
+    const std::string& session_index) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
+  session_index_ = session_index;
   // Delay the verification if the network is not connected or on a captive
   // portal.
   const NetworkState* default_network =
@@ -51,13 +52,15 @@ void OAuth2TokenFetcher::StartExchangeFromCookies() {
     // If network is offline, defer the token fetching until online.
     VLOG(1) << "Network is offline.  Deferring OAuth2 token fetch.";
     BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE,
+        BrowserThread::UI,
+        FROM_HERE,
         base::Bind(&OAuth2TokenFetcher::StartExchangeFromCookies,
-                   AsWeakPtr()),
+                   AsWeakPtr(),
+                   session_index),
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }
-  auth_fetcher_.StartCookieForOAuthLoginTokenExchange(std::string());
+  auth_fetcher_.StartCookieForOAuthLoginTokenExchange(session_index);
 }
 
 void OAuth2TokenFetcher::StartExchangeFromAuthCode(
@@ -95,15 +98,16 @@ void OAuth2TokenFetcher::OnClientOAuthSuccess(
 void OAuth2TokenFetcher::OnClientOAuthFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RetryOnError(
-      error,
-      auth_code_.empty() ?
-          base::Bind(&OAuth2TokenFetcher::StartExchangeFromCookies,
-                     AsWeakPtr()) :
-          base::Bind(&OAuth2TokenFetcher::StartExchangeFromAuthCode,
-                     AsWeakPtr(), auth_code_),
-      base::Bind(&Delegate::OnOAuth2TokensFetchFailed,
-                 base::Unretained(delegate_)));
+  RetryOnError(error,
+               auth_code_.empty()
+                   ? base::Bind(&OAuth2TokenFetcher::StartExchangeFromCookies,
+                                AsWeakPtr(),
+                                session_index_)
+                   : base::Bind(&OAuth2TokenFetcher::StartExchangeFromAuthCode,
+                                AsWeakPtr(),
+                                auth_code_),
+               base::Bind(&Delegate::OnOAuth2TokensFetchFailed,
+                          base::Unretained(delegate_)));
 }
 
 void OAuth2TokenFetcher::RetryOnError(const GoogleServiceAuthError& error,

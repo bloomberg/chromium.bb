@@ -33,6 +33,9 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   // work.
   void HandleCompleteLoginMessage(const base::ListValue* args);
 
+  // JS callback to switch the UI from a constrainted dialog to a full tab.
+  void HandleSwitchToFullTabMessage(const base::ListValue* args);
+
   virtual void SetExtraInitParams(base::DictionaryValue& params) {}
   virtual void CompleteLogin(const base::ListValue* args) = 0;
 

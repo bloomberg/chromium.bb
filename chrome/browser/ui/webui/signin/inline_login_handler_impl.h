@@ -35,12 +35,8 @@ class InlineLoginHandlerImpl : public InlineLoginHandler {
 
  private:
   // InlineLoginHandler overrides:
-  virtual void RegisterMessages() OVERRIDE;
   virtual void SetExtraInitParams(base::DictionaryValue& params) OVERRIDE;
   virtual void CompleteLogin(const base::ListValue* args) OVERRIDE;
-
-  // JS callback to switch the UI from a constrainted dialog to a full tab.
-  void HandleSwitchToFullTabMessage(const base::ListValue* args);
 
   base::WeakPtrFactory<InlineLoginHandlerImpl> weak_factory_;
   std::string email_;

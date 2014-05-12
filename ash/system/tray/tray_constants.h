@@ -72,7 +72,6 @@ extern const int kNotificationIconWidth;
 extern const int kNotificationButtonWidth;
 extern const int kTrayNotificationContentsWidth;
 
-
 extern const int kTrayAvatarCornerRadius;
 extern const int kTrayAvatarSize;
 

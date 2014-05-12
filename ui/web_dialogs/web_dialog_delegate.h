@@ -69,6 +69,10 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // agreement, etc.
   virtual bool CanCloseDialog() const;
 
+  // Returns true if the dialog can ever be resized. Default implementation
+  // returns |true|.
+  virtual bool CanResizeDialog() const;
+
   // A callback to notify the delegate that |source|'s loading state has
   // changed.
   virtual void OnLoadingStateChanged(content::WebContents* source) {}

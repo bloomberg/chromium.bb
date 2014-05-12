@@ -35,16 +35,13 @@ class ASH_EXPORT UserAccountsDelegate {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Returns the user's primary account as a canonicalized email address.
-  virtual std::string GetPrimaryAccount() = 0;
+  // Returns the user's primary account's ID.
+  virtual std::string GetPrimaryAccountId() = 0;
 
-  // Returns a list of the user's secondary accounts in form of canonicalized
-  // email addresses.
-  virtual std::vector<std::string> GetSecondaryAccountsList() = 0;
+  // Returns a list of the user's secondary accounts' IDs.
+  virtual std::vector<std::string> GetSecondaryAccountIds() = 0;
 
-  // Returns display name for given |account_id|. It has form of email but could
-  // be uncanonical, e.g. account "test-user@gmail.com" could have display
-  // name "Test-user+AfterPlus@gmail.com".
+  // Returns display name for given |account_id|.
   virtual std::string GetAccountDisplayName(const std::string& account_id) = 0;
 
   // Deletes given |account_id| from the list of user's account. Passing

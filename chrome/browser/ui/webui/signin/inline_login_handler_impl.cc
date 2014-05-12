@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,21 +14,18 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_oauth_helper.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -191,77 +187,13 @@ InlineLoginHandlerImpl::InlineLoginHandlerImpl()
 
 InlineLoginHandlerImpl::~InlineLoginHandlerImpl() {}
 
-void InlineLoginHandlerImpl::RegisterMessages() {
-  InlineLoginHandler::RegisterMessages();
-
-  web_ui()->RegisterMessageCallback("switchToFullTab",
-      base::Bind(&InlineLoginHandlerImpl::HandleSwitchToFullTabMessage,
-                  base::Unretained(this)));
-}
-
 void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
-  params.SetInteger("authMode", InlineLoginHandler::kDesktopAuthMode);
-
-  const GURL& current_url = web_ui()->GetWebContents()->GetURL();
-  signin::Source source = signin::GetSourceForPromoURL(current_url);
-  if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
-      source == signin::SOURCE_AVATAR_BUBBLE_SIGN_IN) {
-    // Drop the leading slash in the path.
-    params.SetString("gaiaPath",
-        GaiaUrls::GetInstance()->embedded_signin_url().path().substr(1));
-  }
-
   params.SetString("service", "chromiumsync");
-  params.SetString("continueUrl",
-      signin::GetLandingURL("source", static_cast<int>(source)).spec());
 
-  std::string default_email;
-  if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT) {
-    default_email = Profile::FromWebUI(web_ui())->GetPrefs()->
-        GetString(prefs::kGoogleServicesLastUsername);
-  } else {
-    if (!net::GetValueForKeyInQuery(current_url, "email", &default_email))
-      default_email.clear();
-  }
-  if (!default_email.empty())
-    params.SetString("email", default_email);
-
-  std::string frame_url;
-  net::GetValueForKeyInQuery(current_url, "frameUrl", &frame_url);
-  if (!frame_url.empty())
-    params.SetString("frameUrl", frame_url);
-
-  std::string is_constrained;
-  net::GetValueForKeyInQuery(current_url, "constrained", &is_constrained);
-  if (!is_constrained.empty())
-    params.SetString("constrained", is_constrained);
-
-  // TODO(rogerta): this needs to be passed on to gaia somehow.
-  std::string read_only_email;
-  net::GetValueForKeyInQuery(current_url, "readOnlyEmail", &read_only_email);
-  if (!read_only_email.empty())
-    params.SetString("readOnlyEmail", read_only_email);
-
+  signin::Source source =
+      signin::GetSourceForPromoURL(web_ui()->GetWebContents()->GetURL());
   OneClickSigninHelper::LogHistogramValue(
       source, one_click_signin::HISTOGRAM_SHOWN);
-}
-
-void InlineLoginHandlerImpl::HandleSwitchToFullTabMessage(
-    const base::ListValue* args) {
-  base::string16 url_str;
-  CHECK(args->GetString(0, &url_str));
-
-  content::WebContents* web_contents = web_ui()->GetWebContents();
-  GURL main_frame_url(web_contents->GetURL());
-  main_frame_url = net::AppendOrReplaceQueryParameter(
-      main_frame_url, "frameUrl", base::UTF16ToASCII(url_str));
-  chrome::NavigateParams params(
-      Profile::FromWebUI(web_ui()),
-      net::AppendOrReplaceQueryParameter(main_frame_url, "constrained", "0"),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  chrome::Navigate(&params);
-
-  web_ui()->CallJavascriptFunction("inline.login.closeDialog");
 }
 
 void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {

@@ -38,7 +38,7 @@ class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
                      net::URLRequestContextGetter* context_getter);
   virtual ~OAuth2TokenFetcher();
 
-  void StartExchangeFromCookies();
+  void StartExchangeFromCookies(const std::string& session_index);
   void StartExchangeFromAuthCode(const std::string& auth_code);
 
  private:
@@ -62,6 +62,7 @@ class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
 
   // The retry counter. Increment this only when failure happened.
   int retry_count_;
+  std::string session_index_;
   std::string auth_code_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenFetcher);

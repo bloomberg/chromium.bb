@@ -939,6 +939,8 @@
         'browser/chromeos/ui/idle_app_name_notification_view.h',
         'browser/chromeos/ui/idle_logout_dialog_view.cc',
         'browser/chromeos/ui/idle_logout_dialog_view.h',
+        'browser/chromeos/ui/inline_login_dialog.cc',
+        'browser/chromeos/ui/inline_login_dialog.h',
         'browser/chromeos/ui/mobile_config_ui.cc',
         'browser/chromeos/ui/mobile_config_ui.h',
         'browser/chromeos/ui/screen_capture_notification_ui_chromeos.cc',

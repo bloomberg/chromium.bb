@@ -187,7 +187,7 @@ void AccountsDetailedView::UpdateAccountList() {
   // Adding primary account.
   layout->AddPaddingRow(0.0, kPaddingBetweenAccounts);
   layout->StartRow(0.0, kPrimaryAccountColumnSetID);
-  const std::string& primary_account = delegate_->GetPrimaryAccount();
+  const std::string& primary_account = delegate_->GetPrimaryAccountId();
   views::Label* primary_account_label =
       new views::Label(l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_PRIMARY_ACCOUNT_LABEL,
@@ -197,7 +197,7 @@ void AccountsDetailedView::UpdateAccountList() {
 
   // Adding secondary accounts.
   const std::vector<std::string>& secondary_accounts =
-      delegate_->GetSecondaryAccountsList();
+      delegate_->GetSecondaryAccountIds();
   for (size_t i = 0; i < secondary_accounts.size(); ++i) {
     layout->AddPaddingRow(0.0, kPaddingBetweenAccounts);
     layout->StartRow(0.0, kSecondaryAccountColumnSetID);

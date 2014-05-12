@@ -17,8 +17,8 @@ class StubUserAccountsDelegate : public ash::tray::UserAccountsDelegate {
   void AddAccount(const std::string& account);
 
   // Overridden from ash::tray::UserAccountsDelegate:
-  virtual std::string GetPrimaryAccount() OVERRIDE;
-  virtual std::vector<std::string> GetSecondaryAccountsList() OVERRIDE;
+  virtual std::string GetPrimaryAccountId() OVERRIDE;
+  virtual std::vector<std::string> GetSecondaryAccountIds() OVERRIDE;
   virtual std::string GetAccountDisplayName(const std::string& account_id)
       OVERRIDE;
   virtual void DeleteAccount(const std::string& account_id) OVERRIDE;

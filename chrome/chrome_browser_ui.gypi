@@ -364,6 +364,8 @@
         'browser/ui/ash/system_tray_delegate_chromeos.h',
         'browser/ui/ash/system_tray_delegate_win.cc',
         'browser/ui/ash/system_tray_delegate_win.h',
+        'browser/ui/ash/user_accounts_delegate_chromeos.cc',
+        'browser/ui/ash/user_accounts_delegate_chromeos.h',
         'browser/ui/ash/user_wallpaper_delegate_win.cc',
         'browser/ui/ash/user_wallpaper_delegate_win.h',
         'browser/ui/ash/volume_controller_chromeos.cc',

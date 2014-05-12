@@ -76,7 +76,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/stub_user_accounts_delegate.h"
+#include "chrome/browser/ui/ash/user_accounts_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -915,18 +915,13 @@ ash::tray::UserAccountsDelegate*
 SystemTrayDelegateChromeOS::GetUserAccountsDelegate(
     const std::string& user_id) {
   if (!accounts_delegates_.contains(user_id)) {
-    // TODO(dzhioev): replace stub with real implementation.
-    accounts_delegates_.set(user_id,
-                            scoped_ptr<ash::tray::UserAccountsDelegate>(
-                                new StubUserAccountsDelegate(user_id)));
-    static_cast<StubUserAccountsDelegate*>(accounts_delegates_.get(user_id))
-        ->AddAccount("secondary_account1@gmail.com");
-    static_cast<StubUserAccountsDelegate*>(accounts_delegates_.get(user_id))
-        ->AddAccount("very_long_account_name_for_user@gmail.com");
-    static_cast<StubUserAccountsDelegate*>(accounts_delegates_.get(user_id))
-        ->AddAccount("secondary_account2@gmail.com");
-    static_cast<StubUserAccountsDelegate*>(accounts_delegates_.get(user_id))
-        ->AddAccount("very_very_very_long_account_name_for_user@gmail.com");
+    const User* user = UserManager::Get()->FindUser(user_id);
+    Profile* user_profile = UserManager::Get()->GetProfileByUser(user);
+    CHECK(user_profile);
+    accounts_delegates_.set(
+        user_id,
+        scoped_ptr<ash::tray::UserAccountsDelegate>(
+            new UserAccountsDelegateChromeOS(user_profile)));
   }
   return accounts_delegates_.get(user_id);
 }

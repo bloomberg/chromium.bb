@@ -220,7 +220,7 @@ void OAuth2LoginManager::FetchOAuth2Tokens() {
   if (restore_strategy_ == RESTORE_FROM_COOKIE_JAR) {
     oauth2_token_fetcher_.reset(
         new OAuth2TokenFetcher(this, auth_request_context_.get()));
-    oauth2_token_fetcher_->StartExchangeFromCookies();
+    oauth2_token_fetcher_->StartExchangeFromCookies(std::string());
   } else if (restore_strategy_ == RESTORE_FROM_AUTH_CODE) {
     DCHECK(!auth_code_.empty());
     oauth2_token_fetcher_.reset(

@@ -13,11 +13,11 @@ StubUserAccountsDelegate::StubUserAccountsDelegate(const std::string& owner_id)
 
 StubUserAccountsDelegate::~StubUserAccountsDelegate() {}
 
-std::string StubUserAccountsDelegate::GetPrimaryAccount() {
+std::string StubUserAccountsDelegate::GetPrimaryAccountId() {
   return primary_account_;
 }
 
-std::vector<std::string> StubUserAccountsDelegate::GetSecondaryAccountsList() {
+std::vector<std::string> StubUserAccountsDelegate::GetSecondaryAccountIds() {
   return secondary_accounts_;
 }
 

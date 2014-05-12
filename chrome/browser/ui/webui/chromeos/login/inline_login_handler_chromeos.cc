@@ -8,17 +8,25 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
+#include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "google_apis/gaia/gaia_urls.h"
+#include "net/base/url_util.h"
 
 namespace chromeos {
 
 class InlineLoginHandlerChromeOS::InlineLoginUIOAuth2Delegate
     : public OAuth2TokenFetcher::Delegate {
  public:
-  explicit InlineLoginUIOAuth2Delegate(content::WebUI* web_ui)
-      : web_ui_(web_ui) {}
+  explicit InlineLoginUIOAuth2Delegate(content::WebUI* web_ui,
+                                       const std::string& account_id)
+      : web_ui_(web_ui), account_id_(account_id) {}
+
   virtual ~InlineLoginUIOAuth2Delegate() {}
 
   // OAuth2TokenFetcher::Delegate overrides:
@@ -33,11 +41,7 @@ class InlineLoginHandlerChromeOS::InlineLoginUIOAuth2Delegate
     Profile* profile = Profile::FromWebUI(web_ui_);
     ProfileOAuth2TokenService* token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-    SigninManagerBase* signin_manager =
-        SigninManagerFactory::GetForProfile(profile);
-    token_service->UpdateCredentials(
-        signin_manager->GetAuthenticatedAccountId(),
-        oauth2_tokens.refresh_token);
+    token_service->UpdateCredentials(account_id_, oauth2_tokens.refresh_token);
   }
 
   virtual void OnOAuth2TokensFetchFailed() OVERRIDE {
@@ -47,6 +51,9 @@ class InlineLoginHandlerChromeOS::InlineLoginUIOAuth2Delegate
 
  private:
   content::WebUI* web_ui_;
+  std::string account_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(InlineLoginUIOAuth2Delegate);
 };
 
 InlineLoginHandlerChromeOS::InlineLoginHandlerChromeOS() {}
@@ -56,10 +63,25 @@ InlineLoginHandlerChromeOS::~InlineLoginHandlerChromeOS() {}
 void InlineLoginHandlerChromeOS::CompleteLogin(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  oauth2_delegate_.reset(new InlineLoginUIOAuth2Delegate(web_ui()));
-  oauth2_token_fetcher_.reset(new OAuth2TokenFetcher(
-      oauth2_delegate_.get(), profile->GetRequestContext()));
-  oauth2_token_fetcher_->StartExchangeFromCookies();
+  const base::DictionaryValue* dict = NULL;
+  args->GetDictionary(0, &dict);
+
+  std::string session_index;
+  dict->GetString("sessionIndex", &session_index);
+  CHECK(!session_index.empty()) << "Session index is empty.";
+
+  std::string account_id;
+  dict->GetString("email", &account_id);
+  CHECK(!account_id.empty()) << "Account ID is empty.";
+
+  oauth2_delegate_.reset(new InlineLoginUIOAuth2Delegate(web_ui(), account_id));
+  net::URLRequestContextGetter* request_context =
+      content::BrowserContext::GetStoragePartitionForSite(
+          profile, GURL(chrome::kChromeUIChromeSigninURL))
+          ->GetURLRequestContext();
+  oauth2_token_fetcher_.reset(
+      new OAuth2TokenFetcher(oauth2_delegate_.get(), request_context));
+  oauth2_token_fetcher_->StartExchangeFromCookies(session_index);
 }
 
 } // namespace chromeos
