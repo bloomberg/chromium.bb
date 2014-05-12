@@ -45,9 +45,6 @@ class ExternalPrerenderHandlerAndroid {
                                 GURL url,
                                 content::WebContents* web_contents);
 
-  // Whether the cookie store associated with this profile has been loaded.
-  static bool HasCookieStoreLoaded(Profile* profile);
-
   static bool RegisterExternalPrerenderHandlerAndroid(JNIEnv* env);
 
  private:

@@ -29,7 +29,6 @@
 #include "chrome/browser/net/client_hints.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/pref_names.h"
@@ -53,7 +52,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/command_line.h"
@@ -360,8 +358,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       domain_reliability_monitor_(NULL),
       received_content_length_(0),
       original_content_length_(0),
-      first_request_(true),
-      prerender_tracker_(NULL) {
+      first_request_(true) {
   DCHECK(event_router);
   DCHECK(enable_referrers);
 }
@@ -743,13 +740,6 @@ bool ChromeNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                    render_process_id, render_frame_id,
                    request.url(), request.first_party_for_cookies(),
                    cookie_line, *options, !allow));
-  }
-
-  if (prerender_tracker_) {
-    prerender_tracker_->OnCookieChangedForURL(
-        render_process_id,
-        request.context()->cookie_store()->GetCookieMonster(),
-        request.url());
   }
 
   return allow;

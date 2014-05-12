@@ -39,10 +39,8 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "ui/gfx/rect.h"
 
-using content::BrowserThread;
 using content::DownloadItem;
 using content::OpenURLParams;
 using content::RenderViewHost;
@@ -293,8 +291,7 @@ PrerenderContents* PrerenderContents::FromWebContents(
 void PrerenderContents::StartPrerendering(
     int creator_child_id,
     const gfx::Size& size,
-    SessionStorageNamespace* session_storage_namespace,
-    net::URLRequestContextGetter* request_context) {
+    SessionStorageNamespace* session_storage_namespace) {
   DCHECK(profile_ != NULL);
   DCHECK(!size.IsEmpty());
   DCHECK(!prerendering_has_started_);
@@ -341,24 +338,6 @@ void PrerenderContents::StartPrerendering(
   // Log transactions to see if we could merge session storage namespaces in
   // the event of a mismatch.
   alias_session_storage_namespace->AddTransactionLogProcessId(child_id_);
-
-  // Add the RenderProcessHost to the Prerender Manager.
-  prerender_manager()->AddPrerenderProcessHost(
-      GetRenderViewHost()->GetProcess());
-
-  // In the prerender tracker, create a Prerender Cookie Store to keep track of
-  // cookie changes performed by the prerender. Once the prerender is shown,
-  // the cookie changes will be committed to the actual cookie store,
-  // otherwise, they will be discarded.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&PrerenderTracker::AddPrerenderCookieStoreOnIOThread,
-                 base::Unretained(prerender_manager()->prerender_tracker()),
-                 GetRenderViewHost()->GetProcess()->GetID(),
-                 make_scoped_refptr(request_context),
-                 base::Bind(&PrerenderContents::Destroy,
-                            AsWeakPtr(),
-                            FINAL_STATUS_COOKIE_CONFLICT)));
 
   NotifyPrerenderStart();
 
@@ -817,8 +796,8 @@ void PrerenderContents::PrepareForUse() {
 
   NotifyPrerenderStop();
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
       FROM_HERE,
       base::Bind(&ResumeThrottles, resource_throttles_));
   resource_throttles_.clear();

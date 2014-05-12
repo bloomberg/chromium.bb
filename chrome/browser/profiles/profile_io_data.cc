@@ -366,7 +366,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #endif
 
   params->profile = profile;
-  params->prerender_tracker = g_browser_process->prerender_tracker();
   profile_params_.reset(params.release());
 
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
@@ -949,7 +948,6 @@ void ProfileIOData::Init(
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_safesearch_);
-  network_delegate->set_prerender_tracker(profile_params_->prerender_tracker);
   network_delegate_.reset(network_delegate);
 
   fraudulent_certificate_reporter_.reset(

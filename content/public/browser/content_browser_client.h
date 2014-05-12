@@ -234,10 +234,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool IsSuitableHost(RenderProcessHost* process_host,
                               const GURL& site_url);
 
-  // Returns whether a new view for a new site instance can be added to a
-  // given |process_host|.
-  virtual bool MayReuseHost(RenderProcessHost* process_host);
-
   // Returns whether a new process should be created or an existing one should
   // be reused based on the URL we want to load. This should return false,
   // unless there is a good reason otherwise.
@@ -630,7 +626,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // if the default cookie store should be used
   // This is called on the IO thread.
   virtual net::CookieStore* OverrideCookieStoreForRenderProcess(
-      int render_process_id);
+      int render_process_id_);
 
 #if defined(VIDEO_HOLE)
   // Allows an embedder to provide its own ExternalVideoSurfaceContainer

@@ -1711,12 +1711,11 @@ RenderProcessHost* RenderProcessHost::GetExistingProcessHost(
 
   iterator iter(AllHostsIterator());
   while (!iter.IsAtEnd()) {
-    if (GetContentClient()->browser()->MayReuseHost(iter.GetCurrentValue()) &&
-        RenderProcessHostImpl::IsSuitableHost(
+    if (RenderProcessHostImpl::IsSuitableHost(
             iter.GetCurrentValue(),
-            browser_context, site_url)) {
+            browser_context, site_url))
       suitable_renderers.push_back(iter.GetCurrentValue());
-    }
+
     iter.Advance();
   }
 
@@ -1769,8 +1768,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSite(
   std::string site = SiteInstance::GetSiteForURL(browser_context, url)
       .possibly_invalid_spec();
   RenderProcessHost* host = map->FindProcess(site);
-  if (host && (!GetContentClient()->browser()->MayReuseHost(host) ||
-               !IsSuitableHost(host, browser_context, url))) {
+  if (host && !IsSuitableHost(host, browser_context, url)) {
     // The registered process does not have an appropriate set of bindings for
     // the url.  Remove it from the map so we can register a better one.
     RecordAction(
