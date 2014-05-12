@@ -26,7 +26,6 @@
 #include "base/timer/timer.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/loader/global_routing_id.h"
-#include "content/browser/loader/offline_policy.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_loader_delegate.h"
 #include "content/browser/loader/resource_scheduler.h"
@@ -505,10 +504,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   DelegateMap delegate_map_;
 
   scoped_ptr<ResourceScheduler> scheduler_;
-
-  typedef std::map<GlobalRoutingID, OfflinePolicy*> OfflineMap;
-
-  OfflineMap offline_policy_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

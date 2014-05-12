@@ -448,9 +448,6 @@ const char kEnableLogging[]                 = "enable-logging";
 // Enables the memory benchmarking extension
 const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
 
-// Enables use of cache if offline, even if it's stale
-const char kEnableOfflineCacheAccess[]      = "enable-offline-cache-access";
-
 // Enable rasterizer that writes directly to GPU memory.
 const char kEnableOneCopy[]                 = "enable-one-copy";
 
