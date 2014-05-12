@@ -2160,3 +2160,7 @@ name=bug_372226
 *!WebCore::PinchViewport::reset
 *!WebCore::PinchViewport::PinchViewport
 *!WebCore::FrameHost::FrameHost
+
+UNINITIALIZED READ
+name=bug_372254
+*!content::*::NotifyPluginProcessHostHelper
