@@ -21,19 +21,19 @@ const SkColor kDefaultColorManagedUserLabelBackground =
 int MapToManagedUserResourceIds(int id) {
   switch (id) {
     case IDR_THEME_FRAME:
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
-    case IDR_THEME_FRAME_DESKTOP:
+#if defined(OS_WIN)
+    case IDR_THEME_FRAME_WIN:
 #endif
       return IDR_MANAGED_USER_THEME_FRAME;
     case IDR_THEME_FRAME_INACTIVE:
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
-    case IDR_THEME_FRAME_INACTIVE_DESKTOP:
+#if defined(OS_WIN)
+    case IDR_THEME_FRAME_INACTIVE_WIN:
 #endif
       return IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
     case IDR_THEME_TAB_BACKGROUND:
     case IDR_THEME_TAB_BACKGROUND_V:
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
-    case IDR_THEME_TAB_BACKGROUND_DESKTOP:
+#if defined(OS_WIN)
+    case IDR_THEME_TAB_BACKGROUND_WIN:
 #endif
       return IDR_MANAGED_USER_THEME_TAB_BACKGROUND;
   }

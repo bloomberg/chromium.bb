@@ -17,13 +17,9 @@ bool magnifier_key_scroller_enabled = false;
 
 // static
 bool MagnifierKeyScroller::IsEnabled() {
-  bool has_switch = false;
-#if defined(OS_CHROMEOS)
-  has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableMagnifierKeyScroller);
-#endif
-
-  return (magnifier_key_scroller_enabled || has_switch) &&
+  return (magnifier_key_scroller_enabled ||
+          CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAshEnableMagnifierKeyScroller)) &&
       ash::Shell::GetInstance()->magnification_controller()->IsEnabled();
 }
 

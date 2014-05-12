@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/solid_color_user_wallpaper_delegate.h"
+#include "ash/desktop_background/user_wallpaper_delegate.h"
 
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
 #include "base/basictypes.h"
@@ -87,6 +86,6 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
 
 }  // namespace
 
-ash::UserWallpaperDelegate* CreateSolidColorUserWallpaperDelegate() {
+ash::UserWallpaperDelegate* CreateUserWallpaperDelegate() {
   return new UserWallpaperDelegate();
 }

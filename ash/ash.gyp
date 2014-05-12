@@ -1017,7 +1017,7 @@
         'wm/workspace_controller_unittest.cc',
       ],
       'conditions': [
-        ['chromeos==0', {
+        ['OS=="win"', {
           'sources/': [
             # TODO(zork): fix this test to build on Windows. See: crosbug.com/26906
             ['exclude', 'focus_cycler_unittest.cc'],

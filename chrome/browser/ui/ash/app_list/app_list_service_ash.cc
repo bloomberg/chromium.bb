@@ -65,9 +65,8 @@ AppListControllerDelegate* AppListServiceAsh::GetControllerDelegate() {
   return controller_delegate_.get();
 }
 
-// Windows and Linux Ash additionally supports a native UI. See
-// app_list_service_{win,linux}.cc.
-#if defined(OS_CHROMEOS)
+// Windows Ash additionally supports a native UI. See app_list_service_win.cc.
+#if !defined(OS_WIN)
 
 // static
 AppListService* AppListService::Get(chrome::HostDesktopType desktop_type) {

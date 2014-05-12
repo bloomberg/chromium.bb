@@ -14,9 +14,7 @@ const int kResizeOutsideBoundsSize = 6;
 const int kResizeOutsideBoundsScaleForTouch = 5;
 const int kResizeInsideBoundsSize = 1;
 
-#if defined(OS_CHROMEOS)
 const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
-#endif
 
 const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 

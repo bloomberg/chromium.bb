@@ -286,9 +286,7 @@ void AshWindowTreeHostX11::UpdateRootWindowSize(const gfx::Size& host_size) {
 }
 
 void AshWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
-#if defined(OS_CHROMEOS)
   SetCrOSTapPaused(!show);
-#endif
 }
 
 void AshWindowTreeHostX11::OnWindowInitialized(aura::Window* window) {}
@@ -302,11 +300,9 @@ void AshWindowTreeHostX11::OnHostInitialized(aura::WindowTreeHost* host) {
     return;
   UpdateIsInternalDisplay();
 
-#if defined(OS_CHROMEOS)
   // We have to enable Tap-to-click by default because the cursor is set to
   // visible in Shell::InitRootWindowController.
   SetCrOSTapPaused(false);
-#endif
 }
 
 void AshWindowTreeHostX11::OnConfigureNotify() {
@@ -327,7 +323,6 @@ void AshWindowTreeHostX11::TranslateAndDispatchLocatedEvent(
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
-#if defined(OS_CHROMEOS)
       ui::TouchEvent* touchev = static_cast<ui::TouchEvent*>(event);
       if (base::SysInfo::IsRunningOnChromeOS()) {
         // X maps the touch-surface to the size of the X root-window.
@@ -342,7 +337,6 @@ void AshWindowTreeHostX11::TranslateAndDispatchLocatedEvent(
           touch_calibrate_->Calibrate(touchev, bounds());
 #endif  // defined(USE_XI2_MT)
       }
-#endif  // defined(OS_CHROMEOS)
       break;
     }
     default: {
@@ -378,7 +372,6 @@ void AshWindowTreeHostX11::UpdateIsInternalDisplay() {
   is_internal_display_ = display.IsInternal();
 }
 
-#if defined(OS_CHROMEOS)
 void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
   if (!ui::IsXInput2Available())
     return;
@@ -421,7 +414,6 @@ void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
     }
   }
 }
-#endif
 
 AshWindowTreeHost* AshWindowTreeHost::Create(const gfx::Rect& initial_bounds) {
   return new AshWindowTreeHostX11(initial_bounds);

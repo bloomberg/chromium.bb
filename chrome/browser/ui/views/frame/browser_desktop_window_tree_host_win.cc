@@ -58,6 +58,7 @@ class DesktopThemeProvider : public ui::ThemeProvider {
   virtual bool HasCustomImage(int id) const OVERRIDE {
     return delegate_->HasCustomImage(
         chrome::MapThemeImage(chrome::HOST_DESKTOP_TYPE_NATIVE, id));
+
   }
   virtual base::RefCountedMemory* GetRawData(
       int id,
