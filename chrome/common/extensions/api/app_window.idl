@@ -411,7 +411,11 @@ namespace app.window {
     // Fired when the window is resized.
     [nocompile] static void onBoundsChanged();
 
-    // Fired when the window is closed.
+    // Fired when the window is closed. Note, this should be listened to from
+    // a window other than the window being closed, for example from the
+    // background page. This is because the window being closed will be in the
+    // process of being torn down when the event is fired, which means not all
+    // APIs in the window's script context will be functional.
     [nocompile] static void onClosed();
 
     // Fired when the window is fullscreened.
