@@ -204,6 +204,11 @@
             'gfx/screen_unittest.cc',
           ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            'gfx/ozone/gfx_ozone.gyp:gfx_ozone',
+          ],
+        }],
         ['use_ozone==1 and use_pango==0', {
           'sources!': [
             'gfx/text_elider_unittest.cc',

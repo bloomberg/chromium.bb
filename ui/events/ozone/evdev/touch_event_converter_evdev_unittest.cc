@@ -58,7 +58,7 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
         new TouchEvent(*static_cast<TouchEvent*>(event)));
   }
 
-  bool Reinitialize() OVERRIDE { return true; }
+  virtual bool Reinitialize() OVERRIDE { return true; }
 
  private:
   int read_pipe_;
