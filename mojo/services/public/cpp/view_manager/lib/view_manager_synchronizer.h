@@ -48,30 +48,32 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   typedef ScopedVector<ViewManagerTransaction> Transactions;
 
   // Overridden from IViewManagerClient:
-  virtual void OnConnectionEstablished(uint16 connection_id) OVERRIDE;
-  virtual void OnNodeHierarchyChanged(uint32 node_id,
-                                      uint32 new_parent_id,
-                                      uint32 old_parent_id,
-                                      uint32 change_id) OVERRIDE;
+  virtual void OnConnectionEstablished(
+      TransportConnectionId connection_id,
+      TransportChangeId next_server_change_id) OVERRIDE;
+  virtual void OnNodeHierarchyChanged(
+      uint32 node_id,
+      uint32 new_parent_id,
+      uint32 old_parent_id,
+      TransportChangeId server_change_id,
+      TransportChangeId client_change_id) OVERRIDE;
+  virtual void OnNodeDeleted(TransportNodeId node_id,
+                             TransportChangeId server_change_id,
+                             TransportChangeId client_change_id) OVERRIDE;
   virtual void OnNodeViewReplaced(uint32_t node,
                                   uint32_t new_view_id,
                                   uint32_t old_view_id,
-                                  uint32_t change_id) OVERRIDE;
-  virtual void OnNodeDeleted(uint32_t node_id, uint32_t change_id) OVERRIDE;
-
-  // Called to schedule a sync of the client model with the service after a
-  // return to the message loop.
-  void ScheduleSync();
+                                  TransportChangeId client_change_id) OVERRIDE;
 
   // Sync the client model with the service by enumerating the pending
   // transaction queue and applying them in order.
-  void DoSync();
+  void Sync();
 
   // Used by individual transactions to generate a connection-specific change
   // id.
   // TODO(beng): What happens when there are more than sizeof(int) changes in
   //             the queue?
-  uint32_t GetNextChangeId();
+  TransportChangeId GetNextClientChangeId();
 
   // Removes |transaction| from the pending queue. |transaction| must be at the
   // front of the queue.
@@ -81,9 +83,10 @@ class ViewManagerSynchronizer : public IViewManagerClient {
 
   ViewManager* view_manager_;
   bool connected_;
-  uint16_t connection_id_;
+  TransportConnectionId connection_id_;
   uint16_t next_id_;
-  uint32_t next_change_id_;
+  TransportChangeId next_client_change_id_;
+  TransportChangeId next_server_change_id_;
 
   Transactions pending_transactions_;
 

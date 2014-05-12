@@ -28,17 +28,26 @@ class ViewManagerConnection;
 // as well as providing the root of the node hierarchy.
 class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
  public:
+  // Used to indicate if the server id should be incremented after notifiying
+  // clients of the change.
+  enum ChangeType {
+    CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID,
+    CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID,
+  };
+
   // Create when a ViewManagerConnection is about to make a change. Ensures
   // clients are notified of the correct change id.
   class ScopedChange {
    public:
     ScopedChange(ViewManagerConnection* connection,
                  RootNodeManager* root,
-                 TransportChangeId change_id);
+                 TransportChangeId change_id,
+                 RootNodeManager::ChangeType change_type);
     ~ScopedChange();
 
    private:
     RootNodeManager* root_;
+    const ChangeType change_type_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedChange);
   };
@@ -48,6 +57,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // Returns the id for the next ViewManagerConnection.
   TransportConnectionId GetAndAdvanceNextConnectionId();
+
+  TransportChangeId next_server_change_id() const {
+    return next_server_change_id_;
+  }
 
   void AddConnection(ViewManagerConnection* connection);
   void RemoveConnection(ViewManagerConnection* connection);
@@ -82,13 +95,14 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // Tracks a change.
   struct Change {
-    Change(TransportConnectionId connection_id, TransportChangeId change_id)
+    Change(TransportConnectionId connection_id,
+           TransportChangeId client_change_id)
         : connection_id(connection_id),
-          change_id(change_id) {
+          client_change_id(client_change_id) {
     }
 
     TransportConnectionId connection_id;
-    TransportChangeId change_id;
+    TransportChangeId client_change_id;
   };
 
   typedef std::map<TransportConnectionId, ViewManagerConnection*> ConnectionMap;
@@ -103,7 +117,10 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
                         TransportChangeId change_id);
 
   // Balances a call to PrepareForChange().
-  void FinishChange();
+  void FinishChange(ChangeType change_type);
+
+  TransportChangeId GetClientChangeId(
+      TransportConnectionId connection_id) const;
 
   // Overriden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const NodeId& node,
@@ -117,6 +134,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // ID to use for next ViewManagerConnection.
   TransportConnectionId next_connection_id_;
+
+  TransportChangeId next_server_change_id_;
 
   // Set of ViewManagerConnections.
   ConnectionMap connection_map_;

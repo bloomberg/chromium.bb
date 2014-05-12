@@ -54,12 +54,15 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   void NotifyNodeHierarchyChanged(const NodeId& node,
                                   const NodeId& new_parent,
                                   const NodeId& old_parent,
-                                  TransportChangeId change_id);
+                                  TransportChangeId server_change_id,
+                                  TransportChangeId client_change_id);
   void NotifyNodeViewReplaced(const NodeId& node,
                               const ViewId& new_view_id,
                               const ViewId& old_view_id,
-                              TransportChangeId change_id);
-  void NotifyNodeDeleted(const NodeId& node, TransportChangeId change_id);
+                              TransportChangeId client_change_id);
+  void NotifyNodeDeleted(const NodeId& node,
+                         TransportChangeId server_change_id,
+                         TransportChangeId client_change_id);
 
  private:
   typedef std::map<TransportConnectionSpecificNodeId, Node*> NodeMap;
@@ -91,11 +94,13 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void AddNode(TransportNodeId parent_id,
                        TransportNodeId child_id,
-                       TransportChangeId change_id,
+                       TransportChangeId server_change_id,
+                       TransportChangeId client_change_id,
                        const Callback<void(bool)>& callback) OVERRIDE;
   virtual void RemoveNodeFromParent(
       TransportNodeId node_id,
-      TransportChangeId change_id,
+      TransportChangeId server_change_id,
+      TransportChangeId client_change_id,
       const Callback<void(bool)>& callback) OVERRIDE;
   virtual void GetNodeTree(
       TransportNodeId node_id,

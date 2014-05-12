@@ -5,7 +5,6 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/shell/service.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
@@ -33,7 +32,7 @@ class ViewManagerTransaction {
   }
 
   bool committed() const { return committed_; }
-  uint32_t change_id() const { return change_id_; }
+  TransportChangeId client_change_id() const { return client_change_id_; }
 
   // General callback to be used for commits to the service.
   void OnActionCompleted(bool success) {
@@ -55,7 +54,7 @@ class ViewManagerTransaction {
   ViewManagerTransaction(TransactionType transaction_type,
                          ViewManagerSynchronizer* synchronizer)
       : transaction_type_(transaction_type),
-        change_id_(synchronizer->GetNextChangeId()),
+        client_change_id_(synchronizer->GetNextClientChangeId()),
         committed_(false),
         synchronizer_(synchronizer) {
   }
@@ -69,9 +68,13 @@ class ViewManagerTransaction {
 
   IViewManager* service() { return synchronizer_->service_.get(); }
 
+  TransportChangeId GetAndAdvanceNextServerChangeId() {
+    return synchronizer_->next_server_change_id_++;
+  }
+
  private:
   const TransactionType transaction_type_;
-  const uint32_t change_id_;
+  const uint32_t client_change_id_;
   bool committed_;
   ViewManagerSynchronizer* synchronizer_;
 
@@ -96,7 +99,9 @@ class CreateViewTreeNodeTransaction : public ViewManagerTransaction {
   }
   virtual void DoActionCompleted(bool success) OVERRIDE {
     // TODO(beng): Failure means we tried to create with an extant id for this
-    //             connection. Figure out what to do.
+    //             connection. It also could mean we tried to do something
+    //             invalid, or we tried applying a change out of order. Figure
+    //             out what to do.
   }
 
   const uint16_t node_id_;
@@ -117,7 +122,7 @@ class DestroyViewTreeNodeTransaction : public ViewManagerTransaction {
   virtual void DoCommit() OVERRIDE {
     service()->DeleteNode(
         node_id_,
-        change_id(),
+        client_change_id(),
         base::Bind(&ViewManagerTransaction::OnActionCompleted,
                    base::Unretained(this)));
   }
@@ -153,14 +158,16 @@ class HierarchyTransaction : public ViewManagerTransaction {
         service()->AddNode(
             parent_id_,
             child_id_,
-            change_id(),
+            GetAndAdvanceNextServerChangeId(),
+            client_change_id(),
             base::Bind(&ViewManagerTransaction::OnActionCompleted,
                        base::Unretained(this)));
         break;
       case TYPE_REMOVE:
         service()->RemoveNodeFromParent(
             child_id_,
-            change_id(),
+            GetAndAdvanceNextServerChangeId(),
+            client_change_id(),
             base::Bind(&ViewManagerTransaction::OnActionCompleted,
                        base::Unretained(this)));
         break;
@@ -184,7 +191,8 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
       connected_(false),
       connection_id_(0),
       next_id_(1),
-      next_change_id_(0),
+      next_client_change_id_(0),
+      next_server_change_id_(0),
       sync_factory_(this),
       init_loop_(NULL) {
   ConnectTo(ViewManagerPrivate(view_manager_).shell(), "mojo:mojo_view_manager",
@@ -204,14 +212,14 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
 }
 
 ViewManagerSynchronizer::~ViewManagerSynchronizer() {
-  DoSync();
+  Sync();
 }
 
 TransportNodeId ViewManagerSynchronizer::CreateViewTreeNode() {
   DCHECK(connected_);
   uint16_t id = ++next_id_;
   pending_transactions_.push_back(new CreateViewTreeNodeTransaction(id, this));
-  ScheduleSync();
+  Sync();
   return MakeTransportNodeId(connection_id_, id);
 }
 
@@ -219,7 +227,7 @@ void ViewManagerSynchronizer::DestroyViewTreeNode(TransportNodeId node_id) {
   DCHECK(connected_);
   pending_transactions_.push_back(
       new DestroyViewTreeNodeTransaction(node_id, this));
-  ScheduleSync();
+  Sync();
 }
 
 void ViewManagerSynchronizer::AddChild(TransportNodeId child_id,
@@ -230,7 +238,7 @@ void ViewManagerSynchronizer::AddChild(TransportNodeId child_id,
                                child_id,
                                parent_id,
                                this));
-  ScheduleSync();
+  Sync();
 }
 
 void ViewManagerSynchronizer::RemoveChild(TransportNodeId child_id,
@@ -241,7 +249,7 @@ void ViewManagerSynchronizer::RemoveChild(TransportNodeId child_id,
                                child_id,
                                parent_id,
                                this));
-  ScheduleSync();
+  Sync();
 }
 
 bool ViewManagerSynchronizer::OwnsNode(TransportNodeId id) const {
@@ -251,19 +259,27 @@ bool ViewManagerSynchronizer::OwnsNode(TransportNodeId id) const {
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, IViewManagerClient implementation:
 
-void ViewManagerSynchronizer::OnConnectionEstablished(uint16 connection_id) {
+void ViewManagerSynchronizer::OnConnectionEstablished(
+    TransportConnectionId connection_id,
+    TransportChangeId next_server_change_id) {
   connected_ = true;
   connection_id_ = connection_id;
-  ScheduleSync();
+  next_server_change_id_ = next_server_change_id;
+  Sync();
 }
 
-void ViewManagerSynchronizer::OnNodeHierarchyChanged(uint32_t node_id,
-                                                     uint32_t new_parent_id,
-                                                     uint32_t old_parent_id,
-                                                     uint32_t change_id) {
-  if (change_id == 0) {
-    ViewTreeNode* new_parent = view_manager_->GetNodeById(new_parent_id);
-    ViewTreeNode* old_parent = view_manager_->GetNodeById(old_parent_id);
+void ViewManagerSynchronizer::OnNodeHierarchyChanged(
+    uint32_t node_id,
+    uint32_t new_parent_id,
+    uint32_t old_parent_id,
+    TransportChangeId server_change_id,
+    TransportChangeId client_change_id) {
+  if (client_change_id == 0) {
+    // Change originated from another client.
+    ViewTreeNode* new_parent =
+        view_manager_->tree()->GetChildById(new_parent_id);
+    ViewTreeNode* old_parent =
+        view_manager_->tree()->GetChildById(old_parent_id);
     ViewTreeNode* node = NULL;
     if (old_parent) {
       // Existing node, mapped in this connection's tree.
@@ -283,36 +299,32 @@ void ViewManagerSynchronizer::OnNodeHierarchyChanged(uint32_t node_id,
     else
       ViewTreeNodePrivate(old_parent).LocalRemoveChild(node);
   }
+  next_server_change_id_ = server_change_id + 1;
 }
 
-void ViewManagerSynchronizer::OnNodeViewReplaced(uint32_t node,
-                                                 uint32_t new_view_id,
-                                                 uint32_t old_view_id,
-                                                 uint32_t change_id) {
-  // ..
-}
-
-void ViewManagerSynchronizer::OnNodeDeleted(uint32_t node_id,
-                                            uint32_t change_id) {
-  if (change_id == 0) {
+void ViewManagerSynchronizer::OnNodeDeleted(
+    TransportNodeId node_id,
+    TransportChangeId server_change_id,
+    TransportChangeId client_change_id) {
+  next_server_change_id_ = server_change_id + 1;
+  if (client_change_id == 0) {
     ViewTreeNode* node = view_manager_->GetNodeById(node_id);
     if (node)
       ViewTreeNodePrivate(node).LocalDestroy();
   }
 }
 
+void ViewManagerSynchronizer::OnNodeViewReplaced(uint32_t node,
+                                                 uint32_t new_view_id,
+                                                 uint32_t old_view_id,
+                                                 uint32_t client_change_id) {
+  // ..
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewManagerSynchronizer, private:
 
-void ViewManagerSynchronizer::ScheduleSync() {
-  if (sync_factory_.HasWeakPtrs())
-    return;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ViewManagerSynchronizer::DoSync, sync_factory_.GetWeakPtr()));
-}
-
-void ViewManagerSynchronizer::DoSync() {
+void ViewManagerSynchronizer::Sync() {
   // The service connection may not be set up yet. OnConnectionEstablished()
   // will schedule another sync when it is.
   if (!connected_)
@@ -325,13 +337,13 @@ void ViewManagerSynchronizer::DoSync() {
   }
 }
 
-uint32_t ViewManagerSynchronizer::GetNextChangeId() {
+uint32_t ViewManagerSynchronizer::GetNextClientChangeId() {
   // TODO(beng): deal with change id collisions? Important in the "never ack'ed
   //             change" case mentioned in OnNodeHierarchyChanged().
   // "0" is a special value passed to other connected clients, so we can't use
   // it.
-  next_change_id_ = std::max(1u, next_change_id_ + 1);
-  return next_change_id_;
+  next_client_change_id_ = std::max(1u, next_client_change_id_ + 1);
+  return next_client_change_id_;
 }
 
 void ViewManagerSynchronizer::RemoveFromPendingQueue(

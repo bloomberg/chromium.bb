@@ -18,6 +18,20 @@ const TransportConnectionSpecificNodeId kRootId = 1;
 
 }  // namespace
 
+RootNodeManager::ScopedChange::ScopedChange(
+    ViewManagerConnection* connection,
+    RootNodeManager* root,
+    TransportChangeId change_id,
+    RootNodeManager::ChangeType change_type)
+    : root_(root),
+      change_type_(change_type) {
+  root_->PrepareForChange(connection, change_id);
+}
+
+RootNodeManager::ScopedChange::~ScopedChange() {
+  root_->FinishChange(change_type_);
+}
+
 RootNodeManager::Context::Context() {
   // Pass in false as native viewport creates the PlatformEventSource.
   aura::Env::CreateInstance(false);
@@ -26,19 +40,9 @@ RootNodeManager::Context::Context() {
 RootNodeManager::Context::~Context() {
 }
 
-RootNodeManager::ScopedChange::ScopedChange(ViewManagerConnection* connection,
-                                            RootNodeManager* root,
-                                            TransportChangeId change_id)
-    : root_(root) {
-  root_->PrepareForChange(connection, change_id);
-}
-
-RootNodeManager::ScopedChange::~ScopedChange() {
-  root_->FinishChange();
-}
-
 RootNodeManager::RootNodeManager(Shell* shell)
     : next_connection_id_(1),
+      next_server_change_id_(1),
       root_view_manager_(shell, this),
       root_(this, NodeId(0, kRootId)) {
 }
@@ -86,11 +90,9 @@ void RootNodeManager::NotifyNodeHierarchyChanged(const NodeId& node,
                                                  const NodeId& old_parent) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    const TransportChangeId change_id =
-        (change_ && i->first == change_->connection_id) ?
-        change_->change_id : 0;
     i->second->NotifyNodeHierarchyChanged(
-        node, new_parent, old_parent, change_id);
+        node, new_parent, old_parent, next_server_change_id_,
+        GetClientChangeId(i->first));
   }
 }
 
@@ -100,21 +102,17 @@ void RootNodeManager::NotifyNodeViewReplaced(const NodeId& node,
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    const TransportChangeId change_id =
-        (change_ && i->first == change_->connection_id) ?
-        change_->change_id : 0;
     i->second->NotifyNodeViewReplaced(node, new_view_id, old_view_id,
-                                      change_id);
+                                      GetClientChangeId(i->first));
   }
 }
 
 void RootNodeManager::NotifyNodeDeleted(const NodeId& node) {
+  // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    const TransportChangeId change_id =
-        (change_ && i->first == change_->connection_id) ?
-        change_->change_id : 0;
-    i->second->NotifyNodeDeleted(node, change_id);
+    i->second->NotifyNodeDeleted(node, next_server_change_id_,
+                                 GetClientChangeId(i->first));
   }
 }
 
@@ -124,9 +122,17 @@ void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
   change_.reset(new Change(connection->id(), change_id));
 }
 
-void RootNodeManager::FinishChange() {
+void RootNodeManager::FinishChange(ChangeType change_type) {
   DCHECK(change_.get());  // PrepareForChange/FinishChange should be balanced.
   change_.reset();
+  if (change_type == CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID)
+    next_server_change_id_++;
+}
+
+TransportChangeId RootNodeManager::GetClientChangeId(
+    TransportConnectionId connection_id) const {
+  return (change_ && connection_id == change_->connection_id) ?
+      change_->client_change_id : 0;
 }
 
 void RootNodeManager::OnNodeHierarchyChanged(const NodeId& node,
