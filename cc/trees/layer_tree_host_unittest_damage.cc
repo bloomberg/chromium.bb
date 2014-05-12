@@ -48,11 +48,11 @@ class LayerTreeHostDamageTestSetNeedsRedraw
     }
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
         impl->active_tree()->root_layer()->render_surface();
@@ -110,11 +110,11 @@ class LayerTreeHostDamageTestSetViewportSize
     }
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
         impl->active_tree()->root_layer()->render_surface();
@@ -169,11 +169,11 @@ class LayerTreeHostDamageTestNoDamageDoesNotSwap
     LayerTreeHostDamageTest::SetupTree();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     int source_frame = host_impl->active_tree()->source_frame_number();
     switch (source_frame) {
@@ -259,11 +259,11 @@ class LayerTreeHostDamageTestNoDamageReadbackDoesDraw
     LayerTreeHostDamageTest::SetupTree();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     int source_frame = host_impl->active_tree()->source_frame_number();
     switch (source_frame) {
@@ -330,11 +330,11 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
     LayerTreeHostDamageTest::SetupTree();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     RenderSurfaceImpl* root_surface =
         host_impl->active_tree()->root_layer()->render_surface();
@@ -472,11 +472,11 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
         host_impl->active_tree()->root_layer()->render_surface();
     gfx::RectF root_damage =
@@ -546,11 +546,11 @@ class LayerTreeHostDamageTestScrollbarCommitDoesNoDamage
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
     RenderSurfaceImpl* root_surface =
         host_impl->active_tree()->root_layer()->render_surface();
     gfx::RectF root_damage =
@@ -638,11 +638,11 @@ class LayerTreeHostDamageTestVisibleTilesStillTriggerDraws
     update_visible_tile_count_ = 0;
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
     prepare_to_draw_count_++;
     switch (prepare_to_draw_count_) {
       case 1:

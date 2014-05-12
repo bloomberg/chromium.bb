@@ -286,11 +286,11 @@ class LayerTreeHostTestSetNeedsRedrawRect : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     gfx::RectF root_damage_rect;
     if (!frame_data->render_passes.empty())
@@ -518,10 +518,10 @@ class LayerTreeHostTestCompositeAndReadbackDuringForcedDraw
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) OVERRIDE {
     int sfn = host_impl->active_tree()->source_frame_number();
     EXPECT_TRUE(sfn == kFirstCommitSourceFrameNumber ||
                 sfn == kReadbackSourceFrameNumber ||
@@ -536,7 +536,7 @@ class LayerTreeHostTestCompositeAndReadbackDuringForcedDraw
     }
 
     // Aborting for checkerboarding animations will result in a forced draw.
-    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+    return DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -579,10 +579,10 @@ class LayerTreeHostTestCompositeAndReadbackAfterForcedDraw
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) OVERRIDE {
     int sfn = host_impl->active_tree()->source_frame_number();
     EXPECT_TRUE(sfn == kFirstCommitSourceFrameNumber ||
                 sfn == kForcedDrawSourceFrameNumber ||
@@ -591,7 +591,7 @@ class LayerTreeHostTestCompositeAndReadbackAfterForcedDraw
         << sfn;
 
     // Aborting for checkerboarding animations will result in a forced draw.
-    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+    return DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void DidCommit() OVERRIDE {
@@ -656,11 +656,11 @@ class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
       host_impl->SetNeedsRedrawRect(invalid_rect_);
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     gfx::RectF root_damage_rect;
     if (!frame_data->render_passes.empty())
@@ -754,11 +754,11 @@ class LayerTreeHostTestUndrawnLayersDamageLater : public LayerTreeHostTest {
 
   virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    EXPECT_EQ(DrawSwapReadbackResult::DRAW_SUCCESS, draw_result);
+      DrawResult draw_result) OVERRIDE {
+    EXPECT_EQ(DRAW_SUCCESS, draw_result);
 
     gfx::RectF root_damage_rect;
     if (!frame_data->render_passes.empty())
@@ -2619,12 +2619,12 @@ class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) OVERRIDE {
     EndTest();
-    return DrawSwapReadbackResult::DRAW_SUCCESS;
+    return DRAW_SUCCESS;
   }
 
   virtual void AfterTest() OVERRIDE {}
@@ -2924,10 +2924,10 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
     EXPECT_CALL(*mock_context_, bindTexture(_, 0)).Times(AnyNumber());
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) OVERRIDE {
     Mock::VerifyAndClearExpectations(&mock_context_);
     ResourceProvider* resource_provider = host_impl->resource_provider();
     EXPECT_EQ(1u, resource_provider->num_resources());
@@ -4198,10 +4198,10 @@ class LayerTreeHostTestTreeActivationCallback : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) OVERRIDE {
     ++num_commits_;
     switch (num_commits_) {
       case 1:

@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/scheduler/draw_swap_readback_result.h"
+#include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 
 namespace base {
@@ -193,7 +193,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool smoothness_takes_priority() const { return smoothness_takes_priority_; }
 
   // Indicates whether ACTION_DRAW_AND_SWAP_IF_POSSIBLE drew to the screen.
-  void DidDrawIfPossibleCompleted(DrawSwapReadbackResult::DrawResult result);
+  void DidDrawIfPossibleCompleted(DrawResult result);
 
   // Indicates that a new commit flow needs to be performed, either to pull
   // updates from the main thread to the impl, or to push deltas from the impl
@@ -271,6 +271,7 @@ class CC_EXPORT SchedulerStateMachine {
   void AdvanceCurrentFrameNumber();
   bool HasSentBeginMainFrameThisFrame() const;
   bool HasUpdatedVisibleTilesThisFrame() const;
+  bool HasRequestedSwapThisFrame() const;
   bool HasSwappedThisFrame() const;
 
   void UpdateStateOnCommit(bool commit_was_aborted);
@@ -292,6 +293,7 @@ class CC_EXPORT SchedulerStateMachine {
   int current_frame_number_;
   int last_frame_number_animate_performed_;
   int last_frame_number_swap_performed_;
+  int last_frame_number_swap_requested_;
   int last_frame_number_begin_main_frame_sent_;
   int last_frame_number_update_visible_tiles_was_called_;
 

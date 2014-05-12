@@ -35,10 +35,10 @@ TestHooks::TestHooks() {}
 
 TestHooks::~TestHooks() {}
 
-DrawSwapReadbackResult::DrawResult TestHooks::PrepareToDrawOnThread(
+DrawResult TestHooks::PrepareToDrawOnThread(
     LayerTreeHostImpl* host_impl,
     LayerTreeHostImpl::FrameData* frame_data,
-    DrawSwapReadbackResult::DrawResult draw_result) {
+    DrawResult draw_result) {
   return draw_result;
 }
 
@@ -108,10 +108,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     }
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDraw(
-      FrameData* frame,
-      const gfx::Rect& damage_rect) OVERRIDE {
-    DrawSwapReadbackResult::DrawResult draw_result =
+  virtual DrawResult PrepareToDraw(FrameData* frame,
+                                   const gfx::Rect& damage_rect) OVERRIDE {
+    DrawResult draw_result =
         LayerTreeHostImpl::PrepareToDraw(frame, damage_rect);
     return test_hooks_->PrepareToDrawOnThread(this, frame, draw_result);
   }

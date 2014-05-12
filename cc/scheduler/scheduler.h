@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/begin_frame_args.h"
-#include "cc/scheduler/draw_swap_readback_result.h"
+#include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/scheduler/scheduler_state_machine.h"
 #include "cc/scheduler/time_source.h"
@@ -30,9 +30,9 @@ class SchedulerClient {
   virtual void SetNeedsBeginFrame(bool enable) = 0;
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) = 0;
   virtual void ScheduledActionSendBeginMainFrame() = 0;
-  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible() = 0;
-  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() = 0;
-  virtual DrawSwapReadbackResult ScheduledActionDrawAndReadback() = 0;
+  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() = 0;
+  virtual DrawResult ScheduledActionDrawAndSwapForced() = 0;
+  virtual DrawResult ScheduledActionDrawAndReadback() = 0;
   virtual void ScheduledActionAnimate() = 0;
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionUpdateVisibleTiles() = 0;
@@ -166,8 +166,6 @@ class CC_EXPORT Scheduler {
   void SetupPollingMechanisms(bool needs_begin_frame);
   void ActivatePendingTree();
   void DrawAndSwapIfPossible();
-  void DrawAndSwapForced();
-  void DrawAndReadback();
   void ProcessScheduledActions();
 
   bool CanCommitAndActivateBeforeDeadline() const;

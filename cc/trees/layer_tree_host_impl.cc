@@ -698,7 +698,7 @@ static void AppendQuadsToFillScreen(
   }
 }
 
-DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
+DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     FrameData* frame) {
   DCHECK(frame->render_passes.empty());
   DCHECK(CanDraw());
@@ -727,7 +727,7 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     frame->has_no_damage = true;
     DCHECK(!output_surface_->capabilities()
                .draw_and_swap_full_viewport_every_frame);
-    return DrawSwapReadbackResult::DRAW_SUCCESS;
+    return DRAW_SUCCESS;
   }
 
   TRACE_EVENT1("cc",
@@ -784,8 +784,7 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   // still draw the frame. However when the layer being checkerboarded is moving
   // due to an impl-animation, we drop the frame to avoid flashing due to the
   // texture suddenly appearing in the future.
-  DrawSwapReadbackResult::DrawResult draw_result =
-      DrawSwapReadbackResult::DRAW_SUCCESS;
+  DrawResult draw_result = DRAW_SUCCESS;
   // When we have a copy request for a layer, we need to draw no matter
   // what, as the layer may disappear after this frame.
   bool have_copy_request = false;
@@ -873,17 +872,14 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
       bool layer_has_animating_transform =
           it->screen_space_transform_is_animating() ||
           it->draw_transform_is_animating();
-      if (layer_has_animating_transform) {
-        draw_result =
-            DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
-      }
+      if (layer_has_animating_transform)
+        draw_result = DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
     }
 
     if (append_quads_data.had_incomplete_tile) {
       frame->contains_incomplete_tile = true;
       if (active_tree()->RequiresHighResToDraw())
-        draw_result =
-            DrawSwapReadbackResult::DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
+        draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
     }
 
     occlusion_tracker.LeaveLayer(it);
@@ -891,7 +887,7 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
   if (have_copy_request ||
       output_surface_->capabilities().draw_and_swap_full_viewport_every_frame)
-    draw_result = DrawSwapReadbackResult::DRAW_SUCCESS;
+    draw_result = DRAW_SUCCESS;
 
 #if DCHECK_IS_ON
   for (size_t i = 0; i < frame->render_passes.size(); ++i) {
@@ -1086,9 +1082,8 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
   }
 }
 
-DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::PrepareToDraw(
-    FrameData* frame,
-    const gfx::Rect& damage_rect) {
+DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
+                                            const gfx::Rect& damage_rect) {
   TRACE_EVENT1("cc",
                "LayerTreeHostImpl::PrepareToDraw",
                "SourceFrameNumber",
@@ -1118,8 +1113,8 @@ DrawSwapReadbackResult::DrawResult LayerTreeHostImpl::PrepareToDraw(
         AddDamageNextUpdate(device_viewport_damage_rect);
   }
 
-  DrawSwapReadbackResult::DrawResult draw_result = CalculateRenderPasses(frame);
-  if (draw_result != DrawSwapReadbackResult::DRAW_SUCCESS) {
+  DrawResult draw_result = CalculateRenderPasses(frame);
+  if (draw_result != DRAW_SUCCESS) {
     DCHECK(!output_surface_->capabilities()
                .draw_and_swap_full_viewport_every_frame);
     return draw_result;

@@ -110,10 +110,9 @@ class ThreadProxy : public Proxy,
   virtual void SetNeedsBeginFrame(bool enable) OVERRIDE;
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void ScheduledActionSendBeginMainFrame() OVERRIDE;
-  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapIfPossible()
-      OVERRIDE;
-  virtual DrawSwapReadbackResult ScheduledActionDrawAndSwapForced() OVERRIDE;
-  virtual DrawSwapReadbackResult ScheduledActionDrawAndReadback() OVERRIDE;
+  virtual DrawResult ScheduledActionDrawAndSwapIfPossible() OVERRIDE;
+  virtual DrawResult ScheduledActionDrawAndSwapForced() OVERRIDE;
+  virtual DrawResult ScheduledActionDrawAndReadback() OVERRIDE;
   virtual void ScheduledActionAnimate() OVERRIDE;
   virtual void ScheduledActionCommit() OVERRIDE;
   virtual void ScheduledActionUpdateVisibleTiles() OVERRIDE;
@@ -182,9 +181,9 @@ class ThreadProxy : public Proxy,
       RendererCapabilities* capabilities);
   void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
-  DrawSwapReadbackResult DrawSwapReadbackInternal(bool forced_draw,
-                                                  bool swap_requested,
-                                                  bool readback_requested);
+  DrawResult DrawSwapReadbackInternal(bool forced_draw,
+                                      bool swap_requested,
+                                      bool readback_requested);
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
   void CheckOutputSurfaceStatusOnImplThread();
   void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);

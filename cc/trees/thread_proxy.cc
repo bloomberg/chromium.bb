@@ -1115,12 +1115,12 @@ void ThreadProxy::ScheduledActionBeginOutputSurfaceCreation() {
                  main_thread_weak_ptr_));
 }
 
-DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
+DrawResult ThreadProxy::DrawSwapReadbackInternal(
     bool forced_draw,
     bool swap_requested,
     bool readback_requested) {
   TRACE_EVENT_SYNTHETIC_DELAY("cc.DrawAndSwap");
-  DrawSwapReadbackResult result;
+  DrawResult result;
 
   DCHECK(IsImplThread());
   DCHECK(impl().layer_tree_host_impl.get());
@@ -1162,24 +1162,22 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
       if (drawing_for_readback)
         readback_rect = impl().readback_request->rect;
 
-      result.draw_result =
+      result =
           impl().layer_tree_host_impl->PrepareToDraw(&frame, readback_rect);
-      draw_frame = forced_draw ||
-                   result.draw_result == DrawSwapReadbackResult::DRAW_SUCCESS;
+      draw_frame = forced_draw || result == DRAW_SUCCESS;
     } else {
-      result.draw_result = DrawSwapReadbackResult::DRAW_ABORTED_CANT_READBACK;
+      result = DRAW_ABORTED_CANT_READBACK;
     }
   } else {
-    result.draw_result = DrawSwapReadbackResult::DRAW_ABORTED_CANT_DRAW;
+    result = DRAW_ABORTED_CANT_DRAW;
   }
 
   if (draw_frame) {
     impl().layer_tree_host_impl->DrawLayers(
         &frame, impl().scheduler->LastBeginImplFrameTime());
-    result.draw_result = DrawSwapReadbackResult::DRAW_SUCCESS;
+    result = DRAW_SUCCESS;
     impl().animations_frozen_until_next_draw = false;
-  } else if (result.draw_result ==
-                 DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS &&
+  } else if (result == DRAW_ABORTED_CHECKERBOARD_ANIMATIONS &&
              !impl().layer_tree_host_impl->settings().impl_side_painting) {
     // Without impl-side painting, the animated layer that is checkerboarding
     // will continue to checkerboard until the next commit. If this layer
@@ -1190,7 +1188,7 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
     // we freeze animations until we successfully draw.
     impl().animations_frozen_until_next_draw = true;
   } else {
-    DCHECK_NE(DrawSwapReadbackResult::DRAW_SUCCESS, result.draw_result);
+    DCHECK_NE(DRAW_SUCCESS, result);
   }
   impl().layer_tree_host_impl->DidDrawAllLayers(frame);
 
@@ -1200,25 +1198,25 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   // Check for a pending CompositeAndReadback.
   if (drawing_for_readback) {
     DCHECK(!swap_requested);
-    result.did_readback = false;
+    bool did_readback = false;
     if (draw_frame) {
       if (!impl().layer_tree_host_impl->IsContextLost()) {
         impl().layer_tree_host_impl->Readback(impl().readback_request->pixels,
                                               impl().readback_request->rect);
-        result.did_readback = true;
+        did_readback = true;
       } else {
-        result.draw_result = DrawSwapReadbackResult::DRAW_ABORTED_CONTEXT_LOST;
+        result = DRAW_ABORTED_CONTEXT_LOST;
       }
     }
-    impl().readback_request->success = result.did_readback;
+    impl().readback_request->success = did_readback;
     impl().readback_request->completion.Signal();
     impl().readback_request = NULL;
   } else if (draw_frame) {
     DCHECK(swap_requested);
-    result.did_request_swap = impl().layer_tree_host_impl->SwapBuffers(frame);
+    bool did_request_swap = impl().layer_tree_host_impl->SwapBuffers(frame);
 
     // We don't know if we have incomplete tiles if we didn't actually swap.
-    if (result.did_request_swap) {
+    if (did_request_swap) {
       DCHECK(!frame.has_no_damage);
       SetSwapUsedIncompleteTileOnImplThread(frame.contains_incomplete_tile);
     }
@@ -1235,7 +1233,7 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
   if (draw_frame)
     CheckOutputSurfaceStatusOnImplThread();
 
-  if (result.draw_result == DrawSwapReadbackResult::DRAW_SUCCESS) {
+  if (result == DRAW_SUCCESS) {
     base::TimeDelta draw_duration = impl().timing_history.DidFinishDrawing();
 
     base::TimeDelta draw_duration_overestimate;
@@ -1261,7 +1259,7 @@ DrawSwapReadbackResult ThreadProxy::DrawSwapReadbackInternal(
                                50);
   }
 
-  DCHECK_NE(DrawSwapReadbackResult::INVALID_RESULT, result.draw_result);
+  DCHECK_NE(INVALID_RESULT, result);
   return result;
 }
 
@@ -1271,7 +1269,7 @@ void ThreadProxy::ScheduledActionManageTiles() {
   impl().layer_tree_host_impl->ManageTiles();
 }
 
-DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
+DrawResult ThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndSwap");
 
   // SchedulerStateMachine::DidDrawIfPossibleCompleted isn't set up to
@@ -1286,7 +1284,7 @@ DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndSwapIfPossible() {
       forced_draw, swap_requested, readback_requested);
 }
 
-DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndSwapForced() {
+DrawResult ThreadProxy::ScheduledActionDrawAndSwapForced() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndSwapForced");
   bool forced_draw = true;
   bool swap_requested = true;
@@ -1295,7 +1293,7 @@ DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndSwapForced() {
       forced_draw, swap_requested, readback_requested);
 }
 
-DrawSwapReadbackResult ThreadProxy::ScheduledActionDrawAndReadback() {
+DrawResult ThreadProxy::ScheduledActionDrawAndReadback() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionDrawAndReadback");
   bool forced_draw = true;
   bool swap_requested = false;

@@ -426,7 +426,7 @@
         'resources/video_resource_updater.h',
         'scheduler/delay_based_time_source.cc',
         'scheduler/delay_based_time_source.h',
-        'scheduler/draw_swap_readback_result.h',
+        'scheduler/draw_result.h',
         'scheduler/scheduler.cc',
         'scheduler/scheduler.h',
         'scheduler/scheduler_settings.cc',

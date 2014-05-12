@@ -200,11 +200,11 @@ class LayerTreeHostAnimationTestCheckerboardDoesNotStarveDraws
       EndTest();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
-    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+      DrawResult draw_result) OVERRIDE {
+    return DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void AfterTest() OVERRIDE { }
@@ -332,13 +332,13 @@ class LayerTreeHostAnimationTestAnimationTickTimeIsMonotonic
     }
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) OVERRIDE {
     if (TestEnded())
       return draw_result;
-    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+    return DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void AfterTest() OVERRIDE {}
@@ -1065,10 +1065,10 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
+  virtual DrawResult PrepareToDrawOnThread(
       LayerTreeHostImpl* host_impl,
       LayerTreeHostImpl::FrameData* frame_data,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+      DrawResult draw_result) OVERRIDE {
     if (added_animations_ < 2)
       return draw_result;
     if (TestEnded())
@@ -1077,7 +1077,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     ++prevented_draw_;
     if (prevented_draw_ > 2)
       EndTest();
-    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+    return DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
@@ -1209,10 +1209,9 @@ class LayerTreeHostAnimationTestFrozenAnimationTickTime
     }
   }
 
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDrawOnThread(
-      LayerTreeHostImpl* host_impl,
-      LayerTreeHostImpl::FrameData* frame,
-      DrawSwapReadbackResult::DrawResult draw_result) OVERRIDE {
+  virtual DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                           LayerTreeHostImpl::FrameData* frame,
+                                           DrawResult draw_result) OVERRIDE {
     if (TestEnded())
       return draw_result;
     num_draw_attempts_++;
@@ -1220,7 +1219,7 @@ class LayerTreeHostAnimationTestFrozenAnimationTickTime
       num_draw_attempts_ = 0;
       PostSetNeedsCommitToMainThread();
     }
-    return DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
+    return DRAW_ABORTED_CHECKERBOARD_ANIMATIONS;
   }
 
   virtual void BeginCommitOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {

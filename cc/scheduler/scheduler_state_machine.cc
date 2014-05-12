@@ -24,6 +24,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       current_frame_number_(0),
       last_frame_number_animate_performed_(-1),
       last_frame_number_swap_performed_(-1),
+      last_frame_number_swap_requested_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
       last_frame_number_update_visible_tiles_was_called_(-1),
       manage_tiles_funnel_(0),
@@ -224,6 +225,8 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
                           last_frame_number_animate_performed_);
   minor_state->SetInteger("last_frame_number_swap_performed",
                           last_frame_number_swap_performed_);
+  minor_state->SetInteger("last_frame_number_swap_requested",
+                          last_frame_number_swap_requested_);
   minor_state->SetInteger(
       "last_frame_number_begin_main_frame_sent",
       last_frame_number_begin_main_frame_sent_);
@@ -290,6 +293,10 @@ bool SchedulerStateMachine::HasUpdatedVisibleTilesThisFrame() const {
 
 bool SchedulerStateMachine::HasSwappedThisFrame() const {
   return current_frame_number_ == last_frame_number_swap_performed_;
+}
+
+bool SchedulerStateMachine::HasRequestedSwapThisFrame() const {
+  return current_frame_number_ == last_frame_number_swap_requested_;
 }
 
 bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
@@ -370,8 +377,8 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (PendingDrawsShouldBeAborted())
     return active_tree_needs_first_draw_;
 
-  // After this line, we only want to swap once per frame.
-  if (HasSwappedThisFrame())
+  // After this line, we only want to send a swap request once per frame.
+  if (HasRequestedSwapThisFrame())
     return false;
 
   // Do not queue too many swaps.
@@ -793,7 +800,7 @@ void SchedulerStateMachine::UpdateStateOnDraw(bool did_request_swap) {
   active_tree_needs_first_draw_ = false;
 
   if (did_request_swap)
-    last_frame_number_swap_performed_ = current_frame_number_;
+    last_frame_number_swap_requested_ = current_frame_number_;
 }
 
 void SchedulerStateMachine::UpdateStateOnManageTiles() {
@@ -901,12 +908,12 @@ bool SchedulerStateMachine::ProactiveBeginFrameWanted() const {
   if (needs_manage_tiles_)
     return true;
 
-  // If we just swapped, it's likely that we are going to produce another
-  // frame soon. This helps avoid negative glitches in our
+  // If we just sent a swap request, it's likely that we are going to produce
+  // another frame soon. This helps avoid negative glitches in our
   // SetNeedsBeginFrame requests, which may propagate to the BeginImplFrame
   // provider and get sampled at an inopportune time, delaying the next
   // BeginImplFrame.
-  if (last_frame_number_swap_performed_ == current_frame_number_)
+  if (HasRequestedSwapThisFrame())
     return true;
 
   return false;
@@ -987,7 +994,7 @@ bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
 
   // If we just sent a BeginMainFrame and haven't hit the deadline yet, the main
   // thread is in a low latency mode.
-  if (last_frame_number_begin_main_frame_sent_ == current_frame_number_ &&
+  if (HasSentBeginMainFrameThisFrame() &&
       (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING ||
        begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME))
     return false;
@@ -995,9 +1002,7 @@ bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
   // If there's a commit in progress it must either be from the previous frame
   // or it started after the impl thread's deadline. In either case the main
   // thread is in high latency mode.
-  if (commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_SENT ||
-      commit_state_ == COMMIT_STATE_BEGIN_MAIN_FRAME_STARTED ||
-      commit_state_ == COMMIT_STATE_READY_TO_COMMIT)
+  if (CommitPending())
     return true;
 
   // Similarly, if there's a pending tree the main thread is in high latency
@@ -1011,11 +1016,10 @@ bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
 
   if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE) {
     // Even if there's a new active tree to draw at the deadline or we've just
-    // drawn it, it may have been triggered by a previous BeginImplFrame, in
+    // swapped it, it may have been triggered by a previous BeginImplFrame, in
     // which case the main thread is in a high latency mode.
-    return (active_tree_needs_first_draw_ ||
-            last_frame_number_swap_performed_ == current_frame_number_) &&
-           last_frame_number_begin_main_frame_sent_ != current_frame_number_;
+    return (active_tree_needs_first_draw_ || HasSwappedThisFrame()) &&
+           !HasSentBeginMainFrameThisFrame();
   }
 
   // If the active tree needs its first draw in any other state, we know the
@@ -1057,6 +1061,8 @@ void SchedulerStateMachine::SetMaxSwapsPending(int max) {
 void SchedulerStateMachine::DidSwapBuffers() {
   pending_swaps_++;
   DCHECK_LE(pending_swaps_, max_pending_swaps_);
+
+  last_frame_number_swap_performed_ = current_frame_number_;
 }
 
 void SchedulerStateMachine::SetSwapUsedIncompleteTile(
@@ -1074,23 +1080,22 @@ void SchedulerStateMachine::SetSmoothnessTakesPriority(
   smoothness_takes_priority_ = smoothness_takes_priority;
 }
 
-void SchedulerStateMachine::DidDrawIfPossibleCompleted(
-    DrawSwapReadbackResult::DrawResult result) {
+void SchedulerStateMachine::DidDrawIfPossibleCompleted(DrawResult result) {
   switch (result) {
-    case DrawSwapReadbackResult::INVALID_RESULT:
-      NOTREACHED() << "Uninitialized DrawSwapReadbackResult.";
+    case INVALID_RESULT:
+      NOTREACHED() << "Uninitialized DrawResult.";
       break;
-    case DrawSwapReadbackResult::DRAW_ABORTED_CANT_DRAW:
-    case DrawSwapReadbackResult::DRAW_ABORTED_CANT_READBACK:
-    case DrawSwapReadbackResult::DRAW_ABORTED_CONTEXT_LOST:
+    case DRAW_ABORTED_CANT_DRAW:
+    case DRAW_ABORTED_CANT_READBACK:
+    case DRAW_ABORTED_CONTEXT_LOST:
       NOTREACHED() << "Invalid return value from DrawAndSwapIfPossible:"
                    << result;
       break;
-    case DrawSwapReadbackResult::DRAW_SUCCESS:
+    case DRAW_SUCCESS:
       consecutive_checkerboard_animations_ = 0;
       forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
       break;
-    case DrawSwapReadbackResult::DRAW_ABORTED_CHECKERBOARD_ANIMATIONS:
+    case DRAW_ABORTED_CHECKERBOARD_ANIMATIONS:
       needs_redraw_ = true;
 
       // If we're already in the middle of a redraw, we don't need to
@@ -1109,7 +1114,7 @@ void SchedulerStateMachine::DidDrawIfPossibleCompleted(
         forced_redraw_state_ = FORCED_REDRAW_STATE_WAITING_FOR_COMMIT;
       }
       break;
-    case DrawSwapReadbackResult::DRAW_ABORTED_MISSING_HIGH_RES_CONTENT:
+    case DRAW_ABORTED_MISSING_HIGH_RES_CONTENT:
       // It's not clear whether this missing content is because of missing
       // pictures (which requires a commit) or because of memory pressure
       // removing textures (which might not).  To be safe, request a commit

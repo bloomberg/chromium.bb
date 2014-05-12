@@ -31,7 +31,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_manager.h"
-#include "cc/scheduler/draw_swap_readback_result.h"
+#include "cc/scheduler/draw_result.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/rect.h"
@@ -192,9 +192,8 @@ class CC_EXPORT LayerTreeHostImpl
   // to avoid displaying the frame. If PrepareToDraw is called, DidDrawAllLayers
   // must also be called, regardless of whether DrawLayers is called between the
   // two.
-  virtual DrawSwapReadbackResult::DrawResult PrepareToDraw(
-      FrameData* frame,
-      const gfx::Rect& damage_rect);
+  virtual DrawResult PrepareToDraw(FrameData* frame,
+                                   const gfx::Rect& damage_rect);
   virtual void DrawLayers(FrameData* frame, base::TimeTicks frame_begin_time);
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);
@@ -380,7 +379,7 @@ class CC_EXPORT LayerTreeHostImpl
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
 
   class CC_EXPORT CullRenderPassesWithNoQuads {
- public:
+   public:
     bool ShouldRemoveRenderPass(const RenderPassDrawQuad& quad,
                                 const FrameData& frame) const;
 
@@ -514,7 +513,7 @@ class CC_EXPORT LayerTreeHostImpl
   // This function should only be called from PrepareToDraw, as DidDrawAllLayers
   // must be called if this helper function is called.  Returns DRAW_SUCCESS if
   // the frame should be drawn.
-  DrawSwapReadbackResult::DrawResult CalculateRenderPasses(FrameData* frame);
+  DrawResult CalculateRenderPasses(FrameData* frame);
 
   bool EnsureRenderSurfaceLayerList();
   void ClearCurrentlyScrollingLayer();

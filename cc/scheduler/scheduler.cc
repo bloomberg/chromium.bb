@@ -195,6 +195,10 @@ void Scheduler::SetMaxSwapsPending(int max) {
 
 void Scheduler::DidSwapBuffers() {
   state_machine_.DidSwapBuffers();
+
+  // Swap should not occur inside readback operation.
+  DCHECK(!IsInsideAction(SchedulerStateMachine::ACTION_DRAW_AND_READBACK));
+
   // There is no need to call ProcessScheduledActions here because
   // swapping should not trigger any new actions.
   if (!inside_process_scheduled_actions_) {
@@ -604,18 +608,8 @@ bool Scheduler::IsBeginMainFrameSent() const {
 }
 
 void Scheduler::DrawAndSwapIfPossible() {
-  DrawSwapReadbackResult result =
-      client_->ScheduledActionDrawAndSwapIfPossible();
-  state_machine_.DidDrawIfPossibleCompleted(result.draw_result);
-}
-
-void Scheduler::DrawAndSwapForced() {
-  client_->ScheduledActionDrawAndSwapForced();
-}
-
-void Scheduler::DrawAndReadback() {
-  DrawSwapReadbackResult result = client_->ScheduledActionDrawAndReadback();
-  DCHECK(!result.did_request_swap);
+  DrawResult result = client_->ScheduledActionDrawAndSwapIfPossible();
+  state_machine_.DidDrawIfPossibleCompleted(result);
 }
 
 void Scheduler::ProcessScheduledActions() {
@@ -659,14 +653,14 @@ void Scheduler::ProcessScheduledActions() {
         DrawAndSwapIfPossible();
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_FORCED:
-        DrawAndSwapForced();
+        client_->ScheduledActionDrawAndSwapForced();
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT:
         // No action is actually performed, but this allows the state machine to
         // advance out of its waiting to draw state without actually drawing.
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_READBACK:
-        DrawAndReadback();
+        client_->ScheduledActionDrawAndReadback();
         break;
       case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
         client_->ScheduledActionBeginOutputSurfaceCreation();
