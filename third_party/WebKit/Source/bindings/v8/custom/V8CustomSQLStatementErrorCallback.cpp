@@ -45,21 +45,20 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
         return true;
 
     v8::Isolate* isolate = m_scriptState->isolate();
-    v8::HandleScope handleScope(isolate);
-
-    v8::Handle<v8::Context> v8Context = m_scriptState->context();
-    if (v8Context.IsEmpty())
+    if (m_scriptState->contextIsEmpty())
         return true;
 
-    v8::Context::Scope scope(v8Context);
+    ScriptState::Scope scope(m_scriptState.get());
 
-    v8::Handle<v8::Value> transactionHandle = toV8(transaction, v8::Handle<v8::Object>(), isolate);
-    v8::Handle<v8::Value> errorHandle = toV8(error, v8::Handle<v8::Object>(), isolate);
+    v8::Handle<v8::Value> transactionHandle = toV8(transaction, m_scriptState->context()->Global(), isolate);
+    v8::Handle<v8::Value> errorHandle = toV8(error, m_scriptState->context()->Global(), isolate);
     if (transactionHandle.IsEmpty() || errorHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();
         return true;
     }
+
+    ASSERT(transactionHandle->IsObject());
 
     v8::Handle<v8::Value> argv[] = {
         transactionHandle,
@@ -69,7 +68,7 @@ bool V8SQLStatementErrorCallback::handleEvent(SQLTransaction* transaction, SQLEr
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
 
-    v8::Handle<v8::Value> result = ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), isolate->GetCurrentContext()->Global(), 2, argv, isolate);
+    v8::Handle<v8::Value> result = ScriptController::callFunction(executionContext(), m_callback.newLocal(isolate), isolate->GetCurrentContext()->Global(), WTF_ARRAY_LENGTH(argv), argv, isolate);
 
     // FIXME: This comment doesn't make much sense given what the code is actually doing.
     //
