@@ -7,9 +7,8 @@
 
 class GURL;
 
-namespace content {
-// TODO(jif): Abstract the NavigationEntry (crbug.com/359598).
-class NavigationEntry;
+namespace gfx {
+class Image;
 }
 
 // Interface that allows Favicon core code to interact with its driver (i.e.,
@@ -17,9 +16,6 @@ class NavigationEntry;
 // implementation must be provided by the driver.
 class FaviconDriver {
  public:
-  // Returns the current NavigationEntry.
-  // TODO(jif): Abstract the NavigationEntry (crbug.com/359598).
-  virtual content::NavigationEntry* GetActiveEntry() = 0;
 
   // Starts the download for the given favicon. When finished, the driver
   // will call OnDidDownloadFavicon() with the results.
@@ -38,6 +34,33 @@ class FaviconDriver {
 
   // Returns whether the user is operating in an off-the-record context.
   virtual bool IsOffTheRecord() = 0;
+
+  // Returns the bitmap of the current page's favicon. Requires GetActiveURL()
+  // to be valid.
+  virtual const gfx::Image GetActiveFaviconImage() = 0;
+
+  // Returns the URL of the current page's favicon. Requires GetActiveURL() to
+  // be valid.
+  virtual const GURL GetActiveFaviconURL() = 0;
+
+  // Returns whether the page's favicon is valid (returns false if the default
+  // favicon is being used). Requires GetActiveURL() to be valid.
+  virtual bool GetActiveFaviconValidity() = 0;
+
+  // Returns the URL of the current page, if any. Returns an invalid
+  // URL otherwise.
+  virtual const GURL GetActiveURL() = 0;
+
+  // Sets the bitmap of the current page's favicon. Requires GetActiveURL() to
+  // be valid.
+  virtual void SetActiveFaviconImage(gfx::Image image) = 0;
+
+  // Sets the URL of the favicon's bitmap. Requires GetActiveURL() to be valid.
+  virtual void SetActiveFaviconURL(GURL url) = 0;
+
+  // Sets whether the page's favicon is valid (if false, the default favicon is
+  // being used). Requires GetActiveURL() to be valid.
+  virtual void SetActiveFaviconValidity(bool validity) = 0;
 };
 
 #endif  // COMPONENTS_FAVICON_CORE_FAVICON_DRIVER_H_

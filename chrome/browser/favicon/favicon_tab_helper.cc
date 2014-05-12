@@ -135,10 +135,6 @@ void FaviconTabHelper::SaveFavicon() {
       entry->GetURL(), favicon.url, favicon_base::FAVICON, favicon.image);
 }
 
-NavigationEntry* FaviconTabHelper::GetActiveEntry() {
-  return web_contents()->GetController().GetActiveEntry();
-}
-
 int FaviconTabHelper::StartDownload(const GURL& url, int max_image_size) {
   FaviconService* favicon_service = FaviconServiceFactory::GetForProfile(
       profile_->GetOriginalProfile(), Profile::IMPLICIT_ACCESS);
@@ -165,6 +161,42 @@ void FaviconTabHelper::NotifyFaviconUpdated(bool icon_url_changed) {
 bool FaviconTabHelper::IsOffTheRecord() {
   DCHECK(web_contents());
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
+}
+
+const gfx::Image FaviconTabHelper::GetActiveFaviconImage() {
+  return GetFaviconStatus().image;
+}
+
+const GURL FaviconTabHelper::GetActiveFaviconURL() {
+  return GetFaviconStatus().url;
+}
+
+bool FaviconTabHelper::GetActiveFaviconValidity() {
+  return GetFaviconStatus().valid;
+}
+
+const GURL FaviconTabHelper::GetActiveURL() {
+  NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
+  if (!entry || entry->GetURL().is_empty())
+    return GURL();
+  return entry->GetURL();
+}
+
+void FaviconTabHelper::SetActiveFaviconImage(gfx::Image image) {
+  GetFaviconStatus().image = image;
+}
+
+void FaviconTabHelper::SetActiveFaviconURL(GURL url) {
+  GetFaviconStatus().url = url;
+}
+
+void FaviconTabHelper::SetActiveFaviconValidity(bool validity) {
+  GetFaviconStatus().valid = validity;
+}
+
+content::FaviconStatus& FaviconTabHelper::GetFaviconStatus() {
+  DCHECK(web_contents()->GetController().GetActiveEntry());
+  return web_contents()->GetController().GetActiveEntry()->GetFavicon();
 }
 
 void FaviconTabHelper::DidStartNavigationToPendingEntry(
