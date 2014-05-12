@@ -29639,6 +29639,48 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Variations.SimulateSeed.Duration" units="milliseconds">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records the time taken to perform variations seed simulation.
+
+    Recorded on every variation seed simulation, which follows a fetch.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SimulateSeed.KillBestEffortChanges">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records the result of variations seed simulation. Logs the number of
+    experiment groups in the &quot;kill best effort&quot; category that are
+    expected to change on a restart of the browser with the received seed.
+
+    Recorded on every variation seed simulation, which follows a fetch.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SimulateSeed.KillCriticalChanges">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records the result of variations seed simulation. Logs the number of
+    experiment groups in the &quot;kill critical&quot; category that are
+    expected to change on a restart of the browser with the received seed.
+
+    Recorded on every variation seed simulation, which follows a fetch.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SimulateSeed.NormalChanges">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records the result of variations seed simulation. Logs the number of
+    experiment groups in the &quot;normal&quot; category that are expected to
+    change on a restart of the browser with the received seed.
+
+    Recorded on every variation seed simulation, which follows a fetch.
+  </summary>
+</histogram>
+
 <histogram name="Variations.StoreSeedSignature" enum="VariationSeedSignature">
   <owner>asvitkine@chromium.org</owner>
   <summary>

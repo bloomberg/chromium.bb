@@ -39,7 +39,7 @@ class TestVariationsService : public VariationsService {
  public:
   TestVariationsService(TestRequestAllowedNotifier* test_notifier,
                         PrefService* local_state)
-      : VariationsService(test_notifier, local_state),
+      : VariationsService(test_notifier, local_state, NULL),
         intercepts_fetch_(true),
         fetch_attempted_(false),
         seed_stored_(false) {
@@ -296,15 +296,15 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  VariationsService variations_service(new TestRequestAllowedNotifier, &prefs);
+  VariationsService service(new TestRequestAllowedNotifier, &prefs, NULL);
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
     net::TestURLFetcherFactory factory;
-    variations_service.DoActualFetch();
+    service.DoActualFetch();
     EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
 
     net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
     SimulateServerResponse(non_ok_status_codes[i], fetcher);
-    variations_service.OnURLFetchComplete(fetcher);
+    service.OnURLFetchComplete(fetcher);
 
     EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
   }
@@ -317,15 +317,15 @@ TEST_F(VariationsServiceTest, SeedDateUpdatedOn304Status) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  VariationsService variations_service(new TestRequestAllowedNotifier, &prefs);
+  VariationsService service(new TestRequestAllowedNotifier, &prefs, NULL);
   net::TestURLFetcherFactory factory;
-  variations_service.DoActualFetch();
+  service.DoActualFetch();
   EXPECT_TRUE(
       prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   SimulateServerResponse(net::HTTP_NOT_MODIFIED, fetcher);
-  variations_service.OnURLFetchComplete(fetcher);
+  service.OnURLFetchComplete(fetcher);
   EXPECT_FALSE(
       prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());
 }

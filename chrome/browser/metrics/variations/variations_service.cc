@@ -13,14 +13,17 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/browser/network_time/network_time_tracker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "components/variations/variations_seed_processor.h"
+#include "components/variations/variations_seed_simulator.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -197,8 +200,11 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
 
 }  // namespace
 
-VariationsService::VariationsService(PrefService* local_state)
+VariationsService::VariationsService(
+    PrefService* local_state,
+    metrics::MetricsStateManager* state_manager)
     : local_state_(local_state),
+      state_manager_(state_manager),
       policy_pref_service_(local_state),
       seed_store_(local_state),
       create_trials_from_seed_called_(false),
@@ -208,9 +214,12 @@ VariationsService::VariationsService(PrefService* local_state)
   resource_request_allowed_notifier_->Init(this);
 }
 
-VariationsService::VariationsService(ResourceRequestAllowedNotifier* notifier,
-                                     PrefService* local_state)
+VariationsService::VariationsService(
+    ResourceRequestAllowedNotifier* notifier,
+    PrefService* local_state,
+    metrics::MetricsStateManager* state_manager)
     : local_state_(local_state),
+      state_manager_(state_manager),
       policy_pref_service_(local_state),
       seed_store_(local_state),
       create_trials_from_seed_called_(false),
@@ -349,7 +358,10 @@ void VariationsService::RegisterProfilePrefs(
 }
 
 // static
-VariationsService* VariationsService::Create(PrefService* local_state) {
+scoped_ptr<VariationsService> VariationsService::Create(
+    PrefService* local_state,
+    metrics::MetricsStateManager* state_manager) {
+  scoped_ptr<VariationsService> result;
 #if !defined(GOOGLE_CHROME_BUILD)
   // Unless the URL was provided, unsupported builds should return NULL to
   // indicate that the service should not be used.
@@ -357,10 +369,11 @@ VariationsService* VariationsService::Create(PrefService* local_state) {
           switches::kVariationsServerURL)) {
     DVLOG(1) << "Not creating VariationsService in unofficial build without --"
              << switches::kVariationsServerURL << " specified.";
-    return NULL;
+    return result.Pass();
   }
 #endif
-  return new VariationsService(local_state);
+  result.reset(new VariationsService(local_state, state_manager));
+  return result.Pass();
 }
 
 void VariationsService::DoActualFetch() {
@@ -391,9 +404,47 @@ void VariationsService::DoActualFetch() {
 void VariationsService::StoreSeed(const std::string& seed_data,
                                   const std::string& seed_signature,
                                   const base::Time& date_fetched) {
-  if (!seed_store_.StoreSeedData(seed_data, seed_signature, date_fetched))
+  VariationsSeed seed;
+  if (!seed_store_.StoreSeedData(seed_data, seed_signature, date_fetched,
+                                 &seed)) {
     return;
+  }
   RecordLastFetchTime();
+
+  // Perform seed simulation only if |state_manager_| is not-NULL. The state
+  // manager may be NULL for some unit tests.
+  if (!state_manager_)
+    return;
+
+  const base::ElapsedTimer timer;
+
+  // TODO(asvitkine): Get the version that will be used on restart instead of
+  // the current version (i.e. if an update has been downloaded).
+  const chrome::VersionInfo current_version_info;
+  if (!current_version_info.is_valid())
+    return;
+
+  const base::Version current_version(current_version_info.Version());
+  if (!current_version.IsValid())
+    return;
+
+  scoped_ptr<const base::FieldTrial::EntropyProvider> entropy_provider =
+      state_manager_->CreateEntropyProvider();
+  VariationsSeedSimulator seed_simulator(*entropy_provider);
+
+  VariationsSeedSimulator::Result result = seed_simulator.SimulateSeedStudies(
+      seed, g_browser_process->GetApplicationLocale(),
+      GetReferenceDateForExpiryChecks(local_state_), current_version,
+      GetChannelForVariations(), GetCurrentFormFactor(), GetHardwareClass());
+
+  UMA_HISTOGRAM_COUNTS_100("Variations.SimulateSeed.NormalChanges",
+                           result.normal_group_change_count);
+  UMA_HISTOGRAM_COUNTS_100("Variations.SimulateSeed.KillBestEffortChanges",
+                           result.kill_best_effort_group_change_count);
+  UMA_HISTOGRAM_COUNTS_100("Variations.SimulateSeed.KillCriticalChanges",
+                           result.kill_critical_group_change_count);
+
+  UMA_HISTOGRAM_TIMES("Variations.SimulateSeed.Duration", timer.Elapsed());
 }
 
 void VariationsService::FetchVariationsSeed() {

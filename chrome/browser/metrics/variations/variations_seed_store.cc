@@ -162,7 +162,8 @@ bool VariationsSeedStore::LoadSeed(VariationsSeed* seed) {
 bool VariationsSeedStore::StoreSeedData(
     const std::string& seed_data,
     const std::string& base64_seed_signature,
-    const base::Time& date_fetched) {
+    const base::Time& date_fetched,
+    VariationsSeed* parsed_seed) {
   if (seed_data.empty()) {
     VLOG(1) << "Variations seed data is empty, rejecting the seed.";
     return false;
@@ -200,6 +201,8 @@ bool VariationsSeedStore::StoreSeedData(
   local_state_->SetString(prefs::kVariationsSeedSignature,
                           base64_seed_signature);
   variations_serial_number_ = seed.serial_number();
+  if (parsed_seed)
+    seed.Swap(parsed_seed);
 
   return true;
 }

@@ -33,10 +33,13 @@ class VariationsSeedStore {
   // Stores the given seed data (serialized protobuf data) to local state, along
   // with a base64-encoded digital signature for seed and the date when it was
   // fetched. The |seed_data| will be base64 encoded for storage. If the string
-  // is invalid, the existing prefs are left as is and false is returned.
+  // is invalid, the existing prefs are left as is and false is returned. On
+  // success and if |parsed_seed| is not NULL, |parsed_seed| will be filled
+  // with the de-serialized protobuf decoded from |seed_data|.
   bool StoreSeedData(const std::string& seed_data,
                      const std::string& base64_seed_signature,
-                     const base::Time& date_fetched);
+                     const base::Time& date_fetched,
+                     VariationsSeed* parsed_seed);
 
   // Updates |kVariationsSeedDate| and logs when previous date was from a
   // different day.

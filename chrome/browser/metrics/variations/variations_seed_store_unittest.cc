@@ -24,6 +24,10 @@ class TestVariationsSeedStore : public VariationsSeedStore {
       : VariationsSeedStore(local_state) {}
   virtual ~TestVariationsSeedStore() {}
 
+  bool StoreSeedForTesting(const std::string& seed_data) {
+    return StoreSeedData(seed_data, std::string(), base::Time::Now(), NULL);
+  }
+
   virtual VariationsSeedStore::VerifySignatureResult VerifySeedSignature(
       const std::string& seed_bytes,
       const std::string& base64_seed_signature) OVERRIDE {
@@ -122,7 +126,6 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
 }
 
 TEST(VariationsSeedStoreTest, StoreSeedData) {
-  const base::Time now = base::Time::Now();
   const VariationsSeed seed = CreateTestSeed();
   const std::string serialized_seed = SerializeSeed(seed);
 
@@ -131,7 +134,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData) {
 
   TestVariationsSeedStore seed_store(&prefs);
 
-  EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, std::string(), now));
+  EXPECT_TRUE(seed_store.StoreSeedForTesting(serialized_seed));
   // Make sure the pref was actually set.
   EXPECT_FALSE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
 
@@ -144,8 +147,22 @@ TEST(VariationsSeedStoreTest, StoreSeedData) {
 
   // Check if trying to store a bad seed leaves the pref unchanged.
   prefs.ClearPref(prefs::kVariationsSeed);
-  EXPECT_FALSE(seed_store.StoreSeedData("should fail", std::string(), now));
+  EXPECT_FALSE(seed_store.StoreSeedForTesting("should fail"));
   EXPECT_TRUE(PrefHasDefaultValue(prefs, prefs::kVariationsSeed));
+}
+
+TEST(VariationsSeedStoreTest, StoreSeedData_ParsedSeed) {
+  const VariationsSeed seed = CreateTestSeed();
+  const std::string serialized_seed = SerializeSeed(seed);
+
+  TestingPrefServiceSimple prefs;
+  VariationsSeedStore::RegisterPrefs(prefs.registry());
+  TestVariationsSeedStore seed_store(&prefs);
+
+  VariationsSeed parsed_seed;
+  EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, std::string(),
+                                       base::Time::Now(), &parsed_seed));
+  EXPECT_EQ(serialized_seed, SerializeSeed(parsed_seed));
 }
 
 TEST(VariationsSeedStoreTest, VerifySeedSignature) {

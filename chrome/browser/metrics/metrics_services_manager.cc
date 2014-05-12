@@ -35,8 +35,9 @@ chrome_variations::VariationsService*
 MetricsServicesManager::GetVariationsService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!variations_service_) {
-    variations_service_.reset(
-        chrome_variations::VariationsService::Create(local_state_));
+    variations_service_ =
+        chrome_variations::VariationsService::Create(local_state_,
+                                                     GetMetricsStateManager());
   }
   return variations_service_.get();
 }
