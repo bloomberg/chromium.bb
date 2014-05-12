@@ -14,7 +14,6 @@
 #include "components/nacl/renderer/histogram.h"
 #include "components/nacl/renderer/manifest_service_channel.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
-#include "components/nacl/renderer/progress_event.h"
 #include "components/nacl/renderer/sandbox_arch.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
 #include "content/public/common/content_client.h"
@@ -34,8 +33,10 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "ppapi/thunk/enter.h"
+#include "third_party/WebKit/public/web/WebDOMResourceProgressEvent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
@@ -58,6 +59,27 @@ const char* const kDevAttribute = "@dev";
 
 const char* const kNaClMIMEType = "application/x-nacl";
 const char* const kPNaClMIMEType = "application/x-pnacl";
+
+blink::WebString EventTypeToString(PP_NaClEventType event_type) {
+  switch (event_type) {
+    case PP_NACL_EVENT_LOADSTART:
+      return blink::WebString::fromUTF8("loadstart");
+    case PP_NACL_EVENT_PROGRESS:
+      return blink::WebString::fromUTF8("progress");
+    case PP_NACL_EVENT_ERROR:
+      return blink::WebString::fromUTF8("error");
+    case PP_NACL_EVENT_ABORT:
+      return blink::WebString::fromUTF8("abort");
+    case PP_NACL_EVENT_LOAD:
+      return blink::WebString::fromUTF8("load");
+    case PP_NACL_EVENT_LOADEND:
+      return blink::WebString::fromUTF8("loadend");
+    case PP_NACL_EVENT_CRASH:
+      return blink::WebString::fromUTF8("crash");
+  }
+  NOTIMPLEMENTED();
+  return blink::WebString();
+}
 
 static int GetRoutingID(PP_Instance instance) {
   // Check that we are on the main renderer thread.
@@ -146,9 +168,14 @@ void NexeLoadManager::NexeFileDidOpen(int32_t pp_error,
         nexe_size_);
 
     // Inform JavaScript that we successfully downloaded the nacl module.
-    ProgressEvent progress_event(PP_NACL_EVENT_PROGRESS, url, true, nexe_size_,
-                                 nexe_size_);
-    DispatchProgressEvent(pp_instance_, progress_event);
+    ProgressEvent progress_event(pp_instance_, PP_NACL_EVENT_PROGRESS, url,
+        true, nexe_size_, nexe_size_);
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(&NexeLoadManager::DispatchEvent,
+                   weak_factory_.GetWeakPtr(),
+                   progress_event));
+
     load_start_ = base::Time::Now();
   }
 }
@@ -170,13 +197,21 @@ void NexeLoadManager::ReportLoadSuccess(const std::string& url,
   set_nacl_ready_state(PP_NACL_READY_STATE_DONE);
 
   // Inform JavaScript that loading was successful and is complete.
-  ProgressEvent load_event(PP_NACL_EVENT_LOAD, url, true, loaded_bytes,
-                           total_bytes);
-  DispatchProgressEvent(pp_instance_, load_event);
+  ProgressEvent load_event(pp_instance_, PP_NACL_EVENT_LOAD, url, true,
+      loaded_bytes, total_bytes);
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 load_event));
 
-  ProgressEvent loadend_event(PP_NACL_EVENT_LOADEND, url, true, loaded_bytes,
-                              total_bytes);
-  DispatchProgressEvent(pp_instance_, loadend_event);
+  ProgressEvent loadend_event(pp_instance_, PP_NACL_EVENT_LOADEND, url, true,
+      loaded_bytes, total_bytes);
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 loadend_event));
 
   // UMA
   HistogramEnumerateLoadStatus(PP_NACL_ERROR_LOAD_SUCCESS, is_installed_);
@@ -210,8 +245,17 @@ void NexeLoadManager::ReportLoadError(PP_NaClError error,
   SetLastError(error_string);
 
   // Inform JavaScript that loading encountered an error and is complete.
-  DispatchProgressEvent(pp_instance_, ProgressEvent(PP_NACL_EVENT_ERROR));
-  DispatchProgressEvent(pp_instance_, ProgressEvent(PP_NACL_EVENT_LOADEND));
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 ProgressEvent(PP_NACL_EVENT_ERROR)));
+
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 ProgressEvent(PP_NACL_EVENT_LOADEND)));
 
   HistogramEnumerateLoadStatus(error, is_installed_);
   LogToConsole(console_message);
@@ -230,8 +274,17 @@ void NexeLoadManager::ReportLoadAbort() {
   SetLastError(error_string);
 
   // Inform JavaScript that loading was aborted and is complete.
-  DispatchProgressEvent(pp_instance_, ProgressEvent(PP_NACL_EVENT_ABORT));
-  DispatchProgressEvent(pp_instance_, ProgressEvent(PP_NACL_EVENT_LOADEND));
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 ProgressEvent(PP_NACL_EVENT_ABORT)));
+
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 ProgressEvent(PP_NACL_EVENT_LOADEND)));
 
   HistogramEnumerateLoadStatus(PP_NACL_ERROR_LOAD_ABORTED, is_installed_);
   LogToConsole(error_string);
@@ -266,6 +319,43 @@ void NexeLoadManager::NexeDidCrash(const char* crash_log) {
   // invocation will just be a no-op, since the entire crash log will
   // have been received and we'll just get an EOF indication.
   CopyCrashLogToJsConsole(crash_log);
+}
+
+void NexeLoadManager::DispatchEvent(const ProgressEvent &event) {
+  blink::WebPluginContainer* container = plugin_instance_->GetContainer();
+  // It's possible that container() is NULL if the plugin has been removed from
+  // the DOM (but the PluginInstance is not destroyed yet).
+  if (!container)
+    return;
+  blink::WebLocalFrame* frame = container->element().document().frame();
+  if (!frame)
+    return;
+  v8::HandleScope handle_scope(plugin_instance_->GetIsolate());
+  v8::Local<v8::Context> context(
+      plugin_instance_->GetIsolate()->GetCurrentContext());
+  if (context.IsEmpty()) {
+    // If there's no JavaScript on the stack, we have to make a new Context.
+    context = v8::Context::New(plugin_instance_->GetIsolate());
+  }
+  v8::Context::Scope context_scope(context);
+
+  if (!event.resource_url.empty()) {
+    blink::WebString url_string = blink::WebString::fromUTF8(
+        event.resource_url.data(), event.resource_url.size());
+    blink::WebDOMResourceProgressEvent blink_event(
+        EventTypeToString(event.event_type),
+        event.length_is_computable,
+        event.loaded_bytes,
+        event.total_bytes,
+        url_string);
+    container->element().dispatchEvent(blink_event);
+  } else {
+    blink::WebDOMProgressEvent blink_event(EventTypeToString(event.event_type),
+                                           event.length_is_computable,
+                                           event.loaded_bytes,
+                                           event.total_bytes);
+    container->element().dispatchEvent(blink_event);
+  }
 }
 
 void NexeLoadManager::set_trusted_plugin_channel(
@@ -348,8 +438,11 @@ bool NexeLoadManager::RequestNaClManifest(const std::string& url,
       HistogramEnumerateManifestIsDataURI(*is_data_uri);
 
       set_nacl_ready_state(PP_NACL_READY_STATE_OPENED);
-      DispatchProgressEvent(pp_instance_,
-                            ProgressEvent(PP_NACL_EVENT_LOADSTART));
+      ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(&NexeLoadManager::DispatchEvent,
+                   weak_factory_.GetWeakPtr(),
+                   ProgressEvent(PP_NACL_EVENT_LOADSTART)));
       return true;
     }
   }
@@ -366,7 +459,11 @@ void NexeLoadManager::ProcessNaClManifest(const std::string& program_url) {
   if (gurl.is_valid())
     is_installed_ = gurl.SchemeIs("chrome-extension");
   set_nacl_ready_state(PP_NACL_READY_STATE_LOADING);
-  DispatchProgressEvent(pp_instance_, ProgressEvent(PP_NACL_EVENT_PROGRESS));
+  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+      FROM_HERE,
+      base::Bind(&NexeLoadManager::DispatchEvent,
+                 weak_factory_.GetWeakPtr(),
+                 ProgressEvent(PP_NACL_EVENT_PROGRESS)));
 }
 
 std::string NexeLoadManager::GetManifestURLArgument() const {
@@ -417,7 +514,11 @@ void NexeLoadManager::ReportDeadNexe() {
     SetLastError(message);
     LogToConsole(message);
 
-    DispatchProgressEvent(pp_instance_, ProgressEvent(PP_NACL_EVENT_CRASH));
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(&NexeLoadManager::DispatchEvent,
+                   weak_factory_.GetWeakPtr(),
+                   ProgressEvent(PP_NACL_EVENT_CRASH)));
     nexe_error_reported_ = true;
   }
   // else ReportLoadError() and ReportLoadAbort() will be used by loading code

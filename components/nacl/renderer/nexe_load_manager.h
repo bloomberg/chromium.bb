@@ -52,6 +52,31 @@ class NexeLoadManager {
   // The intent is for this class to only expose functions for reporting a
   // load state transition (e.g., ReportLoadError, ReportProgress,
   // ReportLoadAbort, etc.)
+  struct ProgressEvent {
+    explicit ProgressEvent(PP_NaClEventType event_type_param)
+        : event_type(event_type_param),
+          length_is_computable(false),
+          loaded_bytes(0),
+          total_bytes(0) {
+    }
+    ProgressEvent(PP_Instance instance, PP_NaClEventType event_type,
+                  const std::string& resource_url, bool length_is_computable,
+                  uint64_t loaded_bytes, uint64_t total_bytes)
+        : instance(instance),
+          event_type(event_type),
+          resource_url(resource_url),
+          length_is_computable(length_is_computable),
+          loaded_bytes(loaded_bytes),
+          total_bytes(total_bytes) {
+    }
+    PP_Instance instance;
+    PP_NaClEventType event_type;
+    std::string resource_url;
+    bool length_is_computable;
+    uint64_t loaded_bytes;
+    uint64_t total_bytes;
+  };
+  void DispatchEvent(const ProgressEvent &event);
   void set_trusted_plugin_channel(scoped_ptr<TrustedPluginChannel> channel);
   void set_manifest_service_channel(
       scoped_ptr<ManifestServiceChannel> channel);
