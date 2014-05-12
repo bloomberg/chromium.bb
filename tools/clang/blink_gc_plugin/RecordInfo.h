@@ -38,8 +38,6 @@ class BasePoint : public GraphPoint {
             const TracingStatus& status)
       : spec_(spec), info_(info), status_(status) {}
   const TracingStatus NeedsTracing() { return status_; }
-  // Needed to change the status of bases with a pure-virtual trace.
-  void MarkUnneeded() { status_ = TracingStatus::Unneeded(); }
   const clang::CXXBaseSpecifier& spec() { return spec_; }
   RecordInfo* info() { return info_; }
 

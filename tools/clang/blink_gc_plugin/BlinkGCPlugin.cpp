@@ -27,11 +27,13 @@ const char kClassMustLeftMostlyDeriveGC[] =
     "[blink-gc] Class %0 must derive its GC base in the left-most position.";
 
 const char kClassRequiresTraceMethod[] =
-    "[blink-gc] Class %0 requires a trace method"
-    " because it contains fields that require tracing.";
+    "[blink-gc] Class %0 requires a trace method.";
 
 const char kBaseRequiresTracing[] =
     "[blink-gc] Base class %0 of derived class %1 requires tracing.";
+
+const char kBaseRequiresTracingNote[] =
+    "[blink-gc] Untraced base class %0 declared here:";
 
 const char kFieldsRequireTracing[] =
     "[blink-gc] Class %0 has untraced fields that require tracing.";
@@ -578,6 +580,8 @@ class BlinkGCPluginConsumer : public ASTConsumer {
         getErrorLevel(), kClassDeclaresPureVirtualTrace);
 
     // Register note messages.
+    diag_base_requires_tracing_note_ = diagnostic_.getCustomDiagID(
+        DiagnosticsEngine::Note, kBaseRequiresTracingNote);
     diag_field_requires_tracing_note_ = diagnostic_.getCustomDiagID(
         DiagnosticsEngine::Note, kFieldRequiresTracingNote);
     diag_raw_ptr_to_gc_managed_class_note_ = diagnostic_.getCustomDiagID(
@@ -1093,6 +1097,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     FullSourceLoc full_loc(loc, manager);
     diagnostic_.Report(full_loc, diag_class_requires_trace_method_)
         << info->record();
+
+    for (RecordInfo::Bases::iterator it = info->GetBases().begin();
+         it != info->GetBases().end();
+         ++it) {
+      if (it->second.NeedsTracing().IsNeeded())
+        NoteBaseRequiresTracing(&it->second);
+    }
+
     for (RecordInfo::Fields::iterator it = info->GetFields().begin();
          it != info->GetFields().end();
          ++it) {
@@ -1278,6 +1290,14 @@ class BlinkGCPluginConsumer : public ASTConsumer {
     diagnostic_.Report(full_loc, diag_manual_dispatch_method_note_) << dispatch;
   }
 
+  void NoteBaseRequiresTracing(BasePoint* base) {
+    SourceLocation loc = base->spec().getLocStart();
+    SourceManager& manager = instance_.getSourceManager();
+    FullSourceLoc full_loc(loc, manager);
+    diagnostic_.Report(full_loc, diag_base_requires_tracing_note_)
+        << base->info()->record();
+  }
+
   void NoteFieldRequiresTracing(RecordInfo* holder, FieldDecl* field) {
     NoteField(field, diag_field_requires_tracing_note_);
   }
@@ -1354,6 +1374,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
   unsigned diag_class_overrides_new_;
   unsigned diag_class_declares_pure_virtual_trace_;
 
+  unsigned diag_base_requires_tracing_note_;
   unsigned diag_field_requires_tracing_note_;
   unsigned diag_raw_ptr_to_gc_managed_class_note_;
   unsigned diag_ref_ptr_to_gc_managed_class_note_;

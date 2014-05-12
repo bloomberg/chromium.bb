@@ -240,10 +240,18 @@ CXXMethodDecl* RecordInfo::DeclaresNewOperator() {
   return 0;
 }
 
-// An object requires a tracing method if it has any fields that need tracing.
+// An object requires a tracing method if it has any fields that need tracing
+// or if it inherits from multiple bases that need tracing.
 bool RecordInfo::RequiresTraceMethod() {
   if (IsStackAllocated())
     return false;
+  unsigned bases_with_trace = 0;
+  for (Bases::iterator it = GetBases().begin(); it != GetBases().end(); ++it) {
+    if (it->second.NeedsTracing().IsNeeded())
+      ++bases_with_trace;
+  }
+  if (bases_with_trace > 1)
+    return true;
   GetFields();
   return fields_need_tracing_.IsNeeded();
 }
