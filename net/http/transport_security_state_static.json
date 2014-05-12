@@ -746,6 +746,8 @@
     { "name": "harvestapp.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "anycoin.me", "include_subdomains": true, "mode": "force-https" },
     { "name": "noexpect.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "airbnb.com", "mode": "force-https" },
+    { "name": "www.airbnb.com", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
