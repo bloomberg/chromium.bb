@@ -48,6 +48,7 @@ def _RunBisectionScript(options):
          '-m', 'manual_test/manual_test',
          '-r', '1',
          '--working_directory', options.working_directory,
+         '--target_build_type', options.browser_type.title(),
          '--build_preference', 'ninja',
          '--use_goma',
          '--no_custom_deps']

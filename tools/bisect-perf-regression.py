@@ -654,8 +654,8 @@ def SetBuildSystemDefault(build_system):
     raise RuntimeError('%s build not supported.' % build_system)
 
 
-def BuildWithMake(threads, targets):
-  cmd = ['make', 'BUILDTYPE=Release']
+def BuildWithMake(threads, targets, build_type):
+  cmd = ['make', 'BUILDTYPE=%s' % build_type]
 
   if threads:
     cmd.append('-j%d' % threads)
@@ -667,8 +667,8 @@ def BuildWithMake(threads, targets):
   return not return_code
 
 
-def BuildWithNinja(threads, targets):
-  cmd = ['ninja', '-C', os.path.join('out', 'Release')]
+def BuildWithNinja(threads, targets, build_type):
+  cmd = ['ninja', '-C', os.path.join('out', build_type)]
 
   if threads:
     cmd.append('-j%d' % threads)
@@ -680,11 +680,11 @@ def BuildWithNinja(threads, targets):
   return not return_code
 
 
-def BuildWithVisualStudio(targets):
+def BuildWithVisualStudio(targets, build_type):
   path_to_devenv = os.path.abspath(
       os.path.join(os.environ['VS100COMNTOOLS'], '..', 'IDE', 'devenv.com'))
   path_to_sln = os.path.join(os.getcwd(), 'chrome', 'chrome.sln')
-  cmd = [path_to_devenv, '/build', 'Release', path_to_sln]
+  cmd = [path_to_devenv, '/build', build_type, path_to_sln]
 
   for t in targets:
     cmd.extend(['/Project', t])
@@ -797,12 +797,12 @@ class DesktopBuilder(Builder):
 
     build_success = False
     if opts.build_preference == 'make':
-      build_success = BuildWithMake(threads, targets)
+      build_success = BuildWithMake(threads, targets, opts.target_build_type)
     elif opts.build_preference == 'ninja':
-      build_success = BuildWithNinja(threads, targets)
+      build_success = BuildWithNinja(threads, targets, opts.target_build_type)
     elif opts.build_preference == 'msvs':
       assert IsWindows(), 'msvs is only supported on Windows.'
-      build_success = BuildWithVisualStudio(targets)
+      build_success = BuildWithVisualStudio(targets, opts.target_build_type)
     else:
       assert False, 'No build system defined.'
     return build_success
@@ -912,7 +912,7 @@ class CrosBuilder(Builder):
     if depot != 'cros':
       cmd += ['CHROME_ORIGIN=LOCAL_SOURCE']
 
-    cmd += ['BUILDTYPE=Release', './build_packages',
+    cmd += ['BUILDTYPE=%s' % opts.target_build_type, './build_packages',
         '--board=%s' % opts.cros_board]
     return_code = RunProcess(cmd)
 
@@ -939,7 +939,7 @@ class CrosBuilder(Builder):
     if depot != 'cros':
       cmd += ['CHROME_ORIGIN=LOCAL_SOURCE']
 
-    cmd += ['BUILDTYPE=Release', '--', './build_image',
+    cmd += ['BUILDTYPE=%s' % opts.target_build_type, '--', './build_image',
         '--board=%s' % opts.cros_board, 'test']
 
     return_code = RunProcess(cmd)
@@ -3553,10 +3553,10 @@ def RmTreeAndMkDir(path_to_dir, skip_makedir=False):
   return True
 
 
-def RemoveBuildFiles():
+def RemoveBuildFiles(build_type):
   """Removes build files from previous runs."""
-  if RmTreeAndMkDir(os.path.join('out', 'Release')):
-    if RmTreeAndMkDir(os.path.join('build', 'Release')):
+  if RmTreeAndMkDir(os.path.join('out', build_type)):
+    if RmTreeAndMkDir(os.path.join('build', build_type)):
       return True
   return False
 
@@ -3587,6 +3587,7 @@ class BisectOptions(object):
     self.debug_ignore_perf_test = None
     self.gs_bucket = None
     self.target_arch = 'ia32'
+    self.target_build_type = 'Release'
     self.builder_host = None
     self.builder_port = None
     self.bisect_mode = BISECT_MODE_MEAN
@@ -3710,6 +3711,12 @@ class BisectOptions(object):
                      dest='target_arch',
                      help=('The target build architecture. Choices are "ia32" '
                      '(default), "x64" or "arm".'))
+    group.add_option('--target_build_type',
+                     type='choice',
+                     choices=['Release', 'Debug'],
+                     default='Release',
+                     help='The target build type. Choices are "Release" '
+                     '(default), or "Debug".')
     group.add_option('--builder_host',
                      dest='builder_host',
                      type='str',
@@ -3848,7 +3855,7 @@ def main():
 
       os.chdir(os.path.join(os.getcwd(), 'src'))
 
-      if not RemoveBuildFiles():
+      if not RemoveBuildFiles(opts.target_build_type):
         raise RuntimeError('Something went wrong removing the build files.')
 
     if not IsPlatformSupported(opts):
