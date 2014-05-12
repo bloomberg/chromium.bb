@@ -13,39 +13,39 @@
 #include "base/android/build_info.h"
 #endif
 
-const char* kProbably = "probably";
-const char* kMaybe = "maybe";
-const char* kNot = "";
+const char kProbably[] = "probably";
+const char kMaybe[] = "maybe";
+const char kNot[] = "";
 
 #if defined(USE_PROPRIETARY_CODECS)
-const char* kPropProbably = "probably";
-const char* kPropMaybe = "maybe";
+const char kPropProbably[] = "probably";
+const char kPropMaybe[] = "maybe";
 #else
-const char* kPropProbably = "";
-const char* kPropMaybe = "";
+const char kPropProbably[] = "";
+const char kPropMaybe[] = "";
 #endif  // USE_PROPRIETARY_CODECS
 
 // TODO(amogh.bihani): Change the opus tests when opus is  on
 // Android. (http://crbug.com/318436).
 #if !defined(OS_ANDROID)
-const char* kOggVideoProbably = "probably";
-const char* kOggVideoMaybe = "maybe";
-const char* kTheoraProbably = "probably";
-const char* kOpusProbably = "probably";
+const char kOggVideoProbably[] = "probably";
+const char kOggVideoMaybe[] = "maybe";
+const char kTheoraProbably[] = "probably";
+const char kOpusProbably[] = "probably";
 #if defined(USE_PROPRIETARY_CODECS)
-const char* kTheoraAndPropProbably = "probably";
-const char* kOpusAndPropProbably = "probably";
+const char kTheoraAndPropProbably[] = "probably";
+const char kOpusAndPropProbably[] = "probably";
 #else
-const char* kTheoraAndPropProbably = "";
-const char* kOpusAndPropProbably = "";
+const char kTheoraAndPropProbably[] = "";
+const char kOpusAndPropProbably[] = "";
 #endif  // USE_PROPRIETARY_CODECS
 #else
-const char* kOggVideoProbably = "";
-const char* kOggVideoMaybe = "";
-const char* kTheoraProbably = "";
-const char* kOpusProbably = "";
-const char* kTheoraAndPropProbably = "maybe";
-const char* kOpusAndPropProbably = "maybe";
+const char kOggVideoProbably[] = "";
+const char kOggVideoMaybe[] = "";
+const char kTheoraProbably[] = "";
+const char kOpusProbably[] = "";
+const char kTheoraAndPropProbably[] = "maybe";
+const char kOpusAndPropProbably[] = "maybe";
 #endif  // !OS_ANDROID
 
 namespace content {
