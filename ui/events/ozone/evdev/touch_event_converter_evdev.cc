@@ -264,7 +264,7 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
         case SYN_MT_REPORT:
           // For type A devices, we just get a stream of all current contacts,
           // in some arbitrary order.
-          current_slot_++;
+          events_[current_slot_++].type_ = ET_TOUCH_PRESSED;
           is_type_a_ = true;
           break;
         case SYN_DROPPED:
