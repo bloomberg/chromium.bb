@@ -99,6 +99,8 @@ public:
 
     std::string captureTree(bool debugRenderTree);
     SkCanvas* capturePixels();
+    void CapturePixelsForPrinting(
+        base::Callback<void(const SkBitmap&)> callback);
     void CapturePixelsAsync(base::Callback<void(const SkBitmap&)> callback);
 
     void setLogConsoleOutput(bool enabled);

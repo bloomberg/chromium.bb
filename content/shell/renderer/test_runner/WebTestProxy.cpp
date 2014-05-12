@@ -66,20 +66,6 @@ private:
     CallbackMethodType m_callback;
 };
 
-class ClosureTask : public WebMethodTask<WebTestProxyBase> {
- public:
-  ClosureTask(WebTestProxyBase* object, base::Closure callback)
-      : WebMethodTask<WebTestProxyBase>(object), m_callback(callback) {}
-
-  virtual void runIfValid() OVERRIDE {
-    if (!m_callback.is_null())
-      m_callback.Run();
-  }
-
- private:
-  base::Closure m_callback;
-};
-
 void printFrameDescription(WebTestDelegate* delegate, WebFrame* frame)
 {
     string name8 = frame->uniqueName().utf8();
@@ -493,12 +479,33 @@ void WebTestProxyBase::didCompositeAndReadback(const SkBitmap& bitmap) {
   m_compositeAndReadbackCallbacks.pop_front();
 }
 
+void WebTestProxyBase::CapturePixelsForPrinting(
+    base::Callback<void(const SkBitmap&)> callback) {
+  // TODO(enne): get rid of stateful canvas().
+  webWidget()->layout();
+  paintPagesWithBoundaries();
+  DrawSelectionRect(canvas());
+  SkBaseDevice* device = skia::GetTopDevice(*canvas());
+  const SkBitmap& bitmap = device->accessBitmap(false);
+  callback.Run(bitmap);
+}
+
 void WebTestProxyBase::CapturePixelsAsync(
     base::Callback<void(const SkBitmap&)> callback) {
   TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixelsAsync");
 
   DCHECK(webWidget()->isAcceleratedCompositingActive());
   DCHECK(!callback.is_null());
+
+  if (m_testInterfaces->testRunner()->isPrinting()) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebTestProxyBase::CapturePixelsForPrinting,
+                   base::Unretained(this),
+                   callback));
+    return;
+  }
+
   m_compositeAndReadbackCallbacks.push_back(callback);
   webWidget()->compositeAndReadbackAsync(this);
 }
@@ -623,11 +630,11 @@ void WebTestProxyBase::displayAsyncThen(base::Closure callback) {
     TRACE_EVENT0("shell",
                  "WebTestProxyBase::displayAsyncThen "
                  "isAcceleratedCompositingActive false");
-    m_delegate->postTask(
-        new ClosureTask(this,
-                        base::Bind(&WebTestProxyBase::DisplayForSoftwareMode,
-                                   base::Unretained(this),
-                                   callback)));
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebTestProxyBase::DisplayForSoftwareMode,
+                   base::Unretained(this),
+                   callback));
     return;
   }
 
