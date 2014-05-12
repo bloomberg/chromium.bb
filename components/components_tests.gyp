@@ -64,6 +64,7 @@
             'autofill/core/common/password_form_fill_data_unittest.cc',
             'autofill/core/common/save_password_progress_logger_unittest.cc',
             'bookmarks/core/browser/bookmark_codec_unittest.cc',
+            'bookmarks/core/browser/bookmark_expanded_state_tracker_unittest.cc',
             'bookmarks/core/browser/bookmark_index_unittest.cc',
             'bookmarks/core/browser/bookmark_utils_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
