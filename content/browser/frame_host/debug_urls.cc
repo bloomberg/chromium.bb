@@ -43,6 +43,9 @@ bool HandleDebugURL(const GURL& url, PageTransition transition) {
   if (!(transition & PAGE_TRANSITION_FROM_ADDRESS_BAR))
     return false;
 
+  // NOTE: when you add handling of any URLs to this function, also
+  // update IsDebugURL, below.
+
   if (url.host() == kChromeUIBrowserCrashHost) {
     // Induce an intentional crash in the browser process.
     CHECK(false);
@@ -78,6 +81,19 @@ bool HandleDebugURL(const GURL& url, PageTransition transition) {
   }
 
   return false;
+}
+
+bool IsDebugURL(const GURL& url) {
+  // NOTE: when you add any URLs to this list, also update
+  // HandleDebugURL, above.
+  return IsRendererDebugURL(url) ||
+      (url.is_valid() &&
+       (url.host() == kChromeUIBrowserCrashHost ||
+        url == GURL(kChromeUIGpuCleanURL) ||
+        url == GURL(kChromeUIGpuCrashURL) ||
+        url == GURL(kChromeUIGpuHangURL) ||
+        url == GURL(kChromeUIPpapiFlashCrashURL) ||
+        url == GURL(kChromeUIPpapiFlashHangURL)));
 }
 
 bool IsRendererDebugURL(const GURL& url) {

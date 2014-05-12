@@ -5,12 +5,14 @@
 #include "content/browser/frame_host/navigation_controller_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"  // Temporary
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "cc/base/switches.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -1012,8 +1014,18 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     // update the virtual URL when replaceState is called after a pushState.
     GURL url = params.url;
     bool needs_update = false;
-    BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
-        &url, browser_context_, &needs_update);
+    // We call RewriteURLIfNecessary twice: once when page navigation
+    // begins in CreateNavigationEntry, and once here when it commits.
+    // With the kEnableGpuBenchmarking flag, the rewriting includes
+    // handling debug URLs which cause an action to occur, and thus we
+    // should not rewrite them a second time.
+    bool skip_rewrite =
+        IsDebugURL(url) && base::CommandLine::ForCurrentProcess()->HasSwitch(
+            cc::switches::kEnableGpuBenchmarking);
+    if (!skip_rewrite) {
+      BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
+          &url, browser_context_, &needs_update);
+    }
     new_entry->set_update_virtual_url_with_url(needs_update);
 
     // When navigating to a new page, give the browser URL handler a chance to
