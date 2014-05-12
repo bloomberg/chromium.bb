@@ -50,19 +50,6 @@ void ConvertAndScaleYUVToRGB32Rect(
     const webrtc::DesktopRect& dest_buffer_rect,
     const webrtc::DesktopRect& dest_rect);
 
-// Convert RGB32 to YUV on a specific rectangle.
-void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
-                               uint8* y_plane,
-                               uint8* u_plane,
-                               uint8* v_plane,
-                               int x,
-                               int y,
-                               int width,
-                               int height,
-                               int rgb_stride,
-                               int y_stride,
-                               int uv_stride);
-
 int RoundToTwosMultiple(int x);
 
 // Align the sides of the rectangle to multiples of 2 (expanding outwards).

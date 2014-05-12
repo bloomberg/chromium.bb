@@ -6,6 +6,7 @@
 
 #include "remoting/base/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libyuv/include/libyuv/convert_from_argb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 static const int kWidth = 32 ;
@@ -91,17 +92,16 @@ class YuvToRgbTester {
     FillRgbBuffer(rect);
 
     // RGB -> YUV
-    ConvertRGB32ToYUVWithRect(rgb_buffer_.get(),
-                              yplane_,
-                              uplane_,
-                              vplane_,
-                              0,
-                              0,
-                              kWidth,
-                              kHeight,
-                              kRgbStride,
-                              kYStride,
-                              kUvStride);
+    libyuv::ARGBToI420(rgb_buffer_.get(),
+                       kRgbStride,
+                       yplane_,
+                       kYStride,
+                       uplane_,
+                       kUvStride,
+                       vplane_,
+                       kUvStride,
+                       kWidth,
+                       kHeight);
 
     // Reset RGB buffer and do opposite conversion.
     ResetRgbBuffer();

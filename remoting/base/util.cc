@@ -45,28 +45,6 @@ int CalculateUVOffset(int x, int y, int stride) {
   return stride * y / 2 + x / 2;
 }
 
-void ConvertRGB32ToYUVWithRect(const uint8* rgb_plane,
-                               uint8* y_plane,
-                               uint8* u_plane,
-                               uint8* v_plane,
-                               int x,
-                               int y,
-                               int width,
-                               int height,
-                               int rgb_stride,
-                               int y_stride,
-                               int uv_stride) {
-  int rgb_offset = CalculateRGBOffset(x, y, rgb_stride);
-  int y_offset = CalculateYOffset(x, y, y_stride);
-  int uv_offset = CalculateUVOffset(x, y, uv_stride);;
-
-  libyuv::ARGBToI420(rgb_plane + rgb_offset, rgb_stride,
-                     y_plane + y_offset, y_stride,
-                     u_plane + uv_offset, uv_stride,
-                     v_plane + uv_offset, uv_stride,
-                     width, height);
-}
-
 void ConvertAndScaleYUVToRGB32Rect(
     const uint8* source_yplane,
     const uint8* source_uplane,

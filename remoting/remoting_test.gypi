@@ -17,6 +17,7 @@
         '../ppapi/ppapi.gyp:ppapi_cpp',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../third_party/libyuv/libyuv.gyp:libyuv',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
