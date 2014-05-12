@@ -66,14 +66,6 @@ fullscreen_handler(struct window *window, void *data)
 }
 
 static void
-resize_handler(struct widget *widget, int width, int height, void *data)
-{
-	struct fullscreen *fullscreen = data;
-
-	widget_set_size(widget, fullscreen->width, fullscreen->height);
-}
-
-static void
 draw_string(cairo_t *cr,
 	    const char *fmt, ...)
 {
@@ -551,7 +543,6 @@ int main(int argc, char *argv[])
 	widget_set_transparent(fullscreen.widget, 0);
 
 	widget_set_default_cursor(fullscreen.widget, CURSOR_LEFT_PTR);
-	widget_set_resize_handler(fullscreen.widget, resize_handler);
 	widget_set_redraw_handler(fullscreen.widget, redraw_handler);
 	widget_set_button_handler(fullscreen.widget, button_handler);
 	widget_set_motion_handler(fullscreen.widget, motion_handler);
