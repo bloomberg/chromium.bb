@@ -127,10 +127,10 @@ bool IsSystemInstall() {
   return !InstallUtil::IsPerUserInstall(exe_path.value().c_str());
 }
 
-// This task checks the update policy and calls back the task only if the
-// system is not enrolled in a domain (i.e., not in an enterprise environment).
-// It also identifies if autoupdate is enabled and whether we are running an
-// unstable channel. |is_auto_update_enabled| can be NULL.
+// Sets |is_unstable_channel| to true if the current chrome is on the dev or
+// canary channels. Sets |is_auto_update_enabled| to true if Google Update will
+// update the current chrome. Unconditionally posts |callback_task| to the UI
+// thread to continue processing.
 void DetectUpdatability(const base::Closure& callback_task,
                         bool* is_unstable_channel,
                         bool* is_auto_update_enabled) {
@@ -144,9 +144,7 @@ void DetectUpdatability(const base::Closure& callback_task,
         GoogleUpdateSettings::AreAutoupdatesEnabled(app_guid);
   }
   *is_unstable_channel = IsUnstableChannel();
-  // Don't show the update bubbles to entreprise users (i.e., on a domain).
-  if (!base::win::IsEnrolledToDomain())
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_task);
 }
 #endif  // defined(OS_WIN)
 
@@ -367,6 +365,10 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
       return false;
 
 #if defined(OS_WIN)
+    // Don't show the update bubbles to entreprise users (i.e., on a domain).
+    if (base::win::IsEnrolledToDomain())
+      return false;
+
     // On Windows, we don't want to warn about outdated installs when the
     // machine doesn't support SSE2, it's been deprecated starting with M35.
     if (!base::CPU().has_sse2())
