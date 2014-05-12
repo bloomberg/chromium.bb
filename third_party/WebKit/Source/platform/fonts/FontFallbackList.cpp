@@ -135,17 +135,18 @@ const FontData* FontFallbackList::primaryFontData(const FontDescription& fontDes
         if (fontData->isSegmented() && !toSegmentedFontData(fontData)->containsCharacter(' '))
             continue;
 
+        const SimpleFontData* simpleFontData = fontData->fontDataForCharacter(' ');
+        ASSERT(simpleFontData);
+
         // When a custom font is loading, we should use the correct fallback font to layout the text.
         // Here skip the temporary font for the loading custom font which may not act as the correct fallback font.
-        if (!fontData->isLoadingFallback())
+        if (!simpleFontData->isLoadingFallback())
             return fontData;
 
         // Begin to load the first custom font if needed.
         if (shouldLoadCustomFont) {
             shouldLoadCustomFont = false;
-            const SimpleFontData* simpleFontData = fontData->fontDataForCharacter(' ');
-            if (simpleFontData && simpleFontData->customFontData())
-                simpleFontData->customFontData()->beginLoadIfNeeded();
+            simpleFontData->customFontData()->beginLoadIfNeeded();
         }
     }
 }
