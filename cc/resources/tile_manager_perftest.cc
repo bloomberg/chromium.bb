@@ -299,16 +299,17 @@ class TileManagerTileIteratorPerfTest : public testing::Test,
     pending_layer_->SetAllTilesVisible();
   }
 
-  void RunTest(const std::string& test_name, unsigned tile_count) {
+  void RunTest(const std::string& test_name, int tile_count) {
     timer_.Reset();
     do {
+      int count = tile_count;
       for (TileManager::RasterTileIterator it(tile_manager(),
                                               SAME_PRIORITY_FOR_BOTH_TREES);
-           it && tile_count;
+           it && count;
            ++it) {
-        --tile_count;
+        --count;
       }
-      ASSERT_EQ(0u, tile_count);
+      ASSERT_EQ(0, count);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
