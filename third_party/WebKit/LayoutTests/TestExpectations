@@ -439,7 +439,7 @@ crbug.com/268111 [ Win ] http/tests/appcache/online-whitelist.html [ Failure Pas
 crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-shared-basic.html [ Failure Pass ]
 crbug.com/316148 [ Win ] http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Crash ]
 
-crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure Pass ]
+crbug.com/268692 [ Mac ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
