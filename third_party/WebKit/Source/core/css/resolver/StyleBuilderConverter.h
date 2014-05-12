@@ -30,7 +30,9 @@
 #include "core/css/CSSValue.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/ShadowList.h"
+#include "core/rendering/style/StyleReflection.h"
 #include "core/svg/SVGLength.h"
 #include "platform/LengthSize.h"
 
@@ -40,6 +42,7 @@ namespace WebCore {
 
 class StyleBuilderConverter {
 public:
+    static PassRefPtr<StyleReflection> convertBoxReflect(StyleResolverState&, CSSValue*);
     static AtomicString convertFragmentIdentifier(StyleResolverState&, CSSValue*);
     template <typename T> static T convertComputedLength(StyleResolverState&, CSSValue*);
     static EGlyphOrientation convertGlyphOrientation(StyleResolverState&, CSSValue*);
@@ -51,7 +54,9 @@ public:
     static Length convertLengthSizing(StyleResolverState&, CSSValue*);
     static Length convertLengthMaxSizing(StyleResolverState&, CSSValue*);
     static LengthPoint convertLengthPoint(StyleResolverState&, CSSValue*);
+    static LineBoxContain convertLineBoxContain(StyleResolverState&, CSSValue*);
     static float convertNumberOrPercentage(StyleResolverState&, CSSValue*);
+    static PassRefPtr<QuotesData> convertQuotes(StyleResolverState&, CSSValue*);
     static LengthSize convertRadius(StyleResolverState&, CSSValue*);
     static EPaintOrder convertPaintOrder(StyleResolverState&, CSSValue*);
     static PassRefPtr<ShadowList> convertShadow(StyleResolverState&, CSSValue*);
@@ -60,6 +65,7 @@ public:
     static PassRefPtr<SVGLengthList> convertStrokeDasharray(StyleResolverState&, CSSValue*);
     static Color convertSVGColor(StyleResolverState&, CSSValue*);
     static PassRefPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
+    static float convertTextStrokeWidth(StyleResolverState&, CSSValue*);
 
     static bool convertGridTrackList(CSSValue*, Vector<GridTrackSize>&, NamedGridLinesMap&, OrderedNamedGridLines&, StyleResolverState&);
 };

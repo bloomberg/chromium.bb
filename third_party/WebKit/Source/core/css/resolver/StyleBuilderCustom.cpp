@@ -54,7 +54,6 @@
 #include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSProperty.h"
-#include "core/css/CSSReflectValue.h"
 #include "core/css/Counter.h"
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
@@ -1270,29 +1269,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
                 state.style()->clearContent();
             return;
         }
-    case CSSPropertyQuotes:
-        HANDLE_INHERIT_AND_INITIAL(quotes, Quotes);
-        if (value->isValueList()) {
-            CSSValueList* list = toCSSValueList(value);
-            RefPtr<QuotesData> quotes = QuotesData::create();
-            for (size_t i = 0; i < list->length(); i += 2) {
-                CSSValue* first = list->itemWithoutBoundsCheck(i);
-                // item() returns null if out of bounds so this is safe.
-                CSSValue* second = list->item(i + 1);
-                if (!second)
-                    continue;
-                String startQuote = toCSSPrimitiveValue(first)->getStringValue();
-                String endQuote = toCSSPrimitiveValue(second)->getStringValue();
-                quotes->addPair(std::make_pair(startQuote, endQuote));
-            }
-            state.style()->setQuotes(quotes);
-            return;
-        }
-        if (primitiveValue) {
-            if (primitiveValue->getValueID() == CSSValueNone)
-                state.style()->setQuotes(QuotesData::create());
-        }
-        return;
     // Shorthand properties.
     case CSSPropertyFont:
         // Only System Font identifiers should come through this method
@@ -1357,29 +1333,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         break;
 
     // CSS3 Properties
-    case CSSPropertyWebkitBoxReflect: {
-        HANDLE_INHERIT_AND_INITIAL(boxReflect, BoxReflect)
-        if (primitiveValue) {
-            state.style()->setBoxReflect(RenderStyle::initialBoxReflect());
-            return;
-        }
-
-        if (!value->isReflectValue())
-            return;
-
-        CSSReflectValue* reflectValue = toCSSReflectValue(value);
-        RefPtr<StyleReflection> reflection = StyleReflection::create();
-        reflection->setDirection(*reflectValue->direction());
-        if (reflectValue->offset())
-            reflection->setOffset(reflectValue->offset()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()));
-        NinePieceImage mask;
-        mask.setMaskDefaults();
-        state.styleMap().mapNinePieceImage(state.style(), id, reflectValue->mask(), mask);
-        reflection->setMask(mask);
-
-        state.style()->setBoxReflect(reflection.release());
-        return;
-    }
     case CSSPropertySrc: // Only used in @font-face rules.
         return;
     case CSSPropertyUnicodeRange: // Only used in @font-face rules.
@@ -1400,28 +1353,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
             return;
         state.style()->setDraggableRegionMode(primitiveValue->getValueID() == CSSValueDrag ? DraggableRegionDrag : DraggableRegionNoDrag);
         state.document().setHasAnnotatedRegions(true);
-        return;
-    }
-    case CSSPropertyWebkitTextStrokeWidth: {
-        HANDLE_INHERIT_AND_INITIAL(textStrokeWidth, TextStrokeWidth)
-        float width = 0;
-        switch (primitiveValue->getValueID()) {
-        case CSSValueThin:
-        case CSSValueMedium:
-        case CSSValueThick: {
-            double result = 1.0 / 48;
-            if (primitiveValue->getValueID() == CSSValueMedium)
-                result *= 3;
-            else if (primitiveValue->getValueID() == CSSValueThick)
-                result *= 5;
-            width = CSSPrimitiveValue::create(result, CSSPrimitiveValue::CSS_EMS)->computeLength<float>(state.cssToLengthConversionData());
-            break;
-        }
-        default:
-            width = primitiveValue->computeLength<float>(state.cssToLengthConversionData());
-            break;
-        }
-        state.style()->setTextStrokeWidth(width);
         return;
     }
     case CSSPropertyPerspective:
@@ -1534,20 +1465,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         if (primitiveValue)
             state.setTextOrientation(*primitiveValue);
 
-        return;
-    }
-
-    case CSSPropertyWebkitLineBoxContain: {
-        HANDLE_INHERIT_AND_INITIAL(lineBoxContain, LineBoxContain)
-        if (primitiveValue && primitiveValue->getValueID() == CSSValueNone) {
-            state.style()->setLineBoxContain(LineBoxContainNone);
-            return;
-        }
-
-        if (!value->isLineBoxContainValue())
-            return;
-
-        state.style()->setLineBoxContain(toCSSLineBoxContainValue(value)->value());
         return;
     }
 
@@ -1900,6 +1817,10 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyStrokeDasharray:
     case CSSPropertyGlyphOrientationHorizontal:
     case CSSPropertyGlyphOrientationVertical:
+    case CSSPropertyQuotes:
+    case CSSPropertyWebkitTextStrokeWidth:
+    case CSSPropertyWebkitLineBoxContain:
+    case CSSPropertyWebkitBoxReflect:
         ASSERT_NOT_REACHED();
         return;
     // Only used in @viewport rules

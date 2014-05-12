@@ -30,6 +30,7 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSGridLineNamesValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/Pair.h"
 #include "core/svg/SVGURIReference.h"
@@ -54,6 +55,26 @@ static GridLength convertGridTrackBreadth(const StyleResolverState& state, CSSPr
 }
 
 } // namespace
+
+PassRefPtr<StyleReflection> StyleBuilderConverter::convertBoxReflect(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        return RenderStyle::initialBoxReflect();
+    }
+
+    CSSReflectValue* reflectValue = toCSSReflectValue(value);
+    RefPtr<StyleReflection> reflection = StyleReflection::create();
+    reflection->setDirection(*reflectValue->direction());
+    if (reflectValue->offset())
+        reflection->setOffset(reflectValue->offset()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData()));
+    NinePieceImage mask;
+    mask.setMaskDefaults();
+    state.styleMap().mapNinePieceImage(state.style(), CSSPropertyWebkitBoxReflect, reflectValue->mask(), mask);
+    reflection->setMask(mask);
+
+    return reflection.release();
+}
 
 AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& state, CSSValue* value)
 {
@@ -248,6 +269,16 @@ LengthPoint StyleBuilderConverter::convertLengthPoint(StyleResolverState& state,
     return LengthPoint(x, y);
 }
 
+LineBoxContain StyleBuilderConverter::convertLineBoxContain(StyleResolverState&, CSSValue* value)
+{
+    if (value->isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        return LineBoxContainNone;
+    }
+
+    return toCSSLineBoxContainValue(value)->value();
+}
+
 float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
@@ -287,6 +318,27 @@ EPaintOrder StyleBuilderConverter::convertPaintOrder(StyleResolverState&, CSSVal
     }
 
     return PO_NORMAL;
+}
+
+PassRefPtr<QuotesData> StyleBuilderConverter::convertQuotes(StyleResolverState&, CSSValue* value)
+{
+    if (value->isValueList()) {
+        CSSValueList* list = toCSSValueList(value);
+        RefPtr<QuotesData> quotes = QuotesData::create();
+        for (size_t i = 0; i < list->length(); i += 2) {
+            CSSValue* first = list->itemWithoutBoundsCheck(i);
+            // item() returns null if out of bounds so this is safe.
+            CSSValue* second = list->item(i + 1);
+            if (!second)
+                continue;
+            String startQuote = toCSSPrimitiveValue(first)->getStringValue();
+            String endQuote = toCSSPrimitiveValue(second)->getStringValue();
+            quotes->addPair(std::make_pair(startQuote, endQuote));
+        }
+        return quotes.release();
+    }
+    // FIXME: We should assert we're a primitive value with valueID = CSSValueNone
+    return QuotesData::create();
 }
 
 LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSValue* value)
@@ -374,6 +426,16 @@ Color StyleBuilderConverter::convertSVGColor(StyleResolverState& state, CSSValue
 PassRefPtr<SVGLength> StyleBuilderConverter::convertSVGLength(StyleResolverState&, CSSValue* value)
 {
     return SVGLength::fromCSSPrimitiveValue(toCSSPrimitiveValue(value));
+}
+
+float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state, CSSValue* value)
+{
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID()) {
+        float multiplier = convertLineWidth<float>(state, value);
+        return CSSPrimitiveValue::create(multiplier / 48, CSSPrimitiveValue::CSS_EMS)->computeLength<float>(state.cssToLengthConversionData());
+    }
+    return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }
 
 } // namespace WebCore

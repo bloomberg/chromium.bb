@@ -115,6 +115,7 @@ page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
 pointer-events
 position
+quotes converter=convertQuotes
 resize custom_value
 right type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
 scroll-behavior type_name=ScrollBehavior
@@ -183,6 +184,7 @@ backface-visibility
 -webkit-box-ordinal-group type_name=unsigned int
 -webkit-box-orient
 -webkit-box-pack
+-webkit-box-reflect converter=convertBoxReflect
 -webkit-box-shadow use_handlers_for=CSSPropertyBoxShadow
 -webkit-clip-path custom_value
 -webkit-column-break-after type_name=EPageBreak, initial=initialPageBreak
@@ -200,6 +202,7 @@ column-fill type_name=ColumnFill
 -webkit-font-smoothing font, type_name=FontSmoothingMode
 -webkit-highlight type_name=AtomicString, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character type_name=AtomicString, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
+-webkit-line-box-contain converter=convertLineBoxContain
 -webkit-line-break type_name=LineBreak
 -webkit-line-clamp type_name=LineClampValue
 -webkit-margin-after-collapse type_name=EMarginCollapse
@@ -240,6 +243,7 @@ perspective-origin custom_all
 -webkit-text-fill-color custom_all
 -webkit-text-security
 -webkit-text-stroke-color custom_all
+-webkit-text-stroke-width converter=convertTextStrokeWidth
 text-underline-position custom_value
 transform custom_value
 -webkit-transform use_handlers_for=CSSPropertyTransform
