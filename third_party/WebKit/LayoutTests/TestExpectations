@@ -567,7 +567,8 @@ crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-p
 
 # Test results depends on image caching behavior in Blink/Skia. This is being
 # worked on actively. Rebaseline after impl-side painting becomes stable.
-crbug.com/24182 crbug.com/318490 virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass ]
+crbug.com/24182 crbug.com/318490 [ Win Linux Android ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass ]
+crbug.com/24182 crbug.com/318490 crbug.com/372213 [ Mac ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Crash Pass Timeout ]
 
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
@@ -893,7 +894,8 @@ crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash
 crbug.com/344238 inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
-crbug.com/344238 virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
+crbug.com/344238 [ Win Linux Android ] virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
+crbug.com/344238 crbug.com/372213 [ Mac ] virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure Timeout ]
 
 crbug.com/308992 css2.1/20110323/replaced-intrinsic-001.htm [ Failure ]
 crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
