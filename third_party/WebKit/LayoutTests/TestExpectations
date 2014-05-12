@@ -707,8 +707,6 @@ crbug.com/322782 fast/text-autosizing/clusters-insufficient-text.html [ ImageOnl
 crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 
-crbug.com/363767 fast/text-autosizing/list-item-above-dbcat.html [ NeedsRebaseline ]
-
 crbug.com/353827 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
 crbug.com/353827 virtual/softwarecompositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
 crbug.com/353827 virtual/gpu/compositedscrolling/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
