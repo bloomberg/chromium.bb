@@ -14,6 +14,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/mac/mach_logging.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/tracked_objects.h"
 
@@ -61,20 +62,19 @@ void SetPriorityNormal(mach_port_t mach_thread_id) {
   // Please note that this call could fail in rare cases depending
   // on runtime conditions.
   thread_standard_policy policy;
-  kern_return_t result = thread_policy_set(mach_thread_id,
-                                           THREAD_STANDARD_POLICY,
-                                           (thread_policy_t)&policy,
-                                           THREAD_STANDARD_POLICY_COUNT);
+  kern_return_t result =
+      thread_policy_set(mach_thread_id,
+                        THREAD_STANDARD_POLICY,
+                        reinterpret_cast<thread_policy_t>(&policy),
+                        THREAD_STANDARD_POLICY_COUNT);
 
   if (result != KERN_SUCCESS)
-    DVLOG(1) << "thread_policy_set() failure: " << result;
+    MACH_DVLOG(1, result) << "thread_policy_set";
 }
 
 // Enables time-contraint policy and priority suitable for low-latency,
 // glitch-resistant audio.
 void SetPriorityRealtimeAudio(mach_port_t mach_thread_id) {
-  kern_return_t result;
-
   // Increase thread priority to real-time.
 
   // Please note that the thread_policy_set() calls may fail in
@@ -85,12 +85,13 @@ void SetPriorityRealtimeAudio(mach_port_t mach_thread_id) {
   // Make thread fixed priority.
   thread_extended_policy_data_t policy;
   policy.timeshare = 0;  // Set to 1 for a non-fixed thread.
-  result = thread_policy_set(mach_thread_id,
-                             THREAD_EXTENDED_POLICY,
-                             (thread_policy_t)&policy,
-                             THREAD_EXTENDED_POLICY_COUNT);
+  kern_return_t result =
+      thread_policy_set(mach_thread_id,
+                        THREAD_EXTENDED_POLICY,
+                        reinterpret_cast<thread_policy_t>(&policy),
+                        THREAD_EXTENDED_POLICY_COUNT);
   if (result != KERN_SUCCESS) {
-    DVLOG(1) << "thread_policy_set() failure: " << result;
+    MACH_DVLOG(1, result) << "thread_policy_set";
     return;
   }
 
@@ -99,10 +100,10 @@ void SetPriorityRealtimeAudio(mach_port_t mach_thread_id) {
   precedence.importance = 63;
   result = thread_policy_set(mach_thread_id,
                              THREAD_PRECEDENCE_POLICY,
-                             (thread_policy_t)&precedence,
+                             reinterpret_cast<thread_policy_t>(&precedence),
                              THREAD_PRECEDENCE_POLICY_COUNT);
   if (result != KERN_SUCCESS) {
-    DVLOG(1) << "thread_policy_set() failure: " << result;
+    MACH_DVLOG(1, result) << "thread_policy_set";
     return;
   }
 
@@ -133,7 +134,7 @@ void SetPriorityRealtimeAudio(mach_port_t mach_thread_id) {
   mach_timebase_info_data_t tb_info;
   mach_timebase_info(&tb_info);
   double ms_to_abs_time =
-      ((double)tb_info.denom / (double)tb_info.numer) * 1000000;
+      (static_cast<double>(tb_info.denom) / tb_info.numer) * 1000000;
 
   thread_time_constraint_policy_data_t time_constraints;
   time_constraints.period = kTimeQuantum * ms_to_abs_time;
@@ -141,12 +142,12 @@ void SetPriorityRealtimeAudio(mach_port_t mach_thread_id) {
   time_constraints.constraint = kMaxTimeAllowed * ms_to_abs_time;
   time_constraints.preemptible = 0;
 
-  result = thread_policy_set(mach_thread_id,
-                             THREAD_TIME_CONSTRAINT_POLICY,
-                             (thread_policy_t)&time_constraints,
-                             THREAD_TIME_CONSTRAINT_POLICY_COUNT);
-  if (result != KERN_SUCCESS)
-    DVLOG(1) << "thread_policy_set() failure: " << result;
+  result =
+      thread_policy_set(mach_thread_id,
+                        THREAD_TIME_CONSTRAINT_POLICY,
+                        reinterpret_cast<thread_policy_t>(&time_constraints),
+                        THREAD_TIME_CONSTRAINT_POLICY_COUNT);
+  MACH_DVLOG_IF(1, result != KERN_SUCCESS, result) << "thread_policy_set";
 
   return;
 }

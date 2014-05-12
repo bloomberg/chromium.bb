@@ -7,21 +7,21 @@
 namespace base {
 namespace mac {
 
-void ScopedMachVM::reset(mach_vm_address_t address, mach_vm_size_t size) {
+void ScopedMachVM::reset(vm_address_t address, vm_size_t size) {
   DCHECK(address % PAGE_SIZE == 0);
   DCHECK(size % PAGE_SIZE == 0);
 
   if (size_) {
     if (address_ < address) {
-      mach_vm_deallocate(mach_task_self(),
-                         address_,
-                         std::min(size_, address - address_));
+      vm_deallocate(mach_task_self(),
+                    address_,
+                    std::min(size_, address - address_));
     }
     if (address_ + size_ > address + size) {
-      mach_vm_address_t deallocate_start = std::max(address_, address + size);
-      mach_vm_deallocate(mach_task_self(),
-                         deallocate_start,
-                         address_ + size_ - deallocate_start);
+      vm_address_t deallocate_start = std::max(address_, address + size);
+      vm_deallocate(mach_task_self(),
+                    deallocate_start,
+                    address_ + size_ - deallocate_start);
     }
   }
 

@@ -6,15 +6,15 @@
 #define BASE_MAC_SCOPED_MACH_VM_H_
 
 #include <mach/mach.h>
-#include <mach/mach_vm.h>
 
 #include <algorithm>
 
+#include "base/base_export.h"
 #include "base/basictypes.h"
 #include "base/logging.h"
 
 // Use ScopedMachVM to supervise ownership of pages in the current process
-// through the Mach VM subsystem. Pages allocated with mach_vm_allocate can be
+// through the Mach VM subsystem. Pages allocated with vm_allocate can be
 // released when exiting a scope with ScopedMachVM.
 //
 // The Mach VM subsystem operates on a page-by-page basis, and a single VM
@@ -33,10 +33,10 @@
 //
 // Example:
 //
-//   mach_vm_address_t address = 0;
-//   mach_vm_size_t size = 12345;  // This requested size is not page-aligned.
+//   vm_address_t address = 0;
+//   vm_size_t size = 12345;  // This requested size is not page-aligned.
 //   kern_return_t kr =
-//       mach_vm_allocate(mach_task_self(), &address, size, VM_FLAGS_ANYWHERE);
+//       vm_allocate(mach_task_self(), &address, size, VM_FLAGS_ANYWHERE);
 //   if (kr != KERN_SUCCESS) {
 //     return false;
 //   }
@@ -45,9 +45,9 @@
 namespace base {
 namespace mac {
 
-class ScopedMachVM {
+class BASE_EXPORT ScopedMachVM {
  public:
-  explicit ScopedMachVM(mach_vm_address_t address = 0, mach_vm_size_t size = 0)
+  explicit ScopedMachVM(vm_address_t address = 0, vm_size_t size = 0)
       : address_(address),
         size_(size) {
     DCHECK(address % PAGE_SIZE == 0);
@@ -56,17 +56,17 @@ class ScopedMachVM {
 
   ~ScopedMachVM() {
     if (size_) {
-      mach_vm_deallocate(mach_task_self(), address_, size_);
+      vm_deallocate(mach_task_self(), address_, size_);
     }
   }
 
-  void reset(mach_vm_address_t address = 0, mach_vm_size_t size = 0);
+  void reset(vm_address_t address = 0, vm_size_t size = 0);
 
-  mach_vm_address_t address() const {
+  vm_address_t address() const {
     return address_;
   }
 
-  mach_vm_size_t size() const {
+  vm_size_t size() const {
     return size_;
   }
 
@@ -81,8 +81,8 @@ class ScopedMachVM {
   }
 
  private:
-  mach_vm_address_t address_;
-  mach_vm_size_t size_;
+  vm_address_t address_;
+  vm_size_t size_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMachVM);
 };

@@ -5,12 +5,13 @@
 #include "base/memory/discardable_memory.h"
 
 #include <mach/mach.h>
-#include <sys/mman.h>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/mac/mach_logging.h"
+#include "base/mac/scoped_mach_vm.h"
 #include "base/memory/discardable_memory_emulated.h"
 #include "base/memory/discardable_memory_malloc.h"
 #include "base/memory/discardable_memory_manager.h"
@@ -40,7 +41,9 @@ class DiscardableMemoryMac
       public internal::DiscardableMemoryManagerAllocation {
  public:
   explicit DiscardableMemoryMac(size_t bytes)
-      : buffer_(0), bytes_(bytes), is_locked_(false) {
+      : memory_(0, 0),
+        bytes_(mach_vm_round_page(bytes)),
+        is_locked_(false) {
     g_shared_state.Pointer()->manager.Register(this, bytes);
   }
 
@@ -50,8 +53,6 @@ class DiscardableMemoryMac
     if (is_locked_)
       Unlock();
     g_shared_state.Pointer()->manager.Unregister(this);
-    if (buffer_)
-      vm_deallocate(mach_task_self(), buffer_, bytes_);
   }
 
   // Overridden from DiscardableMemory:
@@ -66,64 +67,78 @@ class DiscardableMemoryMac
     return purged ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
                   : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
   }
+
   virtual void Unlock() OVERRIDE {
     DCHECK(is_locked_);
     g_shared_state.Pointer()->manager.ReleaseLock(this);
     is_locked_ = false;
   }
+
   virtual void* Memory() const OVERRIDE {
     DCHECK(is_locked_);
-    return reinterpret_cast<void*>(buffer_);
+    return reinterpret_cast<void*>(memory_.address());
   }
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
   virtual bool AllocateAndAcquireLock() OVERRIDE {
     bool persistent = true;
-    if (!buffer_) {
-      kern_return_t ret = vm_allocate(
+    kern_return_t ret;
+    if (!memory_.size()) {
+      vm_address_t address = 0;
+      ret = vm_allocate(
           mach_task_self(),
-          &buffer_,
+          &address,
           bytes_,
-          VM_FLAGS_PURGABLE | VM_FLAGS_ANYWHERE | kDiscardableMemoryTag);
-      CHECK_EQ(KERN_SUCCESS, ret) << "wm_allocate() failed.";
+          VM_FLAGS_ANYWHERE | VM_FLAGS_PURGABLE | kDiscardableMemoryTag);
+      MACH_CHECK(ret == KERN_SUCCESS, ret) << "vm_allocate";
+      memory_.reset(address, bytes_);
       persistent = false;
     }
+
 #if !defined(NDEBUG)
-    int status = mprotect(
-        reinterpret_cast<void*>(buffer_), bytes_, PROT_READ | PROT_WRITE);
-    DCHECK_EQ(0, status);
+    ret = vm_protect(mach_task_self(),
+                     memory_.address(),
+                     memory_.size(),
+                     FALSE,
+                     VM_PROT_DEFAULT);
+    MACH_DCHECK(ret == KERN_SUCCESS, ret) << "vm_protect";
 #endif
+
     int state = VM_PURGABLE_NONVOLATILE;
-    kern_return_t ret = vm_purgable_control(mach_task_self(),
-                                            buffer_,
-                                            VM_PURGABLE_SET_STATE,
-                                            &state);
-    CHECK_EQ(KERN_SUCCESS, ret) << "Failed to lock memory.";
+    ret = vm_purgable_control(mach_task_self(),
+                              memory_.address(),
+                              VM_PURGABLE_SET_STATE,
+                              &state);
+    MACH_CHECK(ret == KERN_SUCCESS, ret) << "vm_purgable_control";
     if (state & VM_PURGABLE_EMPTY)
       persistent = false;
     return persistent;
   }
+
   virtual void ReleaseLock() OVERRIDE {
     int state = VM_PURGABLE_VOLATILE | VM_VOLATILE_GROUP_DEFAULT;
     kern_return_t ret = vm_purgable_control(mach_task_self(),
-                                            buffer_,
+                                            memory_.address(),
                                             VM_PURGABLE_SET_STATE,
                                             &state);
-    CHECK_EQ(KERN_SUCCESS, ret) << "Failed to unlock memory.";
+    MACH_CHECK(ret == KERN_SUCCESS, ret) << "vm_purgable_control";
+
 #if !defined(NDEBUG)
-    int status = mprotect(reinterpret_cast<void*>(buffer_), bytes_, PROT_NONE);
-    DCHECK_EQ(0, status);
+    ret = vm_protect(mach_task_self(),
+                     memory_.address(),
+                     memory_.size(),
+                     FALSE,
+                     VM_PROT_NONE);
+    MACH_DCHECK(ret == KERN_SUCCESS, ret) << "vm_protect";
 #endif
   }
+
   virtual void Purge() OVERRIDE {
-    if (buffer_) {
-      vm_deallocate(mach_task_self(), buffer_, bytes_);
-      buffer_ = 0;
-    }
+    memory_.reset();
   }
 
  private:
-  vm_address_t buffer_;
+  mac::ScopedMachVM memory_;
   const size_t bytes_;
   bool is_locked_;
 
