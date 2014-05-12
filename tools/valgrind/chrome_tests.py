@@ -384,7 +384,7 @@ class ChromeTests:
 
   def TestMojoPublicUtility(self):
     return self.SimpleTest("mojo_public_utility",
-                           "mojo_public_unittests_unittests")
+                           "mojo_public_utility_unittests")
 
   def TestMojoPublicBindings(self):
     return self.SimpleTest("mojo_public_bindings",
