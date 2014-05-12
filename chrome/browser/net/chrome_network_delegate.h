@@ -49,10 +49,6 @@ namespace policy {
 class URLBlacklistManager;
 }
 
-namespace prerender {
-class PrerenderTracker;
-}
-
 // ChromeNetworkDelegate is the central point from within the chrome code to
 // add hooks into the network stack.
 class ChromeNetworkDelegate : public net::NetworkDelegate {
@@ -108,10 +104,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
       domain_reliability::DomainReliabilityMonitor*
           domain_reliability_monitor) {
     domain_reliability_monitor_ = domain_reliability_monitor;
-  }
-
-  void set_prerender_tracker(prerender::PrerenderTracker* prerender_tracker) {
-    prerender_tracker_ = prerender_tracker;
   }
 
   // Adds the Client Hints header to HTTP requests.
@@ -235,8 +227,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   scoped_ptr<ClientHints> client_hints_;
 
   bool first_request_;
-
-  prerender::PrerenderTracker* prerender_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegate);
 };

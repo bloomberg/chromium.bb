@@ -39,10 +39,6 @@ namespace history {
 struct HistoryAddPageArgs;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace prerender {
 
 class PrerenderHandle;
@@ -50,8 +46,7 @@ class PrerenderManager;
 class PrerenderResourceThrottle;
 
 class PrerenderContents : public content::NotificationObserver,
-                          public content::WebContentsObserver,
-                          public base::SupportsWeakPtr<PrerenderContents> {
+                          public content::WebContentsObserver {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
@@ -156,8 +151,7 @@ class PrerenderContents : public content::NotificationObserver,
   virtual void StartPrerendering(
       int creator_child_id,
       const gfx::Size& size,
-      content::SessionStorageNamespace* session_storage_namespace,
-      net::URLRequestContextGetter* request_context);
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Verifies that the prerendering is not using too many resources, and kills
   // it if not.

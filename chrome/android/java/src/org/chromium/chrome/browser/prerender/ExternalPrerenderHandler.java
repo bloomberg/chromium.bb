@@ -38,18 +38,12 @@ public class ExternalPrerenderHandler {
         return nativeHasPrerenderedUrl(profile, url, webContentsPtr);
     }
 
-    public static boolean hasCookieStoreLoaded(Profile profile)  {
-        return nativeHasCookieStoreLoaded(profile);
-    }
-
     private static native long nativeInit();
     private static native boolean nativeAddPrerender(
             long nativeExternalPrerenderHandlerAndroid, Profile profile,
             long webContentsPtr, String url, String referrer, int width, int height);
     private static native boolean nativeHasPrerenderedUrl(
             Profile profile, String url, long webContentsPtr);
-    private static native boolean nativeHasCookieStoreLoaded(
-            Profile profile);
     private static native void nativeCancelCurrentPrerender(
             long nativeExternalPrerenderHandlerAndroid);
 }

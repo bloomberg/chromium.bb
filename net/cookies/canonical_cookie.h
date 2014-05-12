@@ -125,9 +125,6 @@ class NET_EXPORT CanonicalCookie {
 
   std::string DebugString() const;
 
-  // Returns a duplicate of this cookie.
-  CanonicalCookie* Duplicate();
-
   // Returns the cookie source when cookies are set for |url|. This function
   // is public for unit test purposes only.
   static std::string GetCookieSourceFromURL(const GURL& url);
@@ -137,9 +134,6 @@ class NET_EXPORT CanonicalCookie {
                                     const base::Time& server_time);
 
  private:
-  // NOTE: When any new members are added below, the implementation of
-  // Duplicate() must be updated to copy the new member accordingly.
-
   // The source member of a canonical cookie is the origin of the URL that tried
   // to set this cookie, minus the port number if any.  This field is not
   // persistent though; its only used in the in-tab cookies dialog to show the
@@ -159,9 +153,6 @@ class NET_EXPORT CanonicalCookie {
   bool secure_;
   bool httponly_;
   CookiePriority priority_;
-  // NOTE: When any new members are added above this comment, the
-  // implementation of Duplicate() must be updated to copy the new member
-  // accordingly.
 };
 
 typedef std::vector<CanonicalCookie> CookieList;
