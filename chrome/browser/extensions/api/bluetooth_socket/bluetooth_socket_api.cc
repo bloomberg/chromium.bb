@@ -45,9 +45,8 @@ linked_ptr<SocketInfo> CreateSocketInfo(int socket_id,
   socket_info->paused = socket->paused();
   socket_info->connected = socket->IsConnected();
 
-  // TODO(keybuk): These should not be present if socket isn't connected or
-  // listening.
-  socket_info->address.reset(new std::string(socket->device_address()));
+  if (socket->IsConnected())
+    socket_info->address.reset(new std::string(socket->device_address()));
   socket_info->uuid.reset(new std::string(socket->uuid().canonical_value()));
 
   return socket_info;
@@ -223,22 +222,195 @@ void BluetoothSocketSetPausedFunction::Work() {
   results_ = bluetooth_socket::SetPaused::Results::Create();
 }
 
-bool BluetoothSocketListenUsingRfcommFunction::RunAsync() {
-  // TODO(keybuk): Implement.
-  SetError("Not yet implemented.");
-  return false;
+BluetoothSocketListenFunction::BluetoothSocketListenFunction() {}
+
+BluetoothSocketListenFunction::~BluetoothSocketListenFunction() {}
+
+bool BluetoothSocketListenFunction::Prepare() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!CreateParams())
+    return false;
+  socket_event_dispatcher_ = GetSocketEventDispatcher(browser_context());
+  return socket_event_dispatcher_ != NULL;
 }
 
-bool BluetoothSocketListenUsingInsecureRfcommFunction::RunAsync() {
-  // TODO(keybuk): Implement.
-  SetError("Not yet implemented.");
-  return false;
+void BluetoothSocketListenFunction::AsyncWorkStart() {
+  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&BluetoothSocketListenFunction::OnGetAdapter, this));
 }
 
-bool BluetoothSocketListenUsingL2capFunction::RunAsync() {
-  // TODO(keybuk): Implement.
-  SetError("Not yet implemented.");
-  return false;
+void BluetoothSocketListenFunction::OnGetAdapter(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  BluetoothApiSocket* socket = GetSocket(socket_id());
+  if (!socket) {
+    error_ = kSocketNotFoundError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  device::BluetoothUUID bluetooth_uuid(uuid());
+  if (!bluetooth_uuid.IsValid()) {
+    error_ = kInvalidUuidError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  BluetoothPermissionRequest param(uuid());
+  if (!BluetoothManifestData::CheckRequest(GetExtension(), param)) {
+    error_ = kPermissionDeniedError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  CreateService(
+      adapter,
+      bluetooth_uuid,
+      base::Bind(&BluetoothSocketListenFunction::OnCreateService, this),
+      base::Bind(&BluetoothSocketListenFunction::OnCreateServiceError, this));
+}
+
+
+void BluetoothSocketListenFunction::OnCreateService(
+    scoped_refptr<device::BluetoothSocket> socket) {
+  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+
+  // Fetch the socket again since this is not a reference-counted object, and
+  // it may have gone away in the meantime (we check earlier to avoid making
+  // a connection in the case of an obvious programming error).
+  BluetoothApiSocket* api_socket = GetSocket(socket_id());
+  if (!api_socket) {
+    error_ = kSocketNotFoundError;
+    AsyncWorkCompleted();
+    return;
+  }
+
+  api_socket->AdoptListeningSocket(socket,
+                                   device::BluetoothUUID(uuid()));
+  socket_event_dispatcher_->OnSocketListen(extension_id(), socket_id());
+
+  CreateResults();
+  AsyncWorkCompleted();
+}
+
+void BluetoothSocketListenFunction::OnCreateServiceError(
+    const std::string& message) {
+  DCHECK(BrowserThread::CurrentlyOn(work_thread_id()));
+  error_ = message;
+  AsyncWorkCompleted();
+}
+
+BluetoothSocketListenUsingRfcommFunction::
+    BluetoothSocketListenUsingRfcommFunction() {}
+
+BluetoothSocketListenUsingRfcommFunction::
+    ~BluetoothSocketListenUsingRfcommFunction() {}
+
+int BluetoothSocketListenUsingRfcommFunction::socket_id() const {
+  return params_->socket_id;
+}
+
+const std::string& BluetoothSocketListenUsingRfcommFunction::uuid() const {
+  return params_->uuid;
+}
+
+bool BluetoothSocketListenUsingRfcommFunction::CreateParams() {
+  params_ = bluetooth_socket::ListenUsingRfcomm::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void BluetoothSocketListenUsingRfcommFunction::CreateService(
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    const device::BluetoothUUID& uuid,
+    const device::BluetoothAdapter::CreateServiceCallback& callback,
+    const device::BluetoothAdapter::CreateServiceErrorCallback&
+        error_callback) {
+  int channel = params_->channel;
+  if (!channel)
+    channel = device::BluetoothAdapter::kChannelAuto;
+
+  adapter->CreateRfcommService(uuid, channel, false, callback, error_callback);
+}
+
+void BluetoothSocketListenUsingRfcommFunction::CreateResults() {
+  results_ = bluetooth_socket::ListenUsingRfcomm::Results::Create();
+}
+
+BluetoothSocketListenUsingInsecureRfcommFunction::
+    BluetoothSocketListenUsingInsecureRfcommFunction() {}
+
+BluetoothSocketListenUsingInsecureRfcommFunction::
+    ~BluetoothSocketListenUsingInsecureRfcommFunction() {}
+
+int BluetoothSocketListenUsingInsecureRfcommFunction::socket_id() const {
+  return params_->socket_id;
+}
+
+const std::string&
+BluetoothSocketListenUsingInsecureRfcommFunction::uuid() const {
+  return params_->uuid;
+}
+
+bool BluetoothSocketListenUsingInsecureRfcommFunction::CreateParams() {
+  params_ = bluetooth_socket::ListenUsingInsecureRfcomm::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void BluetoothSocketListenUsingInsecureRfcommFunction::CreateService(
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    const device::BluetoothUUID& uuid,
+    const device::BluetoothAdapter::CreateServiceCallback& callback,
+    const device::BluetoothAdapter::CreateServiceErrorCallback&
+        error_callback) {
+  int channel = params_->channel;
+  if (!channel)
+    channel = device::BluetoothAdapter::kChannelAuto;
+
+  adapter->CreateRfcommService(uuid, channel, true, callback, error_callback);
+}
+
+void BluetoothSocketListenUsingInsecureRfcommFunction::CreateResults() {
+  results_ = bluetooth_socket::ListenUsingInsecureRfcomm::Results::Create();
+}
+
+BluetoothSocketListenUsingL2capFunction::
+    BluetoothSocketListenUsingL2capFunction() {}
+
+BluetoothSocketListenUsingL2capFunction::
+    ~BluetoothSocketListenUsingL2capFunction() {}
+
+int BluetoothSocketListenUsingL2capFunction::socket_id() const {
+  return params_->socket_id;
+}
+
+const std::string& BluetoothSocketListenUsingL2capFunction::uuid() const {
+  return params_->uuid;
+}
+
+bool BluetoothSocketListenUsingL2capFunction::CreateParams() {
+  params_ = bluetooth_socket::ListenUsingL2cap::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_.get());
+  return true;
+}
+
+void BluetoothSocketListenUsingL2capFunction::CreateService(
+    scoped_refptr<device::BluetoothAdapter> adapter,
+    const device::BluetoothUUID& uuid,
+    const device::BluetoothAdapter::CreateServiceCallback& callback,
+    const device::BluetoothAdapter::CreateServiceErrorCallback&
+        error_callback) {
+  int psm = params_->psm;
+  if (!psm)
+    psm = device::BluetoothAdapter::kPsmAuto;
+
+  adapter->CreateL2capService(uuid, psm, callback, error_callback);
+}
+
+void BluetoothSocketListenUsingL2capFunction::CreateResults() {
+  results_ = bluetooth_socket::ListenUsingL2cap::Results::Create();
 }
 
 BluetoothSocketConnectFunction::BluetoothSocketConnectFunction() {}

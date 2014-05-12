@@ -55,6 +55,11 @@ class BluetoothSocketWin : public BluetoothSocketNet {
   // BluetoothSocketNet:
   void ResetData();
 
+  // BluetoothSocket:
+  virtual void Accept(const AcceptCompletionCallback& success_callback,
+                      const ErrorCompletionCallback& error_callback) OVERRIDE;
+
+
  protected:
   virtual ~BluetoothSocketWin();
 

@@ -22,11 +22,15 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_pairing_chromeos.h"
+#include "device/bluetooth/bluetooth_socket_chromeos.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
+using device::BluetoothSocket;
+using device::BluetoothUUID;
 
 namespace {
 
@@ -231,6 +235,25 @@ void BluetoothAdapterChromeOS::ReadLocalOutOfBandPairingData(
     const BluetoothAdapter::BluetoothOutOfBandPairingDataCallback& callback,
     const ErrorCallback& error_callback) {
   error_callback.Run();
+}
+
+void BluetoothAdapterChromeOS::CreateRfcommService(
+    const BluetoothUUID& uuid,
+    int channel,
+    bool insecure,
+    const CreateServiceCallback& callback,
+    const CreateServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement.
+  NOTIMPLEMENTED();
+}
+
+void BluetoothAdapterChromeOS::CreateL2capService(
+    const BluetoothUUID& uuid,
+    int psm,
+    const CreateServiceCallback& callback,
+    const CreateServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement.
+  NOTIMPLEMENTED();
 }
 
 void BluetoothAdapterChromeOS::RemovePairingDelegateInternal(

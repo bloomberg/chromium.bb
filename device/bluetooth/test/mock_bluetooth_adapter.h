@@ -70,6 +70,17 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_METHOD1(RemovePairingDelegate,
                void(BluetoothDevice::PairingDelegate* pairing_delegate));
   MOCK_METHOD0(DefaultPairingDelegate, BluetoothDevice::PairingDelegate*());
+  MOCK_METHOD5(CreateRfcommService,
+               void(const BluetoothUUID& uuid,
+                    int channel,
+                    bool insecure,
+                    const CreateServiceCallback& callback,
+                    const CreateServiceErrorCallback& error_callback));
+  MOCK_METHOD4(CreateL2capService,
+               void(const BluetoothUUID& uuid,
+                    int psm,
+                    const CreateServiceCallback& callback,
+                    const CreateServiceErrorCallback& error_callback));
 
  protected:
   virtual void AddDiscoverySession(const base::Closure& callback,

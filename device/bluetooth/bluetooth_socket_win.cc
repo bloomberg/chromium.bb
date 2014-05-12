@@ -137,6 +137,12 @@ void BluetoothSocketWin::ResetData() {
   }
 }
 
+void BluetoothSocketWin::Accept(
+    const AcceptCompletionCallback& success_callback,
+    const ErrorCompletionCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 void BluetoothSocketWin::DoConnect(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {

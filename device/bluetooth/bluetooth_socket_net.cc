@@ -31,19 +31,6 @@ static void DeactivateSocket(
 
 namespace device {
 
-// static
-scoped_refptr<BluetoothSocketNet>
-BluetoothSocketNet::CreateBluetoothSocket(
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<BluetoothSocketThread> socket_thread,
-    net::NetLog* net_log,
-    const net::NetLog::Source& source) {
-  DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
-
-  return make_scoped_refptr(
-      new BluetoothSocketNet(ui_task_runner, socket_thread, net_log, source));
-}
-
 BluetoothSocketNet::WriteRequest::WriteRequest()
     : buffer_size(0) {}
 

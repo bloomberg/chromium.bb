@@ -408,4 +408,10 @@ void BluetoothSocketMac::OnChannelClosed(
   ReleaseChannel();
 }
 
+void BluetoothSocketMac::Accept(
+    const AcceptCompletionCallback& success_callback,
+    const ErrorCompletionCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace device

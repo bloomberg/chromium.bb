@@ -13,6 +13,11 @@ namespace content {
 class BrowserContext;
 }
 
+namespace device {
+class BluetoothDevice;
+class BluetoothSocket;
+}
+
 namespace extensions {
 struct Event;
 class BluetoothApiSocket;
@@ -33,6 +38,9 @@ class BluetoothSocketEventDispatcher
   // Socket is active, start receiving data from it.
   void OnSocketConnect(const std::string& extension_id, int socket_id);
 
+  // Socket is active again, start accepting connections from it.
+  void OnSocketListen(const std::string& extension_id, int socket_id);
+
   // Socket is active again, start receiving data from it.
   void OnSocketResume(const std::string& extension_id, int socket_id);
 
@@ -51,11 +59,12 @@ class BluetoothSocketEventDispatcher
   static const bool kServiceHasOwnInstanceInIncognito = true;
   static const bool kServiceIsNULLWhileTesting = true;
 
-  // base::Bind supports methods with up to 6 parameters. ReceiveParams is used
-  // as a workaround that limitation for invoking StartReceive.
-  struct ReceiveParams {
-    ReceiveParams();
-    ~ReceiveParams();
+  // base::Bind supports methods with up to 6 parameters. SocketParams is used
+  // as a workaround that limitation for invoking StartReceive() and
+  // StartAccept().
+  struct SocketParams {
+    SocketParams();
+    ~SocketParams();
 
     content::BrowserThread::ID thread_id;
     void* browser_context_id;
@@ -65,21 +74,33 @@ class BluetoothSocketEventDispatcher
   };
 
   // Start a receive and register a callback.
-  void StartSocketReceive(const std::string& extension_id, int socket_id);
-  static void StartReceive(const ReceiveParams& params);
+  static void StartReceive(const SocketParams& params);
 
   // Called when socket receive data.
-  static void ReceiveCallback(const ReceiveParams& params,
+  static void ReceiveCallback(const SocketParams& params,
                               int bytes_read,
                               scoped_refptr<net::IOBuffer> io_buffer);
 
   // Called when socket receive data.
-  static void ReceiveErrorCallback(const ReceiveParams& params,
+  static void ReceiveErrorCallback(const SocketParams& params,
                                    BluetoothApiSocket::ErrorReason error_reason,
                                    const std::string& error);
 
+  // Start an accept and register a callback.
+  static void StartAccept(const SocketParams& params);
+
+  // Called when socket accepts a client connection.
+  static void AcceptCallback(const SocketParams& params,
+                             const device::BluetoothDevice* device,
+                             scoped_refptr<device::BluetoothSocket> socket);
+
+  // Called when socket encounters an error while accepting a client connection.
+  static void AcceptErrorCallback(const SocketParams& params,
+                                  BluetoothApiSocket::ErrorReason error_reason,
+                                  const std::string& error);
+
   // Post an extension event from IO to UI thread
-  static void PostEvent(const ReceiveParams& params, scoped_ptr<Event> event);
+  static void PostEvent(const SocketParams& params, scoped_ptr<Event> event);
 
   // Dispatch an extension event on to EventRouter instance on UI thread.
   static void DispatchEvent(void* browser_context_id,

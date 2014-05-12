@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "extensions/browser/api/api_resource.h"
@@ -23,11 +24,15 @@ namespace extensions {
 // class. All methods must be called on the |kThreadId| thread.
 class BluetoothApiSocket : public ApiResource {
  public:
-  enum ErrorReason { kSystemError, kNotConnected, kIOPending, kDisconnected };
+  enum ErrorReason { kSystemError, kNotConnected, kNotListening, kIOPending,
+                     kDisconnected };
 
   typedef base::Callback<void(int)> SendCompletionCallback;
   typedef base::Callback<void(int, scoped_refptr<net::IOBuffer> io_buffer)>
       ReceiveCompletionCallback;
+  typedef base::Callback<void(const device::BluetoothDevice* device,
+                              scoped_refptr<device::BluetoothSocket>)>
+      AcceptCompletionCallback;
   typedef base::Callback<void(ErrorReason, const std::string& error_message)>
       ErrorCompletionCallback;
 
@@ -45,8 +50,14 @@ class BluetoothApiSocket : public ApiResource {
       const std::string& device_address,
       const device::BluetoothUUID& uuid);
 
+  // Adopts a socket |socket| listening on a service advertised with UUID
+  // |uuid|.
+  virtual void AdoptListeningSocket(
+      scoped_refptr<device::BluetoothSocket> socket,
+      const device::BluetoothUUID& uuid);
+
   // Closes the underlying connection. This is a best effort, and never fails.
-  virtual void Disconnect(const base::Closure& success_callback);
+  virtual void Disconnect(const base::Closure& callback);
 
   // Receives data from the socket and calls |success_callback| when data is
   // available. |count| is maximum amount of bytes received. If an error occurs,
@@ -67,6 +78,12 @@ class BluetoothApiSocket : public ApiResource {
                     int buffer_size,
                     const SendCompletionCallback& success_callback,
                     const ErrorCompletionCallback& error_callback);
+
+  // Accepts a client connection from the socket and calls |success_callback|
+  // when one has connected. If an error occurs, calls |error_callback| with a
+  // reason and a message.
+  virtual void Accept(const AcceptCompletionCallback& success_callback,
+                      const ErrorCompletionCallback& error_callback);
 
   const std::string& device_address() const { return device_address_; }
   const device::BluetoothUUID& uuid() const { return uuid_; }
@@ -103,6 +120,10 @@ class BluetoothApiSocket : public ApiResource {
       const std::string& message);
 
   static void OnSocketSendError(
+      const ErrorCompletionCallback& error_callback,
+      const std::string& message);
+
+  static void OnSocketAcceptError(
       const ErrorCompletionCallback& error_callback,
       const std::string& message);
 

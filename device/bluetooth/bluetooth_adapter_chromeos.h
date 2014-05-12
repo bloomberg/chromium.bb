@@ -66,6 +66,17 @@ class BluetoothAdapterChromeOS
       const device::BluetoothAdapter::BluetoothOutOfBandPairingDataCallback&
           callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void CreateRfcommService(
+      const device::BluetoothUUID& uuid,
+      int channel,
+      bool insecure,
+      const CreateServiceCallback& callback,
+      const CreateServiceErrorCallback& error_callback) OVERRIDE;
+  virtual void CreateL2capService(
+      const device::BluetoothUUID& uuid,
+      int psm,
+      const CreateServiceCallback& callback,
+      const CreateServiceErrorCallback& error_callback) OVERRIDE;
 
  protected:
   // BluetoothAdapter:

@@ -46,9 +46,7 @@ namespace bluetoothSocket {
   // Callback from the <code>listenUsingRfcomm</code>,
   // <code>listenUsingInsecureRfcomm</code> and
   // <code>listenUsingL2cap</code> methods.
-  // |result| : The result code returned from the underlying network call.
-  // A negative value indicates an error.
-  callback ListenCallback = void (long result);
+  callback ListenCallback = void ();
 
   // Callback from the <code>connect</code> method.
   callback ConnectCallback = void ();

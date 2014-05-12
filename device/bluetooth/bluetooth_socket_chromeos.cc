@@ -70,6 +70,12 @@ void BluetoothSocketChromeOS::Connect(
                      error_callback)));
 }
 
+void BluetoothSocketChromeOS::Accept(
+    const AcceptCompletionCallback& success_callback,
+    const ErrorCompletionCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
 void BluetoothSocketChromeOS::DoConnect(
     scoped_ptr<dbus::FileDescriptor> fd,
     const base::Closure& success_callback,

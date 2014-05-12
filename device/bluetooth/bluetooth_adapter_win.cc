@@ -15,7 +15,9 @@
 #include "base/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_device_win.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
+#include "device/bluetooth/bluetooth_socket_win.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace device {
 
@@ -162,6 +164,25 @@ void BluetoothAdapterWin::DiscoveryStopped() {
 void BluetoothAdapterWin::ReadLocalOutOfBandPairingData(
     const BluetoothOutOfBandPairingDataCallback& callback,
     const ErrorCallback& error_callback) {
+  NOTIMPLEMENTED();
+}
+
+void BluetoothAdapterWin::CreateRfcommService(
+    const BluetoothUUID& uuid,
+    int channel,
+    bool insecure,
+    const CreateServiceCallback& callback,
+    const CreateServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement.
+  NOTIMPLEMENTED();
+}
+
+void BluetoothAdapterWin::CreateL2capService(
+    const BluetoothUUID& uuid,
+    int psm,
+    const CreateServiceCallback& callback,
+    const CreateServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement.
   NOTIMPLEMENTED();
 }
 

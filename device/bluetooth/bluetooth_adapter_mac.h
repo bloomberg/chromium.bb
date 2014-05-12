@@ -61,6 +61,17 @@ class BluetoothAdapterMac : public BluetoothAdapter {
   virtual void ReadLocalOutOfBandPairingData(
       const BluetoothOutOfBandPairingDataCallback& callback,
       const ErrorCallback& error_callback) OVERRIDE;
+  virtual void CreateRfcommService(
+      const BluetoothUUID& uuid,
+      int channel,
+      bool insecure,
+      const CreateServiceCallback& callback,
+      const CreateServiceErrorCallback& error_callback) OVERRIDE;
+  virtual void CreateL2capService(
+      const BluetoothUUID& uuid,
+      int psm,
+      const CreateServiceCallback& callback,
+      const CreateServiceErrorCallback& error_callback) OVERRIDE;
 
   // called by BluetoothAdapterMacDelegate.
   void DeviceInquiryStarted(IOBluetoothDeviceInquiry* inquiry);

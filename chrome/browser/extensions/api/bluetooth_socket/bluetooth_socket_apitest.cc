@@ -132,3 +132,61 @@ IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Connect) {
   listener.Reply("go");
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
+
+IN_PROC_BROWSER_TEST_F(BluetoothSocketApiTest, Listen) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(browser()->profile());
+
+  // Return a mock socket object as a successful result to the create service
+  // call.
+  BluetoothUUID service_uuid("2de497f9-ab28-49db-b6d2-066ea69f1737");
+  scoped_refptr<testing::StrictMock<MockBluetoothSocket> > mock_server_socket
+      = new testing::StrictMock<MockBluetoothSocket>();
+  EXPECT_CALL(*mock_adapter_,
+              CreateRfcommService(service_uuid,
+                                  BluetoothAdapter::kPsmAuto,
+                                  false,
+                                  testing::_, testing::_))
+      .WillOnce(InvokeCallbackArgument<3>(mock_server_socket));
+
+  // Since the socket is unpaused, expect a call to Accept() from the socket
+  // dispatcher. We'll immediately send back another mock socket to represent
+  // the client API. Further calls will return no data and behave as if
+  // pending.
+  scoped_refptr<testing::StrictMock<MockBluetoothSocket> > mock_client_socket
+      = new testing::StrictMock<MockBluetoothSocket>();
+  EXPECT_CALL(*mock_server_socket, Accept(testing::_, testing::_))
+      .Times(2)
+      .WillOnce(InvokeCallbackArgument<0>(mock_device1_.get(),
+                                          mock_client_socket))
+      .WillOnce(testing::Return());
+
+  // Run the test, it sends a ready signal once it's ready for us to dispatch
+  // a client connection to it.
+  ExtensionTestMessageListener socket_listening("ready", true);
+  scoped_refptr<const Extension> extension(
+      LoadExtension(test_data_dir_.AppendASCII("bluetooth_socket/listen")));
+  ASSERT_TRUE(extension.get());
+  EXPECT_TRUE(socket_listening.WaitUntilSatisfied());
+
+  // Connection events are dispatched using a couple of PostTask to the UI
+  // thread. Waiting until idle ensures the event is dispatched to the
+  // receiver(s).
+  base::RunLoop().RunUntilIdle();
+  ExtensionTestMessageListener listener("ready", true);
+  socket_listening.Reply("go");
+
+  // Second stage of tests checks for error conditions, and will clean up
+  // the existing server and client sockets.
+  EXPECT_CALL(*mock_server_socket, Disconnect(testing::_))
+      .WillOnce(InvokeCallbackArgument<0>());
+  EXPECT_CALL(*mock_server_socket, Close());
+
+  EXPECT_CALL(*mock_client_socket, Disconnect(testing::_))
+      .WillOnce(InvokeCallbackArgument<0>());
+  EXPECT_CALL(*mock_client_socket, Close());
+
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply("go");
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}

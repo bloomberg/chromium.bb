@@ -19,6 +19,8 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
 }
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN) && !defined(OS_MACOSX)
 
+const int BluetoothAdapter::kChannelAuto = 0;
+const int BluetoothAdapter::kPsmAuto = 0;
 
 BluetoothAdapter::BluetoothAdapter()
     : weak_ptr_factory_(this) {

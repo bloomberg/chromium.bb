@@ -31,12 +31,6 @@ namespace device {
 // performed on a separate thread.
 class BluetoothSocketNet : public BluetoothSocket {
  public:
-  static scoped_refptr<BluetoothSocketNet> CreateBluetoothSocket(
-      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<BluetoothSocketThread> socket_thread,
-      net::NetLog* net_log,
-      const net::NetLog::Source& source);
-
   // BluetoothSocket:
   virtual void Close() OVERRIDE;
   virtual void Disconnect(const base::Closure& callback) OVERRIDE;

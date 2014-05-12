@@ -16,6 +16,9 @@ class IOBuffer;
 
 namespace device {
 
+class BluetoothDevice;
+class BluetoothUUID;
+
 // BluetoothSocket represents a socket to a specific service on a
 // BluetoothDevice.  BluetoothSocket objects are ref counted and may outlive
 // both the BluetoothDevice and BluetoothAdapter that were involved in their
@@ -31,6 +34,9 @@ class BluetoothSocket : public base::RefCountedThreadSafe<BluetoothSocket> {
   typedef base::Callback<void(int)> SendCompletionCallback;
   typedef base::Callback<void(int, scoped_refptr<net::IOBuffer> io_buffer)>
       ReceiveCompletionCallback;
+  typedef base::Callback<void(const BluetoothDevice* device,
+                              scoped_refptr<BluetoothSocket> socket)>
+      AcceptCompletionCallback;
   typedef base::Callback<void(const std::string& error_message)>
       ErrorCompletionCallback;
   typedef base::Callback<void(ErrorReason, const std::string& error_message)>
@@ -61,6 +67,13 @@ class BluetoothSocket : public base::RefCountedThreadSafe<BluetoothSocket> {
                     int buffer_size,
                     const SendCompletionCallback& success_callback,
                     const ErrorCompletionCallback& error_callback) = 0;
+
+  // Accepts a pending client connection from the socket and calls
+  // |success_callback| on completion, passing a new BluetoothSocket instance
+  // for the new client. If an error occurs, calls |error_callback| with a
+  // reason and an error message.
+  virtual void Accept(const AcceptCompletionCallback& success_callback,
+                      const ErrorCompletionCallback& error_callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<BluetoothSocket>;

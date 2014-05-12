@@ -61,6 +61,9 @@ class BluetoothSocketMac : public BluetoothSocket {
                     int buffer_size,
                     const SendCompletionCallback& success_callback,
                     const ErrorCompletionCallback& error_callback) OVERRIDE;
+  virtual void Accept(const AcceptCompletionCallback& success_callback,
+                      const ErrorCompletionCallback& error_callback) OVERRIDE;
+
 
   // Called by BluetoothRFCOMMChannelDelegate.
   void OnChannelOpened(IOBluetoothRFCOMMChannel* rfcomm_channel,

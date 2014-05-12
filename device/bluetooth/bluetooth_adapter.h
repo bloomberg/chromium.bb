@@ -19,6 +19,8 @@
 namespace device {
 
 class BluetoothDiscoverySession;
+class BluetoothSocket;
+class BluetoothUUID;
 
 struct BluetoothOutOfBandPairingData;
 
@@ -222,6 +224,38 @@ class BluetoothAdapter : public base::RefCounted<BluetoothAdapter> {
   // or NULL if no delegate is registered. Used to select the delegate for
   // incoming pairing requests.
   virtual BluetoothDevice::PairingDelegate* DefaultPairingDelegate();
+
+  // Creates an RFCOMM service on this adapter advertised with UUID |uuid|,
+  // listening on channel |channel|, which may be the constant |kChannelAuto|
+  // to automatically allocate one. The socket will require encryption unless
+  // |insecure| is set to true. |callback| will be called on success with a
+  // BluetoothSocket instance that is to be owned by the received.
+  // |error_callback| will be called on failure with a message indicating the
+  // cause.
+  typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
+      CreateServiceCallback;
+  typedef base::Callback<void(const std::string& message)>
+      CreateServiceErrorCallback;
+  static const int kChannelAuto;
+  virtual void CreateRfcommService(
+      const BluetoothUUID& uuid,
+      int channel,
+      bool insecure,
+      const CreateServiceCallback& callback,
+      const CreateServiceErrorCallback& error_callback) = 0;
+
+  // Creates an L2CAP service on this adapter advertised with UUID |uuid|,
+  // listening on PSM |psm|, which may be the constant |kPsmAuto| to
+  // automatically allocate one. |callback| will be called on success with a
+  // BluetoothSocket instance that is to be owned by the received.
+  // |error_callback| will be called on failure with a message indicating the
+  // cause.
+  static const int kPsmAuto;
+  virtual void CreateL2capService(
+      const BluetoothUUID& uuid,
+      int psm,
+      const CreateServiceCallback& callback,
+      const CreateServiceErrorCallback& error_callback) = 0;
 
  protected:
   friend class base::RefCounted<BluetoothAdapter>;

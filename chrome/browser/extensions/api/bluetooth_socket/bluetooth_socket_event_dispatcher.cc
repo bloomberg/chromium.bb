@@ -7,6 +7,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api_socket.h"
 #include "chrome/common/extensions/api/bluetooth_socket.h"
+#include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_socket.h"
 #include "extensions/browser/event_router.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -18,7 +20,7 @@ using extensions::BluetoothApiSocket;
 
 int kDefaultBufferSize = 4096;
 
-bluetooth_socket::ReceiveError MapErrorReason(
+bluetooth_socket::ReceiveError MapReceiveErrorReason(
     BluetoothApiSocket::ErrorReason value) {
   switch (value) {
     case BluetoothApiSocket::kDisconnected:
@@ -33,6 +35,20 @@ bluetooth_socket::ReceiveError MapErrorReason(
     // fallthrough
     default:
       return bluetooth_socket::RECEIVE_ERROR_SYSTEM_ERROR;
+  }
+}
+
+bluetooth_socket::AcceptError MapAcceptErrorReason(
+    BluetoothApiSocket::ErrorReason value) {
+  // TODO(keybuk): All values are system error, we may want to seperate these
+  // out to more discrete reasons.
+  switch (value) {
+    case BluetoothApiSocket::kNotListening:
+    // kNotListening is impossible since a socket has to be listening to be
+    // able to call Accept() on it.
+    // fallthrough
+    default:
+      return bluetooth_socket::ACCEPT_ERROR_SYSTEM_ERROR;
   }
 }
 
@@ -78,32 +94,16 @@ BluetoothSocketEventDispatcher::BluetoothSocketEventDispatcher(
 
 BluetoothSocketEventDispatcher::~BluetoothSocketEventDispatcher() {}
 
-BluetoothSocketEventDispatcher::ReceiveParams::ReceiveParams() {}
+BluetoothSocketEventDispatcher::SocketParams::SocketParams() {}
 
-BluetoothSocketEventDispatcher::ReceiveParams::~ReceiveParams() {}
+BluetoothSocketEventDispatcher::SocketParams::~SocketParams() {}
 
 void BluetoothSocketEventDispatcher::OnSocketConnect(
     const std::string& extension_id,
     int socket_id) {
   DCHECK(BrowserThread::CurrentlyOn(thread_id_));
 
-  StartSocketReceive(extension_id, socket_id);
-}
-
-void BluetoothSocketEventDispatcher::OnSocketResume(
-    const std::string& extension_id,
-    int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
-
-  StartSocketReceive(extension_id, socket_id);
-}
-
-void BluetoothSocketEventDispatcher::StartSocketReceive(
-    const std::string& extension_id,
-    int socket_id) {
-  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
-
-  ReceiveParams params;
+  SocketParams params;
   params.thread_id = thread_id_;
   params.browser_context_id = browser_context_;
   params.extension_id = extension_id;
@@ -113,8 +113,49 @@ void BluetoothSocketEventDispatcher::StartSocketReceive(
   StartReceive(params);
 }
 
+void BluetoothSocketEventDispatcher::OnSocketListen(
+    const std::string& extension_id,
+    int socket_id) {
+  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+
+  SocketParams params;
+  params.thread_id = thread_id_;
+  params.browser_context_id = browser_context_;
+  params.extension_id = extension_id;
+  params.sockets = sockets_;
+  params.socket_id = socket_id;
+
+  StartAccept(params);
+}
+
+void BluetoothSocketEventDispatcher::OnSocketResume(
+    const std::string& extension_id,
+    int socket_id) {
+  DCHECK(BrowserThread::CurrentlyOn(thread_id_));
+
+  SocketParams params;
+  params.thread_id = thread_id_;
+  params.browser_context_id = browser_context_;
+  params.extension_id = extension_id;
+  params.sockets = sockets_;
+  params.socket_id = socket_id;
+
+  BluetoothApiSocket* socket =
+      params.sockets->Get(params.extension_id, params.socket_id);
+  if (!socket) {
+    // This can happen if the socket is closed while our callback is active.
+    return;
+  }
+
+  if (socket->IsConnected()) {
+    StartReceive(params);
+  } else {
+    StartAccept(params);
+  }
+}
+
 // static
-void BluetoothSocketEventDispatcher::StartReceive(const ReceiveParams& params) {
+void BluetoothSocketEventDispatcher::StartReceive(const SocketParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 
   BluetoothApiSocket* socket =
@@ -143,7 +184,7 @@ void BluetoothSocketEventDispatcher::StartReceive(const ReceiveParams& params) {
 
 // static
 void BluetoothSocketEventDispatcher::ReceiveCallback(
-    const ReceiveParams& params,
+    const SocketParams& params,
     int bytes_read,
     scoped_refptr<net::IOBuffer> io_buffer) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
@@ -168,7 +209,7 @@ void BluetoothSocketEventDispatcher::ReceiveCallback(
 
 // static
 void BluetoothSocketEventDispatcher::ReceiveErrorCallback(
-    const ReceiveParams& params,
+    const SocketParams& params,
     BluetoothApiSocket::ErrorReason error_reason,
     const std::string& error) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
@@ -185,7 +226,7 @@ void BluetoothSocketEventDispatcher::ReceiveErrorCallback(
   bluetooth_socket::ReceiveErrorInfo receive_error_info;
   receive_error_info.socket_id = params.socket_id;
   receive_error_info.error_message = error;
-  receive_error_info.error = MapErrorReason(error_reason);
+  receive_error_info.error = MapReceiveErrorReason(error_reason);
   scoped_ptr<base::ListValue> args =
       bluetooth_socket::OnReceiveError::Create(receive_error_info);
   scoped_ptr<Event> event(
@@ -202,7 +243,102 @@ void BluetoothSocketEventDispatcher::ReceiveErrorCallback(
 }
 
 // static
-void BluetoothSocketEventDispatcher::PostEvent(const ReceiveParams& params,
+void BluetoothSocketEventDispatcher::StartAccept(const SocketParams& params) {
+  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+
+  BluetoothApiSocket* socket =
+      params.sockets->Get(params.extension_id, params.socket_id);
+  if (!socket) {
+    // This can happen if the socket is closed while our callback is active.
+    return;
+  }
+  DCHECK(params.extension_id == socket->owner_extension_id())
+      << "Socket has wrong owner.";
+
+  // Don't start another accept if the socket has been paused.
+  if (socket->paused())
+    return;
+
+  socket->Accept(
+      base::Bind(
+          &BluetoothSocketEventDispatcher::AcceptCallback, params),
+      base::Bind(
+          &BluetoothSocketEventDispatcher::AcceptErrorCallback, params));
+}
+
+// static
+void BluetoothSocketEventDispatcher::AcceptCallback(
+    const SocketParams& params,
+    const device::BluetoothDevice* device,
+    scoped_refptr<device::BluetoothSocket> socket) {
+  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+
+  BluetoothApiSocket* server_api_socket =
+      params.sockets->Get(params.extension_id, params.socket_id);
+  DCHECK(server_api_socket);
+
+  BluetoothApiSocket* client_api_socket = new BluetoothApiSocket(
+      params.extension_id,
+      socket,
+      device->GetAddress(),
+      server_api_socket->uuid());
+  int client_socket_id = params.sockets->Add(client_api_socket);
+
+  // Dispatch "onAccept" event.
+  bluetooth_socket::AcceptInfo accept_info;
+  accept_info.socket_id = params.socket_id;
+  accept_info.client_socket_id = client_socket_id;
+  scoped_ptr<base::ListValue> args =
+      bluetooth_socket::OnAccept::Create(accept_info);
+  scoped_ptr<Event> event(
+      new Event(bluetooth_socket::OnAccept::kEventName, args.Pass()));
+  PostEvent(params, event.Pass());
+
+  // Post a task to delay the accept until the socket is available, as
+  // calling StartAccept at this point would error with ERR_IO_PENDING.
+  BrowserThread::PostTask(
+      params.thread_id,
+      FROM_HERE,
+      base::Bind(&BluetoothSocketEventDispatcher::StartAccept, params));
+}
+
+// static
+void BluetoothSocketEventDispatcher::AcceptErrorCallback(
+    const SocketParams& params,
+    BluetoothApiSocket::ErrorReason error_reason,
+    const std::string& error) {
+  DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
+
+  if (error_reason == BluetoothApiSocket::kIOPending) {
+    // This happens when resuming a socket which already had an active "accept"
+    // callback. We can safely ignore this error, as the application should not
+    // care.
+    return;
+  }
+
+  // Dispatch "onAcceptError" event but don't start another accept to avoid
+  // potential infinite accepts if we have a persistent network error.
+  bluetooth_socket::AcceptErrorInfo accept_error_info;
+  accept_error_info.socket_id = params.socket_id;
+  accept_error_info.error_message = error;
+  accept_error_info.error = MapAcceptErrorReason(error_reason);
+  scoped_ptr<base::ListValue> args =
+      bluetooth_socket::OnAcceptError::Create(accept_error_info);
+  scoped_ptr<Event> event(
+      new Event(bluetooth_socket::OnAcceptError::kEventName, args.Pass()));
+  PostEvent(params, event.Pass());
+
+  // Since we got an error, the socket is now "paused" until the application
+  // "resumes" it.
+  BluetoothApiSocket* socket =
+      params.sockets->Get(params.extension_id, params.socket_id);
+  if (socket) {
+    socket->set_paused(true);
+  }
+}
+
+// static
+void BluetoothSocketEventDispatcher::PostEvent(const SocketParams& params,
                                                scoped_ptr<Event> event) {
   DCHECK(BrowserThread::CurrentlyOn(params.thread_id));
 

@@ -8,11 +8,11 @@
 #include "chromeos/chromeos_export.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_net.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 namespace dbus {
 class FileDescriptor;
 }  // namespace dbus
-
 
 namespace chromeos {
 
@@ -31,6 +31,10 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
                        const base::Closure& success_callback,
                        const ErrorCompletionCallback& error_callback);
 
+  // BluetoothSocket:
+  virtual void Accept(const AcceptCompletionCallback& success_callback,
+                      const ErrorCompletionCallback& error_callback) OVERRIDE;
+
  protected:
   virtual ~BluetoothSocketChromeOS();
 
@@ -44,7 +48,6 @@ class CHROMEOS_EXPORT BluetoothSocketChromeOS
   void DoConnect(scoped_ptr<dbus::FileDescriptor> fd,
                  const base::Closure& success_callback,
                  const ErrorCompletionCallback& error_callback);
-
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothSocketChromeOS);
 };

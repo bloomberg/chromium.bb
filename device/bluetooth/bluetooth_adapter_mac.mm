@@ -21,6 +21,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/bluetooth/bluetooth_device_mac.h"
+#include "device/bluetooth/bluetooth_socket_mac.h"
+#include "device/bluetooth/bluetooth_uuid.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -176,6 +178,25 @@ bool BluetoothAdapterMac::IsDiscovering() const {
 void BluetoothAdapterMac::ReadLocalOutOfBandPairingData(
     const BluetoothOutOfBandPairingDataCallback& callback,
     const ErrorCallback& error_callback) {
+}
+
+void BluetoothAdapterMac::CreateRfcommService(
+    const BluetoothUUID& uuid,
+    int channel,
+    bool insecure,
+    const CreateServiceCallback& callback,
+    const CreateServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement.
+  NOTIMPLEMENTED();
+}
+
+void BluetoothAdapterMac::CreateL2capService(
+    const BluetoothUUID& uuid,
+    int psm,
+    const CreateServiceCallback& callback,
+    const CreateServiceErrorCallback& error_callback) {
+  // TODO(keybuk): implement.
+  NOTIMPLEMENTED();
 }
 
 void BluetoothAdapterMac::AddDiscoverySession(
