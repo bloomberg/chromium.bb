@@ -311,6 +311,23 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
             {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
             return;
         }
+        {% for argument, method in arguments_methods
+            if argument.is_numeric_type %}
+        {# 10. Otherwise: if V is a Number value, and there is an entry in S
+           that has one of the following types at position i of its type list,
+        {# • a numeric type #}
+        {# FIXME: not needed yet
+        if (info[{{index}}]->IsNumber()) {
+            {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
+            return;
+        }
+        #}
+        {# 12. Otherwise: if there is an entry in S that has one of the
+               following types at position i of its type list, #}
+        {# • a numeric type #}
+        {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
+        return;
+        {% endfor %}
         {% endfor %}
         break;
     {% endfor %}

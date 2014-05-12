@@ -6519,13 +6519,15 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1))) {
+    switch (info.Length()) {
+    case 1:
+        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+            overloadedMethodD2Method(info);
+            return;
+        }
         overloadedMethodD1Method(info);
         return;
-    }
-    if (((info.Length() == 1) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())))) {
-        overloadedMethodD2Method(info);
-        return;
+        break;
     }
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {

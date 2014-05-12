@@ -353,7 +353,8 @@ def generate_overloads_by_type(methods):
         is_use_spec_algorithm = False
         # Use spec algorithm if:
         # * all type lists have the same length,
-        # * all distinguishing types are (non-nullable) wrapper types,
+        # * all distinguishing types are (non-nullable) wrapper types
+        #   or numeric types,
         # * all distinguishing types are distinct.
         if len(effective_overloads_by_length) == 1:
             effective_overloads = effective_overloads_by_length[0][1]
@@ -364,7 +365,8 @@ def generate_overloads_by_type(methods):
                                              for type_list in type_lists]
             distinguishing_argument_type_names = [
                 idl_type.name for idl_type in distinguishing_argument_types]
-            if (all((distinguishing_argument_type.is_wrapper_type and
+            if (all(((distinguishing_argument_type.is_wrapper_type or
+                      distinguishing_argument_type.is_numeric_type) and
                      not distinguishing_argument_type.is_nullable)
                     for distinguishing_argument_type in distinguishing_argument_types) and
                 len(set(distinguishing_argument_type_names)) == len(distinguishing_argument_type_names)):

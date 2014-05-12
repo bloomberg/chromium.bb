@@ -168,6 +168,7 @@ def generate_argument(interface, method, argument, index):
         'is_clamp': 'Clamp' in extended_attributes,
         'is_callback_interface': idl_type.is_callback_interface,
         'is_nullable': idl_type.is_nullable,
+        'is_numeric_type': idl_type.is_numeric_type,
         'is_optional': argument.is_optional,
         'is_variadic_wrapper_type': is_variadic_wrapper_type,
         'vector_type': v8_types.cpp_ptr_type('Vector', 'HeapVector', idl_type.gc_type),
