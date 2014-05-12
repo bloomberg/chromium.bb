@@ -209,5 +209,6 @@ int main(int argc, char **argv, char **environ) {
   }
   const char *nexe_filename = argv[1];
   uintptr_t entry = LoadElfFile(nexe_filename);
-  return nacl_irt_nonsfi_entry(argc, argv, environ, (nacl_entry_func_t) entry);
+  return nacl_irt_nonsfi_entry(argc - 1, argv + 1, environ,
+                               (nacl_entry_func_t) entry);
 }

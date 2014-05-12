@@ -391,7 +391,7 @@ bool test_access(const char *test_file) {
 
 bool test_utimes(const char *test_file) {
   // TODO(mseaborn): Implement utimes for unsandboxed mode.
-  if (PNACL_UNSANDBOXED)
+  if (NONSFI_MODE)
     return true;
   struct timeval times[2];
   // utimes() is currently not implemented and should always
@@ -403,7 +403,7 @@ bool test_utimes(const char *test_file) {
 
 bool test_truncate(const char *test_file) {
   // TODO(mseaborn): Implement truncate for unsandboxed mode.
-  if (PNACL_UNSANDBOXED)
+  if (NONSFI_MODE)
     return true;
   char temp_file[PATH_MAX];
   snprintf(temp_file, PATH_MAX, "%s.tmp_truncate", test_file);
@@ -583,7 +583,7 @@ bool test_close(const char *test_file) {
   // directory OK
   // Linux's open() (unsandboxed) does not allow O_RDWR on a directory.
   // TODO(mseaborn): sel_ldr should reject O_RDWR on a directory too.
-  if (!PNACL_UNSANDBOXED) {
+  if (!NONSFI_MODE) {
     fd = open(".", O_RDWR);
     if (fd == -1)
       return failed(testname, "open(., O_RDWR)");
@@ -636,7 +636,7 @@ bool test_read(const char *test_file) {
   errno = 0;
   // fd OK, buffer OK, count not OK
   // Linux's read() (unsandboxed) does not reject this buffer size.
-  if (!PNACL_UNSANDBOXED) {
+  if (!NONSFI_MODE) {
     ret_val = read(fd, out_char, -1);
     if (ret_val != -1)
       return failed(testname, "read(fd, out_char, -1)");
@@ -652,8 +652,14 @@ bool test_read(const char *test_file) {
   if (ret_val != -1)
     return failed(testname, "read(-1, out_char, -1)");
   // bad descriptor
-  if (EBADF != errno)
-    return failed(testname, "EBADF != errno");
+  if (NONSFI_MODE) {
+    // Under qemu-arm, this read() call returns EFAULT.
+    if (EBADF != errno && EFAULT != errno)
+      return failed(testname, "errno is not EBADF or EFAULT");
+  } else {
+    if (EBADF != errno)
+      return failed(testname, "EBADF != errno");
+  }
 
   // fd OK, buffer OK, count 0
   ret_val = read(fd, out_char, 0);
@@ -693,7 +699,7 @@ bool test_write(const char *test_file) {
   errno = 0;
   // invalid count
   // Linux's write() (unsandboxed) does not reject this buffer size.
-  if (!PNACL_UNSANDBOXED) {
+  if (!NONSFI_MODE) {
     ret_val = write(fd, out_char, -1);
     if (ret_val != -1)
       return failed(testname, "write(fd, out_char, -1)");
@@ -802,7 +808,7 @@ bool test_lseek(const char *test_file) {
 
 bool test_readdir(const char *test_file) {
   // TODO(mseaborn): Implement listing directories for unsandboxed mode.
-  if (PNACL_UNSANDBOXED)
+  if (NONSFI_MODE)
     return true;
 
   // Read the directory containing the test file
@@ -843,7 +849,7 @@ bool test_readdir(const char *test_file) {
 // isatty returns 1 for TTY descriptors and 0 on error (setting errno)
 bool test_isatty(const char *test_file) {
   // TODO(mseaborn): Implement isatty() for unsandboxed mode.
-  if (PNACL_UNSANDBOXED)
+  if (NONSFI_MODE)
     return true;
 
   // TODO(sbc): isatty() in glibc is not yet hooked up to the IRT
@@ -930,7 +936,7 @@ bool testSuite(const char *test_file) {
   ret &= test_getcwd();
   ret &= test_mkdir_rmdir(test_file);
   ret &= test_isatty(test_file);
-  if (!PNACL_UNSANDBOXED) {
+  if (!NONSFI_MODE) {
     ret &= test_rename(test_file);
     ret &= test_link(test_file);
     ret &= test_symlinks(test_file);

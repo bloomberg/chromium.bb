@@ -14,8 +14,9 @@ if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('windows'):
 
 env.ComponentLibrary('syscall_test_framework', ['test.cc'])
 
-env.Append(CPPDEFINES=[['PNACL_UNSANDBOXED',
-                        str(int(env.Bit('pnacl_unsandboxed')))]])
+env.Append(CPPDEFINES=[['NONSFI_MODE',
+                        str(int(env.Bit('pnacl_unsandboxed') or
+                                env.Bit('nonsfi_nacl')))]])
 
 # The syscall tests need to know if they are compiling with the IRT
 # since glibc only partially functions without the IRT and therefore

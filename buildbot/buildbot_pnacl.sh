@@ -29,8 +29,18 @@ RETCODE=0
 readonly SCONS_EVERYTHING=""
 readonly SCONS_S_M="small_tests medium_tests"
 readonly SCONS_S_M_IRT="small_tests_irt medium_tests_irt"
-# TODO(mseaborn): Enable more tests for Non-SFI Mode when they pass.
-readonly SCONS_NONSFI="nonsfi_nacl=1 run_hello_world_test_irt"
+
+# TODO(mseaborn): Run small_tests_irt with nonsfi_nacl=1 when it passes,
+# instead of the following whitelist of tests.
+readonly SCONS_NONSFI_TESTS="\
+    run_hello_world_test_irt \
+    run_float_test_irt \
+    run_malloc_realloc_calloc_free_test_irt \
+    run_dup_test_irt \
+    run_syscall_test_irt \
+    run_getpid_test_irt"
+readonly SCONS_NONSFI="nonsfi_nacl=1 ${SCONS_NONSFI_TESTS}"
+
 # subset of tests used on toolchain builders
 readonly SCONS_TC_TESTS="small_tests medium_tests"
 
