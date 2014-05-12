@@ -384,6 +384,7 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
     self.failed.wait(60)
     self.failed.set()
 
+  @unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails.')
   def testExceptionRaising(self):
     """Test that exceptions halt all running steps."""
     steps = [self._Exit, self._Fail, self._Pass, self._Fail]
