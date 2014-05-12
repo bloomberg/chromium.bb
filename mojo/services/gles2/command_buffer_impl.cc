@@ -53,7 +53,7 @@ CommandBufferImpl::CommandBufferImpl(gfx::AcceleratedWidget widget,
     : widget_(widget), size_(size) {}
 
 CommandBufferImpl::~CommandBufferImpl() {
-  client_->DidDestroy();
+  client()->DidDestroy();
   if (decoder_.get()) {
     bool have_context = decoder_->MakeCurrent();
     decoder_->Destroy(have_context);
@@ -62,10 +62,6 @@ CommandBufferImpl::~CommandBufferImpl() {
 
 void CommandBufferImpl::OnConnectionError() {
   // TODO(darin): How should we handle this error?
-}
-
-void CommandBufferImpl::SetClient(CommandBufferClient* client) {
-  client_ = client;
 }
 
 void CommandBufferImpl::Initialize(
@@ -194,10 +190,10 @@ void CommandBufferImpl::CancelAnimationFrames() { timer_.Stop(); }
 
 void CommandBufferImpl::OnParseError() {
   gpu::CommandBuffer::State state = command_buffer_->GetLastState();
-  client_->LostContext(state.context_lost_reason);
+  client()->LostContext(state.context_lost_reason);
 }
 
-void CommandBufferImpl::DrawAnimationFrame() { client_->DrawAnimationFrame(); }
+void CommandBufferImpl::DrawAnimationFrame() { client()->DrawAnimationFrame(); }
 
 }  // namespace services
 }  // namespace mojo

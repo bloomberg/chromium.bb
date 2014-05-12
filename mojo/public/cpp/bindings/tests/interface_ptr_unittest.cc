@@ -39,26 +39,21 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
     delete this;
   }
 
-  virtual void SetClient(math::CalculatorUI* ui) MOJO_OVERRIDE {
-    ui_ = ui;
-  }
-
   virtual void Clear() MOJO_OVERRIDE {
-    ui_->Output(total_);
+    client()->Output(total_);
   }
 
   virtual void Add(double value) MOJO_OVERRIDE {
     total_ += value;
-    ui_->Output(total_);
+    client()->Output(total_);
   }
 
   virtual void Multiply(double value) MOJO_OVERRIDE {
     total_ *= value;
-    ui_->Output(total_);
+    client()->Output(total_);
   }
 
  private:
-  math::CalculatorUI* ui_;
   double total_;
 };
 

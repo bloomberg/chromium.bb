@@ -20,10 +20,6 @@ class ProviderImpl : public InterfaceImpl<sample::Provider> {
     delete this;
   }
 
-  virtual void SetClient(sample::ProviderClient* client) MOJO_OVERRIDE {
-    // Ignored. TODO(darin): Eliminate ProviderClient.
-  }
-
   virtual void EchoString(
       const String& a,
       const Callback<void(String)>& callback) MOJO_OVERRIDE {

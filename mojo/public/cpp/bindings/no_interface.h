@@ -22,7 +22,7 @@ class NoInterface {
  public:
   typedef NoInterfaceProxy Proxy_;
   typedef NoInterfaceStub Stub_;
-  typedef NoInterface Client_;
+  typedef NoInterface Client;
   virtual ~NoInterface() {}
   virtual void SetClient(NoInterface* client) {}
 };

@@ -27,8 +27,6 @@ struct TestContext {
 class TestServiceImpl :
     public ServiceConnection<TestService, TestServiceImpl, TestContext> {
  public:
-  TestServiceImpl() : client_(NULL) {}
-
   virtual ~TestServiceImpl() {
     if (context())
       --context()->num_impls;
@@ -40,16 +38,10 @@ class TestServiceImpl :
   }
 
   // TestService implementation:
-  virtual void SetClient(TestClient* client) OVERRIDE {
-    client_ = client;
-  }
   virtual void Test(const mojo::String& test_string) OVERRIDE {
     context()->last_test_string = test_string.To<std::string>();
-    client_->AckTest();
+    client()->AckTest();
   }
-
- private:
-  TestClient* client_;
 };
 
 class TestClientImpl : public TestClient {

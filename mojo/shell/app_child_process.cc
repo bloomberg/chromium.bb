@@ -159,8 +159,7 @@ class AppChildControllerImpl : public InterfaceImpl<AppChildController> {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     // TODO(vtl): Pass in the result from |MainMain()|.
-    if (controller_client_)
-      controller_client_->AppCompleted(MOJO_RESULT_UNIMPLEMENTED);
+    client()->AppCompleted(MOJO_RESULT_UNIMPLEMENTED);
   }
 
   // To be executed on the controller thread. Creates the |AppChildController|,
@@ -194,11 +193,6 @@ class AppChildControllerImpl : public InterfaceImpl<AppChildController> {
   }
 
   // |AppChildController| methods:
-
-  virtual void SetClient(AppChildControllerClient* client) OVERRIDE {
-    controller_client_ = client;
-  }
-
   virtual void StartApp(const String& app_path,
                         ScopedMessagePipeHandle service) OVERRIDE {
     DVLOG(2) << "AppChildControllerImpl::StartApp("
@@ -217,7 +211,6 @@ class AppChildControllerImpl : public InterfaceImpl<AppChildController> {
                          const Blocker::Unblocker& unblocker)
       : app_context_(app_context),
         unblocker_(unblocker),
-        controller_client_(NULL),
         channel_info_(NULL) {
   }
 
@@ -267,7 +260,6 @@ class AppChildControllerImpl : public InterfaceImpl<AppChildController> {
   AppContext* const app_context_;
   Blocker::Unblocker unblocker_;
 
-  AppChildControllerClient* controller_client_;
   embedder::ChannelInfo* channel_info_;
 
   DISALLOW_COPY_AND_ASSIGN(AppChildControllerImpl);

@@ -77,18 +77,18 @@ class InterfacePtrState {
     explicit ProxyWithStub(MessageReceiver* receiver)
         : Interface::Proxy_(receiver) {
     }
-    virtual void SetClient(typename Interface::Client_* client) MOJO_OVERRIDE {
+    virtual void SetClient(typename Interface::Client* client) MOJO_OVERRIDE {
       stub.set_sink(client);
     }
-    typename Interface::Client_::Stub_ stub;
+    typename Interface::Client::Stub_ stub;
    private:
     MOJO_DISALLOW_COPY_AND_ASSIGN(ProxyWithStub);
   };
 
-  class ClientProxyWithStub : public Interface::Client_::Proxy_ {
+  class ClientProxyWithStub : public Interface::Client::Proxy_ {
    public:
     explicit ClientProxyWithStub(MessageReceiver* receiver)
-        : Interface::Client_::Proxy_(receiver) {
+        : Interface::Client::Proxy_(receiver) {
     }
     typename Interface::Stub_ stub;
    private:
@@ -96,7 +96,7 @@ class InterfacePtrState {
   };
 
   Interface* instance_;
-  typename Interface::Client_* client_;
+  typename Interface::Client* client_;
   Router* router_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(InterfacePtrState);

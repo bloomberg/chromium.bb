@@ -193,7 +193,6 @@ class LauncherImpl : public ServiceConnection<Launcher, LauncherImpl>,
  public:
   LauncherImpl()
       : launcher_controller_(this),
-        launcher_client_(NULL),
         pending_show_(false) {
   }
 
@@ -211,9 +210,6 @@ class LauncherImpl : public ServiceConnection<Launcher, LauncherImpl>,
 
  private:
   // Overridden from Launcher:
-  virtual void SetClient(LauncherClient* client) OVERRIDE {
-    launcher_client_ = client;
-  }
   virtual void Show() OVERRIDE {
     if (!window_tree_host_.get()) {
       pending_show_ = true;
@@ -228,7 +224,7 @@ class LauncherImpl : public ServiceConnection<Launcher, LauncherImpl>,
   // Overridden from URLReceiver:
   virtual void OnURLEntered(const std::string& url_text) OVERRIDE {
     AllocationScope scope;
-    launcher_client_->OnURLEntered(url_text);
+    client()->OnURLEntered(url_text);
   }
 
   void HostContextCreated() {
@@ -262,7 +258,6 @@ class LauncherImpl : public ServiceConnection<Launcher, LauncherImpl>,
 
   LauncherController launcher_controller_;
 
-  LauncherClient* launcher_client_;
   scoped_ptr<aura::WindowTreeHost> window_tree_host_;
 
   bool pending_show_;

@@ -34,8 +34,7 @@ class NativeViewportImpl
       public NativeViewportDelegate {
  public:
   NativeViewportImpl()
-      : client_(NULL),
-        widget_(gfx::kNullAcceleratedWidget),
+      : widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false) {}
   virtual ~NativeViewportImpl() {
     // Destroy the NativeViewport early on as it may call us back during
@@ -43,15 +42,11 @@ class NativeViewportImpl
     native_viewport_.reset();
   }
 
-  virtual void SetClient(NativeViewportClient* client) OVERRIDE {
-    client_ = client;
-  }
-
   virtual void Create(const Rect& bounds) OVERRIDE {
     native_viewport_ =
         services::NativeViewport::Create(context(), this);
     native_viewport_->Init(bounds);
-    client_->OnCreated();
+    client()->OnCreated();
     OnBoundsChanged(bounds);
   }
 
@@ -153,7 +148,7 @@ class NativeViewportImpl
       event.set_key_data(key_data.Finish());
     }
 
-    client_->OnEvent(event.Finish(),
+    client()->OnEvent(event.Finish(),
                      base::Bind(&NativeViewportImpl::AckEvent,
                                 base::Unretained(this)));
     waiting_for_event_ack_ = true;
@@ -169,17 +164,16 @@ class NativeViewportImpl
   virtual void OnBoundsChanged(const gfx::Rect& bounds) OVERRIDE {
     CreateCommandBufferIfNeeded();
     AllocationScope scope;
-    client_->OnBoundsChanged(bounds);
+    client()->OnBoundsChanged(bounds);
   }
 
   virtual void OnDestroyed() OVERRIDE {
     command_buffer_.reset();
-    client_->OnDestroyed();
+    client()->OnDestroyed();
     base::MessageLoop::current()->Quit();
   }
 
  private:
-  NativeViewportClient* client_;
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
   ScopedMessagePipeHandle command_buffer_handle_;

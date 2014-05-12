@@ -59,10 +59,6 @@ bool MojoApplicationHost::Activate(IPC::Sender* sender,
   return did_activate_;
 }
 
-void MojoApplicationHost::ShellImpl::SetClient(mojo::ShellClient* client) {
-  client_ = client;
-}
-
 void MojoApplicationHost::ShellImpl::Connect(
     const mojo::String& url,
     mojo::ScopedMessagePipeHandle handle) {

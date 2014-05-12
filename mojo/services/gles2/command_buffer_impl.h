@@ -31,7 +31,6 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
   virtual ~CommandBufferImpl();
 
   virtual void OnConnectionError() OVERRIDE;
-  virtual void SetClient(CommandBufferClient* client) OVERRIDE;
   virtual void Initialize(CommandBufferSyncClientPtr sync_client,
                           mojo::ScopedSharedBufferHandle shared_state) OVERRIDE;
   virtual void SetGetBuffer(int32_t buffer) OVERRIDE;
@@ -54,7 +53,6 @@ class CommandBufferImpl : public InterfaceImpl<CommandBuffer> {
 
   void DrawAnimationFrame();
 
-  CommandBufferClient* client_;
   CommandBufferSyncClientPtr sync_client_;
 
   gfx::AcceleratedWidget widget_;

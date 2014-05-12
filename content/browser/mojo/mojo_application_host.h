@@ -42,19 +42,13 @@ class MojoApplicationHost {
  private:
   class ShellImpl : public mojo::InterfaceImpl<mojo::Shell> {
    public:
-    ShellImpl() : client_(NULL) {}
-    mojo::ShellClient* client() { return client_; }
-
     virtual void OnConnectionError() OVERRIDE {
       // TODO(darin): How should we handle this error?
     }
 
     // mojo::Shell methods:
-    virtual void SetClient(mojo::ShellClient* client) OVERRIDE;
     virtual void Connect(const mojo::String& url,
                          mojo::ScopedMessagePipeHandle handle) OVERRIDE;
-   private:
-    mojo::ShellClient* client_;
   };
 
   mojo::common::ChannelInit channel_init_;

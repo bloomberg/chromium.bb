@@ -10,9 +10,9 @@ class {{interface.name}} {
   typedef {{interface.name}}Proxy Proxy_;
   typedef {{interface.name}}Stub Stub_;
 {% if interface.client %}
-  typedef {{interface.client}} Client_;
+  typedef {{interface.client}} Client;
 {% else %}
-  typedef mojo::NoInterface Client_;
+  typedef mojo::NoInterface Client;
 {% endif %}
 
 {#--- Constants #}

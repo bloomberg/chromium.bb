@@ -22,10 +22,6 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
     delete this;
   }
 
-  virtual void SetClient(sample::FactoryClient* client) MOJO_OVERRIDE {
-    client_ = client;
-  }
-
   virtual void DoStuff(const sample::Request& request,
                        ScopedMessagePipeHandle pipe) MOJO_OVERRIDE {
     std::string text1;
@@ -50,7 +46,7 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
     sample::Response::Builder response;
     response.set_x(2);
     response.set_pipe(pipe0.Pass());
-    client_->DidStuff(response.Finish(), text1);
+    client()->DidStuff(response.Finish(), text1);
   }
 
   virtual void DoStuff2(ScopedDataPipeConsumerHandle pipe) MOJO_OVERRIDE {
@@ -69,11 +65,10 @@ class SampleFactoryImpl : public InterfaceImpl<sample::Factory> {
                           MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
     AllocationScope scope;
-    client_->DidStuff2(String(std::string(data)));
+    client()->DidStuff2(String(std::string(data)));
   }
 
  private:
-  sample::FactoryClient* client_;
   ScopedMessagePipeHandle pipe1_;
 };
 

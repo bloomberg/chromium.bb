@@ -24,8 +24,7 @@ class ServiceManager::ServiceFactory : public InterfaceImpl<Shell> {
  public:
   ServiceFactory(ServiceManager* manager, const GURL& url)
       : manager_(manager),
-        url_(url),
-        client_(NULL) {
+        url_(url) {
   }
 
   virtual ~ServiceFactory() {
@@ -37,13 +36,10 @@ class ServiceManager::ServiceFactory : public InterfaceImpl<Shell> {
       return;
     }
     AllocationScope scope;
-    client_->AcceptConnection(url_.spec(), handle.Pass());
+    client()->AcceptConnection(url_.spec(), handle.Pass());
   }
 
   // Shell implementation:
-  virtual void SetClient(ShellClient* client) OVERRIDE {
-    client_ = client;
-  }
   virtual void Connect(const String& url,
                        ScopedMessagePipeHandle client_pipe) OVERRIDE {
     manager_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
@@ -58,7 +54,6 @@ class ServiceManager::ServiceFactory : public InterfaceImpl<Shell> {
 
   ServiceManager* const manager_;
   const GURL url_;
-  ShellClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactory);
 };
@@ -66,10 +61,7 @@ class ServiceManager::ServiceFactory : public InterfaceImpl<Shell> {
 class ServiceManager::TestAPI::TestShellConnection
     : public InterfaceImpl<Shell> {
  public:
-  explicit TestShellConnection(ServiceManager* manager)
-      : manager_(manager),
-        client_(NULL) {
-  }
+  explicit TestShellConnection(ServiceManager* manager) : manager_(manager) {}
   virtual ~TestShellConnection() {}
 
   virtual void OnConnectionError() OVERRIDE {
@@ -77,9 +69,6 @@ class ServiceManager::TestAPI::TestShellConnection
   }
 
   // Shell:
-  virtual void SetClient(ShellClient* client) OVERRIDE {
-    client_ = client;
-  }
   virtual void Connect(const String& url,
                        ScopedMessagePipeHandle client_pipe) OVERRIDE {
     manager_->Connect(GURL(url.To<std::string>()), client_pipe.Pass());
@@ -87,7 +76,6 @@ class ServiceManager::TestAPI::TestShellConnection
 
  private:
   ServiceManager* manager_;
-  ShellClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShellConnection);
 };

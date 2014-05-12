@@ -38,7 +38,6 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   }
 
   // OmniboxUIHandlerMojo overrides:
-  virtual void SetClient(OmniboxPage* page) OVERRIDE;
   virtual void StartOmniboxQuery(const mojo::String& input_string,
                                  int32_t cursor_position,
                                  bool prevent_inline_autocomplete,
@@ -54,8 +53,6 @@ class OmniboxUIHandler : public AutocompleteControllerDelegate,
   // Re-initializes the AutocompleteController in preparation for the
   // next query.
   void ResetController();
-
-  OmniboxPage* page_;
 
   // The omnibox AutocompleteController that collects/sorts/dup-
   // eliminates the results as they come in.

@@ -20,11 +20,19 @@ namespace mojo {
 template <typename Interface>
 class InterfaceImpl : public WithErrorHandler<Interface> {
  public:
+  typedef typename Interface::Client Client;
+
   InterfaceImpl() : internal_state_(this) {}
   virtual ~InterfaceImpl() {}
 
   // Subclasses must handle connection errors.
   virtual void OnConnectionError() = 0;
+
+  // We override SetClient here so subclasses don't each have to.
+  virtual void SetClient(Client* client) MOJO_OVERRIDE {
+    internal_state_.set_client(client);
+  }
+  Client* client() { return internal_state_.client(); }
 
   // DO NOT USE. Exposed only for internal use and for testing.
   internal::InterfaceImplState<Interface>* internal_state() {

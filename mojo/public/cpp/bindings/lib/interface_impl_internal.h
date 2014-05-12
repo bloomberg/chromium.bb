@@ -15,8 +15,11 @@ namespace internal {
 template <typename Interface>
 class InterfaceImplState : public ErrorHandler {
  public:
+  typedef typename Interface::Client Client;
+
   explicit InterfaceImplState(WithErrorHandler<Interface>* instance)
       : router_(NULL),
+        client_(NULL),
         proxy_(NULL) {
     assert(instance);
     stub_.set_sink(instance);
@@ -46,12 +49,15 @@ class InterfaceImplState : public ErrorHandler {
     router_->set_incoming_receiver(&stub_);
     router_->set_error_handler(this);
 
-    proxy_ = new typename Interface::Client_::Proxy_(router_);
+    proxy_ = new typename Client::Proxy_(router_);
 
     stub_.sink()->SetClient(proxy_);
   }
 
   Router* router() { return router_; }
+
+  void set_client(Client* client) { client_ = client; }
+  Client* client() { return client_; }
 
  private:
   virtual void OnConnectionError() MOJO_OVERRIDE {
@@ -60,7 +66,8 @@ class InterfaceImplState : public ErrorHandler {
   }
 
   internal::Router* router_;
-  typename Interface::Client_::Proxy_* proxy_;
+  Client* client_;
+  typename Client::Proxy_* proxy_;
   typename Interface::Stub_ stub_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(InterfaceImplState);
