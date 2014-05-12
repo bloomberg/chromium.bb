@@ -39,7 +39,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   float opacity = 0.25f;
   SkXfermode::Mode blend_mode = SkXfermode::kMultiply_Mode;
 
-  scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
+  scoped_ptr<SharedQuadState> state(new SharedQuadState);
   state->SetAll(quad_transform,
                 content_bounds,
                 visible_content_rect,
@@ -48,7 +48,8 @@ TEST(DrawQuadTest, CopySharedQuadState) {
                 opacity,
                 blend_mode);
 
-  scoped_ptr<SharedQuadState> copy(state->Copy());
+  scoped_ptr<SharedQuadState> copy(new SharedQuadState);
+  copy->CopyFrom(state.get());
   EXPECT_EQ(quad_transform, copy->content_to_target_transform);
   EXPECT_RECT_EQ(visible_content_rect, copy->visible_content_rect);
   EXPECT_EQ(opacity, copy->opacity);
@@ -66,7 +67,7 @@ scoped_ptr<SharedQuadState> CreateSharedQuadState() {
   float opacity = 1.f;
   SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
 
-  scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
+  scoped_ptr<SharedQuadState> state(new SharedQuadState);
   state->SetAll(quad_transform,
                 content_bounds,
                 visible_content_rect,
@@ -88,9 +89,10 @@ void CompareDrawQuad(DrawQuad* quad,
   EXPECT_EQ(copy_shared_state, copy->shared_quad_state);
 }
 
-#define CREATE_SHARED_STATE() \
-    scoped_ptr<SharedQuadState> shared_state(CreateSharedQuadState()); \
-    scoped_ptr<SharedQuadState> copy_shared_state(shared_state->Copy()); \
+#define CREATE_SHARED_STATE()                                         \
+  scoped_ptr<SharedQuadState> shared_state(CreateSharedQuadState());  \
+  scoped_ptr<SharedQuadState> copy_shared_state(new SharedQuadState); \
+  copy_shared_state->CopyFrom(shared_state.get());
 
 #define QUAD_DATA \
     gfx::Rect quad_rect(30, 40, 50, 60); \

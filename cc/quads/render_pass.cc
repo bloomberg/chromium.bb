@@ -20,7 +20,7 @@ const size_t kDefaultNumQuadsToReserve = 128;
 namespace cc {
 
 void* RenderPass::Id::AsTracingId() const {
-  COMPILE_ASSERT(sizeof(size_t) <= sizeof(void*),  // NOLINT(runtime/sizeof)
+  COMPILE_ASSERT(sizeof(size_t) <= sizeof(void*),  // NOLINT
                  size_t_bigger_than_pointer);
   return reinterpret_cast<void*>(base::HashPair(layer_id, index));
 }
@@ -170,7 +170,7 @@ scoped_ptr<base::Value> RenderPass::AsValue() const {
 }
 
 SharedQuadState* RenderPass::CreateAndAppendSharedQuadState() {
-  shared_quad_state_list.push_back(SharedQuadState::Create());
+  shared_quad_state_list.push_back(make_scoped_ptr(new SharedQuadState));
   return shared_quad_state_list.back();
 }
 

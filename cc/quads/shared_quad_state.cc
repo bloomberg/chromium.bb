@@ -19,14 +19,6 @@ SharedQuadState::~SharedQuadState() {
       "cc::SharedQuadState", this);
 }
 
-scoped_ptr<SharedQuadState> SharedQuadState::Create() {
-  return make_scoped_ptr(new SharedQuadState);
-}
-
-scoped_ptr<SharedQuadState> SharedQuadState::Copy() const {
-  return make_scoped_ptr(new SharedQuadState(*this));
-}
-
 void SharedQuadState::CopyFrom(const SharedQuadState* other) {
   *this = *other;
 }

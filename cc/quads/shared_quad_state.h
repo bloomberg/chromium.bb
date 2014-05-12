@@ -24,10 +24,9 @@ namespace cc {
 // QuadList.
 class CC_EXPORT SharedQuadState {
  public:
-  static scoped_ptr<SharedQuadState> Create();
+  SharedQuadState();
   ~SharedQuadState();
 
-  scoped_ptr<SharedQuadState> Copy() const;
   void CopyFrom(const SharedQuadState* other);
 
   void SetAll(const gfx::Transform& content_to_target_transform,
@@ -50,9 +49,6 @@ class CC_EXPORT SharedQuadState {
   bool is_clipped;
   float opacity;
   SkXfermode::Mode blend_mode;
-
- private:
-  SharedQuadState();
 };
 
 }  // namespace cc
