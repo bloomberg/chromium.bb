@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import ctypes
 import datetime
+import errno
 import functools
 import hashlib
 import httplib
@@ -717,9 +718,17 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
       pid = storage_notify_proc.pid
       for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGKILL):
         cros_build_lib.Warning('sending %s to %i', signals.StrSignal(sig), pid)
-        os.kill(pid, sig)
+        # The process might have exited between the last check and the
+        # actual kill below, so ignore ESRCH errors.
+        try:
+          os.kill(pid, sig)
+        except OSError as e:
+          if e.errno == errno.ESRCH:
+            break
+          else:
+            raise
         time.sleep(5)
-        if storage_notify_proc.is_alive():
+        if not storage_notify_proc.is_alive():
           break
 
       # Drain the queue so we don't hang when we finish.
