@@ -893,11 +893,7 @@ crbug.com/355463 [ Linux Win ] css3/flexbox/repaint.html [ Pass Failure ]
 crbug.com/356957 [ Win Debug ] editing/spelling/spellcheck-editable-on-focus.html [ Pass Timeout ]
 crbug.com/356148 media/audio-delete-while-slider-thumb-clicked.html [ Pass Crash ]
 
-crbug.com/344238 inspector/timeline/timeline-auto-record.html [ Pass Failure ]
-crbug.com/344238 virtual/deferred/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
 crbug.com/344238 [ Mac Win Debug ] virtual/deferred/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
-crbug.com/344238 [ Win Linux Android ] virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure ]
-crbug.com/344238 crbug.com/372213 [ Mac ] virtual/implsidepainting/inspector/timeline/timeline-auto-record.html [ Pass Failure Timeout ]
 
 crbug.com/308992 css2.1/20110323/replaced-intrinsic-001.htm [ Failure ]
 crbug.com/308992 css2.1/20110323/replaced-intrinsic-002.htm [ Failure ]
