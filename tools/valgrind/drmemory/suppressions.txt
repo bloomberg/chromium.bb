@@ -512,3 +512,21 @@ NPCTRL.dll!DllGetClassObject
 NPCTRL.dll!DllGetClassObject
 NPCTRL.dll!DllGetClassObject
 NPCTRL.dll!DllGetClassObject
+
+GDI USAGE ERROR
+name=http://crbug.com/372512
+system call NtUserCallOneParam.RELEASEDC
+USER32.dll!ReleaseDC
+*!gfx::NativeViewGLSurfaceOSMesa::Destroy
+...
+*!mojo::services::CommandBufferImpl::~CommandBufferImpl
+...
+*!mojo::services::NativeViewportImpl::~NativeViewportImpl
+...
+*!mojo::Application::~Application
+...
+*!mojo::BackgroundServiceLoader::~BackgroundServiceLoader
+...
+*!mojo::ServiceManager::~ServiceManager
+*!mojo::shell::Context::~Context
+*!base::DeleteHelper<>::DoDelete
