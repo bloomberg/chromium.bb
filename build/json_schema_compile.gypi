@@ -39,8 +39,8 @@
         # '<@(schema_files)',
       ],
       'outputs': [
-        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_ROOT).cc',
-        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_ROOT).h',
+        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
+        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).h',
       ],
       'action': [
         'python',
@@ -78,8 +78,8 @@
         # '<@(schema_files)',
       ],
       'outputs': [
-        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_ROOT).cc',
-        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_ROOT).h',
+        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).cc',
+        '<(SHARED_INTERMEDIATE_DIR)/<(cc_dir)/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).h',
       ],
       'action': [
         'python',

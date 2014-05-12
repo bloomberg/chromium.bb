@@ -979,6 +979,11 @@
             'browser/extensions/api/tabs/ash_panel_contents.h',
           ],
         }],
+        ['branding=="Chrome" and chromeos==1', {
+          'dependencies': [
+            'browser/extensions/api/ledger/ledger.gyp:ledger_api',
+          ],
+        }],
         ['enable_extensions==0', {
           'sources!': [
             'browser/extensions/browser_context_keyed_service_factories.cc',

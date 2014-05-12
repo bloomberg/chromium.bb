@@ -174,6 +174,11 @@
               'cast_streaming_udp_transport.idl',
             ],
           }],
+          ['branding=="Chrome" and chromeos==1', {
+            'schema_files': [
+              'ledger/ledger.idl',
+            ],
+          }],
         ],
         'cc_dir': 'chrome/common/extensions/api',
         'root_namespace': 'extensions::api',

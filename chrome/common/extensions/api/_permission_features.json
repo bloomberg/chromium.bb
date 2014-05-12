@@ -502,6 +502,10 @@
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
     "location": "component"
   }],
+  "ledger": {
+    "channel": "trunk",
+    "extension_types": ["extension", "platform_app"]
+  },
   "location": [
     {
       "channel": "dev",
