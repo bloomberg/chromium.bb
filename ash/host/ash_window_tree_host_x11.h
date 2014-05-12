@@ -55,9 +55,11 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   // Update is_internal_display_ based on the current state.
   void UpdateIsInternalDisplay();
 
+#if defined(OS_CHROMEOS)
   // Set the CrOS touchpad "tap paused" property. It is used to temporarily
   // turn off the Tap-to-click feature when the mouse pointer is invisible.
   void SetCrOSTapPaused(bool state);
+#endif
 
   // True if the root host resides on the internal display
   bool is_internal_display_;

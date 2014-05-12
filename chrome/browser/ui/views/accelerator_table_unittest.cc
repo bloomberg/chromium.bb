@@ -43,7 +43,7 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
   }
 }
 
-#if defined(USE_ASH) && !defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
   std::set<AcceleratorMapping, Cmp> acclerators;
   const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());

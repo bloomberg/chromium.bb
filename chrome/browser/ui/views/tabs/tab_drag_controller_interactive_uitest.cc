@@ -1503,7 +1503,7 @@ void DragSingleTabToSeparateWindowInSecondDisplayStep2(
 #define MAYBE_DragSingleTabToSeparateWindowInSecondDisplay \
   DISABLED_DragSingleTabToSeparateWindowInSecondDisplay
 #else
-#define MAYBE_DragSingleTabToSeparateWindow \
+#define MAYBE_DragSingleTabToSeparateWindowInSecondDisplay \
   DragSingleTabToSeparateWindowInSecondDisplay
 #endif
 // Drags from browser to a second display and releases input.
@@ -2047,7 +2047,7 @@ void CancelDragTabToWindowInSeparateDisplayStep2(
 
 }  // namespace
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // TODO(sky,sad): Disabled as it fails due to resize locks with a real
 // compositor. crbug.com/331924
 #define MAYBE_CancelDragTabToWindowIn2ndDisplay \
@@ -2094,7 +2094,7 @@ IN_PROC_BROWSER_TEST_F(
       ui_controls::LEFT, ui_controls::UP));
 }
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // TODO(sky,sad): Disabled as it fails due to resize locks with a real
 // compositor. crbug.com/331924
 #define MAYBE_CancelDragTabToWindowIn1stDisplay \
@@ -2318,7 +2318,7 @@ IN_PROC_BROWSER_TEST_P(DetachToDockedTabDragControllerTest,
 
 #endif
 
-#if defined(USE_ASH) && !defined(OS_WIN)  // TODO(win_ash)
+#if defined(USE_ASH) && defined(OS_CHROMEOS)  // TODO(win_ash,linux_ash)
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserInSeparateDisplayTabDragControllerTest,
                         ::testing::Values("mouse", "touch"));
@@ -2334,7 +2334,7 @@ INSTANTIATE_TEST_CASE_P(TabDragging,
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTestTouch,
                         ::testing::Values("touch", "touch docked"));
-#else
+#elif defined(USE_ASH) && !defined(OS_LINUX) // TODO(linux_ash)
 INSTANTIATE_TEST_CASE_P(TabDragging,
                         DetachToBrowserTabDragControllerTest,
                         ::testing::Values("mouse"));
