@@ -925,12 +925,17 @@ void ChromeAppViewAsh::OnMetroExit(MetroTerminateMethod method) {
         core_window == ::GetForegroundWindow()) {
       DVLOG(1) << "We are in the foreground. Exiting via Alt F4";
       SendKeySequence(VK_F4, ALT);
+      if (ui_channel_)
+        ui_channel_->Close();
+    } else {
+      globals.app_exit->Exit();
     }
-  }
-  if (ui_channel_)
-    ui_channel_->Close();
+  } else {
+    if (ui_channel_)
+      ui_channel_->Close();
 
-  globals.app_exit->Exit();
+    globals.app_exit->Exit();
+  }
 }
 
 void ChromeAppViewAsh::OnInputSourceChanged() {
