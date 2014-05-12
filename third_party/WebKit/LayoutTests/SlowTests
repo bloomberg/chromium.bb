@@ -159,3 +159,5 @@ crbug.com/362509 [ Debug ] fast/parser/xml-error-adopted.xml [ Slow ]
 
 crbug.com/363029 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Slow ]
 crbug.com/364225 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Slow ]
+
+crbug.com/372424 fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Slow ]
