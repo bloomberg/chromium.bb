@@ -297,7 +297,7 @@ RenderRegion* RenderMultiColumnFlowThread::regionAtBlockOffset(LayoutUnit /*offs
 bool RenderMultiColumnFlowThread::addForcedRegionBreak(LayoutUnit offset, RenderObject* /*breakChild*/, bool /*isBefore*/, LayoutUnit* offsetBreakAdjustment)
 {
     if (RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(regionAtBlockOffset(offset))) {
-        multicolSet->addForcedBreak(offset);
+        multicolSet->addContentRun(offset);
         if (offsetBreakAdjustment)
             *offsetBreakAdjustment = pageLogicalHeightForOffset(offset) ? pageRemainingLogicalHeightForOffset(offset, IncludePageBoundary) : LayoutUnit();
         return true;

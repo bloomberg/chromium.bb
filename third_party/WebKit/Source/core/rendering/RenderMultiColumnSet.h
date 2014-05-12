@@ -65,6 +65,7 @@ public:
 
     RenderMultiColumnSet* nextSiblingMultiColumnSet() const;
 
+    LayoutUnit logicalTopInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().y() : flowThreadPortionRect().x(); }
     LayoutUnit logicalBottomInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().maxY() : flowThreadPortionRect().maxX(); }
 
     LayoutUnit logicalHeightInFlowThread() const { return isHorizontalWritingMode() ? flowThreadPortionRect().height() : flowThreadPortionRect().width(); }
@@ -88,9 +89,11 @@ public:
     void updateMinimumColumnHeight(LayoutUnit height) { m_minimumColumnHeight = std::max(height, m_minimumColumnHeight); }
     LayoutUnit minimumColumnHeight() const { return m_minimumColumnHeight; }
 
-    unsigned forcedBreaksCount() const { return m_contentRuns.size(); }
-    void clearForcedBreaks();
-    void addForcedBreak(LayoutUnit offsetFromFirstPage);
+    // Add a content run, specified by its end position. A content run is appended at every
+    // forced/explicit break and at the end of the column set. The content runs are used to
+    // determine where implicit/soft breaks will occur, in order to calculate an initial column
+    // height.
+    void addContentRun(LayoutUnit endOffsetFromFirstPage);
 
     // (Re-)calculate the column height if it's auto. If 'initial' is set, guess an initial column
     // height; otherwise, stretch the column height a tad. Return true if column height changed and
@@ -171,11 +174,11 @@ private:
 
     // A run of content without explicit (forced) breaks; i.e. a flow thread portion between two
     // explicit breaks, between flow thread start and an explicit break, between an explicit break
-    // and flow thread end, or, in cases when there are no explicit breaks at all: between flow flow
-    // thread start and flow thread end. We need to know where the explicit breaks are, in order to
-    // figure out where the implicit breaks will end up, so that we get the columns properly
-    // balanced. A content run starts out as representing one single column, and will represent one
-    // additional column for each implicit break "inserted" there.
+    // and flow thread end, or, in cases when there are no explicit breaks at all: between flow
+    // thread portion start and flow thread portion end. We need to know where the explicit breaks
+    // are, in order to figure out where the implicit breaks will end up, so that we get the columns
+    // properly balanced. A content run starts out as representing one single column, and will
+    // represent one additional column for each implicit break "inserted" there.
     class ContentRun {
     public:
         ContentRun(LayoutUnit breakOffset)
