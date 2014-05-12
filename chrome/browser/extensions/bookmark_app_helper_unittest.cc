@@ -269,30 +269,6 @@ TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {
   }
 }
 
-TEST_F(BookmarkAppHelperTest, GenerateIcons) {
-  {
-    // The 32x32 icon should be generated from the 16x16 icon.
-    std::map<int, SkBitmap> bitmaps;
-    bitmaps[16] = CreateSquareBitmapWithColor(16, SK_ColorRED);
-    BookmarkAppHelper::GenerateContainerIcon(&bitmaps, 32);
-    EXPECT_EQ(1u, bitmaps.count(32));
-    EXPECT_EQ(32, bitmaps[32].width());
-  }
-  {
-    // The 32x32 icon should not be generated because no smaller icon exists.
-    std::map<int, SkBitmap> bitmaps;
-    bitmaps[48] = CreateSquareBitmapWithColor(48, SK_ColorRED);
-    BookmarkAppHelper::GenerateContainerIcon(&bitmaps, 32);
-    EXPECT_EQ(0u, bitmaps.count(32));
-  }
-  {
-    // The 32x32 icon should not be generated with no base icons.
-    std::map<int, SkBitmap> bitmaps;
-    BookmarkAppHelper::GenerateContainerIcon(&bitmaps, 32);
-    EXPECT_EQ(0u, bitmaps.count(32));
-  }
-}
-
 TEST_F(BookmarkAppHelperTest, IsValidBookmarkAppUrl) {
   EXPECT_TRUE(IsValidBookmarkAppUrl(GURL("https://www.chromium.org")));
   EXPECT_TRUE(IsValidBookmarkAppUrl(GURL("http://www.chromium.org/path")));

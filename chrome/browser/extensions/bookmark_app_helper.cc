@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 
+#include <cctype>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -19,14 +21,80 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/url_pattern.h"
+#include "grit/platform_locale_settings.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
+#include "ui/gfx/rect.h"
 
 namespace {
+
+// Overlays a shortcut icon over the bottom left corner of a given image.
+class GeneratedIconImageSource : public gfx::CanvasImageSource {
+ public:
+  explicit GeneratedIconImageSource(char letter, SkColor color, int output_size)
+      : gfx::CanvasImageSource(gfx::Size(output_size, output_size), false),
+        letter_(letter),
+        color_(color),
+        output_size_(output_size) {}
+  virtual ~GeneratedIconImageSource() {}
+
+ private:
+  // gfx::CanvasImageSource overrides:
+  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
+    const unsigned char kLuminanceThreshold = 190;
+    const int icon_size = output_size_ * 3 / 4;
+    const int icon_inset = output_size_ / 8;
+    const size_t border_radius = output_size_ / 16;
+    const size_t font_size = output_size_ * 7 / 16;
+
+    std::string font_name =
+        l10n_util::GetStringUTF8(IDS_SANS_SERIF_FONT_FAMILY);
+#if defined(OS_CHROMEOS)
+    const std::string kChromeOSFontFamily = "Noto Sans";
+    font_name = kChromeOSFontFamily;
+#endif
+
+    // Draw a rounded rect of the given |color|.
+    SkPaint background_paint;
+    background_paint.setFlags(SkPaint::kAntiAlias_Flag);
+    background_paint.setColor(color_);
+
+    gfx::Rect icon_rect(icon_inset, icon_inset, icon_size, icon_size);
+    canvas->DrawRoundRect(icon_rect, border_radius, background_paint);
+
+    // The text rect's size needs to be odd to center the text correctly.
+    gfx::Rect text_rect(icon_inset, icon_inset, icon_size + 1, icon_size + 1);
+    // Draw the letter onto the rounded rect. The letter's color depends on the
+    // luminance of |color|.
+    unsigned char luminance = color_utils::GetLuminanceForColor(color_);
+    canvas->DrawStringRectWithFlags(
+        base::string16(1, std::toupper(letter_)),
+        gfx::FontList(gfx::Font(font_name, font_size)),
+        luminance > kLuminanceThreshold ? SK_ColorBLACK : SK_ColorWHITE,
+        text_rect,
+        gfx::Canvas::TEXT_ALIGN_CENTER);
+  }
+
+  char letter_;
+
+  SkColor color_;
+
+  int output_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(GeneratedIconImageSource);
+};
 
 void OnIconsLoaded(
     WebApplicationInfo web_app_info,
@@ -85,86 +153,18 @@ std::map<int, SkBitmap> BookmarkAppHelper::ConstrainBitmapsToSizes(
 }
 
 // static
-void BookmarkAppHelper::GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
-                                              int output_size) {
-  std::map<int, SkBitmap>::const_iterator it =
-      bitmaps->lower_bound(output_size);
-  // Do nothing if there is no icon smaller than the desired size or there is
-  // already an icon of |output_size|.
-  if (it == bitmaps->begin() || bitmaps->count(output_size))
+void BookmarkAppHelper::GenerateIcon(std::map<int, SkBitmap>* bitmaps,
+                                     int output_size,
+                                     SkColor color,
+                                     char letter) {
+  // Do nothing if there is already an icon of |output_size|.
+  if (bitmaps->count(output_size))
     return;
 
-  --it;
-  // This is the biggest icon smaller than |output_size|.
-  const SkBitmap& base_icon = it->second;
-
-  const size_t kBorderRadius = 5;
-  const size_t kColorStripHeight = 3;
-  const SkColor kBorderColor = 0xFFD5D5D5;
-  const SkColor kBackgroundColor = 0xFFFFFFFF;
-
-  // Create a separate canvas for the color strip.
-  scoped_ptr<SkCanvas> color_strip_canvas(
-      skia::CreateBitmapCanvas(output_size, output_size, false));
-  DCHECK(color_strip_canvas);
-
-  // Draw a rounded rect of the |base_icon|'s dominant color.
-  SkPaint color_strip_paint;
-  color_utils::GridSampler sampler;
-  color_strip_paint.setFlags(SkPaint::kAntiAlias_Flag);
-  color_strip_paint.setColor(color_utils::CalculateKMeanColorOfPNG(
-      gfx::Image::CreateFrom1xBitmap(base_icon).As1xPNGBytes(),
-      100,
-      665,
-      &sampler));
-  color_strip_canvas->drawRoundRect(SkRect::MakeWH(output_size, output_size),
-                                    kBorderRadius,
-                                    kBorderRadius,
-                                    color_strip_paint);
-
-  // Erase the top of the rounded rect to leave a color strip.
-  SkPaint clear_paint;
-  clear_paint.setColor(SK_ColorTRANSPARENT);
-  clear_paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  color_strip_canvas->drawRect(
-      SkRect::MakeWH(output_size, output_size - kColorStripHeight),
-      clear_paint);
-
-  // Draw each element to an output canvas.
-  scoped_ptr<SkCanvas> canvas(
-      skia::CreateBitmapCanvas(output_size, output_size, false));
-  DCHECK(canvas);
-
-  // Draw the background.
-  SkPaint background_paint;
-  background_paint.setColor(kBackgroundColor);
-  background_paint.setFlags(SkPaint::kAntiAlias_Flag);
-  canvas->drawRoundRect(SkRect::MakeWH(output_size, output_size),
-                        kBorderRadius,
-                        kBorderRadius,
-                        background_paint);
-
-  // Draw the color strip.
-  canvas->drawBitmap(
-      color_strip_canvas->getDevice()->accessBitmap(false), 0, 0);
-
-  // Draw the border.
-  SkPaint border_paint;
-  border_paint.setColor(kBorderColor);
-  border_paint.setStyle(SkPaint::kStroke_Style);
-  border_paint.setFlags(SkPaint::kAntiAlias_Flag);
-  canvas->drawRoundRect(SkRect::MakeWH(output_size, output_size),
-                        kBorderRadius,
-                        kBorderRadius,
-                        border_paint);
-
-  // Draw the centered base icon to the output canvas.
-  canvas->drawBitmap(base_icon,
-                     (output_size - base_icon.width()) / 2,
-                     (output_size - base_icon.height()) / 2);
-
-  const SkBitmap& generated_icon = canvas->getDevice()->accessBitmap(false);
-  generated_icon.deepCopyTo(&(*bitmaps)[output_size]);
+  gfx::ImageSkia icon_image(
+      new GeneratedIconImageSource(letter, color, output_size),
+      gfx::Size(output_size, output_size));
+  icon_image.bitmap()->deepCopyTo(&(*bitmaps)[output_size]);
 }
 
 BookmarkAppHelper::BookmarkAppHelper(ExtensionService* service,
@@ -253,16 +253,42 @@ void BookmarkAppHelper::OnIconsDownloaded(
 
   // Only generate icons if larger icons don't exist. This means the app
   // launcher and the taskbar will do their best downsizing large icons and
-  // these container icons are only generated as a last resort against upscaling
-  // a smaller icon.
+  // these icons are only generated as a last resort against upscaling a smaller
+  // icon.
   if (resized_bitmaps.lower_bound(*generate_sizes.rbegin()) ==
       resized_bitmaps.end()) {
-    // Generate these from biggest to smallest so we don't end up with
-    // concentric container icons.
-    for (std::set<int>::const_reverse_iterator it = generate_sizes.rbegin();
-         it != generate_sizes.rend();
+    GURL app_url = web_app_info_.app_url;
+
+    // The letter that will be painted on the generated icon.
+    char icon_letter = ' ';
+    std::string domain_and_registry(
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            app_url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+    if (!domain_and_registry.empty()) {
+      icon_letter = domain_and_registry[0];
+    } else if (!app_url.host().empty()) {
+      icon_letter = app_url.host()[0];
+    }
+
+    // The color that will be used for the icon's background.
+    SkColor background_color = SK_ColorBLACK;
+    if (resized_bitmaps.size()) {
+      color_utils::GridSampler sampler;
+      background_color = color_utils::CalculateKMeanColorOfPNG(
+          gfx::Image::CreateFrom1xBitmap(resized_bitmaps.begin()->second)
+              .As1xPNGBytes(),
+          100,
+          568,
+          &sampler);
+    }
+
+    for (std::set<int>::const_iterator it = generate_sizes.begin();
+         it != generate_sizes.end();
          ++it) {
-      GenerateContainerIcon(&resized_bitmaps, *it);
+      GenerateIcon(&resized_bitmaps, *it, background_color, icon_letter);
+      // Also generate the 2x resource for this size.
+      GenerateIcon(&resized_bitmaps, *it * 2, background_color, icon_letter);
     }
   }
 

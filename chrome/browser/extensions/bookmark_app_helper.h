@@ -52,11 +52,12 @@ class BookmarkAppHelper : public content::NotificationObserver {
       const std::set<int>& sizes);
 
   // Adds a square container icon of |output_size| pixels to |bitmaps| by
-  // centering the biggest smaller icon in |bitmaps| and drawing a rounded
-  // rectangle with strip of the that icon's dominant color at the bottom.
+  // drawing the given |letter| into a rounded background of |color|.
   // Does nothing if an icon of |output_size| already exists in |bitmaps|.
-  static void GenerateContainerIcon(std::map<int, SkBitmap>* bitmaps,
-                                    int output_size);
+  static void GenerateIcon(std::map<int, SkBitmap>* bitmaps,
+                           int output_size,
+                           SkColor color,
+                           char letter);
 
   // Begins the asynchronous bookmark app creation.
   void Create(const CreateBookmarkAppCallback& callback);
