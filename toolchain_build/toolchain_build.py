@@ -8,6 +8,7 @@
 The real entry plumbing is in toolchain_main.py.
 """
 
+import collections
 import fnmatch
 import platform
 import os
@@ -174,14 +175,6 @@ def CollectSources():
   return sources
 
 
-# List of all platform and architectures we target and will distribute for.
-HOSTS = [
-    ('win', 'x86-32'),
-    ('darwin', 'x86-64'),
-    ('linux', 'arm'),
-    ('linux', 'x86-32')
-    ]
-
 # Canonical tuples we use for hosts.
 WINDOWS_HOST_TUPLE = pynacl.platform.PlatformTriple('win', 'x86-32')
 MAC_HOST_TUPLE = pynacl.platform.PlatformTriple('darwin', 'x86-64')
@@ -209,7 +202,22 @@ NATIVE_ENOUGH_MAP = {
 
 # The list of targets to build toolchains for.
 TARGET_LIST = ['arm', 'i686']
-UPLOAD_TARGETS = ['arm']
+
+# List upload targets for each host we want to upload packages for.
+TARGET = collections.namedtuple('TARGET', ['name', 'pkg_prefix'])
+HOST_TARGET = collections.namedtuple('HOST_TARGET',
+                                     ['os', 'arch', 'differ3264', 'targets'])
+
+STANDARD_TARGETS = [TARGET('arm', '')]
+LINUX_X86_64_TARGETS = [TARGET('arm', ''), TARGET('i686', 'ng_')]
+
+UPLOAD_HOST_TARGETS = [
+    HOST_TARGET('win', 'x86-32', False, STANDARD_TARGETS),
+    HOST_TARGET('darwin', 'x86-64', False, STANDARD_TARGETS),
+    HOST_TARGET('linux', 'arm', False, STANDARD_TARGETS),
+    HOST_TARGET('linux', 'x86-32', False, STANDARD_TARGETS),
+    HOST_TARGET('linux', 'x86-64', True, LINUX_X86_64_TARGETS),
+    ]
 
 # GDB is built by toolchain_build but injected into package targets built by
 # other means. List out what package targets, packages, and the tar file we are
@@ -896,6 +904,7 @@ def HostIsMac(host):
 def BuildTargetLibsOn(host):
   return host == LINUX_X86_64_TUPLE
 
+
 def GetPackageTargets():
   """Package Targets describes all the final package targets.
 
@@ -905,17 +914,22 @@ def GetPackageTargets():
   """
   package_targets = {}
 
-  for target_arch in UPLOAD_TARGETS:
-    # Each package target contains non-platform specific newlib and gcc libs.
-    # These packages are added inside of TargetLibs(host, target).
-    newlib_package = 'newlib_%s' % target_arch
-    gcc_lib_package = 'gcc_libs_%s' % target_arch
-    shared_packages = [newlib_package, gcc_lib_package]
+  # Add in standard upload targets.
+  for host_target in UPLOAD_HOST_TARGETS:
+    for target in host_target.targets:
+      target_arch = target.name
+      package_prefix = target.pkg_prefix
 
-    for platform, arch in HOSTS:
+      # Each package target contains non-platform specific newlib and gcc libs.
+      # These packages are added inside of TargetLibs(host, target).
+      newlib_package = 'newlib_%s' % target_arch
+      gcc_lib_package = 'gcc_libs_%s' % target_arch
+      shared_packages = [newlib_package, gcc_lib_package]
+
       # Each package target contains arm binutils and gcc.
       # These packages are added inside of HostTools(host, target).
-      platform_triple = pynacl.platform.PlatformTriple(platform, arch)
+      platform_triple = pynacl.platform.PlatformTriple(host_target.os,
+                                                       host_target.arch)
       binutils_package = ForHost('binutils_%s' % target_arch, platform_triple)
       gcc_package = ForHost('gcc_%s' % target_arch, platform_triple)
       gdb_package = ForHost('gdb', platform_triple)
@@ -924,10 +938,14 @@ def GetPackageTargets():
       platform_packages = [binutils_package, gcc_package, gdb_package]
       combined_packages = shared_packages + platform_packages
 
-      os_name = pynacl.platform.GetOS(platform)
-      arch_name = pynacl.platform.GetArch(arch)
+      os_name = pynacl.platform.GetOS(host_target.os)
+      if host_target.differ3264:
+        arch_name = pynacl.platform.GetArch3264(host_target.arch)
+      else:
+        arch_name = pynacl.platform.GetArch(host_target.arch)
       package_target = '%s_%s' % (os_name, arch_name)
-      package_name = 'nacl_%s_newlib' % (pynacl.platform.GetArch(target_arch))
+      package_name = '%snacl_%s_newlib' % (package_prefix,
+                                           pynacl.platform.GetArch(target_arch))
 
       package_target_dict = package_targets.setdefault(package_target, {})
       package_target_dict.setdefault(package_name, []).extend(combined_packages)
