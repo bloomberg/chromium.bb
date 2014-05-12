@@ -591,8 +591,7 @@ void WebViewGuest::OnWebViewGeolocationPermissionResponse(
 
   DCHECK(geolocation_context);
   geolocation_context->RequestGeolocationPermission(
-      embedder_web_contents()->GetRenderProcessHost()->GetID(),
-      embedder_web_contents()->GetRoutingID(),
+      embedder_web_contents(),
       // The geolocation permission request here is not initiated
       // through WebGeolocationPermissionRequest. We are only interested
       // in the fact whether the embedder/app has geolocation

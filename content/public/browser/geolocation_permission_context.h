@@ -12,6 +12,7 @@
 class GURL;
 
 namespace content {
+class WebContents;
 
 // GeolocationPermissionContext must be implemented by the embedder, to provide
 // the policy and logic for the Geolocation permissions flow.
@@ -23,8 +24,7 @@ class CONTENT_EXPORT GeolocationPermissionContext
   // When the answer to a permission request has been determined, |callback|
   // should be called with the result.
   virtual void RequestGeolocationPermission(
-      int render_process_id,
-      int render_view_id,
+      WebContents* web_contents,
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
@@ -32,8 +32,7 @@ class CONTENT_EXPORT GeolocationPermissionContext
 
   // The renderer is cancelling a pending permission request.
   virtual void CancelGeolocationPermissionRequest(
-      int render_process_id,
-      int render_view_id,
+      WebContents* web_contents,
       int bridge_id,
       const GURL& requesting_frame) = 0;
 

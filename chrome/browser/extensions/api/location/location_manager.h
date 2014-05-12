@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -35,8 +34,7 @@ struct Coordinates;
 // Profile's manager of all location watch requests created by chrome.location
 // API. Lives in the UI thread.
 class LocationManager : public BrowserContextKeyedAPI,
-                        public content::NotificationObserver,
-                        public base::SupportsWeakPtr<LocationManager> {
+                        public content::NotificationObserver {
  public:
   explicit LocationManager(content::BrowserContext* context);
   virtual ~LocationManager();

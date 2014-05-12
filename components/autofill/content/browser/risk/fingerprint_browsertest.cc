@@ -187,11 +187,8 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
   position.timestamp =
       base::Time::UnixEpoch() +
       base::TimeDelta::FromMilliseconds(kGeolocationTime);
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
-  content::GeolocationProvider::OverrideLocationForTesting(
-      position, runner->QuitClosure());
-  runner->Run();
+  content::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
+      position);
 
   blink::WebScreenInfo screen_info;
   screen_info.depth = kScreenColorDepth;

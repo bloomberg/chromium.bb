@@ -411,7 +411,6 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       delayed_cleanup_needed_(false),
       within_process_died_observer_(false),
       power_monitor_broadcaster_(this),
-      geolocation_dispatcher_host_(NULL),
       screen_orientation_dispatcher_host_(NULL),
       worker_ref_count_(0),
       weak_factory_(this) {
@@ -705,9 +704,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       storage_partition_impl_->GetIndexedDBContext(),
       ChromeBlobStorageContext::GetFor(browser_context)));
 
-  geolocation_dispatcher_host_ = new GeolocationDispatcherHost(
-      GetID(), browser_context->GetGeolocationPermissionContext());
-  AddFilter(geolocation_dispatcher_host_);
   gpu_message_filter_ = new GpuMessageFilter(GetID(), widget_helper_.get());
   AddFilter(gpu_message_filter_);
 #if defined(ENABLE_WEBRTC)
@@ -1452,7 +1448,6 @@ void RenderProcessHostImpl::Cleanup() {
     channel_.reset();
     gpu_message_filter_ = NULL;
     message_port_message_filter_ = NULL;
-    geolocation_dispatcher_host_ = NULL;
     screen_orientation_dispatcher_host_ = NULL;
 
     // Remove ourself from the list of renderer processes so that we can't be
@@ -1840,7 +1835,6 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
   channel_.reset();
   gpu_message_filter_ = NULL;
   message_port_message_filter_ = NULL;
-  geolocation_dispatcher_host_ = NULL;
   screen_orientation_dispatcher_host_ = NULL;
 
   IDMap<IPC::Listener>::iterator iter(&listeners_);

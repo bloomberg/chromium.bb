@@ -16,45 +16,18 @@ namespace android_webview {
 AwGeolocationPermissionContext::~AwGeolocationPermissionContext() {
 }
 
-void
-AwGeolocationPermissionContext::RequestGeolocationPermissionOnUIThread(
-    int render_process_id,
-    int render_view_id,
+void AwGeolocationPermissionContext::RequestGeolocationPermission(
+    content::WebContents* web_contents,
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,
     base::Callback<void(bool)> callback) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  AwContents* aw_contents =
-      AwContents::FromID(render_process_id, render_view_id);
+  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
   if (!aw_contents) {
     callback.Run(false);
     return;
   }
   aw_contents->ShowGeolocationPrompt(requesting_frame, callback);
-}
-
-void
-AwGeolocationPermissionContext::RequestGeolocationPermission(
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
-    const GURL& requesting_frame,
-    bool user_gesture,
-    base::Callback<void(bool)> callback) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &AwGeolocationPermissionContext::
-              RequestGeolocationPermissionOnUIThread,
-          this,
-          render_process_id,
-          render_view_id,
-          bridge_id,
-          requesting_frame,
-          user_gesture,
-          callback));
 }
 
 // static
@@ -63,37 +36,14 @@ AwGeolocationPermissionContext::Create(AwBrowserContext* browser_context) {
   return new AwGeolocationPermissionContext();
 }
 
-void
-AwGeolocationPermissionContext::CancelGeolocationPermissionRequestOnUIThread(
-    int render_process_id,
-    int render_view_id,
+void AwGeolocationPermissionContext::CancelGeolocationPermissionRequest(
+    content::WebContents* web_contents,
     int bridge_id,
     const GURL& requesting_frame) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  AwContents* aw_contents =
-      AwContents::FromID(render_process_id, render_view_id);
+  AwContents* aw_contents = AwContents::FromWebContents(web_contents);
   if (aw_contents) {
     aw_contents->HideGeolocationPrompt(requesting_frame);
   }
-}
-
-void
-AwGeolocationPermissionContext::CancelGeolocationPermissionRequest(
-    int render_process_id,
-    int render_view_id,
-    int bridge_id,
-    const GURL& requesting_frame) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &AwGeolocationPermissionContext::
-              CancelGeolocationPermissionRequestOnUIThread,
-          this,
-          render_process_id,
-          render_view_id,
-          bridge_id,
-          requesting_frame));
 }
 
 }  // namespace android_webview

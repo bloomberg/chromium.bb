@@ -114,7 +114,7 @@ class GeolocationProviderTest : public testing::Test {
  protected:
   GeolocationProviderTest()
       : message_loop_(),
-        io_thread_(BrowserThread::IO, &message_loop_),
+        ui_thread_(BrowserThread::UI, &message_loop_),
         provider_(new LocationProviderForTestArbitrator) {
   }
 
@@ -131,7 +131,7 @@ class GeolocationProviderTest : public testing::Test {
   void GetProvidersStarted(bool* started);
 
   base::MessageLoop message_loop_;
-  TestBrowserThread io_thread_;
+  TestBrowserThread ui_thread_;
   scoped_ptr<LocationProviderForTestArbitrator> provider_;
 };
 
@@ -167,19 +167,25 @@ void GeolocationProviderTest::SendMockLocation(const Geoposition& position) {
 
 // Regression test for http://crbug.com/59377
 TEST_F(GeolocationProviderTest, OnPermissionGrantedWithoutObservers) {
-  EXPECT_FALSE(provider()->LocationServicesOptedIn());
+  EXPECT_FALSE(provider()->user_did_opt_into_location_services_for_testing());
   provider()->UserDidOptIntoLocationServices();
-  EXPECT_TRUE(provider()->LocationServicesOptedIn());
+  EXPECT_TRUE(provider()->user_did_opt_into_location_services_for_testing());
+}
+
+void DummyFunction(const Geoposition& position) {
 }
 
 TEST_F(GeolocationProviderTest, StartStop) {
   EXPECT_FALSE(provider()->IsRunning());
-  GeolocationProviderImpl::LocationUpdateCallback null_callback;
-  provider()->AddLocationUpdateCallback(null_callback, false);
+  GeolocationProviderImpl::LocationUpdateCallback callback =
+      base::Bind(&DummyFunction);
+  scoped_ptr<content::GeolocationProvider::Subscription> subscription =
+      provider()->AddLocationUpdateCallback(callback, false);
   EXPECT_TRUE(provider()->IsRunning());
   EXPECT_TRUE(ProvidersStarted());
 
-  provider()->RemoveLocationUpdateCallback(null_callback);
+  subscription.reset();
+
   EXPECT_FALSE(ProvidersStarted());
   EXPECT_TRUE(provider()->IsRunning());
 }
@@ -196,11 +202,12 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
       &MockGeolocationObserver::OnLocationUpdate,
       base::Unretained(&first_observer));
   EXPECT_CALL(first_observer, OnLocationUpdate(GeopositionEq(first_position)));
-  provider()->AddLocationUpdateCallback(first_callback, false);
+  scoped_ptr<content::GeolocationProvider::Subscription> subscription =
+      provider()->AddLocationUpdateCallback(first_callback, false);
   SendMockLocation(first_position);
   base::MessageLoop::current()->Run();
 
-  provider()->RemoveLocationUpdateCallback(first_callback);
+  subscription.reset();
 
   Geoposition second_position;
   second_position.latitude = 13;
@@ -216,7 +223,8 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
   GeolocationProviderImpl::LocationUpdateCallback second_callback = base::Bind(
       &MockGeolocationObserver::OnLocationUpdate,
       base::Unretained(&second_observer));
-  provider()->AddLocationUpdateCallback(second_callback, false);
+  scoped_ptr<content::GeolocationProvider::Subscription> subscription2 =
+      provider()->AddLocationUpdateCallback(second_callback, false);
   base::MessageLoop::current()->RunUntilIdle();
 
   // The second observer should receive the new position now.
@@ -225,7 +233,7 @@ TEST_F(GeolocationProviderTest, StalePositionNotSent) {
   SendMockLocation(second_position);
   base::MessageLoop::current()->Run();
 
-  provider()->RemoveLocationUpdateCallback(second_callback);
+  subscription2.reset();
   EXPECT_FALSE(ProvidersStarted());
 }
 
@@ -240,8 +248,9 @@ TEST_F(GeolocationProviderTest, OverrideLocationForTesting) {
   GeolocationProviderImpl::LocationUpdateCallback callback = base::Bind(
       &MockGeolocationObserver::OnLocationUpdate,
       base::Unretained(&mock_observer));
-  provider()->AddLocationUpdateCallback(callback, false);
-  provider()->RemoveLocationUpdateCallback(callback);
+  scoped_ptr<content::GeolocationProvider::Subscription> subscription =
+      provider()->AddLocationUpdateCallback(callback, false);
+  subscription.reset();
   // Wait for the providers to be stopped now that all clients are gone.
   EXPECT_FALSE(ProvidersStarted());
 }

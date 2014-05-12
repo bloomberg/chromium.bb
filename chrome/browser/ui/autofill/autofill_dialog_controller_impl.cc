@@ -305,14 +305,6 @@ bool IsInstrumentAllowed(
   }
 }
 
-// Signals that the user has opted in to geolocation services.  Factored out
-// into a separate method because all interaction with the geolocation provider
-// needs to happen on the IO thread, which is not the thread
-// AutofillDialogViewDelegate lives on.
-void UserDidOptIntoLocationServices() {
-  content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
-}
-
 // Loops through |addresses_| comparing to |address| ignoring ID. If a match
 // is not found, NULL is returned.
 const wallet::Address* FindDuplicateAddress(
@@ -3625,9 +3617,7 @@ bool AutofillDialogControllerImpl::AreLegalDocumentsCurrent() const {
 }
 
 void AutofillDialogControllerImpl::AcceptLegalTerms() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&UserDidOptIntoLocationServices));
+  content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
   PrefService* local_state = g_browser_process->local_state();
   ListPrefUpdate accepted(
       local_state, ::prefs::kAutofillDialogWalletLocationAcceptance);

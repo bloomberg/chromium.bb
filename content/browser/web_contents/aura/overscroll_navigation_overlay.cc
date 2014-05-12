@@ -9,6 +9,7 @@
 #include "content/browser/web_contents/aura/image_window_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"

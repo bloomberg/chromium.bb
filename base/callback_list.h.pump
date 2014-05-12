@@ -94,10 +94,13 @@ class CallbackListBase {
     }
 
     ~Subscription() {
-      if (list_->active_iterator_count_)
+      if (list_->active_iterator_count_) {
         iter_->Reset();
-      else
+      } else {
         list_->callbacks_.erase(iter_);
+        if (!list_->removal_callback_.is_null())
+          list_->removal_callback_.Run();
+      }
     }
 
    private:
@@ -114,6 +117,18 @@ class CallbackListBase {
     DCHECK(!cb.is_null());
     return scoped_ptr<Subscription>(
         new Subscription(this, callbacks_.insert(callbacks_.end(), cb)));
+  }
+
+  // Sets a callback which will be run when a subscription list is changed.
+  void set_removal_callback(const Closure& callback) {
+    removal_callback_ = callback;
+  }
+
+  // Returns true if there are no subscriptions. This is only valid to call when
+  // not looping through the list.
+  bool empty() {
+    DCHECK_EQ(0, active_iterator_count_);
+    return callbacks_.empty();
   }
 
  protected:
@@ -172,17 +187,24 @@ class CallbackListBase {
   // iteration.
   void Compact() {
     typename std::list<CallbackType>::iterator it = callbacks_.begin();
+    bool updated = false;
     while (it != callbacks_.end()) {
-      if ((*it).is_null())
+      if ((*it).is_null()) {
+        updated = true;
         it = callbacks_.erase(it);
-      else
+      } else {
         ++it;
+      }
+
+      if (updated && !removal_callback_.is_null())
+        removal_callback_.Run();
     }
   }
 
  private:
   std::list<CallbackType> callbacks_;
   int active_iterator_count_;
+  Closure removal_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackListBase);
 };

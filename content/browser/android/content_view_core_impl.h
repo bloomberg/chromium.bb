@@ -374,9 +374,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // will be sent to Renderer once it is ready.
   int device_orientation_;
 
-  bool geolocation_needs_pause_;
-
-
   bool accessibility_enabled_;
 
   // Manages injecting Java objects.

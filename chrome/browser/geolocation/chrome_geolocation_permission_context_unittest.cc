@@ -112,9 +112,11 @@ class GeolocationPermissionContextTests
     return InfoBarService::FromWebContents(extra_tabs_[tab]);
   }
 
-  void RequestGeolocationPermission(const PermissionRequestID& id,
+  void RequestGeolocationPermission(content::WebContents* web_contents,
+                                    const PermissionRequestID& id,
                                     const GURL& requesting_frame);
-  void CancelGeolocationPermissionRequest(const PermissionRequestID& id,
+  void CancelGeolocationPermissionRequest(content::WebContents* web_contents,
+                                          const PermissionRequestID& id,
                                           const GURL& requesting_frame);
   void PermissionResponse(const PermissionRequestID& id,
                           bool allowed);
@@ -157,11 +159,11 @@ PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
 }
 
 void GeolocationPermissionContextTests::RequestGeolocationPermission(
+    content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame) {
   geolocation_permission_context_->RequestGeolocationPermission(
-      id.render_process_id(), id.render_view_id(), id.bridge_id(),
-      requesting_frame, false,
+      web_contents, id.bridge_id(), requesting_frame, false,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
                  base::Unretained(this), id));
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
@@ -169,11 +171,11 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
 }
 
 void GeolocationPermissionContextTests::CancelGeolocationPermissionRequest(
+    content::WebContents* web_contents,
     const PermissionRequestID& id,
     const GURL& requesting_frame) {
   geolocation_permission_context_->CancelGeolocationPermissionRequest(
-      id.render_process_id(), id.render_view_id(), id.bridge_id(),
-      requesting_frame);
+      web_contents, id.bridge_id(), requesting_frame);
 }
 
 void GeolocationPermissionContextTests::PermissionResponse(
@@ -263,7 +265,7 @@ TEST_F(GeolocationPermissionContextTests, SinglePermission) {
   GURL requesting_frame("http://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
   infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate =
@@ -281,7 +283,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   NavigateAndCommit(requesting_frame);
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   ConfirmInfoBarDelegate* infobar_delegate_0 =
       infobar_service()->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
@@ -292,7 +294,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   NavigateAndCommit(requesting_frame);
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   ConfirmInfoBarDelegate* infobar_delegate_1 =
       infobar_service()->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
@@ -304,7 +306,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   NavigateAndCommit(requesting_frame);
   MockGoogleLocationSettingsHelper::SetLocationStatus(false, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
 }
 
@@ -313,7 +315,7 @@ TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsEnabled) {
   NavigateAndCommit(requesting_frame);
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, true);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   ConfirmInfoBarDelegate* infobar_delegate =
       infobar_service()->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
@@ -328,7 +330,7 @@ TEST_F(GeolocationPermissionContextTests, MasterEnabledGoogleAppsDisabled) {
   NavigateAndCommit(requesting_frame);
   MockGoogleLocationSettingsHelper::SetLocationStatus(true, false);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   ConfirmInfoBarDelegate* infobar_delegate =
       infobar_service()->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate();
@@ -354,8 +356,10 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   NavigateAndCommit(requesting_frame_0);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   // Request permission for two frames.
-  RequestGeolocationPermission(RequestID(0), requesting_frame_0);
-  RequestGeolocationPermission(RequestID(1), requesting_frame_1);
+  RequestGeolocationPermission(
+      web_contents(), RequestID(0), requesting_frame_0);
+  RequestGeolocationPermission(
+      web_contents(), RequestID(1), requesting_frame_1);
   // Ensure only one infobar is created.
   ASSERT_EQ(1U, infobar_service()->infobar_count());
   infobars::InfoBar* infobar_0 = infobar_service()->infobar_at(0);
@@ -410,7 +414,7 @@ TEST_F(GeolocationPermissionContextTests, HashIsIgnored) {
   // Navigate to the first url and check permission is requested.
   NavigateAndCommit(url_a);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), url_a);
+  RequestGeolocationPermission(web_contents(), RequestID(0), url_a);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
   infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate =
@@ -436,7 +440,7 @@ TEST_F(GeolocationPermissionContextTests, PermissionForFileScheme) {
   GURL requesting_frame("file://example/geolocation.html");
   NavigateAndCommit(requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(1U, infobar_service()->infobar_count());
   infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
   ConfirmInfoBarDelegate* infobar_delegate =
@@ -473,8 +477,10 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
   NavigateAndCommit(requesting_frame_0);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   // Request permission for two frames.
-  RequestGeolocationPermission(RequestID(0), requesting_frame_0);
-  RequestGeolocationPermission(RequestID(1), requesting_frame_1);
+  RequestGeolocationPermission(
+      web_contents(), RequestID(0), requesting_frame_0);
+  RequestGeolocationPermission(
+      web_contents(), RequestID(1), requesting_frame_1);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
 
   infobars::InfoBar* infobar_0 = infobar_service()->infobar_at(0);
@@ -485,7 +491,8 @@ TEST_F(GeolocationPermissionContextTests, CancelGeolocationPermissionRequest) {
 
   // Simulate the frame going away, ensure the infobar for this frame
   // is removed and the next pending infobar is created.
-  CancelGeolocationPermissionRequest(RequestID(0), requesting_frame_0);
+  CancelGeolocationPermissionRequest(
+      web_contents(), RequestID(0), requesting_frame_0);
   EXPECT_EQ(1U, closed_infobar_tracker_.size());
   EXPECT_TRUE(closed_infobar_tracker_.Contains(infobar_0));
   closed_infobar_tracker_.Clear();
@@ -523,7 +530,7 @@ TEST_F(GeolocationPermissionContextTests, InvalidURL) {
   GURL requesting_frame;
   NavigateAndCommit(invalid_embedder);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), requesting_frame);
+  RequestGeolocationPermission(web_contents(), RequestID(0), requesting_frame);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   CheckPermissionMessageSent(0, false);
 }
@@ -536,13 +543,13 @@ TEST_F(GeolocationPermissionContextTests, SameOriginMultipleTabs) {
   AddNewTab(url_a);
 
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), url_a);
+  RequestGeolocationPermission(web_contents(), RequestID(0), url_a);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
 
-  RequestGeolocationPermission(RequestIDForTab(0, 0), url_b);
+  RequestGeolocationPermission(extra_tabs_[0], RequestIDForTab(0, 0), url_b);
   EXPECT_EQ(1U, infobar_service_for_tab(0)->infobar_count());
 
-  RequestGeolocationPermission(RequestIDForTab(1, 0), url_a);
+  RequestGeolocationPermission(extra_tabs_[1], RequestIDForTab(1, 0), url_a);
   ASSERT_EQ(1U, infobar_service_for_tab(1)->infobar_count());
 
   infobars::InfoBar* removed_infobar =
@@ -583,13 +590,13 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   AddNewTab(url_a);
 
   EXPECT_EQ(0U, infobar_service()->infobar_count());
-  RequestGeolocationPermission(RequestID(0), url_a);
+  RequestGeolocationPermission(web_contents(), RequestID(0), url_a);
   ASSERT_EQ(1U, infobar_service()->infobar_count());
 
-  RequestGeolocationPermission(RequestIDForTab(0, 0), url_a);
+  RequestGeolocationPermission(extra_tabs_[0], RequestIDForTab(0, 0), url_a);
   EXPECT_EQ(1U, infobar_service_for_tab(0)->infobar_count());
 
-  RequestGeolocationPermission(RequestIDForTab(0, 1), url_b);
+  RequestGeolocationPermission(extra_tabs_[0], RequestIDForTab(0, 1), url_b);
   ASSERT_EQ(1U, infobar_service_for_tab(0)->infobar_count());
 
   infobars::InfoBar* removed_infobar = infobar_service()->infobar_at(0);
@@ -641,8 +648,10 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
   NavigateAndCommit(requesting_frame_0);
   EXPECT_EQ(0U, infobar_service()->infobar_count());
   // Request permission for two frames.
-  RequestGeolocationPermission(RequestID(0), requesting_frame_0);
-  RequestGeolocationPermission(RequestID(1), requesting_frame_1);
+  RequestGeolocationPermission(
+      web_contents(), RequestID(0), requesting_frame_0);
+  RequestGeolocationPermission(
+      web_contents(), RequestID(1), requesting_frame_1);
   // Ensure only one infobar is created.
   ASSERT_EQ(1U, infobar_service()->infobar_count());
   infobars::InfoBar* infobar = infobar_service()->infobar_at(0);
@@ -666,7 +675,8 @@ TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
   // permission.
   web_contents()->GetController().GoBack();
   // Request permission for the committed frame (not the pending one).
-  RequestGeolocationPermission(RequestID(0), requesting_frame_1);
+  RequestGeolocationPermission(
+      web_contents(), RequestID(0), requesting_frame_1);
   // Ensure the infobar is created.
   ASSERT_EQ(1U, infobar_service()->infobar_count());
   infobars::InfoBarDelegate* infobar_delegate =

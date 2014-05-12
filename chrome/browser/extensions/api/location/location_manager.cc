@@ -140,40 +140,20 @@ class TimeBasedUpdatePolicy : public UpdatePolicy {
 } // namespace updatepolicy
 
 // Request created by chrome.location.watchLocation() call.
-// Lives in the IO thread, except for the constructor.
-class LocationRequest
-    : public base::RefCountedThreadSafe<LocationRequest,
-                                        BrowserThread::DeleteOnIOThread> {
+class LocationRequest : public base::RefCounted<LocationRequest> {
  public:
   LocationRequest(
-      const base::WeakPtr<LocationManager>& location_manager,
+      LocationManager* location_manager,
       const std::string& extension_id,
       const std::string& request_name,
       const double* distance_update_threshold_meters,
       const double* time_between_updates_ms);
 
-  // Finishes the necessary setup for this object.
-  // Call this method immediately after taking a strong reference
-  // to this object.
-  //
-  // Ideally, we would do this at construction time, but currently
-  // our refcount starts at zero. BrowserThread::PostTask will take a ref
-  // and potentially release it before we are done, destroying us in the
-  // constructor.
-  void Initialize();
-
   const std::string& request_name() const { return request_name_; }
 
-  // Grants permission for using geolocation.
-  static void GrantPermission();
-
  private:
-  friend class base::DeleteHelper<LocationRequest>;
-  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
-
-  virtual ~LocationRequest();
-
-  void AddObserverOnIOThread();
+  friend class base::RefCounted<LocationRequest>;
+   ~LocationRequest();
 
   void OnLocationUpdate(const content::Geoposition& position);
 
@@ -191,20 +171,21 @@ class LocationRequest
   const std::string extension_id_;
 
   // Owning location manager.
-  const base::WeakPtr<LocationManager> location_manager_;
+  LocationManager* location_manager_;
 
   // Holds Update Policies.
   typedef std::vector<scoped_refptr<updatepolicy::UpdatePolicy> >
       UpdatePolicyVector;
   UpdatePolicyVector update_policies_;
 
-  content::GeolocationProvider::LocationUpdateCallback callback_;
+  scoped_ptr<content::GeolocationProvider::Subscription>
+      geolocation_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationRequest);
 };
 
 LocationRequest::LocationRequest(
-    const base::WeakPtr<LocationManager>& location_manager,
+    LocationManager* location_manager,
     const std::string& extension_id,
     const std::string& request_name,
     const double* distance_update_threshold_meters,
@@ -213,8 +194,6 @@ LocationRequest::LocationRequest(
       extension_id_(extension_id),
       location_manager_(location_manager) {
   // TODO(vadimt): use request_info.
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   if (time_between_updates_ms) {
     update_policies_.push_back(
         new updatepolicy::TimeBasedUpdatePolicy(
@@ -226,58 +205,29 @@ LocationRequest::LocationRequest(
         new updatepolicy::DistanceBasedUpdatePolicy(
               *distance_update_threshold_meters));
   }
-}
-
-void LocationRequest::Initialize() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  callback_ = base::Bind(&LocationRequest::OnLocationUpdate,
-                         base::Unretained(this));
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&LocationRequest::AddObserverOnIOThread,
-                 this));
-}
-
-void LocationRequest::GrantPermission() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  content::GeolocationProvider::GetInstance()->UserDidOptIntoLocationServices();
-}
-
-LocationRequest::~LocationRequest() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  content::GeolocationProvider::GetInstance()->RemoveLocationUpdateCallback(
-      callback_);
-}
-
-void LocationRequest::AddObserverOnIOThread() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(vadimt): This can get a location cached by GeolocationProvider,
   // contrary to the API definition which says that creating a location watch
   // will get new location.
-  content::GeolocationProvider::GetInstance()->AddLocationUpdateCallback(
-      callback_, true);
+  geolocation_subscription_ = content::GeolocationProvider::GetInstance()->
+      AddLocationUpdateCallback(
+          base::Bind(&LocationRequest::OnLocationUpdate,
+                     base::Unretained(this)),
+          true);
+}
+
+LocationRequest::~LocationRequest() {
 }
 
 void LocationRequest::OnLocationUpdate(const content::Geoposition& position) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (ShouldSendUpdate(position)) {
     OnPositionReported(position);
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&LocationManager::SendLocationUpdate,
-                   location_manager_,
-                   extension_id_,
-                   request_name_,
-                   position));
+    location_manager_->SendLocationUpdate(
+        extension_id_, request_name_, position);
   }
 }
 
 bool LocationRequest::ShouldSendUpdate(const content::Geoposition& position) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (UpdatePolicyVector::iterator it = update_policies_.begin();
        it != update_policies_.end();
        ++it) {
@@ -289,7 +239,6 @@ bool LocationRequest::ShouldSendUpdate(const content::Geoposition& position) {
 }
 
 void LocationRequest::OnPositionReported(const content::Geoposition& position) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (UpdatePolicyVector::iterator it = update_policies_.begin();
        it != update_policies_.end();
        ++it) {
@@ -318,12 +267,11 @@ void LocationManager::AddLocationRequest(
   RemoveLocationRequest(extension_id, request_name);
 
   LocationRequestPointer location_request =
-      new LocationRequest(AsWeakPtr(),
+      new LocationRequest(this,
                           extension_id,
                           request_name,
                           distance_update_threshold_meters,
                           time_between_updates_ms);
-  location_request->Initialize();
   location_requests_.insert(
       LocationRequestMap::value_type(extension_id, location_request));
 }
@@ -411,10 +359,8 @@ void LocationManager::Observe(int type,
           content::Details<const Extension>(details).ptr();
 
       if (extension->HasAPIPermission(APIPermission::kLocation)) {
-          BrowserThread::PostTask(
-              BrowserThread::IO,
-              FROM_HERE,
-              base::Bind(&LocationRequest::GrantPermission));
+          content::GeolocationProvider::GetInstance()->
+              UserDidOptIntoLocationServices();
       }
       break;
     }

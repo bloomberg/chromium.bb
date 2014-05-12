@@ -14,7 +14,6 @@
 #include "base/process/process.h"
 #include "base/timer/timer.h"
 #include "content/browser/child_process_launcher.h"
-#include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -37,7 +36,6 @@ class Size;
 namespace content {
 class AudioRendererHost;
 class BrowserDemuxerAndroid;
-class GeolocationDispatcherHost;
 class GpuMessageFilter;
 class MessagePortMessageFilter;
 class MojoApplicationHost;
@@ -162,11 +160,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       int route_id,
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription(int route_id);
-
-  scoped_refptr<GeolocationDispatcherHost>
-      geolocation_dispatcher_host() const {
-    return make_scoped_refptr(geolocation_dispatcher_host_);
-  }
 
 #if defined(ENABLE_WEBRTC)
   // Fires the webrtc log message callback with |message|, if callback is set.
@@ -416,9 +409,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #if defined(OS_ANDROID)
   scoped_refptr<BrowserDemuxerAndroid> browser_demuxer_android_;
 #endif
-
-  // Message filter for geolocation messages.
-  GeolocationDispatcherHost* geolocation_dispatcher_host_;
 
 #if defined(ENABLE_WEBRTC)
   base::Callback<void(const std::string&)> webrtc_log_message_callback_;

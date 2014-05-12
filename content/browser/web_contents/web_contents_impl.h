@@ -48,6 +48,7 @@ class BrowserPluginGuest;
 class BrowserPluginGuestManager;
 class DateTimeChooserAndroid;
 class DownloadItem;
+class GeolocationDispatcherHost;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class PowerSaveBlocker;
@@ -159,6 +160,10 @@ class CONTENT_EXPORT WebContentsImpl
       const ResourceRedirectDetails& details);
 
   WebContentsView* GetView() const;
+
+  GeolocationDispatcherHost* geolocation_dispatcher_host() {
+    return geolocation_dispatcher_host_.get();
+  }
 
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;
@@ -1091,6 +1096,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Whether the last JavaScript dialog shown was suppressed. Used for testing.
   bool last_dialog_suppressed_;
+
+  scoped_ptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

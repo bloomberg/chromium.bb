@@ -42,33 +42,28 @@ IPC_MESSAGE_ROUTED1(GeolocationMsg_PositionUpdated,
 
 // Messages sent from the renderer to the browser.
 
-// The |render_view_id| and |bridge_id| representing |host| is requesting
-// permission to access geolocation position.
-// This will be replied by GeolocationMsg_PermissionSet.
-IPC_MESSAGE_CONTROL4(GeolocationHostMsg_RequestPermission,
-                     int /* render_view_id */,
+// The |bridge_id| representing |host| is requesting permission to access
+// geolocation position. This will be replied by GeolocationMsg_PermissionSet.
+IPC_MESSAGE_ROUTED3(GeolocationHostMsg_RequestPermission,
                      int /* bridge_id */,
                      GURL /* GURL of the frame requesting geolocation */,
                      bool /* user_gesture */)
 
-// The |render_view_id| and |bridge_id| representing |GURL| is cancelling its
-// previous permission request to access geolocation position.
-IPC_MESSAGE_CONTROL3(GeolocationHostMsg_CancelPermissionRequest,
-                     int /* render_view_id */,
-                     int /* bridge_id */,
-                     GURL /* GURL of the frame */)
+// The |bridge_id| representing |GURL| is cancelling its previous permission
+// request to access geolocation position.
+IPC_MESSAGE_ROUTED2(GeolocationHostMsg_CancelPermissionRequest,
+                    int /* bridge_id */,
+                    GURL /* GURL of the frame */)
 
-// The |render_view_id| requests Geolocation service to start updating.
+// The render view requests the Geolocation service to start updating.
 // This is an asynchronous call, and the browser process may eventually reply
 // with the updated geoposition, or an error (access denied, location
 // unavailable, etc.)
-IPC_MESSAGE_CONTROL3(GeolocationHostMsg_StartUpdating,
-                     int /* render_view_id */,
+IPC_MESSAGE_ROUTED2(GeolocationHostMsg_StartUpdating,
                      GURL /* GURL of the frame requesting geolocation */,
                      bool /* enable_high_accuracy */)
 
-// The |render_view_id| requests Geolocation service to stop updating.
+// The  render view requests Geolocation service to stop updating.
 // Note that the geolocation service may continue to fetch geolocation data
 // for other origins.
-IPC_MESSAGE_CONTROL1(GeolocationHostMsg_StopUpdating,
-                     int /* render_view_id */)
+IPC_MESSAGE_ROUTED0(GeolocationHostMsg_StopUpdating)

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -93,32 +93,6 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   unsigned int max_stored_future_activity_days_;
 
  private:
-  // A helper class to manage receiving geolocation callbacks on the IO
-  // thread.
-  class Context : public base::RefCountedThreadSafe<Context> {
-   public:
-    Context();
-
-    void GetLocationUpdate(
-        const content::GeolocationProvider::LocationUpdateCallback& callback);
-
-   private:
-    friend class base::RefCountedThreadSafe<Context>;
-
-    ~Context();
-
-    void GetLocationUpdateInternal();
-    void OnLocationUpdate(const content::Geoposition& geoposition);
-    void CallCollector(const content::Geoposition& geoposition);
-
-    // The callback which this class registers with
-    // content::GeolocationProvider.
-    content::GeolocationProvider::LocationUpdateCallback our_callback_;
-
-    // The callback passed in to GetLocationUpdate.
-    content::GeolocationProvider::LocationUpdateCallback owner_callback_;
-  };
-
   // Prevents the local store of activity periods from growing too large by
   // removing entries that are outside the reporting window.
   void PruneStoredActivityPeriods(base::Time base_time);
@@ -197,6 +171,9 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   // way to mock geolocation exists.
   LocationUpdateRequester location_update_requester_;
 
+  scoped_ptr<content::GeolocationProvider::Subscription>
+      geolocation_subscription_;
+
   // Cached values of the reporting settings from the device policy.
   bool report_version_info_;
   bool report_activity_times_;
@@ -204,8 +181,6 @@ class DeviceStatusCollector : public CloudPolicyClient::StatusProvider {
   bool report_location_;
   bool report_network_interfaces_;
   bool report_users_;
-
-  scoped_refptr<Context> context_;
 
   scoped_ptr<chromeos::CrosSettings::ObserverSubscription>
       version_info_subscription_;

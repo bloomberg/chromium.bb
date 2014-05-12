@@ -561,13 +561,8 @@ void OverrideGeolocation(double latitude, double longitude) {
   position.altitude = 0.;
   position.accuracy = 0.;
   position.timestamp = base::Time::Now();
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
-
-  content::GeolocationProvider::OverrideLocationForTesting(
-      position, runner->QuitClosure());
-
-  runner->Run();
+  content::GeolocationProvider::GetInstance()->OverrideLocationForTesting(
+      position);
 }
 
 HistoryEnumerator::HistoryEnumerator(Profile* profile) {

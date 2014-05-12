@@ -23,6 +23,7 @@
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/input/motion_event_android.h"
@@ -225,7 +226,6 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       view_android_(view_android),
       window_android_(window_android),
       device_orientation_(0),
-      geolocation_needs_pause_(false),
       accessibility_enabled_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
@@ -333,8 +333,6 @@ void ContentViewCoreImpl::Observe(int type,
         }
       }
       SetFocusInternal(HasFocus());
-      if (geolocation_needs_pause_)
-        PauseOrResumeGeolocation(true);
 
       SetAccessibilityEnabledInternal(accessibility_enabled_);
       break;
@@ -421,23 +419,7 @@ void ContentViewCoreImpl::PauseVideo() {
 }
 
 void ContentViewCoreImpl::PauseOrResumeGeolocation(bool should_pause) {
-  geolocation_needs_pause_ = should_pause;
-  RenderViewHostImpl* rvh =
-      static_cast<RenderViewHostImpl*>(web_contents_->GetRenderViewHost());
-  if (rvh) {
-    scoped_refptr<GeolocationDispatcherHost> geolocation_dispatcher =
-        static_cast<RenderProcessHostImpl*>(
-            web_contents_->GetRenderProcessHost())->
-            geolocation_dispatcher_host();
-    if (geolocation_dispatcher.get()) {
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-          base::Bind(&GeolocationDispatcherHost::PauseOrResume,
-          geolocation_dispatcher,
-          rvh->GetRoutingID(),
-          should_pause));
-      geolocation_needs_pause_ = false;
-    }
-  }
+  web_contents_->geolocation_dispatcher_host()->PauseOrResume(should_pause);
 }
 
 // All positions and sizes are in CSS pixels.

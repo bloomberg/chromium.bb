@@ -21,15 +21,13 @@ class AwGeolocationPermissionContext :
 
   // content::GeolocationPermissionContext implementation
   virtual void RequestGeolocationPermission(
-      int render_process_id,
-      int render_view_id,
+      content::WebContents* web_contents,
       int bridge_id,
       const GURL& requesting_frame,
       bool user_gesture,
       base::Callback<void(bool)> callback) OVERRIDE;
   virtual void CancelGeolocationPermissionRequest(
-      int render_process_id,
-      int render_view_id,
+      content::WebContents* web_contents,
       int bridge_id,
       const GURL& requesting_frame) OVERRIDE;
 
@@ -37,19 +35,6 @@ class AwGeolocationPermissionContext :
   virtual ~AwGeolocationPermissionContext();
 
  private:
-  void RequestGeolocationPermissionOnUIThread(
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame,
-      bool user_gesture,
-      base::Callback<void(bool)> callback);
-
-  void CancelGeolocationPermissionRequestOnUIThread(
-      int render_process_id,
-      int render_view_id,
-      int bridge_id,
-      const GURL& requesting_frame);
 };
 
 }  // namespace android_webview
