@@ -299,6 +299,7 @@
         }],
         ['use_ozone==1', {
           'dependencies': [
+            '../gfx/ozone/gfx_ozone.gyp:gfx_ozone',
             '../ozone/ozone.gyp:ozone',
           ],
         }],
