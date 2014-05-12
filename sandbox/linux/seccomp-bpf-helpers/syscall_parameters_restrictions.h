@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 #include "build/build_config.h"
-#include "sandbox/linux/sandbox_export.h"
+#include "sandbox/sandbox_export.h"
 
 // These are helpers to build seccomp-bpf policies, i.e. policies for a
 // sandbox that reduces the Linux kernel's attack surface. They return an

@@ -5,9 +5,9 @@
 #ifndef SANDBOX_LINUX_SECCOMP_BPF_HELPERS_BASELINE_POLICY_H_
 #define SANDBOX_LINUX_SECCOMP_BPF_HELPERS_BASELINE_POLICY_H_
 
-#include "sandbox/linux/sandbox_export.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
+#include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 

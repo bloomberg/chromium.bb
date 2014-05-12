@@ -6,7 +6,7 @@
 #define SANDBOX_LINUX_SERVICES_THREAD_HELPERS_H_
 
 #include "base/basictypes.h"
-#include "sandbox/linux/sandbox_export.h"
+#include "sandbox/sandbox_export.h"
 
 namespace base { class Thread; }
 

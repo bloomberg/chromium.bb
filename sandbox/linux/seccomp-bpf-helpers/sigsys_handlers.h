@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "build/build_config.h"
-#include "sandbox/linux/sandbox_export.h"
+#include "sandbox/sandbox_export.h"
 
 // The handlers are suitable for use in Trap() error codes. They are
 // guaranteed to be async-signal safe.

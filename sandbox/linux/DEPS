@@ -19,7 +19,7 @@ include_rules = [
   "+base",
   "+build",
   "+testing",
-  "+sandbox/linux/sandbox_export.h",
+  "+sandbox/sandbox_export.h",
   # Everyone can use tests/
   "+sandbox/linux/tests",
 ]

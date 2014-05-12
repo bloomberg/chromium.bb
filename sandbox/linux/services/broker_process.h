@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/pickle.h"
 #include "base/process/process.h"
-#include "sandbox/linux/sandbox_export.h"
+#include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 

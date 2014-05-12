@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/process/launch.h"
-#include "sandbox/linux/sandbox_export.h"
+#include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 
