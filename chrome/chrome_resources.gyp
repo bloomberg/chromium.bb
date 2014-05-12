@@ -258,6 +258,29 @@
       'includes': [ '../build/grit_target.gypi' ],
     },
     {
+      'target_name': 'chrome_strings_map',
+      'type': 'none',
+      'dependencies': [ 'chrome_strings', ],
+      'actions': [
+        {
+          'action_name': 'generate_resources_map',
+          'inputs': [
+            '<(grit_out_dir)/grit/generated_resources.h'
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/metrics/variations/generated_resources_map.cc',
+          ],
+          'action': [
+            'python',
+            'browser/metrics/variations/generate_resources_map.py',
+            '<(grit_out_dir)/grit/generated_resources.h',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/metrics/variations/generated_resources_map.cc'
+          ],
+          'message': 'Generating generated resources map.',
+        }
+      ],
+    },
+    {
       'target_name': 'platform_locale_settings',
       'type': 'none',
       'variables': {
