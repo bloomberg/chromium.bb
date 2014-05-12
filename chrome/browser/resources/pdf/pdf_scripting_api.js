@@ -10,15 +10,16 @@
  */
 function PDFScriptingAPI(window, extensionUrl) {
   this.extensionUrl_ = extensionUrl;
-  this.readyToReceive = false;
   this.messageQueue_ = [];
   window.addEventListener('message', function(event) {
-    if (event.origin != this.extensionUrl_)
+    if (event.origin != this.extensionUrl_) {
+      console.error('Received message that was not from the extension: ' +
+                    event);
       return;
+    }
     switch (event.data.type) {
       case 'readyToReceive':
-        this.pdfWindow_ = event.source;
-        this.flushPendingMessages_();
+        this.setDestinationWindow(event.source);
         break;
       case 'viewport':
         if (this.viewportChangedCallback_)
@@ -32,6 +33,12 @@ function PDFScriptingAPI(window, extensionUrl) {
         if (this.loadCallback_)
           this.loadCallback_();
         break;
+      case 'getAccessibilityJSONReply':
+        if (this.accessibilityCallback_) {
+          this.accessibilityCallback_(event.data.json);
+          this.accessibilityCallback_ = null;
+        }
+        break;
     }
   }.bind(this), false);
 }
@@ -42,10 +49,10 @@ PDFScriptingAPI.prototype = {
    * Send a message to the extension. If we try to send messages prior to the
    * extension being ready to receive messages (i.e. before it has finished
    * loading) we queue up the messages and flush them later.
-   * @param {MessageObject} the message to send.
+   * @param {Object} the message to send.
    */
   sendMessage_: function(message) {
-    if (!this.readyToReceive) {
+    if (!this.pdfWindow_) {
       this.messageQueue_.push(message);
       return;
     }
@@ -54,11 +61,13 @@ PDFScriptingAPI.prototype = {
   },
 
   /**
-   * @private
-   * Flushes all pending messages to the extension.
+   * Sets the destination window containing the PDF viewer. This will be called
+   * when a 'readyToReceive' message is received from the PDF viewer or it can
+   * be called during tests. It then flushes any pending messages to the window.
+   * @param {Window} pdfWindow the window containing the PDF viewer.
    */
-  flushPendingMessages_: function() {
-    this.readyToReceive = true;
+  setDestinationWindow: function(pdfWindow) {
+    this.pdfWindow_ = pdfWindow;
     while (this.messageQueue_.length != 0) {
       this.pdfWindow_.postMessage(this.messageQueue_.shift(),
                                   this.extensionUrl_);
@@ -110,6 +119,29 @@ PDFScriptingAPI.prototype = {
       url: url,
       index: index
     });
+  },
+
+  /**
+   * Get accessibility JSON for the document.
+   * @param {Function} callback a callback to be called with the accessibility
+   *     json that has been retrieved.
+   * @param {number} [page] the 0-indexed page number to get accessibility data
+   *     for. If this is not provided, data about the entire document is
+   *     returned.
+   * @return {boolean} true if the function is successful, false if there is an
+   *     outstanding request for accessibility data that has not been answered.
+   */
+  getAccessibilityJSON: function(callback, page) {
+    if (this.accessibilityCallback_)
+      return false;
+    this.accessibilityCallback_ = callback;
+    var message = {
+      type: 'getAccessibilityJSON',
+    };
+    if (page || page == 0)
+      message.page = page;
+    this.sendMessage_(message);
+    return true;
   },
 
   /**
