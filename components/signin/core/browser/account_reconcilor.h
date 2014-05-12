@@ -213,6 +213,9 @@ class AccountReconcilor : public KeyedService,
   // this profile.
   bool is_reconcile_started_;
 
+  // True iff this is the first time the reconcilor is executing.
+  bool first_execution_;
+
   // Used during reconcile action.
   // These members are used used to validate the gaia cookie.  |gaia_accounts_|
   // holds the state of google accounts in the gaia cookie.  Each element is

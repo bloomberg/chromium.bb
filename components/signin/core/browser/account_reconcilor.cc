@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_client.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_oauth_helper.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -198,6 +199,7 @@ AccountReconcilor::AccountReconcilor(ProfileOAuth2TokenService* token_service,
                             this),
       registered_with_token_service_(false),
       is_reconcile_started_(false),
+      first_execution_(true),
       are_gaia_accounts_set_(false),
       requests_(NULL) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
@@ -612,6 +614,7 @@ void AccountReconcilor::FinishReconcile() {
   // completed otherwise.  Make a copy of |add_to_cookie_| since calls to
   // SignalComplete() will change the array.
   std::vector<std::string> add_to_cookie_copy = add_to_cookie_;
+  int added_to_cookie = 0;
   for (size_t i = 0; i < add_to_cookie_copy.size(); ++i) {
     if (gaia_accounts_.end() !=
             std::find_if(gaia_accounts_.begin(),
@@ -624,6 +627,7 @@ void AccountReconcilor::FinishReconcile() {
           GoogleServiceAuthError::AuthErrorNone());
     } else {
       PerformMergeAction(add_to_cookie_copy[i]);
+      added_to_cookie++;
     }
   }
 
@@ -636,6 +640,12 @@ void AccountReconcilor::FinishReconcile() {
     PerformAddToChromeAction(i->first, i->second);
   }
 
+  signin_metrics::LogSigninAccountReconciliation(valid_chrome_accounts_.size(),
+                                                 added_to_cookie,
+                                                 add_to_chrome_.size(),
+                                                 are_primaries_equal,
+                                                 first_execution_);
+  first_execution_ = false;
   CalculateIfReconcileIsDone();
   ScheduleStartReconcileIfChromeAccountsChanged();
 }

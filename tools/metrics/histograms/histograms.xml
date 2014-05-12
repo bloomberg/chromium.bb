@@ -26,7 +26,7 @@ three sections:
   works.
 
 Each histogram_suffixes tag lists the histograms that it affects. The complete
-list of histograms is computed by appending (or prepending - see blow) the
+list of histograms is computed by appending (or prepending - see below) the
 histogram_suffixes suffix names to each of the affected histograms. For example,
 define the following:
 
@@ -20649,6 +20649,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Profile.NumberOfAccountsPerProfile">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Counts the number of Google-managed accounts linked to a profile. This may
+    be counted multiple times per profile. Please review with the &quot;Show
+    user counts&quot; option enabled on the dashboard.
+  </summary>
+</histogram>
+
 <histogram name="Profile.NumberOfManagedProfiles">
   <owner>pam@chromium.org</owner>
   <summary>
@@ -23515,6 +23524,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>
     Count of the ways users interact with the confirmation dialogs of the new
     web based sign in to Chrome flow (accessed via the one click signin).
+  </summary>
+</histogram>
+
+<histogram name="Signin.Reconciler.AddedToChrome">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    After the first execution of the account reconciler, how many accounts were
+    added to the browser's token service because they were in the cookie jar.
+  </summary>
+</histogram>
+
+<histogram name="Signin.Reconciler.AddedToCookieJar">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    After the first execution of the account reconciler, how many accounts were
+    added to the cookie jar because they were in the browser's token service.
+  </summary>
+</histogram>
+
+<histogram name="Signin.Reconciler.DifferentPrimaryAccounts">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    After the first execution of the account reconciler, true if the token
+    service and cookie jar contained different primary accounts.
   </summary>
 </histogram>
 
@@ -45770,6 +45803,18 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <affected-histogram name="Extensions.ExternalExtensionEvent"/>
   <affected-histogram name="Extensions.InstallSource"/>
   <affected-histogram name="Extensions.UpdateSource"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Signin.Reconciler">
+  <suffix name="FirstRun"
+      label="First execution of the reconciler after the profile was loaded
+             or the new_profile_management flag was toggled."/>
+  <suffix name="SubsequentRun"
+      label="Execution of the reconciler triggered by some other change of
+             state."/>
+  <affected-histogram name="Signin.Reconciler.AddedToChrome"/>
+  <affected-histogram name="Signin.Reconciler.AddedToCookieJar"/>
+  <affected-histogram name="Signin.Reconciler.DifferentPrimaryAccounts"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SocketType">
