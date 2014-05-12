@@ -26,6 +26,7 @@
 #include "components/nacl/renderer/manifest_service_channel.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
+#include "components/nacl/renderer/progress_event.h"
 #include "components/nacl/renderer/sandbox_arch.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
 #include "content/public/common/content_client.h"
@@ -654,48 +655,18 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
   return handle;
 }
 
-void DispatchEventOnMainThread(PP_Instance instance,
-                               PP_NaClEventType event_type,
-                               const std::string& resource_url,
-                               PP_Bool length_is_computable,
-                               uint64_t loaded_bytes,
-                               uint64_t total_bytes);
-
 void DispatchEvent(PP_Instance instance,
                    PP_NaClEventType event_type,
                    const char *resource_url,
                    PP_Bool length_is_computable,
                    uint64_t loaded_bytes,
                    uint64_t total_bytes) {
-  ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DispatchEventOnMainThread,
-                 instance,
-                 event_type,
-                 std::string(resource_url),
-                 length_is_computable,
-                 loaded_bytes,
-                 total_bytes));
-}
-
-void DispatchEventOnMainThread(PP_Instance instance,
-                               PP_NaClEventType event_type,
-                               const std::string& resource_url,
-                               PP_Bool length_is_computable,
-                               uint64_t loaded_bytes,
-                               uint64_t total_bytes) {
-  NexeLoadManager* load_manager =
-      GetNexeLoadManager(instance);
-  // The instance may have been destroyed after we were scheduled, so do
-  // nothing if it's gone.
-  if (load_manager) {
-    NexeLoadManager::ProgressEvent event(event_type);
-    event.resource_url = resource_url;
-    event.length_is_computable = PP_ToBool(length_is_computable);
-    event.loaded_bytes = loaded_bytes;
-    event.total_bytes = total_bytes;
-    load_manager->DispatchEvent(event);
-  }
+  ProgressEvent event(event_type,
+                      resource_url,
+                      PP_ToBool(length_is_computable),
+                      loaded_bytes,
+                      total_bytes);
+  DispatchProgressEvent(instance, event);
 }
 
 void NexeFileDidOpen(PP_Instance instance,
