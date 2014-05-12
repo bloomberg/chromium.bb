@@ -65,6 +65,7 @@
             'autofill/core/common/save_password_progress_logger_unittest.cc',
             'bookmarks/core/browser/bookmark_codec_unittest.cc',
             'bookmarks/core/browser/bookmark_index_unittest.cc',
+            'bookmarks/core/browser/bookmark_utils_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
             'cloud_devices/common/printer_description_unittest.cc',

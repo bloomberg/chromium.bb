@@ -606,7 +606,6 @@
         'browser/bookmarks/bookmark_expanded_state_tracker_unittest.cc',
         'browser/bookmarks/bookmark_html_writer_unittest.cc',
         'browser/bookmarks/bookmark_model_unittest.cc',
-        'browser/bookmarks/bookmark_utils_unittest.cc',
         'browser/browser_about_handler_unittest.cc',
         'browser/browser_commands_unittest.cc',
         'browser/browsing_data/browsing_data_appcache_helper_unittest.cc',
