@@ -50,7 +50,7 @@ struct fullscreen {
 	int width, height;
 	int fullscreen;
 	float pointer_x, pointer_y;
-	int focussed, draw_cursor;
+	int draw_cursor;
 
 	struct wl_list output_list;
 	struct fs_output *current_output;
@@ -189,7 +189,7 @@ redraw_handler(struct widget *widget, void *data)
 		x = 50;
 		cairo_set_line_width (cr, border);
 		while (x + 70 < fullscreen->width) {
-			if (fullscreen->focussed &&
+			if (window_has_focus(fullscreen->window) &&
 			    fullscreen->pointer_x >= x && fullscreen->pointer_x < x + 50 &&
 			    fullscreen->pointer_y >= y && fullscreen->pointer_y < y + 40) {
 				cairo_set_source_rgb(cr, 1, 0, 0);
@@ -209,7 +209,7 @@ redraw_handler(struct widget *widget, void *data)
 		y += 50;
 	}
 
-	if (fullscreen->focussed && fullscreen->draw_cursor) {
+	if (window_has_focus(fullscreen->window) && fullscreen->draw_cursor) {
 		cairo_set_source_rgb(cr, 1, 1, 1);
 		cairo_set_line_width (cr, 8);
 		cairo_move_to(cr,
@@ -389,25 +389,12 @@ enter_handler(struct widget *widget,
 {
 	struct fullscreen *fullscreen = data;
 
-	fullscreen->focussed++;
-
 	fullscreen->pointer_x = x;
 	fullscreen->pointer_y = y;
 
 	widget_schedule_redraw(widget);
 
 	return fullscreen->draw_cursor ? CURSOR_BLANK : CURSOR_LEFT_PTR;
-}
-
-static void
-leave_handler(struct widget *widget,
-	      struct input *input, void *data)
-{
-	struct fullscreen *fullscreen = data;
-
-	fullscreen->focussed--;
-
-	widget_schedule_redraw(widget);
 }
 
 static void
@@ -510,7 +497,6 @@ int main(int argc, char *argv[])
 	fullscreen.width = 640;
 	fullscreen.height = 480;
 	fullscreen.fullscreen = 0;
-	fullscreen.focussed = 0;
 	fullscreen.present_method = _WL_FULLSCREEN_SHELL_PRESENT_METHOD_DEFAULT;
 	wl_list_init(&fullscreen.output_list);
 	fullscreen.current_output = NULL;
@@ -570,7 +556,6 @@ int main(int argc, char *argv[])
 	widget_set_button_handler(fullscreen.widget, button_handler);
 	widget_set_motion_handler(fullscreen.widget, motion_handler);
 	widget_set_enter_handler(fullscreen.widget, enter_handler);
-	widget_set_leave_handler(fullscreen.widget, leave_handler);
 
 	widget_set_touch_down_handler(fullscreen.widget, touch_handler);
 
