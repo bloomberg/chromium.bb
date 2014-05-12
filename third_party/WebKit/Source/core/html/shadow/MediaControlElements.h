@@ -38,7 +38,7 @@ namespace WebCore {
 
 class MediaControlPanelElement FINAL : public MediaControlDivElement {
 public:
-    static PassRefPtr<MediaControlPanelElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlPanelElement> create(MediaControls&);
 
     void setIsDisplayed(bool);
 
@@ -65,7 +65,7 @@ private:
 
 class MediaControlPanelEnclosureElement FINAL : public MediaControlDivElement {
 public:
-    static PassRefPtr<MediaControlPanelEnclosureElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlPanelEnclosureElement> create(MediaControls&);
 
 private:
     explicit MediaControlPanelEnclosureElement(MediaControls&);
@@ -76,7 +76,7 @@ private:
 
 class MediaControlOverlayEnclosureElement FINAL : public MediaControlDivElement {
 public:
-    static PassRefPtr<MediaControlOverlayEnclosureElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlOverlayEnclosureElement> create(MediaControls&);
 
 private:
     explicit MediaControlOverlayEnclosureElement(MediaControls&);
@@ -87,7 +87,7 @@ private:
 
 class MediaControlMuteButtonElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlMuteButtonElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlMuteButtonElement> create(MediaControls&);
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
     virtual void updateDisplayType() OVERRIDE;
@@ -103,7 +103,7 @@ private:
 
 class MediaControlPlayButtonElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlPlayButtonElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlPlayButtonElement> create(MediaControls&);
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
     virtual void updateDisplayType() OVERRIDE;
@@ -119,7 +119,7 @@ private:
 
 class MediaControlOverlayPlayButtonElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlOverlayPlayButtonElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> create(MediaControls&);
 
     virtual void updateDisplayType() OVERRIDE;
 
@@ -134,7 +134,7 @@ private:
 
 class MediaControlToggleClosedCaptionsButtonElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlToggleClosedCaptionsButtonElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> create(MediaControls&);
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
 
@@ -151,7 +151,7 @@ private:
 
 class MediaControlTimelineElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlTimelineElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlTimelineElement> create(MediaControls&);
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
@@ -171,7 +171,7 @@ private:
 
 class MediaControlFullscreenButtonElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlFullscreenButtonElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> create(MediaControls&);
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE { return true; }
 
@@ -188,7 +188,7 @@ private:
 
 class MediaControlVolumeSliderElement FINAL : public MediaControlInputElement {
 public:
-    static PassRefPtr<MediaControlVolumeSliderElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlVolumeSliderElement> create(MediaControls&);
 
     virtual bool willRespondToMouseMoveEvents() OVERRIDE;
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
@@ -205,7 +205,7 @@ private:
 
 class MediaControlTimeRemainingDisplayElement FINAL : public MediaControlTimeDisplayElement {
 public:
-    static PassRefPtr<MediaControlTimeRemainingDisplayElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlTimeRemainingDisplayElement> create(MediaControls&);
 
 private:
     explicit MediaControlTimeRemainingDisplayElement(MediaControls&);
@@ -216,7 +216,7 @@ private:
 
 class MediaControlCurrentTimeDisplayElement FINAL : public MediaControlTimeDisplayElement {
 public:
-    static PassRefPtr<MediaControlCurrentTimeDisplayElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlCurrentTimeDisplayElement> create(MediaControls&);
 
 private:
     explicit MediaControlCurrentTimeDisplayElement(MediaControls&);
@@ -227,7 +227,7 @@ private:
 
 class MediaControlTextTrackContainerElement FINAL : public MediaControlDivElement {
 public:
-    static PassRefPtr<MediaControlTextTrackContainerElement> create(MediaControls&);
+    static PassRefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> create(MediaControls&);
 
     void updateDisplay();
     void updateSizes();

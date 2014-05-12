@@ -66,9 +66,9 @@ MediaControlPanelElement::MediaControlPanelElement(MediaControls& mediaControls)
 {
 }
 
-PassRefPtr<MediaControlPanelElement> MediaControlPanelElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlPanelElement> MediaControlPanelElement::create(MediaControls& mediaControls)
 {
-    return adoptRef(new MediaControlPanelElement(mediaControls));
+    return adoptRefWillBeRefCountedGarbageCollected(new MediaControlPanelElement(mediaControls));
 }
 
 const AtomicString& MediaControlPanelElement::shadowPseudoId() const
@@ -154,9 +154,9 @@ MediaControlPanelEnclosureElement::MediaControlPanelEnclosureElement(MediaContro
 {
 }
 
-PassRefPtr<MediaControlPanelEnclosureElement> MediaControlPanelEnclosureElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlPanelEnclosureElement> MediaControlPanelEnclosureElement::create(MediaControls& mediaControls)
 {
-    return adoptRef(new MediaControlPanelEnclosureElement(mediaControls));
+    return adoptRefWillBeRefCountedGarbageCollected(new MediaControlPanelEnclosureElement(mediaControls));
 }
 
 const AtomicString& MediaControlPanelEnclosureElement::shadowPseudoId() const
@@ -173,9 +173,9 @@ MediaControlOverlayEnclosureElement::MediaControlOverlayEnclosureElement(MediaCo
 {
 }
 
-PassRefPtr<MediaControlOverlayEnclosureElement> MediaControlOverlayEnclosureElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlOverlayEnclosureElement> MediaControlOverlayEnclosureElement::create(MediaControls& mediaControls)
 {
-    return adoptRef(new MediaControlOverlayEnclosureElement(mediaControls));
+    return adoptRefWillBeRefCountedGarbageCollected(new MediaControlOverlayEnclosureElement(mediaControls));
 }
 
 const AtomicString& MediaControlOverlayEnclosureElement::shadowPseudoId() const
@@ -191,9 +191,9 @@ MediaControlMuteButtonElement::MediaControlMuteButtonElement(MediaControls& medi
 {
 }
 
-PassRefPtr<MediaControlMuteButtonElement> MediaControlMuteButtonElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlMuteButtonElement> MediaControlMuteButtonElement::create(MediaControls& mediaControls)
 {
-    RefPtr<MediaControlMuteButtonElement> button = adoptRef(new MediaControlMuteButtonElement(mediaControls));
+    RefPtrWillBeRawPtr<MediaControlMuteButtonElement> button = adoptRefWillBeRefCountedGarbageCollected(new MediaControlMuteButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
     button->setType("button");
     return button.release();
@@ -227,9 +227,9 @@ MediaControlPlayButtonElement::MediaControlPlayButtonElement(MediaControls& medi
 {
 }
 
-PassRefPtr<MediaControlPlayButtonElement> MediaControlPlayButtonElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlPlayButtonElement> MediaControlPlayButtonElement::create(MediaControls& mediaControls)
 {
-    RefPtr<MediaControlPlayButtonElement> button = adoptRef(new MediaControlPlayButtonElement(mediaControls));
+    RefPtrWillBeRawPtr<MediaControlPlayButtonElement> button = adoptRefWillBeRefCountedGarbageCollected(new MediaControlPlayButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
     button->setType("button");
     return button.release();
@@ -263,9 +263,9 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(Media
 {
 }
 
-PassRefPtr<MediaControlOverlayPlayButtonElement> MediaControlOverlayPlayButtonElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> MediaControlOverlayPlayButtonElement::create(MediaControls& mediaControls)
 {
-    RefPtr<MediaControlOverlayPlayButtonElement> button = adoptRef(new MediaControlOverlayPlayButtonElement(mediaControls));
+    RefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> button = adoptRefWillBeRefCountedGarbageCollected(new MediaControlOverlayPlayButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
     button->setType("button");
     return button.release();
@@ -302,9 +302,9 @@ MediaControlToggleClosedCaptionsButtonElement::MediaControlToggleClosedCaptionsB
 {
 }
 
-PassRefPtr<MediaControlToggleClosedCaptionsButtonElement> MediaControlToggleClosedCaptionsButtonElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> MediaControlToggleClosedCaptionsButtonElement::create(MediaControls& mediaControls)
 {
-    RefPtr<MediaControlToggleClosedCaptionsButtonElement> button = adoptRef(new MediaControlToggleClosedCaptionsButtonElement(mediaControls));
+    RefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> button = adoptRefWillBeRefCountedGarbageCollected(new MediaControlToggleClosedCaptionsButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
     button->setType("button");
     button->hide();
@@ -343,9 +343,9 @@ MediaControlTimelineElement::MediaControlTimelineElement(MediaControls& mediaCon
 {
 }
 
-PassRefPtr<MediaControlTimelineElement> MediaControlTimelineElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlTimelineElement> MediaControlTimelineElement::create(MediaControls& mediaControls)
 {
-    RefPtr<MediaControlTimelineElement> timeline = adoptRef(new MediaControlTimelineElement(mediaControls));
+    RefPtrWillBeRawPtr<MediaControlTimelineElement> timeline = adoptRefWillBeRefCountedGarbageCollected(new MediaControlTimelineElement(mediaControls));
     timeline->ensureUserAgentShadowRoot();
     timeline->setType("range");
     timeline->setAttribute(stepAttr, "any");
@@ -415,9 +415,9 @@ MediaControlVolumeSliderElement::MediaControlVolumeSliderElement(MediaControls& 
 {
 }
 
-PassRefPtr<MediaControlVolumeSliderElement> MediaControlVolumeSliderElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlVolumeSliderElement> MediaControlVolumeSliderElement::create(MediaControls& mediaControls)
 {
-    RefPtr<MediaControlVolumeSliderElement> slider = adoptRef(new MediaControlVolumeSliderElement(mediaControls));
+    RefPtrWillBeRawPtr<MediaControlVolumeSliderElement> slider = adoptRefWillBeRefCountedGarbageCollected(new MediaControlVolumeSliderElement(mediaControls));
     slider->ensureUserAgentShadowRoot();
     slider->setType("range");
     slider->setAttribute(stepAttr, "any");
@@ -478,9 +478,9 @@ MediaControlFullscreenButtonElement::MediaControlFullscreenButtonElement(MediaCo
 {
 }
 
-PassRefPtr<MediaControlFullscreenButtonElement> MediaControlFullscreenButtonElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> MediaControlFullscreenButtonElement::create(MediaControls& mediaControls)
 {
-    RefPtr<MediaControlFullscreenButtonElement> button = adoptRef(new MediaControlFullscreenButtonElement(mediaControls));
+    RefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> button = adoptRefWillBeRefCountedGarbageCollected(new MediaControlFullscreenButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
     button->setType("button");
     button->hide();
@@ -517,9 +517,9 @@ MediaControlTimeRemainingDisplayElement::MediaControlTimeRemainingDisplayElement
 {
 }
 
-PassRefPtr<MediaControlTimeRemainingDisplayElement> MediaControlTimeRemainingDisplayElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlTimeRemainingDisplayElement> MediaControlTimeRemainingDisplayElement::create(MediaControls& mediaControls)
 {
-    return adoptRef(new MediaControlTimeRemainingDisplayElement(mediaControls));
+    return adoptRefWillBeRefCountedGarbageCollected(new MediaControlTimeRemainingDisplayElement(mediaControls));
 }
 
 static const AtomicString& getMediaControlTimeRemainingDisplayElementShadowPseudoId()
@@ -540,9 +540,9 @@ MediaControlCurrentTimeDisplayElement::MediaControlCurrentTimeDisplayElement(Med
 {
 }
 
-PassRefPtr<MediaControlCurrentTimeDisplayElement> MediaControlCurrentTimeDisplayElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlCurrentTimeDisplayElement> MediaControlCurrentTimeDisplayElement::create(MediaControls& mediaControls)
 {
-    return adoptRef(new MediaControlCurrentTimeDisplayElement(mediaControls));
+    return adoptRefWillBeRefCountedGarbageCollected(new MediaControlCurrentTimeDisplayElement(mediaControls));
 }
 
 static const AtomicString& getMediaControlCurrentTimeDisplayElementShadowPseudoId()
@@ -564,9 +564,9 @@ MediaControlTextTrackContainerElement::MediaControlTextTrackContainerElement(Med
 {
 }
 
-PassRefPtr<MediaControlTextTrackContainerElement> MediaControlTextTrackContainerElement::create(MediaControls& mediaControls)
+PassRefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> MediaControlTextTrackContainerElement::create(MediaControls& mediaControls)
 {
-    RefPtr<MediaControlTextTrackContainerElement> element = adoptRef(new MediaControlTextTrackContainerElement(mediaControls));
+    RefPtrWillBeRawPtr<MediaControlTextTrackContainerElement> element = adoptRefWillBeRefCountedGarbageCollected(new MediaControlTextTrackContainerElement(mediaControls));
     element->hide();
     return element.release();
 }
