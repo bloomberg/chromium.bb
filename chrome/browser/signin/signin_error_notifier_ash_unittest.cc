@@ -144,7 +144,15 @@ TEST_F(SigninErrorNotifierTest, ErrorAuthStatusProvider) {
 }
 #endif
 
-TEST_F(SigninErrorNotifierTest, AuthStatusProviderErrorTransition) {
+#if defined(OS_WIN)
+// Test started crashing on Win 7. http://crbug.com/372277
+#define MAYBE_AuthStatusProviderErrorTransition \
+  DISABLED_AuthStatusProviderErrorTransition
+#else
+#define MAYBE_AuthStatusProviderErrorTransition \
+  AuthStatusProviderErrorTransition
+#endif
+TEST_F(SigninErrorNotifierTest, MAYBE_AuthStatusProviderErrorTransition) {
   {
     FakeAuthStatusProvider provider0(error_controller_);
     FakeAuthStatusProvider provider1(error_controller_);
