@@ -394,4 +394,20 @@ std::string CanonicalCookie::DebugString() const {
       static_cast<int64>(creation_date_.ToTimeT()));
 }
 
+CanonicalCookie* CanonicalCookie::Duplicate() {
+  CanonicalCookie* cc = new CanonicalCookie();
+  cc->source_ = source_;
+  cc->name_ = name_;
+  cc->value_ = value_;
+  cc->domain_ = domain_;
+  cc->path_ = path_;
+  cc->creation_date_ = creation_date_;
+  cc->expiry_date_ = expiry_date_;
+  cc->last_access_date_ = last_access_date_;
+  cc->secure_ = secure_;
+  cc->httponly_ = httponly_;
+  cc->priority_ = priority_;
+  return cc;
+}
+
 }  // namespace net

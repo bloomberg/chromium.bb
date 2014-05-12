@@ -59,7 +59,8 @@ class DummyPrerenderContents : public PrerenderContents {
   virtual void StartPrerendering(
       int ALLOW_UNUSED creator_child_id,
       const gfx::Size& ALLOW_UNUSED size,
-      content::SessionStorageNamespace* session_storage_namespace) OVERRIDE;
+      content::SessionStorageNamespace* session_storage_namespace,
+      net::URLRequestContextGetter* request_context) OVERRIDE;
   virtual bool GetChildId(int* child_id) const OVERRIDE;
   virtual bool GetRouteId(int* route_id) const OVERRIDE;
 
@@ -115,7 +116,8 @@ DummyPrerenderContents::DummyPrerenderContents(
 void DummyPrerenderContents::StartPrerendering(
     int ALLOW_UNUSED creator_child_id,
     const gfx::Size& ALLOW_UNUSED size,
-    content::SessionStorageNamespace* session_storage_namespace) {
+    content::SessionStorageNamespace* session_storage_namespace,
+    net::URLRequestContextGetter* request_context) {
   prerender_contents_.reset(content::WebContents::CreateWithSessionStorage(
       content::WebContents::CreateParams(profile_),
       session_storage_namespace_map_));
@@ -181,7 +183,8 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
         SetPrerenderContentsFactory(
             new DummyPrerenderContentsFactory(call_did_finish_load,
                                               session_storage_namespace_map));
-
+    PrerenderManagerFactory::GetForProfile(browser()->profile())->
+        OnCookieStoreLoaded();
     if (prerender_search_results_base_page) {
       InstantSearchPrerenderer* prerenderer = GetInstantSearchPrerenderer();
       prerenderer->Init(session_storage_namespace_map, gfx::Size(640, 480));
