@@ -4,9 +4,13 @@
 
 {
   'sources': [
-    'platform/dri/hardware_display_controller_unittest.cc',
     'platform/dri/dri_surface_factory_unittest.cc',
     'platform/dri/dri_surface_unittest.cc',
+    'platform/dri/hardware_display_controller_unittest.cc',
+    'platform/dri/test/mock_dri_surface.cc',
+    'platform/dri/test/mock_dri_surface.h',
+    'platform/dri/test/mock_dri_wrapper.cc',
+    'platform/dri/test/mock_dri_wrapper.h',
   ],
   'conditions': [
     ['ozone_platform_dri == 1', {
