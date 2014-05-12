@@ -54,7 +54,8 @@ BPF_TEST_C(BaselinePolicy, FchmodErrno, BaselinePolicy) {
 }
 
 // TODO(jln): make this work with the sanitizers.
-#if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
+#if !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER) && \
+    !defined(MEMORY_SANITIZER)
 
 BPF_TEST_C(BaselinePolicy, ForkErrno, BaselinePolicy) {
   errno = 0;
@@ -108,7 +109,8 @@ BPF_DEATH_TEST_C(BaselinePolicy,
   HandlePostForkReturn(pid);
 }
 
-#endif  // !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER)
+#endif  // !defined(ADDRESS_SANITIZER) && !defined(THREAD_SANITIZER) &&
+        // !defined(MEMORY_SANITIZER)
 
 }  // namespace
 
