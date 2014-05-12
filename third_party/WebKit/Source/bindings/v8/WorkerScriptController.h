@@ -68,6 +68,8 @@ namespace WebCore {
 
         WorkerGlobalScope& workerGlobalScope() { return m_workerGlobalScope; }
 
+        bool initializeContextIfNeeded();
+
         void evaluate(const ScriptSourceCode&, RefPtrWillBeRawPtr<ErrorEvent>* = 0);
 
         void rethrowExceptionFromImportedScript(PassRefPtrWillBeRawPtr<ErrorEvent>);
@@ -101,9 +103,8 @@ namespace WebCore {
         // until real work has been done.
         bool idleNotification() { return v8::V8::IdleNotification(); }
 
-    private:
-        bool initializeContextIfNeeded();
 
+    private:
         v8::Isolate* m_isolate;
         WorkerGlobalScope& m_workerGlobalScope;
         RefPtr<ScriptState> m_scriptState;

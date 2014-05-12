@@ -128,6 +128,8 @@ void WorkerThread::workerThread()
     m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
 
     WorkerScriptController* script = m_workerGlobalScope->script();
+    if (!script->isExecutionForbidden())
+        script->initializeContextIfNeeded();
     InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), startMode);
     script->evaluate(ScriptSourceCode(sourceCode, scriptURL));
 
