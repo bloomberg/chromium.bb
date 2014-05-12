@@ -998,3 +998,6 @@ crbug.com/371276 [ Linux ] virtual/deferred/inspector/timeline/timeline-window-f
 crbug.com/371276 [ Linux ] virtual/implsidepainting/inspector/timeline/timeline-window-filter.html [ Pass Timeout ]
 
 crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-redirect-to-blocked.html [ Failure ]
+
+crbug.com/372260 [ Debug ] virtual/serviceworker/http/tests/serviceworker/postmessage-msgport-to-client.html [ Pass Crash ]
+crbug.com/372260 [ Release ] virtual/serviceworker/http/tests/serviceworker/postmessage-msgport-to-client.html [ Pass Timeout ]
