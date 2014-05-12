@@ -2378,17 +2378,19 @@ void MenuController::SetExitType(ExitType type) {
   // the current loop.
   bool quit_now = ShouldQuitNow() && exit_type_ != EXIT_NONE &&
       message_loop_depth_;
+  if (quit_now)
+    TerminateNestedMessageLoop();
+}
 
-  if (quit_now) {
-    if (owner_) {
-      aura::Window* root = owner_->GetNativeWindow()->GetRootWindow();
-      aura::client::GetDispatcherClient(root)->QuitNestedMessageLoop();
-    } else {
-      base::MessageLoop::current()->QuitNow();
-    }
-    // Restore the previous dispatcher.
-    nested_dispatcher_.reset();
+void MenuController::TerminateNestedMessageLoop() {
+  if (owner_) {
+    aura::Window* root = owner_->GetNativeWindow()->GetRootWindow();
+    aura::client::GetDispatcherClient(root)->QuitNestedMessageLoop();
+  } else {
+    base::MessageLoop::current()->QuitNow();
   }
+  // Restore the previous dispatcher.
+  nested_dispatcher_.reset();
 }
 
 bool MenuController::ShouldQuitNow() const {

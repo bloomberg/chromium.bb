@@ -622,6 +622,7 @@
         'controls/combobox/combobox_unittest.cc',
         'controls/label_unittest.cc',
         'controls/menu/menu_model_adapter_unittest.cc',
+        'controls/menu/menu_controller_unittest.cc',
         'controls/native/native_view_host_aura_unittest.cc',
         'controls/native/native_view_host_unittest.cc',
         'controls/prefix_selector_unittest.cc',

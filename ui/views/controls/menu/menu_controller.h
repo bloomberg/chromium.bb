@@ -150,6 +150,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   friend class internal::MenuEventDispatcher;
   friend class internal::MenuMessagePumpDispatcher;
   friend class internal::MenuRunnerImpl;
+  friend class MenuControllerTest;
   friend class MenuHostRootView;
   friend class MenuItemView;
   friend class SubmenuView;
@@ -471,8 +472,11 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   void SetActiveMouseView(View* view);
   View* GetActiveMouseView();
 
-  // Sets exit type.
+  // Sets exit type. Calling this can terminate the active nested message-loop.
   void SetExitType(ExitType type);
+
+  // Terminates the current nested message-loop.
+  void TerminateNestedMessageLoop();
 
   // Returns true if SetExitType() should quit the message loop.
   bool ShouldQuitNow() const;
