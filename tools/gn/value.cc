@@ -153,8 +153,22 @@ std::string Value::ToString(bool quote_string) const {
       result.push_back(']');
       return result;
     }
-    case SCOPE:
-      return std::string("<scope>");
+    case SCOPE: {
+      Scope::KeyValueMap scope_values;
+      scope_value_->GetCurrentScopeValues(&scope_values);
+      if (scope_values.empty())
+        return std::string("{ }");
+
+      std::string result = "{\n";
+      for (Scope::KeyValueMap::const_iterator i = scope_values.begin();
+           i != scope_values.end(); ++i) {
+        result += "  " + i->first.as_string() + " = " +
+                  i->second.ToString(true) + "\n";
+      }
+      result += "}";
+
+      return result;
+    }
   }
   return std::string();
 }
