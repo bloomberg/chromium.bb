@@ -259,21 +259,21 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
     osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
-        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS)
+        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS_CHROME)
 
   def testSloppyDeployFailure(self):
     """Sloppy staging enforces that at least one file is copied."""
     options, _ = _ParseCommandLine(self.common_flags + ['--sloppy'])
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
-        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS)
+        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS_CHROME)
 
   def testSloppyDeploySuccess(self):
     """Sloppy staging - stage one file."""
     options, _ = _ParseCommandLine(self.common_flags + ['--sloppy'])
     osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
     deploy_chrome._PrepareStagingDir(options, self.tempdir, self.staging_dir,
-                                     chrome_util._COPY_PATHS)
+                                     chrome_util._COPY_PATHS_CHROME)
 
   def testEmptyDeployStrict(self):
     """Strict staging fails when there are no files."""
@@ -282,7 +282,7 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
 
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
-        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS)
+        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS_CHROME)
 
 
 class DeployTestBuildDir(cros_test_lib.MockTempDirTestCase):
