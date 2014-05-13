@@ -22,17 +22,12 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animation_element.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gfx/transform.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -42,15 +37,7 @@ const int kTrayBackgroundAlpha = 100;
 const int kTrayBackgroundHoverAlpha = 150;
 const SkColor kTrayBackgroundPressedColor = SkColorSetRGB(66, 129, 244);
 
-const int kAnimationDurationForPopupMs = 200;
-
-// Duration of opacity animation for visibility changes.
-const int kAnimationDurationForVisibilityMs = 250;
-
-// When becoming visible delay the animation so that StatusAreaWidgetDelegate
-// can animate sibling views out of the position to be occuped by the
-// TrayBackgroundView.
-const int kShowAnimationDelayMs = 100;
+const int kAnimationDurationForPopupMS = 200;
 
 }  // namespace
 
@@ -320,9 +307,6 @@ TrayBackgroundView::TrayBackgroundView(StatusAreaWidget* status_area_widget)
   tray_container_ = new TrayContainer(shelf_alignment_);
   SetContents(tray_container_);
   tray_event_filter_.reset(new TrayEventFilter);
-
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
 }
 
 TrayBackgroundView::~TrayBackgroundView() {
@@ -333,53 +317,6 @@ TrayBackgroundView::~TrayBackgroundView() {
 void TrayBackgroundView::Initialize() {
   GetWidget()->AddObserver(widget_observer_.get());
   SetTrayBorder();
-}
-
-void TrayBackgroundView::SetVisible(bool visible) {
-  if (visible == this->visible())
-    return;
-
-  if (visible) {
-    // The alignment of the shelf can change while the TrayBackgroundView is
-    // hidden. Reset the offscreen transform so that the animation to becoming
-    // visible reflects the current layout.
-    HideTransformation();
-    // SetVisible(false) is defered until the animation for hiding is done.
-    // Otherwise the view is immediately hidden and the animation does not
-    // render.
-    views::View::SetVisible(visible);
-  }
-
-  layer()->GetAnimator()->StopAnimating();
-  ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-  animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-      kAnimationDurationForVisibilityMs));
-  animation.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-
-  if (visible) {
-    animation.SetTweenType(gfx::Tween::EASE_OUT);
-    // Show is delayed so as to allow time for other children of
-    // StatusAreaWidget to begin animating to their new positions.
-    layer()->GetAnimator()->SchedulePauseForProperties(
-        base::TimeDelta::FromMilliseconds(kShowAnimationDelayMs),
-        ui::LayerAnimationElement::OPACITY |
-        ui::LayerAnimationElement::TRANSFORM);
-    // layer()->SetVisible(true) is handled by views::View::SetVisible(true) so
-    // we do not need to apply that change while becoming visible.
-    layer()->SetOpacity(1.0f);
-    gfx::Transform transform;
-    transform.Translate(0.0f, 0.0f);
-    layer()->SetTransform(transform);
-  } else {
-    // Listen only to the hide animation. As we cannot turn off visibility
-    // until the animation is over.
-    animation.AddObserver(this);
-    animation.SetTweenType(gfx::Tween::EASE_IN);
-    layer()->SetOpacity(0.0f);
-    layer()->SetVisible(false);
-    HideTransformation();
-  }
 }
 
 const char* TrayBackgroundView::GetClassName() const {
@@ -483,20 +420,6 @@ void TrayBackgroundView::SetTrayBorder() {
       top_edge, left_edge, bottom_edge, right_edge));
 }
 
-void TrayBackgroundView::OnImplicitAnimationsCompleted() {
-  views::View::SetVisible(false);
-}
-
-void TrayBackgroundView::HideTransformation() {
-  gfx::Transform transform;
-  if (shelf_alignment_ == SHELF_ALIGNMENT_BOTTOM ||
-      shelf_alignment_ == SHELF_ALIGNMENT_TOP)
-    transform.Translate(width(), 0.0f);
-  else
-    transform.Translate(0.0f, height());
-  layer()->SetTransform(transform);
-}
-
 void TrayBackgroundView::InitializeBubbleAnimations(
     views::Widget* bubble_widget) {
   wm::SetWindowVisibilityAnimationType(
@@ -507,7 +430,7 @@ void TrayBackgroundView::InitializeBubbleAnimations(
       wm::ANIMATE_HIDE);
   wm::SetWindowVisibilityAnimationDuration(
       bubble_widget->GetNativeWindow(),
-      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMs));
+      base::TimeDelta::FromMilliseconds(kAnimationDurationForPopupMS));
 }
 
 aura::Window* TrayBackgroundView::GetBubbleWindowContainer() const {
