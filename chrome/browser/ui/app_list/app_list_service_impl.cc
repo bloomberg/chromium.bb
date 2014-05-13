@@ -136,7 +136,8 @@ class ProfileStoreImpl : public ProfileStore {
     ProfileInfoCache& profile_info =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     size_t profile_index = profile_info.GetIndexOfProfileWithPath(profile_path);
-    return profile_info.ProfileIsManagedAtIndex(profile_index);
+    return profile_index != std::string::npos &&
+        profile_info.ProfileIsManagedAtIndex(profile_index);
   }
 
  private:
