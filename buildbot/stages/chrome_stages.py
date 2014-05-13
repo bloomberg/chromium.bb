@@ -21,7 +21,8 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 
 
-class SyncChromeStage(generic_stages.BuilderStage):
+class SyncChromeStage(generic_stages.BuilderStage,
+                      generic_stages.ArchivingStageMixin):
   """Stage that syncs Chrome sources if needed."""
 
   option_name = 'managed_chrome'
@@ -37,6 +38,7 @@ class SyncChromeStage(generic_stages.BuilderStage):
     self._run.attrs.chrome_version = self._run.DetermineChromeVersion()
     cros_build_lib.Debug('Existing chrome version is %s.',
                          self._run.attrs.chrome_version)
+    self._WriteChromeVersionToMetadata()
     super(SyncChromeStage, self).HandleSkip()
 
   def PerformStage(self):
@@ -67,12 +69,19 @@ class SyncChromeStage(generic_stages.BuilderStage):
       cros_build_lib.Info('Chrome already uprevved')
       sys.exit(0)
 
+  def _WriteChromeVersionToMetadata(self):
+    """Write chrome version to metadata and upload partial json file."""
+    self._run.attrs.metadata.UpdateKeyDictWithDict(
+        'version',
+        {'chrome': self._run.attrs.chrome_version})
+    self.UploadMetadata(filename=constants.PARTIAL_METADATA_JSON)
+
   def _Finish(self):
     """Provide chrome_version to the rest of the run."""
     # Even if the stage failed, a None value for chrome_version still
     # means something.  In other words, this stage tried to run.
     self._run.attrs.chrome_version = self.chrome_version
-
+    self._WriteChromeVersionToMetadata()
     super(SyncChromeStage, self)._Finish()
 
 
