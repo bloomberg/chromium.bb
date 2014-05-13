@@ -27,7 +27,7 @@ namespace {
 
 typedef base::Callback<void(
     ServiceWorkerStorage::InitialData* data,
-    bool success)> InitializeCallback;
+    ServiceWorkerStatusCode status)> InitializeCallback;
 typedef base::Callback<void(
     const ServiceWorkerDatabase::RegistrationData& data,
     const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources,
@@ -70,15 +70,22 @@ void ReadInitialDataFromDB(
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
     const InitializeCallback& callback) {
   DCHECK(database);
-  ServiceWorkerStorage::InitialData* data =
-      new ServiceWorkerStorage::InitialData();
-  bool success =
+  scoped_ptr<ServiceWorkerStorage::InitialData> data(
+      new ServiceWorkerStorage::InitialData());
+
+  ServiceWorkerStatusCode status =
       database->GetNextAvailableIds(&data->next_registration_id,
                                     &data->next_version_id,
-                                    &data->next_resource_id) &&
-      database->GetOriginsWithRegistrations(&data->origins);
+                                    &data->next_resource_id);
+  if (status != SERVICE_WORKER_OK) {
+    original_task_runner->PostTask(
+        FROM_HERE, base::Bind(callback, base::Owned(data.release()), status));
+    return;
+  }
+
+  status = database->GetOriginsWithRegistrations(&data->origins);
   original_task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, base::Owned(data), success));
+      FROM_HERE, base::Bind(callback, base::Owned(data.release()), status));
 }
 
 void ReadRegistrationFromDB(
@@ -492,18 +499,21 @@ bool ServiceWorkerStorage::LazyInitialize(const base::Closure& callback) {
 
 void ServiceWorkerStorage::DidReadInitialData(
     InitialData* data,
-    bool success) {
+    ServiceWorkerStatusCode status) {
   DCHECK(data);
   DCHECK_EQ(INITIALIZING, state_);
 
-  if (success) {
+  if (status == SERVICE_WORKER_OK) {
     next_registration_id_ = data->next_registration_id;
     next_version_id_ = data->next_version_id;
     next_resource_id_ = data->next_resource_id;
     registered_origins_.swap(data->origins);
     state_ = INITIALIZED;
   } else {
-    DLOG(WARNING) << "Failed to initialize.";
+    // TODO(nhiroki): If status==SERVICE_WORKER_ERROR_DB_CORRUPTED, do
+    // corruption recovery (http://crbug.com/371675).
+    DLOG(WARNING) << "Failed to initialize: "
+                  << ServiceWorkerStatusToString(status);
     state_ = DISABLED;
   }
 

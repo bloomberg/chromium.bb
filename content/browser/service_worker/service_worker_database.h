@@ -68,10 +68,12 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   };
 
   // For use during initialization.
-  bool GetNextAvailableIds(int64* next_avail_registration_id,
-                           int64* next_avail_version_id,
-                           int64* next_avail_resource_id);
-  bool GetOriginsWithRegistrations(std::set<GURL>* origins);
+  ServiceWorkerStatusCode GetNextAvailableIds(
+      int64* next_avail_registration_id,
+      int64* next_avail_version_id,
+      int64* next_avail_resource_id);
+  ServiceWorkerStatusCode GetOriginsWithRegistrations(
+      std::set<GURL>* origins);
 
   // For use when first handling a request in an origin with registrations.
   bool GetRegistrationsForOrigin(const GURL& origin,
@@ -144,8 +146,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // does not exist and |create_if_needed| is false.
   bool LazyOpen(bool create_if_needed);
 
-  bool ReadNextAvailableId(const char* id_key,
-                           int64* next_avail_id);
+  ServiceWorkerStatusCode ReadNextAvailableId(
+      const char* id_key,
+      int64* next_avail_id);
   bool ReadRegistrationData(int64 registration_id,
                             const GURL& origin,
                             RegistrationData* registration);

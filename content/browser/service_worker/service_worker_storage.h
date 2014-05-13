@@ -138,7 +138,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       const base::Closure& callback);
   void DidReadInitialData(
       InitialData* data,
-      bool success);
+      ServiceWorkerStatusCode status);
   void DidGetRegistrationsForPattern(
       const GURL& scope,
       const FindRegistrationCallback& callback,

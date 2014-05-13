@@ -211,6 +211,18 @@ bool ParseResourceRecord(const std::string& serialized,
   return true;
 }
 
+ServiceWorkerStatusCode LevelDBStatusToServiceWorkerStatusCode(
+    const leveldb::Status& status) {
+  if (status.ok())
+    return SERVICE_WORKER_OK;
+  else if (status.IsNotFound())
+    return SERVICE_WORKER_ERROR_NOT_FOUND;
+  else if (status.IsCorruption())
+    return SERVICE_WORKER_ERROR_DB_CORRUPTED;
+  else
+    return SERVICE_WORKER_ERROR_FAILED;
+}
+
 }  // namespace
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData()
@@ -239,7 +251,7 @@ ServiceWorkerDatabase::~ServiceWorkerDatabase() {
   db_.reset();
 }
 
-bool ServiceWorkerDatabase::GetNextAvailableIds(
+ServiceWorkerStatusCode ServiceWorkerDatabase::GetNextAvailableIds(
     int64* next_avail_registration_id,
     int64* next_avail_version_id,
     int64* next_avail_resource_id) {
@@ -250,37 +262,42 @@ bool ServiceWorkerDatabase::GetNextAvailableIds(
 
   if (!LazyOpen(false)) {
     if (is_disabled_)
-      return false;
+      return SERVICE_WORKER_ERROR_FAILED;
     // Database has never been used.
     *next_avail_registration_id = 0;
     *next_avail_version_id = 0;
     *next_avail_resource_id = 0;
-    return true;
+    return SERVICE_WORKER_OK;
   }
 
-  if (!ReadNextAvailableId(kNextRegIdKey, &next_avail_registration_id_) ||
-      !ReadNextAvailableId(kNextVerIdKey, &next_avail_version_id_) ||
-      !ReadNextAvailableId(kNextResIdKey, &next_avail_resource_id_)) {
-    return false;
-  }
+  ServiceWorkerStatusCode status =
+      ReadNextAvailableId(kNextRegIdKey, &next_avail_registration_id_);
+  if (status != SERVICE_WORKER_OK)
+    return status;
+  status = ReadNextAvailableId(kNextVerIdKey, &next_avail_version_id_);
+  if (status != SERVICE_WORKER_OK)
+    return status;
+  status = ReadNextAvailableId(kNextResIdKey, &next_avail_resource_id_);
+  if (status != SERVICE_WORKER_OK)
+    return status;
 
   *next_avail_registration_id = next_avail_registration_id_;
   *next_avail_version_id = next_avail_version_id_;
   *next_avail_resource_id = next_avail_resource_id_;
-  return true;
+  return SERVICE_WORKER_OK;
 }
 
-bool ServiceWorkerDatabase::GetOriginsWithRegistrations(
+ServiceWorkerStatusCode ServiceWorkerDatabase::GetOriginsWithRegistrations(
     std::set<GURL>* origins) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(origins);
 
   if (!LazyOpen(false)) {
     if (is_disabled_)
-      return false;
+      return SERVICE_WORKER_ERROR_FAILED;
     // Database has never been used.
     origins->clear();
-    return true;
+    return SERVICE_WORKER_OK;
   }
 
   scoped_ptr<leveldb::Iterator> itr(db_->NewIterator(leveldb::ReadOptions()));
@@ -288,7 +305,7 @@ bool ServiceWorkerDatabase::GetOriginsWithRegistrations(
     if (!itr->status().ok()) {
       HandleError(FROM_HERE, itr->status());
       origins->clear();
-      return false;
+      return LevelDBStatusToServiceWorkerStatusCode(itr->status());
     }
 
     std::string origin;
@@ -296,7 +313,7 @@ bool ServiceWorkerDatabase::GetOriginsWithRegistrations(
       break;
     origins->insert(GURL(origin));
   }
-  return true;
+  return SERVICE_WORKER_OK;
 }
 
 bool ServiceWorkerDatabase::GetRegistrationsForOrigin(
@@ -624,8 +641,9 @@ bool ServiceWorkerDatabase::LazyOpen(bool create_if_needed) {
   return true;
 }
 
-bool ServiceWorkerDatabase::ReadNextAvailableId(
-    const char* id_key, int64* next_avail_id) {
+ServiceWorkerStatusCode ServiceWorkerDatabase::ReadNextAvailableId(
+    const char* id_key,
+    int64* next_avail_id) {
   DCHECK(id_key);
   DCHECK(next_avail_id);
 
@@ -634,22 +652,22 @@ bool ServiceWorkerDatabase::ReadNextAvailableId(
   if (status.IsNotFound()) {
     // Nobody has gotten the next resource id for |id_key|.
     *next_avail_id = 0;
-    return true;
+    return SERVICE_WORKER_OK;
   }
 
   if (!status.ok()) {
     HandleError(FROM_HERE, status);
-    return false;
+    return LevelDBStatusToServiceWorkerStatusCode(status);
   }
 
   int64 parsed;
   if (!base::StringToInt64(value, &parsed)) {
     HandleError(FROM_HERE, leveldb::Status::Corruption("failed to parse"));
-    return false;
+    return SERVICE_WORKER_ERROR_DB_CORRUPTED;
   }
 
   *next_avail_id = parsed;
-  return true;
+  return SERVICE_WORKER_OK;
 }
 
 bool ServiceWorkerDatabase::ReadRegistrationData(
