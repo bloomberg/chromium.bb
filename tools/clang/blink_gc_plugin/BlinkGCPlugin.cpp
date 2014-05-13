@@ -503,9 +503,7 @@ class CheckFieldsVisitor : public RecursiveEdgeVisitor {
     if (options_.enable_oilpan) {
       if (Parent()->IsOwnPtr() ||
           Parent()->IsRawPtrClass() ||
-          (stack_allocated_host_ && Parent()->IsRawPtr() &&
-           // TODO: Remove this exception once the node hierarchy is moved.
-           !edge->value()->IsTreeShared())) {
+          (stack_allocated_host_ && Parent()->IsRawPtr())) {
         invalid_fields_.push_back(std::make_pair(current_, Parent()));
         return;
       }
@@ -726,8 +724,7 @@ class BlinkGCPluginConsumer : public ASTConsumer {
       if (CXXMethodDecl* newop = info->DeclaresNewOperator())
         ReportClassOverridesNew(info, newop);
 
-      // TODO: Remove this exception once TreeShared is properly traced.
-      if (!info->IsTreeShared()) {
+      {
         CheckGCRootsVisitor visitor;
         if (visitor.ContainsGCRoots(info))
           ReportClassContainsGCRoots(info, &visitor.gc_roots());

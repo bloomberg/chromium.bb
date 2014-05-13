@@ -115,24 +115,6 @@ bool RecordInfo::IsGCFinalized() {
   return false;
 }
 
-bool RecordInfo::IsTreeShared() {
-  if (Config::IsTreeSharedBase(name_))
-    return true;
-  if (!IsGCDerived())
-    return false;
-  for (CXXBasePaths::paths_iterator it = base_paths_->begin();
-       it != base_paths_->end();
-       ++it) {
-    // TreeShared is an immediate base of GCFinalized.
-    if (it->size() < 2) continue;
-    const CXXBasePathElement& elem = (*it)[it->size() - 2];
-    CXXRecordDecl* base = elem.Base->getType()->getAsCXXRecordDecl();
-    if (Config::IsTreeSharedBase(base->getName()))
-      return true;
-  }
-  return false;
-}
-
 // A GC mixin is a class that inherits from a GC mixin base and has
 // not yet been "mixed in" with another GC base class.
 bool RecordInfo::IsGCMixin() {
