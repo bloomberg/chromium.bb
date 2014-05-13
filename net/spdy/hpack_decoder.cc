@@ -48,8 +48,10 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
   HpackInputStream input_stream(max_string_literal_size_,
                                 headers_block_buffer_);
   while (input_stream.HasMoreData()) {
-    if (!DecodeNextOpcode(&input_stream))
+    if (!DecodeNextOpcode(&input_stream)) {
+      headers_block_buffer_.clear();
       return false;
+    }
   }
   headers_block_buffer_.clear();
 

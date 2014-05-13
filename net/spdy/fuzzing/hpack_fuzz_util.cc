@@ -113,16 +113,19 @@ size_t HpackFuzzUtil::SampleExponential(size_t mean, size_t sanity_bound) {
 // static
 bool HpackFuzzUtil::NextHeaderBlock(Input* input,
                                     StringPiece* out) {
+  // ClusterFuzz may truncate input files if the fuzzer ran out of allocated
+  // disk space. Be tolerant of these.
   CHECK_LE(input->offset, input->input.size());
-  if (input->remaining() == 0) {
+  if (input->remaining() < sizeof(uint32)) {
     return false;
   }
-  CHECK_LE(sizeof(uint32), input->remaining());
 
   size_t length = ntohl(*reinterpret_cast<const uint32*>(input->ptr()));
   input->offset += sizeof(uint32);
 
-  CHECK_LE(length, input->remaining());
+  if (input->remaining() < length) {
+    return false;
+  }
   *out = StringPiece(input->ptr(), length);
   input->offset += length;
   return true;
@@ -157,10 +160,16 @@ bool HpackFuzzUtil::RunHeaderBlockThroughFuzzerStages(FuzzerContext* context,
   CHECK(context->second_stage->EncodeHeaderSet(
       context->first_stage->decoded_block(), &second_stage_out));
 
-  // Third stage: Expect a decoding of the re-encoded block to succeed.
-  CHECK(context->third_stage->HandleControlFrameHeadersData(
-      1, second_stage_out.data(), second_stage_out.length()));
-  CHECK(context->third_stage->HandleControlFrameHeadersComplete(1));
+  // Third stage: Expect a decoding of the re-encoded block to succeed, but
+  // don't require it. It's possible for the stage-two encoder to produce an
+  // output which violates decoder size tolerances.
+  if (!context->third_stage->HandleControlFrameHeadersData(
+          1, second_stage_out.data(), second_stage_out.length())) {
+    return false;
+  }
+  if (!context->third_stage->HandleControlFrameHeadersComplete(1)) {
+    return false;
+  }
   return true;
 }
 
