@@ -26,7 +26,7 @@ def ParseLogLines(lines):
 
     Below is an example of a small log file:
     5086e000-52e92000 r-xp 00000000 b3:02 51276      libchromeview.so
-    secs       msecs      pid:threadid    func
+    secs       usecs      pid:threadid    func
     START
     1314897086 795828     3587:1074648168 0x509e105c
     1314897086 795874     3587:1074648168 0x509e0eb4
@@ -78,18 +78,18 @@ def CheckTimestamps(calls):
   """
   index = 0
   last_timestamp_secs = -1
-  last_timestamp_ms = -1
+  last_timestamp_us = -1
   while (index < len (calls)):
     timestamp_secs = int (calls[index][0])
-    timestamp_ms = int (calls[index][1])
-    timestamp = (timestamp_secs * 1000000) + timestamp_ms
-    last_timestamp = (last_timestamp_secs * 1000000) + last_timestamp_ms
+    timestamp_us = int (calls[index][1])
+    timestamp = (timestamp_secs * 1000000) + timestamp_us
+    last_timestamp = (last_timestamp_secs * 1000000) + last_timestamp_us
     if (timestamp < last_timestamp):
-      sys.stderr.write("WARNING: last_timestamp: " + str(last_timestamp_secs)
-                       + " " + str(last_timestamp_ms) + " timestamp: "
-                       + str(timestamp_secs) + " " + str(timestamp_ms) + "\n")
+      raise Exception("last_timestamp: " + str(last_timestamp_secs)
+                       + " " + str(last_timestamp_us) + " timestamp: "
+                       + str(timestamp_secs) + " " + str(timestamp_us) + "\n")
     last_timestamp_secs = timestamp_secs
-    last_timestamp_ms = timestamp_ms
+    last_timestamp_us = timestamp_us
     index = index + 1
 
 def Convert (call_lines, startAddr, endAddr):
@@ -100,19 +100,19 @@ def Convert (call_lines, startAddr, endAddr):
   address in shared library.
 
   Returns:
-     list of calls as tuples (sec, msec, pid:tid, callee)
+     list of calls as tuples (sec, usec, pid:tid, callee)
   """
   converted_calls = []
   call_addresses = []
   for fields in call_lines:
     secs = int (fields[0])
-    msecs = int (fields[1])
+    usecs = int (fields[1])
     callee = int (fields[3], 16)
     # print ("callee: " + hex (callee) + " start: " + hex (startAddr) + " end: "
     #        + hex (endAddr))
     if (callee >= startAddr and callee < endAddr
         and (not callee in call_addresses)):
-      converted_calls.append((secs, msecs, fields[2], (callee - startAddr)))
+      converted_calls.append((secs, usecs, fields[2], (callee - startAddr)))
       call_addresses.append(callee)
   return converted_calls
 
@@ -177,7 +177,7 @@ def main():
   merged_trace.sort(key=Timestamp)
 
   print "0-ffffffff r-xp 00000000 xx:00 00000 ./"
-  print "secs\tmsecs\tpid:threadid\tfunc"
+  print "secs\tusecs\tpid:threadid\tfunc"
   for call in merged_trace:
     print (str(call[0]) + "\t" + str(call[1]) + "\t" + call[2] + "\t" +
            hex(call[3]))

@@ -208,7 +208,7 @@ CygCommon::CygCommon() {
     }
   }
   mapsfile.close();
-  header_line_.append("\nsecs\tmsecs\tpid:threadid\tfunc\n");
+  header_line_.append("\nsecs\tusecs\tpid:threadid\tfunc\n");
 }
 
 void CygTlsLog::LogEnter(void* this_fn) {
@@ -222,9 +222,9 @@ void CygTlsLog::LogEnter(void* this_fn) {
     base::AutoLock lock(log_mutex_);
     if (buf_.capacity() < kBufMaxSize)
       buf_.reserve(kBufMaxSize);
-    struct timeval timestamp;
-    gettimeofday(&timestamp, NULL);
-    buf_.push_back(CygLogEntry(time(NULL), timestamp.tv_usec,
+    struct timespec timestamp;
+    clock_gettime(CLOCK_MONOTONIC, &timestamp);
+    buf_.push_back(CygLogEntry(timestamp.tv_sec, timestamp.tv_nsec / 1000,
                                getpid(), pthread_self(), this_fn));
     if (buf_.size() == kBufMaxSize) {
       FlushLog();

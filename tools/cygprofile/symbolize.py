@@ -26,7 +26,7 @@ def ParseLogLines(log_file_lines):
 
     Below is an example of a small log file:
     5086e000-52e92000 r-xp 00000000 b3:02 51276      libchromeview.so
-    secs       msecs      pid:threadid    func
+    secs       usecs      pid:threadid    func
     START
     1314897086 795828     3587:1074648168 0x509e105c
     1314897086 795874     3587:1074648168 0x509e0eb4
@@ -35,7 +35,7 @@ def ParseLogLines(log_file_lines):
     END
 
   Returns:
-    call_info list with list of tuples of the format (sec, msec, call id,
+    call_info list with list of tuples of the format (sec, usec, call id,
     function address called)
   """
   call_lines = []
@@ -54,12 +54,12 @@ def ParseLogLines(log_file_lines):
   # Convert strings to int in fields.
   call_info = []
   for call_line in call_lines:
-    (sec_timestamp, msec_timestamp) = map(int, call_line[0:2])
+    (sec_timestamp, usec_timestamp) = map(int, call_line[0:2])
     callee_id = call_line[2]
     addr = int(call_line[3], 16)
     if vm_start < addr:
       addr -= vm_start
-      call_info.append((sec_timestamp, msec_timestamp, callee_id, addr))
+      call_info.append((sec_timestamp, usec_timestamp, callee_id, addr))
 
   return call_info
 
