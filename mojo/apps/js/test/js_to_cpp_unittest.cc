@@ -20,6 +20,11 @@
 
 namespace mojo {
 namespace js {
+
+// Global value updated by some checks to prevent compilers from optimizing
+// reads out of existence.
+uint32 g_waste_accumulator = 0;
+
 namespace {
 
 // Negative numbers with different values in each byte, the last of
@@ -106,6 +111,30 @@ void CheckSampleEchoArgs(const js_to_cpp::EchoArgs& arg) {
     EXPECT_EQ(std::string("one"), arg.string_array()[0].To<std::string>());
     EXPECT_EQ(std::string("two"), arg.string_array()[1].To<std::string>());
     EXPECT_EQ(std::string("three"), arg.string_array()[2].To<std::string>());
+}
+
+void CheckDataPipe(MojoHandle data_pipe_handle) {
+  char buffer[100];
+  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
+  MojoResult result = MojoReadData(
+      data_pipe_handle, buffer, &buffer_size, MOJO_READ_DATA_FLAG_NONE);
+  EXPECT_EQ(MOJO_RESULT_OK, result);
+  EXPECT_EQ(64u, buffer_size);
+  for (int i = 0; i < 64; ++i) {
+    EXPECT_EQ(i, buffer[i]);
+  }
+}
+
+void CheckCorruptedString(const mojo::String& arg) {
+  // The values don't matter so long as all accesses are within bounds.
+  std::string name = arg.To<std::string>();
+  for (size_t i = 0; i < name.length(); ++i)
+    g_waste_accumulator += name[i];
+}
+
+void CheckCorruptedStringArray(const mojo::Array<mojo::String>& string_array) {
+  for (size_t i = 0; i < string_array.size(); ++i)
+    CheckCorruptedString(string_array[i]);
 }
 
 // Base Provider implementation class. It's expected that tests subclass and
@@ -203,6 +232,7 @@ class EchoCppSideConnection : public CppSideConnection {
     EXPECT_EQ(-1, arg2.si16());
     EXPECT_EQ(-1, arg2.si8());
     EXPECT_EQ(std::string("going"), arg2.name().To<std::string>());
+    CheckDataPipe(arg2.data_handle().get().value());
   }
 
   virtual void TestFinished() OVERRIDE {
@@ -233,8 +263,13 @@ class BitFlipCppSideConnection : public CppSideConnection {
     js_side_->BitFlip(BuildSampleEchoArgs());
   }
 
-  virtual void BitFlipResponse(const js_to_cpp::EchoArgs& arg1) OVERRIDE {
-    // TODO(tsepez): How to check, may be corrupt in various ways.
+  virtual void BitFlipResponse(const js_to_cpp::EchoArgs& arg) OVERRIDE {
+    if (arg.is_null())
+      return;
+    CheckCorruptedString(arg.name());
+    CheckCorruptedStringArray(arg.string_array());
+    if (arg.data_handle().is_valid())
+      CheckDataPipe(arg.data_handle().get().value());
   }
 
   virtual void TestFinished() OVERRIDE {
