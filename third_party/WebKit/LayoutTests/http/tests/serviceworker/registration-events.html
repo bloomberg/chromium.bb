@@ -6,24 +6,9 @@
 <script>
 var t = async_test('Registration: events');
 t.step(function() {
-
-    // This always tests fresh registration, so unregister it first.
-    navigator.serviceWorker.unregister('/in-scope/*').then(
-        t.step_func(doRegister),
-        unreached_rejection(t, 'Unregister should not fail')
-    );
-
-    function doRegister() {
-        navigator.serviceWorker.register(
-            'resources/events-worker.js',
-            {scope: '/in-scope/*'}
-        ).then(
-            t.step_func(onRegister),
-            t.step_func(function(reason) {
-                assert_unreached('register failed: ' + reason.message);
-            })
-        );
-    }
+    var scope = '/in-scope/*';
+    service_worker_unregister_and_register(
+        t, 'resources/events-worker.js', scope, onRegister);
 
     function sendMessagePort(worker, from) {
         var messageChannel = new MessageChannel();
@@ -40,7 +25,7 @@ t.step(function() {
                 assert_array_equals(e.data.events,
                                     ['install', 'activate'],
                                    'Worker should see install then activate events');
-                t.done();
+                service_worker_unregister_and_done(t, scope);
             });
         });
     }

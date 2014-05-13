@@ -2,18 +2,20 @@
 <title>Service Worker: Registration</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
 <script>
 (function() {
     var t = async_test('Registering normal pattern');
     t.step(function() {
+        var scope = '/registration/*';
         navigator.serviceWorker.register(
             'resources/registration-worker.js',
-            {scope: '/registration/*'}
+            {scope: scope}
         ).then(
             t.step_func(function(worker) {
                 assert_true(worker instanceof ServiceWorker,
                             'Successfully registered.');
-                t.done();
+                service_worker_unregister_and_done(t, scope);
             }),
             t.step_func(function(reason) {
                 assert_unreached('Registration should succeed, but failed: ' + reason.name);

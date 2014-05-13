@@ -7,21 +7,14 @@
 var test = async_test('Verify Indexed DB operation in a Service Worker');
 test.step(function() {
     var scope = 'resources/blank.html';
-    navigator.serviceWorker.unregister(scope).then(
-        doTest,
-        unreached_rejection(test, 'Unregister should not fail')
-    );
+    service_worker_unregister_and_register(
+        test, 'resources/indexeddb-worker.js', scope, onRegister);
 
-    function doTest() {
-      navigator.serviceWorker.register('resources/indexeddb-worker.js',
-                                      {scope: scope}).then(
-          test.step_func(function(worker) {
-              var messageChannel = new MessageChannel();
-              messageChannel.port1.onmessage = test.step_func(onMessage);
+    function onRegister(worker) {
+        var messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = test.step_func(onMessage);
 
-              worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
-          }),
-          unreached_rejection(test, 'Registration should succeed, but failed'));
+        worker.postMessage({port: messageChannel.port2}, [messageChannel.port2]);
     }
 
     function onMessage() {
@@ -34,7 +27,7 @@ test.step(function() {
             getRequest.onsuccess = test.step_func(function() {
                 assert_equals(getRequest.result, 'value',
                               'The get() result should match what the worker put().');
-                test.done();
+                service_worker_unregister_and_done(test, scope);
             });
         });
     }

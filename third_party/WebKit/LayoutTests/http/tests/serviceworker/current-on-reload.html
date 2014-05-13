@@ -3,7 +3,6 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.js"></script>
-<script src="resources/testutils.js"></script>
 <body>
 <script>
 var t = async_test('current is set upon reload after registration');
@@ -39,7 +38,7 @@ t.step(function() {
         if (reloaded) {
             assert_true(w.navigator.serviceWorker.current instanceof w.ServiceWorker,
                         'current should be a ServiceWorker object upon reload');
-            t.done();
+            service_worker_unregister_and_done(t, scope);
             return;
         }
 

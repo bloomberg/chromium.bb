@@ -1,24 +1,16 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/test-helpers.js"></script>
 <body>
 <script>
 (function () {
     var t = async_test('Service Worker state property and "statechange" event');
     var currentState = 'test-is-starting';
+    var scope = '/state/*';
 
-    navigator.serviceWorker.unregister('/state/*').then(register, register);
-
-    function register() {
-        navigator.serviceWorker.register(
-            'resources/state-worker.js', {scope: '/state/*'}
-        ).then(t.step_func(onRegister), t.step_func(onRegisterFail));
-    }
-
-    function onRegisterFail(reason) {
-        assert_unreached('registration should not fail.');
-        t.done();
-    }
+    service_worker_unregister_and_register(
+        t, 'resources/state-worker.js', scope, onRegister);
 
     function onRegister(sw) {
         sw.addEventListener('statechange', t.step_func(onStateChange));
@@ -68,13 +60,8 @@
 
         checkStateTransition(event.target.state);
 
-        if (event.target.state == 'active') {
-            navigator.serviceWorker.unregister('/state/*').then(done, done);
-        }
-    }
-
-    function done() {
-        t.done();
+        if (event.target.state == 'active')
+            service_worker_unregister_and_done(t, scope);
     }
 }());
 </script>

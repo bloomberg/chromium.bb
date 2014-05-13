@@ -20,6 +20,26 @@ function service_worker_test(url, description) {
     });
 }
 
+function service_worker_unregister_and_register(test, url, scope, onregister) {
+    var options = scope ? { scope: scope } : {};
+    return navigator.serviceWorker.unregister(scope).then(
+        // FIXME: Wrap this with test.step_func once testharness.js is updated.
+        function() {
+            return navigator.serviceWorker.register(url, options);
+        },
+        unreached_rejection(test, 'Unregister should not fail')
+    ).then(
+        test.step_func(onregister),
+        unreached_rejection(test, 'Registration should not fail')
+    );
+}
+
+function service_worker_unregister_and_done(test, scope) {
+    navigator.serviceWorker.unregister(scope).then(
+        test.done.bind(test),
+        unreached_rejection(test, 'Unregister should not fail'));
+}
+
 // FIXME: Replace this with test.unreached_func(desc) once testharness.js is updated
 // Use with unexpected event handlers or Promise rejection.
 // E.g.:

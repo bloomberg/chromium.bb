@@ -7,6 +7,7 @@
 var t = async_test('Registration: end-to-end');
 t.step(function() {
 
+    var scope = '/in-scope/*';
     var serviceWorkerStates = [];
     var lastServiceWorkerState = '';
     var receivedMessageFromPort = '';
@@ -20,22 +21,8 @@ t.step(function() {
         ++currentChangeCount;
     };
 
-    // This always tests fresh registration, so unregister it first.
-    navigator.serviceWorker.unregister('/in-scope/*').then(
-        t.step_func(doRegister),
-        unreached_func(t, 'unregister should not reject')
-    );
-
-    function doRegister() {
-        navigator.serviceWorker.register(
-                'resources/end-to-end-worker.js',
-                {scope: '/in-scope/*'}
-        ).then(
-            t.step_func(onRegister)
-        ).catch(
-            unreached_func(t, 'Registration failed')
-        );
-    }
+    service_worker_unregister_and_register(
+        t, 'resources/end-to-end-worker.js', scope, onRegister);
 
     function sendMessagePort(worker, from) {
         var messageChannel = new MessageChannel();
@@ -96,7 +83,7 @@ t.step(function() {
 
             assert_equals(receivedMessageFromPort, 'Ack for: registering doc');
 
-            t.done();
+            service_worker_unregister_and_done(t, scope);
         }));
     }
 });
