@@ -66,6 +66,9 @@ static const char kFrontendHostMethod[] = "method";
 static const char kFrontendHostParams[] = "params";
 static const char kTitleFormat[] = "Developer Tools - %s";
 
+static const char kDevicesChanged[] = "DevicesChanged";
+static const char kDeviceCountChanged[] = "DeviceCountChanged";
+
 std::string SkColorToRGBAString(SkColor color) {
   // We avoid StringPrintf because it will use locale specific formatters for
   // the double (e.g. ',' instead of '.' in German).
@@ -352,8 +355,9 @@ DevToolsUIBindings::~DevToolsUIBindings() {
     jobs_it->second->Stop();
   }
   indexing_jobs_.clear();
-  if (device_listener_enabled_)
-    EnableRemoteDeviceCounter(false);
+
+  while (!subscribers_.empty())
+    Unsubscribe(*subscribers_.begin());
 
   // Remove self from global list.
   DevToolsUIBindingsList* instances = g_instances.Pointer();
@@ -581,15 +585,41 @@ void DevToolsUIBindings::OpenUrlOnRemoteDeviceAndInspect(
   }
 }
 
-void DevToolsUIBindings::StartRemoteDevicesListener() {
-  remote_targets_handler_ = DevToolsTargetsUIHandler::CreateForAdb(
-      base::Bind(&DevToolsUIBindings::PopulateRemoteDevices,
-                 base::Unretained(this)),
-      profile_);
+void DevToolsUIBindings::Subscribe(const std::string& event_type) {
+  if (subscribers_.find(event_type) != subscribers_.end()) {
+    LOG(ERROR) << "Already subscribed for [" << event_type << "].";
+    return;
+  }
+
+  subscribers_.insert(event_type);
+
+  if (event_type == kDevicesChanged) {
+    remote_targets_handler_ = DevToolsTargetsUIHandler::CreateForAdb(
+        base::Bind(&DevToolsUIBindings::PopulateRemoteDevices,
+                   base::Unretained(this)),
+        profile_);
+  } else if (event_type == kDeviceCountChanged) {
+    EnableRemoteDeviceCounter(true);
+  } else {
+    LOG(ERROR) << "Attempt to start unknown event listener " << event_type;
+  }
 }
 
-void DevToolsUIBindings::StopRemoteDevicesListener() {
-  remote_targets_handler_.reset();
+void DevToolsUIBindings::Unsubscribe(const std::string& event_type) {
+  if (subscribers_.find(event_type) == subscribers_.end()) {
+    LOG(ERROR) << "Not yet subscribed for [" << event_type << "]";
+    return;
+  }
+
+  subscribers_.erase(event_type);
+
+  if (event_type == kDevicesChanged) {
+    remote_targets_handler_.reset();
+  } else if (event_type == kDeviceCountChanged) {
+    EnableRemoteDeviceCounter(false);
+  } else {
+    LOG(ERROR) << "Attempt to stop unknown event listener " << event_type;
+  }
 }
 
 void DevToolsUIBindings::EnableRemoteDeviceCounter(bool enable) {
@@ -608,15 +638,13 @@ void DevToolsUIBindings::EnableRemoteDeviceCounter(bool enable) {
 
 void DevToolsUIBindings::DeviceCountChanged(int count) {
   base::FundamentalValue value(count);
-  CallClientFunction(
-      "InspectorFrontendAPI.setRemoteDeviceCount", &value, NULL, NULL);
+  DispatchEventOnFrontend(kDeviceCountChanged, &value);
 }
 
 void DevToolsUIBindings::PopulateRemoteDevices(
     const std::string& source,
     scoped_ptr<base::ListValue> targets) {
-  CallClientFunction(
-      "InspectorFrontendAPI.populateRemoteDevices", targets.get(), NULL, NULL);
+  DispatchEventOnFrontend(kDevicesChanged, targets.get());
 }
 
 void DevToolsUIBindings::FileSavedAs(const std::string& url) {
@@ -778,6 +806,18 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
   base::string16 javascript =
       base::UTF8ToUTF16(function_name + "(" + params + ");");
   web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
+}
+
+void DevToolsUIBindings::DispatchEventOnFrontend(
+    const std::string& event_type,
+    const base::Value* event_data) {
+  if (subscribers_.find(event_type) == subscribers_.end())
+    return;
+  base::StringValue event_type_value = base::StringValue(event_type);
+  CallClientFunction("InspectorFrontendAPI.dispatchEventToListeners",
+                     &event_type_value,
+                     event_data,
+                     NULL);
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {

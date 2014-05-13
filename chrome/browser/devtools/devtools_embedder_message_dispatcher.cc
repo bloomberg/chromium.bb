@@ -268,11 +268,9 @@ DevToolsEmbedderMessageDispatcher*
   d->RegisterHandler("resetZoom", &Delegate::ResetZoom, delegate);
   d->RegisterHandler("openUrlOnRemoteDeviceAndInspect",
                      &Delegate::OpenUrlOnRemoteDeviceAndInspect, delegate);
-  d->RegisterHandler("startRemoteDevicesListener",
-                     &Delegate::StartRemoteDevicesListener, delegate);
-  d->RegisterHandler("stopRemoteDevicesListener",
-                     &Delegate::StopRemoteDevicesListener, delegate);
-  d->RegisterHandler("enableRemoteDeviceCounter",
-                     &Delegate::EnableRemoteDeviceCounter, delegate);
+  d->RegisterHandler(
+      "subscribe", &Delegate::Subscribe, delegate);
+  d->RegisterHandler(
+      "unsubscribe", &Delegate::Unsubscribe, delegate);
   return d;
 }

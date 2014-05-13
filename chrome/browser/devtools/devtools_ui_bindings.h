@@ -76,7 +76,8 @@ class DevToolsUIBindings : public content::NotificationObserver,
                           const base::Value* arg1,
                           const base::Value* arg2,
                           const base::Value* arg3);
-
+  void DispatchEventOnFrontend(const std::string& event_type,
+                               const base::Value* event_data);
  private:
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -121,9 +122,10 @@ class DevToolsUIBindings : public content::NotificationObserver,
   virtual void ResetZoom() OVERRIDE;
   virtual void OpenUrlOnRemoteDeviceAndInspect(const std::string& browser_id,
                                                const std::string& url) OVERRIDE;
-  virtual void StartRemoteDevicesListener() OVERRIDE;
-  virtual void StopRemoteDevicesListener() OVERRIDE;
-  virtual void EnableRemoteDeviceCounter(bool enable) OVERRIDE;
+  virtual void Subscribe(const std::string& event_type) OVERRIDE;
+  virtual void Unsubscribe(const std::string& event_type) OVERRIDE;
+
+  void EnableRemoteDeviceCounter(bool enable);
 
   // DevToolsAndroidBridge::DeviceCountListener override:
   virtual void DeviceCountChanged(int count) OVERRIDE;
@@ -177,6 +179,8 @@ class DevToolsUIBindings : public content::NotificationObserver,
       IndexingJobsMap;
   IndexingJobsMap indexing_jobs_;
 
+  typedef std::set<std::string> Subscribers;
+  Subscribers subscribers_;
   scoped_ptr<DevToolsTargetsUIHandler> remote_targets_handler_;
   scoped_ptr<DevToolsEmbedderMessageDispatcher> embedder_message_dispatcher_;
   base::WeakPtrFactory<DevToolsUIBindings> weak_factory_;
