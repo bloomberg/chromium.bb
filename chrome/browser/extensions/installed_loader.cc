@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
@@ -28,6 +29,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extension_set.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -191,6 +193,7 @@ void InstalledLoader::LoadAllExtensions() {
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
+  Profile* profile = extension_service_->profile();
   scoped_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
       extension_prefs_->GetInstalledExtensionsInfo());
 
@@ -230,7 +233,7 @@ void InstalledLoader::LoadAllExtensions() {
         ExtensionErrorReporter::GetInstance()->ReportLoadError(
             info->extension_path,
             error,
-            extension_service_->profile(),
+            profile,
             false);  // Be quiet.
         continue;
       }
@@ -243,9 +246,8 @@ void InstalledLoader::LoadAllExtensions() {
   }
 
   for (size_t i = 0; i < extensions_info->size(); ++i) {
-    if (extensions_info->at(i)->extension_location == Manifest::COMMAND_LINE)
-      continue;
-    Load(*extensions_info->at(i), should_write_prefs);
+    if (extensions_info->at(i)->extension_location != Manifest::COMMAND_LINE)
+      Load(*extensions_info->at(i), should_write_prefs);
   }
 
   extension_service_->OnLoadedInstalledExtensions();
@@ -282,9 +284,16 @@ void InstalledLoader::LoadAllExtensions() {
   int disabled_for_permissions_count = 0;
   int item_user_count = 0;
   int non_webstore_ntp_override_count = 0;
+  int incognito = 0;
+  int not_incognito = 0;
+  int file_access = 0;
+  int not_file_access = 0;
+
   const ExtensionSet& extensions = extension_registry_->enabled_extensions();
-  ExtensionSet::const_iterator ex;
-  for (ex = extensions.begin(); ex != extensions.end(); ++ex) {
+
+  for (ExtensionSet::const_iterator ex = extensions.begin();
+       ex != extensions.end();
+       ++ex) {
     Manifest::Location location = (*ex)->location();
     Manifest::Type type = (*ex)->GetType();
     if ((*ex)->is_app()) {
@@ -412,11 +421,32 @@ void InstalledLoader::LoadAllExtensions() {
 
     extension_service_->RecordPermissionMessagesHistogram(
         ex->get(), "Extensions.Permissions_Load");
+
+    // For incognito and file access, skip unpacked extensions because they get
+    // file access up-front, and the data isn't useful. Skip anything that
+    // doesn't appear in settings.
+    if ((*ex)->location() != Manifest::UNPACKED &&
+        (*ex)->ShouldDisplayInExtensionSettings()) {
+      if ((*ex)->can_be_incognito_enabled()) {
+        if (util::IsIncognitoEnabled((*ex)->id(), profile))
+          ++incognito;
+        else
+          ++not_incognito;
+      }
+      if ((*ex)->wants_file_access()) {
+        if (util::AllowFileAccess((*ex)->id(), profile))
+          ++file_access;
+        else
+          ++not_file_access;
+      }
+    }
   }
 
   const ExtensionSet& disabled_extensions =
       extension_registry_->disabled_extensions();
-  for (ex = disabled_extensions.begin(); ex != disabled_extensions.end();
+
+  for (ExtensionSet::const_iterator ex = disabled_extensions.begin();
+       ex != disabled_extensions.end();
        ++ex) {
     if (extension_prefs_->DidExtensionEscalatePermissions((*ex)->id())) {
       ++disabled_for_permissions_count;
@@ -479,6 +509,10 @@ void InstalledLoader::LoadAllExtensions() {
                            disabled_for_permissions_count);
   UMA_HISTOGRAM_COUNTS_100("Extensions.NonWebStoreNewTabPageOverrides",
                            non_webstore_ntp_override_count);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.IncognitoAllowed", incognito);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.IncognitoNotAllowed", not_incognito);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.FileAccessAllowed", file_access);
+  UMA_HISTOGRAM_COUNTS_100("Extensions.FileAccessNotAllowed", not_file_access);
 }
 
 int InstalledLoader::GetCreationFlags(const ExtensionInfo* info) {
