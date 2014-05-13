@@ -182,6 +182,12 @@ public:
     const ViewportConstrainedObjectSet* viewportConstrainedObjects() const { return m_viewportConstrainedObjects.get(); }
     bool hasViewportConstrainedObjects() const { return m_viewportConstrainedObjects && m_viewportConstrainedObjects->size() > 0; }
 
+    typedef HashSet<RenderObject*> ViewportConstrainedBackgroundObjectSet;
+    void addViewportConstrainedBackgroundObject(RenderObject&);
+    void removeViewportConstrainedBackgroundObject(RenderObject&);
+    const ViewportConstrainedBackgroundObjectSet* viewportConstrainedBackgroundObjects() const { return m_viewportConstrainedBackgroundObjects.get(); }
+    bool hasViewportConstrainedBackgroundObjects() const { return m_viewportConstrainedBackgroundObjects && !m_viewportConstrainedBackgroundObjects->isEmpty(); }
+
     void handleLoadCompleted();
 
     void updateAnnotatedRegions();
@@ -317,6 +323,9 @@ public:
     // which is to display the tickmarks corresponding to find results.
     // If |m_tickmarks| is empty, the default behavior is restored.
     void setTickmarks(const Vector<IntRect>& tickmarks) { m_tickmarks = tickmarks; }
+
+    void invalidateFixedBackgroundChildren(const IntRect& updateRect);
+    void invalidateFixedBackgroundDescendants(const IntRect& updateRect, const RenderObject* ancestor);
 
     // ScrollableArea interface
     virtual void invalidateScrollbarRect(Scrollbar*, const IntRect&) OVERRIDE;
@@ -502,7 +511,10 @@ private:
     OwnPtr<ScrollableAreaSet> m_scrollableAreas;
     OwnPtr<ResizerAreaSet> m_resizerAreas;
     OwnPtr<ViewportConstrainedObjectSet> m_viewportConstrainedObjects;
-
+    // This is used to track objects who have background-attachment:fixed
+    // since they have to be updated when they move even if they are on a
+    // composited layer.
+    OwnPtr<ViewportConstrainedBackgroundObjectSet> m_viewportConstrainedBackgroundObjects;
     bool m_hasSoftwareFilters;
 
     float m_visibleContentScaleFactor;
