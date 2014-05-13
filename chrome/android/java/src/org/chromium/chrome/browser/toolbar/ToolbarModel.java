@@ -42,10 +42,10 @@ public class ToolbarModel {
         mNativeToolbarModelAndroid = 0;
     }
 
-    /** @return The search terms extracted from the current url if query extraction is enabled. */
-    public String getSearchTerms() {
+    /** @return The formatted text (URL or search terms) for display. */
+    public String getText() {
         if (mNativeToolbarModelAndroid == 0) return null;
-        return nativeGetSearchTerms(mNativeToolbarModelAndroid);
+        return nativeGetText(mNativeToolbarModelAndroid);
     }
 
     /** @return The parameter in the url that triggers query extraction. */
@@ -62,7 +62,7 @@ public class ToolbarModel {
 
     private native long nativeInit(ToolbarModelDelegate delegate);
     private native void nativeDestroy(long nativeToolbarModelAndroid);
-    private native String nativeGetSearchTerms(long nativeToolbarModelAndroid);
+    private native String nativeGetText(long nativeToolbarModelAndroid);
     private native String nativeGetQueryExtractionParam(long nativeToolbarModelAndroid);
     private native String nativeGetCorpusChipText(long nativeToolbarModelAndroid);
 }

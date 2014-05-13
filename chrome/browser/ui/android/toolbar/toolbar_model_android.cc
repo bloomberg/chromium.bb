@@ -26,8 +26,8 @@ void ToolbarModelAndroid::Destroy(JNIEnv* env, jobject obj) {
   delete this;
 }
 
-ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetSearchTerms(JNIEnv* env,
-                                                                jobject obj) {
+ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetText(JNIEnv* env,
+                                                         jobject obj) {
   return base::android::ConvertUTF16ToJavaString(env,
                                                  toolbar_model_->GetText());
 }

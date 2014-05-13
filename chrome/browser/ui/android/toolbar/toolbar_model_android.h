@@ -24,7 +24,7 @@ class ToolbarModelAndroid : public ToolbarModelDelegate {
   virtual ~ToolbarModelAndroid();
 
   void Destroy(JNIEnv* env, jobject obj);
-  base::android::ScopedJavaLocalRef<jstring> GetSearchTerms(
+  base::android::ScopedJavaLocalRef<jstring> GetText(
       JNIEnv* env,
       jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetQueryExtractionParam(
