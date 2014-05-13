@@ -1002,3 +1002,5 @@ crbug.com/372917 http/tests/security/contentSecurityPolicy/connect-src-beacon-re
 
 crbug.com/372260 [ Debug ] virtual/serviceworker/http/tests/serviceworker/postmessage-msgport-to-client.html [ Pass Crash ]
 crbug.com/372260 [ Release ] virtual/serviceworker/http/tests/serviceworker/postmessage-msgport-to-client.html [ Pass Timeout ]
+
+crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
