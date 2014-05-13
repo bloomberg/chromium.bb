@@ -1314,7 +1314,21 @@ want to set 'managed': False in .gclient.
               prev_url, self.root_dir, entry_fixed, self.outbuf)
 
           # Check to see if this directory is now part of a higher-up checkout.
-          if scm.GetCheckoutRoot() in full_entries:
+          # The directory might be part of a git OR svn checkout.
+          scm_root = None
+          for scm_class in (gclient_scm.scm.GIT, gclient_scm.scm.SVN):
+            try:
+              scm_root = scm_class.GetCheckoutRoot(scm.checkout_path)
+            except subprocess2.CalledProcessError:
+              pass
+            if scm_root:
+              break
+          else:
+            logging.warning('Could not find checkout root for %s. Unable to '
+                            'determine whether it is part of a higher-level '
+                            'checkout, so not removing.' % entry)
+            continue
+          if scm_root in full_entries:
             logging.info('%s is part of a higher level checkout, not '
                          'removing.', scm.GetCheckoutRoot())
             continue
