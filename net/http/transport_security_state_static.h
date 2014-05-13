@@ -762,7 +762,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {17, false, "\003www\010intercom\002io", true, kNoPins, DOMAIN_NOT_PINNED },
   {17, true, "\010fatzebra\003com\002au", true, kNoPins, DOMAIN_NOT_PINNED },
   {18, true, "\007csawctf\004poly\003edu", true, kNoPins, DOMAIN_NOT_PINNED },
-  {18, false, "\014makeyourlaws\003org", true, kNoPins, DOMAIN_NOT_PINNED },
+  {18, true, "\014makeyourlaws\003org", true, kNoPins, DOMAIN_NOT_PINNED },
   {22, false, "\003www\014makeyourlaws\003org", true, kNoPins, DOMAIN_NOT_PINNED },
   {16, true, "\003iop\006intuit\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {14, false, "\010surfeasy\003com", true, kNoPins, DOMAIN_NOT_PINNED },
@@ -955,6 +955,10 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {14, true, "\010noexpect\003org", true, kNoPins, DOMAIN_NOT_PINNED },
   {12, false, "\006airbnb\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {16, true, "\003www\006airbnb\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {10, false, "\004usaa\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {14, false, "\003www\004usaa\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {17, false, "\006mobile\004usaa\003com", true, kNoPins, DOMAIN_NOT_PINNED },
+  {12, true, "\007subrosa\002io", true, kNoPins, DOMAIN_NOT_PINNED },
 };
 static const size_t kNumPreloadedSTS = ARRAYSIZE_UNSAFE(kPreloadedSTS);
 
