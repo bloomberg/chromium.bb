@@ -89,16 +89,8 @@ void FullscreenController::didEnterFullScreen()
             if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()) {
                 Element* element = FullscreenElementStack::currentFullScreenElementFrom(*doc);
                 ASSERT(element);
-                if (isHTMLMediaElement(*element)) {
-                    HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
-                    if (mediaElement->player() && mediaElement->player()->canShowFullscreenOverlay()
-                        // FIXME: There is no embedder-side handling in layout test mode.
-                        && !isRunningLayoutTest()) {
-                        mediaElement->player()->showFullscreenOverlay();
-                    }
-                    if (m_webViewImpl->layerTreeView())
-                        m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
-                }
+                if (isHTMLMediaElement(*element) && m_webViewImpl->layerTreeView())
+                    m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
             }
         }
     }
@@ -166,6 +158,18 @@ void FullscreenController::enterFullScreenForElement(WebCore::Element* element)
         return;
     }
 
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()
+        && isHTMLMediaElement(element)
+        // FIXME: There is no embedder-side handling in layout test mode.
+        && !isRunningLayoutTest()) {
+        HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
+        if (mediaElement->player() && mediaElement->player()->canShowFullscreenOverlay()) {
+            mediaElement->player()->showFullscreenOverlay();
+            m_provisionalFullScreenElement = element;
+            return;
+        }
+    }
+
     // We need to transition to fullscreen mode.
     if (WebViewClient* client = m_webViewImpl->client()) {
         if (client->enterFullScreen())
@@ -178,7 +182,15 @@ void FullscreenController::exitFullScreenForElement(WebCore::Element* element)
     // The client is exiting full screen, so don't send a notification.
     if (m_isCancelingFullScreen)
         return;
-
+    if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled()
+        && isHTMLMediaElement(element)
+        // FIXME: There is no embedder-side handling in layout test mode.
+        && !isRunningLayoutTest()) {
+        HTMLMediaElement* mediaElement = toHTMLMediaElement(element);
+        if (mediaElement->player())
+            mediaElement->player()->hideFullscreenOverlay();
+        return;
+    }
     if (WebViewClient* client = m_webViewImpl->client())
         client->exitFullScreen();
 }
