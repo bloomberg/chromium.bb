@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -79,15 +80,21 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
         // IMMERSIVE_STICKY mode is used, the system clears this flag (leaving the FULLSCREEN flag
         // set) when the user swipes the edge to reveal the bars temporarily. When this happens,
         // the action-bar should remain hidden.
-        int fullscreenFlags = View.SYSTEM_UI_FLAG_LOW_PROFILE;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            fullscreenFlags |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        }
+        int fullscreenFlags = getSystemUiFlags();
         if ((visibility & fullscreenFlags) != 0) {
             hideActionBar();
         } else {
             showActionBar();
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private int getSystemUiFlags() {
+        int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            flags |= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        }
+        return flags;
     }
 
     public void showActionBar() {
@@ -106,10 +113,7 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
 
         // LOW_PROFILE gives the status and navigation bars a "lights-out" appearance.
         // FULLSCREEN hides the status bar on supported devices (4.1 and above).
-        int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            flags |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-        }
+        int flags = getSystemUiFlags();
 
         // HIDE_NAVIGATION hides the navigation bar. However, if the user touches the screen, the
         // event is not seen by the application and instead the navigation bar is re-shown.
