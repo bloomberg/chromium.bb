@@ -5,15 +5,19 @@
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
 
 #include "ash/shell.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event_source.h"
 
 namespace chromeos {
 
 EventRewriterController::EventRewriterController() : initialized_(false) {
+  // Add the controller as an observer for new root windows.
+  aura::Env::GetInstance()->AddObserver(this);
 }
 
 EventRewriterController::~EventRewriterController() {
+  aura::Env::GetInstance()->RemoveObserver(this);
   // Remove the rewriters from every root window EventSource and destroy them.
   for (EventRewriters::iterator rewriter_iter = rewriters_.begin();
        rewriter_iter != rewriters_.end();
