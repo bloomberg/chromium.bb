@@ -20,12 +20,12 @@ button: 2
 x: 100
 y: 200
 -----Event-----
-type: contextmenu
+type: mouseup
 button: 2
 x: 100
 y: 200
 -----Event-----
-type: mouseup
+type: contextmenu
 button: 2
 x: 100
 y: 200

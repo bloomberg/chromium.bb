@@ -3,10 +3,13 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
 <script>
 
-window.addEventListener("mousedown", logEvent);
-window.addEventListener("mouseup", logEvent);
-window.addEventListener("mousemove", logEvent);
-window.addEventListener("contextmenu", logEvent);
+function addListeners()
+{
+    window.addEventListener("mousedown", logEvent);
+    window.addEventListener("mouseup", logEvent);
+    window.addEventListener("mousemove", logEvent);
+    window.addEventListener("contextmenu", logEvent);
+}
 
 function logEvent(event)
 {
@@ -59,8 +62,10 @@ function test()
         }
     ];
 
-    for (var i = 0; i < events.length; i++)
-        InspectorTest.sendCommand("Input.dispatchMouseEvent", events[i], checkResponse.bind(undefined, i == events.length - 1));
+    InspectorTest.executeInPage("addListeners();", function() {
+        for (var i = 0; i < events.length; i++)
+            InspectorTest.sendCommand("Input.dispatchMouseEvent", events[i], checkResponse.bind(undefined, i == events.length - 1));
+    });
 
     function checkResponse(isLastCommand, msg)
     {

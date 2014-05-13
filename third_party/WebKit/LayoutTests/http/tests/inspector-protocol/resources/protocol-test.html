@@ -228,6 +228,21 @@ InspectorTest.completeTest = function()
     this.sendCommand("Runtime.evaluate", { "expression": "closeTest();"} );
 }
 
+/**
+ * Evaluates string in page.
+ * @param {string} message
+ * @param {!function} callback
+ */
+InspectorTest.executeInPage = function(string, callback)
+{
+    this.sendCommand("Runtime.evaluate", { "expression": string }, function(message) {
+        if (message.error)
+            InspectorTest.log("Error while executing '" + string + "': " + message.error.message);
+        else
+            callback();
+    });
+};
+
 InspectorTest.completeTestIfError = function(messageObject)
 {
     if (messageObject.error) {

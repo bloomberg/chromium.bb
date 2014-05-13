@@ -1,9 +1,4 @@
 -----Event-----
-type: mousemove
-button: 0
-x: 0
-y: 0
------Event-----
 type: mousedown
 button: 0
 x: 100
