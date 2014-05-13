@@ -9,7 +9,6 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.os.Handler;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -17,7 +16,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
-import org.chromium.base.TraceEvent;
 import org.chromium.ui.base.WindowAndroid;
 
 /***
@@ -27,30 +25,15 @@ import org.chromium.ui.base.WindowAndroid;
  * Note that only one ContentViewCore can be shown at a time.
  */
 @JNINamespace("content")
-public class ContentViewRenderView extends FrameLayout implements WindowAndroid.VSyncClient {
-    private static final int MAX_SWAP_BUFFER_COUNT = 2;
-
+public class ContentViewRenderView extends FrameLayout {
     // The native side of this object.
     private long mNativeContentViewRenderView;
     private final SurfaceHolder.Callback mSurfaceCallback;
 
     private final SurfaceView mSurfaceView;
-    private final WindowAndroid mRootWindow;
-
-    private int mPendingRenders;
-    private int mPendingSwapBuffers;
-    private boolean mNeedToRender;
-
     protected ContentViewCore mContentViewCore;
 
     private ContentReadbackHandler mContentReadbackHandler;
-
-    private final Runnable mRenderRunnable = new Runnable() {
-        @Override
-        public void run() {
-            render();
-        }
-    };
 
     /**
      * Constructs a new ContentViewRenderView that should be can to a view hierarchy.
@@ -63,8 +46,6 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
         mNativeContentViewRenderView = nativeInit(rootWindow.getNativePointer());
         assert mNativeContentViewRenderView != 0;
 
-        mRootWindow = rootWindow;
-        rootWindow.setVSyncClient(this);
         mSurfaceView = createSurfaceView(getContext());
         mSurfaceView.setZOrderMediaOverlay(true);
         mSurfaceCallback = new SurfaceHolder.Callback() {
@@ -85,9 +66,6 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
 
                 assert mNativeContentViewRenderView != 0;
                 nativeSurfaceCreated(mNativeContentViewRenderView);
-
-                mPendingSwapBuffers = 0;
-                mPendingRenders = 0;
 
                 onReadyToRender();
             }
@@ -112,19 +90,6 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
             }
         };
         mContentReadbackHandler.initNativeContentReadbackHandler();
-    }
-
-    @Override
-    public void onVSync(long vsyncTimeMicros) {
-        if (mNeedToRender) {
-            if (mPendingSwapBuffers + mPendingRenders <= MAX_SWAP_BUFFER_COUNT) {
-                mNeedToRender = false;
-                mPendingRenders++;
-                render();
-            } else {
-                TraceEvent.instant("ContentViewRenderView:bail");
-            }
-        }
     }
 
     /**
@@ -153,7 +118,6 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
     public void destroy() {
         mContentReadbackHandler.destroy();
         mContentReadbackHandler = null;
-        mRootWindow.setVSyncClient(null);
         mSurfaceView.getHolder().removeCallback(mSurfaceCallback);
         nativeDestroy(mNativeContentViewRenderView);
         mNativeContentViewRenderView = 0;
@@ -226,54 +190,17 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
     }
 
     @CalledByNative
-    private void requestRender() {
-        boolean rendererHasFrame =
-                mContentViewCore != null && mContentViewCore.consumePendingRendererFrame();
-
-        if (rendererHasFrame && mPendingSwapBuffers + mPendingRenders < MAX_SWAP_BUFFER_COUNT) {
-            TraceEvent.instant("requestRender:now");
-            mNeedToRender = false;
-            mPendingRenders++;
-
-            // The handler can be null if we are detached from the window.  Calling
-            // {@link View#post(Runnable)} properly handles this case, but we lose the front of
-            // queue behavior.  That is okay for this edge case.
-            Handler handler = getHandler();
-            if (handler != null) {
-                handler.postAtFrontOfQueue(mRenderRunnable);
-            } else {
-                post(mRenderRunnable);
-            }
-        } else if (mPendingRenders <= 0) {
-            assert mPendingRenders == 0;
-            TraceEvent.instant("requestRender:later");
-            mNeedToRender = true;
-            mRootWindow.requestVSyncUpdate();
-        }
+    protected void onCompositorLayout() {
     }
 
     @CalledByNative
     private void onSwapBuffersCompleted() {
-        TraceEvent.instant("onSwapBuffersCompleted");
-
-        if (mPendingSwapBuffers == MAX_SWAP_BUFFER_COUNT && mNeedToRender) requestRender();
-        if (mPendingSwapBuffers > 0) mPendingSwapBuffers--;
-    }
-
-    protected void render() {
-        if (mPendingRenders > 0) mPendingRenders--;
-
-        boolean didDraw = nativeComposite(mNativeContentViewRenderView);
-        if (didDraw) {
-            mPendingSwapBuffers++;
-            if (mSurfaceView.getBackground() != null) {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mSurfaceView.setBackgroundResource(0);
-                    }
-                });
-            }
+        if (mSurfaceView.getBackground() != null) {
+            post(new Runnable() {
+                @Override public void run() {
+                    mSurfaceView.setBackgroundResource(0);
+                }
+            });
         }
     }
 
@@ -287,7 +214,6 @@ public class ContentViewRenderView extends FrameLayout implements WindowAndroid.
     private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
     private native void nativeSurfaceChanged(long nativeContentViewRenderView,
             int format, int width, int height, Surface surface);
-    private native boolean nativeComposite(long nativeContentViewRenderView);
     private native boolean nativeCompositeToBitmap(long nativeContentViewRenderView, Bitmap bitmap);
     private native void nativeSetOverlayVideoMode(long nativeContentViewRenderView,
             boolean enabled);

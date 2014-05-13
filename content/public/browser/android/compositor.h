@@ -69,8 +69,9 @@ class CONTENT_EXPORT Compositor {
   // The buffer is not modified if false is returned.
   virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect) = 0;
 
-  // Composite immediately. Used in single-threaded mode.
-  virtual void Composite() = 0;
+  // Request layout and draw. You only need to call this if you need to trigger
+  // Composite *without* having modified the layer tree.
+  virtual void SetNeedsComposite() = 0;
 
   // Generates a UIResource and returns a UIResourceId.  |is_transient|
   // indicates whether or not to release the resource once the bitmap

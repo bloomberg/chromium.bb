@@ -301,9 +301,6 @@ public class ContentViewCore
     // because the OSK was just brought up.
     private final Rect mFocusPreOSKViewportRect = new Rect();
 
-    // Whether we received a new frame since consumePendingRendererFrame() was last called.
-    private boolean mPendingRendererFrame = false;
-
     // On single tap this will store the x, y coordinates of the touch.
     private int mSingleTapX;
     private int mSingleTapY;
@@ -877,17 +874,6 @@ public class ContentViewCore
     public boolean isShowingInterstitialPage() {
         return mNativeContentViewCore == 0 ?
                 false : nativeIsShowingInterstitialPage(mNativeContentViewCore);
-    }
-
-    /**
-     * Mark any new frames that have arrived since this function was last called as non-pending.
-     *
-     * @return Whether there was a pending frame from the renderer.
-     */
-    public boolean consumePendingRendererFrame() {
-        boolean hadPendingFrame = mPendingRendererFrame;
-        mPendingRendererFrame = false;
-        return hadPendingFrame;
     }
 
     /**
@@ -2286,7 +2272,6 @@ public class ContentViewCore
         getContentViewClient().onOffsetsForFullscreenChanged(
                 controlsOffsetPix, contentOffsetYPix, overdrawBottomHeightPix);
 
-        mPendingRendererFrame = true;
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();
         }

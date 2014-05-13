@@ -11,14 +11,11 @@ namespace content {
 
 class CONTENT_EXPORT CompositorClient {
  public:
-  // Tells the client that it should schedule a composite.
-  virtual void ScheduleComposite() = 0;
+  // Gives the client a chance for layout changes before compositing.
+  virtual void Layout() {}
 
   // The compositor has completed swapping a frame.
-  virtual void OnSwapBuffersCompleted() {}
-
-  // The compositor will eventually swap a frame.
-  virtual void OnSwapBuffersPosted() {}
+  virtual void OnSwapBuffersCompleted(int pending_swap_buffers) {}
 
   // Tells the client that GL resources were lost and need to be reinitialized.
   virtual void DidLoseResources() {}

@@ -43,17 +43,14 @@ class ContentViewRenderView : public CompositorClient {
   jboolean CompositeToBitmap(JNIEnv* env, jobject obj, jobject java_bitmap);
   void SetOverlayVideoMode(JNIEnv* env, jobject obj, bool enabled);
 
-  // CompositorClient ---------------------------------------------------------
-  virtual void ScheduleComposite() OVERRIDE;
-  virtual void OnSwapBuffersPosted() OVERRIDE;
-  virtual void OnSwapBuffersCompleted() OVERRIDE;
+  // CompositorClient implementation
+  virtual void Layout() OVERRIDE;
+  virtual void OnSwapBuffersCompleted(int pending_swap_buffers) OVERRIDE;
 
  private:
   virtual ~ContentViewRenderView();
 
   void InitCompositor();
-
-  bool buffers_swapped_during_composite_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   scoped_ptr<LayerTreeBuildHelper> layer_tree_build_helper_;

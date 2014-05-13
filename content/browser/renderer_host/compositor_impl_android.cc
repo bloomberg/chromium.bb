@@ -238,7 +238,14 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       window_(NULL),
       surface_id_(0),
       client_(client),
-      root_window_(root_window) {
+      root_window_(root_window),
+      did_post_swapbuffers_(false),
+      ignore_schedule_composite_(false),
+      needs_composite_(false),
+      should_composite_on_vsync_(false),
+      did_composite_this_frame_(false),
+      pending_swapbuffers_(0U),
+      weak_factory_(this) {
   DCHECK(client);
   DCHECK(root_window);
   ImageTransportFactoryAndroid::AddObserver(this);
@@ -252,9 +259,69 @@ CompositorImpl::~CompositorImpl() {
   SetSurface(NULL);
 }
 
-void CompositorImpl::Composite() {
-  if (host_)
-    host_->Composite(gfx::FrameTime::Now());
+void CompositorImpl::PostComposite(base::TimeDelta delay) {
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CompositorImpl::Composite,
+                 weak_factory_.GetWeakPtr(),
+                 COMPOSITE_IMMEDIATELY),
+      delay);
+}
+
+void CompositorImpl::Composite(CompositingTrigger trigger) {
+  if (!host_)
+    return;
+
+  if (!needs_composite_)
+    return;
+
+  if (trigger != COMPOSITE_ON_VSYNC && should_composite_on_vsync_) {
+    TRACE_EVENT0("compositor", "CompositorImpl_DeferCompositeToVSync");
+    root_window_->RequestVSyncUpdate();
+    return;
+  }
+
+  // Don't Composite more than once in between vsync ticks.
+  if (did_composite_this_frame_) {
+    TRACE_EVENT0("compositor", "CompositorImpl_ThrottleComposite");
+    if (should_composite_on_vsync_)
+      root_window_->RequestVSyncUpdate();
+    else
+      PostComposite(vsync_period_);
+    return;
+  }
+
+  const unsigned int kMaxSwapBuffers = 2U;
+  DCHECK_LE(pending_swapbuffers_, kMaxSwapBuffers);
+  if (pending_swapbuffers_ == kMaxSwapBuffers) {
+    TRACE_EVENT0("compositor", "CompositorImpl_SwapLimit");
+    if (should_composite_on_vsync_)
+      root_window_->RequestVSyncUpdate();
+    else
+      PostComposite(vsync_period_);
+    return;
+  }
+
+  // Reset state before Layout+Composite since that might create more
+  // requests to Composite that we need to respect.
+  needs_composite_ = false;
+  should_composite_on_vsync_ = false;
+
+  // Ignore ScheduleComposite() from layer tree changes during Layout.
+  ignore_schedule_composite_ = true;
+  client_->Layout();
+  ignore_schedule_composite_ = false;
+
+  did_post_swapbuffers_ = false;
+  host_->Composite(gfx::FrameTime::Now());
+  if (did_post_swapbuffers_)
+    pending_swapbuffers_++;
+
+  if (trigger != COMPOSITE_ON_VSYNC) {
+    // Need to track vsync to avoid compositing more than once per frame.
+    root_window_->RequestVSyncUpdate();
+  }
+  did_composite_this_frame_ = true;
 }
 
 void CompositorImpl::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
@@ -316,6 +383,10 @@ void CompositorImpl::SetVisible(bool visible) {
     host_.reset();
     client_->UIResourcesAreInvalid();
   } else if (!host_) {
+    needs_composite_ = false;
+    did_composite_this_frame_ = false;
+    should_composite_on_vsync_ = false;
+    pending_swapbuffers_ = 0;
     cc::LayerTreeSettings settings;
     settings.refresh_rate = 60.0;
     settings.impl_side_painting = false;
@@ -372,6 +443,17 @@ bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
     return host_->CompositeAndReadback(pixels, rect);
   else
     return false;
+}
+
+void CompositorImpl::SetNeedsComposite() {
+  if (!host_.get() || needs_composite_)
+    return;
+
+  needs_composite_ = true;
+
+  // For explicit requests we try to composite regularly on vsync.
+  should_composite_on_vsync_ = true;
+  root_window_->RequestVSyncUpdate();
 }
 
 cc::UIResourceId CompositorImpl::GenerateUIResourceFromUIResourceBitmap(
@@ -468,6 +550,13 @@ CreateGpuProcessViewContext(
                                                 NULL));
 }
 
+void CompositorImpl::Layout() {
+  // TODO: If we get this callback from the SingleThreadProxy, we need
+  // to stop calling it ourselves in CompositorImpl::Composite().
+  NOTREACHED();
+  client_->Layout();
+}
+
 scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
     bool fallback) {
   blink::WebGraphicsContext3D::Attributes attrs;
@@ -493,12 +582,16 @@ void CompositorImpl::OnLostResources() {
   client_->DidLoseResources();
 }
 
-void CompositorImpl::DidCompleteSwapBuffers() {
-  client_->OnSwapBuffersCompleted();
-}
-
 void CompositorImpl::ScheduleComposite() {
-  client_->ScheduleComposite();
+  if (needs_composite_ || ignore_schedule_composite_)
+    return;
+
+  needs_composite_ = true;
+
+  // We currently expect layer tree invalidations at most once per frame
+  // during normal operation and therefore try to composite immediately
+  // to minimize latency.
+  PostComposite(base::TimeDelta());
 }
 
 void CompositorImpl::ScheduleAnimation() {
@@ -507,12 +600,19 @@ void CompositorImpl::ScheduleAnimation() {
 
 void CompositorImpl::DidPostSwapBuffers() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidPostSwapBuffers");
-  client_->OnSwapBuffersPosted();
+  did_post_swapbuffers_ = true;
+}
+
+void CompositorImpl::DidCompleteSwapBuffers() {
+  TRACE_EVENT0("compositor", "CompositorImpl::DidCompleteSwapBuffers");
+  DCHECK_GT(pending_swapbuffers_, 0U);
+  client_->OnSwapBuffersCompleted(pending_swapbuffers_--);
 }
 
 void CompositorImpl::DidAbortSwapBuffers() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidAbortSwapBuffers");
-  client_->OnSwapBuffersCompleted();
+  DCHECK_GT(pending_swapbuffers_, 0U);
+  client_->OnSwapBuffersCompleted(pending_swapbuffers_--);
 }
 
 void CompositorImpl::DidCommit() {
@@ -521,6 +621,15 @@ void CompositorImpl::DidCommit() {
 
 void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
   root_layer_->AddChild(layer);
+}
+
+void CompositorImpl::OnVSync(base::TimeTicks frame_time,
+                             base::TimeDelta vsync_period) {
+  vsync_period_ = vsync_period;
+  did_composite_this_frame_ = false;
+
+  if (should_composite_on_vsync_)
+    Composite(COMPOSITE_ON_VSYNC);
 }
 
 }  // namespace content

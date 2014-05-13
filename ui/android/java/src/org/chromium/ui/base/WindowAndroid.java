@@ -32,7 +32,6 @@ public class WindowAndroid {
     // Native pointer to the c++ WindowAndroid object.
     private long mNativeWindowAndroid = 0;
     private final VSyncMonitor mVSyncMonitor;
-    private VSyncClient mVSyncClient = null;
 
     // A string used as a key to store intent errors in a bundle
     static final String WINDOW_CALLBACK_ERRORS = "window_callback_errors";
@@ -51,9 +50,6 @@ public class WindowAndroid {
     private final VSyncMonitor.Listener mVSyncListener = new VSyncMonitor.Listener() {
         @Override
         public void onVSync(VSyncMonitor monitor, long vsyncTimeMicros) {
-            if (mVSyncClient != null) {
-                mVSyncClient.onVSync(vsyncTimeMicros);
-            }
             if (mNativeWindowAndroid != 0) {
                 nativeOnVSync(mNativeWindowAndroid, vsyncTimeMicros);
             }
@@ -231,34 +227,9 @@ public class WindowAndroid {
         return false;
     }
 
-    /**
-     * An interface to receive VSync notifications from the window.
-     * The one and only client is set with setVSyncClient(client).
-     */
-    public interface VSyncClient {
-        /**
-         * Called very soon after the start of the display's vertical sync period.
-         * @param vsyncTimeMicros Absolute frame time in microseconds.
-         */
-        void onVSync(long vsyncTimeMicros);
-    }
-
-    /**
-     * Sets the VSyncClient.
-     * @param client The client receiving VSync notifications.
-     */
-    public void setVSyncClient(VSyncClient client) {
-        assert mVSyncClient == null || client == null;
-        mVSyncClient = client;
-    }
-
-    /**
-     * Request a VSync callback.
-     * VSyncClient.onVSync() will be called at least once.
-     */
     @CalledByNative
-    public void requestVSyncUpdate() {
-        mVSyncMonitor.requestUpdate();
+    private void requestVSyncUpdate() {
+       mVSyncMonitor.requestUpdate();
     }
 
     /**

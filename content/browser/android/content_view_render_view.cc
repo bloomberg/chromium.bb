@@ -53,8 +53,7 @@ bool ContentViewRenderView::RegisterContentViewRenderView(JNIEnv* env) {
 ContentViewRenderView::ContentViewRenderView(JNIEnv* env,
                                              jobject obj,
                                              gfx::NativeWindow root_window)
-    : buffers_swapped_during_composite_(false),
-      layer_tree_build_helper_(new LayerTreeBuildHelperImpl()),
+    : layer_tree_build_helper_(new LayerTreeBuildHelperImpl()),
       root_window_(root_window),
       current_surface_format_(0) {
   java_obj_.Reset(env, obj);
@@ -118,15 +117,6 @@ void ContentViewRenderView::SurfaceChanged(JNIEnv* env, jobject obj,
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
-jboolean ContentViewRenderView::Composite(JNIEnv* env, jobject obj) {
-  if (!compositor_)
-    return false;
-
-  buffers_swapped_during_composite_ = false;
-  compositor_->Composite();
-  return buffers_swapped_during_composite_;
-}
-
 jboolean ContentViewRenderView::CompositeToBitmap(JNIEnv* env, jobject obj,
                                                   jobject java_bitmap) {
   gfx::JavaBitmap bitmap(java_bitmap);
@@ -139,19 +129,14 @@ jboolean ContentViewRenderView::CompositeToBitmap(JNIEnv* env, jobject obj,
 void ContentViewRenderView::SetOverlayVideoMode(
     JNIEnv* env, jobject obj, bool enabled) {
   compositor_->SetHasTransparentBackground(enabled);
-  Java_ContentViewRenderView_requestRender(env, obj);
 }
 
-void ContentViewRenderView::ScheduleComposite() {
+void ContentViewRenderView::Layout() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentViewRenderView_requestRender(env, java_obj_.obj());
+  Java_ContentViewRenderView_onCompositorLayout(env, java_obj_.obj());
 }
 
-void ContentViewRenderView::OnSwapBuffersPosted() {
-  buffers_swapped_during_composite_ = true;
-}
-
-void ContentViewRenderView::OnSwapBuffersCompleted() {
+void ContentViewRenderView::OnSwapBuffersCompleted(int pending_swap_buffers) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContentViewRenderView_onSwapBuffersCompleted(env, java_obj_.obj());
 }

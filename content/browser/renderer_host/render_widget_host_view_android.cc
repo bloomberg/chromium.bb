@@ -255,6 +255,7 @@ void RenderWidgetHostViewAndroid::WasShown() {
 
   if (content_view_core_ && !using_synchronous_compositor_) {
     content_view_core_->GetWindowAndroid()->AddObserver(this);
+    content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
     observing_root_window_ = true;
   }
 }

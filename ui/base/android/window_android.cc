@@ -96,10 +96,13 @@ void WindowAndroid::RequestVSyncUpdate() {
 }
 
 void WindowAndroid::OnVSync(JNIEnv* env, jobject obj, jlong time_micros) {
+  base::TimeTicks frame_time(base::TimeTicks::FromInternalValue(time_micros));
   FOR_EACH_OBSERVER(
       WindowAndroidObserver,
       observer_list_,
-      OnVSync(base::TimeTicks::FromInternalValue(time_micros), vsync_period_));
+      OnVSync(frame_time, vsync_period_));
+  if (compositor_)
+    compositor_->OnVSync(frame_time, vsync_period_);
 }
 
 // ----------------------------------------------------------------------------

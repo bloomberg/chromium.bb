@@ -19,6 +19,8 @@ class UI_BASE_EXPORT WindowAndroidCompositor {
   virtual ~WindowAndroidCompositor() {}
 
   virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) = 0;
+  virtual void OnVSync(base::TimeTicks frame_time,
+                       base::TimeDelta vsync_period) = 0;
 };
 
 }  // namespace ui

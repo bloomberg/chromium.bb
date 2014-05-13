@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -53,6 +54,7 @@ class CONTENT_EXPORT CompositorImpl
   // Destroy all surface textures associated with |child_process_id|.
   static void DestroyAllSurfaceTextures(int child_process_id);
 
+ private:
   // Compositor implementation.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> root) OVERRIDE;
   virtual void SetWindowSurface(ANativeWindow* window) OVERRIDE;
@@ -63,7 +65,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void SetHasTransparentBackground(bool flag) OVERRIDE;
   virtual bool CompositeAndReadback(
       void *pixels, const gfx::Rect& rect) OVERRIDE;
-  virtual void Composite() OVERRIDE;
+  virtual void SetNeedsComposite() OVERRIDE;
   virtual cc::UIResourceId GenerateUIResource(const SkBitmap& bitmap,
                                               bool is_transient) OVERRIDE;
   virtual cc::UIResourceId GenerateCompressedUIResource(const gfx::Size& size,
@@ -76,7 +78,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void WillBeginMainFrame(int frame_id) OVERRIDE {}
   virtual void DidBeginMainFrame() OVERRIDE {}
   virtual void Animate(base::TimeTicks frame_begin_time) OVERRIDE {}
-  virtual void Layout() OVERRIDE {}
+  virtual void Layout() OVERRIDE;
   virtual void ApplyScrollAndScale(const gfx::Vector2d& scroll_delta,
                                    float page_scale) OVERRIDE {}
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback)
@@ -98,8 +100,15 @@ class CONTENT_EXPORT CompositorImpl
 
   // WindowAndroidCompositor implementation.
   virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) OVERRIDE;
+  virtual void OnVSync(base::TimeTicks frame_time,
+                       base::TimeDelta vsync_period) OVERRIDE;
 
- private:
+  void PostComposite(base::TimeDelta delay);
+  enum CompositingTrigger {
+    COMPOSITE_IMMEDIATELY,
+    COMPOSITE_ON_VSYNC
+  };
+  void Composite(CompositingTrigger trigger);
   cc::UIResourceId GenerateUIResourceFromUIResourceBitmap(
       const cc::UIResourceBitmap& bitmap,
       bool is_transient);
@@ -121,6 +130,32 @@ class CONTENT_EXPORT CompositorImpl
   UIResourceMap ui_resource_map_;
 
   gfx::NativeWindow root_window_;
+
+  // Used locally to track whether a call to LTH::Composite() did result in
+  // a posted SwapBuffers().
+  bool did_post_swapbuffers_;
+
+  // Used locally to inhibit ScheduleComposite() during Layout().
+  bool ignore_schedule_composite_;
+
+  // Whether we need to composite in general because of any invalidation or
+  // explicit request.
+  bool needs_composite_;
+
+  // When SetNeedsComposite() is getting called, we will try to schedule
+  // regularly during vsync.
+  bool should_composite_on_vsync_;
+
+  // Whether we composited already in the current vsync interval.
+  bool did_composite_this_frame_;
+
+  // The number of SwapBuffer calls that have not returned and ACK'd from
+  // the GPU thread.
+  unsigned int pending_swapbuffers_;
+
+  base::TimeDelta vsync_period_;
+
+  base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };
