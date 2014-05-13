@@ -842,6 +842,7 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
     if (HANDLE_EINTR(sys_sendmsg(server_fd_, &msg, 0)) < 0) {
       static const char errmsg[] = "Failed to tell parent about crash.\n";
       WriteLog(errmsg, sizeof(errmsg) - 1);
+      IGNORE_RET(sys_close(fds[0]));
       IGNORE_RET(sys_close(fds[1]));
       return false;
     }
@@ -851,6 +852,7 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
       static const char errmsg[] = "Parent failed to complete crash dump.\n";
       WriteLog(errmsg, sizeof(errmsg) - 1);
     }
+    IGNORE_RET(sys_close(fds[0]));
 
     return true;
   }
