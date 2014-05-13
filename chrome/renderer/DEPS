@@ -9,7 +9,7 @@ include_rules = [
   "+components/signin/core/common",
   "+components/translate/content/common",
   "+components/translate/core/common",
-  "+components/translate/language_detection",
+  "+components/translate/core/language_detection",
   "+components/visitedlink/renderer",
   "+content/public/child",
   "+content/public/renderer",

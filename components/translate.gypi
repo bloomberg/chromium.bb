@@ -80,7 +80,7 @@
       ],
     },
     {
-      'target_name': 'translate_language_detection',
+      'target_name': 'translate_core_language_detection',
       'type': 'static_library',
       'dependencies': [
         'translate_core_common',
@@ -91,8 +91,8 @@
         '..',
       ],
       'sources': [
-        'translate/language_detection/language_detection_util.cc',
-        'translate/language_detection/language_detection_util.h',
+        'translate/core/language_detection/language_detection_util.cc',
+        'translate/core/language_detection/language_detection_util.h',
       ],
       'conditions': [
         ['cld_version==0 or cld_version==1', {
@@ -132,7 +132,7 @@
           'type': 'static_library',
           'dependencies': [
             'translate_core_common',
-            'translate_language_detection',
+            'translate_core_language_detection',
             '../base/base.gyp:base',
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',

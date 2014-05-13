@@ -161,7 +161,7 @@
             'translate/core/browser/translate_script_unittest.cc',
             'translate/core/common/translate_metrics_unittest.cc',
             'translate/core/common/translate_util_unittest.cc',
-            'translate/language_detection/language_detection_util_unittest.cc',
+            'translate/core/language_detection/language_detection_util_unittest.cc',
             'url_matcher/regex_set_matcher_unittest.cc',
             'url_matcher/string_pattern_unittest.cc',
             'url_matcher/substring_set_matcher_unittest.cc',
@@ -281,7 +281,7 @@
             # Dependencies of translate.
             'components.gyp:translate_core_browser',
             'components.gyp:translate_core_common',
-            'components.gyp:translate_language_detection',
+            'components.gyp:translate_core_language_detection',
 
             # Dependencies of variations
             'components.gyp:variations',

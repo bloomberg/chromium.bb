@@ -19,7 +19,7 @@
         '../components/components.gyp:startup_metric_utils',
         '../components/components.gyp:plugins_renderer',
         '../components/components.gyp:translate_core_common',
-        '../components/components.gyp:translate_language_detection',
+        '../components/components.gyp:translate_core_language_detection',
         '../components/components.gyp:visitedlink_renderer',
         '../content/content.gyp:content_renderer',
         '../extensions/extensions.gyp:extensions_renderer',
