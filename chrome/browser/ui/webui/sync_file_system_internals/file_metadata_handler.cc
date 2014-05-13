@@ -72,9 +72,8 @@ void FileMetadataHandler::GetExtensions(const base::ListValue* args) {
   web_ui()->CallJavascriptFunction("FileMetadata.onGetExtensions", list);
 }
 
-void FileMetadataHandler::DidGetFileMetadata(const base::ListValue* files) {
-  DCHECK(files);
-  web_ui()->CallJavascriptFunction("FileMetadata.onGetFileMetadata", *files);
+void FileMetadataHandler::DidGetFileMetadata(const base::ListValue& files) {
+  web_ui()->CallJavascriptFunction("FileMetadata.onGetFileMetadata", files);
 }
 
 }  // namespace syncfs_internals

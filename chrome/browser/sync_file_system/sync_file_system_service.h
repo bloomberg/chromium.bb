@@ -48,7 +48,7 @@ class SyncFileSystemService
       public content::NotificationObserver,
       public base::SupportsWeakPtr<SyncFileSystemService> {
  public:
-  typedef base::Callback<void(const base::ListValue* files)> DumpFilesCallback;
+  typedef base::Callback<void(const base::ListValue&)> DumpFilesCallback;
 
   // KeyedService overrides.
   virtual void Shutdown() OVERRIDE;
@@ -103,6 +103,9 @@ class SyncFileSystemService
   void DidInitializeFileSystemForDump(const GURL& app_origin,
                                       const DumpFilesCallback& callback,
                                       SyncStatusCode status);
+  void DidDumpFiles(const GURL& app_origin,
+                    const DumpFilesCallback& callback,
+                    scoped_ptr<base::ListValue> files);
 
   // Overrides sync_enabled_ setting. This should be called only by tests.
   void SetSyncEnabledForTesting(bool enabled);

@@ -343,9 +343,15 @@ void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
   sync_worker_->GetOriginStatusMap(status_map);
 }
 
-scoped_ptr<base::ListValue> SyncEngine::DumpFiles(const GURL& origin) {
-  // TODO(peria): Make this route asynchronous.
-  return sync_worker_->DumpFiles(origin);
+void SyncEngine::DumpFiles(const GURL& origin,
+                           const ListCallback& callback) {
+  PostTaskAndReplyWithResult(
+      worker_task_runner_,
+      FROM_HERE,
+      base::Bind(&SyncWorker::DumpFiles,
+                 base::Unretained(sync_worker_.get()),
+                 origin),
+      callback);
 }
 
 scoped_ptr<base::ListValue> SyncEngine::DumpDatabase() {

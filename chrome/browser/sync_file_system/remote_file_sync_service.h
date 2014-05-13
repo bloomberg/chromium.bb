@@ -120,6 +120,9 @@ class RemoteFileSyncService {
                               webkit_blob::ScopedFile downloaded)>
       DownloadVersionCallback;
 
+  // For DumpFile.
+  typedef base::Callback<void(scoped_ptr<base::ListValue> list)> ListCallback;
+
   // Creates an initialized RemoteFileSyncService for backend |version|
   // for |context|.
   static scoped_ptr<RemoteFileSyncService> CreateForBrowserContext(
@@ -191,8 +194,9 @@ class RemoteFileSyncService {
   // corresponding sync statuses.
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) = 0;
 
-  // Returns file metadata for |origin|.
-  virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) = 0;
+  // Returns file metadata for |origin| to call |callback|.
+  virtual void DumpFiles(const GURL& origin,
+                         const ListCallback& callback) = 0;
 
   // Returns the dump of internal database.
   virtual scoped_ptr<base::ListValue> DumpDatabase() = 0;

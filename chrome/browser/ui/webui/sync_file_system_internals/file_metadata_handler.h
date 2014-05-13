@@ -32,7 +32,7 @@ class FileMetadataHandler : public content::WebUIMessageHandler {
   void GetExtensions(const base::ListValue* args);
 
   void GetFileMetadata(const base::ListValue* args);
-  void DidGetFileMetadata(const base::ListValue* files);
+  void DidGetFileMetadata(const base::ListValue& files);
 
   Profile* profile_;
   base::WeakPtrFactory<FileMetadataHandler> weak_factory_;

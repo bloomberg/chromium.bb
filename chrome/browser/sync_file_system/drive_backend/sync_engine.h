@@ -95,7 +95,8 @@ class SyncEngine : public RemoteFileSyncService,
   virtual bool IsConflicting(const fileapi::FileSystemURL& url) OVERRIDE;
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) OVERRIDE;
-  virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
+  virtual void DumpFiles(const GURL& origin,
+                         const ListCallback& callback) OVERRIDE;
   virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
   virtual SyncStatusCode SetDefaultConflictResolutionPolicy(

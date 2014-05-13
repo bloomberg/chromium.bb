@@ -251,9 +251,9 @@ void DriveFileSyncService::GetOriginStatusMap(OriginStatusMap* status_map) {
     (*status_map)[itr->first] = "Disabled";
 }
 
-scoped_ptr<base::ListValue> DriveFileSyncService::DumpFiles(
-    const GURL& origin) {
-  return metadata_store_->DumpFiles(origin);
+void DriveFileSyncService::DumpFiles(const GURL& origin,
+                                     const ListCallback& callback) {
+  callback.Run(metadata_store_->DumpFiles(origin).Pass());
 }
 
 scoped_ptr<base::ListValue> DriveFileSyncService::DumpDatabase() {
