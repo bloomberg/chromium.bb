@@ -20,10 +20,64 @@ if (is_android) {
            "You must specify android_src for an Android WebView build.")
   }
 
-  # android_ndk_root -----------------------------------------------------------
+  # Host stuff -----------------------------------------------------------------
 
-  # Full system path to the Android NDK.
-  android_ndk_root = rebase_path("//third_party/android_tools/ndk")
+  # Defines the name the Android build gives to the current host CPU
+  # architecture, which is different than the names GN uses.
+  if (build_cpu_arch == "x64") {
+    android_host_arch = "x86_64"
+  } else if (build_cpu_arch == "x86") {
+    android_host_arch = "x86"
+  } else {
+    assert(false, "Need Android toolchain support for your build CPU arch.")
+  }
+
+  # Defines the name the Android build gives to the current host CPU
+  # architecture, which is different than the names GN uses.
+  if (build_os == "linux") {
+    android_host_os = "linux"
+  } else {
+    assert(false, "Need Android toolchain support for your build OS.")
+  }
+
+  # Directories and files ------------------------------------------------------
+  #
+  # We define may of the dirs strings here for each output architecture (rather
+  # than just the current one) since these are needed by the Android toolchain
+  # file to define toolchains for all possible targets in one pass.
+
+  # Path to the Android NDK.
+  android_ndk_root = "//third_party/android_tools/ndk"
+
+  # Subdirectories inside android_ndk_root that contain the sysroot for the
+  # associated platform.
+  _android_api_level = 14
+  x86_android_sysroot_subdir = "platforms/android-${_android_api_level}/arch-x86"
+  arm_android_sysroot_subdir = "platforms/android-${_android_api_level}/arch-arm"
+  mips_android_sysroot_subdir = "platforms/android-${_android_api_level}/arch-mips"
+
+  # Toolchain root directory for each build. The actual binaries are inside
+  # a "bin" directory inside of these.
+  _android_toolchain_version = "4.6"
+  x86_android_toolchain_root = "$android_ndk_root/toolchains/x86-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
+  arm_android_toolchain_root = "$android_ndk_root/toolchains/arm-linux-androideabi-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
+  mips_android_toolchain_root = "$android_ndk_root/toolchains/mipsel-linux-android-${_android_toolchain_version}/prebuilt/${android_host_os}-${android_host_arch}"
+
+  # Location of libgcc. This is only needed for the current GN toolchain, so we
+  # only need to define the current one, rather than one for every platform
+  # like the toolchain roots.
+  if (cpu_arch == "x86") {
+    android_libgcc_file =
+      "$x86_android_toolchain_root/lib/gcc/i686-linux-android/${_android_toolchain_version}/libgcc.a"
+  } else if (cpu_arch == "arm") {
+    android_libgcc_file =
+      "$arm_android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
+  } else if (cpu_arch == "mips") {
+    android_libgcc_file =
+      "$mips_android_toolchain_root/lib/gcc/mipsel-linux-android/${_android_toolchain_version}/libgcc.a"
+  } else {
+    assert(false, "Need android libgcc support for your target arch.")
+  }
 
   # stlport stuff --------------------------------------------------------------
 

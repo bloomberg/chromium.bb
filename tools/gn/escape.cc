@@ -89,5 +89,5 @@ void EscapeStringToStream(std::ostream& out,
   result->reserve(str.size() + 4);  // Guess we'll add a couple of extra chars.
   EscapeStringToString(str, options, &result.container(), NULL);
   if (!result->empty())
-    out.write(result->data(), result->size());
+    out.write(&result[0], result->size());
 }

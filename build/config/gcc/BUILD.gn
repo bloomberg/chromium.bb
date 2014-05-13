@@ -17,3 +17,21 @@ config("symbol_visibility_hidden") {
   # config since that can almost always be applied.
   cflags = [ "-fvisibility=hidden" ]
 }
+
+# Settings for executables and shared libraries.
+config("executable_ldconfig") {
+  ldflags = [
+    # Want to pass "\$". Need to escape both '\' and '$'. GN will re-escape as
+    # required for ninja.
+    "-Wl,-rpath=\\\$ORIGIN/lib/",
+
+    "-Wl,-rpath-link=lib/",
+  ]
+
+  if (is_android) {
+    ldflags += [
+      "-Bdynamic",
+      "-Wl,-z,nocopyreloc",
+    ]
+  }
+}

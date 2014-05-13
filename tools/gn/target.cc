@@ -213,7 +213,13 @@ void Target::PullRecursiveHardDeps() {
     const Target* dep = deps_[dep_i].ptr;
     if (dep->hard_dep())
       recursive_hard_deps_.insert(dep);
-    recursive_hard_deps_.insert(dep->recursive_hard_deps().begin(),
-                                dep->recursive_hard_deps().end());
+
+    // Android STL doesn't like insert(begin, end) so do it manually.
+    // TODO(brettw) this can be changed to insert(dep->begin(), dep->end()) when
+    // Android uses a better STL.
+    for (std::set<const Target*>::const_iterator cur =
+             dep->recursive_hard_deps().begin();
+         cur != dep->recursive_hard_deps().end(); ++cur)
+      recursive_hard_deps_.insert(*cur);
   }
 }

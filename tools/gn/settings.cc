@@ -36,6 +36,10 @@ Settings::Settings(const BuildSettings* build_settings,
   target_os_ = MAC;
 #elif defined(OS_LINUX)
   target_os_ = LINUX;
+#elif defined(OS_ANDROID)
+  // Currently we don't have an "Android" target OS, it looks just like Linux
+  // from our perspective.
+  target_os_ = LINUX;
 #else
   #error implement me
 #endif

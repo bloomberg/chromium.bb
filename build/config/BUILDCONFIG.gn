@@ -418,7 +418,7 @@ set_defaults("executable") {
       "//build/config/mac:mac_dynamic_flags",
       "//build/config/mac:mac_executable_flags" ]
   } else if (is_linux || is_android) {
-    configs += [ "//build/config/linux:executable_ldconfig" ]
+    configs += [ "//build/config/gcc:executable_ldconfig" ]
   }
 }
 

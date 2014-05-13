@@ -5,8 +5,6 @@
 static_library("libevent") {
   sources = [
     "buffer.c",
-    "epoll.c",
-    "epoll_sub.c",
     "evbuffer.c",
     "evdns.c",
     "event.c",
@@ -14,7 +12,6 @@ static_library("libevent") {
     "evrpc.c",
     "evutil.c",
     "http.c",
-    "kqueue.c",
     "log.c",
     "poll.c",
     "select.c",
@@ -24,20 +21,16 @@ static_library("libevent") {
 
   defines = [ "HAVE_CONFIG_H" ]
 
-  if (is_linux) {
-    libs = [ "rt" ]
-  } else {
-    sources -= [ "epoll.c", "epoll_sub.c" ]
-  }
-
-  if (is_mac) {
+  if (is_mac || is_ios) {
+    sources += [ "kqueue.c" ]
     include_dirs = [ "mac" ]
   } else if (is_linux) {
+    sources += [ "epoll.c" ]
     include_dirs = [ "linux" ]
-    sources -= [ "kqueue.c" ]
+    libs = [ "rt" ]
   } else if (is_android) {
+    sources += [ "epoll.c" ]
     include_dirs = [ "android" ]
-    sources -= [ "kqueue.c" ]
   }
 
   configs -= [ "//build/config/compiler:chromium_code" ]

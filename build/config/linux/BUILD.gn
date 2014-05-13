@@ -18,17 +18,6 @@ config("sdk") {
   }
 }
 
-# Sets up the dynamic library search path to include our "lib" directory.
-config("executable_ldconfig") {
-  ldflags = [
-    # Want to pass "\$". Need to escape both '\' and '$'. GN will re-escape as
-    # required for ninja.
-    "-Wl,-rpath=\\\$ORIGIN/lib/",
-
-    "-Wl,-rpath-link=lib/",
-  ]
-}
-
 pkg_config("dridrm") {
   packages = [ "libdrm" ]
 }
