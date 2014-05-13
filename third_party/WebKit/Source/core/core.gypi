@@ -2012,6 +2012,8 @@
             'dom/IdTargetObserverRegistry.cpp',
             'dom/IdTargetObserverRegistry.h',
             'dom/IgnoreDestructiveWriteCountIncrementer.h',
+            'dom/IncrementLoadEventDelayCount.cpp',
+            'dom/IncrementLoadEventDelayCount.h',
             'dom/LiveNodeList.cpp',
             'dom/LiveNodeList.h',
             'dom/LiveNodeListBase.cpp',

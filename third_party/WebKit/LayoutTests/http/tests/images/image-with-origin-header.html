@@ -16,8 +16,7 @@
     var srcLastHasOrigin = false;
     document.body.onload = function() {
         srcFirstHasOrigin = (img.width == 100)
-        // srcFirstHasOrigin should be true per spec - see http://crbug.com/341047
-        shouldBeFalse('srcFirstHasOrigin');
+        shouldBeTrue('srcFirstHasOrigin');
         srcLastHasOrigin = (img2.width == 100)
         shouldBeTrue('srcLastHasOrigin');
         finishJSTest();

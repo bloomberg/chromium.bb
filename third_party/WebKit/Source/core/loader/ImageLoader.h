@@ -28,9 +28,12 @@
 #include "core/fetch/ResourcePtr.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
+#include "wtf/WeakPtr.h"
 #include "wtf/text/AtomicString.h"
 
 namespace WebCore {
+
+class IncrementLoadEventDelayCount;
 
 class ImageLoaderClient : public WillBeGarbageCollectedMixin {
 public:
@@ -68,14 +71,20 @@ public:
     void elementDidMoveToNewDocument();
 
     Element* element() const { return m_element; }
-    bool imageComplete() const { return m_imageComplete; }
+    bool imageComplete() const
+    {
+        return m_imageComplete && !m_pendingTask;
+    }
 
     ImageResource* image() const { return m_image.get(); }
     void setImage(ImageResource*); // Cancels pending load events, and doesn't dispatch new ones.
 
     void setLoadManually(bool loadManually) { m_loadManually = loadManually; }
 
-    bool hasPendingActivity() const { return m_hasPendingLoadEvent || m_hasPendingErrorEvent; }
+    bool hasPendingActivity() const
+    {
+        return m_hasPendingLoadEvent || m_hasPendingErrorEvent || m_pendingTask;
+    }
 
     void dispatchPendingEvent(ImageEventSender*);
 
@@ -89,6 +98,11 @@ protected:
     virtual void notifyFinished(Resource*) OVERRIDE;
 
 private:
+    class Task;
+
+    // Called from the task or from updateFromElement to initiate the load.
+    void doUpdateFromElement(bool bypassMainWorldCSP = false);
+
     virtual void dispatchLoadEvent() = 0;
     virtual String sourceURI(const AtomicString&) const = 0;
 
@@ -106,6 +120,12 @@ private:
 
     void timerFired(Timer<ImageLoader>*);
 
+    KURL imageURL() const;
+
+    // Used to determine whether to immediately initiate the load
+    // or to schedule a microtask.
+    bool shouldLoadImmediately(const KURL&) const;
+
     typedef WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<ImageLoaderClient> > ImageLoaderClientSet;
 
     Element* m_element;
@@ -113,6 +133,8 @@ private:
     ImageLoaderClientSet m_clients;
     Timer<ImageLoader> m_derefElementTimer;
     AtomicString m_failedLoadURL;
+    WeakPtr<Task> m_pendingTask; // owned by Microtask
+    OwnPtr<IncrementLoadEventDelayCount> m_delayLoad;
     bool m_hasPendingLoadEvent : 1;
     bool m_hasPendingErrorEvent : 1;
     bool m_imageComplete : 1;
