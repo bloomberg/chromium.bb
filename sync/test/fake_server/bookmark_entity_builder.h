@@ -18,10 +18,10 @@ namespace fake_server {
 // Builder for BookmarkEntity objects.
 class BookmarkEntityBuilder : public EntityBuilder {
  public:
-  explicit BookmarkEntityBuilder(const std::string& title,
-                                 const GURL& url,
-                                 const std::string& originator_cache_guid,
-                                 const std::string& originator_client_item_id);
+  BookmarkEntityBuilder(const std::string& title,
+                        const GURL& url,
+                        const std::string& originator_cache_guid,
+                        const std::string& originator_client_item_id);
 
   virtual ~BookmarkEntityBuilder();
 

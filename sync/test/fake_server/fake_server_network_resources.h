@@ -19,19 +19,19 @@ class FakeServer;
 class HttpPostProviderFactory;
 
 class FakeServerNetworkResources : public syncer::NetworkResources {
-  public:
-   FakeServerNetworkResources(FakeServer* fake_server);
-   virtual ~FakeServerNetworkResources();
+ public:
+  explicit FakeServerNetworkResources(FakeServer* fake_server);
+  virtual ~FakeServerNetworkResources();
 
-   // NetworkResources
-   virtual
-   scoped_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
-       net::URLRequestContextGetter* baseline_context_getter,
-       const syncer::NetworkTimeUpdateCallback& network_time_update_callback,
-       syncer::CancelationSignal* cancelation_signal) OVERRIDE;
+  // NetworkResources
+  virtual
+  scoped_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
+      net::URLRequestContextGetter* baseline_context_getter,
+      const syncer::NetworkTimeUpdateCallback& network_time_update_callback,
+      syncer::CancelationSignal* cancelation_signal) OVERRIDE;
 
-  private:
-   FakeServer* const fake_server_;
+ private:
+  FakeServer* const fake_server_;
 };
 
 }  // namespace fake_server

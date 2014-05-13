@@ -18,7 +18,7 @@ namespace fake_server {
 class EntityBuilderFactory {
  public:
   EntityBuilderFactory();
-  EntityBuilderFactory(const std::string& cache_guid);
+  explicit EntityBuilderFactory(const std::string& cache_guid);
   virtual ~EntityBuilderFactory();
 
   BookmarkEntityBuilder NewBookmarkEntityBuilder(const std::string& title,

@@ -67,18 +67,18 @@ FakeServerEntity* BookmarkEntity::CreateUpdatedVersion(
   ModelType model_type =
       syncer::GetModelTypeFromSpecifics(client_entity.specifics());
 
- return new BookmarkEntity(client_entity.id_string(),
-                           model_type,
-                           client_entity.version(),
-                           client_entity.name(),
-                           originator_cache_guid,
-                           originator_client_item_id,
-                           client_entity.unique_position(),
-                           client_entity.specifics(),
-                           client_entity.folder(),
-                           parent_id,
-                           client_entity.ctime(),
-                           client_entity.mtime());
+  return new BookmarkEntity(client_entity.id_string(),
+                            model_type,
+                            client_entity.version(),
+                            client_entity.name(),
+                            originator_cache_guid,
+                            originator_client_item_id,
+                            client_entity.unique_position(),
+                            client_entity.specifics(),
+                            client_entity.folder(),
+                            parent_id,
+                            client_entity.ctime(),
+                            client_entity.mtime());
 }
 
 BookmarkEntity::BookmarkEntity(

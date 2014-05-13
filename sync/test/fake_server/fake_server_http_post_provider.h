@@ -21,7 +21,7 @@ class FakeServerHttpPostProvider
     : public syncer::HttpPostProviderInterface,
       public base::RefCountedThreadSafe<FakeServerHttpPostProvider> {
  public:
-  explicit FakeServerHttpPostProvider(
+  FakeServerHttpPostProvider(
       FakeServer* fake_server,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
@@ -66,7 +66,7 @@ class FakeServerHttpPostProvider
 class FakeServerHttpPostProviderFactory
     : public syncer::HttpPostProviderFactory {
  public:
-  explicit FakeServerHttpPostProviderFactory(
+  FakeServerHttpPostProviderFactory(
       FakeServer* fake_server,
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~FakeServerHttpPostProviderFactory();
