@@ -196,6 +196,13 @@ struct hostent* HostResolver::gethostbyname(const char* name) {
   }
 
   freeaddrinfo(ai);
+
+#if !defined(h_addr)
+  // Copy element zero of h_addr_list to h_addr when h_addr is not defined
+  // as in some libc's h_addr may be a separate member instead of a macro.
+  hostent_.h_addr = hostent_.h_addr_list[0];
+#endif
+
   return &hostent_;
 }
 
@@ -416,6 +423,10 @@ void HostResolver::hostent_cleanup() {
   hostent_.h_name = NULL;
   hostent_.h_aliases = NULL;
   hostent_.h_addr_list = NULL;
+#if !defined(h_addr)
+  // Initialize h_addr separately in the case where it is not a macro.
+  hostent_.h_addr = NULL;
+#endif
 }
 
 }  // namespace nacl_io

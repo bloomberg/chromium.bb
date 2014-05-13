@@ -321,8 +321,12 @@ TEST_F(FakeHostResolverTest, Gethostbyname) {
   in_addr_t** addr_list = reinterpret_cast<in_addr_t**>(host->h_addr_list);
   ASSERT_NE(reinterpret_cast<in_addr_t**>(NULL), addr_list);
   ASSERT_EQ(NULL, addr_list[1]);
-  in_addr_t exptected_addr = htonl(FAKE_IP);
-  ASSERT_EQ(exptected_addr, *addr_list[0]);
+  in_addr_t expected_addr = htonl(FAKE_IP);
+  ASSERT_EQ(expected_addr, *addr_list[0]);
+  // Check that h_addr also matches as in some libc's it may be a separate
+  // member.
+  in_addr_t* first_addr = reinterpret_cast<in_addr_t*>(host->h_addr);
+  ASSERT_EQ(expected_addr, *first_addr);
 }
 
 TEST_F(FakeHostResolverTest, Gethostbyname_Failure) {
@@ -346,6 +350,10 @@ TEST_F(HostResolverTest, Gethostbyname_Numeric) {
   ASSERT_NE(reinterpret_cast<in_addr_t**>(NULL), addr_list);
   ASSERT_EQ(NULL, addr_list[1]);
   ASSERT_EQ(inet_addr("8.8.8.8"), *addr_list[0]);
+  // Check that h_addr also matches as in some libc's it may be a separate
+  // member.
+  in_addr_t* first_addr = reinterpret_cast<in_addr_t*>(host->h_addr);
+  ASSERT_EQ(inet_addr("8.8.8.8"), *first_addr);
 }
 
 // These utility functions are only used for newlib (glibc provides its own
