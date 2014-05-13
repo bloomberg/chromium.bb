@@ -140,6 +140,16 @@ class ExtensionFunction
   // Runs the function and returns the action to take when the caller is ready
   // to respond.
   //
+  // Typical return values might be:
+  //   * RespondNow(NoArguments())
+  //   * RespondNow(SingleArgument(42))
+  //   * RespondNow(MultipleArguments(my_result.ToValue()))
+  //   * RespondNow(Error("Warp core breach"))
+  //   * RespondLater(), then later,
+  //     * Respond(NoArguments())
+  //     * ... etc.
+  //
+  //
   // Callers must call Execute() on the return ResponseAction at some point,
   // exactly once.
   //
