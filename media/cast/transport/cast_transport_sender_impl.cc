@@ -117,11 +117,10 @@ void CastTransportSenderImpl::SendRtcpFromRtpSender(
     uint32 packet_type_flags,
     const RtcpSenderInfo& sender_info,
     const RtcpDlrrReportBlock& dlrr,
-    const RtcpSenderLogMessage& sender_log,
     uint32 sending_ssrc,
     const std::string& c_name) {
   rtcp_builder_.SendRtcpFromRtpSender(
-      packet_type_flags, sender_info, dlrr, sender_log, sending_ssrc, c_name);
+      packet_type_flags, sender_info, dlrr, sending_ssrc, c_name);
 }
 
 void CastTransportSenderImpl::ResendPackets(

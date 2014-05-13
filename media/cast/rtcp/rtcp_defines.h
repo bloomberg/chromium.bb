@@ -17,7 +17,6 @@ namespace media {
 namespace cast {
 
 static const size_t kRtcpCastLogHeaderSize = 12;
-static const size_t kRtcpSenderFrameLogSize = 4;
 static const size_t kRtcpReceiverFrameLogSize = 8;
 static const size_t kRtcpReceiverEventLogSize = 4;
 

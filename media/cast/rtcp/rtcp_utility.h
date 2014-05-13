@@ -22,7 +22,6 @@ static const int kRtcpMaxNumberOfRembFeedbackSsrcs = 255;
 static const uint32 kRemb = ('R' << 24) + ('E' << 16) + ('M' << 8) + 'B';
 static const uint32 kCast = ('C' << 24) + ('A' << 16) + ('S' << 8) + 'T';
 
-static const uint8 kSenderLogSubtype = 1;
 static const uint8 kReceiverLogSubtype = 2;
 
 static const size_t kRtcpMaxReceiverLogMessages = 256;
@@ -160,12 +159,6 @@ struct RtcpFieldApplicationSpecificCastReceiverLogItem {
   uint16 event_timestamp_delta;
 };
 
-struct RtcpFieldApplicationSpecificCastSenderLogItem {
-  uint32 sender_ssrc;
-  uint8 status;
-  uint32 rtp_timestamp;
-};
-
 union RtcpField {
   RtcpFieldReceiverReport receiver_report;
   RtcpFieldSenderReport sender_report;
@@ -190,7 +183,6 @@ union RtcpField {
   RtcpFieldPayloadSpecificCastNackItem cast_nack_item;
 
   RtcpFieldApplicationSpecificCastReceiverLogItem cast_receiver_log;
-  RtcpFieldApplicationSpecificCastSenderLogItem cast_sender_log;
 };
 
 enum RtcpFieldTypes {
@@ -225,7 +217,6 @@ enum RtcpFieldTypes {
   kRtcpApplicationSpecificCastReceiverLogCode,
   kRtcpApplicationSpecificCastReceiverLogFrameCode,
   kRtcpApplicationSpecificCastReceiverLogEventCode,
-  kRtcpApplicationSpecificCastSenderLogCode,
 
   // RFC 5104.
   kRtcpPayloadSpecificFirCode,
@@ -264,7 +255,6 @@ class RtcpParser {
     kStateBye,
     kStateApplicationSpecificCastReceiverFrameLog,
     kStateApplicationSpecificCastReceiverEventLog,
-    kStateApplicationSpecificCastSenderLog,
     kStateExtendedReportBlock,
     kStateExtendedReportDelaySinceLastReceiverReport,
     kStateGenericRtpFeedbackNack,
@@ -286,7 +276,6 @@ class RtcpParser {
   void IterateByeItem();
   void IterateCastReceiverLogFrame();
   void IterateCastReceiverLogEvent();
-  void IterateCastSenderLog();
   void IterateExtendedReportItem();
   void IterateExtendedReportDelaySinceLastReceiverReportItem();
   void IterateNackItem();
@@ -312,7 +301,6 @@ class RtcpParser {
   bool ParseApplicationDefined(uint8 subtype);
   bool ParseCastReceiverLogFrameItem();
   bool ParseCastReceiverLogEventItem();
-  bool ParseCastSenderLogItem();
 
   bool ParseExtendedReport();
   bool ParseExtendedReportItem();

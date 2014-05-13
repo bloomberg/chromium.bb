@@ -181,15 +181,13 @@ void CastTransportHostFilter::OnSendRtcpFromRtpSender(
     int32 channel_id,
     const media::cast::transport::SendRtcpFromRtpSenderData& data,
     const media::cast::transport::RtcpSenderInfo& sender_info,
-    const media::cast::transport::RtcpDlrrReportBlock& dlrr,
-    const media::cast::transport::RtcpSenderLogMessage& sender_log) {
+    const media::cast::transport::RtcpDlrrReportBlock& dlrr) {
   media::cast::transport::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->SendRtcpFromRtpSender(data.packet_type_flags,
                                   sender_info,
                                   dlrr,
-                                  sender_log,
                                   data.sending_ssrc,
                                   data.c_name);
   } else {

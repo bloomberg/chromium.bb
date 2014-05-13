@@ -65,7 +65,6 @@ void CastTransportSenderIPC::SendRtcpFromRtpSender(
     uint32 packet_type_flags,
     const media::cast::transport::RtcpSenderInfo& sender_info,
     const media::cast::transport::RtcpDlrrReportBlock& dlrr,
-    const media::cast::transport::RtcpSenderLogMessage& sender_log,
     uint32 sending_ssrc,
     const std::string& c_name) {
   struct media::cast::transport::SendRtcpFromRtpSenderData data;
@@ -76,8 +75,7 @@ void CastTransportSenderIPC::SendRtcpFromRtpSender(
       channel_id_,
       data,
       sender_info,
-      dlrr,
-      sender_log));
+      dlrr));
 }
 
 void CastTransportSenderIPC::ResendPackets(

@@ -213,21 +213,6 @@ void TestRtcpPacketBuilder::AddCast(uint32 sender_ssrc,
   big_endian_writer_.WriteU8(0);  // Lost packet id mask.
 }
 
-void TestRtcpPacketBuilder::AddSenderLog(uint32 sender_ssrc) {
-  AddRtcpHeader(204, 1);
-  big_endian_writer_.WriteU32(sender_ssrc);
-  big_endian_writer_.WriteU8('C');
-  big_endian_writer_.WriteU8('A');
-  big_endian_writer_.WriteU8('S');
-  big_endian_writer_.WriteU8('T');
-}
-
-void TestRtcpPacketBuilder::AddSenderFrameLog(uint8 event_id,
-                                              uint32 rtp_timestamp) {
-  big_endian_writer_.WriteU32((static_cast<uint32>(event_id) << 24) +
-                              (rtp_timestamp & 0xffffff));
-}
-
 void TestRtcpPacketBuilder::AddReceiverLog(uint32 sender_ssrc) {
   AddRtcpHeader(204, 2);
   big_endian_writer_.WriteU32(sender_ssrc);

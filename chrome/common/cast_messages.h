@@ -21,8 +21,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::AudioCodec,
                           media::cast::transport::kAudioCodecLast)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::VideoCodec,
                           media::cast::transport::kVideoCodecLast)
-IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::RtcpSenderFrameStatus,
-                          media::cast::transport::kRtcpSenderFrameStatusLast)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::CastTransportStatus,
                           media::cast::transport::CAST_TRANSPORT_STATUS_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::CastLoggingEvent,
@@ -55,11 +53,6 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtcpDlrrReportBlock)
   IPC_STRUCT_TRAITS_MEMBER(last_rr)
   IPC_STRUCT_TRAITS_MEMBER(delay_since_last_rr)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtcpSenderFrameLogMessage)
-  IPC_STRUCT_TRAITS_MEMBER(frame_status)
-  IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtpConfig)
@@ -150,13 +143,12 @@ IPC_MESSAGE_CONTROL3(
     media::cast::transport::EncodedVideoFrame /* video_frame */,
     base::TimeTicks /* recorded_time */)
 
-IPC_MESSAGE_CONTROL5(
+IPC_MESSAGE_CONTROL4(
     CastHostMsg_SendRtcpFromRtpSender,
     int32 /* channel_id */,
     media::cast::transport::SendRtcpFromRtpSenderData /* flags, ssrc, name */,
     media::cast::transport::RtcpSenderInfo /* sender_info */,
-    media::cast::transport::RtcpDlrrReportBlock /* dlrr */,
-    media::cast::transport::RtcpSenderLogMessage /* sender_log */)
+    media::cast::transport::RtcpDlrrReportBlock /* dlrr */)
 
 IPC_MESSAGE_CONTROL3(
     CastHostMsg_ResendPackets,

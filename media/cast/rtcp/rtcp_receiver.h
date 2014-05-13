@@ -29,9 +29,6 @@ class RtcpReceiverFeedback {
   virtual void OnReceivedReceiverLog(
       const RtcpReceiverLogMessage& receiver_log) = 0;
 
-  virtual void OnReceivedSenderLog(
-      const transport::RtcpSenderLogMessage& sender_log) = 0;
-
   virtual ~RtcpReceiverFeedback() {}
 };
 

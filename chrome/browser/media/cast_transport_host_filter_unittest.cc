@@ -129,12 +129,8 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   media::cast::transport::RtcpDlrrReportBlock dlrr;
   dlrr.last_rr = 7;
   dlrr.delay_since_last_rr = 8;
-  media::cast::transport::RtcpSenderLogMessage sender_log(1);
-  sender_log[0].frame_status =
-      media::cast::transport::kRtcpSenderFrameStatusSentToNetwork;
-  sender_log[0].rtp_timestamp = 9;
   CastHostMsg_SendRtcpFromRtpSender rtcp_msg(
-      kChannelId, rtcp_data, sender_info, dlrr, sender_log);
+      kChannelId, rtcp_data, sender_info, dlrr);
   FakeSend(rtcp_msg);
 
   media::cast::MissingFramesAndPacketsMap missing_packets;

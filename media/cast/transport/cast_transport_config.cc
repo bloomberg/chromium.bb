@@ -45,10 +45,6 @@ EncodedAudioFrame::EncodedAudioFrame()
     : codec(kOpus), frame_id(0), rtp_timestamp(0) {}
 EncodedAudioFrame::~EncodedAudioFrame() {}
 
-RtcpSenderFrameLogMessage::RtcpSenderFrameLogMessage()
-    : frame_status(kRtcpSenderFrameStatusUnknown), rtp_timestamp(0) {}
-RtcpSenderFrameLogMessage::~RtcpSenderFrameLogMessage() {}
-
 RtcpSenderInfo::RtcpSenderInfo()
     : ntp_seconds(0),
       ntp_fraction(0),

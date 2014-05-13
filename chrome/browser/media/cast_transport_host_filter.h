@@ -59,8 +59,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
       int32 channel_id,
       const media::cast::transport::SendRtcpFromRtpSenderData& data,
       const media::cast::transport::RtcpSenderInfo& sender_info,
-      const media::cast::transport::RtcpDlrrReportBlock& dlrr,
-      const media::cast::transport::RtcpSenderLogMessage& sender_log);
+      const media::cast::transport::RtcpDlrrReportBlock& dlrr);
   void OnResendPackets(
       int32 channel_id,
       bool is_audio,

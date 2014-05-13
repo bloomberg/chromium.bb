@@ -61,9 +61,6 @@ RtcpFieldTypes RtcpParser::Iterate() {
     case kStateApplicationSpecificCastReceiverEventLog:
       IterateCastReceiverLogEvent();
       break;
-    case kStateApplicationSpecificCastSenderLog:
-      IterateCastSenderLog();
-      break;
     case kStateExtendedReportBlock:
       IterateExtendedReportItem();
       break;
@@ -239,12 +236,6 @@ void RtcpParser::IterateCastReceiverLogFrame() {
 
 void RtcpParser::IterateCastReceiverLogEvent() {
   bool success = ParseCastReceiverLogEventItem();
-  if (!success)
-    Iterate();
-}
-
-void RtcpParser::IterateCastSenderLog() {
-  bool success = ParseCastSenderLogItem();
   if (!success)
     Iterate();
 }
@@ -523,8 +514,7 @@ bool RtcpParser::ParseByeItem() {
 
 bool RtcpParser::ParseApplicationDefined(uint8 subtype) {
   ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
-  if (length < 16 ||
-      !(subtype == kSenderLogSubtype || subtype == kReceiverLogSubtype)) {
+  if (length < 16 || subtype != kReceiverLogSubtype) {
     state_ = kStateTopLevel;
     EndCurrentBlock();
     return false;
@@ -546,11 +536,6 @@ bool RtcpParser::ParseApplicationDefined(uint8 subtype) {
   }
   rtcp_data_ += 12;
   switch (subtype) {
-    case kSenderLogSubtype:
-      state_ = kStateApplicationSpecificCastSenderLog;
-      field_type_ = kRtcpApplicationSpecificCastSenderLogCode;
-      field_.cast_sender_log.sender_ssrc = sender_ssrc;
-      break;
     case kReceiverLogSubtype:
       state_ = kStateApplicationSpecificCastReceiverFrameLog;
       field_type_ = kRtcpApplicationSpecificCastReceiverLogCode;
@@ -620,28 +605,6 @@ bool RtcpParser::ParseCastReceiverLogEventItem() {
       event_type_and_timestamp_delta & 0xfff;
 
   field_type_ = kRtcpApplicationSpecificCastReceiverLogEventCode;
-  return true;
-}
-
-bool RtcpParser::ParseCastSenderLogItem() {
-  ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
-
-  if (length < 4) {
-    state_ = kStateTopLevel;
-    EndCurrentBlock();
-    return false;
-  }
-  uint32 data;
-  base::BigEndianReader big_endian_reader(
-      reinterpret_cast<const char*>(rtcp_data_), length);
-  big_endian_reader.ReadU32(&data);
-
-  rtcp_data_ += 4;
-
-  field_.cast_sender_log.status = static_cast<uint8>(data >> 24);
-  // We have 24 LSB of the RTP timestamp on the wire.
-  field_.cast_sender_log.rtp_timestamp = data & 0xffffff;
-  field_type_ = kRtcpApplicationSpecificCastSenderLogCode;
   return true;
 }
 

@@ -23,11 +23,6 @@ namespace cast {
 
 const int64 kMinSchedulingDelayMs = 1;
 
-// This is the maxmimum number of sender frame log messages that can fit in a
-// single RTCP packet.
-const int64 kMaxEventSubscriberEntries =
-    (kMaxIpPacketSize - kRtcpCastLogHeaderSize) / kRtcpSenderFrameLogSize;
-
 class LocalRtcpVideoSenderFeedback : public RtcpSenderFeedback {
  public:
   explicit LocalRtcpVideoSenderFeedback(VideoSender* video_sender)
@@ -56,7 +51,6 @@ VideoSender::VideoSender(
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
       transport_sender_(transport_sender),
-      event_subscriber_(kMaxEventSubscriberEntries),
       rtp_stats_(kVideoFrequency),
       rtcp_feedback_(new LocalRtcpVideoSenderFeedback(this)),
       last_acked_frame_id_(-1),
@@ -117,7 +111,6 @@ VideoSender::VideoSender(
       CastEnvironment::MAIN,
       FROM_HERE,
       base::Bind(cast_initialization_cb, STATUS_VIDEO_INITIALIZED));
-  cast_environment_->Logging()->AddRawEventSubscriber(&event_subscriber_);
 
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
 
@@ -126,7 +119,6 @@ VideoSender::VideoSender(
 }
 
 VideoSender::~VideoSender() {
-  cast_environment_->Logging()->RemoveRawEventSubscriber(&event_subscriber_);
 }
 
 void VideoSender::InitializeTimers() {
@@ -235,44 +227,8 @@ void VideoSender::StoreStatistics(
 void VideoSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
-  transport::RtcpSenderLogMessage sender_log_message;
-  RtcpEventMap rtcp_events;
-  event_subscriber_.GetRtcpEventsAndReset(&rtcp_events);
-
-  for (RtcpEventMap::iterator it = rtcp_events.begin(); it != rtcp_events.end();
-       ++it) {
-    CastLoggingEvent event_type = it->second.type;
-    if (event_type == FRAME_CAPTURE_BEGIN ||
-        event_type == FRAME_ENCODED) {
-      transport::RtcpSenderFrameLogMessage frame_message;
-      frame_message.rtp_timestamp = it->first;
-      switch (event_type) {
-        case FRAME_CAPTURE_BEGIN:
-          frame_message.frame_status =
-              transport::kRtcpSenderFrameStatusDroppedByFlowControl;
-          break;
-        case FRAME_ENCODED:
-          frame_message.frame_status =
-              transport::kRtcpSenderFrameStatusSentToNetwork;
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
-      sender_log_message.push_back(frame_message);
-    } else {
-      // This shouldn't happen because RtcpEventMap isn't supposed to contain
-      // other event types.
-      NOTREACHED() << "Got unknown event type in RtcpEventMap: " << event_type;
-    }
-  }
-
   rtp_stats_.UpdateInfo(cast_environment_->Clock()->NowTicks());
-
-  rtcp_->SendRtcpFromRtpSender(sender_log_message, rtp_stats_.sender_info());
-  if (!sender_log_message.empty()) {
-    VLOG(1) << "Failed to send all log messages";
-  }
+  rtcp_->SendRtcpFromRtpSender(rtp_stats_.sender_info());
   ScheduleNextRtcpReport();
 }
 

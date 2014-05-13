@@ -30,8 +30,6 @@ class MockRtcpReceiverFeedback : public RtcpReceiverFeedback {
 
   MOCK_METHOD1(OnReceivedReceiverLog,
                void(const RtcpReceiverLogMessage& receiver_log));
-  MOCK_METHOD1(OnReceivedSenderLog,
-               void(const transport::RtcpSenderLogMessage& sender_log));
 };
 
 class MockRtcpRttFeedback : public RtcpRttFeedback {

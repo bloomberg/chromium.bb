@@ -10,26 +10,6 @@
 
 namespace {
 
-media::cast::transport::RtcpSenderFrameStatus
-TranslateToFrameStatusFromWireFormat(uint8 status) {
-  switch (status) {
-    case 0:
-      return media::cast::transport::kRtcpSenderFrameStatusUnknown;
-    case 1:
-      return media::cast::transport::kRtcpSenderFrameStatusDroppedByEncoder;
-    case 2:
-      return media::cast::transport::kRtcpSenderFrameStatusDroppedByFlowControl;
-    case 3:
-      return media::cast::transport::kRtcpSenderFrameStatusSentToNetwork;
-    default:
-      // If the sender adds new log messages we will end up here until we add
-      // the new messages in the receiver.
-      NOTREACHED();
-      VLOG(1) << "Unexpected status received: " << static_cast<int>(status);
-      return media::cast::transport::kRtcpSenderFrameStatusUnknown;
-  }
-}
-
 // A receiver frame event is identified by frame RTP timestamp, event timestamp
 // and event type.
 // A receiver packet event is identified by all of the above plus packet id.
@@ -120,9 +100,6 @@ void RtcpReceiver::IncomingRtcpPacket(RtcpParser* rtcp_parser) {
         break;
       case kRtcpApplicationSpecificCastReceiverLogCode:
         HandleApplicationSpecificCastReceiverLog(rtcp_parser);
-        break;
-      case kRtcpApplicationSpecificCastSenderLogCode:
-        HandleApplicationSpecificCastSenderLog(rtcp_parser);
         break;
       case kRtcpPayloadSpecificRembCode:
       case kRtcpPayloadSpecificRembItemCode:
@@ -509,36 +486,6 @@ void RtcpReceiver::HandleApplicationSpecificCastReceiverEventLog(
   event_log.packet_id =
       rtcp_field.cast_receiver_log.delay_delta_or_packet_id.packet_id;
   event_log_messages->push_back(event_log);
-}
-
-void RtcpReceiver::HandleApplicationSpecificCastSenderLog(
-    RtcpParser* rtcp_parser) {
-  const RtcpField& rtcp_field = rtcp_parser->Field();
-  uint32 remote_ssrc = rtcp_field.cast_sender_log.sender_ssrc;
-
-  if (remote_ssrc_ != remote_ssrc) {
-    RtcpFieldTypes field_type;
-    // Message not to us. Iterate until we have passed this message.
-    do {
-      field_type = rtcp_parser->Iterate();
-    } while (field_type == kRtcpApplicationSpecificCastSenderLogCode);
-    return;
-  }
-  transport::RtcpSenderLogMessage sender_log;
-
-  RtcpFieldTypes field_type = rtcp_parser->Iterate();
-  while (field_type == kRtcpApplicationSpecificCastSenderLogCode) {
-    const RtcpField& rtcp_field = rtcp_parser->Field();
-    transport::RtcpSenderFrameLogMessage frame_log;
-    frame_log.frame_status =
-        TranslateToFrameStatusFromWireFormat(rtcp_field.cast_sender_log.status);
-    frame_log.rtp_timestamp = rtcp_field.cast_sender_log.rtp_timestamp;
-    sender_log.push_back(frame_log);
-    field_type = rtcp_parser->Iterate();
-  }
-  if (receiver_feedback_) {
-    receiver_feedback_->OnReceivedSenderLog(sender_log);
-  }
 }
 
 void RtcpReceiver::HandlePayloadSpecificCastItem(RtcpParser* rtcp_parser) {

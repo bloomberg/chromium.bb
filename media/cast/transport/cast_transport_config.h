@@ -110,25 +110,6 @@ class PacketSender {
   virtual ~PacketSender() {}
 };
 
-// Log messages form sender to receiver.
-// TODO(mikhal): Refactor to Chromium style (MACRO_STYLE).
-enum RtcpSenderFrameStatus {
-  kRtcpSenderFrameStatusUnknown = 0,
-  kRtcpSenderFrameStatusDroppedByEncoder = 1,
-  kRtcpSenderFrameStatusDroppedByFlowControl = 2,
-  kRtcpSenderFrameStatusSentToNetwork = 3,
-  kRtcpSenderFrameStatusLast = kRtcpSenderFrameStatusSentToNetwork
-};
-
-struct RtcpSenderFrameLogMessage {
-  RtcpSenderFrameLogMessage();
-  ~RtcpSenderFrameLogMessage();
-  RtcpSenderFrameStatus frame_status;
-  uint32 rtp_timestamp;
-};
-
-typedef std::vector<RtcpSenderFrameLogMessage> RtcpSenderLogMessage;
-
 struct RtcpSenderInfo {
   RtcpSenderInfo();
   ~RtcpSenderInfo();

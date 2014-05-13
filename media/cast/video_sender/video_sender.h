@@ -110,9 +110,6 @@ class VideoSender : public base::NonThreadSafe,
   scoped_refptr<CastEnvironment> cast_environment_;
   transport::CastTransportSender* const transport_sender_;
 
-  // Subscribes to raw events.
-  // Processes raw audio events to be sent over to the cast receiver via RTCP.
-  SenderRtcpEventSubscriber event_subscriber_;
   RtpSenderStatistics rtp_stats_;
   scoped_ptr<LocalRtcpVideoSenderFeedback> rtcp_feedback_;
   scoped_ptr<VideoEncoder> video_encoder_;

@@ -142,9 +142,8 @@ void AudioSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   // We don't send audio logging messages since all captured audio frames will
   // be sent.
-  transport::RtcpSenderLogMessage empty_msg;
   rtp_stats_.UpdateInfo(cast_environment_->Clock()->NowTicks());
-  rtcp_.SendRtcpFromRtpSender(empty_msg, rtp_stats_.sender_info());
+  rtcp_.SendRtcpFromRtpSender(rtp_stats_.sender_info());
   ScheduleNextRtcpReport();
 }
 

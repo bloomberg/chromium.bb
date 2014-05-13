@@ -25,7 +25,6 @@ class RtcpBuilder {
   void SendRtcpFromRtpSender(uint32 packet_type_flags,
                              const RtcpSenderInfo& sender_info,
                              const RtcpDlrrReportBlock& dlrr,
-                             const RtcpSenderLogMessage& sender_log,
                              uint32 ssrc,
                              const std::string& c_name);
 
@@ -35,8 +34,6 @@ class RtcpBuilder {
   bool BuildBye(Packet* packet) const;
   bool BuildDlrrRb(const RtcpDlrrReportBlock& dlrr,
                    Packet* packet) const;
-  bool BuildSenderLog(const RtcpSenderLogMessage& sender_log_message,
-                      Packet* packet) const;
 
   PacedSender* const transport_;  // Not owned by this class.
   uint32 ssrc_;

@@ -91,7 +91,6 @@ class CastTransportSender : public base::NonThreadSafe {
   virtual void SendRtcpFromRtpSender(uint32 packet_type_flags,
                                      const RtcpSenderInfo& sender_info,
                                      const RtcpDlrrReportBlock& dlrr,
-                                     const RtcpSenderLogMessage& sender_log,
                                      uint32 sending_ssrc,
                                      const std::string& c_name) = 0;
 

@@ -128,7 +128,7 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrr) {
   EXPECT_EQ(1, test_transport_.packet_count());
 }
 
-TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrrAndLog) {
+TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrr) {
   RtcpSenderInfo sender_info;
   sender_info.ntp_seconds = kNtpHigh;
   sender_info.ntp_fraction = kNtpLow;
@@ -142,8 +142,6 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrrAndLog) {
   p.AddSdesCname(kSendingSsrc, kCName);
   p.AddXrHeader(kSendingSsrc);
   p.AddXrDlrrBlock(kSendingSsrc);
-  p.AddSenderLog(kSendingSsrc);
-  p.AddSenderFrameLog(kRtcpSenderFrameStatusSentToNetwork, kRtpTimestamp);
 
   test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
 
@@ -151,65 +149,15 @@ TEST_F(RtcpBuilderTest, RtcpSenderReportWithDlrrAndLog) {
   dlrr_rb.last_rr = kLastRr;
   dlrr_rb.delay_since_last_rr = kDelayLastRr;
 
-  RtcpSenderFrameLogMessage sender_frame_log;
-  sender_frame_log.frame_status = kRtcpSenderFrameStatusSentToNetwork;
-  sender_frame_log.rtp_timestamp = kRtpTimestamp;
-
-  RtcpSenderLogMessage sender_log;
-  sender_log.push_back(sender_frame_log);
-
   rtcp_builder_->SendRtcpFromRtpSender(
       RtcpBuilder::kRtcpSr | RtcpBuilder::kRtcpDlrr |
           RtcpBuilder::kRtcpSenderLog,
       &sender_info,
       &dlrr_rb,
-      &sender_log,
       kSendingSsrc,
       kCName);
 
   EXPECT_EQ(1, test_transport_.packet_count());
-  EXPECT_TRUE(sender_log.empty());
-}
-
-TEST_F(RtcpBuilderTest, RtcpSenderReporWithTooManyLogFrames) {
-  RtcpSenderInfo sender_info;
-  sender_info.ntp_seconds = kNtpHigh;
-  sender_info.ntp_fraction = kNtpLow;
-  sender_info.rtp_timestamp = kRtpTimestamp;
-  sender_info.send_packet_count = kSendPacketCount;
-  sender_info.send_octet_count = kSendOctetCount;
-
-  // Sender report + c_name + sender log.
-  TestRtcpPacketBuilder p;
-  p.AddSr(kSendingSsrc, 0);
-  p.AddSdesCname(kSendingSsrc, kCName);
-  p.AddSenderLog(kSendingSsrc);
-
-  for (int i = 0; i < 359; ++i) {
-    p.AddSenderFrameLog(kRtcpSenderFrameStatusSentToNetwork,
-                        kRtpTimestamp + i * 90);
-  }
-  test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
-
-
-  RtcpSenderLogMessage sender_log;
-  for (int j = 0; j < 400; ++j) {
-    RtcpSenderFrameLogMessage sender_frame_log;
-    sender_frame_log.frame_status = kRtcpSenderFrameStatusSentToNetwork;
-    sender_frame_log.rtp_timestamp = kRtpTimestamp + j * 90;
-    sender_log.push_back(sender_frame_log);
-  }
-
-  rtcp_builder_->SendRtcpFromRtpSender(
-      RtcpBuilder::kRtcpSr | RtcpBuilder::kRtcpSenderLog,
-      &sender_info,
-      NULL,
-      &sender_log,
-      kSendingSsrc,
-      kCName);
-
-  EXPECT_EQ(1, test_transport_.packet_count());
-  EXPECT_EQ(41u, sender_log.size());
 }
 
 }  // namespace cast
