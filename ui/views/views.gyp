@@ -683,6 +683,9 @@
           ],
         }],
         ['OS=="win"', {
+          'dependencies': [
+            '../../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+          ],
           'link_settings': {
             'libraries': [
               '-limm32.lib',

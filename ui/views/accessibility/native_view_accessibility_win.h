@@ -12,6 +12,7 @@
 #include <UIAutomationCore.h>
 
 #include <set>
+#include <vector>
 
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/accessibility/ax_view_state.h"
@@ -38,7 +39,7 @@ namespace views {
 class __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 NativeViewAccessibilityWin
   : public CComObjectRootEx<CComMultiThreadModel>,
-    public IDispatchImpl<IAccessible2, &IID_IAccessible2,
+    public IDispatchImpl<IAccessible2_2, &IID_IAccessible2_2,
                            &LIBID_IAccessible2Lib>,
     public IAccessibleText,
     public IServiceProvider,
@@ -47,9 +48,9 @@ NativeViewAccessibilityWin
     public NativeViewAccessibility {
  public:
   BEGIN_COM_MAP(NativeViewAccessibilityWin)
-    COM_INTERFACE_ENTRY2(IDispatch, IAccessible2)
-    COM_INTERFACE_ENTRY2(IAccessible, IAccessible2)
-    COM_INTERFACE_ENTRY(IAccessible2)
+    COM_INTERFACE_ENTRY2(IDispatch, IAccessible2_2)
+    COM_INTERFACE_ENTRY2(IAccessible, IAccessible2_2)
+    COM_INTERFACE_ENTRY(IAccessible2_2)
     COM_INTERFACE_ENTRY(IAccessibleText)
     COM_INTERFACE_ENTRY(IServiceProvider)
     COM_INTERFACE_ENTRY(IAccessibleEx)
@@ -145,11 +146,19 @@ NativeViewAccessibilityWin
 
   STDMETHODIMP get_windowHandle(HWND* window_handle);
 
+  STDMETHODIMP get_relationTargetsOfType(BSTR type,
+                                         long max_targets,
+                                         IUnknown ***targets,
+                                         long *n_targets);
+
   //
   // IAccessible2 methods not implemented.
   //
 
   STDMETHODIMP get_attributes(BSTR* attributes) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_attribute(BSTR name, VARIANT* attribute) {
     return E_NOTIMPL;
   }
   STDMETHODIMP get_indexInParent(LONG* index_in_parent) {
@@ -203,6 +212,10 @@ NativeViewAccessibilityWin
     return E_NOTIMPL;
   }
   STDMETHODIMP get_locale(IA2Locale* locale) {
+    return E_NOTIMPL;
+  }
+  STDMETHODIMP get_accessibleWithCaret(IUnknown** accessible,
+                                       long* caret_offset) {
     return E_NOTIMPL;
   }
 
@@ -396,6 +409,12 @@ NativeViewAccessibilityWin
   // NativeViewHost.
   void PopulateChildWidgetVector(std::vector<Widget*>* child_widgets);
 
+  // Adds this view to alert_target_view_storage_ids_.
+  void AddAlertTarget();
+
+  // Removes this view from alert_target_view_storage_ids_.
+  void RemoveAlertTarget();
+
   // Give CComObject access to the class constructor.
   template <class Base> friend class CComObject;
 
@@ -417,6 +436,11 @@ NativeViewAccessibilityWin
 
   // Next index into |view_storage_ids_| to use.
   static int next_view_storage_id_index_;
+
+  // A vector of view storage ids of views that have been the target of
+  // an alert event, in order to provide an api to quickly identify all
+  // open alerts.
+  static std::vector<int> alert_target_view_storage_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewAccessibilityWin);
 };

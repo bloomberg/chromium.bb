@@ -189,6 +189,7 @@ void AccessibleWebViewRegistry::QueryIAccessible2Interface(View* web_view) {
 long NativeViewAccessibilityWin::next_unique_id_ = 1;
 int NativeViewAccessibilityWin::view_storage_ids_[kMaxViewStorageIds] = {0};
 int NativeViewAccessibilityWin::next_view_storage_id_index_ = 0;
+std::vector<int> NativeViewAccessibilityWin::alert_target_view_storage_ids_;
 
 // static
 NativeViewAccessibility* NativeViewAccessibility::Create(View* view) {
@@ -210,6 +211,7 @@ NativeViewAccessibilityWin::NativeViewAccessibilityWin()
 }
 
 NativeViewAccessibilityWin::~NativeViewAccessibilityWin() {
+  RemoveAlertTarget();
 }
 
 void NativeViewAccessibilityWin::NotifyAccessibilityEvent(
@@ -236,6 +238,10 @@ void NativeViewAccessibilityWin::NotifyAccessibilityEvent(
   ::NotifyWinEvent(MSAAEvent(event_type), hwnd, OBJID_CLIENT, child_id);
   next_view_storage_id_index_ =
       (next_view_storage_id_index_ + 1) % kMaxViewStorageIds;
+
+  // Keep track of views that are a target of an alert event.
+  if (event_type == ui::AX_EVENT_ALERT)
+    AddAlertTarget();
 }
 
 gfx::NativeViewAccessible NativeViewAccessibilityWin::GetNativeObject() {
@@ -865,6 +871,59 @@ STDMETHODIMP NativeViewAccessibilityWin::get_windowHandle(HWND* window_handle) {
   return *window_handle ? S_OK : S_FALSE;
 }
 
+STDMETHODIMP NativeViewAccessibilityWin::get_relationTargetsOfType(
+    BSTR type_bstr,
+    long max_targets,
+    IUnknown ***targets,
+    long *n_targets) {
+  if (!view_)
+    return E_FAIL;
+
+  if (!targets || !n_targets)
+    return E_INVALIDARG;
+
+  *n_targets = 0;
+  *targets = NULL;
+
+  // Only respond to requests for relations of type "alerts" on the
+  // root view.
+  base::string16 type(type_bstr);
+  if (type != L"alerts" || view_->parent())
+    return S_FALSE;
+
+  // Collect all of the alert views that are still valid.
+  std::vector<View*> alert_views;
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  for (size_t i = 0; i < alert_target_view_storage_ids_.size(); ++i) {
+    int view_storage_id = alert_target_view_storage_ids_[i];
+    View* view = view_storage->RetrieveView(view_storage_id);
+    if (!view || !view_->Contains(view))
+      continue;
+    alert_views.push_back(view);
+  }
+
+  long count = alert_views.size();
+  if (count == 0)
+    return S_FALSE;
+
+  // Don't return more targets than max_targets - but note that the caller
+  // is allowed to specify max_targets=0 to mean no limit.
+  if (max_targets > 0 && count > max_targets)
+    count = max_targets;
+
+  // Return the number of targets.
+  *n_targets = count;
+
+  // Allocate COM memory for the result array and populate it.
+  *targets = static_cast<IUnknown**>(
+      CoTaskMemAlloc(count * sizeof(IUnknown*)));
+  for (long i = 0; i < count; ++i) {
+    (*targets)[i] = alert_views[i]->GetNativeViewAccessible();
+    (*targets)[i]->AddRef();
+  }
+  return S_OK;
+}
+
 //
 // IAccessibleText
 //
@@ -1071,11 +1130,12 @@ STDMETHODIMP NativeViewAccessibilityWin::QueryService(
   if (!view_)
     return E_FAIL;
 
-  if (riid == IID_IAccessible2)
+  if (riid == IID_IAccessible2 || riid == IID_IAccessible2_2)
     AccessibleWebViewRegistry::GetInstance()->EnableIAccessible2Support();
 
   if (guidService == IID_IAccessible ||
       guidService == IID_IAccessible2 ||
+      guidService == IID_IAccessible2_2 ||
       guidService == IID_IAccessibleText)  {
     return QueryInterface(riid, object);
   }
@@ -1409,6 +1469,34 @@ void NativeViewAccessibilityWin::PopulateChildWidgetVector(
       continue;
 
     result_child_widgets->push_back(child_widget);
+  }
+}
+
+void NativeViewAccessibilityWin::AddAlertTarget() {
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  for (size_t i = 0; i < alert_target_view_storage_ids_.size(); ++i) {
+    int view_storage_id = alert_target_view_storage_ids_[i];
+    View* view = view_storage->RetrieveView(view_storage_id);
+    if (view == view_)
+      return;
+  }
+  int view_storage_id = view_storage->CreateStorageID();
+  view_storage->StoreView(view_storage_id, view_);
+  alert_target_view_storage_ids_.push_back(view_storage_id);
+}
+
+void NativeViewAccessibilityWin::RemoveAlertTarget() {
+  ViewStorage* view_storage = ViewStorage::GetInstance();
+  size_t i = 0;
+  while (i < alert_target_view_storage_ids_.size()) {
+    int view_storage_id = alert_target_view_storage_ids_[i];
+    View* view = view_storage->RetrieveView(view_storage_id);
+    if (view == NULL || view == view_) {
+      alert_target_view_storage_ids_.erase(
+          alert_target_view_storage_ids_.begin() + i);
+    } else {
+      ++i;
+    }
   }
 }
 
