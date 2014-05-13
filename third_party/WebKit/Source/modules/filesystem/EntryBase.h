@@ -64,9 +64,10 @@ protected:
     RefPtrWillBeMember<DOMFileSystemBase> m_fileSystem;
 
     // This is a virtual path.
-    String m_fullPath;
+    const String m_fullPath;
+    const String m_name;
 
-    String m_name;
+    mutable String m_cachedURL;
 };
 
 }
