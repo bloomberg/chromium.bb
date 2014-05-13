@@ -43,6 +43,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -141,6 +142,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -239,6 +241,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -336,6 +339,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -433,6 +437,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -530,6 +535,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -625,6 +631,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -722,6 +729,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -815,6 +823,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -912,6 +921,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -1007,6 +1017,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -1102,6 +1113,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -1197,6 +1209,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -1294,6 +1307,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -1389,6 +1403,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -1484,6 +1499,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -1579,6 +1595,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -1672,6 +1689,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -1767,6 +1785,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -1862,6 +1881,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -1957,6 +1977,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -2055,6 +2076,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -2152,6 +2174,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -2245,6 +2268,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -2345,6 +2369,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -2442,6 +2467,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -2542,6 +2568,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -2661,6 +2688,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -2763,6 +2791,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -2849,6 +2878,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -2951,6 +2981,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -3051,6 +3082,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -3153,6 +3185,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -3251,6 +3284,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -3365,6 +3399,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -3462,6 +3497,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -3557,6 +3593,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -3652,6 +3689,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -3731,6 +3769,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -3828,6 +3867,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -3924,6 +3964,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -4017,6 +4058,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -4138,6 +4180,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -4246,6 +4289,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -4350,6 +4394,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -4454,6 +4499,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -4542,6 +4588,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -4644,6 +4691,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -4740,6 +4788,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -4838,6 +4887,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -4935,6 +4985,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -5031,6 +5082,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -5128,6 +5180,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -5234,6 +5287,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -5331,6 +5385,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -5426,6 +5481,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -5521,6 +5577,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -5619,6 +5676,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -5716,6 +5774,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -5812,6 +5871,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -5909,6 +5969,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -6015,6 +6076,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": true,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -6112,6 +6174,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -6205,6 +6268,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -6305,6 +6369,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -6403,6 +6468,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -6515,6 +6581,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -6610,6 +6677,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -6705,6 +6773,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -6784,6 +6853,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -6879,6 +6949,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -6974,6 +7045,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -7070,6 +7142,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -7167,6 +7240,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -7288,6 +7362,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -7392,6 +7467,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -7496,6 +7572,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -7584,6 +7661,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -7707,6 +7785,7 @@
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -7817,6 +7896,7 @@
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -7911,6 +7991,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -8021,6 +8102,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -8131,6 +8213,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -8235,6 +8318,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -8328,6 +8412,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -8423,6 +8508,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -8516,6 +8602,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -8614,6 +8701,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -8709,6 +8797,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -8806,6 +8895,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -8908,6 +8998,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -9004,6 +9095,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -9102,6 +9194,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -9199,6 +9292,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -9295,6 +9389,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -9388,6 +9483,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -9488,6 +9584,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -9588,6 +9685,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -9684,6 +9782,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -9777,6 +9876,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -9876,6 +9976,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -9971,6 +10072,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -10066,6 +10168,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -10164,6 +10267,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -10261,6 +10365,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -10357,6 +10462,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -10454,6 +10560,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -10558,6 +10665,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -10653,6 +10761,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -10748,6 +10857,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -10846,6 +10956,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -10943,6 +11054,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -11039,6 +11151,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -11136,6 +11249,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -11242,6 +11356,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 6,\n    \"pool\": \"pfq\",\n    \"priority\": \"PFQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -11340,6 +11455,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -11438,6 +11554,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -11535,6 +11652,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -11631,6 +11749,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -11728,6 +11847,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -11832,6 +11952,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -11929,6 +12050,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -12026,6 +12148,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -12130,6 +12253,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -12226,6 +12350,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -12319,6 +12444,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -12419,6 +12545,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -12515,6 +12642,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -12614,6 +12742,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -12709,6 +12838,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -12804,6 +12934,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -12902,6 +13033,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -12999,6 +13131,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -13095,6 +13228,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -13192,6 +13326,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -13296,6 +13431,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -13391,6 +13527,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -13486,6 +13623,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -13584,6 +13722,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -13681,6 +13820,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -13777,6 +13917,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -13874,6 +14015,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -13980,6 +14122,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -14081,6 +14224,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -14197,6 +14341,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -14294,6 +14439,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -14373,6 +14519,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -14491,6 +14638,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -14599,6 +14747,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -14687,6 +14836,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -14791,6 +14941,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -14886,6 +15037,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -14981,6 +15133,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -15079,6 +15232,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -15176,6 +15330,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -15272,6 +15427,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -15369,6 +15525,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -15473,6 +15630,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -15568,6 +15726,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -15663,6 +15822,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -15761,6 +15921,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -15858,6 +16019,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -15954,6 +16116,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -16051,6 +16214,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -16155,6 +16319,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -16250,6 +16415,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -16345,6 +16511,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -16443,6 +16610,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -16542,6 +16710,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -16638,6 +16807,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -16735,6 +16905,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -16842,6 +17013,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -16940,6 +17112,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": true,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -17037,6 +17210,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -17135,6 +17309,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -17233,6 +17408,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -17330,6 +17506,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -17428,6 +17605,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -17524,6 +17702,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -17617,6 +17796,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -17717,6 +17897,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -17844,6 +18025,7 @@
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -17954,6 +18136,7 @@
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -18048,6 +18231,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -18158,6 +18342,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -18268,6 +18453,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -18372,6 +18558,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -18470,6 +18657,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -18567,6 +18755,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -18662,6 +18851,7 @@
         ],
         "health_threshold": 3,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -18760,6 +18950,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -18858,6 +19049,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -18955,6 +19147,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -19051,6 +19244,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -19148,6 +19342,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -19252,6 +19447,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -19364,6 +19560,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -19459,6 +19656,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -19554,6 +19752,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -19633,6 +19832,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -19728,6 +19928,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -19824,6 +20025,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -19921,6 +20123,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -20042,6 +20245,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -20146,6 +20350,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -20250,6 +20455,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -20338,6 +20544,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -20438,6 +20645,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -20533,6 +20741,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -20630,6 +20839,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -20730,6 +20940,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -20825,6 +21036,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -20922,6 +21134,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -21022,6 +21235,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -21120,6 +21334,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -21217,6 +21432,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -21313,6 +21529,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -21410,6 +21627,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -21514,6 +21732,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -21609,6 +21828,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": true,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -21706,6 +21926,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -21804,6 +22025,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -21903,6 +22125,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -21999,6 +22222,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -22092,6 +22316,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -22194,6 +22419,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -22319,6 +22545,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -22427,6 +22654,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -22515,6 +22743,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -22642,6 +22871,7 @@
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -22752,6 +22982,7 @@
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -22846,6 +23077,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -22956,6 +23188,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -23066,6 +23299,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -23170,6 +23404,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -23267,6 +23502,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -23364,6 +23600,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -23481,6 +23718,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -23576,6 +23814,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -23655,6 +23894,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -23771,6 +24011,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -23875,6 +24116,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -23963,6 +24205,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -24063,6 +24306,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -24161,6 +24405,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -24256,6 +24501,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -24353,6 +24599,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -24453,6 +24700,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -24551,6 +24799,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -24648,6 +24897,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -24744,6 +24994,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -24841,6 +25092,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -24941,6 +25193,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -25039,6 +25292,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -25136,6 +25390,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -25234,6 +25489,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -25331,6 +25587,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -25452,6 +25709,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -25549,6 +25807,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -25644,6 +25903,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -25739,6 +25999,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -25834,6 +26095,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -25913,6 +26175,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -26031,6 +26294,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -26139,6 +26403,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -26243,6 +26508,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -26343,6 +26609,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -26443,6 +26710,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -26531,6 +26799,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -26652,6 +26921,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "test"
@@ -26750,6 +27020,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "test"
@@ -26846,6 +27117,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "test"
@@ -26942,6 +27214,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "test"
@@ -27024,6 +27297,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -27122,6 +27396,7 @@
         ],
         "health_threshold": 1,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -27218,6 +27493,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -27313,6 +27589,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -27408,6 +27685,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -27506,6 +27784,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -27603,6 +27882,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -27699,6 +27979,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -27796,6 +28077,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -27917,6 +28199,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -28014,6 +28297,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -28109,6 +28393,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -28204,6 +28489,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -28283,6 +28569,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -28401,6 +28688,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -28509,6 +28797,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -28613,6 +28902,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -28717,6 +29007,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -28805,6 +29096,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -28926,6 +29218,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -29023,6 +29316,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -29118,6 +29412,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -29213,6 +29508,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -29292,6 +29588,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -29410,6 +29707,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -29518,6 +29816,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -29622,6 +29921,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -29726,6 +30026,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -29814,6 +30115,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -29935,6 +30237,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -30032,6 +30335,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -30127,6 +30431,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -30206,6 +30511,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -30324,6 +30630,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -30432,6 +30739,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -30536,6 +30844,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -30624,6 +30933,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -30728,6 +31038,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -30823,6 +31134,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -30918,6 +31230,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -31016,6 +31329,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -31113,6 +31427,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -31209,6 +31524,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -31302,6 +31618,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -31404,6 +31721,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -31509,6 +31827,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -31604,6 +31923,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -31699,6 +32019,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -31794,6 +32115,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -31892,6 +32214,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -31989,6 +32312,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -32085,6 +32409,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -32182,6 +32507,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -32303,6 +32629,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -32400,6 +32727,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -32495,6 +32823,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -32590,6 +32919,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -32669,6 +32999,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -32783,6 +33114,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -32880,6 +33212,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -32975,6 +33308,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -33070,6 +33404,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -33165,6 +33500,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -33260,6 +33596,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -33339,6 +33676,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -33457,6 +33795,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -33565,6 +33904,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -33669,6 +34009,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -33773,6 +34114,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -33877,6 +34219,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -33981,6 +34324,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -34069,6 +34413,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -34194,6 +34539,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -34302,6 +34648,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -34406,6 +34753,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -34510,6 +34858,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -34598,6 +34947,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -34702,6 +35052,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -34800,6 +35151,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -34914,6 +35266,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -35011,6 +35364,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -35106,6 +35460,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -35201,6 +35556,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -35296,6 +35652,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "base",
@@ -35375,6 +35732,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -35472,6 +35830,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -35568,6 +35927,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -35665,6 +36025,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -35790,6 +36151,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -35898,6 +36260,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -36002,6 +36365,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -36106,6 +36470,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -36210,6 +36575,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -36298,6 +36664,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -36402,6 +36769,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -36499,6 +36867,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -36592,6 +36961,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -36691,6 +37061,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -36786,6 +37157,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -36881,6 +37253,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -36979,6 +37352,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -37076,6 +37450,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -37172,6 +37547,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -37269,6 +37645,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -37373,6 +37750,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -37471,6 +37849,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -37568,6 +37947,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -37666,6 +38046,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -37763,6 +38144,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -37867,6 +38249,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -37965,6 +38348,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -38064,6 +38448,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -38160,6 +38545,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -38257,6 +38643,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -38361,6 +38748,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -38454,6 +38842,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -38554,6 +38943,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -38647,6 +39037,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -38749,6 +39140,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -38844,6 +39236,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -38939,6 +39332,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -39037,6 +39431,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -39134,6 +39529,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -39230,6 +39626,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -39327,6 +39724,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -39448,6 +39846,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "test"
@@ -39541,6 +39940,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": false,
                 "images": [
                     "test"
@@ -39618,6 +40018,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -39713,6 +40114,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -39812,6 +40214,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -39909,6 +40312,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -40006,6 +40410,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -40103,6 +40508,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -40207,6 +40613,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -40302,6 +40709,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -40397,6 +40805,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -40495,6 +40904,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -40592,6 +41002,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -40688,6 +41099,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -40785,6 +41197,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -40889,6 +41302,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -40987,6 +41401,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -41084,6 +41499,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -41180,6 +41596,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -41277,6 +41694,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -41381,6 +41799,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -41478,6 +41897,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -41571,6 +41991,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -41666,6 +42087,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -41761,6 +42183,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -41860,6 +42283,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 6,\n    \"pool\": \"cq\",\n    \"priority\": \"CQ\",\n    \"suite\": \"bvt\",\n    \"timeout\": 7200\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -41956,6 +42380,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -42049,6 +42474,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -42151,6 +42577,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -42276,6 +42703,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -42380,6 +42808,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -42468,6 +42897,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -42595,6 +43025,7 @@
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -42705,6 +43136,7 @@
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
                     "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -42799,6 +43231,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -42909,6 +43342,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -43019,6 +43453,7 @@
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"pyauto_perf\",\n    \"timeout\": 5400\n}",
             "{\n    \"async\": true,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": false,\n    \"num\": 1,\n    \"pool\": \"chromeperf\",\n    \"priority\": \"Build\",\n    \"suite\": \"perf_v2\",\n    \"timeout\": 5400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -43123,6 +43558,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -43220,6 +43656,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -43313,6 +43750,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -43413,6 +43851,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -43510,6 +43949,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -43607,6 +44047,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -43702,6 +44143,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -43799,6 +44241,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -43894,6 +44337,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -43991,6 +44435,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -44086,6 +44531,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -44181,6 +44627,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -44276,6 +44723,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -44373,6 +44821,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -44468,6 +44917,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -44572,6 +45022,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -44670,6 +45121,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -44767,6 +45219,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -44864,6 +45317,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -44962,6 +45416,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -45059,6 +45514,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -45163,6 +45619,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -45260,6 +45717,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -45355,6 +45813,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -45452,6 +45911,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -45548,6 +46008,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -45645,6 +46106,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -45770,6 +46232,7 @@
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
                     "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
                 ],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -45874,6 +46337,7 @@
                 "health_alert_recipients": [],
                 "health_threshold": 0,
                 "hw_tests": [],
+                "hw_tests_warn": false,
                 "hwqual": true,
                 "images": [
                     "base",
@@ -45962,6 +46426,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -46066,6 +46531,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -46163,6 +46629,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -46256,6 +46723,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",
@@ -46356,6 +46824,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -46451,6 +46920,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [],
         "important": false,
@@ -46546,6 +47016,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [],
         "important": false,
@@ -46644,6 +47115,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "base",
@@ -46741,6 +47213,7 @@
         "health_alert_recipients": [],
         "health_threshold": 0,
         "hw_tests": [],
+        "hw_tests_warn": false,
         "hwqual": false,
         "images": [
             "test"
@@ -46838,6 +47311,7 @@
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"suite\": \"au\",\n    \"timeout\": 11400\n}",
             "{\n    \"async\": false,\n    \"critical\": false,\n    \"fatal_timeouts\": true,\n    \"file_bugs\": true,\n    \"num\": 2,\n    \"pool\": \"bvt\",\n    \"priority\": \"DEFAULT\",\n    \"suite\": \"qav\",\n    \"timeout\": 11400\n}"
         ],
+        "hw_tests_warn": false,
         "hwqual": true,
         "images": [
             "base",

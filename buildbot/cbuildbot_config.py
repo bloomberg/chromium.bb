@@ -447,6 +447,9 @@ _settings = dict(
 #                             image.
   upload_hw_test_artifacts=False,
 
+# hw_tests_warn -- If true, failures in the hw_tests stage only warn.
+  hw_tests_warn=False,
+
 # upload_standalone_images -- If true, uploads individual image tarballs.
   upload_standalone_images=True,
 

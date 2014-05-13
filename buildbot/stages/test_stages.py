@@ -221,6 +221,11 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""
     exc_type = exc_info[0]
+
+    # If the config says HW Tests can only warn. Only warn.
+    if self._run.config.hw_tests_warn:
+      return self._HandleExceptionAsWarning(exc_info)
+
     # Deal with timeout errors specially.
     if issubclass(exc_type, timeout_util.TimeoutError):
       return self._HandleStageTimeoutException(exc_info)

@@ -264,6 +264,11 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     """Tests that we fail if we get a returncode of 1."""
     self._RunHWTestSuite(returncode=1, fails=True)
 
+  def testWithSuiteWithFatalFailureWarnFlag(self):
+    """Tests that we fail if we get a returncode of 1."""
+    self._Prepare('x86-alex-release', extra_config={'hw_tests_warn': True})
+    self._RunHWTestSuite(returncode=1, fails=False)
+
   def testHandleLabDownAsWarning(self):
     """Test that buildbot warn when lab is down."""
     check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
