@@ -1,13 +1,6 @@
 <?php
 
-$gotOrigin = 0;
-foreach (getallheaders() as $name => $value) {
-    if ($name == "Origin") {
-        $gotOrigin = 1;
-    }
-}
-
-if ($gotOrigin) {
+if ($_SERVER['HTTP_ORIGIN']) {
     header('Location: square100.png');
 }
 else {
