@@ -22,37 +22,40 @@ DiscardableMemoryAshmem::DiscardableMemoryAshmem(
 
 DiscardableMemoryAshmem::~DiscardableMemoryAshmem() {
   if (is_locked_)
-    manager_->ReleaseLock(this);
+    Unlock();
 
   manager_->Unregister(this);
 }
 
 bool DiscardableMemoryAshmem::Initialize() {
-  return Lock() == DISCARDABLE_MEMORY_LOCK_STATUS_PURGED;
+  return Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 }
 
 DiscardableMemoryLockStatus DiscardableMemoryAshmem::Lock() {
+  DCHECK(!is_locked_);
+
   bool purged = false;
   if (!manager_->AcquireLock(this, &purged))
     return DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 
+  is_locked_ = true;
   return purged ? DISCARDABLE_MEMORY_LOCK_STATUS_PURGED
                 : DISCARDABLE_MEMORY_LOCK_STATUS_SUCCESS;
 }
 
 void DiscardableMemoryAshmem::Unlock() {
+  DCHECK(is_locked_);
   manager_->ReleaseLock(this);
+  is_locked_ = false;
 }
 
 void* DiscardableMemoryAshmem::Memory() const {
+  DCHECK(is_locked_);
   DCHECK(ashmem_chunk_);
   return ashmem_chunk_->Memory();
 }
 
 bool DiscardableMemoryAshmem::AllocateAndAcquireLock() {
-  DCHECK(!is_locked_);
-  is_locked_ = true;
-
   if (ashmem_chunk_)
     return ashmem_chunk_->Lock();
 
@@ -61,13 +64,10 @@ bool DiscardableMemoryAshmem::AllocateAndAcquireLock() {
 }
 
 void DiscardableMemoryAshmem::ReleaseLock() {
-  DCHECK(is_locked_);
   ashmem_chunk_->Unlock();
-  is_locked_ = false;
 }
 
 void DiscardableMemoryAshmem::Purge() {
-  DCHECK(!is_locked_);
   ashmem_chunk_.reset();
 }
 

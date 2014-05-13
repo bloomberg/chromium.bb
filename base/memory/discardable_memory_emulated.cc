@@ -56,7 +56,7 @@ void DiscardableMemoryEmulated::PurgeForTesting() {
 }
 
 bool DiscardableMemoryEmulated::Initialize() {
-  return Lock() == DISCARDABLE_MEMORY_LOCK_STATUS_PURGED;
+  return Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 }
 
 DiscardableMemoryLockStatus DiscardableMemoryEmulated::Lock() {

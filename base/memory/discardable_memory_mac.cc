@@ -47,7 +47,7 @@ class DiscardableMemoryMac
     g_shared_state.Pointer()->manager.Register(this, bytes);
   }
 
-  bool Initialize() { return Lock() == DISCARDABLE_MEMORY_LOCK_STATUS_PURGED; }
+  bool Initialize() { return Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_FAILED; }
 
   virtual ~DiscardableMemoryMac() {
     if (is_locked_)
@@ -81,8 +81,8 @@ class DiscardableMemoryMac
 
   // Overridden from internal::DiscardableMemoryManagerAllocation:
   virtual bool AllocateAndAcquireLock() OVERRIDE {
-    bool persistent = true;
     kern_return_t ret;
+    bool persistent;
     if (!memory_.size()) {
       vm_address_t address = 0;
       ret = vm_allocate(
@@ -92,17 +92,24 @@ class DiscardableMemoryMac
           VM_FLAGS_ANYWHERE | VM_FLAGS_PURGABLE | kDiscardableMemoryTag);
       MACH_CHECK(ret == KERN_SUCCESS, ret) << "vm_allocate";
       memory_.reset(address, bytes_);
+
+      // When making a fresh allocation, it's impossible for |persistent| to
+      // be true.
       persistent = false;
-    }
+    } else {
+      // |persistent| will be reset to false below if appropriate, but when
+      // reusing an existing allocation, it's possible for it to be true.
+      persistent = true;
 
 #if !defined(NDEBUG)
-    ret = vm_protect(mach_task_self(),
-                     memory_.address(),
-                     memory_.size(),
-                     FALSE,
-                     VM_PROT_DEFAULT);
-    MACH_DCHECK(ret == KERN_SUCCESS, ret) << "vm_protect";
+      ret = vm_protect(mach_task_self(),
+                       memory_.address(),
+                       memory_.size(),
+                       FALSE,
+                       VM_PROT_DEFAULT);
+      MACH_DCHECK(ret == KERN_SUCCESS, ret) << "vm_protect";
 #endif
+    }
 
     int state = VM_PURGABLE_NONVOLATILE;
     ret = vm_purgable_control(mach_task_self(),
@@ -112,6 +119,7 @@ class DiscardableMemoryMac
     MACH_CHECK(ret == KERN_SUCCESS, ret) << "vm_purgable_control";
     if (state & VM_PURGABLE_EMPTY)
       persistent = false;
+
     return persistent;
   }
 

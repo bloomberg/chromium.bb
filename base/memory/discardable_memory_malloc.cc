@@ -16,7 +16,7 @@ DiscardableMemoryMalloc::~DiscardableMemoryMalloc() {
 }
 
 bool DiscardableMemoryMalloc::Initialize() {
-  return Lock() == DISCARDABLE_MEMORY_LOCK_STATUS_PURGED;
+  return Lock() != DISCARDABLE_MEMORY_LOCK_STATUS_FAILED;
 }
 
 DiscardableMemoryLockStatus DiscardableMemoryMalloc::Lock() {
