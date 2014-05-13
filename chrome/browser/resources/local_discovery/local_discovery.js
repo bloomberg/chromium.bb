@@ -335,7 +335,8 @@ cr.define('local_discovery', function() {
     }
 
     fillDeviceDescription(devicesDomElement, device.display_name,
-                          description, device.type, 'Manage' /*Localize*/,
+                          description, device.type,
+                          loadTimeData.getString('manageDevice'),
                           manageCloudDevice.bind(null, device.id));
     return devicesDomElement;
   }

@@ -29,6 +29,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->SetUseJsonJSFormatV2();
   source->AddLocalizedString("serviceRegister",
                              IDS_LOCAL_DISCOVERY_SERVICE_REGISTER);
+  source->AddLocalizedString("manageDevice", IDS_LOCAL_DISCOVERY_MANAGE_DEVICE);
 
   source->AddLocalizedString("registerConfirmMessage",
                              IDS_LOCAL_DISCOVERY_REGISTER_CONFIRMATION);

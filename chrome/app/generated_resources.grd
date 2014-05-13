@@ -14071,8 +14071,11 @@ Do you accept?
 
     <!-- Local Device Discovery display strings -->
     <if expr="enable_service_discovery">
-      <message name="IDS_LOCAL_DISCOVERY_SERVICE_REGISTER" desc="Table header for registering a service">
+      <message name="IDS_LOCAL_DISCOVERY_SERVICE_REGISTER" desc="Name for button to register device in the Cloud">
         Register
+      </message>
+      <message name="IDS_LOCAL_DISCOVERY_MANAGE_DEVICE" desc="Name for button to manage registered device">
+        Manage
       </message>
       <message name="IDS_LOCAL_DISOCVERY_NOTIFICATION_TITLE_PRINTER" desc="Title of notification for a new printer showing up on your network">
         New printer on your network
