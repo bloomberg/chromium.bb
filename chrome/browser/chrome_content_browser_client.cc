@@ -631,7 +631,8 @@ float GetDeviceScaleAdjustment() {
 
 namespace chrome {
 
-ChromeContentBrowserClient::ChromeContentBrowserClient() {
+ChromeContentBrowserClient::ChromeContentBrowserClient()
+    : prerender_tracker_(NULL) {
 #if defined(ENABLE_PLUGINS)
   for (size_t i = 0; i < arraysize(kPredefinedAllowedFileHandleOrigins); ++i)
     allowed_file_handle_origins_.insert(kPredefinedAllowedFileHandleOrigins[i]);
@@ -1215,6 +1216,24 @@ bool ChromeContentBrowserClient::IsSuitableHost(
       privilege_required;
 }
 
+bool ChromeContentBrowserClient::MayReuseHost(
+    content::RenderProcessHost* process_host) {
+  // If there is currently a prerender in progress for the host provided,
+  // it may not be shared. We require prerenders to be by themselves in a
+  // separate process, so that we can monitor their resource usage, and so that
+  // we can track the cookies that they change.
+  Profile* profile = Profile::FromBrowserContext(
+      process_host->GetBrowserContext());
+  prerender::PrerenderManager* prerender_manager =
+      prerender::PrerenderManagerFactory::GetForProfile(profile);
+  if (prerender_manager &&
+      prerender_manager->IsProcessPrerendering(process_host)) {
+    return false;
+  }
+
+  return true;
+}
+
 // This function is trying to limit the amount of processes used by extensions
 // with background pages. It uses a globally set percentage of processes to
 // run such extensions and if the limit is exceeded, it returns true, to
@@ -1766,6 +1785,13 @@ bool ChromeContentBrowserClient::AllowSetCookie(
   CookieSettings* cookie_settings = io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, first_party);
 
+  if (prerender_tracker_) {
+    prerender_tracker_->OnCookieChangedForURL(
+        render_process_id,
+        context->GetRequestContext()->cookie_store()->GetCookieMonster(),
+        url);
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TabSpecificContentSettings::CookieChanged, render_process_id,
@@ -2212,6 +2238,8 @@ std::string ChromeContentBrowserClient::GetWorkerProcessTitle(
 }
 
 void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  prerender_tracker_ = g_browser_process->prerender_tracker();
   return g_browser_process->ResourceDispatcherHostCreated();
 }
 
@@ -2702,6 +2730,16 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs() {
 content::DevToolsManagerDelegate*
 ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
   return new ChromeDevToolsManagerDelegate();
+}
+
+net::CookieStore*
+ChromeContentBrowserClient::OverrideCookieStoreForRenderProcess(
+    int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!prerender_tracker_)
+    return NULL;
+  return prerender_tracker_->
+      GetPrerenderCookieStoreForRenderProcess(render_process_id);
 }
 
 #if defined(ENABLE_WEBRTC)

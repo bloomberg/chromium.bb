@@ -193,6 +193,8 @@ TEST_F(EvictedDomainCookieCounterTest, TestChain) {
       ++(*result_);
     }
 
+    virtual void OnLoaded() OVERRIDE {}
+
    private:
     virtual ~ChangedDelegateDummy() {}
 

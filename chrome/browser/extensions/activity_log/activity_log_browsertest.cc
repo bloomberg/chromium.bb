@@ -12,7 +12,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -98,6 +101,13 @@ IN_PROC_BROWSER_TEST_F(ActivityLogPrerenderTest, TestScriptInjected) {
   GURL url(base::StringPrintf(
       "http://www.google.com.bo:%d/test.html",
       port));
+
+  if (!prerender_manager->cookie_store_loaded()) {
+    base::RunLoop loop;
+    prerender_manager->set_on_cookie_store_loaded_cb_for_testing(
+        loop.QuitClosure());
+    loop.Run();
+  }
 
   const gfx::Size kSize(640, 480);
   scoped_ptr<prerender::PrerenderHandle> prerender_handle(

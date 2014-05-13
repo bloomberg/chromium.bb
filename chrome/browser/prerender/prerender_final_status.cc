@@ -59,6 +59,8 @@ const char* kFinalStatusNames[] = {
   "Bad Deferred Redirect",
   "Navigation Uncommitted",
   "New Navigation Entry",
+  "Cookie Store Not Loaded",
+  "Cookie Conflict",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
