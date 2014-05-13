@@ -9,7 +9,6 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.shell.ChromeShellTestBase;
@@ -51,12 +50,9 @@ public class InfoBarTest extends ChromeShellTestBase {
      * Verify PopUp InfoBar. Only basic triggering verified due to lack of tabs
      * in ChromeShell
      */
-    /*
     @Smoke
     @MediumTest
     @Feature({"Browser", "Main"})
-    */
-    @DisabledTest
     public void testInfoBarForPopUp() throws InterruptedException {
         loadUrlWithSanitization(TestHttpServerClient.getUrl(POPUP_PAGE));
         assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());

@@ -808,10 +808,9 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
     // Drop the cc::DelegatedFrameResourceCollection so that we will not return
     // any resources from the old output surface with the new output surface id.
     if (resource_collection_.get()) {
+      resource_collection_->SetClient(NULL);
       if (resource_collection_->LoseAllResources())
         SendReturnedDelegatedResources(last_output_surface_id_);
-
-      resource_collection_->SetClient(NULL);
       resource_collection_ = NULL;
     }
     DestroyDelegatedContent();
