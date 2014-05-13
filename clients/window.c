@@ -230,8 +230,6 @@ struct window {
 	int fullscreen;
 	int maximized;
 
-	int next_attach_serial;
-
 	enum preferred_format preferred_format;
 
 	window_key_handler_t key_handler;
@@ -1339,12 +1337,6 @@ surface_flush(struct surface *surface)
 					    surface->input_region);
 		wl_region_destroy(surface->input_region);
 		surface->input_region = NULL;
-	}
-
-	if (surface->window->next_attach_serial > 0) {
-		xdg_surface_ack_configure(surface->window->xdg_surface,
-					  surface->window->next_attach_serial);
-		surface->window->next_attach_serial = 0;
 	}
 
 	surface->toysurface->swap(surface->toysurface,
@@ -3893,7 +3885,7 @@ handle_surface_configure(void *data, struct xdg_surface *xdg_surface,
 				       window->saved_allocation.height);
 	}
 
-	window->next_attach_serial = serial;
+	xdg_surface_ack_configure(window->xdg_surface, serial);
 
 	if (window->state_changed_handler)
 		window->state_changed_handler(window, window->user_data);
