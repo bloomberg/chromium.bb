@@ -49,8 +49,12 @@ class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopBrowserTest);
 };
 
-#if defined (OS_WIN)
+#if defined(OS_WIN)
 // SignOut is flaky. So far only observed on Windows. crbug.com/357329.
+#define MAYBE_SignOut DISABLED_SignOut
+#elif defined(OS_CHROMEOS)
+// This test doesn't make sense for Chrome OS since it has a different
+// multi-profiles menu in the system tray instead.
 #define MAYBE_SignOut DISABLED_SignOut
 #else
 #define MAYBE_SignOut SignOut
@@ -85,7 +89,14 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SignOut) {
   chrome::HideUserManager();
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, SwitchToProfile) {
+#if defined(OS_CHROMEOS)
+// This test doesn't make sense for Chrome OS since it has a different
+// multi-profiles menu in the system tray instead.
+#define MAYBE_SwitchToProfile DISABLED_SwitchToProfile
+#else
+#define MAYBE_SwitchToProfile SwitchToProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
