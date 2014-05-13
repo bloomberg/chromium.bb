@@ -25,6 +25,7 @@ class GURL;
 
 namespace base {
 class FilePath;
+class MessageLoopProxy;
 class SequencedTaskRunner;
 }
 
@@ -48,8 +49,7 @@ class ServiceWorkerStorage;
 // is the root of the containment hierarchy for service worker data
 // associated with a particular partition.
 class CONTENT_EXPORT ServiceWorkerContextCore
-    : NON_EXPORTED_BASE(public base::SupportsWeakPtr<ServiceWorkerContextCore>),
-      public ServiceWorkerVersion::Listener {
+    : public ServiceWorkerVersion::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode status,
                               int64 registration_id,
@@ -88,6 +88,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
       base::SequencedTaskRunner* database_task_runner,
+      base::MessageLoopProxy* disk_cache_thread,
       quota::QuotaManagerProxy* quota_manager_proxy,
       ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
       scoped_ptr<ServiceWorkerProcessManager> process_manager);
@@ -154,6 +155,10 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // Returns new context-local unique ID for ServiceWorkerHandle.
   int GetNewServiceWorkerHandleId();
 
+  base::WeakPtr<ServiceWorkerContextCore> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
   // Allows tests to change how processes are created.
   void SetProcessManagerForTest(
       scoped_ptr<ServiceWorkerProcessManager> new_process_manager) {
@@ -174,6 +179,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version);
 
+  base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
   ProcessToProviderMap providers_;
   scoped_ptr<ServiceWorkerStorage> storage_;
   scoped_refptr<EmbeddedWorkerRegistry> embedded_worker_registry_;
@@ -182,7 +188,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64, ServiceWorkerRegistration*> live_registrations_;
   std::map<int64, ServiceWorkerVersion*> live_versions_;
   int next_handle_id_;
-
   scoped_refptr<ObserverListThreadSafe<ServiceWorkerContextObserver> >
       observer_list_;
 

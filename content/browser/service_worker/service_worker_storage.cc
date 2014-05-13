@@ -162,6 +162,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
     const base::FilePath& path,
     base::WeakPtr<ServiceWorkerContextCore> context,
     base::SequencedTaskRunner* database_task_runner,
+    base::MessageLoopProxy* disk_cache_thread,
     quota::QuotaManagerProxy* quota_manager_proxy)
     : next_registration_id_(kInvalidServiceWorkerRegistrationId),
       next_version_id_(kInvalidServiceWorkerVersionId),
@@ -169,6 +170,7 @@ ServiceWorkerStorage::ServiceWorkerStorage(
       state_(UNINITIALIZED),
       context_(context),
       database_task_runner_(database_task_runner),
+      disk_cache_thread_(disk_cache_thread),
       quota_manager_proxy_(quota_manager_proxy),
       weak_factory_(this) {
   if (!path.empty()) {

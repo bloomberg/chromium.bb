@@ -20,6 +20,7 @@
 #include "url/gurl.h"
 
 namespace base {
+class MessageLoopProxy;
 class SequencedTaskRunner;
 }
 
@@ -65,6 +66,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   ServiceWorkerStorage(const base::FilePath& path,
                        base::WeakPtr<ServiceWorkerContextCore> context,
                        base::SequencedTaskRunner* database_task_runner,
+                       base::MessageLoopProxy* disk_cache_thread,
                        quota::QuotaManagerProxy* quota_manager_proxy);
   ~ServiceWorkerStorage();
 
@@ -208,6 +210,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   scoped_ptr<ServiceWorkerDatabase> database_;
 
   scoped_refptr<base::SequencedTaskRunner> database_task_runner_;
+  scoped_refptr<base::MessageLoopProxy> disk_cache_thread_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   scoped_ptr<ServiceWorkerDiskCache> disk_cache_;
 
