@@ -1582,18 +1582,17 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       if (hard_enabled) {
         command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
       } else if (!hard_disabled) {
-        chrome::VersionInfo::Channel channel =
-          chrome::VersionInfo::GetChannel();
-#if defined(OS_ANDROID) || defined(OS_IOS)
-        chrome::VersionInfo::Channel kForceChannel =
-            chrome::VersionInfo::CHANNEL_DEV;
-#else
-        chrome::VersionInfo::Channel kForceChannel =
-            chrome::VersionInfo::CHANNEL_CANARY;
-#endif
         std::string group =
             base::FieldTrialList::FindFullName("AutoReloadExperiment");
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+        chrome::VersionInfo::Channel channel =
+          chrome::VersionInfo::GetChannel();
+        chrome::VersionInfo::Channel kForceChannel =
+            chrome::VersionInfo::CHANNEL_CANARY;
         if (channel <= kForceChannel || group == "Enabled")
+#else
+        if (group == "Enabled")
+#endif
           command_line->AppendSwitch(switches::kEnableOfflineAutoReload);
       }
     }
