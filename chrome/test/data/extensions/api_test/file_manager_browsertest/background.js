@@ -319,6 +319,21 @@ function waitUntilTaskExecutes(windowId, taskId) {
 }
 
 /**
+ * Adds check of chrome.test to the end of the given promise.
+ * @param {Promise} promise Promise.
+ */
+function testPromise(promise) {
+  promise.then(function() {
+    return new Promise(checkIfNoErrorsOccured);
+  }).then(chrome.test.callbackPass(function() {
+    // The callbacPass is necessary to avoid prematurely finishing tests.
+    // Don't put chrome.test.succeed() here to avoid doubled success log.
+  }), function(error) {
+    chrome.test.fail(error.stack || error);
+  });
+};
+
+/**
  * Sends a fake key down event.
  * @param {string} windowId Window ID.
  * @param {string} query Query for the target element.

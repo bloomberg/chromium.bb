@@ -588,10 +588,12 @@ DirectoryModel.prototype.onRenameEntry = function(
  * @param {string} name Directory name.
  * @param {function(DirectoryEntry)} successCallback Callback on success.
  * @param {function(FileError)} errorCallback Callback on failure.
+ * @param {function()} abortCallback Callback on abort (cancelled by user).
  */
 DirectoryModel.prototype.createDirectory = function(name,
                                                     successCallback,
-                                                    errorCallback) {
+                                                    errorCallback,
+                                                    abortCallback) {
   // Obtain and check the current directory.
   var entry = this.getCurrentDirEntry();
   if (!entry || this.isSearching()) {
@@ -620,8 +622,10 @@ DirectoryModel.prototype.createDirectory = function(name,
         // Do not change anything or call the callback if current
         // directory changed.
         tracker.stop();
-        if (tracker.hasChanged)
+        if (tracker.hasChanged) {
+          abortCallback();
           return;
+        }
 
         // If target directory is already in the list, just select it.
         var existing = this.getFileList().slice().filter(

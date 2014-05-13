@@ -128,63 +128,6 @@ function keyboardDelete(path) {
 }
 
 /**
- * Adds check of chrome.test to the end of the given promise.
- * @param {Promise} promise Promise.
- */
-function testPromise(promise) {
-  promise.then(function() {
-    return new Promise(checkIfNoErrorsOccured);
-  }).then(chrome.test.callbackPass(function() {
-    // The callbacPass is necessary to avoid prematurely finishing tests.
-    // Don't put chrome.test.succeed() here to avoid doubled success log.
-  }), function(error) {
-    chrome.test.fail(error.stack || error);
-  });
-};
-
-/**
- * Test for creating new folder.
- * @param {string} path Initial path.
- * @param {Array.<TestEntryInfo>} initialEntrySet Initial set of entries.
- * @return {Promise} Promise to be fulfilled on success.
- */
-function createNewFolder(path, initialEntrySet) {
-  var windowId;
-  // Open window.
-  return new Promise(function(callback) {
-    setupAndWaitUntilReady(null, path, callback);
-  }).then(function(inWindowId) {
-    windowId = inWindowId;
-    // Push Ctrl + E.
-    return callRemoteTestUtil('fakeKeyDown',
-                              windowId,
-                              // Ctrl + E
-                              ['#file-list', 'U+0045', true]);
-  }).then(function() {
-    // Wait for rename text field.
-    return waitForElement(windowId, 'input.rename');
-  }).then(function() {
-    // Type new folder name.
-    return callRemoteTestUtil(
-        'inputText', windowId, ['input.rename', 'Test Folder Name']);
-  }).then(function() {
-    // Push Enter.
-    return callRemoteTestUtil('fakeKeyDown',
-                              windowId,
-                              ['input.rename', 'Enter', false]);
-  }).then(function() {
-    return waitForElementLost(windowId, 'input.rename');
-  }).then(function() {
-    var expectedEntryRows = TestEntryInfo.getExpectedRows(initialEntrySet);
-    expectedEntryRows.push(['Test Folder Name', '--', 'Folder', '']);
-    // Wait for the new folder.
-    return waitForFiles(windowId,
-                        expectedEntryRows,
-                        {ignoreLastModifiedTime: true});
-  });
-};
-
-/**
  * Renames a file.
  * @param {string} windowId ID of the window.
  * @param {string} oldName Old name of a file.
@@ -273,12 +216,7 @@ testcase.keyboardDeleteDrive = function() {
   keyboardDelete(RootPath.DRIVE);
 };
 
-testcase.createNewFolderDownloads = function() {
-  testPromise(createNewFolder(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET));
-};
-
-testcase.createNewFolderDrive = function() {
-  testPromise(createNewFolder(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET));
+testcase.createNewFolderAndCheckFocus = function() {
 };
 
 testcase.renameFileDownloads = function() {

@@ -10,6 +10,7 @@
       // List background.js first because the testcase namespace is defined
       // here.
       "background.js",
+      "create_new_folder.js",
       "drive_specific.js",
       "copy_between_windows.js",
       "execute_default_task.js",

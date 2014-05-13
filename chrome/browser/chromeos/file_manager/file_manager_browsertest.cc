@@ -753,6 +753,18 @@ INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatMultipleFileDrive")));
 
 INSTANTIATE_TEST_CASE_P(
+    CreateNewFolder,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "createNewFolderAfterSelectFile"),
+                      TestParameter(IN_GUEST_MODE,
+                                    "createNewFolderDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "createNewFolderDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "createNewFolderDrive")));
+
+INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "keyboardDeleteDownloads"),
@@ -762,12 +774,6 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
-                      TestParameter(IN_GUEST_MODE,
-                                    "createNewFolderDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "createNewFolderDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE,
-                                    "createNewFolderDrive"),
                       TestParameter(IN_GUEST_MODE,
                                     "renameFileDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE,
