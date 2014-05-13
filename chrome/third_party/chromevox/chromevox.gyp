@@ -110,18 +110,6 @@
               ],
             },
             {
-              'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox/extensions/searchbox',
-              'files': [
-                'extensions/searchvox/abstract_result.js',
-                'extensions/searchvox/constants.js',
-                'extensions/searchvox/context_menu.js',
-                'extensions/searchvox/results.js',
-                'extensions/searchvox/search.js',
-                'extensions/searchvox/search_tools.js',
-                'extensions/searchvox/util.js',
-              ],
-            },
-            {
               'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox/',
               'files': [
                 '_locales/',

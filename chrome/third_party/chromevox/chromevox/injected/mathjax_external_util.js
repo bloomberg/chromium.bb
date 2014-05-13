@@ -19,7 +19,6 @@
  * (sorge@google.com).
  * This is the only file that should contain actual MathJax code!
  *
- * @author sorge@google.com (Volker Sorge)
  */
 
 if (typeof(goog) != 'undefined' && goog.provide) {
