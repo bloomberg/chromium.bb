@@ -183,8 +183,11 @@ bool RemoteWindowTreeHostWin::IsValid() {
   return Instance()->remote_window_ != NULL;
 }
 
-void RemoteWindowTreeHostWin::SetRemoteWindowHandle(HWND remote_window) {
+void RemoteWindowTreeHostWin::InitializeRemoteWindowAndScaleFactor(
+    HWND remote_window,
+    float device_scale) {
   remote_window_ = remote_window;
+  gfx::InitDeviceScaleFactor(device_scale);
   // Do not create compositor here, but in Connected() below.
   // See http://crbug.com/330179 and http://crbug.com/334380.
 }
@@ -489,7 +492,7 @@ void RemoteWindowTreeHostWin::OnTextInputClientUpdated(
 }
 
 gfx::Point PointFromNativeEvent(int32 x, int32 y) {
-  static float scale_factor = gfx::GetModernUIScale();
+  static float scale_factor = gfx::GetDPIScale();
   gfx::Point result( x * scale_factor, y * scale_factor);
   return result;
 }

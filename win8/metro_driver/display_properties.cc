@@ -9,15 +9,10 @@
 #include <wrl\wrappers\corewrappers.h>
 #include <windows.foundation.h>
 #include <windows.graphics.display.h>
-#include "base/win/scoped_com_initializer.h"
+#include "ui/gfx/win/dpi.h"
 #include "winrt_utils.h"
 
-#pragma comment(lib, "runtimeobject.lib")
-
-extern "C" {
-
-__declspec(dllexport) float GetModernUIScale() {
-  base::win::ScopedCOMInitializer com_init;
+float GetModernUIScale() {
   Microsoft::WRL::ComPtr<
       ABI::Windows::Graphics::Display::IDisplayPropertiesStatics>
       display_properties;
@@ -29,6 +24,4 @@ __declspec(dllexport) float GetModernUIScale() {
       return static_cast<float>(resolution_scale) / 100.0f;
   }
   return 1.0f;
-}
-
 }

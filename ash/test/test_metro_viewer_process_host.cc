@@ -26,10 +26,12 @@ void TestMetroViewerProcessHost::OnChannelError() {
 }
 
 void TestMetroViewerProcessHost::OnSetTargetSurface(
-    gfx::NativeViewId target_surface) {
+    gfx::NativeViewId target_surface,
+    float device_scale) {
   DLOG(INFO) << __FUNCTION__ << ", target_surface = " << target_surface;
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
-  aura::RemoteWindowTreeHostWin::Instance()->SetRemoteWindowHandle(hwnd);
+  aura::RemoteWindowTreeHostWin::Instance()->
+      InitializeRemoteWindowAndScaleFactor(hwnd, device_scale);
   aura::RemoteWindowTreeHostWin::Instance()->Connected(this);
 }
 

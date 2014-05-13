@@ -74,6 +74,8 @@ struct Globals {
   BreakpadExceptionHandler breakpad_exception_handler;
 } globals;
 
+extern float GetModernUIScale();
+
 namespace {
 
 enum KeyModifier {
@@ -506,7 +508,8 @@ class ChromeAppViewAsh::PointerInfoHandler {
 ChromeAppViewAsh::ChromeAppViewAsh()
     : mouse_down_flags_(ui::EF_NONE),
       ui_channel_(nullptr),
-      core_window_hwnd_(NULL) {
+      core_window_hwnd_(NULL),
+      scale_(0) {
   DVLOG(1) << __FUNCTION__;
   globals.previous_state =
       winapp::Activation::ApplicationExecutionState_NotRunning;
@@ -625,6 +628,9 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   // we can now directly blit to it from the browser process.
   direct3d_helper_.Initialize(window);
   DVLOG(1) << "Initialized Direct3D.";
+
+  scale_ = GetModernUIScale();
+  DVLOG(1) << "Scale is " << scale_;
   return S_OK;
 }
 
@@ -669,7 +675,7 @@ ChromeAppViewAsh::Run() {
   // Upon receipt of the MetroViewerHostMsg_SetTargetSurface message the
   // browser will use D3D from the browser process to present to our Window.
   ui_channel_->Send(new MetroViewerHostMsg_SetTargetSurface(
-                    gfx::NativeViewId(core_window_hwnd_)));
+                    gfx::NativeViewId(core_window_hwnd_), scale_));
   DVLOG(1) << "ICoreWindow sent " << core_window_hwnd_;
 
   // Send an initial size message so that the Ash root window host gets sized

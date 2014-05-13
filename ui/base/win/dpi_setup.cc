@@ -13,15 +13,7 @@ namespace ui {
 namespace win {
 
 void InitDeviceScaleFactor() {
-  float scale = 1.0;
-  if (CommandLine::ForCurrentProcess()->HasSwitch("silent-launch")) {
-    if (gfx::IsHighDPIEnabled())
-      scale = gfx::GetModernUIScale();
-  }
-  else {
-    scale = gfx::GetDPIScale();
-  }
-  gfx::InitDeviceScaleFactor(scale);
+  gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
 }
 
 }  // namespace win

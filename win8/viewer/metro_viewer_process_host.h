@@ -64,7 +64,8 @@ class MetroViewerProcessHost : public IPC::Listener,
 
   // Called over IPC by the viewer process to tell this host that it should be
   // drawing to |target_surface|.
-  virtual void OnSetTargetSurface(gfx::NativeViewId target_surface) = 0;
+  virtual void OnSetTargetSurface(gfx::NativeViewId target_surface,
+                                  float device_scale) = 0;
 
   // Called over IPC by the viewer process to request that the url passed in be
   // opened.

@@ -16,7 +16,8 @@ class ChromeMetroViewerProcessHost : public win8::MetroViewerProcessHost {
   virtual void OnChannelError() OVERRIDE;
   // IPC::Listener implementation
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
-  virtual void OnSetTargetSurface(gfx::NativeViewId target_surface) OVERRIDE;
+  virtual void OnSetTargetSurface(gfx::NativeViewId target_surface,
+                                  float device_scale) OVERRIDE;
   virtual void OnOpenURL(const base::string16& url) OVERRIDE;
   virtual void OnHandleSearchRequest(
       const base::string16& search_string) OVERRIDE;

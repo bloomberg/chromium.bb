@@ -115,7 +115,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   } else {
 #if defined(OS_WIN)
     if (gfx::IsHighDPIEnabled()) {
-      device_scale_factor = gfx::GetModernUIScale();
+      device_scale_factor = gfx::GetDPIScale();
     }
 #endif
   }

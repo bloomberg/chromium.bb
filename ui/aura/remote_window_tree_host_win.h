@@ -120,10 +120,13 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   // HWND. A return value of false typically indicates we're not in metro mode.
   static bool IsValid();
 
-  // Sets the handle to the remote window. The |remote_window| is the actual
-  // window owned by the viewer process. Call this before Connected() for some
-  // customers like input method initialization which needs the handle.
-  void SetRemoteWindowHandle(HWND remote_window);
+  // Sets the handle to the remote window and the scale factor. The
+  // |remote_window| is the actual window owned by the viewer process. Call
+  // this before Connected() for some customers like input method
+  // initialization which needs the handle.
+  // |device_scale| indicates the Windows 8 dpi scale.
+  void InitializeRemoteWindowAndScaleFactor(HWND remote_window,
+                                            float device_scale);
 
   // The |host| can be used when we need to send a message to it.
   void Connected(IPC::Sender* host);

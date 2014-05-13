@@ -116,13 +116,15 @@ void ChromeMetroViewerProcessHost::OnChannelConnected(int32 /*peer_pid*/) {
 }
 
 void ChromeMetroViewerProcessHost::OnSetTargetSurface(
-    gfx::NativeViewId target_surface) {
+    gfx::NativeViewId target_surface,
+    float device_scale) {
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
 
   // Make hwnd available as early as possible for proper InputMethod
   // initialization.
   ash::AshRemoteWindowTreeHostWin::Init();
-  aura::RemoteWindowTreeHostWin::Instance()->SetRemoteWindowHandle(hwnd);
+  aura::RemoteWindowTreeHostWin::Instance()->
+      InitializeRemoteWindowAndScaleFactor(hwnd, device_scale);
 
   // Now start the Ash shell environment.
   chrome::OpenAsh();
@@ -158,7 +160,7 @@ void ChromeMetroViewerProcessHost::OnWindowSizeChanged(uint32 width,
                                                        uint32 height) {
   std::vector<ash::DisplayInfo> info_list;
   info_list.push_back(ash::DisplayInfo::CreateFromSpec(
-      base::StringPrintf("%dx%d*%f", width, height, gfx::GetModernUIScale())));
+      base::StringPrintf("%dx%d*%f", width, height, gfx::GetDPIScale())));
   ash::Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(
       info_list);
   aura::RemoteWindowTreeHostWin::Instance()->HandleWindowSizeChanged(width,

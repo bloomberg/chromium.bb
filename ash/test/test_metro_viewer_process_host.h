@@ -23,7 +23,8 @@ class TestMetroViewerProcessHost : public win8::MetroViewerProcessHost {
  private:
   // win8::MetroViewerProcessHost implementation
   virtual void OnChannelError() OVERRIDE;
-  virtual void OnSetTargetSurface(gfx::NativeViewId target_surface) OVERRIDE;
+  virtual void OnSetTargetSurface(gfx::NativeViewId target_surface,
+                                  float device_scale) OVERRIDE;
   virtual void OnOpenURL(const base::string16& url) OVERRIDE;
   virtual void OnHandleSearchRequest(
       const base::string16& search_string) OVERRIDE;

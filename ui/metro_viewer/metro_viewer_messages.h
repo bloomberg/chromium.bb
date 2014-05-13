@@ -33,8 +33,9 @@ IPC_STRUCT_END()
 // Messages sent from the viewer to the browser:
 
 // Inform the browser of the surface to target for compositing.
-IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_SetTargetSurface,
-                     gfx::NativeViewId /* target hwnd */)
+IPC_MESSAGE_CONTROL2(MetroViewerHostMsg_SetTargetSurface,
+                     gfx::NativeViewId /* target hwnd */,
+                     float             /* device scale */)
 // Informs the browser that the mouse moved.
 IPC_MESSAGE_CONTROL3(MetroViewerHostMsg_MouseMoved,
                      int32,       /* x-coordinate */

@@ -232,6 +232,9 @@ class ChromeAppViewAsh
   // For IME support.
   scoped_ptr<metro_driver::InputSource> input_source_;
   scoped_ptr<metro_driver::TextService> text_service_;
+
+  // The device scale factor.
+  float scale_;
 };
 
 #endif  // WIN8_METRO_DRIVER_CHROME_APP_VIEW_ASH_H_

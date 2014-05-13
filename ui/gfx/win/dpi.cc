@@ -38,27 +38,14 @@ BOOL IsProcessDPIAwareWrapper() {
 float g_device_scale_factor = 0.0f;
 
 float GetUnforcedDeviceScaleFactor() {
+  // If the global device scale factor is initialized use it. This is to ensure
+  // we use the same scale factor across all callsites. We don't use the
+  // GetDeviceScaleFactor function here because it fires a DCHECK if the
+  // g_device_scale_factor global is 0. 
+  if (g_device_scale_factor)
+    return g_device_scale_factor;
   return static_cast<float>(gfx::GetDPI().width()) /
       static_cast<float>(kDefaultDPIX);
-}
-
-float GetModernUIScaleWrapper() {
-  float result = 1.0f;
-  // TODO(cpu) : Fix scale for Win7.
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return result;
-
-  typedef float(WINAPI *GetModernUIScalePtr)(VOID);
-  HMODULE lib = LoadLibraryA("metro_driver.dll");
-  if (lib) {
-    GetModernUIScalePtr func =
-        reinterpret_cast<GetModernUIScalePtr>(
-        GetProcAddress(lib, "GetModernUIScale"));
-    if (func)
-      result = func();
-    FreeLibrary(lib);
-  }
-  return result;
 }
 
 // Duplicated from Win8.1 SDK ShellScalingApi.h
@@ -125,10 +112,6 @@ DWORD ReadRegistryValue(HKEY root,
 }  // namespace
 
 namespace gfx {
-
-float GetModernUIScale() {
-  return GetModernUIScaleWrapper();
-}
 
 void InitDeviceScaleFactor(float scale) {
   DCHECK_NE(0.0f, scale);
