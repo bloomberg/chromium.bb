@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/media_galleries/iphoto_library.h"
 #include "chrome/common/media_galleries/itunes_library.h"
+#include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "ipc/ipc_message_macros.h"
@@ -146,6 +147,13 @@ IPC_STRUCT_TRAITS_BEGIN(picasa::FolderINIContents)
   IPC_STRUCT_TRAITS_MEMBER(ini_contents)
 IPC_STRUCT_TRAITS_END()
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+IPC_STRUCT_TRAITS_BEGIN(metadata::AttachedImage)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(data)
+IPC_STRUCT_TRAITS_END()
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 //------------------------------------------------------------------------------
 // Utility process messages:
@@ -291,9 +299,10 @@ IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_CheckMediaFile,
                      int64 /* milliseconds_of_decoding */,
                      IPC::PlatformFileForTransit /* Media file to parse */)
 
-IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_ParseMediaMetadata,
+IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_ParseMediaMetadata,
                      std::string /* mime_type */,
-                     int64 /* total_size */)
+                     int64 /* total_size */,
+                     bool /* get_attached_images */)
 
 IPC_MESSAGE_CONTROL2(ChromeUtilityMsg_RequestBlobBytes_Finished,
                      int64 /* request_id */,
@@ -481,9 +490,11 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_IndexPicasaAlbumsContents_Finished,
 IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_CheckMediaFile_Finished,
                      bool /* passed_checks */)
 
-IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_ParseMediaMetadata_Finished,
-                     bool /* parse_success */,
-                     base::DictionaryValue /* metadata */)
+IPC_MESSAGE_CONTROL3(
+    ChromeUtilityHostMsg_ParseMediaMetadata_Finished,
+    bool /* parse_success */,
+    base::DictionaryValue /* metadata */,
+    std::vector<metadata::AttachedImage> /* attached_images */)
 
 IPC_MESSAGE_CONTROL3(ChromeUtilityHostMsg_RequestBlobBytes,
                      int64 /* request_id */,

@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SAFE_MEDIA_METADATA_PARSER_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_SAFE_MEDIA_METADATA_PARSER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/extensions/api/media_galleries.h"
+#include "chrome/common/media_galleries/metadata_types.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 
@@ -29,11 +33,14 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
  public:
   // |metadata_dictionary| is owned by the callback.
   typedef base::Callback<
-      void(bool parse_success, base::DictionaryValue* metadata_dictionary)>
+      void(bool parse_success,
+           scoped_ptr<base::DictionaryValue> metadata_dictionary,
+           scoped_ptr<std::vector<AttachedImage> > attached_images)>
       DoneCallback;
 
   SafeMediaMetadataParser(Profile* profile, const std::string& blob_uuid,
-                          int64 blob_size, const std::string& mime_type);
+                          int64 blob_size, const std::string& mime_type,
+                          bool get_attached_images);
 
   // Should be called on the UI thread. |callback| also runs on the UI thread.
   void Start(const DoneCallback& callback);
@@ -54,8 +61,8 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
   // Notification from the utility process when it finishes parsing metadata.
   // Runs on the IO thread.
   void OnParseMediaMetadataFinished(
-      bool parse_success,
-      const base::DictionaryValue& metadata_dictionary);
+      bool parse_success, const base::DictionaryValue& metadata_dictionary,
+      const std::vector<AttachedImage>& attached_images);
 
   // Sequence of functions that bounces from the IO thread to the UI thread to
   // read the blob data, then sends the data back to the utility process.
@@ -78,6 +85,7 @@ class SafeMediaMetadataParser : public content::UtilityProcessHostClient {
   const std::string blob_uuid_;
   const int64 blob_size_;
   const std::string mime_type_;
+  bool get_attached_images_;
 
   DoneCallback callback_;
 

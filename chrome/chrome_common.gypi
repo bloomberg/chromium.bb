@@ -252,6 +252,7 @@
         'common/media/webrtc_logging_messages.h',
         'common/media/webrtc_logging_message_data.cc',
         'common/media/webrtc_logging_message_data.h',
+        'common/media_galleries/metadata_types.h',
         'common/metrics/caching_permuted_entropy_provider.cc',
         'common/metrics/caching_permuted_entropy_provider.h',
         'common/metrics/metrics_service_base.cc',
@@ -390,6 +391,7 @@
             ['exclude', '^common/custom_handlers/'],
             ['exclude', '^common/extensions/'],
             ['exclude', '^common/logging_chrome\\.'],
+            ['exclude', '^common/media_galleries/'],
             ['exclude', '^common/multi_process_'],
             ['exclude', '^common/nacl_'],
             ['exclude', '^common/pepper_flash\\.'],
@@ -435,6 +437,7 @@
             ['exclude', '^common/importer/'],
             ['include', '^common/importer/imported_favicon_usage.cc$'],
             ['include', '^common/importer/imported_favicon_usage.h$'],
+            ['exclude', '^common/media_galleries/'],
             ['exclude', '^common/service_'],
           ],
           'sources!': [

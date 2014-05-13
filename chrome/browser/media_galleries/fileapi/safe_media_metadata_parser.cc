@@ -14,14 +14,14 @@ using content::BrowserThread;
 
 namespace metadata {
 
-SafeMediaMetadataParser::SafeMediaMetadataParser(Profile* profile,
-                                                 const std::string& blob_uuid,
-                                                 int64 blob_size,
-                                                 const std::string& mime_type)
+SafeMediaMetadataParser::SafeMediaMetadataParser(
+    Profile* profile, const std::string& blob_uuid, int64 blob_size,
+    const std::string& mime_type, bool get_attached_images)
     : profile_(profile),
       blob_uuid_(blob_uuid),
       blob_size_(blob_size),
       mime_type_(mime_type),
+      get_attached_images_(get_attached_images),
       parser_state_(INITIAL_STATE) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -51,24 +51,33 @@ void SafeMediaMetadataParser::StartWorkOnIOThread(
       this, base::MessageLoopProxy::current())->AsWeakPtr();
 
   utility_process_host_->Send(
-      new ChromeUtilityMsg_ParseMediaMetadata(mime_type_, blob_size_));
+      new ChromeUtilityMsg_ParseMediaMetadata(mime_type_, blob_size_,
+                                              get_attached_images_));
 
   parser_state_ = STARTED_PARSING_STATE;
 }
 
 void SafeMediaMetadataParser::OnParseMediaMetadataFinished(
-    bool parse_success, const base::DictionaryValue& metadata_dictionary) {
+    bool parse_success, const base::DictionaryValue& metadata_dictionary,
+    const std::vector<AttachedImage>& attached_images) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!callback_.is_null());
 
   if (parser_state_ != STARTED_PARSING_STATE)
     return;
 
+  // We need to make a scoped copy of this vector since it will be destroyed
+  // at the end of the IPC message handler.
+  scoped_ptr<std::vector<metadata::AttachedImage> > attached_images_copy =
+      make_scoped_ptr(new std::vector<metadata::AttachedImage>(
+          attached_images));
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(callback_, parse_success,
-                 base::Owned(metadata_dictionary.DeepCopy())));
+                 base::Passed(make_scoped_ptr(metadata_dictionary.DeepCopy())),
+                 base::Passed(&attached_images_copy)));
   parser_state_ = FINISHED_PARSING_STATE;
 }
 
@@ -120,7 +129,9 @@ void SafeMediaMetadataParser::OnProcessCrashed(int exit_code) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(callback_, false, base::Owned(new base::DictionaryValue)));
+      base::Bind(callback_, false,
+                 base::Passed(scoped_ptr<base::DictionaryValue>()),
+                 base::Passed(scoped_ptr<std::vector<AttachedImage> >())));
   parser_state_ = FINISHED_PARSING_STATE;
 }
 

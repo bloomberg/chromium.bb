@@ -68,6 +68,7 @@
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/common/media_galleries/metadata_types.h"
 #include "chrome/utility/media_galleries/image_metadata_extractor.h"
 #include "chrome/utility/media_galleries/ipc_data_source.h"
 #include "chrome/utility/media_galleries/media_metadata_parser.h"
@@ -170,7 +171,7 @@ class PdfFunctionsBase {
       const base::FilePath& pdf_module_path,
       const base::ScopedNativeLibrary& pdf_lib) {
     return true;
-  };
+  }
 
  private:
   // Exported by PDF plugin.
@@ -303,9 +304,10 @@ typedef PdfFunctionsBase PdfFunctions;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 void FinishParseMediaMetadata(
     metadata::MediaMetadataParser* parser,
-    scoped_ptr<extensions::api::media_galleries::MediaMetadata> metadata) {
+    const extensions::api::media_galleries::MediaMetadata& metadata,
+    const std::vector<metadata::AttachedImage>& attached_images) {
   Send(new ChromeUtilityHostMsg_ParseMediaMetadata_Finished(
-      true, *(metadata->ToValue().get())));
+      true, *metadata.ToValue(), attached_images));
   ReleaseProcessIfNeeded();
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -919,14 +921,13 @@ void ChromeContentUtilityClient::OnCheckMediaFile(
 }
 
 void ChromeContentUtilityClient::OnParseMediaMetadata(
-    const std::string& mime_type,
-    int64 total_size) {
+    const std::string& mime_type, int64 total_size, bool get_attached_images) {
   // Only one IPCDataSource may be created and added to the list of handlers.
   metadata::IPCDataSource* source = new metadata::IPCDataSource(total_size);
   handlers_.push_back(source);
 
-  metadata::MediaMetadataParser* parser =
-      new metadata::MediaMetadataParser(source, mime_type);
+  metadata::MediaMetadataParser* parser = new metadata::MediaMetadataParser(
+      source, mime_type, get_attached_images);
   parser->Start(base::Bind(&FinishParseMediaMetadata, base::Owned(parser)));
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)

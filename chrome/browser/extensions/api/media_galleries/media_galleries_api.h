@@ -18,6 +18,7 @@
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/media_galleries/media_scan_manager_observer.h"
 #include "chrome/common/extensions/api/media_galleries.h"
+#include "chrome/common/media_galleries/metadata_types.h"
 #include "components/storage_monitor/media_storage_util.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
@@ -271,7 +272,8 @@ class MediaGalleriesGetMetadataFunction : public ChromeAsyncExtensionFunction {
                      int64 total_blob_length);
 
   void OnSafeMediaMetadataParserDone(
-      bool parse_success, base::DictionaryValue* metadata_dictionary);
+      bool parse_success, scoped_ptr<base::DictionaryValue> metadata_dictionary,
+      scoped_ptr<std::vector<metadata::AttachedImage> > attached_images);
 };
 
 }  // namespace extensions

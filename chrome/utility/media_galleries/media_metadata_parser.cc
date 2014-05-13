@@ -15,6 +15,7 @@
 #include "chrome/utility/media_galleries/image_metadata_extractor.h"
 #include "media/base/audio_video_metadata_extractor.h"
 #include "media/base/data_source.h"
+#include "net/base/mime_sniffer.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;
 
@@ -49,16 +50,16 @@ void SetBoolScopedPtr(bool value, scoped_ptr<bool>* destination) {
 // This runs on |media_thread_|, as the underlying FFmpeg operation is
 // blocking, and the utility thread must not be blocked, so the media file
 // bytes can be sent from the browser process to the utility process.
-scoped_ptr<MediaMetadataParser::MediaMetadata> ParseAudioVideoMetadata(
-    media::DataSource* source,
-    scoped_ptr<MediaMetadataParser::MediaMetadata> metadata) {
+void ParseAudioVideoMetadata(
+    media::DataSource* source, bool get_attached_images,
+    MediaMetadataParser::MediaMetadata* metadata,
+    std::vector<AttachedImage>* attached_images) {
   DCHECK(source);
-  DCHECK(metadata.get());
+  DCHECK(metadata);
   media::AudioVideoMetadataExtractor extractor;
 
-  // TODO(tommycli): Add attached picture extraction.
-  if (!extractor.Extract(source, false /* extract_attached_pics */))
-    return metadata.Pass();
+  if (!extractor.Extract(source, get_attached_images))
+    return;
 
   if (extractor.duration() >= 0)
     metadata->duration.reset(new double(extractor.duration()));
@@ -97,65 +98,89 @@ scoped_ptr<MediaMetadataParser::MediaMetadata> ParseAudioVideoMetadata(
     metadata->raw_tags.push_back(stream_info);
   }
 
-  return metadata.Pass();
+  if (get_attached_images) {
+    for (std::vector<std::string>::const_iterator it =
+             extractor.attached_images_bytes().begin();
+         it != extractor.attached_images_bytes().end(); ++it) {
+      attached_images->push_back(AttachedImage());
+      attached_images->back().data = *it;
+      net::SniffMimeTypeFromLocalData(it->c_str(), it->length(),
+                                      &attached_images->back().type);
+    }
+  }
+}
+
+void FinishParseAudioVideoMetadata(
+    MediaMetadataParser::MetadataCallback callback,
+    MediaMetadataParser::MediaMetadata* metadata,
+    std::vector<AttachedImage>* attached_images) {
+  DCHECK(!callback.is_null());
+  DCHECK(metadata);
+  DCHECK(attached_images);
+
+  callback.Run(*metadata, *attached_images);
 }
 
 void FinishParseImageMetadata(
-    ImageMetadataExtractor* extractor,
-    scoped_ptr<MediaMetadataParser::MediaMetadata> metadata,
-    MediaMetadataParser::MetadataCallback callback,
-    bool extract_success) {
+    ImageMetadataExtractor* extractor, const std::string& mime_type,
+    MediaMetadataParser::MetadataCallback callback, bool extract_success) {
   DCHECK(extractor);
-  DCHECK(metadata.get());
+  MediaMetadataParser::MediaMetadata metadata;
+  metadata.mime_type = mime_type;
 
   if (!extract_success) {
-    callback.Run(metadata.Pass());
+    callback.Run(metadata, std::vector<AttachedImage>());
     return;
   }
 
-  SetIntScopedPtr(extractor->height(), &metadata->height);
-  SetIntScopedPtr(extractor->width(), &metadata->width);
+  SetIntScopedPtr(extractor->height(), &metadata.height);
+  SetIntScopedPtr(extractor->width(), &metadata.width);
 
-  SetIntScopedPtr(extractor->rotation(), &metadata->rotation);
+  SetIntScopedPtr(extractor->rotation(), &metadata.rotation);
 
-  SetDoubleScopedPtr(extractor->x_resolution(), &metadata->x_resolution);
-  SetDoubleScopedPtr(extractor->y_resolution(), &metadata->y_resolution);
-  SetBoolScopedPtr(extractor->flash_fired(), &metadata->flash_fired);
-  SetStringScopedPtr(extractor->camera_make(), &metadata->camera_make);
-  SetStringScopedPtr(extractor->camera_model(), &metadata->camera_model);
+  SetDoubleScopedPtr(extractor->x_resolution(), &metadata.x_resolution);
+  SetDoubleScopedPtr(extractor->y_resolution(), &metadata.y_resolution);
+  SetBoolScopedPtr(extractor->flash_fired(), &metadata.flash_fired);
+  SetStringScopedPtr(extractor->camera_make(), &metadata.camera_make);
+  SetStringScopedPtr(extractor->camera_model(), &metadata.camera_model);
   SetDoubleScopedPtr(extractor->exposure_time_sec(),
-                     &metadata->exposure_time_seconds);
+                     &metadata.exposure_time_seconds);
 
-  SetDoubleScopedPtr(extractor->f_number(), &metadata->f_number);
-  SetDoubleScopedPtr(extractor->focal_length_mm(), &metadata->focal_length_mm);
-  SetDoubleScopedPtr(extractor->iso_equivalent(), &metadata->iso_equivalent);
+  SetDoubleScopedPtr(extractor->f_number(), &metadata.f_number);
+  SetDoubleScopedPtr(extractor->focal_length_mm(), &metadata.focal_length_mm);
+  SetDoubleScopedPtr(extractor->iso_equivalent(), &metadata.iso_equivalent);
 
-  callback.Run(metadata.Pass());
+  callback.Run(metadata, std::vector<AttachedImage>());
 }
 
 }  // namespace
 
 MediaMetadataParser::MediaMetadataParser(media::DataSource* source,
-                                         const std::string& mime_type)
+                                         const std::string& mime_type,
+                                         bool get_attached_images)
     : source_(source),
-      mime_type_(mime_type) {
+      mime_type_(mime_type),
+      get_attached_images_(get_attached_images) {
 }
 
 MediaMetadataParser::~MediaMetadataParser() {}
 
 void MediaMetadataParser::Start(const MetadataCallback& callback) {
-  scoped_ptr<MediaMetadata> metadata(new MediaMetadata);
-  metadata->mime_type = mime_type_;
-
   if (StartsWithASCII(mime_type_, "audio/", true) ||
       StartsWithASCII(mime_type_, "video/", true)) {
+    MediaMetadata* metadata = new MediaMetadata;
+    metadata->mime_type = mime_type_;
+    std::vector<AttachedImage>* attached_images =
+        new std::vector<AttachedImage>;
+
     media_thread_.reset(new base::Thread("media_thread"));
     CHECK(media_thread_->Start());
-    base::PostTaskAndReplyWithResult(
-        media_thread_->message_loop_proxy(),
+    media_thread_->message_loop_proxy()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&ParseAudioVideoMetadata, source_, base::Passed(&metadata)),
-        callback);
+        base::Bind(&ParseAudioVideoMetadata, source_, get_attached_images_,
+                   metadata, attached_images),
+        base::Bind(&FinishParseAudioVideoMetadata, callback,
+                   base::Owned(metadata), base::Owned(attached_images)));
     return;
   }
 
@@ -164,12 +189,11 @@ void MediaMetadataParser::Start(const MetadataCallback& callback) {
     extractor->Extract(
         source_,
         base::Bind(&FinishParseImageMetadata, base::Owned(extractor),
-                   base::Passed(&metadata), callback));
+                   mime_type_, callback));
     return;
   }
 
-  // TODO(tommycli): Implement for image mime types.
-  callback.Run(metadata.Pass());
+  callback.Run(MediaMetadata(), std::vector<AttachedImage>());
 }
 
 }  // namespace metadata

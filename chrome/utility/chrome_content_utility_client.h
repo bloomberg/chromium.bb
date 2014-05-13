@@ -107,7 +107,8 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   void OnCheckMediaFile(int64 milliseconds_of_decoding,
                         const IPC::PlatformFileForTransit& media_file);
-  void OnParseMediaMetadata(const std::string& mime_type, int64 total_size);
+  void OnParseMediaMetadata(const std::string& mime_type, int64 total_size,
+                            bool get_attached_images);
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_WIN)
