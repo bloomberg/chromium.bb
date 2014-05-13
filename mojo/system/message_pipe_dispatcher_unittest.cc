@@ -41,6 +41,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
   // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
     scoped_refptr<MessagePipeDispatcher> d0(new MessagePipeDispatcher());
+    EXPECT_EQ(Dispatcher::kTypeMessagePipe, d0->GetType());
     scoped_refptr<MessagePipeDispatcher> d1(new MessagePipeDispatcher());
     {
       scoped_refptr<MessagePipe> mp(new MessagePipe());

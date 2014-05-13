@@ -14,6 +14,7 @@
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe.h"
 #include "mojo/system/message_pipe_dispatcher.h"
+#include "mojo/system/platform_handle_dispatcher.h"
 #include "mojo/system/raw_channel.h"
 
 namespace mojo {
@@ -132,6 +133,46 @@ void DestroyChannelOnIOThread(ChannelInfo* channel_info) {
 
   channel_info->channel->Shutdown();
   delete channel_info;
+}
+
+MojoResult CreatePlatformHandleWrapper(
+    ScopedPlatformHandle platform_handle,
+    MojoHandle* platform_handle_wrapper_handle) {
+  DCHECK(platform_handle_wrapper_handle);
+
+  scoped_refptr<system::Dispatcher> dispatcher(
+      new system::PlatformHandleDispatcher(platform_handle.Pass()));
+
+  system::Core* core = system::entrypoints::GetCore();
+  DCHECK(core);
+  MojoHandle h = core->AddDispatcher(dispatcher);
+  if (h == MOJO_HANDLE_INVALID) {
+    LOG(ERROR) << "Handle table full";
+    dispatcher->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
+
+  *platform_handle_wrapper_handle = h;
+  return MOJO_RESULT_OK;
+}
+
+MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
+                                     ScopedPlatformHandle* platform_handle) {
+  DCHECK(platform_handle);
+
+  system::Core* core = system::entrypoints::GetCore();
+  DCHECK(core);
+  scoped_refptr<system::Dispatcher> dispatcher(
+      core->GetDispatcher(platform_handle_wrapper_handle));
+  if (!dispatcher.get())
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (dispatcher->GetType() != system::Dispatcher::kTypePlatformHandle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  *platform_handle = static_cast<system::PlatformHandleDispatcher*>(
+      dispatcher.get())->PassPlatformHandle().Pass();
+  return MOJO_RESULT_OK;
 }
 
 }  // namespace embedder

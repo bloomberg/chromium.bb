@@ -56,6 +56,21 @@ MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle CreateChannel(
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
     ChannelInfo* channel_info);
 
+// Creates a |MojoHandle| that wraps the given |PlatformHandle| (taking
+// ownership of it). This |MojoHandle| can then, e.g., be passed through message
+// pipes. Note: This takes ownership (and thus closes) |platform_handle| even on
+// failure, which is different from what you'd expect from a Mojo API, but it
+// makes for a more convenient embedder API.
+MOJO_SYSTEM_IMPL_EXPORT MojoResult CreatePlatformHandleWrapper(
+    ScopedPlatformHandle platform_handle,
+    MojoHandle* platform_handle_wrapper_handle);
+// Retrieves the |PlatformHandle| that was wrapped into a |MojoHandle| (using
+// |CreatePlatformHandleWrapper()| above). Note that the |MojoHandle| must still
+// be closed separately.
+MOJO_SYSTEM_IMPL_EXPORT MojoResult PassWrappedPlatformHandle(
+    MojoHandle platform_handle_wrapper_handle,
+    ScopedPlatformHandle* platform_handle);
+
 }  // namespace embedder
 }  // namespace mojo
 

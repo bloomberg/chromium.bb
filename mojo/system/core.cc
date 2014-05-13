@@ -27,12 +27,11 @@ namespace system {
 
 // Implementation notes
 //
-// Mojo primitives are implemented by the singleton |Core| object. Most
-// calls are for a "primary" handle (the first argument).
-// |Core::GetDispatcher()| is used to look up a |Dispatcher| object for a
-// given handle. That object implements most primitives for that object. The
-// wait primitives are not attached to objects and are implemented by |Core|
-// itself.
+// Mojo primitives are implemented by the singleton |Core| object. Most calls
+// are for a "primary" handle (the first argument). |Core::GetDispatcher()| is
+// used to look up a |Dispatcher| object for a given handle. That object
+// implements most primitives for that object. The wait primitives are not
+// attached to objects and are implemented by |Core| itself.
 //
 // Some objects have multiple handles associated to them, e.g., message pipes
 // (which have two). In such a case, there is still a |Dispatcher| (e.g.,
@@ -84,6 +83,14 @@ MojoHandle Core::AddDispatcher(
     const scoped_refptr<Dispatcher>& dispatcher) {
   base::AutoLock locker(handle_table_lock_);
   return handle_table_.AddDispatcher(dispatcher);
+}
+
+scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
+  if (handle == MOJO_HANDLE_INVALID)
+    return NULL;
+
+  base::AutoLock locker(handle_table_lock_);
+  return handle_table_.GetDispatcher(handle);
 }
 
 MojoTimeTicks Core::GetTimeTicksNow() {
@@ -503,14 +510,6 @@ MojoResult Core::MapBuffer(MojoHandle buffer_handle,
 MojoResult Core::UnmapBuffer(void* buffer) {
   base::AutoLock locker(mapping_table_lock_);
   return mapping_table_.RemoveMapping(buffer);
-}
-
-scoped_refptr<Dispatcher> Core::GetDispatcher(MojoHandle handle) {
-  if (handle == MOJO_HANDLE_INVALID)
-    return NULL;
-
-  base::AutoLock locker(handle_table_lock_);
-  return handle_table_.GetDispatcher(handle);
 }
 
 // Note: We allow |handles| to repeat the same handle multiple times, since

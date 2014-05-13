@@ -55,7 +55,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher :
     kTypeMessagePipe,
     kTypeDataPipeProducer,
     kTypeDataPipeConsumer,
-    kTypeSharedBuffer
+    kTypeSharedBuffer,
+
+    // "Private" types (not exposed via the public interface):
+    kTypePlatformHandle = -1
   };
   virtual Type GetType() const = 0;
 

@@ -111,6 +111,7 @@ MojoResult HandleTable::MarkBusyAndStartTransport(
   DCHECK(handles);
   DCHECK_LE(num_handles, kMaxMessageNumHandles);
   DCHECK(transports);
+  DCHECK_EQ(transports->size(), num_handles);
 
   std::vector<Entry*> entries(num_handles);
 

@@ -22,10 +22,17 @@ class Dispatcher;
 // are thread-safe.
 class MOJO_SYSTEM_IMPL_EXPORT Core {
  public:
-  // These methods are only to be used by via the embedder API.
+  // These methods are only to be used by via the embedder API (and internally).
   Core();
   virtual ~Core();
+
+  // Adds |dispatcher| to the handle table, returning the handle for it. Returns
+  // |MOJO_HANDLE_INVALID| on failure, namely if the handle table is full.
   MojoHandle AddDispatcher(const scoped_refptr<Dispatcher>& dispatcher);
+
+  // Looks up the dispatcher for the given handle. Returns null if the handle is
+  // invalid.
+  scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
 
   // System calls implementation.
   MojoTimeTicks GetTimeTicksNow();
@@ -37,9 +44,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                       const MojoWaitFlags* flags,
                       uint32_t num_handles,
                       MojoDeadline deadline);
-  MojoResult CreateMessagePipe(
-      MojoHandle* message_pipe_handle0,
-      MojoHandle* message_pipe_handle1);
+  MojoResult CreateMessagePipe(MojoHandle* message_pipe_handle0,
+                               MojoHandle* message_pipe_handle1);
   MojoResult WriteMessage(MojoHandle message_pipe_handle,
                           const void* bytes,
                           uint32_t num_bytes,
@@ -52,10 +58,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          MojoHandle* handles,
                          uint32_t* num_handles,
                          MojoReadMessageFlags flags);
-  MojoResult CreateDataPipe(
-      const MojoCreateDataPipeOptions* options,
-      MojoHandle* data_pipe_producer_handle,
-      MojoHandle* data_pipe_consumer_handle);
+  MojoResult CreateDataPipe(const MojoCreateDataPipeOptions* options,
+                            MojoHandle* data_pipe_producer_handle,
+                            MojoHandle* data_pipe_consumer_handle);
   MojoResult WriteData(MojoHandle data_pipe_producer_handle,
                        const void* elements,
                        uint32_t* num_bytes,
@@ -76,10 +81,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                            MojoReadDataFlags flags);
   MojoResult EndReadData(MojoHandle data_pipe_consumer_handle,
                          uint32_t num_bytes_read);
-  MojoResult CreateSharedBuffer(
-      const MojoCreateSharedBufferOptions* options,
-      uint64_t num_bytes,
-      MojoHandle* shared_buffer_handle);
+  MojoResult CreateSharedBuffer(const MojoCreateSharedBufferOptions* options,
+                                uint64_t num_bytes,
+                                MojoHandle* shared_buffer_handle);
   MojoResult DuplicateBufferHandle(
       MojoHandle buffer_handle,
       const MojoDuplicateBufferHandleOptions* options,
@@ -93,10 +97,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
  private:
   friend bool internal::ShutdownCheckNoLeaks(Core*);
-
-  // Looks up the dispatcher for the given handle. Returns null if the handle is
-  // invalid.
-  scoped_refptr<Dispatcher> GetDispatcher(MojoHandle handle);
 
   // Internal implementation of |Wait()| and |WaitMany()|; doesn't do basic
   // validation of arguments.
