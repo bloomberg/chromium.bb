@@ -449,6 +449,7 @@ FormController::~FormController()
 
 void FormController::trace(Visitor* visitor)
 {
+    visitor->trace(m_radioButtonGroupScope);
     visitor->trace(m_documentState);
     visitor->trace(m_formKeyGenerator);
 }

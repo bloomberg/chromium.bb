@@ -95,6 +95,7 @@ void HTMLFormElement::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_pastNamesMap);
+    visitor->trace(m_radioButtonGroupScope);
     visitor->trace(m_associatedElements);
 #endif
     HTMLElement::trace(visitor);

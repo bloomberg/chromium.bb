@@ -26,10 +26,10 @@
 
 namespace WebCore {
 
-class RadioButtonGroup {
-    WTF_MAKE_FAST_ALLOCATED;
+class RadioButtonGroup : public NoBaseWillBeGarbageCollected<RadioButtonGroup> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    static PassOwnPtr<RadioButtonGroup> create();
+    static PassOwnPtrWillBeRawPtr<RadioButtonGroup> create();
     bool isEmpty() const { return m_members.isEmpty(); }
     bool isRequired() const { return m_requiredCount; }
     HTMLInputElement* checkedButton() const { return m_checkedButton; }
@@ -39,26 +39,28 @@ public:
     void remove(HTMLInputElement*);
     bool contains(HTMLInputElement*) const;
 
+    void trace(Visitor*);
+
 private:
     RadioButtonGroup();
     void setNeedsValidityCheckForAllButtons();
     bool isValid() const;
     void setCheckedButton(HTMLInputElement*);
 
-    HashSet<HTMLInputElement*> m_members;
-    HTMLInputElement* m_checkedButton;
+    WillBeHeapHashSet<RawPtrWillBeMember<HTMLInputElement> > m_members;
+    RawPtrWillBeMember<HTMLInputElement> m_checkedButton;
     size_t m_requiredCount;
 };
 
 RadioButtonGroup::RadioButtonGroup()
-    : m_checkedButton(0)
+    : m_checkedButton(nullptr)
     , m_requiredCount(0)
 {
 }
 
-PassOwnPtr<RadioButtonGroup> RadioButtonGroup::create()
+PassOwnPtrWillBeRawPtr<RadioButtonGroup> RadioButtonGroup::create()
 {
-    return adoptPtr(new RadioButtonGroup);
+    return adoptPtrWillBeNoop(new RadioButtonGroup);
 }
 
 inline bool RadioButtonGroup::isValid() const
@@ -106,7 +108,7 @@ void RadioButtonGroup::updateCheckedState(HTMLInputElement* button)
         setCheckedButton(button);
     } else {
         if (m_checkedButton == button)
-            m_checkedButton = 0;
+            m_checkedButton = nullptr;
     }
     if (wasValid != isValid())
         setNeedsValidityCheckForAllButtons();
@@ -130,7 +132,7 @@ void RadioButtonGroup::requiredAttributeChanged(HTMLInputElement* button)
 void RadioButtonGroup::remove(HTMLInputElement* button)
 {
     ASSERT(button->isRadioButton());
-    HashSet<HTMLInputElement*>::iterator it = m_members.find(button);
+    WillBeHeapHashSet<RawPtrWillBeMember<HTMLInputElement> >::iterator it = m_members.find(button);
     if (it == m_members.end())
         return;
     bool wasValid = isValid();
@@ -140,7 +142,7 @@ void RadioButtonGroup::remove(HTMLInputElement* button)
         --m_requiredCount;
     }
     if (m_checkedButton == button)
-        m_checkedButton = 0;
+        m_checkedButton = nullptr;
 
     if (m_members.isEmpty()) {
         ASSERT(!m_requiredCount);
@@ -157,7 +159,7 @@ void RadioButtonGroup::remove(HTMLInputElement* button)
 
 void RadioButtonGroup::setNeedsValidityCheckForAllButtons()
 {
-    typedef HashSet<HTMLInputElement*>::const_iterator Iterator;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<HTMLInputElement> >::const_iterator Iterator;
     Iterator end = m_members.end();
     for (Iterator it = m_members.begin(); it != end; ++it) {
         HTMLInputElement* button = *it;
@@ -169,6 +171,12 @@ void RadioButtonGroup::setNeedsValidityCheckForAllButtons()
 bool RadioButtonGroup::contains(HTMLInputElement* button) const
 {
     return m_members.contains(button);
+}
+
+void RadioButtonGroup::trace(Visitor* visitor)
+{
+    visitor->trace(m_members);
+    visitor->trace(m_checkedButton);
 }
 
 // ----------------------------------------------------------------
@@ -191,9 +199,9 @@ void RadioButtonGroupScope::addButton(HTMLInputElement* element)
         return;
 
     if (!m_nameToGroupMap)
-        m_nameToGroupMap = adoptPtr(new NameToGroupMap);
+        m_nameToGroupMap = adoptPtrWillBeNoop(new NameToGroupMap);
 
-    OwnPtr<RadioButtonGroup>& group = m_nameToGroupMap->add(element->name(), PassOwnPtr<RadioButtonGroup>()).storedValue->value;
+    OwnPtrWillBeMember<RadioButtonGroup>& group = m_nameToGroupMap->add(element->name(), nullptr).storedValue->value;
     if (!group)
         group = RadioButtonGroup::create();
     group->add(element);
@@ -262,6 +270,13 @@ void RadioButtonGroupScope::removeButton(HTMLInputElement* element)
         ASSERT(!group->isRequired());
         ASSERT_WITH_SECURITY_IMPLICATION(!group->checkedButton());
     }
+}
+
+void RadioButtonGroupScope::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_nameToGroupMap);
+#endif
 }
 
 } // namespace

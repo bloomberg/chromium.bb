@@ -21,6 +21,7 @@
 #ifndef RadioButtonGroupScope_h
 #define RadioButtonGroupScope_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -32,9 +33,11 @@ class HTMLInputElement;
 class RadioButtonGroup;
 
 class RadioButtonGroupScope {
+    DISALLOW_ALLOCATION();
 public:
     RadioButtonGroupScope();
     ~RadioButtonGroupScope();
+    void trace(Visitor*);
     void addButton(HTMLInputElement*);
     void updateCheckedState(HTMLInputElement*);
     void requiredAttributeChanged(HTMLInputElement*);
@@ -43,8 +46,8 @@ public:
     bool isInRequiredGroup(HTMLInputElement*) const;
 
 private:
-    typedef HashMap<AtomicString, OwnPtr<RadioButtonGroup>, CaseFoldingHash> NameToGroupMap;
-    OwnPtr<NameToGroupMap> m_nameToGroupMap;
+    typedef WillBeHeapHashMap<AtomicString, OwnPtrWillBeMember<RadioButtonGroup>, CaseFoldingHash> NameToGroupMap;
+    OwnPtrWillBeMember<NameToGroupMap> m_nameToGroupMap;
 };
 
 } // namespace WebCore
