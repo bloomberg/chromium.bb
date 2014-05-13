@@ -62,9 +62,15 @@ class ExitWarningLabel : public views::Label {
 class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
  public:
   ExitWarningWidgetDelegateView() : text_width_(0), width_(0), height_(0) {
+#ifdef OS_CHROMEOS
+    text_ = l10n_util::GetStringUTF16(IDS_ASH_SIGN_OUT_WARNING_POPUP_TEXT);
+    accessible_name_ = l10n_util::GetStringUTF16(
+        IDS_ASH_SIGN_OUT_WARNING_POPUP_TEXT_ACCESSIBLE);
+#else
     text_ = l10n_util::GetStringUTF16(IDS_ASH_EXIT_WARNING_POPUP_TEXT);
     accessible_name_ =
         l10n_util::GetStringUTF16(IDS_ASH_EXIT_WARNING_POPUP_TEXT_ACCESSIBLE);
+#endif
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::FontList& font_list =
         rb.GetFontList(ui::ResourceBundle::LargeFont);
