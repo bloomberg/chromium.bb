@@ -105,6 +105,10 @@ if [ "$(uname -s)" = "Darwin" ]; then
   (cd $PDIR/bin && ln -sf libc++.1.dylib libc++.dylib)
 fi
 
+# Copy libc++ headers.
+mkdir $PDIR/include
+cp -R "${LLVM_BOOTSTRAP_INSTALL_DIR}/include/c++" $PDIR/include
+
 # Copy plugins. Some of the dylibs are pretty big, so copy only the ones we
 # care about.
 cp "${LLVM_LIB_DIR}/libFindBadConstructs.${SO_EXT}" $PDIR/lib
