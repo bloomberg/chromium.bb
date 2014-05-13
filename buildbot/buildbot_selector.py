@@ -58,6 +58,10 @@ BOT_ASSIGNMENT = {
         python + ' buildbot/buildbot_pnacl.py opt 32 pnacl',
     'precise_64-newlib-x86_64-pnacl':
         python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
+    'mac10.8-newlib-opt-pnacl':
+        python + ' buildbot/buildbot_pnacl.py opt 32 pnacl',
+    'win7-64-newlib-opt-pnacl':
+        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     'precise_64-newlib-mips-pnacl':
         echo + ' "TODO(mseaborn): add mips"',
     # PNaCl Spec
@@ -136,6 +140,10 @@ BOT_ASSIGNMENT = {
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-try',
     'nacl-arm_hw_opt_panda':
         bash + ' buildbot/buildbot_pnacl.sh mode-buildbot-arm-hw-try',
+    'nacl-mac10.8_newlib_opt_pnacl':
+        python + ' buildbot/buildbot_pnacl.py opt 32 pnacl',
+    'nacl-win7_64_newlib_opt_pnacl':
+        python + ' buildbot/buildbot_pnacl.py opt 64 pnacl',
     # Pnacl spec2k trybots
     'nacl-precise_64-newlib-x86_32-pnacl-spec':
         bash + ' buildbot/buildbot_spec2k.sh pnacl-trybot-x8632',
