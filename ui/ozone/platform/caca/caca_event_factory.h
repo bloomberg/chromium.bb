@@ -8,13 +8,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "ui/events/ozone/event_factory_ozone.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
 
 class CacaConnection;
 
-class CacaEventFactory : public ui::EventFactoryOzone {
+class CacaEventFactory : public EventFactoryOzone, PlatformEventSource {
  public:
   CacaEventFactory(CacaConnection* connection);
   virtual ~CacaEventFactory();
