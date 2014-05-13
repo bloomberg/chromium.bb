@@ -49,6 +49,7 @@ PASS Window must be primary interface of window
 FAIL Stringification of window assert_equals: class string of window expected "[object Window]" but got "[object global]"
 FAIL Window interface: window must inherit property "performance" with the proper type (0) assert_inherits: property "performance" found on object expected in prototype chain
 PASS PerformanceTiming interface: existence and properties of interface object 
+PASS PerformanceTiming interface object length 
 FAIL PerformanceTiming interface: existence and properties of interface prototype object assert_equals: class string of PerformanceTiming.prototype expected "[object PerformanceTimingPrototype]" but got "[object Object]"
 PASS PerformanceTiming interface: existence and properties of interface prototype object's "constructor" property 
 FAIL PerformanceTiming interface: attribute navigationStart assert_true: The prototype object must have a property "navigationStart" expected true got false
@@ -96,6 +97,7 @@ FAIL PerformanceTiming interface: window.performance.timing must inherit propert
 FAIL PerformanceTiming interface: window.performance.timing must inherit property "loadEventStart" with the proper type (19) assert_inherits: property "loadEventStart" found on object expected in prototype chain
 FAIL PerformanceTiming interface: window.performance.timing must inherit property "loadEventEnd" with the proper type (20) assert_inherits: property "loadEventEnd" found on object expected in prototype chain
 PASS PerformanceNavigation interface: existence and properties of interface object 
+PASS PerformanceNavigation interface object length 
 FAIL PerformanceNavigation interface: existence and properties of interface prototype object assert_equals: class string of PerformanceNavigation.prototype expected "[object PerformanceNavigationPrototype]" but got "[object Object]"
 PASS PerformanceNavigation interface: existence and properties of interface prototype object's "constructor" property 
 PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object 
@@ -117,6 +119,7 @@ PASS PerformanceNavigation interface: window.performance.navigation must inherit
 FAIL PerformanceNavigation interface: window.performance.navigation must inherit property "type" with the proper type (4) assert_inherits: property "type" found on object expected in prototype chain
 FAIL PerformanceNavigation interface: window.performance.navigation must inherit property "redirectCount" with the proper type (5) assert_inherits: property "redirectCount" found on object expected in prototype chain
 FAIL Performance interface: existence and properties of interface object assert_equals: prototype of window's property "Performance" is not Function.prototype expected function "function Empty() {}" but got function "function EventTarget() { [native code] }"
+PASS Performance interface object length 
 FAIL Performance interface: existence and properties of interface prototype object assert_equals: prototype of Performance.prototype is not Object.prototype expected object "[object Object]" but got object "[object Object]"
 PASS Performance interface: existence and properties of interface prototype object's "constructor" property 
 FAIL Performance interface: attribute timing assert_true: The prototype object must have a property "timing" expected true got false

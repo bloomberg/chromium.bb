@@ -64,7 +64,7 @@ t.step(function() {
                     assert_equals(lastServiceWorkerState, 'activating');
                     break;
                 default:
-                    unreached_func(t, 'Unexpected state: ' + sw.state);
+                    assert_unreached('Unexpected state: ' + sw.state);
                 }
 
                 lastServiceWorkerState = sw.state;

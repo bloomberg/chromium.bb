@@ -5,10 +5,8 @@
 <title>window.performance.memory in shared workers</title>
 <script src="/w3c/resources/testharness.js"></script>
 <script src="/w3c/resources/testharnessreport.js"></script>
-<script src="/w3c/webperf/resources/webperftestharness.js"></script>
 <link rel="stylesheet" href="/w3c/resources/testharness.css" />
 <script>
-setup({explicit_done: true, timeout:10000});
 
 var tests = [
   '"performance" in self;',
@@ -16,26 +14,25 @@ var tests = [
   'JSON.stringify(self.performance.memory);',
 ];
 
-var worker = new SharedWorker("/w3c/webperf/resources/worker.js");
+var t = async_test('window.performance.memory in shared workers');
+t.step(function() {
 
-worker.port.onmessage = function(event) {
-    var results = event.data;
-    assert_true(results.length == 3);
-    test_true(results[0], "self.performance is defined");
-    test_true(results[1], "self.performance.memory is defined");
-    var jsHeap = JSON.parse(results[2]);
-    test_greater_or_equals(jsHeap.jsHeapSizeLimit, jsHeap.totalJSHeapSize, "jsHeapSizeLimit should be no less than totalJSHeapSize", {});
-    test_greater_or_equals(jsHeap.totalJSHeapSize, jsHeap.usedJSHeapSize, "totalJSHeapSize should be no less than usedJSHeapSize", {});
-    worker.port.postMessage(["close();"]);    
-    done();
-}
-
-
-function start() {
+    var worker = new SharedWorker("/w3c/webperf/resources/worker.js");
     worker.port.postMessage(tests);
-}
 
-window.addEventListener("load", start);
+    worker.port.onmessage = t.step_func(function(event) {
+        var results = event.data;
+        assert_equals(results.length, 3);
+        assert_true(results[0], "self.performance is defined");
+        assert_true(results[1], "self.performance.memory is defined");
+        var jsHeap = JSON.parse(results[2]);
+        assert_greater_than_equal(jsHeap.jsHeapSizeLimit, jsHeap.totalJSHeapSize, "jsHeapSizeLimit should be no less than totalJSHeapSize", {});
+        assert_greater_than_equal(jsHeap.totalJSHeapSize, jsHeap.usedJSHeapSize, "totalJSHeapSize should be no less than usedJSHeapSize", {});
+        worker.port.postMessage(["close();"]);
+        t.done();
+    });
+});
+
 </script>
 </head>
 <body>

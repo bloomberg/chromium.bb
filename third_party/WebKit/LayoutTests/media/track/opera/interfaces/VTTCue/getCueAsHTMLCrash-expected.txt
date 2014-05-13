@@ -1,1 +1,14 @@
 Test passes if it does not induce a crash.
+Summary
+
+Found 4 tests
+
+3 Pass
+1 Fail
+Details
+
+Result	Test Name	Message
+Pass	, creating the cue	
+Fail	, >	assert_false: hasChildNodes() expected false got true
+Pass	,	
+Pass	, x\0	

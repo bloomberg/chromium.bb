@@ -5,10 +5,8 @@
 <title>window.performance.memory in dedicated workers</title>
 <script src="/w3c/resources/testharness.js"></script>
 <script src="/w3c/resources/testharnessreport.js"></script>
-<script src="/w3c/webperf/resources/webperftestharness.js"></script>
 <link rel="stylesheet" href="/w3c/resources/testharness.css" />
 <script>
-setup({explicit_done: true});
 
 var tests = [
   '"performance" in self;',
@@ -16,24 +14,23 @@ var tests = [
   'JSON.stringify(self.performance.memory);',
 ];
 
-var worker = new Worker("/w3c/webperf/resources/worker.js");
-
-worker.onmessage = function(event) {
-    var results = event.data;
-    assert_true(results.length == 3);
-    test_true(results[0], "self.performance is defined");
-    test_true(results[1], "self.performance.memory is defined");
-    var jsHeap = JSON.parse(results[2]);
-    test_greater_or_equals(jsHeap.jsHeapSizeLimit, jsHeap.totalJSHeapSize, "jsHeapSizeLimit should be no less than totalJSHeapSize", {});
-    test_greater_or_equals(jsHeap.totalJSHeapSize, jsHeap.usedJSHeapSize, "totalJSHeapSize should be no less than usedJSHeapSize", {});
-    done();
-}
-
-function start() {
+var t = async_test('window.performance.memory in dedicated workers');
+t.step(function() {
+    var worker = new Worker("/w3c/webperf/resources/worker.js");
     worker.postMessage(tests);
-}
 
-window.addEventListener("load", start);
+    worker.onmessage = t.step_func(function(event) {
+        var results = event.data;
+        assert_equals(results.length, 3);
+        assert_true(results[0], "self.performance is defined");
+        assert_true(results[1], "self.performance.memory is defined");
+        var jsHeap = JSON.parse(results[2]);
+        assert_greater_than_equal(jsHeap.jsHeapSizeLimit, jsHeap.totalJSHeapSize, "jsHeapSizeLimit should be no less than totalJSHeapSize", {});
+        assert_greater_than_equal(jsHeap.totalJSHeapSize, jsHeap.usedJSHeapSize, "totalJSHeapSize should be no less than usedJSHeapSize", {});
+        t.done();
+    });
+});
+
 </script>
 </head>
 <body>

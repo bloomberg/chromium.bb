@@ -32,9 +32,11 @@ PASS Performance interface: calling measure(DOMString,DOMString,DOMString) on wi
 PASS Performance interface: window.performance must inherit property "clearMeasures" with the proper type (3) 
 PASS Performance interface: calling clearMeasures(DOMString) on window.performance with too few arguments must throw TypeError 
 FAIL PerformanceMark interface: existence and properties of interface object assert_equals: prototype of window's property "PerformanceMark" is not Function.prototype expected function "function Empty() {}" but got function "function PerformanceEntry() { [native code] }"
+PASS PerformanceMark interface object length 
 FAIL PerformanceMark interface: existence and properties of interface prototype object assert_equals: class string of PerformanceMark.prototype expected "[object PerformanceMarkPrototype]" but got "[object Object]"
 PASS PerformanceMark interface: existence and properties of interface prototype object's "constructor" property 
 FAIL PerformanceMeasure interface: existence and properties of interface object assert_equals: prototype of window's property "PerformanceMeasure" is not Function.prototype expected function "function Empty() {}" but got function "function PerformanceEntry() { [native code] }"
+PASS PerformanceMeasure interface object length 
 FAIL PerformanceMeasure interface: existence and properties of interface prototype object assert_equals: class string of PerformanceMeasure.prototype expected "[object PerformanceMeasurePrototype]" but got "[object Object]"
 PASS PerformanceMeasure interface: existence and properties of interface prototype object's "constructor" property 
 

@@ -3,9 +3,7 @@
     // the LayoutTest timeout. This prevents testharness.js from prematurely
     // terminating tests and allows the LayoutTest runner to control when to
     // timeout the test.
-    // FIXME: Change this to use explicit_timeout instead once /resources/testharness.js
-    //        is updated to a more recent version.
-    setup({ timeout: 120000 });
+    setup({ explicit_timeout: 120000 });
 
     var SEGMENT_INFO_LIST = [
         {

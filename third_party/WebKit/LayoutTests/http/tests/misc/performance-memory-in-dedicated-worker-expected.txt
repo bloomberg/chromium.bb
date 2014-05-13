@@ -3,8 +3,5 @@ Description
 This test validates that performance.memory exists in dedicated workers
 
 
-PASS self.performance is defined 
-PASS self.performance.memory is defined 
-PASS jsHeapSizeLimit should be no less than totalJSHeapSize 
-PASS totalJSHeapSize should be no less than usedJSHeapSize 
+PASS window.performance.memory in dedicated workers 
 

@@ -157,7 +157,7 @@ crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements
 crbug.com/330083 w3c/web-platform-tests/custom-elements/concepts/custom-elements-type-naming.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Failure ]
 crbug.com/330083 w3c/web-platform-tests/custom-elements/creating-and-passing-registries/share-registry-import-document.html [ Timeout ]
-crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-014.html [ Failure ]
+crbug.com/330083 w3c/web-platform-tests/shadow-dom/elements-and-dom-objects/shadowroot-object/shadowroot-attributes/test-014.html [ Timeout Failure ]
 crbug.com/330083 w3c/web-platform-tests/webrtc/simplecall.html [ Failure ]
 
 # Untriaged Aura-specific failure.
