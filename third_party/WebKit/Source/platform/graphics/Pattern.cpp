@@ -57,11 +57,13 @@ SkShader* Pattern::shader()
     if (m_pattern)
         return m_pattern.get();
 
+    SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
+
     // If we don't have a bitmap, return a transparent shader.
     if (!m_tileImage)
         m_pattern = adoptRef(new SkColorShader(SK_ColorTRANSPARENT));
     else if (m_repeatX && m_repeatY)
-        m_pattern = adoptRef(SkShader::CreateBitmapShader(m_tileImage->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode));
+        m_pattern = adoptRef(SkShader::CreateBitmapShader(m_tileImage->bitmap(), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
     else {
         // Skia does not have a "draw the tile only once" option. Clamp_TileMode
         // repeats the last line of the image after drawing one tile. To avoid
@@ -88,13 +90,12 @@ SkShader* Pattern::shader()
         SkCanvas canvas(bm2);
         canvas.drawBitmap(m_tileImage->bitmap(), 0, 0);
         bm2.setImmutable();
-        m_pattern = adoptRef(SkShader::CreateBitmapShader(bm2, tileModeX, tileModeY));
+        m_pattern = adoptRef(SkShader::CreateBitmapShader(bm2, tileModeX, tileModeY, &localMatrix));
 
         // Clamp to int, since that's what the adjust function takes.
         m_externalMemoryAllocated = static_cast<int>(std::min(static_cast<size_t>(INT_MAX), bm2.getSafeSize()));
         v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(m_externalMemoryAllocated);
     }
-    m_pattern->setLocalMatrix(affineTransformToSkMatrix(m_patternSpaceTransformation));
     return m_pattern.get();
 }
 
@@ -102,7 +103,7 @@ void Pattern::setPatternSpaceTransform(const AffineTransform& patternSpaceTransf
 {
     m_patternSpaceTransformation = patternSpaceTransformation;
     if (m_pattern)
-        m_pattern->setLocalMatrix(affineTransformToSkMatrix(m_patternSpaceTransformation));
+        m_pattern.clear();
 }
 
 }
