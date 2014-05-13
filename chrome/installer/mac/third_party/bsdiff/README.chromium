@@ -51,3 +51,4 @@ Local Modifications:
    previously. This will theoretically cause it to exit with an error instead
    of sitting in a busy loop or crashing when certain malformatted patch files
    are provided.
+ - Improved sanity checks for malformed patches.

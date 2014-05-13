@@ -3,7 +3,7 @@
  * All rights reserved
  *
  * Redistribution and use in source and binary forms, with or without
- * modification, are permitted providing that the following conditions 
+ * modification, are permitted providing that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
@@ -468,6 +468,10 @@ int main(int argc,char * argv[])
 			cfread(&cf, buf, 8);
 			ctrl[i]=offtin(buf);
 		};
+
+		/* Sanity-check */
+		if((ctrl[0]<0) || (ctrl[1]<0))
+			errx(1,"corrupt patch (diff): negative chunk size");
 
 		/* Sanity-check */
 		if(newpos+ctrl[0]>newsize)
