@@ -117,8 +117,8 @@ public:
     String innerHTML() const;
     void setInnerHTML(const String&, ExceptionState&);
 
-    PassRefPtr<Node> cloneNode(bool, ExceptionState&);
-    PassRefPtr<Node> cloneNode(ExceptionState& exceptionState) { return cloneNode(true, exceptionState); }
+    PassRefPtrWillBeRawPtr<Node> cloneNode(bool, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> cloneNode(ExceptionState& exceptionState) { return cloneNode(true, exceptionState); }
 
     StyleSheetList* styleSheets();
 
@@ -141,7 +141,7 @@ private:
     void invalidateDescendantInsertionPoints();
 
     // ShadowRoots should never be cloned.
-    virtual PassRefPtr<Node> cloneNode(bool) OVERRIDE { return nullptr; }
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool) OVERRIDE { return nullptr; }
 
     // FIXME: This shouldn't happen. https://bugs.webkit.org/show_bug.cgi?id=88834
     bool isOrphan() const { return !host(); }

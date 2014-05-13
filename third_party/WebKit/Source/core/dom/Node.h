@@ -193,7 +193,7 @@ public:
     void appendChild(PassRefPtr<Node> newChild, ExceptionState& = ASSERT_NO_EXCEPTION);
 
     bool hasChildren() const { return firstChild(); }
-    virtual PassRefPtr<Node> cloneNode(bool deep = false) = 0;
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = false) = 0;
     virtual const AtomicString& localName() const;
     virtual const AtomicString& namespaceURI() const;
     void normalize();

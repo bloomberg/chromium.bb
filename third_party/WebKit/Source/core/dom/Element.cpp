@@ -273,21 +273,21 @@ bool Element::rendererIsFocusable() const
     return true;
 }
 
-PassRefPtr<Node> Element::cloneNode(bool deep)
+PassRefPtrWillBeRawPtr<Node> Element::cloneNode(bool deep)
 {
     return deep ? cloneElementWithChildren() : cloneElementWithoutChildren();
 }
 
-PassRefPtr<Element> Element::cloneElementWithChildren()
+PassRefPtrWillBeRawPtr<Element> Element::cloneElementWithChildren()
 {
-    RefPtr<Element> clone = cloneElementWithoutChildren();
+    RefPtrWillBeRawPtr<Element> clone = cloneElementWithoutChildren();
     cloneChildNodes(clone.get());
     return clone.release();
 }
 
-PassRefPtr<Element> Element::cloneElementWithoutChildren()
+PassRefPtrWillBeRawPtr<Element> Element::cloneElementWithoutChildren()
 {
-    RefPtr<Element> clone = cloneElementWithoutAttributesAndChildren();
+    RefPtrWillBeRawPtr<Element> clone = cloneElementWithoutAttributesAndChildren();
     // This will catch HTML elements in the wrong namespace that are not correctly copied.
     // This is a sanity check as HTML overloads some of the DOM methods.
     ASSERT(isHTMLElement() == clone->isHTMLElement());
@@ -296,7 +296,7 @@ PassRefPtr<Element> Element::cloneElementWithoutChildren()
     return clone.release();
 }
 
-PassRefPtr<Element> Element::cloneElementWithoutAttributesAndChildren()
+PassRefPtrWillBeRawPtr<Element> Element::cloneElementWithoutAttributesAndChildren()
 {
     return document().createElement(tagQName(), false);
 }

@@ -253,8 +253,8 @@ public:
 
     virtual String nodeName() const OVERRIDE;
 
-    PassRefPtr<Element> cloneElementWithChildren();
-    PassRefPtr<Element> cloneElementWithoutChildren();
+    PassRefPtrWillBeRawPtr<Element> cloneElementWithChildren();
+    PassRefPtrWillBeRawPtr<Element> cloneElementWithoutChildren();
 
     void scheduleLayerUpdate();
 
@@ -627,8 +627,8 @@ private:
 
     // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
     // are used instead.
-    virtual PassRefPtr<Node> cloneNode(bool deep) OVERRIDE;
-    virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren();
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren();
 
     QualifiedName m_tagName;
 

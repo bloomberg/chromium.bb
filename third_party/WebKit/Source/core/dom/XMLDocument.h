@@ -33,19 +33,19 @@ namespace WebCore {
 
 class XMLDocument FINAL : public Document {
 public:
-    static PassRefPtr<XMLDocument> create(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<XMLDocument> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new XMLDocument(initializer, XMLDocumentClass));
+        return adoptRefWillBeRefCountedGarbageCollected(new XMLDocument(initializer, XMLDocumentClass));
     }
 
-    static PassRefPtr<XMLDocument> createXHTML(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<XMLDocument> createXHTML(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new XMLDocument(initializer, XMLDocumentClass | XHTMLDocumentClass));
+        return adoptRefWillBeRefCountedGarbageCollected(new XMLDocument(initializer, XMLDocumentClass | XHTMLDocumentClass));
     }
 
-    static PassRefPtr<XMLDocument> createSVG(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<XMLDocument> createSVG(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass));
+        return adoptRefWillBeRefCountedGarbageCollected(new XMLDocument(initializer, XMLDocumentClass | SVGDocumentClass));
     }
 
 protected:

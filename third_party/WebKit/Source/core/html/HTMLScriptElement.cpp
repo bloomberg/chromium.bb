@@ -176,9 +176,9 @@ void HTMLScriptElement::dispatchLoadEvent()
     dispatchEvent(Event::create(EventTypeNames::load));
 }
 
-PassRefPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
+PassRefPtrWillBeRawPtr<Element> HTMLScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRef(new HTMLScriptElement(document(), false, m_loader->alreadyStarted()));
+    return adoptRefWillBeRefCountedGarbageCollected(new HTMLScriptElement(document(), false, m_loader->alreadyStarted()));
 }
 
 }

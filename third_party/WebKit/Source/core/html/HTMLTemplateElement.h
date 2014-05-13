@@ -46,7 +46,7 @@ public:
     DocumentFragment* content() const;
 
 private:
-    virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE;
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 
     explicit HTMLTemplateElement(Document&);

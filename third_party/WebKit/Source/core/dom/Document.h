@@ -238,9 +238,9 @@ class Document : public ContainerNode, public TreeScope, public SecurityContext,
     , public DocumentSupplementable, public LifecycleContext<Document> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(Document);
 public:
-    static PassRefPtr<Document> create(const DocumentInit& initializer = DocumentInit())
+    static PassRefPtrWillBeRawPtr<Document> create(const DocumentInit& initializer = DocumentInit())
     {
-        return adoptRef(new Document(initializer));
+        return adoptRefWillBeRefCountedGarbageCollected(new Document(initializer));
     }
     virtual ~Document();
 
@@ -391,7 +391,7 @@ public:
     bool hidden() const;
     void didChangeVisibilityState();
 
-    PassRefPtr<Node> adoptNode(PassRefPtr<Node> source, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> adoptNode(PassRefPtrWillBeRawPtr<Node> source, ExceptionState&);
 
     PassRefPtr<HTMLCollection> images();
     PassRefPtr<HTMLCollection> embeds();
@@ -1088,7 +1088,7 @@ protected:
 
     virtual void dispose() OVERRIDE;
 
-    virtual PassRefPtr<Document> cloneDocumentWithoutChildren();
+    virtual PassRefPtrWillBeRawPtr<Document> cloneDocumentWithoutChildren();
 
     bool importContainerNodeChildren(ContainerNode* oldContainerNode, PassRefPtr<ContainerNode> newContainerNode, ExceptionState&);
     void lockCompatibilityMode() { m_compatibilityModeLocked = true; }
@@ -1131,7 +1131,7 @@ private:
     virtual String nodeName() const OVERRIDE FINAL;
     virtual NodeType nodeType() const OVERRIDE FINAL;
     virtual bool childTypeAllowed(NodeType) const OVERRIDE FINAL;
-    virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
     void cloneDataFromDocument(const Document&);
 
     virtual void refExecutionContext() OVERRIDE FINAL { ref(); }

@@ -76,7 +76,7 @@ PassRefPtrWillBeRawPtr<VTTElement> VTTElement::create(VTTNodeType nodeType, Docu
     return adoptRefWillBeRefCountedGarbageCollected(new VTTElement(nodeType, document));
 }
 
-PassRefPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()
+PassRefPtrWillBeRawPtr<Element> VTTElement::cloneElementWithoutAttributesAndChildren()
 {
     RefPtrWillBeRawPtr<VTTElement> clone = create(static_cast<VTTNodeType>(m_webVTTNodeType), &document());
     clone->setLanguage(m_language);

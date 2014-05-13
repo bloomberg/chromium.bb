@@ -1002,7 +1002,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
     return nullptr;
 }
 
-PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> Document::adoptNode(PassRefPtrWillBeRawPtr<Node> source, ExceptionState& exceptionState)
 {
     if (!source) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::argumentNullOrIncorrectType(1, "Node"));
@@ -3367,16 +3367,16 @@ bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
     return true;
 }
 
-PassRefPtr<Node> Document::cloneNode(bool deep)
+PassRefPtrWillBeRawPtr<Node> Document::cloneNode(bool deep)
 {
-    RefPtr<Document> clone = cloneDocumentWithoutChildren();
+    RefPtrWillBeRawPtr<Document> clone = cloneDocumentWithoutChildren();
     clone->cloneDataFromDocument(*this);
     if (deep)
         cloneChildNodes(clone.get());
     return clone.release();
 }
 
-PassRefPtr<Document> Document::cloneDocumentWithoutChildren()
+PassRefPtrWillBeRawPtr<Document> Document::cloneDocumentWithoutChildren()
 {
     DocumentInit init(url());
     if (isXMLDocument()) {

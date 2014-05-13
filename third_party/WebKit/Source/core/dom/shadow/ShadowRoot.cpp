@@ -108,7 +108,7 @@ ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
     return older;
 }
 
-PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
 {
     exceptionState.throwDOMException(DataCloneError, "ShadowRoot nodes are not clonable.");
     return nullptr;

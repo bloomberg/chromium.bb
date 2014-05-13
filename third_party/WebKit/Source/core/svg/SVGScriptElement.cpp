@@ -187,9 +187,9 @@ bool SVGScriptElement::hasSourceAttribute() const
     return href()->isSpecified();
 }
 
-PassRefPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()
+PassRefPtrWillBeRawPtr<Element> SVGScriptElement::cloneElementWithoutAttributesAndChildren()
 {
-    return adoptRef(new SVGScriptElement(document(), false, m_loader->alreadyStarted()));
+    return adoptRefWillBeRefCountedGarbageCollected(new SVGScriptElement(document(), false, m_loader->alreadyStarted()));
 }
 
 void SVGScriptElement::dispatchLoadEvent()

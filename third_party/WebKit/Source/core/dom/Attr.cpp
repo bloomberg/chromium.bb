@@ -137,9 +137,9 @@ void Attr::setNodeValue(const String& v)
     setValueInternal(AtomicString(v));
 }
 
-PassRefPtr<Node> Attr::cloneNode(bool /*deep*/)
+PassRefPtrWillBeRawPtr<Node> Attr::cloneNode(bool /*deep*/)
 {
-    RefPtr<Attr> clone = adoptRef(new Attr(document(), qualifiedName(), value()));
+    RefPtrWillBeRawPtr<Attr> clone = adoptRefWillBeRefCountedGarbageCollected(new Attr(document(), qualifiedName(), value()));
     cloneChildNodes(clone.get());
     return clone.release();
 }

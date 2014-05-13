@@ -236,7 +236,7 @@ Node::NodeType Text::nodeType() const
     return TEXT_NODE;
 }
 
-PassRefPtr<Node> Text::cloneNode(bool /*deep*/)
+PassRefPtrWillBeRawPtr<Node> Text::cloneNode(bool /*deep*/)
 {
     return cloneWithData(data());
 }

@@ -70,7 +70,7 @@ private:
 
     virtual void dispatchLoadEvent() OVERRIDE;
 
-    virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
 
     OwnPtr<ScriptLoader> m_loader;
 };

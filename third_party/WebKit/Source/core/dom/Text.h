@@ -67,7 +67,7 @@ protected:
 
 private:
     virtual String nodeName() const OVERRIDE;
-    virtual PassRefPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
+    virtual PassRefPtrWillBeRawPtr<Node> cloneNode(bool deep = true) OVERRIDE FINAL;
 
     bool needsWhitespaceRenderer();
 

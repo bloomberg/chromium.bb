@@ -35,9 +35,9 @@ DocumentFragment::DocumentFragment(Document* document, ConstructionType construc
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<DocumentFragment> DocumentFragment::create(Document& document)
+PassRefPtrWillBeRawPtr<DocumentFragment> DocumentFragment::create(Document& document)
 {
-    return adoptRef(new DocumentFragment(&document, Node::CreateDocumentFragment));
+    return adoptRefWillBeRefCountedGarbageCollected(new DocumentFragment(&document, Node::CreateDocumentFragment));
 }
 
 String DocumentFragment::nodeName() const
@@ -64,9 +64,9 @@ bool DocumentFragment::childTypeAllowed(NodeType type) const
     }
 }
 
-PassRefPtr<Node> DocumentFragment::cloneNode(bool deep)
+PassRefPtrWillBeRawPtr<Node> DocumentFragment::cloneNode(bool deep)
 {
-    RefPtr<DocumentFragment> clone = create(document());
+    RefPtrWillBeRawPtr<DocumentFragment> clone = create(document());
     if (deep)
         cloneChildNodes(clone.get());
     return clone.release();

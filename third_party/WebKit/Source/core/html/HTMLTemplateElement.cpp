@@ -64,12 +64,12 @@ DocumentFragment* HTMLTemplateElement::content() const
     return m_content.get();
 }
 
-PassRefPtr<Node> HTMLTemplateElement::cloneNode(bool deep)
+PassRefPtrWillBeRawPtr<Node> HTMLTemplateElement::cloneNode(bool deep)
 {
     if (!deep)
         return cloneElementWithoutChildren();
 
-    RefPtr<Node> clone = cloneElementWithChildren();
+    RefPtrWillBeRawPtr<Node> clone = cloneElementWithChildren();
     if (m_content)
         content()->cloneChildNodes(toHTMLTemplateElement(clone.get())->content());
     return clone.release();

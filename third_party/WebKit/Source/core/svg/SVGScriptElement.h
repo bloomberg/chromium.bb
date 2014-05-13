@@ -74,7 +74,7 @@ private:
 
     virtual void dispatchLoadEvent() OVERRIDE;
 
-    virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 
     virtual Timer<SVGElement>* svgLoadEventTimer() OVERRIDE { return &m_svgLoadEventTimer; }

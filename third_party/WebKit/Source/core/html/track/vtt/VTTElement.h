@@ -45,7 +45,7 @@ public:
     static PassRefPtrWillBeRawPtr<VTTElement> create(const QualifiedName&, Document*);
     PassRefPtr<HTMLElement> createEquivalentHTMLElement(Document&);
 
-    virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
+    virtual PassRefPtrWillBeRawPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
 
     void setVTTNodeType(VTTNodeType type) { m_webVTTNodeType = static_cast<unsigned>(type); }
     VTTNodeType webVTTNodeType() const { return static_cast<VTTNodeType>(m_webVTTNodeType); }
