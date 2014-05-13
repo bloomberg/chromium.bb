@@ -117,6 +117,18 @@ BackgroundPageType GetBackgroundPageType(const Extension* extension) {
   return EVENT_PAGE;
 }
 
+// Records the creation flags of an extension grouped by
+// Extension::InitFromValueFlags.
+void RecordCreationFlags(const Extension* extension) {
+  for (int i = 0; i < Extension::kInitFromValueFlagBits; ++i) {
+    int flag = 1 << i;
+    if (extension->creation_flags() & flag) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.LoadCreationFlags", i, Extension::kInitFromValueFlagBits);
+    }
+  }
+}
+
 }  // namespace
 
 InstalledLoader::InstalledLoader(ExtensionService* extension_service)
@@ -418,6 +430,8 @@ void InstalledLoader::LoadAllExtensions() {
 
     if (extensions::ManagedModeInfo::IsContentPack(ex->get()))
       ++content_pack_count;
+
+    RecordCreationFlags(*ex);
 
     extension_service_->RecordPermissionMessagesHistogram(
         ex->get(), "Extensions.Permissions_Load");

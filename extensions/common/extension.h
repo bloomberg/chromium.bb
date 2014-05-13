@@ -118,6 +118,8 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     virtual ~ManifestData() {}
   };
 
+  // Do not change the order of entries or remove entries in this list
+  // as this is used in UMA_HISTOGRAM_ENUMERATIONs about extensions.
   enum InitFromValueFlags {
     NO_FLAGS = 0,
 
@@ -170,7 +172,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // be placed in a special OEM folder in the App Launcher. Note: OEM apps are
     // also installed by Default (i.e. WAS_INSTALLED_BY_DEFAULT is also true).
     WAS_INSTALLED_BY_OEM = 1 << 10,
+
+    // When adding new flags, make sure to update kInitFromValueFlagBits.
   };
+
+  // This is the highest bit index of the flags defined above.
+  static const int kInitFromValueFlagBits;
 
   static scoped_refptr<Extension> Create(const base::FilePath& path,
                                          Manifest::Location location,

@@ -67,6 +67,8 @@ bool ContainsReservedCharacters(const base::FilePath& path) {
 
 }  // namespace
 
+const int Extension::kInitFromValueFlagBits = 11;
+
 const char Extension::kMimeType[] = "application/x-chrome-extension";
 
 const int Extension::kValidWebExtentSchemes =
