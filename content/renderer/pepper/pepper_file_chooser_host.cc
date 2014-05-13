@@ -82,9 +82,9 @@ PepperFileChooserHost::~PepperFileChooserHost() {}
 int32_t PepperFileChooserHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperFileChooserHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileChooser_Show, OnShow)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFileChooserHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileChooser_Show, OnShow)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

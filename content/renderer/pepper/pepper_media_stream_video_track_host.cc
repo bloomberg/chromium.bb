@@ -466,10 +466,10 @@ void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
 int32_t PepperMediaStreamVideoTrackHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperMediaStreamVideoTrackHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_MediaStreamVideoTrack_Configure, OnHostMsgConfigure)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperMediaStreamVideoTrackHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_MediaStreamVideoTrack_Configure, OnHostMsgConfigure)
+  PPAPI_END_MESSAGE_MAP()
   return PepperMediaStreamTrackHostBase::OnResourceMessageReceived(msg,
                                                                    context);
 }

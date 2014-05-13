@@ -124,11 +124,11 @@ void PPB_Broker_Impl::BrokerConnected(int32_t handle, int32_t result) {
 bool PPB_Broker_Impl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PPB_Broker_Impl, message)
-  IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
-                      OnPpapiBrokerChannelCreated)
-  IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
-                      OnPpapiBrokerPermissionResult)
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerChannelCreated,
+                        OnPpapiBrokerChannelCreated)
+    IPC_MESSAGE_HANDLER(ViewMsg_PpapiBrokerPermissionResult,
+                        OnPpapiBrokerPermissionResult)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }

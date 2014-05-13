@@ -53,12 +53,13 @@ PepperFileSystemHost::~PepperFileSystemHost() {}
 int32_t PepperFileSystemHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperFileSystemHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileSystem_Open, OnHostMsgOpen)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
-      OnHostMsgInitIsolatedFileSystem)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFileSystemHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileSystem_Open,
+                                      OnHostMsgOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
+        OnHostMsgInitIsolatedFileSystem)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

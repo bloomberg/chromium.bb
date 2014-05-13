@@ -30,9 +30,9 @@ bool PepperBrowserConnection::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperBrowserConnection, msg)
-  IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHostReply,
-                      OnMsgCreateResourceHostsFromHostReply)
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHostReply,
+                        OnMsgCreateResourceHostsFromHostReply)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }

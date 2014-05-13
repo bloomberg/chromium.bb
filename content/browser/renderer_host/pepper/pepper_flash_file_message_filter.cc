@@ -85,21 +85,22 @@ PepperFlashFileMessageFilter::OverrideTaskRunnerForMessage(
 int32_t PepperFlashFileMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperFlashFileMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_OpenFile, OnOpenFile)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_RenameFile,
-                                    OnRenameFile)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_DeleteFileOrDir,
-                                    OnDeleteFileOrDir)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_CreateDir,
-                                    OnCreateDir)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_QueryFile,
-                                    OnQueryFile)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_GetDirContents,
-                                    OnGetDirContents)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-      PpapiHostMsg_FlashFile_CreateTemporaryFile, OnCreateTemporaryFile)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFlashFileMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_OpenFile,
+                                      OnOpenFile)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_RenameFile,
+                                      OnRenameFile)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_DeleteFileOrDir,
+                                      OnDeleteFileOrDir)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_CreateDir,
+                                      OnCreateDir)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_QueryFile,
+                                      OnQueryFile)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashFile_GetDirContents,
+                                      OnGetDirContents)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_FlashFile_CreateTemporaryFile, OnCreateTemporaryFile)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

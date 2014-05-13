@@ -123,19 +123,19 @@ PepperFlashClipboardMessageFilter::OverrideTaskRunnerForMessage(
 int32_t PepperFlashClipboardMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperFlashClipboardMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_FlashClipboard_RegisterCustomFormat,
-      OnMsgRegisterCustomFormat);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_FlashClipboard_IsFormatAvailable, OnMsgIsFormatAvailable);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashClipboard_ReadData,
-                                    OnMsgReadData);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashClipboard_WriteData,
-                                    OnMsgWriteData);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_FlashClipboard_GetSequenceNumber, OnMsgGetSequenceNumber);
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFlashClipboardMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_FlashClipboard_RegisterCustomFormat,
+        OnMsgRegisterCustomFormat)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_FlashClipboard_IsFormatAvailable, OnMsgIsFormatAvailable)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashClipboard_ReadData,
+                                      OnMsgReadData)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashClipboard_WriteData,
+                                      OnMsgWriteData)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_FlashClipboard_GetSequenceNumber, OnMsgGetSequenceNumber)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

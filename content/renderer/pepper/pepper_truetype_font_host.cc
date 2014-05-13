@@ -36,14 +36,14 @@ int32_t PepperTrueTypeFontHost::OnResourceMessageReceived(
   if (!host()->permissions().HasPermission(ppapi::PERMISSION_DEV))
     return PP_ERROR_FAILED;
 
-  IPC_BEGIN_MESSAGE_MAP(PepperTrueTypeFontHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TrueTypeFont_Describe,
-                                      OnHostMsgDescribe)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TrueTypeFont_GetTableTags,
-                                      OnHostMsgGetTableTags)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TrueTypeFont_GetTable,
-                                    OnHostMsgGetTable)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperTrueTypeFontHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TrueTypeFont_Describe,
+                                        OnHostMsgDescribe)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TrueTypeFont_GetTableTags,
+                                        OnHostMsgGetTableTags)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TrueTypeFont_GetTable,
+                                      OnHostMsgGetTable)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

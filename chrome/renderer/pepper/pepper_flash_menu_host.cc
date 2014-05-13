@@ -122,9 +122,10 @@ PepperFlashMenuHost::~PepperFlashMenuHost() {
 int32_t PepperFlashMenuHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperFlashMenuHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashMenu_Show, OnHostMsgShow)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFlashMenuHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FlashMenu_Show,
+                                      OnHostMsgShow)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

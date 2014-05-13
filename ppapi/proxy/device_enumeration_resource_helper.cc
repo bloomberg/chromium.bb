@@ -93,12 +93,12 @@ int32_t DeviceEnumerationResourceHelper::MonitorDeviceChange(
 bool DeviceEnumerationResourceHelper::HandleReply(
     const ResourceMessageReplyParams& params,
     const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(DeviceEnumerationResourceHelper, msg)
+  PPAPI_BEGIN_MESSAGE_MAP(DeviceEnumerationResourceHelper, msg)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
         PpapiPluginMsg_DeviceEnumeration_NotifyDeviceChange,
         OnPluginMsgNotifyDeviceChange)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(return false)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_END_MESSAGE_MAP()
 
   return true;
 }

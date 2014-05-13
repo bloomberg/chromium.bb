@@ -32,10 +32,10 @@ PepperFlashDRMRendererHost::~PepperFlashDRMRendererHost() {}
 int32_t PepperFlashDRMRendererHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperFlashDRMRendererHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetVoucherFile,
-                                      OnGetVoucherFile)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFlashDRMRendererHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetVoucherFile,
+                                        OnGetVoucherFile)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

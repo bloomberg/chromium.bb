@@ -235,7 +235,7 @@ void URLLoaderResource::RegisterStatusCallback(
 void URLLoaderResource::OnReplyReceived(
     const ResourceMessageReplyParams& params,
     const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(URLLoaderResource, msg)
+  PPAPI_BEGIN_MESSAGE_MAP(URLLoaderResource, msg)
     case PpapiPluginMsg_URLLoader_SendData::ID:
       // Special message, manually dispatch since we don't want the automatic
       // unpickling.
@@ -251,7 +251,7 @@ void URLLoaderResource::OnReplyReceived(
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
         PpapiPluginMsg_URLLoader_UpdateProgress,
         OnPluginMsgUpdateProgress)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_END_MESSAGE_MAP()
 }
 
 void URLLoaderResource::OnPluginMsgReceivedResponse(

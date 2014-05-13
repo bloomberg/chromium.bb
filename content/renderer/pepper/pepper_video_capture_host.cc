@@ -63,16 +63,17 @@ int32_t PepperVideoCaptureHost::OnResourceMessageReceived(
   if (enumeration_helper_.HandleResourceMessage(msg, context, &result))
     return result;
 
-  IPC_BEGIN_MESSAGE_MAP(PepperVideoCaptureHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoCapture_Open, OnOpen)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_StartCapture,
-                                      OnStartCapture)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoCapture_ReuseBuffer,
-                                    OnReuseBuffer)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_StopCapture,
-                                      OnStopCapture)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_Close, OnClose)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperVideoCaptureHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoCapture_Open, OnOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_StartCapture,
+                                        OnStartCapture)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoCapture_ReuseBuffer,
+                                      OnReuseBuffer)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_StopCapture,
+                                        OnStopCapture)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoCapture_Close,
+                                        OnClose)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

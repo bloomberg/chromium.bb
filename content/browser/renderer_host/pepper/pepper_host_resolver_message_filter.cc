@@ -107,10 +107,10 @@ PepperHostResolverMessageFilter::OverrideTaskRunnerForMessage(
 int32_t PepperHostResolverMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperHostResolverMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_HostResolver_Resolve,
-                                    OnMsgResolve)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperHostResolverMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_HostResolver_Resolve,
+                                      OnMsgResolve)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

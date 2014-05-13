@@ -43,7 +43,7 @@ void MediaStreamTrackResourceBase::SendEnqueueBufferMessageToHost(
 void MediaStreamTrackResourceBase::OnReplyReceived(
     const ResourceMessageReplyParams& params,
     const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(MediaStreamTrackResourceBase, msg)
+  PPAPI_BEGIN_MESSAGE_MAP(MediaStreamTrackResourceBase, msg)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
         PpapiPluginMsg_MediaStreamTrack_InitBuffers, OnPluginMsgInitBuffers)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
@@ -53,7 +53,7 @@ void MediaStreamTrackResourceBase::OnReplyReceived(
         OnPluginMsgEnqueueBuffers)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(
         PluginResource::OnReplyReceived(params, msg))
-  IPC_END_MESSAGE_MAP()
+  PPAPI_END_MESSAGE_MAP()
 }
 
 void MediaStreamTrackResourceBase::CloseInternal() {

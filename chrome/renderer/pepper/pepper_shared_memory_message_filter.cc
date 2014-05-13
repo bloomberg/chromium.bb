@@ -25,9 +25,9 @@ bool PepperSharedMemoryMessageFilter::OnInstanceMessageReceived(
     const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperSharedMemoryMessageFilter, msg)
-  IPC_MESSAGE_HANDLER(PpapiHostMsg_SharedMemory_CreateSharedMemory,
-                      OnHostMsgCreateSharedMemory)
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_SharedMemory_CreateSharedMemory,
+                        OnHostMsgCreateSharedMemory)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }

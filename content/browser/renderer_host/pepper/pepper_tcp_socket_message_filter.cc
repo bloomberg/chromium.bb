@@ -140,23 +140,26 @@ PepperTCPSocketMessageFilter::OverrideTaskRunnerForMessage(
 int32_t PepperTCPSocketMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperTCPSocketMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Bind, OnMsgBind)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Connect,
-                                    OnMsgConnect)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_TCPSocket_ConnectWithNetAddress, OnMsgConnectWithNetAddress)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_SSLHandshake,
-                                    OnMsgSSLHandshake)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Read, OnMsgRead)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Write, OnMsgWrite)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Listen, OnMsgListen)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TCPSocket_Accept,
-                                      OnMsgAccept)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TCPSocket_Close, OnMsgClose)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_SetOption,
-                                    OnMsgSetOption)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperTCPSocketMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Bind, OnMsgBind)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Connect,
+                                      OnMsgConnect)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_TCPSocket_ConnectWithNetAddress,
+        OnMsgConnectWithNetAddress)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_SSLHandshake,
+                                      OnMsgSSLHandshake)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Read, OnMsgRead)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Write, OnMsgWrite)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_Listen,
+                                      OnMsgListen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TCPSocket_Accept,
+                                        OnMsgAccept)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TCPSocket_Close,
+                                        OnMsgClose)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPSocket_SetOption,
+                                      OnMsgSetOption)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

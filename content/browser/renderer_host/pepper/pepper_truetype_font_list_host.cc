@@ -61,14 +61,14 @@ scoped_refptr<base::TaskRunner> FontMessageFilter::OverrideTaskRunnerForMessage(
 int32_t FontMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(FontMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-      PpapiHostMsg_TrueTypeFontSingleton_GetFontFamilies,
-      OnHostMsgGetFontFamilies)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_TrueTypeFontSingleton_GetFontsInFamily,
-      OnHostMsgGetFontsInFamily)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(FontMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_TrueTypeFontSingleton_GetFontFamilies,
+        OnHostMsgGetFontFamilies)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_TrueTypeFontSingleton_GetFontsInFamily,
+        OnHostMsgGetFontsInFamily)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

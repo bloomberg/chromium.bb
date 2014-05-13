@@ -91,12 +91,12 @@ void PepperMediaStreamTrackHostBase::SendEnqueueBuffersMessageToPlugin(
 int32_t PepperMediaStreamTrackHostBase::OnResourceMessageReceived(
     const IPC::Message& msg,
     HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperMediaStreamTrackHostBase, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_MediaStreamTrack_EnqueueBuffer,
-                                    OnHostMsgEnqueueBuffer)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_MediaStreamTrack_Close,
-                                      OnHostMsgClose)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperMediaStreamTrackHostBase, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_MediaStreamTrack_EnqueueBuffer, OnHostMsgEnqueueBuffer)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_MediaStreamTrack_Close,
+                                        OnHostMsgClose)
+  PPAPI_END_MESSAGE_MAP()
   return ppapi::host::ResourceHost::OnResourceMessageReceived(msg, context);
 }
 

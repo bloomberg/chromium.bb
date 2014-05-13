@@ -104,10 +104,10 @@ void PepperNetworkProxyHost::DidGetUIThreadData(
 int32_t PepperNetworkProxyHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperNetworkProxyHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_NetworkProxy_GetProxyForURL,
-                                    OnMsgGetProxyForURL)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperNetworkProxyHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_NetworkProxy_GetProxyForURL,
+                                      OnMsgGetProxyForURL)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

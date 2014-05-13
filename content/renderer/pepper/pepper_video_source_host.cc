@@ -69,14 +69,14 @@ PepperVideoSourceHost::~PepperVideoSourceHost() { Close(); }
 int32_t PepperVideoSourceHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperVideoSourceHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoSource_Open,
-                                    OnHostMsgOpen)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoSource_GetFrame,
-                                      OnHostMsgGetFrame)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoSource_Close,
-                                      OnHostMsgClose)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperVideoSourceHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_VideoSource_Open,
+                                      OnHostMsgOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoSource_GetFrame,
+                                        OnHostMsgGetFrame)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_VideoSource_Close,
+                                        OnHostMsgClose)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

@@ -45,7 +45,7 @@ void VideoCaptureResource::OnReplyReceived(
     return;
   }
 
-  IPC_BEGIN_MESSAGE_MAP(VideoCaptureResource, msg)
+  PPAPI_BEGIN_MESSAGE_MAP(VideoCaptureResource, msg)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
         PpapiPluginMsg_VideoCapture_OnDeviceInfo,
         OnPluginMsgOnDeviceInfo)
@@ -59,7 +59,7 @@ void VideoCaptureResource::OnReplyReceived(
         PpapiPluginMsg_VideoCapture_OnBufferReady,
         OnPluginMsgOnBufferReady)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(NOTREACHED())
-  IPC_END_MESSAGE_MAP()
+  PPAPI_END_MESSAGE_MAP()
 }
 
 int32_t VideoCaptureResource::EnumerateDevices(

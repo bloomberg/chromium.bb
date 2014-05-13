@@ -101,14 +101,15 @@ void PepperFileSystemBrowserHost::OpenExisting(const GURL& root_url,
 int32_t PepperFileSystemBrowserHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperFileSystemBrowserHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileSystem_Open, OnHostMsgOpen)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
-      OnHostMsgInitIsolatedFileSystem)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileSystem_ReserveQuota,
-                                    OnHostMsgReserveQuota)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFileSystemBrowserHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileSystem_Open,
+                                      OnHostMsgOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
+        OnHostMsgInitIsolatedFileSystem)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileSystem_ReserveQuota,
+                                      OnHostMsgReserveQuota)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

@@ -78,13 +78,13 @@ int32_t TalkResource::StopRemoting(scoped_refptr<TrackedCallback> callback) {
 
 void TalkResource::OnReplyReceived(const ResourceMessageReplyParams& params,
                                    const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(TalkResource, msg)
+  PPAPI_BEGIN_MESSAGE_MAP(TalkResource, msg)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
         PpapiPluginMsg_Talk_NotifyEvent,
         OnNotifyEvent)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(
         PluginResource::OnReplyReceived(params, msg))
-  IPC_END_MESSAGE_MAP()
+  PPAPI_END_MESSAGE_MAP()
 }
 
 void TalkResource::OnNotifyEvent(const ResourceMessageReplyParams& params,

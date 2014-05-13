@@ -82,10 +82,11 @@ PepperIsolatedFileSystemMessageFilter::OverrideTaskRunnerForMessage(
 int32_t PepperIsolatedFileSystemMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperIsolatedFileSystemMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_IsolatedFileSystem_BrowserOpen,
-                                    OnOpenFileSystem);
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperIsolatedFileSystemMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+      PpapiHostMsg_IsolatedFileSystem_BrowserOpen,
+      OnOpenFileSystem)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

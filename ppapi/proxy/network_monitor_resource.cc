@@ -31,14 +31,14 @@ NetworkMonitorResource::AsPPB_NetworkMonitor_API() {
 void NetworkMonitorResource::OnReplyReceived(
     const ResourceMessageReplyParams& params,
     const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(NetworkMonitorResource, msg)
+  PPAPI_BEGIN_MESSAGE_MAP(NetworkMonitorResource, msg)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL(
         PpapiPluginMsg_NetworkMonitor_NetworkList, OnPluginMsgNetworkList)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_0(
         PpapiPluginMsg_NetworkMonitor_Forbidden, OnPluginMsgForbidden)
     PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL_UNHANDLED(
         PluginResource::OnReplyReceived(params, msg))
-  IPC_END_MESSAGE_MAP()
+  PPAPI_END_MESSAGE_MAP()
 }
 
 int32_t NetworkMonitorResource::UpdateNetworkList(

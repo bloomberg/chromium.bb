@@ -139,13 +139,13 @@ bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperRendererConnection, msg, *message_was_ok)
-  IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHost,
-                      OnMsgCreateResourceHostsFromHost)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateInProcessInstance,
-                      OnMsgDidCreateInProcessInstance)
-  IPC_MESSAGE_HANDLER(ViewHostMsg_DidDeleteInProcessInstance,
-                      OnMsgDidDeleteInProcessInstance)
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHost,
+                        OnMsgCreateResourceHostsFromHost)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateInProcessInstance,
+                        OnMsgDidCreateInProcessInstance)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidDeleteInProcessInstance,
+                        OnMsgDidDeleteInProcessInstance)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;

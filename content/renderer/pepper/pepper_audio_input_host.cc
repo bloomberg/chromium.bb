@@ -60,12 +60,12 @@ int32_t PepperAudioInputHost::OnResourceMessageReceived(
   if (enumeration_helper_.HandleResourceMessage(msg, context, &result))
     return result;
 
-  IPC_BEGIN_MESSAGE_MAP(PepperAudioInputHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_Open, OnOpen)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_StartOrStop,
-                                    OnStartOrStop);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_AudioInput_Close, OnClose);
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperAudioInputHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_Open, OnOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_AudioInput_StartOrStop,
+                                      OnStartOrStop)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_AudioInput_Close, OnClose)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

@@ -20,11 +20,9 @@ bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
                                             bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperMessageFilter, msg, *message_was_ok)
-  // X509 certificate messages.
-  IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBX509Certificate_ParseDER,
-                      OnX509CertificateParseDER);
-
-  IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBX509Certificate_ParseDER,
+                        OnX509CertificateParseDER)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
 }

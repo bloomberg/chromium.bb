@@ -153,14 +153,14 @@ PepperTalkHost::~PepperTalkHost() {
 int32_t PepperTalkHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperTalkHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Talk_RequestPermission,
-                                    OnRequestPermission)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Talk_StartRemoting,
-                                      OnStartRemoting)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Talk_StopRemoting,
-                                      OnStopRemoting)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperTalkHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Talk_RequestPermission,
+                                      OnRequestPermission)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Talk_StartRemoting,
+                                        OnStartRemoting)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Talk_StopRemoting,
+                                        OnStopRemoting)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

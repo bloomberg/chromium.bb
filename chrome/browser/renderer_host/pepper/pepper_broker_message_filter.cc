@@ -42,10 +42,10 @@ PepperBrokerMessageFilter::OverrideTaskRunnerForMessage(
 int32_t PepperBrokerMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperBrokerMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Broker_IsAllowed,
-                                      OnIsAllowed)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperBrokerMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Broker_IsAllowed,
+                                        OnIsAllowed)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

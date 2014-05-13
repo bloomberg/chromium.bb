@@ -82,17 +82,18 @@ PepperWebSocketHost::~PepperWebSocketHost() {
 int32_t PepperWebSocketHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperWebSocketHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_Connect,
-                                    OnHostMsgConnect)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_Close,
-                                    OnHostMsgClose)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_SendText,
-                                    OnHostMsgSendText)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_SendBinary,
-                                    OnHostMsgSendBinary)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_Fail, OnHostMsgFail)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperWebSocketHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_Connect,
+                                      OnHostMsgConnect)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_Close,
+                                      OnHostMsgClose)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_SendText,
+                                      OnHostMsgSendText)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_SendBinary,
+                                      OnHostMsgSendBinary)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_WebSocket_Fail,
+                                      OnHostMsgFail)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

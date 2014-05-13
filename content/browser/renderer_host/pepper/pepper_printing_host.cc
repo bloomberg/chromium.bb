@@ -27,10 +27,11 @@ PepperPrintingHost::~PepperPrintingHost() {}
 int32_t PepperPrintingHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperPrintingHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-      PpapiHostMsg_Printing_GetDefaultPrintSettings, OnGetDefaultPrintSettings)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperPrintingHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_Printing_GetDefaultPrintSettings,
+        OnGetDefaultPrintSettings)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

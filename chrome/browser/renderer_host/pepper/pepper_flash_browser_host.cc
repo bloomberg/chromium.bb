@@ -64,14 +64,14 @@ PepperFlashBrowserHost::~PepperFlashBrowserHost() {}
 int32_t PepperFlashBrowserHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperFlashBrowserHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_UpdateActivity,
-                                      OnUpdateActivity);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetLocalTimeZoneOffset,
-                                    OnGetLocalTimeZoneOffset);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-      PpapiHostMsg_Flash_GetLocalDataRestrictions, OnGetLocalDataRestrictions);
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFlashBrowserHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_Flash_UpdateActivity,
+                                        OnUpdateActivity)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_Flash_GetLocalTimeZoneOffset,
+                                      OnGetLocalTimeZoneOffset)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_Flash_GetLocalDataRestrictions, OnGetLocalDataRestrictions)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

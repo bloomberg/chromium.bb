@@ -42,10 +42,11 @@ int32_t PepperPlatformVerificationMessageFilter::OnResourceMessageReceived(
     ppapi::host::HostMessageContext* context) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  IPC_BEGIN_MESSAGE_MAP(PepperPlatformVerificationMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(
-      PpapiHostMsg_PlatformVerification_ChallengePlatform, OnChallengePlatform)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperPlatformVerificationMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_PlatformVerification_ChallengePlatform,
+        OnChallengePlatform)
+  PPAPI_END_MESSAGE_MAP()
 
   return PP_ERROR_FAILED;
 }

@@ -84,14 +84,14 @@ PepperTCPServerSocketMessageFilter::OverrideTaskRunnerForMessage(
 int32_t PepperTCPServerSocketMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperTCPServerSocketMessageFilter, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPServerSocket_Listen,
-                                    OnMsgListen)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TCPServerSocket_Accept,
-                                      OnMsgAccept)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-      PpapiHostMsg_TCPServerSocket_StopListening, OnMsgStopListening)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperTCPServerSocketMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_TCPServerSocket_Listen,
+                                      OnMsgListen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_TCPServerSocket_Accept,
+                                        OnMsgAccept)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_TCPServerSocket_StopListening, OnMsgStopListening)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

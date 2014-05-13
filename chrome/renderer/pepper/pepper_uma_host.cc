@@ -57,16 +57,16 @@ PepperUMAHost::~PepperUMAHost() {}
 int32_t PepperUMAHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperUMAHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramCustomTimes,
-                                    OnHistogramCustomTimes);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramCustomCounts,
-                                    OnHistogramCustomCounts);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramEnumeration,
-                                    OnHistogramEnumeration);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_UMA_IsCrashReportingEnabled,
-                                      OnIsCrashReportingEnabled);
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperUMAHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramCustomTimes,
+                                      OnHistogramCustomTimes)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramCustomCounts,
+                                      OnHistogramCustomCounts)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_UMA_HistogramEnumeration,
+                                      OnHistogramEnumeration)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_UMA_IsCrashReportingEnabled, OnIsCrashReportingEnabled)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

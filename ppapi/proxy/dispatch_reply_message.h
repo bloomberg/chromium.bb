@@ -129,6 +129,16 @@ void DispatchResourceReplyOrDefaultParams(
   (obj->*method)(reply_params);
 }
 
+// When using PPAPI_DISPATCH_PLUGIN_RESOURCE_CALL* below, use this macro to
+// begin the map instead of IPC_BEGIN_MESSAGE_MAP. The reason is that the macros
+// in src/ipc are all closely tied together, and there might be errors for
+// unused variables or other errors if they're used with these macros.
+#define PPAPI_BEGIN_MESSAGE_MAP(class_name, msg) \
+  { \
+    typedef class_name _IpcMessageHandlerClass; \
+    const IPC::Message& ipc_message__ = msg; \
+    switch (ipc_message__.type()) { \
+
 // Note that this only works for message with 1 or more parameters. For
 // 0-parameter messages you need to use the _0 version below (since there are
 // no params in the message).
@@ -157,6 +167,10 @@ void DispatchResourceReplyOrDefaultParams(
         code; \
     } \
     break;
+
+#define PPAPI_END_MESSAGE_MAP() \
+  } \
+}
 
 }  // namespace proxy
 }  // namespace ppapi

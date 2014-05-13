@@ -104,16 +104,17 @@ PepperURLLoaderHost::~PepperURLLoaderHost() {
 int32_t PepperURLLoaderHost::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperURLLoaderHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_URLLoader_Open, OnHostMsgOpen)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_URLLoader_SetDeferLoading,
-                                    OnHostMsgSetDeferLoading)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_URLLoader_Close,
-                                      OnHostMsgClose);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-      PpapiHostMsg_URLLoader_GrantUniversalAccess,
-      OnHostMsgGrantUniversalAccess)
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperURLLoaderHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_URLLoader_Open,
+                                      OnHostMsgOpen)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_URLLoader_SetDeferLoading,
+                                      OnHostMsgSetDeferLoading)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_URLLoader_Close,
+                                        OnHostMsgClose);
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_URLLoader_GrantUniversalAccess,
+        OnHostMsgGrantUniversalAccess)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 

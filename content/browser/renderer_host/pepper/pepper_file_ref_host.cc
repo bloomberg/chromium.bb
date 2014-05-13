@@ -156,19 +156,18 @@ int32_t PepperFileRefHost::OnResourceMessageReceived(
   if (!backend_)
     return PP_ERROR_FAILED;
 
-  IPC_BEGIN_MESSAGE_MAP(PepperFileRefHost, msg)
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileRef_MakeDirectory,
-                                    OnMakeDirectory);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileRef_Touch, OnTouch);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileRef_Delete, OnDelete);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileRef_Rename, OnRename);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileRef_Query, OnQuery);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileRef_ReadDirectoryEntries,
-                                      OnReadDirectoryEntries);
-  PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileRef_GetAbsolutePath,
-                                      OnGetAbsolutePath);
-
-  IPC_END_MESSAGE_MAP()
+  PPAPI_BEGIN_MESSAGE_MAP(PepperFileRefHost, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileRef_MakeDirectory,
+                                      OnMakeDirectory)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileRef_Touch, OnTouch)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileRef_Delete, OnDelete)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileRef_Rename, OnRename)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileRef_Query, OnQuery)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
+        PpapiHostMsg_FileRef_ReadDirectoryEntries, OnReadDirectoryEntries)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileRef_GetAbsolutePath,
+                                        OnGetAbsolutePath)
+  PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
