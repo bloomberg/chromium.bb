@@ -126,7 +126,7 @@ blink::WebCryptoAlgorithm CreateRsaHashedKeyGenAlgorithm(
     const std::vector<uint8>& public_exponent) {
   DCHECK(algorithm_id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
          algorithm_id == blink::WebCryptoAlgorithmIdRsaOaep);
-  DCHECK(IsHashAlgorithm(hash_id));
+  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       algorithm_id,
       new blink::WebCryptoRsaHashedKeyGenParams(
@@ -166,7 +166,7 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
 blink::WebCryptoAlgorithm CreateHmacKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId hash_id,
     unsigned int key_length_bits) {
-  DCHECK(IsHashAlgorithm(hash_id));
+  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
   // key_length_bytes == 0 means unspecified
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdHmac,

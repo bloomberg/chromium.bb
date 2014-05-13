@@ -114,13 +114,6 @@ base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(
   return jwk_key_ops;
 }
 
-bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id) {
-  return alg_id == blink::WebCryptoAlgorithmIdSha1 ||
-         alg_id == blink::WebCryptoAlgorithmIdSha256 ||
-         alg_id == blink::WebCryptoAlgorithmIdSha384 ||
-         alg_id == blink::WebCryptoAlgorithmIdSha512;
-}
-
 blink::WebCryptoAlgorithm GetInnerHashAlgorithm(
     const blink::WebCryptoAlgorithm& algorithm) {
   DCHECK(!algorithm.isNull());
@@ -144,7 +137,7 @@ blink::WebCryptoAlgorithm CreateAlgorithm(blink::WebCryptoAlgorithmId id) {
 
 blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
     blink::WebCryptoAlgorithmId hash_id) {
-  DCHECK(IsHashAlgorithm(hash_id));
+  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
       blink::WebCryptoAlgorithmIdHmac,
       new blink::WebCryptoHmacImportParams(CreateAlgorithm(hash_id)));
@@ -153,7 +146,7 @@ blink::WebCryptoAlgorithm CreateHmacImportAlgorithm(
 blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
     blink::WebCryptoAlgorithmId id,
     blink::WebCryptoAlgorithmId hash_id) {
-  DCHECK(IsHashAlgorithm(hash_id));
+  DCHECK(blink::WebCryptoAlgorithm::isHash(hash_id));
   DCHECK(id == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 ||
          id == blink::WebCryptoAlgorithmIdRsaOaep);
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(

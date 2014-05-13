@@ -46,8 +46,6 @@ CONTENT_EXPORT Status GetWebCryptoUsagesFromJwkKeyOps(
 base::ListValue* CreateJwkKeyOpsFromWebCryptoUsages(
     blink::WebCryptoKeyUsageMask usage_mask);
 
-CONTENT_EXPORT bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id);
-
 // Returns the "hash" param for an algorithm if it exists, otherwise returns
 // a null algorithm.
 blink::WebCryptoAlgorithm GetInnerHashAlgorithm(
