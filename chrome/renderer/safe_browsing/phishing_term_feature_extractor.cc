@@ -9,8 +9,10 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/i18n/break_iterator.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +21,6 @@
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "crypto/sha2.h"
-#include "third_party/icu/source/common/unicode/ubrk.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace safe_browsing {
@@ -51,15 +52,7 @@ struct PhishingTermFeatureExtractor::ExtractionState {
   std::list<size_t> previous_word_sizes;
 
   // An iterator for word breaking.
-  UBreakIterator* iterator;
-
-  // Our current position in the text that was passed to the ExtractionState
-  // constructor, speciailly, the most recent break position returned by our
-  // iterator.
-  int position;
-
-  // True if position has been initialized.
-  bool position_initialized;
+  scoped_ptr<base::i18n::BreakIterator> iterator;
 
   // The time at which we started feature extraction for the current page.
   base::TimeTicks start_time;
@@ -68,24 +61,17 @@ struct PhishingTermFeatureExtractor::ExtractionState {
   int num_iterations;
 
   ExtractionState(const base::string16& text, base::TimeTicks start_time_ticks)
-      : position(-1),
-        position_initialized(false),
-        start_time(start_time_ticks),
+      : start_time(start_time_ticks),
         num_iterations(0) {
-    UErrorCode status = U_ZERO_ERROR;
-    // TODO(bryner): We should pass in the language for the document.
-    iterator = ubrk_open(UBRK_WORD, NULL,
-                         text.data(), text.size(),
-                         &status);
-    if (U_FAILURE(status)) {
-      DLOG(ERROR) << "ubrk_open failed: " << status;
-      iterator = NULL;
-    }
-  }
 
-  ~ExtractionState() {
-    if (iterator) {
-      ubrk_close(iterator);
+    scoped_ptr<base::i18n::BreakIterator> i(
+        new base::i18n::BreakIterator(
+            text, base::i18n::BreakIterator::BREAK_WORD));
+
+    if (i->Init()) {
+      iterator = i.Pass();
+    } else {
+      DLOG(ERROR) << "failed to open iterator";
     }
   }
 };
@@ -145,33 +131,21 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
   ++state_->num_iterations;
   base::TimeTicks current_chunk_start_time = clock_->Now();
 
-  if (!state_->iterator) {
+  if (!state_->iterator.get()) {
     // We failed to initialize the break iterator, so stop now.
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.TermFeatureBreakIterError", 1);
     RunCallback(false);
     return;
   }
 
-  if (!state_->position_initialized) {
-    state_->position = ubrk_first(state_->iterator);
-    if (state_->position == UBRK_DONE) {
-      // No words present, so we're done.
-      RunCallback(true);
-      return;
-    }
-    state_->position_initialized = true;
-  }
-
   int num_words = 0;
-  for (int next = ubrk_next(state_->iterator);
-       next != UBRK_DONE; next = ubrk_next(state_->iterator)) {
-    if (ubrk_getRuleStatus(state_->iterator) != UBRK_WORD_NONE) {
-      // next is now positioned at the end of a word.
-      HandleWord(base::StringPiece16(page_text_->data() + state_->position,
-                                     next - state_->position));
+  while (state_->iterator->Advance()) {
+    if (state_->iterator->IsWord()) {
+      const size_t start = state_->iterator->prev();
+      const size_t length = state_->iterator->pos() - start;
+      HandleWord(base::StringPiece16(page_text_->data() + start, length));
       ++num_words;
     }
-    state_->position = next;
 
     if (num_words >= kClockCheckGranularity) {
       num_words = 0;
