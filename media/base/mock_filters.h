@@ -145,8 +145,8 @@ class MockAudioRenderer : public AudioRenderer {
                                 const TimeCB& time_cb,
                                 const base::Closure& ended_cb,
                                 const PipelineStatusCB& error_cb));
-  MOCK_METHOD0(StartRendering, void());
-  MOCK_METHOD0(StopRendering, void());
+  MOCK_METHOD0(Play, void());
+  MOCK_METHOD0(Pause, void());
   MOCK_METHOD1(Flush, void(const base::Closure& callback));
   MOCK_METHOD1(Stop, void(const base::Closure& callback));
   MOCK_METHOD1(SetPlaybackRate, void(float playback_rate));

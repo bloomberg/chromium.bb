@@ -72,8 +72,8 @@ class MEDIA_EXPORT AudioRendererImpl
                           const TimeCB& time_cb,
                           const base::Closure& ended_cb,
                           const PipelineStatusCB& error_cb) OVERRIDE;
-  virtual void StartRendering() OVERRIDE;
-  virtual void StopRendering() OVERRIDE;
+  virtual void Play() OVERRIDE;
+  virtual void Pause() OVERRIDE;
   virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void SetPlaybackRate(float rate) OVERRIDE;
@@ -97,33 +97,12 @@ class MEDIA_EXPORT AudioRendererImpl
  private:
   friend class AudioRendererImplTest;
 
-  // Important detail: being in kPlaying doesn't imply that audio is being
-  // rendered. Rather, it means that the renderer is ready to go. The actual
-  // rendering of audio is controlled via Start/StopRendering().
-  //
-  //   kUninitialized
-  //         | Initialize()
-  //         |
-  //         V
-  //    kInitializing
-  //         | Decoders initialized
-  //         |
-  //         V            Decoders reset
-  //      kFlushed <------------------ kFlushing
-  //         | Preroll()                  ^
-  //         |                            |
-  //         V                            | Flush()
-  //     kPrerolling ----------------> kPlaying ---------.
-  //           Enough data buffered       ^              | Not enough data
-  //                                      |              | buffered
-  //                 Enough data buffered |              V
-  //                                 kRebuffering <--- kUnderflow
-  //                                      ResumeAfterUnderflow()
+  // TODO(acolwell): Add a state machine graph.
   enum State {
     kUninitialized,
     kInitializing,
+    kPaused,
     kFlushing,
-    kFlushed,
     kPrerolling,
     kPlaying,
     kStopped,
@@ -148,8 +127,8 @@ class MEDIA_EXPORT AudioRendererImpl
                                     const base::TimeDelta& playback_delay,
                                     const base::TimeTicks& time_now);
 
-  void StartRendering_Locked();
-  void StopRendering_Locked();
+  void DoPlay_Locked();
+  void DoPause_Locked();
 
   // AudioRendererSink::RenderCallback implementation.
   //
@@ -256,9 +235,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // Simple state tracking variable.
   State state_;
 
-  // Keep track of whether or not the sink is playing and whether we should be
-  // rendering.
-  bool rendering_;
+  // Keep track of whether or not the sink is playing.
   bool sink_playing_;
 
   // Keep track of our outstanding read to |decoder_|.
