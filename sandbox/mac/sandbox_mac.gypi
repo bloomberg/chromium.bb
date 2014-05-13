@@ -5,19 +5,55 @@
 {
   'targets': [
     {
+      'target_name': 'sandbox',
+      'type': '<(component)',
+      'sources': [
+        'bootstrap_sandbox.cc',
+        'bootstrap_sandbox.h',
+        'launchd_interception_server.cc',
+        'launchd_interception_server.h',
+        'policy.cc',
+        'policy.h',
+        'os_compatibility.cc',
+        'os_compatibility.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'defines': [
+        'SANDBOX_IMPLEMENTATION',
+      ],
+      'link_settings': {
+        'libraries': [
+          '$(SDKROOT)/usr/lib/libbsm.dylib',
+        ],
+      },
+    },
+    {
       'target_name': 'sandbox_mac_unittests',
       'type': 'executable',
       'sources': [
-        'temp_test.cc',
+        'bootstrap_sandbox_unittest.mm',
+        'policy_unittest.cc',
       ],
       'dependencies': [
+        'sandbox',
         '../base/base.gyp:base',
         '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
       ],
       'include_dirs': [
-        '../',
+        '..',
       ],
+      'link_settings': {
+        'libraries': [
+          '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+          '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
+        ],
+      },
     },
   ],
 }
