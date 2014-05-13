@@ -129,7 +129,7 @@ public:
     virtual NetworkState networkState() const = 0;
     virtual ReadyState readyState() const = 0;
 
-    virtual bool didLoadingProgress() const = 0;
+    virtual bool didLoadingProgress() = 0;
 
     virtual bool hasSingleSecurityOrigin() const = 0;
     virtual bool didPassCORSAccessCheck() const = 0;
