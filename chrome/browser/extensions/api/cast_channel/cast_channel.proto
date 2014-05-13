@@ -53,19 +53,31 @@ message CastMessage {
   optional bytes payload_binary = 7;
 }
 
+enum SignatureAlgorithm {
+  UNSPECIFIED = 0;
+  RSASSA_PKCS1v15 = 1;
+  RSASSA_PSS = 2;
+}
+
 // Messages for authentication protocol between a sender and a receiver.
 message AuthChallenge {
+  optional SignatureAlgorithm signature_algorithm = 1
+      [default = RSASSA_PKCS1v15];
 }
 
 message AuthResponse {
   required bytes signature = 1;
   required bytes client_auth_certificate = 2;
+  repeated bytes intermediate_certificate = 3;
+  optional SignatureAlgorithm signature_algorithm = 4
+      [default = RSASSA_PKCS1v15];
 }
 
 message AuthError {
   enum ErrorType {
     INTERNAL_ERROR = 0;
     NO_TLS = 1;  // The underlying connection is not TLS
+    SIGNATURE_ALGORITHM_UNAVAILABLE = 2;
   }
   required ErrorType error_type = 1;
 }
