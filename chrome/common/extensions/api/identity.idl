@@ -87,6 +87,13 @@ namespace identity {
     // window will close, and the final redirect URL will be passed to
     // the <var>callback</var> function.
     //
+    // For a good user experience it is important interactive auth flows are
+    // initiated by UI in your app explaining what the authorization is for.
+    // Failing to do this will cause your users to get authorization requests
+    // - or even Chrome sign in screens if they are not signed in - with
+    // no context. In particular, do not launch an interactive auth flow when
+    // your app is first launched.
+    //
     // |details| : WebAuth flow options.
     // |callback| : Called with the URL redirected back to your application.
     static void launchWebAuthFlow(WebAuthFlowDetails details,
