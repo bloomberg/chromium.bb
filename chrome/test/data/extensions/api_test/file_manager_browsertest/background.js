@@ -785,13 +785,14 @@ window.addEventListener('load', function() {
     },
     // Run the test case.
     function(testCaseName) {
-      if (!testcase[testCaseName]) {
-        chrome.test.runTests([function() {
-          chrome.test.fail(testCaseName + ' is not found.');
-        }]);
+      var targetTest = testcase[testCaseName];
+      if (!targetTest) {
+        chrome.test.fail(testCaseName + ' is not found.');
         return;
       }
-      chrome.test.runTests([testcase[testCaseName]]);
+      // Specify the name of test to the test system.
+      targetTest.generatedName = testCaseName;
+      chrome.test.runTests([targetTest]);
     }
   ];
   steps.shift()();
