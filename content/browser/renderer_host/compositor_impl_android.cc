@@ -368,7 +368,10 @@ void CompositorImpl::SetHasTransparentBackground(bool flag) {
 }
 
 bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
-  return false;
+  if (host_)
+    return host_->CompositeAndReadback(pixels, rect);
+  else
+    return false;
 }
 
 cc::UIResourceId CompositorImpl::GenerateUIResourceFromUIResourceBitmap(
