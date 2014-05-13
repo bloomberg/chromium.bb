@@ -20,9 +20,6 @@ class TouchscreenDelegateX11 : public DisplayConfigurator::TouchscreenDelegate {
   // DisplayConfigurator::TouchscreenDelegate implementation:
   virtual void AssociateTouchscreens(
       DisplayConfigurator::DisplayStateList* outputs) OVERRIDE;
-  virtual void ConfigureCTM(
-      int touch_device_id,
-      const DisplayConfigurator::CoordinateTransformation& ctm) OVERRIDE;
 
  private:
   Display* display_;

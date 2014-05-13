@@ -39,6 +39,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/device_list_cache_x.h"
@@ -102,6 +103,138 @@ bool default_override_redirect = false;
 
 }  // namespace
 
+namespace internal {
+
+// TODO(miletus) : Move this into DeviceDataManager.
+// Accomplishes 2 tasks concerning touch event calibration:
+// 1. Being a message-pump observer,
+//    routes all the touch events to the X root window,
+//    where they can be calibrated later.
+// 2. Has the Calibrate method that does the actual bezel calibration,
+//    when invoked from X root window's event dispatcher.
+class TouchEventCalibrate : public ui::PlatformEventObserver {
+ public:
+  TouchEventCalibrate() : left_(0), right_(0), top_(0), bottom_(0) {
+    if (ui::PlatformEventSource::GetInstance())
+      ui::PlatformEventSource::GetInstance()->AddPlatformEventObserver(this);
+#if defined(USE_XI2_MT)
+    std::vector<std::string> parts;
+    if (Tokenize(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                     switches::kTouchCalibration),
+                 ",",
+                 &parts) >= 4) {
+      if (!base::StringToInt(parts[0], &left_))
+        DLOG(ERROR) << "Incorrect left border calibration value passed.";
+      if (!base::StringToInt(parts[1], &right_))
+        DLOG(ERROR) << "Incorrect right border calibration value passed.";
+      if (!base::StringToInt(parts[2], &top_))
+        DLOG(ERROR) << "Incorrect top border calibration value passed.";
+      if (!base::StringToInt(parts[3], &bottom_))
+        DLOG(ERROR) << "Incorrect bottom border calibration value passed.";
+    }
+#endif  // defined(USE_XI2_MT)
+  }
+
+  virtual ~TouchEventCalibrate() {
+    if (ui::PlatformEventSource::GetInstance())
+      ui::PlatformEventSource::GetInstance()->RemovePlatformEventObserver(this);
+  }
+
+  // Modify the location of the |event|,
+  // expanding it from |bounds| to (|bounds| + bezels).
+  // Required when touchscreen is bigger than screen (i.e. has bezels),
+  // because we receive events in touchscreen coordinates,
+  // which need to be expanded when converting to screen coordinates,
+  // so that location on bezels will be outside of screen area.
+  void Calibrate(ui::TouchEvent* event, const gfx::Rect& bounds) {
+#if defined(USE_XI2_MT)
+    int x = event->x();
+    int y = event->y();
+
+    if (!left_ && !right_ && !top_ && !bottom_)
+      return;
+
+    const int resolution_x = bounds.width();
+    const int resolution_y = bounds.height();
+    // The "grace area" (10% in this case) is to make it easier for the user to
+    // navigate to the corner.
+    const double kGraceAreaFraction = 0.1;
+    if (left_ || right_) {
+      // Offset the x position to the real
+      x -= left_;
+      // Check if we are in the grace area of the left side.
+      // Note: We might not want to do this when the gesture is locked?
+      if (x < 0 && x > -left_ * kGraceAreaFraction)
+        x = 0;
+      // Check if we are in the grace area of the right side.
+      // Note: We might not want to do this when the gesture is locked?
+      if (x > resolution_x - left_ &&
+          x < resolution_x - left_ + right_ * kGraceAreaFraction)
+        x = resolution_x - left_;
+      // Scale the screen area back to the full resolution of the screen.
+      x = (x * resolution_x) / (resolution_x - (right_ + left_));
+    }
+    if (top_ || bottom_) {
+      // When there is a top bezel we add our border,
+      y -= top_;
+
+      // Check if we are in the grace area of the top side.
+      // Note: We might not want to do this when the gesture is locked?
+      if (y < 0 && y > -top_ * kGraceAreaFraction)
+        y = 0;
+
+      // Check if we are in the grace area of the bottom side.
+      // Note: We might not want to do this when the gesture is locked?
+      if (y > resolution_y - top_ &&
+          y < resolution_y - top_ + bottom_ * kGraceAreaFraction)
+        y = resolution_y - top_;
+      // Scale the screen area back to the full resolution of the screen.
+      y = (y * resolution_y) / (resolution_y - (bottom_ + top_));
+    }
+
+    // Set the modified coordinate back to the event.
+    if (event->root_location() == event->location()) {
+      // Usually those will be equal,
+      // if not, I am not sure what the correct value should be.
+      event->set_root_location(gfx::Point(x, y));
+    }
+    event->set_location(gfx::Point(x, y));
+#endif  // defined(USE_XI2_MT)
+  }
+
+ private:
+  // ui::PlatformEventObserver:
+  virtual void WillProcessEvent(const ui::PlatformEvent& event) OVERRIDE {
+#if defined(USE_XI2_MT)
+    if (event->type == GenericEvent &&
+        (event->xgeneric.evtype == XI_TouchBegin ||
+         event->xgeneric.evtype == XI_TouchUpdate ||
+         event->xgeneric.evtype == XI_TouchEnd)) {
+      XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(event->xcookie.data);
+      LOG(ERROR) << "Raw " << xievent->event_x << " " << xievent->event_y
+                 << " " << xievent->root_x << " " << xievent->root_y;
+      xievent->event = xievent->root;
+      xievent->event_x = xievent->root_x;
+      xievent->event_y = xievent->root_y;
+    }
+#endif  // defined(USE_XI2_MT)
+  }
+
+  virtual void DidProcessEvent(const ui::PlatformEvent& event) OVERRIDE {}
+
+  // The difference in screen's native resolution pixels between
+  // the border of the touchscreen and the border of the screen,
+  // aka bezel sizes.
+  int left_;
+  int right_;
+  int top_;
+  int bottom_;
+
+  DISALLOW_COPY_AND_ASSIGN(TouchEventCalibrate);
+};
+
+}  // namespace internal
+
 ////////////////////////////////////////////////////////////////////////////////
 // WindowTreeHostX11
 
@@ -112,6 +245,7 @@ WindowTreeHostX11::WindowTreeHostX11(const gfx::Rect& bounds)
       current_cursor_(ui::kCursorNull),
       window_mapped_(false),
       bounds_(bounds),
+      touch_calibrate_(new internal::TouchEventCalibrate),
       atom_cache_(xdisplay_, kAtomsToCache) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
@@ -498,6 +632,7 @@ ui::EventProcessor* WindowTreeHostX11::GetEventProcessor() {
 void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   XEvent* xev = event;
+  XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev->xcookie.data);
   if (!factory->ShouldProcessXI2Event(xev))
     return;
 
@@ -515,19 +650,11 @@ void WindowTreeHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
-#if defined(OS_CHROMEOS)
-      // Bail out early before generating a ui::TouchEvent if this event
-      // is not within the range of this RootWindow. Converting an xevent
-      // to ui::TouchEvent might change the state of the global touch tracking
-      // state, e.g. touch release event can remove the touch id from the
-      // record, and doing this multiple time when there are multiple
-      // RootWindow will cause problem. So only generate the ui::TouchEvent
-      // when we are sure it belongs to this RootWindow.
-      if (base::SysInfo::IsRunningOnChromeOS() &&
-          !bounds().Contains(ui::EventLocationFromNative(xev)))
-        return;
-#endif
       ui::TouchEvent touchev(xev);
+      if (ui::DeviceDataManager::GetInstance()->TouchEventNeedsCalibrate(
+              xiev->deviceid)) {
+        touch_calibrate_->Calibrate(&touchev, bounds_);
+      }
       TranslateAndDispatchLocatedEvent(&touchev);
       break;
     }

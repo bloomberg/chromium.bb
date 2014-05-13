@@ -41,6 +41,7 @@ component("events_base") {
     ":dom4_keycode_converter",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -239,6 +240,7 @@ source_set("events_test_support") {
   ]
 
   deps = [
+    "//skia",
     ":events_base",
     ":events",
   ]
@@ -300,6 +302,7 @@ test("events_unittests") {
     ":gesture_detection",
     "//base",
     "//base/test:run_all_unittests",
+    "//skia",
     "//testing/gtest",
     "//ui/gfx:gfx_test_support",
   ]

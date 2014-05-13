@@ -89,12 +89,6 @@ int GetDisplayPower(
 
 }  // namespace
 
-DisplayConfigurator::CoordinateTransformation::CoordinateTransformation()
-    : x_scale(1.0),
-      x_offset(0.0),
-      y_scale(1.0),
-      y_offset(0.0) {}
-
 DisplayConfigurator::DisplayState::DisplayState()
     : display(NULL),
       touch_device_id(0),
@@ -796,11 +790,8 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
         DisplayState* state = &cached_displays_[i];
         new_mode[i] = display_power[i] ? state->mirror_mode : NULL;
         if (state->touch_device_id) {
-          // CTM needs to be calculated if aspect preserving scaling is used.
-          // Otherwise, assume it is full screen, and use identity CTM.
           if (state->mirror_mode != state->display->native_mode() &&
               state->display->is_aspect_preserving_scaling()) {
-            state->transform = GetMirrorModeCTM(*state);
             mirrored_display_area_ratio_map_[state->touch_device_id] =
                 GetMirroredDisplayAreaRatio(*state);
           }
@@ -832,12 +823,6 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
         size.set_width(std::max<int>(size.width(), mode_info->size().width()));
         size.set_height(size.height() + (size.height() ? kVerticalGap : 0) +
                         mode_info->size().height());
-      }
-
-      for (size_t i = 0; i < cached_displays_.size(); ++i) {
-        DisplayState* state = &cached_displays_[i];
-        if (state->touch_device_id)
-          state->transform = GetExtendedModeCTM(*state, new_origins[i], size);
       }
       break;
     }
@@ -886,13 +871,8 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
           break;
       }
 
-      if (configure_succeeded) {
-        if (state.touch_device_id)
-          touchscreen_delegate_->ConfigureCTM(state.touch_device_id,
-                                              state.transform);
-      } else {
+      if (!configure_succeeded)
         all_succeeded = false;
-      }
 
       // If we are trying to set mirror mode and one of the modesets fails,
       // then the two monitors will be mis-matched.  In this case, return
@@ -907,6 +887,7 @@ bool DisplayConfigurator::EnterState(MultipleDisplayState display_state,
   if (all_succeeded) {
     display_state_ = display_state;
     power_state_ = power_state;
+    framebuffer_size_ = size;
   }
   return all_succeeded;
 }
@@ -943,82 +924,6 @@ MultipleDisplayState DisplayConfigurator::ChooseDisplayState(
       NOTREACHED();
   }
   return MULTIPLE_DISPLAY_STATE_INVALID;
-}
-
-DisplayConfigurator::CoordinateTransformation
-DisplayConfigurator::GetMirrorModeCTM(const DisplayState& display_state) {
-  CoordinateTransformation ctm;  // Default to identity
-  const DisplayMode* native_mode_info = display_state.display->native_mode();
-  const DisplayMode* mirror_mode_info = display_state.mirror_mode;
-
-  if (!native_mode_info || !mirror_mode_info ||
-      native_mode_info->size().height() == 0 ||
-      mirror_mode_info->size().height() == 0 ||
-      native_mode_info->size().width() == 0 ||
-      mirror_mode_info->size().width() == 0)
-    return ctm;
-
-  float native_mode_ar = static_cast<float>(native_mode_info->size().width()) /
-                         static_cast<float>(native_mode_info->size().height());
-  float mirror_mode_ar = static_cast<float>(mirror_mode_info->size().width()) /
-                         static_cast<float>(mirror_mode_info->size().height());
-
-  if (mirror_mode_ar > native_mode_ar) {  // Letterboxing
-    ctm.x_scale = 1.0;
-    ctm.x_offset = 0.0;
-    ctm.y_scale = mirror_mode_ar / native_mode_ar;
-    ctm.y_offset = (native_mode_ar / mirror_mode_ar - 1.0) * 0.5;
-    return ctm;
-  }
-  if (native_mode_ar > mirror_mode_ar) {  // Pillarboxing
-    ctm.y_scale = 1.0;
-    ctm.y_offset = 0.0;
-    ctm.x_scale = native_mode_ar / mirror_mode_ar;
-    ctm.x_offset = (mirror_mode_ar / native_mode_ar - 1.0) * 0.5;
-    return ctm;
-  }
-
-  return ctm;  // Same aspect ratio - return identity
-}
-
-DisplayConfigurator::CoordinateTransformation
-DisplayConfigurator::GetExtendedModeCTM(const DisplayState& display_state,
-                                        const gfx::Point& new_origin,
-                                        const gfx::Size& framebuffer_size) {
-  CoordinateTransformation ctm;  // Default to identity
-  const DisplayMode* mode_info = display_state.selected_mode;
-  DCHECK(mode_info);
-  if (!mode_info)
-    return ctm;
-  // An example of how to calculate the CTM.
-  // Suppose we have 2 monitors, the first one has size 1366 x 768.
-  // The second one has size 2560 x 1600
-  // The total size of framebuffer is 2560 x 2428
-  // where 2428 = 768 + 60 (hidden gap) + 1600
-  // and the sceond monitor is translated to Point (0, 828) in the
-  // framebuffer.
-  // X will first map input event location to [0, 2560) x [0, 2428),
-  // then apply CTM on it.
-  // So to compute CTM, for monitor1, we have
-  // x_scale = (1366 - 1) / (2560 - 1)
-  // x_offset = 0 / (2560 - 1)
-  // y_scale = (768 - 1) / (2428 - 1)
-  // y_offset = 0 / (2428 -1)
-  // For Monitor 2, we have
-  // x_scale = (2560 - 1) / (2560 - 1)
-  // x_offset = 0 / (2560 - 1)
-  // y_scale = (1600 - 1) / (2428 - 1)
-  // y_offset = 828 / (2428 -1)
-  // See the unittest DisplayConfiguratorTest.CTMForMultiScreens.
-  ctm.x_scale = static_cast<float>(mode_info->size().width() - 1) /
-                (framebuffer_size.width() - 1);
-  ctm.x_offset =
-      static_cast<float>(new_origin.x()) / (framebuffer_size.width() - 1);
-  ctm.y_scale = static_cast<float>(mode_info->size().height() - 1) /
-                (framebuffer_size.height() - 1);
-  ctm.y_offset =
-      static_cast<float>(new_origin.y()) / (framebuffer_size.height() - 1);
-  return ctm;
 }
 
 float DisplayConfigurator::GetMirroredDisplayAreaRatio(

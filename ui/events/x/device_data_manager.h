@@ -20,8 +20,12 @@
 
 #include "base/basictypes.h"
 #include "base/event_types.h"
+#include "base/memory/scoped_ptr.h"
+#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_base_export.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/transform.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -217,6 +221,14 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
                               DataType type,
                               double value);
 
+  void ClearTouchTransformerRecord();
+  void UpdateTouchInfoForDisplay(int64 display_id,
+                                 int touch_device_id,
+                                 const gfx::Transform& touch_transformer);
+  void ApplyTouchTransformer(int touch_device_id, float* x, float* y);
+  int64 GetDisplayForTouchDevice(int touch_device_id) const;
+  bool TouchEventNeedsCalibrate(int touch_device_id) const;
+
  private:
   // Requirement for Singleton.
   friend struct DefaultSingletonTraits<DeviceDataManager>;
@@ -235,6 +247,8 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
                                   int end_valuator,
                                   double min_value,
                                   double max_value);
+
+  bool IsTouchDeviceIdValid(int touch_device_id) const;
 
   static const int kMaxDeviceNum = 128;
   static const int kMaxXIEventType = XI_LASTEVENT + 1;
@@ -281,6 +295,11 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
 
   unsigned char button_map_[256];
   int button_map_count_;
+
+  // Table to keep track of which display id is mapped to which touch device.
+  int64 touch_device_to_display_map_[kMaxDeviceNum];
+  // Index table to find the TouchTransformer for a touch device.
+  gfx::Transform touch_device_transformer_map_[kMaxDeviceNum];
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManager);
 };

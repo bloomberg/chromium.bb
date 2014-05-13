@@ -18,9 +18,6 @@ class TouchscreenDelegateOzone
   // DisplayConfigurator::TouchscreenDelegate overrides:
   virtual void AssociateTouchscreens(
       std::vector<DisplayConfigurator::DisplayState>* outputs) OVERRIDE;
-  virtual void ConfigureCTM(
-      int touch_device_id,
-      const DisplayConfigurator::CoordinateTransformation& ctm) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TouchscreenDelegateOzone);

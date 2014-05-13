@@ -103,6 +103,9 @@ class ASH_EXPORT DisplayInfo {
   }
   gfx::Display::TouchSupport touch_support() const { return touch_support_; }
 
+  void set_touch_device_id(int id) { touch_device_id_ = id; }
+  int touch_device_id() const { return touch_device_id_; }
+
   // Gets/Sets the device scale factor of the display.
   float device_scale_factor() const { return device_scale_factor_; }
   void set_device_scale_factor(float scale) { device_scale_factor_ = scale; }
@@ -200,6 +203,10 @@ class ASH_EXPORT DisplayInfo {
   bool has_overscan_;
   gfx::Display::Rotation rotation_;
   gfx::Display::TouchSupport touch_support_;
+
+  // If the display is also a touch device, it will have a positive
+  // |touch_device_id_|. Otherwise |touch_device_id_| is 0.
+  int touch_device_id_;
 
   // This specifies the device's pixel density. (For example, a
   // display whose DPI is higher than the threshold is considered to have

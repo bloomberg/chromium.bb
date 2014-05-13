@@ -10,9 +10,13 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/sys_info.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/event_switches.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
+#include "ui/gfx/display.h"
+#include "ui/gfx/point3_f.h"
 #include "ui/gfx/x/x11_types.h"
 
 // XIScrollClass was introduced in XI 2.1 so we need to define it here
@@ -120,6 +124,8 @@ DeviceDataManager::DeviceDataManager()
   CHECK(arraysize(kCachedAtoms) == static_cast<size_t>(DT_LAST_ENTRY) + 1);
   UpdateDeviceList(gfx::GetXDisplay());
   UpdateButtonMap();
+  for (int i = 0; i < kMaxDeviceNum; i++)
+    touch_device_to_display_map_[i] = gfx::Display::kInvalidDisplayID;
 }
 
 DeviceDataManager::~DeviceDataManager() {
@@ -632,6 +638,56 @@ void DeviceDataManager::InitializeValuatorsForTest(int deviceid,
     valuator_max_[deviceid][j] = max_value;
     valuator_count_[deviceid]++;
   }
+}
+
+bool DeviceDataManager::TouchEventNeedsCalibrate(int touch_device_id) const {
+#if defined(OS_CHROMEOS) && defined(USE_XI2_MT)
+  int64 touch_display_id = GetDisplayForTouchDevice(touch_device_id);
+  if (base::SysInfo::IsRunningOnChromeOS() &&
+      touch_display_id == gfx::Display::InternalDisplayId()) {
+    return true;
+  }
+#endif  // defined(OS_CHROMEOS) && defined(USE_XI2_MT)
+  return false;
+}
+
+void DeviceDataManager::ClearTouchTransformerRecord() {
+  for (int i = 0; i < kMaxDeviceNum; i++) {
+    touch_device_transformer_map_[i] = gfx::Transform();
+    touch_device_to_display_map_[i] = gfx::Display::kInvalidDisplayID;
+  }
+}
+
+bool DeviceDataManager::IsTouchDeviceIdValid(int touch_device_id) const {
+  return (touch_device_id > 0 && touch_device_id < kMaxDeviceNum);
+}
+
+void DeviceDataManager::UpdateTouchInfoForDisplay(
+    int64 display_id,
+    int touch_device_id,
+    const gfx::Transform& touch_transformer) {
+  if (IsTouchDeviceIdValid(touch_device_id)) {
+    touch_device_to_display_map_[touch_device_id] = display_id;
+    touch_device_transformer_map_[touch_device_id] = touch_transformer;
+  }
+}
+
+void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
+                                              float* x, float* y) {
+  if (IsTouchDeviceIdValid(touch_device_id)) {
+    gfx::Point3F point(*x, *y, 0.0);
+    const gfx::Transform& trans =
+        touch_device_transformer_map_[touch_device_id];
+    trans.TransformPoint(&point);
+    *x = point.x();
+    *y = point.y();
+  }
+}
+
+int64 DeviceDataManager::GetDisplayForTouchDevice(int touch_device_id) const {
+  if (IsTouchDeviceIdValid(touch_device_id))
+    return touch_device_to_display_map_[touch_device_id];
+  return gfx::Display::kInvalidDisplayID;
 }
 
 }  // namespace ui

@@ -15,10 +15,4 @@ void TouchscreenDelegateOzone::AssociateTouchscreens(
   NOTIMPLEMENTED();
 }
 
-void TouchscreenDelegateOzone::ConfigureCTM(
-    int touch_device_id,
-    const DisplayConfigurator::CoordinateTransformation& ctm) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace ui

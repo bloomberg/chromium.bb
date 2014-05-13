@@ -464,11 +464,6 @@ TouchEvent::~TouchEvent() {
     ClearTouchIdIfReleased(native_event());
 }
 
-void TouchEvent::Relocate(const gfx::Point& origin) {
-  location_ -= origin.OffsetFromOrigin();
-  root_location_ -= origin.OffsetFromOrigin();
-}
-
 void TouchEvent::UpdateForRootTransform(
     const gfx::Transform& inverted_root_transform) {
   LocatedEvent::UpdateForRootTransform(inverted_root_transform);

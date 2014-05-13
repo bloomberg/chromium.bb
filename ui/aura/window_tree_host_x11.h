@@ -64,7 +64,7 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   // Called when X Configure Notify event is recevied.
   virtual void OnConfigureNotify();
 
-  // Translates the native mouse location into screen coordinates and and
+  // Translates the native mouse location into screen coordinates and
   // dispatches the event via WindowEventDispatcher.
   virtual void TranslateAndDispatchLocatedEvent(ui::LocatedEvent* event);
 
@@ -98,6 +98,8 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
+
+  scoped_ptr<internal::TouchEventCalibrate> touch_calibrate_;
 
   ui::X11AtomCache atom_cache_;
 
