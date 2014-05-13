@@ -382,6 +382,8 @@
         'browser/chromeos/file_system_provider/observer.h',
         'browser/chromeos/file_system_provider/operations/get_metadata.cc',
         'browser/chromeos/file_system_provider/operations/get_metadata.h',
+        'browser/chromeos/file_system_provider/operations/open_file.cc',
+        'browser/chromeos/file_system_provider/operations/open_file.h',
         'browser/chromeos/file_system_provider/operations/operation.cc',
         'browser/chromeos/file_system_provider/operations/operation.h',
         'browser/chromeos/file_system_provider/operations/read_directory.cc',

@@ -6,6 +6,7 @@
 
 #include "base/files/file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/read_directory.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/unmount.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
@@ -29,9 +30,8 @@ ProvidedFileSystem::~ProvidedFileSystem() {}
 void ProvidedFileSystem::RequestUnmount(
     const fileapi::AsyncFileUtil::StatusCallback& callback) {
   if (!request_manager_.CreateRequest(
-          make_scoped_ptr<RequestManager::HandlerInterface>(
-              new operations::Unmount(
-                  event_router_, file_system_info_, callback)))) {
+          scoped_ptr<RequestManager::HandlerInterface>(new operations::Unmount(
+              event_router_, file_system_info_, callback)))) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 }
@@ -40,7 +40,7 @@ void ProvidedFileSystem::GetMetadata(
     const base::FilePath& entry_path,
     const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) {
   if (!request_manager_.CreateRequest(
-          make_scoped_ptr<RequestManager::HandlerInterface>(
+          scoped_ptr<RequestManager::HandlerInterface>(
               new operations::GetMetadata(
                   event_router_, file_system_info_, entry_path, callback)))) {
     callback.Run(base::File::FILE_ERROR_SECURITY, base::File::Info());
@@ -50,12 +50,36 @@ void ProvidedFileSystem::GetMetadata(
 void ProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) {
-  if (!request_manager_.CreateRequest(make_scoped_ptr<
+  if (!request_manager_.CreateRequest(scoped_ptr<
           RequestManager::HandlerInterface>(new operations::ReadDirectory(
           event_router_, file_system_info_, directory_path, callback)))) {
     callback.Run(base::File::FILE_ERROR_SECURITY,
                  fileapi::AsyncFileUtil::EntryList(),
                  false /* has_more */);
+  }
+}
+
+void ProvidedFileSystem::OpenFile(
+    const base::FilePath& file_path,
+    OpenFileMode mode,
+    bool create,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  // Writing is not supported. Note, that this includes a situation, when a file
+  // exists, but |create| is set to true.
+  if (mode == OPEN_FILE_MODE_WRITE || create) {
+    callback.Run(base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  if (!request_manager_.CreateRequest(
+          scoped_ptr<RequestManager::HandlerInterface>(
+              new operations::OpenFile(event_router_,
+                                       file_system_info_,
+                                       file_path,
+                                       mode,
+                                       create,
+                                       callback)))) {
+    callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 }
 

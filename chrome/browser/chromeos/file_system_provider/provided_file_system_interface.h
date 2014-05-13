@@ -24,6 +24,9 @@ class RequestManager;
 // TODO(mtomasz): Add more methods once implemented.
 class ProvidedFileSystemInterface {
  public:
+  // Mode of opening a file. Used by OpenFile().
+  enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
+
   virtual ~ProvidedFileSystemInterface() {}
 
   // Requests unmounting of the file system. The callback is called when the
@@ -42,6 +45,14 @@ class ProvidedFileSystemInterface {
   virtual void ReadDirectory(
       const base::FilePath& directory_path,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
+
+  // Requests opening a file at |file_path|. If |create| is set to true, it will
+  // create a file and return succes in case it didn't exist.
+  virtual void OpenFile(
+      const base::FilePath& file_path,
+      OpenFileMode mode,
+      bool create,
+      const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;

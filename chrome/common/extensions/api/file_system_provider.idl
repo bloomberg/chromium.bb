@@ -29,6 +29,12 @@ namespace fileSystemProvider {
     IO
   };
 
+  // Mode of opening a file. Used by <code>onOpenFileRequested</code>.
+  enum OpenFileMode {
+    READ,
+    WRITE
+  };
+
   // Represents metadata of a file or a directory.
   dictionary EntryMetadata {
     // True if it is a directory.
@@ -116,7 +122,7 @@ namespace fileSystemProvider {
         long fileSystemId,
         DOMString entryPath,
         MetadataCallback successCallback,
-        ErrorCallback errorCallback);
+        ProviderErrorCallback errorCallback);
 
     // Raised when contents of a directory at <code>directoryPath</code> are
     // requested. The results should be returned in chunks by calling the <code>
@@ -126,7 +132,18 @@ namespace fileSystemProvider {
         long fileSystemId,
         DOMString directoryPath,
         EntriesCallback successCallback,
-        ErrorCallback errorCallback);
+        ProviderErrorCallback errorCallback);
+
+    // Raised when opening a file at <code>filePath</code> is requested.
+    // If <code>create</code> is set to <code>true</code> and the file does not
+    // exist, then it should be created.
+    [maxListeners=1] static void onOpenFileRequested(
+        long fileSystemId,
+        DOMString filePath,
+        OpenFileMode mode,
+        boolean create,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
   };
 };
 

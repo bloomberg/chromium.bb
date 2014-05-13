@@ -102,6 +102,30 @@ class FileSystemProviderInternalReadDirectoryRequestedErrorFunction
   virtual bool RunWhenValid() OVERRIDE;
 };
 
+class FileSystemProviderInternalOpenFileRequestedSuccessFunction
+    : public FileSystemProviderInternalFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.openFileRequestedSuccess",
+      FILESYSTEMPROVIDERINTERNAL_OPENFILEREQUESTEDSUCCESS)
+
+ protected:
+  virtual ~FileSystemProviderInternalOpenFileRequestedSuccessFunction() {}
+  virtual bool RunWhenValid() OVERRIDE;
+};
+
+class FileSystemProviderInternalOpenFileRequestedErrorFunction
+    : public FileSystemProviderInternalFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.openFileRequestedError",
+      FILESYSTEMPROVIDERINTERNAL_OPENFILEREQUESTEDERROR)
+
+ protected:
+  virtual ~FileSystemProviderInternalOpenFileRequestedErrorFunction() {}
+  virtual bool RunWhenValid() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_API_H_

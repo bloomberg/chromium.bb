@@ -161,4 +161,24 @@ eventBindings.registerArgumentMassager(
           fileSystemId, directoryPath, onSuccessCallback, onErrorCallback]);
     });
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onOpenFileRequested',
+    function(args, dispatch) {
+      var fileSystemId = args[0];
+      var requestId = args[1];
+      var filePath = args[2];
+      var mode = args[3];
+      var create = args[4];
+      var onSuccessCallback = function() {
+        fileSystemProviderInternal.openFileRequestedSuccess(
+            fileSystemId, requestId);
+      };
+      var onErrorCallback = function(error) {
+        fileSystemProviderInternal.openFileRequestedError(
+          fileSystemId, requestId, error);
+      }
+      dispatch([fileSystemId, filePath, mode, create, onSuccessCallback,
+                onErrorCallback]);
+    });
+
 exports.binding = binding.generate();

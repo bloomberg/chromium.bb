@@ -118,6 +118,20 @@ void FakeProvidedFileSystem::ReadDirectory(
   }
 }
 
+void FakeProvidedFileSystem::OpenFile(
+    const base::FilePath& file_path,
+    OpenFileMode mode,
+    bool create,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  if (file_path.AsUTF8Unsafe() != "/hello.txt" ||
+      mode == OPEN_FILE_MODE_WRITE || create) {
+    callback.Run(base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  callback.Run(base::File::FILE_OK);
+}
+
 const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()
     const {
   return file_system_info_;
