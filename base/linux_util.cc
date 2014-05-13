@@ -71,55 +71,6 @@ class LinuxDistroHelper {
 };
 #endif  // if defined(OS_LINUX)
 
-// expected prefix of the target of the /proc/self/fd/%d link for a socket
-const char kSocketLinkPrefix[] = "socket:[";
-
-// Parse a symlink in /proc/pid/fd/$x and return the inode number of the
-// socket.
-//   inode_out: (output) set to the inode number on success
-//   path: e.g. /proc/1234/fd/5 (must be a UNIX domain socket descriptor)
-//   log: if true, log messages about failure details
-bool ProcPathGetInode(ino_t* inode_out, const char* path, bool log = false) {
-  DCHECK(inode_out);
-  DCHECK(path);
-
-  char buf[256];
-  const ssize_t n = readlink(path, buf, sizeof(buf) - 1);
-  if (n == -1) {
-    if (log) {
-      DLOG(WARNING) << "Failed to read the inode number for a socket from /proc"
-                      "(" << errno << ")";
-    }
-    return false;
-  }
-  buf[n] = 0;
-
-  if (memcmp(kSocketLinkPrefix, buf, sizeof(kSocketLinkPrefix) - 1)) {
-    if (log) {
-      DLOG(WARNING) << "The descriptor passed from the crashing process wasn't "
-                      " a UNIX domain socket.";
-    }
-    return false;
-  }
-
-  char* endptr;
-  const unsigned long long int inode_ul =
-      strtoull(buf + sizeof(kSocketLinkPrefix) - 1, &endptr, 10);
-  if (*endptr != ']')
-    return false;
-
-  if (inode_ul == ULLONG_MAX) {
-    if (log) {
-      DLOG(WARNING) << "Failed to parse a socket's inode number: the number "
-                       "was too large. Please report this bug: " << buf;
-    }
-    return false;
-  }
-
-  *inode_out = inode_ul;
-  return true;
-}
-
 }  // namespace
 
 namespace base {
@@ -178,78 +129,6 @@ void SetLinuxDistro(const std::string& distro) {
   std::string trimmed_distro;
   base::TrimWhitespaceASCII(distro, base::TRIM_ALL, &trimmed_distro);
   base::strlcpy(g_linux_distro, trimmed_distro.c_str(), kDistroSize);
-}
-
-bool FileDescriptorGetInode(ino_t* inode_out, int fd) {
-  DCHECK(inode_out);
-
-  struct stat buf;
-  if (fstat(fd, &buf) < 0)
-    return false;
-
-  if (!S_ISSOCK(buf.st_mode))
-    return false;
-
-  *inode_out = buf.st_ino;
-  return true;
-}
-
-bool FindProcessHoldingSocket(pid_t* pid_out, ino_t socket_inode) {
-  DCHECK(pid_out);
-  bool already_found = false;
-
-  DIR* proc = opendir("/proc");
-  if (!proc) {
-    DLOG(WARNING) << "Cannot open /proc";
-    return false;
-  }
-
-  std::vector<pid_t> pids;
-
-  struct dirent* dent;
-  while ((dent = readdir(proc))) {
-    char* endptr;
-    const unsigned long int pid_ul = strtoul(dent->d_name, &endptr, 10);
-    if (pid_ul == ULONG_MAX || *endptr)
-      continue;
-    pids.push_back(pid_ul);
-  }
-  closedir(proc);
-
-  for (std::vector<pid_t>::const_iterator
-       i = pids.begin(); i != pids.end(); ++i) {
-    const pid_t current_pid = *i;
-    char buf[256];
-    snprintf(buf, sizeof(buf), "/proc/%d/fd", current_pid);
-    DIR* fd = opendir(buf);
-    if (!fd)
-      continue;
-
-    while ((dent = readdir(fd))) {
-      if (snprintf(buf, sizeof(buf), "/proc/%d/fd/%s", current_pid,
-                   dent->d_name) >= static_cast<int>(sizeof(buf))) {
-        continue;
-      }
-
-      ino_t fd_inode = static_cast<ino_t>(-1);
-      if (ProcPathGetInode(&fd_inode, buf)) {
-        if (fd_inode == socket_inode) {
-          if (already_found) {
-            closedir(fd);
-            return false;
-          }
-
-          already_found = true;
-          *pid_out = current_pid;
-          break;
-        }
-      }
-    }
-
-    closedir(fd);
-  }
-
-  return already_found;
 }
 
 pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
