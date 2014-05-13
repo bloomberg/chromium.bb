@@ -4,7 +4,7 @@
 
 #include "ash/wm/workspace/two_step_edge_cycler.h"
 
-#include <cmath>
+#include <cstdlib>
 
 namespace ash {
 namespace {
