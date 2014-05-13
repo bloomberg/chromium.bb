@@ -80,6 +80,9 @@ class EmbeddedWorkerDevToolsManager::EmbeddedWorkerDevToolsAgentHost
       host->AddRoute(worker_id_.second, this);
   }
 
+  // DevToolsAgentHost override.
+  virtual bool IsWorker() const OVERRIDE { return true; }
+
   // IPCDevToolsAgentHost implementation.
   virtual void SendMessageToAgent(IPC::Message* message) OVERRIDE {
     if (worker_attached_)

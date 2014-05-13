@@ -51,6 +51,8 @@
         'browser/devtools/device/usb/usb_device_provider.h',
         'browser/devtools/browser_list_tabcontents_provider.cc',
         'browser/devtools/browser_list_tabcontents_provider.h',
+        'browser/devtools/chrome_devtools_manager_delegate.cc',
+        'browser/devtools/chrome_devtools_manager_delegate.h',
         'browser/devtools/devtools_contents_resizing_strategy.cc',
         'browser/devtools/devtools_contents_resizing_strategy.h',
         'browser/devtools/devtools_embedder_message_dispatcher.cc',

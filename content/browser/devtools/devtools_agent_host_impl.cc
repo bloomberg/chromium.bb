@@ -60,6 +60,10 @@ void DevToolsAgentHostImpl::DisconnectRenderViewHost() {}
 
 void DevToolsAgentHostImpl::ConnectRenderViewHost(RenderViewHost* rvh) {}
 
+bool DevToolsAgentHostImpl::IsWorker() const {
+  return false;
+}
+
 void DevToolsAgentHostImpl::NotifyCloseListener() {
   if (close_listener_) {
     scoped_refptr<DevToolsAgentHostImpl> protect(this);

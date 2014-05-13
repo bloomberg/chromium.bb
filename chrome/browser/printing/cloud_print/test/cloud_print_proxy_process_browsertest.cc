@@ -16,11 +16,13 @@
 #include "base/test/test_timeouts.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
 #include "chrome/browser/service_process/service_process_control.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/service_messages.h"
@@ -336,6 +338,8 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
 
   std::string startup_channel_id_;
   scoped_ptr<IPC::ChannelProxy> startup_channel_;
+  scoped_ptr<ChromeContentClient> content_client_;
+  scoped_ptr<chrome::ChromeContentBrowserClient> browser_content_client_;
 
 #if defined(OS_MACOSX)
   base::ScopedTempDir temp_dir_;
@@ -384,6 +388,11 @@ CloudPrintProxyPolicyStartupTest::~CloudPrintProxyPolicyStartupTest() {
 }
 
 void CloudPrintProxyPolicyStartupTest::SetUp() {
+  content_client_.reset(new ChromeContentClient);
+  content::SetContentClient(content_client_.get());
+  browser_content_client_.reset(new chrome::ChromeContentBrowserClient());
+  content::SetBrowserClientForTesting(browser_content_client_.get());
+
   TestingBrowserProcess::CreateInstance();
 #if defined(OS_MACOSX)
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -418,6 +427,10 @@ void CloudPrintProxyPolicyStartupTest::SetUp() {
 }
 
 void CloudPrintProxyPolicyStartupTest::TearDown() {
+  browser_content_client_.reset();
+  content_client_.reset();
+  content::SetContentClient(NULL);
+
   TestingBrowserProcess::DeleteInstance();
 }
 

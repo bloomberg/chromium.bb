@@ -66,6 +66,9 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Attaches render view host to this host.
   virtual void ConnectRenderViewHost(RenderViewHost* rvh) = 0;
 
+  // Returns true if DevToolsAgentHost is for worker.
+  virtual bool IsWorker() const = 0;
+
  protected:
   friend class base::RefCounted<DevToolsAgentHost>;
   virtual ~DevToolsAgentHost() {}

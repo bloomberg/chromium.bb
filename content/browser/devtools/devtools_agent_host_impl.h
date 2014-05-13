@@ -53,6 +53,8 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
 
   virtual void ConnectRenderViewHost(RenderViewHost* rvh) OVERRIDE;
 
+  virtual bool IsWorker() const OVERRIDE;
+
  protected:
   DevToolsAgentHostImpl();
   virtual ~DevToolsAgentHostImpl();

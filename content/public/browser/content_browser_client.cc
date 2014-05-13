@@ -283,6 +283,10 @@ VibrationProvider* ContentBrowserClient::OverrideVibrationProvider() {
   return NULL;
 }
 
+DevToolsManagerDelegate* ContentBrowserClient::GetDevToolsManagerDelegate() {
+  return NULL;
+}
+
 #if defined(OS_WIN)
 const wchar_t* ContentBrowserClient::GetResourceDllName() {
   return NULL;

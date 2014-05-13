@@ -88,6 +88,7 @@ class BrowserPluginGuestDelegate;
 class BrowserPpapiHost;
 class BrowserURLHandler;
 class DesktopNotificationDelegate;
+class DevToolsManagerDelegate;
 class ExternalVideoSurfaceContainer;
 class LocationProvider;
 class MediaObserver;
@@ -592,6 +593,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Contact Viatcheslav Ostapenko at sl.ostapenko@samsung.com for more
   // information.
   virtual VibrationProvider* OverrideVibrationProvider();
+
+  // Creates a new DevToolsManagerDelegate. The caller owns the returned value.
+  // It's valid to return NULL.
+  virtual DevToolsManagerDelegate* GetDevToolsManagerDelegate();
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching

@@ -13,7 +13,9 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 
 namespace content {
 
@@ -27,12 +29,19 @@ DevToolsManagerImpl* DevToolsManagerImpl::GetInstance() {
   return Singleton<DevToolsManagerImpl>::get();
 }
 
-DevToolsManagerImpl::DevToolsManagerImpl() {
+DevToolsManagerImpl::DevToolsManagerImpl()
+    : delegate_(GetContentClient()->browser()->GetDevToolsManagerDelegate()) {
 }
 
 DevToolsManagerImpl::~DevToolsManagerImpl() {
   DCHECK(agent_to_client_host_.empty());
   DCHECK(client_to_agent_host_.empty());
+}
+
+void DevToolsManagerImpl::Inspect(BrowserContext* browser_context,
+                                  DevToolsAgentHost* agent_host) {
+  if (delegate_)
+    delegate_->Inspect(browser_context, agent_host);
 }
 
 DevToolsClientHost* DevToolsManagerImpl::GetDevToolsClientHostFor(

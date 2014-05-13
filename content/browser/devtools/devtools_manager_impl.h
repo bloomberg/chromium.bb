@@ -24,6 +24,8 @@ class Message;
 
 namespace content {
 
+class BrowserContext;
+class DevToolsManagerDelegate;
 class RenderViewHost;
 
 // This class is a singleton that manages DevToolsClientHost instances and
@@ -42,6 +44,9 @@ class CONTENT_EXPORT DevToolsManagerImpl
 
   DevToolsManagerImpl();
   virtual ~DevToolsManagerImpl();
+
+  // Opens the inspector for |agent_host|.
+  void Inspect(BrowserContext* browser_context, DevToolsAgentHost* agent_host);
 
   void DispatchOnInspectorFrontend(DevToolsAgentHost* agent_host,
                                    const std::string& message);
@@ -95,6 +100,8 @@ class CONTENT_EXPORT DevToolsManagerImpl
 
   typedef std::vector<const Callback*> CallbackContainer;
   CallbackContainer callbacks_;
+
+  scoped_ptr<DevToolsManagerDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerImpl);
 };
