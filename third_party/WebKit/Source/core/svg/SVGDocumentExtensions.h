@@ -43,7 +43,7 @@ class SVGSVGElement;
 class Element;
 
 class SVGDocumentExtensions : public NoBaseWillBeGarbageCollectedFinalized<SVGDocumentExtensions> {
-    WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_NONCOPYABLE(SVGDocumentExtensions); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     typedef HashSet<Element*> SVGPendingElements;
     explicit SVGDocumentExtensions(Document*);
