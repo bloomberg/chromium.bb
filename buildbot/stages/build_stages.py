@@ -126,16 +126,7 @@ class InitSDKStage(generic_stages.BuilderStage):
       chroot_replace: If True, force the chroot to be replaced.
     """
     super(InitSDKStage, self).__init__(builder_run, **kwargs)
-    self._env = {}
     self.force_chroot_replace = chroot_replace
-    if self._run.options.clobber:
-      self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
-
-    self._latest_toolchain = (self._run.config.latest_toolchain or
-                              self._run.options.latest_toolchain)
-    if self._latest_toolchain and self._run.config.gcc_githash:
-      self._env['USE'] = 'git_gcc'
-      self._env['GCC_GITHASH'] = self._run.config.gcc_githash
 
   def PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
@@ -158,7 +149,7 @@ class InitSDKStage(generic_stages.BuilderStage):
           replace=replace,
           use_sdk=use_sdk,
           chrome_root=self._run.options.chrome_root,
-          extra_env=self._env)
+          extra_env=self._portage_extra_env)
 
     post_ver = cros_build_lib.GetChrootVersion(chroot=chroot_path)
     if pre_ver is not None and pre_ver != post_ver:
@@ -198,7 +189,7 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
           self._build_root, board=self._current_board, usepkg=usepkg,
           chrome_binhost_only=self._run.config.chrome_binhost_only,
           force=self._run.config.board_replace,
-          extra_env=self._env, chroot_upgrade=chroot_upgrade,
+          extra_env=self._portage_extra_env, chroot_upgrade=chroot_upgrade,
           profile=self._run.options.profile or self._run.config.profile)
 
 
@@ -220,16 +211,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     elif pgo_use:
       self.name += ' [%s]' % constants.USE_PGO_USE
       useflags.append(constants.USE_PGO_USE)
-
-    self._env = {}
-    if useflags:
-      self._env['USE'] = ' '.join(useflags)
-
-    if self._run.options.chrome_root:
-      self._env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
-
-    if self._run.options.clobber:
-      self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
   def _GetArchitectures(self):
     """Get the list of architectures built by this builder."""
@@ -254,7 +235,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                    skip_chroot_upgrade=True,
                    chrome_root=self._run.options.chrome_root,
                    noworkon=noworkon,
-                   extra_env=self._env)
+                   extra_env=self._portage_extra_env)
 
 
 class BuildImageStage(BuildPackagesStage):
@@ -285,7 +266,7 @@ class BuildImageStage(BuildPackagesStage):
                         rootfs_verification=rootfs_verification,
                         version=version,
                         disk_layout=disk_layout,
-                        extra_env=self._env)
+                        extra_env=self._portage_extra_env)
 
     # Update link to latest image.
     latest_image = os.readlink(self.GetImageDirSymlink('latest'))
@@ -306,14 +287,14 @@ class BuildImageStage(BuildPackagesStage):
           self._build_root,
           self._current_board,
           disk_layout=self._run.config.disk_vm_layout,
-          extra_env=self._env)
+          extra_env=self._portage_extra_env)
 
   def _GenerateAuZip(self, image_dir):
     """Create au-generator.zip."""
     if not self._pgo_generate:
       commands.GenerateAuZip(self._build_root,
                              image_dir,
-                             extra_env=self._env)
+                             extra_env=self._portage_extra_env)
 
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""

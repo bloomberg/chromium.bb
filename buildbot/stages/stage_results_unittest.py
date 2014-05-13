@@ -140,6 +140,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     options.buildnumber = 1234
     options.chrome_rev = None
     options.branch = 'dontcare'
+    options.chrome_root = False
 
     self._manager = parallel.Manager()
     self._manager.__enter__()

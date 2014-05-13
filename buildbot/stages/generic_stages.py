@@ -16,6 +16,7 @@ import traceback
 # We import mox so that we can identify mox exceptions and pass them through
 # in our exception handling code.
 try:
+  # pylint: disable=F0401
   import mox
 except ImportError:
   mox = None
@@ -105,6 +106,25 @@ class BuilderStage(object):
     self._chrome_rev = self._run.config.chrome_rev
     if self._run.options.chrome_rev:
       self._chrome_rev = self._run.options.chrome_rev
+
+    # USE and enviroment variable settings.
+    self._portage_extra_env = {}
+    useflags = self._run.config.useflags[:]
+
+    if self._run.options.clobber:
+      self._portage_extra_env['IGNORE_PREFLIGHT_BINHOST'] = '1'
+
+    if self._run.options.chrome_root:
+      self._portage_extra_env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
+
+    self._latest_toolchain = (self._run.config.latest_toolchain or
+                              self._run.options.latest_toolchain)
+    if self._latest_toolchain and self._run.config.gcc_githash:
+      useflags.append('git_gcc')
+      self._portage_extra_env['GCC_GITHASH'] = self._run.config.gcc_githash
+
+    if useflags:
+      self._portage_extra_env['USE'] = ' '.join(useflags)
 
   def GetStageNames(self):
     """Get a list of the places where this stage has recorded results."""

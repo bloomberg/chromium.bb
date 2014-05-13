@@ -111,7 +111,8 @@ class SDKTestStage(generic_stages.BuilderStage):
     # Build a new SDK using the provided tarball.
     cmd = new_chroot_cmd + ['--download', '--replace', '--nousepkg',
         '--url', 'file://' + tarball_location]
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root)
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root,
+                              extra_env=self._portage_extra_env)
 
     for board in self._boards:
       cros_build_lib.PrintBuildbotStepText(board)
@@ -120,4 +121,5 @@ class SDKTestStage(generic_stages.BuilderStage):
       cros_build_lib.RunCommand(cmd, cwd=self._build_root)
       cmd = new_chroot_cmd + ['--', './build_packages',
           '--board', board, '--nousepkg', '--skip_chroot_upgrade']
-      cros_build_lib.RunCommand(cmd, cwd=self._build_root)
+      cros_build_lib.RunCommand(cmd, cwd=self._build_root,
+                                extra_env=self._portage_extra_env)
