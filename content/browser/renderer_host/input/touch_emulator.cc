@@ -163,8 +163,8 @@ bool TouchEmulator::HandleMouseWheelEvent(const WebMouseWheelEvent& event) {
   if (!enabled_)
     return false;
 
-  // No mouse wheel events for the renderer.
-  return true;
+  // Send mouse wheel for easy scrolling when there is no active touch.
+  return touch_active_;
 }
 
 bool TouchEmulator::HandleKeyboardEvent(const WebKeyboardEvent& event) {
@@ -351,6 +351,7 @@ bool TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
       break;
     case WebInputEvent::MouseUp:
       eventType = WebInputEvent::TouchEnd;
+      touch_active_ = false;
       break;
     default:
       eventType = WebInputEvent::Undefined;
