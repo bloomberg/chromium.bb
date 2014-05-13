@@ -76,7 +76,7 @@ class ThemeService : public base::NonThreadSafe,
   virtual gfx::Image GetImageNamed(int id) const;
 
   // Overridden from ui::ThemeProvider:
-  virtual bool UsingNativeTheme() const OVERRIDE;
+  virtual bool UsingSystemTheme() const OVERRIDE;
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE;
   virtual SkColor GetColor(int id) const OVERRIDE;
   virtual int GetDisplayProperty(int id) const OVERRIDE;
@@ -106,9 +106,9 @@ class ThemeService : public base::NonThreadSafe,
   // Reset the theme to default.
   virtual void UseDefaultTheme();
 
-  // Set the current theme to the native theme. On some platforms, the native
+  // Set the current theme to the system theme. On some platforms, the system
   // theme is the default theme.
-  virtual void SetNativeTheme();
+  virtual void UseSystemTheme();
 
   // Whether we're using the chrome default theme. Virtual so linux can check
   // if we're using the GTK theme.
@@ -143,8 +143,8 @@ class ThemeService : public base::NonThreadSafe,
   virtual void SetCustomDefaultTheme(
       scoped_refptr<CustomThemeSupplier> theme_supplier);
 
-  // Returns true if the ThemeService should use the native theme on startup.
-  virtual bool ShouldInitWithNativeTheme() const;
+  // Returns true if the ThemeService should use the system theme on startup.
+  virtual bool ShouldInitWithSystemTheme() const;
 
   // Get the specified tint - |id| is one of the TINT_* enum values.
   color_utils::HSL GetTint(int id) const;

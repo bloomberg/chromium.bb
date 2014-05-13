@@ -13,7 +13,7 @@ DefaultThemeProvider::DefaultThemeProvider() {}
 
 DefaultThemeProvider::~DefaultThemeProvider() {}
 
-bool DefaultThemeProvider::UsingNativeTheme() const {
+bool DefaultThemeProvider::UsingSystemTheme() const {
   return true;
 }
 

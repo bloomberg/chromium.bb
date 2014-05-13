@@ -17,10 +17,10 @@ class OpaqueBrowserFrameViewPlatformSpecific {
   // Returns whether we're using native system like rendering for theme
   // elements.
   //
-  // Why not just ask ThemeService::UsingNativeTheme()? Because on Windows, the
-  // default theme is UsingNativeTheme(). Therefore, the default implementation
+  // Why not just ask ThemeService::UsingSystemTheme()? Because on Windows, the
+  // default theme is UsingSystemTheme(). Therefore, the default implementation
   // always returns false and we specifically override this on Linux.
-  virtual bool IsUsingNativeTheme();
+  virtual bool IsUsingSystemTheme();
 
   // Builds an observer for |view| and |layout|.
   static OpaqueBrowserFrameViewPlatformSpecific* Create(

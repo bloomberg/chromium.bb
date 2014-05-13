@@ -191,7 +191,7 @@ std::string UIThreadSearchTermsData::NTPIsThemedParam() const {
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
   // NTP is considered themed if the theme is not default and not native (GTK+).
   if (theme_service && !theme_service->UsingDefaultTheme() &&
-      !theme_service->UsingNativeTheme())
+      !theme_service->UsingSystemTheme())
     return "es_th=1&";
 #endif  // defined(ENABLE_THEMES)
 

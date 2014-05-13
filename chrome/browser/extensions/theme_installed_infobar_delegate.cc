@@ -28,7 +28,7 @@ void ThemeInstalledInfoBarDelegate::Create(
     const extensions::Extension* new_theme,
     Profile* profile,
     const std::string& previous_theme_id,
-    bool previous_using_native_theme) {
+    bool previous_using_system_theme) {
   DCHECK(new_theme);
   if (!new_theme->is_theme())
     return;
@@ -52,7 +52,7 @@ void ThemeInstalledInfoBarDelegate::Create(
       ConfirmInfoBarDelegate::CreateInfoBar(scoped_ptr<ConfirmInfoBarDelegate>(
           new ThemeInstalledInfoBarDelegate(
               profile->GetExtensionService(), theme_service, new_theme,
-              previous_theme_id, previous_using_native_theme))));
+              previous_theme_id, previous_using_system_theme))));
 
   // If there's a previous theme infobar, just replace that instead of adding a
   // new one.
@@ -82,14 +82,14 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
     ThemeService* theme_service,
     const extensions::Extension* new_theme,
     const std::string& previous_theme_id,
-    bool previous_using_native_theme)
+    bool previous_using_system_theme)
     : ConfirmInfoBarDelegate(),
       extension_service_(extension_service),
       theme_service_(theme_service),
       name_(new_theme->name()),
       theme_id_(new_theme->id()),
       previous_theme_id_(previous_theme_id),
-      previous_using_native_theme_(previous_using_native_theme) {
+      previous_using_system_theme_(previous_using_system_theme) {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
 }
@@ -142,8 +142,8 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
     }
   }
 
-  if (previous_using_native_theme_)
-    theme_service_->SetNativeTheme();
+  if (previous_using_system_theme_)
+    theme_service_->UseSystemTheme();
   else
     theme_service_->UseDefaultTheme();
   return false;  // The theme change will close us.

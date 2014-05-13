@@ -27,8 +27,8 @@ bool UsingCustomTheme(Profile* profile) WARN_UNUSED_RESULT;
 // Returns true iff |profile| is using the default theme.
 bool UsingDefaultTheme(Profile* profile) WARN_UNUSED_RESULT;
 
-// Returns true iff |profile| is using the native theme.
-bool UsingNativeTheme(Profile* profile) WARN_UNUSED_RESULT;
+// Returns true iff |profile| is using the system theme.
+bool UsingSystemTheme(Profile* profile) WARN_UNUSED_RESULT;
 
 // Returns true iff a theme with the given ID is pending install in
 // |profile|.
@@ -46,8 +46,8 @@ void UseCustomTheme(Profile* profile, int index);
 // Sets |profile| to use the default theme.
 void UseDefaultTheme(Profile* profile);
 
-// Sets |profile| to use the native theme.
-void UseNativeTheme(Profile* profile);
+// Sets |profile| to use the system theme.
+void UseSystemTheme(Profile* profile);
 
 }  // namespace themes_helper
 

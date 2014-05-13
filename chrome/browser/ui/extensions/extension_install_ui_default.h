@@ -26,7 +26,7 @@ class ExtensionInstallUIDefault : public ExtensionInstallUI {
  private:
   // Used to undo theme installation.
   std::string previous_theme_id_;
-  bool previous_using_native_theme_;
+  bool previous_using_system_theme_;
 
   // Whether to show an installed bubble on app install, or use the default
   // action of opening a new tab page.

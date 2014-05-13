@@ -25,7 +25,7 @@ class OpaqueBrowserFrameViewLinux
   virtual ~OpaqueBrowserFrameViewLinux();
 
   // Overridden from OpaqueBrowserFrameViewPlatformSpecific:
-  virtual bool IsUsingNativeTheme() OVERRIDE;
+  virtual bool IsUsingSystemTheme() OVERRIDE;
 
   // Overridden from views::WindowButtonOrderObserver:
   virtual void OnWindowButtonOrderingChange(

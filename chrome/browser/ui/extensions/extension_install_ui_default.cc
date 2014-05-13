@@ -202,7 +202,7 @@ ExtensionInstallPrompt* ExtensionInstallUI::CreateInstallPromptWithProfile(
 
 ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
     : ExtensionInstallUI(profile),
-      previous_using_native_theme_(false),
+      previous_using_system_theme_(false),
       use_app_installed_bubble_(false) {
   // |profile| can be NULL during tests.
   if (profile) {
@@ -211,8 +211,8 @@ ExtensionInstallUIDefault::ExtensionInstallUIDefault(Profile* profile)
         ThemeServiceFactory::GetThemeForProfile(profile);
     if (previous_theme)
       previous_theme_id_ = previous_theme->id();
-    previous_using_native_theme_ =
-        ThemeServiceFactory::GetForProfile(profile)->UsingNativeTheme();
+    previous_using_system_theme_ =
+        ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme();
   }
 }
 
@@ -232,7 +232,7 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
 
   if (extension->is_theme()) {
     ThemeInstalledInfoBarDelegate::Create(
-        extension, profile(), previous_theme_id_, previous_using_native_theme_);
+        extension, profile(), previous_theme_id_, previous_using_system_theme_);
     return;
   }
 

@@ -47,8 +47,8 @@ bool UsingDefaultTheme(Profile* profile) {
   return GetThemeService(profile)->UsingDefaultTheme();
 }
 
-bool UsingNativeTheme(Profile* profile) {
-  return GetThemeService(profile)->UsingNativeTheme();
+bool UsingSystemTheme(Profile* profile) {
+  return GetThemeService(profile)->UsingSystemTheme();
 }
 
 bool ThemeIsPendingInstall(Profile* profile, const std::string& id) {
@@ -69,9 +69,8 @@ void UseDefaultTheme(Profile* profile) {
   GetThemeService(profile)->UseDefaultTheme();
 }
 
-void UseNativeTheme(Profile* profile) {
-  // TODO(akalin): Fix this inconsistent naming in the theme service.
-  GetThemeService(profile)->SetNativeTheme();
+void UseSystemTheme(Profile* profile) {
+  GetThemeService(profile)->UseSystemTheme();
 }
 
 }  // namespace themes_helper

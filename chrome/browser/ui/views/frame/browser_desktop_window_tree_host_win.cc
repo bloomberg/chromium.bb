@@ -39,8 +39,8 @@ class DesktopThemeProvider : public ui::ThemeProvider {
       : delegate_(delegate) {
   }
 
-  virtual bool UsingNativeTheme() const OVERRIDE {
-    return delegate_->UsingNativeTheme();
+  virtual bool UsingSystemTheme() const OVERRIDE {
+    return delegate_->UsingSystemTheme();
   }
   virtual gfx::ImageSkia* GetImageSkiaNamed(int id) const OVERRIDE {
     return delegate_->GetImageSkiaNamed(

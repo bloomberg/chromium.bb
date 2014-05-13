@@ -27,7 +27,7 @@ BackgroundTheme::BackgroundTheme(ui::ThemeProvider* provider) :
 
 BackgroundTheme::~BackgroundTheme() {}
 
-bool BackgroundTheme::UsingNativeTheme() const {
+bool BackgroundTheme::UsingSystemTheme() const {
   return true;
 }
 

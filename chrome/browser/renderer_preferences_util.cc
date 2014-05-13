@@ -140,7 +140,7 @@ void UpdateFromSystemSettings(
 #if defined(USE_AURA) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
   views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui) {
-    if (ThemeServiceFactory::GetForProfile(profile)->UsingNativeTheme()) {
+    if (ThemeServiceFactory::GetForProfile(profile)->UsingSystemTheme()) {
       prefs->focus_ring_color = linux_ui->GetFocusRingColor();
       prefs->thumb_active_color = linux_ui->GetThumbActiveColor();
       prefs->thumb_inactive_color = linux_ui->GetThumbInactiveColor();

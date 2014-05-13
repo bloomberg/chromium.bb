@@ -19,7 +19,7 @@ namespace {
 const SkColor kThemeToolbarColor = 0xFFCFDDC0;
 
 bool UsingCustomTheme(const ThemeService& theme_service) {
-  return !theme_service.UsingNativeTheme() &&
+  return !theme_service.UsingSystemTheme() &&
          !theme_service.UsingDefaultTheme();
 }
 

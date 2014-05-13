@@ -31,10 +31,10 @@ OpaqueBrowserFrameViewLinux::~OpaqueBrowserFrameViewLinux() {
     ui->RemoveWindowButtonOrderObserver(this);
 }
 
-bool OpaqueBrowserFrameViewLinux::IsUsingNativeTheme() {
-  // On X11, this does the correct thing. On Windows, UsingNativeTheme() will
+bool OpaqueBrowserFrameViewLinux::IsUsingSystemTheme() {
+  // On X11, this does the correct thing. On Windows, UsingSystemTheme() will
   // return true when using the default blue theme too.
-  return theme_service_->UsingNativeTheme();
+  return theme_service_->UsingSystemTheme();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

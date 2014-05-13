@@ -15,9 +15,9 @@
 
 namespace {
 
-class NativeThemeX11 : public CustomThemeSupplier {
+class SystemThemeX11 : public CustomThemeSupplier {
  public:
-  explicit NativeThemeX11(PrefService* pref_service);
+  explicit SystemThemeX11(PrefService* pref_service);
 
   // Overridden from CustomThemeSupplier:
   virtual void StartUsingTheme() OVERRIDE;
@@ -27,46 +27,46 @@ class NativeThemeX11 : public CustomThemeSupplier {
   virtual bool HasCustomImage(int id) const OVERRIDE;
 
  private:
-  virtual ~NativeThemeX11();
+  virtual ~SystemThemeX11();
 
   // These pointers are not owned by us.
   views::LinuxUI* const linux_ui_;
   PrefService* const pref_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeThemeX11);
+  DISALLOW_COPY_AND_ASSIGN(SystemThemeX11);
 };
 
-NativeThemeX11::NativeThemeX11(PrefService* pref_service)
+SystemThemeX11::SystemThemeX11(PrefService* pref_service)
     : CustomThemeSupplier(NATIVE_X11),
       linux_ui_(views::LinuxUI::instance()),
       pref_service_(pref_service) {}
 
-void NativeThemeX11::StartUsingTheme() {
+void SystemThemeX11::StartUsingTheme() {
   pref_service_->SetBoolean(prefs::kUsesSystemTheme, true);
   // Have the former theme notify its observers of change.
   ui::NativeThemeAura::instance()->NotifyObservers();
 }
 
-void NativeThemeX11::StopUsingTheme() {
+void SystemThemeX11::StopUsingTheme() {
   pref_service_->SetBoolean(prefs::kUsesSystemTheme, false);
   // Have the former theme notify its observers of change.
   if (linux_ui_)
     linux_ui_->GetNativeTheme(NULL)->NotifyObservers();
 }
 
-bool NativeThemeX11::GetColor(int id, SkColor* color) const {
+bool SystemThemeX11::GetColor(int id, SkColor* color) const {
   return linux_ui_ && linux_ui_->GetColor(id, color);
 }
 
-gfx::Image NativeThemeX11::GetImageNamed(int id) {
+gfx::Image SystemThemeX11::GetImageNamed(int id) {
   return linux_ui_ ? linux_ui_->GetThemeImageNamed(id) : gfx::Image();
 }
 
-bool NativeThemeX11::HasCustomImage(int id) const {
+bool SystemThemeX11::HasCustomImage(int id) const {
   return linux_ui_ && linux_ui_->HasCustomImage(id);
 }
 
-NativeThemeX11::~NativeThemeX11() {}
+SystemThemeX11::~SystemThemeX11() {}
 
 }  // namespace
 
@@ -74,19 +74,19 @@ ThemeServiceAuraX11::ThemeServiceAuraX11() {}
 
 ThemeServiceAuraX11::~ThemeServiceAuraX11() {}
 
-bool ThemeServiceAuraX11::ShouldInitWithNativeTheme() const {
+bool ThemeServiceAuraX11::ShouldInitWithSystemTheme() const {
   return profile()->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme);
 }
 
-void ThemeServiceAuraX11::SetNativeTheme() {
-  SetCustomDefaultTheme(new NativeThemeX11(profile()->GetPrefs()));
+void ThemeServiceAuraX11::UseSystemTheme() {
+  SetCustomDefaultTheme(new SystemThemeX11(profile()->GetPrefs()));
 }
 
 bool ThemeServiceAuraX11::UsingDefaultTheme() const {
-  return ThemeService::UsingDefaultTheme() && !UsingNativeTheme();
+  return ThemeService::UsingDefaultTheme() && !UsingSystemTheme();
 }
 
-bool ThemeServiceAuraX11::UsingNativeTheme() const {
+bool ThemeServiceAuraX11::UsingSystemTheme() const {
   const CustomThemeSupplier* theme_supplier = get_theme_supplier();
   return theme_supplier &&
          theme_supplier->get_theme_type() == CustomThemeSupplier::NATIVE_X11;

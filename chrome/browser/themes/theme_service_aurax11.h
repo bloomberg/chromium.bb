@@ -15,10 +15,10 @@ class ThemeServiceAuraX11 : public ThemeService {
   virtual ~ThemeServiceAuraX11();
 
   // Overridden from ThemeService:
-  virtual bool ShouldInitWithNativeTheme() const OVERRIDE;
-  virtual void SetNativeTheme() OVERRIDE;
+  virtual bool ShouldInitWithSystemTheme() const OVERRIDE;
+  virtual void UseSystemTheme() OVERRIDE;
   virtual bool UsingDefaultTheme() const OVERRIDE;
-  virtual bool UsingNativeTheme() const OVERRIDE;
+  virtual bool UsingSystemTheme() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceAuraX11);

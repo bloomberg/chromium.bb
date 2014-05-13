@@ -1267,18 +1267,18 @@ void BrowserOptionsHandler::DeleteProfile(const base::ListValue* args) {
 void BrowserOptionsHandler::ObserveThemeChanged() {
   Profile* profile = Profile::FromWebUI(web_ui());
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile);
-  bool is_native_theme = false;
+  bool is_system_theme = false;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   bool profile_is_managed = profile->IsManaged();
-  is_native_theme = theme_service->UsingNativeTheme();
-  base::FundamentalValue native_theme_enabled(!is_native_theme &&
+  is_system_theme = theme_service->UsingSystemTheme();
+  base::FundamentalValue native_theme_enabled(!is_system_theme &&
                                               !profile_is_managed);
   web_ui()->CallJavascriptFunction("BrowserOptions.setNativeThemeButtonEnabled",
                                    native_theme_enabled);
 #endif
 
-  bool is_classic_theme = !is_native_theme &&
+  bool is_classic_theme = !is_system_theme &&
                           theme_service->UsingDefaultTheme();
   base::FundamentalValue enabled(!is_classic_theme);
   web_ui()->CallJavascriptFunction("BrowserOptions.setThemesResetButtonEnabled",
@@ -1295,7 +1295,7 @@ void BrowserOptionsHandler::ThemesReset(const base::ListValue* args) {
 void BrowserOptionsHandler::ThemesSetNative(const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("Options_GtkThemeSet"));
   Profile* profile = Profile::FromWebUI(web_ui());
-  ThemeServiceFactory::GetForProfile(profile)->SetNativeTheme();
+  ThemeServiceFactory::GetForProfile(profile)->UseSystemTheme();
 }
 #endif
 

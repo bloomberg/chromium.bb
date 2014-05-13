@@ -13,10 +13,10 @@ using themes_helper::GetCustomTheme;
 using themes_helper::GetThemeID;
 using themes_helper::UseCustomTheme;
 using themes_helper::UseDefaultTheme;
-using themes_helper::UseNativeTheme;
+using themes_helper::UseSystemTheme;
 using themes_helper::UsingCustomTheme;
 using themes_helper::UsingDefaultTheme;
-using themes_helper::UsingNativeTheme;
+using themes_helper::UsingSystemTheme;
 
 class SingleClientThemesSyncTest : public SyncTest {
  public:
@@ -58,20 +58,20 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, NativeTheme) {
 
   UseCustomTheme(GetProfile(0), 0);
   UseCustomTheme(verifier(), 0);
-  ASSERT_FALSE(UsingNativeTheme(GetProfile(0)));
-  ASSERT_FALSE(UsingNativeTheme(verifier()));
+  ASSERT_FALSE(UsingSystemTheme(GetProfile(0)));
+  ASSERT_FALSE(UsingSystemTheme(verifier()));
 
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  UseNativeTheme(GetProfile(0));
-  UseNativeTheme(verifier());
-  ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
-  ASSERT_TRUE(UsingNativeTheme(verifier()));
+  UseSystemTheme(GetProfile(0));
+  UseSystemTheme(verifier());
+  ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
+  ASSERT_TRUE(UsingSystemTheme(verifier()));
 
   ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
 
-  ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
-  ASSERT_TRUE(UsingNativeTheme(verifier()));
+  ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
+  ASSERT_TRUE(UsingSystemTheme(verifier()));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, DefaultTheme) {

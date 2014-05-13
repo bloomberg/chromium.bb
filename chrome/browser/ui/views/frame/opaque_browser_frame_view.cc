@@ -616,7 +616,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
   // the system title bar pref is set, or when maximized on Ubuntu). Hide the
   // gradient in the tab strip (by shifting it up vertically) to avoid a
   // double-gradient effect.
-  if (tp->UsingNativeTheme())
+  if (tp->UsingSystemTheme())
     frame_background_->set_maximized_top_inset(kGTKThemeCondensedFrameTopInset);
 #endif
 
@@ -839,7 +839,7 @@ SkColor OpaqueBrowserFrameView::GetFrameColor() const {
   }
 
   if (browser_view()->IsBrowserTypeNormal() ||
-      platform_observer_->IsUsingNativeTheme()) {
+      platform_observer_->IsUsingSystemTheme()) {
     return GetThemeProvider()->GetColor(color_id);
   }
 
@@ -869,8 +869,8 @@ gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameImage() const {
         IDR_THEME_FRAME_INCOGNITO_INACTIVE : IDR_THEME_FRAME_INACTIVE;
   }
 
-  if (platform_observer_->IsUsingNativeTheme()) {
-    // We want to use theme images provided by the platform theme when enabled,
+  if (platform_observer_->IsUsingSystemTheme()) {
+    // We want to use theme images provided by the system theme when enabled,
     // even if we are an app or popup window.
     return GetThemeProvider()->GetImageSkiaNamed(resource_id);
   }

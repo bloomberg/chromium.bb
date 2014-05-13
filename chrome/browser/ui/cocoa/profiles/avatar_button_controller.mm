@@ -120,7 +120,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
   if ((self = [super initWithBrowser:browser])) {
     ThemeService* themeService =
         ThemeServiceFactory::GetForProfile(browser->profile());
-    isThemedWindow_ = !themeService->UsingNativeTheme();
+    isThemedWindow_ = !themeService->UsingSystemTheme();
 
     HoverImageButton* hoverButton =
         [[HoverImageButton alloc] initWithFrame:NSZeroRect];
@@ -169,7 +169,7 @@ NSImage* GetImageFromResourceID(int resourceId) {
   // Redraw the button if the window has switched between themed and native.
   ThemeService* themeService =
       ThemeServiceFactory::GetForProfile(browser_->profile());
-  BOOL updatedIsThemedWindow = !themeService->UsingNativeTheme();
+  BOOL updatedIsThemedWindow = !themeService->UsingSystemTheme();
   if (isThemedWindow_ != updatedIsThemedWindow) {
     isThemedWindow_ = updatedIsThemedWindow;
     [[button_ cell] setIsThemedWindow:isThemedWindow_];

@@ -15,10 +15,10 @@ using themes_helper::HasOrWillHaveCustomTheme;
 using themes_helper::ThemeIsPendingInstall;
 using themes_helper::UseCustomTheme;
 using themes_helper::UseDefaultTheme;
-using themes_helper::UseNativeTheme;
+using themes_helper::UseSystemTheme;
 using themes_helper::UsingCustomTheme;
 using themes_helper::UsingDefaultTheme;
-using themes_helper::UsingNativeTheme;
+using themes_helper::UsingSystemTheme;
 
 class TwoClientThemesSyncTest : public SyncTest {
  public:
@@ -82,16 +82,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeTheme) {
 
   ASSERT_TRUE(AwaitQuiescence());
 
-  UseNativeTheme(GetProfile(0));
-  UseNativeTheme(verifier());
-  ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
-  ASSERT_TRUE(UsingNativeTheme(verifier()));
+  UseSystemTheme(GetProfile(0));
+  UseSystemTheme(verifier());
+  ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
+  ASSERT_TRUE(UsingSystemTheme(verifier()));
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
-  ASSERT_TRUE(UsingNativeTheme(GetProfile(1)));
-  ASSERT_TRUE(UsingNativeTheme(verifier()));
+  ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
+  ASSERT_TRUE(UsingSystemTheme(GetProfile(1)));
+  ASSERT_TRUE(UsingSystemTheme(verifier()));
 }
 
 // TCM ID - 7247455.
@@ -126,9 +126,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeDefaultRace) {
 #endif  // OS_CHROMEOS
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  UseNativeTheme(GetProfile(0));
+  UseSystemTheme(GetProfile(0));
   UseDefaultTheme(GetProfile(1));
-  ASSERT_TRUE(UsingNativeTheme(GetProfile(0)));
+  ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(1)));
 
   ASSERT_TRUE(AwaitQuiescence());
@@ -136,8 +136,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, NativeDefaultRace) {
   // TODO(akalin): Add function that compares two profiles to see if
   // they're at the same state.
 
-  ASSERT_EQ(UsingNativeTheme(GetProfile(0)),
-            UsingNativeTheme(GetProfile(1)));
+  ASSERT_EQ(UsingSystemTheme(GetProfile(0)),
+            UsingSystemTheme(GetProfile(1)));
   ASSERT_EQ(UsingDefaultTheme(GetProfile(0)),
             UsingDefaultTheme(GetProfile(1)));
 }
@@ -152,9 +152,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, CustomNativeRace) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   UseCustomTheme(GetProfile(0), 0);
-  UseNativeTheme(GetProfile(1));
+  UseSystemTheme(GetProfile(1));
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
-  ASSERT_TRUE(UsingNativeTheme(GetProfile(1)));
+  ASSERT_TRUE(UsingSystemTheme(GetProfile(1)));
 
   ASSERT_TRUE(AwaitQuiescence());
 

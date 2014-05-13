@@ -55,7 +55,7 @@ const base::FilePath::CharType kExtensionFilePath[] = FILE_PATH_LITERAL("/oo");
 class FakeThemeService : public ThemeService {
  public:
   FakeThemeService() :
-    using_native_theme_(false),
+    using_system_theme_(false),
     using_default_theme_(false),
     theme_extension_(NULL),
     is_dirty_(false) {}
@@ -64,20 +64,20 @@ class FakeThemeService : public ThemeService {
   virtual void SetTheme(const extensions::Extension* extension) OVERRIDE {
     is_dirty_ = true;
     theme_extension_ = extension;
-    using_native_theme_ = false;
+    using_system_theme_ = false;
     using_default_theme_ = false;
   }
 
   virtual void UseDefaultTheme() OVERRIDE {
     is_dirty_ = true;
     using_default_theme_ = true;
-    using_native_theme_ = false;
+    using_system_theme_ = false;
     theme_extension_ = NULL;
   }
 
-  virtual void SetNativeTheme() OVERRIDE {
+  virtual void UseSystemTheme() OVERRIDE {
     is_dirty_ = true;
-    using_native_theme_ = true;
+    using_system_theme_ = true;
     using_default_theme_ = false;
     theme_extension_ = NULL;
   }
@@ -86,8 +86,8 @@ class FakeThemeService : public ThemeService {
     return using_default_theme_;
   }
 
-  virtual bool UsingNativeTheme() const OVERRIDE {
-    return using_native_theme_;
+  virtual bool UsingSystemTheme() const OVERRIDE {
+    return using_system_theme_;
   }
 
   virtual string GetThemeID() const OVERRIDE {
@@ -110,7 +110,7 @@ class FakeThemeService : public ThemeService {
   }
 
  private:
-  bool using_native_theme_;
+  bool using_system_theme_;
   bool using_default_theme_;
   scoped_refptr<const extensions::Extension> theme_extension_;
   bool is_dirty_;
@@ -327,7 +327,7 @@ TEST_F(ThemeSyncableServiceTest, SetCurrentThemeSystemTheme) {
                     new syncer::SyncErrorFactoryMock()))
           .error();
   EXPECT_FALSE(error.IsSet()) << error.message();
-  EXPECT_TRUE(fake_theme_service_->UsingNativeTheme());
+  EXPECT_TRUE(fake_theme_service_->UsingSystemTheme());
 }
 
 TEST_F(ThemeSyncableServiceTest, SetCurrentThemeCustomTheme) {
@@ -571,7 +571,7 @@ TEST_F(ThemeSyncableServiceTest, RestoreSystemThemeBitWhenChangeToCustomTheme) {
 TEST_F(ThemeSyncableServiceTest,
        GtkUpdateSystemThemeBitWhenChangeBetweenSystemAndDefault) {
   // Initialize to use native theme.
-  fake_theme_service_->SetNativeTheme();
+  fake_theme_service_->UseSystemTheme();
   fake_theme_service_->MarkClean();
   sync_pb::ThemeSpecifics theme_specifics;
   theme_specifics.set_use_system_theme_by_default(true);
@@ -603,7 +603,7 @@ TEST_F(ThemeSyncableServiceTest,
   // Change to native theme and notify theme_sync_service_.
   // use_system_theme_by_default bit should be true.
   changes.clear();
-  fake_theme_service_->SetNativeTheme();
+  fake_theme_service_->UseSystemTheme();
   theme_sync_service_->OnThemeChange();
   EXPECT_EQ(1u, changes.size());
   EXPECT_TRUE(changes[0]

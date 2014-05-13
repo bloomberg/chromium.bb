@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 
-bool OpaqueBrowserFrameViewPlatformSpecific::IsUsingNativeTheme() {
+bool OpaqueBrowserFrameViewPlatformSpecific::IsUsingSystemTheme() {
   return false;
 }
 

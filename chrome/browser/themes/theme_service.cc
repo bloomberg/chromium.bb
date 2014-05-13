@@ -119,7 +119,7 @@ gfx::Image ThemeService::GetImageNamed(int id) const {
   return image;
 }
 
-bool ThemeService::UsingNativeTheme() const {
+bool ThemeService::UsingSystemTheme() const {
   return UsingDefaultTheme();
 }
 
@@ -191,7 +191,7 @@ int ThemeService::GetDisplayProperty(int id) const {
 
   if (id == Properties::NTP_LOGO_ALTERNATE &&
       !UsingDefaultTheme() &&
-      !UsingNativeTheme()) {
+      !UsingSystemTheme()) {
     // Use the alternate logo for themes from the web store except for
     // |kDefaultThemeGalleryID|.
     return 1;
@@ -325,7 +325,7 @@ void ThemeService::SetCustomDefaultTheme(
   NotifyThemeChanged();
 }
 
-bool ThemeService::ShouldInitWithNativeTheme() const {
+bool ThemeService::ShouldInitWithSystemTheme() const {
   return false;
 }
 
@@ -382,7 +382,7 @@ void ThemeService::UseDefaultTheme() {
   NotifyThemeChanged();
 }
 
-void ThemeService::SetNativeTheme() {
+void ThemeService::UseSystemTheme() {
   UseDefaultTheme();
 }
 
@@ -436,8 +436,8 @@ void ThemeService::LoadThemePrefs() {
     // Managed users have a different default theme.
     if (IsManagedUser())
       SetManagedUserTheme();
-    else if (ShouldInitWithNativeTheme())
-      SetNativeTheme();
+    else if (ShouldInitWithSystemTheme())
+      UseSystemTheme();
     else
       UseDefaultTheme();
     set_ready();
