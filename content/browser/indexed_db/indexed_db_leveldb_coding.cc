@@ -46,7 +46,8 @@
 // <0, 0, 0, 2> => SerializedScriptValue version [DataVersionKey]
 // <0, 0, 0, 3>
 //   => Blob journal
-//     The format of the journal is: {database_id, blobKey}*.
+//     The format of the journal is:
+//         {database_id (var int), blobKey (var int)}*.
 //     If the blobKey is kAllBlobsKey, the whole database should be deleted.
 //     [BlobJournalKey]
 // <0, 0, 0, 4> => Live blob journal; same format. [LiveBlobJournalKey]
