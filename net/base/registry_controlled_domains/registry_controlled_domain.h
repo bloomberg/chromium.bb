@@ -226,11 +226,12 @@ NET_EXPORT size_t GetRegistryLength(const std::string& host,
 
 typedef const struct DomainRule* (*FindDomainPtr)(const char *, unsigned int);
 
-// Used for unit tests, so that a different perfect hash map from the full
-// list is used. Set to NULL to use the Default function.
-NET_EXPORT_PRIVATE void SetFindDomainFunctionAndStringPoolForTesting(
-    FindDomainPtr fn, const char* stringpool);
+// Used for unit tests. Use default domains.
+NET_EXPORT_PRIVATE void SetFindDomainGraph();
 
+// Used for unit tests, so that a frozen list of domains is used.
+NET_EXPORT_PRIVATE void SetFindDomainGraph(const unsigned char* domains,
+                                           size_t length);
 }  // namespace registry_controlled_domains
 }  // namespace net
 
