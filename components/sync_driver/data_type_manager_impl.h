@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
-#define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
+#ifndef COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_IMPL_H__
+#define COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_IMPL_H__
 
 #include "components/sync_driver/data_type_manager.h"
 
@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -39,6 +40,7 @@ class DataTypeManagerImpl : public DataTypeManager,
                             public ModelAssociationResultProcessor {
  public:
   DataTypeManagerImpl(
+      const base::Closure& unrecoverable_error_method,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
       const DataTypeController::TypeMap* controllers,
@@ -184,6 +186,8 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Association and time stats of data type configuration.
   std::vector<syncer::DataTypeConfigurationStats> configuration_stats_;
 
+  base::Closure unrecoverable_error_method_;
+
   base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataTypeManagerImpl);
@@ -191,4 +195,4 @@ class DataTypeManagerImpl : public DataTypeManager,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_MANAGER_IMPL_H__
+#endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_IMPL_H__

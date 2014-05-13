@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "components/sync_driver/data_type_manager_impl.h"
 
 #include <algorithm>
 #include <functional>
@@ -16,15 +16,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/failed_data_types_handler.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/data_type_debug_info_listener.h"
-
-using content::BrowserThread;
 
 namespace browser_sync {
 
@@ -50,6 +46,7 @@ DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo() {}
 DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() {}
 
 DataTypeManagerImpl::DataTypeManagerImpl(
+    const base::Closure& unrecoverable_error_method,
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
     const DataTypeController::TypeMap* controllers,
@@ -67,6 +64,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       observer_(observer),
       failed_data_types_handler_(failed_data_types_handler),
       encryption_handler_(encryption_handler),
+      unrecoverable_error_method_(unrecoverable_error_method),
       weak_ptr_factory_(this) {
   DCHECK(failed_data_types_handler_);
   DCHECK(configurer_);
@@ -105,7 +103,6 @@ void DataTypeManagerImpl::PurgeForMigration(
 void DataTypeManagerImpl::ConfigureImpl(
     syncer::ModelTypeSet desired_types,
     syncer::ConfigureReason reason) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_NE(reason, syncer::CONFIGURE_REASON_UNKNOWN);
   DVLOG(1) << "Configuring for " << syncer::ModelTypeSetToString(desired_types)
            << " with reason " << reason;
@@ -331,7 +328,8 @@ void DataTypeManagerImpl::DownloadReady(
   }
 
   if (!failed_configuration_types.Empty()) {
-    ChromeReportUnrecoverableError();
+    if (!unrecoverable_error_method_.is_null())
+      unrecoverable_error_method_.Run();
     std::string error_msg =
         "Configuration failed for types " +
         syncer::ModelTypeSetToString(failed_configuration_types);
@@ -494,7 +492,6 @@ void DataTypeManagerImpl::OnModelAssociationDone(
 }
 
 void DataTypeManagerImpl::Stop() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (state_ == STOPPED)
     return;
 

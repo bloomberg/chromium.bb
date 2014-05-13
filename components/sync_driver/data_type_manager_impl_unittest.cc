@@ -1,19 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
+#include "components/sync_driver/data_type_manager_impl.h"
 
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/failed_data_types_handler.h"
 #include "components/sync_driver/fake_data_type_controller.h"
-#include "content/public/test/test_browser_thread.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -148,7 +146,8 @@ class TestDataTypeManager : public DataTypeManagerImpl {
       const DataTypeEncryptionHandler* encryption_handler,
       DataTypeManagerObserver* observer,
       FailedDataTypesHandler* failed_data_types_handler)
-      : DataTypeManagerImpl(debug_info_listener,
+      : DataTypeManagerImpl(base::Closure(),
+                            debug_info_listener,
                             controllers,
                             encryption_handler,
                             configurer,
@@ -183,8 +182,7 @@ class TestDataTypeManager : public DataTypeManagerImpl {
 // run both configuring with nigori, and configuring without).
 class SyncDataTypeManagerImplTest : public testing::Test {
  public:
-  SyncDataTypeManagerImplTest()
-      : ui_thread_(content::BrowserThread::UI, &ui_loop_) {}
+  SyncDataTypeManagerImplTest() {}
 
   virtual ~SyncDataTypeManagerImplTest() {
   }
@@ -253,7 +251,6 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   }
 
   base::MessageLoopForUI ui_loop_;
-  content::TestBrowserThread ui_thread_;
   DataTypeController::TypeMap controllers_;
   FakeBackendDataTypeConfigurer configurer_;
   DataTypeManagerObserverMock observer_;

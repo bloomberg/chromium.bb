@@ -27,6 +27,8 @@
         'sync_driver/data_type_error_handler.h',
         'sync_driver/data_type_manager.cc',
         'sync_driver/data_type_manager.h',
+        'sync_driver/data_type_manager_impl.cc',
+        'sync_driver/data_type_manager_impl.h',
         'sync_driver/data_type_manager_observer.h',
         'sync_driver/failed_data_types_handler.cc',
         'sync_driver/failed_data_types_handler.h',

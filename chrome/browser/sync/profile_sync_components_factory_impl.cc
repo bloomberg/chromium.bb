@@ -23,7 +23,6 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/chrome_report_unrecoverable_error.h"
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/glue/extension_data_type_controller.h"
 #include "chrome/browser/sync/glue/extension_setting_data_type_controller.h"
 #include "chrome/browser/sync/glue/password_data_type_controller.h"
@@ -53,6 +52,7 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/generic_change_processor.h"
 #include "components/sync_driver/proxy_data_type_controller.h"
@@ -420,7 +420,8 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     SyncBackendHost* backend,
     DataTypeManagerObserver* observer,
     browser_sync::FailedDataTypesHandler* failed_data_types_handler) {
-  return new DataTypeManagerImpl(debug_info_listener,
+  return new DataTypeManagerImpl(base::Bind(ChromeReportUnrecoverableError),
+                                 debug_info_listener,
                                  controllers,
                                  encryption_handler,
                                  backend,

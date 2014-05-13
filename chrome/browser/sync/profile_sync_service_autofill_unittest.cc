@@ -357,6 +357,7 @@ ACTION_P(MakeAutocompleteSyncComponents, wds) {
 
 ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
   return new browser_sync::DataTypeManagerImpl(
+      base::Closure(),
       debug_listener,
       arg1,
       arg2,

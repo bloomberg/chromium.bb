@@ -13,7 +13,6 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 #include "chrome/browser/sync/managed_user_signin_manager_wrapper.h"
 #include "chrome/browser/sync/profile_sync_components_factory_mock.h"
@@ -21,6 +20,7 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/pref_names.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -32,7 +32,8 @@ namespace browser_sync {
 namespace {
 
 ACTION(ReturnNewDataTypeManager) {
-  return new browser_sync::DataTypeManagerImpl(arg0,
+  return new browser_sync::DataTypeManagerImpl(base::Closure(),
+                                               arg0,
                                                arg1,
                                                arg2,
                                                arg3,

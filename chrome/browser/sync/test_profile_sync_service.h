@@ -10,10 +10,10 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "sync/test/engine/test_id_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -24,7 +24,8 @@ class ProfileSyncComponentsFactory;
 class ProfileSyncComponentsFactoryMock;
 
 ACTION(ReturnNewDataTypeManager) {
-  return new browser_sync::DataTypeManagerImpl(arg0,
+  return new browser_sync::DataTypeManagerImpl(base::Closure(),
+                                               arg0,
                                                arg1,
                                                arg2,
                                                arg3,
