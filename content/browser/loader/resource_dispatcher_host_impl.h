@@ -340,7 +340,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                       int route_id,
                                       bool cancel_requests);
 
-  void OnRequestResource(const IPC::Message& msg,
+  void OnRequestResource(int routing_id,
                          int request_id,
                          const ResourceHostMsg_Request& request_data);
   void OnSyncLoad(int request_id,

@@ -38,8 +38,7 @@ class BrowserPluginManagerImpl : public BrowserPluginManager {
  private:
   virtual ~BrowserPluginManagerImpl();
 
-  void OnAllocateInstanceIDACK(const IPC::Message& message,
-                               int request_id,
+  void OnAllocateInstanceIDACK(int request_id,
                                int guest_instance_id);
 
   int request_id_counter_;

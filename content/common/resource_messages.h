@@ -302,7 +302,8 @@ IPC_MESSAGE_CONTROL2(ResourceMsg_RequestComplete,
 // Resource messages sent from the renderer to the browser.
 
 // Makes a resource request via the browser.
-IPC_MESSAGE_ROUTED2(ResourceHostMsg_RequestResource,
+IPC_MESSAGE_CONTROL3(ResourceHostMsg_RequestResource,
+                    int /* routing_id */,
                     int /* request_id */,
                     ResourceHostMsg_Request)
 

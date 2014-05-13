@@ -35,9 +35,9 @@ WebContentsImpl* TestBrowserPluginGuest::web_contents() const {
 void TestBrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {
   if (msg->type() == BrowserPluginMsg_UpdateRect::ID) {
     update_rect_count_++;
-    int instance_id = 0;
-    BrowserPluginMsg_UpdateRect_Params params;
-    BrowserPluginMsg_UpdateRect::Read(msg, &instance_id, &params);
+    BrowserPluginMsg_UpdateRect::Param param;
+    BrowserPluginMsg_UpdateRect::Read(msg, &param);
+    BrowserPluginMsg_UpdateRect_Params params = param.b;
     last_view_size_observed_ = params.view_size;
     if (!expected_auto_view_size_.IsEmpty() &&
         expected_auto_view_size_ == params.view_size) {

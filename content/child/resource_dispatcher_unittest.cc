@@ -112,10 +112,11 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   // returning the hardcoded file contents.
   void ProcessMessages() {
     while (!message_queue_.empty()) {
-      int request_id;
-      ResourceHostMsg_Request request;
+      ResourceHostMsg_RequestResource::Param params;
       ASSERT_TRUE(ResourceHostMsg_RequestResource::Read(
-          &message_queue_[0], &request_id, &request));
+          &message_queue_[0], &params));
+      int request_id = params.b;
+      ResourceHostMsg_Request request = params.c;
 
       // check values
       EXPECT_EQ(test_page_url, request.url.spec());

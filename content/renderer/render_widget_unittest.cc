@@ -77,10 +77,6 @@ class TouchableRenderWidget : public RenderWidget {
 TEST_F(RenderWidgetUnittest, TouchHitTestSinglePoint) {
   scoped_refptr<TouchableRenderWidget> widget = new TouchableRenderWidget();
 
-  blink::WebInputEvent::Type type;
-  InputEventAckState ack_state;
-  ui::LatencyInfo latency;
-
   SyntheticWebTouchEvent touch;
   touch.PressPoint(10, 10);
 
@@ -91,7 +87,9 @@ TEST_F(RenderWidgetUnittest, TouchHitTestSinglePoint) {
   // be 'no consumer exists'.
   const IPC::Message* message = widget->sink()->GetMessageAt(0);
   EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
-  InputHostMsg_HandleInputEvent_ACK::Read(message, &type, &ack_state, &latency);
+  InputHostMsg_HandleInputEvent_ACK::Param params;
+  InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
+  InputEventAckState ack_state = params.b;
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, ack_state);
   widget->sink()->ClearMessages();
 
@@ -104,7 +102,8 @@ TEST_F(RenderWidgetUnittest, TouchHitTestSinglePoint) {
   ASSERT_EQ(1u, widget->sink()->message_count());
   message = widget->sink()->GetMessageAt(0);
   EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
-  InputHostMsg_HandleInputEvent_ACK::Read(message, &type, &ack_state, &latency);
+  InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
+  ack_state = params.b;
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_state);
   widget->sink()->ClearMessages();
 }
@@ -116,10 +115,6 @@ TEST_F(RenderWidgetUnittest, TouchHitTestMultiplePoints) {
   rects.push_back(gfx::Rect(25, 0, 10, 10));
   widget->SetTouchRegion(rects);
 
-  blink::WebInputEvent::Type type;
-  InputEventAckState ack_state;
-  ui::LatencyInfo latency;
-
   SyntheticWebTouchEvent touch;
   touch.PressPoint(25, 25);
 
@@ -130,7 +125,9 @@ TEST_F(RenderWidgetUnittest, TouchHitTestMultiplePoints) {
   // be 'no consumer exists'.
   const IPC::Message* message = widget->sink()->GetMessageAt(0);
   EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
-  InputHostMsg_HandleInputEvent_ACK::Read(message, &type, &ack_state, &latency);
+  InputHostMsg_HandleInputEvent_ACK::Param params;
+  InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
+  InputEventAckState ack_state = params.b;
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, ack_state);
   widget->sink()->ClearMessages();
 
@@ -140,7 +137,8 @@ TEST_F(RenderWidgetUnittest, TouchHitTestMultiplePoints) {
   ASSERT_EQ(1u, widget->sink()->message_count());
   message = widget->sink()->GetMessageAt(0);
   EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
-  InputHostMsg_HandleInputEvent_ACK::Read(message, &type, &ack_state, &latency);
+  InputHostMsg_HandleInputEvent_ACK::Read(message, &params);
+  ack_state = params.b;
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, ack_state);
   widget->sink()->ClearMessages();
 }

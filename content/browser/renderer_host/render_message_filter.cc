@@ -881,7 +881,7 @@ void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
 }
 #endif
 
-void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
+void RenderMessageFilter::OnDownloadUrl(int render_view_id,
                                         const GURL& url,
                                         const Referrer& referrer,
                                         const base::string16& suggested_name,
@@ -907,7 +907,7 @@ void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
       true,  // is_content_initiated
       resource_context_,
       render_process_id_,
-      message.routing_id(),
+      render_view_id,
       false,
       save_info.Pass(),
       content::DownloadItem::kInvalidId,

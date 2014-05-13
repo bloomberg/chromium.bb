@@ -11,6 +11,19 @@
 #include "ipc/ipc_message_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// IPC messages for testing ----------------------------------------------------
+
+#define IPC_MESSAGE_IMPL
+#include "ipc/ipc_message_macros.h"
+
+#define IPC_MESSAGE_START TestMsgStart
+
+IPC_MESSAGE_CONTROL0(TestMsgClassEmpty)
+
+IPC_MESSAGE_CONTROL1(TestMsgClassI, int)
+
+IPC_SYNC_MESSAGE_CONTROL1_1(TestMsgClassIS, int, std::string)
+
 namespace {
 
 TEST(IPCMessageTest, ListValue) {
@@ -69,5 +82,72 @@ TEST(IPCMessageTest, DictionaryValue) {
   iter = PickleIterator(bad_msg);
   EXPECT_FALSE(IPC::ReadParam(&bad_msg, &iter, &output));
 }
+
+class IPCMessageParameterTest : public testing::Test {
+ public:
+  IPCMessageParameterTest() : extra_param_("extra_param"), called_(false) {}
+
+  bool OnMessageReceived(const IPC::Message& message) {
+    bool msg_is_ok = true;
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(IPCMessageParameterTest, message,
+                                     msg_is_ok, std::string, &extra_param_) 
+      IPC_MESSAGE_HANDLER(TestMsgClassEmpty, OnEmpty)
+      IPC_MESSAGE_HANDLER(TestMsgClassI, OnInt)
+      //IPC_MESSAGE_HANDLER(TestMsgClassIS, OnSync)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+
+    return handled;
+  }
+
+  void OnEmpty(std::string* extra_param) {
+    EXPECT_EQ(extra_param, &extra_param_);
+    called_ = true;
+  }
+
+  void OnInt(std::string* extra_param, int foo) {
+    EXPECT_EQ(extra_param, &extra_param_);
+    EXPECT_EQ(foo, 42);
+    called_ = true;
+  }
+
+  /* TODO: handle sync IPCs
+    void OnSync(std::string* extra_param, int foo, std::string* out) {
+    EXPECT_EQ(extra_param, &extra_param_);
+    EXPECT_EQ(foo, 42);
+    called_ = true;
+    *out = std::string("out");
+  }
+
+  bool Send(IPC::Message* reply) {
+    delete reply;
+    return true;
+  }*/
+
+  std::string extra_param_;
+  bool called_;
+};
+
+TEST_F(IPCMessageParameterTest, EmptyDispatcherWithParam) {
+  TestMsgClassEmpty message;
+  EXPECT_TRUE(OnMessageReceived(message));
+  EXPECT_TRUE(called_);
+}
+
+TEST_F(IPCMessageParameterTest, OneIntegerWithParam) {
+  TestMsgClassI message(42);
+  EXPECT_TRUE(OnMessageReceived(message));
+  EXPECT_TRUE(called_);
+}
+
+/* TODO: handle sync IPCs
+TEST_F(IPCMessageParameterTest, Sync) {
+  std::string output;
+  TestMsgClassIS message(42, &output);
+  EXPECT_TRUE(OnMessageReceived(message));
+  EXPECT_TRUE(called_);
+  EXPECT_EQ(output, std::string("out"));
+}*/
 
 }  // namespace

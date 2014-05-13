@@ -74,7 +74,6 @@ void BrowserPluginManagerImpl::DidCommitCompositorFrame() {
 }
 
 void BrowserPluginManagerImpl::OnAllocateInstanceIDACK(
-    const IPC::Message& message,
     int request_id,
     int guest_instance_id) {
   InstanceIDMap::iterator it =

@@ -141,31 +141,17 @@ class IPC_EXPORT Message : public Pickle {
   // call.
   void SetHeaderValues(int32 routing, uint32 type, uint32 flags);
 
-  template<class T, class S>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
+  template<class T, class S, class P>
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,
                        void (T::*func)()) {
     (obj->*func)();
     return true;
   }
 
-  template<class T, class S>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
-                       void (T::*func)() const) {
-    (obj->*func)();
-    return true;
-  }
-
-  template<class T, class S>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
-                       void (T::*func)(const Message&)) {
-    (obj->*func)(*msg);
-    return true;
-  }
-
-  template<class T, class S>
-  static bool Dispatch(const Message* msg, T* obj, S* sender,
-                       void (T::*func)(const Message&) const) {
-    (obj->*func)(*msg);
+  template<class T, class S, class P>
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,
+                       void (T::*func)(P*)) {
+    (obj->*func)(parameter);
     return true;
   }
 

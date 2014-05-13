@@ -22,9 +22,10 @@ GetAllResourceMessagesMatching(const ResourceMessageTestSink& sink,
   for (size_t i = 0; i < sink.message_count(); i++) {
     const IPC::Message* msg = sink.GetMessageAt(i);
     if (msg->type() == WrapperMessage::ID) {
-      Params cur_params;
-      IPC::Message cur_msg;
-      WrapperMessage::Read(msg, &cur_params, &cur_msg);
+      typename WrapperMessage::Param params;
+      WrapperMessage::Read(msg, &params);
+      Params cur_params = params.a;
+      IPC::Message cur_msg = params.b;
       if (cur_msg.type() == id) {
         result.push_back(std::make_pair(cur_params, cur_msg));
       }

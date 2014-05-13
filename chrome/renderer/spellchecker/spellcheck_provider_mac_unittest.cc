@@ -16,36 +16,14 @@ namespace {
 
 class SpellCheckProviderMacTest : public SpellCheckProviderTest {};
 
-struct MessageParameters {
-  MessageParameters()
-      : router_id(0),
-        request_id(0) {}
-
-  int router_id;
-  int request_id;
-  base::string16 text;
-  std::vector<SpellCheckMarker> markers;
-};
-
-MessageParameters ReadRequestTextCheck(IPC::Message* message) {
-  MessageParameters parameters;
-  bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
-      message,
-      &parameters.router_id,
-      &parameters.request_id,
-      &parameters.text,
-      &parameters.markers);
-  EXPECT_TRUE(ok);
-  return parameters;
-}
-
-void FakeMessageArrival(SpellCheckProvider* provider,
-                        const MessageParameters& parameters) {
+void FakeMessageArrival(
+    SpellCheckProvider* provider,
+    const SpellCheckHostMsg_RequestTextCheck::Param& parameters) {
   std::vector<SpellCheckResult> fake_result;
   bool handled = provider->OnMessageReceived(
       SpellCheckMsg_RespondTextCheck(
           0,
-          parameters.request_id,
+          parameters.b,
           fake_result));
   EXPECT_TRUE(handled);
 }
@@ -60,11 +38,13 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   EXPECT_EQ(provider_.messages_.size(), 1U);
   EXPECT_EQ(provider_.pending_text_request_size(), 1U);
 
-  MessageParameters read_parameters =
-      ReadRequestTextCheck(provider_.messages_[0]);
-  EXPECT_EQ(read_parameters.text, base::UTF8ToUTF16("hello "));
+  SpellCheckHostMsg_RequestTextCheck::Param read_parameters1;
+  bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
+      provider_.messages_[0], &read_parameters1);
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(read_parameters1.c, base::UTF8ToUTF16("hello "));
 
-  FakeMessageArrival(&provider_, read_parameters);
+  FakeMessageArrival(&provider_, read_parameters1);
   EXPECT_EQ(completion.completion_count_, 1U);
   EXPECT_EQ(provider_.pending_text_request_size(), 0U);
 }
@@ -84,13 +64,17 @@ TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
   EXPECT_EQ(provider_.messages_.size(), 2U);
   EXPECT_EQ(provider_.pending_text_request_size(), 2U);
 
-  MessageParameters read_parameters1 =
-      ReadRequestTextCheck(provider_.messages_[0]);
-  EXPECT_EQ(read_parameters1.text, base::UTF8ToUTF16("hello "));
+  SpellCheckHostMsg_RequestTextCheck::Param read_parameters1;
+  bool ok = SpellCheckHostMsg_RequestTextCheck::Read(
+      provider_.messages_[0], &read_parameters1);
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(read_parameters1.c, base::UTF8ToUTF16("hello "));
 
-  MessageParameters read_parameters2 =
-      ReadRequestTextCheck(provider_.messages_[1]);
-  EXPECT_EQ(read_parameters2.text, base::UTF8ToUTF16("bye "));
+  SpellCheckHostMsg_RequestTextCheck::Param read_parameters2;
+  ok = SpellCheckHostMsg_RequestTextCheck::Read(
+      provider_.messages_[1], &read_parameters2);
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(read_parameters2.c, base::UTF8ToUTF16("bye "));
 
   FakeMessageArrival(&provider_, read_parameters1);
   EXPECT_EQ(completion1.completion_count_, 1U);

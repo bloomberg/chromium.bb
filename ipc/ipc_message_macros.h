@@ -434,9 +434,12 @@
 
 // The following macros define the common set of methods provided by ASYNC
 // message classes.
+// This macro is for all the async IPCs that don't pass an extra parameter using
+// IPC_BEGIN_MESSAGE_MAP_WITH_PARAM.
 #define IPC_ASYNC_MESSAGE_METHODS_GENERIC                                     \
-  template<class T, class S, class Method>                                    \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, Method func) {  \
+  template<class T, class S, class P, class Method>                           \
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
+                       Method func) {                                         \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
       DispatchToMethod(obj, func, p);                                         \
@@ -444,124 +447,86 @@
     }                                                                         \
     return false;                                                             \
   }
+
+// The following macros are for for async IPCs which have a dispatcher with an
+// extra parameter specified using IPC_BEGIN_MESSAGE_MAP_WITH_PARAM.
 #define IPC_ASYNC_MESSAGE_METHODS_1                                           \
   IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, typename TA>                                     \
-  static bool Dispatch(const Message* msg, T* obj, S* sender,                 \
-                       void (T::*func)(const Message&, TA)) {                 \
+  template<class T, class S, class P, typename TA>                            \
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
+                       void (T::*func)(P*, TA)) {                             \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(*msg, p.a);                                                \
+      (obj->*func)(parameter, p.a);                                           \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
   }
 #define IPC_ASYNC_MESSAGE_METHODS_2                                           \
   IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, typename TA, typename TB>                        \
-  static bool Dispatch(const Message* msg, T* obj, S* sender,                 \
-                       void (T::*func)(const Message&, TA, TB)) {             \
+  template<class T, class S, class P, typename TA, typename TB>               \
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
+                       void (T::*func)(P*, TA, TB)) {                         \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(*msg, p.a, p.b);                                           \
+      (obj->*func)(parameter, p.a, p.b);                                      \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
-  }                                                                           \
-  template<typename TA, typename TB>                                          \
-  static bool Read(const IPC::Message* msg, TA* a, TB* b) {                   \
-    Schema::Param p;                                                          \
-    if (!Read(msg, &p))                                                       \
-      return false;                                                           \
-    *a = p.a;                                                                 \
-    *b = p.b;                                                                 \
-    return true;                                                              \
   }
 #define IPC_ASYNC_MESSAGE_METHODS_3                                           \
   IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, typename TA, typename TB, typename TC>           \
-  static bool Dispatch(const Message* msg, T* obj, S* sender,                 \
-                       void (T::*func)(const Message&, TA, TB, TC)) {         \
+  template<class T, class S, class P, typename TA, typename TB, typename TC>  \
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
+                       void (T::*func)(P*, TA, TB, TC)) {                     \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(*msg, p.a, p.b, p.c);                                      \
+      (obj->*func)(parameter, p.a, p.b, p.c);                                 \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
-  }                                                                           \
-  template<typename TA, typename TB, typename TC>                             \
-  static bool Read(const IPC::Message* msg, TA* a, TB* b, TC* c) {            \
-    Schema::Param p;                                                          \
-    if (!Read(msg, &p))                                                       \
-      return false;                                                           \
-    *a = p.a;                                                                 \
-    *b = p.b;                                                                 \
-    *c = p.c;                                                                 \
-    return true;                                                              \
   }
 #define IPC_ASYNC_MESSAGE_METHODS_4                                           \
   IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, typename TA, typename TB, typename TC,           \
+  template<class T, class S, class P, typename TA, typename TB, typename TC,  \
            typename TD>                                                       \
-  static bool Dispatch(const Message* msg, T* obj, S* sender,                 \
-                       void (T::*func)(const Message&, TA, TB, TC, TD)) {     \
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
+                       void (T::*func)(P*, TA, TB, TC, TD)) {                 \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(*msg, p.a, p.b, p.c, p.d);                                 \
+      (obj->*func)(parameter, p.a, p.b, p.c, p.d);                            \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
-  }                                                                           \
-  template<typename TA, typename TB, typename TC, typename TD>                \
-  static bool Read(const IPC::Message* msg, TA* a, TB* b, TC* c, TD* d) {     \
-    Schema::Param p;                                                          \
-    if (!Read(msg, &p))                                                       \
-      return false;                                                           \
-    *a = p.a;                                                                 \
-    *b = p.b;                                                                 \
-    *c = p.c;                                                                 \
-    *d = p.d;                                                                 \
-    return true;                                                              \
   }
 #define IPC_ASYNC_MESSAGE_METHODS_5                                           \
   IPC_ASYNC_MESSAGE_METHODS_GENERIC                                           \
-  template<class T, class S, typename TA, typename TB, typename TC,           \
+  template<class T, class S, class P, typename TA, typename TB, typename TC,  \
            typename TD, typename TE>                                          \
-  static bool Dispatch(const Message* msg, T* obj, S* sender,                 \
-                       void (T::*func)(const Message&, TA, TB, TC, TD, TE)) { \
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
+                       void (T::*func)(P*, TA, TB, TC, TD, TE)) {             \
     Schema::Param p;                                                          \
     if (Read(msg, &p)) {                                                      \
-      (obj->*func)(*msg, p.a, p.b, p.c, p.d, p.e);                            \
+      (obj->*func)(parameter, p.a, p.b, p.c, p.d, p.e);                       \
       return true;                                                            \
     }                                                                         \
     return false;                                                             \
-  }                                                                           \
-  template<typename TA, typename TB, typename TC, typename TD, typename TE>   \
-  static bool Read(const IPC::Message* msg, TA* a, TB* b, TC* c, TD* d,       \
-                   TE* e) {                                                   \
-    Schema::Param p;                                                          \
-    if (!Read(msg, &p))                                                       \
-      return false;                                                           \
-    *a = p.a;                                                                 \
-    *b = p.b;                                                                 \
-    *c = p.c;                                                                 \
-    *d = p.d;                                                                 \
-    *e = p.e;                                                                 \
-    return true;                                                              \
   }
 
 // The following macros define the common set of methods provided by SYNC
 // message classes.
 #define IPC_SYNC_MESSAGE_METHODS_GENERIC                                      \
-  template<class T, class S, class Method>                                    \
-  static bool Dispatch(const Message* msg, T* obj, S* sender, Method func) {  \
+  template<class T, class S, class P, class Method>                           \
+  static bool Dispatch(const Message* msg, T* obj, S* sender, P* parameter,   \
+                       Method func) {                                         \
     Schema::SendParam send_params;                                            \
     bool ok = ReadSendParam(msg, &send_params);                               \
     return Schema::DispatchWithSendParams(ok, send_params, msg, obj, sender,  \
                                           func);                              \
   }                                                                           \
-  template<class T, class Method>                                             \
-  static bool DispatchDelayReply(const Message* msg, T* obj, Method func) {   \
+  template<class T, class P, class Method>                                    \
+  static bool DispatchDelayReply(const Message* msg, T* obj, P* parameter,    \
+                                 Method func) {                               \
     Schema::SendParam send_params;                                            \
     bool ok = ReadSendParam(msg, &send_params);                               \
     return Schema::DispatchDelayReplyWithSendParams(ok, send_params, msg,     \
@@ -932,24 +897,32 @@
 
 
 #define IPC_BEGIN_MESSAGE_MAP_EX(class_name, msg, msg_is_ok) \
-  { \
-    typedef class_name _IpcMessageHandlerClass; \
-    const IPC::Message& ipc_message__ = msg; \
-    bool& msg_is_ok__ = msg_is_ok; \
-    switch (ipc_message__.type()) { \
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, msg_is_ok, void, NULL)
 
 #define IPC_BEGIN_MESSAGE_MAP(class_name, msg) \
   { \
     typedef class_name _IpcMessageHandlerClass; \
+    typedef void _ParamClass; \
+    _ParamClass* param__ = NULL; \
     const IPC::Message& ipc_message__ = msg; \
     bool msg_is_ok__ = true; \
     switch (ipc_message__.type()) { \
+
+#define IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, msg_is_ok,           \
+                                         param_type, param)                    \
+  {                                                                            \
+    typedef class_name _IpcMessageHandlerClass;                                \
+    typedef param_type _ParamClass;                                            \
+    _ParamClass* param__ = param;                                              \
+    const IPC::Message& ipc_message__ = msg;                                   \
+    bool& msg_is_ok__ = msg_is_ok;                                             \
+    switch (ipc_message__.type()) {                                            \
 
 #define IPC_MESSAGE_FORWARD(msg_class, obj, member_func)                       \
     case msg_class::ID: {                                                      \
         TRACK_RUN_IN_IPC_HANDLER(member_func);                                 \
         msg_is_ok__ = msg_class::Dispatch(&ipc_message__, obj, this,           \
-                                      &member_func);                           \
+                                          param__, &member_func);              \
       }                                                                        \
       break;
 
@@ -960,7 +933,7 @@
     case msg_class::ID: {                                                      \
         TRACK_RUN_IN_IPC_HANDLER(member_func);                                 \
         msg_is_ok__ = msg_class::DispatchDelayReply(&ipc_message__, obj,       \
-                                                  &member_func);               \
+                                                  param__, &member_func);      \
       }                                                                        \
       break;
 

@@ -178,13 +178,11 @@ TEST_F(InputEventFilterTest, Basic) {
     EXPECT_EQ(kTestRoutingID, message->routing_id());
     EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
 
-    WebInputEvent::Type event_type = WebInputEvent::Undefined;
-    InputEventAckState ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-    ui::LatencyInfo latency_info;
-    EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message,
-                                                        &event_type,
-                                                        &ack_result,
-                                                        &latency_info));
+    InputHostMsg_HandleInputEvent_ACK::Param params;
+    EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message, &params));
+    WebInputEvent::Type event_type = params.a;
+    InputEventAckState ack_result = params.b;
+
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
@@ -206,11 +204,9 @@ TEST_F(InputEventFilterTest, Basic) {
     const IPC::Message& message = message_recorder_.message_at(i);
 
     ASSERT_EQ(InputMsg_HandleInputEvent::ID, message.type());
-    const WebInputEvent* event = NULL;
-    ui::LatencyInfo latency_info;
-    bool is_kbd_shortcut;
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(
-        &message, &event, &latency_info, &is_kbd_shortcut));
+    InputMsg_HandleInputEvent::Param params;
+    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(&message, &params));
+    const WebInputEvent* event = params.a;
 
     EXPECT_EQ(kEvents[i].size, event->size);
     EXPECT_TRUE(memcmp(&kEvents[i], event, event->size) == 0);
@@ -234,13 +230,10 @@ TEST_F(InputEventFilterTest, Basic) {
     EXPECT_EQ(kTestRoutingID, message->routing_id());
     EXPECT_EQ(InputHostMsg_HandleInputEvent_ACK::ID, message->type());
 
-    WebInputEvent::Type event_type = WebInputEvent::Undefined;
-    InputEventAckState ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-    ui::LatencyInfo latency_info;
-    EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message,
-                                                        &event_type,
-                                                        &ack_result,
-                                                        &latency_info));
+    InputHostMsg_HandleInputEvent_ACK::Param params;
+    EXPECT_TRUE(InputHostMsg_HandleInputEvent_ACK::Read(message, &params));
+    WebInputEvent::Type event_type = params.a;
+    InputEventAckState ack_result = params.b;
     EXPECT_EQ(kEvents[i].type, event_type);
     EXPECT_EQ(ack_result, INPUT_EVENT_ACK_STATE_CONSUMED);
   }

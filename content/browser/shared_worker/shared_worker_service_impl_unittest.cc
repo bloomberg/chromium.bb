@@ -357,8 +357,10 @@ void CheckWorkerMsgConnect(MockRendererProcessHost* renderer_host,
   scoped_ptr<IPC::Message> msg(renderer_host->PopMessage());
   EXPECT_EQ(WorkerMsg_Connect::ID, msg->type());
   EXPECT_EQ(expected_msg_route_id, msg->routing_id());
-  int port_id;
-  EXPECT_TRUE(WorkerMsg_Connect::Read(msg.get(), &port_id, routing_id));
+  WorkerMsg_Connect::Param params;
+  EXPECT_TRUE(WorkerMsg_Connect::Read(msg.get(), &params));
+  int port_id = params.a;
+  *routing_id = params.b;
   EXPECT_EQ(expected_sent_message_port_id, port_id);
 }
 
@@ -368,11 +370,9 @@ void CheckMessagePortMsgMessage(MockRendererProcessHost* renderer_host,
   scoped_ptr<IPC::Message> msg(renderer_host->PopMessage());
   EXPECT_EQ(MessagePortMsg_Message::ID, msg->type());
   EXPECT_EQ(expected_msg_route_id, msg->routing_id());
-  base::string16 data;
-  std::vector<int> sent_message_port_ids;
-  std::vector<int> new_routing_ids;
-  EXPECT_TRUE(MessagePortMsg_Message::Read(
-      msg.get(), &data, &sent_message_port_ids, &new_routing_ids));
+  MessagePortMsg_Message::Param params;
+  EXPECT_TRUE(MessagePortMsg_Message::Read(msg.get(), &params));
+  base::string16 data = params.a;
   EXPECT_EQ(base::ASCIIToUTF16(expected_data), data);
 }
 

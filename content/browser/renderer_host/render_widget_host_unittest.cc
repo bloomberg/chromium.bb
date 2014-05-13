@@ -2242,15 +2242,13 @@ TEST_F(RenderWidgetHostTest, OverscrollResetsOnBlur) {
 }
 
 std::string GetInputMessageTypes(RenderWidgetHostProcess* process) {
-  const WebInputEvent* event = NULL;
-  ui::LatencyInfo latency_info;
-  bool is_keyboard_shortcut;
   std::string result;
   for (size_t i = 0; i < process->sink().message_count(); ++i) {
     const IPC::Message *message = process->sink().GetMessageAt(i);
     EXPECT_EQ(InputMsg_HandleInputEvent::ID, message->type());
-    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(
-        message, &event, &latency_info, &is_keyboard_shortcut));
+    InputMsg_HandleInputEvent::Param params;
+    EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
+    const WebInputEvent* event = params.a;
     if (i != 0)
       result += " ";
     result += WebInputEventTraits::GetName(event->type);
@@ -2573,14 +2571,12 @@ TEST_F(RenderWidgetHostTest, InputRouterReceivesHasTouchEventHandlers) {
 void CheckLatencyInfoComponentInMessage(RenderWidgetHostProcess* process,
                                         int64 component_id,
                                         WebInputEvent::Type input_type) {
-  const WebInputEvent* event = NULL;
-  ui::LatencyInfo latency_info;
-  bool is_keyboard_shortcut;
   const IPC::Message* message = process->sink().GetUniqueMessageMatching(
       InputMsg_HandleInputEvent::ID);
   ASSERT_TRUE(message);
-  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(
-      message, &event, &latency_info, &is_keyboard_shortcut));
+  InputMsg_HandleInputEvent::Param params;
+  EXPECT_TRUE(InputMsg_HandleInputEvent::Read(message, &params));
+  ui::LatencyInfo latency_info = params.b;
   EXPECT_TRUE(latency_info.FindLatency(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
       component_id,

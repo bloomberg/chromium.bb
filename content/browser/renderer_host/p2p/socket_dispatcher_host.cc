@@ -160,8 +160,7 @@ P2PSocketHost* P2PSocketDispatcherHost::LookupSocket(int socket_id) {
   return (it == sockets_.end()) ? NULL : it->second;
 }
 
-void P2PSocketDispatcherHost::OnStartNetworkNotifications(
-    const IPC::Message& msg) {
+void P2PSocketDispatcherHost::OnStartNetworkNotifications() {
   if (!monitoring_networks_) {
     net::NetworkChangeNotifier::AddIPAddressObserver(this);
     monitoring_networks_ = true;
@@ -172,8 +171,7 @@ void P2PSocketDispatcherHost::OnStartNetworkNotifications(
           &P2PSocketDispatcherHost::DoGetNetworkList, this));
 }
 
-void P2PSocketDispatcherHost::OnStopNetworkNotifications(
-    const IPC::Message& msg) {
+void P2PSocketDispatcherHost::OnStopNetworkNotifications() {
   if (monitoring_networks_) {
     net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
     monitoring_networks_ = false;

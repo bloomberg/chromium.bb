@@ -193,7 +193,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnOpenChannelToPpapiBroker(int routing_id,
                                   const base::FilePath& path);
   void OnGenerateRoutingID(int* route_id);
-  void OnDownloadUrl(const IPC::Message& message,
+  void OnDownloadUrl(int render_view_id,
                      const GURL& url,
                      const Referrer& referrer,
                      const base::string16& suggested_name,

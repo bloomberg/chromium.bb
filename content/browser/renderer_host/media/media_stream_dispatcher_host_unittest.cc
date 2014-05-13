@@ -51,7 +51,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       MediaStreamManager* manager)
       : MediaStreamDispatcherHost(kProcessId, salt_callback, manager),
-        message_loop_(message_loop) {}
+        message_loop_(message_loop),
+        current_ipc_(NULL) {}
 
   // A list of mock methods.
   MOCK_METHOD4(OnStreamGenerated,
@@ -114,35 +115,36 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   // conversation between this object and the renderer.
   virtual bool Send(IPC::Message* message) OVERRIDE {
     CHECK(message);
+    current_ipc_ = message;
 
     // In this method we dispatch the messages to the according handlers as if
     // we are the renderer.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(MockMediaStreamDispatcherHost, *message)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerated, OnStreamGenerated)
+      IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerated,
+                          OnStreamGeneratedInternal)
       IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerationFailed,
-                          OnStreamGenerationFailed)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceStopped, OnDeviceStopped)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpened, OnDeviceOpened)
-      IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerated,
-                          OnDevicesEnumerated)
+                          OnStreamGenerationFailedInternal)
+      IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceStopped, OnDeviceStoppedInternal)
+      IPC_MESSAGE_HANDLER(MediaStreamMsg_DeviceOpened, OnDeviceOpenedInternal)
+      IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerated, OnDevicesEnumerated)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
 
     delete message;
+    current_ipc_ = NULL;
     return true;
   }
 
   // These handler methods do minimal things and delegate to the mock methods.
-  void OnStreamGenerated(
-      const IPC::Message& msg,
+  void OnStreamGeneratedInternal(
       int request_id,
       std::string label,
       StreamDeviceInfoArray audio_device_list,
       StreamDeviceInfoArray video_device_list) {
-    OnStreamGenerated(msg.routing_id(), request_id, audio_device_list.size(),
-        video_device_list.size());
+    OnStreamGenerated(current_ipc_->routing_id(), request_id,
+                      audio_device_list.size(), video_device_list.size());
     // Notify that the event have occurred.
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
@@ -153,11 +155,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     video_devices_ = video_device_list;
   }
 
-  void OnStreamGenerationFailed(
-      const IPC::Message& msg,
+  void OnStreamGenerationFailedInternal(
       int request_id,
       content::MediaStreamRequestResult result) {
-    OnStreamGenerationFailed(msg.routing_id(), request_id, result);
+    OnStreamGenerationFailed(current_ipc_->routing_id(), request_id, result);
     if (!quit_closures_.empty()) {
       base::Closure quit_closure = quit_closures_.front();
       quit_closures_.pop();
@@ -167,21 +168,19 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     label_= "";
   }
 
-  void OnDeviceStopped(const IPC::Message& msg,
-                       const std::string& label,
-                       const content::StreamDeviceInfo& device) {
+  void OnDeviceStoppedInternal(const std::string& label,
+                               const content::StreamDeviceInfo& device) {
     if (IsVideoMediaType(device.device.type))
       EXPECT_TRUE(StreamDeviceInfo::IsEqual(device, video_devices_[0]));
     if (IsAudioMediaType(device.device.type))
       EXPECT_TRUE(StreamDeviceInfo::IsEqual(device, audio_devices_[0]));
 
-    OnDeviceStopped(msg.routing_id());
+    OnDeviceStopped(current_ipc_->routing_id());
   }
 
-  void OnDeviceOpened(const IPC::Message& msg,
-                      int request_id,
-                      const std::string& label,
-                      const StreamDeviceInfo& device) {
+  void OnDeviceOpenedInternal(int request_id,
+                              const std::string& label,
+                              const StreamDeviceInfo& device) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
     message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
@@ -189,8 +188,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     opened_device_ = device;
   }
 
-  void OnDevicesEnumerated(const IPC::Message& msg,
-                           int request_id,
+  void OnDevicesEnumerated(int request_id,
                            const StreamDeviceInfoArray& devices) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
@@ -199,7 +197,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
   }
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-
+  IPC::Message* current_ipc_;
   std::queue<base::Closure> quit_closures_;
 };
 

@@ -537,9 +537,10 @@ TEST_F(RenderViewImplTest, ReloadWhileSwappedOut) {
   const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
-  int page_id_A;
-  PageState state_A;
-  ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
+  ViewHostMsg_UpdateState::Param params;
+  ViewHostMsg_UpdateState::Read(msg_A, &params);
+  int page_id_A = params.a;
+  PageState state_A = params.b;
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
@@ -609,9 +610,10 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
-  int page_id_A;
-  PageState state_A;
-  ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
+  ViewHostMsg_UpdateState::Param param;
+  ViewHostMsg_UpdateState::Read(msg_A, &param);
+  int page_id_A = param.a;
+  PageState state_A = param.b;
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
@@ -623,9 +625,9 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
-  int page_id_B;
-  PageState state_B;
-  ViewHostMsg_UpdateState::Read(msg_B, &page_id_B, &state_B);
+  ViewHostMsg_UpdateState::Read(msg_B, &param);
+  int page_id_B = param.a;
+  PageState state_B = param.b;
   EXPECT_EQ(2, page_id_B);
   EXPECT_NE(state_A, state_B);
   render_thread_->sink().ClearMessages();
@@ -638,9 +640,9 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   const IPC::Message* msg_C = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_C);
-  int page_id_C;
-  PageState state_C;
-  ViewHostMsg_UpdateState::Read(msg_C, &page_id_C, &state_C);
+  ViewHostMsg_UpdateState::Read(msg_C, &param);
+  int page_id_C = param.a;
+  PageState state_C = param.b;
   EXPECT_EQ(3, page_id_C);
   EXPECT_NE(state_B, state_C);
   render_thread_->sink().ClearMessages();
@@ -690,9 +692,9 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
   const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg);
-  int page_id;
-  PageState state;
-  ViewHostMsg_UpdateState::Read(msg, &page_id, &state);
+  ViewHostMsg_UpdateState::Read(msg, &param);
+  int page_id = param.a;
+  PageState state = param.b;
   EXPECT_EQ(page_id_C, page_id);
   EXPECT_NE(state_A, state);
   EXPECT_NE(state_B, state);
@@ -720,9 +722,10 @@ TEST_F(RenderViewImplTest, StaleNavigationsIgnored) {
   const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
-  int page_id_A;
-  PageState state_A;
-  ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
+  ViewHostMsg_UpdateState::Param param;
+  ViewHostMsg_UpdateState::Read(msg_A, &param);
+  int page_id_A = param.a;
+  PageState state_A = param.b;
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
@@ -785,9 +788,10 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   const IPC::Message* msg_A = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_A);
-  int page_id_A;
-  PageState state_A;
-  ViewHostMsg_UpdateState::Read(msg_A, &page_id_A, &state_A);
+  ViewHostMsg_UpdateState::Param param;
+  ViewHostMsg_UpdateState::Read(msg_A, &param);
+  int page_id_A = param.a;
+  PageState state_A = param.b;
   EXPECT_EQ(1, page_id_A);
   render_thread_->sink().ClearMessages();
 
@@ -802,9 +806,9 @@ TEST_F(RenderViewImplTest, DontIgnoreBackAfterNavEntryLimit) {
   const IPC::Message* msg_B = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_UpdateState::ID);
   ASSERT_TRUE(msg_B);
-  int page_id_B;
-  PageState state_B;
-  ViewHostMsg_UpdateState::Read(msg_B, &page_id_B, &state_B);
+  ViewHostMsg_UpdateState::Read(msg_B, &param);
+  int page_id_B = param.a;
+  PageState state_B = param.b;
   EXPECT_EQ(2, page_id_B);
   render_thread_->sink().ClearMessages();
 
@@ -895,13 +899,11 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
     EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-    ui::TextInputType type;
-    bool can_compose_inline = false;
-    ui::TextInputMode input_mode = ui::TEXT_INPUT_MODE_DEFAULT;
-    ViewHostMsg_TextInputTypeChanged::Read(msg,
-                                           &type,
-                                           &input_mode,
-                                           &can_compose_inline);
+    ViewHostMsg_TextInputTypeChanged::Param params;
+    ViewHostMsg_TextInputTypeChanged::Read(msg, &params);
+    ui::TextInputType type = params.a;
+    ui::TextInputMode input_mode = params.b;
+    bool can_compose_inline = params.c;
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, type);
     EXPECT_EQ(true, can_compose_inline);
 
@@ -917,10 +919,9 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != NULL);
     EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-    ViewHostMsg_TextInputTypeChanged::Read(msg,
-                                           &type,
-                                           &input_mode,
-                                           &can_compose_inline);
+    ViewHostMsg_TextInputTypeChanged::Read(msg, & params);
+    type = params.a;
+    input_mode = params.b;
     EXPECT_EQ(ui::TEXT_INPUT_TYPE_PASSWORD, type);
 
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kInputModeTestCases); i++) {
@@ -940,10 +941,9 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != NULL);
       EXPECT_EQ(ViewHostMsg_TextInputTypeChanged::ID, msg->type());
-      ViewHostMsg_TextInputTypeChanged::Read(msg,
-                                            &type,
-                                            &input_mode,
-                                            &can_compose_inline);
+      ViewHostMsg_TextInputTypeChanged::Read(msg, & params);
+      type = params.a;
+      input_mode = params.b;
       EXPECT_EQ(test_case->expected_mode, input_mode);
     }
   }

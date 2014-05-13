@@ -269,9 +269,9 @@ TEST_F(BrowserPluginTest, SrcAttribute) {
             BrowserPluginHostMsg_NavigateGuest::ID);
     ASSERT_TRUE(msg);
 
-    int instance_id = 0;
-    std::string src;
-    BrowserPluginHostMsg_NavigateGuest::Read(msg, &instance_id, &src);
+    BrowserPluginHostMsg_NavigateGuest::Param params;
+    BrowserPluginHostMsg_NavigateGuest::Read(msg, &params);
+    std::string src = params.b;
     EXPECT_EQ("bar", src);
     std::string src_value =
         ExecuteScriptAndReturnString(
@@ -328,8 +328,10 @@ TEST_F(BrowserPluginTest, ResizeFlowControl) {
       browser_plugin_manager()->sink().GetUniqueMessageMatching(
           BrowserPluginHostMsg_ResizeGuest::ID);
   ASSERT_TRUE(msg);
-  BrowserPluginHostMsg_ResizeGuest_Params params;
-  BrowserPluginHostMsg_ResizeGuest::Read(msg, &instance_id, &params);
+  BrowserPluginHostMsg_ResizeGuest::Param param;
+  BrowserPluginHostMsg_ResizeGuest::Read(msg, &param);
+  instance_id = param.a;
+  BrowserPluginHostMsg_ResizeGuest_Params params = param.b;
   EXPECT_EQ(641, params.view_rect.width());
   EXPECT_EQ(480, params.view_rect.height());
 
@@ -576,13 +578,10 @@ TEST_F(BrowserPluginTest, AutoSizeAttributes) {
             BrowserPluginHostMsg_SetAutoSize::ID);
     ASSERT_TRUE(auto_size_msg);
 
-    int instance_id = 0;
-    BrowserPluginHostMsg_AutoSize_Params auto_size_params;
-    BrowserPluginHostMsg_ResizeGuest_Params resize_params;
-    BrowserPluginHostMsg_SetAutoSize::Read(auto_size_msg,
-                                           &instance_id,
-                                           &auto_size_params,
-                                           &resize_params);
+    BrowserPluginHostMsg_SetAutoSize::Param param;
+    BrowserPluginHostMsg_SetAutoSize::Read(auto_size_msg, &param);
+    BrowserPluginHostMsg_AutoSize_Params auto_size_params = param.b;
+    BrowserPluginHostMsg_ResizeGuest_Params resize_params = param.c;
     EXPECT_FALSE(auto_size_params.enable);
     // These value are not populated (as an optimization) if autosize is
     // disabled.

@@ -40,13 +40,12 @@ TestingSpellCheckProvider::~TestingSpellCheckProvider() {
 }
 
 bool TestingSpellCheckProvider::Send(IPC::Message* message)  {
+#if !defined(OS_MACOSX)
   // Call our mock message handlers.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TestingSpellCheckProvider, *message)
-#if !defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CallSpellingService,
                         OnCallSpellingService)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -54,6 +53,7 @@ bool TestingSpellCheckProvider::Send(IPC::Message* message)  {
     delete message;
     return true;
   }
+#endif
 
   messages_.push_back(message);
   return true;

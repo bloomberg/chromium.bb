@@ -101,15 +101,13 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
       kRouteId, kCallbackId, kMarkers, kSuccess, kText, results);
   EXPECT_EQ(static_cast<size_t>(1), filter->sent_messages.size());
 
-  int sent_identifier = -1;
-  bool sent_success = false;
-  base::string16 sent_text;
-  std::vector<SpellCheckResult> sent_results;
-  bool ok = SpellCheckMsg_RespondSpellingService::Read(filter->sent_messages[0],
-                                                       &sent_identifier,
-                                                       &sent_success,
-                                                       &sent_text,
-                                                       &sent_results);
+  SpellCheckMsg_RespondSpellingService::Param params;
+  bool ok = SpellCheckMsg_RespondSpellingService::Read(
+      filter->sent_messages[0], & params);
+  int sent_identifier = params.a;
+  bool sent_success = params.b;
+  base::string16 sent_text = params.c;
+  std::vector<SpellCheckResult> sent_results = params.d;
   EXPECT_TRUE(ok);
   EXPECT_EQ(kCallbackId, sent_identifier);
   EXPECT_EQ(kSuccess, sent_success);
@@ -134,15 +132,11 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTest) {
       true,  base::ASCIIToUTF16("Helllo walrd"), results);
   EXPECT_EQ(static_cast<size_t>(1), filter->sent_messages.size());
 
-  int sent_identifier = -1;
-  bool sent_success = false;
-  base::string16 sent_text;
-  std::vector<SpellCheckResult> sent_results;
-  bool ok = SpellCheckMsg_RespondSpellingService::Read(filter->sent_messages[0],
-                                                       &sent_identifier,
-                                                       &sent_success,
-                                                       &sent_text,
-                                                       &sent_results);
+  SpellCheckMsg_RespondSpellingService::Param params;
+  bool ok = SpellCheckMsg_RespondSpellingService::Read(
+      filter->sent_messages[0], & params);
+  base::string16 sent_text = params.c;
+  std::vector<SpellCheckResult> sent_results = params.d;
   EXPECT_TRUE(ok);
   EXPECT_EQ(static_cast<size_t>(2), sent_results.size());
 }

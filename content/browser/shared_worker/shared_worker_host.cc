@@ -237,12 +237,12 @@ void SharedWorkerHost::RelayMessage(
     return;
   if (message.type() == WorkerMsg_Connect::ID) {
     // Crack the SharedWorker Connect message to setup routing for the port.
-    int sent_message_port_id;
-    int new_routing_id;
-    if (!WorkerMsg_Connect::Read(
-            &message, &sent_message_port_id, &new_routing_id)) {
+    WorkerMsg_Connect::Param param;
+    if (!WorkerMsg_Connect::Read(&message, &param))
       return;
-    }
+    int sent_message_port_id = param.a;
+    int new_routing_id = param.b;
+
     DCHECK(container_render_filter_);
     new_routing_id = container_render_filter_->GetNextRoutingID();
     MessagePortService::GetInstance()->UpdateMessagePort(

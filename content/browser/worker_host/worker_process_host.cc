@@ -510,12 +510,12 @@ void WorkerProcessHost::RelayMessage(
     WorkerInstance* instance) {
   if (message.type() == WorkerMsg_Connect::ID) {
     // Crack the SharedWorker Connect message to setup routing for the port.
-    int sent_message_port_id;
-    int new_routing_id;
-    if (!WorkerMsg_Connect::Read(
-            &message, &sent_message_port_id, &new_routing_id)) {
+    WorkerMsg_Connect::Param params;
+    if (!WorkerMsg_Connect::Read(&message, &params))
       return;
-    }
+
+    int sent_message_port_id = params.a;
+    int new_routing_id = params.b;
     new_routing_id = worker_message_filter_->GetNextRoutingID();
     MessagePortService::GetInstance()->UpdateMessagePort(
         sent_message_port_id,

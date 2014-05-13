@@ -146,12 +146,12 @@ void InputEventFilter::ForwardToHandler(const IPC::Message& message) {
   }
 
   int routing_id = message.routing_id();
-  ui::LatencyInfo latency_info;
-  const WebInputEvent* event = NULL;
-  bool is_keyboard_shortcut;
-  if (!InputMsg_HandleInputEvent::Read(
-          &message, &event, &latency_info, &is_keyboard_shortcut))
+  InputMsg_HandleInputEvent::Param params;
+  if (!InputMsg_HandleInputEvent::Read(&message, &params))
     return;
+  const WebInputEvent* event = params.a;
+  ui::LatencyInfo latency_info = params.b;
+  bool is_keyboard_shortcut = params.c;
   DCHECK(event);
 
   InputEventAckState ack = handler_.Run(routing_id, event, &latency_info);

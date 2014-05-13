@@ -859,10 +859,10 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
 }
 
 void ResourceDispatcherHostImpl::OnRequestResource(
-    const IPC::Message& message,
+    int routing_id,
     int request_id,
     const ResourceHostMsg_Request& request_data) {
-  BeginRequest(request_id, request_data, NULL, message.routing_id());
+  BeginRequest(request_id, request_data, NULL, routing_id);
 }
 
 // Begins a resource request with the given params on behalf of the specified
