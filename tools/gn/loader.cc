@@ -19,20 +19,6 @@
 #include "tools/gn/source_file.h"
 #include "tools/gn/trace.h"
 
-namespace {
-
-std::string GetOutputSubdirName(const Label& toolchain_label, bool is_default) {
-  // The default toolchain has no subdir.
-  if (is_default)
-    return std::string();
-
-  // For now just assume the toolchain name is always a valid dir name. We may
-  // want to clean up the in the future.
-  return toolchain_label.name();
-}
-
-}  // namespace
-
 // Identifies one time a file is loaded in a given toolchain so we don't load
 // it more than once.
 struct LoaderImpl::LoadID {

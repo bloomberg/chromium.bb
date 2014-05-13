@@ -147,6 +147,14 @@ Value RunGetEnv(Scope* scope,
                 const std::vector<Value>& args,
                 Err* err);
 
+extern const char kGetLabelInfo[];
+extern const char kGetLabelInfo_HelpShort[];
+extern const char kGetLabelInfo_Help[];
+Value RunGetLabelInfo(Scope* scope,
+                      const FunctionCallNode* function,
+                      const std::vector<Value>& args,
+                      Err* err);
+
 extern const char kGetTargetOutputs[];
 extern const char kGetTargetOutputs_HelpShort[];
 extern const char kGetTargetOutputs_Help[];

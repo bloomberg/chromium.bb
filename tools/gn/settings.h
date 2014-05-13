@@ -33,10 +33,12 @@ class Settings {
     WIN
   };
 
-  // Constructs a toolchain settings. The output_subdir_name is the name we
-  // should use for the subdirectory in the build output directory for this
-  // toolchain's outputs. It should have no slashes in it. The default
-  // toolchain should use an empty string.
+  // Constructs a toolchain settings.
+  //
+  // The output_subdir_name is the name we should use for the subdirectory in
+  // the build output directory for this toolchain's outputs. The default
+  // toolchain would use an empty string (it goes in the root build dir).
+  // Otherwise, it must end in a slash.
   Settings(const BuildSettings* build_settings,
            const std::string& output_subdir_name);
   ~Settings();

@@ -178,7 +178,7 @@ TEST_F(BuilderTest, ShouldGenerate) {
   DefineToolchain();
 
   // Define a secondary toolchain.
-  Settings settings2(&build_settings_, "secondary");
+  Settings settings2(&build_settings_, "secondary/");
   Label toolchain_label2(SourceDir("//tc/"), "secondary");
   settings2.set_toolchain_label(toolchain_label2);
   Toolchain* tc2 = new Toolchain(&settings2, toolchain_label2);

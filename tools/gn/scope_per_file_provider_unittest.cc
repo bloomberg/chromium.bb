@@ -35,7 +35,7 @@ TEST(ScopePerFileProvider, Expected) {
 
   // Test some with an alternate toolchain.
   {
-    Settings settings(test.build_settings(), "tc");
+    Settings settings(test.build_settings(), "tc/");
     Toolchain toolchain(&settings, Label(SourceDir("//toolchain/"), "tc"));
     settings.set_toolchain_label(toolchain.label());
 

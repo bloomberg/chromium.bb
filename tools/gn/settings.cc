@@ -14,13 +14,12 @@ Settings::Settings(const BuildSettings* build_settings,
       import_manager_(),
       base_config_(this),
       greedy_target_generation_(false) {
-  DCHECK(output_subdir_name.find('/') == std::string::npos);
   if (output_subdir_name.empty()) {
     toolchain_output_dir_ = build_settings->build_dir();
   } else {
     // We guarantee this ends in a slash.
+    DCHECK(output_subdir_name[output_subdir_name.size() - 1] == '/');
     toolchain_output_subdir_.value().append(output_subdir_name);
-    toolchain_output_subdir_.value().push_back('/');
 
     DCHECK(!build_settings->build_dir().is_null());
     toolchain_output_dir_ = SourceDir(build_settings->build_dir().value() +

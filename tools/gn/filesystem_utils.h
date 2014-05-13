@@ -166,11 +166,21 @@ SourceDir SourceDirForPath(const base::FilePath& source_root,
 // directory.
 SourceDir SourceDirForCurrentDirectory(const base::FilePath& source_root);
 
+// Given the label of a toolchain and whether that toolchain is the default
+// toolchain, returns the name of the subdirectory for that toolchain's
+// output. This will be the empty string to indicate that the toolchain outputs
+// go in the root build directory. Otherwise, the result will end in a slash.
+std::string GetOutputSubdirName(const Label& toolchain_label, bool is_default);
+
 // -----------------------------------------------------------------------------
 
 // These functions return the various flavors of output and gen directories.
 SourceDir GetToolchainOutputDir(const Settings* settings);
+SourceDir GetToolchainOutputDir(const BuildSettings* build_settings,
+                                const Label& label, bool is_default);
 SourceDir GetToolchainGenDir(const Settings* settings);
+SourceDir GetToolchainGenDir(const BuildSettings* build_settings,
+                             const Label& toolchain_label, bool is_default);
 SourceDir GetOutputDirForSourceDir(const Settings* settings,
                                    const SourceDir& source_dir);
 SourceDir GetGenDirForSourceDir(const Settings* settings,
