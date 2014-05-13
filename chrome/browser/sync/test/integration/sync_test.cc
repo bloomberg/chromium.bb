@@ -594,8 +594,15 @@ void SyncTest::DecideServerType() {
       // one that makes sense for most developers. FakeServer is the
       // current solution but some scenarios are only supported by the
       // legacy python server.
-        server_type_ = test_type_ == SINGLE_CLIENT || test_type_ == TWO_CLIENT ?
-              IN_PROCESS_FAKE_SERVER : LOCAL_PYTHON_SERVER;
+      switch (test_type_) {
+        case SINGLE_CLIENT:
+        case TWO_CLIENT:
+        case MULTIPLE_CLIENT:
+          server_type_ = IN_PROCESS_FAKE_SERVER;
+          break;
+        default:
+          server_type_ = LOCAL_PYTHON_SERVER;
+      }
     } else if (cl->HasSwitch(switches::kSyncServiceURL) &&
                cl->HasSwitch(switches::kSyncServerCommandLine)) {
       // If a sync server URL and a sync server command line are provided,
