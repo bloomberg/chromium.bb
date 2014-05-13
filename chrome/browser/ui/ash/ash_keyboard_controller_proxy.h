@@ -46,7 +46,6 @@ class AshKeyboardControllerProxy
       const content::MediaResponseCallback& callback) OVERRIDE;
   virtual void SetupWebContents(content::WebContents* contents) OVERRIDE;
   virtual void ShowKeyboardContainer(aura::Window* container) OVERRIDE;
-  virtual void EnsureCaretInWorkArea() OVERRIDE;
 
   // The overridden implementation dispatches
   // chrome.virtualKeyboardPrivate.onTextInputBoxFocused event to extension to

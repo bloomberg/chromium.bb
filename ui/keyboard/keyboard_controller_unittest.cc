@@ -188,8 +188,9 @@ class KeyboardControllerTest : public testing::Test {
   KeyboardController* controller() { return controller_.get(); }
 
   void ShowKeyboard() {
-    ui::DummyTextInputClient test_text_input_client(ui::TEXT_INPUT_TYPE_TEXT);
-    SetFocus(&test_text_input_client);
+    test_text_input_client_.reset(
+        new ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT));
+    SetFocus(test_text_input_client_.get());
   }
 
  protected:
@@ -218,7 +219,7 @@ class KeyboardControllerTest : public testing::Test {
  private:
   KeyboardControllerProxy* proxy_;
   scoped_ptr<KeyboardController> controller_;
-
+  scoped_ptr<ui::TextInputClient> test_text_input_client_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerTest);
 };
 

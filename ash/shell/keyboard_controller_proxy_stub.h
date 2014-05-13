@@ -33,10 +33,9 @@ class KeyboardControllerProxyStub : public keyboard::KeyboardControllerProxy {
   virtual void LoadSystemKeyboard() OVERRIDE;
   virtual void ReloadKeyboardIfNeeded() OVERRIDE;
 
-
   aura::test::TestWindowDelegate delegate_;
   scoped_ptr<aura::Window> keyboard_;
-
+  scoped_ptr<ui::InputMethod> input_method_;
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerProxyStub);
 };
 

@@ -25,6 +25,9 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/base/ime/dummy_text_input_client.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/events/test/test_event_handler.h"
 #include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -616,6 +619,25 @@ class VirtualKeyboardRootWindowControllerTest : public RootWindowControllerTest
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardRootWindowControllerTest);
 };
 
+class MockTextInputClient : public ui::DummyTextInputClient {
+ public:
+  MockTextInputClient() :
+      ui::DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
+
+  virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE {
+    visible_rect_ = rect;
+  }
+
+  const gfx::Rect& visible_rect() const {
+    return visible_rect_;
+  }
+
+ private:
+  gfx::Rect visible_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTextInputClient);
+};
+
 // Test for http://crbug.com/297858. Virtual keyboard container should only show
 // on primary root window.
 TEST_F(VirtualKeyboardRootWindowControllerTest,
@@ -764,6 +786,38 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, ClickWithActiveModalDialog) {
   root_window_event_generator.ClickLeftButton();
   EXPECT_EQ(2, handler.num_mouse_events() / 2);
   root_window->RemovePreTargetHandler(&handler);
+}
+
+// Ensure that the visible area for scrolling the text caret excludes the
+// region occluded by the on-screen keyboard.
+TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  keyboard::KeyboardControllerProxy* proxy = keyboard_controller->proxy();
+
+  MockTextInputClient text_input_client;
+  ui::InputMethod* input_method = proxy->GetInputMethod();
+  ASSERT_TRUE(input_method);
+  input_method->SetFocusedTextInputClient(&text_input_client);
+
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* keyboard_container =
+      Shell::GetContainer(root_window, kShellWindowId_VirtualKeyboardContainer);
+  ASSERT_TRUE(keyboard_container);
+  keyboard_container->Show();
+
+  const int keyboard_height = 100;
+  aura::Window* keyboard_window =proxy->GetKeyboardWindow();
+  keyboard_container->AddChild(keyboard_window);
+  keyboard_window->set_owned_by_parent(false);
+  keyboard_window->SetBounds(keyboard::KeyboardBoundsFromWindowBounds(
+      keyboard_container->bounds(), keyboard_height));
+
+  proxy->EnsureCaretInWorkArea();
+  ASSERT_EQ(keyboard_container->bounds().width(),
+            text_input_client.visible_rect().width());
+  ASSERT_EQ(keyboard_container->bounds().height() - keyboard_height,
+            text_input_client.visible_rect().height());
 }
 
 }  // namespace test
