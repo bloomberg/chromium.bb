@@ -1594,6 +1594,8 @@ class Port(object):
                               ['--force-compositing-mode']),
             PhysicalTestSuite('pointer-lock',
                               ['--force-compositing-mode']),
+            PhysicalTestSuite('printing',
+                              ['--force-compositing-mode']),
             PhysicalTestSuite('push_messaging',
                               ['--force-compositing-mode']),
             PhysicalTestSuite('resources',
