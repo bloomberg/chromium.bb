@@ -194,15 +194,15 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
 }
 
 TransportData::~TransportData() {
-  if (platform_handles_) {
-    for (size_t i = 0; i < platform_handles_->size(); i++)
-      (*platform_handles_)[i].CloseIfNecessary();
-  }
+  if (platform_handles_)
+    embedder::CloseAllHandlesAndClear(platform_handles_.get());
 }
 
 // static
-const char* TransportData::ValidateBuffer(const void* buffer,
-                                          size_t buffer_size) {
+const char* TransportData::ValidateBuffer(
+    size_t serialized_platform_handle_size,
+    const void* buffer,
+    size_t buffer_size) {
   DCHECK(buffer);
   DCHECK_GT(buffer_size, 0u);
 
@@ -224,11 +224,37 @@ const char* TransportData::ValidateBuffer(const void* buffer,
   if (buffer_size < sizeof(Header) + num_handles * sizeof(HandleTableEntry))
     return "Message secondary buffer too small";
 
-  // TODO(vtl): Check |platform_handle_table_offset| and |num_platform_handles|
-  // once they're used.
-  if (header->platform_handle_table_offset != 0 ||
-      header->num_platform_handles != 0)
-    return "Bad message secondary buffer header values";
+  if (header->num_platform_handles == 0) {
+    // Then |platform_handle_table_offset| should also be zero.
+    if (header->platform_handle_table_offset != 0) {
+      return
+          "Message has no handles attached, but platform handle table present";
+    }
+  } else {
+    // |num_handles| has already been validated, so the multiplication is okay.
+    if (header->num_platform_handles >
+            num_handles * kMaxSerializedDispatcherPlatformHandles)
+      return "Message has too many platform handles attached";
+
+    static const char kInvalidPlatformHandleTableOffset[] =
+        "Message has invalid platform handle table offset";
+    // This doesn't check that the platform handle table doesn't alias other
+    // stuff, but it doesn't matter, since it's all read-only.
+    if (header->platform_handle_table_offset %
+            MessageInTransit::kMessageAlignment != 0)
+      return kInvalidPlatformHandleTableOffset;
+
+    // ">" instead of ">=" since the size per handle may be zero.
+    if (header->platform_handle_table_offset > buffer_size)
+      return kInvalidPlatformHandleTableOffset;
+
+    // We already checked |platform_handle_table_offset| and
+    // |num_platform_handles|, so the addition and multiplication are okay.
+    if (header->platform_handle_table_offset +
+            header->num_platform_handles * serialized_platform_handle_size >
+            buffer_size)
+      return kInvalidPlatformHandleTableOffset;
+  }
 
   const HandleTableEntry* handle_table =
       reinterpret_cast<const HandleTableEntry*>(
@@ -251,6 +277,20 @@ const char* TransportData::ValidateBuffer(const void* buffer,
   }
 
   return NULL;
+}
+
+// static
+void TransportData::GetPlatformHandleTable(const void* transport_data_buffer,
+                                           size_t* num_platform_handles,
+                                           const void** platform_handle_table) {
+  DCHECK(transport_data_buffer);
+  DCHECK(num_platform_handles);
+  DCHECK(platform_handle_table);
+
+  const Header* header = static_cast<const Header*>(transport_data_buffer);
+  *num_platform_handles = header->num_platform_handles;
+  *platform_handle_table = static_cast<const char*>(transport_data_buffer) +
+      header->platform_handle_table_offset;
 }
 
 // static

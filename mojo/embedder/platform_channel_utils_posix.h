@@ -12,6 +12,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/embedder/platform_handle.h"
+#include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/system/system_impl_export.h"
 
 struct iovec;  // Declared in <sys/uio.h>.
@@ -24,8 +25,6 @@ namespace embedder {
 // TODO(vtl): This number is taken from ipc/file_descriptor_set_posix.h:
 // |FileDescriptorSet::kMaxDescriptorsPerMessage|. Where does it come from?
 const size_t kPlatformChannelMaxNumHandles = 7;
-
-typedef std::vector<PlatformHandle> PlatformHandleVector;
 
 // Use these to write to a socket created using |PlatformChannelPair| (or
 // equivalent). These are like |write()| and |writev()|, but handle |EINTR| and

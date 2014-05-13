@@ -21,6 +21,8 @@
 #include "base/synchronization/lock.h"
 #include "mojo/embedder/platform_channel_utils_posix.h"
 #include "mojo/embedder/platform_handle.h"
+#include "mojo/embedder/platform_handle_vector.h"
+#include "mojo/system/transport_data.h"
 
 namespace mojo {
 namespace system {
@@ -40,6 +42,9 @@ class RawChannelPosix : public RawChannel,
   // |RawChannel| protected methods:
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
+  virtual scoped_ptr<embedder::PlatformHandleVector> GetReadPlatformHandles(
+      size_t num_platform_handles,
+      const void* platform_handle_table) OVERRIDE;
   virtual IOResult WriteNoLock(size_t* platform_handles_written,
                                size_t* bytes_written) OVERRIDE;
   virtual IOResult ScheduleWriteNoLock() OVERRIDE;
@@ -62,6 +67,8 @@ class RawChannelPosix : public RawChannel,
   scoped_ptr<base::MessageLoopForIO::FileDescriptorWatcher> write_watcher_;
 
   bool pending_read_;
+
+  scoped_ptr<embedder::PlatformHandleVector> read_platform_handles_;
 
   // The following members are used on multiple threads and protected by
   // |write_lock()|:
@@ -110,28 +117,31 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
   size_t bytes_to_read = 0;
   read_buffer()->GetBuffer(&buffer, &bytes_to_read);
 
-  scoped_ptr<embedder::PlatformHandleVector> handles;
-  ssize_t read_result = embedder::PlatformChannelRecvmsg(fd_.get(),
-                                                         buffer,
-                                                         bytes_to_read,
-                                                         &handles);
+  size_t old_num_platform_handles =
+      read_platform_handles_ ? read_platform_handles_->size() : 0;
+  ssize_t read_result =
+      embedder::PlatformChannelRecvmsg(fd_.get(),
+                                       buffer,
+                                       bytes_to_read,
+                                       &read_platform_handles_);
   if (read_result > 0) {
     *bytes_read = static_cast<size_t>(read_result);
     return IO_SUCCEEDED;
   }
 
-  if (handles) {
+  if (read_platform_handles_ &&
+      read_platform_handles_->size() > old_num_platform_handles) {
     if (read_result != 1) {
-      LOG(WARNING) << "Invalid control message with handles";
+      LOG(WARNING) << "Invalid control message with platform handles";
       return IO_FAILED;
     }
 
-    // TODO(vtl): Implement this ("buffer" received handles). For now, just drop
-    // them on the floor. (Discard this message entirely.)
-    NOTIMPLEMENTED();
-    for (size_t i = 0; i < handles->size(); i++)
-      (*handles)[i].CloseIfNecessary();
-    return ScheduleRead();
+    if (read_platform_handles_->size() > TransportData::kMaxPlatformHandles) {
+      LOG(WARNING) << "Received too many platform handles";
+      embedder::CloseAllHandlesAndClear(read_platform_handles_.get());
+      read_platform_handles_.reset();
+      return IO_FAILED;
+    }
   }
 
   // |read_result == 0| means "end of file".
@@ -154,6 +164,22 @@ RawChannel::IOResult RawChannelPosix::ScheduleRead() {
   pending_read_ = true;
 
   return IO_PENDING;
+}
+
+scoped_ptr<embedder::PlatformHandleVector>
+    RawChannelPosix::GetReadPlatformHandles(
+        size_t num_platform_handles,
+        const void* /*platform_handle_table*/) {
+  DCHECK_GT(num_platform_handles, 0u);
+
+  if (!read_platform_handles_ ||
+      read_platform_handles_->size() != num_platform_handles) {
+    embedder::CloseAllHandlesAndClear(read_platform_handles_.get());
+    read_platform_handles_.reset();
+    return scoped_ptr<embedder::PlatformHandleVector>();
+  }
+
+  return read_platform_handles_.Pass();
 }
 
 RawChannel::IOResult RawChannelPosix::WriteNoLock(

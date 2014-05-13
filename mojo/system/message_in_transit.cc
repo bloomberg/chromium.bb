@@ -58,7 +58,8 @@ MessageInTransit::View::View(size_t message_size, const void* buffer)
   DCHECK_EQ(message_size, total_size());
 }
 
-bool MessageInTransit::View::IsValid(const char** error_message) const {
+bool MessageInTransit::View::IsValid(size_t serialized_platform_handle_size,
+                                     const char** error_message) const {
   // Note: This also implies a check on the |main_buffer_size()|, which is just
   // |RoundUpMessageAlignment(sizeof(Header) + num_bytes())|.
   if (num_bytes() > kMaxMessageNumBytes) {
@@ -67,8 +68,10 @@ bool MessageInTransit::View::IsValid(const char** error_message) const {
   }
 
   if (transport_data_buffer_size() > 0) {
-    const char* e = TransportData::ValidateBuffer(transport_data_buffer(),
-                                                  transport_data_buffer_size());
+    const char* e =
+        TransportData::ValidateBuffer(serialized_platform_handle_size,
+                                      transport_data_buffer(),
+                                      transport_data_buffer_size());
     if (e) {
       *error_message = e;
       return false;

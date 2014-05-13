@@ -151,6 +151,8 @@
         'embedder/platform_channel_utils_posix.h',
         'embedder/platform_handle.cc',
         'embedder/platform_handle.h',
+        'embedder/platform_handle_vector.cc',
+        'embedder/platform_handle_vector.h',
         'embedder/scoped_platform_handle.h',
         'system/channel.cc',
         'system/channel.h',

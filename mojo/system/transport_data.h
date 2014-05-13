@@ -79,6 +79,12 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   // dispatcher.
   static const size_t kMaxSerializedDispatcherPlatformHandles = 2;
 
+  // The maximum possible size of a valid transport data buffer.
+  static const size_t kMaxBufferSize;
+
+  // The maximum total number of platform handles that may be attached.
+  static const size_t kMaxPlatformHandles;
+
   TransportData(scoped_ptr<DispatcherVector> dispatchers, Channel* channel);
   ~TransportData();
 
@@ -108,7 +114,15 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   // validity of the handle table entries (i.e., does range checking), but does
   // not check that the validity of the actual serialized dispatcher
   // information.
-  static const char* ValidateBuffer(const void* buffer, size_t buffer_size);
+  static const char* ValidateBuffer(size_t serialized_platform_handle_size,
+                                    const void* buffer,
+                                    size_t buffer_size);
+
+  // Gets the platform handle table from a (valid) |TransportData| buffer (which
+  // should have been validated using |ValidateBuffer()| first).
+  static void GetPlatformHandleTable(const void* transport_data_buffer,
+                                     size_t* num_platform_handles,
+                                     const void** platform_handle_table);
 
   // Deserializes dispatchers from the given (serialized) transport data buffer
   // (typically from a |MessageInTransit::View|). |buffer| should be non-null
@@ -139,12 +153,6 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
     uint32_t size;  // (Not including any padding.)
     uint32_t unused;
   };
-
-  // The maximum possible size of a valid transport data buffer.
-  static const size_t kMaxBufferSize;
-
-  // The maximum total number of platform handles that may be attached.
-  static const size_t kMaxPlatformHandles;
 
   const Header* header() const {
     return reinterpret_cast<const Header*>(buffer_.get());

@@ -273,10 +273,6 @@ Channel::~Channel() {
 }
 
 void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
-  // Note: |ValidateReadMessage()| will call |HandleRemoteError()| if necessary.
-  if (!ValidateReadMessage(message_view))
-    return;
-
   switch (message_view.type()) {
     case MessageInTransit::kTypeMessagePipeEndpoint:
     case MessageInTransit::kTypeMessagePipe:
@@ -296,17 +292,6 @@ void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
 void Channel::OnFatalError(FatalError fatal_error) {
   LOG(ERROR) << "RawChannel fatal error (type " << fatal_error << ")";
   Shutdown();
-}
-
-bool Channel::ValidateReadMessage(const MessageInTransit::View& message_view) {
-  const char* error_message = NULL;
-  if (!message_view.IsValid(&error_message)) {
-    DCHECK(error_message);
-    HandleRemoteError(error_message);
-    return false;
-  }
-
-  return true;
 }
 
 void Channel::OnReadMessageForDownstream(

@@ -88,7 +88,8 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransit {
     // It returns true (and leaves |error_message| alone) if this object appears
     // to be a valid message (according to the above) and false, pointing
     // |*error_message| to a suitable error message, if not.
-    bool IsValid(const char** error_message) const;
+    bool IsValid(size_t serialized_platform_handle_size,
+                 const char** error_message) const;
 
     // API parallel to that for |MessageInTransit| itself (mostly getters for
     // header data).

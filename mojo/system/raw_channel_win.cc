@@ -162,6 +162,9 @@ class RawChannelWin : public RawChannel {
   // |RawChannel| private methods:
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
+  virtual scoped_ptr<embedder::PlatformHandleVector> GetReadPlatformHandles(
+      size_t num_platform_handles,
+      const void* platform_handle_table) OVERRIDE;
   virtual IOResult WriteNoLock(size_t* platform_handles_written,
                                size_t* bytes_written) OVERRIDE;
   virtual IOResult ScheduleWriteNoLock() OVERRIDE;
@@ -423,6 +426,15 @@ RawChannel::IOResult RawChannelWin::ScheduleRead() {
   }
 
   return io_result;
+}
+
+scoped_ptr<embedder::PlatformHandleVector>
+    RawChannelWin::GetReadPlatformHandles(
+        size_t num_platform_handles,
+        const void* platform_handle_table) {
+  // TODO(vtl): Implement.
+  NOTIMPLEMENTED();
+  return scoped_ptr<embedder::PlatformHandleVector>();
 }
 
 RawChannel::IOResult RawChannelWin::WriteNoLock(

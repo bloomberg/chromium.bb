@@ -311,6 +311,41 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
           message_view(message_size, &read_buffer_->buffer_[read_buffer_start]);
       DCHECK_EQ(message_view.total_size(), message_size);
 
+      const char* error_message = NULL;
+      if (!message_view.IsValid(GetSerializedPlatformHandleSize(),
+                                &error_message)) {
+        DCHECK(error_message);
+        LOG(WARNING) << "Received invalid message: " << error_message;
+        read_stopped_ = true;
+        CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
+        return;
+      }
+
+      scoped_ptr<embedder::PlatformHandleVector> platform_handles;
+      if (message_view.transport_data_buffer()) {
+        size_t num_platform_handles;
+        const void* platform_handle_table;
+        TransportData::GetPlatformHandleTable(
+            message_view.transport_data_buffer(),
+            &num_platform_handles,
+            &platform_handle_table);
+
+        if (num_platform_handles > 0) {
+          platform_handles =
+              GetReadPlatformHandles(num_platform_handles,
+                                     platform_handle_table).Pass();
+          if (!platform_handles) {
+            LOG(WARNING) << "Invalid number of platform handles received";
+            read_stopped_ = true;
+            CallOnFatalError(Delegate::FATAL_ERROR_FAILED_READ);
+            return;
+          }
+        }
+      }
+
+      // TODO(vtl): In the case that we aren't expecting any platform handles,
+      // for the POSIX implementation, we should confirm that none are stored.
+
       // Dispatch the message.
       DCHECK(delegate_);
       delegate_->OnReadMessage(message_view);

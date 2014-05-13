@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/message_in_transit.h"
@@ -207,6 +208,15 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // guarantee that the method doesn't succeed synchronously, i.e., it only
   // returns |IO_FAILED| or |IO_PENDING|.
   virtual IOResult ScheduleRead() = 0;
+
+  // Called by |OnReadCompleted()| to get the platform handles associated with
+  // the given platform handle table (from a message). This should only be
+  // called when |num_platform_handles| is nonzero. Returns null if the
+  // |num_platform_handles| handles are not available. Only called on the I/O
+  // thread (without |write_lock_| held).
+  virtual scoped_ptr<embedder::PlatformHandleVector> GetReadPlatformHandles(
+      size_t num_platform_handles,
+      const void* platform_handle_table) = 0;
 
   // Writes contents in |write_buffer_no_lock()|.
   // This class guarantees that:
