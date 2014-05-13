@@ -6421,16 +6421,6 @@
    fun:_ZN7testing8internal15TestFactoryImplIN8feedback*
 }
 {
-   bug_372226
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN7WebCore13PinchViewport5resetEv
-   ...
-   fun:_ZN7WebCore13PinchViewportC1ERNS_9FrameHostE
-   ...
-   fun:_ZN7WebCore9FrameHostC1ERNS_4PageE
-}
-{
    bug_371974
    Memcheck:Leak
    fun:_Znw*
