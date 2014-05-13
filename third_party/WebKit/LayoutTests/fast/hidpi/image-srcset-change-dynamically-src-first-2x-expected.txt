@@ -1,4 +1,3 @@
-main frame - img requested 'blue-100-px-square.png'
 main frame - img requested 'green-400-px-square.png'
 PASS successfullyParsed is true
 
