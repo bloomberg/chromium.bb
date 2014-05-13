@@ -24,7 +24,7 @@ void A::traceAfterDispatch(Visitor* visitor)
 void B::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_a);
-    A::trace(visitor);
+    A::traceAfterDispatch(visitor);
 }
 
 }

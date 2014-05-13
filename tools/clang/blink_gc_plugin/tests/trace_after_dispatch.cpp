@@ -30,19 +30,21 @@ void A::traceAfterDispatch(Visitor* visitor)
 void B::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_a);
-    // Missing A::trace(visitor);
+    // Missing A::traceAfterDispatch(visitor);
+    // Also check that calling trace does not count.
+    A::trace(visitor);
 }
 
 void C::traceAfterDispatch(Visitor* visitor)
 {
     // Missing visitor->trace(m_a);
-    A::trace(visitor);
+    A::traceAfterDispatch(visitor);
 }
 
 void D::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_a);
-    Abstract::trace(visitor);
+    Abstract::traceAfterDispatch(visitor);
 }
 
 }

@@ -45,19 +45,19 @@ void A::finalizeGarbageCollectedObject()
 void B::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_a);
-    A::trace(visitor);
+    A::traceAfterDispatch(visitor);
 }
 
 void C::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_a);
-    A::trace(visitor);
+    A::traceAfterDispatch(visitor);
 }
 
 void D::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_a);
-    Abstract::trace(visitor);
+    Abstract::traceAfterDispatch(visitor);
 }
 
 }

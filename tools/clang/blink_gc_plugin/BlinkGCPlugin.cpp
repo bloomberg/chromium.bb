@@ -356,10 +356,13 @@ class CheckTraceVisitor : public RecursiveASTVisitor<CheckTraceVisitor> {
         return true;
       }
 
-      // TODO: It is possible to have multiple bases, where one must be traced
-      // using a traceAfterDispatch. In such a case we should also check that
-      // the mixin does not add a vtable.
-      if (Config::IsTraceMethod(fn) && member->hasQualifier()) {
+      // Currently, a manually dispatched class cannot have mixin bases (having
+      // one would add a vtable which we explicitly check against). This means
+      // that we can only make calls to a trace method of the same name. Revisit
+      // this if our mixin/vtable assumption changes.
+      if (Config::IsTraceMethod(fn) &&
+          fn->getName() == trace_->getName() &&
+          member->hasQualifier()) {
         if (const Type* type = member->getQualifier()->getAsType()) {
           if (CXXRecordDecl* decl = type->getAsCXXRecordDecl()) {
             RecordInfo::Bases::iterator it = info_->GetBases().find(decl);
