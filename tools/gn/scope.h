@@ -134,6 +134,10 @@ class Scope {
                   const Value& v,
                   const ParseNode* set_node);
 
+  // Removes the value with the given identifier if it exists on the current
+  // scope. This does not search recursive scopes. Does nothing if not found.
+  void RemoveIdentifier(const base::StringPiece& ident);
+
   // Templates associated with this scope. A template can only be set once, so
   // AddTemplate will fail and return false if a rule with that name already
   // exists. GetTemplate returns NULL if the rule doesn't exist, and it will

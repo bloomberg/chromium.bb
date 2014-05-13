@@ -139,6 +139,14 @@ Value RunExecutable(Scope* scope,
                     BlockNode* block,
                     Err* err);
 
+extern const char kForEach[];
+extern const char kForEach_HelpShort[];
+extern const char kForEach_Help[];
+Value RunForEach(Scope* scope,
+                 const FunctionCallNode* function,
+                 const ListNode* args_list,
+                 Err* err);
+
 extern const char kGetEnv[];
 extern const char kGetEnv_HelpShort[];
 extern const char kGetEnv_Help[];

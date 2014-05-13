@@ -123,6 +123,12 @@ Value* Scope::SetValue(const base::StringPiece& ident,
   return &r.value;
 }
 
+void Scope::RemoveIdentifier(const base::StringPiece& ident) {
+  RecordMap::iterator found = values_.find(ident);
+  if (found != values_.end())
+    values_.erase(found);
+}
+
 bool Scope::AddTemplate(const std::string& name, const Template* templ) {
   if (GetTemplate(name))
     return false;

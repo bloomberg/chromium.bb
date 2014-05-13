@@ -651,6 +651,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(DeclareArgs, false)
     INSERT_FUNCTION(Defined, false)
     INSERT_FUNCTION(ExecScript, false)
+    INSERT_FUNCTION(ForEach, false)
     INSERT_FUNCTION(GetEnv, false)
     INSERT_FUNCTION(GetLabelInfo, false)
     INSERT_FUNCTION(GetTargetOutputs, false)
