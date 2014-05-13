@@ -262,3 +262,6 @@ race:cc::RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats
 race:SandboxIPCHandler::HandleFontMatchRequest
 race:SkFontConfigInterfaceDirect::matchFamilyName
 race:SkFontConfigInterface::GetSingletonDirectInterface
+
+# http://crbug.com/372807
+deadlock:net::X509Certificate::CreateCertificateListFromBytes
