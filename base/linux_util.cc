@@ -75,8 +75,6 @@ class LinuxDistroHelper {
 
 namespace base {
 
-const char kFindInodeSwitch[] = "--find-inode";
-
 // Account for the terminating null character.
 static const int kDistroSize = 128 + 1;
 

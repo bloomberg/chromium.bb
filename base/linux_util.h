@@ -14,8 +14,6 @@
 
 namespace base {
 
-BASE_EXPORT extern const char kFindInodeSwitch[];
-
 // This is declared here so the crash reporter can access the memory directly
 // in compromised context without going through the standard library.
 BASE_EXPORT extern char g_linux_distro[];
