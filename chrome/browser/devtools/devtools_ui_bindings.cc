@@ -232,11 +232,12 @@ InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {
 class DevToolsUIBindings::FrontendWebContentsObserver
     : public content::WebContentsObserver {
  public:
-  explicit FrontendWebContentsObserver(DevToolsUIBindings* window);
+  explicit FrontendWebContentsObserver(DevToolsUIBindings* ui_bindings);
   virtual ~FrontendWebContentsObserver();
 
  private:
   // contents::WebContentsObserver:
+  virtual void WebContentsDestroyed() OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void AboutToNavigateRenderView(
       content::RenderViewHost* render_view_host) OVERRIDE;
@@ -247,13 +248,17 @@ class DevToolsUIBindings::FrontendWebContentsObserver
 };
 
 DevToolsUIBindings::FrontendWebContentsObserver::FrontendWebContentsObserver(
-    DevToolsUIBindings* devtools_window)
-    : WebContentsObserver(devtools_window->web_contents()),
-      devtools_bindings_(devtools_window) {
+    DevToolsUIBindings* devtools_ui_bindings)
+    : WebContentsObserver(devtools_ui_bindings->web_contents()),
+      devtools_bindings_(devtools_ui_bindings) {
 }
 
 DevToolsUIBindings::FrontendWebContentsObserver::
     ~FrontendWebContentsObserver() {
+}
+
+void DevToolsUIBindings::FrontendWebContentsObserver::WebContentsDestroyed() {
+  delete devtools_bindings_;
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
@@ -274,7 +279,7 @@ void DevToolsUIBindings::FrontendWebContentsObserver::
 // DevToolsUIBindings ---------------------------------------------------------
 
 // static
-DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
+DevToolsUIBindings* DevToolsUIBindings::GetOrCreateFor(
     content::WebContents* web_contents) {
   DevToolsUIBindingsList* instances = g_instances.Pointer();
   for (DevToolsUIBindingsList::iterator it(instances->begin());
@@ -282,7 +287,7 @@ DevToolsUIBindings* DevToolsUIBindings::ForWebContents(
     if ((*it)->web_contents() == web_contents)
       return *it;
   }
-  return NULL;
+  return new DevToolsUIBindings(web_contents);
 }
 
 // static

@@ -38,7 +38,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
                            public DevToolsEmbedderMessageDispatcher::Delegate,
                            public DevToolsAndroidBridge::DeviceCountListener {
  public:
-  static DevToolsUIBindings* ForWebContents(
+  static DevToolsUIBindings* GetOrCreateFor(
       content::WebContents* web_contents);
   static GURL ApplyThemeToURL(Profile* profile, const GURL& base_url);
 
@@ -70,6 +70,7 @@ class DevToolsUIBindings : public content::NotificationObserver,
   Profile* profile() { return profile_; }
   content::DevToolsClientHost* frontend_host() { return frontend_host_.get(); }
 
+  // Takes ownership over the |delegate|.
   void SetDelegate(Delegate* delegate);
   void CallClientFunction(const std::string& function_name,
                           const base::Value* arg1,

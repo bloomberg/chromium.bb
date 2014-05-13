@@ -608,7 +608,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   // Lookup bindings and pass ownership over self into them.
-  bindings_ = DevToolsUIBindings::ForWebContents(web_contents_);
+  bindings_ = DevToolsUIBindings::GetOrCreateFor(web_contents_);
+  // Bindings take ownership over devtools as its delegate.
   bindings_->SetDelegate(this);
 
   g_instances.Get().push_back(this);
@@ -761,7 +762,7 @@ void DevToolsWindow::CloseContents(WebContents* source) {
     inspected_window->UpdateDevTools();
   // In case of docked web_contents_, we own it so delete here.
   // Embedding DevTools window will be deleted as a result of
-  // WebContentsDestroyed callback.
+  // DevToolsUIBindings destruction.
   delete web_contents_;
 }
 

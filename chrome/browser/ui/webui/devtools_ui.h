@@ -18,7 +18,7 @@ class DevToolsUI : public content::WebUIController {
   explicit DevToolsUI(content::WebUI* web_ui);
 
  private:
-  DevToolsUIBindings bindings_;
+  DevToolsUIBindings* bindings_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsUI);
 };
 
