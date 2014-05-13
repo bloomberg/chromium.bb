@@ -297,7 +297,12 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         {% for test, method in tests_methods %}
         {# 10. If i = d, then: #}
         if ({{test}}) {
-            {# FIXME: add counters (from below) #}
+            {% if method.measure_as and not overloads.measure_all_as %}
+            UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
+            {% endif %}
+            {% if method.deprecate_as and not overloads.deprecate_all_as %}
+            UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
+            {% endif %}
             {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
             return;
         }
