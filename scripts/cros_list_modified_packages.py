@@ -123,15 +123,18 @@ class WorkonPackageInfo(object):
     self.src_ebuild_mtime = src_ebuild_mtime
 
 
-def ListWorkonPackages(board, host):
+def ListWorkonPackages(board, host, all_opt=False):
   """List the packages that are currently being worked on.
 
   Args:
     board: The board to look at. If host is True, this should be set to None.
     host: Whether to look at workon packages for the host.
+    all_opt: Pass --all to cros_workon. For testing purposes.
   """
   cmd = [os.path.join(constants.CROSUTILS_DIR, 'cros_workon'), 'list']
   cmd.extend(['--host'] if host else ['--board', board])
+  if all_opt:
+    cmd.append('--all')
   result = cros_build_lib.RunCommand(cmd, print_cmd=False, capture_output=True)
   return result.output.split()
 
