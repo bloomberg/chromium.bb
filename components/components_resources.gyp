@@ -27,12 +27,6 @@
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
-
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/components',
-        ],
-      },
       'hard_dependency': 1,
     },
   ],
