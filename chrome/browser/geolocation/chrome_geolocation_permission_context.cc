@@ -242,9 +242,11 @@ void ChromeGeolocationPermissionContext::DecidePermission(
       if (PermissionBubbleManager::Enabled()) {
         PermissionBubbleManager* mgr =
             PermissionBubbleManager::FromWebContents(web_contents);
-        mgr->AddRequest(new GeolocationPermissionRequest(
-                this, id, requesting_frame, user_gesture, callback,
-                profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+        if (mgr) {
+          mgr->AddRequest(new GeolocationPermissionRequest(
+                  this, id, requesting_frame, user_gesture, callback,
+                  profile_->GetPrefs()->GetString(prefs::kAcceptLanguages)));
+        }
       } else {
         // setting == ask. Prompt the user.
         QueueController()->CreateInfoBarRequest(

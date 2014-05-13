@@ -199,10 +199,12 @@ void ChromeMidiPermissionContext::DecidePermission(
       if (PermissionBubbleManager::Enabled()) {
         PermissionBubbleManager* bubble_manager =
             PermissionBubbleManager::FromWebContents(web_contents);
-        bubble_manager->AddRequest(new MidiPermissionRequest(
-            this, id, requesting_frame, user_gesture,
-            profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
-            callback));
+        if (bubble_manager) {
+          bubble_manager->AddRequest(new MidiPermissionRequest(
+              this, id, requesting_frame, user_gesture,
+              profile_->GetPrefs()->GetString(prefs::kAcceptLanguages),
+              callback));
+        }
         return;
       }
 

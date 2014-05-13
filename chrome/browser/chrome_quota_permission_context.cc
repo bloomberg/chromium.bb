@@ -283,11 +283,13 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   if (PermissionBubbleManager::Enabled()) {
     PermissionBubbleManager* bubble_manager =
         PermissionBubbleManager::FromWebContents(web_contents);
-    bubble_manager->AddRequest(new QuotaPermissionRequest(this,
-            params.origin_url, params.requested_size, params.user_gesture,
-            Profile::FromBrowserContext(web_contents->GetBrowserContext())->
-                GetPrefs()->GetString(prefs::kAcceptLanguages),
-            callback));
+    if (bubble_manager) {
+      bubble_manager->AddRequest(new QuotaPermissionRequest(this,
+              params.origin_url, params.requested_size, params.user_gesture,
+              Profile::FromBrowserContext(web_contents->GetBrowserContext())->
+                  GetPrefs()->GetString(prefs::kAcceptLanguages),
+              callback));
+    }
     return;
   }
 

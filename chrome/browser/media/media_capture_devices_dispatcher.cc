@@ -75,7 +75,7 @@ const content::MediaStreamDevice* FindDeviceWithId(
     }
   }
   return NULL;
-};
+}
 
 // This is a short-term solution to grant camera and/or microphone access to
 // extensions:
@@ -631,8 +631,10 @@ void MediaCaptureDevicesDispatcher::ProcessQueuedAccessRequest(
                        base::Unretained(this), web_contents)));
     if (controller->DismissInfoBarAndTakeActionOnSettings())
       return;
-    PermissionBubbleManager::FromWebContents(web_contents)->
-        AddRequest(controller.release());
+    PermissionBubbleManager* bubble_manager =
+        PermissionBubbleManager::FromWebContents(web_contents);
+    if (bubble_manager)
+      bubble_manager->AddRequest(controller.release());
     return;
   }
 

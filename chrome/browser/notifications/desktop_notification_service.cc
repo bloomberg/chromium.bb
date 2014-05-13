@@ -514,12 +514,14 @@ void DesktopNotificationService::RequestPermission(
     if (PermissionBubbleManager::Enabled()) {
       PermissionBubbleManager* bubble_manager =
           PermissionBubbleManager::FromWebContents(web_contents);
-      bubble_manager->AddRequest(new NotificationPermissionRequest(
-          this,
-          origin,
-          DisplayNameForOriginInProcessId(
-              origin, render_frame_host->GetProcess()->GetID()),
-          callback));
+      if (bubble_manager) {
+        bubble_manager->AddRequest(new NotificationPermissionRequest(
+            this,
+            origin,
+            DisplayNameForOriginInProcessId(
+                origin, render_frame_host->GetProcess()->GetID()),
+            callback));
+      }
       return;
     }
 
