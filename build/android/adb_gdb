@@ -361,7 +361,7 @@ get_gyp_target_arch () {
                cut -d= -f2)
   case $ARCH in
     ia32|i?86|x86) echo "x86";;
-    mips|arm) echo "$ARCH";;
+    mips|arm|arm64|x86_64) echo "$ARCH";;
     *) echo "";
   esac
 }
@@ -429,8 +429,14 @@ get_arch_gnu_config () {
     arm)
       echo "arm-linux-androideabi"
       ;;
+    arm64)
+      echo "aarch64-linux-android"
+      ;;
     x86)
       echo "i686-linux-android"
+      ;;
+    x86_64)
+      echo "x86_64-linux-android"
       ;;
     mips)
       echo "mipsel-linux-android"
@@ -468,9 +474,12 @@ get_ndk_toolchain_prebuilt () {
   local FILE TARGET
   FILE=$NDK_DIR/toolchains/$NAME-4.6/prebuilt/$SUBPATH
   if [ ! -f "$FILE" ]; then
-    FILE=$NDK_DIR/toolchains/$NAME-4.4.3/prebuilt/$SUBPATH
+    FILE=$NDK_DIR/toolchains/$NAME-4.8/prebuilt/$SUBPATH
     if [ ! -f "$FILE" ]; then
-      FILE=
+      FILE=$NDK_DIR/toolchains/$NAME-4.4.3/prebuilt/$SUBPATH
+      if [ ! -f "$FILE" ]; then
+        FILE=
+      fi
     fi
   fi
   echo "$FILE"
@@ -904,9 +913,15 @@ PORT=5039
 HOST_PORT=$PORT
 TARGET_PORT=$PORT
 
+# Select correct app_process for architecture.
+case $TARGET_ARCH in
+      arm|x86|mips) GDBEXEC=app_process;;
+      arm64|x86_64) GDBEXEC=app_process64;;
+      *) fail_panic "Unknown app_process for architecture!";;
+esac
+
 # Detect AddressSanitizer setup on the device. In that case app_process is a
 # script, and the real executable is app_process.real.
-GDBEXEC=app_process
 GDBEXEC_ASAN=app_process.real
 adb_shell ls /system/bin/$GDBEXEC_ASAN
 if [ $? == 0 ]; then
