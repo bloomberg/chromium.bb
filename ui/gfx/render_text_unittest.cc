@@ -946,6 +946,22 @@ TEST_F(RenderTextTest, MidGraphemeSelectionBounds) {
   }
 }
 
+TEST_F(RenderTextTest, FindCursorPosition) {
+  const wchar_t* kTestStrings[] = { kLtrRtl, kLtrRtlLtr, kRtlLtr, kRtlLtrRtl };
+  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
+  render_text->SetDisplayRect(Rect(0, 0, 100, 20));
+  for (size_t i = 0; i < arraysize(kTestStrings); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
+    render_text->SetText(WideToUTF16(kTestStrings[i]));
+    for(size_t j = 0; j < render_text->text().length(); ++j) {
+      const Range range(render_text->GetGlyphBounds(j));
+      // Test a point just inside the leading edge of the glyph bounds.
+      int x = range.is_reversed() ? range.GetMax() - 1 : range.GetMin() + 1;
+      EXPECT_EQ(j, render_text->FindCursorPosition(Point(x, 0)).caret_pos());
+    }
+  }
+}
+
 TEST_F(RenderTextTest, EdgeSelectionModels) {
   // Simple Latin text.
   const base::string16 kLatin = WideToUTF16(L"abc");
@@ -1751,11 +1767,7 @@ TEST_F(RenderTextTest, DisplayRectShowsCursorRTL) {
 
 // Changing colors between or inside ligated glyphs should not break shaping.
 TEST_F(RenderTextTest, SelectionKeepsLigatures) {
-  const wchar_t* kTestStrings[] = {
-    L"\x644\x623",
-    L"\x633\x627"
-  };
-
+  const wchar_t* kTestStrings[] = { L"\x644\x623", L"\x633\x627" };
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->set_selection_color(SK_ColorRED);
   Canvas canvas;
@@ -1765,8 +1777,7 @@ TEST_F(RenderTextTest, SelectionKeepsLigatures) {
     const int expected_width = render_text->GetStringSize().width();
     render_text->MoveCursorTo(SelectionModel(Range(0, 1), CURSOR_FORWARD));
     EXPECT_EQ(expected_width, render_text->GetStringSize().width());
-    // Draw the text. It shouldn't hit any DCHECKs or crash.
-    // See http://crbug.com/214150
+    // Drawing the text should not DCHECK or crash; see http://crbug.com/262119
     render_text->Draw(&canvas);
     render_text->MoveCursorTo(SelectionModel(0, CURSOR_FORWARD));
   }

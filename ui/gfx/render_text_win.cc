@@ -658,6 +658,7 @@ SelectionModel RenderTextWin::AdjacentWordSelectionModel(
 }
 
 Range RenderTextWin::GetGlyphBounds(size_t index) {
+  EnsureLayout();
   const size_t run_index =
       GetRunContainingCaret(SelectionModel(index, CURSOR_FORWARD));
   // Return edge bounds if the index is invalid or beyond the layout text size.
