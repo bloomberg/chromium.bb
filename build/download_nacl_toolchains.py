@@ -6,6 +6,7 @@
 """Shim to run nacl toolchain download script only if there is a nacl dir."""
 
 import os
+import shutil
 import sys
 
 
@@ -50,8 +51,18 @@ def Main(args):
       args.extend(['--exclude', 'nacl_arm_newlib'])
 
   args.append('sync')
-  args.append('--extract')
   package_version.main(args)
+
+  # Because we are no longer extracting the toolchain, it is best to delete
+  # the old extracted ones so that no stale toolchains are left behind. This
+  # also would catch any stale code that happens to work because it is using
+  # an old extracted toolchain that was left behind.
+  toolchain_dir = os.path.join(nacl_dir, 'toolchain')
+  for toolchain_item in os.listdir(toolchain_dir):
+    toolchain_path = os.path.join(toolchain_dir, toolchain_item)
+    if os.path.isdir(toolchain_path) and not toolchain_item.startswith('.'):
+      shutil.rmtree(toolchain_path)
+
   return 0
 
 
