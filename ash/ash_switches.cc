@@ -41,10 +41,11 @@ const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
 // Disable ability to dock windows at the desktop edge.
 const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
 
-// Enable the Touch Exploration Mode. Touch Exploration Mode will be turned on
-// automatically when spoken feedback is enabled when this flag is set.
-const char kAshEnableTouchExplorationMode[] =
-    "ash-enable-touch-exploration-mode";
+// Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
+// turned on automatically when spoken feedback is enabled when this flag is
+// set.
+const char kAshDisableTouchExplorationMode[] =
+    "ash-disable-touch-exploration-mode";
 
 #if defined(OS_CHROMEOS)
 // Enables key bindings to scroll magnified screen.

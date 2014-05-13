@@ -5,10 +5,8 @@
 #include "ui/chromeos/touch_exploration_controller.h"
 
 #include "ash/accessibility_delegate.h"
-#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "base/command_line.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/aura/test/event_generator.h"
@@ -23,10 +21,6 @@ class TouchExplorationTest : public InProcessBrowserTest {
  public:
   TouchExplorationTest() {}
   virtual ~TouchExplorationTest() {}
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(ash::switches::kAshEnableTouchExplorationMode);
-  }
 
  protected:
   void SwitchTouchExplorationMode(bool on) {
