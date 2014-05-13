@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
@@ -44,6 +45,7 @@ namespace {
 const bool kNotRemounting = false;
 
 const char kFileManagerMTPMountNamePrefix[] = "fileman-mtp-";
+const char kMtpVolumeIdPrefix [] = "mtp:";
 
 // Registers |path| as the "Downloads" folder to the FileSystem API backend.
 // If another folder is already mounted. It revokes and overrides the old one.
@@ -721,7 +723,12 @@ void VolumeManager::OnRemovableStorageAttached(
 
   const base::FilePath path = base::FilePath::FromUTF8Unsafe(info.location());
   const std::string fsid = GetMountPointNameForMediaStorage(info);
-  const std::string name = base::UTF16ToUTF8(info.GetDisplayName(false));
+  const std::string base_name = base::UTF16ToUTF8(info.model_name());
+
+  // Assign a fresh volume ID based on the volume name.
+  std::string id = kMtpVolumeIdPrefix + base_name;
+  for (int i = 2; mounted_volumes_.count(id); ++i)
+    id = kMtpVolumeIdPrefix + base_name + base::StringPrintf(" (%d)", i);
 
   bool result =
       fileapi::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
@@ -740,7 +747,7 @@ void VolumeManager::OnRemovableStorageAttached(
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = true;
   volume_info.is_read_only = true;
-  volume_info.volume_id = "mtp:" + name;
+  volume_info.volume_id = id;
   volume_info.source_path = path;
   volume_info.device_type = chromeos::DEVICE_TYPE_MOBILE;
   DoMountEvent(chromeos::MOUNT_ERROR_NONE, volume_info, false);
