@@ -345,7 +345,7 @@ interface PPB_NaCl_Private {
   PP_Bool NaClDebugEnabledForURL([in] str_t alleged_nmf_url);
 
   /* Returns the kind of SFI sandbox implemented by NaCl on this
-  /* platform.
+   * platform.
    */
   str_t GetSandboxArch();
 
@@ -401,8 +401,6 @@ interface PPB_NaCl_Private {
   /* Returns the manifest url as passed as a plugin argument. */
   PP_Var GetManifestURLArgument([in] PP_Instance instance);
 
-  PP_Bool IsPNaCl([in] PP_Instance instance);
-
   PP_Bool DevInterfacesEnabled([in] PP_Instance instance);
 
   /* Downloads the manifest into the buffer |data|, invoking
@@ -415,7 +413,6 @@ interface PPB_NaCl_Private {
   int32_t CreatePnaclManifest([in] PP_Instance instance);
   int32_t CreateJsonManifest([in] PP_Instance instance,
                              [in] str_t manifest_base_url,
-                             [in] str_t sandbox_isa,
                              [in] str_t manifest_data);
 
   void DestroyManifest([in] PP_Instance instance,

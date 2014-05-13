@@ -180,24 +180,14 @@ class Plugin : public pp::Instance {
   // in this order, for the main nacl subprocess.
   void ShutDownSubprocesses();
 
-  // Access the service runtime for the main NaCl subprocess.
-  ServiceRuntime* main_service_runtime() const {
-    return main_subprocess_.service_runtime();
-  }
-
   // Histogram helper functions, internal to Plugin so they can use
   // uma_interface_ normally.
   void HistogramTimeSmall(const std::string& name, int64_t ms);
   void HistogramTimeMedium(const std::string& name, int64_t ms);
   void HistogramTimeLarge(const std::string& name, int64_t ms);
   void HistogramSizeKB(const std::string& name, int32_t sample);
-  void HistogramEnumerate(const std::string& name,
-                          int sample,
-                          int maximum,
-                          int out_of_range_replacement);
   void HistogramEnumerateLoadStatus(PP_NaClError error_code);
   void HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code);
-  void HistogramHTTPStatusCode(const std::string& name, int status);
 
   // Load a nacl module from the file specified in wrapper.
   // Only to be used from a background (non-main) thread.

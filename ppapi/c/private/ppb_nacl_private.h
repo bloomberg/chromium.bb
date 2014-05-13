@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu May  8 10:24:52 2014. */
+/* From private/ppb_nacl_private.idl modified Mon May 12 10:21:30 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -399,7 +399,6 @@ struct PPB_NaCl_Private_1_0 {
   void (*ProcessNaClManifest)(PP_Instance instance, const char* program_url);
   /* Returns the manifest url as passed as a plugin argument. */
   struct PP_Var (*GetManifestURLArgument)(PP_Instance instance);
-  PP_Bool (*IsPNaCl)(PP_Instance instance);
   PP_Bool (*DevInterfacesEnabled)(PP_Instance instance);
   /* Downloads the manifest into the buffer |data|, invoking
    * |callback| when finished.
@@ -410,7 +409,6 @@ struct PPB_NaCl_Private_1_0 {
   int32_t (*CreatePnaclManifest)(PP_Instance instance);
   int32_t (*CreateJsonManifest)(PP_Instance instance,
                                 const char* manifest_base_url,
-                                const char* sandbox_isa,
                                 const char* manifest_data);
   void (*DestroyManifest)(PP_Instance instance, int32_t manifest_id);
   PP_Bool (*GetManifestProgramURL)(PP_Instance instance,

@@ -44,8 +44,6 @@ namespace plugin {
 
 namespace {
 
-// The pseudo-architecture used to indicate portable native client.
-const char* const kPortableArch = "portable";
 // This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
 // Note that the resulting string object has to have at least one byte extra
 // for the null termination character.
@@ -94,42 +92,19 @@ void Plugin::HistogramSizeKB(const std::string& name,
                                        kSizeKBBuckets);
 }
 
-void Plugin::HistogramEnumerate(const std::string& name,
-                                int sample,
-                                int maximum,
-                                int out_of_range_replacement) {
-  if (sample < 0 || sample >= maximum) {
-    if (out_of_range_replacement < 0)
-      // No replacement for bad input, abort.
-      return;
-    else
-      // Use a specific value to signal a bad input.
-      sample = out_of_range_replacement;
-  }
-  uma_interface_.HistogramEnumeration(name, sample, maximum);
-}
-
 void Plugin::HistogramEnumerateSelLdrLoadStatus(NaClErrorCode error_code) {
-  HistogramEnumerate("NaCl.LoadStatus.SelLdr", error_code,
-                     NACL_ERROR_CODE_MAX, LOAD_STATUS_UNKNOWN);
+  if (error_code < 0 || error_code > NACL_ERROR_CODE_MAX)
+    error_code = LOAD_STATUS_UNKNOWN;
+
+  uma_interface_.HistogramEnumeration("NaCl.LoadStatus.SelLdr",
+                                      error_code,
+                                      NACL_ERROR_CODE_MAX);
 
   // Gather data to see if being installed changes load outcomes.
   const char* name = nacl_interface_->GetIsInstalled(pp_instance()) ?
       "NaCl.LoadStatus.SelLdr.InstalledApp" :
       "NaCl.LoadStatus.SelLdr.NotInstalledApp";
-  HistogramEnumerate(name, error_code, NACL_ERROR_CODE_MAX,
-                     LOAD_STATUS_UNKNOWN);
-}
-
-void Plugin::HistogramHTTPStatusCode(const std::string& name, int status) {
-  // Log the status codes in rough buckets - 1XX, 2XX, etc.
-  int sample = status / 100;
-  // HTTP status codes only go up to 5XX, using "6" to indicate an internal
-  // error.
-  // Note: installed files may have "0" for a status code.
-  if (status < 0 || status >= 600)
-    sample = 6;
-  HistogramEnumerate(name, sample, 7, 6);
+  uma_interface_.HistogramEnumeration(name, error_code, NACL_ERROR_CODE_MAX);
 }
 
 bool Plugin::LoadNaClModuleFromBackgroundThread(
@@ -522,7 +497,8 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
                    " non-PP_OK arg -- SHOULD NOT HAPPEN\n"));
   }
 
-  std::string crash_log = main_service_runtime()->GetCrashLogOutput();
+  std::string crash_log =
+      main_subprocess_.service_runtime()->GetCrashLogOutput();
   nacl_interface_->NexeDidCrash(pp_instance(), crash_log.c_str());
 }
 
@@ -662,16 +638,13 @@ bool Plugin::SetManifestObject(const nacl::string& manifest_json) {
        manifest_json.c_str()));
   // Determine whether lookups should use portable (i.e., pnacl versions)
   // rather than platform-specific files.
-  bool is_pnacl = nacl_interface_->IsPNaCl(pp_instance());
   pp::Var manifest_base_url =
       pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
   std::string manifest_base_url_str = manifest_base_url.AsString();
-  const char* sandbox_isa = nacl_interface_->GetSandboxArch();
 
   int32_t manifest_id = nacl_interface_->CreateJsonManifest(
       pp_instance(),
       manifest_base_url_str.c_str(),
-      is_pnacl ? kPortableArch : sandbox_isa,
       manifest_json.c_str());
   if (manifest_id == -1)
     return false;

@@ -61,6 +61,9 @@
 namespace nacl {
 namespace {
 
+// The pseudo-architecture used to indicate portable native client.
+const char* const kPortableArch = "portable";
+
 base::LazyInstance<scoped_refptr<PnaclTranslationResourceHost> >
     g_pnacl_resource_host = LAZY_INSTANCE_INITIALIZER;
 
@@ -872,13 +875,6 @@ PP_Var GetManifestURLArgument(PP_Instance instance) {
   return PP_MakeUndefined();
 }
 
-PP_Bool IsPNaCl(PP_Instance instance) {
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager)
-    return PP_FromBool(load_manager->IsPNaCl());
-  return PP_FALSE;
-}
-
 PP_Bool DevInterfacesEnabled(PP_Instance instance) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   if (load_manager)
@@ -996,10 +992,18 @@ int32_t CreatePNaClManifest(PP_Instance /* instance */) {
 
 int32_t CreateJsonManifest(PP_Instance instance,
                            const char* manifest_url,
-                           const char* isa_type,
                            const char* manifest_data) {
+  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+  if (!load_manager)
+    return -1;
   int32_t manifest_id = g_next_manifest_id.Get();
   g_next_manifest_id.Get()++;
+
+  const char* isa_type;
+  if (load_manager->IsPNaCl())
+    isa_type = kPortableArch;
+  else
+    isa_type = GetSandboxArch();
 
   scoped_ptr<nacl::JsonManifest> j(
       new nacl::JsonManifest(
@@ -1012,9 +1016,7 @@ int32_t CreateJsonManifest(PP_Instance instance,
     g_manifest_map.Get().add(manifest_id, j.Pass());
     return manifest_id;
   }
-  nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager)
-    load_manager->ReportLoadError(error_info.error, error_info.string);
+  load_manager->ReportLoadError(error_info.error, error_info.string);
   return -1;
 }
 
@@ -1292,7 +1294,6 @@ const PPB_NaCl_Private nacl_interface = {
   &ParseDataURL,
   &ProcessNaClManifest,
   &GetManifestURLArgument,
-  &IsPNaCl,
   &DevInterfacesEnabled,
   &DownloadManifestToBuffer,
   &CreatePNaClManifest,
