@@ -722,7 +722,7 @@ def _SendChangeGerrit(bot_spec, options):
 
   Reads Change-Id from the HEAD commit, resolves the current revision, checks
   that local revision matches the uploaded one, posts a try job in form of a
-  message, sets Tryjob label to 1.
+  message, sets Tryjob-Request label to 1.
 
   Gerrit message format: starts with !tryjob, optionally followed by a tryjob
   definition in JSON format:
@@ -768,7 +768,7 @@ def _SendChangeGerrit(bot_spec, options):
       # Post a message and set TryJob=1 label.
       try:
         gerrit_util.SetReview(gerrit_host, change_id, msg=message,
-                              labels={'Tryjob': 1})
+                              labels={'Tryjob-Request': 1})
       except gerrit_util.GerritError, e:
         if e.http_status == 400:
           raise Error(e.reason)
