@@ -49,7 +49,9 @@
 #include "webkit/browser/quota/special_storage_policy.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(SPDY_PROXY_AUTH_VALUE)
 #include "components/data_reduction_proxy/browser/data_reduction_proxy_settings.h"
+#endif
 #endif
 
 namespace {
@@ -479,10 +481,12 @@ void ProfileImplIOData::InitializeInternal(
       network_session_params, main_backend);
   main_cache->InitializeInfiniteCache(lazy_params_->infinite_cache_path);
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
 #if defined(SPDY_PROXY_AUTH_VALUE)
   data_reduction_proxy::DataReductionProxySettings::
       InitDataReductionProxySession(main_cache->GetSession(),
                                     SPDY_PROXY_AUTH_VALUE);
+#endif
 #endif
 
   if (chrome_browser_net::ShouldUseInMemoryCookiesAndCache()) {
