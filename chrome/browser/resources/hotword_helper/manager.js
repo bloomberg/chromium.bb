@@ -129,32 +129,67 @@ OptInManager.prototype.handleMessage_ = function(
   return false;
 };
 
+/**
+ * Helper function to test URLs as being valid for running the
+ * hotwording extension. It's used by isEligibleUrl to make that
+ * function clearer.
+ * @param {string} url URL to check.
+ * @param {string} base Base URL to compare against..
+ * @return {boolean} True if url is an eligible hotword URL.
+ */
+OptInManager.prototype.checkEligibleUrl = function(url, base) {
+  if (!url)
+    return false;
+
+  if (url === base ||
+      url === base + '/' ||
+      url.indexOf(base + '/_/chrome/newtab?') === 0 ||  // Appcache NTP.
+      url.indexOf(base + '/?') === 0 ||
+      url.indexOf(base + '/#') === 0 ||
+      url.indexOf(base + '/webhp') === 0 ||
+      url.indexOf(base + '/search') === 0) {
+    return true;
+  }
+  return false;
+
+};
 
 /**
  * Determines if a URL is eligible for hotwording. For now, the
  * valid pages are the Google HP and SERP (this will include the NTP).
- * @param {string} url Url to check.
- * @return {boolean} True if url is eligible hotword url.
+ * @param {string} url URL to check.
+ * @return {boolean} True if url is an eligible hotword URL.
  */
 OptInManager.prototype.isEligibleUrl = function(url) {
   if (!url)
     return false;
 
+  // More URLs will be added in the future so leaving this as an array.
   var baseUrls = [
-    'https://www.google.com',
-    'chrome://newtab',
-    'https://encrypted.google.com'
+    'chrome://newtab'
+  ];
+  var baseGoogleUrls = [
+    'https://www.google.',
+    'https://encrypted.google.'
+  ];
+  var tlds = [
+    'com',
+    'co.uk',
+    'de',
+    'fr',
+    'ru'
   ];
 
-  for (var i = 0; i < baseUrls.length; i++) {
-    var base = baseUrls[i];
-    if (url === base + '/' ||
-        url.indexOf(base + '/_/chrome/newtab?') === 0 ||  // Appcache NTP.
-        url.indexOf(base + '/?') === 0 ||
-        url.indexOf(base + '/#') === 0 ||
-        url.indexOf(base + '/webhp') === 0 ||
-        url.indexOf(base + '/search') === 0) {
-      return true;
+  // Check URLs which do not have locale-based TLDs first.
+  if (this.checkEligibleUrl(url, baseUrls[0]))
+    return true;
+
+  // Check URLs with each type of local-based TLD.
+  for (var i = 0; i < baseGoogleUrls.length; i++) {
+    for (var j = 0; j < tlds.length; j++) {
+      var base = baseGoogleUrls[i] + tlds[j];
+      if (this.checkEligibleUrl(url, base))
+        return true;
     }
   }
   return false;
