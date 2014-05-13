@@ -33,10 +33,14 @@
 #include "core/accessibility/AXTableCell.h"
 #include "core/accessibility/AXTableColumn.h"
 #include "core/accessibility/AXTableRow.h"
+#include "core/dom/ElementTraversal.h"
+#include "core/html/HTMLCollection.h"
 #include "core/html/HTMLTableCaptionElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableColElement.h"
 #include "core/html/HTMLTableElement.h"
+#include "core/html/HTMLTableRowElement.h"
+#include "core/html/HTMLTableSectionElement.h"
 #include "core/rendering/RenderTableCell.h"
 
 namespace WebCore {
@@ -85,9 +89,18 @@ bool AXTable::isAXTable() const
     return m_isAXTable;
 }
 
+static bool elementHasAriaRole(const Element* element)
+{
+    if (!element)
+        return false;
+
+    const AtomicString& ariaRole = element->fastGetAttribute(roleAttr);
+    return (!ariaRole.isNull() && !ariaRole.isEmpty());
+}
+
 bool AXTable::isDataTable() const
 {
-    if (!m_renderer)
+    if (!m_renderer || !node())
         return false;
 
     // Do not consider it a data table is it has an ARIA role.
@@ -110,8 +123,36 @@ bool AXTable::isDataTable() const
     if (!isHTMLTableElement(tableNode))
         return false;
 
-    // if there is a caption element, summary, THEAD, or TFOOT section, it's most certainly a data table
+    // Do not consider it a data table if any of its descendants have an ARIA role.
     HTMLTableElement* tableElement = toHTMLTableElement(tableNode);
+    if (elementHasAriaRole(tableElement->tHead()))
+        return false;
+    if (elementHasAriaRole(tableElement->tFoot()))
+        return false;
+
+    RefPtr<HTMLCollection> bodies = tableElement->tBodies();
+    for (unsigned bodyIndex = 0; bodyIndex < bodies->length(); ++bodyIndex) {
+        Element* bodyElement = bodies->item(bodyIndex);
+        if (elementHasAriaRole(bodyElement))
+            return false;
+    }
+
+    RefPtr<HTMLCollection> rows = tableElement->rows();
+    for (unsigned rowIndex = 0; rowIndex < rows->length(); ++rowIndex) {
+        Element* rowElement = rows->item(rowIndex);
+        if (elementHasAriaRole(rowElement))
+            return false;
+        if (rowElement->hasTagName(trTag)) {
+            HTMLTableRowElement* row = static_cast<HTMLTableRowElement*>(rowElement);
+            RefPtr<HTMLCollection> cells = row->cells();
+            for (unsigned cellIndex = 0; cellIndex < cells->length(); ++cellIndex) {
+                if (elementHasAriaRole(cells->item(cellIndex)))
+                    return false;
+            }
+        }
+    }
+
+    // If there is a caption element, summary, THEAD, or TFOOT section, it's most certainly a data table
     if (!tableElement->summary().isEmpty() || tableElement->tHead() || tableElement->tFoot() || tableElement->caption())
         return true;
 
