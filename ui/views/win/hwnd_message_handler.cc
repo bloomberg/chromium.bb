@@ -911,10 +911,9 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
   if (!::IsWindow(window))
     return result;
 
-  if (delegate_)
+  if (delegate_) {
     delegate_->PostHandleMSG(message, w_param, l_param);
-  if (message == WM_NCDESTROY) {
-    if (delegate_)
+    if (message == WM_NCDESTROY)
       delegate_->HandleDestroyed();
   }
 

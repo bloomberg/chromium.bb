@@ -864,7 +864,9 @@ bool DesktopWindowTreeHostWin::HandlePaintAccelerated(
 }
 
 void DesktopWindowTreeHostWin::HandlePaint(gfx::Canvas* canvas) {
-  compositor()->ScheduleRedrawRect(gfx::Rect());
+  // It appears possible to get WM_PAINT after WM_DESTROY.
+  if (compositor())
+    compositor()->ScheduleRedrawRect(gfx::Rect());
 }
 
 bool DesktopWindowTreeHostWin::HandleTooltipNotify(int w_param,
