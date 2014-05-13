@@ -567,6 +567,15 @@ void AwContents::OnPermissionRequestCanceled(AwPermissionRequest* request) {
       env, j_ref.obj(), j_request.obj());
 }
 
+void AwContents::PreauthorizePermission(
+    JNIEnv* env,
+    jobject obj,
+    jstring origin,
+    jlong resources) {
+  permission_request_handler_->PreauthorizePermission(
+      GURL(base::android::ConvertJavaStringToUTF8(env, origin)), resources);
+}
+
 void AwContents::FindAllAsync(JNIEnv* env, jobject obj, jstring search_string) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   GetFindHelper()->FindAllAsync(ConvertJavaStringToUTF16(env, search_string));

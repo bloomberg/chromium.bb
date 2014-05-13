@@ -149,6 +149,11 @@ class AwContents : public FindHelper::Listener,
     return permission_request_handler_.get();
   }
 
+  void PreauthorizePermission(JNIEnv* env,
+                              jobject obj,
+                              jstring origin,
+                              jlong resources);
+
   // Find-in-page API and related methods.
   void FindAllAsync(JNIEnv* env, jobject obj, jstring search_string);
   void FindNext(JNIEnv* env, jobject obj, jboolean forward);

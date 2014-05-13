@@ -26,6 +26,11 @@ PermissionRequestHandler::~PermissionRequestHandler() {
 
 void PermissionRequestHandler::SendRequest(
     scoped_ptr<AwPermissionRequestDelegate> request) {
+  if (Preauthorized(request->GetOrigin(), request->GetResources())) {
+    request->NotifyRequestResult(true);
+    return;
+  }
+
   AwPermissionRequest* aw_request = new AwPermissionRequest(request.Pass());
   requests_.push_back(
       base::WeakPtr<AwPermissionRequest>(aw_request->GetWeakPtr()));
@@ -43,6 +48,20 @@ void PermissionRequestHandler::CancelRequest(const GURL& origin,
     requests_.erase(i);
     i = FindRequest(origin, resources);
   }
+}
+
+void PermissionRequestHandler::PreauthorizePermission(const GURL& origin,
+                                                      int64 resources) {
+  if (!resources)
+    return;
+
+  std::string key = origin.GetOrigin().spec();
+  if (key.empty()) {
+    LOG(ERROR) << "The origin of preauthorization is empty, ignore it.";
+    return;
+  }
+
+  preauthorized_permission_[key] |= resources;
 }
 
 PermissionRequestHandler::RequestIterator
@@ -75,6 +94,15 @@ void PermissionRequestHandler::PruneRequests() {
     else
       ++i;
   }
+}
+
+bool PermissionRequestHandler::Preauthorized(const GURL& origin,
+                                              int64 resources) {
+  std::map<std::string, int64>::iterator i =
+      preauthorized_permission_.find(origin.GetOrigin().spec());
+
+  return i != preauthorized_permission_.end() &&
+      (resources & i->second) == resources;
 }
 
 }  // namespace android_webivew

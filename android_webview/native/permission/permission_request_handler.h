@@ -5,6 +5,7 @@
 #ifndef ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_H
 #define ANDROID_WEBVIEW_NATIVE_PERMISSION_PERMISSION_REQUEST_HANDLER_H
 
+#include <map>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
@@ -32,6 +33,9 @@ class PermissionRequestHandler {
   // Cancel the ongoing request initiated by |origin| for accessing |resources|.
   void CancelRequest(const GURL& origin, int64 resources);
 
+  // Allow |origin| to access the |resources|.
+  void PreauthorizePermission(const GURL& origin, int64 resources);
+
  private:
   friend class TestPermissionRequestHandler;
 
@@ -47,10 +51,15 @@ class PermissionRequestHandler {
   // Remove the invalid requests from requests_.
   void PruneRequests();
 
+  // Return true if |origin| were preauthorized to access |resources|.
+  bool Preauthorized(const GURL& origin, int64 resources);
+
   PermissionRequestHandlerClient* client_;
 
   // A list of ongoing requests.
   std::vector<base::WeakPtr<AwPermissionRequest> > requests_;
+
+  std::map<std::string, int64> preauthorized_permission_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestHandler);
 };

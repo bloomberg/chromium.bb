@@ -54,6 +54,9 @@ class TestPermissionRequestHandlerClient :
     int64 resources;
   };
 
+  TestPermissionRequestHandlerClient()
+      : request_(NULL) {}
+
   virtual void OnPermissionRequest(AwPermissionRequest* request) OVERRIDE {
     request_ = request;
     requested_permission_ =
@@ -86,6 +89,12 @@ class TestPermissionRequestHandlerClient :
   void Deny() {
     request_->OnAccept(NULL, NULL, false);
     request_ = NULL;
+  }
+
+  void Reset() {
+    request_ = NULL;
+    requested_permission_ = Permission();
+    canceled_permission_ = Permission();
   }
 
  private:
@@ -264,6 +273,80 @@ TEST_F(PermissionRequestHandlerTest, TestMultiplePermissionRequest) {
   ASSERT_EQ(1u, handler()->requests().size());
   EXPECT_EQ(origin1, handler()->requests()[0]->GetOrigin());
   EXPECT_EQ(resources1, handler()->requests()[0]->GetResources());
+}
+
+TEST_F(PermissionRequestHandlerTest, TestPreauthorizePermission) {
+  handler()->PreauthorizePermission(origin(), resources());
+
+  // Permission should granted without asking PermissionRequestHandlerClient.
+  handler()->SendRequest(delegate().Pass());
+  EXPECT_TRUE(allowed());
+  EXPECT_EQ(NULL, client()->request());
+
+  // Only ask one preauthorized resource, permission should granted
+  // without asking PermissionRequestHandlerClient.
+  scoped_ptr<AwPermissionRequestDelegate> delegate;
+  delegate.reset(new TestAwPermissionRequestDelegate(
+      origin(), AwPermissionRequest::AudioCapture,
+      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
+                 base::Unretained(this))));
+  client()->Reset();
+  handler()->SendRequest(delegate.Pass());
+  EXPECT_TRUE(allowed());
+  EXPECT_EQ(NULL, client()->request());
+}
+
+TEST_F(PermissionRequestHandlerTest, TestOriginNotPreauthorized) {
+  handler()->PreauthorizePermission(origin(), resources());
+
+  // Ask the origin which wasn't preauthorized.
+  GURL origin ("http://a.google.com/a/b");
+  scoped_ptr<AwPermissionRequestDelegate> delegate;
+  int64 requested_resources = AwPermissionRequest::AudioCapture;
+  delegate.reset(new TestAwPermissionRequestDelegate(
+      origin, requested_resources,
+      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
+                 base::Unretained(this))));
+  handler()->SendRequest(delegate.Pass());
+  EXPECT_EQ(origin, handler()->requests()[0]->GetOrigin());
+  EXPECT_EQ(requested_resources, handler()->requests()[0]->GetResources());
+  client()->Grant();
+  EXPECT_TRUE(allowed());
+}
+
+TEST_F(PermissionRequestHandlerTest, TestResourcesNotPreauthorized) {
+  handler()->PreauthorizePermission(origin(), resources());
+
+  // Ask the resources which weren't preauthorized.
+  scoped_ptr<AwPermissionRequestDelegate> delegate;
+  int64 requested_resources = AwPermissionRequest::AudioCapture
+    | AwPermissionRequest::Geolocation;
+  delegate.reset(new TestAwPermissionRequestDelegate(
+      origin(), requested_resources,
+      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
+                 base::Unretained(this))));
+
+  handler()->SendRequest(delegate.Pass());
+  EXPECT_EQ(origin(), handler()->requests()[0]->GetOrigin());
+  EXPECT_EQ(requested_resources, handler()->requests()[0]->GetResources());
+  client()->Deny();
+  EXPECT_FALSE(allowed());
+}
+
+TEST_F(PermissionRequestHandlerTest, TestPreauthorizeMultiplePermission) {
+  handler()->PreauthorizePermission(origin(), resources());
+  // Preauthorize another permission.
+  GURL origin ("http://a.google.com/a/b");
+  handler()->PreauthorizePermission(origin, AwPermissionRequest::Geolocation);
+  GURL origin_hostname ("http://a.google.com/");
+  scoped_ptr<AwPermissionRequestDelegate> delegate;
+  delegate.reset(new TestAwPermissionRequestDelegate(
+      origin_hostname, AwPermissionRequest::Geolocation,
+      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
+                 base::Unretained(this))));
+  handler()->SendRequest(delegate.Pass());
+  EXPECT_TRUE(allowed());
+  EXPECT_EQ(NULL, client()->request());
 }
 
 }  // android_webview
