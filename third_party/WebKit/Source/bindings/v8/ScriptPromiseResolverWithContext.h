@@ -27,7 +27,7 @@ namespace WebCore {
 //    ExecutionContext state. When the ExecutionContext is suspended,
 //    resolve or reject will be delayed. When it is stopped, resolve or reject
 //    will be ignored.
-class ScriptPromiseResolverWithContext FINAL : public ActiveDOMObject, public RefCounted<ScriptPromiseResolverWithContext> {
+class ScriptPromiseResolverWithContext : public ActiveDOMObject, public RefCounted<ScriptPromiseResolverWithContext> {
     WTF_MAKE_NONCOPYABLE(ScriptPromiseResolverWithContext);
 
 public:
@@ -74,6 +74,9 @@ public:
         return scriptState->context()->Global();
     }
 
+protected:
+    explicit ScriptPromiseResolverWithContext(ScriptState*);
+
 private:
     enum ResolutionState {
         Pending,
@@ -81,8 +84,6 @@ private:
         Rejecting,
         ResolvedOrRejected,
     };
-
-    explicit ScriptPromiseResolverWithContext(ScriptState*);
 
     template<typename T>
     v8::Handle<v8::Value> toV8Value(const T& value)
