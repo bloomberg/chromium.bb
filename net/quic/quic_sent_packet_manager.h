@@ -96,7 +96,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   // Removes the retransmittable frames from all unencrypted packets to ensure
   // they don't get retransmitted.
-  void DiscardUnencryptedPackets();
+  void NeuterUnencryptedPackets();
 
   // Returns true if the unacked packet |sequence_number| has retransmittable
   // frames.  This will only return false if the packet has been acked, if a

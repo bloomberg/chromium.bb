@@ -31,9 +31,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if the packet |sequence_number| is unacked.
   bool IsUnacked(QuicPacketSequenceNumber sequence_number) const;
 
-  // Returns true if the packet |sequence_number| is pending.
-  bool IsPending(QuicPacketSequenceNumber sequence_number) const;
-
   // Sets the nack count to the max of the current nack count and |min_nacks|.
   void NackPacket(QuicPacketSequenceNumber sequence_number,
                   size_t min_nacks);
@@ -71,10 +68,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns the smallest sequence number of a serialized packet which has not
   // been acked by the peer.  If there are no unacked packets, returns 0.
   QuicPacketSequenceNumber GetLeastUnackedSentPacket() const;
-
-  // Returns the set of sequence numbers of all unacked packets.
-  // Test only.
-  SequenceNumberSet GetUnackedPackets() const;
 
   // Sets a packet as sent with the sent time |sent_time|.  Marks the packet
   // as pending and tracks the |bytes_sent| if |set_pending| is true.
@@ -120,15 +113,21 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if there are any pending crypto packets.
   bool HasPendingCryptoPackets() const;
 
-  // Deletes the retransmittable frames associated with the packet and removes
-  // it from unacked packets if it's not pending.
+  // Removes entries from the unacked packet map, and deletes
+  // the retransmittable frames associated with the packet.
   // Does not remove any previous or subsequent transmissions of this packet.
-  void NeuterIfPendingOrRemovePacket(QuicPacketSequenceNumber sequence_number);
+  void RemovePacket(QuicPacketSequenceNumber sequence_number);
+
+  // Neuters the specified packet.  Deletes any retransmittable
+  // frames, and sets all_transmissions to only include itself.
+  void NeuterPacket(QuicPacketSequenceNumber sequence_number);
 
   // Returns true if the packet has been marked as sent by SetSent.
   static bool IsSentAndNotPending(const TransmissionInfo& transmission_info);
 
  private:
+  void MaybeRemoveRetransmittableFrames(TransmissionInfo* transmission_info);
+
   QuicPacketSequenceNumber largest_sent_packet_;
 
   // Newly serialized retransmittable and fec packets are added to this map,

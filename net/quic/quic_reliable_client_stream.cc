@@ -94,8 +94,7 @@ void QuicReliableClientStream::OnError(int error) {
 
 bool QuicReliableClientStream::CanWrite(const CompletionCallback& callback) {
   bool can_write =  session()->connection()->CanWrite(
-      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
-      id() == kCryptoStreamId ? IS_HANDSHAKE : NOT_HANDSHAKE);
+      NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
   if (!can_write) {
     session()->MarkWriteBlocked(id(), EffectivePriority());
     DCHECK(callback_.is_null());

@@ -83,6 +83,16 @@ bool QuicClient::Initialize() {
   epoll_server_.set_timeout_in_us(50 * 1000);
   crypto_config_.SetDefaults();
 
+  if (!CreateUDPSocket()) {
+    return false;
+  }
+
+  epoll_server_.RegisterFD(fd_, this, kEpollFlags);
+  initialized_ = true;
+  return true;
+}
+
+bool QuicClient::CreateUDPSocket() {
   int address_family = server_address_.GetSockAddrFamily();
   fd_ = socket(address_family, SOCK_DGRAM | SOCK_NONBLOCK, IPPROTO_UDP);
   if (fd_ < 0) {
@@ -153,8 +163,6 @@ bool QuicClient::Initialize() {
     LOG(ERROR) << "Unable to get self address.  Error: " << strerror(errno);
   }
 
-  epoll_server_.RegisterFD(fd_, this, kEpollFlags);
-  initialized_ = true;
   return true;
 }
 

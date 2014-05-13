@@ -60,9 +60,6 @@ class QuicSentPacketManagerPeer {
   static size_t GetNumRetransmittablePackets(
       const QuicSentPacketManager* sent_packet_manager);
 
-  static SequenceNumberSet GetUnackedPackets(
-      const QuicSentPacketManager* sent_packet_manager);
-
   static QuicByteCount GetBytesInFlight(
       const QuicSentPacketManager* sent_packet_manager);
 

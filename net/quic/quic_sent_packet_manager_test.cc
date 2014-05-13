@@ -69,22 +69,13 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
 
   void VerifyRetransmittablePackets(QuicPacketSequenceNumber* packets,
                                     size_t num_packets) {
-    SequenceNumberSet unacked =
-        QuicSentPacketManagerPeer::GetUnackedPackets(&manager_);
-    for (size_t i = 0; i < num_packets; ++i) {
-      EXPECT_TRUE(ContainsKey(unacked, packets[i])) << packets[i];
-    }
-    size_t num_retransmittable = 0;
-    for (SequenceNumberSet::const_iterator it = unacked.begin();
-         it != unacked.end(); ++it) {
-      if (manager_.HasRetransmittableFrames(*it)) {
-        ++num_retransmittable;
-      }
-    }
     EXPECT_EQ(num_packets,
               QuicSentPacketManagerPeer::GetNumRetransmittablePackets(
                   &manager_));
-    EXPECT_EQ(num_packets, num_retransmittable);
+    for (size_t i = 0; i < num_packets; ++i) {
+      EXPECT_TRUE(manager_.HasRetransmittableFrames(packets[i]))
+          << " packets[" << i << "]:" << packets[i];
+    }
   }
 
   void ExpectAck(QuicPacketSequenceNumber largest_observed) {
@@ -125,15 +116,18 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
                                   Pointwise(KeyEq(), lost_vector)));
   }
 
+  // Retransmits a packet as though it was a TLP retransmission, because TLP
+  // leaves the |old_sequence_number| pending.
+  // TODO(ianswett): Test with transmission types besides TLP.
   void RetransmitPacket(QuicPacketSequenceNumber old_sequence_number,
                         QuicPacketSequenceNumber new_sequence_number) {
     QuicSentPacketManagerPeer::MarkForRetransmission(
-        &manager_, old_sequence_number, LOSS_RETRANSMISSION);
+        &manager_, old_sequence_number, TLP_RETRANSMISSION);
     EXPECT_TRUE(manager_.HasPendingRetransmissions());
     QuicSentPacketManager::PendingRetransmission next_retransmission =
         manager_.NextPendingRetransmission();
     EXPECT_EQ(old_sequence_number, next_retransmission.sequence_number);
-    EXPECT_EQ(LOSS_RETRANSMISSION,
+    EXPECT_EQ(TLP_RETRANSMISSION,
               next_retransmission.transmission_type);
     manager_.OnRetransmittedPacket(old_sequence_number, new_sequence_number);
     EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(
@@ -197,7 +191,6 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     SerializedPacket packet(CreateDataPacket(sequence_number));
     packet.retransmittable_frames->AddStreamFrame(
         new QuicStreamFrame(1, false, 0, IOVector()));
-    packet.retransmittable_frames->set_encryption_level(ENCRYPTION_NONE);
     manager_.OnSerializedPacket(packet);
     manager_.OnPacketSent(sequence_number, clock_.ApproximateNow(),
                           packet.packet->length(), NOT_RETRANSMISSION,
@@ -297,7 +290,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
 TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
   SendDataPacket(1);
   QuicSentPacketManagerPeer::MarkForRetransmission(
-      &manager_, 1, LOSS_RETRANSMISSION);
+      &manager_, 1, TLP_RETRANSMISSION);
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
 
   // Ack 1.
@@ -557,9 +550,9 @@ TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
   manager_.OnIncomingAck(received_info, clock_.Now());
 
   // High water mark will be raised.
-  QuicPacketSequenceNumber unacked[] = { 2, 3, 4 };
+  QuicPacketSequenceNumber unacked[] = { 2, 3, 4, 5 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
-  QuicPacketSequenceNumber retransmittable[] = { 4 };
+  QuicPacketSequenceNumber retransmittable[] = { 5 };
   VerifyRetransmittablePackets(retransmittable, arraysize(retransmittable));
 }
 
@@ -985,25 +978,6 @@ TEST_F(QuicSentPacketManagerTest,
   VerifyUnackedPackets(unacked, arraysize(unacked));
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
-  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
-}
-
-TEST_F(QuicSentPacketManagerTest,
-       CryptoHandshakeRetransmissionThenAbandonAll) {
-  // Send 1 crypto packet.
-  SendCryptoPacket(1);
-  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
-
-  // Retransmit the crypto packet as 2.
-  manager_.OnRetransmissionTimeout();
-  RetransmitNextPacket(2);
-
-  // Now discard all unacked unencrypted packets, which occurs when the
-  // connection goes forward secure.
-  manager_.DiscardUnencryptedPackets();
-  VerifyUnackedPackets(NULL, 0);
-  EXPECT_FALSE(manager_.HasPendingRetransmissions());
-  EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
 }
 

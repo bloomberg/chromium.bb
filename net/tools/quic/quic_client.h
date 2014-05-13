@@ -181,6 +181,10 @@ class QuicClient : public EpollCallbackInterface,
  private:
   friend class net::tools::test::QuicClientPeer;
 
+  // Used during initialization: creates the UDP socket FD, sets socket options,
+  // and binds the socket to our address.
+  bool CreateUDPSocket();
+
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
 
