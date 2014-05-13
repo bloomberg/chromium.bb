@@ -5,10 +5,9 @@
 #ifndef PushError_h
 #define PushError_h
 
-#include "core/dom/DOMError.h"
+#include "core/dom/DOMException.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebPushError.h"
-#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -19,16 +18,9 @@ class PushError {
 public:
     // For CallbackPromiseAdapter.
     typedef blink::WebPushError WebType;
-    static PassRefPtrWillBeRawPtr<DOMError> from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw)
-    {
-        OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
-        RefPtrWillBeRawPtr<DOMError> error = DOMError::create(errorString(webError->errorType), webError->message);
-        return error.release();
-    }
+    static PassRefPtrWillBeRawPtr<DOMException> from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw);
 
 private:
-    static String errorString(blink::WebPushError::ErrorType);
-
     PushError() WTF_DELETED_FUNCTION;
 };
 

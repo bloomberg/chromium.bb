@@ -5,18 +5,22 @@
 #include "config.h"
 #include "modules/push_messaging/PushError.h"
 
+#include "core/dom/ExceptionCode.h"
+#include "wtf/OwnPtr.h"
+
 namespace WebCore {
 
-String PushError::errorString(blink::WebPushError::ErrorType type)
+PassRefPtrWillBeRawPtr<DOMException> PushError::from(ScriptPromiseResolverWithContext*, WebType* webErrorRaw)
 {
-    switch (type) {
+    OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
+    switch (webError->errorType) {
     case blink::WebPushError::ErrorTypeAbort:
-        return "AbortError";
+        return DOMException::create(AbortError, "Registration failed.");
     case blink::WebPushError::ErrorTypeUnknown:
-        return "UnknownError";
+        return DOMException::create(UnknownError);
     }
     ASSERT_NOT_REACHED();
-    return String();
+    return DOMException::create(UnknownError);
 }
 
 } // namespace WebCore
