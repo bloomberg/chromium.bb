@@ -57,6 +57,7 @@ def main():
       '--isolate-server', options.isolate_server,
       '--dimension', 'os', options.swarming_os,
       '--task-name', task_name,
+      '--shards', str(options.shards),
       isolated,
     ]
     if options.priority is not None:

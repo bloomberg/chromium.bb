@@ -45,6 +45,9 @@ def parse_args(use_isolate_server, use_swarming):
         help='Swarming slave OS to request. Should be one of the valid '
              'sys.platform values like darwin, linux2 or win32 default: '
              '%default.')
+    parser.add_option(
+        '--shards', metavar='INT', type='int', default=1,
+        help='Number of shards to use')
   parser.add_option('-v', '--verbose', action='count', default=0)
   parser.add_option(
       '--priority', metavar='INT', type='int', help='Priority to use')

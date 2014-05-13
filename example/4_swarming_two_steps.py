@@ -60,6 +60,7 @@ def main():
       '--isolate-server', options.isolate_server,
       '--dimension', 'os', options.swarming_os,
       '--task-name', task_name,
+      '--shards', str(options.shards),
       hashval,
     ]
     if options.priority is not None:
@@ -72,6 +73,7 @@ def main():
           'swarming.py',
           'collect',
           '--swarming', options.swarming,
+          '--shards', str(options.shards),
           task_name,
         ], options.verbose)
     return 0

@@ -55,7 +55,7 @@ def print_results(results, columns, buckets):
 
 
 def trigger_task(
-    swarming_url, dimensions, number_shards, sleep_time, output_size, progress,
+    swarming_url, dimensions, sleep_time, output_size, progress,
     unique, timeout, index):
   """Triggers a Swarming job and collects results.
 
@@ -72,7 +72,6 @@ def trigger_task(
     isolated_hash=1,
     task_name=name,
     extra_args=[],
-    shards=number_shards,
     env={},
     dimensions=dimensions,
     working_dir=None,
@@ -105,9 +104,9 @@ def trigger_task(
     u'test_case_name': unicode(name),
     u'test_keys': [
       {
-        u'num_instances': number_shards,
-        u'instance_index': i,
-      } for i in xrange(number_shards)
+        u'num_instances': 1,
+        u'instance_index': 0,
+      }
     ],
   }
   assert result == expected, '\n%s\n%s' % (result, expected)
@@ -132,13 +131,12 @@ def trigger_task(
       # TODO(maruel): Assert output even when run on a real bot.
       _out_actual = item.pop('output')
       # assert out_actual == swarming_load_test_bot.TASK_OUTPUT, out_actual
-    out.sort(key=lambda x: x['config_instance_index'])
     expected = [
       {
-        u'config_instance_index': i,
+        u'config_instance_index': 0,
         u'exit_codes': u'0',
-        u'num_config_instances': number_shards,
-      } for i in xrange(number_shards)
+        u'num_config_instances': 1,
+      }
     ]
     assert out == expected, '\n%s\n%s' % (out, expected)
     return time.time() - start
@@ -177,9 +175,6 @@ def main():
       '--sleep', type='int', default=60, metavar='N',
       help='Amount of time the bot should sleep, e.g. faking work, '
            'default: %default')
-  group.add_option(
-      '-n', '--shards', type='int', default=1, metavar='N',
-      help='Number of shards per request, default: %default')
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, 'Display options')
@@ -235,7 +230,6 @@ def main():
               trigger_task,
               options.swarming,
               options.dimensions,
-              options.shards,
               options.sleep,
               options.output_size,
               progress,
