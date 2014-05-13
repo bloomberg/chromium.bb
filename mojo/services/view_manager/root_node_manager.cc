@@ -16,16 +16,18 @@ namespace {
 // Id for the root node.
 const TransportConnectionSpecificNodeId kRootId = 1;
 
+// Used to identify an invalid connection.
+const TransportConnectionId kNoConnection = 0;
+
 }  // namespace
 
 RootNodeManager::ScopedChange::ScopedChange(
     ViewManagerConnection* connection,
     RootNodeManager* root,
-    TransportChangeId change_id,
     RootNodeManager::ChangeType change_type)
     : root_(root),
       change_type_(change_type) {
-  root_->PrepareForChange(connection, change_id);
+  root_->PrepareForChange(connection);
 }
 
 RootNodeManager::ScopedChange::~ScopedChange() {
@@ -43,6 +45,7 @@ RootNodeManager::Context::~Context() {
 RootNodeManager::RootNodeManager(Shell* shell)
     : next_connection_id_(1),
       next_server_change_id_(1),
+      change_source_(kNoConnection),
       root_view_manager_(shell, this),
       root_(this, NodeId(0, kRootId)) {
 }
@@ -88,11 +91,13 @@ View* RootNodeManager::GetView(const ViewId& id) {
 void RootNodeManager::NotifyNodeHierarchyChanged(const NodeId& node,
                                                  const NodeId& new_parent,
                                                  const NodeId& old_parent) {
+  // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->NotifyNodeHierarchyChanged(
-        node, new_parent, old_parent, next_server_change_id_,
-        GetClientChangeId(i->first));
+    if (ShouldNotifyConnection(i->first)) {
+      i->second->NotifyNodeHierarchyChanged(
+          node, new_parent, old_parent, next_server_change_id_);
+    }
   }
 }
 
@@ -102,8 +107,8 @@ void RootNodeManager::NotifyNodeViewReplaced(const NodeId& node,
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->NotifyNodeViewReplaced(node, new_view_id, old_view_id,
-                                      GetClientChangeId(i->first));
+    if (ShouldNotifyConnection(i->first))
+      i->second->NotifyNodeViewReplaced(node, new_view_id, old_view_id);
   }
 }
 
@@ -111,8 +116,8 @@ void RootNodeManager::NotifyNodeDeleted(const NodeId& node) {
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->NotifyNodeDeleted(node, next_server_change_id_,
-                                 GetClientChangeId(i->first));
+    if (ShouldNotifyConnection(i->first))
+      i->second->NotifyNodeDeleted(node, next_server_change_id_);
   }
 }
 
@@ -120,28 +125,29 @@ void RootNodeManager::NotifyViewDeleted(const ViewId& view) {
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->NotifyViewDeleted(view, next_server_change_id_,
-                                 GetClientChangeId(i->first));
+    if (ShouldNotifyConnection(i->first))
+      i->second->NotifyViewDeleted(view);
   }
 }
 
-void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
-                                       TransportChangeId change_id) {
-  DCHECK(!change_.get());  // Should only ever have one change in flight.
-  change_.reset(new Change(connection->id(), change_id));
+void RootNodeManager::PrepareForChange(ViewManagerConnection* connection) {
+  // Should only ever have one change in flight.
+  DCHECK_EQ(kNoConnection, change_source_);
+  change_source_ = connection->id();
 }
 
 void RootNodeManager::FinishChange(ChangeType change_type) {
-  DCHECK(change_.get());  // PrepareForChange/FinishChange should be balanced.
-  change_.reset();
+  // PrepareForChange/FinishChange should be balanced.
+  DCHECK_NE(kNoConnection, change_source_);
+  change_source_ = 0;
   if (change_type == CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID)
     next_server_change_id_++;
 }
 
-TransportChangeId RootNodeManager::GetClientChangeId(
+bool RootNodeManager::ShouldNotifyConnection(
     TransportConnectionId connection_id) const {
-  return (change_ && connection_id == change_->connection_id) ?
-      change_->client_change_id : 0;
+  // Don't notify the source that originated the change.
+  return connection_id != change_source_;
 }
 
 void RootNodeManager::OnNodeHierarchyChanged(const NodeId& node,

@@ -41,7 +41,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
    public:
     ScopedChange(ViewManagerConnection* connection,
                  RootNodeManager* root,
-                 TransportChangeId change_id,
                  RootNodeManager::ChangeType change_type);
     ~ScopedChange();
 
@@ -94,34 +93,22 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
     ~Context();
   };
 
-  // Tracks a change.
-  struct Change {
-    Change(TransportConnectionId connection_id,
-           TransportChangeId client_change_id)
-        : connection_id(connection_id),
-          client_change_id(client_change_id) {
-    }
-
-    TransportConnectionId connection_id;
-    TransportChangeId client_change_id;
-  };
-
   typedef std::map<TransportConnectionId, ViewManagerConnection*> ConnectionMap;
 
-  // Invoked when a particular connection is about to make a change. Records
-  // the |change_id| so that it can be supplied to the clients by way of
-  // OnNodeHierarchyChanged().
+  // Invoked when a particular connection is about to make a change.
+  // Subsequently followed by FinishChange() once the change is done.
+  //
   // Changes should never nest, meaning each PrepareForChange() must be
   // balanced with a call to FinishChange() with no PrepareForChange()
   // in between.
-  void PrepareForChange(ViewManagerConnection* connection,
-                        TransportChangeId change_id);
+  void PrepareForChange(ViewManagerConnection* connection);
 
   // Balances a call to PrepareForChange().
   void FinishChange(ChangeType change_type);
 
-  TransportChangeId GetClientChangeId(
-      TransportConnectionId connection_id) const;
+  // Returns true if the specified connection should be notified of the current
+  // change.
+  bool ShouldNotifyConnection(TransportConnectionId connection_id) const;
 
   // Overriden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const NodeId& node,
@@ -141,8 +128,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   // Set of ViewManagerConnections.
   ConnectionMap connection_map_;
 
-  // If non-null we're processing a change.
-  scoped_ptr<Change> change_;
+  // If non-zero we're processing a change from this client.
+  TransportConnectionId change_source_;
 
   RootViewManager root_view_manager_;
 

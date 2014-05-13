@@ -65,14 +65,14 @@ ViewManagerConnection::ViewManagerConnection() : id_(0) {
 ViewManagerConnection::~ViewManagerConnection() {
   // Delete any views we own.
   while (!view_map_.empty()) {
-    bool result = DeleteViewImpl(this, view_map_.begin()->second->id(), 0);
+    bool result = DeleteViewImpl(this, view_map_.begin()->second->id());
     DCHECK(result);
   }
 
   // We're about to destroy all our nodes. Detach any views from them.
   for (NodeMap::iterator i = node_map_.begin(); i != node_map_.end(); ++i) {
     if (i->second->view()) {
-      bool result = SetViewImpl(i->second->id(), ViewId(), 0);
+      bool result = SetViewImpl(i->second->id(), ViewId());
       DCHECK(result);
     }
   }
@@ -108,52 +108,40 @@ void ViewManagerConnection::NotifyNodeHierarchyChanged(
     const NodeId& node,
     const NodeId& new_parent,
     const NodeId& old_parent,
-    TransportChangeId server_change_id,
-    TransportChangeId client_change_id) {
+    TransportChangeId server_change_id) {
   client()->OnNodeHierarchyChanged(NodeIdToTransportId(node),
                                    NodeIdToTransportId(new_parent),
                                    NodeIdToTransportId(old_parent),
-                                   server_change_id,
-                                   client_change_id);
+                                   server_change_id);
 }
 
 void ViewManagerConnection::NotifyNodeViewReplaced(
     const NodeId& node,
     const ViewId& new_view_id,
-    const ViewId& old_view_id,
-    TransportChangeId client_change_id) {
+    const ViewId& old_view_id) {
   client()->OnNodeViewReplaced(NodeIdToTransportId(node),
                                ViewIdToTransportId(new_view_id),
-                               ViewIdToTransportId(old_view_id),
-                               client_change_id);
+                               ViewIdToTransportId(old_view_id));
 }
 
 void ViewManagerConnection::NotifyNodeDeleted(
     const NodeId& node,
-    TransportChangeId server_change_id,
-    TransportChangeId client_change_id) {
-  client()->OnNodeDeleted(NodeIdToTransportId(node), server_change_id,
-                          client_change_id);
+    TransportChangeId server_change_id) {
+  client()->OnNodeDeleted(NodeIdToTransportId(node), server_change_id);
 }
 
-void ViewManagerConnection::NotifyViewDeleted(
-    const ViewId& view,
-    TransportChangeId server_change_id,
-    TransportChangeId client_change_id) {
-  client()->OnViewDeleted(ViewIdToTransportId(view), server_change_id,
-                          client_change_id);
+void ViewManagerConnection::NotifyViewDeleted(const ViewId& view) {
+  client()->OnViewDeleted(ViewIdToTransportId(view));
 }
 
 bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
-                                           const NodeId& node_id,
-                                           TransportChangeId change_id) {
+                                           const NodeId& node_id) {
   DCHECK_EQ(node_id.connection_id, id_);
   Node* node = GetNode(node_id);
   if (!node)
     return false;
   RootNodeManager::ScopedChange change(
-      source, context(), change_id,
-      RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID);
+      source, context(), RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID);
   if (node->GetParent())
     node->GetParent()->Remove(node);
   std::vector<Node*> children(node->GetChildren());
@@ -168,26 +156,27 @@ bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
 }
 
 bool ViewManagerConnection::DeleteViewImpl(ViewManagerConnection* source,
-                                           const ViewId& view_id,
-                                           TransportChangeId change_id) {
+                                           const ViewId& view_id) {
   DCHECK_EQ(view_id.connection_id, id_);
   View* view = GetView(view_id);
   if (!view)
     return false;
   RootNodeManager::ScopedChange change(
-      source, context(), change_id,
+      source, context(),
       RootNodeManager::CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID);
   if (view->node())
     view->node()->SetView(NULL);
   view_map_.erase(view_id.view_id);
+  // Make a copy of |view_id| as once we delete view |view_id| may no longer be
+  // valid.
+  const ViewId view_id_copy(view_id);
   delete view;
-  context()->NotifyViewDeleted(view_id);
+  context()->NotifyViewDeleted(view_id_copy);
   return true;
 }
 
 bool ViewManagerConnection::SetViewImpl(const NodeId& node_id,
-                                        const ViewId& view_id,
-                                        TransportChangeId change_id) {
+                                        const ViewId& view_id) {
   Node* node = GetNode(node_id);
   if (!node)
     return false;
@@ -195,7 +184,7 @@ bool ViewManagerConnection::SetViewImpl(const NodeId& node_id,
   if (!view && view_id != ViewId())
     return false;
   RootNodeManager::ScopedChange change(
-      this, context(), change_id,
+      this, context(),
       RootNodeManager::CHANGE_TYPE_DONT_ADVANCE_SERVER_CHANGE_ID);
   node->SetView(view);
   return true;
@@ -215,20 +204,18 @@ void ViewManagerConnection::CreateNode(
 
 void ViewManagerConnection::DeleteNode(
     TransportNodeId transport_node_id,
-    TransportChangeId change_id,
     const Callback<void(bool)>& callback) {
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
   ViewManagerConnection* connection = context()->GetConnection(
       node_id.connection_id);
   callback.Run(connection &&
-               connection->DeleteNodeImpl(this, node_id, change_id));
+               connection->DeleteNodeImpl(this, node_id));
 }
 
 void ViewManagerConnection::AddNode(
     TransportNodeId parent_id,
     TransportNodeId child_id,
     TransportChangeId server_change_id,
-    TransportChangeId client_change_id,
     const Callback<void(bool)>& callback) {
   bool success = false;
   if (server_change_id == context()->next_server_change_id()) {
@@ -238,7 +225,7 @@ void ViewManagerConnection::AddNode(
         !child->window()->Contains(parent->window())) {
       success = true;
       RootNodeManager::ScopedChange change(
-          this, context(), client_change_id,
+          this, context(),
           RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID);
       parent->Add(child);
     }
@@ -249,7 +236,6 @@ void ViewManagerConnection::AddNode(
 void ViewManagerConnection::RemoveNodeFromParent(
     TransportNodeId node_id,
     TransportChangeId server_change_id,
-    TransportChangeId client_change_id,
     const Callback<void(bool)>& callback) {
   bool success = false;
   if (server_change_id == context()->next_server_change_id()) {
@@ -257,7 +243,7 @@ void ViewManagerConnection::RemoveNodeFromParent(
     if (node && node->GetParent()) {
       success = true;
       RootNodeManager::ScopedChange change(
-          this, context(), client_change_id,
+          this, context(),
           RootNodeManager::CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID);
       node->GetParent()->Remove(node);
     }
@@ -291,23 +277,19 @@ void ViewManagerConnection::CreateView(
 
 void ViewManagerConnection::DeleteView(
     TransportViewId transport_view_id,
-    TransportChangeId change_id,
     const Callback<void(bool)>& callback) {
   const ViewId view_id(ViewIdFromTransportId(transport_view_id));
   ViewManagerConnection* connection = context()->GetConnection(
       view_id.connection_id);
-  callback.Run(connection &&
-               connection->DeleteViewImpl(this, view_id, change_id));
+  callback.Run(connection && connection->DeleteViewImpl(this, view_id));
 }
 
 void ViewManagerConnection::SetView(
     TransportNodeId transport_node_id,
     TransportViewId transport_view_id,
-    TransportChangeId change_id,
     const Callback<void(bool)>& callback) {
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
-  callback.Run(SetViewImpl(node_id, ViewIdFromTransportId(transport_view_id),
-                           change_id));
+  callback.Run(SetViewImpl(node_id, ViewIdFromTransportId(transport_view_id)));
 }
 
 void ViewManagerConnection::SetViewContents(

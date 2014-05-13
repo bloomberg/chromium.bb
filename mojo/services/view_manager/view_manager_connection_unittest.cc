@@ -101,12 +101,9 @@ bool CreateNode(IViewManager* view_manager,
 // TODO(sky): make a macro for these functions, they are all the same.
 
 // Deletes a node, blocking until done.
-bool DeleteNode(IViewManager* view_manager,
-                TransportNodeId node_id,
-                TransportChangeId change_id) {
+bool DeleteNode(IViewManager* view_manager, TransportNodeId node_id) {
   bool result = false;
-  view_manager->DeleteNode(node_id, change_id,
-                           base::Bind(&BooleanCallback, &result));
+  view_manager->DeleteNode(node_id, base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
 }
@@ -115,10 +112,9 @@ bool DeleteNode(IViewManager* view_manager,
 bool AddNode(IViewManager* view_manager,
              TransportNodeId parent,
              TransportNodeId child,
-             TransportChangeId server_change_id,
-             TransportChangeId client_change_id) {
+             TransportChangeId server_change_id) {
   bool result = false;
-  view_manager->AddNode(parent, child, server_change_id, client_change_id,
+  view_manager->AddNode(parent, child, server_change_id,
                         base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
@@ -127,12 +123,10 @@ bool AddNode(IViewManager* view_manager,
 // Removes a node, blocking until done.
 bool RemoveNodeFromParent(IViewManager* view_manager,
                           TransportNodeId node_id,
-                          TransportChangeId server_change_id,
-                          TransportChangeId client_change_id) {
+                          TransportChangeId server_change_id) {
   bool result = false;
   view_manager->RemoveNodeFromParent(
-      node_id, server_change_id, client_change_id,
-      base::Bind(&BooleanCallback, &result));
+      node_id, server_change_id, base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
 }
@@ -158,10 +152,9 @@ bool CreateView(IViewManager* view_manager,
 // get back result from server.
 bool SetView(IViewManager* view_manager,
              TransportNodeId node_id,
-             TransportViewId view_id,
-             TransportChangeId change_id) {
+             TransportViewId view_id) {
   bool result = false;
-  view_manager->SetView(node_id, view_id, change_id,
+  view_manager->SetView(node_id, view_id,
                         base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
@@ -216,48 +209,39 @@ class ViewManagerClientImpl : public IViewManagerClient {
       TransportNodeId node,
       TransportNodeId new_parent,
       TransportNodeId old_parent,
-      TransportChangeId server_change_id,
-      TransportChangeId client_change_id) OVERRIDE {
+      TransportChangeId server_change_id) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
-            "change_id=%d,%d node=%s new_parent=%s old_parent=%s",
+            "HierarchyChanged change_id=%d node=%s new_parent=%s old_parent=%s",
             static_cast<int>(server_change_id),
-            static_cast<int>(client_change_id),
             NodeIdToString(node).c_str(),
             NodeIdToString(new_parent).c_str(),
             NodeIdToString(old_parent).c_str()));
     QuitIfNecessary();
   }
   virtual void OnNodeDeleted(TransportNodeId node,
-                             TransportChangeId server_change_id,
-                             TransportChangeId client_change_id) OVERRIDE {
+                             TransportChangeId server_change_id) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
-            "NodeDeleted change_id=%d,%d node=%s",
+            "NodeDeleted change_id=%d node=%s",
             static_cast<int>(server_change_id),
-            static_cast<int>(client_change_id),
             NodeIdToString(node).c_str()));
     QuitIfNecessary();
   }
-  virtual void OnViewDeleted(TransportViewId view,
-                             TransportChangeId server_change_id,
-                             TransportChangeId client_change_id) OVERRIDE {
+  virtual void OnViewDeleted(TransportViewId view) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
-            "ViewDeleted change_id=%d,%d view=%s",
-            static_cast<int>(client_change_id),
-            static_cast<int>(client_change_id),
+            "ViewDeleted view=%s",
             NodeIdToString(view).c_str()));
     QuitIfNecessary();
   }
   virtual void OnNodeViewReplaced(TransportNodeId node,
                                   TransportViewId new_view_id,
-                                  TransportViewId old_view_id,
-                                  TransportChangeId change_id) OVERRIDE {
+                                  TransportViewId old_view_id) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
-            "change_id=%d node=%s new_view=%s old_view=%s",
-            static_cast<int>(change_id), NodeIdToString(node).c_str(),
+            "ViewReplaced node=%s new_view=%s old_view=%s",
+            NodeIdToString(node).c_str(),
             NodeIdToString(new_view_id).c_str(),
             NodeIdToString(old_view_id).c_str()));
     QuitIfNecessary();
@@ -349,18 +333,25 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
 
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
+  EstablishSecondConnection();
+  EXPECT_TRUE(client2_.GetAndClearChanges().empty());
+
   // Make 2 a child of 1.
   {
     AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 2),
-                        1,
-                        11));
+                        1));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=1,11 node=1,2 new_parent=1,1 old_parent=null",
-              changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=1 node=1,2 new_parent=1,1 old_parent=null",
+        changes[0]);
   }
 
   // Remove 2 from its parent.
@@ -368,12 +359,16 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
     AllocationScope scope;
     ASSERT_TRUE(RemoveNodeFromParent(view_manager_.get(),
                                      CreateNodeId(client_.id(), 2),
-                                     2,
-                                     101));
+                                     2));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=2,101 node=1,2 new_parent=null old_parent=1,1",
-              changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=2 node=1,2 new_parent=null old_parent=1,1",
+        changes[0]);
   }
 }
 
@@ -384,18 +379,25 @@ TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
 
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
+  EstablishSecondConnection();
+  EXPECT_TRUE(client2_.GetAndClearChanges().empty());
+
   // Make 2 a child of 1.
   {
     AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 2),
-                        1,
-                        11));
+                        1));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=1,11 node=1,2 new_parent=1,1 old_parent=null",
-              changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=1 node=1,2 new_parent=1,1 old_parent=null",
+        changes[0]);
   }
 
   // Try again, this should fail.
@@ -404,8 +406,7 @@ TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
     EXPECT_FALSE(AddNode(view_manager_.get(),
                          CreateNodeId(client_.id(), 1),
                          CreateNodeId(client_.id(), 2),
-                         2,
-                         11));
+                         2));
     Changes changes(client_.GetAndClearChanges());
     EXPECT_TRUE(changes.empty());
   }
@@ -418,42 +419,7 @@ TEST_F(ViewManagerConnectionTest, AddAncestorFails) {
 
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
-  // Make 2 a child of 1.
-  {
-    AllocationScope scope;
-    ASSERT_TRUE(AddNode(view_manager_.get(),
-                        CreateNodeId(client_.id(), 1),
-                        CreateNodeId(client_.id(), 2),
-                        1,
-                        11));
-    Changes changes(client_.GetAndClearChanges());
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=1,11 node=1,2 new_parent=1,1 old_parent=null",
-              changes[0]);
-  }
-
-  // Try to make 1 a child of 2, this should fail since 1 is an ancestor of 2.
-  {
-    AllocationScope scope;
-    EXPECT_FALSE(AddNode(view_manager_.get(),
-                         CreateNodeId(client_.id(), 2),
-                         CreateNodeId(client_.id(), 1),
-                         2,
-                         21));
-    Changes changes(client_.GetAndClearChanges());
-    EXPECT_TRUE(changes.empty());
-  }
-}
-
-// Verifies hierarchy changes are sent to multiple clients.
-TEST_F(ViewManagerConnectionTest, AddRemoveNotifyMultipleConnections) {
   EstablishSecondConnection();
-
-  // Create two nodes in first connection.
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
-
-  EXPECT_TRUE(client_.GetAndClearChanges().empty());
   EXPECT_TRUE(client2_.GetAndClearChanges().empty());
 
   // Make 2 a child of 1.
@@ -462,21 +428,27 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotifyMultipleConnections) {
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 2),
-                        1,
-                        11));
+                        1));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=1,11 node=1,2 new_parent=1,1 old_parent=null",
-              changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=1 node=1,2 new_parent=1,1 old_parent=null",
+        changes[0]);
   }
 
-  // Second client should also have received the change.
+  // Try to make 1 a child of 2, this should fail since 1 is an ancestor of 2.
   {
-    client2_.DoRunLoopUntilChangesCount(1);
-    Changes changes(client2_.GetAndClearChanges());
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=1,0 node=1,2 new_parent=1,1 old_parent=null",
-              changes[0]);
+    AllocationScope scope;
+    EXPECT_FALSE(AddNode(view_manager_.get(),
+                         CreateNodeId(client_.id(), 2),
+                         CreateNodeId(client_.id(), 1),
+                         2));
+    Changes changes(client_.GetAndClearChanges());
+    EXPECT_TRUE(changes.empty());
   }
 }
 
@@ -492,8 +464,7 @@ TEST_F(ViewManagerConnectionTest, AddWithInvalidServerId) {
     ASSERT_FALSE(AddNode(view_manager_.get(),
                          CreateNodeId(client_.id(), 1),
                          CreateNodeId(client_.id(), 2),
-                         0,
-                         11));
+                         0));
     Changes changes(client_.GetAndClearChanges());
     EXPECT_TRUE(changes.empty());
   }
@@ -505,18 +476,25 @@ TEST_F(ViewManagerConnectionTest, AddToRoot) {
   ASSERT_TRUE(CreateNode(view_manager_.get(), 3));
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
+  EstablishSecondConnection();
+  EXPECT_TRUE(client2_.GetAndClearChanges().empty());
+
   // Make 3 a child of 21.
   {
     AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 21),
                         CreateNodeId(client_.id(), 3),
-                        1,
-                        11));
+                        1));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=1,11 node=1,3 new_parent=1,21 old_parent=null",
-              changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=1 node=1,3 new_parent=1,21 old_parent=null",
+        changes[0]);
   }
 
   // Make 21 a child of the root.
@@ -525,12 +503,16 @@ TEST_F(ViewManagerConnectionTest, AddToRoot) {
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 21),
-                        2,
-                        44));
+                        2));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=2,44 node=1,21 new_parent=0,1 old_parent=null",
-              changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=2 node=1,21 new_parent=0,1 old_parent=null",
+        changes[0]);
   }
 }
 
@@ -540,18 +522,25 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
   ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
+  EstablishSecondConnection();
+  EXPECT_TRUE(client2_.GetAndClearChanges().empty());
+
   // Make 2 a child of 1.
   {
     AllocationScope scope;
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
                         CreateNodeId(client_.id(), 2),
-                        1,
-                        11));
+                        1));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=1,11 node=1,2 new_parent=1,1 old_parent=null",
-              changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=1 node=1,2 new_parent=1,1 old_parent=null",
+        changes[0]);
   }
 
   // Add 1 to the root
@@ -560,28 +549,36 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
     ASSERT_TRUE(AddNode(view_manager_.get(),
                         CreateNodeId(0, 1),
                         CreateNodeId(client_.id(), 1),
-                        2,
-                        101));
+                        2));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=2,101 node=1,1 new_parent=0,1 old_parent=null",
-              changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=2 node=1,1 new_parent=0,1 old_parent=null",
+        changes[0]);
   }
 
   // Delete 1. Deleting 1 sends out notification of a removal for both nodes (1
   // and 2).
   {
     AllocationScope scope;
-    ASSERT_TRUE(DeleteNode(view_manager_.get(),
-                           CreateNodeId(client_.id(), 1),
-                           121));
+    ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 1)));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(3);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(3u, changes.size());
-    EXPECT_EQ("change_id=3,121 node=1,1 new_parent=null old_parent=0,1",
-              changes[0]);
-    EXPECT_EQ("change_id=3,121 node=1,2 new_parent=null old_parent=1,1",
-              changes[1]);
-    EXPECT_EQ("NodeDeleted change_id=3,121 node=1,1", changes[2]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=3 node=1,1 new_parent=null old_parent=0,1",
+        changes[0]);
+    EXPECT_EQ(
+        "HierarchyChanged change_id=3 node=1,2 new_parent=null old_parent=1,1",
+        changes[1]);
+    EXPECT_EQ("NodeDeleted change_id=3 node=1,1", changes[2]);
   }
 }
 
@@ -592,29 +589,39 @@ TEST_F(ViewManagerConnectionTest, SetView) {
   ASSERT_TRUE(CreateView(view_manager_.get(), 11));
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
+  EstablishSecondConnection();
+  EXPECT_TRUE(client2_.GetAndClearChanges().empty());
+
   // Set view 11 on node 1.
   {
     ASSERT_TRUE(SetView(view_manager_.get(),
                         CreateNodeId(client_.id(), 1),
-                        CreateViewId(client_.id(), 11),
-                        21));
+                        CreateViewId(client_.id(), 11)));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=21 node=1,1 new_view=1,11 old_view=null",
-              changes[0]);
+    EXPECT_EQ(
+        "ViewReplaced node=1,1 new_view=1,11 old_view=null",
+        changes[0]);
   }
 
   // Set view 11 on node 2.
   {
     ASSERT_TRUE(SetView(view_manager_.get(),
                         CreateNodeId(client_.id(), 2),
-                        CreateViewId(client_.id(), 11),
-                        22));
+                        CreateViewId(client_.id(), 11)));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(2);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(2u, changes.size());
-    EXPECT_EQ("change_id=22 node=1,1 new_view=null old_view=1,11",
+    EXPECT_EQ("ViewReplaced node=1,1 new_view=null old_view=1,11",
               changes[0]);
-    EXPECT_EQ("change_id=22 node=1,2 new_view=1,11 old_view=null",
+    EXPECT_EQ("ViewReplaced node=1,2 new_view=1,11 old_view=null",
               changes[1]);
   }
 }
@@ -629,31 +636,37 @@ TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
   // Set view 11 on node 1.
   ASSERT_TRUE(SetView(view_manager_.get(),
                       CreateNodeId(client_.id(), 1),
-                      CreateViewId(client_.id(), 11),
-                      21));
+                      CreateViewId(client_.id(), 11)));
   client_.GetAndClearChanges();
+
+  EstablishSecondConnection();
+  EXPECT_TRUE(client2_.GetAndClearChanges().empty());
 
   // Delete node 1.
   {
-    ASSERT_TRUE(DeleteNode(view_manager_.get(),
-                           CreateNodeId(client_.id(), 1),
-                           121));
+    ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 1)));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(2);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(2u, changes.size());
-    EXPECT_EQ("change_id=121 node=1,1 new_view=null old_view=1,11",
-              changes[0]);
-    EXPECT_EQ("NodeDeleted change_id=1,121 node=1,1", changes[1]);
+    EXPECT_EQ("ViewReplaced node=1,1 new_view=null old_view=1,11", changes[0]);
+    EXPECT_EQ("NodeDeleted change_id=1 node=1,1", changes[1]);
   }
 
   // Set view 11 on node 2.
   {
     ASSERT_TRUE(SetView(view_manager_.get(),
                         CreateNodeId(client_.id(), 2),
-                        CreateViewId(client_.id(), 11),
-                        22));
+                        CreateViewId(client_.id(), 11)));
     Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=22 node=1,2 new_view=1,11 old_view=null", changes[0]);
+    EXPECT_EQ("ViewReplaced node=1,2 new_view=1,11 old_view=null", changes[0]);
   }
 }
 
@@ -671,31 +684,26 @@ TEST_F(ViewManagerConnectionTest, SetViewFromSecondConnection) {
   // Create a view in the second connection.
   ASSERT_TRUE(CreateView(view_manager2_.get(), 51));
 
-  // Attach view to node 1 in the first connection.
+  // Attach view to node 1 in the first connectoin.
   {
     ASSERT_TRUE(SetView(view_manager2_.get(),
                         CreateNodeId(client_.id(), 1),
-                        CreateViewId(client2_.id(), 51),
-                        22));
+                        CreateViewId(client2_.id(), 51)));
     client_.DoRunLoopUntilChangesCount(1);
     Changes changes(client_.GetAndClearChanges());
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=0 node=1,1 new_view=2,51 old_view=null", changes[0]);
-
-    client2_.DoRunLoopUntilChangesCount(1);
-    changes = client2_.GetAndClearChanges();
-    ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ("change_id=22 node=1,1 new_view=2,51 old_view=null", changes[0]);
+    EXPECT_EQ("ViewReplaced node=1,1 new_view=2,51 old_view=null", changes[0]);
   }
 
   // Shutdown the second connection and verify view is removed.
   {
     DestroySecondConnection();
-    client_.DoRunLoopUntilChangesCount(1);
+    client_.DoRunLoopUntilChangesCount(2);
 
     Changes changes(client_.GetAndClearChanges());
     ASSERT_EQ(2u, changes.size());
-    EXPECT_EQ("change_id=0 node=1,1 new_view=null old_view=2,51", changes[0]);
+    EXPECT_EQ("ViewReplaced node=1,1 new_view=null old_view=2,51", changes[0]);
+    EXPECT_EQ("ViewDeleted view=2,51", changes[1]);
   }
 }
 
@@ -709,13 +717,11 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
   ASSERT_TRUE(AddNode(view_manager_.get(),
                       CreateNodeId(0, 1),
                       CreateNodeId(client_.id(), 1),
-                      1,
-                      101));
+                      1));
   ASSERT_TRUE(AddNode(view_manager_.get(),
                       CreateNodeId(client_.id(), 1),
                       CreateNodeId(client_.id(), 11),
-                      2,
-                      102));
+                      2));
 
   // Create two nodes in second connection, 2 and 3, both children of the root.
   ASSERT_TRUE(CreateNode(view_manager2_.get(), 2));
@@ -723,20 +729,17 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
   ASSERT_TRUE(AddNode(view_manager2_.get(),
                       CreateNodeId(0, 1),
                       CreateNodeId(client2_.id(), 2),
-                      3,
-                      99));
+                      3));
   ASSERT_TRUE(AddNode(view_manager2_.get(),
                       CreateNodeId(0, 1),
                       CreateNodeId(client2_.id(), 3),
-                      4,
-                      99));
+                      4));
 
   // Attach view to node 11 in the first connection.
   ASSERT_TRUE(CreateView(view_manager_.get(), 51));
   ASSERT_TRUE(SetView(view_manager_.get(),
                       CreateNodeId(client_.id(), 11),
-                      CreateViewId(client_.id(), 51),
-                      22));
+                      CreateViewId(client_.id(), 51)));
 
   // Verifies GetNodeTree() on the root.
   {

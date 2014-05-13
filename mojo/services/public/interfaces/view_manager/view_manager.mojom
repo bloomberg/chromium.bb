@@ -10,17 +10,11 @@ struct INode {
   uint32 view_id;
 };
 
-// Functions that mutate the hierarchy take two change ids:
-// |server_change_id|: this is an ever increasing integer used to identify the
-// change. Every hierarchy change increases this value. The server only accepts
-// changes where the supplied |server_change_id| matches the expected next
-// value. This ensures changes are made in a well defined order. The client is
-// told the |server_change_id| when the connection is initially established and
-// subsequentely in any changes.
-//
-// |client_change_id|: this id is for use by the client to further identify the
-// change. This value is supplied in the mutation notifications to clients.
-// Connections that did not originate the change get a value of 0.
+// Functions that mutate the hierarchy take a change id. This is an ever
+// increasing integer used to identify the change. Every hierarchy change
+// increases this value. The server only accepts changes where the supplied
+// |server_change_id| matches the expected next value. This ensures changes are
+// made in a well defined order.
 //
 // Nodes and Views are identified by a uint32. The upper 16 bits are the
 // connection id, and the lower 16 the id assigned by the client. Functions
@@ -36,8 +30,8 @@ interface IViewManager {
 
   // Deletes a node. This does not recurse. Children are removed from the node
   // before it is destroyed. Deletion is always allowed and implicitly advances
-  // the server_change_id.
-  DeleteNode(uint32 node_id, uint32 change_id) => (bool success);
+  // |server_change_id|.
+  DeleteNode(uint32 node_id) => (bool success);
 
   // Reparents a node. See description above class for details of |change_id|.
   // This fails for any of the following reasons:
@@ -47,15 +41,13 @@ interface IViewManager {
   // . |child| is already a child of |parent|.
   AddNode(uint32 parent,
           uint32 child,
-          uint32 server_change_id,
-          uint32 client_change_id) => (bool success);
+          uint32 server_change_id) => (bool success);
 
   // Removes a view from its current parent. See description above class for
   // details of |change_id|. This fails if the node is not valid,
   // |server_change_id| doesn't match, or the node already has no parent.
   RemoveNodeFromParent(uint32 node_id,
-                       uint32 server_change_id,
-                       uint32 client_change_id) => (bool success);
+                       uint32 server_change_id) => (bool success);
 
   // Returns the nodes comprising the tree starting at |node_id|. |node_id| is 
   // the first result in the return value, unless |node_id| is invalid, in which
@@ -68,10 +60,10 @@ interface IViewManager {
   CreateView(uint16 view_id) => (bool success);
 
   // Deletes the view with the specified id.
-  DeleteView(uint32 view_id, uint32 change_id) => (bool success);
+  DeleteView(uint32 view_id) => (bool success);
 
   // Sets the view a node is showing.
-  SetView(uint32 node_id, uint32 view_id, uint32 change_id) => (bool success);
+  SetView(uint32 node_id, uint32 view_id) => (bool success);
 
   // Shows the specified image (png encoded) in the specified view.
   SetViewContents(uint32 view_id,
@@ -79,12 +71,14 @@ interface IViewManager {
                   uint32 buffer_size);
 };
 
+// Changes to nodes/views are not sent to the connection that originated the
+// change. For example, if connection 1 attaches a view to a node (SetView())
+// connection 1 does not receive OnNodeViewReplaced().
 interface IViewManagerClient {
   // Invoked once the connection has been established. |connection_id| is the id
   // that uniquely identifies this connection. |next_server_change_id| is the
   // id of the next change the server is expecting.
-  OnConnectionEstablished(uint16 connection_id,
-                          uint32 next_server_change_id);
+  OnConnectionEstablished(uint16 connection_id, uint32 next_server_change_id);
 
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
   // identify a null node. For example, if the old_parent is NULL, 0 is
@@ -92,22 +86,18 @@ interface IViewManagerClient {
   OnNodeHierarchyChanged(uint32 node,
                          uint32 new_parent,
                          uint32 old_parent,
-                         uint32 server_change_id,
-                         uint32 client_change_id);
+                         uint32 server_change_id);
 
   // Invoked when a node is deleted.
-  OnNodeDeleted(uint32 node, uint32 server_change_id, uint32 client_change_id);
+  OnNodeDeleted(uint32 node, uint32 server_change_id);
                 
 
   // Invoked when the view associated with a node is replaced by another view.
   // 0 is used to identify a null view.
-  OnNodeViewReplaced(uint32 node,
-                     uint32 new_view_id,
-                     uint32 old_view_id,
-                     uint32 client_change_id);
+  OnNodeViewReplaced(uint32 node, uint32 new_view_id, uint32 old_view_id);
 
   // Invoked when a view is deleted.
-  OnViewDeleted(uint32 view, uint32 server_change_id, uint32 client_change_id);
+  OnViewDeleted(uint32 view);
 };
 
 }

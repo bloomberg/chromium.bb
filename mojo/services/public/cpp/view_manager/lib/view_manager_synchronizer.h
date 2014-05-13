@@ -60,28 +60,17 @@ class ViewManagerSynchronizer : public IViewManagerClient {
       uint32 node_id,
       uint32 new_parent_id,
       uint32 old_parent_id,
-      TransportChangeId server_change_id,
-      TransportChangeId client_change_id) OVERRIDE;
+      TransportChangeId server_change_id) OVERRIDE;
   virtual void OnNodeDeleted(TransportNodeId node_id,
-                             TransportChangeId server_change_id,
-                             TransportChangeId client_change_id) OVERRIDE;
+                             TransportChangeId server_change_id) OVERRIDE;
   virtual void OnNodeViewReplaced(uint32_t node,
                                   uint32_t new_view_id,
-                                  uint32_t old_view_id,
-                                  TransportChangeId client_change_id) OVERRIDE;
-  virtual void OnViewDeleted(uint32_t node_id,
-                             uint32_t server_change_id,
-                             uint32_t client_change_id) OVERRIDE;
+                                  uint32_t old_view_id) OVERRIDE;
+  virtual void OnViewDeleted(uint32_t view_id) OVERRIDE;
 
   // Sync the client model with the service by enumerating the pending
   // transaction queue and applying them in order.
   void Sync();
-
-  // Used by individual transactions to generate a connection-specific change
-  // id.
-  // TODO(beng): What happens when there are more than sizeof(int) changes in
-  //             the queue?
-  TransportChangeId GetNextClientChangeId();
 
   // Removes |transaction| from the pending queue. |transaction| must be at the
   // front of the queue.
@@ -93,7 +82,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   bool connected_;
   TransportConnectionId connection_id_;
   uint16_t next_id_;
-  TransportChangeId next_client_change_id_;
   TransportChangeId next_server_change_id_;
 
   Transactions pending_transactions_;
