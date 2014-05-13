@@ -153,8 +153,6 @@
       ],
       'sources': [
         'services/public/cpp/view_manager/lib/view.cc',
-        'services/public/cpp/view_manager/lib/view_private.cc',
-        'services/public/cpp/view_manager/lib/view_private.h',
         'services/public/cpp/view_manager/lib/view_manager.cc',
         'services/public/cpp/view_manager/lib/view_manager_private.cc',
         'services/public/cpp/view_manager/lib/view_manager_private.h',
@@ -168,7 +166,6 @@
         'services/public/cpp/view_manager/view.h',
         'services/public/cpp/view_manager/view_manager.h',
         'services/public/cpp/view_manager/view_manager_types.h',
-        'services/public/cpp/view_manager/view_observer.h',
         'services/public/cpp/view_manager/view_tree_host.h',
         'services/public/cpp/view_manager/view_tree_node.h',
         'services/public/cpp/view_manager/view_tree_node_observer.h',

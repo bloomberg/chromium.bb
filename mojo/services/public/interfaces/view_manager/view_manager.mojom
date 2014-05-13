@@ -96,7 +96,9 @@ interface IViewManagerClient {
                          uint32 client_change_id);
 
   // Invoked when a node is deleted.
-  OnNodeDeleted(uint32 node, uint32 server_change_id, uint32 client_change_id);
+  OnNodeDeleted(uint32 node,
+                uint32 server_change_id,
+                uint32 client_change_id);
                 
 
   // Invoked when the view associated with a node is replaced by another view.
@@ -105,9 +107,6 @@ interface IViewManagerClient {
                      uint32 new_view_id,
                      uint32 old_view_id,
                      uint32 client_change_id);
-
-  // Invoked when a view is deleted.
-  OnViewDeleted(uint32 view, uint32 server_change_id, uint32 client_change_id);
 };
 
 }

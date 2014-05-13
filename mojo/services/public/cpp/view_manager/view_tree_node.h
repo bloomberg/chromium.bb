@@ -15,7 +15,6 @@ namespace mojo {
 namespace services {
 namespace view_manager {
 
-class View;
 class ViewManager;
 class ViewTreeNodeObserver;
 
@@ -51,10 +50,6 @@ class ViewTreeNode {
 
   ViewTreeNode* GetChildById(TransportNodeId id);
 
-  // View.
-  void SetActiveView(View* view);
-  View* active_view() { return active_view_; }
-
  protected:
   // This class is subclassed only by test classes that provide a public ctor.
   ViewTreeNode();
@@ -68,7 +63,6 @@ class ViewTreeNode {
   void LocalDestroy();
   void LocalAddChild(ViewTreeNode* child);
   void LocalRemoveChild(ViewTreeNode* child);
-  void LocalSetActiveView(View* view);
 
   ViewManager* manager_;
   TransportNodeId id_;
@@ -76,8 +70,6 @@ class ViewTreeNode {
   Children children_;
 
   ObserverList<ViewTreeNodeObserver> observers_;
-
-  View* active_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewTreeNode);
 };

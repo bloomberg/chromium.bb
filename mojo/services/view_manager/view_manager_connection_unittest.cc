@@ -239,17 +239,6 @@ class ViewManagerClientImpl : public IViewManagerClient {
             NodeIdToString(node).c_str()));
     QuitIfNecessary();
   }
-  virtual void OnViewDeleted(TransportViewId view,
-                             TransportChangeId server_change_id,
-                             TransportChangeId client_change_id) OVERRIDE {
-    changes_.push_back(
-        base::StringPrintf(
-            "ViewDeleted change_id=%d,%d view=%s",
-            static_cast<int>(client_change_id),
-            static_cast<int>(client_change_id),
-            NodeIdToString(view).c_str()));
-    QuitIfNecessary();
-  }
   virtual void OnNodeViewReplaced(TransportNodeId node,
                                   TransportViewId new_view_id,
                                   TransportViewId old_view_id,
@@ -694,7 +683,7 @@ TEST_F(ViewManagerConnectionTest, SetViewFromSecondConnection) {
     client_.DoRunLoopUntilChangesCount(1);
 
     Changes changes(client_.GetAndClearChanges());
-    ASSERT_EQ(2u, changes.size());
+    ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("change_id=0 node=1,1 new_view=null old_view=2,51", changes[0]);
   }
 }

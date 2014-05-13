@@ -17,7 +17,6 @@ class Shell;
 namespace services {
 namespace view_manager {
 
-class View;
 class ViewManagerSynchronizer;
 class ViewTreeNode;
 
@@ -45,19 +44,16 @@ class ViewManager {
   ViewTreeNode* tree() { return tree_; }
 
   ViewTreeNode* GetNodeById(TransportNodeId id);
-  View* GetViewById(TransportViewId id);
 
  private:
   friend class ViewManagerPrivate;
   typedef std::map<TransportNodeId, ViewTreeNode*> IdToNodeMap;
-  typedef std::map<TransportViewId, View*> IdToViewMap;
 
   Shell* shell_;
   scoped_ptr<ViewManagerSynchronizer> synchronizer_;
   ViewTreeNode* tree_;
 
   IdToNodeMap nodes_;
-  IdToViewMap views_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManager);
 };

@@ -30,13 +30,10 @@ class ViewManagerSynchronizer : public IViewManagerClient {
 
   bool connected() const { return connected_; }
 
-  // API exposed to the node/view implementations that pushes local changes to
-  // the service.
+  // API exposed to the node implementation that pushes local changes to the
+  // service.
   TransportNodeId CreateViewTreeNode();
   void DestroyViewTreeNode(TransportNodeId node_id);
-
-  TransportViewId CreateView();
-  void DestroyView(TransportViewId view_id);
 
   // These methods take TransportIds. For views owned by the current connection,
   // the connection id high word can be zero. In all cases, the TransportId 0x1
@@ -45,9 +42,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   void RemoveChild(TransportNodeId child_id, TransportNodeId parent_id);
 
   bool OwnsNode(TransportNodeId id) const;
-  bool OwnsView(TransportViewId id) const;
-
-  void SetActiveView(TransportNodeId node_id, TransportViewId view_id);
 
  private:
   friend class ViewManagerTransaction;
@@ -70,9 +64,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
                                   uint32_t new_view_id,
                                   uint32_t old_view_id,
                                   TransportChangeId client_change_id) OVERRIDE;
-  virtual void OnViewDeleted(uint32_t node_id,
-                             uint32_t server_change_id,
-                             uint32_t client_change_id) OVERRIDE;
 
   // Sync the client model with the service by enumerating the pending
   // transaction queue and applying them in order.

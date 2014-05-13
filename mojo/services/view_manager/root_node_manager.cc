@@ -116,15 +116,6 @@ void RootNodeManager::NotifyNodeDeleted(const NodeId& node) {
   }
 }
 
-void RootNodeManager::NotifyViewDeleted(const ViewId& view) {
-  // TODO(sky): make a macro for this.
-  for (ConnectionMap::iterator i = connection_map_.begin();
-       i != connection_map_.end(); ++i) {
-    i->second->NotifyViewDeleted(view, next_server_change_id_,
-                                 GetClientChangeId(i->first));
-  }
-}
-
 void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
                                        TransportChangeId change_id) {
   DCHECK(!change_.get());  // Should only ever have one change in flight.
