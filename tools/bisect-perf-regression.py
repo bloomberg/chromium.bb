@@ -1637,12 +1637,17 @@ class BisectPerformanceMetrics(object):
 
     bot_name, build_timeout = GetBuilderNameAndBuildTime(self.opts.target_arch)
 
+    # Create a unique ID for each build request posted to try server builders.
+    # This ID is added to "Reason" property in build's json.
+    # TODO: Use this id to track the build status.
+    build_request_id = GetSHA1HexDigest('%s-%s' % (revision, patch))
+
     # Creates a try job description.
     job_args = {'host': self.opts.builder_host,
                 'port': self.opts.builder_port,
                 'revision': 'src@%s' % revision,
                 'bot': bot_name,
-                'name': 'Bisect Job-%s' % revision
+                'name': build_request_id
                }
     # Update patch information if supplied.
     if patch:
