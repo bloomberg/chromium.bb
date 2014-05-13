@@ -64,7 +64,8 @@ const int kEnableQuietModeDay = 2;
 
 namespace {
 
-const SkColor kWebNotificationColorNoUnread = SkColorSetA(SK_ColorWHITE, 128);
+const SkColor kWebNotificationColorNoUnread =
+    SkColorSetARGB(128, 255, 255, 255);
 const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
 
 }

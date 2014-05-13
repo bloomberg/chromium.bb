@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <string>
 
 #include "ash/accelerators/accelerator_commands.h"

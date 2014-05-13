@@ -15,7 +15,7 @@ ASH_EXPORT extern const int kShelfBackgroundAlpha;
 // Invalid image resource id used for ShelfItemDetails.
 extern const int kInvalidImageResourceID;
 
-extern const int kInvalidShelfID;
+const int kInvalidShelfID = 0;
 
 // Size of the shelf when visible (height when the shelf is horizontal).
 ASH_EXPORT extern const int kShelfSize;

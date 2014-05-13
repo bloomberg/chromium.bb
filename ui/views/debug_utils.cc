@@ -4,7 +4,7 @@
 
 #include "ui/views/debug_utils.h"
 
-#include <iostream>
+#include <ostream>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"

@@ -35,12 +35,11 @@ float GetForcedDeviceScaleFactorImpl() {
   return static_cast<float>(scale_in_double);
 }
 
-const int64 kInvalidDisplayIDForCompileTimeInit = -1;
-int64 internal_display_id_ = kInvalidDisplayIDForCompileTimeInit;
+int64 internal_display_id_ = -1;
 
 }  // namespace
 
-const int64 Display::kInvalidDisplayID = kInvalidDisplayIDForCompileTimeInit;
+const int64 Display::kInvalidDisplayID = -1;
 
 // static
 float Display::GetForcedDeviceScaleFactor() {
