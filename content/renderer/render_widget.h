@@ -121,9 +121,6 @@ class CONTENT_EXPORT RenderWidget
   // blink::WebWidgetClient
   virtual void suppressCompositorScheduling(bool enable);
   virtual void willBeginCompositorFrame();
-  virtual void didInvalidateRect(const blink::WebRect&);
-  virtual void didScrollRect(int dx, int dy,
-                             const blink::WebRect& clipRect);
   virtual void didAutoResize(const blink::WebSize& new_size);
   virtual void didActivateCompositor() OVERRIDE;
   virtual void didDeactivateCompositor();
@@ -302,7 +299,6 @@ class CONTENT_EXPORT RenderWidget
   // active RenderWidgets.
   void SetSwappedOut(bool is_swapped_out);
 
-  void InvalidationCallback();
   void FlushPendingInputEventAck();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const blink::WebRect& pos);
@@ -648,11 +644,6 @@ class CONTENT_EXPORT RenderWidget
   // Set to true if painting to the window is handled by the accelerated
   // compositor.
   bool is_accelerated_compositing_active_;
-
-  bool invalidation_task_posted_;
-
-  // Stats for legacy software mode
-  scoped_ptr<cc::RenderingStatsInstrumentation> legacy_software_mode_stats_;
 
   // Properties of the screen hosting this RenderWidget instance.
   blink::WebScreenInfo screen_info_;

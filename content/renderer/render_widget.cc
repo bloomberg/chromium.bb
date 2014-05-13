@@ -386,7 +386,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       pending_window_rect_count_(0),
       suppress_next_char_events_(false),
       is_accelerated_compositing_active_(false),
-      invalidation_task_posted_(false),
       screen_info_(screen_info),
       device_scale_factor_(screen_info_.deviceScaleFactor),
       is_threaded_compositing_enabled_(false),
@@ -409,11 +408,6 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
   is_threaded_compositing_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableThreadedCompositing);
-
-  legacy_software_mode_stats_ = cc::RenderingStatsInstrumentation::Create();
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          cc::switches::kEnableGpuBenchmarking))
-    legacy_software_mode_stats_->set_record_rendering_stats(true);
 }
 
 RenderWidget::~RenderWidget() {
@@ -1143,12 +1137,6 @@ void RenderWidget::ClearFocus() {
     webwidget_->setFocus(false);
 }
 
-void RenderWidget::InvalidationCallback() {
-  TRACE_EVENT0("renderer", "RenderWidget::InvalidationCallback");
-  invalidation_task_posted_ = false;
-  FlushPendingInputEventAck();
-}
-
 void RenderWidget::FlushPendingInputEventAck() {
   if (pending_input_event_ack_)
     Send(pending_input_event_ack_.release());
@@ -1157,54 +1145,6 @@ void RenderWidget::FlushPendingInputEventAck() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // WebWidgetClient
-
-void RenderWidget::didInvalidateRect(const WebRect& rect) {
-  // The invalidated rect might be outside the bounds of the view.
-  gfx::Rect view_rect(size_);
-  gfx::Rect damaged_rect = gfx::IntersectRects(view_rect, rect);
-  if (damaged_rect.IsEmpty())
-    return;
-
-  // We may not need to schedule another call to DoDeferredUpdate.
-  if (invalidation_task_posted_)
-    return;
-
-  // Perform updating asynchronously.  This serves two purposes:
-  // 1) Ensures that we call WebView::Paint without a bunch of other junk
-  //    on the call stack.
-  // 2) Allows us to collect more damage rects before painting to help coalesce
-  //    the work that we will need to do.
-  invalidation_task_posted_ = true;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&RenderWidget::InvalidationCallback, this));
-}
-
-void RenderWidget::didScrollRect(int dx, int dy,
-                                 const WebRect& clip_rect) {
-  // Drop scrolls on the floor when we are in compositing mode.
-  // TODO(nduca): stop WebViewImpl from sending scrolls in the first place.
-  if (is_accelerated_compositing_active_)
-    return;
-
-  // The scrolled rect might be outside the bounds of the view.
-  gfx::Rect view_rect(size_);
-  gfx::Rect damaged_rect = gfx::IntersectRects(view_rect, clip_rect);
-  if (damaged_rect.IsEmpty())
-    return;
-
-  // We may not need to schedule another call to DoDeferredUpdate.
-  if (invalidation_task_posted_)
-    return;
-
-  // Perform updating asynchronously.  This serves two purposes:
-  // 1) Ensures that we call WebView::Paint without a bunch of other junk
-  //    on the call stack.
-  // 2) Allows us to collect more damage rects before painting to help coalesce
-  //    the work that we will need to do.
-  invalidation_task_posted_ = true;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&RenderWidget::InvalidationCallback, this));
-}
 
 void RenderWidget::didAutoResize(const WebSize& new_size) {
   if (size_.width() != new_size.width || size_.height() != new_size.height) {
@@ -1333,15 +1273,7 @@ void RenderWidget::scheduleComposite() {
   // render_thread may be NULL in tests.
   if (render_thread && render_thread->compositor_message_loop_proxy().get() &&
       compositor_) {
-      compositor_->setNeedsAnimate();
-  } else {
-    // TODO(nduca): replace with something a little less hacky.  The reason this
-    // hack is still used is because the Invalidate-DoDeferredUpdate loop
-    // contains a lot of host-renderer synchronization logic that is still
-    // important for the accelerated compositing case. The option of simply
-    // duplicating all that code is less desirable than "faking out" the
-    // invalidation path using a magical damage rect.
-    didInvalidateRect(WebRect(0, 0, 1, 1));
+    compositor_->setNeedsAnimate();
   }
 }
 
