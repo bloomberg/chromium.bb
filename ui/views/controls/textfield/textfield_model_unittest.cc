@@ -23,11 +23,7 @@
 #include "base/win/windows_version.h"
 #endif
 
-using base::ASCIIToUTF16;
-using base::UTF8ToUTF16;
-using base::WideToUTF16;
-
-#define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(ASCIIToUTF16(ascii), utf16)
+#define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(base::ASCIIToUTF16(ascii), utf16)
 
 namespace {
 
@@ -72,24 +68,23 @@ class TextfieldModelTest : public ViewsTestBase,
 
 TEST_F(TextfieldModelTest, EditString) {
   TextfieldModel model(NULL);
-  // append two strings
-  model.Append(ASCIIToUTF16("HILL"));
+  // Append two strings.
+  model.Append(base::ASCIIToUTF16("HILL"));
   EXPECT_STR_EQ("HILL", model.text());
-  model.Append(ASCIIToUTF16("WORLD"));
+  model.Append(base::ASCIIToUTF16("WORLD"));
   EXPECT_STR_EQ("HILLWORLD", model.text());
 
-  // Insert "E" to make hello
+  // Insert "E" and replace "I" with "L" to make "HELLO".
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
   model.InsertChar('E');
   EXPECT_STR_EQ("HEILLWORLD", model.text());
-  // Replace "I" with "L"
   model.ReplaceChar('L');
   EXPECT_STR_EQ("HELLLWORLD", model.text());
   model.ReplaceChar('L');
   model.ReplaceChar('O');
   EXPECT_STR_EQ("HELLOWORLD", model.text());
 
-  // Delete 6th char "W", then delete 5th char O"
+  // Delete 6th char "W", then delete 5th char "O".
   EXPECT_EQ(5U, model.GetCursorPosition());
   EXPECT_TRUE(model.Delete());
   EXPECT_STR_EQ("HELLOORLD", model.text());
@@ -97,54 +92,54 @@ TEST_F(TextfieldModelTest, EditString) {
   EXPECT_EQ(4U, model.GetCursorPosition());
   EXPECT_STR_EQ("HELLORLD", model.text());
 
-  // Move the cursor to start. backspace should fail.
+  // Move the cursor to start; backspace should fail.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
   EXPECT_FALSE(model.Backspace());
   EXPECT_STR_EQ("HELLORLD", model.text());
-  // Move the cursor to the end. delete should fail.
+  // Move the cursor to the end; delete should fail, but backspace should work.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_FALSE(model.Delete());
   EXPECT_STR_EQ("HELLORLD", model.text());
-  // but backspace should work.
   EXPECT_TRUE(model.Backspace());
   EXPECT_STR_EQ("HELLORL", model.text());
 
   MoveCursorTo(model, 5);
-  model.ReplaceText(ASCIIToUTF16(" WOR"));
+  model.ReplaceText(base::ASCIIToUTF16(" WOR"));
   EXPECT_STR_EQ("HELLO WORL", model.text());
 }
 
 TEST_F(TextfieldModelTest, EditString_SimpleRTL) {
   TextfieldModel model(NULL);
   // Append two strings.
-  model.Append(WideToUTF16(L"\x05d0\x05d1\x05d2"));
-  EXPECT_EQ(WideToUTF16(L"\x05d0\x05d1\x05d2"), model.text());
-  model.Append(WideToUTF16(L"\x05e0\x05e1\x05e2"));
-  EXPECT_EQ(WideToUTF16(L"\x05d0\x05d1\x05d2\x05e0\x05e1\x05e2"), model.text());
+  model.Append(base::WideToUTF16(L"\x05d0\x05d1\x05d2"));
+  EXPECT_EQ(base::WideToUTF16(L"\x05d0\x05d1\x05d2"), model.text());
+  model.Append(base::WideToUTF16(L"\x05e0\x05e1\x05e2"));
+  EXPECT_EQ(base::WideToUTF16(L"\x05d0\x05d1\x05d2\x05e0\x05e1\x05e2"),
+            model.text());
 
-  // Insert 0x05f0.
+  // Insert "\x05f0".
   MoveCursorTo(model, 1);
   model.InsertChar(0x05f0);
-  EXPECT_EQ(WideToUTF16(L"\x05d0\x05f0\x05d1\x05d2\x05e0\x05e1\x05e2"),
+  EXPECT_EQ(base::WideToUTF16(L"\x05d0\x05f0\x05d1\x05d2\x05e0\x05e1\x05e2"),
             model.text());
 
   // Replace "\x05d1" with "\x05f1".
   model.ReplaceChar(0x05f1);
-  EXPECT_EQ(WideToUTF16(L"\x05d0\x05f0\x5f1\x05d2\x05e0\x05e1\x05e2"),
+  EXPECT_EQ(base::WideToUTF16(L"\x05d0\x05f0\x5f1\x05d2\x05e0\x05e1\x05e2"),
             model.text());
 
-  // Delete and backspace.
+  // Test Delete and backspace.
   EXPECT_EQ(3U, model.GetCursorPosition());
   EXPECT_TRUE(model.Delete());
-  EXPECT_EQ(WideToUTF16(L"\x05d0\x05f0\x5f1\x05e0\x05e1\x05e2"), model.text());
+  EXPECT_EQ(base::WideToUTF16(L"\x05d0\x05f0\x5f1\x05e0\x05e1\x05e2"),
+            model.text());
   EXPECT_TRUE(model.Backspace());
   EXPECT_EQ(2U, model.GetCursorPosition());
-  EXPECT_EQ(WideToUTF16(L"\x05d0\x05f0\x05e0\x05e1\x05e2"), model.text());
+  EXPECT_EQ(base::WideToUTF16(L"\x05d0\x05f0\x05e0\x05e1\x05e2"), model.text());
 }
 
 TEST_F(TextfieldModelTest, EditString_ComplexScript) {
-  // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
-  //                  font support for some scripts - http://crbug.com/106450
+  // TODO(msw): XP fails due to lack of font support: http://crbug.com/106450
   bool on_windows_xp = false;
 #if defined(OS_WIN)
   on_windows_xp = base::win::GetVersion() < base::win::VERSION_VISTA;
@@ -153,23 +148,21 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   TextfieldModel model(NULL);
 
   // Append two Hindi strings.
-  model.Append(WideToUTF16(L"\x0915\x093f\x0915\x094d\x0915"));
-  EXPECT_EQ(WideToUTF16(L"\x0915\x093f\x0915\x094d\x0915"), model.text());
-  model.Append(WideToUTF16(L"\x0915\x094d\x092e\x094d"));
-  EXPECT_EQ(WideToUTF16(
+  model.Append(base::WideToUTF16(L"\x0915\x093f\x0915\x094d\x0915"));
+  EXPECT_EQ(base::WideToUTF16(L"\x0915\x093f\x0915\x094d\x0915"), model.text());
+  model.Append(base::WideToUTF16(L"\x0915\x094d\x092e\x094d"));
+  EXPECT_EQ(base::WideToUTF16(
       L"\x0915\x093f\x0915\x094d\x0915\x0915\x094d\x092e\x094d"), model.text());
 
-  // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
-  //                  font support for some scripts - http://crbug.com/106450
   if (!on_windows_xp) {
-    // Check it is not able to place cursor in middle of a grapheme.
+    // Ensure the cursor cannot be placed in the middle of a grapheme.
     MoveCursorTo(model, 1);
     EXPECT_EQ(0U, model.GetCursorPosition());
 
     MoveCursorTo(model, 2);
     EXPECT_EQ(2U, model.GetCursorPosition());
     model.InsertChar('a');
-    EXPECT_EQ(WideToUTF16(
+    EXPECT_EQ(base::WideToUTF16(
         L"\x0915\x093f\x0061\x0915\x094d\x0915\x0915\x094d\x092e\x094d"),
         model.text());
 
@@ -179,7 +172,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
     // characters turned into empty square due to font regression. So, not able
     // to test 2 characters belong to the same grapheme.
 #if defined(OS_LINUX)
-    EXPECT_EQ(WideToUTF16(
+    EXPECT_EQ(base::WideToUTF16(
         L"\x0915\x093f\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
         model.text());
 #endif
@@ -193,21 +186,20 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   // to test 2 characters belong to the same grapheme.
 #if defined(OS_LINUX)
   EXPECT_TRUE(model.Delete());
-  EXPECT_EQ(WideToUTF16(L"\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
+  EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x0915\x094d\x092e\x094d"),
             model.text());
   MoveCursorTo(model, model.text().length());
   EXPECT_EQ(model.text().length(), model.GetCursorPosition());
   EXPECT_TRUE(model.Backspace());
-  EXPECT_EQ(WideToUTF16(L"\x0061\x0062\x0915\x0915\x094d\x092e"), model.text());
+  EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x0915\x094d\x092e"),
+            model.text());
 #endif
 
   // Test cursor position and deletion for Hindi Virama.
-  model.SetText(WideToUTF16(L"\x0D38\x0D4D\x0D15\x0D16\x0D2E"));
+  model.SetText(base::WideToUTF16(L"\x0D38\x0D4D\x0D15\x0D16\x0D2E"));
   MoveCursorTo(model, 0);
   EXPECT_EQ(0U, model.GetCursorPosition());
 
-  // TODO(asvitkine): Disable tests that fail on XP bots due to lack of complete
-  //                  font support for some scripts - http://crbug.com/106450
   if (!on_windows_xp) {
     MoveCursorTo(model, 1);
     EXPECT_EQ(0U, model.GetCursorPosition());
@@ -221,22 +213,25 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   MoveCursorTo(model, 2);
   EXPECT_EQ(2U, model.GetCursorPosition());
   EXPECT_TRUE(model.Backspace());
-  EXPECT_EQ(WideToUTF16(L"\x0D38\x0D15\x0D16\x0D2E"), model.text());
+  EXPECT_EQ(base::WideToUTF16(L"\x0D38\x0D15\x0D16\x0D2E"), model.text());
 #endif
 
-  model.SetText(WideToUTF16(L"\x05d5\x05b7\x05D9\x05B0\x05D4\x05B4\x05D9"));
+  model.SetText(
+      base::WideToUTF16(L"\x05d5\x05b7\x05D9\x05B0\x05D4\x05B4\x05D9"));
   MoveCursorTo(model, 0);
   EXPECT_TRUE(model.Delete());
   EXPECT_TRUE(model.Delete());
   EXPECT_TRUE(model.Delete());
   EXPECT_TRUE(model.Delete());
-  EXPECT_EQ(WideToUTF16(L""), model.text());
+  EXPECT_EQ(base::WideToUTF16(L""), model.text());
 
   // The first 2 characters are not strong directionality characters.
-  model.SetText(WideToUTF16(L"\x002C\x0020\x05D1\x05BC\x05B7\x05E9\x05BC"));
+  model.SetText(
+      base::WideToUTF16(L"\x002C\x0020\x05D1\x05BC\x05B7\x05E9\x05BC"));
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
   EXPECT_TRUE(model.Backspace());
-  EXPECT_EQ(WideToUTF16(L"\x002C\x0020\x05D1\x05BC\x05B7\x05E9"), model.text());
+  EXPECT_EQ(base::WideToUTF16(L"\x002C\x0020\x05D1\x05BC\x05B7\x05E9"),
+            model.text());
 }
 
 TEST_F(TextfieldModelTest, EmptyString) {
@@ -257,7 +252,7 @@ TEST_F(TextfieldModelTest, EmptyString) {
 
 TEST_F(TextfieldModelTest, Selection) {
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("HELLO"));
+  model.Append(base::ASCIIToUTF16("HELLO"));
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   EXPECT_STR_EQ("E", model.GetSelectedText());
@@ -310,88 +305,89 @@ TEST_F(TextfieldModelTest, Selection_BidiWithNonSpacingMarks) {
   // characters turned into empty square due to font regression. So, not able
   // to test 2 characters belong to the same grapheme.
 #if defined(OS_LINUX)
-  model.Append(WideToUTF16(
+  model.Append(base::WideToUTF16(
       L"abc\x05E9\x05BC\x05C1\x05B8\x05E0\x05B8" L"def"));
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   EXPECT_EQ(gfx::Range(2, 3), model.render_text()->selection());
-  EXPECT_EQ(WideToUTF16(L"c"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"c"), model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   EXPECT_EQ(gfx::Range(2, 7), model.render_text()->selection());
-  EXPECT_EQ(WideToUTF16(L"c\x05E9\x05BC\x05C1\x05B8"),
+  EXPECT_EQ(base::WideToUTF16(L"c\x05E9\x05BC\x05C1\x05B8"),
             model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   EXPECT_EQ(gfx::Range(2, 3), model.render_text()->selection());
-  EXPECT_EQ(WideToUTF16(L"c"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"c"), model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   EXPECT_EQ(gfx::Range(2, 10), model.render_text()->selection());
-  EXPECT_EQ(WideToUTF16(L"c\x05E9\x05BC\x05C1\x05B8\x05E0\x05B8" L"d"),
+  EXPECT_EQ(base::WideToUTF16(L"c\x05E9\x05BC\x05C1\x05B8\x05E0\x05B8" L"d"),
             model.GetSelectedText());
 
   model.ClearSelection();
   EXPECT_EQ(base::string16(), model.GetSelectedText());
   model.SelectAll(false);
-  EXPECT_EQ(WideToUTF16(L"abc\x05E9\x05BC\x05C1\x05B8\x05E0\x05B8" L"def"),
-            model.GetSelectedText());
+  EXPECT_EQ(
+      base::WideToUTF16(L"abc\x05E9\x05BC\x05C1\x05B8\x05E0\x05B8" L"def"),
+      model.GetSelectedText());
 #endif
 
   // In case of "aBc", this test shows how to select "aB" or "Bc", assume 'B' is
   // an RTL character.
-  model.SetText(WideToUTF16(L"a\x05E9" L"b"));
+  model.SetText(base::WideToUTF16(L"a\x05E9" L"b"));
   MoveCursorTo(model, 0);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
-  EXPECT_EQ(WideToUTF16(L"a"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"a"), model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
-  EXPECT_EQ(WideToUTF16(L"a"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"a"), model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
-  EXPECT_EQ(WideToUTF16(L"a\x05E9" L"b"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"a\x05E9" L"b"), model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_EQ(3U, model.GetCursorPosition());
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
-  EXPECT_EQ(WideToUTF16(L"b"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"b"), model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
-  EXPECT_EQ(WideToUTF16(L"b"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"b"), model.GetSelectedText());
 
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
-  EXPECT_EQ(WideToUTF16(L"a\x05E9" L"b"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"a\x05E9" L"b"), model.GetSelectedText());
 
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
-  EXPECT_EQ(WideToUTF16(L"a\x05E9"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"a\x05E9"), model.GetSelectedText());
 
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_LEFT, true);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
-  EXPECT_EQ(WideToUTF16(L"\x05E9" L"b"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"\x05E9" L"b"), model.GetSelectedText());
 
   model.ClearSelection();
   EXPECT_EQ(base::string16(), model.GetSelectedText());
   model.SelectAll(false);
-  EXPECT_EQ(WideToUTF16(L"a\x05E9" L"b"), model.GetSelectedText());
+  EXPECT_EQ(base::WideToUTF16(L"a\x05E9" L"b"), model.GetSelectedText());
 }
 
 TEST_F(TextfieldModelTest, SelectionAndEdit) {
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("HELLO"));
+  model.Append(base::ASCIIToUTF16("HELLO"));
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);  // "EL"
   EXPECT_TRUE(model.Backspace());
   EXPECT_STR_EQ("HLO", model.text());
 
-  model.Append(ASCIIToUTF16("ILL"));
+  model.Append(base::ASCIIToUTF16("ILL"));
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);
   model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, true);  // "LO"
   EXPECT_TRUE(model.Delete());
@@ -414,7 +410,7 @@ TEST_F(TextfieldModelTest, SelectionAndEdit) {
 TEST_F(TextfieldModelTest, Word) {
   TextfieldModel model(NULL);
   model.Append(
-      ASCIIToUTF16("The answer to Life, the Universe, and Everything"));
+      base::ASCIIToUTF16("The answer to Life, the Universe, and Everything"));
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_EQ(3U, model.GetCursorPosition());
   model.MoveCursor(gfx::WORD_BREAK, gfx::CURSOR_RIGHT, false);
@@ -460,9 +456,9 @@ TEST_F(TextfieldModelTest, Word) {
 
 TEST_F(TextfieldModelTest, SetText) {
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("HELLO"));
+  model.Append(base::ASCIIToUTF16("HELLO"));
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
-  model.SetText(ASCIIToUTF16("GOODBYE"));
+  model.SetText(base::ASCIIToUTF16("GOODBYE"));
   EXPECT_STR_EQ("GOODBYE", model.text());
   // SetText move the cursor to the end of the new text.
   EXPECT_EQ(7U, model.GetCursorPosition());
@@ -471,7 +467,7 @@ TEST_F(TextfieldModelTest, SetText) {
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_EQ(7U, model.GetCursorPosition());
 
-  model.SetText(ASCIIToUTF16("BYE"));
+  model.SetText(base::ASCIIToUTF16("BYE"));
   // Setting shorter string moves the cursor to the end of the new string.
   EXPECT_EQ(3U, model.GetCursorPosition());
   EXPECT_EQ(base::string16(), model.GetSelectedText());
@@ -481,13 +477,14 @@ TEST_F(TextfieldModelTest, SetText) {
 
 TEST_F(TextfieldModelTest, Clipboard) {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
-  const base::string16 initial_clipboard_text = ASCIIToUTF16("initial text");
+  const base::string16 initial_clipboard_text =
+      base::ASCIIToUTF16("initial text");
   ui::ScopedClipboardWriter(clipboard, ui::CLIPBOARD_TYPE_COPY_PASTE).
       WriteText(initial_clipboard_text);
 
   base::string16 clipboard_text;
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("HELLO WORLD"));
+  model.Append(base::ASCIIToUTF16("HELLO WORLD"));
 
   // Cut with an empty selection should do nothing.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
@@ -560,39 +557,39 @@ static void SelectWordTestVerifier(
 
 TEST_F(TextfieldModelTest, SelectWordTest) {
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("  HELLO  !!  WO     RLD "));
+  model.Append(base::ASCIIToUTF16("  HELLO  !!  WO     RLD "));
 
   // Test when cursor is at the beginning.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
   model.SelectWord();
-  SelectWordTestVerifier(model, ASCIIToUTF16("  "), 2U);
+  SelectWordTestVerifier(model, base::ASCIIToUTF16("  "), 2U);
 
   // Test when cursor is at the beginning of a word.
   MoveCursorTo(model, 2);
   model.SelectWord();
-  SelectWordTestVerifier(model, ASCIIToUTF16("HELLO"), 7U);
+  SelectWordTestVerifier(model, base::ASCIIToUTF16("HELLO"), 7U);
 
   // Test when cursor is at the end of a word.
   MoveCursorTo(model, 15);
   model.SelectWord();
-  SelectWordTestVerifier(model, ASCIIToUTF16("     "), 20U);
+  SelectWordTestVerifier(model, base::ASCIIToUTF16("     "), 20U);
 
   // Test when cursor is somewhere in a non-alpha-numeric fragment.
   for (size_t cursor_pos = 8; cursor_pos < 13U; cursor_pos++) {
     MoveCursorTo(model, cursor_pos);
     model.SelectWord();
-    SelectWordTestVerifier(model, ASCIIToUTF16("  !!  "), 13U);
+    SelectWordTestVerifier(model, base::ASCIIToUTF16("  !!  "), 13U);
   }
 
   // Test when cursor is somewhere in a whitespace fragment.
   MoveCursorTo(model, 17);
   model.SelectWord();
-  SelectWordTestVerifier(model, ASCIIToUTF16("     "), 20U);
+  SelectWordTestVerifier(model, base::ASCIIToUTF16("     "), 20U);
 
   // Test when cursor is at the end.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   model.SelectWord();
-  SelectWordTestVerifier(model, ASCIIToUTF16(" "), 24U);
+  SelectWordTestVerifier(model, base::ASCIIToUTF16(" "), 24U);
 }
 
 // TODO(xji): temporarily disable in platform Win since the complex script
@@ -617,14 +614,14 @@ TEST_F(TextfieldModelTest, SelectWordTest_MixScripts) {
   word_and_cursor.push_back(WordAndCursor(L"\x5929", 14));
 
   // The text consists of Ascii, Hebrew, Hindi with Virama sign, and Chinese.
-  model.SetText(WideToUTF16(L"a\x05d0 \x05d1\x05d2 \x0915\x094d\x0915 "
-                            L"\x4E2D\x56FD\x82B1\x5929"));
+  model.SetText(base::WideToUTF16(L"a\x05d0 \x05d1\x05d2 \x0915\x094d\x0915 "
+                                  L"\x4E2D\x56FD\x82B1\x5929"));
   for (size_t i = 0; i < word_and_cursor.size(); ++i) {
     model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
     for (size_t j = 0; j < i; ++j)
       model.MoveCursor(gfx::CHARACTER_BREAK, gfx::CURSOR_RIGHT, false);
     model.SelectWord();
-    SelectWordTestVerifier(model, WideToUTF16(word_and_cursor[i].word),
+    SelectWordTestVerifier(model, base::WideToUTF16(word_and_cursor[i].word),
                            word_and_cursor[i].cursor);
   }
 }
@@ -632,7 +629,7 @@ TEST_F(TextfieldModelTest, SelectWordTest_MixScripts) {
 
 TEST_F(TextfieldModelTest, RangeTest) {
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("HELLO WORLD"));
+  model.Append(base::ASCIIToUTF16("HELLO WORLD"));
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
   gfx::Range range = model.render_text()->selection();
   EXPECT_TRUE(range.is_empty());
@@ -696,7 +693,7 @@ TEST_F(TextfieldModelTest, RangeTest) {
 
 TEST_F(TextfieldModelTest, SelectRangeTest) {
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("HELLO WORLD"));
+  model.Append(base::ASCIIToUTF16("HELLO WORLD"));
   gfx::Range range(0, 6);
   EXPECT_FALSE(range.is_reversed());
   model.SelectRange(range);
@@ -740,7 +737,7 @@ TEST_F(TextfieldModelTest, SelectRangeTest) {
 
 TEST_F(TextfieldModelTest, SelectionTest) {
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("HELLO WORLD"));
+  model.Append(base::ASCIIToUTF16("HELLO WORLD"));
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
   gfx::Range selection = model.render_text()->selection();
   EXPECT_EQ(gfx::Range(0), selection);
@@ -782,7 +779,7 @@ TEST_F(TextfieldModelTest, SelectionTest) {
 
 TEST_F(TextfieldModelTest, SelectSelectionModelTest) {
   TextfieldModel model(NULL);
-  model.Append(ASCIIToUTF16("HELLO WORLD"));
+  model.Append(base::ASCIIToUTF16("HELLO WORLD"));
   model.SelectSelectionModel(gfx::SelectionModel(gfx::Range(0, 6),
       gfx::CURSOR_BACKWARD));
   EXPECT_STR_EQ("HELLO ", model.GetSelectedText());
@@ -815,7 +812,7 @@ TEST_F(TextfieldModelTest, SelectSelectionModelTest) {
 
 TEST_F(TextfieldModelTest, CompositionTextTest) {
   TextfieldModel model(this);
-  model.Append(ASCIIToUTF16("1234590"));
+  model.Append(base::ASCIIToUTF16("1234590"));
   model.SelectRange(gfx::Range(5, 5));
   EXPECT_FALSE(model.HasSelection());
   EXPECT_EQ(5U, model.GetCursorPosition());
@@ -825,7 +822,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   EXPECT_EQ(gfx::Range(0, 7), range);
 
   ui::CompositionText composition;
-  composition.text = ASCIIToUTF16("678");
+  composition.text = base::ASCIIToUTF16("678");
   composition.underlines.push_back(ui::CompositionUnderline(0, 3, 0, false));
 
   // Cursor should be at the end of composition when characters are just typed.
@@ -834,7 +831,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   EXPECT_TRUE(model.HasCompositionText());
   EXPECT_FALSE(model.HasSelection());
 
-  // Cancel composition
+  // Cancel the composition.
   model.CancelCompositionText();
   composition_text_confirmed_or_cleared_ = false;
 
@@ -854,7 +851,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
 
   model.GetCompositionTextRange(&range);
   EXPECT_EQ(gfx::Range(5, 8), range);
-  // composition text
+  // Check the composition text.
   EXPECT_STR_EQ("456", model.GetTextFromRange(gfx::Range(3, 6)));
   EXPECT_EQ(gfx::Range(5, 7), model.render_text()->selection());
 
@@ -868,7 +865,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
 
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("1234567890", model.text());
-  EXPECT_TRUE(model.SetText(ASCIIToUTF16("1234567890")));
+  EXPECT_TRUE(model.SetText(base::ASCIIToUTF16("1234567890")));
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
   composition_text_confirmed_or_cleared_ = false;
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
@@ -876,7 +873,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("1234567890678", model.text());
 
-  model.InsertText(UTF8ToUTF16("-"));
+  model.InsertText(base::UTF8ToUTF16("-"));
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
   composition_text_confirmed_or_cleared_ = false;
   EXPECT_STR_EQ("1234567890-", model.text());
@@ -888,7 +885,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("1234567890678", model.text());
 
-  model.ReplaceText(UTF8ToUTF16("-"));
+  model.ReplaceText(base::UTF8ToUTF16("-"));
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
   composition_text_confirmed_or_cleared_ = false;
   EXPECT_STR_EQ("1234567890-", model.text());
@@ -896,7 +893,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
   EXPECT_FALSE(model.HasSelection());
 
   model.SetCompositionText(composition);
-  model.Append(UTF8ToUTF16("-"));
+  model.Append(base::UTF8ToUTF16("-"));
   EXPECT_TRUE(composition_text_confirmed_or_cleared_);
   composition_text_confirmed_or_cleared_ = false;
   EXPECT_STR_EQ("1234567890-678-", model.text());
@@ -992,7 +989,7 @@ TEST_F(TextfieldModelTest, CompositionTextTest) {
 TEST_F(TextfieldModelTest, UndoRedo_BasicTest) {
   TextfieldModel model(NULL);
   model.InsertChar('a');
-  EXPECT_FALSE(model.Redo());  // nothing to redo
+  EXPECT_FALSE(model.Redo());  // There is nothing to redo.
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_TRUE(model.Redo());
@@ -1057,7 +1054,7 @@ TEST_F(TextfieldModelTest, UndoRedo_BasicTest) {
   EXPECT_EQ(1U, model.GetCursorPosition());
 
   // Delete ===============================
-  model.SetText(ASCIIToUTF16("ABCDE"));
+  model.SetText(base::ASCIIToUTF16("ABCDE"));
   model.ClearEditHistory();
   MoveCursorTo(model, 2);
   EXPECT_TRUE(model.Delete());
@@ -1092,25 +1089,25 @@ TEST_F(TextfieldModelTest, UndoRedo_SetText) {
   model.InsertChar('w');
   EXPECT_STR_EQ("w", model.text());
   EXPECT_EQ(1U, model.GetCursorPosition());
-  model.SetText(ASCIIToUTF16("www.google.com"));
+  model.SetText(base::ASCIIToUTF16("www.google.com"));
   EXPECT_EQ(14U, model.GetCursorPosition());
   EXPECT_STR_EQ("www.google.com", model.text());
   model.SelectRange(gfx::Range(14, 1));
   model.InsertChar('w');
   EXPECT_STR_EQ("ww", model.text());
-  model.SetText(ASCIIToUTF16("www.google.com"));
+  model.SetText(base::ASCIIToUTF16("www.google.com"));
   model.SelectRange(gfx::Range(14, 2));
   model.InsertChar('w');
   EXPECT_STR_EQ("www", model.text());
-  model.SetText(ASCIIToUTF16("www.google.com"));
+  model.SetText(base::ASCIIToUTF16("www.google.com"));
   model.SelectRange(gfx::Range(14, 3));
   model.InsertChar('.');
   EXPECT_STR_EQ("www.", model.text());
-  model.SetText(ASCIIToUTF16("www.google.com"));
+  model.SetText(base::ASCIIToUTF16("www.google.com"));
   model.SelectRange(gfx::Range(14, 4));
   model.InsertChar('y');
   EXPECT_STR_EQ("www.y", model.text());
-  model.SetText(ASCIIToUTF16("www.youtube.com"));
+  model.SetText(base::ASCIIToUTF16("www.youtube.com"));
   EXPECT_STR_EQ("www.youtube.com", model.text());
   EXPECT_EQ(15U, model.GetCursorPosition());
 
@@ -1154,17 +1151,17 @@ TEST_F(TextfieldModelTest, UndoRedo_BackspaceThenSetText) {
   model.InsertChar('w');
   EXPECT_STR_EQ("w", model.text());
   EXPECT_EQ(1U, model.GetCursorPosition());
-  model.SetText(ASCIIToUTF16("www.google.com"));
+  model.SetText(base::ASCIIToUTF16("www.google.com"));
   EXPECT_EQ(14U, model.GetCursorPosition());
   EXPECT_STR_EQ("www.google.com", model.text());
-  model.SetText(ASCIIToUTF16("www.google.com"));  // Confirm the text.
+  model.SetText(base::ASCIIToUTF16("www.google.com"));  // Confirm the text.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   EXPECT_EQ(14U, model.GetCursorPosition());
   EXPECT_TRUE(model.Backspace());
   EXPECT_TRUE(model.Backspace());
   EXPECT_STR_EQ("www.google.c", model.text());
-  // Autocomplete sets the text
-  model.SetText(ASCIIToUTF16("www.google.com/search=www.google.c"));
+  // Autocomplete sets the text.
+  model.SetText(base::ASCIIToUTF16("www.google.com/search=www.google.c"));
   EXPECT_STR_EQ("www.google.com/search=www.google.c", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("www.google.c", model.text());
@@ -1174,9 +1171,9 @@ TEST_F(TextfieldModelTest, UndoRedo_BackspaceThenSetText) {
 
 TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   TextfieldModel model(NULL);
-  model.SetText(ASCIIToUTF16("ABCDE"));
-  EXPECT_FALSE(model.Redo());  // nothing to redo
-  // Cut
+  model.SetText(base::ASCIIToUTF16("ABCDE"));
+  EXPECT_FALSE(model.Redo());  // There is nothing to redo.
+  // Test Cut.
   model.SelectRange(gfx::Range(1, 3));
   model.Cut();
   EXPECT_STR_EQ("ADE", model.text());
@@ -1187,7 +1184,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_EQ(0U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Undo());  // no more undo
+  EXPECT_FALSE(model.Undo());  // There is no more to undo.
   EXPECT_STR_EQ("", model.text());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ABCDE", model.text());
@@ -1195,7 +1192,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ADE", model.text());
   EXPECT_EQ(1U, model.GetCursorPosition());
-  EXPECT_FALSE(model.Redo());  // no more redo
+  EXPECT_FALSE(model.Redo());  // There is no more to redo.
   EXPECT_STR_EQ("ADE", model.text());
 
   model.Paste();
@@ -1221,10 +1218,10 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_FALSE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_TRUE(model.Redo());
-  EXPECT_STR_EQ("ABCDE", model.text());  // Redoing SetText
+  EXPECT_STR_EQ("ABCDE", model.text());
   EXPECT_EQ(5U, model.GetCursorPosition());
 
-  // Redo
+  // Test Redo.
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("ADE", model.text());
   EXPECT_EQ(1U, model.GetCursorPosition());
@@ -1239,7 +1236,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_EQ(7U, model.GetCursorPosition());
   EXPECT_FALSE(model.Redo());
 
-  // with SelectRange
+  // Test using SelectRange.
   model.SelectRange(gfx::Range(1, 3));
   EXPECT_TRUE(model.Cut());
   EXPECT_STR_EQ("ABCBCDE", model.text());
@@ -1253,18 +1250,18 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCBCDE", model.text());
   EXPECT_EQ(7U, model.GetCursorPosition());
-  // empty cut shouldn't create an edit.
+  // An empty cut shouldn't create an edit.
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCBCBCDE", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
 
-  // Copy
+  // Test Copy.
   ResetModel(&model);
-  model.SetText(ASCIIToUTF16("12345"));
+  model.SetText(base::ASCIIToUTF16("12345"));
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(5U, model.GetCursorPosition());
   model.SelectRange(gfx::Range(1, 3));
-  model.Copy();  // Copy "23"
+  model.Copy();  // Copy "23".
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
   model.Paste();  // Paste "23" into "23".
@@ -1276,14 +1273,14 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
-  // TODO(oshima): We need to change the return type from bool to enum.
+  // TODO(oshima): Change the return type from bool to enum.
   EXPECT_FALSE(model.Undo());  // No text change.
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(3U, model.GetCursorPosition());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("", model.text());
   EXPECT_FALSE(model.Undo());
-  // Redo
+  // Test Redo.
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("12345", model.text());
   EXPECT_EQ(5U, model.GetCursorPosition());
@@ -1296,7 +1293,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CutCopyPasteTest) {
   EXPECT_FALSE(model.Redo());
   EXPECT_STR_EQ("1232345", model.text());
 
-  // Test using SelectRange
+  // Test using SelectRange.
   model.SelectRange(gfx::Range(1, 3));
   model.Copy();
   EXPECT_STR_EQ("1232345", model.text());
@@ -1344,7 +1341,7 @@ void RunInsertReplaceTest(TextfieldModel& model) {
   EXPECT_FALSE(model.Undo());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("abcd", model.text());
-  EXPECT_EQ(4U, model.GetCursorPosition());  // By SetText
+  EXPECT_EQ(4U, model.GetCursorPosition());
   EXPECT_TRUE(model.Redo());
   EXPECT_STR_EQ("a123d", model.text());
   EXPECT_EQ(4U, model.GetCursorPosition());
@@ -1376,61 +1373,31 @@ void RunOverwriteReplaceTest(TextfieldModel& model) {
 }
 
 TEST_F(TextfieldModelTest, UndoRedo_ReplaceTest) {
-  // By Cursor
   {
-    SCOPED_TRACE("forward & insert by cursor");
+    SCOPED_TRACE("Select forwards and insert.");
     TextfieldModel model(NULL);
-    model.SetText(ASCIIToUTF16("abcd"));
+    model.SetText(base::ASCIIToUTF16("abcd"));
     model.SelectRange(gfx::Range(1, 3));
     RunInsertReplaceTest(model);
   }
   {
-    SCOPED_TRACE("backward & insert by cursor");
+    SCOPED_TRACE("Select reversed and insert.");
     TextfieldModel model(NULL);
-    model.SetText(ASCIIToUTF16("abcd"));
+    model.SetText(base::ASCIIToUTF16("abcd"));
     model.SelectRange(gfx::Range(3, 1));
     RunInsertReplaceTest(model);
   }
   {
-    SCOPED_TRACE("forward & overwrite by cursor");
+    SCOPED_TRACE("Select forwards and overwrite.");
     TextfieldModel model(NULL);
-    model.SetText(ASCIIToUTF16("abcd"));
+    model.SetText(base::ASCIIToUTF16("abcd"));
     model.SelectRange(gfx::Range(1, 3));
     RunOverwriteReplaceTest(model);
   }
   {
-    SCOPED_TRACE("backward & overwrite by cursor");
+    SCOPED_TRACE("Select reversed and overwrite.");
     TextfieldModel model(NULL);
-    model.SetText(ASCIIToUTF16("abcd"));
-    model.SelectRange(gfx::Range(3, 1));
-    RunOverwriteReplaceTest(model);
-  }
-  // By SelectRange API
-  {
-    SCOPED_TRACE("forward & insert by SelectRange");
-    TextfieldModel model(NULL);
-    model.SetText(ASCIIToUTF16("abcd"));
-    model.SelectRange(gfx::Range(1, 3));
-    RunInsertReplaceTest(model);
-  }
-  {
-    SCOPED_TRACE("backward & insert by SelectRange");
-    TextfieldModel model(NULL);
-    model.SetText(ASCIIToUTF16("abcd"));
-    model.SelectRange(gfx::Range(3, 1));
-    RunInsertReplaceTest(model);
-  }
-  {
-    SCOPED_TRACE("forward & overwrite by SelectRange");
-    TextfieldModel model(NULL);
-    model.SetText(ASCIIToUTF16("abcd"));
-    model.SelectRange(gfx::Range(1, 3));
-    RunOverwriteReplaceTest(model);
-  }
-  {
-    SCOPED_TRACE("backward & overwrite by SelectRange");
-    TextfieldModel model(NULL);
-    model.SetText(ASCIIToUTF16("abcd"));
+    model.SetText(base::ASCIIToUTF16("abcd"));
     model.SelectRange(gfx::Range(3, 1));
     RunOverwriteReplaceTest(model);
   }
@@ -1440,11 +1407,11 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
   TextfieldModel model(NULL);
 
   ui::CompositionText composition;
-  composition.text = ASCIIToUTF16("abc");
+  composition.text = base::ASCIIToUTF16("abc");
   composition.underlines.push_back(ui::CompositionUnderline(0, 3, 0, false));
   composition.selection = gfx::Range(2, 3);
 
-  model.SetText(ASCIIToUTF16("ABCDE"));
+  model.SetText(base::ASCIIToUTF16("ABCDE"));
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   model.InsertChar('x');
   EXPECT_STR_EQ("ABCDEx", model.text());
@@ -1454,7 +1421,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
   EXPECT_TRUE(model.HasSelection());
   EXPECT_STR_EQ("ABCDEabc", model.text());
 
-  // Accepting composition
+  // Confirm the composition.
   model.ConfirmCompositionText();
   EXPECT_STR_EQ("ABCDEabc", model.text());
   EXPECT_TRUE(model.Undo());
@@ -1467,7 +1434,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
   EXPECT_STR_EQ("ABCDEabc", model.text());
   EXPECT_FALSE(model.Redo());
 
-  // Canceling composition
+  // Cancel the composition.
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_LEFT, false);
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("abcABCDEabc", model.text());
@@ -1481,13 +1448,13 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
   EXPECT_STR_EQ("ABCDEabc", model.text());
   EXPECT_FALSE(model.Redo());
 
-  // SetText with the same text as the result.
+  // Call SetText with the same text as the result.
   ResetModel(&model);
-  model.SetText(ASCIIToUTF16("ABCDE"));
+  model.SetText(base::ASCIIToUTF16("ABCDE"));
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("ABCDEabc", model.text());
-  model.SetText(ASCIIToUTF16("ABCDEabc"));
+  model.SetText(base::ASCIIToUTF16("ABCDEabc"));
   EXPECT_STR_EQ("ABCDEabc", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
@@ -1495,14 +1462,13 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
   EXPECT_STR_EQ("ABCDEabc", model.text());
   EXPECT_FALSE(model.Redo());
 
-  // SetText with the different text than the result should not
-  // remember composition text.
+  // Call SetText with a different result; the composition should be forgotten.
   ResetModel(&model);
-  model.SetText(ASCIIToUTF16("ABCDE"));
+  model.SetText(base::ASCIIToUTF16("ABCDE"));
   model.MoveCursor(gfx::LINE_BREAK, gfx::CURSOR_RIGHT, false);
   model.SetCompositionText(composition);
   EXPECT_STR_EQ("ABCDEabc", model.text());
-  model.SetText(ASCIIToUTF16("1234"));
+  model.SetText(base::ASCIIToUTF16("1234"));
   EXPECT_STR_EQ("1234", model.text());
   EXPECT_TRUE(model.Undo());
   EXPECT_STR_EQ("ABCDE", model.text());
@@ -1510,7 +1476,7 @@ TEST_F(TextfieldModelTest, UndoRedo_CompositionText) {
   EXPECT_STR_EQ("1234", model.text());
   EXPECT_FALSE(model.Redo());
 
-  // TODO(oshima): We need MockInputMethod to test the behavior with IME.
+  // TODO(oshima): Test the behavior with an IME.
 }
 
 }  // namespace views

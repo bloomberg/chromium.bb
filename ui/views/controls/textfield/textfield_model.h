@@ -11,17 +11,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ime/composition_text.h"
-#include "ui/gfx/rect.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/views_export.h"
-
-namespace gfx {
-class Range;
-class RenderText;
-}  // namespace gfx
 
 namespace views {
 
@@ -29,17 +22,14 @@ namespace internal {
 // Internal Edit class that keeps track of edits for undo/redo.
 class Edit;
 
-// C++ doesn't allow forward decl enum, so let's define here.
+// The types of merge behavior implemented by Edit operations.
 enum MergeType {
-  // The edit should not be merged with next edit. It still may
-  // be merged with an edit with MERGE_WITH_PREVIOUS.
+  // The edit should not usually be merged with next edit.
   DO_NOT_MERGE,
-  // The edit can be merged with next edit when possible.
+  // The edit should be merged with next edit when possible.
   MERGEABLE,
-  // Does the edit have to be merged with previous edit?
-  // This forces the merge even if the previous edit is marked
-  // as DO_NOT_MERGE.
-  MERGE_WITH_PREVIOUS,
+  // The edit should be merged with the prior edit, even if marked DO_NOT_MERGE.
+  FORCE_MERGE,
 };
 
 }  // namespace internal
@@ -130,7 +120,7 @@ class VIEWS_EXPORT TextfieldModel {
   // Helper function to call MoveCursorTo on the TextfieldModel.
   bool MoveCursorTo(const gfx::Point& point, bool select);
 
-  // Selection related method
+  // Selection related methods.
 
   // Returns the selected text.
   base::string16 GetSelectedText() const;
@@ -226,23 +216,18 @@ class VIEWS_EXPORT TextfieldModel {
   void ClearEditHistory();
 
  private:
-  friend class TextfieldModelTest;
-  friend class UndoRedo_BasicTest;
-  friend class UndoRedo_CutCopyPasteTest;
-  friend class UndoRedo_ReplaceTest;
   friend class internal::Edit;
 
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_BasicTest);
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_CutCopyPasteTest);
   FRIEND_TEST_ALL_PREFIXES(TextfieldModelTest, UndoRedo_ReplaceTest);
 
-  // Insert the given |new_text|. |mergeable| indicates if this insert
-  // operation can be merged to previous edit in the edit history.
+  // Insert the given |new_text|. |mergeable| indicates if this insert operation
+  // can be merged with previous edits in the history.
   void InsertTextInternal(const base::string16& new_text, bool mergeable);
 
-  // Replace the current text with the given |new_text|. |mergeable|
-  // indicates if this replace operation can be merged to previous
-  // edit in the edit history.
+  // Replace the current text with the given |new_text|. |mergeable| indicates
+  // if this replace operation can be merged with previous edits in the history.
   void ReplaceTextInternal(const base::string16& new_text, bool mergeable);
 
   // Clears redo history.
@@ -276,8 +261,7 @@ class VIEWS_EXPORT TextfieldModel {
 
   void ClearComposition();
 
-  // Pointer to a TextfieldModel::Delegate instance, should be provided by
-  // the View object.
+  // The TextfieldModel::Delegate instance should be provided by the owner.
   Delegate* delegate_;
 
   // The stylized text, cursor, selection, and the visual layout model.
@@ -289,14 +273,15 @@ class VIEWS_EXPORT TextfieldModel {
   // An iterator that points to the current edit that can be undone.
   // This iterator moves from the |end()|, meaining no edit to undo,
   // to the last element (one before |end()|), meaning no edit to redo.
-  //  There is no edit to undo (== end()) when:
-  // 1) in initial state. (nothing to undo)
-  // 2) very 1st edit is undone.
-  // 3) all edit history is removed.
-  //  There is no edit to redo (== last element or no element) when:
-  // 1) in initial state. (nothing to redo)
-  // 2) new edit is added. (redo history is cleared)
-  // 3) redone all undone edits.
+  //
+  // There is no edit to undo (== end()) when:
+  //   1) in initial state. (nothing to undo)
+  //   2) very 1st edit is undone.
+  //   3) all edit history is removed.
+  // There is no edit to redo (== last element or no element) when:
+  //   1) in initial state. (nothing to redo)
+  //   2) new edit is added. (redo history is cleared)
+  //   3) redone all undone edits.
   EditHistory::iterator current_edit_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldModel);

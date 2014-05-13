@@ -6,40 +6,29 @@
 
 #include <algorithm>
 
-#include "base/i18n/break_iterator.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
-#include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/range/range.h"
-#include "ui/gfx/render_text.h"
-#include "ui/gfx/text_constants.h"
 #include "ui/gfx/utf16_indexing.h"
-#include "ui/views/controls/textfield/textfield.h"
 
 namespace views {
 
 namespace internal {
 
-// An edit object holds enough information/state to undo/redo the
-// change. Two edits are merged when possible, for example, when
-// you type new characters in sequence.  |Commit()| can be used to
-// mark an edit as an independent edit and it shouldn't be merged.
-// (For example, when you did undo/redo, or a text is appended via
-// API)
+// Edit holds state information to undo/redo editing changes. Editing operations
+// are merged when possible, like when characters are typed in sequence. Calling
+// Commit() marks an edit as an independent operation that shouldn't be merged.
 class Edit {
  public:
   enum Type {
     INSERT_EDIT,
     DELETE_EDIT,
-    REPLACE_EDIT
+    REPLACE_EDIT,
   };
 
-  virtual ~Edit() {
-  }
+  virtual ~Edit() {}
 
   // Revert the change made by this edit in |model|.
   void Undo(TextfieldModel* model) {
@@ -55,15 +44,14 @@ class Edit {
                       new_cursor_pos_);
   }
 
-  // Try to merge the |edit| into this edit. Returns true if merge was
-  // successful, or false otherwise. Merged edit will be deleted after
-  // redo and should not be reused.
+  // Try to merge the |edit| into this edit and returns true on success. The
+  // merged edit will be deleted after redo and should not be reused.
   bool Merge(const Edit* edit) {
     // Don't merge if previous edit is DELETE. This happens when a
     // user deletes characters then hits return. In this case, the
     // delete should be treated as separate edit that can be undone
     // and should not be merged with the replace edit.
-    if (type_ != DELETE_EDIT && edit->merge_with_previous()) {
+    if (type_ != DELETE_EDIT && edit->force_merge()) {
       MergeReplace(edit);
       return true;
     }
@@ -98,8 +86,7 @@ class Edit {
         new_text_start_(new_text_start) {
   }
 
-  // A template method pattern that provides specific merge
-  // implementation for each type of edit.
+  // Each type of edit provides its own specific merge implementation.
   virtual bool DoMerge(const Edit* edit) = 0;
 
   Type type() const { return type_; }
@@ -108,9 +95,7 @@ class Edit {
   bool mergeable() const { return merge_type_ == MERGEABLE; }
 
   // Should this edit be forcibly merged with the previous edit?
-  bool merge_with_previous() const {
-    return merge_type_ == MERGE_WITH_PREVIOUS;
-  }
+  bool force_merge() const { return merge_type_ == FORCE_MERGE; }
 
   // Returns the end index of the |old_text_|.
   size_t old_text_end() const { return old_text_start_ + old_text_.length(); }
@@ -118,9 +103,8 @@ class Edit {
   // Returns the end index of the |new_text_|.
   size_t new_text_end() const { return new_text_start_ + new_text_.length(); }
 
-  // Merge the replace edit into the current edit. This is a special case to
-  // handle an omnibox setting autocomplete string after new character is
-  // typed in.
+  // Merge the replace edit into the current edit. This handles the special case
+  // where an omnibox autocomplete string is set after a new character is typed.
   void MergeReplace(const Edit* edit) {
     CHECK_EQ(REPLACE_EDIT, edit->type_);
     CHECK_EQ(0U, edit->old_text_start_);
@@ -244,16 +228,14 @@ class DeleteEdit : public Edit {
       return false;
 
     if (delete_backward_) {
-      // backspace can be merged only with backspace at the
-      // same position.
+      // backspace can be merged only with backspace at the same position.
       if (!edit->delete_backward_ || old_text_start_ != edit->old_text_end())
         return false;
       old_text_start_ = edit->old_text_start_;
       old_text_ = edit->old_text_ + old_text_;
       new_cursor_pos_ = edit->new_cursor_pos_;
     } else {
-      // delete can be merged only with delete at the same
-      // position.
+      // delete can be merged only with delete at the same position.
       if (edit->delete_backward_ || old_text_start_ != edit->old_text_start_)
         return false;
       old_text_ += edit->old_text_;
@@ -286,14 +268,13 @@ using internal::InsertEdit;
 using internal::ReplaceEdit;
 using internal::MergeType;
 using internal::DO_NOT_MERGE;
-using internal::MERGE_WITH_PREVIOUS;
+using internal::FORCE_MERGE;
 using internal::MERGEABLE;
 
 /////////////////////////////////////////////////////////////////
 // TextfieldModel: public
 
-TextfieldModel::Delegate::~Delegate() {
-}
+TextfieldModel::Delegate::~Delegate() {}
 
 TextfieldModel::TextfieldModel(Delegate* delegate)
     : delegate_(delegate),
@@ -321,12 +302,8 @@ bool TextfieldModel::SetText(const base::string16& new_text) {
     SelectAll(false);
     // If there is a composition text, don't merge with previous edit.
     // Otherwise, force merge the edits.
-    ExecuteAndRecordReplace(
-        changed ? DO_NOT_MERGE : MERGE_WITH_PREVIOUS,
-        old_cursor,
-        new_cursor,
-        new_text,
-        0U);
+    ExecuteAndRecordReplace(changed ? DO_NOT_MERGE : FORCE_MERGE,
+                            old_cursor, new_cursor, new_text, 0U);
     render_text_->SetCursorPosition(new_cursor);
   }
   ClearSelection();
@@ -463,8 +440,7 @@ bool TextfieldModel::CanUndo() {
 bool TextfieldModel::CanRedo() {
   if (!edit_history_.size())
     return false;
-  // There is no redo iff the current edit is the last element
-  // in the history.
+  // There is no redo iff the current edit is the last element in the history.
   EditHistory::iterator iter = current_edit_;
   return iter == edit_history_.end() || // at the top.
       ++iter != edit_history_.end();
@@ -474,7 +450,7 @@ bool TextfieldModel::Undo() {
   if (!CanUndo())
     return false;
   DCHECK(!HasCompositionText());
-  if (HasCompositionText())  // safe guard for release build.
+  if (HasCompositionText())
     CancelCompositionText();
 
   base::string16 old = text();
@@ -493,7 +469,7 @@ bool TextfieldModel::Redo() {
   if (!CanRedo())
     return false;
   DCHECK(!HasCompositionText());
-  if (HasCompositionText()) // safe guard for release build.
+  if (HasCompositionText())
     CancelCompositionText();
 
   if (current_edit_ == edit_history_.end())
@@ -538,11 +514,11 @@ bool TextfieldModel::Paste() {
   base::string16 result;
   ui::Clipboard::GetForCurrentThread()->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE,
                                                  &result);
-  if (!result.empty()) {
-    InsertTextInternal(result, false);
-    return true;
-  }
-  return false;
+  if (result.empty())
+    return false;
+
+  InsertTextInternal(result, false);
+  return true;
 }
 
 bool TextfieldModel::HasSelection() const {
@@ -600,8 +576,7 @@ void TextfieldModel::SetCompositionText(
     // Because the target clause is more important than the actual selection
     // range (or caret position) in the composition here we use a selection-like
     // marker instead to show this range.
-    // TODO(yukawa, msw): Support thick underline in RenderText and remove
-    // this workaround.
+    // TODO(yukawa, msw): Support thick underlines and remove this workaround.
     render_text_->SelectRange(gfx::Range(
         cursor + emphasized_range.GetMin(),
         cursor + emphasized_range.GetMax()));
@@ -761,15 +736,14 @@ bool TextfieldModel::AddOrMergeEditHistory(Edit* edit) {
   ClearRedoHistory();
 
   if (current_edit_ != edit_history_.end() && (*current_edit_)->Merge(edit)) {
-    // If a current edit exists and has been merged with a new edit,
-    // don't add to the history, and return true to delete |edit| after
-    // redo.
+    // If a current edit exists and has been merged with a new edit, don't add
+    // to the history, and return true to delete |edit| after redo.
     return true;
   }
   edit_history_.push_back(edit);
   if (current_edit_ == edit_history_.end()) {
-    // If there is no redoable edit, this is the 1st edit because
-    // RedoHistory has been already deleted.
+    // If there is no redoable edit, this is the 1st edit because RedoHistory
+    // has been already deleted.
     DCHECK_EQ(1u, edit_history_.size());
     current_edit_ = edit_history_.begin();
   } else {
@@ -791,8 +765,7 @@ void TextfieldModel::ModifyText(size_t delete_from,
   if (!new_text.empty())
     render_text_->SetText(old_text.insert(new_text_insert_at, new_text));
   render_text_->SetCursorPosition(new_cursor_pos);
-  // TODO(oshima): mac selects the text that is just undone (but gtk doesn't).
-  // This looks fine feature and we may want to do the same.
+  // TODO(oshima): Select text that was just undone, like Mac (but not GTK).
 }
 
 }  // namespace views
