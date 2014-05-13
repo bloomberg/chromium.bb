@@ -3534,7 +3534,7 @@
                         'ldflags': [
                           # As long as -fuse-ld=gold doesn't work, add a dummy directory
                           # with an 'ld' that redirects to gold, so that clang uses gold.
-                          '-B<(PRODUCT_DIR)/../../build/android/arm-linux-androideabi-gold',
+                          '-B<!(cd <(DEPTH) && pwd -P)/build/android/arm-linux-androideabi-gold',
                         ],
                       }],
                       ['asan==1', {
