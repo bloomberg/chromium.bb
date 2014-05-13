@@ -48,6 +48,12 @@ class EVENTS_EXPORT TouchEventConverterEvdev
 
   virtual bool Reinitialize();
 
+  void ProcessInputEvent(const input_event& input);
+  void ProcessAbs(const input_event& input);
+  void ProcessSyn(const input_event& input);
+
+  void ReportEvents(base::TimeDelta delta);
+
   // Set if we have seen a SYN_DROPPED and not yet re-synced with the device.
   bool syn_dropped_;
 
@@ -110,4 +116,3 @@ class EVENTS_EXPORT TouchEventConverterEvdev
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_EVDEV_TOUCH_EVENT_CONVERTER_EVDEV_H_
-
