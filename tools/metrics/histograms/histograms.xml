@@ -34234,6 +34234,8 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="761"
       label="FILESYSTEMPROVIDERINTERNAL_READDIRECTORYREQUESTEDERROR"/>
   <int value="762" label="LEDGER_BATCHEXECUTE"/>
+  <int value="763" label="FILESYSTEMPROVIDERINTERNAL_OPENFILEREQUESTEDSUCCESS"/>
+  <int value="764" label="FILESYSTEMPROVIDERINTERNAL_OPENFILEREQUESTEDERROR"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
