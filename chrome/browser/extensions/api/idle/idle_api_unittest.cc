@@ -17,6 +17,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -509,12 +510,9 @@ TEST_F(IdleTest, UnloadCleanup) {
   }
 
   // Threshold will reset after unload (and listen count == 0)
-  UnloadedExtensionInfo details(extension(),
-                                UnloadedExtensionInfo::REASON_UNINSTALL);
-  idle_manager_->Observe(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(browser()->profile()),
-      content::Details<UnloadedExtensionInfo>(&details));
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  registry->TriggerOnUnloaded(extension(),
+                              UnloadedExtensionInfo::REASON_UNINSTALL);
 
   {
     ScopedListen listen(idle_manager_, extension()->id());
@@ -530,24 +528,18 @@ TEST_F(IdleTest, UnloadCleanup) {
 
 // Verifies that unloading an extension with no listeners or threshold works.
 TEST_F(IdleTest, UnloadOnly) {
-  UnloadedExtensionInfo details(extension(),
-                                UnloadedExtensionInfo::REASON_UNINSTALL);
-  idle_manager_->Observe(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(browser()->profile()),
-      content::Details<UnloadedExtensionInfo>(&details));
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  registry->TriggerOnUnloaded(extension(),
+                              UnloadedExtensionInfo::REASON_UNINSTALL);
 }
 
 // Verifies that its ok for the unload notification to happen before all the
 // listener removals.
 TEST_F(IdleTest, UnloadWhileListening) {
   ScopedListen listen(idle_manager_, extension()->id());
-  UnloadedExtensionInfo details(extension(),
-                                UnloadedExtensionInfo::REASON_UNINSTALL);
-  idle_manager_->Observe(
-      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(browser()->profile()),
-      content::Details<UnloadedExtensionInfo>(&details));
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  registry->TriggerOnUnloaded(extension(),
+                              UnloadedExtensionInfo::REASON_UNINSTALL);
 }
 
 // Verifies that re-adding a listener after a state change doesn't immediately

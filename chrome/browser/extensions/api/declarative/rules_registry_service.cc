@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -43,16 +44,12 @@ bool IsWebView(const RulesRegistryService::WebViewKey& webview_key) {
 
 RulesRegistryService::RulesRegistryService(content::BrowserContext* context)
     : content_rules_registry_(NULL),
+      extension_registry_observer_(this),
       profile_(Profile::FromBrowserContext(context)) {
   if (profile_) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                   content::Source<Profile>(profile_->GetOriginalProfile()));
+    extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
     registrar_.Add(this,
                    chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
-                   content::Source<Profile>(profile_->GetOriginalProfile()));
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                    content::Source<Profile>(profile_->GetOriginalProfile()));
     registrar_.Add(
         this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
@@ -206,29 +203,28 @@ void RulesRegistryService::NotifyRegistriesHelper(
   }
 }
 
+void RulesRegistryService::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  NotifyRegistriesHelper(&RulesRegistry::OnExtensionLoaded, extension->id());
+}
+
+void RulesRegistryService::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  NotifyRegistriesHelper(&RulesRegistry::OnExtensionUnloaded, extension->id());
+}
+
 void RulesRegistryService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      NotifyRegistriesHelper(&RulesRegistry::OnExtensionUnloaded,
-                             extension->id());
-      break;
-    }
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
       const Extension* extension =
           content::Details<const Extension>(details).ptr();
       NotifyRegistriesHelper(&RulesRegistry::OnExtensionUninstalled,
-                             extension->id());
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<const Extension>(details).ptr();
-      NotifyRegistriesHelper(&RulesRegistry::OnExtensionLoaded,
                              extension->id());
       break;
     }

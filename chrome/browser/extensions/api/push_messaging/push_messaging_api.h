@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/push_messaging/obfuscated_gaia_id_fetcher.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -28,7 +30,7 @@ class BrowserContext;
 }
 
 namespace extensions {
-
+class ExtensionRegistry;
 class PushMessagingInvalidationMapper;
 
 // Observes a single InvalidationHandler and generates onMessage events.
@@ -109,7 +111,8 @@ class PushMessagingGetChannelIdFunction
 };
 
 class PushMessagingAPI : public BrowserContextKeyedAPI,
-                         public content::NotificationObserver {
+                         public content::NotificationObserver,
+                         public ExtensionRegistryObserver {
  public:
   explicit PushMessagingAPI(content::BrowserContext* context);
   virtual ~PushMessagingAPI();
@@ -146,12 +149,27 @@ class PushMessagingAPI : public BrowserContextKeyedAPI,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Overridden from ExtensionRegistryObserver.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
+  // Initialize |event_router_| and |handler_|.
+  bool InitEventRouterAndHandler();
+
   // Created lazily when an app or extension with the push messaging permission
   // is loaded.
   scoped_ptr<PushMessagingEventRouter> event_router_;
   scoped_ptr<PushMessagingInvalidationMapper> handler_;
 
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension load, unload notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   Profile* profile_;
 

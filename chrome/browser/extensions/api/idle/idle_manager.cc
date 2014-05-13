@@ -7,14 +7,12 @@
 #include <utility>
 
 #include "base/stl_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/idle/idle_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/idle.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 namespace keys = extensions::idle_api_constants;
@@ -125,15 +123,15 @@ IdleManager::IdleManager(Profile* profile)
       last_state_(IDLE_STATE_ACTIVE),
       weak_factory_(this),
       idle_time_provider_(new DefaultIdleProvider()),
-      event_delegate_(new DefaultEventDelegate(profile)) {
+      event_delegate_(new DefaultEventDelegate(profile)),
+      extension_registry_observer_(this) {
 }
 
 IdleManager::~IdleManager() {
 }
 
 void IdleManager::Init() {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   event_delegate_->RegisterObserver(this);
 }
 
@@ -142,18 +140,11 @@ void IdleManager::Shutdown() {
   event_delegate_->UnregisterObserver(this);
 }
 
-void IdleManager::Observe(int type,
-                          const content::NotificationSource& source,
-                          const content::NotificationDetails& details) {
+void IdleManager::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      UnloadedExtensionInfo::Reason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
-    const Extension* extension =
-        content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
-    monitors_.erase(extension->id());
-  } else {
-    NOTREACHED();
-  }
+  monitors_.erase(extension->id());
 }
 
 void IdleManager::OnListenerAdded(const EventListenerInfo& details) {

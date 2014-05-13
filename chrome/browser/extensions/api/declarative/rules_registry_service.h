@@ -12,11 +12,13 @@
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
 
@@ -27,6 +29,7 @@ class NotificationSource;
 
 namespace extensions {
 class ContentRulesRegistry;
+class ExtensionRegistry;
 class RulesRegistry;
 class RulesRegistryStorageDelegate;
 }
@@ -36,7 +39,8 @@ namespace extensions {
 // This class owns all RulesRegistries implementations of an ExtensionService.
 // This class lives on the UI thread.
 class RulesRegistryService : public BrowserContextKeyedAPI,
-                             public content::NotificationObserver {
+                             public content::NotificationObserver,
+                             public ExtensionRegistryObserver {
  public:
   typedef RulesRegistry::WebViewKey WebViewKey;
   struct RulesRegistryKey {
@@ -105,6 +109,14 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ExtensionRegistryObserver implementation.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // Iterates over all registries, and calls |notification_callback| on them
   // with |extension_id| as the argument. If a registry lives on a different
   // thread, the call is posted to that thread, so no guarantee of synchronous
@@ -130,6 +142,10 @@ class RulesRegistryService : public BrowserContextKeyedAPI,
   ContentRulesRegistry* content_rules_registry_;
 
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension load, unloaded notification.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   Profile* profile_;
 

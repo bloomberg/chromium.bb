@@ -12,14 +12,14 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/common/extensions/api/alarms.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
-
-class Profile;
+#include "extensions/browser/extension_registry_observer.h"
 
 namespace base {
 class Clock;
@@ -30,8 +30,8 @@ class BrowserContext;
 }  // namespace content
 
 namespace extensions {
-
 class ExtensionAlarmsSchedulingTest;
+class ExtensionRegistry;
 
 struct Alarm {
   Alarm();
@@ -57,6 +57,7 @@ struct Alarm {
 // There is one manager per virtual Profile.
 class AlarmManager : public BrowserContextKeyedAPI,
                      public content::NotificationObserver,
+                     public ExtensionRegistryObserver,
                      public base::SupportsWeakPtr<AlarmManager> {
  public:
   typedef std::vector<Alarm> AlarmList;
@@ -114,8 +115,8 @@ class AlarmManager : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static BrowserContextKeyedAPIFactory<AlarmManager>* GetFactoryInstance();
 
-  // Convenience method to get the AlarmManager for a profile.
-  static AlarmManager* Get(Profile* profile);
+  // Convenience method to get the AlarmManager for a content::BrowserContext.
+  static AlarmManager* Get(content::BrowserContext* browser_context);
 
  private:
   friend void RunScheduleNextPoll(AlarmManager*);
@@ -208,16 +209,24 @@ class AlarmManager : public BrowserContextKeyedAPI,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Overridden from extensions::ExtensionRegistryObserver.
+  virtual void OnExtensionLoaded(content::BrowserContext* browser_context,
+                                 const Extension* extension) OVERRIDE;
+
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() {
     return "AlarmManager";
   }
   static const bool kServiceHasOwnInstanceInIncognito = true;
 
-  Profile* const profile_;
+  content::BrowserContext* const browser_context_;
   scoped_ptr<base::Clock> clock_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<Delegate> delegate_;
+
+  // Listen to extension load notifications.
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // The timer for this alarm manager.
   base::OneShotTimer<AlarmManager> timer_;

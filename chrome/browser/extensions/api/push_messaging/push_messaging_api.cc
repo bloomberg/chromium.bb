@@ -28,6 +28,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
@@ -75,8 +76,7 @@ void PushMessagingEventRouter::OnMessage(const std::string& extension_id,
            << "' extension = '" << extension_id << "'";
 
   scoped_ptr<base::ListValue> args(glue::OnMessage::Create(message));
-  scoped_ptr<extensions::Event> event(
-      new extensions::Event(glue::OnMessage::kEventName, args.Pass()));
+  scoped_ptr<Event> event(new Event(glue::OnMessage::kEventName, args.Pass()));
   event->restrict_to_browser_context = profile_;
   EventRouter::Get(profile_)->DispatchEventToExtension(
       extension_id, event.Pass());
@@ -287,13 +287,10 @@ void PushMessagingGetChannelIdFunction::OnObfuscatedGaiaIdFetchFailure(
 }
 
 PushMessagingAPI::PushMessagingAPI(content::BrowserContext* context)
-    : profile_(Profile::FromBrowserContext(context)) {
+    : extension_registry_observer_(this),
+      profile_(Profile::FromBrowserContext(context)) {
+  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(profile_->GetOriginalProfile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
 }
 
@@ -319,46 +316,56 @@ PushMessagingAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void PushMessagingAPI::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
+bool PushMessagingAPI::InitEventRouterAndHandler() {
   invalidation::InvalidationService* invalidation_service =
       invalidation::InvalidationServiceFactory::GetForProfile(profile_);
   if (!invalidation_service)
-    return;
+    return false;
 
   if (!event_router_)
     event_router_.reset(new PushMessagingEventRouter(profile_));
   if (!handler_) {
-    handler_.reset(new PushMessagingInvalidationHandler(
-        invalidation_service, event_router_.get()));
+    handler_.reset(new PushMessagingInvalidationHandler(invalidation_service,
+                                                        event_router_.get()));
   }
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_INSTALLED: {
-      const Extension* extension =
-          content::Details<const InstalledExtensionInfo>(details)->extension;
-      if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
-        handler_->SuppressInitialInvalidationsForExtension(extension->id());
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension = content::Details<Extension>(details).ptr();
-      if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
-        handler_->RegisterExtension(extension->id());
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* extension =
-          content::Details<UnloadedExtensionInfo>(details)->extension;
-      if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
-        handler_->UnregisterExtension(extension->id());
-      }
-      break;
-    }
-    default:
-      NOTREACHED();
+
+  return true;
+}
+
+void PushMessagingAPI::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension) {
+  if (!InitEventRouterAndHandler())
+    return;
+
+  if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
+    handler_->RegisterExtension(extension->id());
+  }
+}
+
+void PushMessagingAPI::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  if (!InitEventRouterAndHandler())
+    return;
+
+  if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
+    handler_->UnregisterExtension(extension->id());
+  }
+}
+
+void PushMessagingAPI::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_EXTENSION_INSTALLED);
+  if (!InitEventRouterAndHandler())
+    return;
+
+  const Extension* extension =
+      content::Details<const InstalledExtensionInfo>(details)->extension;
+  if (extension->HasAPIPermission(APIPermission::kPushMessaging)) {
+    handler_->SuppressInitialInvalidationsForExtension(extension->id());
   }
 }
 
