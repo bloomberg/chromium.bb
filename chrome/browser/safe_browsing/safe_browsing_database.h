@@ -189,6 +189,10 @@ class SafeBrowsingDatabase {
   // in the csd whitelist.
   virtual bool IsMalwareIPMatchKillSwitchOn() = 0;
 
+  // Returns true if the whitelist killswitch URL is present in the csd
+  // whitelist.
+  virtual bool IsCsdWhitelistKillSwitchOn() = 0;
+
   // The name of the bloom-filter file for the given database file.
   // NOTE(shess): OBSOLETE.  Present for deleting stale files.
   static base::FilePath BloomFilterForFilename(
@@ -327,6 +331,9 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
   // Returns the value of malware_kill_switch_;
   virtual bool IsMalwareIPMatchKillSwitchOn() OVERRIDE;
+
+  // Returns true if the CSD whitelist has everything whitelisted.
+  virtual bool IsCsdWhitelistKillSwitchOn() OVERRIDE;
 
  private:
   friend class SafeBrowsingDatabaseTest;

@@ -1633,3 +1633,7 @@ bool SafeBrowsingDatabaseNew::IsMalwareIPMatchKillSwitchOn() {
   full_hashes.push_back(malware_kill_switch);
   return ContainsWhitelistedHashes(csd_whitelist_, full_hashes);
 }
+
+bool SafeBrowsingDatabaseNew::IsCsdWhitelistKillSwitchOn() {
+  return csd_whitelist_.second;
+}

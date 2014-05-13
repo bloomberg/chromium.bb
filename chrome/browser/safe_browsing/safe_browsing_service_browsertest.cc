@@ -181,6 +181,9 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
   virtual bool IsMalwareIPMatchKillSwitchOn() OVERRIDE {
     return false;
   }
+  virtual bool IsCsdWhitelistKillSwitchOn() OVERRIDE {
+    return false;
+  }
 
   // Fill up the database with test URL.
   void AddUrl(const GURL& url,

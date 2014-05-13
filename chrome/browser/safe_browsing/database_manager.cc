@@ -334,6 +334,14 @@ bool SafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
   return database_->IsMalwareIPMatchKillSwitchOn();
 }
 
+bool SafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!enabled_ || !MakeDatabaseAvailable()) {
+    return true;
+  }
+  return database_->IsCsdWhitelistKillSwitchOn();
+}
+
 bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
                                                  Client* client) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

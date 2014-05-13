@@ -1422,6 +1422,9 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   EXPECT_FALSE(database_->ContainsDownloadWhitelistedUrl(
       GURL(std::string("http://www.google.com/"))));
 
+  // The CSD whitelist killswitch is not present.
+  EXPECT_FALSE(database_->IsCsdWhitelistKillSwitchOn());
+
   // Test only add the malware IP killswitch
   csd_chunks.clear();
   chunk.hosts.clear();
@@ -1434,6 +1437,8 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   database_->UpdateFinished(true);
 
   EXPECT_TRUE(database_->IsMalwareIPMatchKillSwitchOn());
+  // The CSD whitelist killswitch is not present.
+  EXPECT_FALSE(database_->IsCsdWhitelistKillSwitchOn());
 
   // Test that the kill-switch works as intended.
   csd_chunks.clear();
@@ -1454,6 +1459,8 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
                           download_chunks);
   database_->UpdateFinished(true);
 
+  // The CSD whitelist killswitch is present.
+  EXPECT_TRUE(database_->IsCsdWhitelistKillSwitchOn());
   EXPECT_TRUE(database_->IsMalwareIPMatchKillSwitchOn());
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("https://") + kGood1Url2 + "/c.html")));
@@ -1501,6 +1508,7 @@ TEST_F(SafeBrowsingDatabaseTest, Whitelists) {
   database_->UpdateFinished(true);
 
   EXPECT_FALSE(database_->IsMalwareIPMatchKillSwitchOn());
+  EXPECT_FALSE(database_->IsCsdWhitelistKillSwitchOn());
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(
       GURL(std::string("https://") + kGood1Url2 + "/c.html")));
   EXPECT_TRUE(database_->ContainsCsdWhitelistedUrl(

@@ -173,6 +173,9 @@ class SafeBrowsingDatabaseManager
   // Check if the CSD malware IP matching kill switch is turned on.
   virtual bool IsMalwareKillSwitchOn();
 
+  // Check if the CSD whitelist kill switch is turned on.
+  virtual bool IsCsdWhitelistKillSwitchOn();
+
   // Called on the IO thread to cancel a pending check if the result is no
   // longer needed.
   void CancelCheck(Client* client);
