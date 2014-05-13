@@ -18,6 +18,15 @@
 
 namespace {
 
+std::string RandASCIIString(size_t length) {
+  std::string result;
+  const int kMin = static_cast<int>(' ');
+  const int kMax = static_cast<int>('~');
+  for (size_t i = 0; i < length; ++i)
+    result.push_back(static_cast<char>(base::RandInt(kMin, kMax)));
+  return result;
+}
+
 std::string DeleteDirectiveToString(
     const sync_pb::HistoryDeleteDirectiveSpecifics& delete_directive) {
   scoped_ptr<base::DictionaryValue> value(
@@ -354,7 +363,7 @@ syncer::SyncError DeleteDirectiveHandler::ProcessLocalDeleteDirective(
 
   // Generate a random sync tag since history delete directives don't
   // have a 'built-in' ID.  8 bytes should suffice.
-  std::string sync_tag = base::RandBytesAsString(8);
+  std::string sync_tag = RandASCIIString(8);
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_history_delete_directive()->CopyFrom(
       delete_directive);
