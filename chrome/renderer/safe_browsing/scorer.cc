@@ -103,6 +103,14 @@ uint32 Scorer::murmurhash3_seed() const {
   return model_.murmur_hash_seed();
 }
 
+size_t Scorer::max_shingles_per_page() const {
+  return model_.max_shingles_per_page();
+}
+
+size_t Scorer::shingle_size() const {
+  return model_.shingle_size();
+}
+
 double Scorer::ComputeRuleScore(const ClientSideModel::Rule& rule,
                                 const FeatureMap& features) const {
   const base::hash_map<std::string, double>& feature_map = features.features();

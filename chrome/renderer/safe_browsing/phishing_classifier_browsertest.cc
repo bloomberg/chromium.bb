@@ -93,6 +93,8 @@ class PhishingClassifierTest : public InProcessBrowserTest {
     model.set_murmur_hash_seed(2777808611U);
     model.add_page_word(MurmurHash3String("login", model.murmur_hash_seed()));
     model.set_max_words_per_term(1);
+    model.set_max_shingles_per_page(100);
+    model.set_shingle_size(3);
 
     clock_ = new MockFeatureExtractorClock;
     scorer_.reset(Scorer::Create(model.SerializeAsString()));

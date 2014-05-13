@@ -57,6 +57,12 @@ class Scorer {
   // Returns the murmurhash3 seed for the loaded model.
   uint32 murmurhash3_seed() const;
 
+  // Return the maximum number of unique shingle hashes per page.
+  size_t max_shingles_per_page() const;
+
+  // Return the number of words in a shingle.
+  size_t shingle_size() const;
+
  protected:
   // Most clients should use the factory method.  This constructor is public
   // to allow for mock implementations.
@@ -79,6 +85,6 @@ class Scorer {
 
   DISALLOW_COPY_AND_ASSIGN(Scorer);
 };
-}  // namepsace safe_browsing
+}  // namespace safe_browsing
 
 #endif  // CHROME_RENDERER_SAFE_BROWSING_SCORER_H_

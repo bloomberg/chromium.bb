@@ -16,12 +16,12 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_TERM_FEATURE_EXTRACTOR_H_
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_TERM_FEATURE_EXTRACTOR_H_
 
+#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
-#include "base/containers/mru_cache.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -47,6 +47,11 @@ class PhishingTermFeatureExtractor {
   // must ensure that they are valid until the PhishingTermFeatureExtractor is
   // destroyed.
   //
+  // In addition to extracting page terms, we will also extract text shingling
+  // sketch, which consists of hashes of N-gram-words (referred to as shingles)
+  // in the page. |shingle_size| defines N, and |max_shingles_per_page| defines
+  // the maximum number of unique shingle hashes we extracted per page.
+  //
   // |clock| is used for timing feature extractor operations, and may be mocked
   // for testing.  The caller keeps ownership of the clock.
   PhishingTermFeatureExtractor(
@@ -54,6 +59,8 @@ class PhishingTermFeatureExtractor {
       const base::hash_set<uint32>* page_word_hashes,
       size_t max_words_per_term,
       uint32 murmurhash3_seed,
+      size_t max_shingles_per_page,
+      size_t shingle_size,
       FeatureExtractorClock* clock);
   ~PhishingTermFeatureExtractor();
 
@@ -67,11 +74,12 @@ class PhishingTermFeatureExtractor {
   // |done_callback| is run on the current thread.
   // PhishingTermFeatureExtractor takes ownership of the callback.
   //
-  // |page_text| and |features| are owned by the caller, and must not be
-  // destroyed until either |done_callback| is run or
+  // |page_text|, |features|, and |shingle_hashes| are owned by the caller,
+  // and must not be destroyed until either |done_callback| is run or
   // CancelPendingExtraction() is called.
   void ExtractFeatures(const base::string16* page_text,
                        FeatureMap* features,
+                       std::set<uint32>* shingle_hashes,
                        const DoneCallback& done_callback);
 
   // Cancels any pending feature extraction.  The DoneCallback will not be run.
@@ -94,10 +102,6 @@ class PhishingTermFeatureExtractor {
   // The maximum total amount of time that the feature extractor will run
   // before giving up on the current page.
   static const int kMaxTotalTimeMs;
-
-  // The size of the cache that we use to determine if we can avoid lower
-  // casing, hashing, and UTF conversion.
-  static const int kMaxNegativeWordCacheSize;
 
   // Does the actual work of ExtractFeatures.  ExtractFeaturesWithTimeout runs
   // until a predefined maximum amount of time has elapsed, then posts a task
@@ -135,12 +139,11 @@ class PhishingTermFeatureExtractor {
   // The seed for murmurhash3.
   const uint32 murmurhash3_seed_;
 
-  // This cache is used to see if we need to check the word at all, as
-  // converting to UTF8, lowercasing, and hashing are all relatively expensive
-  // operations. Though this is called an MRU cache, it seems to behave like
-  // an LRU cache (i.e. it evicts the oldest accesses first).
-  typedef base::HashingMRUCache<base::StringPiece16, bool> WordCache;
-  WordCache negative_word_cache_;
+  // The maximum number of unique shingle hashes we extract in a page.
+  const size_t max_shingles_per_page_;
+
+  // The number of words in a shingle.
+  const size_t shingle_size_;
 
   // Non-owned pointer to our clock.
   FeatureExtractorClock* clock_;
@@ -148,6 +151,7 @@ class PhishingTermFeatureExtractor {
   // The output parameters from the most recent call to ExtractFeatures().
   const base::string16* page_text_;  // The caller keeps ownership of this.
   FeatureMap* features_;  // The caller keeps ownership of this.
+  std::set<uint32>* shingle_hashes_;
   DoneCallback done_callback_;
 
   // Stores the current state of term extraction from |page_text_|.

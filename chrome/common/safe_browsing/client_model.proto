@@ -88,4 +88,10 @@ message ClientSideModel {
 
   // Murmur hash seed that was used to hash the page words.
   optional fixed32 murmur_hash_seed = 8;
+
+  // Maximum number of unique shingle hashes per page.
+  optional int32 max_shingles_per_page = 9 [default = 200];
+
+  // The number of words in a shingle.
+  optional int32 shingle_size = 10 [default = 4];
 }

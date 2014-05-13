@@ -63,6 +63,8 @@ void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
         &scorer_->page_words(),
         scorer_->max_words_per_term(),
         scorer_->murmurhash3_seed(),
+        scorer_->max_shingles_per_page(),
+        scorer_->shingle_size(),
         clock_.get()));
   } else {
     // We're disabling client-side phishing detection, so tear down all
@@ -154,12 +156,14 @@ void PhishingClassifier::CancelPendingClassification() {
 }
 
 void PhishingClassifier::DOMExtractionFinished(bool success) {
+  shingle_hashes_.reset(new std::set<uint32>);
   if (success) {
     // Term feature extraction can take awhile, so it runs asynchronously
     // in several chunks of work and invokes the callback when finished.
     term_extractor_->ExtractFeatures(
         page_text_,
         features_.get(),
+        shingle_hashes_.get(),
         base::Bind(&PhishingClassifier::TermExtractionFinished,
                    base::Unretained(this)));
   } else {
@@ -196,6 +200,10 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
       ClientPhishingRequest::Feature* feature = verdict.add_feature_map();
       feature->set_name(it->first);
       feature->set_value(it->second);
+    }
+    for (std::set<uint32>::const_iterator it = shingle_hashes_->begin();
+         it != shingle_hashes_->end(); ++it) {
+      verdict.add_shingle_hashes(*it);
     }
     float score = static_cast<float>(scorer_->ComputeScore(hashed_features));
     verdict.set_client_score(score);
@@ -236,6 +244,7 @@ void PhishingClassifier::Clear() {
   page_text_ = NULL;
   done_callback_.Reset();
   features_.reset(NULL);
+  shingle_hashes_.reset(NULL);
 }
 
 }  // namespace safe_browsing

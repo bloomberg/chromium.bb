@@ -18,6 +18,8 @@
 #ifndef CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_H_
 #define CHROME_RENDERER_SAFE_BROWSING_PHISHING_CLASSIFIER_H_
 
+#include <set>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -135,6 +137,7 @@ class PhishingClassifier {
 
   // State for any in-progress extraction.
   scoped_ptr<FeatureMap> features_;
+  scoped_ptr<std::set<uint32> > shingle_hashes_;
   const base::string16* page_text_;  // owned by the caller
   DoneCallback done_callback_;
 

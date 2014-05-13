@@ -68,6 +68,9 @@ message ClientPhishingRequest {
   optional string OBSOLETE_referrer_url = 9;
 
   // Field 11 is only used on the server.
+
+  // List of shingle hashes we extracted.
+  repeated uint32 shingle_hashes = 12 [packed = true];
 }
 
 message ClientPhishingResponse {

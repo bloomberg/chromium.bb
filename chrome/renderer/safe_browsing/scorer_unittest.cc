@@ -55,6 +55,8 @@ class PhishingScorerTest : public ::testing::Test {
 
     model_.set_max_words_per_term(2);
     model_.set_murmur_hash_seed(12345U);
+    model_.set_max_shingles_per_page(10);
+    model_.set_shingle_size(3);
   }
 
   ClientSideModel model_;
@@ -96,6 +98,8 @@ TEST_F(PhishingScorerTest, PageWords) {
               ::testing::ContainerEq(expected_page_words));
   EXPECT_EQ(2U, scorer->max_words_per_term());
   EXPECT_EQ(12345U, scorer->murmurhash3_seed());
+  EXPECT_EQ(10U, scorer->max_shingles_per_page());
+  EXPECT_EQ(3U, scorer->shingle_size());
 }
 
 TEST_F(PhishingScorerTest, ComputeScore) {
