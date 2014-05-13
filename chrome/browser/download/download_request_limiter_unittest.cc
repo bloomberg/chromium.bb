@@ -126,7 +126,6 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
   void CanDownloadFor(WebContents* web_contents) {
     download_request_limiter_->CanDownloadImpl(
         web_contents,
-        -1,  // request id
         "GET",  // request method
         base::Bind(&DownloadRequestLimiterTest::ContinueDownload,
                    base::Unretained(this)));

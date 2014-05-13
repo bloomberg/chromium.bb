@@ -136,7 +136,7 @@ class PrerenderContents::WebContentsDelegateImpl
 
   virtual void CanDownload(
       RenderViewHost* render_view_host,
-      int request_id,
+      const GURL& url,
       const std::string& request_method,
       const base::Callback<void(bool)>& callback) OVERRIDE {
     prerender_contents_->Destroy(FINAL_STATUS_DOWNLOAD);

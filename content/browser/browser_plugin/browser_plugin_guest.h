@@ -182,7 +182,7 @@ class CONTENT_EXPORT BrowserPluginGuest
                               bool user_gesture,
                               bool* was_blocked) OVERRIDE;
   virtual void CanDownload(RenderViewHost* render_view_host,
-                           int request_id,
+                           const GURL& url,
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void LoadProgressChanged(WebContents* source,
@@ -446,13 +446,6 @@ class CONTENT_EXPORT BrowserPluginGuest
                          bool is_top_level,
                          const std::string& name);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
-
-  // Requests download permission through embedder JavaScript API after
-  // retrieving url information from IO thread.
-  void DidRetrieveDownloadURLFromRequestId(
-      const std::string& request_method,
-      const base::Callback<void(bool)>& callback,
-      const GURL& url);
 
   // Forwards all messages from the |pending_messages_| queue to the embedder.
   void SendQueuedMessages();

@@ -417,7 +417,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
         new DownloadResourceThrottle(download_request_limiter_.get(),
                                      child_id,
                                      route_id,
-                                     request_id,
+                                     request->url(),
                                      request->method()));
 #if defined(OS_ANDROID)
     throttles->push_back(

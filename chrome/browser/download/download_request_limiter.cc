@@ -281,7 +281,7 @@ DownloadRequestLimiter::GetDownloadStatus(content::WebContents* web_contents) {
 void DownloadRequestLimiter::CanDownloadOnIOThread(
     int render_process_host_id,
     int render_view_id,
-    int request_id,
+    const GURL& url,
     const std::string& request_method,
     const Callback& callback) {
   // This is invoked on the IO thread. Schedule the task to run on the UI
@@ -290,7 +290,7 @@ void DownloadRequestLimiter::CanDownloadOnIOThread(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadRequestLimiter::CanDownload, this,
-                 render_process_host_id, render_view_id, request_id,
+                 render_process_host_id, render_view_id, url,
                  request_method, callback));
 }
 
@@ -315,7 +315,7 @@ DownloadRequestLimiter::GetDownloadState(
 
 void DownloadRequestLimiter::CanDownload(int render_process_host_id,
                                          int render_view_id,
-                                         int request_id,
+                                         const GURL& url,
                                          const std::string& request_method,
                                          const Callback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -341,13 +341,12 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
       factory_.GetWeakPtr(),
       render_process_host_id,
       render_view_id,
-      request_id,
       request_method,
       callback);
 
   originating_contents->GetDelegate()->CanDownload(
       originating_contents->GetRenderViewHost(),
-      request_id,
+      url,
       request_method,
       can_download_callback);
 }
@@ -355,7 +354,6 @@ void DownloadRequestLimiter::CanDownload(int render_process_host_id,
 void DownloadRequestLimiter::OnCanDownloadDecided(
     int render_process_host_id,
     int render_view_id,
-    int request_id,
     const std::string& request_method,
     const Callback& orig_callback, bool allow) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -367,7 +365,6 @@ void DownloadRequestLimiter::OnCanDownloadDecided(
   }
 
   CanDownloadImpl(originating_contents,
-                  request_id,
                   request_method,
                   orig_callback);
 }
@@ -380,7 +377,6 @@ HostContentSettingsMap* DownloadRequestLimiter::GetContentSettings(
 
 void DownloadRequestLimiter::CanDownloadImpl(
     content::WebContents* originating_contents,
-    int request_id,
     const std::string& request_method,
     const Callback& callback) {
   DCHECK(originating_contents);

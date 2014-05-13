@@ -25,7 +25,7 @@ class DownloadResourceThrottle
   DownloadResourceThrottle(DownloadRequestLimiter* limiter,
                            int render_process_id,
                            int render_view_id,
-                           int request_id,
+                           const GURL& url,
                            const std::string& request_method);
 
   // content::ResourceThrottle implementation:

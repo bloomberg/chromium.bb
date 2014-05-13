@@ -76,7 +76,7 @@ void AwWebContentsDelegate::FindReply(WebContents* web_contents,
 
 void AwWebContentsDelegate::CanDownload(
     content::RenderViewHost* source,
-    int request_id,
+    const GURL& url,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
   // Android webview intercepts download in its resource dispatcher host

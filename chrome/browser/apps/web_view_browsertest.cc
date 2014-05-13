@@ -234,11 +234,11 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
 
   virtual void CanDownload(
       content::RenderViewHost* render_view_host,
-      int request_id,
+      const GURL& url,
       const std::string& request_method,
       const base::Callback<void(bool)>& callback) OVERRIDE {
     orig_delegate_->CanDownload(
-        render_view_host, request_id, request_method,
+        render_view_host, url, request_method,
         base::Bind(&MockDownloadWebContentsDelegate::DownloadDecided,
                    base::Unretained(this)));
   }

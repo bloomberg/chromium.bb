@@ -153,20 +153,6 @@ std::string WindowOpenDispositionToString(
   }
 }
 
-// Called on IO thread.
-static GURL RetrieveDownloadURLFromRequestId(
-    int render_process_id,
-    int url_request_id) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  GlobalRequestID global_id(render_process_id, url_request_id);
-  net::URLRequest* url_request =
-      ResourceDispatcherHostImpl::Get()->GetURLRequest(global_id);
-  if (url_request)
-    return url_request->url();
-  return GURL();
-}
-
 }  // namespace
 
 class BrowserPluginGuest::EmbedderWebContentsObserver
@@ -613,22 +599,15 @@ void BrowserPluginGuest::AddNewContents(WebContents* source,
 
 void BrowserPluginGuest::CanDownload(
     RenderViewHost* render_view_host,
-    int request_id,
+    const GURL& url,
     const std::string& request_method,
     const base::Callback<void(bool)>& callback) {
-  if (!delegate_) {
+  if (!delegate_ || !url.is_valid()) {
     callback.Run(false);
     return;
   }
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&RetrieveDownloadURLFromRequestId,
-                 render_view_host->GetProcess()->GetID(), request_id),
-      base::Bind(&BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 request_method,
-                 callback));
+  delegate_->CanDownload(request_method, url, callback);
 }
 
 void BrowserPluginGuest::LoadProgressChanged(WebContents* contents,
@@ -1548,17 +1527,5 @@ void BrowserPluginGuest::OnImeCompositionRangeChanged(
           range, character_bounds);
 }
 #endif
-
-void BrowserPluginGuest::DidRetrieveDownloadURLFromRequestId(
-    const std::string& request_method,
-    const base::Callback<void(bool)>& callback,
-    const GURL& url) {
-  if (!url.is_valid()) {
-    callback.Run(false);
-    return;
-  }
-
-  delegate_->CanDownload(request_method, url, callback);
-}
 
 }  // namespace content

@@ -28,7 +28,7 @@ class AwWebContentsDelegate
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
   virtual void CanDownload(content::RenderViewHost* source,
-                           int request_id,
+                           const GURL& url,
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
   virtual void RunFileChooser(
