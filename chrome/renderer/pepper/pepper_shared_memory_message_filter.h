@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/platform_file.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/host/instance_message_filter.h"
 

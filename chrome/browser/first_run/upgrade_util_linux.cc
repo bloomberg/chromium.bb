@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/platform_file.h"
 #include "base/process/launch.h"
 #include "chrome/browser/first_run/upgrade_util_linux.h"
 

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/numerics/safe_conversions.h"
-#include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"

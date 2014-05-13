@@ -4,7 +4,6 @@
 
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
-#include "base/platform_file.h"
 #include "base/prefs/pref_member.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/platform_file.h"
 #include "chrome/common/media_galleries/iphoto_library.h"
 
 namespace iphoto {

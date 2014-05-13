@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/platform_file.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"

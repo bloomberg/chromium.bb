@@ -13,7 +13,6 @@
 #include "base/i18n/icu_string_conversions.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

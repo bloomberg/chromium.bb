@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/platform_file.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/sync_file_status.h"

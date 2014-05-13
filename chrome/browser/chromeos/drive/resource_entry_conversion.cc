@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"

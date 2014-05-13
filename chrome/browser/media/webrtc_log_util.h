@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_LOG_UTIL_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_LOG_UTIL_H_
 
-#include "base/platform_file.h"
+#include "base/files/file_path.h"
+#include "base/time/time.h"
 
 class WebRtcLogUtil {
  public:

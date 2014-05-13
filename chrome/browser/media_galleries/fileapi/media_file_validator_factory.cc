@@ -5,7 +5,6 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_validator_factory.h"
 
 #include "base/files/file_path.h"
-#include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/supported_audio_video_checker.h"
 #include "chrome/browser/media_galleries/fileapi/supported_image_type_validator.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"

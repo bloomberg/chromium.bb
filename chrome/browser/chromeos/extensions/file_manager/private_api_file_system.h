@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 

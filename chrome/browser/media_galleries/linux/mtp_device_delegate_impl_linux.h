@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
@@ -119,7 +118,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   // directory file entries.
   //
   // If |root| is not a directory, |error_callback| is invoked to notify the
-  // caller about the platform file error and process the next pending request.
+  // caller about the file error and process the next pending request.
   void OnDidGetFileInfoToReadDirectory(
       const std::string& root,
       const ReadDirectorySuccessCallback& success_callback,
@@ -156,7 +155,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
 
   // Called when WriteDataIntoSnapshotFile() fails.
   //
-  // |error| specifies the platform file error code.
+  // |error| specifies the file error code.
   //
   // |current_snapshot_request_info_.error_callback| is invoked to notify the
   // caller about |error|.

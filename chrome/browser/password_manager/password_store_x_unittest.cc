@@ -7,7 +7,6 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"

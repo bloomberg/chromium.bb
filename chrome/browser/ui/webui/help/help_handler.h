@@ -15,7 +15,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/platform_file.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #endif  // defined(OS_CHROMEOS)
 
