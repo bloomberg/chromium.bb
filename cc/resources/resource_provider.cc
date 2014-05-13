@@ -1606,7 +1606,6 @@ void ResourceProvider::TransferResource(GLES2Interface* gl,
   DCHECK(!source->lock_for_read_count);
   DCHECK(source->origin != Resource::External || source->mailbox.IsValid());
   DCHECK(source->allocated);
-  DCHECK_EQ(source->wrap_mode, GL_CLAMP_TO_EDGE);
   resource->id = id;
   resource->format = source->format;
   resource->mailbox_holder.texture_target = source->target;

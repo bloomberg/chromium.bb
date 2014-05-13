@@ -13,7 +13,6 @@
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
@@ -29,6 +28,7 @@ class VideoFrame;
 namespace content {
 
 class DelegatedFrameHost;
+class ReadbackYUVInterface;
 class RenderWidgetHostViewFrameSubscriber;
 class RenderWidgetHostImpl;
 class ResizeLock;
@@ -258,7 +258,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   scoped_refptr<ui::CompositorLock> released_front_lock_;
 
   enum CanLockCompositorState {
-    YES,
+    YES_CAN_LOCK,
     // We locked, so at some point we'll need to kick a frame.
     YES_DID_LOCK,
     // No. A lock timed out, we need to kick a new frame before locking again.

@@ -1090,6 +1090,7 @@
     'browser/renderer_host/render_view_host_impl.h',
     'browser/renderer_host/render_widget_helper.cc',
     'browser/renderer_host/render_widget_helper.h',
+    'browser/renderer_host/render_widget_helper_mac.mm',
     'browser/renderer_host/render_widget_host_delegate.cc',
     'browser/renderer_host/render_widget_host_delegate.h',
     'browser/renderer_host/render_widget_host_impl.cc',

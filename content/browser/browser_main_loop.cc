@@ -754,8 +754,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
     resource_dispatcher_host_.get()->Shutdown();
   }
 
-#if defined(USE_AURA)
-  {
+#if defined(USE_AURA) || defined(OS_MACOSX)
+  if (ShouldInitializeBrowserGpuChannelAndTransportSurface()) {
     TRACE_EVENT0("shutdown",
                  "BrowserMainLoop::Subsystem:ImageTransportFactory");
     ImageTransportFactory::Terminate();

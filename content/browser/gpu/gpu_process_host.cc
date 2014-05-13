@@ -800,6 +800,13 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
                                "GpuHostMsg_AcceleratedSurfaceBuffersSwapped"))
     return;
 
+  gfx::AcceleratedWidget native_widget =
+      GpuSurfaceTracker::Get()->AcquireNativeWidget(params.surface_id);
+  if (native_widget) {
+    RenderWidgetHelper::OnNativeSurfaceBuffersSwappedOnIOThread(this, params);
+    return;
+  }
+
   gfx::GLSurfaceHandle surface_handle =
       GpuSurfaceTracker::Get()->GetSurfaceHandle(params.surface_id);
   // Compositor window is always gfx::kNullPluginWindow.

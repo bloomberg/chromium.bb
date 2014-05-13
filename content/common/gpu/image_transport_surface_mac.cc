@@ -515,7 +515,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     const gfx::GLSurfaceHandle& surface_handle) {
-  DCHECK(surface_handle.transport_type == gfx::NATIVE_TRANSPORT);
+  DCHECK(surface_handle.transport_type == gfx::NATIVE_DIRECT ||
+         surface_handle.transport_type == gfx::NATIVE_TRANSPORT);
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
 
   switch (gfx::GetGLImplementation()) {

@@ -17,6 +17,7 @@
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"

@@ -12,6 +12,7 @@
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "content/browser/compositor/resize_lock.h"
+#include "content/common/gpu/client/gl_helper.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
@@ -40,7 +41,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),
-      can_lock_compositor_(YES),
+      can_lock_compositor_(YES_CAN_LOCK),
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
   ImageTransportFactory::GetInstance()->AddObserver(this);
 }
@@ -76,15 +77,13 @@ void DelegatedFrameHost::MaybeCreateResizeLock() {
       can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
       can_lock_compositor_ == NO_PENDING_COMMIT;
 
-  if (can_lock_compositor_ == YES)
+  if (can_lock_compositor_ == YES_CAN_LOCK)
     can_lock_compositor_ = YES_DID_LOCK;
 
   resize_lock_ = client_->CreateResizeLock(defer_compositor_lock);
 }
 
 bool DelegatedFrameHost::ShouldCreateResizeLock() {
-  RenderWidgetHostImpl* host = client_->GetHost();
-
   // On Windows while resizing, the the resize locks makes us mis-paint a white
   // vertical strip (including the non-client area) if the content composition
   // is lagging the UI composition. So here we disable the throttling so that
@@ -92,9 +91,12 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
   // whiteout. Because this causes the content to be drawn at wrong sizes while
   // resizing we compensate by blocking the UI thread in Compositor::Draw() by
   // issuing a FinishAllRendering() if we are resizing.
-#if defined(OS_WIN)
+  // TODO(ccameron): Mac browser window resizing is incompletely implemented.
+#if defined(OS_WIN) || defined(OS_MACOSX)
   return false;
 #else
+  RenderWidgetHostImpl* host = client_->GetHost();
+
   if (resize_lock_)
     return false;
 
@@ -724,7 +726,7 @@ void DelegatedFrameHost::OnCompositingDidCommit(
     ui::Compositor* compositor) {
   RenderWidgetHostImpl* host = client_->GetHost();
   if (can_lock_compositor_ == NO_PENDING_COMMIT) {
-    can_lock_compositor_ = YES;
+    can_lock_compositor_ = YES_CAN_LOCK;
     if (resize_lock_.get() && resize_lock_->GrabDeferredLock())
       can_lock_compositor_ = YES_DID_LOCK;
   }

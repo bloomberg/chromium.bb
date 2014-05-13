@@ -27,12 +27,14 @@
 #include "base/sys_info.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
+#include "content/browser/compositor/resize_lock.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/compositing_iosurface_context_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_layer_mac.h"
 #include "content/browser/renderer_host/compositing_iosurface_mac.h"
+#include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
@@ -61,6 +63,8 @@
 #import "ui/base/cocoa/underlay_opengl_hosting_window.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/base/layout.h"
+#include "ui/compositor/compositor.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect_conversions.h"
@@ -406,6 +410,55 @@ void RemoveLayerFromSuperlayer(
 
 namespace content {
 
+////////////////////////////////////////////////////////////////////////////////
+// DelegatedFrameHost, public:
+
+ui::Compositor* RenderWidgetHostViewMac::GetCompositor() const {
+  return compositor_.get();
+}
+
+ui::Layer* RenderWidgetHostViewMac::GetLayer() {
+  return root_layer_.get();
+}
+
+RenderWidgetHostImpl* RenderWidgetHostViewMac::GetHost() {
+  return render_widget_host_;
+}
+
+void RenderWidgetHostViewMac::SchedulePaintInRect(
+    const gfx::Rect& damage_rect_in_dip) {
+  compositor_->ScheduleFullRedraw();
+}
+
+bool RenderWidgetHostViewMac::IsVisible() {
+  return !render_widget_host_->is_hidden();
+}
+
+gfx::Size RenderWidgetHostViewMac::DesiredFrameSize() {
+  return GetViewBounds().size();
+}
+
+float RenderWidgetHostViewMac::CurrentDeviceScaleFactor() {
+  return ViewScaleFactor();
+}
+
+gfx::Size RenderWidgetHostViewMac::ConvertViewSizeToPixel(
+    const gfx::Size& size) {
+  return gfx::ToEnclosingRect(gfx::ScaleRect(gfx::Rect(size),
+                                             ViewScaleFactor())).size();
+}
+
+scoped_ptr<ResizeLock> RenderWidgetHostViewMac::CreateResizeLock(
+    bool defer_compositor_lock) {
+  NOTREACHED();
+  ResizeLock* lock = NULL;
+  return scoped_ptr<ResizeLock>(lock);
+}
+
+DelegatedFrameHost* RenderWidgetHostViewMac::GetDelegatedFrameHost() const {
+  return delegated_frame_host_.get();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewBase, public:
 
@@ -461,6 +514,11 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
   // This is being called from |cocoa_view_|'s destructor, so invalidate the
   // pointer.
   cocoa_view_ = nil;
+
+  // Delete the delegated frame state.
+  delegated_frame_host_.reset();
+  compositor_.reset();
+  root_layer_.reset();
 
   UnlockMouse();
 
@@ -809,6 +867,8 @@ void RenderWidgetHostViewMac::WasShown() {
     web_contents_switch_paint_time_ = base::TimeTicks::Now();
   render_widget_host_->WasShown();
   software_frame_manager_->SetVisibility(true);
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasShown();
 
   // Call setNeedsDisplay before pausing for new frames to come in -- if any
   // do, and are drawn, then the needsDisplay bit will be cleared.
@@ -833,6 +893,8 @@ void RenderWidgetHostViewMac::WasHidden() {
   // reduce its resource utilization.
   render_widget_host_->WasHidden();
   software_frame_manager_->SetVisibility(false);
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasHidden();
 
   // There can be a transparent flash as this view is removed and the next is
   // added, because of OSX windowing races between displaying the contents of
@@ -934,6 +996,9 @@ bool RenderWidgetHostViewMac::HasFocus() const {
 }
 
 bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
+  if (delegated_frame_host_)
+    return delegated_frame_host_->CanCopyToBitmap();
+
   return software_frame_manager_->HasCurrentFrame() ||
          (compositing_iosurface_ && compositing_iosurface_->HasIOSurface());
 }
@@ -1174,6 +1239,12 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     const SkBitmap::Config config) {
+  if (delegated_frame_host_) {
+    delegated_frame_host_->CopyFromCompositingSurface(
+        src_subrect, dst_size, callback, config);
+    return;
+  }
+
   if (config != SkBitmap::kARGB_8888_Config) {
     NOTIMPLEMENTED();
     callback.Run(false, SkBitmap());
@@ -1231,6 +1302,12 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,
       const base::Callback<void(bool)>& callback) {
+  if (delegated_frame_host_) {
+    delegated_frame_host_->CopyFromCompositingSurfaceToVideoFrame(
+        src_subrect, target, callback);
+    return;
+  }
+
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
   if (!render_widget_host_->is_accelerated_compositing_active() ||
       !compositing_iosurface_ ||
@@ -1259,6 +1336,9 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
 }
 
 bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
+  if (delegated_frame_host_)
+    return delegated_frame_host_->CanCopyToVideoFrame();
+
   return (!software_frame_manager_->HasCurrentFrame() &&
           render_widget_host_->is_accelerated_compositing_active() &&
           compositing_iosurface_ &&
@@ -1266,15 +1346,27 @@ bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
 }
 
 bool RenderWidgetHostViewMac::CanSubscribeFrame() const {
+  if (delegated_frame_host_)
+    return delegated_frame_host_->CanSubscribeFrame();
+
   return !software_frame_manager_->HasCurrentFrame();
 }
 
 void RenderWidgetHostViewMac::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
+  if (delegated_frame_host_) {
+    delegated_frame_host_->BeginFrameSubscription(subscriber.Pass());
+    return;
+  }
   frame_subscriber_ = subscriber.Pass();
 }
 
 void RenderWidgetHostViewMac::EndFrameSubscription() {
+  if (delegated_frame_host_) {
+    delegated_frame_host_->EndFrameSubscription();
+    return;
+  }
+
   frame_subscriber_.reset();
 }
 
@@ -1806,43 +1898,67 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
 
 void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) {
-  // Only software compositor frames are accepted.
-  if (!frame->software_frame_data) {
+  if (frame->delegated_frame_data) {
+    if (!compositor_) {
+      compositor_.reset(new ui::Compositor(cocoa_view_));
+      root_layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
+      delegated_frame_host_.reset(new DelegatedFrameHost(this));
+    }
+
+    // TODO(ccameron): Having the root layer set while swapping the frame will
+    // result in frames not appearing. Fix this.
+    compositor_->SetRootLayer(NULL);
+    delegated_frame_host_->SwapDelegatedFrame(
+        output_surface_id,
+        frame->delegated_frame_data.Pass(),
+        frame->metadata.device_scale_factor,
+        frame->metadata.latency_info);
+    gfx::Size size = ToCeiledSize(frame->metadata.viewport_size);
+    float scale_factor = frame->metadata.device_scale_factor;
+    if (compositor_->size() != size ||
+        compositor_->device_scale_factor() != scale_factor) {
+      // TODO(ccameron): The scale factor here does not result in the
+      // composited frame that is received having the right scale factor. Fix
+      // this.
+      compositor_->SetScaleAndSize(scale_factor, size);
+      root_layer_->SetBounds(gfx::Rect(size));
+    }
+    compositor_->SetRootLayer(root_layer_.get());
+  } else if (frame->software_frame_data) {
+    if (!software_frame_manager_->SwapToNewFrame(
+            output_surface_id,
+            frame->software_frame_data.get(),
+            frame->metadata.device_scale_factor,
+            render_widget_host_->GetProcess()->GetHandle())) {
+      render_widget_host_->GetProcess()->ReceivedBadMessage();
+      return;
+    }
+
+    // Add latency info to report when the frame finishes drawing.
+    AddPendingLatencyInfo(frame->metadata.latency_info);
+    GotSoftwareFrame();
+
+    cc::CompositorFrameAck ack;
+    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
+        render_widget_host_->GetRoutingID(),
+        software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
+        render_widget_host_->GetProcess()->GetID(),
+        ack);
+    software_frame_manager_->SwapToNewFrameComplete(
+        !render_widget_host_->is_hidden());
+
+    // Notify observers, tab capture observers in particular, that a new
+    // software frame has come in.
+    NotificationService::current()->Notify(
+        NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+        Source<RenderWidgetHost>(render_widget_host_),
+        NotificationService::NoDetails());
+  } else {
     DLOG(ERROR) << "Received unexpected frame type.";
     RecordAction(
         base::UserMetricsAction("BadMessageTerminate_UnexpectedFrameType"));
     render_widget_host_->GetProcess()->ReceivedBadMessage();
-    return;
   }
-
-  if (!software_frame_manager_->SwapToNewFrame(
-          output_surface_id,
-          frame->software_frame_data.get(),
-          frame->metadata.device_scale_factor,
-          render_widget_host_->GetProcess()->GetHandle())) {
-    render_widget_host_->GetProcess()->ReceivedBadMessage();
-    return;
-  }
-
-  // Add latency info to report when the frame finishes drawing.
-  AddPendingLatencyInfo(frame->metadata.latency_info);
-  GotSoftwareFrame();
-
-  cc::CompositorFrameAck ack;
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-      render_widget_host_->GetRoutingID(),
-      software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
-      render_widget_host_->GetProcess()->GetID(),
-      ack);
-  software_frame_manager_->SwapToNewFrameComplete(
-      !render_widget_host_->is_hidden());
-
-  // Notify observers, tab capture observers in particular, that a new software
-  // frame has come in.
-  NotificationService::current()->Notify(
-      NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-      Source<RenderWidgetHost>(render_widget_host_),
-      NotificationService::NoDetails());
 }
 
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
@@ -3142,6 +3258,8 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
 
   renderWidgetHostView_->render_widget_host_->SendScreenRects();
   renderWidgetHostView_->render_widget_host_->WasResized();
+  if (renderWidgetHostView_->delegated_frame_host_)
+    renderWidgetHostView_->delegated_frame_host_->WasResized();
 
   // Wait for the frame that WasResize might have requested. If the view is
   // being made visible at a new size, then this call will have no effect
@@ -3199,6 +3317,16 @@ SkBitmap::Config RenderWidgetHostViewMac::PreferredReadbackFormat() {
                                    CGColorGetConstantColor(kCGColorWhite));
     CGContextFillRect(context, NSRectToCGRect(r));
   }
+}
+
+- (void)onNativeSurfaceBuffersSwappedWithParams:
+      (GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)params {
+
+  renderWidgetHostView_->CompositorSwapBuffers(
+      params.surface_handle,
+      params.size,
+      params.scale_factor,
+      params.latency_info);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {

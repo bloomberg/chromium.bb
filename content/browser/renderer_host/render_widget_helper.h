@@ -30,10 +30,12 @@ namespace base {
 class TimeDelta;
 }
 
+struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewMsg_SwapOut_Params;
 
 namespace content {
+class GpuProcessHost;
 class ResourceDispatcherHostImpl;
 class SessionStorageNamespace;
 
@@ -165,6 +167,12 @@ class RenderWidgetHelper
 
   // Called on the IO thread to handle the freeing of a transport DIB
   void FreeTransportDIB(TransportDIB::Id dib_id);
+#endif
+
+#if defined(OS_MACOSX)
+  static void OnNativeSurfaceBuffersSwappedOnIOThread(
+      GpuProcessHost* gpu_process_host,
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
 
  private:

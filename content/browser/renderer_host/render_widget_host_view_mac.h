@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "content/browser/compositor/delegated_frame_host.h"
 #include "content/browser/renderer_host/display_link_mac.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/software_frame_manager.h"
@@ -33,6 +34,11 @@ class CompositingIOSurfaceContext;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 class WebContents;
+}
+
+namespace ui {
+class Compositor;
+class Layer;
 }
 
 @class CompositingIOSurfaceLayer;
@@ -214,6 +220,7 @@ class RenderWidgetHostImpl;
 // RenderWidgetHostView class hierarchy described in render_widget_host_view.h.
 class CONTENT_EXPORT RenderWidgetHostViewMac
     : public RenderWidgetHostViewBase,
+      public DelegatedFrameHostClient,
       public IPC::Sender,
       public SoftwareFrameManagerClient {
  public:
@@ -448,6 +455,11 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   base::DelayTimer<RenderWidgetHostViewMac>
       compositing_iosurface_layer_async_timer_;
 
+  // Delegated frame management and compositior.
+  scoped_ptr<DelegatedFrameHost> delegated_frame_host_;
+  scoped_ptr<ui::Compositor> compositor_;
+  scoped_ptr<ui::Layer> root_layer_;
+
   // This holds the current software compositing framebuffer, if any.
   scoped_ptr<SoftwareFrameManager> software_frame_manager_;
 
@@ -513,6 +525,20 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void LayoutLayers();
 
   bool HasPendingSwapAck() const { return pending_swap_ack_; }
+
+  // DelegatedFrameHostClient implementation.
+  virtual ui::Compositor* GetCompositor() const OVERRIDE;
+  virtual ui::Layer* GetLayer() OVERRIDE;
+  virtual RenderWidgetHostImpl* GetHost() OVERRIDE;
+  virtual void SchedulePaintInRect(
+      const gfx::Rect& damage_rect_in_dip) OVERRIDE;
+  virtual bool IsVisible() OVERRIDE;
+  virtual scoped_ptr<ResizeLock> CreateResizeLock(
+      bool defer_compositor_lock) OVERRIDE;
+  virtual gfx::Size DesiredFrameSize() OVERRIDE;
+  virtual float CurrentDeviceScaleFactor() OVERRIDE;
+  virtual gfx::Size ConvertViewSizeToPixel(const gfx::Size& size) OVERRIDE;
+  virtual DelegatedFrameHost* GetDelegatedFrameHost() const OVERRIDE;
 
  private:
   friend class RenderWidgetHostViewMacTest;
