@@ -188,6 +188,7 @@ interface PPB_NaCl_Private {
    * are throttled by crash throttling.
    */
   void LaunchSelLdr([in] PP_Instance instance,
+                    [in] PP_Bool main_service_runtime,
                     [in] str_t alleged_url,
                     [in] PP_Bool uses_irt,
                     [in] PP_Bool uses_ppapi,
@@ -199,7 +200,6 @@ interface PPB_NaCl_Private {
                     [in] PPP_ManifestService manifest_service_interface,
                     [inout] mem_t manifest_service_user_data,
                     [out] mem_t imc_handle,
-                    [out] PP_Var error_message,
                     [in] PP_CompletionCallback callback);
 
   /* This function starts the IPC proxy so the nexe can communicate with the

@@ -7,7 +7,6 @@
 
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/cpp/completion_callback.h"
 
@@ -17,6 +16,7 @@ class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
  public:
   virtual bool Start(const char* url);
   virtual void Start(PP_Instance instance,
+                     bool main_service_runtime,
                      const char* url,
                      bool uses_irt,
                      bool uses_ppapi,
@@ -27,7 +27,6 @@ class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
                      bool enable_crash_throttling,
                      const PPP_ManifestService* manifest_service_interface,
                      void* manifest_service_user_data,
-                     PP_Var* error_message,
                      pp::CompletionCallback callback);
 };
 

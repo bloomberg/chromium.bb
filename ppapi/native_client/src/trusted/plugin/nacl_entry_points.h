@@ -20,6 +20,7 @@
 
 typedef PP_ExternalPluginResult (*LaunchNaClProcessFunc)(
     PP_Instance instance,
+    PP_Bool main_service_runtime,
     const char* alleged_url,
     PP_Bool uses_irt,
     PP_Bool uses_ppapi,
@@ -31,9 +32,7 @@ typedef PP_ExternalPluginResult (*LaunchNaClProcessFunc)(
     const PPP_ManifestService* manifest_service_interface,
     void* manifest_service_user_data,
     NaClHandle* result_socket,
-    struct PP_Var* error_message,
     PP_CompletionCallback callback);
-
 
 extern LaunchNaClProcessFunc launch_nacl_process;
 

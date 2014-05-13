@@ -41,6 +41,12 @@ class NexeLoadManager {
                          uint64_t total_bytes);
   void ReportLoadError(PP_NaClError error,
                        const std::string& error_message);
+
+  // console_message is a part of the error that is logged to
+  // the JavaScript console but is not reported to JavaScript via
+  // the lastError property.  This is used to report internal errors which
+  // may easily change in new versions of the browser and we don't want apps
+  // to come to depend on the details of these errors.
   void ReportLoadError(PP_NaClError error,
                        const std::string& error_message,
                        const std::string& console_message);

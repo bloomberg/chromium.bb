@@ -256,6 +256,7 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
 
 // Launch NaCl's sel_ldr process.
 void LaunchSelLdr(PP_Instance instance,
+                  PP_Bool main_service_runtime,
                   const char* alleged_url,
                   PP_Bool uses_irt,
                   PP_Bool uses_ppapi,
@@ -267,7 +268,6 @@ void LaunchSelLdr(PP_Instance instance,
                   const PPP_ManifestService* manifest_service_interface,
                   void* manifest_service_user_data,
                   void* imc_handle,
-                  struct PP_Var* error_message,
                   PP_CompletionCallback callback) {
   CHECK(ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->
             BelongsToCurrentThread());
@@ -283,7 +283,6 @@ void LaunchSelLdr(PP_Instance instance,
   FileDescriptor result_socket;
   IPC::Sender* sender = content::RenderThread::Get();
   DCHECK(sender);
-  *error_message = PP_MakeUndefined();
   int routing_id = 0;
   // If the nexe uses ppapi APIs, we need a routing ID.
   // To get the routing ID, we must be on the main thread.
@@ -332,7 +331,14 @@ void LaunchSelLdr(PP_Instance instance,
     return;
   }
   if (!error_message_string.empty()) {
-    *error_message = ppapi::StringVar::StringToPPVar(error_message_string);
+    if (PP_ToBool(main_service_runtime)) {
+      NexeLoadManager* load_manager = GetNexeLoadManager(instance);
+      if (load_manager) {
+        load_manager->ReportLoadError(PP_NACL_ERROR_SEL_LDR_LAUNCH,
+                                      "ServiceRuntime: failed to start",
+                                      error_message_string);
+      }
+    }
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
         FROM_HERE,
         base::Bind(callback.func, callback.user_data,

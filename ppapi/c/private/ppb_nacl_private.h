@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Mon May 12 10:21:30 2014. */
+/* From private/ppb_nacl_private.idl modified Tue May 13 11:00:06 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -228,6 +228,7 @@ struct PPB_NaCl_Private_1_0 {
    */
   void (*LaunchSelLdr)(
       PP_Instance instance,
+      PP_Bool main_service_runtime,
       const char* alleged_url,
       PP_Bool uses_irt,
       PP_Bool uses_ppapi,
@@ -239,7 +240,6 @@ struct PPB_NaCl_Private_1_0 {
       const struct PPP_ManifestService_1_0* manifest_service_interface,
       void* manifest_service_user_data,
       void* imc_handle,
-      struct PP_Var* error_message,
       struct PP_CompletionCallback callback);
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser.

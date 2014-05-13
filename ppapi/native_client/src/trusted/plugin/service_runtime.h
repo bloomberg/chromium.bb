@@ -230,8 +230,6 @@ class ServiceRuntime {
   bool LoadModule(nacl::DescWrapper* shm, ErrorInfo* error_info);
   bool InitReverseService(ErrorInfo* error_info);
   bool StartModule(ErrorInfo* error_info);
-  void StartSelLdrContinuation(int32_t pp_error,
-                               pp::CompletionCallback callback);
 
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
@@ -252,7 +250,6 @@ class ServiceRuntime {
   int exit_status_;
   bool start_sel_ldr_done_;
 
-  PP_Var start_sel_ldr_error_message_;
   pp::CompletionCallbackFactory<ServiceRuntime> callback_factory_;
 };
 

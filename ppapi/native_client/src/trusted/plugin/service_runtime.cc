@@ -650,13 +650,11 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
     pp::Module::Get()->core()->CallOnMainThread(0, callback, PP_ERROR_FAILED);
     return;
   }
-  pp::CompletionCallback internal_callback =
-      callback_factory_.NewCallback(&ServiceRuntime::StartSelLdrContinuation,
-                                    callback);
 
   ManifestService* manifest_service =
       new ManifestService(anchor_->Ref(), rev_interface_);
   tmp_subprocess->Start(plugin_->pp_instance(),
+                        main_service_runtime_,
                         params.url.c_str(),
                         params.uses_irt,
                         params.uses_ppapi,
@@ -667,31 +665,8 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
                         params.enable_crash_throttling,
                         &kManifestServiceVTable,
                         manifest_service,
-                        &start_sel_ldr_error_message_,
-                        internal_callback);
+                        callback);
   subprocess_.reset(tmp_subprocess.release());
-}
-
-void ServiceRuntime::StartSelLdrContinuation(int32_t pp_error,
-                                             pp::CompletionCallback callback) {
-  if (pp_error != PP_OK) {
-    NaClLog(LOG_ERROR, "ServiceRuntime::StartSelLdrContinuation "
-                       " (start failed)\n");
-    if (main_service_runtime_) {
-      std::string error_message;
-      pp::Var var_error_message_cpp(pp::PASS_REF, start_sel_ldr_error_message_);
-      if (var_error_message_cpp.is_string()) {
-        error_message = var_error_message_cpp.AsString();
-      }
-      ErrorInfo error_info;
-      error_info.SetReportWithConsoleOnlyError(
-          PP_NACL_ERROR_SEL_LDR_LAUNCH,
-          "ServiceRuntime: failed to start",
-          error_message);
-      plugin_->ReportLoadError(error_info);
-    }
-  }
-  pp::Module::Get()->core()->CallOnMainThread(0, callback, pp_error);
 }
 
 bool ServiceRuntime::WaitForSelLdrStart() {
