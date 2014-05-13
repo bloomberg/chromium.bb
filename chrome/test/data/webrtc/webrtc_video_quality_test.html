@@ -17,8 +17,7 @@
     </tr>
     <tr>
       <td>
-        <video width="640" height="360" id="local-view"
-            autoplay="autoplay"></video>
+        <video id="local-view" autoplay="autoplay"></video>
       </td>
       <td>
         <!-- startFrameCapture() takes 5 parameters:
@@ -27,20 +26,15 @@
              3. canvas_height: Height of the canvas.
              4. fps: fps at which we would like to sample.
              5. duration: The duration of the capturing. -->
-        <video width="640" height="360" id="remote-view"
-            autoplay="autoplay" onplay="startFrameCapture(640,360,360,30,5)">
-        </video>
+        <video id="remote-view" autoplay="autoplay"
+            onplay="startFrameCapture(this, 30, 5)"></video>
       </td>
     </tr>
     <tr>
       <td></td>
       <td>
-        <div id="output" style="display: inline-block;
-            position: relative; width: 640; height: 360">
-          <!-- Canvas height should be equal to video height if we want to
-               capture the whole frames. If we only want to capture the barcode,
-               canvas height should equal the barcode height. -->
-          <canvas id="remote-canvas" width="640" height="360"></canvas>
+        <div id="output">
+          <canvas id="remote-canvas"></canvas>
         </div>
       </td>
     </tr>

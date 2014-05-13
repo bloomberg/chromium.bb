@@ -67,6 +67,8 @@ static const base::FilePath::CharType kStatsFileName[] =
     FILE_PATH_LITERAL("stats.txt");
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
+static const char kCapturingWebrtcHtmlPage[] =
+    "/webrtc/webrtc_video_quality_test.html";
 
 // If you change the port number, don't forget to modify video_extraction.js
 // too!
@@ -76,16 +78,13 @@ static const struct VideoQualityTestConfig {
   const char* test_name;
   int width;
   int height;
-  const char* capture_page;
   const base::FilePath::CharType* reference_video;
   const char* constraints;
 } kVideoConfigurations[] = {
   { "360p", 640, 360,
-    "/webrtc/webrtc_video_quality_test.html",
     test::kReferenceFileName360p,
     WebRtcTestBase::kAudioVideoCallConstraints360p },
   { "720p", 1280, 720,
-    "/webrtc/webrtc_video_quality_test_hd.html",
     test::kReferenceFileName720p,
     WebRtcTestBase::kAudioVideoCallConstraints720p },
 };
@@ -341,7 +340,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
           test_config_.constraints);
   content::WebContents* right_tab =
       OpenPageAndGetUserMediaInNewTabWithConstraints(
-          embedded_test_server()->GetURL(test_config_.capture_page),
+          embedded_test_server()->GetURL(kCapturingWebrtcHtmlPage),
           test_config_.constraints);
 
   SetupPeerconnectionWithLocalStream(left_tab);
