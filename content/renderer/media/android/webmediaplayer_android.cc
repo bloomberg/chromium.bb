@@ -762,8 +762,6 @@ void WebMediaPlayerAndroid::OnDisconnectedFromRemoteDevice() {
 
 void WebMediaPlayerAndroid::OnDidEnterFullscreen() {
   if (!manager_->IsInFullscreen(frame_)) {
-    frame_->view()->willEnterFullScreen();
-    frame_->view()->didEnterFullScreen();
     manager_->DidEnterFullscreen(frame_);
   }
 }
@@ -782,8 +780,6 @@ void WebMediaPlayerAndroid::OnDidExitFullscreen() {
     manager_->RequestExternalSurface(player_id_, last_computed_rect_);
 #endif  // defined(VIDEO_HOLE)
 
-  frame_->view()->willExitFullScreen();
-  frame_->view()->didExitFullScreen();
   manager_->DidExitFullscreen();
   client_->repaint();
 }
