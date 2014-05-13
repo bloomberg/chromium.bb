@@ -298,10 +298,47 @@ bool BluetoothLowEnergyGetDescriptorFunction::DoWork() {
 }
 
 bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
-  // TODO(armansito): Implement.
-  SetError("Call not supported.");
-  SendResponse(false);
-  return false;
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+
+  // The adapter must be initialized at this point, but return an error instead
+  // of asserting.
+  if (!event_router->HasAdapter()) {
+    SetError(kErrorAdapterNotInitialized);
+    SendResponse(false);
+    return false;
+  }
+
+  scoped_ptr<apibtle::GetDescriptors::Params> params(
+      apibtle::GetDescriptors::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
+
+  std::string chrc_id = params->characteristic_id;
+
+  BluetoothLowEnergyEventRouter::DescriptorList descriptor_list;
+  if (!event_router->GetDescriptors(chrc_id, &descriptor_list)) {
+    SetError(base::StringPrintf(kErrorCharacteristicNotFoundFormat,
+                                chrc_id.c_str()));
+    SendResponse(false);
+    return false;
+  }
+
+  // Manually construct the result instead of using
+  // apibtle::GetDescriptors::Result::Create as it doesn't convert lists of
+  // enums correctly.
+  scoped_ptr<base::ListValue> result(new base::ListValue());
+  for (BluetoothLowEnergyEventRouter::DescriptorList::iterator iter =
+           descriptor_list.begin();
+       iter != descriptor_list.end();
+       ++iter)
+    result->Append(apibtle::DescriptorToValue(iter->get()).release());
+
+  SetResult(result.release());
+  SendResponse(true);
+
+  return true;
 }
 
 bool BluetoothLowEnergyReadCharacteristicValueFunction::DoWork() {

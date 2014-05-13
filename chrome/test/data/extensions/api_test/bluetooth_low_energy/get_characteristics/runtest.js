@@ -5,7 +5,7 @@
 function testGetCharacteristics() {
   chrome.test.assertEq(2, chrcs.length);
 
-  chrome.test.assertEq('char_id0', chrcs[0].instanceId),
+  chrome.test.assertEq('char_id0', chrcs[0].instanceId);
   chrome.test.assertEq('00001211-0000-1000-8000-00805f9b34fb', chrcs[0].uuid);
   chrome.test.assertEq(false, chrcs[0].isLocal);
   chrome.test.assertEq(serviceId, chrcs[0].service.instanceId);

@@ -138,6 +138,8 @@
         'test/mock_bluetooth_discovery_session.h',
         'test/mock_bluetooth_gatt_characteristic.cc',
         'test/mock_bluetooth_gatt_characteristic.h',
+        'test/mock_bluetooth_gatt_descriptor.cc',
+        'test/mock_bluetooth_gatt_descriptor.h',
         'test/mock_bluetooth_gatt_service.cc',
         'test/mock_bluetooth_gatt_service.h',
         'test/mock_bluetooth_profile.cc',
