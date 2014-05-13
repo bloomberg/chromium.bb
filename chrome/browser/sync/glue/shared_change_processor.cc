@@ -9,7 +9,7 @@
 #include "components/sync_driver/generic_change_processor_factory.h"
 #include "components/sync_driver/sync_api_component_factory.h"
 #include "sync/api/attachments/attachment_service.h"
-#include "sync/api/attachments/fake_attachment_service.h"
+#include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/sync_change.h"
 #include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 
@@ -75,10 +75,8 @@ base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
   scoped_ptr<syncer::AttachmentUploader> attachment_uploader(
       new syncer::FakeAttachmentUploader);
 
-  // TODO(maniscalco): Replace FakeAttachmentService with a real
-  // AttachmentService implementation once implemented (bug 356359).
   scoped_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::FakeAttachmentService(
+      new syncer::AttachmentServiceImpl(
           sync_factory->CreateCustomAttachmentStoreForType(type),
           attachment_uploader.Pass()));
 

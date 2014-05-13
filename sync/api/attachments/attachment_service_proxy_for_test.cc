@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "sync/api/attachments/fake_attachment_service.h"
+#include "sync/api/attachments/attachment_service_impl.h"
 
 namespace syncer {
 
@@ -24,7 +24,7 @@ AttachmentServiceProxyForTest::OwningCore::~OwningCore() {
 
 // Static.
 AttachmentServiceProxy AttachmentServiceProxyForTest::Create() {
-  scoped_ptr<AttachmentService> wrapped(FakeAttachmentService::CreateForTest());
+  scoped_ptr<AttachmentService> wrapped(AttachmentServiceImpl::CreateForTest());
   // This class's base class, AttachmentServiceProxy, must be initialized with a
   // WeakPtr to an AttachmentService.  Because the base class ctor must be
   // invoked before any of this class's members are initialized, we create the

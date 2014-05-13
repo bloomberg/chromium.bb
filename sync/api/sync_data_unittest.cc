@@ -12,8 +12,8 @@
 #include "base/time/time.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_service.h"
+#include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/attachments/attachment_service_proxy.h"
-#include "sync/api/attachments/fake_attachment_service.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +32,7 @@ const base::Time kLastModifiedTime = base::Time();
 class SyncDataTest : public testing::Test {
  protected:
   SyncDataTest()
-      : attachment_service(FakeAttachmentService::CreateForTest()),
+      : attachment_service(AttachmentServiceImpl::CreateForTest()),
         attachment_service_weak_ptr_factory(attachment_service.get()),
         attachment_service_proxy(
             base::MessageLoopProxy::current(),

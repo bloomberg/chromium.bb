@@ -9,7 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync_driver/data_type_error_handler_mock.h"
-#include "sync/api/attachments/fake_attachment_service.h"
+#include "sync/api/attachments/attachment_service_impl.h"
 #include "sync/api/fake_syncable_service.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_merge_result.h"
@@ -32,7 +32,7 @@ namespace {
 const char kTestData[] = "some data";
 
 // A mock that keeps track of attachments passed to StoreAttachments.
-class MockAttachmentService : public syncer::FakeAttachmentService {
+class MockAttachmentService : public syncer::AttachmentServiceImpl {
  public:
   MockAttachmentService();
   virtual ~MockAttachmentService();
@@ -45,7 +45,7 @@ class MockAttachmentService : public syncer::FakeAttachmentService {
 };
 
 MockAttachmentService::MockAttachmentService()
-    : FakeAttachmentService(
+    : AttachmentServiceImpl(
           scoped_ptr<syncer::AttachmentStore>(new syncer::FakeAttachmentStore(
               base::MessageLoopProxy::current())),
           scoped_ptr<syncer::AttachmentUploader>(
@@ -59,7 +59,7 @@ void MockAttachmentService::StoreAttachments(
     const syncer::AttachmentList& attachments,
     const StoreCallback& callback) {
   attachment_lists_.push_back(attachments);
-  FakeAttachmentService::StoreAttachments(attachments, callback);
+  AttachmentServiceImpl::StoreAttachments(attachments, callback);
 }
 
 std::vector<syncer::AttachmentList>* MockAttachmentService::attachment_lists() {

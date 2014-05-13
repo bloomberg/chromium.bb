@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_API_ATTACHMENTS_FAKE_ATTACHMENT_SERVICE_H_
-#define SYNC_API_ATTACHMENTS_FAKE_ATTACHMENT_SERVICE_H_
+#ifndef SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
+#define SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -14,15 +14,15 @@
 
 namespace syncer {
 
-// A fake implementation of AttachmentService.
-class SYNC_EXPORT FakeAttachmentService : public AttachmentService,
+// Implementation of AttachmentService.
+class SYNC_EXPORT AttachmentServiceImpl : public AttachmentService,
                                           public base::NonThreadSafe {
  public:
-  FakeAttachmentService(scoped_ptr<AttachmentStore> attachment_store,
+  AttachmentServiceImpl(scoped_ptr<AttachmentStore> attachment_store,
                         scoped_ptr<AttachmentUploader> attachment_uploader);
-  virtual ~FakeAttachmentService();
+  virtual ~AttachmentServiceImpl();
 
-  // Create a FakeAttachmentService suitable for use in tests.
+  // Create an AttachmentServiceImpl suitable for use in tests.
   static scoped_ptr<syncer::AttachmentService> CreateForTest();
 
   // AttachmentService implementation.
@@ -49,11 +49,11 @@ class SYNC_EXPORT FakeAttachmentService : public AttachmentService,
   const scoped_ptr<AttachmentStore> attachment_store_;
   const scoped_ptr<AttachmentUploader> attachment_uploader_;
   // Must be last data member.
-  base::WeakPtrFactory<FakeAttachmentService> weak_ptr_factory_;
+  base::WeakPtrFactory<AttachmentServiceImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeAttachmentService);
+  DISALLOW_COPY_AND_ASSIGN(AttachmentServiceImpl);
 };
 
 }  // namespace syncer
 
-#endif  // SYNC_API_ATTACHMENTS_FAKE_ATTACHMENT_SERVICE_H_
+#endif  // SYNC_API_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
