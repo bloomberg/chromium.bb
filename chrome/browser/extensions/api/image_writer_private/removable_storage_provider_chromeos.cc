@@ -17,9 +17,8 @@ using chromeos::disks::DiskMountManager;
 // fixed disk.  In fact, some SD cards will present themselves as fixed disks
 // (see http://crbug.com/340761).  Thus we just expose all USB and SD drives.
 // static
-void RemovableStorageProvider::GetAllDevices(DeviceListReadyCallback callback) {
-  scoped_refptr<StorageDeviceList> device_list(new StorageDeviceList());
-
+bool RemovableStorageProvider::PopulateDeviceList(
+    scoped_refptr<StorageDeviceList> device_list) {
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   const DiskMountManager::DiskMap& disks = disk_mount_manager->disks();
 
@@ -49,7 +48,7 @@ void RemovableStorageProvider::GetAllDevices(DeviceListReadyCallback callback) {
     }
   }
 
-  callback.Run(device_list, true);
+  return true;
 }
 
 }  // namespace extensions

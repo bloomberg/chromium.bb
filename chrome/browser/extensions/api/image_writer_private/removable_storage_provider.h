@@ -10,6 +10,8 @@
 
 namespace extensions {
 
+// TODO(haven): Clean up this class to remove refcounting.  http://crbug/370590
+
 typedef RefCountedVector<linked_ptr
   <api::image_writer_private::RemovableStorageDevice> > StorageDeviceList;
 
@@ -19,10 +21,21 @@ class RemovableStorageProvider {
  public:
   typedef base::Callback<void(scoped_refptr<StorageDeviceList>, bool)>
     DeviceListReadyCallback;
+
+  // Gets the list of all available devices and returns it via callback.
   static void GetAllDevices(DeviceListReadyCallback callback);
-#if defined(OS_LINUX)
-  static bool GetDevicesOnFileThread(scoped_refptr<StorageDeviceList>);
-#endif
+
+  // Sets the list of devices that will be returned by GetAllDevices during
+  // testing.  All calls to |GetAllDevices| will return this list until
+  // |ClearDeviceListForTesting| is called.
+  static void SetDeviceListForTesting(
+      scoped_refptr<StorageDeviceList> device_list);
+  // Clears the list of devices that is used during testing.
+  static void ClearDeviceListForTesting();
+
+ private:
+  // Fills the provided empty device list with the available devices.
+  static bool PopulateDeviceList(scoped_refptr<StorageDeviceList> device_list);
 };
 
 } // namespace extensions

@@ -18,7 +18,7 @@ namespace {
 
 bool AddDeviceInfo(HANDLE interface_enumerator,
                    SP_DEVICE_INTERFACE_DATA* interface_data,
-                   StorageDeviceList* device_list) {
+                   scoped_refptr<StorageDeviceList> device_list) {
   // Get the required buffer size by calling with a null output buffer.
   DWORD interface_detail_data_size;
   BOOL status = SetupDiGetDeviceInterfaceDetail(
@@ -149,7 +149,10 @@ bool AddDeviceInfo(HANDLE interface_enumerator,
   return true;
 }
 
-bool PopulateList(StorageDeviceList* device_list) {
+}  // namespace
+
+bool RemovableStorageProvider::PopulateDeviceList(
+    scoped_refptr<StorageDeviceList> device_list) {
   HDEVINFO interface_enumerator = SetupDiGetClassDevs(
       &DiskClassGuid,
       NULL, // Enumerator.
@@ -186,18 +189,6 @@ bool PopulateList(StorageDeviceList* device_list) {
 
   SetupDiDestroyDeviceInfoList(interface_enumerator);
   return true;
-}
-
-}  // namespace
-
-void RemovableStorageProvider::GetAllDevices(DeviceListReadyCallback callback) {
-  scoped_refptr<StorageDeviceList> device_list(new StorageDeviceList());
-
-  if (PopulateList(device_list.get())) {
-    callback.Run(device_list, true);
-  } else {
-    callback.Run(device_list, false);
-  }
 }
 
 } // namespace extensions

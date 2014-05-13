@@ -1061,6 +1061,7 @@
         'browser/extensions/api/identity/identity_apitest.cc',
         'browser/extensions/api/idle/idle_apitest.cc',
         'browser/extensions/api/idltest/idltest_apitest.cc',
+        'browser/extensions/api/image_writer_private/image_writer_private_apitest.cc',
         'browser/extensions/api/input_ime/input_ime_apitest_chromeos.cc',
         'browser/extensions/api/management/management_api_browsertest.cc',
         'browser/extensions/api/management/management_apitest.cc',

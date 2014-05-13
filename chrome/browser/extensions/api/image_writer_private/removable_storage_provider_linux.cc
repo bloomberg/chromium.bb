@@ -10,7 +10,6 @@
 #include "content/public/browser/browser_thread.h"
 
 namespace extensions {
-
 // TODO(haven): Udev code may be duplicated in the Chrome codebase.
 // https://code.google.com/p/chromium/issues/detail?id=284898
 
@@ -42,19 +41,7 @@ static int get_device_blk_size(const std::string& path) {
   return blk_size;
 }
 
-void RemovableStorageProvider::GetAllDevices(
-    DeviceListReadyCallback callback) {
-  scoped_refptr<StorageDeviceList> device_list(new StorageDeviceList);
-
-  // We need to do some file i/o to get the device block size
-  content::BrowserThread::PostTaskAndReplyWithResult(
-    content::BrowserThread::FILE,
-    FROM_HERE,
-    base::Bind(GetDevicesOnFileThread, device_list),
-    base::Bind(callback, device_list));
-}
-
-bool RemovableStorageProvider::GetDevicesOnFileThread(
+bool RemovableStorageProvider::PopulateDeviceList(
     scoped_refptr<StorageDeviceList> device_list) {
   struct udev* udev;
   struct udev_enumerate* enumerate;

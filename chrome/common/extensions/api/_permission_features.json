@@ -761,7 +761,8 @@
     "extension_types": ["platform_app"],
     "whitelist": [
       "A291B26E088FA6BA53FFD72F0916F06EBA7C585A", // http://crbug.com/329088
-      "D7986543275120831B39EF28D1327552FC343960"  // http://crbug.com/329088
+      "D7986543275120831B39EF28D1327552FC343960", // http://crbug.com/329088
+      "BCC85C0D7F85897F2699974421EA402144C35C0C"  // API Test
     ]
   },
   "readingListPrivate": {

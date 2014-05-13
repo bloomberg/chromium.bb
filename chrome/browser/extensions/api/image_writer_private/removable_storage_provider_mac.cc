@@ -6,11 +6,9 @@
 
 namespace extensions {
 
-void RemovableStorageProvider::GetAllDevices(
-    DeviceListReadyCallback callback) {
-  scoped_refptr<StorageDeviceList> device_list(new StorageDeviceList());
-
-  callback.Run(device_list, false);
+bool RemovableStorageProvider::PopulateDeviceList(
+    scoped_refptr<StorageDeviceList> device_list) {
+  return false;
 }
 
 } // namespace extensions

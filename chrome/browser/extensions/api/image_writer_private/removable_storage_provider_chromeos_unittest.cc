@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -109,6 +111,9 @@ class RemovableStorageProviderChromeOsUnitTest : public testing::Test {
 
   MockDiskMountManager* disk_mount_manager_mock_;
   scoped_refptr<StorageDeviceList> devices_;
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 }  // namespace
@@ -127,6 +132,8 @@ TEST_F(RemovableStorageProviderChromeOsUnitTest, GetAllDevices) {
       base::Bind(&RemovableStorageProviderChromeOsUnitTest::DevicesCallback,
                  base::Unretained(this)));
 
+  base::RunLoop().RunUntilIdle();
+
   ASSERT_EQ(2U, devices_->data.size());
 
   ExpectDevice(
@@ -144,6 +151,8 @@ TEST_F(RemovableStorageProviderChromeOsUnitTest, EmptyProductAndModel) {
   RemovableStorageProvider::GetAllDevices(
       base::Bind(&RemovableStorageProviderChromeOsUnitTest::DevicesCallback,
                  base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(2U, devices_->data.size());
 
