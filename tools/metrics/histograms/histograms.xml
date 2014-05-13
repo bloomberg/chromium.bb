@@ -26584,6 +26584,25 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Error codes returned by sqlite the web db.</summary>
 </histogram>
 
+<histogram name="Startup.AppListFirstPaintColdStart" units="milliseconds">
+  <owner>tapted@chromium.org</owner>
+  <summary>
+    Time for a newly created browser process to perform the first paint of the
+    app launcher, when started with the --show-app-list flag and with no
+    currently running Chrome processes.
+  </summary>
+</histogram>
+
+<histogram name="Startup.AppListFirstPaintWarmStart" units="milliseconds">
+  <owner>tapted@chromium.org</owner>
+  <summary>
+    Time for a running browser process to perform the first paint of the app
+    launcher. Measured from the time a second Chrome process started, which sent
+    its --show-app-list command line argument to the already-running process and
+    will soon exit.
+  </summary>
+</histogram>
+
 <histogram name="Startup.BrowserMessageLoopStartTime">
   <owner>jeremy@chromium.org</owner>
   <summary>
@@ -43124,6 +43143,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="network manager thinks that the active network is behind portal"/>
   <affected-histogram name="CaptivePortal.OOBE.DiscrepancyWithShill"/>
   <affected-histogram name="CaptivePortal.Session.DiscrepancyWithShill"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AppListFirstPaintWarmStartFast" separator="">
+  <suffix name="" label="Normal start."/>
+  <suffix name="Fast"
+      label="Fast start by skipping normal chrome.dll startup."/>
+  <affected-histogram name="Startup.AppListFirstPaintWarmStart"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AsyncSlowStart">
