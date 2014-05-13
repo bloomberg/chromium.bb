@@ -1030,6 +1030,10 @@ NSDictionary* attributeToMethodNameMap = nil;
   return [attributeToMethodNameMap objectForKey:attribute];
 }
 
+- (void)swapChildren:(base::scoped_nsobject<NSMutableArray>*)other {
+  children_.swap(*other);
+}
+
 // Returns the accessibility value for the given attribute.  If the value isn't
 // supported this will return nil.
 - (id)accessibilityAttributeValue:(NSString*)attribute {

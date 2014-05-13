@@ -48,6 +48,9 @@
 // Return the method name for the given attribute. For testing only.
 - (NSString*)methodNameForAttribute:(NSString*)attribute;
 
+// Swap the children array with the given scoped_nsobject.
+- (void)swapChildren:(base::scoped_nsobject<NSMutableArray>*)other;
+
 // Internally-used method.
 @property(nonatomic, readonly) NSPoint origin;
 

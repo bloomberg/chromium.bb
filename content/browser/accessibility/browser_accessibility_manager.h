@@ -192,6 +192,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 
+  // Called at the end of updating the tree.
+  virtual void OnTreeUpdateFinished() {}
+
  private:
   // The following states keep track of whether or not the
   // on-screen keyboard is allowed to be shown.

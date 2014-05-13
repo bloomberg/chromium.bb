@@ -175,6 +175,8 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     }
   }
 
+  OnTreeUpdateFinished();
+
   if (should_send_initial_focus &&
       (!delegate_ || delegate_->AccessibilityViewHasFocus())) {
     NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, GetFromAXNode(focus_));
