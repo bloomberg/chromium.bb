@@ -1,4 +1,3 @@
-
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -48,6 +47,12 @@
         EXPECT_EQ((expected).height(), (actual).height()); \
     } while (false)
 
+#define EXPECT_FLOAT_SIZE_EQ(expected, actual) \
+    do { \
+        EXPECT_FLOAT_EQ((expected).width(), (actual).width()); \
+        EXPECT_FLOAT_EQ((expected).height(), (actual).height()); \
+    } while (false)
+
 #define EXPECT_FLOAT_RECT_EQ(expected, actual) \
     do { \
         EXPECT_FLOAT_EQ((expected).x(), (actual).x()); \
@@ -69,16 +74,19 @@ public:
     {
     }
 
-    void initializeWithDesktopSettings()
+    void initializeWithDesktopSettings(void (*overrideSettingsFunc)(WebSettings*) = 0)
     {
-        m_helper.initialize(true, 0, &m_mockWebViewClient, &configureSettings);
-
+        if (!overrideSettingsFunc)
+            overrideSettingsFunc = &configureSettings;
+        m_helper.initialize(true, 0, &m_mockWebViewClient, overrideSettingsFunc);
         webViewImpl()->setPageScaleFactorLimits(1, 4);
     }
 
-    void initializeWithAndroidSettings()
+    void initializeWithAndroidSettings(void (*overrideSettingsFunc)(WebSettings*) = 0)
     {
-        m_helper.initialize(true, 0, &m_mockWebViewClient, &configureAndroidSettings);
+        if (!overrideSettingsFunc)
+            overrideSettingsFunc = &configureAndroidSettings;
+        m_helper.initialize(true, 0, &m_mockWebViewClient, overrideSettingsFunc);
     }
 
     virtual ~PinchViewportTest()
@@ -114,11 +122,6 @@ public:
     WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
     LocalFrame* frame() const { return m_helper.webViewImpl()->mainFrameImpl()->frame(); }
 
-protected:
-    std::string m_baseURL;
-    FrameTestHelpers::TestWebViewClient m_mockWebViewClient;
-
-private:
     static void configureSettings(WebSettings* settings)
     {
         settings->setJavaScriptEnabled(true);
@@ -138,6 +141,11 @@ private:
         settings->setShrinksViewportContentToFit(true);
     }
 
+protected:
+    std::string m_baseURL;
+    FrameTestHelpers::TestWebViewClient m_mockWebViewClient;
+
+private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
@@ -169,6 +177,27 @@ TEST_F(PinchViewportTest, TestResize)
     pinchViewport.setSize(newViewportSize);
     EXPECT_SIZE_EQ(webViewSize, IntSize(webViewImpl()->size()));
     EXPECT_SIZE_EQ(newViewportSize, pinchViewport.size());
+}
+
+static void turnOffForceCompositingMode(WebSettings* settings)
+{
+    PinchViewportTest::configureSettings(settings);
+    settings->setForceCompositingMode(false);
+}
+
+// Test that the container layer gets sized properly if the WebView is resized
+// prior to the PinchViewport being attached to the layer tree.
+TEST_F(PinchViewportTest, TestWebViewResizedBeforeAttachment)
+{
+    initializeWithDesktopSettings(turnOffForceCompositingMode);
+    webViewImpl()->resize(IntSize(320, 240));
+
+    navigateTo("about:blank");
+    forceFullCompositingUpdate();
+    webViewImpl()->enterForceCompositingMode(true);
+
+    PinchViewport& pinchViewport = frame()->page()->frameHost().pinchViewport();
+    EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240), pinchViewport.rootGraphicsLayer()->size());
 }
 
 // Make sure that the visibleRect method acurately reflects the scale and scroll location

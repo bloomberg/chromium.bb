@@ -41,6 +41,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
+#include "platform/TraceEvent.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
@@ -73,23 +74,22 @@ PinchViewport::~PinchViewport() { }
 
 void PinchViewport::setSize(const IntSize& size)
 {
-    ASSERT(mainFrame() && mainFrame()->view());
-
-    if (!m_innerViewportContainerLayer || !m_innerViewportScrollLayer)
-        return;
-
     if (m_size == size)
         return;
 
+    TRACE_EVENT2("webkit", "PinchViewport::setSize", "width", size.width(), "height", size.height());
     m_size = size;
-    m_innerViewportContainerLayer->setSize(m_size);
 
     // Make sure we clamp the offset to within the new bounds.
     setLocation(m_offset);
 
-    // Need to re-compute sizes for the overlay scrollbars.
-    setupScrollbar(WebScrollbar::Horizontal);
-    setupScrollbar(WebScrollbar::Vertical);
+    if (m_innerViewportContainerLayer) {
+        m_innerViewportContainerLayer->setSize(m_size);
+
+        // Need to re-compute sizes for the overlay scrollbars.
+        setupScrollbar(WebScrollbar::Horizontal);
+        setupScrollbar(WebScrollbar::Vertical);
+    }
 }
 
 void PinchViewport::reset()
@@ -100,6 +100,8 @@ void PinchViewport::reset()
 
 void PinchViewport::mainFrameDidChangeSize()
 {
+    TRACE_EVENT0("webkit", "PinchViewport::mainFrameDidChangeSize");
+
     // In unit tests we may not have initialized the layer tree.
     if (m_innerViewportScrollLayer)
         m_innerViewportScrollLayer->setSize(contentsSize());
@@ -178,6 +180,7 @@ void PinchViewport::setScale(float scale)
 //
 void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, GraphicsLayerFactory* graphicsLayerFactory)
 {
+    TRACE_EVENT1("webkit", "PinchViewport::attachToLayerTree", "currentLayerTreeRoot", (bool)currentLayerTreeRoot);
     if (!currentLayerTreeRoot) {
         m_innerViewportScrollLayer->removeAllChildren();
         return;
@@ -205,6 +208,7 @@ void PinchViewport::attachToLayerTree(GraphicsLayer* currentLayerTreeRoot, Graph
         // Set masks to bounds so the compositor doesn't clobber a manually
         // set inner viewport container layer size.
         m_innerViewportContainerLayer->setMasksToBounds(m_frameHost.settings().mainFrameClipsContent());
+        m_innerViewportContainerLayer->setSize(m_size);
 
         m_innerViewportScrollLayer->platformLayer()->setScrollClipLayer(
             m_innerViewportContainerLayer->platformLayer());
@@ -272,6 +276,7 @@ void PinchViewport::setupScrollbar(WebScrollbar::Orientation orientation)
 
 void PinchViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) const
 {
+    TRACE_EVENT0("webkit", "PinchViewport::registerLayersWithTreeView");
     ASSERT(layerTreeView);
     ASSERT(m_frameHost.page().mainFrame());
     ASSERT(m_frameHost.page().mainFrame()->contentRenderer());
