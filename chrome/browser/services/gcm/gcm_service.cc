@@ -13,10 +13,9 @@
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/services/gcm/gcm_app_handler.h"
+#include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/common/chrome_version_info.h"
-#include "components/gcm_driver/gcm_app_handler.h"
-#include "components/gcm_driver/gcm_client_factory.h"
-#include "components/gcm_driver/system_encryptor.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gcm/protocol/android_checkin.pb.h"
@@ -194,7 +193,7 @@ void GCMService::IOWorker::Initialize(
         url_request_context_getter) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  gcm_client_ = gcm_client_factory->BuildInstance();
+  gcm_client_ = gcm_client_factory->BuildInstance().Pass();
 
   checkin_proto::ChromeBuildProto chrome_build_proto;
   chrome_build_proto.set_platform(GetPlatform());
@@ -213,7 +212,6 @@ void GCMService::IOWorker::Initialize(
                           account_ids,
                           blocking_task_runner,
                           url_request_context_getter,
-                          make_scoped_ptr<Encryptor>(new SystemEncryptor),
                           this);
 }
 

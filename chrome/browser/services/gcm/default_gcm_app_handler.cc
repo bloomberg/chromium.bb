@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/gcm_driver/default_gcm_app_handler.h"
+#include "chrome/browser/services/gcm/default_gcm_app_handler.h"
 
 #include "base/logging.h"
 

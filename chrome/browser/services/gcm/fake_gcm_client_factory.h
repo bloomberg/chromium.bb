@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/services/gcm/gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_client_mock.h"
-#include "components/gcm_driver/gcm_client_factory.h"
 
 namespace gcm {
 

@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
-#include "google_apis/gcm/base/fake_encryptor.h"
+#include "components/os_crypt/os_crypt_switches.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
@@ -330,6 +330,10 @@ GCMClientImplTest::~GCMClientImplTest() {}
 
 void GCMClientImplTest::SetUp() {
   testing::Test::SetUp();
+#if defined(OS_MACOSX)
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      os_crypt::switches::kUseMockKeychain);
+#endif  // OS_MACOSX
   ASSERT_TRUE(CreateUniqueTempDir());
   InitializeLoop();
   BuildGCMClient(base::TimeDelta());
@@ -450,7 +454,6 @@ void GCMClientImplTest::InitializeGCMClient() {
                           std::vector<std::string>(),
                           message_loop_.message_loop_proxy(),
                           url_request_context_getter_,
-                          make_scoped_ptr<Encryptor>(new FakeEncryptor),
                           this);
 
   // Start loading and check-in.
@@ -699,6 +702,10 @@ GCMClientImplCheckinTest::~GCMClientImplCheckinTest() {
 
 void GCMClientImplCheckinTest::SetUp() {
   testing::Test::SetUp();
+#if defined(OS_MACOSX)
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      os_crypt::switches::kUseMockKeychain);
+#endif  // OS_MACOSX
   // Creating unique temp directory that will be used by GCMStore shared between
   // GCM Client and G-services settings.
   ASSERT_TRUE(CreateUniqueTempDir());

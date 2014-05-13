@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_clock.h"
-#include "google_apis/gcm/base/encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/checkin_request.h"
@@ -207,7 +206,6 @@ void GCMClientImpl::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
-    scoped_ptr<Encryptor> encryptor,
     GCMClient::Delegate* delegate) {
   DCHECK_EQ(UNINITIALIZED, state_);
   DCHECK(url_request_context_getter);
@@ -223,8 +221,7 @@ void GCMClientImpl::Initialize(
   chrome_build_proto_.CopyFrom(chrome_build_proto);
   account_ids_ = account_ids;
 
-  gcm_store_.reset(
-      new GCMStoreImpl(path, blocking_task_runner, encryptor.Pass()));
+  gcm_store_.reset(new GCMStoreImpl(path, blocking_task_runner));
 
   delegate_ = delegate;
 

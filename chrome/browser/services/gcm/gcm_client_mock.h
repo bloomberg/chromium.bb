@@ -37,7 +37,6 @@ class GCMClientMock : public GCMClient {
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
-      scoped_ptr<Encryptor> encryptor,
       Delegate* delegate) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;

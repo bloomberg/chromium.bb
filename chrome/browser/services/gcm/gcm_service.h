@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/gcm_driver/default_gcm_app_handler.h"
+#include "chrome/browser/services/gcm/default_gcm_app_handler.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "google_apis/gcm/gcm_client.h"
 

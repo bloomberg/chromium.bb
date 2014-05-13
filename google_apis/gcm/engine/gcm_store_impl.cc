@@ -18,7 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
-#include "google_apis/gcm/base/encryptor.h"
+#include "components/os_crypt/os_crypt.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -107,8 +107,7 @@ class GCMStoreImpl::Backend
     : public base::RefCountedThreadSafe<GCMStoreImpl::Backend> {
  public:
   Backend(const base::FilePath& path,
-          scoped_refptr<base::SequencedTaskRunner> foreground_runner,
-          scoped_ptr<Encryptor> encryptor);
+          scoped_refptr<base::SequencedTaskRunner> foreground_runner);
 
   // Blocking implementations of GCMStoreImpl methods.
   void Load(const LoadCallback& callback);
@@ -159,19 +158,14 @@ class GCMStoreImpl::Backend
 
   const base::FilePath path_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
-  scoped_ptr<Encryptor> encryptor_;
 
   scoped_ptr<leveldb::DB> db_;
 };
 
 GCMStoreImpl::Backend::Backend(
     const base::FilePath& path,
-    scoped_refptr<base::SequencedTaskRunner> foreground_task_runner,
-    scoped_ptr<Encryptor> encryptor)
-    : path_(path),
-      foreground_task_runner_(foreground_task_runner),
-      encryptor_(encryptor.Pass()) {
-}
+    scoped_refptr<base::SequencedTaskRunner> foreground_task_runner)
+    : path_(path), foreground_task_runner_(foreground_task_runner) {}
 
 GCMStoreImpl::Backend::~Backend() {}
 
@@ -284,8 +278,8 @@ void GCMStoreImpl::Backend::SetDeviceCredentials(
   write_options.sync = true;
 
   std::string encrypted_token;
-  encryptor_->EncryptString(base::Uint64ToString(device_security_token),
-                            &encrypted_token);
+  OSCrypt::EncryptString(base::Uint64ToString(device_security_token),
+                         &encrypted_token);
   std::string android_id_str = base::Uint64ToString(device_android_id);
   leveldb::Status s =
       db_->Put(write_options,
@@ -557,7 +551,7 @@ bool GCMStoreImpl::Backend::LoadDeviceCredentials(uint64* android_id,
   }
   if (s.ok()) {
     std::string decrypted_token;
-    encryptor_->DecryptString(result, &decrypted_token);
+    OSCrypt::DecryptString(result, &decrypted_token);
     if (!base::StringToUint64(decrypted_token, security_token)) {
       LOG(ERROR) << "Failed to restore security token.";
       return false;
@@ -705,11 +699,8 @@ bool GCMStoreImpl::Backend::LoadGServicesSettings(
 
 GCMStoreImpl::GCMStoreImpl(
     const base::FilePath& path,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
-    scoped_ptr<Encryptor> encryptor)
-    : backend_(new Backend(path,
-                           base::MessageLoopProxy::current(),
-                           encryptor.Pass())),
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+    : backend_(new Backend(path, base::MessageLoopProxy::current())),
       blocking_task_runner_(blocking_task_runner),
       weak_ptr_factory_(this) {
 }

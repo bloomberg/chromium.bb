@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_GCM_DRIVER_GCM_APP_HANDLER_H_
-#define COMPONENTS_GCM_DRIVER_GCM_APP_HANDLER_H_
+#ifndef CHROME_BROWSER_SERVICES_GCM_GCM_APP_HANDLER_H_
+#define CHROME_BROWSER_SERVICES_GCM_GCM_APP_HANDLER_H_
 
 #include <string>
 
@@ -39,4 +39,4 @@ class GCMAppHandler {
 
 }  // namespace gcm
 
-#endif  // COMPONENTS_GCM_DRIVER_GCM_APP_HANDLER_H_
+#endif  // CHROME_BROWSER_SERVICES_GCM_GCM_APP_HANDLER_H_

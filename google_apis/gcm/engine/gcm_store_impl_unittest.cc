@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "google_apis/gcm/base/fake_encryptor.h"
+#include "components/os_crypt/os_crypt_switches.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
@@ -76,13 +76,16 @@ GCMStoreImplTest::~GCMStoreImplTest() {}
 
 void GCMStoreImplTest::SetUp() {
   testing::Test::SetUp();
+#if defined(OS_MACOSX)
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      os_crypt::switches::kUseMockKeychain);
+#endif  // OS_MACOSX
 }
 
 scoped_ptr<GCMStore> GCMStoreImplTest::BuildGCMStore() {
   return scoped_ptr<GCMStore>(new GCMStoreImpl(
       temp_directory_.path(),
-      message_loop_.message_loop_proxy(),
-      make_scoped_ptr<Encryptor>(new FakeEncryptor)));
+      message_loop_.message_loop_proxy()));
 }
 
 std::string GCMStoreImplTest::GetNextPersistentId() {

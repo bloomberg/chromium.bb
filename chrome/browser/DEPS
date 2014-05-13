@@ -23,7 +23,6 @@ include_rules = [
   "+components/domain_reliability",
   "+components/favicon_base",
   "+components/feedback",
-  "+components/gcm_driver",
   "+components/infobars",
   "+components/keyed_service",
   "+components/language_usage_metrics",
