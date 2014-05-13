@@ -1022,6 +1022,22 @@
       Disables adaptive compression.
     </dd>
 
+    <dt class="field">IgnoreDefaultRoute</dt>
+    <dd>
+      <span class="field_meta">
+        (optional, defaults to <span class="value">false</span>)
+        <span class="type">bool</span>
+      </span>
+      Omits a default route to the VPN gateway while the connection is active.
+      By default, the client creates a default route to the gateway address
+      advertised by the VPN server.  Setting this value to
+      <span class="value">true</span> will allow split tunnelling for
+      configurations where the VPN server omits explicit default routes.
+      This is roughly equivalent to omitting "redirect-gateway" OpenVPN client
+      configuration option.  If the server pushes a "redirect-gateway"
+      configuration flag to the client, this option is ignored.
+    </dd>
+
     <dt class="field">KeyDirection</dt>
     <dd>
       <span class="field_meta">
