@@ -70,12 +70,15 @@ enum InterceptVerb {
   UNKNOWN_VERB,
 };
 
-Manifest::Manifest() : online_whitelist_all(false) {}
+Manifest::Manifest()
+    : online_whitelist_all(false),
+      did_ignore_intercept_namespaces(false) {
+}
 
 Manifest::~Manifest() {}
 
 bool ParseManifest(const GURL& manifest_url, const char* data, int length,
-                   Manifest& manifest) {
+                   ParseMode parse_mode, Manifest& manifest) {
   // This is an implementation of the parsing algorithm specified in
   // the HTML5 offline web application docs:
   //   http://www.w3.org/TR/html5/offline.html
@@ -92,6 +95,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
   DCHECK(manifest.fallback_namespaces.empty());
   DCHECK(manifest.online_whitelist_namespaces.empty());
   DCHECK(!manifest.online_whitelist_all);
+  DCHECK(!manifest.did_ignore_intercept_namespaces);
 
   Mode mode = EXPLICIT;
 
@@ -218,6 +222,11 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
             Namespace(NETWORK_NAMESPACE, url, GURL(), is_pattern));
       }
     } else if (mode == INTERCEPT) {
+      if (parse_mode != PARSE_MANIFEST_ALLOWING_INTERCEPTS) {
+        manifest.did_ignore_intercept_namespaces = true;
+        continue;
+      }
+
       // Lines of the form,
       // <urlnamespace> <intercept_type> <targeturl>
       const wchar_t* line_p = line.c_str();

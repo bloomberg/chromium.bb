@@ -209,6 +209,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   void NotifyAllProgress(const GURL& url);
   void NotifyAllFinalProgress();
   void NotifyAllError(const ErrorDetails& detals);
+  void LogConsoleMessageToAll(const std::string& message);
   void AddAllAssociatedHostsToNotifier(HostNotifier* notifier);
 
   // Checks if manifest is byte for byte identical with the manifest
@@ -319,6 +320,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT AppCacheUpdateJob
   scoped_refptr<net::IOBuffer> read_manifest_buffer_;
   std::string loaded_manifest_data_;
   scoped_ptr<AppCacheResponseReader> manifest_response_reader_;
+  bool manifest_has_valid_mime_type_;
 
   // New master entries added to the cache by this job, used to cleanup
   // in error conditions.

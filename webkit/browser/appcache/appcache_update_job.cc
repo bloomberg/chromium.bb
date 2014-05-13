@@ -85,6 +85,17 @@ class HostNotifier {
     }
   }
 
+  void SendLogMessage(const std::string& message) {
+    for (NotifyHostMap::iterator it = hosts_to_notify.begin();
+         it != hosts_to_notify.end(); ++it) {
+      AppCacheFrontend* frontend = it->first;
+      for (HostIds::iterator id = it->second.begin();
+           id != it->second.end(); ++id) {
+        frontend->OnLogMessage(*id, LOG_WARNING, message);
+      }
+    }
+  }
+
  private:
   NotifyHostMap hosts_to_notify;
 };
@@ -339,6 +350,7 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
       master_entries_completed_(0),
       url_fetches_completed_(0),
       manifest_fetcher_(NULL),
+      manifest_has_valid_mime_type_(false),
       stored_state_(UNSTORED),
       storage_(service->storage()) {
     service_->AddObserver(this);
@@ -489,6 +501,10 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(
   if (request->status().is_success()) {
     response_code = request->GetResponseCode();
     is_valid_response_code = (response_code / 100 == 2);
+
+    std::string mime_type;
+    request->GetMimeType(&mime_type);
+    manifest_has_valid_mime_type_ = (mime_type == "text/cache-manifest");
   }
 
   if (is_valid_response_code) {
@@ -561,7 +577,11 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
 
   Manifest manifest;
   if (!ParseManifest(manifest_url_, manifest_data_.data(),
-                     manifest_data_.length(), manifest)) {
+                     manifest_data_.length(),
+                     manifest_has_valid_mime_type_ ?
+                        PARSE_MANIFEST_ALLOWING_INTERCEPTS :
+                        PARSE_MANIFEST_PER_STANDARD,
+                     manifest)) {
     const char* kFormatString = "Failed to parse manifest %s";
     const std::string message = base::StringPrintf(kFormatString,
         manifest_url_.spec().c_str());
@@ -589,6 +609,14 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
       (*host_it)
           ->AssociateIncompleteCache(inprogress_cache_.get(), manifest_url_);
     }
+  }
+
+  if (manifest.did_ignore_intercept_namespaces) {
+    // Must be done after associating all pending master hosts.
+    std::string message(
+        "Ignoring the INTERCEPT section of the application cache manifest "
+        "because the content type is not text/cache-manifest");
+    LogConsoleMessageToAll(message);
   }
 
   group_->SetUpdateStatus(AppCacheGroup::DOWNLOADING);
@@ -956,6 +984,12 @@ void AppCacheUpdateJob::NotifyAllError(const ErrorDetails& details) {
   HostNotifier host_notifier;
   AddAllAssociatedHostsToNotifier(&host_notifier);
   host_notifier.SendErrorNotifications(details);
+}
+
+void AppCacheUpdateJob::LogConsoleMessageToAll(const std::string& message) {
+  HostNotifier host_notifier;
+  AddAllAssociatedHostsToNotifier(&host_notifier);
+  host_notifier.SendLogMessage(message);
 }
 
 void AppCacheUpdateJob::AddAllAssociatedHostsToNotifier(

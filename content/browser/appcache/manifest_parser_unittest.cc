@@ -13,6 +13,8 @@ using appcache::NamespaceVector;
 using appcache::FALLBACK_NAMESPACE;
 using appcache::INTERCEPT_NAMESPACE;
 using appcache::NETWORK_NAMESPACE;
+using appcache::PARSE_MANIFEST_ALLOWING_INTERCEPTS;
+using appcache::PARSE_MANIFEST_PER_STANDARD;
 
 namespace content {
 
@@ -22,8 +24,10 @@ class AppCacheManifestParserTest : public testing::Test {
 TEST(AppCacheManifestParserTest, NoData) {
   GURL url;
   Manifest manifest;
-  EXPECT_FALSE(ParseManifest(url, "", 0, manifest));
-  EXPECT_FALSE(ParseManifest(url, "CACHE MANIFEST\r", 0, manifest));  // 0 len
+  EXPECT_FALSE(ParseManifest(url, "", 0,
+                             PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
+  EXPECT_FALSE(ParseManifest(url, "CACHE MANIFEST\r", 0,  // Len is 0.
+                             PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
 }
 
 TEST(AppCacheManifestParserTest, CheckSignature) {
@@ -43,7 +47,8 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
 
   for (size_t i = 0; i < arraysize(kBadSignatures); ++i) {
     const std::string bad = kBadSignatures[i];
-    EXPECT_FALSE(ParseManifest(url, bad.c_str(), bad.length(), manifest));
+    EXPECT_FALSE(ParseManifest(url, bad.c_str(), bad.length(),
+                               PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   }
 
   const std::string kGoodSignatures[] = {
@@ -60,7 +65,8 @@ TEST(AppCacheManifestParserTest, CheckSignature) {
 
   for (size_t i = 0; i < arraysize(kGoodSignatures); ++i) {
     const std::string good = kGoodSignatures[i];
-    EXPECT_TRUE(ParseManifest(url, good.c_str(), good.length(), manifest));
+    EXPECT_TRUE(ParseManifest(url, good.c_str(), good.length(),
+                              PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   }
 }
 
@@ -70,7 +76,8 @@ TEST(AppCacheManifestParserTest, NoManifestUrl) {
     "relative/tobase.com\r"
     "http://absolute.com/addme.com");
   const GURL kUrl;
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
@@ -97,13 +104,32 @@ TEST(AppCacheManifestParserTest, ExplicitUrls) {
     "  \t relative/four#stripme\n\r"
     "*\r");
 
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
 
   base::hash_set<std::string> urls = manifest.explicit_urls;
   const size_t kExpected = 5;
+  ASSERT_EQ(kExpected, urls.size());
+  EXPECT_TRUE(urls.find("http://www.foo.com/relative/one") != urls.end());
+  EXPECT_TRUE(urls.find("http://www.foo.com/two") != urls.end());
+  EXPECT_TRUE(urls.find("http://www.diff.com/three") != urls.end());
+  EXPECT_TRUE(urls.find("http://www.foo.com/relative/four") != urls.end());
+
+  // Wildcard is treated as a relative URL in explicit section.
+  EXPECT_TRUE(urls.find("http://www.foo.com/*") != urls.end());
+
+  // We should get the same results with intercepts disallowed.
+  manifest = Manifest();
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_PER_STANDARD, manifest));
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
+
+  urls = manifest.explicit_urls;
   ASSERT_EQ(kExpected, urls.size());
   EXPECT_TRUE(urls.find("http://www.foo.com/relative/one") != urls.end());
   EXPECT_TRUE(urls.find("http://www.foo.com/two") != urls.end());
@@ -134,7 +160,8 @@ TEST(AppCacheManifestParserTest, WhitelistUrls) {
     "http://www.five.com\r\n"
     "*foo\r");
 
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
   EXPECT_TRUE(manifest.intercept_namespaces.empty());
@@ -180,7 +207,8 @@ TEST(AppCacheManifestParserTest, FallbackUrls) {
     "relative/four#strip relative/fourfb#strip\r"
     "http://www.glorp.com/notsame relative/skipped\r");
 
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
@@ -230,7 +258,8 @@ TEST(AppCacheManifestParserTest, FallbackUrlsWithPort) {
     "http://www.portme.com/noport http://www.portme.com:1234/skipped\r"
     "http://www.portme.com:1234/skipme http://www.portme.com/noport\r");
 
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.explicit_urls.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
   EXPECT_FALSE(manifest.online_whitelist_all);
@@ -272,7 +301,8 @@ TEST(AppCacheManifestParserTest, InterceptUrls) {
     "http://www.portme.com:1234/skipme return http://www.portme.com/noport\r"
     "relative/wrong/again missing/intercept_type\r");
 
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
   EXPECT_TRUE(manifest.explicit_urls.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
@@ -296,6 +326,16 @@ TEST(AppCacheManifestParserTest, InterceptUrls) {
             intercepts[2].namespace_url);
   EXPECT_EQ(GURL("http://www.portme.com:1234/int3"),
             intercepts[2].target_url);
+
+  // Disallow intercepts ths time.
+  manifest = Manifest();
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_PER_STANDARD, manifest));
+  EXPECT_TRUE(manifest.fallback_namespaces.empty());
+  EXPECT_TRUE(manifest.explicit_urls.empty());
+  EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
+  EXPECT_TRUE(manifest.intercept_namespaces.empty());
+  EXPECT_FALSE(manifest.online_whitelist_all);
 }
 
 TEST(AppCacheManifestParserTest, ComboUrls) {
@@ -320,7 +360,8 @@ TEST(AppCacheManifestParserTest, ComboUrls) {
     "NETWORK:\r\n"
     "relative/whitelist-3#strip\r"
     "http://combo.com:99/whitelist-4\r");
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.online_whitelist_all);
 
   base::hash_set<std::string> urls = manifest.explicit_urls;
@@ -366,8 +407,8 @@ TEST(AppCacheManifestParserTest, UnusualUtf8) {
   const std::string kData("CACHE MANIFEST\r"
     "\xC0" "invalidutf8\r"
     "nonbmp" "\xF1\x84\xAB\xBC\r");
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
-
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   base::hash_set<std::string> urls = manifest.explicit_urls;
   EXPECT_TRUE(urls.find("http://bad.com/%EF%BF%BDinvalidutf8") != urls.end());
   EXPECT_TRUE(urls.find("http://bad.com/nonbmp%F1%84%AB%BC") != urls.end());
@@ -379,7 +420,8 @@ TEST(AppCacheManifestParserTest, IgnoreAfterSpace) {
   const std::string kData(
     "CACHE MANIFEST\r"
     "resource.txt this stuff after the white space should be ignored\r");
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
 
   base::hash_set<std::string> urls = manifest.explicit_urls;
   EXPECT_TRUE(urls.find("http://smorg.borg/resource.txt") != urls.end());
@@ -395,7 +437,8 @@ TEST(AppCacheManifestParserTest, DifferentOriginUrlWithSecureScheme) {
     "http://www.xyz.com/secureschemedifforigin\r"
     "https://www.xyz.com/secureschemedifforigin\r");
 
-  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.fallback_namespaces.empty());
   EXPECT_TRUE(manifest.online_whitelist_namespaces.empty());
 
@@ -433,7 +476,8 @@ TEST(AppCacheManifestParserTest, PatternMatching) {
 
   Manifest manifest;
   EXPECT_TRUE(ParseManifest(kUrl, kManifestBody.c_str(),
-                            kManifestBody.length(), manifest));
+                            kManifestBody.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   EXPECT_TRUE(manifest.online_whitelist_all);
   EXPECT_EQ(1u, manifest.explicit_urls.size());
   EXPECT_EQ(3u, manifest.intercept_namespaces.size());

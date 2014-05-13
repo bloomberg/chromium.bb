@@ -52,12 +52,20 @@ struct WEBKIT_STORAGE_BROWSER_EXPORT Manifest {
   NamespaceVector fallback_namespaces;
   NamespaceVector online_whitelist_namespaces;
   bool online_whitelist_all;
+  bool did_ignore_intercept_namespaces;
 };
 
-WEBKIT_STORAGE_BROWSER_EXPORT bool ParseManifest(const GURL& manifest_url,
-                                         const char* data,
-                                         int length,
-                                         Manifest& manifest);
+enum ParseMode {
+  PARSE_MANIFEST_PER_STANDARD,
+  PARSE_MANIFEST_ALLOWING_INTERCEPTS
+};
+
+WEBKIT_STORAGE_BROWSER_EXPORT bool ParseManifest(
+    const GURL& manifest_url,
+    const char* data,
+    int length,
+    ParseMode parse_mode,
+    Manifest& manifest);
 
 }  // namespace appcache
 

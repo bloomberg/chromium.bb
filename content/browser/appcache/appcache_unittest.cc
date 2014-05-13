@@ -23,6 +23,8 @@ using appcache::Manifest;
 using appcache::Namespace;
 using appcache::NamespaceVector;
 using appcache::NETWORK_NAMESPACE;
+using appcache::PARSE_MANIFEST_ALLOWING_INTERCEPTS;
+using appcache::PARSE_MANIFEST_PER_STANDARD;
 using appcache::Status;
 
 namespace content {
@@ -577,8 +579,8 @@ TEST(AppCacheTest, ToFromDatabaseRecords) {
       new AppCacheGroup(service.storage(), kManifestUrl, kGroupId);
   scoped_refptr<AppCache> cache(new AppCache(service.storage(), kCacheId));
   Manifest manifest;
-  EXPECT_TRUE(
-      ParseManifest(kManifestUrl, kData.c_str(), kData.length(), manifest));
+  EXPECT_TRUE(ParseManifest(kManifestUrl, kData.c_str(), kData.length(),
+                            PARSE_MANIFEST_ALLOWING_INTERCEPTS, manifest));
   cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(NETWORK_NAMESPACE, cache->online_whitelist_namespaces_[0].type);
   EXPECT_TRUE(cache->online_whitelist_namespaces_[0].is_pattern);
