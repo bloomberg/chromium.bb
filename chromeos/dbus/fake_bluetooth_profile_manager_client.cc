@@ -65,9 +65,9 @@ void FakeBluetoothProfileManagerClient::UnregisterProfile(
   VLOG(1) << "UnregisterProfile: " << profile_path.value();
 
   ServiceProviderMap::iterator iter = service_provider_map_.find(profile_path);
-  if (iter != service_provider_map_.end()) {
+  if (iter == service_provider_map_.end()) {
     error_callback.Run(bluetooth_profile_manager::kErrorInvalidArguments,
-                       "Profile still registered");
+                       "Profile not registered");
   } else {
     for (ProfileMap::iterator piter = profile_map_.begin();
          piter != profile_map_.end(); ++piter) {

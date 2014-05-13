@@ -23,6 +23,8 @@ class BluetoothSocketThread
     : public base::RefCountedThreadSafe<BluetoothSocketThread> {
  public:
   static scoped_refptr<BluetoothSocketThread> Get();
+  static void CleanupForTesting();
+
   void OnSocketActivate();
   void OnSocketDeactivate();
 

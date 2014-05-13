@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
@@ -35,37 +36,37 @@ class CHROMEOS_EXPORT BluetoothProfileManagerClient : public DBusClient {
     ~Options();
 
     // Human readable name for the profile.
-    std::string name;
+    scoped_ptr<std::string> name;
 
     // Primary service class UUID (if different from the actual UUID)
-    std::string service;
+    scoped_ptr<std::string> service;
 
     // Role.
     enum ProfileRole role;
 
     // RFCOMM channel number.
-    uint16 channel;
+    scoped_ptr<uint16> channel;
 
     // PSM number.
-    uint16 psm;
+    scoped_ptr<uint16> psm;
 
     // Pairing is required before connections will be established.
-    bool require_authentication;
+    scoped_ptr<bool> require_authentication;
 
     // Request authorization before connections will be established.
-    bool require_authorization;
+    scoped_ptr<bool> require_authorization;
 
     // Force connections when a remote device is connected.
-    bool auto_connect;
+    scoped_ptr<bool> auto_connect;
 
     // Manual SDP record.
-    std::string service_record;
+    scoped_ptr<std::string> service_record;
 
     // Profile version.
-    uint16 version;
+    scoped_ptr<uint16> version;
 
     // Profile features.
-    uint16 features;
+    scoped_ptr<uint16> features;
   };
 
   virtual ~BluetoothProfileManagerClient();

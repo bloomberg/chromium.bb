@@ -54,8 +54,6 @@
         'bluetooth_pairing_chromeos.h',
         'bluetooth_profile.cc',
         'bluetooth_profile.h',
-        'bluetooth_profile_chromeos.cc',
-        'bluetooth_profile_chromeos.h',
         'bluetooth_profile_mac.h',
         'bluetooth_profile_mac.mm',
         'bluetooth_profile_win.cc',

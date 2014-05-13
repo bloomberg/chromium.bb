@@ -243,8 +243,21 @@ void BluetoothAdapterChromeOS::CreateRfcommService(
     bool insecure,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
-  // TODO(keybuk): implement.
-  NOTIMPLEMENTED();
+  VLOG(1) << object_path_.value() << ": Creating RFCOMM service: "
+          << uuid.canonical_value();
+  scoped_refptr<BluetoothSocketChromeOS> socket =
+      BluetoothSocketChromeOS::CreateBluetoothSocket(
+          ui_task_runner_,
+          socket_thread_,
+          NULL,
+          net::NetLog::Source());
+  socket->Listen(this,
+                 BluetoothSocketChromeOS::kRfcomm,
+                 uuid,
+                 channel,
+                 insecure,
+                 base::Bind(callback, socket),
+                 error_callback);
 }
 
 void BluetoothAdapterChromeOS::CreateL2capService(
@@ -252,8 +265,21 @@ void BluetoothAdapterChromeOS::CreateL2capService(
     int psm,
     const CreateServiceCallback& callback,
     const CreateServiceErrorCallback& error_callback) {
-  // TODO(keybuk): implement.
-  NOTIMPLEMENTED();
+  VLOG(1) << object_path_.value() << ": Creating L2CAP service: "
+          << uuid.canonical_value();
+  scoped_refptr<BluetoothSocketChromeOS> socket =
+      BluetoothSocketChromeOS::CreateBluetoothSocket(
+          ui_task_runner_,
+          socket_thread_,
+          NULL,
+          net::NetLog::Source());
+  socket->Listen(this,
+                 BluetoothSocketChromeOS::kL2cap,
+                 uuid,
+                 psm,
+                 false,
+                 base::Bind(callback, socket),
+                 error_callback);
 }
 
 void BluetoothAdapterChromeOS::RemovePairingDelegateInternal(

@@ -4,13 +4,7 @@
 
 #include "device/bluetooth/bluetooth_profile.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
-#include "base/thread_task_runner_handle.h"
-#include "device/bluetooth/bluetooth_profile_chromeos.h"
-#include "device/bluetooth/bluetooth_socket_thread.h"
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #elif defined(OS_WIN)
 #include "device/bluetooth/bluetooth_profile_win.h"
@@ -51,13 +45,7 @@ BluetoothProfile* CreateBluetoothProfileMac(
 void BluetoothProfile::Register(const BluetoothUUID& uuid,
                                 const Options& options,
                                 const ProfileCallback& callback) {
-#if defined(OS_CHROMEOS)
-  chromeos::BluetoothProfileChromeOS* profile = NULL;
-  profile = new chromeos::BluetoothProfileChromeOS(
-      base::ThreadTaskRunnerHandle::Get(),
-      device::BluetoothSocketThread::Get());
-  profile->Init(uuid, options, callback);
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   BluetoothProfile* profile = NULL;
 
   if (base::mac::IsOSLionOrLater())

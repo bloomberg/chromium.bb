@@ -78,6 +78,18 @@ class BluetoothAdapterChromeOS
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) OVERRIDE;
 
+  // Locates the device object by object path (the devices map and
+  // BluetoothDevice methods are by address).
+  BluetoothDeviceChromeOS* GetDeviceWithPath(
+      const dbus::ObjectPath& object_path);
+
+  // Announce to observers a change in device state that is not reflected by
+  // its D-Bus properties.
+  void NotifyDeviceChanged(BluetoothDeviceChromeOS* device);
+
+  // Returns the object path of the adapter.
+  const dbus::ObjectPath& object_path() const { return object_path_; }
+
  protected:
   // BluetoothAdapter:
   virtual void RemovePairingDelegateInternal(
@@ -85,9 +97,6 @@ class BluetoothAdapterChromeOS
 
  private:
   friend class BluetoothChromeOSTest;
-  friend class BluetoothDeviceChromeOS;
-  friend class BluetoothProfileChromeOS;
-  friend class BluetoothProfileChromeOSTest;
 
   // typedef for callback parameters that are passed to AddDiscoverySession
   // and RemoveDiscoverySession. This is used to queue incoming requests while
@@ -149,11 +158,6 @@ class BluetoothAdapterChromeOS
   void OnRequestDefaultAgentError(const std::string& error_name,
                                   const std::string& error_message);
 
-  // Internal method used to locate the device object by object path
-  // (the devices map and BluetoothDevice methods are by address)
-  BluetoothDeviceChromeOS* GetDeviceWithPath(
-      const dbus::ObjectPath& object_path);
-
   // Internal method to obtain a BluetoothPairingChromeOS object for the device
   // with path |object_path|. Returns the existing pairing object if the device
   // already has one (usually an outgoing connection in progress) or a new
@@ -177,10 +181,6 @@ class BluetoothAdapterChromeOS
   void DiscoverableChanged(bool discoverable);
   void DiscoveringChanged(bool discovering);
   void PresentChanged(bool present);
-
-  // Announce to observers a change in device state that is not reflected by
-  // its D-Bus properties.
-  void NotifyDeviceChanged(BluetoothDeviceChromeOS* device);
 
   // Called by dbus:: on completion of the discoverable property change.
   void OnSetDiscoverable(const base::Closure& callback,

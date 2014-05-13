@@ -21,10 +21,22 @@ scoped_refptr<BluetoothSocketThread> BluetoothSocketThread::Get() {
   return g_instance.Get();
 }
 
+// static
+void BluetoothSocketThread::CleanupForTesting() {
+  DCHECK(g_instance.Get());
+  g_instance.Get() = NULL;
+}
+
 BluetoothSocketThread::BluetoothSocketThread()
     : active_socket_count_(0) {}
 
-BluetoothSocketThread::~BluetoothSocketThread() {}
+BluetoothSocketThread::~BluetoothSocketThread() {
+  if (thread_) {
+    thread_->Stop();
+    thread_.reset(NULL);
+    task_runner_ = NULL;
+  }
+}
 
 void BluetoothSocketThread::OnSocketActivate() {
   DCHECK(thread_checker_.CalledOnValidThread());

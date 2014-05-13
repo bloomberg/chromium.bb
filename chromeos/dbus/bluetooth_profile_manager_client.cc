@@ -18,11 +18,7 @@ const char BluetoothProfileManagerClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
 
 
-BluetoothProfileManagerClient::Options::Options()
-    : role(SYMMETRIC),
-      require_authentication(false),
-      require_authorization(false),
-      auto_connect(true) {
+BluetoothProfileManagerClient::Options::Options() {
 }
 
 BluetoothProfileManagerClient::Options::~Options() {
@@ -56,22 +52,24 @@ class BluetoothProfileManagerClientImpl
 
     dbus::MessageWriter dict_writer(NULL);
 
-    // Always send Name, even if empty string.
-    array_writer.OpenDictEntry(&dict_writer);
-    dict_writer.AppendString(bluetooth_profile_manager::kNameOption);
-    dict_writer.AppendVariantOfString(options.name);
-    array_writer.CloseContainer(&dict_writer);
-
-    // Don't send Service if not provided.
-    if (options.service.length()) {
-      dbus::MessageWriter dict_writer(NULL);
+    // Send Name if provided.
+    if (options.name.get() != NULL) {
       array_writer.OpenDictEntry(&dict_writer);
-      dict_writer.AppendString(bluetooth_profile_manager::kServiceOption);
-      dict_writer.AppendVariantOfString(options.service);
+      dict_writer.AppendString(bluetooth_profile_manager::kNameOption);
+      dict_writer.AppendVariantOfString(*(options.name));
       array_writer.CloseContainer(&dict_writer);
     }
 
-    // Don't send the default Role since there's no value for it.
+    // Send Service if provided.
+    if (options.service.get() != NULL) {
+      dbus::MessageWriter dict_writer(NULL);
+      array_writer.OpenDictEntry(&dict_writer);
+      dict_writer.AppendString(bluetooth_profile_manager::kServiceOption);
+      dict_writer.AppendVariantOfString(*(options.service));
+      array_writer.CloseContainer(&dict_writer);
+    }
+
+    // Send Role if not the default value.
     if (options.role != SYMMETRIC) {
       dbus::MessageWriter dict_writer(NULL);
       array_writer.OpenDictEntry(&dict_writer);
@@ -87,67 +85,75 @@ class BluetoothProfileManagerClientImpl
       array_writer.CloseContainer(&dict_writer);
     }
 
-    // Don't send Channel unless given.
-    if (options.channel) {
+    // Send Channel if provided.
+    if (options.channel.get() != NULL) {
       dbus::MessageWriter dict_writer(NULL);
       array_writer.OpenDictEntry(&dict_writer);
       dict_writer.AppendString(bluetooth_profile_manager::kChannelOption);
-      dict_writer.AppendVariantOfUint16(options.channel);
+      dict_writer.AppendVariantOfUint16(*(options.channel));
       array_writer.CloseContainer(&dict_writer);
     }
 
-    // Don't send PSM unless given.
-    if (options.psm) {
+    // Send PSM if provided.
+    if (options.psm.get() != NULL) {
       dbus::MessageWriter dict_writer(NULL);
       array_writer.OpenDictEntry(&dict_writer);
       dict_writer.AppendString(bluetooth_profile_manager::kPSMOption);
-      dict_writer.AppendVariantOfUint16(options.psm);
+      dict_writer.AppendVariantOfUint16(*(options.psm));
       array_writer.CloseContainer(&dict_writer);
     }
 
-    // Always send RequireAuthentication, RequireAuthorization and AutoConnect.
-    array_writer.OpenDictEntry(&dict_writer);
-    dict_writer.AppendString(
-        bluetooth_profile_manager::kRequireAuthenticationOption);
-    dict_writer.AppendVariantOfBool(options.require_authentication);
-    array_writer.CloseContainer(&dict_writer);
+    // Send RequireAuthentication if provided.
+    if (options.require_authentication.get() != NULL) {
+      array_writer.OpenDictEntry(&dict_writer);
+      dict_writer.AppendString(
+          bluetooth_profile_manager::kRequireAuthenticationOption);
+      dict_writer.AppendVariantOfBool(*(options.require_authentication));
+      array_writer.CloseContainer(&dict_writer);
+    }
 
-    array_writer.OpenDictEntry(&dict_writer);
-    dict_writer.AppendString(
-        bluetooth_profile_manager::kRequireAuthorizationOption);
-    dict_writer.AppendVariantOfBool(options.require_authorization);
-    array_writer.CloseContainer(&dict_writer);
+    // Send RequireAuthorization if provided.
+    if (options.require_authorization.get() != NULL) {
+      array_writer.OpenDictEntry(&dict_writer);
+      dict_writer.AppendString(
+          bluetooth_profile_manager::kRequireAuthorizationOption);
+      dict_writer.AppendVariantOfBool(*(options.require_authorization));
+      array_writer.CloseContainer(&dict_writer);
+    }
 
-    array_writer.OpenDictEntry(&dict_writer);
-    dict_writer.AppendString(
-        bluetooth_profile_manager::kAutoConnectOption);
-    dict_writer.AppendVariantOfBool(options.auto_connect);
-    array_writer.CloseContainer(&dict_writer);
+    // Send AutoConnect if provided.
+    if (options.auto_connect.get() != NULL) {
+      array_writer.OpenDictEntry(&dict_writer);
+      dict_writer.AppendString(
+          bluetooth_profile_manager::kAutoConnectOption);
+      dict_writer.AppendVariantOfBool(*(options.auto_connect));
+      array_writer.CloseContainer(&dict_writer);
+    }
 
-    // Don't send ServiceRecord if not provided.
-    if (options.service_record.length()) {
+    // Send ServiceRecord if provided.
+    if (options.service_record.get() != NULL) {
       dbus::MessageWriter dict_writer(NULL);
       array_writer.OpenDictEntry(&dict_writer);
       dict_writer.AppendString(bluetooth_profile_manager::kServiceRecordOption);
-      dict_writer.AppendVariantOfString(options.service_record);
+      dict_writer.AppendVariantOfString(*(options.service_record));
       array_writer.CloseContainer(&dict_writer);
     }
 
-    // Don't send Version if not provided.
-    if (options.version) {
+    // Send Version if provided.
+    if (options.version.get() != NULL) {
       dbus::MessageWriter dict_writer(NULL);
       array_writer.OpenDictEntry(&dict_writer);
       dict_writer.AppendString(bluetooth_profile_manager::kVersionOption);
-      dict_writer.AppendVariantOfUint16(options.version);
+      dict_writer.AppendVariantOfUint16(*(options.version));
       array_writer.CloseContainer(&dict_writer);
     }
 
-    // Don't send Features if not provided.
-    if (options.features) {
+    // Send Features if provided.
+    if (options.features.get() != NULL) {
       dbus::MessageWriter dict_writer(NULL);
       array_writer.OpenDictEntry(&dict_writer);
       dict_writer.AppendString(bluetooth_profile_manager::kFeaturesOption);
-      dict_writer.AppendVariantOfUint16(options.features);
+      dict_writer.AppendVariantOfUint16(*(options.features));
       array_writer.CloseContainer(&dict_writer);
     }
 
