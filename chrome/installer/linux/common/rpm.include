@@ -71,7 +71,7 @@ determine_rpm_package_manager() {
     "Fedora")
       PACKAGEMANAGER=yum
       ;;
-    "MandrivaLinux")
+    "Mageia"|"MandrivaLinux")
       PACKAGEMANAGER=urpmi
       ;;
     "SUSE LINUX")
