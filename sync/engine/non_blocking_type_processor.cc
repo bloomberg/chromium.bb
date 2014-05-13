@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sync/internal_api/public/non_blocking_type_processor.h"
+#include "sync/engine/non_blocking_type_processor.h"
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "sync/engine/non_blocking_type_processor_core.h"

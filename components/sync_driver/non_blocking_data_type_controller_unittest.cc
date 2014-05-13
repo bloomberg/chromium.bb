@@ -11,8 +11,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
+#include "sync/engine/non_blocking_type_processor.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/non_blocking_type_processor.h"
 #include "sync/internal_api/public/sync_core_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

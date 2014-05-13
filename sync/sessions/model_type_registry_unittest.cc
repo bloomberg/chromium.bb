@@ -6,8 +6,8 @@
 
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/message_loop/message_loop.h"
+#include "sync/engine/non_blocking_type_processor.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/non_blocking_type_processor.h"
 #include "sync/sessions/model_type_registry.h"
 #include "sync/test/engine/fake_model_worker.h"
 #include "sync/test/engine/test_directory_setter_upper.h"

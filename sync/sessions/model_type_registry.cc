@@ -9,8 +9,8 @@
 #include "base/observer_list.h"
 #include "sync/engine/directory_commit_contributor.h"
 #include "sync/engine/directory_update_handler.h"
+#include "sync/engine/non_blocking_type_processor.h"
 #include "sync/engine/non_blocking_type_processor_core.h"
-#include "sync/internal_api/public/non_blocking_type_processor.h"
 #include "sync/sessions/directory_type_debug_info_emitter.h"
 
 namespace syncer {

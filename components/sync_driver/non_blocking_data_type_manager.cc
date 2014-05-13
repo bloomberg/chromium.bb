@@ -6,7 +6,7 @@
 
 #include "base/sequenced_task_runner.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
-#include "sync/internal_api/public/non_blocking_type_processor.h"
+#include "sync/engine/non_blocking_type_processor.h"
 
 namespace browser_sync {
 

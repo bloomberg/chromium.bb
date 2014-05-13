@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "sync/internal_api/public/non_blocking_type_processor.h"
+#include "sync/engine/non_blocking_type_processor.h"
 
 namespace browser_sync {
 
