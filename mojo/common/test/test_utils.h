@@ -6,17 +6,16 @@
 #define MOJO_COMMON_TEST_TEST_UTILS_H_
 
 #include <stddef.h>
+#include <stdio.h>
 
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
+#include "mojo/embedder/platform_handle.h"
+#include "mojo/embedder/scoped_platform_handle.h"
 
 namespace mojo {
-
-namespace embedder {
-struct PlatformHandle;
-}
-
 namespace test {
 
 // On success, |bytes_written| is updated to the number of bytes written;
@@ -41,6 +40,13 @@ bool NonBlockingRead(const embedder::PlatformHandle& handle,
                      void* buffer,
                      size_t buffer_size,
                      size_t* bytes_read);
+
+// Gets a (scoped) |PlatformHandle| from the given (scoped) |FILE|.
+embedder::ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp);
+
+// Gets a (scoped) |FILE| from a (scoped) |PlatformHandle|.
+base::ScopedFILE FILEFromPlatformHandle(embedder::ScopedPlatformHandle h,
+                                        const char* mode);
 
 // Returns the path to the mojom js bindings file.
 base::FilePath GetFilePathForJSResource(const std::string& path);

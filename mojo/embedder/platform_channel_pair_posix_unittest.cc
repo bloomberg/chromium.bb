@@ -17,8 +17,10 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "mojo/common/test/test_utils.h"
 #include "mojo/embedder/platform_channel_utils_posix.h"
 #include "mojo/embedder/scoped_platform_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,16 +28,6 @@
 namespace mojo {
 namespace embedder {
 namespace {
-
-ScopedPlatformHandle PlatformHandleFromFILE(FILE* fp) {
-  CHECK(fp);
-  return ScopedPlatformHandle(PlatformHandle(dup(fileno(fp))));
-}
-
-FILE* FILEFromPlatformHandle(ScopedPlatformHandle h, const char* mode) {
-  CHECK(h.is_valid());
-  return fdopen(h.release().fd, mode);
-}
 
 void WaitReadable(PlatformHandle h) {
   struct pollfd pfds = {};
@@ -144,12 +136,12 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     PlatformHandleVector platform_handles;
     for (size_t j = 1; j <= i; j++) {
       base::FilePath ignored;
-      FILE* fp = base::CreateAndOpenTemporaryFile(&ignored);
+      base::ScopedFILE fp(base::CreateAndOpenTemporaryFile(&ignored));
       ASSERT_TRUE(fp);
-      platform_handles.push_back(PlatformHandleFromFILE(fp).release());
+      fwrite(std::string(j, '0' + i).data(), 1, j, fp.get());
+      platform_handles.push_back(
+          test::PlatformHandleFromFILE(fp.Pass()).release());
       ASSERT_TRUE(platform_handles.back().is_valid());
-      fwrite(std::string(j, '0' + i).data(), 1, j, fp);
-      fclose(fp);
     }
 
     // Send the FDs.
@@ -168,14 +160,13 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     EXPECT_EQ(i, received_handles->size());
 
     for (size_t j = 0; j < received_handles->size(); j++) {
-      FILE* fp = FILEFromPlatformHandle(
-          ScopedPlatformHandle((*received_handles)[j]), "rb");
+      base::ScopedFILE fp(test::FILEFromPlatformHandle(
+          ScopedPlatformHandle((*received_handles)[j]), "rb"));
       (*received_handles)[j] = PlatformHandle();
       ASSERT_TRUE(fp);
-      rewind(fp);
+      rewind(fp.get());
       char read_buf[100];
-      size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp);
-      fclose(fp);
+      size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp.get());
       EXPECT_EQ(j + 1, bytes_read);
       EXPECT_EQ(std::string(j + 1, '0' + i), std::string(read_buf, bytes_read));
     }
@@ -191,13 +182,13 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
 
   {
     base::FilePath ignored;
-    FILE* fp = base::CreateAndOpenTemporaryFile(&ignored);
+    base::ScopedFILE fp(base::CreateAndOpenTemporaryFile(&ignored));
     ASSERT_TRUE(fp);
+    fwrite(file_contents.data(), 1, file_contents.size(), fp.get());
     PlatformHandleVector platform_handles;
-    platform_handles.push_back(PlatformHandleFromFILE(fp).release());
+    platform_handles.push_back(
+        test::PlatformHandleFromFILE(fp.Pass()).release());
     ASSERT_TRUE(platform_handles.back().is_valid());
-    fwrite(file_contents.data(), 1, file_contents.size(), fp);
-    fclose(fp);
 
     // Send the FD.
     EXPECT_TRUE(PlatformChannelSendHandles(server_handle.get(),
@@ -221,14 +212,13 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   EXPECT_TRUE((*handles)[1].is_valid());
 
   {
-    FILE* fp = FILEFromPlatformHandle(ScopedPlatformHandle((*handles)[1]),
-                                      "rb");
+    base::ScopedFILE fp(test::FILEFromPlatformHandle(
+        ScopedPlatformHandle((*handles)[1]), "rb"));
     (*handles)[1] = PlatformHandle();
     ASSERT_TRUE(fp);
-    rewind(fp);
+    rewind(fp.get());
     char read_buf[100];
-    size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp);
-    fclose(fp);
+    size_t bytes_read = fread(read_buf, 1, sizeof(read_buf), fp.get());
     EXPECT_EQ(file_contents.size(), bytes_read);
     EXPECT_EQ(file_contents, std::string(read_buf, bytes_read));
   }

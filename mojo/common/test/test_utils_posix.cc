@@ -10,7 +10,6 @@
 #include "base/base_paths.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
-#include "mojo/embedder/platform_handle.h"
 
 namespace mojo {
 namespace test {
@@ -73,6 +72,21 @@ bool NonBlockingRead(const embedder::PlatformHandle& handle,
   }
 
   return true;
+}
+
+embedder::ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
+  CHECK(fp);
+  int rv = dup(fileno(fp.get()));
+  PCHECK(rv != -1) << "dup";
+  return embedder::ScopedPlatformHandle(embedder::PlatformHandle(rv));
+}
+
+base::ScopedFILE FILEFromPlatformHandle(embedder::ScopedPlatformHandle h,
+                                        const char* mode) {
+  CHECK(h.is_valid());
+  base::ScopedFILE rv(fdopen(h.release().fd, mode));
+  PCHECK(rv) << "fdopen";
+  return rv.Pass();
 }
 
 base::FilePath GetFilePathForJSResource(const std::string& path) {

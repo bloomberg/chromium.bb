@@ -4,12 +4,14 @@
 
 #include "mojo/common/test/test_utils.h"
 
+#include <fcntl.h>
+#include <io.h>
+#include <string.h>
 #include <windows.h>
 
 #include "base/base_paths.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "mojo/embedder/platform_handle.h"
 
 namespace mojo {
 namespace test {
@@ -77,6 +79,41 @@ bool NonBlockingRead(const embedder::PlatformHandle& handle,
 
   *bytes_read = bytes_read_dword;
   return true;
+}
+
+embedder::ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
+  CHECK(fp);
+
+  HANDLE rv = INVALID_HANDLE_VALUE;
+  PCHECK(DuplicateHandle(
+      GetCurrentProcess(),
+      reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(fp.get()))),
+      GetCurrentProcess(),
+      &rv,
+      0,
+      TRUE,
+      DUPLICATE_SAME_ACCESS)) << "DuplicateHandle";
+  return embedder::ScopedPlatformHandle(embedder::PlatformHandle(rv));
+}
+
+base::ScopedFILE FILEFromPlatformHandle(embedder::ScopedPlatformHandle h,
+                                        const char* mode) {
+  CHECK(h.is_valid());
+  // Microsoft's documentation for |_open_osfhandle()| only discusses these
+  // flags (and |_O_WTEXT|). Hmmm.
+  int flags = 0;
+  if (strchr(mode, 'a'))
+    flags |= _O_APPEND;
+  if (strchr(mode, 'r'))
+    flags |= _O_RDONLY;
+  if (strchr(mode, 't'))
+    flags |= _O_TEXT;
+  base::ScopedFILE rv(
+      _fdopen(_open_osfhandle(reinterpret_cast<intptr_t>(h.release().handle),
+                              flags),
+              mode));
+  PCHECK(rv) << "_fdopen";
+  return rv.Pass();
 }
 
 base::FilePath GetFilePathForJSResource(const std::string& path) {
