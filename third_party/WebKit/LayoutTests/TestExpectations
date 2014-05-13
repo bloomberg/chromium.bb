@@ -229,6 +229,10 @@ crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetime
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
 crbug.com/314947 [ Mavericks ] http/tests/images/drag-image-to-desktop.html [ Failure ]
 
+Bug(hartmanng) compositing/overflow/nested-border-radius-clipping.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/softwarecompositing/overflow/nested-border-radius-clipping.html [ NeedsRebaseline ]
+Bug(hartmanng) virtual/gpu/compositedscrolling/overflow/nested-border-radius-clipping.html [ NeedsRebaseline ]
+
 # Mavericks bots seem to fail lots of tests on occasion.
 crbug.com/331582 [ Mavericks ] fast/inline/justify-emphasis-inline-box.html [ Pass ImageOnlyFailure ]
 crbug.com/331583 [ Mavericks ] fast/parser/fonts.html [ Pass ImageOnlyFailure ]

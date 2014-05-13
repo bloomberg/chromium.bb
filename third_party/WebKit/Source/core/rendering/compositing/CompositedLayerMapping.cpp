@@ -456,7 +456,11 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     }
 
     bool hasChildClippingLayer = compositor->clipsCompositingDescendants(&m_owningLayer) && (hasClippingLayer() || hasScrollingLayer());
-    bool needsChildClippingMask = (renderer->style()->clipPath() || renderer->style()->hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(renderer));
+    // If we have a border radius on a scrolling layer, we need a clipping mask to properly clip the scrolled contents,
+    // even if there are no composited descendants.
+    // FIXME: This also needs to be extended to include clip path for scrolled layers.
+    bool needsChildClippingMaskForScrollableBorderRadius = renderer->style()->hasBorderRadius() && hasScrollingLayer();
+    bool needsChildClippingMask = needsChildClippingMaskForScrollableBorderRadius || ((renderer->style()->clipPath() || renderer->style()->hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(renderer)));
     if (updateClippingMaskLayers(needsChildClippingMask)) {
         if (hasClippingLayer())
             clippingLayer()->setMaskLayer(m_childClippingMaskLayer.get());
