@@ -280,8 +280,11 @@ GetTrackingConfiguration() {
     }
 
     if (enforcement_group >= GROUP_ENFORCE_ALWAYS_WITH_EXTENSIONS &&
-        data.name == extensions::pref_names::kExtensions) {
-      // Specifically enable extension settings enforcement.
+        (data.name == extensions::pref_names::kExtensions ||
+         data.name == extensions::pref_names::kKnownDisabled)) {
+      // Specifically enable extension settings enforcement and ensure
+      // kKnownDisabled follows it in the Protected Preferences.
+      // TODO(gab): Get rid of kKnownDisabled altogether.
       data.enforcement_level = PrefHashFilter::ENFORCE_ON_LOAD;
     }
 
