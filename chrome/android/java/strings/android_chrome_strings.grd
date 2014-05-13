@@ -156,8 +156,34 @@ You are signing in with a managed account and giving its administrator control o
       <message desc="Message for the progress dialog shown while profile data is being wiped after signing out of an enterprise account" name="IDS_WIPING_PROFILE_DATA_MESSAGE">
         Please wait...
       </message>
-       <!-- InfoBar -->
-        <message desc="Accessibility label for the dismiss infobar Button" name="IDS_INFOBAR_CLOSE">
+      <!-- Tab switcher -->
+      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_STANDARD_STACK" desc="Content description for the standard stack selection 'button'.">
+        Standard tabs
+      </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_INCOGNITO_STACK" desc="Content description for the incognito stack selection 'button'.">
+        Incognito tabs
+      </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_TAB_CLOSED" desc="Content description for the tab closed message.">
+        Tab closed
+      </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_UNDO_TAB_CLOSED" desc="Content description for the undo tab closed 'button.">
+        Reopen closed tab
+      </message>
+      <message name="IDS_ACCESSIBILITY_TABSTRIP_TAB" desc="Content description for the tab title.">
+        <ph name="TAB_TITLE">%1$s<ex>Welcome to Facebook</ex></ph>, tab
+      </message>
+      <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_CLOSE_TAB" desc="Content description for the close tab button.">
+        Close tab
+      </message>
+      <message name="IDS_ACCESSIBILITY_TABSTRIP_BTN_NEW_TAB" desc="Content description for the new tab button.">
+        New tab
+      </message>
+      <!-- TODO(newt): remove duplicated strings once crbug.com/176069 is fixed. -->
+      <message name="IDS_TAB_LOADING_DEFAULT_TITLE" desc="The title of a tab when we are still waiting for either the URL or the real title. This generally shows when the page is first loading.">
+        Loading…
+      </message>
+      <!-- InfoBar -->
+      <message desc="Accessibility label for the dismiss infobar Button" name="IDS_INFOBAR_CLOSE">
         Close
       </message>
       <!-- TranslateInfoBar -->

@@ -8,6 +8,12 @@
     <!-- Certificate Viewer Dimensions -->
     <dimen name="certificate_viewer_padding">20dp</dimen>
 
+    <!-- Accessibility tab switcher -->
+    <dimen name="accessibility_tab_height">65dp</dimen>
+
+    <!-- TabSwitcher - The minimum distance from the edge to commit a side swap. -->
+    <dimen name="swipe_commit_distance">120dp</dimen>
+
     <!-- Custom Menu dimensions -->
     <dimen name="menu_width">257dp</dimen>
     <dimen name="menu_vertical_offset">0dp</dimen>
