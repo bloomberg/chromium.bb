@@ -6,12 +6,16 @@
 
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_synchronizer.h"
+#include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
+#include "mojo/services/public/cpp/view_manager/view.h"
 #include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 
 namespace mojo {
 namespace services {
 namespace view_manager {
+
+namespace {
 
 void NotifyViewTreeChangeAtReceiver(
     ViewTreeNode* receiver,
@@ -87,6 +91,64 @@ void RemoveChildImpl(ViewTreeNode* child, ViewTreeNode::Children* children) {
   }
 }
 
+class ScopedSetActiveViewNotifier {
+ public:
+  ScopedSetActiveViewNotifier(ViewTreeNode* node,
+                              View* old_view,
+                              View* new_view)
+      : node_(node),
+        old_view_(old_view),
+        new_view_(new_view) {
+    FOR_EACH_OBSERVER(
+        ViewTreeNodeObserver,
+        *ViewTreeNodePrivate(node).observers(),
+        OnNodeActiveViewChange(node_,
+                               old_view_,
+                               new_view_,
+                               ViewTreeNodeObserver::DISPOSITION_CHANGING));
+  }
+  ~ScopedSetActiveViewNotifier() {
+    FOR_EACH_OBSERVER(
+        ViewTreeNodeObserver,
+        *ViewTreeNodePrivate(node_).observers(),
+        OnNodeActiveViewChange(node_,
+                               old_view_,
+                               new_view_,
+                               ViewTreeNodeObserver::DISPOSITION_CHANGED));
+  }
+
+ private:
+  ViewTreeNode* node_;
+  View* old_view_;
+  View* new_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedSetActiveViewNotifier);
+};
+
+class ScopedDestructionNotifier {
+ public:
+  explicit ScopedDestructionNotifier(ViewTreeNode* node)
+      : node_(node) {
+    FOR_EACH_OBSERVER(
+        ViewTreeNodeObserver,
+        *ViewTreeNodePrivate(node_).observers(),
+        OnNodeDestroy(node_, ViewTreeNodeObserver::DISPOSITION_CHANGING));
+  }
+  ~ScopedDestructionNotifier() {
+    FOR_EACH_OBSERVER(
+        ViewTreeNodeObserver,
+        *ViewTreeNodePrivate(node_).observers(),
+        OnNodeDestroy(node_, ViewTreeNodeObserver::DISPOSITION_CHANGED));
+  }
+
+ private:
+  ViewTreeNode* node_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedDestructionNotifier);
+};
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewTreeNode, public:
 
@@ -114,18 +176,24 @@ void ViewTreeNode::RemoveObserver(ViewTreeNodeObserver* observer) {
 }
 
 void ViewTreeNode::AddChild(ViewTreeNode* child) {
+  if (manager_)
+    CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
   LocalAddChild(child);
   if (manager_)
     ViewManagerPrivate(manager_).synchronizer()->AddChild(child->id(), id_);
 }
 
 void ViewTreeNode::RemoveChild(ViewTreeNode* child) {
+  if (manager_)
+    CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
   LocalRemoveChild(child);
   if (manager_)
     ViewManagerPrivate(manager_).synchronizer()->RemoveChild(child->id(), id_);
 }
 
 bool ViewTreeNode::Contains(ViewTreeNode* child) const {
+  if (manager_)
+    CHECK_EQ(ViewTreeNodePrivate(child).view_manager(), manager_);
   for (ViewTreeNode* p = child->parent(); p; p = p->parent()) {
     if (p == this)
       return true;
@@ -146,25 +214,29 @@ ViewTreeNode* ViewTreeNode::GetChildById(TransportNodeId id) {
   return NULL;
 }
 
+void ViewTreeNode::SetActiveView(View* view) {
+  if (manager_)
+    CHECK_EQ(ViewPrivate(view).view_manager(), manager_);
+  LocalSetActiveView(view);
+  if (manager_) {
+    ViewManagerPrivate(manager_).synchronizer()->SetActiveView(
+        id_, active_view_->id());
+  }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ViewTreeNode, protected:
 
 ViewTreeNode::ViewTreeNode()
     : manager_(NULL),
       id_(-1),
-      parent_(NULL) {}
+      parent_(NULL),
+      active_view_(NULL) {}
 
 ViewTreeNode::~ViewTreeNode() {
-  FOR_EACH_OBSERVER(
-      ViewTreeNodeObserver,
-      observers_,
-      OnNodeDestroy(this, ViewTreeNodeObserver::DISPOSITION_CHANGING));
+  ScopedDestructionNotifier notifier(this);
   if (parent_)
     parent_->LocalRemoveChild(this);
-  FOR_EACH_OBSERVER(
-      ViewTreeNodeObserver,
-      observers_,
-      OnNodeDestroy(this, ViewTreeNodeObserver::DISPOSITION_CHANGED));
   if (manager_)
     ViewManagerPrivate(manager_).RemoveNode(id_);
 }
@@ -175,7 +247,8 @@ ViewTreeNode::~ViewTreeNode() {
 ViewTreeNode::ViewTreeNode(ViewManager* manager)
     : manager_(manager),
       id_(ViewManagerPrivate(manager).synchronizer()->CreateViewTreeNode()),
-      parent_(NULL) {}
+      parent_(NULL),
+      active_view_(NULL) {}
 
 void ViewTreeNode::LocalDestroy() {
   delete this;
@@ -193,6 +266,15 @@ void ViewTreeNode::LocalRemoveChild(ViewTreeNode* child) {
   DCHECK_EQ(this, child->parent());
   ScopedTreeNotifier(child, this, NULL);
   RemoveChildImpl(child, &children_);
+}
+
+void ViewTreeNode::LocalSetActiveView(View* view) {
+  ScopedSetActiveViewNotifier notifier(this, active_view_, view);
+  if (active_view_)
+    ViewPrivate(active_view_).set_node(NULL);
+  active_view_ = view;
+  if (active_view_)
+    ViewPrivate(active_view_).set_node(this);
 }
 
 }  // namespace view_manager

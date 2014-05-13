@@ -13,6 +13,7 @@ namespace mojo {
 namespace services {
 namespace view_manager {
 
+class View;
 class ViewTreeNode;
 
 class ViewTreeNodeObserver {
@@ -35,6 +36,11 @@ class ViewTreeNodeObserver {
 
   virtual void OnNodeDestroy(ViewTreeNode* node,
                              DispositionChangePhase phase) {}
+
+  virtual void OnNodeActiveViewChange(ViewTreeNode* node,
+                                      View* old_view,
+                                      View* new_view,
+                                      DispositionChangePhase phase) {}
 
  protected:
   virtual ~ViewTreeNodeObserver() {}

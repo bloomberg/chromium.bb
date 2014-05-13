@@ -5,8 +5,6 @@
 #ifndef MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_TREE_NODE_PRIVATE_H_
 #define MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_TREE_NODE_PRIVATE_H_
 
-#include <vector>
-
 #include "base/basictypes.h"
 
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
@@ -41,6 +39,10 @@ class ViewTreeNodePrivate {
   }
   void LocalRemoveChild(ViewTreeNode* child) {
     node_->LocalRemoveChild(child);
+  }
+
+  void LocalSetActiveView(View* view) {
+    node_->LocalSetActiveView(view);
   }
 
  private:
