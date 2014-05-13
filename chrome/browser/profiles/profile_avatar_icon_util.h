@@ -17,6 +17,8 @@ namespace gfx {
 class Image;
 }
 
+class SkBitmap;
+
 namespace profiles {
 
 // Avatar access.
@@ -63,6 +65,7 @@ bool IsDefaultAvatarIconIndex(size_t index);
 // Checks if the given URL points to one of the default avatar icons. If it
 // is, returns true and its index through |icon_index|. If not, returns false.
 bool IsDefaultAvatarIconUrl(const std::string& icon_url, size_t *icon_index);
+
 // Returns a version of |image| of a specific size. Note that no checks are
 // done on the width/height so make sure they're reasonable values; in the
 // range of 16-256 is probably best.
@@ -84,6 +87,10 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
                                     bool is_rectangle,
                                     int dst_width,
                                     int dst_height);
+
+// Returns a bitmap with a couple of columns shaved off so it is more square,
+// so that when resized to a square aspect ratio it looks pretty.
+SkBitmap GetAvatarIconAsSquare(const SkBitmap& source_bitmap, int scale_factor);
 
 }  // namespace profiles
 

@@ -13,6 +13,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -22,6 +23,8 @@
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 
 // Helper methods for transforming and drawing avatar icons.
 namespace {
@@ -184,7 +187,7 @@ struct IconResourceInfo {
 };
 
 const int kAvatarIconWidth = 38;
-const int kAvatarIconHeight = 38;
+const int kAvatarIconHeight = 31;
 const SkColor kAvatarTutorialBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xf4);
 const SkColor kAvatarTutorialContentTextColor = SkColorSetRGB(0xc6, 0xda, 0xfc);
 const SkColor kAvatarBubbleAccountsBackgroundColor =
@@ -262,6 +265,25 @@ gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
               AvatarImageSource::BORDER_NONE));
 
   return gfx::Image(gfx::ImageSkia(source.release(), dst_size));
+}
+
+SkBitmap GetAvatarIconAsSquare(const SkBitmap& source_bitmap,
+                               int scale_factor) {
+  SkBitmap square_bitmap;
+  if ((source_bitmap.width() == scale_factor * profiles::kAvatarIconWidth) &&
+      (source_bitmap.height() == scale_factor * profiles::kAvatarIconHeight)) {
+    // Shave a couple of columns so the |source_bitmap| is more square. So when
+    // resized to a square aspect ratio it looks pretty.
+    gfx::Rect frame(scale_factor * profiles::kAvatarIconWidth,
+                    scale_factor * profiles::kAvatarIconHeight);
+    frame.Inset(scale_factor * 2, 0, scale_factor * 2, 0);
+    source_bitmap.extractSubset(&square_bitmap, gfx::RectToSkIRect(frame));
+  } else {
+    // If not the avatar icon's aspect ratio, the image should be square.
+    DCHECK(source_bitmap.width() == source_bitmap.height());
+    square_bitmap = source_bitmap;
+  }
+  return square_bitmap;
 }
 
 // Helper methods for accessing, transforming and drawing avatar icons.

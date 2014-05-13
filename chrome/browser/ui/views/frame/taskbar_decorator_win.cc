@@ -16,7 +16,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/win/hwnd_util.h"
@@ -41,15 +40,17 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
 
   base::win::ScopedGDIObject<HICON> icon;
   if (bitmap.get()) {
-    const size_t kOverlayIconSize = 16;
-    const SkBitmap* source_bitmap = bitmap.get();
-
-    // Maintain aspect ratio on resize. Image is assumed to be square.
+    DCHECK_GE(bitmap.get()->width(), bitmap.get()->height());
+    // Maintain aspect ratio on resize.
+    const int kOverlayIconSize = 16;
+    int resized_height =
+        bitmap.get()->height() * kOverlayIconSize / bitmap.get()->width();
+    DCHECK_GE(kOverlayIconSize, resized_height);
     // Since the target size is so small, we use our best resizer.
     SkBitmap sk_icon = skia::ImageOperations::Resize(
-        *source_bitmap,
+        *bitmap.get(),
         skia::ImageOperations::RESIZE_LANCZOS3,
-        kOverlayIconSize, kOverlayIconSize);
+        kOverlayIconSize, resized_height);
 
     // Paint the resized icon onto a 16x16 canvas otherwise Windows will badly
     // hammer it to 16x16.
@@ -57,8 +58,7 @@ void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
     offscreen_bitmap.allocN32Pixels(kOverlayIconSize, kOverlayIconSize);
     SkCanvas offscreen_canvas(offscreen_bitmap);
     offscreen_canvas.clear(SK_ColorTRANSPARENT);
-    offscreen_canvas.drawBitmap(sk_icon, 0, 0);
-
+    offscreen_canvas.drawBitmap(sk_icon, 0, kOverlayIconSize - resized_height);
     icon.Set(IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap));
     if (!icon.Get())
       return;
@@ -84,8 +84,11 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
 
   // Copy the image since we're going to use it on a separate thread and
   // gfx::Image isn't thread safe.
-  scoped_ptr<SkBitmap> bitmap(
-      image ? new SkBitmap(*image->ToSkBitmap()) : NULL);
+  scoped_ptr<SkBitmap> bitmap;
+  if (image) {
+    bitmap.reset(new SkBitmap(
+        profiles::GetAvatarIconAsSquare(*image->ToSkBitmap(), 1)));
+  }
   content::BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
       FROM_HERE, base::Bind(&SetOverlayIcon, hwnd, Passed(&bitmap)),
       base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);

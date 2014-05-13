@@ -43,8 +43,7 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/skia_util.h"
+
 
 using content::BrowserThread;
 
@@ -111,18 +110,16 @@ const int kProfileAvatarIconResources2x[] = {
 SkBitmap BadgeIcon(const SkBitmap& app_icon_bitmap,
                    const SkBitmap& avatar_bitmap,
                    int scale_factor) {
-  // All icons, whether cartoon, GAIA or placeholder, should be square.
-  // TODO(mlerman) - uncomment the ASSERT once noms@ lands the square images.
-  // DCHECK(avatar_bitmap.width() == avatar_bitmap.height());
-
+  SkBitmap source_bitmap =
+      profiles::GetAvatarIconAsSquare(avatar_bitmap, scale_factor);
   int avatar_badge_size = kProfileAvatarBadgeSize;
   if (app_icon_bitmap.width() != kShortcutIconSize) {
     avatar_badge_size =
         app_icon_bitmap.width() * kProfileAvatarBadgeSize / kShortcutIconSize;
   }
   SkBitmap sk_icon = skia::ImageOperations::Resize(
-      avatar_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, avatar_badge_size,
-      avatar_bitmap.height() * avatar_badge_size / avatar_bitmap.width());
+      source_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, avatar_badge_size,
+      source_bitmap.height() * avatar_badge_size / source_bitmap.width());
 
   // Overlay the avatar on the icon, anchoring it to the bottom-right of the
   // icon.
