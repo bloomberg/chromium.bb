@@ -1877,6 +1877,13 @@ const Experiment kExperiments[] = {
                               switches::kDisableTextInputFocusManager)
   },
 #endif
+  {
+    "extension-active-script-permission",
+    IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_NAME,
+    IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(extensions::switches::kEnableScriptsRequireAction)
+  },
 };
 
 const Experiment* experiments = kExperiments;

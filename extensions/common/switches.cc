@@ -60,7 +60,15 @@ const char kForceDevModeHighlighting[] = "force-dev-mode-highlighting";
 const char kGlobalCommands[] = "global-commands";
 
 // Notify the user and require consent for extensions running scripts.
+// Appending --scripts-require-action=1 has the same effect as
+// --enable-scripts-require-action (see below).
 const char kScriptsRequireAction[] = "scripts-require-action";
+// FeatureSwitch and about_flags don't play nice. Feature switch expects either
+// --enable-<feature> or --<feature>=1, but about_flags expects the command
+// line argument to enable it (or a selection). Hack this in, so enabling it
+// in about_flags enables the feature. Appending this flag has the same effect
+// as --scripts-require-action=1.
+const char kEnableScriptsRequireAction[] = "enable-scripts-require-action";
 
 // Makes component extensions appear in chrome://settings/extensions.
 const char kShowComponentExtensionOptions[] =

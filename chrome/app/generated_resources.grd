@@ -5656,17 +5656,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_APP_WINDOW_CONTROLS_DESCRIPTION" desc="Description of the 'Enable 'window-controls' element' lab.">
         Enables using 'window-controls' HTML elements in packaged apps.
       </message>
-      <message name="IDS_FLAGS_SCRIPT_BADGES_NAME" desc="Name of the 'Script Badges' lab.">
-        Script badges
+      <message name="IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_NAME" desc="Name of the 'User consent for extension scripts' lab.">
+        User consent for extension scripts
       </message>
-      <message name="IDS_FLAGS_SCRIPT_BADGES_DESCRIPTION" desc="Description of the 'Script Badges' lab.">
-        Shows extension "script badges" in the location bar rather than page actions.
-      </message>
-      <message name="IDS_FLAGS_SCRIPT_BUBBLE_NAME" desc="Name of the 'Script Bubble' lab.">
-        Script Bubble
-      </message>
-      <message name="IDS_FLAGS_SCRIPT_BUBBLE_DESCRIPTION" desc="Description of the 'Script Bubble' lab.">
-        Enable or disable the "Script Bubble" experimental toolbar UI.
+      <message name="IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_DESCRIPTION" desc="Description of the 'User consent for extension scripts' lab">
+        Require user consent for an extension running a script on the page, if the extension requested permission to run on all urls.
       </message>
       <message name="IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_NAME" desc="Name of the 'Disable hyperlink auditing' lab.">
         Disable hyperlink auditing
