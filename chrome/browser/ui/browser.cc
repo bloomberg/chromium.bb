@@ -66,7 +66,6 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/repost_form_warning_controller.h"
 #include "chrome/browser/search/search.h"
@@ -347,8 +346,7 @@ Browser::Browser(const CreateParams& params)
       tab_restore_service_delegate_(new BrowserTabRestoreServiceDelegate(this)),
       synced_window_delegate_(new BrowserSyncedWindowDelegate(this)),
       bookmark_bar_state_(BookmarkBar::HIDDEN),
-      command_controller_(new chrome::BrowserCommandController(
-          this, g_browser_process->profile_manager())),
+      command_controller_(new chrome::BrowserCommandController(this)),
       window_has_shown_(false),
       chrome_updater_factory_(this),
       weak_factory_(this),

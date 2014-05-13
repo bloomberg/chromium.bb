@@ -485,6 +485,7 @@ bool AvatarMenuBubbleView::close_on_deactivate_for_testing_ = true;
 void AvatarMenuBubbleView::ShowBubble(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
+    views::BubbleBorder::ArrowPaintType arrow_paint_type,
     views::BubbleBorder::BubbleAlignment border_alignment,
     const gfx::Rect& anchor_rect,
     Browser* browser) {
@@ -498,6 +499,7 @@ void AvatarMenuBubbleView::ShowBubble(
   avatar_bubble_->set_close_on_deactivate(close_on_deactivate_for_testing_);
   avatar_bubble_->SetBackgroundColors();
   avatar_bubble_->SetAlignment(border_alignment);
+  avatar_bubble_->SetArrowPaintType(arrow_paint_type);
   avatar_bubble_->GetWidget()->Show();
 }
 

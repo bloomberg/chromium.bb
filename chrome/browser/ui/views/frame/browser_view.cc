@@ -2369,7 +2369,8 @@ void BrowserView::ShowAvatarBubble(WebContents* web_contents,
   views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
   gfx::Rect bounds(origin, rect.size());
 
-  AvatarMenuBubbleView::ShowBubble(this, views::BubbleBorder::TOP_RIGHT,
+  AvatarMenuBubbleView::ShowBubble(
+      this, views::BubbleBorder::TOP_RIGHT, views::BubbleBorder::PAINT_NORMAL,
       views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds, browser_.get());
 }
 
@@ -2390,9 +2391,21 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(AvatarBubbleMode mode) {
           views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE, bounds, browser());
     }
   } else {
-    AvatarMenuButton* button = frame_->GetAvatarMenuButton();
-    if (button)
-      button->ShowAvatarBubble();
+    views::BubbleBorder::Arrow arrow = views::BubbleBorder::TOP_RIGHT;
+    views::View* anchor_view = frame_->GetAvatarMenuButton();
+    if (!anchor_view)
+      anchor_view = toolbar_->app_menu();
+    else if (!frame_->GetAvatarMenuButton()->button_on_right())
+      arrow = views::BubbleBorder::TOP_LEFT;
+    gfx::Point origin;
+    views::View::ConvertPointToScreen(anchor_view, &origin);
+    gfx::Rect bounds(origin, anchor_view->size());
+    views::BubbleBorder::ArrowPaintType arrow_paint_type =
+        ShouldHideUIForFullscreen() ? views::BubbleBorder::PAINT_TRANSPARENT :
+                                      views::BubbleBorder::PAINT_NORMAL;
+    AvatarMenuBubbleView::ShowBubble(anchor_view, arrow, arrow_paint_type,
+        views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds, browser());
+    ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
   }
 }
 

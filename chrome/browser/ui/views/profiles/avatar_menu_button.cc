@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
@@ -77,9 +78,7 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 bool AvatarMenuButton::HitTestRect(const gfx::Rect& rect) const {
-  if (disabled_)
-    return false;
-  return views::MenuButton::HitTestRect(rect);
+  return !disabled_ && views::MenuButton::HitTestRect(rect);
 }
 
 void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
@@ -93,28 +92,6 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
 // views::MenuButtonListener implementation
 void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
                                            const gfx::Point& point) {
-  if (disabled_)
-    return;
-
-  ShowAvatarBubble();
-}
-
-void AvatarMenuButton::ShowAvatarBubble() {
-  gfx::Point origin;
-  views::View::ConvertPointToScreen(this, &origin);
-  gfx::Rect bounds(origin, size());
-  views::BubbleBorder::Arrow arrow = button_on_right_ ?
-      views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::TOP_LEFT;
-  if (switches::IsNewAvatarMenu()) {
-    ProfileChooserView::ShowBubble(
-        ProfileChooserView::BUBBLE_VIEW_MODE_PROFILE_CHOOSER,
-        this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,
-        browser_);
-  } else {
-    AvatarMenuBubbleView::ShowBubble(
-        this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,
-        browser_);
-  }
-
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
+  if (!disabled_)
+    chrome::ShowAvatarMenu(browser_);
 }

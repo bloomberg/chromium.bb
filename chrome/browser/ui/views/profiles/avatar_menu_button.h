@@ -49,8 +49,6 @@ class AvatarMenuButton : public views::MenuButton,
   }
   bool button_on_right() { return button_on_right_; }
 
-  void ShowAvatarBubble();
-
  private:
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,

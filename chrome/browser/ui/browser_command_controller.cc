@@ -13,9 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/shell_integration.h"
@@ -183,17 +181,12 @@ namespace chrome {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, public:
 
-BrowserCommandController::BrowserCommandController(
-    Browser* browser,
-    ProfileManager* profile_manager)
+BrowserCommandController::BrowserCommandController(Browser* browser)
     : browser_(browser),
-      profile_manager_(profile_manager),
       command_updater_(this),
       block_command_execution_(false),
       last_blocked_command_id_(-1),
       last_blocked_command_disposition_(CURRENT_TAB) {
-  if (profile_manager_)
-    profile_manager_->GetProfileInfoCache().AddObserver(this);
   browser_->tab_strip_model()->AddObserver(this);
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -259,8 +252,6 @@ BrowserCommandController::~BrowserCommandController() {
   profile_pref_registrar_.RemoveAll();
   local_pref_registrar_.RemoveAll();
   browser_->tab_strip_model()->RemoveObserver(this);
-  if (profile_manager_)
-    profile_manager_->GetProfileInfoCache().RemoveObserver(this);
 }
 
 bool BrowserCommandController::IsReservedCommandOrKey(
@@ -782,20 +773,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, ProfileInfoCacheObserver implementation:
-
-void BrowserCommandController::OnProfileAdded(
-    const base::FilePath& profile_path) {
-  UpdateCommandsForMultipleProfiles();
-}
-
-void BrowserCommandController::OnProfileWasRemoved(
-    const base::FilePath& profile_path,
-    const base::string16& profile_name) {
-  UpdateCommandsForMultipleProfiles();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, SigninPrefObserver implementation:
 
 void BrowserCommandController::OnSigninAllowedPrefChange() {
@@ -969,28 +946,30 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_ZOOM_MINUS, true);
 
   // Show various bits of UI
+  const bool guest_session = profile()->IsGuestSession();
+  const bool normal_window = browser_->is_type_tabbed();
   UpdateOpenFileState(&command_updater_);
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS, false);
   UpdateCommandsForDevTools();
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, CanOpenTaskManager());
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY,
-                                        !profile()->IsGuestSession());
+  command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, !guest_session);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_KEYBOARD, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE_VIA_MENU, true);
-  command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU,
-                                        !profile()->IsGuestSession());
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARKS_MENU, !guest_session);
   command_updater_.UpdateCommandEnabled(IDC_RECENT_TABS_MENU,
-                                        !profile()->IsGuestSession() &&
+                                        !guest_session &&
                                         !profile()->IsOffTheRecord());
+  command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
 #if defined(OS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(IDC_TAKE_SCREENSHOT, true);
+#else
+  // Chrome OS uses the system tray menu to handle multi-profiles.
+  if (normal_window && (guest_session || !profile()->IsOffTheRecord()))
+    command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU, true);
 #endif
 
   UpdateShowSyncState(true);
-
-  // Initialize other commands based on the window type.
-  bool normal_window = browser_->is_type_tabbed();
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(
@@ -1015,39 +994,24 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
 #if defined(OS_WIN)
-#if !defined(USE_AURA)
-  const bool metro_mode = base::win::IsMetroProcess();
-#else
-  const bool metro_mode =
-     browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH ?
-         true : false;
-#endif
-  command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_ENABLE, metro_mode);
-  command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_DISABLE, metro_mode);
-  int restart_mode = metro_mode ?
-      IDC_WIN8_DESKTOP_RESTART : IDC_WIN8_METRO_RESTART;
+  bool metro = browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH;
+  command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_ENABLE, metro);
+  command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_DISABLE, metro);
+  int restart_mode = metro ? IDC_WIN8_DESKTOP_RESTART : IDC_WIN8_METRO_RESTART;
   command_updater_.UpdateCommandEnabled(restart_mode, normal_window);
 #endif
 
-  // Show various bits of UI
-  command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, normal_window);
-
-  // The upgrade entry and the view incompatibility entry should always be
-  // enabled. Whether they are visible is a separate matter determined on menu
-  // show.
+  // These are always enabled; the menu determines their menu item visibility.
   command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_INCOMPATIBILITIES, true);
 
   // Toggle speech input
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_SPEECH_INPUT, true);
 
-  // Initialize other commands whose state changes based on fullscreen mode.
+  // Initialize other commands whose state changes based on various conditions.
   UpdateCommandsForFullscreenMode();
-
   UpdateCommandsForContentRestrictionState();
-
   UpdateCommandsForBookmarkEditing();
-
   UpdateCommandsForIncognitoAvailability();
 }
 
@@ -1279,18 +1243,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
                                         fullscreen_enabled);
 
   UpdateCommandsForBookmarkBar();
-  UpdateCommandsForMultipleProfiles();
-}
-
-void BrowserCommandController::UpdateCommandsForMultipleProfiles() {
-  bool is_regular_or_guest_session =
-      profile()->IsGuestSession() || !profile()->IsOffTheRecord();
-  bool enable = IsShowingMainUI() &&
-      is_regular_or_guest_session &&
-      profile_manager_ &&
-      AvatarMenu::ShouldShowAvatarMenu();
-  command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,
-                                        enable);
 }
 
 void BrowserCommandController::UpdatePrintingState() {

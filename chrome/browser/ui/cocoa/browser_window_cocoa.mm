@@ -706,7 +706,10 @@ void BrowserWindowCocoa::ShowAvatarBubble(WebContents* web_contents,
 void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode) {
   AvatarBaseController* controller = [controller_ avatarButtonController];
-  [controller showAvatarBubble:[controller buttonView] withMode:mode];
+  NSView* anchor = [controller buttonView];
+  if ([anchor isHiddenOrHasHiddenAncestor])
+    anchor = [[controller_ toolbarController] wrenchButton];
+  [controller showAvatarBubble:anchor withMode:mode];
 }
 
 void BrowserWindowCocoa::ShowPasswordGenerationBubble(
