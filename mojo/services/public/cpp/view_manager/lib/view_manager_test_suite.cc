@@ -7,7 +7,6 @@
 #include "ui/gl/gl_surface.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 ViewManagerTestSuite::ViewManagerTestSuite(int argc, char** argv)
@@ -22,5 +21,4 @@ void ViewManagerTestSuite::Initialize() {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

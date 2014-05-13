@@ -9,7 +9,6 @@
 #include "mojo/services/public/cpp/view_manager/view.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 ViewManager::ViewManager(Shell* shell)
@@ -47,5 +46,4 @@ View* ViewManager::GetViewById(TransportViewId id) {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

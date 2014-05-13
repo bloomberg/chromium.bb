@@ -10,7 +10,6 @@
 #include "mojo/services/public/cpp/view_manager/view_tree_node.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 class ViewTreeNodePrivate {
@@ -52,7 +51,6 @@ class ViewTreeNodePrivate {
 };
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_TREE_NODE_PRIVATE_H_

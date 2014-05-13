@@ -20,8 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
+namespace service {
 
 namespace {
 
@@ -762,6 +762,6 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
   }
 }
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

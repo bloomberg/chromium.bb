@@ -15,7 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 base::RunLoop* current_run_loop = NULL;
@@ -484,5 +483,4 @@ TEST_F(ViewManagerTest, SetActiveViewAcrossConnection) {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

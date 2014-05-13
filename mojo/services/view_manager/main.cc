@@ -25,11 +25,11 @@ extern "C" VIEW_MANAGER_EXPORT MojoResult CDECL MojoMain(
   base::AtExitManager at_exit;
   base::MessageLoop loop;
   mojo::Application app(shell_handle);
-  mojo::services::view_manager::RootNodeManager root_node_manager(app.shell());
+  mojo::view_manager::service::RootNodeManager root_node_manager(app.shell());
   app.AddServiceConnector(
       new mojo::ServiceConnector<
-          mojo::services::view_manager::ViewManagerConnection,
-          mojo::services::view_manager::RootNodeManager>(&root_node_manager));
+          mojo::view_manager::service::ViewManagerConnection,
+          mojo::view_manager::service::RootNodeManager>(&root_node_manager));
   loop.Run();
 
   return MOJO_RESULT_OK;

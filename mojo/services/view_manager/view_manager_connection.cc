@@ -14,8 +14,8 @@
 #include "ui/gfx/codec/png_codec.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
+namespace service {
 namespace {
 
 // Implementation of NodeCount(). |count| is the current count.
@@ -96,7 +96,7 @@ Node* ViewManagerConnection::GetNode(const NodeId& id) {
   return context()->GetNode(id);
 }
 
-service::View* ViewManagerConnection::GetView(const ViewId& id) {
+View* ViewManagerConnection::GetView(const ViewId& id) {
   if (id_ == id.connection_id) {
     ViewMap::const_iterator i = view_map_.find(id.view_id);
     return i == view_map_.end() ? NULL : i->second;
@@ -171,7 +171,7 @@ bool ViewManagerConnection::DeleteViewImpl(ViewManagerConnection* source,
                                            const ViewId& view_id,
                                            TransportChangeId change_id) {
   DCHECK_EQ(view_id.connection_id, id_);
-  service::View* view = GetView(view_id);
+  View* view = GetView(view_id);
   if (!view)
     return false;
   RootNodeManager::ScopedChange change(
@@ -191,7 +191,7 @@ bool ViewManagerConnection::SetViewImpl(const NodeId& node_id,
   Node* node = GetNode(node_id);
   if (!node)
     return false;
-  service::View* view = GetView(view_id);
+  View* view = GetView(view_id);
   if (!view && view_id != ViewId())
     return false;
   RootNodeManager::ScopedChange change(
@@ -285,7 +285,7 @@ void ViewManagerConnection::CreateView(
     callback.Run(false);
     return;
   }
-  view_map_[view_id] = new service::View(ViewId(id_, view_id));
+  view_map_[view_id] = new View(ViewId(id_, view_id));
   callback.Run(true);
 }
 
@@ -314,7 +314,7 @@ void ViewManagerConnection::SetViewContents(
     TransportViewId view_id,
     ScopedSharedBufferHandle buffer,
     uint32_t buffer_size) {
-  service::View* view = GetView(ViewIdFromTransportId(view_id));
+  View* view = GetView(ViewIdFromTransportId(view_id));
   if (!view)
     return;
   void* handle_data;
@@ -341,6 +341,6 @@ void ViewManagerConnection::OnNodeViewReplaced(const NodeId& node,
   context()->NotifyNodeViewReplaced(node, new_view_id, old_view_id);
 }
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

@@ -5,7 +5,6 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 ViewPrivate::ViewPrivate(View* view)
@@ -21,5 +20,4 @@ View* ViewPrivate::LocalCreate() {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

@@ -7,7 +7,6 @@
 #include "mojo/services/view_manager/node.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 namespace service {
 
@@ -26,5 +25,4 @@ void View::SetBitmap(const SkBitmap& bitmap) {
 
 }  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

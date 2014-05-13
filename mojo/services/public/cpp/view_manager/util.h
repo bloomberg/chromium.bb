@@ -8,7 +8,6 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 inline uint16_t HiWord(uint32_t id) {
@@ -20,7 +19,6 @@ inline uint16_t LoWord(uint32_t id) {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_UTIL_H_

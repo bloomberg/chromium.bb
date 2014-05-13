@@ -15,8 +15,8 @@
 #include "ui/aura/window.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
+namespace service {
 
 class WindowTreeClientImpl : public aura::client::WindowTreeClient {
  public:
@@ -83,6 +83,6 @@ void RootViewManager::OnCompositorCreated() {
   window_tree_host_->Show();
 }
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

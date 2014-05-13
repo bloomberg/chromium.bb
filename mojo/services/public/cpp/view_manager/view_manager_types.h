@@ -11,7 +11,6 @@
 // file, see it for specifics.
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 typedef uint32_t TransportChangeId;
@@ -27,7 +26,6 @@ typedef uint16_t TransportConnectionSpecificNodeId;
 typedef uint16_t TransportConnectionSpecificViewId;
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_MANAGER_TYPES_H_

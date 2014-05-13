@@ -9,7 +9,6 @@
 #include "mojo/services/public/cpp/view_manager/view_observer.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 namespace {
@@ -78,5 +77,4 @@ void View::LocalDestroy() {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

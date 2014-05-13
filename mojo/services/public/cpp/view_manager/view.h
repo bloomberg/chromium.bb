@@ -10,7 +10,6 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 class ViewManager;
@@ -49,7 +48,6 @@ class View {
 };
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_H_

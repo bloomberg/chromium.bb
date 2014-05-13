@@ -12,7 +12,6 @@
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 class View;
@@ -83,7 +82,6 @@ class ViewTreeNode {
 };
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_TREE_NODE_H_

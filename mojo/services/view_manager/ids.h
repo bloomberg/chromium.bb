@@ -10,8 +10,8 @@
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
+namespace service {
 
 // Adds a bit of type safety to node ids.
 struct MOJO_VIEW_MANAGER_EXPORT NodeId {
@@ -72,8 +72,8 @@ inline TransportViewId ViewIdToTransportId(const ViewId& id) {
   return (id.connection_id << 16) | id.view_id;
 }
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_IDS_H_

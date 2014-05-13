@@ -5,7 +5,6 @@
 #include "mojo/services/public/cpp/view_manager/lib/view_tree_node_private.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 ViewTreeNodePrivate::ViewTreeNodePrivate(ViewTreeNode* node)
@@ -21,5 +20,4 @@ ViewTreeNode* ViewTreeNodePrivate::LocalCreate() {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

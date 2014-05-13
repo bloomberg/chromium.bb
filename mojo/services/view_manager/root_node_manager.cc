@@ -9,8 +9,8 @@
 #include "ui/aura/env.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
+namespace service {
 namespace {
 
 // Id for the root node.
@@ -80,7 +80,7 @@ Node* RootNodeManager::GetNode(const NodeId& id) {
   return i == connection_map_.end() ? NULL : i->second->GetNode(id);
 }
 
-service::View* RootNodeManager::GetView(const ViewId& id) {
+View* RootNodeManager::GetView(const ViewId& id) {
   ConnectionMap::iterator i = connection_map_.find(id.connection_id);
   return i == connection_map_.end() ? NULL : i->second->GetView(id);
 }
@@ -157,6 +157,6 @@ void RootNodeManager::OnNodeViewReplaced(const NodeId& node,
   NotifyNodeViewReplaced(node, new_view_id, old_view_id);
 }
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

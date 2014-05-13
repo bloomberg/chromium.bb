@@ -18,8 +18,8 @@ namespace mojo {
 
 class Shell;
 
-namespace services {
 namespace view_manager {
+namespace service {
 
 class View;
 class ViewManagerConnection;
@@ -72,7 +72,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   Node* GetNode(const NodeId& id);
 
   // Returns the View identified by |id|.
-  service::View* GetView(const ViewId& id);
+  View* GetView(const ViewId& id);
 
   Node* root() { return &root_; }
 
@@ -152,8 +152,8 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   DISALLOW_COPY_AND_ASSIGN(RootNodeManager);
 };
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_ROOT_NODE_MANAGER_H_

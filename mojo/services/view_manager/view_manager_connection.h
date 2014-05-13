@@ -16,14 +16,12 @@
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
+namespace service {
 
 class Node;
 class RootNodeManager;
-namespace service {
 class View;
-}
 
 #if defined(OS_WIN)
 // Equivalent of NON_EXPORTED_BASE which does not work with the template snafu
@@ -50,7 +48,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   Node* GetNode(const NodeId& id);
 
   // Returns the View with the specified id.
-  service::View* GetView(const ViewId& id);
+  View* GetView(const ViewId& id);
 
   // Notifies the client of a hierarchy change.
   void NotifyNodeHierarchyChanged(const NodeId& node,
@@ -71,7 +69,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
  private:
   typedef std::map<TransportConnectionSpecificNodeId, Node*> NodeMap;
-  typedef std::map<TransportConnectionSpecificViewId, service::View*> ViewMap;
+  typedef std::map<TransportConnectionSpecificViewId, View*> ViewMap;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
@@ -145,8 +143,8 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 #pragma warning(pop)
 #endif
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_CONNECTION_H_

@@ -8,8 +8,8 @@
 #include "mojo/services/view_manager/view_manager_export.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
+namespace service {
 
 struct NodeId;
 struct ViewId;
@@ -30,8 +30,8 @@ class MOJO_VIEW_MANAGER_EXPORT NodeDelegate {
   virtual ~NodeDelegate() {}
 };
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_VIEW_MANAGER_NODE_DELEGATE_H_

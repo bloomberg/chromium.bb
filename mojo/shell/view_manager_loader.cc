@@ -23,11 +23,11 @@ void ViewManagerLoader::LoadService(ServiceManager* manager,
   scoped_ptr<Application> app(new Application(shell_handle.Pass()));
   if (!root_node_manager_.get()) {
     root_node_manager_.reset(
-        new services::view_manager::RootNodeManager(app->shell()));
+        new view_manager::service::RootNodeManager(app->shell()));
   }
   app->AddServiceConnector(
-      new ServiceConnector<services::view_manager::ViewManagerConnection,
-                           services::view_manager::RootNodeManager>(
+      new ServiceConnector<view_manager::service::ViewManagerConnection,
+                           view_manager::service::RootNodeManager>(
                                root_node_manager_.get()));
   apps_.push_back(app.release());
 }

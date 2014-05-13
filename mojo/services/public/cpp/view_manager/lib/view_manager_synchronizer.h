@@ -16,7 +16,6 @@ class RunLoop;
 }
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 class ViewManager;
@@ -111,7 +110,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
 };
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_LIB_VIEW_MANAGER_SYNCHRONIZER_H_

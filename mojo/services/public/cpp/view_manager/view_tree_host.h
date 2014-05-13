@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 class ViewTreeHost {
@@ -18,7 +17,6 @@ class ViewTreeHost {
 };
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
 #endif  // MOJO_SERVICES_PUBLIC_CPP_VIEW_MANAGER_VIEW_TREE_HOST_H_

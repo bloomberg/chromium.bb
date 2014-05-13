@@ -13,11 +13,11 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(mojo::services::view_manager::Node*);
+DECLARE_WINDOW_PROPERTY_TYPE(mojo::view_manager::service::Node*);
 
 namespace mojo {
-namespace services {
 namespace view_manager {
+namespace service {
 
 DEFINE_WINDOW_PROPERTY_KEY(Node*, kNodeKey, NULL);
 
@@ -62,7 +62,7 @@ std::vector<Node*> Node::GetChildren() {
   return children;
 }
 
-void Node::SetView(service::View* view) {
+void Node::SetView(View* view) {
   if (view == view_)
     return;
 
@@ -156,6 +156,6 @@ bool Node::HasHitTestMask() const {
 void Node::GetHitTestMask(gfx::Path* mask) const {
 }
 
+}  // namespace service
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

@@ -12,7 +12,6 @@
 #include "mojo/services/public/cpp/view_manager/view_tree_node_observer.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 namespace {
@@ -278,6 +277,5 @@ void ViewTreeNode::LocalSetActiveView(View* view) {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 

@@ -14,7 +14,6 @@
 #include "mojo/services/public/cpp/view_manager/util.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 uint32_t MakeTransportId(uint16_t connection_id, uint16_t local_id) {
@@ -550,5 +549,4 @@ void ViewManagerSynchronizer::OnRootTreeReceived(
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 // ViewTreeNode ----------------------------------------------------------------
@@ -344,5 +343,4 @@ TEST_F(ViewTreeNodeObserverTest, TreeChange_Reparent) {
 }
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo

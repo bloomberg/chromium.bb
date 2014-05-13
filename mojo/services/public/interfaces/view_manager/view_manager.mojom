@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo.services.view_manager {
+module mojo.view_manager {
 
 struct INode {
   uint32 parent_id;

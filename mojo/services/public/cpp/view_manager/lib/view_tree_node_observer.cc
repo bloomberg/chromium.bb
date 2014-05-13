@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 
 namespace mojo {
-namespace services {
 namespace view_manager {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -21,6 +20,5 @@ ViewTreeNodeObserver::TreeChangeParams::TreeChangeParams()
       phase(ViewTreeNodeObserver::DISPOSITION_CHANGING) {}
 
 }  // namespace view_manager
-}  // namespace services
 }  // namespace mojo
 
