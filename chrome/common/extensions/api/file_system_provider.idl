@@ -144,6 +144,14 @@ namespace fileSystemProvider {
         boolean create,
         ProviderSuccessCallback successCallback,
         ProviderErrorCallback errorCallback);
+
+    // Raised when opening a file previously opened with <code>openRequestId
+    // </code> is requested to be closed.
+    [maxListeners=1] static void onCloseFileRequested(
+        long fileSystemId,
+        long openRequestId,
+        ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
   };
 };
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system.h"
 
 #include "base/files/file.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/close_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/read_directory.h"
@@ -59,15 +60,14 @@ void ProvidedFileSystem::ReadDirectory(
   }
 }
 
-void ProvidedFileSystem::OpenFile(
-    const base::FilePath& file_path,
-    OpenFileMode mode,
-    bool create,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+void ProvidedFileSystem::OpenFile(const base::FilePath& file_path,
+                                  OpenFileMode mode,
+                                  bool create,
+                                  const OpenFileCallback& callback) {
   // Writing is not supported. Note, that this includes a situation, when a file
   // exists, but |create| is set to true.
   if (mode == OPEN_FILE_MODE_WRITE || create) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
     return;
   }
 
@@ -79,6 +79,17 @@ void ProvidedFileSystem::OpenFile(
                                        mode,
                                        create,
                                        callback)))) {
+    callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
+  }
+}
+
+void ProvidedFileSystem::CloseFile(
+    int file_handle,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  if (!request_manager_.CreateRequest(
+          scoped_ptr<RequestManager::HandlerInterface>(
+              new operations::CloseFile(
+                  event_router_, file_system_info_, file_handle, callback)))) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
   }
 }

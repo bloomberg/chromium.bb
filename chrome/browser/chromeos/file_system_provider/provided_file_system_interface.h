@@ -24,6 +24,9 @@ class RequestManager;
 // TODO(mtomasz): Add more methods once implemented.
 class ProvidedFileSystemInterface {
  public:
+  typedef base::Callback<void(int file_handle, base::File::Error result)>
+      OpenFileCallback;
+
   // Mode of opening a file. Used by OpenFile().
   enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
 
@@ -39,6 +42,7 @@ class ProvidedFileSystemInterface {
   virtual void GetMetadata(
       const base::FilePath& entry_path,
       const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) = 0;
+
   // Requests enumerating entries from the passed |directory_path|. The callback
   // can be called multiple times until either an error is returned or the
   // has_more field is set to false.
@@ -47,11 +51,16 @@ class ProvidedFileSystemInterface {
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
 
   // Requests opening a file at |file_path|. If |create| is set to true, it will
-  // create a file and return succes in case it didn't exist.
-  virtual void OpenFile(
-      const base::FilePath& file_path,
-      OpenFileMode mode,
-      bool create,
+  // create a file and return success in case it didn't exist.
+  virtual void OpenFile(const base::FilePath& file_path,
+                        OpenFileMode mode,
+                        bool create,
+                        const OpenFileCallback& callback) = 0;
+
+  // Requests closing a file, previously opened with OpenFile() as a file with
+  // |file_handle|. For either succes or error |callback| must be called.
+  virtual void CloseFile(
+      int file_handle,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Returns a provided file system info for this file system.

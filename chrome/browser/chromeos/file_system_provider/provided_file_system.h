@@ -38,10 +38,12 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual void ReadDirectory(
       const base::FilePath& directory_path,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void OpenFile(
-      const base::FilePath& file_path,
-      OpenFileMode mode,
-      bool create,
+  virtual void OpenFile(const base::FilePath& file_path,
+                        OpenFileMode mode,
+                        bool create,
+                        const OpenFileCallback& callback) OVERRIDE;
+  virtual void CloseFile(
+      int file_handle,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;

@@ -380,6 +380,8 @@
         'browser/chromeos/file_system_provider/mount_path_util.cc',
         'browser/chromeos/file_system_provider/mount_path_util.h',
         'browser/chromeos/file_system_provider/observer.h',
+        'browser/chromeos/file_system_provider/operations/close_file.cc',
+        'browser/chromeos/file_system_provider/operations/close_file.h',
         'browser/chromeos/file_system_provider/operations/get_metadata.cc',
         'browser/chromeos/file_system_provider/operations/get_metadata.h',
         'browser/chromeos/file_system_provider/operations/open_file.cc',

@@ -13,12 +13,13 @@ namespace chromeos {
 namespace file_system_provider {
 namespace operations {
 
-OpenFile::OpenFile(extensions::EventRouter* event_router,
-                   const ProvidedFileSystemInfo& file_system_info,
-                   const base::FilePath& file_path,
-                   ProvidedFileSystemInterface::OpenFileMode mode,
-                   bool create,
-                   const fileapi::AsyncFileUtil::StatusCallback& callback)
+OpenFile::OpenFile(
+    extensions::EventRouter* event_router,
+    const ProvidedFileSystemInfo& file_system_info,
+    const base::FilePath& file_path,
+    ProvidedFileSystemInterface::OpenFileMode mode,
+    bool create,
+    const ProvidedFileSystemInterface::OpenFileCallback& callback)
     : Operation(event_router, file_system_info),
       file_path_(file_path),
       mode_(mode),
@@ -52,14 +53,15 @@ bool OpenFile::Execute(int request_id) {
       values.Pass());
 }
 
-void OpenFile::OnSuccess(int /* request_id */,
+void OpenFile::OnSuccess(int request_id,
                          scoped_ptr<RequestValue> result,
                          bool has_next) {
-  callback_.Run(base::File::FILE_OK);
+  // File handle is the same as request id of the OpenFile operation.
+  callback_.Run(request_id, base::File::FILE_OK);
 }
 
 void OpenFile::OnError(int /* request_id */, base::File::Error error) {
-  callback_.Run(error);
+  callback_.Run(0 /* file_handle */, error);
 }
 
 }  // namespace operations

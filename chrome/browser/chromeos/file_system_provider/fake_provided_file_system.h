@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FAKE_PROVIDED_FILE_SYSTEM_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_FAKE_PROVIDED_FILE_SYSTEM_H_
 
+#include <set>
+
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 
@@ -34,10 +36,12 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual void ReadDirectory(
       const base::FilePath& directory_path,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) OVERRIDE;
-  virtual void OpenFile(
-      const base::FilePath& file_path,
-      OpenFileMode mode,
-      bool create,
+  virtual void OpenFile(const base::FilePath& file_path,
+                        OpenFileMode mode,
+                        bool create,
+                        const OpenFileCallback& callback) OVERRIDE;
+  virtual void CloseFile(
+      int file_handle,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
@@ -50,6 +54,8 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
 
  private:
   ProvidedFileSystemInfo file_system_info_;
+  std::set<int> opened_files_;
+  int last_file_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeProvidedFileSystem);
 };

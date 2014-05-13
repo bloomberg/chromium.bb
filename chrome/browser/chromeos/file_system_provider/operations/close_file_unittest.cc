@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/close_file.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
@@ -25,7 +25,7 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const int kFileSystemId = 1;
 const int kRequestId = 2;
-const base::FilePath::CharType kFilePath[] = "/directory/blueberries.txt";
+const int kOpenRequestId = 3;
 
 // Fake event dispatcher implementation with extra logging capability. Acts as
 // a providing extension end-point.
@@ -52,38 +52,19 @@ class LoggingDispatchEventImpl {
 // Callback invocation logger. Acts as a fileapi end-point.
 class CallbackLogger {
  public:
-  class Event {
-   public:
-    Event(int file_handle, base::File::Error result)
-        : file_handle_(file_handle), result_(result) {}
-    virtual ~Event() {}
-
-    int file_handle() { return file_handle_; }
-    base::File::Error result() { return result_; }
-
-   private:
-    int file_handle_;
-    base::File::Error result_;
-
-    DISALLOW_COPY_AND_ASSIGN(Event);
-  };
-
   CallbackLogger() : weak_ptr_factory_(this) {}
   virtual ~CallbackLogger() {}
 
-  void OnOpenFile(int file_handle, base::File::Error result) {
-    events_.push_back(new Event(file_handle, result));
-  }
+  void OnCloseFile(base::File::Error result) { events_.push_back(result); }
 
-  ScopedVector<Event>& events() { return events_; }
+  std::vector<base::File::Error>& events() { return events_; }
 
   base::WeakPtr<CallbackLogger> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
  private:
-  ScopedVector<Event> events_;
-  bool dispatch_reply_;
+  std::vector<base::File::Error> events_;
   base::WeakPtrFactory<CallbackLogger> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CallbackLogger);
@@ -91,10 +72,10 @@ class CallbackLogger {
 
 }  // namespace
 
-class FileSystemProviderOperationsOpenFileTest : public testing::Test {
+class FileSystemProviderOperationsCloseFileTest : public testing::Test {
  protected:
-  FileSystemProviderOperationsOpenFileTest() {}
-  virtual ~FileSystemProviderOperationsOpenFileTest() {}
+  FileSystemProviderOperationsCloseFileTest() {}
+  virtual ~FileSystemProviderOperationsCloseFileTest() {}
 
   virtual void SetUp() OVERRIDE {
     file_system_info_ =
@@ -107,30 +88,28 @@ class FileSystemProviderOperationsOpenFileTest : public testing::Test {
   ProvidedFileSystemInfo file_system_info_;
 };
 
-TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
+TEST_F(FileSystemProviderOperationsCloseFileTest, Execute) {
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(
+  CloseFile close_file(
       NULL,
       file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kFilePath),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
-      base::Bind(&CallbackLogger::OnOpenFile, callback_logger.GetWeakPtr()));
-  open_file.SetDispatchEventImplForTesting(
+      kOpenRequestId,
+      base::Bind(&CallbackLogger::OnCloseFile, callback_logger.GetWeakPtr()));
+  close_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(open_file.Execute(kRequestId));
+  EXPECT_TRUE(close_file.Execute(kRequestId));
 
   ASSERT_EQ(1u, dispatcher.events().size());
   extensions::Event* event = dispatcher.events()[0];
   EXPECT_EQ(
-      extensions::api::file_system_provider::OnOpenFileRequested::kEventName,
+      extensions::api::file_system_provider::OnCloseFileRequested::kEventName,
       event->event_name);
   base::ListValue* event_args = event->event_args.get();
-  ASSERT_EQ(5u, event_args->GetSize());
+  ASSERT_EQ(3u, event_args->GetSize());
 
   int event_file_system_id = -1;
   EXPECT_TRUE(event_args->GetInteger(0, &event_file_system_id));
@@ -140,96 +119,76 @@ TEST_F(FileSystemProviderOperationsOpenFileTest, Execute) {
   EXPECT_TRUE(event_args->GetInteger(1, &event_request_id));
   EXPECT_EQ(kRequestId, event_request_id);
 
-  std::string event_file_path;
-  EXPECT_TRUE(event_args->GetString(2, &event_file_path));
-  EXPECT_EQ(kFilePath, event_file_path);
-
-  std::string event_file_open_mode;
-  EXPECT_TRUE(event_args->GetString(3, &event_file_open_mode));
-  const std::string expected_file_open_mode =
-      extensions::api::file_system_provider::ToString(
-          extensions::api::file_system_provider::OPEN_FILE_MODE_READ);
-  EXPECT_EQ(expected_file_open_mode, event_file_open_mode);
-
-  bool event_create;
-  EXPECT_TRUE(event_args->GetBoolean(4, &event_create));
-  EXPECT_FALSE(event_create);
+  int event_open_request_id = -1;
+  EXPECT_TRUE(event_args->GetInteger(2, &event_open_request_id));
+  EXPECT_EQ(kOpenRequestId, event_open_request_id);
 }
 
-TEST_F(FileSystemProviderOperationsOpenFileTest, Execute_NoListener) {
+TEST_F(FileSystemProviderOperationsCloseFileTest, Execute_NoListener) {
   LoggingDispatchEventImpl dispatcher(false /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(
+  CloseFile close_file(
       NULL,
       file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kFilePath),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
-      base::Bind(&CallbackLogger::OnOpenFile, callback_logger.GetWeakPtr()));
-  open_file.SetDispatchEventImplForTesting(
+      kOpenRequestId,
+      base::Bind(&CallbackLogger::OnCloseFile, callback_logger.GetWeakPtr()));
+  close_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_FALSE(open_file.Execute(kRequestId));
+  EXPECT_FALSE(close_file.Execute(kRequestId));
 }
 
-TEST_F(FileSystemProviderOperationsOpenFileTest, OnSuccess) {
+TEST_F(FileSystemProviderOperationsCloseFileTest, OnSuccess) {
   using extensions::api::file_system_provider::EntryMetadata;
   using extensions::api::file_system_provider_internal::
-      OpenFileRequestedSuccess::Params;
+      CloseFileRequestedSuccess::Params;
 
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(
+  CloseFile close_file(
       NULL,
       file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kFilePath),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
-      base::Bind(&CallbackLogger::OnOpenFile, callback_logger.GetWeakPtr()));
-  open_file.SetDispatchEventImplForTesting(
+      kOpenRequestId,
+      base::Bind(&CallbackLogger::OnCloseFile, callback_logger.GetWeakPtr()));
+  close_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(open_file.Execute(kRequestId));
+  EXPECT_TRUE(close_file.Execute(kRequestId));
 
-  open_file.OnSuccess(kRequestId,
-                      scoped_ptr<RequestValue>(new RequestValue()),
-                      false /* has_next */);
+  close_file.OnSuccess(kRequestId,
+                       scoped_ptr<RequestValue>(new RequestValue()),
+                       false /* has_next */);
   ASSERT_EQ(1u, callback_logger.events().size());
-  CallbackLogger::Event* event = callback_logger.events()[0];
-  EXPECT_EQ(base::File::FILE_OK, event->result());
-  EXPECT_LT(0, event->file_handle());
+  EXPECT_EQ(base::File::FILE_OK, callback_logger.events()[0]);
 }
 
-TEST_F(FileSystemProviderOperationsOpenFileTest, OnError) {
+TEST_F(FileSystemProviderOperationsCloseFileTest, OnError) {
   using extensions::api::file_system_provider::EntryMetadata;
-  using extensions::api::file_system_provider_internal::OpenFileRequestedError::
-      Params;
+  using extensions::api::file_system_provider_internal::
+      CloseFileRequestedError::Params;
 
   LoggingDispatchEventImpl dispatcher(true /* dispatch_reply */);
   CallbackLogger callback_logger;
 
-  OpenFile open_file(
+  CloseFile close_file(
       NULL,
       file_system_info_,
-      base::FilePath::FromUTF8Unsafe(kFilePath),
-      ProvidedFileSystemInterface::OPEN_FILE_MODE_READ,
-      false /* create */,
-      base::Bind(&CallbackLogger::OnOpenFile, callback_logger.GetWeakPtr()));
-  open_file.SetDispatchEventImplForTesting(
+      kOpenRequestId,
+      base::Bind(&CallbackLogger::OnCloseFile, callback_logger.GetWeakPtr()));
+  close_file.SetDispatchEventImplForTesting(
       base::Bind(&LoggingDispatchEventImpl::OnDispatchEventImpl,
                  base::Unretained(&dispatcher)));
 
-  EXPECT_TRUE(open_file.Execute(kRequestId));
+  EXPECT_TRUE(close_file.Execute(kRequestId));
 
-  open_file.OnError(kRequestId, base::File::FILE_ERROR_TOO_MANY_OPENED);
+  close_file.OnError(kRequestId, base::File::FILE_ERROR_TOO_MANY_OPENED);
   ASSERT_EQ(1u, callback_logger.events().size());
-  CallbackLogger::Event* event = callback_logger.events()[0];
-  EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED, event->result());
-  ASSERT_EQ(0, event->file_handle());
+  EXPECT_EQ(base::File::FILE_ERROR_TOO_MANY_OPENED,
+            callback_logger.events()[0]);
 }
 
 }  // namespace operations

@@ -169,4 +169,24 @@ bool FileSystemProviderInternalOpenFileRequestedErrorFunction::RunWhenValid() {
   return true;
 }
 
+bool
+FileSystemProviderInternalCloseFileRequestedSuccessFunction::RunWhenValid() {
+  using api::file_system_provider_internal::CloseFileRequestedSuccess::Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  FulfillRequest(scoped_ptr<RequestValue>(new RequestValue()),
+                 false /* has_more */);
+  return true;
+}
+
+bool FileSystemProviderInternalCloseFileRequestedErrorFunction::RunWhenValid() {
+  using api::file_system_provider_internal::CloseFileRequestedError::Params;
+  const scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  RejectRequest(ProviderErrorToFileError(params->error));
+  return true;
+}
+
 }  // namespace extensions

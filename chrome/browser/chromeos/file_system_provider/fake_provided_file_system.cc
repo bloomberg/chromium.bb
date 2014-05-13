@@ -32,7 +32,7 @@ void AddDirectoryEntry(fileapi::AsyncFileUtil::EntryList* entry_list,
 
 FakeProvidedFileSystem::FakeProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info)
-    : file_system_info_(file_system_info) {
+    : file_system_info_(file_system_info), last_file_handle_(0) {
 }
 
 FakeProvidedFileSystem::~FakeProvidedFileSystem() {}
@@ -118,17 +118,31 @@ void FakeProvidedFileSystem::ReadDirectory(
   }
 }
 
-void FakeProvidedFileSystem::OpenFile(
-    const base::FilePath& file_path,
-    OpenFileMode mode,
-    bool create,
-    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+void FakeProvidedFileSystem::OpenFile(const base::FilePath& file_path,
+                                      OpenFileMode mode,
+                                      bool create,
+                                      const OpenFileCallback& callback) {
   if (file_path.AsUTF8Unsafe() != "/hello.txt" ||
       mode == OPEN_FILE_MODE_WRITE || create) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    callback.Run(0 /* file_handle */, base::File::FILE_ERROR_SECURITY);
     return;
   }
 
+  const int file_handle = ++last_file_handle_;
+  callback.Run(file_handle, base::File::FILE_OK);
+}
+
+void FakeProvidedFileSystem::CloseFile(
+    int file_handle,
+    const fileapi::AsyncFileUtil::StatusCallback& callback) {
+  const std::set<int>::iterator opened_file_it =
+      opened_files_.find(file_handle);
+  if (opened_file_it == opened_files_.end()) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  opened_files_.erase(opened_file_it);
   callback.Run(base::File::FILE_OK);
 }
 

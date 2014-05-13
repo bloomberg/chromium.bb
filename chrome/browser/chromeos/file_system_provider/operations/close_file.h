@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_OPEN_FILE_H_
-#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_OPEN_FILE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_CLOSE_FILE_H_
+#define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_CLOSE_FILE_H_
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
@@ -28,15 +28,13 @@ namespace operations {
 // Opens a file for either read or write, with optionally creating the file
 // first. Note, that this is part of fileapi::CreateOrOpen file, but it does
 // not download the file locally. Created per request.
-class OpenFile : public Operation {
+class CloseFile : public Operation {
  public:
-  OpenFile(extensions::EventRouter* event_router,
-           const ProvidedFileSystemInfo& file_system_info,
-           const base::FilePath& file_path,
-           ProvidedFileSystemInterface::OpenFileMode mode,
-           bool create,
-           const ProvidedFileSystemInterface::OpenFileCallback& callback);
-  virtual ~OpenFile();
+  CloseFile(extensions::EventRouter* event_router,
+            const ProvidedFileSystemInfo& file_system_info,
+            int open_request_id,
+            const fileapi::AsyncFileUtil::StatusCallback& callback);
+  virtual ~CloseFile();
 
   // Operation overrides.
   virtual bool Execute(int request_id) OVERRIDE;
@@ -46,16 +44,14 @@ class OpenFile : public Operation {
   virtual void OnError(int request_id, base::File::Error error) OVERRIDE;
 
  private:
-  base::FilePath file_path_;
-  ProvidedFileSystemInterface::OpenFileMode mode_;
-  bool create_;
-  const ProvidedFileSystemInterface::OpenFileCallback callback_;
+  int open_request_id_;
+  const fileapi::AsyncFileUtil::StatusCallback callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(OpenFile);
+  DISALLOW_COPY_AND_ASSIGN(CloseFile);
 };
 
 }  // namespace operations
 }  // namespace file_system_provider
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_OPEN_FILE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_CLOSE_FILE_H_
