@@ -10,8 +10,6 @@
 #include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/extensions/activity_log/activity_action_constants.h"
 #include "chrome/browser/extensions/activity_log/ad_network_database.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -180,13 +178,8 @@ void UmaPolicy::HistogramOnClose(const std::string& cleaned_url,
   int statuses[MAX_STATUS - 1];
   std::memset(statuses, 0, sizeof(statuses));
 
-  // |web_contents| can be NULL in unit tests.
-  TabHelper* tab_helper =
-      web_contents ? TabHelper::FromWebContents(web_contents) : NULL;
   ActiveScriptController* active_script_controller =
-      tab_helper && tab_helper->location_bar_controller() ?
-          tab_helper->location_bar_controller()->active_script_controller() :
-          NULL;
+      ActiveScriptController::GetForWebContents(web_contents);
   SiteMap::iterator site_lookup = url_status_.find(cleaned_url);
   const ExtensionMap& exts = site_lookup->second;
   std::vector<std::string> ad_injectors;

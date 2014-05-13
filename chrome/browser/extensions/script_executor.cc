@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "chrome/browser/extensions/active_script_controller.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -109,7 +108,9 @@ ScriptExecutor::ScriptExecutor(
     ObserverList<TabHelper::ScriptExecutionObserver>* script_observers)
     : next_request_id_(0),
       web_contents_(web_contents),
-      script_observers_(script_observers) {}
+      script_observers_(script_observers) {
+  CHECK(web_contents_);
+}
 
 ScriptExecutor::~ScriptExecutor() {}
 
@@ -125,15 +126,15 @@ void ScriptExecutor::ExecuteScript(const std::string& extension_id,
                                    bool user_gesture,
                                    ScriptExecutor::ResultType result_type,
                                    const ExecuteScriptCallback& callback) {
-  TabHelper* tab_helper = TabHelper::FromWebContents(web_contents_);
-  if (tab_helper) {
-    LocationBarController* location_bar_controller =
-        TabHelper::FromWebContents(web_contents_)->location_bar_controller();
+  ActiveScriptController* active_script_controller =
+      ActiveScriptController::GetForWebContents(web_contents_);
+  content::NavigationEntry* visible_entry =
+      web_contents_->GetController().GetVisibleEntry();
+  if (active_script_controller && visible_entry) {
     // TODO(rdevlin.cronin): Now, this is just a notification. Soon, it should
     // block until the user gives the OK to execute.
-    location_bar_controller->active_script_controller()->NotifyScriptExecuting(
-        extension_id,
-        web_contents_->GetController().GetVisibleEntry()->GetPageID());
+    active_script_controller->NotifyScriptExecuting(extension_id,
+                                                    visible_entry->GetPageID());
   }
 
   ExtensionMsg_ExecuteCode_Params params;

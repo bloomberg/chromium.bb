@@ -7,6 +7,8 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/extensions/location_bar_controller.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -31,11 +33,28 @@ ActiveScriptController::~ActiveScriptController() {
   LogUMA();
 }
 
+// static
+ActiveScriptController* ActiveScriptController::GetForWebContents(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return NULL;
+  TabHelper* tab_helper = TabHelper::FromWebContents(web_contents);
+  if (!tab_helper)
+    return NULL;
+  LocationBarController* location_bar_controller =
+      tab_helper->location_bar_controller();
+  // This should never be NULL.
+  DCHECK(location_bar_controller);
+  return location_bar_controller->active_script_controller();
+}
+
 void ActiveScriptController::NotifyScriptExecuting(
     const std::string& extension_id, int page_id) {
-  if (extensions_executing_scripts_.count(extension_id) ||
-      web_contents()->GetController().GetVisibleEntry()->GetPageID() !=
-          page_id) {
+  content::NavigationEntry* visible_entry =
+      web_contents()->GetController().GetVisibleEntry();
+  if (!visible_entry ||
+      extensions_executing_scripts_.count(extension_id) ||
+      visible_entry->GetPageID() != page_id) {
     return;
   }
 

@@ -37,6 +37,11 @@ class ActiveScriptController : public LocationBarController::ActionProvider,
   explicit ActiveScriptController(content::WebContents* web_contents);
   virtual ~ActiveScriptController();
 
+  // Returns the ActiveScriptController for the given |web_contents|, or NULL
+  // if one does not exist.
+  static ActiveScriptController* GetForWebContents(
+      content::WebContents* web_contents);
+
   // Notify the ActiveScriptController that an extension is running a script.
   // TODO(rdevlin.cronin): Soon, this should be ask the user for permission,
   // rather than simply notifying them.
