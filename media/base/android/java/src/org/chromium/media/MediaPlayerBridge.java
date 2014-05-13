@@ -42,7 +42,7 @@ public class MediaPlayerBridge {
     private long mNativeMediaPlayerBridge;
 
     @CalledByNative
-    private static MediaPlayerBridge create(long  nativeMediaPlayerBridge) {
+    private static MediaPlayerBridge create(long nativeMediaPlayerBridge) {
         return new MediaPlayerBridge(nativeMediaPlayerBridge);
     }
 
