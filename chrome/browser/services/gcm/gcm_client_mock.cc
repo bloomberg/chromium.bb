@@ -10,6 +10,7 @@
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gcm/base/encryptor.h"
 
 namespace gcm {
 
@@ -30,6 +31,7 @@ void GCMClientMock::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter,
+    scoped_ptr<Encryptor> encryptor,
     Delegate* delegate) {
   delegate_ = delegate;
 }

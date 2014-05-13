@@ -31,7 +31,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-        '../../components/components.gyp:os_crypt',
         '../../net/net.gyp:net',
         '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -101,6 +100,8 @@
         'gcm'
       ],
       'sources': [
+        'base/fake_encryptor.cc',
+        'base/fake_encryptor.h',
         'tools/mcs_probe.cc',
       ],
     },
@@ -119,7 +120,6 @@
       'dependencies': [
         '../../base/base.gyp:run_all_unittests',
         '../../base/base.gyp:base',
-        '../../components/components.gyp:os_crypt',
         '../../net/net.gyp:net',
         '../../net/net.gyp:net_test_support',
         '../../testing/gtest.gyp:gtest',
@@ -127,6 +127,8 @@
         'gcm'
       ],
       'sources': [
+        'base/fake_encryptor.cc',
+        'base/fake_encryptor.h',
         'base/mcs_message_unittest.cc',
         'base/mcs_util_unittest.cc',
         'base/socket_stream_unittest.cc',

@@ -87,6 +87,7 @@ class GCM_EXPORT GCMClientImpl
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
+      scoped_ptr<Encryptor> encryptor,
       GCMClient::Delegate* delegate) OVERRIDE;
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;

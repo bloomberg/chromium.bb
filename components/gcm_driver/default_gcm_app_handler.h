@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_DEFAULT_GCM_APP_HANDLER_H_
-#define CHROME_BROWSER_SERVICES_GCM_DEFAULT_GCM_APP_HANDLER_H_
+#ifndef COMPONENTS_GCM_DRIVER_DEFAULT_GCM_APP_HANDLER_H_
+#define COMPONENTS_GCM_DRIVER_DEFAULT_GCM_APP_HANDLER_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/services/gcm/gcm_app_handler.h"
+#include "components/gcm_driver/gcm_app_handler.h"
 
 namespace gcm {
 
@@ -32,4 +32,4 @@ class DefaultGCMAppHandler : public GCMAppHandler {
 
 }  // namespace gcm
 
-#endif  // CHROME_BROWSER_SERVICES_GCM_DEFAULT_GCM_APP_HANDLER_H_
+#endif  // COMPONENTS_GCM_DRIVER_DEFAULT_GCM_APP_HANDLER_H_

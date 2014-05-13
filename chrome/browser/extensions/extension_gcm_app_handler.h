@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/services/gcm/gcm_app_handler.h"
+#include "components/gcm_driver/gcm_app_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"

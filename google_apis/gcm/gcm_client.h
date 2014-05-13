@@ -30,6 +30,8 @@ class URLRequestContextGetter;
 
 namespace gcm {
 
+class Encryptor;
+
 // Interface that encapsulates the network communications with the Google Cloud
 // Messaging server. This interface is not supposed to be thread-safe.
 class GCM_EXPORT GCMClient {
@@ -183,6 +185,7 @@ class GCM_EXPORT GCMClient {
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
+      scoped_ptr<Encryptor> encryptor,
       Delegate* delegate) = 0;
 
   // Starts the GCM service by first loading the data from the persistent store.
