@@ -6,14 +6,17 @@
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Browser;
 
 namespace extensions {
 class Extension;
+class ExtensionRegistry;
 }
 
 // Provides feedback to the user upon successful installation of an
@@ -27,7 +30,8 @@ class Extension;
 //                      don't specify a default icon.
 //
 // ExtensionInstallBubble manages its own lifetime.
-class ExtensionInstalledBubble : public content::NotificationObserver {
+class ExtensionInstalledBubble : public content::NotificationObserver,
+                                 public extensions::ExtensionRegistryObserver {
  public:
   // The behavior and content of this Bubble comes in these varieties:
   enum BubbleType {
@@ -72,6 +76,15 @@ class ExtensionInstalledBubble : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // extensions::ExtensionRegistryObserver:
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // The view delegate that shows the bubble. Owns us.
   Delegate* delegate_;
 
@@ -81,6 +94,11 @@ class ExtensionInstalledBubble : public content::NotificationObserver {
   const SkBitmap icon_;
   BubbleType type_;
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension load, unloaded notifications.
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // The number of times to retry showing the bubble if the browser action
   // toolbar is animating.

@@ -10,16 +10,22 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/page_navigator.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class ExtensionEnableFlowDelegate;
 
 namespace content {
 class PageNavigator;
 class WebContents;
+}
+
+namespace extensions {
+class ExtensionRegistry;
 }
 
 // ExtensionEnableFlow performs an UI flow to enable a disabled/terminated
@@ -31,7 +37,8 @@ class WebContents;
 // flow is aborted when user declines it.
 class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
                             public content::PageNavigator,
-                            public content::NotificationObserver {
+                            public content::NotificationObserver,
+                            public extensions::ExtensionRegistryObserver {
  public:
   ExtensionEnableFlow(Profile* profile,
                       const std::string& extension_id,
@@ -77,6 +84,11 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // extensions::ExtensionRegistryObserver overrides:
+  virtual void OnExtensionLoaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension) OVERRIDE;
+
   // ExtensionInstallPrompt::Delegate overrides:
   virtual void InstallUIProceed() OVERRIDE;
   virtual void InstallUIAbort(bool user_initiated) OVERRIDE;
@@ -103,6 +115,11 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
 
   scoped_ptr<ExtensionInstallPrompt> prompt_;
   content::NotificationRegistrar registrar_;
+
+  // Listen to extension load notification.
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEnableFlow);
 };

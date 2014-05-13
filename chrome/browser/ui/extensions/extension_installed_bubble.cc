@@ -10,11 +10,13 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 using content::Details;
@@ -31,12 +33,13 @@ const int kAnimationWaitRetries = 10;
 
 ExtensionInstalledBubble::ExtensionInstalledBubble(Delegate* delegate,
                                                    const Extension* extension,
-                                                   Browser *browser,
+                                                   Browser* browser,
                                                    const SkBitmap& icon)
     : delegate_(delegate),
       extension_(extension),
       browser_(browser),
       icon_(icon),
+      extension_registry_observer_(this),
       animation_wait_retries_(0),
       weak_factory_(this) {
   if (!extensions::OmniboxInfo::GetKeyword(extension).empty())
@@ -54,11 +57,9 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(Delegate* delegate,
   // fired, but all of the EXTENSION_LOADED Observers have run. Only then can we
   // be sure that a BrowserAction or PageAction has had views created which we
   // can inspect for the purpose of previewing of pointing to them.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                 content::Source<Profile>(browser->profile()));
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-      content::Source<Profile>(browser->profile()));
+  extension_registry_observer_.Add(
+      extensions::ExtensionRegistry::Get(browser->profile()));
+
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
       content::Source<Browser>(browser));
 }
@@ -82,38 +83,35 @@ void ExtensionInstalledBubble::ShowInternal() {
   }
 }
 
+void ExtensionInstalledBubble::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  if (extension == extension_) {
+    animation_wait_retries_ = 0;
+    // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
+    base::MessageLoopForUI::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ExtensionInstalledBubble::ShowInternal,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
+void ExtensionInstalledBubble::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  if (extension == extension_) {
+    // Extension is going away, make sure ShowInternal won't be called.
+    weak_factory_.InvalidateWeakPtrs();
+    extension_ = NULL;
+  }
+}
+
 void ExtensionInstalledBubble::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED: {
-      const Extension* extension = Details<const Extension>(details).ptr();
-      if (extension == extension_) {
-        animation_wait_retries_ = 0;
-        // PostTask to ourself to allow all EXTENSION_LOADED Observers to run.
-        base::MessageLoopForUI::current()->PostTask(
-            FROM_HERE,
-            base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                       weak_factory_.GetWeakPtr()));
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED: {
-      const Extension* extension =
-          Details<extensions::UnloadedExtensionInfo>(details)->extension;
-      if (extension == extension_) {
-        // Extension is going away, make sure ShowInternal won't be called.
-        weak_factory_.InvalidateWeakPtrs();
-        extension_ = NULL;
-      }
-      break;
-    }
-    case chrome::NOTIFICATION_BROWSER_CLOSING:
-      delete delegate_;
-      break;
-
-    default:
-      NOTREACHED() << "Received unexpected notification";
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_BROWSER_CLOSING)
+      << "Received unexpected notification";
+  delete delegate_;
 }
