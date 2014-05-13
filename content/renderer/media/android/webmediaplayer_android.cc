@@ -128,13 +128,14 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
   player_id_ = manager_->RegisterMediaPlayer(this);
 
 #if defined(VIDEO_HOLE)
-  if (manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
+  force_use_overlay_embedded_video_ = CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kForceUseOverlayEmbeddedVideo);
+  if (force_use_overlay_embedded_video_ ||
+      manager_->ShouldUseVideoOverlayForEmbeddedEncryptedVideo()) {
     // Defer stream texture creation until we are sure it's necessary.
     needs_establish_peer_ = false;
     current_frame_ = VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
   }
-  force_use_overlay_embedded_video_ = CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kForceUseOverlayEmbeddedVideo);
 #endif  // defined(VIDEO_HOLE)
   TryCreateStreamTextureProxyIfNeeded();
 }
