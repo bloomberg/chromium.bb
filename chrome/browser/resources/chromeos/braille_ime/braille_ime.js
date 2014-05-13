@@ -69,7 +69,7 @@ BrailleIme.prototype = {
   USE_STANDARD_KEYBOARD_ID: 'useStandardKeyboard',
 
   // State related to the support for typing braille using a standrad
-  // (querty) keyboard.
+  // (qwerty) keyboard.
 
   /** @private {boolean} */
   useStandardKeyboard_: false,
@@ -88,16 +88,24 @@ BrailleIme.prototype = {
   accumulated_: 0,
 
   /**
+   * Bit in {@code pressed_} and {@code accumulated_} that represent
+   * the space key.
+   * @const {number}
+   */
+  SPACE: 0x100,
+
+  /**
    * Maps key codes on a standard keyboard to the correspodning dots.
    * Keys on the 'home row' correspond to the keys on a Perkins-style keyboard.
    * Note that the mapping below is arranged like the dots in a braille cell.
    * Only 6 dot input is supported.
    * @private
-   * @const {Object.<string, string>}
+   * @const {Object.<string, number>}
    */
   CODE_TO_DOT_: {'KeyF': 0x01, 'KeyJ': 0x08,
                  'KeyD': 0x02, 'KeyK': 0x10,
-                 'KeyS': 0x04, 'KeyL': 0x20 },
+                 'KeyS': 0x04, 'KeyL': 0x20,
+                 'Space': 0x100 },
 
   /**
    * The current engine ID as set by {@code onActivate}, or the empty string if
@@ -201,7 +209,7 @@ BrailleIme.prototype = {
    */
   onKeyEvent_: function(engineID, event) {
     this.log_('onKeyEvent', engineID + ', ' + JSON.stringify(event));
-    return this.processKey_(event.code, event.type);
+    return this.processKey_(event);
   },
 
   /**
@@ -252,31 +260,40 @@ BrailleIme.prototype = {
   },
 
   /**
-   * Handles a querty key on the home row as a braille key.
-   * @param {string} code Key code.
-   * @param {string} type Type of key event.
+   * Handles a qwerty key on the home row as a braille key.
+   * @param {!ChromeKeyboardEvent} event Keyboard event.
    * @return {boolean} Whether the key event was handled or not.
    * @private
    */
-  processKey_: function(code, type) {
+  processKey_: function(event) {
     if (!this.useStandardKeyboard_) {
       return false;
     }
-    var dot = this.CODE_TO_DOT_[code];
-    if (!dot) {
+    var dot = this.CODE_TO_DOT_[event.code];
+    if (!dot || event.altKey || event.ctrlKey || event.shiftKey ||
+        event.capsLock) {
       this.pressed_ = 0;
       this.accumulated_ = 0;
       return false;
     }
-    if (type === 'keydown') {
+    if (event.type === 'keydown') {
       this.pressed_ |= dot;
       this.accumulated_ |= this.pressed_;
       return true;
-    } else if (type == 'keyup') {
+    } else if (event.type === 'keyup') {
       this.pressed_ &= ~dot;
-      if (this.pressed_ == 0 && this.accumulated_ != 0) {
-        this.sendToChromeVox_({type: 'brailleDots', dots: this.accumulated_});
+      if (this.pressed_ === 0 && this.accumulated_ !== 0) {
+        var dotsToSend = this.accumulated_;
         this.accumulated_ = 0;
+        if (dotsToSend & this.SPACE) {
+          if (dotsToSend != this.SPACE) {
+            // Can't combine space and actual dot keys.
+            return true;
+          }
+          // Space is sent as a blank cell.
+          dotsToSend = 0;
+        }
+        this.sendToChromeVox_({type: 'brailleDots', dots: dotsToSend});
       }
       return true;
     }

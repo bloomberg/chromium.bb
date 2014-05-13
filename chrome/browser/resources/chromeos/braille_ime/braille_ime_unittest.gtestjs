@@ -122,12 +122,20 @@ BrailleImeUnitTest.prototype = {
     this.port.messages.length = 0;
   },
 
-  sendKeyDown: function(code) {
-    return this.onKeyEvent.dispatch(ENGINE_ID, {code: code, type: 'keydown'});
+  sendKeyDown: function(code, extra) {
+    var event = {code: code, type: 'keydown'};
+    for (var key in extra) {
+      event[key] = extra[key];
+    }
+    return this.onKeyEvent.dispatch(ENGINE_ID, event);
   },
 
-  sendKeyUp: function(code) {
-    return this.onKeyEvent.dispatch(ENGINE_ID, {code: code, type: 'keyup'});
+  sendKeyUp: function(code, extra) {
+    var event = {code: code, type: 'keyup'};
+    for (var key in extra) {
+      event[key] = extra[key];
+    }
+    return this.onKeyEvent.dispatch(ENGINE_ID, event);
   },
 };
 
@@ -154,6 +162,7 @@ TEST_F('BrailleImeUnitTest', 'KeysWhenStandardKeysEnabled', function() {
   expectTrue(this.sendKeyDown('KeyF'));
   expectTrue(this.sendKeyUp('KeyJ'));
   expectTrue(this.sendKeyUp('KeyF'));
+
   // Make sure that other keys are not handled, either by themselves or while
   // one of the 'braille keys' is pressed.
   expectFalse(this.sendKeyDown('KeyX'));
@@ -164,9 +173,32 @@ TEST_F('BrailleImeUnitTest', 'KeysWhenStandardKeysEnabled', function() {
   expectTrue(this.sendKeyUp('KeyS'));
   expectFalse(this.sendKeyUp('KeyG'));
 
+  // Keys like Ctrl L should not be handled, despite L being a dot key.
+  var ctrlFlag = {ctrlKey: true};
+  expectFalse(this.sendKeyDown('ControlLeft', ctrlFlag));
+  expectFalse(this.sendKeyDown('KeyL', ctrlFlag));
+  expectFalse(this.sendKeyUp('KeyL', ctrlFlag));
+  expectFalse(this.sendKeyUp('ControlLeft', ctrlFlag))
+
+  // Space key by itself should send a blank cell.
+  expectTrue(this.sendKeyDown('Space'));
+  expectTrue(this.sendKeyUp('Space'));
+
+  // Space and braille dots results in no event.
+  expectTrue(this.sendKeyDown('Space'));
+  expectTrue(this.sendKeyDown('KeyF'));
+  expectTrue(this.sendKeyUp('Space'));
+  expectTrue(this.sendKeyUp('KeyF'));
+  // Send the braille key first, still no event should be produced.
+  expectTrue(this.sendKeyDown('KeyF'));
+  expectTrue(this.sendKeyDown('Space'));
+  expectTrue(this.sendKeyUp('Space'));
+  expectTrue(this.sendKeyUp('KeyF'));
+
   assertThat(this.port.messages,
              eqJSON([{type: 'brailleDots', dots: 0x03},
-                     {type: 'brailleDots', dots: 0x09}]));
+                     {type: 'brailleDots', dots: 0x09},
+                     {type: 'brailleDots', dots: 0}]));
 });
 
 TEST_F('BrailleImeUnitTest', 'UseStandardKeyboardSettingPreserved', function() {
@@ -175,7 +207,6 @@ TEST_F('BrailleImeUnitTest', 'UseStandardKeyboardSettingPreserved', function() {
   this.onMenuItemActivated.dispatch(ENGINE_ID, this.menuItems[0].id);
   assertTrue(this.menuItems[0].checked);
   // Create a new instance and make sure the setting is still turned on.
-  console.log('localStorage: ' + JSON.stringify(localStorage));
   this.createIme();
   this.activateIme();
   assertTrue(this.menuItems[0].checked);

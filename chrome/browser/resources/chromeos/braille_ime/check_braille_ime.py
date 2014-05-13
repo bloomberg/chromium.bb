@@ -60,9 +60,9 @@ def _run_closure_compiler():
   args = [_java_executable, '-jar', _CLOSURE_COMPILER_JAR]
   args.extend(['--compilation_level', 'SIMPLE_OPTIMIZATIONS'])
   args.extend(['--jscomp_error=%s' % error for error in _JSCOMP_ERRORS])
-  args.extend(['--externs', 'externs.js'])
-  args.extend(['--js', 'braille_ime.js'])
-  args.extend(['--js', 'main.js'])
+  args.extend(['--externs', os.path.join(_SCRIPT_DIR, 'externs.js')])
+  args.extend(['--js', os.path.join(_SCRIPT_DIR, 'braille_ime.js')])
+  args.extend(['--js', os.path.join(_SCRIPT_DIR, 'main.js')])
   args.extend(['--js_output_file', '/dev/null'])
   output = _execute_command(args, ignore_exit_status=True)
   success = len(output) == 0

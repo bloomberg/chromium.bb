@@ -141,6 +141,9 @@ ChromeKeyboardEvent.prototype.ctrlKey;
 /** @type {boolean} */
 ChromeKeyboardEvent.prototype.shiftKey;
 
+/** @type {boolean} */
+ChromeKeyboardEvent.prototype.capsLock;
+
 /**
  * @constructor
  */
