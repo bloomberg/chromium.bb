@@ -117,7 +117,7 @@ class SK_API SkiaBitLocker {
   SkCanvas* canvas_;
   CGContextRef cgContext_;
   SkBitmap bitmap_;
-  bool useBitmap_;
+  bool useDeviceBits_;
 };
 
 
