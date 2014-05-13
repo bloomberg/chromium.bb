@@ -1737,10 +1737,12 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   DidVisibilityChange(this, visible_);
   EnforceManagedMemoryPolicy(ActualManagedMemoryPolicy());
 
-  if (!visible_) {
+  // If we just became visible, we have to ensure that we draw high res tiles,
+  // to prevent checkerboard/low res flashes.
+  if (visible_)
     active_tree()->SetRequiresHighResToDraw();
+  else
     EvictAllUIResources();
-  }
 
   // Evict tiles immediately if invisible since this tab may never get another
   // draw or timer tick.

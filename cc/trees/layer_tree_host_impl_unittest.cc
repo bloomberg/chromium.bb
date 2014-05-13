@@ -5740,6 +5740,25 @@ TEST_F(LayerTreeHostImplTest, MemoryPolicy) {
   EXPECT_EQ(nothing_cutoff_value, current_priority_cutoff_value_);
 }
 
+TEST_F(LayerTreeHostImplTest, RequireHighResWhenVisible) {
+  ASSERT_TRUE(host_impl_->active_tree());
+
+  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  host_impl_->SetVisible(false);
+  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  host_impl_->SetVisible(true);
+  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+  host_impl_->SetVisible(false);
+  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+
+  host_impl_->CreatePendingTree();
+  host_impl_->ActivatePendingTree();
+
+  EXPECT_FALSE(host_impl_->active_tree()->RequiresHighResToDraw());
+  host_impl_->SetVisible(true);
+  EXPECT_TRUE(host_impl_->active_tree()->RequiresHighResToDraw());
+}
+
 class LayerTreeHostImplTestManageTiles : public LayerTreeHostImplTest {
  public:
   virtual void SetUp() OVERRIDE {
