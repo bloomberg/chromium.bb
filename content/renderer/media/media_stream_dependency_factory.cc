@@ -601,6 +601,12 @@ void MediaStreamDependencyFactory::AddNativeAudioTrackToBlinkTrack(
           is_local_track));
 }
 
+scoped_refptr<base::MessageLoopProxy>
+MediaStreamDependencyFactory::GetWebRtcWorkerThread() const {
+  DCHECK(CalledOnValidThread());
+  return chrome_worker_thread_.message_loop_proxy();
+}
+
 bool MediaStreamDependencyFactory::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;

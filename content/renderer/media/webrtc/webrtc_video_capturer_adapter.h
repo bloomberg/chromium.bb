@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
@@ -19,12 +21,18 @@ namespace content {
 // used for VideoCapturing in libJingle and especially in PeerConnections.
 // The class is created and destroyed on the main render thread.
 // PeerConnection access cricket::VideoCapturer from a libJingle worker thread.
+// An instance of WebRtcVideoCapturerAdapter is owned by an instance of
+// webrtc::VideoSourceInterface in libJingle. The implementation of
+// webrtc::VideoSourceInterface guarantees that this object is not deleted
+// while it is still used in libJingle.
 class CONTENT_EXPORT WebRtcVideoCapturerAdapter
     : NON_EXPORTED_BASE(public cricket::VideoCapturer) {
  public:
   explicit WebRtcVideoCapturerAdapter(bool is_screencast);
   virtual ~WebRtcVideoCapturerAdapter();
 
+  // OnFrameCaptured delivers video frames to libjingle. It must be called on
+  // libjingles worker thread.
   // This method is virtual for testing purposes.
   virtual void OnFrameCaptured(const scoped_refptr<media::VideoFrame>& frame);
 
@@ -42,7 +50,9 @@ class CONTENT_EXPORT WebRtcVideoCapturerAdapter
 
   void UpdateI420Buffer(const scoped_refptr<media::VideoFrame>& src);
 
- private:
+  // |thread_checker_| is bound to the libjingle worker thread.
+  base::ThreadChecker thread_checker_;
+
   const bool is_screencast_;
   bool running_;
   base::TimeDelta first_frame_timestamp_;

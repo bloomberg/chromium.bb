@@ -17,6 +17,7 @@ WebRtcVideoCapturerAdapter::WebRtcVideoCapturerAdapter(bool is_screencast)
       running_(false),
       buffer_(NULL),
       buffer_size_(0) {
+  thread_checker_.DetachFromThread();
 }
 
 WebRtcVideoCapturerAdapter::~WebRtcVideoCapturerAdapter() {
@@ -26,6 +27,7 @@ WebRtcVideoCapturerAdapter::~WebRtcVideoCapturerAdapter() {
 
 cricket::CaptureState WebRtcVideoCapturerAdapter::Start(
     const cricket::VideoFormat& capture_format) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!running_);
   DVLOG(3) << " WebRtcVideoCapturerAdapter::Start w = " << capture_format.width
            << " h = " << capture_format.height;
@@ -35,6 +37,7 @@ cricket::CaptureState WebRtcVideoCapturerAdapter::Start(
 }
 
 void WebRtcVideoCapturerAdapter::Stop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << " WebRtcVideoCapturerAdapter::Stop ";
   DCHECK(running_);
   running_ = false;
@@ -43,11 +46,13 @@ void WebRtcVideoCapturerAdapter::Stop() {
 }
 
 bool WebRtcVideoCapturerAdapter::IsRunning() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return running_;
 }
 
 bool WebRtcVideoCapturerAdapter::GetPreferredFourccs(
     std::vector<uint32>* fourccs) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!fourccs)
     return false;
   fourccs->push_back(cricket::FOURCC_I420);
@@ -61,6 +66,7 @@ bool WebRtcVideoCapturerAdapter::IsScreencast() const {
 bool WebRtcVideoCapturerAdapter::GetBestCaptureFormat(
     const cricket::VideoFormat& desired,
     cricket::VideoFormat* best_format) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(3) << " GetBestCaptureFormat:: "
            << " w = " << desired.width
            << " h = " << desired.height;
@@ -77,6 +83,7 @@ bool WebRtcVideoCapturerAdapter::GetBestCaptureFormat(
 
 void WebRtcVideoCapturerAdapter::OnFrameCaptured(
     const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(media::VideoFrame::I420 == frame->format() ||
          media::VideoFrame::YV12 == frame->format());
   if (first_frame_timestamp_ == media::kNoTimestamp())
@@ -120,6 +127,7 @@ void WebRtcVideoCapturerAdapter::OnFrameCaptured(
 
 void WebRtcVideoCapturerAdapter::UpdateI420Buffer(
     const scoped_refptr<media::VideoFrame>& src) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   const int src_width = src->coded_size().width();
   const int src_height = src->coded_size().height();
   const int dst_width = src->visible_rect().width();

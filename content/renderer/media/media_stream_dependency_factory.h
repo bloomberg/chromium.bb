@@ -131,6 +131,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
       const blink::WebMediaStreamTrack& webkit_track,
       bool is_local_track);
 
+  scoped_refptr<base::MessageLoopProxy> GetWebRtcWorkerThread() const;
+
  protected:
   // Asks the PeerConnection factory to create a Local Audio Source.
   virtual scoped_refptr<webrtc::AudioSourceInterface>
