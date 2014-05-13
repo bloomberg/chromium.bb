@@ -82,10 +82,10 @@ class PageCycler(page_measurement.PageMeasurement):
     if self._report_speed_index:
       self._speedindex_metric.Start(page, tab)
     self._cpu_metric.Start(page, tab)
+    self._power_metric.Start(page, tab)
 
   def DidNavigateToPage(self, page, tab):
     self._memory_metric.Start(page, tab)
-    self._power_metric.Start(page, tab)
     if self._record_v8_object_stats:
       self._v8_object_stats_metric.Start(page, tab)
 
