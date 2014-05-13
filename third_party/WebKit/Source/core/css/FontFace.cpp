@@ -576,7 +576,7 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
         } else {
 #if ENABLE(SVG_FONTS)
             if (item->svgFontFaceElement()) {
-                RefPtr<SVGFontFaceElement> fontfaceElement = item->svgFontFaceElement();
+                RefPtrWillBeRawPtr<SVGFontFaceElement> fontfaceElement = item->svgFontFaceElement();
                 // SVGFontFaceSource assumes that it is the case where <font-face> element resides in the same document.
                 // We put a RELEASE_ASSERT here as it will cause UAF if the assumption is false.
                 RELEASE_ASSERT(fontfaceElement->inDocument());

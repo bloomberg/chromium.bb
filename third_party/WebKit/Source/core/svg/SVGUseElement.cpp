@@ -699,7 +699,7 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         // the generated 'svg'. If attributes width and/or height are not specified, the generated
         // 'svg' element will use values of 100% for these attributes.
         ASSERT(referencedScope());
-        RefPtr<SVGSVGElement> svgElement = SVGSVGElement::create(referencedScope()->document());
+        RefPtrWillBeRawPtr<SVGSVGElement> svgElement = SVGSVGElement::create(referencedScope()->document());
 
         // Transfer all data (attributes, etc.) from <symbol> to the new <svg> element.
         svgElement->cloneDataFromElement(*toElement(element));

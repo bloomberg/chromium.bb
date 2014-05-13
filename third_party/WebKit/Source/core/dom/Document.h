@@ -1307,7 +1307,7 @@ private:
     HashSet<LiveNodeListBase*> m_listsInvalidatedAtDocument;
     unsigned m_nodeListCounts[numNodeListInvalidationTypes];
 
-    OwnPtr<SVGDocumentExtensions> m_svgExtensions;
+    OwnPtrWillBeMember<SVGDocumentExtensions> m_svgExtensions;
 
     Vector<AnnotatedRegionValue> m_annotatedRegions;
     bool m_hasAnnotatedRegions;

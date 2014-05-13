@@ -148,9 +148,9 @@ StyleResolver::StyleResolver(Document& document)
 
 #if ENABLE(SVG_FONTS)
     if (document.svgExtensions()) {
-        const HashSet<SVGFontFaceElement*>& svgFontFaceElements = document.svgExtensions()->svgFontFaceElements();
-        HashSet<SVGFontFaceElement*>::const_iterator end = svgFontFaceElements.end();
-        for (HashSet<SVGFontFaceElement*>::const_iterator it = svgFontFaceElements.begin(); it != end; ++it)
+        const WillBeHeapHashSet<RawPtrWillBeMember<SVGFontFaceElement> >& svgFontFaceElements = document.svgExtensions()->svgFontFaceElements();
+        WillBeHeapHashSet<RawPtrWillBeMember<SVGFontFaceElement> >::const_iterator end = svgFontFaceElements.end();
+        for (WillBeHeapHashSet<RawPtrWillBeMember<SVGFontFaceElement> >::const_iterator it = svgFontFaceElements.begin(); it != end; ++it)
             addFontFaceRule(&document, document.styleEngine()->fontSelector(), (*it)->fontFaceRule());
     }
 #endif

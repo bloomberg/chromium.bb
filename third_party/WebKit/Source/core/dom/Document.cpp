@@ -4507,7 +4507,7 @@ const SVGDocumentExtensions* Document::svgExtensions()
 SVGDocumentExtensions& Document::accessSVGExtensions()
 {
     if (!m_svgExtensions)
-        m_svgExtensions = adoptPtr(new SVGDocumentExtensions(this));
+        m_svgExtensions = adoptPtrWillBeNoop(new SVGDocumentExtensions(this));
     return *m_svgExtensions;
 }
 
@@ -5730,6 +5730,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_templateDocumentHost);
     visitor->trace(m_visibilityObservers);
     visitor->trace(m_userActionElements);
+    visitor->trace(m_svgExtensions);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     DocumentSupplementable::trace(visitor);
     TreeScope::trace(visitor);

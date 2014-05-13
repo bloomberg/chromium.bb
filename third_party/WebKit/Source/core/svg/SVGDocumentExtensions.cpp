@@ -425,7 +425,7 @@ void SVGDocumentExtensions::unregisterSVGFontFaceElement(SVGFontFaceElement* ele
     m_svgFontFaceElements.remove(element);
 }
 
-void SVGDocumentExtensions::registerPendingSVGFontFaceElementsForRemoval(PassRefPtr<SVGFontFaceElement> font)
+void SVGDocumentExtensions::registerPendingSVGFontFaceElementsForRemoval(PassRefPtrWillBeRawPtr<SVGFontFaceElement> font)
 {
     m_pendingSVGFontFaceElementsForRemoval.add(font);
 }
@@ -473,6 +473,12 @@ SVGSVGElement* SVGDocumentExtensions::rootElement() const
 {
     ASSERT(m_document);
     return rootElement(*m_document);
+}
+
+void SVGDocumentExtensions::trace(Visitor* visitor)
+{
+    visitor->trace(m_svgFontFaceElements);
+    visitor->trace(m_pendingSVGFontFaceElementsForRemoval);
 }
 
 }
