@@ -24,7 +24,7 @@ namespace options {
 namespace {
 
 const char kHandlersLearnMoreUrl[] =
-    "https://support.google.com/chromebook/answer/1382847";
+    "https://support.google.com/chrome/answer/1382847";
 
 }  // namespace
 
