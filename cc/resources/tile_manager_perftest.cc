@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/time/time.h"
+#include "cc/debug/lap_timer.h"
 #include "cc/resources/tile.h"
 #include "cc/resources/tile_priority.h"
 #include "cc/test/fake_impl_proxy.h"
@@ -14,7 +15,6 @@
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "cc/test/impl_side_painting_settings.h"
-#include "cc/test/lap_timer.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_tile_priorities.h"
 #include "cc/trees/layer_tree_impl.h"

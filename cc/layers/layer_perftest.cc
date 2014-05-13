@@ -4,12 +4,12 @@
 
 #include "cc/layers/layer.h"
 
+#include "cc/debug/lap_timer.h"
 #include "cc/resources/layer_painter.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/lap_timer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"

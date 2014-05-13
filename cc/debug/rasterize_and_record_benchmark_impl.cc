@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/values.h"
+#include "cc/debug/lap_timer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/raster_worker_pool.h"
@@ -21,12 +22,6 @@ namespace cc {
 namespace {
 
 const int kDefaultRasterizeRepeatCount = 100;
-
-base::TimeTicks Now() {
-  return base::TimeTicks::IsThreadNowSupported()
-             ? base::TimeTicks::ThreadNow()
-             : base::TimeTicks::HighResNow();
-}
 
 class BenchmarkRasterTask : public Task {
  public:
@@ -46,24 +41,38 @@ class BenchmarkRasterTask : public Task {
     PicturePileImpl* picture_pile = picture_pile_->GetCloneForDrawingOnThread(
         RasterWorkerPool::GetPictureCloneIndexForCurrentThread());
 
-    for (size_t i = 0; i < repeat_count_; ++i) {
-      SkBitmap bitmap;
-      bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect_.width(),
-                                                    content_rect_.height()));
-      SkCanvas canvas(bitmap);
-      PicturePileImpl::Analysis analysis;
+    // Parameters for LapTimer.
+    const int kTimeLimitMillis = 1;
+    const int kWarmupRuns = 0;
+    const int kTimeCheckInterval = 1;
 
-      base::TimeTicks start = Now();
-      picture_pile->AnalyzeInRect(
-          content_rect_, contents_scale_, &analysis, NULL);
-      picture_pile->RasterToBitmap(
-          &canvas, content_rect_, contents_scale_, NULL);
-      base::TimeTicks end = Now();
-      base::TimeDelta duration = end - start;
+    for (size_t i = 0; i < repeat_count_; ++i) {
+      // Run for a minimum amount of time to avoid problems with timer
+      // quantization when the layer is very small.
+      LapTimer timer(kWarmupRuns,
+                     base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+                     kTimeCheckInterval);
+      do {
+        SkBitmap bitmap;
+        bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect_.width(),
+                                                      content_rect_.height()));
+        SkCanvas canvas(bitmap);
+        PicturePileImpl::Analysis analysis;
+
+        picture_pile->AnalyzeInRect(
+            content_rect_, contents_scale_, &analysis, NULL);
+        picture_pile->RasterToBitmap(
+            &canvas, content_rect_, contents_scale_, NULL);
+
+        is_solid_color_ = analysis.is_solid_color;
+
+        timer.NextLap();
+      } while (!timer.HasTimeLimitExpired());
+      base::TimeDelta duration =
+          base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
       if (duration < best_time_)
         best_time_ = duration;
 
-      is_solid_color_ = analysis.is_solid_color;
     }
   }
 

@@ -313,7 +313,6 @@
         'resources/task_graph_runner_perftest.cc',
         'resources/tile_manager_perftest.cc',
         'test/cc_test_suite.cc',
-        'test/lap_timer.cc',
         'test/run_all_perftests.cc',
         'trees/layer_tree_host_common_perftest.cc',
         'trees/layer_tree_host_perftest.cc',

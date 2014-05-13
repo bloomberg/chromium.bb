@@ -5,6 +5,7 @@
 #include "cc/resources/raster_worker_pool.h"
 
 #include "base/time/time.h"
+#include "cc/debug/lap_timer.h"
 #include "cc/output/context_provider.h"
 #include "cc/resources/direct_raster_worker_pool.h"
 #include "cc/resources/image_copy_raster_worker_pool.h"
@@ -16,7 +17,6 @@
 #include "cc/resources/scoped_resource.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "cc/test/lap_timer.h"
 #include "cc/test/test_context_support.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"

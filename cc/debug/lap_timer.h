@@ -1,11 +1,12 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_LAP_TIMER_H_
-#define CC_TEST_LAP_TIMER_H_
+#ifndef CC_DEBUG_LAP_TIMER_H_
+#define CC_DEBUG_LAP_TIMER_H_
 
 #include "base/time/time.h"
+#include "cc/base/cc_export.h"
 
 namespace cc {
 
@@ -19,7 +20,7 @@ namespace cc {
 // If you set the time_limit then you can use HasTimeLimitExpired() to see if
 // the current accumulated time has crossed that threshold, with an optimization
 // that it only tests this every check_interval laps.
-class LapTimer {
+class CC_EXPORT LapTimer {
  public:
   LapTimer(int warmup_laps, base::TimeDelta time_limit, int check_interval);
   // Resets the timer back to it's starting state.
@@ -60,4 +61,4 @@ class LapTimer {
 
 }  // namespace cc
 
-#endif  // CC_TEST_LAP_TIMER_H_
+#endif  // CC_DEBUG_LAP_TIMER_H_

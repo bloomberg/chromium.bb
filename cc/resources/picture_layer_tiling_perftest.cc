@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/debug/lap_timer.h"
 #include "cc/resources/picture_layer_tiling.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
-#include "cc/test/lap_timer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"

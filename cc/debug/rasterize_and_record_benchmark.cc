@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "cc/debug/lap_timer.h"
 #include "cc/debug/rasterize_and_record_benchmark_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
@@ -26,12 +27,6 @@ const int kDefaultRecordRepeatCount = 100;
 
 const char* kModeSuffixes[Picture::RECORDING_MODE_COUNT] = {
     "", "_sk_null_canvas", "_painting_disabled", "_skrecord"};
-
-base::TimeTicks Now() {
-  return base::TimeTicks::IsThreadNowSupported()
-             ? base::TimeTicks::ThreadNow()
-             : base::TimeTicks::HighResNow();
-}
 
 }  // namespace
 
@@ -121,12 +116,25 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
     Picture::RecordingMode mode =
         static_cast<Picture::RecordingMode>(mode_index);
     base::TimeDelta min_time = base::TimeDelta::Max();
+
+    // Parameters for LapTimer.
+    const int kTimeLimitMillis = 1;
+    const int kWarmupRuns = 0;
+    const int kTimeCheckInterval = 1;
+
     for (int i = 0; i < record_repeat_count_; ++i) {
-      base::TimeTicks start = Now();
-      scoped_refptr<Picture> picture = Picture::Create(
-          visible_content_rect, painter, tile_grid_info, false, 0, mode);
-      base::TimeTicks end = Now();
-      base::TimeDelta duration = end - start;
+      // Run for a minimum amount of time to avoid problems with timer
+      // quantization when the layer is very small.
+      LapTimer timer(kWarmupRuns,
+                     base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
+                     kTimeCheckInterval);
+      do {
+        scoped_refptr<Picture> picture = Picture::Create(
+            visible_content_rect, painter, tile_grid_info, false, 0, mode);
+        timer.NextLap();
+      } while (!timer.HasTimeLimitExpired());
+      base::TimeDelta duration =
+          base::TimeDelta::FromMillisecondsD(timer.MsPerLap());
       if (duration < min_time)
         min_time = duration;
     }

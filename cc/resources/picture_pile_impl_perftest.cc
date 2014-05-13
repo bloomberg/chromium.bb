@@ -4,9 +4,9 @@
 
 #include "cc/resources/picture_pile_impl.h"
 
+#include "cc/debug/lap_timer.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
-#include "cc/test/lap_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
