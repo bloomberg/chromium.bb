@@ -98,6 +98,7 @@ void PicturePileImpl::RasterToBitmap(
     const gfx::Rect& canvas_rect,
     float contents_scale,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
+  canvas->discard();
   if (clear_canvas_with_debug_color_) {
     // Any non-painted areas in the content bounds will be left in this color.
     canvas->clear(DebugColors::NonPaintedFillColor());
