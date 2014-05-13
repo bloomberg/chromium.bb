@@ -155,6 +155,32 @@
             }],
           ],
         }],
+        ['OS == "win"', {
+          # Specify delayload for base.dll.
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                'powrprof.dll',
+              ],
+              'AdditionalDependencies': [
+                'powrprof.lib',
+              ],
+            },
+          },
+          # Specify delayload for components that link with base.lib.
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  'powrprof.dll',
+                ],
+                'AdditionalDependencies': [
+                  'powrprof.lib',
+                ],
+              },
+            },
+          },
+        }],
         ['OS == "mac" or (OS == "ios" and _toolset == "host")', {
           'link_settings': {
             'libraries': [
@@ -1059,6 +1085,30 @@
               ],
             }],
           ],
+          # Specify delayload for base_win64.dll.
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'DelayLoadDLLs': [
+                'powrprof.dll',
+              ],
+              'AdditionalDependencies': [
+                'powrprof.lib',
+              ],
+            },
+          },
+          # Specify delayload for components that link with base_win64.lib.
+          'all_dependent_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'DelayLoadDLLs': [
+                  'powrprof.dll',
+                ],
+                'AdditionalDependencies': [
+                  'powrprof.lib',
+                ],
+              },
+            },
+          },
           # TODO(rvargas): Bug 78117. Remove this.
           'msvs_disabled_warnings': [
             4244,
