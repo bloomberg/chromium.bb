@@ -748,14 +748,24 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     if (m_foregroundLayer) {
         FloatSize foregroundSize = contentsSize;
         IntSize foregroundOffset = m_graphicsLayer->offsetFromRenderer();
+        m_foregroundLayer->setPosition(FloatPoint());
+
         if (hasClippingLayer()) {
             // If we have a clipping layer (which clips descendants), then the foreground layer is a child of it,
             // so that it gets correctly sorted with children. In that case, position relative to the clipping layer.
             foregroundSize = FloatSize(clippingBox.size());
             foregroundOffset = toIntSize(clippingBox.location());
+        } else if (m_childTransformLayer) {
+            // Things are different if we have a child transform layer rather
+            // than a clipping layer. In this case, we want to actually change
+            // the position of the layer (to compensate for our ancestor
+            // compositing layer's position) rather than leave the position the
+            // same and use offset-from-renderer + size to describe a clipped
+            // "window" onto the clipped layer.
+
+            m_foregroundLayer->setPosition(-m_childTransformLayer->position());
         }
 
-        m_foregroundLayer->setPosition(FloatPoint());
         if (foregroundSize != m_foregroundLayer->size()) {
             m_foregroundLayer->setSize(foregroundSize);
             m_foregroundLayer->setNeedsDisplay();
