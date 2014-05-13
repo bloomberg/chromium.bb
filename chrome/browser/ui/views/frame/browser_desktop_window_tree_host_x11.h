@@ -23,8 +23,7 @@ class BrowserDesktopWindowTreeHostX11
   BrowserDesktopWindowTreeHostX11(
       views::internal::NativeWidgetDelegate* native_widget_delegate,
       views::DesktopNativeWidgetAura* desktop_native_widget_aura,
-      BrowserView* browser_view,
-      BrowserFrame* browser_frame);
+      BrowserView* browser_view);
   virtual ~BrowserDesktopWindowTreeHostX11();
 
  private:

@@ -142,7 +142,7 @@ class DragDropTest : public test::AshTestBase {
   }
 };
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 #define MAYBE_DragDropAcrossMultiDisplay DISABLED_DragDropAcrossMultiDisplay
 #else
 #define MAYBE_DragDropAcrossMultiDisplay DragDropAcrossMultiDisplay
