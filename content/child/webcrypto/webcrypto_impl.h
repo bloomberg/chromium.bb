@@ -14,13 +14,18 @@
 namespace content {
 
 // Wrapper around the Blink WebCrypto asynchronous interface, which forwards to
-// the synchronous platfrom (NSS or OpenSSL) implementation.
+// the synchronous platform (NSS or OpenSSL) implementation.
 //
-// TODO(eroman): Post the synchronous work to a background thread.
+// WebCryptoImpl is threadsafe.
+//
+// EnsureInit() must be called prior to using methods on WebCryptoImpl().
 class WebCryptoImpl : public blink::WebCrypto {
  public:
   WebCryptoImpl();
+
   virtual ~WebCryptoImpl();
+
+  static void EnsureInit();
 
   virtual void encrypt(const blink::WebCryptoAlgorithm& algorithm,
                        const blink::WebCryptoKey& key,

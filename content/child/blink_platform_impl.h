@@ -10,6 +10,7 @@
 #include "base/platform_file.h"
 #include "base/threading/thread_local_storage.h"
 #include "base/timer/timer.h"
+#include "content/child/webcrypto/webcrypto_impl.h"
 #include "content/child/webfallbackthemeengine_impl.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -174,7 +175,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
   int shared_timer_suspended_;  // counter
   scoped_ptr<FlingCurveConfiguration> fling_curve_configuration_;
   base::ThreadLocalStorage::Slot current_thread_slot_;
-  scoped_ptr<WebCryptoImpl> web_crypto_;
+  WebCryptoImpl web_crypto_;
 };
 
 }  // namespace content

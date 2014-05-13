@@ -22,6 +22,7 @@ class CryptoData;
 class Status;
 
 // Do one-time initialization. It is safe to call this multiple times.
+// May be called concurrently from multiple threads.
 CONTENT_EXPORT void Init();
 
 // The functions exported by shared_crypto.h provide a common entry point for

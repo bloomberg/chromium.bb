@@ -32,7 +32,6 @@
 #include "content/child/web_discardable_memory_impl.h"
 #include "content/child/web_socket_stream_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
-#include "content/child/webcrypto/webcrypto_impl.h"
 #include "content/child/websocket_bridge.h"
 #include "content/child/webthread_impl.h"
 #include "content/child/worker_task_runner.h"
@@ -907,9 +906,8 @@ void BlinkPlatformImpl::didStopWorkerRunLoop(
 }
 
 blink::WebCrypto* BlinkPlatformImpl::crypto() {
-  if (!web_crypto_)
-    web_crypto_.reset(new WebCryptoImpl());
-  return web_crypto_.get();
+  WebCryptoImpl::EnsureInit();
+  return &web_crypto_;
 }
 
 

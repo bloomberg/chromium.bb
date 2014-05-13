@@ -552,10 +552,13 @@ void DoUnwrapKey(scoped_ptr<UnwrapKeyState> passed_state) {
 }  // namespace
 
 WebCryptoImpl::WebCryptoImpl() {
-  webcrypto::Init();
 }
 
 WebCryptoImpl::~WebCryptoImpl() {
+}
+
+void WebCryptoImpl::EnsureInit() {
+  webcrypto::Init();
 }
 
 void WebCryptoImpl::encrypt(const blink::WebCryptoAlgorithm& algorithm,
