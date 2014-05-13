@@ -41,6 +41,7 @@
     'include_dirs': [
       './overrides',
       './<(libjingle_source)',
+      '../..',
       '../../testing/gtest/include',
       '../../third_party',
       '../../third_party/libyuv/include',
