@@ -36,7 +36,6 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
-#include "chrome/common/logging_chrome.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
