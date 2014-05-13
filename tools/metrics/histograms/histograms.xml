@@ -42476,6 +42476,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="11" label="prefs::kPinnedTabs"/>
   <int value="12" label="extensions::pref_names::kKnownDisabled"/>
   <int value="13" label="prefs::kProfileResetPromptMemento"/>
+  <int value="14"
+      label="DefaultSearchManager::kDefaultSearchProviderDataPrefName"/>
+  <int value="15" label="prefs::kPreferenceResetTime"/>
 </enum>
 
 <enum name="TranslateError" type="int">
