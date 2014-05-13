@@ -167,6 +167,10 @@ class XCustomCursorCache {
     cache_.clear();
   }
 
+  const XcursorImage* GetXcursorImage(::Cursor cursor) const {
+    return cache_.find(cursor)->second->image();
+  }
+
  private:
   friend struct DefaultSingletonTraits<XCustomCursorCache>;
 
@@ -198,6 +202,10 @@ class XCustomCursorCache {
       }
       return false;
     }
+
+    const XcursorImage* image() const {
+      return image_;
+    };
 
    private:
     XcursorImage* image_;
@@ -313,11 +321,6 @@ bool QueryRenderSupport(Display* dpy) {
   if (!cursor_cache)
     cursor_cache = new XCursorCache;
   return cursor_cache->GetCursor(cursor_shape);
-}
-
-void ResetXCursorCache() {
-  delete cursor_cache;
-  cursor_cache = NULL;
 }
 
 ::Cursor CreateReffedCustomXCursor(XcursorImage* image) {
@@ -1269,6 +1272,18 @@ void XScopedCursor::reset(::Cursor cursor) {
   if (cursor_)
     XFreeCursor(display_, cursor_);
   cursor_ = cursor;
+}
+
+namespace test {
+
+void ResetXCursorCache() {
+  delete cursor_cache;
+  cursor_cache = NULL;
+}
+
+const XcursorImage* GetCachedXcursorImage(::Cursor cursor) {
+  return XCustomCursorCache::GetInstance()->GetXcursorImage(cursor);
+}
 }
 
 // ----------------------------------------------------------------------------

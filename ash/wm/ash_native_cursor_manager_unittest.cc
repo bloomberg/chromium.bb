@@ -22,6 +22,11 @@
 #include "ui/base/cursor/cursor_loader_win.h"
 #endif
 
+#if defined(USE_X11)
+#include "grit/ui_resources.h"
+#include "ui/base/cursor/cursor_loader_x11.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -174,6 +179,29 @@ TEST_F(AshNativeCursorManagerTest, UIScaleShouldNotChangeCursor) {
             Shell::GetScreen()->GetPrimaryDisplay().device_scale_factor());
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
 }
+
+#if defined(USE_X11)
+// This test is in ash_unittests becuase ui_unittests does not include
+// 2x assets. crbug.com/372541.
+TEST_F(AshNativeCursorManagerTest, CursorLoaderX11Test) {
+  const int kCursorId = 1;
+  ui::CursorLoaderX11 loader;
+  loader.set_scale(1.0f);
+
+  loader.LoadImageCursor(kCursorId, IDR_AURA_CURSOR_MOVE, gfx::Point());
+  const XcursorImage* image = loader.GetXcursorImageForTest(kCursorId);
+  int height = image->height;
+  int width = image->width;
+  loader.UnloadAll();
+
+  // Load 2x cursor and make sure its size is 2x of the 1x cusor.
+  loader.set_scale(2.0f);
+  loader.LoadImageCursor(kCursorId, IDR_AURA_CURSOR_MOVE, gfx::Point());
+  image = loader.GetXcursorImageForTest(kCursorId);
+  EXPECT_EQ(height * 2, static_cast<int>(image->height));
+  EXPECT_EQ(width * 2, static_cast<int>(image->width));
+}
+#endif
 
 }  // namespace test
 }  // namespace ash

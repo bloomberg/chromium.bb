@@ -65,10 +65,6 @@ UI_BASE_EXPORT bool QueryRenderSupport(XDisplay* dpy);
 // |cursor_shape| is an X font cursor shape, see XCreateFontCursor().
 UI_BASE_EXPORT ::Cursor GetXCursor(int cursor_shape);
 
-// Resets the cache used by GetXCursor(). Only useful for tests that may delete
-// the display.
-UI_BASE_EXPORT void ResetXCursorCache();
-
 // Creates a custom X cursor from the image. This takes ownership of image. The
 // caller must not free/modify the image. The refcount of the newly created
 // cursor is set to 1.
@@ -338,6 +334,16 @@ class UI_BASE_EXPORT XScopedCursor {
 
   DISALLOW_COPY_AND_ASSIGN(XScopedCursor);
 };
+
+namespace test {
+// Resets the cache used by GetXCursor(). Only useful for tests that may delete
+// the display.
+UI_BASE_EXPORT void ResetXCursorCache();
+
+// Returns the cached XcursorImage for |cursor|.
+UI_BASE_EXPORT const XcursorImage* GetCachedXcursorImage(::Cursor cursor);
+
+}  // namespace test
 
 }  // namespace ui
 

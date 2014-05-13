@@ -33,6 +33,8 @@ class UI_BASE_EXPORT CursorLoaderX11 : public CursorLoader {
   virtual void UnloadAll() OVERRIDE;
   virtual void SetPlatformCursor(gfx::NativeCursor* cursor) OVERRIDE;
 
+  const XcursorImage* GetXcursorImageForTest(int id);
+
  private:
   // Returns true if we have an image resource loaded for the |native_cursor|.
   bool IsImageCursor(gfx::NativeCursor native_cursor);

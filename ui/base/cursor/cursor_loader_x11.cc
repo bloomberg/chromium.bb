@@ -162,8 +162,10 @@ void CursorLoaderX11::LoadImageCursor(int id,
   const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(scale());
   SkBitmap bitmap = image_rep.sk_bitmap();
   gfx::Point hotpoint = hot;
+  // TODO(oshima): The cursor should use resource scale factor when
+  // fractional scale factor is enabled. crbug.com/372212
   ScaleAndRotateCursorBitmapAndHotpoint(
-      scale(), rotation(), &bitmap, &hotpoint);
+      scale() / image_rep.scale(), rotation(), &bitmap, &hotpoint);
 
   XcursorImage* x_image = SkBitmapToXcursorImage(&bitmap, hotpoint);
   cursors_[id] = CreateReffedCustomXCursor(x_image);
@@ -174,6 +176,7 @@ void CursorLoaderX11::LoadAnimatedCursor(int id,
                                          int resource_id,
                                          const gfx::Point& hot,
                                          int frame_delay_ms) {
+  // TODO(oshima|tdanderson): Support rotation and fractional scale factor.
   const gfx::ImageSkia* image =
       ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
   const gfx::ImageSkiaRep& image_rep = image->GetRepresentation(scale());
@@ -238,6 +241,10 @@ void CursorLoaderX11::SetPlatformCursor(gfx::NativeCursor* cursor) {
   }
 
   cursor->SetPlatformCursor(xcursor);
+}
+
+const XcursorImage* CursorLoaderX11::GetXcursorImageForTest(int id) {
+  return test::GetCachedXcursorImage(cursors_[id]);
 }
 
 bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
