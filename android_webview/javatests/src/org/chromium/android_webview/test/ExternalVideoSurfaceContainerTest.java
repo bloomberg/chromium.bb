@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.android_webview.ExternalVideoSurfaceContainer;
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.base.CommandLine;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
@@ -97,8 +98,12 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
         });
     }
 
-    @SmallTest
-    @Feature({"AndroidWebView"})
+    /**
+     * @SmallTest
+     * @Feature({"AndroidWebView"})
+     * http://crbug.com/372748
+     */
+    @DisabledTest
     public void testEnableVideoOverlayForEmbeddedVideo() throws Throwable {
         setUpMockExternalVideoSurfaceContainer();
 
