@@ -3,29 +3,22 @@
 // found in the LICENSE file.
 
 var callbackPass = chrome.test.callbackPass;
+var callbackFail = chrome.test.callbackFail;
 
-function testAlwaysOnTop(testId, value) {
-  var options = {
-    id: testId,
-    alwaysOnTop: value
-  };
-
+function setAlwaysOnTop(value) {
   chrome.app.window.create('index.html',
-                           options,
+                           {},
                            callbackPass(function(win) {
-    // Check that isAlwaysOnTop() returns false because the manifest did not
-    // specify the "app.window.alwaysOnTop" permission.
-    chrome.test.assertEq(false, win.isAlwaysOnTop());
+    chrome.test.assertFalse(win.isAlwaysOnTop());
 
-    // Attempt to use setAlwaysOnTop() to change the property. But this should
-    // also fail.
+    // Attempt to use setAlwaysOnTop() to change the property.
     win.setAlwaysOnTop(value);
 
-    // setAlwaysOnTop is synchronous in the browser, so send an async request to
-    // ensure we get the updated value of isAlwaysOnTop.
-    chrome.test.waitForRoundTrip("msg", callbackPass(function(platformInfo) {
-      // Check that isAlwaysOnTop() returns false.
-      chrome.test.assertEq(false, win.isAlwaysOnTop());
+    // setAlwaysOnTop() is synchronous in the browser, so send an async request
+    // to ensure we get the updated value of isAlwaysOnTop().
+    chrome.test.waitForRoundTrip("", callbackPass(function() {
+      // Check that isAlwaysOnTop() always returns false.
+      chrome.test.assertFalse(win.isAlwaysOnTop());
 
       win.contentWindow.close();
     }));
@@ -35,14 +28,43 @@ function testAlwaysOnTop(testId, value) {
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.test.runTests([
 
-    // Try to enable alwaysOnTop on window creation and after window creation.
-    function testAlwaysOnTopEnable() {
-      testAlwaysOnTop('testAlwaysOnTopEnable', true);
+    // Attempting to create an alwaysOnTop window without the permission should
+    // fail to create a window.
+    function testCreateAlwaysOnTopEnabled() {
+      var options = {
+        alwaysOnTop: true
+      };
+
+      chrome.app.window.create(
+          'index.html', options,
+          callbackFail('The "app.window.alwaysOnTop" permission is required.'));
     },
 
-    // Try to disable alwaysOnTop on window creation and after window creation.
-    function testAlwaysOnTopDisable() {
-      testAlwaysOnTop('testAlwaysOnTopDisable', false);
+    // Setting the alwaysOnTop property to false without the permission should
+    // still result in a window being created.
+    function testCreateAlwaysOnTopDisabled() {
+      var options = {
+        alwaysOnTop: false
+      };
+
+      chrome.app.window.create('index.html',
+                               options,
+                               callbackPass(function(win) {
+        chrome.test.assertFalse(win.isAlwaysOnTop());
+        win.contentWindow.close();
+      }));
+    },
+
+    // Enabling the alwaysOnTop property after window creation without the
+    // permission should fail.
+    function testSetAlwaysOnTopEnabled() {
+      setAlwaysOnTop(true);
+    },
+
+    // Disabling the alwaysOnTop property after window creation without the
+    // permission should not change the property.
+    function testSetAlwaysOnTopDisabled() {
+      setAlwaysOnTop(false);
     }
 
   ]);

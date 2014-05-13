@@ -48,6 +48,8 @@ const char kInactiveColorWithoutColor[] =
     "frame.inactiveColor must be used with frame.color.";
 const char kConflictingBoundsOptions[] =
     "The $1 property cannot be specified for both inner and outer bounds.";
+const char kAlwaysOnTopPermission[] =
+    "The \"app.window.alwaysOnTop\" permission is required.";
 }  // namespace app_window_constants
 
 const char kNoneFrameOption[] = "none";
@@ -234,9 +236,15 @@ bool AppWindowCreateFunction::RunAsync() {
     if (options->resizable.get())
       create_params.resizable = *options->resizable.get();
 
-    if (options->always_on_top.get() &&
-        GetExtension()->HasAPIPermission(APIPermission::kAlwaysOnTopWindows))
+    if (options->always_on_top.get()) {
       create_params.always_on_top = *options->always_on_top.get();
+
+      if (create_params.always_on_top && !GetExtension()->HasAPIPermission(
+              APIPermission::kAlwaysOnTopWindows)) {
+        error_ = app_window_constants::kAlwaysOnTopPermission;
+        return false;
+      }
+    }
 
     if (options->focused.get())
       create_params.focused = *options->focused.get();
