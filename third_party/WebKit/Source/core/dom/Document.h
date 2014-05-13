@@ -305,7 +305,7 @@ public:
     String outgoingReferrer();
     String outgoingOrigin() const;
 
-    void setDoctype(PassRefPtr<DocumentType>);
+    void setDoctype(PassRefPtrWillBeRawPtr<DocumentType>);
     DocumentType* doctype() const { return m_docType.get(); }
 
     DOMImplementation& implementation();
@@ -323,9 +323,9 @@ public:
     PassRefPtrWillBeRawPtr<Element> createElement(const AtomicString& name, ExceptionState&);
     PassRefPtr<DocumentFragment> createDocumentFragment();
     PassRefPtrWillBeRawPtr<Text> createTextNode(const String& data);
-    PassRefPtr<Comment> createComment(const String& data);
+    PassRefPtrWillBeRawPtr<Comment> createComment(const String& data);
     PassRefPtrWillBeRawPtr<CDATASection> createCDATASection(const String& data, ExceptionState&);
-    PassRefPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionState&);
+    PassRefPtrWillBeRawPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionState&);
     PassRefPtr<Attr> createAttribute(const AtomicString& name, ExceptionState&);
     PassRefPtr<Attr> createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&, bool shouldIgnoreNamespaceChecks = false);
     PassRefPtr<Node> importNode(Node* importedNode, ExceptionState&);

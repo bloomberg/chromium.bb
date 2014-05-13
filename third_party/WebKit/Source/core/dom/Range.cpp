@@ -668,7 +668,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
     return fragment.release();
 }
 
-static inline void deleteCharacterData(PassRefPtr<CharacterData> data, unsigned startOffset, unsigned endOffset, ExceptionState& exceptionState)
+static inline void deleteCharacterData(PassRefPtrWillBeRawPtr<CharacterData> data, unsigned startOffset, unsigned endOffset, ExceptionState& exceptionState)
 {
     if (data->length() - endOffset)
         data->deleteData(endOffset, data->length() - endOffset, exceptionState);
@@ -690,7 +690,13 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
     case Node::COMMENT_NODE:
         endOffset = std::min(endOffset, toCharacterData(container)->length());
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
+#if ENABLE(OILPAN)
+            // FIXME: Oilpan: Node::cloneNode() should return a raw pointer.
+            RefPtr<CharacterData> rpClone = static_pointer_cast<CharacterData>(container->cloneNode(true));
+            RawPtr<CharacterData> c = rpClone.get();
+#else
             RefPtr<CharacterData> c = static_pointer_cast<CharacterData>(container->cloneNode(true));
+#endif
             deleteCharacterData(c, startOffset, endOffset, exceptionState);
             if (fragment) {
                 result = fragment;
@@ -704,7 +710,13 @@ PassRefPtr<Node> Range::processContentsBetweenOffsets(ActionType action, PassRef
     case Node::PROCESSING_INSTRUCTION_NODE:
         endOffset = std::min(endOffset, toProcessingInstruction(container)->data().length());
         if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
+#if ENABLE(OILPAN)
+            // FIXME: Oilpan: Node::cloneNode() should return a raw pointer.
+            RefPtr<ProcessingInstruction> rpClone = static_pointer_cast<ProcessingInstruction>(container->cloneNode(true));
+            RawPtr<ProcessingInstruction> c = rpClone.get();
+#else
             RefPtr<ProcessingInstruction> c = static_pointer_cast<ProcessingInstruction>(container->cloneNode(true));
+#endif
             c->setData(c->data().substring(startOffset, endOffset - startOffset));
             if (fragment) {
                 result = fragment;

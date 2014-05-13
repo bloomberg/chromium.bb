@@ -1108,7 +1108,7 @@ void XMLDocumentParser::processingInstruction(const String& target, const String
 
     // ### handle exceptions
     TrackExceptionState exceptionState;
-    RefPtr<ProcessingInstruction> pi = m_currentNode->document().createProcessingInstruction(target, data, exceptionState);
+    RefPtrWillBeRawPtr<ProcessingInstruction> pi = m_currentNode->document().createProcessingInstruction(target, data, exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -1162,8 +1162,7 @@ void XMLDocumentParser::comment(const String& text)
 
     exitText();
 
-    RefPtr<Comment> newNode = Comment::create(m_currentNode->document(), text);
-    m_currentNode->parserAppendChild(newNode.get());
+    m_currentNode->parserAppendChild(Comment::create(m_currentNode->document(), text));
 }
 
 enum StandaloneInfo {

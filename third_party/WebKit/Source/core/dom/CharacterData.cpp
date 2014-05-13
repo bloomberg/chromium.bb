@@ -47,7 +47,7 @@ void CharacterData::setData(const String& data)
     if (m_data == nonNullData)
         return;
 
-    RefPtr<CharacterData> protect = this;
+    RefPtrWillBeRawPtr<CharacterData> protect(this);
 
     unsigned oldLength = length();
 

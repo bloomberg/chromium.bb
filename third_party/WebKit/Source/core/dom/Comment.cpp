@@ -32,9 +32,9 @@ inline Comment::Comment(Document& document, const String& text)
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<Comment> Comment::create(Document& document, const String& text)
+PassRefPtrWillBeRawPtr<Comment> Comment::create(Document& document, const String& text)
 {
-    return adoptRef(new Comment(document, text));
+    return adoptRefWillBeRefCountedGarbageCollected(new Comment(document, text));
 }
 
 String Comment::nodeName() const

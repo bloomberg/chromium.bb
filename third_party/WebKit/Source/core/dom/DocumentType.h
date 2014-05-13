@@ -32,9 +32,9 @@ class NamedNodeMap;
 
 class DocumentType FINAL : public Node {
 public:
-    static PassRefPtr<DocumentType> create(Document* document, const String& name, const String& publicId, const String& systemId)
+    static PassRefPtrWillBeRawPtr<DocumentType> create(Document* document, const String& name, const String& publicId, const String& systemId)
     {
-        return adoptRef(new DocumentType(document, name, publicId, systemId));
+        return adoptRefWillBeRefCountedGarbageCollected(new DocumentType(document, name, publicId, systemId));
     }
 
     const String& name() const { return m_name; }

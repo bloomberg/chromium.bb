@@ -697,7 +697,7 @@ String Document::compatMode() const
     return inQuirksMode() ? "BackCompat" : "CSS1Compat";
 }
 
-void Document::setDoctype(PassRefPtr<DocumentType> docType)
+void Document::setDoctype(PassRefPtrWillBeRawPtr<DocumentType> docType)
 {
     // This should never be called more than once.
     ASSERT(!m_docType || !docType);
@@ -879,7 +879,7 @@ PassRefPtrWillBeRawPtr<Text> Document::createTextNode(const String& data)
     return Text::create(*this, data);
 }
 
-PassRefPtr<Comment> Document::createComment(const String& data)
+PassRefPtrWillBeRawPtr<Comment> Document::createComment(const String& data)
 {
     return Comment::create(*this, data);
 }
@@ -897,7 +897,7 @@ PassRefPtrWillBeRawPtr<CDATASection> Document::createCDATASection(const String& 
     return CDATASection::create(*this, data);
 }
 
-PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<ProcessingInstruction> Document::createProcessingInstruction(const String& target, const String& data, ExceptionState& exceptionState)
 {
     if (!isValidName(target)) {
         exceptionState.throwDOMException(InvalidCharacterError, "The target provided ('" + target + "') is not a valid name.");

@@ -31,7 +31,7 @@ class ExecutionContext;
 
 class Comment FINAL : public CharacterData {
 public:
-    static PassRefPtr<Comment> create(Document&, const String&);
+    static PassRefPtrWillBeRawPtr<Comment> create(Document&, const String&);
 
 private:
     Comment(Document&, const String&);

@@ -57,7 +57,7 @@ public:
     // DOM methods & attributes for DOMImplementation
     static bool hasFeature(const String& feature, const String& version);
     bool hasFeatureForBindings(const String& feature, const String& version);
-    PassRefPtr<DocumentType> createDocumentType(const AtomicString& qualifiedName, const String& publicId, const String& systemId, ExceptionState&);
+    PassRefPtrWillBeRawPtr<DocumentType> createDocumentType(const AtomicString& qualifiedName, const String& publicId, const String& systemId, ExceptionState&);
     PassRefPtr<XMLDocument> createDocument(const AtomicString& namespaceURI, const AtomicString& qualifiedName, DocumentType*, ExceptionState&);
 
     // From the HTMLDOMImplementation interface

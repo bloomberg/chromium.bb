@@ -187,7 +187,7 @@ bool DOMImplementation::hasFeatureForBindings(const String& feature, const Strin
     return true;
 }
 
-PassRefPtr<DocumentType> DOMImplementation::createDocumentType(const AtomicString& qualifiedName,
+PassRefPtrWillBeRawPtr<DocumentType> DOMImplementation::createDocumentType(const AtomicString& qualifiedName,
     const String& publicId, const String& systemId, ExceptionState& exceptionState)
 {
     AtomicString prefix, localName;
