@@ -720,6 +720,9 @@ FcPrivate FcLangSet *
 FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l);
 
 /* fccharset.c */
+FcPrivate FcCharSet *
+FcCharSetPromote (FcValuePromotionBuffer *vbuf);
+
 FcPrivate void
 FcLangCharSetPopulate (void);
 
