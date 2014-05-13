@@ -466,6 +466,8 @@
         'nacl/common/nacl_host_messages.cc',
         'nacl/common/nacl_messages.cc',
         'nacl/common/nacl_messages.h',
+        'nacl/common/nacl_nonsfi_util.cc',
+        'nacl/common/nacl_nonsfi_util.h',
         'nacl/common/nacl_process_type.h',
         'nacl/common/nacl_sandbox_type_mac.h',
         'nacl/common/nacl_types.cc',

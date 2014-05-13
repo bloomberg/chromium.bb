@@ -1703,6 +1703,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     static const char* const kSwitchNames[] = {
       // Load (in-process) Pepper plugins in-process in the zygote pre-sandbox.
       switches::kDisableBundledPpapiFlash,
+      switches::kEnableNaClNonSfiMode,
       switches::kNaClDangerousNoSandboxNonSfi,
       switches::kPpapiFlashPath,
       switches::kPpapiFlashVersion,

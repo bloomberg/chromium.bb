@@ -12,6 +12,15 @@
 #include "base/compiler_specific.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 
+template <typename>
+class ScopedVector;
+
+namespace nacl {
+
+// Appends any ZygoteForkDelegate instances needed by NaCl to |*delegates|.
+void AddNaClZygoteForkDelegates(
+    ScopedVector<content::ZygoteForkDelegate>* delegates);
+
 // The NaClForkDelegate is created during Chrome linux zygote
 // initialization, and provides "fork()" functionality with
 // NaCl specific process characteristics (specifically address
@@ -19,7 +28,7 @@
 // A new delegate is passed in as an argument to ZygoteMain().
 class NaClForkDelegate : public content::ZygoteForkDelegate {
  public:
-  NaClForkDelegate();
+  NaClForkDelegate(bool nonsfi_mode);
   virtual ~NaClForkDelegate();
 
   virtual void Init(int sandboxdesc, bool enable_layer1_sandbox) OVERRIDE;
@@ -49,8 +58,11 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
     kNaClHelperStatusBoundary  // Must be one greater than highest value used.
   };
 
+  const bool nonsfi_mode_;
   NaClHelperStatus status_;
   int fd_;
 };
+
+}  // namespace nacl
 
 #endif  // COMPONENTS_NACL_ZYGOTE_NACL_FORK_DELEGATE_LINUX_H_

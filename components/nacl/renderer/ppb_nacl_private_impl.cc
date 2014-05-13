@@ -18,6 +18,7 @@
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_messages.h"
+#include "components/nacl/common/nacl_nonsfi_util.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/renderer/histogram.h"
@@ -532,19 +533,8 @@ int32_t GetNumberOfProcessors() {
   return num_processors;
 }
 
-PP_Bool IsNonSFIModeEnabled() {
-// Note that this only indicates whether non-sfi mode *can* run for a given
-// platform and if nonsfi manifest entries are preferred.  There can be other
-// restrictions which prevent a particular module from launching.  See
-// NaClProcessHost::Launch which makes the final determination.
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
-  return PP_TRUE;
-#elif defined(OS_LINUX)
-  return PP_FromBool(CommandLine::ForCurrentProcess()->HasSwitch(
-                         switches::kEnableNaClNonSfiMode));
-#else
-  return PP_FALSE;
-#endif
+PP_Bool PPIsNonSFIModeEnabled() {
+  return PP_FromBool(IsNonSFIModeEnabled());
 }
 
 int32_t GetNexeFd(PP_Instance instance,
@@ -1015,7 +1005,7 @@ int32_t CreateJsonManifest(PP_Instance instance,
       new nacl::JsonManifest(
           manifest_url,
           isa_type,
-          PP_ToBool(IsNonSFIModeEnabled()),
+          IsNonSFIModeEnabled(),
           PP_ToBool(NaClDebugEnabledForURL(manifest_url))));
   JsonManifest::ErrorInfo error_info;
   if (j->Init(manifest_data, &error_info)) {
@@ -1272,7 +1262,7 @@ const PPB_NaCl_Private nacl_interface = {
   &GetReadonlyPnaclFD,
   &CreateTemporaryFile,
   &GetNumberOfProcessors,
-  &IsNonSFIModeEnabled,
+  &PPIsNonSFIModeEnabled,
   &GetNexeFd,
   &ReportTranslationFinished,
   &OpenNaClExecutable,

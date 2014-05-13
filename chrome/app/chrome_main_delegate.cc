@@ -858,7 +858,7 @@ bool ChromeMainDelegate::DelaySandboxInitialization(
 void ChromeMainDelegate::ZygoteStarting(
     ScopedVector<content::ZygoteForkDelegate>* delegates) {
 #if !defined(DISABLE_NACL)
-  delegates->push_back(new NaClForkDelegate());
+  nacl::AddNaClZygoteForkDelegates(delegates);
 #endif
 }
 
