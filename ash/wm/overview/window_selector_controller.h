@@ -41,11 +41,6 @@ class ASH_EXPORT WindowSelectorController
   // or touch rather than keypresses.
   void ToggleOverview();
 
-  // Cycles between windows in the given |direction|. It is assumed that the
-  // alt key is held down and a key filter is installed to watch for alt being
-  // released.
-  void HandleCycleWindow(WindowSelector::Direction direction);
-
   // Returns true if window selection mode is active.
   bool IsSelecting();
 

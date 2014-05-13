@@ -120,12 +120,10 @@ void CleanupWidgetAfterAnimationObserver::OnLayerAnimationScheduled(
 }  // namespace
 
 WindowOverview::WindowOverview(WindowSelector* window_selector,
-                               WindowSelectorItemList* windows,
-                               aura::Window* single_root_window)
+                               WindowSelectorItemList* windows)
     : window_selector_(window_selector),
       windows_(windows),
       selection_index_(0),
-      single_root_window_(single_root_window),
       overview_start_time_(base::Time::Now()),
       cursor_client_(NULL) {
   Shell* shell = Shell::GetInstance();
@@ -151,11 +149,9 @@ WindowOverview::WindowOverview(WindowSelector* window_selector,
   shell->GetScreen()->AddObserver(this);
   shell->metrics()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW);
   HideAndTrackNonOverviewWindows();
-  // Send an a11y alert only if the overview was activated by the user.
-  if (window_selector_->mode() == WindowSelector::OVERVIEW) {
-    shell->accessibility_delegate()->TriggerAccessibilityAlert(
-        A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
-  }
+  // Send an a11y alert.
+  shell->accessibility_delegate()->TriggerAccessibilityAlert(
+      A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);
 }
 
 WindowOverview::~WindowOverview() {
@@ -251,11 +247,6 @@ void WindowOverview::SetSelection(size_t index) {
 }
 
 void WindowOverview::OnWindowsChanged() {
-  PositionWindows(/* animate */ true);
-}
-
-void WindowOverview::MoveToSingleRootWindow(aura::Window* root_window) {
-  single_root_window_ = root_window;
   PositionWindows(/* animate */ true);
 }
 
@@ -378,18 +369,9 @@ void WindowOverview::HideAndTrackNonOverviewWindows() {
 }
 
 void WindowOverview::PositionWindows(bool animate) {
-  if (single_root_window_) {
-    std::vector<WindowSelectorItem*> windows;
-    for (WindowSelectorItemList::iterator iter = windows_->begin();
-         iter != windows_->end(); ++iter) {
-      windows.push_back(*iter);
-    }
-    PositionWindowsOnRoot(single_root_window_, windows, animate);
-  } else {
-    aura::Window::Windows root_window_list = Shell::GetAllRootWindows();
-    for (size_t i = 0; i < root_window_list.size(); ++i)
-      PositionWindowsFromRoot(root_window_list[i], animate);
-  }
+  aura::Window::Windows root_window_list = Shell::GetAllRootWindows();
+  for (size_t i = 0; i < root_window_list.size(); ++i)
+    PositionWindowsFromRoot(root_window_list[i], animate);
 }
 
 void WindowOverview::PositionWindowsFromRoot(aura::Window* root_window,
@@ -400,13 +382,7 @@ void WindowOverview::PositionWindowsFromRoot(aura::Window* root_window,
     if ((*iter)->GetRootWindow() == root_window)
       windows.push_back(*iter);
   }
-  PositionWindowsOnRoot(root_window, windows, animate);
-}
 
-void WindowOverview::PositionWindowsOnRoot(
-    aura::Window* root_window,
-    const std::vector<WindowSelectorItem*>& windows,
-    bool animate) {
   if (windows.empty())
     return;
 
@@ -455,9 +431,7 @@ void WindowOverview::InitializeSelectionWidget() {
   params.keep_on_top = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::OPAQUE_WINDOW;
-  params.parent = Shell::GetContainer(single_root_window_
-                                          ? single_root_window_
-                                          : windows_->front()->GetRootWindow(),
+  params.parent = Shell::GetContainer(windows_->front()->GetRootWindow(),
                                       kShellWindowId_DefaultContainer);
   params.accept_events = false;
   selection_widget_->set_focus_on_creation(false);

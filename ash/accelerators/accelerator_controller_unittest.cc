@@ -1199,7 +1199,7 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
     GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
-    EXPECT_EQ(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_NONE);
+    EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
   }
 
   // Don't alert if we have a minimized window either.
@@ -1207,7 +1207,7 @@ TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);
     GetController()->PerformAction(kActionsNeedingWindow[i], dummy);
-    EXPECT_EQ(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_NONE);
+    EXPECT_NE(delegate->GetLastAccessibilityAlert(), A11Y_ALERT_WINDOW_NEEDED);
   }
 }
 

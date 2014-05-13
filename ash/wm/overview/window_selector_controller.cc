@@ -50,29 +50,9 @@ void WindowSelectorController::ToggleOverview() {
     if (windows.empty())
       return;
 
-    window_selector_.reset(
-        new WindowSelector(windows, WindowSelector::OVERVIEW, this));
+    window_selector_.reset(new WindowSelector(windows, this));
     OnSelectionStarted();
   }
-}
-
-void WindowSelectorController::HandleCycleWindow(
-    WindowSelector::Direction direction) {
-  if (!CanSelect())
-    return;
-
-  if (!IsSelecting()) {
-    std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
-        mru_window_tracker()->BuildMruWindowList();
-    // Don't cycle with no windows.
-    if (windows.empty())
-      return;
-
-    window_selector_.reset(
-        new WindowSelector(windows, WindowSelector::CYCLE, this));
-    OnSelectionStarted();
-  }
-  window_selector_->Step(direction);
 }
 
 bool WindowSelectorController::IsSelecting() {

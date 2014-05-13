@@ -49,6 +49,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/partial_screenshot_view.h"
 #include "ash/wm/power_button_controller.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
@@ -127,8 +128,8 @@ bool HandleCycleBackwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_PrevWindow_Tab"));
 
-  Shell::GetInstance()->window_selector_controller()->HandleCycleWindow(
-      WindowSelector::BACKWARD);
+  Shell::GetInstance()->window_cycle_controller()->HandleCycleWindow(
+      WindowCycleController::BACKWARD);
   return true;
 }
 
@@ -136,8 +137,8 @@ bool HandleCycleForwardMRU(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_TAB)
     base::RecordAction(base::UserMetricsAction("Accel_NextWindow_Tab"));
 
-  Shell::GetInstance()->window_selector_controller()->HandleCycleWindow(
-      WindowSelector::FORWARD);
+  Shell::GetInstance()->window_cycle_controller()->HandleCycleWindow(
+      WindowCycleController::FORWARD);
   return true;
 }
 

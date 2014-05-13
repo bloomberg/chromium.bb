@@ -73,6 +73,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/video_detector.h"
 #include "ash/wm/window_animations.h"
+#include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
@@ -712,6 +713,7 @@ Shell::~Shell() {
   shadow_controller_.reset();
   resize_shadow_controller_.reset();
 
+  window_cycle_controller_.reset();
   window_selector_controller_.reset();
   mru_window_tracker_.reset();
 
@@ -946,6 +948,7 @@ void Shell::Init() {
   high_contrast_controller_.reset(new HighContrastController);
   video_detector_.reset(new VideoDetector);
   window_selector_controller_.reset(new WindowSelectorController());
+  window_cycle_controller_.reset(new WindowCycleController());
 
   tooltip_controller_.reset(
       new views::corewm::TooltipController(

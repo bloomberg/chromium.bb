@@ -47,8 +47,7 @@ class WindowOverview : public ui::EventHandler,
   // If |single_root_window| is not NULL, all windows will be positioned on the
   // given root window.
   WindowOverview(WindowSelector* window_selector,
-                 WindowSelectorItemList* windows,
-                 aura::Window* single_root_window);
+                 WindowSelectorItemList* windows);
   virtual ~WindowOverview();
 
   // Sets the selected window to be the window in position |index|.
@@ -56,9 +55,6 @@ class WindowOverview : public ui::EventHandler,
 
   // Dispatched when the list of windows has changed.
   void OnWindowsChanged();
-
-  // Moves the overview to only |root_window|.
-  void MoveToSingleRootWindow(aura::Window* root_window);
 
   // ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
@@ -87,10 +83,6 @@ class WindowOverview : public ui::EventHandler,
   void PositionWindows(bool animate);
   // Position all of the windows from |root_window| on |root_window|.
   void PositionWindowsFromRoot(aura::Window* root_window, bool animate);
-  // Position all of the |windows| to fit on the |root_window|.
-  void PositionWindowsOnRoot(aura::Window* root_window,
-                             const std::vector<WindowSelectorItem*>& windows,
-                             bool animate);
 
   // Creates the selection widget.
   void InitializeSelectionWidget();
@@ -112,11 +104,6 @@ class WindowOverview : public ui::EventHandler,
   // Index of the currently selected window. This is used to determine when the
   // selection changes rows and use a different animation.
   size_t selection_index_;
-
-  // If NULL, each root window displays an overview of the windows in that
-  // display. Otherwise, all windows are in a single overview on
-  // |single_root_window_|.
-  aura::Window* single_root_window_;
 
   // The time when overview was started.
   base::Time overview_start_time_;
