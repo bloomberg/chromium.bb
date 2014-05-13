@@ -264,23 +264,6 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginHostTest);
 };
 
-// This test ensures that if guest isn't there and we resize the guest (from
-// js), it remembers the size correctly.
-//
-// Initially we load an embedder with a guest without a src attribute (which has
-// dimension 640x480), resize it to 100x200, and then we set the source to a
-// sample guest. In the end we verify that the correct size has been set.
-IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, NavigateAfterResize) {
-  const gfx::Size nxt_size = gfx::Size(100, 200);
-  const std::string embedder_code = base::StringPrintf(
-      "SetSize(%d, %d);", nxt_size.width(), nxt_size.height());
-  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true, embedder_code);
-
-  // Wait for the guest to be resized to 100x200.
-  test_guest()->WaitForResizeGuest(nxt_size);
-}
-
 IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, AdvanceFocus) {
   const char kEmbedderURL[] = "/browser_plugin_focus.html";
   const char* kGuestURL = "/browser_plugin_focus_child.html";

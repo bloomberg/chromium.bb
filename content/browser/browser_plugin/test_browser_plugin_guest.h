@@ -27,7 +27,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   WebContentsImpl* web_contents() const;
 
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
-  virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual void OnHandleInputEvent(int instance_id,
                                   const gfx::Rect& guest_window_rect,
                                   const blink::WebInputEvent* event) OVERRIDE;
@@ -35,9 +34,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   virtual void OnTakeFocus(bool reverse) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void OnImeCancelComposition() OVERRIDE;
-  virtual void OnResizeGuest(
-      int instance_id,
-      const BrowserPluginHostMsg_ResizeGuest_Params& params) OVERRIDE;
 
   // Test utilities to wait for a event we are interested in.
   // Waits until UpdateRect message is sent from the guest, meaning it is
@@ -50,8 +46,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   void WaitForBlur();
   // Waits for focus to move out of this guest.
   void WaitForAdvanceFocus();
-  // Waits until guest exits.
-  void WaitForExit();
   // Waits until input is observed.
   void WaitForInput();
   // Waits until 'loadstop' is observed.
@@ -60,8 +54,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   void WaitForViewSize(const gfx::Size& view_size);
   // Waits until IME cancellation is observed.
   void WaitForImeCancel();
-  // Waits until we have seen a resize guest of size |view_size|.
-  void WaitForResizeGuest(const gfx::Size& view_size);
 
   void set_guest_hang_timeout(const base::TimeDelta& timeout) {
     guest_hang_timeout_ = timeout;
@@ -76,7 +68,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   virtual void SendMessageToEmbedder(IPC::Message* msg) OVERRIDE;
 
   int update_rect_count_;
-  bool exit_observed_;
   bool focus_observed_;
   bool blur_observed_;
   bool advance_focus_observed_;
@@ -85,11 +76,8 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   bool ime_cancel_observed_;
   gfx::Size last_view_size_observed_;
   gfx::Size expected_auto_view_size_;
-  gfx::Size last_size_observed_in_resize_;
-  gfx::Size expected_view_size_in_resize_;
 
   scoped_refptr<MessageLoopRunner> send_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> crash_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> focus_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> blur_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> advance_focus_message_loop_runner_;
@@ -97,7 +85,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   scoped_refptr<MessageLoopRunner> load_stop_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> auto_view_size_message_loop_runner_;
   scoped_refptr<MessageLoopRunner> ime_cancel_message_loop_runner_;
-  scoped_refptr<MessageLoopRunner> resize_guest_message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginGuest);
 };

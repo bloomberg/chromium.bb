@@ -41,6 +41,10 @@ window.runTest = function(testName) {
   embedder.test.testList[testName]();
 };
 
+var LOG = function(msg) {
+  window.console.log(msg);
+};
+
 // Creates a <webview> tag in document.body and returns the reference to it.
 // It also sets a dummy src. The dummy src is significant because this makes
 // sure that the <object> shim is created (asynchronously at this point) for the
@@ -1211,6 +1215,54 @@ function testNavigationToExternalProtocol() {
   document.body.appendChild(webview);
 }
 
+// This test ensures if the guest isn't there and we resize the guest (from JS),
+// it remembers the size correctly.
+function testNavigateAfterResize() {
+  var webview = new WebView();
+
+  var postMessageHandler = function(e) {
+    var data = JSON.parse(e.data);
+    LOG('postMessageHandler: ' + data);
+    webview.removeEventListener('message', postMessageHandler);
+    if (data[0] == 'dimension-response') {
+      var actualWidth = data[1];
+      var actualHeight = data[2];
+      LOG('actualWidth: ' + actualWidth + ', actualHeight: ' + actualHeight);
+      embedder.test.assertEq(100, actualWidth);
+      embedder.test.assertEq(125, actualHeight);
+      embedder.test.succeed();
+    }
+  };
+  window.addEventListener('message', postMessageHandler);
+
+  webview.addEventListener('consolemessage', function(e) {
+    LOG('guest log: ' + e.message);
+  });
+
+  webview.addEventListener('loadstop', function(e) {
+    webview.executeScript(
+      {file: 'navigate_after_resize.js'},
+      function(results) {
+        if (!results || !results.length) {
+          LOG('Failed to inject navigate_after_resize.js');
+          embedder.test.fail();
+          return;
+        }
+        LOG('Inject success: navigate_after_resize.js');
+        var msg = ['dimension-request'];
+        webview.contentWindow.postMessage(JSON.stringify(msg), '*');
+      });
+  });
+
+  // First set size.
+  webview.style.width = '100px';
+  webview.style.height = '125px';
+
+  // Then navigate.
+  webview.src = 'about:blank';
+  document.body.appendChild(webview);
+}
+
 function testResizeWebviewResizesContent() {
   var webview = new WebView();
   webview.src = 'about:blank';
@@ -1562,6 +1614,7 @@ embedder.test.testList = {
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
   'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
   'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
+  'testNavigateAfterResize': testNavigateAfterResize,
   'testNavigationToExternalProtocol': testNavigationToExternalProtocol,
   'testReload': testReload,
   'testRemoveWebviewOnExit': testRemoveWebviewOnExit,

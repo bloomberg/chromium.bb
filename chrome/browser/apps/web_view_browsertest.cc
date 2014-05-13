@@ -956,6 +956,10 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavOnSrcAttributeChange) {
   TestHelper("testNavOnSrcAttributeChange", "web_view/shim", NO_TEST_SERVER);
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavigateAfterResize) {
+  TestHelper("testNavigateAfterResize", "web_view/shim", NO_TEST_SERVER);
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveSrcAttribute) {
   TestHelper("testRemoveSrcAttribute", "web_view/shim", NO_TEST_SERVER);
 }
