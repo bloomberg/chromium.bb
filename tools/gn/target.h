@@ -103,7 +103,8 @@ class Target : public Item {
   const LabelTargetVector& datadeps() const { return datadeps_; }
   LabelTargetVector& datadeps() { return datadeps_; }
 
-  // List of configs that this class inherits settings from.
+  // List of configs that this class inherits settings from. Once a target is
+  // resolved, this will also list all- and direct-dependent configs.
   const LabelConfigVector& configs() const { return configs_; }
   LabelConfigVector& configs() { return configs_; }
 

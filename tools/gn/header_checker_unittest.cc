@@ -51,10 +51,25 @@ TEST_F(HeaderCheckerTest, IsDependencyOf) {
   scoped_refptr<HeaderChecker> checker(
       new HeaderChecker(setup_.build_settings(), targets_));
 
-  EXPECT_FALSE(checker->IsDependencyOf(&a_, &a_));
-  EXPECT_TRUE(checker->IsDependencyOf(&b_, &a_));
-  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_));
-  EXPECT_FALSE(checker->IsDependencyOf(&a_, &c_));
+  std::vector<const Target*> chain;
+  EXPECT_FALSE(checker->IsDependencyOf(&a_, &a_, &chain));
+
+  chain.clear();
+  EXPECT_TRUE(checker->IsDependencyOf(&b_, &a_, &chain));
+  ASSERT_EQ(2u, chain.size());
+  EXPECT_EQ(&b_, chain[0]);
+  EXPECT_EQ(&a_, chain[1]);
+
+  chain.clear();
+  EXPECT_TRUE(checker->IsDependencyOf(&c_, &a_, &chain));
+  ASSERT_EQ(3u, chain.size());
+  EXPECT_EQ(&c_, chain[0]);
+  EXPECT_EQ(&b_, chain[1]);
+  EXPECT_EQ(&a_, chain[2]);
+
+  chain.clear();
+  EXPECT_FALSE(checker->IsDependencyOf(&a_, &c_, &chain));
+  EXPECT_TRUE(chain.empty());
 }
 
 TEST_F(HeaderCheckerTest, CheckInclude) {
@@ -114,4 +129,43 @@ TEST_F(HeaderCheckerTest, CheckInclude) {
   err = Err();
   EXPECT_FALSE(checker->CheckInclude(&a_, input_file, c_public, range, &err));
   EXPECT_TRUE(err.has_error());
+}
+
+TEST_F(HeaderCheckerTest, DoDirectDependentConfigsApply) {
+  // Assume we have a chain A -> B -> C -> D.
+  Target target_a(setup_.settings(), Label(SourceDir("//a/"), "a"));
+  Target target_b(setup_.settings(), Label(SourceDir("//b/"), "b"));
+  Target target_c(setup_.settings(), Label(SourceDir("//c/"), "c"));
+  Target target_d(setup_.settings(), Label(SourceDir("//d/"), "d"));
+
+  // C is a group, and B forwards deps from C, so A should get configs from D.
+  target_a.set_output_type(Target::SOURCE_SET);
+  target_b.set_output_type(Target::SOURCE_SET);
+  target_c.set_output_type(Target::GROUP);
+  target_d.set_output_type(Target::SOURCE_SET);
+  target_b.forward_dependent_configs().push_back(
+      LabelTargetPair(&target_c));
+
+  // Dependency chain goes from bottom to top.
+  std::vector<const Target*> chain;
+  chain.push_back(&target_d);
+  chain.push_back(&target_c);
+  chain.push_back(&target_b);
+  chain.push_back(&target_a);
+
+  // This chain should be valid.
+  size_t badone = 0;
+  EXPECT_TRUE(HeaderChecker::DoDirectDependentConfigsApply(chain, &badone));
+
+  // If C is not a group, it shouldn't work anymore.
+  target_c.set_output_type(Target::SOURCE_SET);
+  EXPECT_FALSE(HeaderChecker::DoDirectDependentConfigsApply(chain, &badone));
+  EXPECT_EQ(1u, badone);
+
+  // Or if B stops forwarding from C, it shouldn't work anymore.
+  target_c.set_output_type(Target::GROUP);
+  badone = 0;
+  target_b.forward_dependent_configs().clear();
+  EXPECT_FALSE(HeaderChecker::DoDirectDependentConfigsApply(chain, &badone));
+  EXPECT_EQ(2u, badone);
 }

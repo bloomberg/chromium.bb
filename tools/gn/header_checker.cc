@@ -13,6 +13,7 @@
 #include "tools/gn/build_settings.h"
 #include "tools/gn/builder.h"
 #include "tools/gn/c_include_iterator.h"
+#include "tools/gn/config.h"
 #include "tools/gn/err.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/scheduler.h"
@@ -44,6 +45,73 @@ LocationRange CreatePersistentRange(const InputFile& input_file,
                range.begin().char_offset()),
       Location(clone_input_file, range.end().line_number(),
                range.end().char_offset()));
+}
+
+// Returns true if the given config could affect how the compiler runs (rather
+// than being empty or just affecting linker flags).
+bool ConfigHasCompilerSettings(const Config* config) {
+  const ConfigValues& values = config->config_values();
+  return
+      !values.cflags().empty() ||
+      !values.cflags_c().empty() ||
+      !values.cflags_cc().empty() ||
+      !values.cflags_objc().empty() ||
+      !values.cflags_objcc().empty() ||
+      !values.defines().empty() ||
+      !values.include_dirs().empty();
+}
+
+// Returns true if the given target has any direct dependent configs with
+// compiler settings in it.
+bool HasDirectDependentCompilerSettings(const Target* target) {
+  const LabelConfigVector& direct = target->direct_dependent_configs();
+  for (size_t i = 0; i < direct.size(); i++) {
+    if (ConfigHasCompilerSettings(direct[i].ptr))
+      return true;
+  }
+  return false;
+}
+
+// Given a reverse dependency chain where the target chain[0]'s dependent
+// configs don't apply to chain[end], returns the string describing the error.
+// The problematic index is the target where the dependent configs were lost.
+std::string GetDependentConfigChainError(
+    const std::vector<const Target*>& chain,
+    size_t problematic_index) {
+  // Erroneous dependent config chains are always at least three long, since
+  // dependent configs would apply if it was length two.
+  DCHECK(chain.size() >= 3);
+
+  std::string from_label =
+      chain[chain.size() - 1]->label().GetUserVisibleName(false);
+  std::string to_label =
+      chain[0]->label().GetUserVisibleName(false);
+  std::string problematic_label =
+      chain[problematic_index]->label().GetUserVisibleName(false);
+  std::string problematic_upstream_label =
+      chain[problematic_index - 1]->label().GetUserVisibleName(false);
+
+  return
+      "You have the dependency tree:  SOURCE -> MID -> DEST\n"
+      "Where a file from:\n"
+      "  SOURCE = " + from_label + "\n"
+      "is including a header from:\n"
+      "  DEST = " + to_label + "\n"
+      "\n"
+      "DEST has direct_dependent_configs, and they don't apply to SOURCE "
+      "because\nSOURCE is more than one hop away. This means that DEST's "
+      "headers might not\nreceive the expected compiler flags.\n"
+      "\n"
+      "To fix this, make SOURCE depend directly on DEST.\n"
+      "\n"
+      "Alternatively, if the target:\n"
+      "  MID = " + problematic_label + "\n"
+      "exposes DEST as part of its public API, you can declare this by "
+      "adding:\n"
+      "  forward_dependent_configs_from = [\n"
+      "    \"" + problematic_upstream_label + "\"\n"
+      "  ]\n"
+      "to MID. This will apply DEST's direct dependent configs to SOURCE.\n";
 }
 
 }  // namespace
@@ -181,8 +249,15 @@ bool HeaderChecker::CheckFile(const Target* from_target,
   return true;
 }
 
-// If the file exists, it must be in a dependency of the given target, and it
-// must be public in that dependency.
+// If the file exists:
+//  - It must be in one or more dependencies of the given target.
+//  - Those dependencies must have visibility from the source file.
+//  - The header must be in the public section of those dependeices.
+//  - Those dependencies must either have no direct dependent configs with
+//    flags that affect the compiler, or those direct dependent configs apply
+//    to the "from_target" (it's one "hop" away). This ensures that if the
+//    include file needs needs compiler settings to compile it, that those
+//    settings are applied to the file including it.
 bool HeaderChecker::CheckInclude(const Target* from_target,
                                  const InputFile& source_file,
                                  const SourceFile& include_file,
@@ -198,6 +273,7 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
     return true;
 
   const TargetVector& targets = found->second;
+  std::vector<const Target*> chain;  // Prevent reallocating in the loop.
 
   // For all targets containing this file, we require that at least one be
   // a dependency of the current target, and all targets that are dependencies
@@ -206,15 +282,20 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
   for (size_t i = 0; i < targets.size(); i++) {
     // We always allow source files in a target to include headers also in that
     // target.
-    if (targets[i].target == from_target)
+    const Target* to_target = targets[i].target;
+    if (to_target == from_target)
       return true;
 
-    if (IsDependencyOf(targets[i].target, from_target)) {
+    if (IsDependencyOf(to_target, from_target, &chain)) {
+      DCHECK(chain.size() >= 2);
+      DCHECK(chain[0] == to_target);
+      DCHECK(chain[chain.size() - 1] == from_target);
+
       // The include is in a target that's a proper dependency. Verify that
       // the including target has visibility.
-      if (!targets[i].target->visibility().CanSeeMe(from_target->label())) {
+      if (!to_target->visibility().CanSeeMe(from_target->label())) {
         std::string msg = "The included file is in " +
-            targets[i].target->label().GetUserVisibleName(false) +
+            to_target->label().GetUserVisibleName(false) +
             "\nwhich is not visible from " +
             from_target->label().GetUserVisibleName(false) +
             "\n(see \"gn help visibility\").";
@@ -225,7 +306,7 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
         return false;
       }
 
-      // The file must also be public in the target.
+      // The file must be public in the target.
       if (!targets[i].is_public) {
         // Danger: must call CreatePersistentRange to put in Err.
         *err = Err(CreatePersistentRange(source_file, range),
@@ -234,6 +315,19 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
                        targets[i].target->label().GetUserVisibleName(false));
         return false;
       }
+
+      // If the to_target has direct_dependent_configs, they must apply to the
+      // from_target.
+      if (HasDirectDependentCompilerSettings(to_target)) {
+        size_t problematic_index;
+        if (!DoDirectDependentConfigsApply(chain, &problematic_index)) {
+          *err = Err(CreatePersistentRange(source_file, range),
+                     "Can't include this header from here.",
+                     GetDependentConfigChainError(chain, problematic_index));
+          return false;
+        }
+      }
+
       found_dependency = true;
     }
   }
@@ -255,31 +349,96 @@ bool HeaderChecker::CheckInclude(const Target* from_target,
     return false;
   }
 
+  // One thing we didn't check for is targets that expose their dependents
+  // headers in their own public headers.
+  //
+  // Say we have A -> B -> C. If C has direct_dependent_configs, everybody
+  // getting headers from C should get the configs also or things could be
+  // out-of-sync. Above, we check for A including C's headers directly, but A
+  // could also include a header from B that in turn includes a header from C.
+  //
+  // There are two ways to solve this:
+  //  - If a public header in B includes C, force B to forward C's direct
+  //    dependent configs. This is possible to check, but might be super
+  //    annoying because most targets (especially large leaf-node targets)
+  //    don't declare public/private headers and you'll get lots of false
+  //    positives.
+  //
+  //  - Save the includes found in each file and actually compute the graph of
+  //    includes to detect when A implicitly includes C's header. This will not
+  //    have the annoying false positive problem, but is complex to write.
+
   return true;
 }
 
 bool HeaderChecker::IsDependencyOf(const Target* search_for,
-                                   const Target* search_from) const {
+                                   const Target* search_from,
+                                   std::vector<const Target*>* chain) const {
   std::set<const Target*> checked;
-  return IsDependencyOf(search_for, search_from, &checked);
+  return IsDependencyOf(search_for, search_from, chain, &checked);
 }
 
 bool HeaderChecker::IsDependencyOf(const Target* search_for,
                                    const Target* search_from,
+                                   std::vector<const Target*>* chain,
                                    std::set<const Target*>* checked) const {
   if (checked->find(search_for) != checked->end())
     return false;  // Already checked this subtree.
 
   const LabelTargetVector& deps = search_from->deps();
   for (size_t i = 0; i < deps.size(); i++) {
-    if (deps[i].ptr == search_for)
-      return true;  // Found it.
+    if (deps[i].ptr == search_for) {
+      // Found it.
+      chain->clear();
+      chain->push_back(deps[i].ptr);
+      chain->push_back(search_from);
+      return true;
+    }
 
     // Recursive search.
     checked->insert(deps[i].ptr);
-    if (IsDependencyOf(search_for, deps[i].ptr, checked))
+    if (IsDependencyOf(search_for, deps[i].ptr, chain, checked)) {
+      chain->push_back(search_from);
       return true;
+    }
   }
 
   return false;
+}
+
+// static
+bool HeaderChecker::DoDirectDependentConfigsApply(
+    const std::vector<const Target*>& chain,
+    size_t* problematic_index) {
+  // Direct dependent configs go up the chain one level with the following
+  // exceptions:
+  // - Skip over groups
+  // - Skip anything that explicitly forwards it
+
+  // All chains should be at least two (or it wouldn't be a chain).
+  DCHECK(chain.size() >= 2);
+
+  // A chain of length 2 is always OK as far as direct dependent configs are
+  // concerned since the targets are direct dependents.
+  if (chain.size() == 2)
+    return true;
+
+  // Check the middle configs to make sure they're either groups or configs
+  // are forwarded.
+  for (size_t i = 1; i < chain.size() - 1; i++) {
+    if (chain[i]->output_type() == Target::GROUP)
+      continue;  // This one is OK, skip to next one.
+
+    // The forward list on this target should have contained in it the target
+    // at the next lower level.
+    const LabelTargetVector& forwarded = chain[i]->forward_dependent_configs();
+    if (std::find_if(forwarded.begin(), forwarded.end(),
+                     LabelPtrPtrEquals<Target>(chain[i - 1])) ==
+        forwarded.end()) {
+      *problematic_index = i;
+      return false;
+    }
+  }
+
+  return true;
 }

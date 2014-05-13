@@ -42,6 +42,7 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   friend class base::RefCountedThreadSafe<HeaderChecker>;
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, IsDependencyOf);
   FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, CheckInclude);
+  FRIEND_TEST_ALL_PREFIXES(HeaderCheckerTest, DoDirectDependentConfigsApply);
   ~HeaderChecker();
 
   struct TargetInfo {
@@ -87,11 +88,28 @@ class HeaderChecker : public base::RefCountedThreadSafe<HeaderChecker> {
   // duplicate checking across recursive calls by keeping track of checked
   // targets in the given set. It should point to an empty set for the first
   // call. A target is not considered to be a dependency of itself.
-  bool IsDependencyOf(const Target* search_for,
-                      const Target* search_from) const;
+  //
+  // If found, the vector given in "chain" will be filled with the reverse
+  // dependency chain from the dest target (chain[0] = search_for) to the src
+  // target (chain[chain.size() - 1] = search_from).
   bool IsDependencyOf(const Target* search_for,
                       const Target* search_from,
+                      std::vector<const Target*>* chain) const;
+  bool IsDependencyOf(const Target* search_for,
+                      const Target* search_from,
+                      std::vector<const Target*>* chain,
                       std::set<const Target*>* checked) const;
+
+  // Given a reverse dependency chain (chain[0] is the lower-level target,
+  // chain[end] is the higher-level target), determines if all direct dependent
+  // configs on the lower-level target would apply to the higher-level one.
+  //
+  // If configs do not apply, this function returns false and indicates the
+  // index of the target that caused the config to not apply by putting it in
+  // problematic_index.
+  static bool DoDirectDependentConfigsApply(
+      const std::vector<const Target*>& chain,
+      size_t* problematic_index);
 
   // Non-locked variables ------------------------------------------------------
   //

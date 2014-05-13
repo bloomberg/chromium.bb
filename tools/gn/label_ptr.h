@@ -57,7 +57,7 @@ struct LabelPtrLabelEquals : public std::unary_function<Label, bool> {
 };
 
 // To do a brute-force search by object pointer:
-// std::find_if(vect.begin(), vect.end(), LabelPtrLabelEquals<Config>(config));
+// std::find_if(vect.begin(), vect.end(), LabelPtrPtrEquals<Config>(config));
 template<typename T>
 struct LabelPtrPtrEquals : public std::unary_function<T, bool> {
   explicit LabelPtrPtrEquals(const T* p) : ptr(p) {}
