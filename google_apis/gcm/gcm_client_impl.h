@@ -88,7 +88,7 @@ class GCM_EXPORT GCMClientImpl
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       GCMClient::Delegate* delegate) OVERRIDE;
-  virtual void Load() OVERRIDE;
+  virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void CheckOut() OVERRIDE;
   virtual void Register(const std::string& app_id,

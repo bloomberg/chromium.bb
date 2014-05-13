@@ -234,7 +234,7 @@ class TestGCMServiceWrapper {
   GCMClientMock* GetGCMClient();
 
   void CreateService(bool start_automatically,
-                     GCMClientMock::LoadingDelay gcm_client_loading_delay);
+                     GCMClientMock::StartMode gcm_client_start_mode);
 
   void SignIn(const std::string& account_id);
   void SignOut();
@@ -313,13 +313,13 @@ GCMClientMock* TestGCMServiceWrapper::GetGCMClient() {
 
 void TestGCMServiceWrapper::CreateService(
     bool start_automatically,
-    GCMClientMock::LoadingDelay gcm_client_loading_delay) {
+    GCMClientMock::StartMode gcm_client_start_mode) {
   service_.reset(new TestGCMService(
       start_automatically,
       identity_provider_owner_.PassAs<IdentityProvider>(),
       request_context_));
   service_->Initialize(scoped_ptr<GCMClientFactory>(
-      new FakeGCMClientFactory(gcm_client_loading_delay)));
+      new FakeGCMClientFactory(gcm_client_start_mode)));
 
   gcm_app_handler_.reset(new FakeGCMAppHandler);
   service_->AddAppHandler(kTestAppID1, gcm_app_handler_.get());
@@ -445,7 +445,7 @@ void GCMServiceTest::TearDown() {
 
 TEST_F(GCMServiceTest, CreateGCMServiceBeforeSignIn) {
   // Create CreateGMCService first.
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
   EXPECT_FALSE(wrapper_->service()->IsStarted());
 
   // Sign in. This will kick off the check-in.
@@ -458,12 +458,12 @@ TEST_F(GCMServiceTest, CreateGCMServiceAfterSignIn) {
   wrapper_->SignIn(kTestAccountID1);
 
   // Create GCMeService after sign-in.
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
   EXPECT_TRUE(wrapper_->service()->IsStarted());
 }
 
 TEST_F(GCMServiceTest, Shutdown) {
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
   EXPECT_TRUE(wrapper_->ServiceHasAppHandlers());
 
   wrapper_->service()->ShutdownService();
@@ -471,12 +471,12 @@ TEST_F(GCMServiceTest, Shutdown) {
 }
 
 TEST_F(GCMServiceTest, SignInAndSignOutUnderPositiveChannelSignal) {
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 
   // GCMClient should be loaded.
   EXPECT_TRUE(wrapper_->service()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, wrapper_->GetGCMClient()->status());
 
   wrapper_->SignOut();
 
@@ -488,7 +488,7 @@ TEST_F(GCMServiceTest, SignInAndSignOutUnderPositiveChannelSignal) {
 TEST_F(GCMServiceTest, SignInAndSignOutUnderNonPositiveChannelSignal) {
   // Non-positive channel signal will prevent GCMClient from checking in during
   // sign-in.
-  wrapper_->CreateService(false, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(false, GCMClientMock::NO_DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 
   // GCMClient should not be loaded.
@@ -503,12 +503,12 @@ TEST_F(GCMServiceTest, SignInAndSignOutUnderNonPositiveChannelSignal) {
 }
 
 TEST_F(GCMServiceTest, SignOutAndThenSignIn) {
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 
   // GCMClient should be loaded.
   EXPECT_TRUE(wrapper_->service()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, wrapper_->GetGCMClient()->status());
 
   wrapper_->SignOut();
 
@@ -521,16 +521,16 @@ TEST_F(GCMServiceTest, SignOutAndThenSignIn) {
 
   // GCMClient should be loaded again.
   EXPECT_TRUE(wrapper_->service()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, wrapper_->GetGCMClient()->status());
 }
 
 TEST_F(GCMServiceTest, StopAndRestartGCM) {
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 
   // GCMClient should be loaded.
   EXPECT_TRUE(wrapper_->service()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, wrapper_->GetGCMClient()->status());
 
   // Stops the GCM.
   wrapper_->service()->Stop();
@@ -548,7 +548,7 @@ TEST_F(GCMServiceTest, StopAndRestartGCM) {
 
   // GCMClient should be loaded.
   EXPECT_TRUE(wrapper_->service()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, wrapper_->GetGCMClient()->status());
 
   // Stops the GCM.
   wrapper_->service()->Stop();
@@ -568,7 +568,7 @@ TEST_F(GCMServiceTest, StopAndRestartGCM) {
 }
 
 TEST_F(GCMServiceTest, RegisterWhenNotSignedIn) {
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
 
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
@@ -581,7 +581,7 @@ TEST_F(GCMServiceTest, RegisterWhenNotSignedIn) {
 TEST_F(GCMServiceTest, RegisterUnderNonPositiveChannelSignal) {
   // Non-positive channel signal will prevent GCMClient from checking in during
   // sign-in.
-  wrapper_->CreateService(false, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(false, GCMClientMock::NO_DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 
   // GCMClient should not be checked in.
@@ -595,7 +595,7 @@ TEST_F(GCMServiceTest, RegisterUnderNonPositiveChannelSignal) {
 
   // GCMClient should be checked in.
   EXPECT_TRUE(wrapper_->service()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, wrapper_->GetGCMClient()->status());
 
   // Registration should succeed.
   const std::string expected_registration_id =
@@ -605,7 +605,7 @@ TEST_F(GCMServiceTest, RegisterUnderNonPositiveChannelSignal) {
 }
 
 TEST_F(GCMServiceTest, SendWhenNotSignedIn) {
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
 
   GCMClient::OutgoingMessage message;
   message.id = "1";
@@ -619,7 +619,7 @@ TEST_F(GCMServiceTest, SendWhenNotSignedIn) {
 TEST_F(GCMServiceTest, SendUnderNonPositiveChannelSignal) {
   // Non-positive channel signal will prevent GCMClient from checking in during
   // sign-in.
-  wrapper_->CreateService(false, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(false, GCMClientMock::NO_DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 
   // GCMClient should not be checked in.
@@ -634,7 +634,7 @@ TEST_F(GCMServiceTest, SendUnderNonPositiveChannelSignal) {
 
   // GCMClient should be checked in.
   EXPECT_TRUE(wrapper_->service()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, wrapper_->GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, wrapper_->GetGCMClient()->status());
 
   // Sending should succeed.
   EXPECT_EQ(message.id, wrapper_->send_message_id());
@@ -663,7 +663,7 @@ GCMServiceSingleInstanceTest::~GCMServiceSingleInstanceTest() {
 void GCMServiceSingleInstanceTest::SetUp() {
   GCMServiceTest::SetUp();
 
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 }
 
@@ -740,7 +740,7 @@ TEST_F(GCMServiceSingleInstanceTest, RegisterAgainWithDifferentSenderIDs) {
 TEST_F(GCMServiceSingleInstanceTest, GCMClientNotReadyBeforeRegistration) {
   // Make GCMClient not ready initially.
   wrapper_.reset(new TestGCMServiceWrapper(request_context_));
-  wrapper_->CreateService(true, GCMClientMock::DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 
   // The registration is on hold until GCMClient is ready.
@@ -872,7 +872,7 @@ TEST_F(GCMServiceSingleInstanceTest, Send) {
 TEST_F(GCMServiceSingleInstanceTest, GCMClientNotReadyBeforeSending) {
   // Make GCMClient not ready initially.
   wrapper_.reset(new TestGCMServiceWrapper(request_context_));
-  wrapper_->CreateService(true, GCMClientMock::DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::DELAY_START);
   wrapper_->SignIn(kTestAccountID1);
 
   // The sending is on hold until GCMClient is ready.
@@ -1008,8 +1008,8 @@ void GCMServiceMultipleInstanceTest::SetUp() {
 
   wrapper2_.reset(new TestGCMServiceWrapper(request_context_));
 
-  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
-  wrapper2_->CreateService(true, GCMClientMock::NO_DELAY_LOADING);
+  wrapper_->CreateService(true, GCMClientMock::NO_DELAY_START);
+  wrapper2_->CreateService(true, GCMClientMock::NO_DELAY_START);
 
   // Initiate check-in for each instance.
   wrapper_->SignIn(kTestAccountID1);

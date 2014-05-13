@@ -130,9 +130,9 @@ class GCMService : public IdentityProvider::Observer {
 
   typedef std::map<std::string, GCMAppHandler*> GCMAppHandlerMap;
 
-  // Ensures that the GCMClient is loaded and the GCM check-in is done if the
+  // Ensures that the GCMClient is started and the GCM check-in is done if the
   // |identity_provider_| is able to supply an account ID.
-  void EnsureLoaded();
+  void EnsureStarted();
 
   // Remove cached data when GCM service is stopped.
   void RemoveCachedData();

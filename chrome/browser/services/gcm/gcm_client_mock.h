@@ -15,18 +15,17 @@ class GCMClientMock : public GCMClient {
  public:
   enum Status {
     UNINITIALIZED,
-    LOADED,
+    STARTED,
     STOPPED,
     CHECKED_OUT
   };
 
-  enum LoadingDelay {
-    NO_DELAY_LOADING,
-    DELAY_LOADING,
+  enum StartMode {
+    NO_DELAY_START,
+    DELAY_START,
   };
 
-  // |loading_delay| denotes if the check-in should be delayed.
-  explicit GCMClientMock(LoadingDelay loading_delay);
+  explicit GCMClientMock(StartMode start_mode);
   virtual ~GCMClientMock();
 
   // Overridden from GCMClient:
@@ -39,7 +38,7 @@ class GCMClientMock : public GCMClient {
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter,
       Delegate* delegate) OVERRIDE;
-  virtual void Load() OVERRIDE;
+  virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual void CheckOut() OVERRIDE;
   virtual void Register(const std::string& app_id,
@@ -83,7 +82,7 @@ class GCMClientMock : public GCMClient {
 
   Delegate* delegate_;
   Status status_;
-  LoadingDelay loading_delay_;
+  StartMode start_mode_;
   base::WeakPtrFactory<GCMClientMock> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientMock);

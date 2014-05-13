@@ -154,7 +154,7 @@ class GCMService::IOWorker : public GCMClient::Delegate {
                   const std::vector<std::string>& account_ids,
                   const scoped_refptr<net::URLRequestContextGetter>&
                       url_request_context_getter);
-  void Load(const base::WeakPtr<GCMService>& service);
+  void Start(const base::WeakPtr<GCMService>& service);
   void Stop();
   void CheckOut();
   void Register(const std::string& app_id,
@@ -304,11 +304,11 @@ void GCMService::IOWorker::OnActivityRecorded() {
   GetGCMStatistics(false);
 }
 
-void GCMService::IOWorker::Load(const base::WeakPtr<GCMService>& service) {
+void GCMService::IOWorker::Start(const base::WeakPtr<GCMService>& service) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   service_ = service;
-  gcm_client_->Load();
+  gcm_client_->Start();
 }
 
 void GCMService::IOWorker::Stop() {
@@ -410,10 +410,9 @@ void GCMService::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
                  account_ids,
                  GetURLRequestContextGetter()));
 
-  // Load from the GCM store and initiate the GCM check-in if the rollout signal
-  // indicates yes.
+  // Start the GCM service if the rollout signal indicates yes.
   if (ShouldStartAutomatically())
-    EnsureLoaded();
+    EnsureStarted();
 
   identity_provider_->AddObserver(this);
 }
@@ -421,7 +420,7 @@ void GCMService::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
 void GCMService::Start() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  EnsureLoaded();
+  EnsureStarted();
 }
 
 void GCMService::Stop() {
@@ -667,14 +666,14 @@ void GCMService::SetGCMRecording(GetGCMStatisticsCallback callback,
 
 void GCMService::OnActiveAccountLogin() {
   if (ShouldStartAutomatically())
-    EnsureLoaded();
+    EnsureStarted();
 }
 
 void GCMService::OnActiveAccountLogout() {
   CheckOut();
 }
 
-void GCMService::EnsureLoaded() {
+void GCMService::EnsureStarted() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   const std::string account_id = identity_provider_->GetActiveAccountId();
   if (account_id.empty())
@@ -690,14 +689,12 @@ void GCMService::EnsureLoaded() {
   DCHECK(!delayed_task_controller_);
   delayed_task_controller_.reset(new DelayedTaskController);
 
-  // This will load the data from the gcm store and trigger the check-in if
-  // the persisted check-in info is not found.
   // Note that we need to pass weak pointer again since the existing weak
   // pointer in IOWorker might have been invalidated when check-out occurs.
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::Load,
+      base::Bind(&GCMService::IOWorker::Start,
                  base::Unretained(io_worker_.get()),
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -733,10 +730,11 @@ void GCMService::CheckOut() {
 
 GCMClient::Result GCMService::EnsureAppReady(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  // Ensure that check-in has been done.
-  EnsureLoaded();
 
-  // If the service was not started, bail out.
+  // Starts the service if not yet.
+  EnsureStarted();
+
+  // If the service cannot be started, bail out.
   if (account_id_.empty())
     return GCMClient::NOT_SIGNED_IN;
 

@@ -216,7 +216,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
                     profile(),
                     &ExtensionGCMAppHandlerTest::BuildGCMProfileService));
     scoped_ptr<gcm::GCMClientFactory> gcm_client_factory(
-        new gcm::FakeGCMClientFactory(gcm::GCMClientMock::NO_DELAY_LOADING));
+        new gcm::FakeGCMClientFactory(gcm::GCMClientMock::NO_DELAY_START));
     gcm_profile_service->Initialize(gcm_client_factory.Pass());
 
     // Create a fake version of ExtensionGCMAppHandler.

@@ -10,15 +10,15 @@
 namespace gcm {
 
 FakeGCMClientFactory::FakeGCMClientFactory(
-    GCMClientMock::LoadingDelay gcm_client_loading_delay)
-    : gcm_client_loading_delay_(gcm_client_loading_delay) {
+    GCMClientMock::StartMode gcm_client_start_mode)
+    : gcm_client_start_mode_(gcm_client_start_mode) {
 }
 
 FakeGCMClientFactory::~FakeGCMClientFactory() {
 }
 
 scoped_ptr<GCMClient> FakeGCMClientFactory::BuildInstance() {
-  return scoped_ptr<GCMClient>(new GCMClientMock(gcm_client_loading_delay_));
+  return scoped_ptr<GCMClient>(new GCMClientMock(gcm_client_start_mode_));
 }
 
 }  // namespace gcm

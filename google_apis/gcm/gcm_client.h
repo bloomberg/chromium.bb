@@ -185,10 +185,10 @@ class GCM_EXPORT GCMClient {
           url_request_context_getter,
       Delegate* delegate) = 0;
 
-  // Loads the data from the persistent store. This will automatically kick off
-  // the check-in if the check-in info is not found in the store.
-  // TODO(jianli): consider renaming this name to Start.
-  virtual void Load() = 0;
+  // Starts the GCM service by first loading the data from the persistent store.
+  // This will then kick off the check-in if the check-in info is not found in
+  // the store.
+  virtual void Start() = 0;
 
   // Stops using the GCM service. This will not erase the persisted data.
   virtual void Stop() = 0;

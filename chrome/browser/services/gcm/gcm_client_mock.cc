@@ -13,10 +13,10 @@
 
 namespace gcm {
 
-GCMClientMock::GCMClientMock(LoadingDelay loading_delay)
+GCMClientMock::GCMClientMock(StartMode start_mode)
     : delegate_(NULL),
       status_(UNINITIALIZED),
-      loading_delay_(loading_delay),
+      start_mode_(start_mode),
       weak_ptr_factory_(this) {
 }
 
@@ -34,17 +34,17 @@ void GCMClientMock::Initialize(
   delegate_ = delegate;
 }
 
-void GCMClientMock::Load() {
+void GCMClientMock::Start() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  DCHECK_NE(LOADED, status_);
+  DCHECK_NE(STARTED, status_);
 
-  if (loading_delay_ == DELAY_LOADING)
+  if (start_mode_ == DELAY_START)
     return;
   DoLoading();
 }
 
 void GCMClientMock::DoLoading() {
-  status_ = LOADED;
+  status_ = STARTED;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&GCMClientMock::CheckinFinished,

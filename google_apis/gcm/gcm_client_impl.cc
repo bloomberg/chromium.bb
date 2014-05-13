@@ -230,7 +230,7 @@ void GCMClientImpl::Initialize(
   state_ = INITIALIZED;
 }
 
-void GCMClientImpl::Load() {
+void GCMClientImpl::Start() {
   DCHECK_EQ(INITIALIZED, state_);
 
   // Once the loading is completed, the check-in will be initiated.

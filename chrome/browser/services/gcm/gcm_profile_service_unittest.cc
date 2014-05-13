@@ -96,7 +96,7 @@ void GCMProfileServiceTest::SetUp() {
           profile_.get(),
           &BuildGCMProfileService));
   gcm_profile_service_->Initialize(scoped_ptr<GCMClientFactory>(
-      new FakeGCMClientFactory(GCMClientMock::NO_DELAY_LOADING)));
+      new FakeGCMClientFactory(GCMClientMock::NO_DELAY_START)));
 
   FakeSigninManager* signin_manager = static_cast<FakeSigninManager*>(
       SigninManagerFactory::GetInstance()->GetForProfile(profile_.get()));
@@ -158,7 +158,7 @@ TEST_F(GCMProfileServiceTest, RegisterUnderNeutralChannelSignal) {
 
   // GCMClient should be checked in.
   EXPECT_TRUE(gcm_profile_service_->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
 
   // Registration should succeed.
   std::string expected_registration_id =
@@ -180,7 +180,7 @@ TEST_F(GCMProfileServiceTest, SendUnderNeutralChannelSignal) {
 
   // GCMClient should be checked in.
   EXPECT_TRUE(gcm_profile_service_->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::LOADED, GetGCMClient()->status());
+  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
 
   // Sending should succeed.
   EXPECT_EQ(message.id, send_message_id_);

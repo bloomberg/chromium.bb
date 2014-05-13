@@ -457,7 +457,7 @@ void GCMClientImplTest::InitializeGCMClient() {
                           this);
 
   // Start loading and check-in.
-  gcm_client_->Load();
+  gcm_client_->Start();
 
   PumpLoopUntilIdle();
 }

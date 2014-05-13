@@ -16,15 +16,14 @@ class GCMClient;
 
 class FakeGCMClientFactory : public GCMClientFactory {
  public:
-  explicit FakeGCMClientFactory(
-      GCMClientMock::LoadingDelay gcm_client_loading_delay);
+  explicit FakeGCMClientFactory(GCMClientMock::StartMode gcm_client_start_mode);
   virtual ~FakeGCMClientFactory();
 
   // GCMClientFactory:
   virtual scoped_ptr<GCMClient> BuildInstance() OVERRIDE;
 
  private:
-  GCMClientMock::LoadingDelay gcm_client_loading_delay_;
+  GCMClientMock::StartMode gcm_client_start_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMClientFactory);
 };
