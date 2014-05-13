@@ -10,6 +10,7 @@ namespace WebCore {
 // Extension names are needed to properly wrap instances in JavaScript objects.
 enum WebGLExtensionName {
     ANGLEInstancedArraysName,
+    EXTBlendMinMaxName,
     EXTFragDepthName,
     EXTShaderTextureLODName,
     EXTTextureFilterAnisotropicName,

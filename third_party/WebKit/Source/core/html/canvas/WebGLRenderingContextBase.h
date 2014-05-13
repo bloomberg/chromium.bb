@@ -51,6 +51,7 @@ class WebLayer;
 namespace WebCore {
 
 class ANGLEInstancedArrays;
+class EXTBlendMinMax;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
 class EXTTextureFilterAnisotropic;

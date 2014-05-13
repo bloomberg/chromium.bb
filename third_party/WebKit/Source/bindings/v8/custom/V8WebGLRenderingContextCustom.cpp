@@ -32,6 +32,7 @@
 #include "V8WebGLRenderingContext.h"
 
 #include "V8ANGLEInstancedArrays.h"
+#include "V8EXTBlendMinMax.h"
 #include "V8EXTFragDepth.h"
 #include "V8EXTShaderTextureLOD.h"
 #include "V8EXTTextureFilterAnisotropic.h"
@@ -188,6 +189,10 @@ static v8::Handle<v8::Value> toV8Object(WebGLExtension* extension, v8::Handle<v8
     case ANGLEInstancedArraysName:
         extensionObject = toV8(static_cast<ANGLEInstancedArrays*>(extension), contextObject, isolate);
         referenceName = "angleInstancedArraysName";
+        break;
+    case EXTBlendMinMaxName:
+        extensionObject = toV8(static_cast<EXTBlendMinMax*>(extension), contextObject, isolate);
+        referenceName = "extBlendMinMaxName";
         break;
     case EXTFragDepthName:
         extensionObject = toV8(static_cast<EXTFragDepth*>(extension), contextObject, isolate);

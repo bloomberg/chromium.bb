@@ -38,6 +38,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/ANGLEInstancedArrays.h"
+#include "core/html/canvas/EXTBlendMinMax.h"
 #include "core/html/canvas/EXTFragDepth.h"
 #include "core/html/canvas/EXTShaderTextureLOD.h"
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"
@@ -5090,6 +5091,12 @@ bool WebGLRenderingContextBase::validateBlendEquation(const char* functionName, 
     case GL_FUNC_SUBTRACT:
     case GL_FUNC_REVERSE_SUBTRACT:
         return true;
+    case GL_MIN_EXT:
+    case GL_MAX_EXT:
+        if (extensionEnabled(EXTBlendMinMaxName))
+            return true;
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid mode");
+        return false;
     default:
         synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid mode");
         return false;

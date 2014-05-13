@@ -28,6 +28,7 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/html/canvas/ANGLEInstancedArrays.h"
+#include "core/html/canvas/EXTBlendMinMax.h"
 #include "core/html/canvas/EXTFragDepth.h"
 #include "core/html/canvas/EXTShaderTextureLOD.h"
 #include "core/html/canvas/EXTTextureFilterAnisotropic.h"
@@ -142,6 +143,7 @@ void WebGLRenderingContext::registerContextExtensions()
     registerExtension<WebGLLoseContext>(m_webglLoseContext, ApprovedExtension, bothPrefixes);
 
     // Register draft extensions.
+    registerExtension<EXTBlendMinMax>(m_extBlendMinMax, DraftExtension);
     registerExtension<EXTFragDepth>(m_extFragDepth, DraftExtension);
     registerExtension<EXTShaderTextureLOD>(m_extShaderTextureLOD, DraftExtension);
     registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1, DraftExtension);
