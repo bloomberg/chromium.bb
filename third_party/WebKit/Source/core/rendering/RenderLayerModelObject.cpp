@@ -79,8 +79,6 @@ void RenderLayerModelObject::willBeDestroyed()
             if (FrameView* frameView = frame->view()) {
                 if (style()->hasViewportConstrainedPosition())
                     frameView->removeViewportConstrainedObject(this);
-                if (style()->hasFixedBackgroundImage())
-                    frameView->removeViewportConstrainedBackgroundObject(*this);
             }
         }
     }
@@ -165,22 +163,13 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
     }
 
     if (FrameView *frameView = view()->frameView()) {
-        bool newStyleIsViewportConstrained = style()->hasViewportConstrainedPosition();
+        bool newStyleIsViewportConstained = style()->hasViewportConstrainedPosition();
         bool oldStyleIsViewportConstrained = oldStyle && oldStyle->hasViewportConstrainedPosition();
-        if (newStyleIsViewportConstrained != oldStyleIsViewportConstrained) {
-            if (newStyleIsViewportConstrained && layer())
+        if (newStyleIsViewportConstained != oldStyleIsViewportConstrained) {
+            if (newStyleIsViewportConstained && layer())
                 frameView->addViewportConstrainedObject(this);
             else
                 frameView->removeViewportConstrainedObject(this);
-        }
-
-        bool newStyleIsViewportBackgroundConstrained = style()->hasFixedBackgroundImage();
-        bool oldStyleIsViewportBackgroundConstrained = oldStyle && oldStyle->hasFixedBackgroundImage();
-        if (newStyleIsViewportBackgroundConstrained != oldStyleIsViewportBackgroundConstrained) {
-            if (newStyleIsViewportBackgroundConstrained)
-                frameView->addViewportConstrainedBackgroundObject(*this);
-            else
-                frameView->removeViewportConstrainedBackgroundObject(*this);
         }
     }
 }

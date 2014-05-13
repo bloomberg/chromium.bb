@@ -380,15 +380,6 @@ void RenderLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset)
         updateCompositingLayersAfterScroll();
     }
 
-    {
-        // FIXME: If we are being dragged by a mouse, rather than scroll wheel
-        // we can get called when compositing queries are disallowed.
-        // Without disabling we crash in scrollbars/scrollbar-drag-fixed-background-intenal.html.
-        // crbug.com/372802
-        DisableCompositingQueryAsserts disabler;
-        frameView->invalidateFixedBackgroundDescendants(box().pixelSnappedFrameRect(), &box());
-    }
-
     const RenderLayerModelObject* repaintContainer = box().containerForRepaint();
     // The caret rect needs to be invalidated after scrolling
     frame->selection().setCaretRectNeedsUpdate();

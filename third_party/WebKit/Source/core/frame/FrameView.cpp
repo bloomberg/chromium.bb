@@ -57,7 +57,6 @@
 #include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderEmbeddedObject.h"
-#include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderListBox.h"
 #include "core/rendering/RenderPart.h"
@@ -1259,22 +1258,6 @@ void FrameView::removeSlowRepaintObject()
     }
 }
 
-void FrameView::addViewportConstrainedBackgroundObject(RenderObject& object)
-{
-    if (!m_viewportConstrainedBackgroundObjects)
-        m_viewportConstrainedBackgroundObjects = adoptPtr(new ViewportConstrainedBackgroundObjectSet);
-
-    m_viewportConstrainedBackgroundObjects->add(&object);
-}
-
-void FrameView::removeViewportConstrainedBackgroundObject(RenderObject& object)
-{
-    if (!m_viewportConstrainedBackgroundObjects)
-        return;
-
-    m_viewportConstrainedBackgroundObjects->remove(&object);
-}
-
 void FrameView::addViewportConstrainedObject(RenderObject* object)
 {
     if (!m_viewportConstrainedObjects)
@@ -1477,64 +1460,6 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta, const IntRect
     return true;
 }
 
-void FrameView::invalidateFixedBackgroundDescendants(const IntRect& updateRect, const RenderObject* ancestor)
-{
-    if (!m_viewportConstrainedBackgroundObjects)
-        return;
-
-
-    IntRect localRect(updateRect);
-    localRect.move(scrollOffset());
-    // These are our objects that have non-fixed position but fixed background
-    // images. This means when they are scrolled they need to be invalidated.
-    ViewportConstrainedBackgroundObjectSet::const_iterator end = m_viewportConstrainedBackgroundObjects->end();
-
-    for (ViewportConstrainedBackgroundObjectSet::const_iterator it = m_viewportConstrainedBackgroundObjects->begin(); it != end; ++it) {
-        RenderObject* renderer = *it;
-
-        if (ancestor && !renderer->containingBlock()->isDescendantOf(ancestor))
-            continue;
-        ASSERT(renderer->style()->hasFixedBackgroundImage());
-
-        // We want to early-out if the object has a fixed-position since it
-        // will not move and should not be invalidated.
-        if  (renderer->style()->hasViewportConstrainedPosition())
-            continue;
-
-        RenderLayer* layer = renderer->enclosingLayer();
-        IntRect layerRelativeRect = localRect;
-        // If the layer is not compoisted, then we will have to find the
-        // next composited layer and invalidate our Rect.
-        if (layer->renderer()->compositingState() == NotComposited) {
-            layer = layer->enclosingCompositingLayer(ExcludeSelf);
-            // If there is no enclosing complisted layer, then this will get
-            // invalidated on scroll.
-            if (!layer)
-                continue;
-        }
-
-        if (renderer != layer->renderer()) {
-            // FIXME: It seems a bit odd to have to use the RenderGeometryMap in
-            // this way. It always expects the last thing to be put in to be a
-            // RenderView even if we do not want to map all of the way up.
-            RenderGeometryMap map;
-            map.pushMappingsToAncestor(renderer, 0);
-            layerRelativeRect = enclosingIntRect(map.mapToContainer(layerRelativeRect, layer->renderer()).boundingBox());
-        }
-
-        // setBackingNeedsRepaintInRect is in the layer's space, so we must
-        // translate back to a layer origin of 0, 0.
-        layerRelativeRect.moveBy(-layer->rect().pixelSnappedLocation());
-        layerRelativeRect.intersect(pixelSnappedIntRect(layer->repainter().repaintRectIncludingNonCompositingDescendants()));
-        layer->repainter().setBackingNeedsRepaintInRect(layerRelativeRect);
-    }
-}
-
-void FrameView::invalidateFixedBackgroundChildren(const IntRect& updateRect)
-{
-    invalidateFixedBackgroundDescendants(updateRect, 0);
-}
-
 void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
 {
     if (contentsInCompositedLayer()) {
@@ -1542,9 +1467,6 @@ void FrameView::scrollContentsSlowPath(const IntRect& updateRect)
         ASSERT(renderView());
         renderView()->layer()->repainter().setBackingNeedsRepaintInRect(updateRect);
     }
-
-    invalidateFixedBackgroundChildren(updateRect);
-
     if (RenderPart* frameRenderer = m_frame->ownerRenderer()) {
         if (isEnclosedInCompositingLayer()) {
             LayoutRect rect(frameRenderer->borderLeft() + frameRenderer->paddingLeft(),
