@@ -316,6 +316,8 @@ TEST_F(FeatureInfoTest, InitializeNoExtensions) {
       GL_DEPTH_COMPONENT32_OES));
   EXPECT_FALSE(info_->validators()->texture_internal_format_storage.IsValid(
       GL_DEPTH24_STENCIL8_OES));
+  EXPECT_FALSE(info_->validators()->equation.IsValid(GL_MIN_EXT));
+  EXPECT_FALSE(info_->validators()->equation.IsValid(GL_MAX_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeWithANGLE) {
@@ -950,6 +952,13 @@ TEST_F(FeatureInfoTest, InitializeVAOsWithClientSideArrays) {
                                        command_line);
   EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
+}
+
+TEST_F(FeatureInfoTest, InitializeEXT_blend_minmax) {
+  SetupInitExpectations("GL_EXT_blend_minmax");
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_blend_minmax"));
+  EXPECT_TRUE(info_->validators()->equation.IsValid(GL_MIN_EXT));
+  EXPECT_TRUE(info_->validators()->equation.IsValid(GL_MAX_EXT));
 }
 
 TEST_F(FeatureInfoTest, InitializeEXT_frag_depth) {

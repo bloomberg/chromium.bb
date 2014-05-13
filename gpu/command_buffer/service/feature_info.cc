@@ -777,6 +777,13 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
+  if (extensions.Contains("GL_EXT_blend_minmax") ||
+      gfx::HasDesktopGLFeatures()) {
+    AddExtensionString("GL_EXT_blend_minmax");
+    validators_.equation.AddValue(GL_MIN_EXT);
+    validators_.equation.AddValue(GL_MAX_EXT);
+  }
+
   if (extensions.Contains("GL_EXT_frag_depth") || gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_frag_depth");
     feature_flags_.ext_frag_depth = true;
