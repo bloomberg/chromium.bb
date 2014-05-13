@@ -711,21 +711,18 @@ TEST_F(TouchDispositionGestureFilterTest,
        TapNotCancelledIfTapEndingEventReceived) {
   PushGesture(ET_GESTURE_TAP_DOWN);
   PressTouchPoint(1, 1);
-  PressTouchPoint(2, 2);
   SendTouchNotConsumedAck();
-  SendTouchNotConsumedAck();
-  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_DOWN),
-                            GetAndResetSentGestures()));
+  EXPECT_TRUE(
+      GesturesMatch(Gestures(ET_GESTURE_TAP_DOWN), GetAndResetSentGestures()));
 
   PushGesture(ET_GESTURE_TAP);
   ReleaseTouchPoint();
   SendTouchNotConsumedAck();
-  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SHOW_PRESS,
-                                     ET_GESTURE_TAP),
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_SHOW_PRESS, ET_GESTURE_TAP),
                             GetAndResetSentGestures()));
 
   // The tap should not be cancelled as it was terminated by a |ET_GESTURE_TAP|.
-  ReleaseTouchPoint();
+  PressTouchPoint(2, 2);
   SendTouchConsumedAck();
   EXPECT_FALSE(GesturesSent());
 }
@@ -1025,6 +1022,19 @@ TEST_F(TouchDispositionGestureFilterTest, TestDisallowedMultiFingerSwipe) {
   PressTouchPoint(1, 1);
   SendTouchNotConsumedAck();
   EXPECT_FALSE(GesturesSent());
+}
+
+TEST_F(TouchDispositionGestureFilterTest, TapCancelOnSecondFingerDown) {
+  PushGesture(ET_GESTURE_TAP_DOWN);
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_DOWN),
+                            GetAndResetSentGestures()));
+
+  PressTouchPoint(1, 1);
+  SendTouchNotConsumedAck();
+  EXPECT_TRUE(GesturesMatch(Gestures(ET_GESTURE_TAP_CANCEL),
+                            GetAndResetSentGestures()));
 }
 
 }  // namespace ui

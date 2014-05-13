@@ -215,6 +215,8 @@ void TouchDispositionGestureFilter::FilterAndSendPacket(
     CancelTapIfNecessary();
     EndScrollIfNecessary();
     CancelFlingIfNecessary();
+  } else if (packet.gesture_source() == GestureEventDataPacket::TOUCH_START) {
+    CancelTapIfNecessary();
   }
 
   for (size_t i = 0; i < packet.gesture_count(); ++i) {
@@ -264,6 +266,7 @@ void TouchDispositionGestureFilter::SendGesture(const GestureEventData& event) {
       needs_show_press_event_ = false;
       break;
     case ET_GESTURE_TAP:
+      DCHECK(needs_tap_ending_event_);
       if (needs_show_press_event_) {
         GestureEventData show_press_event(event);
         show_press_event.type = ET_GESTURE_SHOW_PRESS;
