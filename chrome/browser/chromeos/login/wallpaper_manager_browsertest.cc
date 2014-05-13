@@ -95,9 +95,6 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
     ash::test::DisplayManagerTestApi display_manager_test_api(
         ash::Shell::GetInstance()->display_manager());
     display_manager_test_api.UpdateDisplay(display_specs);
-    LOG(ERROR) << "UpdateDisplay(display_specs='" << display_specs
-               << "') done.";
-    WallpaperManager::GetAppropriateResolutionForTesting();
   }
 
   void WaitAsyncWallpaperLoadStarted() {
@@ -642,7 +639,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(0, observer.GetUpdateWallpaperCountAndReset());
@@ -651,7 +647,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(0, observer.GetUpdateWallpaperCountAndReset());
@@ -660,7 +655,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
@@ -670,7 +664,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_LARGE,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
@@ -679,7 +672,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_LARGE,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
@@ -688,7 +680,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_LARGE,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
@@ -698,7 +689,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
@@ -707,7 +697,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_SMALL,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
@@ -715,7 +704,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   EXPECT_EQ(WallpaperManager::WALLPAPER_RESOLUTION_LARGE,
             WallpaperManager::Get()->GetAppropriateResolution());
   EXPECT_EQ(1, observer.GetUpdateWallpaperCountAndReset());
@@ -724,7 +712,6 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest, DisplayChange) {
   UpdateDisplay("900x800/r,400x1366");
   // Wait for asynchronous DisplayBackgroundController::UpdateDisplay() call.
   base::RunLoop().RunUntilIdle();
-  WallpaperManager::GetAppropriateResolutionForTesting();
   wallpaper_manager_test_utils::WaitAsyncWallpaperLoadFinished();
   EXPECT_EQ(0, observer.GetUpdateWallpaperCountAndReset());
 }
