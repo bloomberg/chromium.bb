@@ -80,7 +80,7 @@ Node* RootNodeManager::GetNode(const NodeId& id) {
   return i == connection_map_.end() ? NULL : i->second->GetNode(id);
 }
 
-View* RootNodeManager::GetView(const ViewId& id) {
+service::View* RootNodeManager::GetView(const ViewId& id) {
   ConnectionMap::iterator i = connection_map_.find(id.connection_id);
   return i == connection_map_.end() ? NULL : i->second->GetView(id);
 }
@@ -112,6 +112,15 @@ void RootNodeManager::NotifyNodeDeleted(const NodeId& node) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     i->second->NotifyNodeDeleted(node, next_server_change_id_,
+                                 GetClientChangeId(i->first));
+  }
+}
+
+void RootNodeManager::NotifyViewDeleted(const ViewId& view) {
+  // TODO(sky): make a macro for this.
+  for (ConnectionMap::iterator i = connection_map_.begin();
+       i != connection_map_.end(); ++i) {
+    i->second->NotifyViewDeleted(view, next_server_change_id_,
                                  GetClientChangeId(i->first));
   }
 }

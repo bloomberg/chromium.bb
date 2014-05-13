@@ -62,7 +62,7 @@ std::vector<Node*> Node::GetChildren() {
   return children;
 }
 
-void Node::SetView(View* view) {
+void Node::SetView(service::View* view) {
   if (view == view_)
     return;
 

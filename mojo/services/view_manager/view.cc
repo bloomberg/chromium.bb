@@ -9,6 +9,7 @@
 namespace mojo {
 namespace services {
 namespace view_manager {
+namespace service {
 
 View::View(const ViewId& id) : id_(id), node_(NULL) {}
 
@@ -23,6 +24,7 @@ void View::SetBitmap(const SkBitmap& bitmap) {
   }
 }
 
+}  // namespace service
 }  // namespace view_manager
 }  // namespace services
 }  // namespace mojo

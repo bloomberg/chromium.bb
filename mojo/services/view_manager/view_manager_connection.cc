@@ -96,7 +96,7 @@ Node* ViewManagerConnection::GetNode(const NodeId& id) {
   return context()->GetNode(id);
 }
 
-View* ViewManagerConnection::GetView(const ViewId& id) {
+service::View* ViewManagerConnection::GetView(const ViewId& id) {
   if (id_ == id.connection_id) {
     ViewMap::const_iterator i = view_map_.find(id.view_id);
     return i == view_map_.end() ? NULL : i->second;
@@ -136,6 +136,14 @@ void ViewManagerConnection::NotifyNodeDeleted(
                           client_change_id);
 }
 
+void ViewManagerConnection::NotifyViewDeleted(
+    const ViewId& view,
+    TransportChangeId server_change_id,
+    TransportChangeId client_change_id) {
+  client()->OnViewDeleted(ViewIdToTransportId(view), server_change_id,
+                          client_change_id);
+}
+
 bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
                                            const NodeId& node_id,
                                            TransportChangeId change_id) {
@@ -163,7 +171,7 @@ bool ViewManagerConnection::DeleteViewImpl(ViewManagerConnection* source,
                                            const ViewId& view_id,
                                            TransportChangeId change_id) {
   DCHECK_EQ(view_id.connection_id, id_);
-  View* view = GetView(view_id);
+  service::View* view = GetView(view_id);
   if (!view)
     return false;
   RootNodeManager::ScopedChange change(
@@ -173,6 +181,7 @@ bool ViewManagerConnection::DeleteViewImpl(ViewManagerConnection* source,
     view->node()->SetView(NULL);
   view_map_.erase(view_id.view_id);
   delete view;
+  context()->NotifyViewDeleted(view_id);
   return true;
 }
 
@@ -182,7 +191,7 @@ bool ViewManagerConnection::SetViewImpl(const NodeId& node_id,
   Node* node = GetNode(node_id);
   if (!node)
     return false;
-  View* view = GetView(view_id);
+  service::View* view = GetView(view_id);
   if (!view && view_id != ViewId())
     return false;
   RootNodeManager::ScopedChange change(
@@ -276,7 +285,7 @@ void ViewManagerConnection::CreateView(
     callback.Run(false);
     return;
   }
-  view_map_[view_id] = new View(ViewId(id_, view_id));
+  view_map_[view_id] = new service::View(ViewId(id_, view_id));
   callback.Run(true);
 }
 
@@ -305,7 +314,7 @@ void ViewManagerConnection::SetViewContents(
     TransportViewId view_id,
     ScopedSharedBufferHandle buffer,
     uint32_t buffer_size) {
-  View* view = GetView(ViewIdFromTransportId(view_id));
+  service::View* view = GetView(ViewIdFromTransportId(view_id));
   if (!view)
     return;
   void* handle_data;

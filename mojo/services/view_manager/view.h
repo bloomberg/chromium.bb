@@ -15,8 +15,8 @@
 namespace mojo {
 namespace services {
 namespace view_manager {
-
 class Node;
+namespace service {
 
 // Represents a view. A view may be associated with a single Node.
 class MOJO_VIEW_MANAGER_EXPORT View {
@@ -33,7 +33,7 @@ class MOJO_VIEW_MANAGER_EXPORT View {
 
  private:
   // Node is responsible for maintaining |node_|.
-  friend class Node;
+  friend class mojo::services::view_manager::Node;
 
   void set_node(Node* node) { node_ = node; }
 
@@ -44,6 +44,7 @@ class MOJO_VIEW_MANAGER_EXPORT View {
   DISALLOW_COPY_AND_ASSIGN(View);
 };
 
+}  // namespace service
 }  // namespace view_manager
 }  // namespace services
 }  // namespace mojo

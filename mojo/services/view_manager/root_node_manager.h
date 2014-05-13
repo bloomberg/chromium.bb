@@ -72,7 +72,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   Node* GetNode(const NodeId& id);
 
   // Returns the View identified by |id|.
-  View* GetView(const ViewId& id);
+  service::View* GetView(const ViewId& id);
 
   Node* root() { return &root_; }
 
@@ -85,6 +85,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
                               const ViewId& new_view_id,
                               const ViewId& old_view_id);
   void NotifyNodeDeleted(const NodeId& node);
+  void NotifyViewDeleted(const ViewId& view);
 
  private:
   // Used to setup any static state needed by RootNodeManager.
