@@ -55,10 +55,6 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   // Waits until IME cancellation is observed.
   void WaitForImeCancel();
 
-  void set_guest_hang_timeout(const base::TimeDelta& timeout) {
-    guest_hang_timeout_ = timeout;
-  }
-
   ui::TextInputType last_text_input_type() {
     return last_text_input_type_;
   }

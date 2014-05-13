@@ -469,7 +469,6 @@ class CONTENT_EXPORT BrowserPluginGuest
   float guest_device_scale_factor_;
   gfx::Rect guest_window_rect_;
   gfx::Rect guest_screen_rect_;
-  base::TimeDelta guest_hang_timeout_;
   bool focused_;
   bool mouse_locked_;
   bool pending_lock_request_;

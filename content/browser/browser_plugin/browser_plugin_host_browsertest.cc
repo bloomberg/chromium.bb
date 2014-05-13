@@ -8,7 +8,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/test_timeouts.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/browser_plugin/browser_plugin_host_factory.h"
@@ -117,34 +116,6 @@ class TestBrowserPluginHostFactory : public BrowserPluginHostFactory {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserPluginHostFactory);
-};
-
-// Test factory class for browser plugin that creates guests with short hang
-// timeout.
-class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
- public:
-  virtual BrowserPluginGuest* CreateBrowserPluginGuest(
-      int instance_id, WebContentsImpl* web_contents) OVERRIDE {
-    TestBrowserPluginGuest* guest =
-        new TestBrowserPluginGuest(instance_id, web_contents);
-    guest->set_guest_hang_timeout(TestTimeouts::tiny_timeout());
-    return guest;
-  }
-
-  // Singleton getter.
-  static TestShortHangTimeoutGuestFactory* GetInstance() {
-    return Singleton<TestShortHangTimeoutGuestFactory>::get();
-  }
-
- protected:
-  TestShortHangTimeoutGuestFactory() {}
-  virtual ~TestShortHangTimeoutGuestFactory() {}
-
- private:
-  // For Singleton.
-  friend struct DefaultSingletonTraits<TestShortHangTimeoutGuestFactory>;
-
-  DISALLOW_COPY_AND_ASSIGN(TestShortHangTimeoutGuestFactory);
 };
 
 class BrowserPluginHostTest : public ContentBrowserTest {

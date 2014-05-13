@@ -207,11 +207,11 @@ BrowserPluginGuest::BrowserPluginGuest(
       embedder_web_contents_(NULL),
       instance_id_(instance_id),
       guest_device_scale_factor_(1.0f),
-      guest_hang_timeout_(
-          base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       focused_(false),
       mouse_locked_(false),
       pending_lock_request_(false),
+      guest_visible_(false),
+      guest_opaque_(true),
       embedder_visible_(true),
       auto_size_enabled_(false),
       copy_request_id_(0),
@@ -940,8 +940,8 @@ void BrowserPluginGuest::RenderViewReady() {
   Send(new ViewMsg_SetName(routing_id(), name_));
   OnSetContentsOpaque(instance_id_, guest_opaque_);
 
-  RenderWidgetHostImpl::From(rvh)->
-      set_hung_renderer_delay_ms(guest_hang_timeout_);
+  RenderWidgetHostImpl::From(rvh)->set_hung_renderer_delay_ms(
+      base::TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
 
 void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {

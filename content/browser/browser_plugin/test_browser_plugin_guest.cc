@@ -4,7 +4,6 @@
 
 #include "content/browser/browser_plugin/test_browser_plugin_guest.h"
 
-#include "base/test/test_timeouts.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
