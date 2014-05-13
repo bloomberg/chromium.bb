@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS pc = new webkitRTCPeerConnection(null, null); did not throw exception.
 PASS iceConnectionState is completed
-PASS pc.addIceCandidate(null, null, null); threw exception TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': No function was found that matched the signature provided..
+PASS pc.addIceCandidate(null, null, null); threw exception TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': The callback provided as parameter 2 is not a function..
 PASS pc.addIceCandidate(iceCandidate, null, null); threw exception TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': The callback provided as parameter 2 is not a function..
 PASS pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, null); threw exception TypeError: Failed to execute 'addIceCandidate' on 'RTCPeerConnection': The callback provided as parameter 3 is not a function..
 PASS pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, addIceCandidateFailure); did not throw exception.

@@ -378,26 +378,47 @@ def generate_overloads_by_name(name, overloads):
 def is_use_spec_algorithm(effective_overloads_by_length):
     # FIXME: temporary function so can switch incrementally
     # Use spec algorithm if:
-    # * all type lists have the same length,
-    # * all distinguishing types are (non-nullable) wrapper types
-    #   or numeric types,
-    # * all distinguishing types are distinct.
-    if len(effective_overloads_by_length) != 1:
-        return False
+    # * method is not variadic,
+    # * no distinguishing type is unsupported:
+    #   non-wrapper, array, callback interface, enumeration, boolean, string, nullable,
+    # * all distinguishing types are distinct, and
+    # * all distinguishing arguments are required (not optional).
+    def is_unsupported_type(idl_type):
+        return ((idl_type.is_interface_type and not idl_type.is_wrapper_type) or
+                idl_type.array_or_sequence_type or
+                idl_type.is_callback_interface or
+                idl_type.is_enum or
+                idl_type.name in ('Boolean', 'String') or
+                idl_type.is_nullable)
 
-    effective_overloads = effective_overloads_by_length[0][1]
-    index = distinguishing_argument_index(effective_overloads)
-    type_lists = [effective_overload[1]
-                  for effective_overload in effective_overloads]
-    distinguishing_argument_types = [type_list[index]
-                                     for type_list in type_lists]
-    distinguishing_argument_type_names = [
-        idl_type.name for idl_type in distinguishing_argument_types]
-    return (all((distinguishing_argument_type.is_wrapper_type or
-                 distinguishing_argument_type.is_numeric_type) and
-                not distinguishing_argument_type.is_nullable
-                for distinguishing_argument_type in distinguishing_argument_types) and
-            len(set(distinguishing_argument_type_names)) == len(distinguishing_argument_type_names))
+    for _, effective_overloads in effective_overloads_by_length:
+        methods = [effective_overload[0]
+                   for effective_overload in effective_overloads]
+        if any(method['is_variadic'] for method in methods):
+            return False
+
+        if len(effective_overloads) == 1:
+            # No distinguishing type, since resolved by length
+            continue
+
+        index = distinguishing_argument_index(effective_overloads)
+        type_lists = [effective_overload[1]
+                      for effective_overload in effective_overloads]
+        distinguishing_argument_types = [type_list[index]
+                                         for type_list in type_lists]
+        # Use names to check for distinct types, since objects are distinct
+        distinguishing_argument_type_names = [
+            idl_type.name for idl_type in distinguishing_argument_types]
+        distinguishing_arguments = [method['arguments'][index]
+                                    for method in methods]
+
+        if (any(is_unsupported_type(distinguishing_argument_type)
+                for distinguishing_argument_type in distinguishing_argument_types) or
+                len(set(distinguishing_argument_type_names)) != len(distinguishing_argument_type_names) or
+            any(argument['is_optional']
+                for argument in distinguishing_arguments)):
+            return False
+    return True
 
 
 def effective_overload_set(F):
@@ -514,12 +535,12 @@ def distinguishing_argument_index(entries):
     The lowest such index is termed the distinguishing argument index for the
     entries of the effective overload set with the given type list length.
     """
-    if len(entries) < 2:
-        # Only need to distinguish if two or more entries
-        return
+    # Only applicable “If there is more than one entry”
+    assert len(entries) > 1
     type_lists = [tuple(idl_type.name for idl_type in entry[1])
                   for entry in entries]
     type_list_length = len(type_lists[0])
+    # Only applicable for entries that “[have] a given type list length”
     assert all(len(type_list) == type_list_length for type_list in type_lists)
     name = entries[0][0]['name']
 
@@ -574,12 +595,11 @@ def length_tests_methods(effective_overloads_by_length):
         [(length, [(test, method)])]
     """
     return [(length, list(resolution_tests_methods(effective_overloads)))
-            for length, effective_overloads in effective_overloads_by_length
-            if len(effective_overloads) > 1]
+            for length, effective_overloads in effective_overloads_by_length]
 
 
 def resolution_tests_methods(effective_overloads):
-    """Yields resolution test and associated method, in resolution order.
+    """Yields resolution test and associated method, in resolution order, for effective overloads of a given length.
 
     This is the heart of the resolution algorithm.
     http://heycam.github.io/webidl/#dfn-overload-resolution-algorithm
@@ -592,13 +612,23 @@ def resolution_tests_methods(effective_overloads):
     """
     methods = [effective_overload[0]
                for effective_overload in effective_overloads]
+    if len(methods) == 1:
+        # If only one method with a given length, no test needed
+        yield ('true', methods[0])
+        return
+
+    # 6. If there is more than one entry in S, then set d to be the
+    # distinguishing argument index for the entries of S.
+    index = distinguishing_argument_index(effective_overloads)
+    # (7-9 are for handling |undefined| values for optional arguments before
+    # the distinguishing argument (as “missing”), so you can specify only some
+    # optional arguments. We don’t support this, so we skip these steps.)
     # 10. If i = d, then:
     # (d is the distinguishing argument index)
-    index = distinguishing_argument_index(effective_overloads)
-    cpp_value = 'info[%s]' % index
     # 1. Let V be argi.
     #     Note: This is the argument that will be used to resolve which
     #           overload is selected.
+    cpp_value = 'info[%s]' % index
 
     # Extract argument and IDL type to simplify accessing these in each loop.
     # FIXME: mostly just need type, but need argument itself for optionality

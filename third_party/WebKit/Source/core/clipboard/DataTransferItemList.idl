@@ -28,15 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#datatransferitemlist
+
 [
-    WillBeGarbageCollected
+    TypeChecking=Interface,
+    WillBeGarbageCollected,
 ] interface DataTransferItemList {
     readonly attribute long length;
     [ImplementedAs=item] getter DataTransferItem (unsigned long index);
 
+    [RaisesException] DataTransferItem add(DOMString data, DOMString type);
+    DataTransferItem add(File? file);
     [RaisesException, ImplementedAs=deleteItem] void remove(unsigned long index);
     void clear();
-    DataTransferItem add(File? file);
-    [RaisesException] DataTransferItem add(DOMString data, DOMString type);
 };
-
