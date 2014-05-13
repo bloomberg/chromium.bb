@@ -100,6 +100,7 @@ cr.define('local_discovery', function() {
         this.domElement,
         this.info.human_readable_name,
         this.info.description,
+        this.info.type,
         loadTimeData.getString('serviceRegister'),
         this.showRegister.bind(this));
 
@@ -183,17 +184,20 @@ cr.define('local_discovery', function() {
    * @param {HTMLElement} device_dom_element Element to be filled.
    * @param {string} name Name of device.
    * @param {string} description Description of device.
+   * @param {string} type Type of device.
    * @param {string} button_text Text to appear on button.
    * @param {function()} button_action Action for button.
    * @return {HTMLElement} The button (for enabling/disabling/rebinding)
    */
   function fillDeviceDescription(device_dom_element,
-                                name,
-                                description,
-                                button_text,
-                                button_action) {
+                                 name,
+                                 description,
+                                 type,
+                                 button_text,
+                                 button_action) {
     device_dom_element.classList.add('device');
-    device_dom_element.classList.add('printer');
+    if (type == 'printer')
+      device_dom_element.classList.add('printer');
 
     var deviceInfo = document.createElement('div');
     deviceInfo.className = 'device-info';
@@ -325,13 +329,13 @@ cr.define('local_discovery', function() {
 
     var description;
     if (device.description == '') {
-        description = loadTimeData.getString('noDescription');
-      } else {
-        description = device.description;
-      }
+      description = loadTimeData.getString('noDescription');
+    } else {
+      description = device.description;
+    }
 
     fillDeviceDescription(devicesDomElement, device.display_name,
-                          description, 'Manage' /*Localize*/,
+                          description, device.type, 'Manage' /*Localize*/,
                           manageCloudDevice.bind(null, device.id));
     return devicesDomElement;
   }

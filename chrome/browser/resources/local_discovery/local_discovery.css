@@ -20,6 +20,7 @@ header {
 }
 
 .device {
+  background: url(device.png) no-repeat;
   margin: 23px 0;
   max-width: 695px;
   overflow: hidden;

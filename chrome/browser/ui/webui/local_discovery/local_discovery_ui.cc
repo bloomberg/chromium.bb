@@ -23,6 +23,7 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->SetDefaultResource(IDR_LOCAL_DISCOVERY_HTML);
   source->AddResourcePath("local_discovery.css", IDR_LOCAL_DISCOVERY_CSS);
   source->AddResourcePath("local_discovery.js", IDR_LOCAL_DISCOVERY_JS);
+  source->AddResourcePath("device.png", IDR_LOCAL_DISCOVERY_DEVICE_PNG);
   source->AddResourcePath("printer.png", IDR_LOCAL_DISCOVERY_PRINTER_PNG);
 
   source->SetUseJsonJSFormatV2();

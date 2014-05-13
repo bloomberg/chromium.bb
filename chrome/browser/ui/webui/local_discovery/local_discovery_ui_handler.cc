@@ -356,6 +356,7 @@ void LocalDiscoveryUIHandler::DeviceChanged(
     info.SetString("service_name", name);
     info.SetString("human_readable_name", description.name);
     info.SetString("description", description.description);
+    info.SetString("type", description.type);
 
     web_ui()->CallJavascriptFunction(
         "local_discovery.onUnregisteredDeviceUpdate",
@@ -481,6 +482,7 @@ scoped_ptr<base::DictionaryValue> LocalDiscoveryUIHandler::CreatePrinterInfo(
   return_value->SetString("id", description.id);
   return_value->SetString("display_name", description.display_name);
   return_value->SetString("description", description.description);
+  return_value->SetString("type", "printer");
 
   return return_value.Pass();
 }
