@@ -314,7 +314,9 @@
     'browser/appcache/view_appcache_internals_job.h',
     'browser/appcache/view_appcache_internals_job.cc',
     'browser/battery_status/battery_status_manager_android.cc',
-    'browser/battery_status/battery_status_manager_android.h',
+    'browser/battery_status/battery_status_manager_default.cc',
+    'browser/battery_status/battery_status_manager.h',
+    'browser/battery_status/battery_status_update_callback.h',
     'browser/browser_child_process_host_impl.cc',
     'browser/browser_child_process_host_impl.h',
     'browser/browser_context.cc',
@@ -1597,6 +1599,7 @@
         ],
       },
       'sources/': [
+        ['exclude', '^browser/battery_status/battery_status_manager_default.cc$'],
         ['exclude', '^browser/device_sensors/data_fetcher_shared_memory_default.cc$'],
         ['exclude', '^browser/geolocation/network_location_provider\\.(cc|h)$'],
         ['exclude', '^browser/geolocation/network_location_request\\.(cc|h)$'],

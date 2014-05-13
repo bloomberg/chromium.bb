@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/battery_status/battery_status_manager_android.h"
-
-#include <string.h>
+#include "content/browser/battery_status/battery_status_manager.h"
 
 #include "base/android/jni_android.h"
 #include "jni/BatteryStatusManager_jni.h"
@@ -13,33 +11,39 @@ using base::android::AttachCurrentThread;
 
 namespace content {
 
-BatteryStatusManagerAndroid::BatteryStatusManagerAndroid() {
+BatteryStatusManager::BatteryStatusManager(
+    const BatteryStatusUpdateCallback& callback) : callback_(callback) {
   j_manager_.Reset(
       Java_BatteryStatusManager_getInstance(
           AttachCurrentThread(), base::android::GetApplicationContext()));
 }
 
-BatteryStatusManagerAndroid::~BatteryStatusManagerAndroid() {
+BatteryStatusManager::~BatteryStatusManager() {
   StopListeningBatteryChange();
 }
 
-bool BatteryStatusManagerAndroid::Register(JNIEnv* env) {
+bool BatteryStatusManager::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-void BatteryStatusManagerAndroid::GotBatteryStatus(JNIEnv*, jobject,
-    jboolean charging, jdouble chargingTime, jdouble dischargingTime,
+void BatteryStatusManager::GotBatteryStatus(JNIEnv*, jobject,
+    jboolean charging, jdouble charging_time, jdouble discharging_time,
     jdouble level) {
-  NOTIMPLEMENTED();
+  blink::WebBatteryStatus status;
+  status.charging = charging;
+  status.chargingTime = charging_time;
+  status.dischargingTime = discharging_time;
+  status.level = level;
+  callback_.Run(status);
 }
 
-bool BatteryStatusManagerAndroid::StartListeningBatteryChange() {
+bool BatteryStatusManager::StartListeningBatteryChange() {
   return Java_BatteryStatusManager_start(
       AttachCurrentThread(), j_manager_.obj(),
       reinterpret_cast<intptr_t>(this));
 }
 
-void BatteryStatusManagerAndroid::StopListeningBatteryChange() {
+void BatteryStatusManager::StopListeningBatteryChange() {
   Java_BatteryStatusManager_stop(
       AttachCurrentThread(), j_manager_.obj());
 }
