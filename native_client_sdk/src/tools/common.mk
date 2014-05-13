@@ -477,7 +477,14 @@ CHROME_PATH ?= $(shell $(GETOS) --chrome 2> $(DEV_NULL))
 
 NULL :=
 SPACE := $(NULL) # one space after NULL is required
-CHROME_PATH_ESCAPE := $(subst $(SPACE),\ ,$(CHROME_PATH))
+ifneq ($(OSNAME),win)
+  CHROME_PATH_ESCAPE := $(subst $(SPACE),\ ,$(CHROME_PATH))
+  SANDBOX_ARGS :=
+else
+  CHROME_PATH_ESCAPE := $(CHROME_PATH)
+  SANDBOX_ARGS := --no-sandbox
+endif
+
 GDB_PATH := $(shell $(NACL_CONFIG) -t $(TOOLCHAIN) --tool=gdb)
 
 .PHONY: check_for_chrome
@@ -495,7 +502,7 @@ PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 run: check_for_chrome all $(PAGE)
 	$(RUN_PY) -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH_ESCAPE) \
-	    $(CHROME_ARGS) --no-sandbox \
+	    $(CHROME_ARGS) \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 .PHONY: run_package
@@ -515,7 +522,7 @@ debug: check_for_chrome all $(PAGE)
 	$(RUN_PY) $(GDB_ARGS) \
 	    -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
 	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH_ESCAPE) \
-	    $(CHROME_ARGS) --enable-nacl-debug \
+	    $(CHROME_ARGS) $(SANDBOX_ARGS) --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 .PHONY: serve

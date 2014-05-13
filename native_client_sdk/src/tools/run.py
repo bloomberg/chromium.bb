@@ -74,8 +74,9 @@ def main(args):
       cmd = ['osascript', '-e',
              'tell application "Terminal" to do script "%s"' %
                  ' '.join(r'\"%s\"' % x for x in options.debug)]
-    else:
-      cmd = []
+    elif getos.GetPlatform() == 'win':
+      cmd = ['cmd.exe', '/c', 'start', 'cmd.exe', '/c']
+      cmd += options.debug
     print 'Starting debugger: ' + ' '.join(cmd)
     debug_process = subprocess.Popen(cmd, env=env)
   else:
