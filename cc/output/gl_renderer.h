@@ -90,7 +90,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual void DidChangeVisibility() OVERRIDE;
 
   bool IsBackbufferDiscarded() const { return is_backbuffer_discarded_; }
-  void InitializeGrContext();
 
   const gfx::QuadF& SharedGeometryQuad() const { return shared_geometry_quad_; }
   const GeometryBinding* SharedGeometry() const {
