@@ -90,6 +90,8 @@ void AppListLinux::MoveNearCursor(app_list::AppListView* view) {
 
   view->SetBubbleArrow(views::BubbleBorder::FLOAT);
 
+  AppListPositioner::ScreenEdge edge;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // In the Unity desktop environment, special case SCREEN_EDGE_LEFT. It is
   // always on the left side in Unity, but ShelfLocationInDisplay will not
   // detect this if the shelf is hidden.
@@ -97,10 +99,10 @@ void AppListLinux::MoveNearCursor(app_list::AppListView* view) {
   // applies, but we currently have no way to detect whether Gnome Shell is
   // running.
   views::LinuxUI* ui = views::LinuxUI::instance();
-  AppListPositioner::ScreenEdge edge;
   if (ui && ui->UnityIsRunning())
     edge = AppListPositioner::SCREEN_EDGE_LEFT;
   else
+#endif
     edge = ShelfLocationInDisplay(display);
   view->SetAnchorPoint(FindAnchorPoint(view->GetPreferredSize(),
                                        display,

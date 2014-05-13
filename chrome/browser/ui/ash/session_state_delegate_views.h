@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 class SessionStateObserver;
@@ -45,6 +46,7 @@ class SessionStateDelegate : public ash::SessionStateDelegate {
       ash::SessionStateObserver* observer) OVERRIDE;
   virtual void RemoveSessionStateObserver(
       ash::SessionStateObserver* observer) OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegate);
 };

@@ -19,11 +19,13 @@ namespace chrome {
 
 BrowserNonClientFrameView* CreateBrowserNonClientFrameView(
     BrowserFrame* frame, BrowserView* browser_view) {
-#if defined(OS_WIN)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
   if (browser_view->browser()->
           host_desktop_type() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
+#if defined(OS_WIN)
     if (frame->ShouldUseNativeFrame())
       return new GlassBrowserFrameView(frame, browser_view);
+#endif
     return new OpaqueBrowserFrameView(frame, browser_view);
   }
 #endif

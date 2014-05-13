@@ -108,7 +108,7 @@ ash::SessionStateDelegate::SessionState SessionStateDelegate::GetSessionState()
 
 const ash::UserInfo* SessionStateDelegate::GetUserInfo(
     ash::MultiProfileIndex index) const {
-  return GetUserInfo(NULL);
+  return GetUserInfo(static_cast<content::BrowserContext*>(NULL));
 }
 
 const ash::UserInfo* SessionStateDelegate::GetUserInfo(

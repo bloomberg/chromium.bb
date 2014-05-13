@@ -92,9 +92,17 @@ scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
 
 }  // namespace
 
+// On desktop linux aura, we currently don't use the ash frame, breaking some
+// tests which expect ash sizes: http://crbug.com/303862
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_DefaultSizeCase DISABLED_DefaultSizeCase
+#else
+#define MAYBE_DefaultSizeCase DefaultSizeCase
+#endif
+
 // Test that the window is sized appropriately for the first run experience
 // where the default window bounds calculation is invoked.
-TEST_F(WindowSizerAshTest, DefaultSizeCase) {
+TEST_F(WindowSizerAshTest, MAYBE_DefaultSizeCase) {
 #if defined(OS_WIN)
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kOpenAsh);
 #endif
@@ -451,8 +459,16 @@ TEST_F(WindowSizerAshTest, LastWindowOffscreenWithNonAggressiveRepositioning) {
   }
 }
 
+// On desktop linux aura, we currently don't use the ash frame, breaking some
+// tests which expect ash sizes: http://crbug.com/303862
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_PlaceNewWindows DISABLED_PlaceNewWindows
+#else
+#define MAYBE_PlaceNewWindows PlaceNewWindows
+#endif
+
 // Test the placement of newly created windows.
-TEST_F(WindowSizerAshTest, PlaceNewWindows) {
+TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindows) {
   // Create a browser which we can use to pass into the GetWindowBounds
   // function.
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -521,10 +537,18 @@ TEST_F(WindowSizerAshTest, PlaceNewWindows) {
   }
 }
 
+// On desktop linux aura, we currently don't use the ash frame, breaking some
+// tests which expect ash sizes: http://crbug.com/303862
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_PlaceNewBrowserWindowOnEmptyDesktop DISABLED_PlaceNewBrowserWindowOnEmptyDesktop
+#else
+#define MAYBE_PlaceNewBrowserWindowOnEmptyDesktop PlaceNewBrowserWindowOnEmptyDesktop
+#endif
+
 // Test the placement of newly created windows on an empty desktop.
 // This test supplements "PlaceNewWindows" by testing the creation of a newly
 // created browser window on an empty desktop.
-TEST_F(WindowSizerAshTest, PlaceNewBrowserWindowOnEmptyDesktop) {
+TEST_F(WindowSizerAshTest, MAYBE_PlaceNewBrowserWindowOnEmptyDesktop) {
   // Create a browser which we can use to pass into the GetWindowBounds
   // function.
   scoped_ptr<TestingProfile> profile(new TestingProfile());
@@ -695,8 +719,16 @@ TEST_F(WindowSizerAshTest, MAYBE_PlaceNewWindowsOnMultipleDisplays) {
   }
 }
 
+// On desktop linux aura, we currently don't use the ash frame, breaking some
+// tests which expect ash sizes: http://crbug.com/303862
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#define MAYBE_TestShowState DISABLED_TestShowState
+#else
+#define MAYBE_TestShowState TestShowState
+#endif
+
 // Test that the show state is properly returned for non default cases.
-TEST_F(WindowSizerAshTest, TestShowState) {
+TEST_F(WindowSizerAshTest, MAYBE_TestShowState) {
   scoped_ptr<TestingProfile> profile(new TestingProfile());
 
   // Creating a browser & window to play with.

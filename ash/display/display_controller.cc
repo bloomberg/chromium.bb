@@ -43,6 +43,8 @@
 #include "ash/display/display_configurator_animation.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_types.h"
@@ -52,7 +54,7 @@
 #include <X11/extensions/Xrandr.h>
 #undef RootWindow
 #endif  // defined(USE_X11)
-#endif  // defined(OS_CHROMEOS)
+
 
 namespace ash {
 namespace {

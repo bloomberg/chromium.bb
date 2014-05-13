@@ -87,21 +87,13 @@
 
           'conditions': [
             # ChromeOS and Windows use Aura and Ash.
-            ['chromeos==1 or OS=="win"', {
+            ['chromeos==1 or OS=="win" or OS=="linux"', {
               'use_ash%': 1,
               'use_aura%': 1,
             }],
 
             # Ozone uses Aura.
             ['use_ozone==1', {
-              'use_aura%': 1,
-            }],
-
-            # ToT Linux should be aura.
-            #
-            # TODO(erg): Merge this into the previous block once compiling with
-            # aura safely implies including ash capabilities.
-            ['OS=="linux"', {
               'use_aura%': 1,
             }],
 

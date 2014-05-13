@@ -35,7 +35,7 @@
 #include "apps/app_window_registry.h"
 #endif
 
-#if defined(USE_ASH) && !defined(OS_WIN)
+#if defined(USE_ASH) && defined(OS_CHROMEOS)
 // TODO(stevenjb): Figure out the correct behavior for Ash + Win
 #define USE_ASH_PANELS
 #endif
@@ -273,8 +273,16 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, MAYBE_WindowOpenPanelDetached) {
   ASSERT_TRUE(RunExtensionTest("window_open/panel_detached")) << message_;
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(erg): Bring up ash http://crbug.com/300084
+#define MAYBE_CloseNonExtensionPanelsOnUninstall \
+  DISABLED_CloseNonExtensionPanelsOnUninstall
+#else
+#define MAYBE_CloseNonExtensionPanelsOnUninstall \
+  CloseNonExtensionPanelsOnUninstall
+#endif
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
-                       CloseNonExtensionPanelsOnUninstall) {
+                       MAYBE_CloseNonExtensionPanelsOnUninstall) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -345,8 +353,8 @@ IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest,
   EXPECT_TRUE(WaitForTabsAndPopups(browser(), 1, num_popups, 0));
 }
 
-// This test isn't applicable on Chrome OS, which automatically reloads
-// crashed pages.
+// This test isn't applicable on Chrome OS, which automatically reloads crashed
+// pages.
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(WindowOpenPanelTest, ClosePanelsOnExtensionCrash) {
 #if defined(USE_ASH_PANELS)
