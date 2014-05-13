@@ -45,9 +45,6 @@ class WebServiceWorkerNetworkProvider;
 class WebServiceWorkerResponse;
 class WebString;
 
-// FIXME: Remove this after chromium-side code is cleaned up.
-#define HAS_SERVICE_WORKER_CONTEXT_DESTROYED 1
-
 // This interface is implemented by the client. It is supposed to be created
 // on the main thread and then passed on to the worker thread.
 // by a newly created WorkerGlobalScope. All methods of this class, except
