@@ -23,7 +23,6 @@ class LandingPage(object):
       items = self.section_map[section_name]
       items = sorted(items, cmp=CmpByName)
       sec_map[section_name] = items
-      print 'Add section ' + section_name
 
     template_dict = { 'section_map': sec_map }
     return easy_template.RunTemplateString(template, template_dict)

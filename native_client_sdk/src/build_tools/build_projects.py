@@ -40,9 +40,14 @@ VALID_TOOLCHAINS = [
 ]
 
 # Global verbosity setting.
-# If set to try (normally via a command line arg) then build_projects will
+# If set to True (normally via a command line arg) then build_projects will
 # add V=1 to all calls to 'make'
 verbose = False
+
+
+def Trace(msg):
+  if verbose:
+    sys.stderr.write(str(msg) + '\n')
 
 
 def CopyFilesFromTo(filelist, srcdir, dstdir):
@@ -229,7 +234,6 @@ def BuildProjectsBranch(pepperdir, branch, deps, clean, config, args=None):
 
 def BuildProjects(pepperdir, project_tree, deps=True,
                   clean=False, config='Debug'):
-
   # Make sure we build libraries (which live in 'src') before
   # any of the examples.
   build_first = [p for p in project_tree if p != 'src']
@@ -245,7 +249,8 @@ def main(argv):
       help='Clobber project directories before copying new files',
       action='store_true', default=False)
   parser.add_option('-b', '--build',
-      help='Build the projects.', action='store_true')
+      help='Build the projects. Otherwise the projects are only copied.',
+      action='store_true')
   parser.add_option('--config',
       help='Choose configuration to build (Debug or Release).  Builds both '
            'by default')
@@ -272,6 +277,12 @@ def main(argv):
 
   options, args = parser.parse_args(argv[1:])
 
+  global verbose
+  if options.verbose:
+    verbose = True
+
+  buildbot_common.verbose = verbose
+
   if 'NACL_SDK_ROOT' in os.environ:
     # We don't want the currently configured NACL_SDK_ROOT to have any effect
     # on the build.
@@ -292,36 +303,34 @@ def main(argv):
   if 'host' in options.toolchain:
     options.toolchain.remove('host')
     options.toolchain.append(getos.GetPlatform())
-    print 'Adding platform: ' + getos.GetPlatform()
+    Trace('Adding platform: ' + getos.GetPlatform())
 
   ValidateToolchains(options.toolchain)
 
   filters = {}
   if options.toolchain:
     filters['TOOLS'] = options.toolchain
-    print 'Filter by toolchain: ' + str(options.toolchain)
+    Trace('Filter by toolchain: ' + str(options.toolchain))
   if not options.experimental:
     filters['EXPERIMENTAL'] = False
   if options.dest:
     filters['DEST'] = options.dest
-    print 'Filter by type: ' + str(options.dest)
+    Trace('Filter by type: ' + str(options.dest))
   if args:
     filters['NAME'] = args
-    print 'Filter by name: ' + str(args)
+    Trace('Filter by name: ' + str(args))
 
   try:
     project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, include=filters)
   except parse_dsc.ValidationError as e:
     buildbot_common.ErrorExit(str(e))
-  parse_dsc.PrintProjectTree(project_tree)
+
+  if verbose:
+    parse_dsc.PrintProjectTree(project_tree)
 
   UpdateHelpers(pepperdir, clobber=options.clobber)
   UpdateProjects(pepperdir, project_tree, options.toolchain,
                  clobber=options.clobber)
-
-  if options.verbose:
-    global verbose
-    verbose = True
 
   if options.build:
     if options.config:
