@@ -483,7 +483,7 @@ TEST_F(FilePathWatcherTest, MoveParent) {
   DeleteDelegateOnFileThread(subdir_delegate.release());
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 TEST_F(FilePathWatcherTest, RecursiveWatch) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_.path().AppendASCII("dir"));
@@ -541,7 +541,8 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_.path().AppendASCII("dir"));
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
-  // Non-Windows implementaion does not support recursive watching.
+  // Only Windows/Linux support recursive watching. Other implementations
+  // should simply fail.
   ASSERT_FALSE(SetupWatch(dir, &watcher, delegate.get(), true));
   DeleteDelegateOnFileThread(delegate.release());
 }
@@ -574,10 +575,6 @@ TEST_F(FilePathWatcherTest, MoveChild) {
   DeleteDelegateOnFileThread(subdir_delegate.release());
 }
 
-#if !defined(OS_LINUX)
-// Linux implementation of FilePathWatcher doesn't catch attribute changes.
-// http://crbug.com/78043
-
 // Verify that changing attributes on a file is caught
 TEST_F(FilePathWatcherTest, FileAttributesChanged) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
@@ -590,8 +587,6 @@ TEST_F(FilePathWatcherTest, FileAttributesChanged) {
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
 }
-
-#endif  // !OS_LINUX
 
 #if defined(OS_LINUX)
 

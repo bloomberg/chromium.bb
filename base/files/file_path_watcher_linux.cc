@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <map>
 #include <set>
 #include <utility>
 #include <vector>
@@ -20,6 +21,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -91,11 +93,16 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
 
   // Called for each event coming from the watch. |fired_watch| identifies the
   // watch that fired, |child| indicates what has changed, and is relative to
-  // the currently watched path for |fired_watch|. The flag |created| is true if
-  // the object appears.
+  // the currently watched path for |fired_watch|.
+  //
+  // |created| is true if the object appears.
+  // |deleted| is true if the object disappears.
+  // |is_dir| is true if the object is a directory.
   void OnFilePathChanged(InotifyReader::Watch fired_watch,
                          const FilePath::StringType& child,
-                         bool created);
+                         bool created,
+                         bool deleted,
+                         bool is_dir);
 
  protected:
   virtual ~FilePathWatcherImpl() {}
@@ -134,8 +141,27 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   typedef std::vector<WatchEntry> WatchVector;
 
   // Reconfigure to watch for the most specific parent directory of |target_|
-  // that exists. Updates |watched_path_|. Returns true on success.
-  bool UpdateWatches() WARN_UNUSED_RESULT;
+  // that exists. Also calls UpdateRecursiveWatches() below.
+  void UpdateWatches();
+
+  // Reconfigure to recursively watch |target_| and all its sub-directories.
+  // - This is a no-op if the watch is not recursive.
+  // - If |target_| does not exist, then clear all the recursive watches.
+  // - Assuming |target_| exists, passing kInvalidWatch as |fired_watch| forces
+  //   addition of recursive watches for |target_|.
+  // - Otherwise, only the directory associated with |fired_watch| and its
+  //   sub-directories will be reconfigured.
+  void UpdateRecursiveWatches(InotifyReader::Watch fired_watch, bool is_dir);
+
+  // Enumerate recursively through |path| and add / update watches.
+  void UpdateRecursiveWatchesForPath(const FilePath& path);
+
+  // Do internal bookkeeping to update mappings between |watch| and its
+  // associated full path |path|.
+  void TrackWatchForRecursion(InotifyReader::Watch watch, const FilePath& path);
+
+  // Remove all the recursive watches.
+  void RemoveRecursiveWatches();
 
   // |path| is a symlink to a non-existent target. Attempt to add a watch to
   // the link target's parent directory. Returns true and update |watch_entry|
@@ -150,10 +176,15 @@ class FilePathWatcherImpl : public FilePathWatcher::PlatformDelegate,
   // The file or directory we're supposed to watch.
   FilePath target_;
 
+  bool recursive_;
+
   // The vector of watches and next component names for all path components,
   // starting at the root directory. The last entry corresponds to the watch for
   // |target_| and always stores an empty next component name in |subdir|.
   WatchVector watches_;
+
+  hash_map<InotifyReader::Watch, FilePath> recursive_paths_by_watch_;
+  std::map<FilePath, InotifyReader::Watch> recursive_watches_by_path_;
 
   DISALLOW_COPY_AND_ASSIGN(FilePathWatcherImpl);
 };
@@ -262,7 +293,7 @@ InotifyReader::Watch InotifyReader::AddWatch(
   AutoLock auto_lock(lock_);
 
   Watch watch = inotify_add_watch(inotify_fd_, path.value().c_str(),
-                                  IN_CREATE | IN_DELETE |
+                                  IN_ATTRIB | IN_CREATE | IN_DELETE |
                                   IN_CLOSE_WRITE | IN_MOVE |
                                   IN_ONLYDIR);
 
@@ -300,22 +331,27 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
        ++watcher) {
     (*watcher)->OnFilePathChanged(event->wd,
                                   child,
-                                  event->mask & (IN_CREATE | IN_MOVED_TO));
+                                  event->mask & (IN_CREATE | IN_MOVED_TO),
+                                  event->mask & (IN_DELETE | IN_MOVED_FROM),
+                                  event->mask & IN_ISDIR);
   }
 }
 
-FilePathWatcherImpl::FilePathWatcherImpl() {
+FilePathWatcherImpl::FilePathWatcherImpl()
+    : recursive_(false) {
 }
 
 void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
                                             const FilePath::StringType& child,
-                                            bool created) {
+                                            bool created,
+                                            bool deleted,
+                                            bool is_dir) {
   if (!message_loop()->BelongsToCurrentThread()) {
     // Switch to message_loop() to access |watches_| safely.
     message_loop()->PostTask(
         FROM_HERE,
         Bind(&FilePathWatcherImpl::OnFilePathChanged, this,
-             fired_watch, child, created));
+             fired_watch, child, created, deleted, is_dir));
     return;
   }
 
@@ -328,6 +364,9 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
 
   DCHECK(MessageLoopForIO::current());
   DCHECK(HasValidWatchVector());
+
+  // Used below to avoid multiple recursive updates.
+  bool did_update = false;
 
   // Find the entry in |watches_| that corresponds to |fired_watch|.
   for (size_t i = 0; i < watches_.size(); ++i) {
@@ -353,9 +392,9 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
     // checking the event mask to see if it is for a directory here as changes
     // to symlinks on the target path will not have IN_ISDIR set in the event
     // masks. As a result we may sometimes call UpdateWatches() unnecessarily.
-    if (change_on_target_path && !UpdateWatches()) {
-      callback_.Run(target_, true /* error */);
-      return;
+    if (change_on_target_path && (created || deleted) && !did_update) {
+      UpdateWatches();
+      did_update = true;
     }
 
     // Report the following events:
@@ -366,11 +405,21 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
     //  - One of the parent directories appears. The event corresponding to
     //    the target appearing might have been missed in this case, so recheck.
     if (target_changed ||
-        (change_on_target_path && !created) ||
-        (change_on_target_path && PathExists(target_))) {
+        (change_on_target_path && deleted) ||
+        (change_on_target_path && created && PathExists(target_))) {
+      if (!did_update) {
+        UpdateRecursiveWatches(fired_watch, is_dir);
+        did_update = true;
+      }
       callback_.Run(target_, false /* error */);
       return;
     }
+  }
+
+  if (ContainsKey(recursive_paths_by_watch_, fired_watch)) {
+    if (!did_update)
+      UpdateRecursiveWatches(fired_watch, is_dir);
+    callback_.Run(target_, false /* error */);
   }
 }
 
@@ -379,15 +428,11 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
                                 const FilePathWatcher::Callback& callback) {
   DCHECK(target_.empty());
   DCHECK(MessageLoopForIO::current());
-  if (recursive) {
-    // Recursive watch is not supported on this platform.
-    NOTIMPLEMENTED();
-    return false;
-  }
 
   set_message_loop(MessageLoopProxy::current().get());
   callback_ = callback;
   target_ = path;
+  recursive_ = recursive;
   MessageLoop::current()->AddDestructionObserver(this);
 
   std::vector<FilePath::StringType> comps;
@@ -396,7 +441,8 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   for (size_t i = 1; i < comps.size(); ++i)
     watches_.push_back(WatchEntry(comps[i]));
   watches_.push_back(WatchEntry(FilePath::StringType()));
-  return UpdateWatches();
+  UpdateWatches();
+  return true;
 }
 
 void FilePathWatcherImpl::Cancel() {
@@ -428,13 +474,16 @@ void FilePathWatcherImpl::CancelOnMessageLoopThread() {
     g_inotify_reader.Get().RemoveWatch(watches_[i].watch, this);
   watches_.clear();
   target_.clear();
+
+  if (recursive_)
+    RemoveRecursiveWatches();
 }
 
 void FilePathWatcherImpl::WillDestroyCurrentMessageLoop() {
   CancelOnMessageLoopThread();
 }
 
-bool FilePathWatcherImpl::UpdateWatches() {
+void FilePathWatcherImpl::UpdateWatches() {
   // Ensure this runs on the message_loop() exclusively in order to avoid
   // concurrency issues.
   DCHECK(message_loop()->BelongsToCurrentThread());
@@ -463,7 +512,113 @@ bool FilePathWatcherImpl::UpdateWatches() {
     path = path.Append(watch_entry.subdir);
   }
 
-  return true;
+  UpdateRecursiveWatches(InotifyReader::kInvalidWatch,
+                         false /* is directory? */);
+}
+
+void FilePathWatcherImpl::UpdateRecursiveWatches(
+    InotifyReader::Watch fired_watch,
+    bool is_dir) {
+  if (!recursive_)
+    return;
+
+  if (!DirectoryExists(target_)) {
+    RemoveRecursiveWatches();
+    return;
+  }
+
+  // Check to see if this is a forced update or if some component of |target_|
+  // has changed. For these cases, redo the watches for |target_| and below.
+  if (!ContainsKey(recursive_paths_by_watch_, fired_watch)) {
+    UpdateRecursiveWatchesForPath(target_);
+    return;
+  }
+
+  // Underneath |target_|, only directory changes trigger watch updates.
+  if (!is_dir)
+    return;
+
+  const FilePath& changed_dir = recursive_paths_by_watch_[fired_watch];
+
+  std::map<FilePath, InotifyReader::Watch>::iterator start_it =
+      recursive_watches_by_path_.lower_bound(changed_dir);
+  std::map<FilePath, InotifyReader::Watch>::iterator end_it = start_it;
+  for (; end_it != recursive_watches_by_path_.end(); ++end_it) {
+    const FilePath& cur_path = end_it->first;
+    if (!changed_dir.IsParent(cur_path))
+      break;
+    if (!DirectoryExists(cur_path))
+      g_inotify_reader.Get().RemoveWatch(end_it->second, this);
+  }
+  recursive_watches_by_path_.erase(start_it, end_it);
+  UpdateRecursiveWatchesForPath(changed_dir);
+}
+
+void FilePathWatcherImpl::UpdateRecursiveWatchesForPath(const FilePath& path) {
+  DCHECK(recursive_);
+  DCHECK(!path.empty());
+  DCHECK(DirectoryExists(path));
+
+  // Note: SHOW_SYM_LINKS exposes symlinks as symlinks, so they are ignored
+  // rather than followed. Following symlinks can easily lead to the undesirable
+  // situation where the entire file system is being watched.
+  FileEnumerator enumerator(
+      path,
+      true /* recursive enumeration */,
+      FileEnumerator::DIRECTORIES | FileEnumerator::SHOW_SYM_LINKS);
+  for (FilePath current = enumerator.Next();
+       !current.empty();
+       current = enumerator.Next()) {
+    DCHECK(enumerator.GetInfo().IsDirectory());
+
+    if (!ContainsKey(recursive_watches_by_path_, current)) {
+      // Add new watches.
+      InotifyReader::Watch watch =
+          g_inotify_reader.Get().AddWatch(current, this);
+      TrackWatchForRecursion(watch, current);
+    } else {
+      // Update existing watches.
+      InotifyReader::Watch old_watch = recursive_watches_by_path_[current];
+      DCHECK_NE(InotifyReader::kInvalidWatch, old_watch);
+      InotifyReader::Watch watch =
+          g_inotify_reader.Get().AddWatch(current, this);
+      if (watch != old_watch) {
+        g_inotify_reader.Get().RemoveWatch(old_watch, this);
+        recursive_paths_by_watch_.erase(old_watch);
+        recursive_watches_by_path_.erase(current);
+        TrackWatchForRecursion(watch, current);
+      }
+    }
+  }
+}
+
+void FilePathWatcherImpl::TrackWatchForRecursion(InotifyReader::Watch watch,
+                                                 const FilePath& path) {
+  DCHECK(recursive_);
+  DCHECK(!path.empty());
+  DCHECK(target_.IsParent(path));
+
+  if (watch == InotifyReader::kInvalidWatch)
+    return;
+
+  DCHECK(!ContainsKey(recursive_paths_by_watch_, watch));
+  DCHECK(!ContainsKey(recursive_watches_by_path_, path));
+  recursive_paths_by_watch_[watch] = path;
+  recursive_watches_by_path_[path] = watch;
+}
+
+void FilePathWatcherImpl::RemoveRecursiveWatches() {
+  if (!recursive_)
+    return;
+
+  for (hash_map<InotifyReader::Watch, FilePath>::const_iterator it =
+           recursive_paths_by_watch_.begin();
+       it != recursive_paths_by_watch_.end();
+       ++it) {
+    g_inotify_reader.Get().RemoveWatch(it->first, this);
+  }
+  recursive_paths_by_watch_.clear();
+  recursive_watches_by_path_.clear();
 }
 
 bool FilePathWatcherImpl::AddWatchForBrokenSymlink(const FilePath& path,
