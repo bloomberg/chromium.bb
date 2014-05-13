@@ -44,6 +44,9 @@ const int kMaxOverScrollShift = 48;
 // result of minimal bubble arrow sizes and offsets.
 const int kMinimalAnchorPositionOffset = 57;
 
+// The minimal margin (in pixels) around the app list when in centered mode.
+const int kMinimalCenteredAppListMargin = 10;
+
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -115,8 +118,11 @@ gfx::Vector2d GetAnchorPositionOffsetToShelf(
 }
 
 // Gets the point at the center of the display that a particular view is on.
-// This calculation excludes the virtual keyboard area.
-gfx::Point GetCenterOfDisplayForView(const views::View* view) {
+// This calculation excludes the virtual keyboard area. If the height of the
+// display area is less than |minimum_height|, its bottom will be extended to
+// that height (so that the app list never starts above the top of the screen).
+gfx::Point GetCenterOfDisplayForView(const views::View* view,
+                                     int minimum_height) {
   gfx::Rect bounds = Shell::GetScreen()->GetDisplayNearestWindow(
       view->GetWidget()->GetNativeView()).bounds();
 
@@ -129,7 +135,16 @@ gfx::Point GetCenterOfDisplayForView(const views::View* view) {
   if (keyboard_controller && keyboard_controller->keyboard_visible())
     bounds.Subtract(keyboard_controller->current_keyboard_bounds());
 
+  // Apply the |minimum_height|.
+  if (bounds.height() < minimum_height)
+    bounds.set_height(minimum_height);
+
   return bounds.CenterPoint();
+}
+
+// Gets the minimum height of the rectangle to center the app list in.
+int GetMinimumBoundsHeightForAppList(const app_list::AppListView* app_list) {
+  return app_list->bounds().height() + 2 * kMinimalCenteredAppListMargin;
 }
 
 }  // namespace
@@ -189,15 +204,19 @@ void AppListController::SetVisible(bool visible, aura::Window* window) {
         Shelf::ForWindow(container)->GetAppListButtonView();
     is_centered_ = view->ShouldCenterWindow();
     if (is_centered_) {
-      // The experimental app list is centered over the display of the app list
-      // button that was pressed (if triggered via keyboard, this is the display
-      // with the currently focused window).
+      // Note: We can't center the app list until we have its dimensions, so we
+      // init at (0, 0) and then reset its anchor point.
       view->InitAsBubbleAtFixedLocation(
           container,
           pagination_model_.get(),
-          GetCenterOfDisplayForView(applist_button),
+          gfx::Point(),
           views::BubbleBorder::FLOAT,
           true /* border_accepts_events */);
+      // The experimental app list is centered over the display of the app list
+      // button that was pressed (if triggered via keyboard, this is the display
+      // with the currently focused window).
+      view->SetAnchorPoint(GetCenterOfDisplayForView(
+          applist_button, GetMinimumBoundsHeightForAppList(view)));
     } else {
       gfx::Rect applist_button_bounds = applist_button->GetBoundsInScreen();
       // We need the location of the button within the local screen.
@@ -340,7 +359,8 @@ void AppListController::UpdateBounds() {
   view_->UpdateBounds();
 
   if (is_centered_)
-    view_->SetAnchorPoint(GetCenterOfDisplayForView(view_));
+    view_->SetAnchorPoint(GetCenterOfDisplayForView(
+        view_, GetMinimumBoundsHeightForAppList(view_)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
