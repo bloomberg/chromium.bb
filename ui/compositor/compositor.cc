@@ -90,7 +90,6 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
       device_scale_factor_(0.0f),
       last_started_frame_(0),
       last_ended_frame_(0),
-      next_draw_is_resize_(false),
       disable_schedule_composite_(false),
       compositor_lock_(NULL),
       defer_draw_scheduling_(false),
@@ -232,18 +231,6 @@ void Compositor::Draw() {
     // compositeImmediately() directly.
     Layout();
     host_->Composite(gfx::FrameTime::Now());
-
-#if defined(OS_WIN)
-    // While we resize, we are usually a few frames behind. By blocking
-    // the UI thread here we minize the area that is mis-painted, specially
-    // in the non-client area. See RenderWidgetHostViewAura::SetBounds for
-    // more details and bug 177115.
-    if (next_draw_is_resize_ && (last_ended_frame_ > 1)) {
-      next_draw_is_resize_ = false;
-      host_->FinishAllRendering();
-    }
-#endif
-
   }
   if (swap_state_ == SWAP_NONE)
     NotifyEnd();
@@ -255,6 +242,10 @@ void Compositor::ScheduleFullRedraw() {
 
 void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
   host_->SetNeedsRedrawRect(damage_rect);
+}
+
+void Compositor::FinishAllRendering() {
+  host_->FinishAllRendering();
 }
 
 void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
@@ -269,8 +260,6 @@ void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
     size_ = size_in_pixel;
     host_->SetViewportSize(size_in_pixel);
     root_web_layer_->SetBounds(size_in_pixel);
-
-    next_draw_is_resize_ = true;
   }
   if (device_scale_factor_ != scale) {
     device_scale_factor_ = scale;

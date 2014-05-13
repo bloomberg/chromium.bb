@@ -172,6 +172,9 @@ class COMPOSITOR_EXPORT Compositor
   // from changes to layer properties.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
+  // Finishes all outstanding rendering on the GPU.
+  void FinishAllRendering();
+
   void SetLatencyInfo(const LatencyInfo& latency_info);
 
   // Sets the compositor's device scale factor and size.
@@ -275,8 +278,6 @@ class COMPOSITOR_EXPORT Compositor
 
   int last_started_frame_;
   int last_ended_frame_;
-
-  bool next_draw_is_resize_;
 
   bool disable_schedule_composite_;
 

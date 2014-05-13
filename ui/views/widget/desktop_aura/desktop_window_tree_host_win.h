@@ -204,6 +204,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
                              WPARAM w_param,
                              LPARAM l_param) OVERRIDE;
   virtual bool HandleScrollEvent(const ui::ScrollEvent& event) OVERRIDE;
+  virtual void HandleWindowSizeChanging() OVERRIDE;
 
   Widget* GetWidget();
   const Widget* GetWidget() const;

@@ -233,6 +233,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // handled by the delegate.
   virtual bool HandleScrollEvent(const ui::ScrollEvent& event) = 0;
 
+  // Called when the window size is about to change.
+  virtual void HandleWindowSizeChanging() = 0;
+
  protected:
   virtual ~HWNDMessageHandlerDelegate() {}
 };

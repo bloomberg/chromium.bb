@@ -907,6 +907,11 @@ bool DesktopWindowTreeHostWin::HandleScrollEvent(
   return event.handled();
 }
 
+void DesktopWindowTreeHostWin::HandleWindowSizeChanging() {
+  if (compositor())
+    compositor()->FinishAllRendering();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, private:
 

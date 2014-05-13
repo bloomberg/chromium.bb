@@ -2224,6 +2224,9 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
     }
   }
 
+  if (DidClientAreaSizeChange(window_pos))
+    delegate_->HandleWindowSizeChanging();
+
   if (ScopedFullscreenVisibility::IsHiddenForFullscreen(hwnd())) {
     // Prevent the window from being made visible if we've been asked to do so.
     // See comment in header as to why we might want this.
