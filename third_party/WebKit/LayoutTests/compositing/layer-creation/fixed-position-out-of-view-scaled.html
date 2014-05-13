@@ -8,6 +8,10 @@
     height: 10px;
     background-color: silver;
   }
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+  }
 </style>
 <script>
   if (window.testRunner) {
@@ -38,7 +42,7 @@
 <!-- Fixed position elements may skip compositing without a scrollable
 ancestor. To make sure this test covers the intended scenario, we force the
 body element to be tall, so that the FrameView is scrolling. -->
-<body style="height: 4000px;">
+<body style="width: 4000px; height: 4000px;">
 <div style="height: 1000px">
   Not scaled:
   <pre id="layerTree"></pre>

@@ -2,10 +2,10 @@
 <html>
 <head>
 <style>
-  body {
-    width: 1000px;
-    height: 800px;
-  }
+   ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+   }
   .reference {
     position: absolute;
     left: 51px;
@@ -29,7 +29,7 @@
     window.eventSender.setPageScaleFactor(0.5, 0, 0);
 </script>
 </head>
-<body>
+<body style="width: 4000px; height: 4000px">
   On success, the blue reference box should be invisible (covered by the fixed box).
   <div class="reference"></div>
   <div class="fixed"></div>

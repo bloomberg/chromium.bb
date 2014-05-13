@@ -168,6 +168,9 @@ WebView* TouchActionTest::setupTest(std::string file, TouchActionTrackingWebView
     // Note that JavaScript must be enabled for shadow DOM tests.
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + file, true, 0, &client);
 
+    // Lock page scale factor to avoid zooming out to contents size.
+    m_webViewHelper.webView()->setPageScaleFactorLimits(1, 1);
+
     // Set size to enable hit testing, and avoid line wrapping for consistency with browser.
     webView->resize(WebSize(800, 1200));
 

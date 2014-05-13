@@ -3,6 +3,10 @@
 <head>
 <script src="../../../resources/js-test.js"></script>
 <style type="text/css">
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
 #touchtarget {
   width: 100px;
   height: 100px;
@@ -10,7 +14,7 @@
 }
 </style>
 </head>
-<body onload="runTest();">
+<body style="width: 2000px; height: 2000px" onload="runTest();">
 <div id="touchtarget">
 
 <p id="description"></p>

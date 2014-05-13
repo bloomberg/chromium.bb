@@ -1,7 +1,12 @@
 <html>
   <head>
     <title>FrameSet Rotation Hit Test</title>
-
+    <style>
+        ::-webkit-scrollbar {
+            width: 0px;
+            height: 0px;
+        }
+    </style>
     <script>
         function init() {
             if (!window.eventSender)
@@ -19,7 +24,7 @@
     </script>
   </head>
   <!--rotate the frameset and translate it to make sure the entire frameset is visible after scaling-->
-  <frameset style="background-color: red; -webkit-transform: rotate(90deg) translate(100px, 0px);" cols="25%,75%">
+  <frameset style="width: 4000px; height: 4000px; background-color: red; -webkit-transform: rotate(90deg) translate(100px, 0px);" cols="25%,75%">
     <frame src="data:text/html,<body bgcolor='green'></body>">
     <frame src="data:text/html,<body bgcolor='green'></body>">
   </frameset>

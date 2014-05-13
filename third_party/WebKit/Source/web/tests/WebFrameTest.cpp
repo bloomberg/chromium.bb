@@ -1591,20 +1591,6 @@ TEST_F(WebFrameTest, setPageScaleFactorWithOverlayScrollbarsDoesNotLayout)
 
 }
 
-TEST_F(WebFrameTest, setPageScaleFactorBeforeFrameHasView)
-{
-    registerMockedHttpURLLoad("fixed_layout.html");
-
-    float pageScaleFactor = 3;
-    FrameTestHelpers::WebViewHelper webViewHelper;
-    webViewHelper.initializeAndLoad("about:html", true, 0, 0);
-    webViewHelper.webView()->setPageScaleFactor(pageScaleFactor);
-
-    FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "fixed_layout.html");
-    WebCore::FrameView* view = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
-    EXPECT_EQ(pageScaleFactor, view->visibleContentScaleFactor());
-}
-
 TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
@@ -2176,6 +2162,7 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
     FrameTestHelpers::WebViewHelper webViewHelper;
     webViewHelper.initialize(true, 0, fakeCompositingWebViewClient.get(), &configueCompositingWebView);
 
+    webViewHelper.webView()->setPageScaleFactorLimits(1, 1);
     webViewHelper.webView()->resize(WebSize(viewWidth, viewHeight));
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "large-div.html");
 

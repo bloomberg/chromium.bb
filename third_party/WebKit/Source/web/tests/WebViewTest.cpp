@@ -746,6 +746,7 @@ TEST_F(WebViewTest, IsSelectionAnchorFirst)
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
     WebFrame* frame = webView->mainFrame();
 
+    webView->setPageScaleFactorLimits(1, 1);
     webView->setInitialFocus(false);
     frame->setEditableSelectionOffsets(4, 10);
     EXPECT_TRUE(webView->isSelectionAnchorFirst());
@@ -1455,6 +1456,7 @@ TEST_F(WebViewTest, SmartClipData)
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("Ahem.ttf"));
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("smartclip.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "smartclip.html");
+    webView->setPageScaleFactorLimits(1, 1);
     webView->resize(WebSize(500, 500));
     webView->layout();
     WebRect cropRect(300, 125, 100, 50);
