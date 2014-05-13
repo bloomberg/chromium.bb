@@ -43,6 +43,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'])
     self.Fail('conformance/textures/copy-tex-image-and-sub-image-2d.html',
         ['win7', 'intel'])
+    self.Fail('conformance/rendering/gl-viewport-test.html',
+        ['win7', 'intel'], bug=372511)
 
     # Mac / Intel failures
     # Radar 13499466
