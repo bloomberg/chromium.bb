@@ -66,7 +66,7 @@ def _ListOverlays(board=None, buildroot=constants.SOURCE_ROOT):
       patterns += ['overlay-variant-%s' % board.replace('_', '-')]
 
   for d in _GLOBAL_OVERLAYS:
-      overlays += glob.glob(d % dict(buildroot=buildroot))
+    overlays += glob.glob(d % dict(buildroot=buildroot))
 
   for p in patterns:
     overlays += glob.glob('%s/src/overlays/%s' % (buildroot, p))
