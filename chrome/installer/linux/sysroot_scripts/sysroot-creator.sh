@@ -1,13 +1,19 @@
-#!/bin/sh
-#
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-#@ This script builds a Debian Wheezy sysroot for building Google Chrome.
+# This script should not be run directly but sourced by the other
+# scripts (e.g. sysroot-creator-trusty.sh).  Its up to the parent scripts
+# to define certain environment variables: e.g.
+#  DIST=trusty
+#  APT_REPO=http://archive.ubuntu.com/ubuntu
+#  KEYRING_FILE=/usr/share/keyrings/ubuntu-archive-keyring.gpg
+#  DEBIAN_PACKAGES="gcc libz libssl"
+
+#@ This script builds a Debian sysroot images for building Google Chrome.
 #@
 #@  Generally this script is invoked as:
-#@  sysroot-creator-debian.wheezy.sh <mode> <args>*
+#@  sysroot-creator-<flavour>.sh <mode> <args>*
 #@  Available modes are shown below.
 #@
 #@ List of modes:
@@ -19,22 +25,40 @@
 set -o nounset
 set -o errexit
 
-readonly SCRIPT_DIR=$(dirname $0)
+SCRIPT_DIR=$(cd $(dirname $0) && pwd)
+
+if [ -z "${DIST:-}" ]; then
+  echo "error: DIST not defined"
+  exit 1
+fi
+
+if [ -z "${APT_REPO:-}" ]; then
+  echo "error: APT_REPO not defined"
+  exit 1
+fi
+
+if [ -z "${KEYRING_FILE:-}" ]; then
+  echo "error: KEYRING_FILE not defined"
+  exit 1
+fi
+
+if [ -z "${DEBIAN_PACKAGES:-}" ]; then
+  echo "error: DEBIAN_PACKAGES not defined"
+  exit 1
+fi
+
+readonly REPO_BASEDIR="${APT_REPO}/dists/${DIST}"
 
 # This is where the staging sysroot is.
-readonly INSTALL_ROOT_AMD64=$(pwd)/debian_wheezy_amd64_staging
-readonly INSTALL_ROOT_I386=$(pwd)/debian_wheezy_i386_staging
-readonly INSTALL_ROOT_ARM=$(pwd)/debian_wheezy_arm_staging
+readonly INSTALL_ROOT_AMD64=$(pwd)/${DIST}_amd64_staging
+readonly INSTALL_ROOT_I386=$(pwd)/${DIST}_i386_staging
+readonly INSTALL_ROOT_ARM=$(pwd)/${DIST}_arm_staging
 
 readonly REQUIRED_TOOLS="wget"
 
 ######################################################################
 # Package Config
 ######################################################################
-
-# This is where we get all the debian packages from.
-readonly DEBIAN_REPO=http://http.us.debian.org/debian
-readonly REPO_BASEDIR="${DEBIAN_REPO}/dists/wheezy"
 
 readonly RELEASE_FILE="Release"
 readonly RELEASE_FILE_GPG="Release.gpg"
@@ -47,174 +71,9 @@ readonly PACKAGE_LIST_AMD64="${REPO_BASEDIR}/${PACKAGE_FILE_AMD64}"
 readonly PACKAGE_LIST_I386="${REPO_BASEDIR}/${PACKAGE_FILE_I386}"
 readonly PACKAGE_LIST_ARM="${REPO_BASEDIR}/${PACKAGE_FILE_ARM}"
 
-# Sysroot packages: these are the packages needed to build chrome.
-# NOTE: When DEBIAN_PACKAGES is modified, the packagelist files must be updated
-# by running this script in GeneratePackageList mode.
-readonly DEBIAN_PACKAGES="\
-  comerr-dev \
-  gcc-4.6 \
-  krb5-multidev \
-  libasound2 \
-  libasound2-dev \
-  libatk1.0-0 \
-  libatk1.0-dev \
-  libavahi-client3 \
-  libavahi-common3 \
-  libc6 \
-  libc6-dev \
-  libcairo2 \
-  libcairo2-dev \
-  libcairo-gobject2 \
-  libcairo-script-interpreter2 \
-  libcap-dev \
-  libcap2 \
-  libcomerr2 \
-  libcups2 \
-  libcups2-dev \
-  libdbus-1-3 \
-  libdbus-1-dev \
-  libdbus-glib-1-2 \
-  libdrm2 \
-  libelf1 \
-  libelf-dev \
-  libexif12 \
-  libexif-dev \
-  libexpat1 \
-  libexpat1-dev \
-  libffi5 \
-  libfontconfig1 \
-  libfontconfig1-dev \
-  libfreetype6 \
-  libfreetype6-dev \
-  libgcc1 \
-  libgcc1 \
-  libgconf-2-4 \
-  libgconf2-4 \
-  libgconf2-dev \
-  libgcrypt11 \
-  libgcrypt11-dev \
-  libgdk-pixbuf2.0-0 \
-  libgdk-pixbuf2.0-dev \
-  libgl1-mesa-dev \
-  libgl1-mesa-glx \
-  libglapi-mesa \
-  libglib2.0-0 \
-  libglib2.0-dev \
-  libgnome-keyring0 \
-  libgnome-keyring-dev \
-  libgnutls26 \
-  libgnutls-dev \
-  libgnutls-openssl27 \
-  libgnutlsxx27 \
-  libgomp1 \
-  libgpg-error0 \
-  libgpg-error-dev \
-  libgssapi-krb5-2 \
-  libgssrpc4 \
-  libgtk2.0-0 \
-  libgtk2.0-dev \
-  libk5crypto3 \
-  libkadm5clnt-mit8 \
-  libkadm5srv-mit8 \
-  libkdb5-6 \
-  libkeyutils1 \
-  libkrb5-3 \
-  libkrb5-dev \
-  libkrb5support0 \
-  libnspr4 \
-  libnspr4-dev \
-  libnss3 \
-  libnss3-dev \
-  libnss-db \
-  liborbit2 \
-  libp11-2 \
-  libp11-kit0 \
-  libpam0g \
-  libpam0g-dev \
-  libpango1.0-0 \
-  libpango1.0-dev \
-  libpci3 \
-  libpci-dev \
-  libpcre3 \
-  libpcre3-dev \
-  libpcrecpp0 \
-  libpixman-1-0 \
-  libpixman-1-dev \
-  libpng12-0 \
-  libpng12-dev \
-  libpulse0 \
-  libpulse-dev \
-  libpulse-mainloop-glib0 \
-  libselinux1 \
-  libspeechd2 \
-  libspeechd-dev \
-  libssl1.0.0 \
-  libssl-dev \
-  libstdc++6 \
-  libstdc++6-4.6-dev \
-  libtasn1-3 \
-  libudev0 \
-  libudev-dev \
-  libx11-6 \
-  libx11-dev \
-  libx11-xcb1 \
-  libxau6 \
-  libxau-dev \
-  libxcb1 \
-  libxcb1-dev \
-  libxcb-glx0 \
-  libxcb-render0 \
-  libxcb-render0-dev \
-  libxcb-shm0 \
-  libxcb-shm0-dev \
-  libxcomposite1 \
-  libxcomposite-dev \
-  libxcursor1 \
-  libxcursor-dev \
-  libxdamage1 \
-  libxdamage-dev \
-  libxdmcp6 \
-  libxext6 \
-  libxext-dev \
-  libxfixes3 \
-  libxfixes-dev \
-  libxi6 \
-  libxi-dev \
-  libxinerama1 \
-  libxinerama-dev \
-  libxrandr2 \
-  libxrandr-dev \
-  libxrender1 \
-  libxrender-dev \
-  libxss1 \
-  libxss-dev \
-  libxt6 \
-  libxt-dev \
-  libxtst6 \
-  libxtst-dev \
-  libxxf86vm1 \
-  linux-libc-dev \
-  mesa-common-dev \
-  speech-dispatcher \
-  x11proto-composite-dev \
-  x11proto-core-dev \
-  x11proto-damage-dev \
-  x11proto-fixes-dev \
-  x11proto-input-dev \
-  x11proto-kb-dev \
-  x11proto-randr-dev \
-  x11proto-record-dev \
-  x11proto-render-dev \
-  x11proto-scrnsaver-dev \
-  x11proto-xext-dev \
-  zlib1g \
-  zlib1g-dev"
-
-DEBIAN_PACKAGES_X86="libquadmath0"
-
-readonly DEBIAN_DEP_LIST_AMD64="packagelist.debian.wheezy.amd64"
-readonly DEBIAN_DEP_LIST_I386="packagelist.debian.wheezy.i386"
-readonly DEBIAN_DEP_LIST_ARM="packagelist.debian.wheezy.arm"
+readonly DEBIAN_DEP_LIST_AMD64="packagelist.${DIST}.amd64"
+readonly DEBIAN_DEP_LIST_I386="packagelist.${DIST}.i386"
+readonly DEBIAN_DEP_LIST_ARM="packagelist.${DIST}.arm"
 
 ######################################################################
 # Helper
@@ -228,14 +87,14 @@ Banner() {
 
 
 SubBanner() {
-  echo "......................................................................"
+  echo "----------------------------------------------------------------------"
   echo $*
-  echo "......................................................................"
+  echo "----------------------------------------------------------------------"
 }
 
 
 Usage() {
-  egrep "^#@" "$0" | cut --bytes=3-
+  egrep "^#@" "${BASH_SOURCE[0]}" | cut --bytes=3-
 }
 
 
@@ -249,7 +108,8 @@ DownloadOrCopy() {
   echo "$1" | grep -qs ^http:// && HTTP=1
   if [ "$HTTP" = "1" ]; then
     SubBanner "downloading from $1 -> $2"
-    wget "$1" -O "$2"
+    wget "$1" -O "${2}.partial"
+    mv "${2}.partial" $2
   else
     SubBanner "copying from $1"
     cp "$1" "$2"
@@ -283,36 +143,24 @@ SetEnvironmentVariables() {
   esac
 }
 
-Cleanup() {
-  echo "Cleaning: $TMP"
-  rm -rf "$TMP"
-}
 
 # some sanity checks to make sure this script is run from the right place
 # with the right tools
 SanityCheck() {
   Banner "Sanity Checks"
 
-  if [ "$(basename $(pwd))" != "sysroot_scripts" ] ; then
-    echo -n "ERROR: run this script from "
-    echo "src/chrome/installer/linux/sysroot_scripts"
-    exit 1
-  fi
-
   if ! mkdir -p "${INSTALL_ROOT}" ; then
      echo "ERROR: ${INSTALL_ROOT} can't be created."
     exit 1
   fi
 
-  TMP=$(mktemp -q -t -d debian-wheezy-XXXXXX)
-  if [ -z "$TMP" ]; then
-    echo "ERROR: temp dir can't be created."
-    exit 1
-  fi
-  trap Cleanup 0
+  CHROME_DIR=$(cd "${SCRIPT_DIR}/../../.." && pwd)
+  BUILD_DIR=${CHROME_DIR}/out/sysroot-build/${DIST}
+  mkdir -p ${BUILD_DIR}
+  echo "Using build directory: ${BUILD_DIR}"
 
   for tool in ${REQUIRED_TOOLS} ; do
-    if ! which ${tool} ; then
+    if ! which ${tool} > /dev/null ; then
       echo "Required binary $tool not found."
       echo "Exiting."
       exit 1
@@ -357,36 +205,33 @@ ExtractPackageBz2() {
 
 GeneratePackageListAmd64() {
   local output_file="$1"
-  local package_list="${TMP}/Packages.wheezy_amd64.bz2"
-  local tmp_package_list="${TMP}/Packages.wheezy_amd64"
+  local package_list="${BUILD_DIR}/Packages.${DIST}_amd64.bz2"
+  local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_amd64"
   DownloadOrCopy "${PACKAGE_LIST_AMD64}" "${package_list}"
   VerifyPackageListing "${PACKAGE_FILE_AMD64}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
-
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
-  ${DEBIAN_PACKAGES_X86}"
+    ${DEBIAN_PACKAGES_X86}"
 }
 
 GeneratePackageListI386() {
   local output_file="$1"
-  local package_list="${TMP}/Packages.wheezy_i386.bz2"
-  local tmp_package_list="${TMP}/Packages.wheezy_amd64"
+  local package_list="${BUILD_DIR}/Packages.${DIST}_i386.bz2"
+  local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_amd64"
   DownloadOrCopy "${PACKAGE_LIST_I386}" "${package_list}"
   VerifyPackageListing "${PACKAGE_FILE_I386}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
-
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
-  ${DEBIAN_PACKAGES_X86}"
+    ${DEBIAN_PACKAGES_X86}"
 }
 
 GeneratePackageListARM() {
   local output_file="$1"
-  local package_list="${TMP}/Packages.wheezy_arm.bz2"
-  local tmp_package_list="${TMP}/Packages.wheezy_arm"
+  local package_list="${BUILD_DIR}/Packages.${DIST}_arm.bz2"
+  local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_arm"
   DownloadOrCopy "${PACKAGE_LIST_ARM}" "${package_list}"
   VerifyPackageListing "${PACKAGE_FILE_ARM}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
-
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}"
 }
 
@@ -480,11 +325,11 @@ HacksAndPatchesARM() {
 InstallIntoSysroot() {
   Banner "Install Libs And Headers Into Jail"
 
-  mkdir -p ${TMP}/debian-packages
+  mkdir -p ${BUILD_DIR}/debian-packages
   mkdir -p ${INSTALL_ROOT}
   while (( "$#" )); do
     local file="$1"
-    local package="${TMP}/debian-packages/${file##*/}"
+    local package="${BUILD_DIR}/debian-packages/${file##*/}"
     shift
     local sha256sum="$1"
     shift
@@ -494,7 +339,7 @@ InstallIntoSysroot() {
     fi
 
     Banner "Installing ${file}"
-    DownloadOrCopy ${DEBIAN_REPO}/pool/${file} ${package}
+    DownloadOrCopy ${APT_REPO}/pool/${file} ${package}
     if [ ! -s "${package}" ] ; then
       echo
       echo "ERROR: bad package ${package}"
@@ -504,7 +349,7 @@ InstallIntoSysroot() {
 
     SubBanner "Extracting to ${INSTALL_ROOT}"
     dpkg --fsys-tarfile ${package}\
-      | tar -xvf - --exclude=./usr/share -C ${INSTALL_ROOT}
+      | tar -xf - --exclude=./usr/share -C ${INSTALL_ROOT}
   done
 }
 
@@ -558,12 +403,12 @@ CleanupJailSymlinks() {
 BuildSysrootAmd64() {
   CheckBuildSysrootArgs $@
   ClearInstallDir
-  local package_file="$TMP/package_with_sha256sum_amd64"
+  local package_file="$BUILD_DIR/package_with_sha256sum_amd64"
   GeneratePackageListAmd64 "$package_file"
   local files_and_sha256sums="$(cat ${package_file})"
   StripChecksumsFromPackageList "$package_file"
   VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_AMD64"
-  InstallIntoSysroot "${files_and_sha256sums}"
+  InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesAmd64
   CreateTarBall "$1"
@@ -576,12 +421,12 @@ BuildSysrootAmd64() {
 BuildSysrootI386() {
   CheckBuildSysrootArgs $@
   ClearInstallDir
-  local package_file="$TMP/package_with_sha256sum_i386"
+  local package_file="$BUILD_DIR/package_with_sha256sum_i386"
   GeneratePackageListI386 "$package_file"
   local files_and_sha256sums="$(cat ${package_file})"
   StripChecksumsFromPackageList "$package_file"
   VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_I386"
-  InstallIntoSysroot "${files_and_sha256sums}"
+  InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesI386
   CreateTarBall "$1"
@@ -594,12 +439,13 @@ BuildSysrootI386() {
 BuildSysrootARM() {
   CheckBuildSysrootArgs $@
   ClearInstallDir
-  local package_file="$TMP/package_with_sha256sum_arm"
+  local package_file="$BUILD_DIR/package_with_sha256sum_arm"
   GeneratePackageListARM "$package_file"
   local files_and_sha256sums="$(cat ${package_file})"
   StripChecksumsFromPackageList "$package_file"
   VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_ARM"
-  InstallIntoSysroot "${files_and_sha256sums}"
+  APT_REPO=${APR_REPO_ARM:=$APT_REPO}
+  InstallIntoSysroot ${files_and_sha256sums}
   CleanupJailSymlinks
   HacksAndPatchesARM
   CreateTarBall "$1"
@@ -611,7 +457,7 @@ BuildSysrootARM() {
 #     Make sure the Debian GPG keys exist. Otherwise print a helpful message.
 #
 CheckForDebianGPGKeyring() {
-  if [ ! -e "/usr/share/keyrings/debian-archive-keyring.gpg" ]; then
+  if [ ! -e "$KEYRING_FILE" ]; then
     echo "Debian GPG keys missing. Install the debian-archive-keyring package."
     exit 1
   fi
@@ -625,16 +471,15 @@ CheckForDebianGPGKeyring() {
 VerifyPackageListing() {
   local file_path=$1
   local output_file=$2
-  local release_file="${TMP}/${RELEASE_FILE}"
-  local release_file_gpg="${TMP}/${RELEASE_FILE_GPG}"
+  local release_file="${BUILD_DIR}/${RELEASE_FILE}"
+  local release_file_gpg="${BUILD_DIR}/${RELEASE_FILE_GPG}"
 
   CheckForDebianGPGKeyring
 
   DownloadOrCopy ${RELEASE_LIST} ${release_file}
   DownloadOrCopy ${RELEASE_LIST_GPG} ${release_file_gpg}
   echo "Verifying: ${release_file} with ${release_file_gpg}"
-  gpgv --keyring /usr/share/keyrings/debian-archive-keyring.gpg \
-       ${release_file_gpg} ${release_file}
+  gpgv --keyring $KEYRING_FILE ${release_file_gpg} ${release_file}
 
   echo "Verifying: ${output_file}"
   local checksums=$(grep ${file_path} ${release_file} | cut -d " " -f 2)
@@ -651,7 +496,7 @@ VerifyPackageListing() {
 #
 # GeneratePackageList
 #
-#     Looks up package names in ${TMP}/Packages and write list of URLs
+#     Looks up package names in ${BUILD_DIR}/Packages and write list of URLs
 #     to output file.
 #
 GeneratePackageList() {
