@@ -272,14 +272,23 @@ gfx::Rect SystemModalContainerLayoutManager::GetUsableDialogArea() {
 
 gfx::Rect SystemModalContainerLayoutManager::GetCenteredAndOrFittedBounds(
     const aura::Window* window) {
+  gfx::Rect target_bounds;
+  gfx::Rect usable_area = GetUsableDialogArea();
   if (window->GetProperty(kCenteredKey)) {
     // Keep the dialog centered if it was centered before.
-    gfx::Rect target_bounds = GetUsableDialogArea();
+    target_bounds = usable_area;
     target_bounds.ClampToCenteredSize(window->bounds().size());
-    return target_bounds;
+  } else {
+    // Keep the dialog within the usable area.
+    target_bounds = window->bounds();
+    target_bounds.AdjustToFit(usable_area);
   }
-  gfx::Rect target_bounds = window->bounds();
-  target_bounds.AdjustToFit(GetUsableDialogArea());
+  if (usable_area != container_->bounds()) {
+    // Don't clamp the dialog for the keyboard. Keep the size as it is but make
+    // sure that the top remains visible.
+    // TODO(skuhne): M37 should add over scroll functionality to address this.
+    target_bounds.set_size(window->bounds().size());
+  }
   return target_bounds;
 }
 
