@@ -30,14 +30,16 @@
 
 namespace WTF {
 
-class TextCodecUTF8 FINAL : public TextCodec {
+class TextCodecUTF8 : public TextCodec {
 public:
     static void registerEncodingNames(EncodingNameRegistrar);
     static void registerCodecs(TextCodecRegistrar);
 
+protected:
+    TextCodecUTF8() : m_partialSequenceSize(0) { }
+
 private:
     static PassOwnPtr<TextCodec> create(const TextEncoding&, const void*);
-    TextCodecUTF8() : m_partialSequenceSize(0) { }
 
     virtual String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) OVERRIDE;
     virtual CString encode(const UChar*, size_t length, UnencodableHandling) OVERRIDE;

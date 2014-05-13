@@ -29,12 +29,12 @@ var korean = {
                 'KSC5601', 'KSC_5601'],
     encoded: ['%A2%E6', '%A1%A4', '%A1%A9', '%A1%AA', '%A1%AD', '%A2%A6',
               '%A2%C1', '%1A',    '%1C',    '%8F%A1', '%B4%D3', '%A2%41'],
-    unicode: ['U+20AC', 'U+00B7', 'U+00AD', 'U+2015', 'U+223C', 'U+FF5E', 
-              'U+2299', 'U+001A', 'U+001C', 'U+B8EA', 'U+B2D2', 'U+C910'] 
+    unicode: ['U+20AC', 'U+00B7', 'U+00AD', 'U+2015', 'U+223C', 'U+FF5E',
+              'U+2299', 'U+001A', 'U+001C', 'U+B8EA', 'U+B2D2', 'U+C910']
 };
 
 batchTestDecode(korean);
-   
+
 // Test that ISO-8859-9 (Turkish) is upgraded to windows-1254 with Euro symbol.
 var turkish = {
   encodings: ['iso-8859-9', 'latin5', 'windows-1254'],
@@ -44,7 +44,7 @@ var turkish = {
 
 batchTestDecode(turkish);
 
-// FIXME: Have to add tests for Euro and a few new characters added to ISO-8859-x 
+// FIXME: Have to add tests for Euro and a few new characters added to ISO-8859-x
 // that are NOT subsets of the corresponding Windows codepages. For instance,
 // ISO-8859-7:2003 has Euro at 0xA4 and a couple of other new characters.
 // ICU 3.8.x or later has them. Perhaps, we need to have a separate test that
@@ -104,6 +104,13 @@ testDecode('csUnicode', '%69%D8%D6%DE', 'U+D869/U+DED6');
 // UTF-16BE and variants.
 testDecode('UTF-16BE', '%D8%69%DE%D6', 'U+D869/U+DED6');
 testDecode('unicodeFFFE', '%D8%69%DE%D6', 'U+D869/U+DED6');
+
+// Replacement encodings should decode as replacement (U+FFFD) then EOF
+testDecode("csiso2022kr", "%41%42%43%61%62%63%31%32%33%A0", "U+FFFD");
+testDecode("hz-gb-2312", "%41%42%43%61%62%63%31%32%33%A0", "U+FFFD");
+testDecode("iso-2022-cn", "%41%42%43%61%62%63%31%32%33%A0", "U+FFFD");
+testDecode("iso-2022-cn-ext", "%41%42%43%61%62%63%31%32%33%A0", "U+FFFD");
+testDecode("iso-2022-kr", "%41%42%43%61%62%63%31%32%33%A0", "U+FFFD");
 
 </script>
 </body>
