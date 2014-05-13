@@ -87,6 +87,10 @@ intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
       return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
                                     static_cast<int>(args.args[1]));
     case __NR_open:
+#if defined(MEMORY_SANITIZER)
+      // http://crbug.com/372840
+      __msan_unpoison_string(reinterpret_cast<const char*>(args.args[0]));
+#endif
       return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
                                   static_cast<int>(args.args[1]));
     case __NR_openat:
