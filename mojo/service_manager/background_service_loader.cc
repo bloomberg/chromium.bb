@@ -91,6 +91,8 @@ void BackgroundServiceLoader::OnServiceErrorOnBackgroundThread(
 
 void BackgroundServiceLoader::ShutdownOnBackgroundThread() {
   delete background_loader_;
+  // Destroy |loader_| on the thread it's actually used on.
+  loader_.reset();
 }
 
 }  // namespace mojo
