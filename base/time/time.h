@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Time represents an absolute point in time, internally represented as
-// microseconds (s/1,000,000) since the Windows epoch (1601-01-01 00:00:00 UTC)
-// (See http://crbug.com/14734).  System-dependent clock interface routines are
-// defined in time_PLATFORM.cc.
+// Time represents an absolute point in coordinated universal time (UTC),
+// internally represented as microseconds (s/1,000,000) since the Windows epoch
+// (1601-01-01 00:00:00 UTC) (See http://crbug.com/14734).  System-dependent
+// clock interface routines are defined in time_PLATFORM.cc.
 //
 // TimeDelta represents a duration of time, internally represented in
 // microseconds.
@@ -208,7 +208,7 @@ inline TimeDelta operator*(int64 a, TimeDelta td) {
 
 // Time -----------------------------------------------------------------------
 
-// Represents a wall clock time.
+// Represents a wall clock time in UTC.
 class BASE_EXPORT Time {
  public:
   static const int64 kMillisecondsPerSecond = 1000;
