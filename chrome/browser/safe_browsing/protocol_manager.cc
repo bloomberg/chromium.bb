@@ -54,6 +54,10 @@ void RecordUpdateResult(UpdateResult result) {
 
 }  // namespace
 
+// The maximum staleness for a cached entry.
+// TODO(shess,mattm): remove this when switching to Safebrowsing API 3.
+static const int kMaxStalenessMinutes = 45;
+
 // Minimum time, in seconds, from start up before we must issue an update query.
 static const int kSbTimerStartIntervalSecMin = 60;
 
@@ -173,7 +177,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
   if (gethash_error_count_ && Time::Now() <= next_gethash_time_) {
     RecordGetHashResult(is_download, GET_HASH_BACKOFF_ERROR);
     std::vector<SBFullHashResult> full_hashes;
-    callback.Run(full_hashes, false);
+    callback.Run(full_hashes, base::TimeDelta());
     return;
   }
   GURL gethash_url = GetHashUrl();
@@ -219,7 +223,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     fetcher.reset(it->first);
     const FullHashDetails& details = it->second;
     std::vector<SBFullHashResult> full_hashes;
-    bool can_cache = false;
+    base::TimeDelta cache_lifetime;
     if (source->GetStatus().is_success() &&
         (source->GetResponseCode() == 200 ||
          source->GetResponseCode() == 204)) {
@@ -229,7 +233,9 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
         RecordGetHashResult(details.is_download, GET_HASH_STATUS_200);
       else
         RecordGetHashResult(details.is_download, GET_HASH_STATUS_204);
-      can_cache = true;
+      // In SB 3, cache lifetime will be part of the protocol message. For
+      // now, use the old value of 45 minutes.
+      cache_lifetime = base::TimeDelta::FromMinutes(kMaxStalenessMinutes);
       gethash_error_count_ = 0;
       gethash_back_off_mult_ = 1;
       SafeBrowsingProtocolParser parser;
@@ -242,7 +248,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       if (!parsed_ok) {
         full_hashes.clear();
         RecordGetHashResult(details.is_download, GET_HASH_PARSE_ERROR);
-        // TODO(cbentzel): Should can_cache be set to false here? (See
+        // TODO(cbentzel): Should cache_lifetime be set to 0 here? (See
         // http://crbug.com/360232.)
       }
     } else {
@@ -261,7 +267,7 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     // Invoke the callback with full_hashes, even if there was a parse error or
     // an error response code (in which case full_hashes will be empty). The
     // caller can't be blocked indefinitely.
-    details.callback.Run(full_hashes, can_cache);
+    details.callback.Run(full_hashes, cache_lifetime);
 
     hash_requests_.erase(it);
   } else {

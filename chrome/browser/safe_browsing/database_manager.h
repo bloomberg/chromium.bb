@@ -179,10 +179,9 @@ class SafeBrowsingDatabaseManager
 
   // Called on the IO thread when the SafeBrowsingProtocolManager has received
   // the full hash results for prefix hits detected in the database.
-  void HandleGetHashResults(
-      SafeBrowsingCheck* check,
-      const std::vector<SBFullHashResult>& full_hashes,
-      bool can_cache);
+  void HandleGetHashResults(SafeBrowsingCheck* check,
+                            const std::vector<SBFullHashResult>& full_hashes,
+                            const base::TimeDelta& cache_lifetime);
 
   // Log the user perceived delay caused by SafeBrowsing. This delay is the time
   // delta starting from when we would have started reading data from the
@@ -287,10 +286,6 @@ class SafeBrowsingDatabaseManager
   // Runs on the db thread to reset the database. We assume that resetting the
   // database is a synchronous operation.
   void OnResetDatabase();
-
-  // Store in-memory the GetHash response. Runs on the database thread.
-  void CacheHashResults(const std::vector<SBPrefix>& prefixes,
-                        const std::vector<SBFullHashResult>& full_hashes);
 
   // Internal worker function for processing full hashes.
   void OnHandleGetHashResults(SafeBrowsingCheck* check,

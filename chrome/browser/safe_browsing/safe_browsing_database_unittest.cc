@@ -22,8 +22,11 @@
 #include "url/gurl.h"
 
 using base::Time;
+using base::TimeDelta;
 
 namespace {
+
+const TimeDelta kCacheLifetime = TimeDelta::FromMinutes(45);
 
 SBPrefix SBPrefixForString(const std::string& str) {
   return SBFullHashForString(str).prefix;
@@ -552,51 +555,40 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
   EXPECT_EQ(lists[0].adds, "1-3,7");
   EXPECT_TRUE(lists[0].subs.empty());
 
-  const Time now = Time::Now();
   std::vector<SBFullHashResult> cached_hashes;
   std::vector<SBPrefix> prefix_hits;
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cached_hashes));
   EXPECT_EQ(prefix_hits[0], SBPrefixForString("www.evil.com/phishing.html"));
   EXPECT_EQ(prefix_hits.size(), 1U);
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/malware.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/notevil1.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/notevil1.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/notevil2.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/good1.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/good1.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/good2.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/good2.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://192.168.0.1/malware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://192.168.0.1/malware.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/"), &prefix_hits, &cached_hashes));
   EXPECT_TRUE(prefix_hits.empty());
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/robots.txt"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/robots.txt"), &prefix_hits, &cached_hashes));
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/evil.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/evil.html"), &prefix_hits, &cached_hashes));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(prefix_hits[0], SBPrefixForString("www.evil.com/evil.html"));
 
@@ -629,27 +621,22 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
   database_->UpdateFinished(true);
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cached_hashes));
   EXPECT_EQ(prefix_hits[0], SBPrefixForString("www.evil.com/phishing.html"));
   EXPECT_EQ(prefix_hits.size(), 1U);
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/notevil1.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/notevil1.html"), &prefix_hits, &cached_hashes));
   EXPECT_TRUE(prefix_hits.empty());
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/notevil2.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/good1.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/good1.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/good2.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/good2.html"), &prefix_hits, &cached_hashes));
 
   GetListsInfo(&lists);
   EXPECT_TRUE(lists[0].name == safe_browsing_util::kMalwareList);
@@ -677,16 +664,13 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
   database_->UpdateFinished(true);
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/notevil2.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/good1.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/good1.html"), &prefix_hits, &cached_hashes));
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/good2.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/good2.html"), &prefix_hits, &cached_hashes));
 
   GetListsInfo(&lists);
   EXPECT_TRUE(lists[0].name == safe_browsing_util::kMalwareList);
@@ -731,7 +715,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
       GURL("http://www.notevilanymore.com/index.html"),
-      &prefix_hits, &cached_hashes, now));
+      &prefix_hits, &cached_hashes));
 
   // Now insert the tardy add chunk and we don't expect them to appear
   // in database because of the previous sub chunk.
@@ -747,11 +731,11 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
       GURL("http://www.notevilanymore.com/index.html"),
-      &prefix_hits, &cached_hashes, now));
+      &prefix_hits, &cached_hashes));
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
       GURL("http://www.notevilanymore.com/good.html"),
-      &prefix_hits, &cached_hashes, now));
+      &prefix_hits, &cached_hashes));
 
   // Reset and reload the database.  The database will rely on the prefix set.
   database_.reset(new SafeBrowsingDatabaseNew);
@@ -759,20 +743,17 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseDatabase) {
 
   // Check that a prefix still hits.
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cached_hashes));
   EXPECT_EQ(prefix_hits[0], SBPrefixForString("www.evil.com/phishing.html"));
   EXPECT_EQ(prefix_hits.size(), 1U);
 
   // Also check that it's not just always returning true in this case.
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/"), &prefix_hits, &cached_hashes));
 
   // Check that the full hash is still present.
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/evil.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/evil.html"), &prefix_hits, &cached_hashes));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(prefix_hits[0], SBPrefixForString("www.evil.com/evil.html"));
 }
@@ -845,15 +826,14 @@ TEST_F(SafeBrowsingDatabaseTest, ZeroSizeChunk) {
   database_->InsertChunks(safe_browsing_util::kMalwareList, chunks);
   database_->UpdateFinished(true);
 
-  const Time now = Time::Now();
   std::vector<SBFullHashResult> cached_hashes;
   std::vector<SBPrefix> prefix_hits;
   EXPECT_TRUE(database_->ContainsBrowseUrl(
       GURL("http://www.notempty.com/full1.html"),
-      &prefix_hits, &cached_hashes, now));
+      &prefix_hits, &cached_hashes));
   EXPECT_TRUE(database_->ContainsBrowseUrl(
       GURL("http://www.notempty.com/full2.html"),
-      &prefix_hits, &cached_hashes, now));
+      &prefix_hits, &cached_hashes));
 
   GetListsInfo(&lists);
   EXPECT_EQ(lists[0].adds, "1,10,19-22");
@@ -904,7 +884,7 @@ void SafeBrowsingDatabaseTest::PopulateDatabaseForCacheTest() {
   results.push_back(full_hash);
 
   std::vector<SBPrefix> prefixes;
-  database_->CacheHashResults(prefixes, results);
+  database_->CacheHashResults(prefixes, results, kCacheLifetime);
 }
 
 TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
@@ -917,8 +897,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   std::vector<SBPrefix> prefixes;
   std::vector<SBFullHashResult> cached_hashes;
   database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing.html"),
-      &prefixes, &cached_hashes, Time::Now());
+      GURL("http://www.evil.com/phishing.html"), &prefixes, &cached_hashes);
   ASSERT_EQ(1U, cached_hashes.size());
   EXPECT_TRUE(
       SBFullHashEqual(cached_hashes[0].hash,
@@ -929,8 +908,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
 
   // Test the cache lookup for the second prefix.
   database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefixes, &cached_hashes, Time::Now());
+      GURL("http://www.evil.com/malware.html"), &prefixes, &cached_hashes);
   ASSERT_EQ(1U, cached_hashes.size());
   EXPECT_TRUE(
       SBFullHashEqual(cached_hashes[0].hash,
@@ -953,8 +931,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
 
   // This prefix should still be there, but the fullhash is gone.
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL("http://www.evil.com/malware.html"), &prefixes, &cached_hashes));
   ASSERT_EQ(1U, prefixes.size());
   EXPECT_EQ(SBPrefixForString("www.evil.com/malware.html"), prefixes[0]);
   EXPECT_TRUE(cached_hashes.empty());
@@ -963,8 +940,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
 
   // This prefix should be gone.
   database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing.html"),
-      &prefixes, &cached_hashes, Time::Now());
+      GURL("http://www.evil.com/phishing.html"), &prefixes, &cached_hashes);
   EXPECT_TRUE(cached_hashes.empty());
 
   prefixes.clear();
@@ -975,8 +951,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   AddDelChunk(safe_browsing_util::kMalwareList, 1);
   database_->UpdateFinished(true);
   database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefixes, &cached_hashes, Time::Now());
+      GURL("http://www.evil.com/malware.html"), &prefixes, &cached_hashes);
   EXPECT_TRUE(cached_hashes.empty());
   EXPECT_TRUE(database_->cached_browse_hashes_.empty());
 
@@ -991,27 +966,25 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   std::vector<SBFullHashCached>* hash_cache = &database_->cached_browse_hashes_;
   EXPECT_EQ(2U, hash_cache->size());
 
-  // Now adjust one of the entries times to be in the past.
-  base::Time expired = base::Time::Now() - base::TimeDelta::FromMinutes(60);
+  // Now adjust one of the entries times to be expired.
+  const Time expired = Time::Now() - TimeDelta::FromMinutes(1);
   const SBPrefix key = SBPrefixForString("www.evil.com/malware.html");
   std::vector<SBFullHashCached>::iterator iter;
   for (iter = hash_cache->begin(); iter != hash_cache->end(); ++iter) {
     if (iter->hash.prefix == key) {
-      iter->received = static_cast<int32>(expired.ToTimeT());
+      iter->expire_after = expired;
       break;
     }
   }
   EXPECT_TRUE(iter != hash_cache->end());
 
   database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefixes, &cached_hashes, expired);
+      GURL("http://www.evil.com/malware.html"), &prefixes, &cached_hashes);
   EXPECT_TRUE(cached_hashes.empty());
 
   // This entry should still exist.
   database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing.html"),
-      &prefixes, &cached_hashes, expired);
+      GURL("http://www.evil.com/phishing.html"), &prefixes, &cached_hashes);
   EXPECT_EQ(1U, cached_hashes.size());
 
   // Testing prefix miss caching. First, we clear out the existing database,
@@ -1026,7 +999,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   prefix_misses.push_back(SBPrefixForString("http://www.bad.com/malware.html"));
   prefix_misses.push_back(
       SBPrefixForString("http://www.bad.com/phishing.html"));
-  database_->CacheHashResults(prefix_misses, empty_full_hash);
+  database_->CacheHashResults(prefix_misses, empty_full_hash, kCacheLifetime);
 
   // Prefixes with no full results are misses.
   EXPECT_EQ(2U, database_->prefix_miss_cache_.size());
@@ -1045,10 +1018,9 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   prefix_misses.clear();
   empty_full_hash.clear();
   prefix_misses.push_back(SBPrefixForString("www.evil.com/phishing.html"));
-  database_->CacheHashResults(prefix_misses, empty_full_hash);
+  database_->CacheHashResults(prefix_misses, empty_full_hash, kCacheLifetime);
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing.html"),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL("http://www.evil.com/phishing.html"), &prefixes, &cached_hashes));
 
   prefixes.clear();
   cached_hashes.clear();
@@ -1065,8 +1037,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   database_->UpdateFinished(true);
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.fullevil.com/bad1.html"),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL("http://www.fullevil.com/bad1.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(cached_hashes.empty());
   ASSERT_EQ(1U, prefixes.size());
   EXPECT_EQ(SBPrefixForString("www.fullevil.com/bad1.html"), prefixes[0]);
@@ -1074,8 +1045,7 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   cached_hashes.clear();
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.fullevil.com/bad2.html"),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL("http://www.fullevil.com/bad2.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(cached_hashes.empty());
   ASSERT_EQ(1U, prefixes.size());
   EXPECT_EQ(SBPrefixForString("www.fullevil.com/bad2.html"), prefixes[0]);
@@ -1094,14 +1064,12 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   database_->UpdateFinished(true);
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.fullevil.com/bad1.html"),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL("http://www.fullevil.com/bad1.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(cached_hashes.empty());
 
   // There should be one remaining full add.
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.fullevil.com/bad2.html"),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL("http://www.fullevil.com/bad2.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(cached_hashes.empty());
   ASSERT_EQ(1U, prefixes.size());
   EXPECT_EQ(SBPrefixForString("www.fullevil.com/bad2.html"), prefixes[0]);
@@ -1114,11 +1082,9 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
   database_->UpdateFinished(true);
 
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.fullevil.com/bad1.html"),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL("http://www.fullevil.com/bad1.html"), &prefixes, &cached_hashes));
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.fullevil.com/bad2.html"),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL("http://www.fullevil.com/bad2.html"), &prefixes, &cached_hashes));
 
   // Add a fullhash which has a prefix collision for a known url.
   static const char kExampleFine[] = "www.example.com/fine.html";
@@ -1143,14 +1109,14 @@ TEST_F(SafeBrowsingDatabaseTest, HashCaching) {
     result.hash = SBFullHashForString(kExampleCollision);
     result.list_id = safe_browsing_util::MALWARE;
     database_->CacheHashResults(std::vector<SBPrefix>(1, result.hash.prefix),
-                                std::vector<SBFullHashResult>(1, result));
+                                std::vector<SBFullHashResult>(1, result),
+                                kCacheLifetime);
   }
 
   // Expect a prefix hit due to the collision between |kExampleFine| and
   // |kExampleCollision|, with the gethash showing only |kExampleCollision|.
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL(std::string("http://") + kExampleFine),
-      &prefixes, &cached_hashes, Time::Now()));
+      GURL(std::string("http://") + kExampleFine), &prefixes, &cached_hashes));
   ASSERT_EQ(1U, prefixes.size());
   EXPECT_EQ(SBPrefixForString(kExampleFine), prefixes[0]);
   ASSERT_EQ(1U, cached_hashes.size());
@@ -1601,23 +1567,18 @@ TEST_F(SafeBrowsingDatabaseTest, SameHostEntriesOkay) {
   EXPECT_EQ(std::string(safe_browsing_util::kPhishingList), lists[1].name);
   EXPECT_EQ("47", lists[1].adds);
 
-  const Time now = Time::Now();
   std::vector<SBPrefix> prefixes;
   std::vector<SBFullHashResult> cached_hashes;
   std::vector<SBPrefix> prefix_hits;
 
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware1.html"),
-      &prefixes, &cached_hashes, now));
+      GURL("http://www.evil.com/malware1.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware2.html"),
-      &prefixes, &cached_hashes, now));
+      GURL("http://www.evil.com/malware2.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing1.html"),
-      &prefixes, &cached_hashes, now));
+      GURL("http://www.evil.com/phishing1.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing2.html"),
-      &prefixes, &cached_hashes, now));
+      GURL("http://www.evil.com/phishing2.html"), &prefixes, &cached_hashes));
 
   // Test removing a single prefix from the add chunk.
   // Remove the prefix that added first.
@@ -1642,17 +1603,13 @@ TEST_F(SafeBrowsingDatabaseTest, SameHostEntriesOkay) {
 
   // Verify that the database contains urls expected.
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware1.html"),
-      &prefixes, &cached_hashes, now));
+      GURL("http://www.evil.com/malware1.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware2.html"),
-      &prefixes, &cached_hashes, now));
+      GURL("http://www.evil.com/malware2.html"), &prefixes, &cached_hashes));
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing1.html"),
-      &prefixes, &cached_hashes, now));
+      GURL("http://www.evil.com/phishing1.html"), &prefixes, &cached_hashes));
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/phishing2.html"),
-      &prefixes, &cached_hashes, now));
+      GURL("http://www.evil.com/phishing2.html"), &prefixes, &cached_hashes));
 }
 
 // Test that an empty update doesn't actually update the database.
@@ -1679,8 +1636,8 @@ TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
   // the file has been updated.
   base::File::Info before_info, after_info;
   ASSERT_TRUE(base::GetFileInfo(filename, &before_info));
-  const base::Time old_last_modified =
-      before_info.last_modified - base::TimeDelta::FromSeconds(10);
+  const Time old_last_modified =
+      before_info.last_modified - TimeDelta::FromSeconds(10);
 
   // Inserting another chunk updates the database file.  The sleep is
   // needed because otherwise the entire test can finish w/in the
@@ -1738,15 +1695,12 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
   }
 
   // Find the malware url in the database, don't find a good url.
-  const Time now = Time::Now();
   std::vector<SBFullHashResult> cached_hashes;
   std::vector<SBPrefix> prefix_hits;
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/malware.html"), &prefix_hits, &cached_hashes));
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/goodware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/goodware.html"), &prefix_hits, &cached_hashes));
 
   base::FilePath filter_file = database_->PrefixSetForFilename(
       database_->BrowseDBFilename(database_filename_));
@@ -1757,11 +1711,9 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
   database_.reset(new SafeBrowsingDatabaseNew);
   database_->Init(database_filename_);
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/malware.html"), &prefix_hits, &cached_hashes));
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/goodware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/goodware.html"), &prefix_hits, &cached_hashes));
 
   // If there is no filter file, the database cannot find malware urls.
   base::DeleteFile(filter_file, false);
@@ -1769,11 +1721,9 @@ TEST_F(SafeBrowsingDatabaseTest, FilterFile) {
   database_.reset(new SafeBrowsingDatabaseNew);
   database_->Init(database_filename_);
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/malware.html"), &prefix_hits, &cached_hashes));
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.good.com/goodware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.good.com/goodware.html"), &prefix_hits, &cached_hashes));
 }
 
 TEST_F(SafeBrowsingDatabaseTest, MalwareIpBlacklist) {
@@ -1915,14 +1865,12 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsBrowseURL) {
 
   database_->UpdateFinished(true);
 
-  const Time now = Time::Now();
   std::vector<SBFullHashResult> cached_hashes;
   std::vector<SBPrefix> prefix_hits;
 
   // Anything will hit the host prefix.
   EXPECT_TRUE(database_->ContainsBrowseUrl(
-      GURL("http://www.evil.com/malware.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.evil.com/malware.html"), &prefix_hits, &cached_hashes));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString("www.evil.com/"), prefix_hits[0]);
   EXPECT_TRUE(cached_hashes.empty());
@@ -1930,22 +1878,21 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsBrowseURL) {
   // Hit the specific URL prefix.
   EXPECT_TRUE(database_->ContainsBrowseUrl(
       GURL(std::string("http://") + kWhateverMalware),
-      &prefix_hits, &cached_hashes, now));
+      &prefix_hits, &cached_hashes));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kWhateverMalware), prefix_hits[0]);
   EXPECT_TRUE(cached_hashes.empty());
 
   // Other URLs at that host are fine.
   EXPECT_FALSE(database_->ContainsBrowseUrl(
-      GURL("http://www.whatever.com/fine.html"),
-      &prefix_hits, &cached_hashes, now));
+      GURL("http://www.whatever.com/fine.html"), &prefix_hits, &cached_hashes));
   EXPECT_TRUE(prefix_hits.empty());
   EXPECT_TRUE(cached_hashes.empty());
 
   // Hit the specific URL full hash.
   EXPECT_TRUE(database_->ContainsBrowseUrl(
       GURL(std::string("http://") + kExampleCollision),
-      &prefix_hits, &cached_hashes, now));
+      &prefix_hits, &cached_hashes));
   ASSERT_EQ(1U, prefix_hits.size());
   EXPECT_EQ(SBPrefixForString(kExampleCollision), prefix_hits[0]);
   EXPECT_TRUE(cached_hashes.empty());
@@ -1953,5 +1900,5 @@ TEST_F(SafeBrowsingDatabaseTest, ContainsBrowseURL) {
   // This prefix collides, but no full hash match.
   EXPECT_FALSE(database_->ContainsBrowseUrl(
       GURL(std::string("http://") + kExampleFine),
-      &prefix_hits, &cached_hashes, now));
+      &prefix_hits, &cached_hashes));
 }

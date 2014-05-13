@@ -59,10 +59,10 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // Parameters:
   //   - The vector of full hash results. If empty, indicates that there
   //     were no matches, and that the resource is safe.
-  //   - Whether the result can be cached. This may not be the case when
-  //     the result did not come from the SB server, for example.
+  //   - The cache lifetime of the result. A lifetime of 0 indicates the results
+  //     should not be cached.
   typedef base::Callback<void(const std::vector<SBFullHashResult>&,
-                              bool)> FullHashCallback;
+                              const base::TimeDelta&)> FullHashCallback;
 
   virtual ~SafeBrowsingProtocolManager();
 

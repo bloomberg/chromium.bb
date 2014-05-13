@@ -56,7 +56,7 @@ namespace {
 void InvokeFullHashCallback(
     SafeBrowsingProtocolManager::FullHashCallback callback,
     const std::vector<SBFullHashResult>& result) {
-  callback.Run(result, true);
+  callback.Run(result, base::TimeDelta::FromMinutes(45));
 }
 
 class FakeSafeBrowsingService : public SafeBrowsingService {
@@ -115,10 +115,10 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
   // Called on the IO thread to check if the given URL is safe or not.  If we
   // can synchronously determine that the URL is safe, CheckUrl returns true,
   // otherwise it returns false.
-  virtual bool ContainsBrowseUrl(const GURL& url,
-                                 std::vector<SBPrefix>* prefix_hits,
-                                 std::vector<SBFullHashResult>* cached_hits,
-                                 base::Time last_update) OVERRIDE {
+  virtual bool ContainsBrowseUrl(
+      const GURL& url,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cached_hits) OVERRIDE {
     std::vector<GURL> urls(1, url);
     return ContainsUrl(safe_browsing_util::MALWARE,
                        safe_browsing_util::PHISH,
@@ -172,8 +172,10 @@ class TestSafeBrowsingDatabase :  public SafeBrowsingDatabase {
   virtual void UpdateFinished(bool update_succeeded) OVERRIDE {
     ADD_FAILURE() << "Not implemented.";
   }
-  virtual void CacheHashResults(const std::vector<SBPrefix>& prefixes,
-      const std::vector<SBFullHashResult>& full_hits) OVERRIDE {
+  virtual void CacheHashResults(
+      const std::vector<SBPrefix>& prefixes,
+      const std::vector<SBFullHashResult>& full_hits,
+      const base::TimeDelta& cache_lifetime) OVERRIDE {
     // Do nothing for the cache.
   }
   virtual bool IsMalwareIPMatchKillSwitchOn() OVERRIDE {

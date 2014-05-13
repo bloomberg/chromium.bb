@@ -362,8 +362,7 @@ bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   std::vector<SBFullHashResult> cached_hits;
 
   bool prefix_match =
-      database_->ContainsBrowseUrl(url, &prefix_hits, &cached_hits,
-          sb_service_->protocol_manager()->last_update());
+      database_->ContainsBrowseUrl(url, &prefix_hits, &cached_hits);
 
   UMA_HISTOGRAM_TIMES("SB2.FilterCheck", base::TimeTicks::Now() - start);
 
@@ -415,7 +414,7 @@ void SafeBrowsingDatabaseManager::CancelCheck(Client* client) {
 void SafeBrowsingDatabaseManager::HandleGetHashResults(
     SafeBrowsingCheck* check,
     const std::vector<SBFullHashResult>& full_hashes,
-    bool can_cache) {
+    const base::TimeDelta& cache_lifetime) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (!enabled_)
@@ -433,10 +432,9 @@ void SafeBrowsingDatabaseManager::HandleGetHashResults(
   std::vector<SBPrefix> prefixes = check->prefix_hits;
   OnHandleGetHashResults(check, full_hashes);  // 'check' is deleted here.
 
-  if (can_cache && MakeDatabaseAvailable()) {
-    // Cache the GetHash results in memory:
-    database_->CacheHashResults(prefixes, full_hashes);
-  }
+  // Cache the GetHash results.
+  if (cache_lifetime != base::TimeDelta() && MakeDatabaseAvailable())
+    database_->CacheHashResults(prefixes, full_hashes, cache_lifetime);
 }
 
 void SafeBrowsingDatabaseManager::GetChunks(GetChunksCallback callback) {
@@ -840,14 +838,6 @@ void SafeBrowsingDatabaseManager::OnResetDatabase() {
   DCHECK_EQ(base::MessageLoop::current(),
             safe_browsing_thread_->message_loop());
   GetDatabase()->ResetDatabase();
-}
-
-void SafeBrowsingDatabaseManager::CacheHashResults(
-  const std::vector<SBPrefix>& prefixes,
-  const std::vector<SBFullHashResult>& full_hashes) {
-  DCHECK_EQ(base::MessageLoop::current(),
-            safe_browsing_thread_->message_loop());
-  GetDatabase()->CacheHashResults(prefixes, full_hashes);
 }
 
 void SafeBrowsingDatabaseManager::OnHandleGetHashResults(

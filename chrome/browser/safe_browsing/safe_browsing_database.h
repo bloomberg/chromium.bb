@@ -16,11 +16,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 
 namespace base {
 class MessageLoop;
-class Time;
 }
 
 namespace safe_browsing {
@@ -55,7 +55,7 @@ class SafeBrowsingDatabaseFactory {
 struct SBFullHashCached {
   SBFullHash hash;
   int list_id;  // TODO(shess): Use safe_browsing_util::ListType.
-  int received;  // time_t like SBAddFullHash.
+  base::Time expire_after;
 };
 
 // Encapsulates on-disk databases that for safebrowsing. There are
@@ -107,10 +107,10 @@ class SafeBrowsingDatabase {
   // then |prefix_hits| contains the list of prefix matches, and |cached_hits|
   // contains the cached gethash results for those prefixes (if any).  This
   // function is safe to call from threads other than the creation thread.
-  virtual bool ContainsBrowseUrl(const GURL& url,
-                                 std::vector<SBPrefix>* prefix_hits,
-                                 std::vector<SBFullHashResult>* cached_hits,
-                                 base::Time last_update) = 0;
+  virtual bool ContainsBrowseUrl(
+      const GURL& url,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cached_hits) = 0;
 
   // Returns false if none of |urls| are in Download database. If it returns
   // true, |prefix_hits| should contain the prefixes for the URLs that were in
@@ -182,7 +182,8 @@ class SafeBrowsingDatabase {
   // further GetHash requests we know will be empty.
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
-      const std::vector<SBFullHashResult>& full_hits) = 0;
+      const std::vector<SBFullHashResult>& full_hits,
+      const base::TimeDelta& cache_lifetime) = 0;
 
   // Returns true if the malware IP blacklisting killswitch URL is present
   // in the csd whitelist.
@@ -298,10 +299,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Implement SafeBrowsingDatabase interface.
   virtual void Init(const base::FilePath& filename) OVERRIDE;
   virtual bool ResetDatabase() OVERRIDE;
-  virtual bool ContainsBrowseUrl(const GURL& url,
-                                 std::vector<SBPrefix>* prefix_hits,
-                                 std::vector<SBFullHashResult>* cached_hits,
-                                 base::Time last_update) OVERRIDE;
+  virtual bool ContainsBrowseUrl(
+      const GURL& url,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cached_hits) OVERRIDE;
   virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
                                    std::vector<SBPrefix>* prefix_hits) OVERRIDE;
   virtual bool ContainsCsdWhitelistedUrl(const GURL& url) OVERRIDE;
@@ -321,7 +322,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual void UpdateFinished(bool update_succeeded) OVERRIDE;
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
-      const std::vector<SBFullHashResult>& full_hits) OVERRIDE;
+      const std::vector<SBFullHashResult>& full_hits,
+      const base::TimeDelta& cache_lifetime) OVERRIDE;
 
   // Returns the value of malware_kill_switch_;
   virtual bool IsMalwareIPMatchKillSwitchOn() OVERRIDE;

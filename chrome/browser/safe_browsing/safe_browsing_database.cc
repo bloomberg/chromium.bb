@@ -66,9 +66,6 @@ const base::FilePath::CharType kIPBlacklistDBFile[] =
 // this.
 const base::FilePath::CharType kBrowseDBFile[] = FILE_PATH_LITERAL(" Bloom");
 
-// The maximum staleness for a cached entry.
-const int kMaxStalenessMinutes = 45;
-
 // Maximum number of entries we allow in any of the whitelists.
 // If a whitelist on disk contains more entries then all lookups to
 // the whitelist will be considered a match.
@@ -196,10 +193,8 @@ bool MatchAddPrefixes(SafeBrowsingStore* store,
 void GetCachedFullHashesForBrowse(
     const std::vector<SBPrefix>& prefix_hits,
     const std::vector<SBFullHashCached>& full_hashes,
-    std::vector<SBFullHashResult>* full_hits,
-    base::Time last_update) {
-  const base::Time expire_time =
-      base::Time::Now() - base::TimeDelta::FromMinutes(kMaxStalenessMinutes);
+    std::vector<SBFullHashResult>* full_hits) {
+  const base::Time now = base::Time::Now();
 
   std::vector<SBPrefix>::const_iterator piter = prefix_hits.begin();
   std::vector<SBFullHashCached>::const_iterator hiter = full_hashes.begin();
@@ -210,8 +205,7 @@ void GetCachedFullHashesForBrowse(
     } else if (hiter->hash.prefix < *piter) {
       ++hiter;
     } else {
-      if (expire_time < last_update ||
-          expire_time.ToTimeT() < hiter->received) {
+      if (now <= hiter->expire_after) {
         SBFullHashResult result;
         result.list_id = hiter->list_id;
         result.hash = hiter->hash;
@@ -657,8 +651,7 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
 bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
     const GURL& url,
     std::vector<SBPrefix>* prefix_hits,
-    std::vector<SBFullHashResult>* cached_hits,
-    base::Time last_update) {
+    std::vector<SBFullHashResult>* cached_hits) {
   // Clear the results first.
   prefix_hits->clear();
   cached_hits->clear();
@@ -695,7 +688,7 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
   // Find matching cached gethash responses.
   std::sort(prefix_hits->begin(), prefix_hits->end());
   GetCachedFullHashesForBrowse(*prefix_hits, cached_browse_hashes_,
-                               cached_hits, last_update);
+                               cached_hits);
 
   return true;
 }
@@ -1025,7 +1018,10 @@ void SafeBrowsingDatabaseNew::DeleteChunks(
 
 void SafeBrowsingDatabaseNew::CacheHashResults(
     const std::vector<SBPrefix>& prefixes,
-    const std::vector<SBFullHashResult>& full_hits) {
+    const std::vector<SBFullHashResult>& full_hits,
+    const base::TimeDelta& cache_lifetime) {
+  const base::Time expire_after = base::Time::Now() + cache_lifetime;
+
   // This is called on the I/O thread, lock against updates.
   base::AutoLock locked(lookup_lock_);
 
@@ -1034,7 +1030,6 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
     return;
   }
 
-  const base::Time now = base::Time::Now();
   const size_t orig_size = cached_browse_hashes_.size();
   for (std::vector<SBFullHashResult>::const_iterator iter = full_hits.begin();
        iter != full_hits.end(); ++iter) {
@@ -1043,7 +1038,7 @@ void SafeBrowsingDatabaseNew::CacheHashResults(
       SBFullHashCached cached_hash;
       cached_hash.hash = iter->hash;
       cached_hash.list_id = iter->list_id;
-      cached_hash.received = static_cast<int>(now.ToTimeT());
+      cached_hash.expire_after = expire_after;
       cached_browse_hashes_.push_back(cached_hash);
     }
   }
