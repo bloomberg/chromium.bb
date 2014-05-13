@@ -10,6 +10,7 @@ import errno
 import logging
 import optparse
 import os
+import re
 import tempfile
 import time
 import subprocess
@@ -151,6 +152,10 @@ class Mirror(object):
     self.mirror_path = os.path.join(self.GetCachePath(), self.basedir)
     self.print = print_func or print
 
+  @classmethod
+  def FromPath(cls, path):
+    return cls(cls.CacheDirToUrl(path))
+
   @staticmethod
   def UrlToCacheDir(url):
     """Convert a git url to a normalized form for the cache dir path."""
@@ -159,6 +164,12 @@ class Mirror(object):
     if norm_url.endswith('.git'):
       norm_url = norm_url[:-len('.git')]
     return norm_url.replace('-', '--').replace('/', '-').lower()
+
+  @staticmethod
+  def CacheDirToUrl(path):
+    """Convert a cache dir path to its corresponding url."""
+    netpath = re.sub(r'\b-\b', '/', os.path.basename(path)).replace('--', '-')
+    return 'https://%s' % netpath
 
   @staticmethod
   def FindExecutable(executable):
@@ -346,12 +357,41 @@ class Mirror(object):
     gsutil.call('cp', tmp_zipfile, dest_name)
     os.remove(tmp_zipfile)
 
+
+  @staticmethod
+  def BreakLocks(path):
+    did_unlock = False
+    lf = Lockfile(path)
+    if lf.break_lock():
+      did_unlock = True
+    # Look for lock files that might have been left behind by an interrupted
+    # git process.
+    lf = os.path.join(path, 'config.lock')
+    if os.path.exists(lf):
+      os.remove(lf)
+      did_unlock = True
+    return did_unlock
+
   def unlock(self):
-    lf = Lockfile(self.mirror_path)
-    config_lock = os.path.join(self.mirror_path, 'config.lock')
-    if os.path.exists(config_lock):
-      os.remove(config_lock)
-    lf.break_lock()
+    return self.BreakLocks(self.mirror_path)
+
+  @classmethod
+  def UnlockAll(cls):
+    cachepath = cls.GetCachePath()
+    dirlist = os.listdir(cachepath)
+    repo_dirs = set([os.path.join(cachepath, path) for path in dirlist
+                     if os.path.isdir(os.path.join(cachepath, path))])
+    for dirent in dirlist:
+      if (dirent.endswith('.lock') and
+          os.path.isfile(os.path.join(cachepath, dirent))):
+        repo_dirs.add(os.path.join(cachepath, dirent[:-5]))
+
+    unlocked_repos = []
+    for repo_dir in repo_dirs:
+      if cls.BreakLocks(repo_dir):
+        unlocked_repos.append(repo_dir)
+
+    return unlocked_repos
 
 @subcommand.usage('[url of repo to check for caching]')
 def CMDexists(parser, args):
@@ -427,54 +467,26 @@ def CMDunlock(parser, args):
   if len(args) > 1 or (len(args) == 0 and not options.all):
     parser.error('git cache unlock takes exactly one repo url, or --all')
 
-  repo_dirs = []
-  if not options.all:
-    url = args[0]
-    repo_dirs.append(Mirror(url).mirror_path)
-  else:
-    cachepath = Mirror.GetCachePath()
-    repo_dirs = [os.path.join(cachepath, path)
-                 for path in os.listdir(cachepath)
-                 if os.path.isdir(os.path.join(cachepath, path))]
-    repo_dirs.extend([os.path.join(cachepath,
-                                   lockfile.replace('.lock', ''))
-                      for lockfile in os.listdir(cachepath)
-                      if os.path.isfile(os.path.join(cachepath,
-                                                     lockfile))
-                      and lockfile.endswith('.lock')
-                      and os.path.join(cachepath, lockfile)
-                          not in repo_dirs])
-  lockfiles = [repo_dir + '.lock' for repo_dir in repo_dirs
-               if os.path.exists(repo_dir + '.lock')]
-
   if not options.force:
+    cachepath = Mirror.GetCachePath()
+    lockfiles = [os.path.join(cachepath, path)
+                 for path in os.listdir(cachepath)
+                 if path.endswith('.lock') and os.path.isfile(path)]
     parser.error('git cache unlock requires -f|--force to do anything. '
                  'Refusing to unlock the following repo caches: '
                  ', '.join(lockfiles))
 
   unlocked_repos = []
-  untouched_repos = []
-  for repo_dir in repo_dirs:
-    lf = Lockfile(repo_dir)
-    config_lock = os.path.join(repo_dir, 'config.lock')
-    unlocked = False
-    if os.path.exists(config_lock):
-      os.remove(config_lock)
-      unlocked = True
-    if lf.break_lock():
-      unlocked = True
-
-    if unlocked:
-      unlocked_repos.append(repo_dir)
-    else:
-      untouched_repos.append(repo_dir)
+  if options.all:
+    unlocked_repos.extend(Mirror.UnlockAll())
+  else:
+    m = Mirror(args[0])
+    if m.unlock():
+      unlocked_repos.append(m.mirror_path)
 
   if unlocked_repos:
     logging.info('Broke locks on these caches:\n  %s' % '\n  '.join(
         unlocked_repos))
-  if untouched_repos:
-    logging.debug('Did not touch these caches:\n %s' % '\n  '.join(
-        untouched_repos))
 
 
 class OptionParser(optparse.OptionParser):
