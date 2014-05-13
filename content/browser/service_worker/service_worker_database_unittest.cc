@@ -29,16 +29,17 @@ struct AvailableIds {
 
 GURL URL(const GURL& origin, const std::string& path) {
   EXPECT_TRUE(origin.is_valid());
-  GURL out(origin.GetOrigin().spec() + path);
+  EXPECT_EQ(origin, origin.GetOrigin());
+  GURL out(origin.spec() + path);
   EXPECT_TRUE(out.is_valid());
   return out;
 }
 
 Resource CreateResource(int64 resource_id, const GURL& url) {
+  EXPECT_TRUE(url.is_valid());
   Resource resource;
   resource.resource_id = resource_id;
   resource.url = url;
-  EXPECT_TRUE(resource.url.is_valid());
   return resource;
 }
 
@@ -63,9 +64,7 @@ void VerifyRegistrationData(const RegistrationData& expected,
 
 void VerifyResourceRecords(const std::vector<Resource>& expected,
                            const std::vector<Resource>& actual) {
-  EXPECT_EQ(expected.size(), actual.size());
-  if (expected.size() != actual.size())
-    return;
+  ASSERT_EQ(expected.size(), actual.size());
   for (size_t i = 0; i < expected.size(); ++i) {
     EXPECT_EQ(expected[i].resource_id, actual[i].resource_id);
     EXPECT_EQ(expected[i].url, actual[i].url);
@@ -218,7 +217,6 @@ TEST(ServiceWorkerDatabaseTest, GetOriginsWithRegistrations) {
   data4.scope = URL(origin3, "/fuga");
   data4.script = URL(origin3, "/script4.js");
   data4.version_id = 789;
-  ASSERT_EQ(origin3, data4.scope.GetOrigin());
   ASSERT_TRUE(database->WriteRegistration(data4, resources));
 
   origins.clear();
@@ -348,9 +346,6 @@ TEST(ServiceWorkerDatabaseTest, GetAllRegistrations) {
   VerifyRegistrationData(data4, registrations[3]);
 }
 
-// TODO(nhiroki): Record read/write operations using gtest fixture to avoid
-// building expectations by hand. For example, expected purgeable resource ids
-// should be calculated automatically.
 TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
@@ -361,23 +356,19 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   data.script = URL(origin, "/script.js");
   data.version_id = 200;
 
-  Resource resource1 = CreateResource(1, URL(origin, "/resource1"));
-  Resource resource2 = CreateResource(2, URL(origin, "/resource2"));
-
   std::vector<Resource> resources;
-  resources.push_back(resource1);
-  resources.push_back(resource2);
+  resources.push_back(CreateResource(1, URL(origin, "/resource1")));
+  resources.push_back(CreateResource(2, URL(origin, "/resource2")));
 
-  // Write |resource1| to the uncommitted list to make sure that writing
+  // Write a resource to the uncommitted list to make sure that writing
   // registration removes resource ids associated with the registration from
   // the uncommitted list.
   std::set<int64> uncommitted_ids;
-  uncommitted_ids.insert(resource1.resource_id);
+  uncommitted_ids.insert(resources[0].resource_id);
   EXPECT_TRUE(database->WriteUncommittedResourceIds(uncommitted_ids));
   std::set<int64> uncommitted_ids_out;
   EXPECT_TRUE(database->GetUncommittedResourceIds(&uncommitted_ids_out));
-  EXPECT_EQ(1u, uncommitted_ids_out.size());
-  EXPECT_TRUE(ContainsKey(uncommitted_ids_out, resource1.resource_id));
+  EXPECT_EQ(uncommitted_ids, uncommitted_ids_out);
 
   EXPECT_TRUE(database->WriteRegistration(data, resources));
 
@@ -389,13 +380,12 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   VerifyRegistrationData(data, data_out);
   VerifyResourceRecords(resources, resources_out);
 
-  // Make sure that |resource1| is removed from the uncommitted list.
+  // Make sure that the resource is removed from the uncommitted list.
   uncommitted_ids_out.clear();
   EXPECT_TRUE(database->GetUncommittedResourceIds(&uncommitted_ids_out));
   EXPECT_TRUE(uncommitted_ids_out.empty());
 
-  EXPECT_TRUE(database->DeleteRegistration(
-      data.registration_id, data.scope.GetOrigin()));
+  EXPECT_TRUE(database->DeleteRegistration(data.registration_id, origin));
 
   // Make sure that the registration and resource records are gone.
   resources_out.clear();
@@ -404,11 +394,11 @@ TEST(ServiceWorkerDatabaseTest, Registration_Basic) {
   EXPECT_TRUE(resources_out.empty());
 
   // Resources should be purgeable because these are no longer referred.
-  std::set<int64> purgeable_resource_ids;
-  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_resource_ids));
-  EXPECT_EQ(2u, purgeable_resource_ids.size());
-  EXPECT_TRUE(ContainsKey(purgeable_resource_ids, resource1.resource_id));
-  EXPECT_TRUE(ContainsKey(purgeable_resource_ids, resource2.resource_id));
+  std::set<int64> purgeable_ids_out;
+  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_ids_out));
+  EXPECT_EQ(2u, purgeable_ids_out.size());
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, resources[0].resource_id));
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, resources[1].resource_id));
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
@@ -421,12 +411,9 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   data.script = URL(origin, "/script.js");
   data.version_id = 200;
 
-  Resource resource1 = CreateResource(1, URL(origin, "/resource1"));
-  Resource resource2 = CreateResource(2, URL(origin, "/resource2"));
-
   std::vector<Resource> resources1;
-  resources1.push_back(resource1);
-  resources1.push_back(resource2);
+  resources1.push_back(CreateResource(1, URL(origin, "/resource1")));
+  resources1.push_back(CreateResource(2, URL(origin, "/resource2")));
 
   EXPECT_TRUE(database->WriteRegistration(data, resources1));
 
@@ -441,11 +428,9 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   // Update the registration.
   RegistrationData updated_data = data;
   updated_data.version_id = data.version_id + 1;
-  Resource resource3 = CreateResource(3, URL(origin, "/resource3"));
-  Resource resource4 = CreateResource(4, URL(origin, "/resource4"));
   std::vector<Resource> resources2;
-  resources2.push_back(resource3);
-  resources2.push_back(resource4);
+  resources2.push_back(CreateResource(3, URL(origin, "/resource3")));
+  resources2.push_back(CreateResource(4, URL(origin, "/resource4")));
 
   EXPECT_TRUE(database->WriteRegistration(updated_data, resources2));
 
@@ -457,16 +442,15 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   VerifyRegistrationData(updated_data, data_out);
   VerifyResourceRecords(resources2, resources_out);
 
-  std::set<int64> purgeable_resource_ids;
-  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_resource_ids));
-  EXPECT_EQ(2u, purgeable_resource_ids.size());
-  EXPECT_TRUE(ContainsKey(purgeable_resource_ids, resource1.resource_id));
-  EXPECT_TRUE(ContainsKey(purgeable_resource_ids, resource2.resource_id));
+  std::set<int64> purgeable_ids_out;
+  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_ids_out));
+  EXPECT_EQ(2u, purgeable_ids_out.size());
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, resources1[0].resource_id));
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, resources1[1].resource_id));
 }
 
 TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
-
   GURL origin("http://example.com");
 
   // Add registration1.
@@ -475,14 +459,10 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   data1.scope = URL(origin, "/foo");
   data1.script = URL(origin, "/script1.js");
   data1.version_id = 200;
-  GURL origin1 = data1.scope.GetOrigin();
-
-  Resource resource1 = CreateResource(1, URL(origin, "/resource1"));
-  Resource resource2 = CreateResource(2, URL(origin, "/resource2"));
 
   std::vector<Resource> resources1;
-  resources1.push_back(resource1);
-  resources1.push_back(resource2);
+  resources1.push_back(CreateResource(1, URL(origin, "/resource1")));
+  resources1.push_back(CreateResource(2, URL(origin, "/resource2")));
   EXPECT_TRUE(database->WriteRegistration(data1, resources1));
 
   // Add registration2.
@@ -491,14 +471,10 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   data2.scope = URL(origin, "/bar");
   data2.script = URL(origin, "/script2.js");
   data2.version_id = 201;
-  GURL origin2 = data2.scope.GetOrigin();
-
-  Resource resource3 = CreateResource(3, URL(origin, "/resource3"));
-  Resource resource4 = CreateResource(4, URL(origin, "/resource4"));
 
   std::vector<Resource> resources2;
-  resources2.push_back(resource3);
-  resources2.push_back(resource4);
+  resources2.push_back(CreateResource(3, URL(origin, "/resource3")));
+  resources2.push_back(CreateResource(4, URL(origin, "/resource4")));
   EXPECT_TRUE(database->WriteRegistration(data2, resources2));
 
   // Make sure that registration1 is stored.
@@ -516,9 +492,9 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   VerifyRegistrationData(data2, data_out);
   VerifyResourceRecords(resources2, resources_out);
 
-  std::set<int64> purgeable_resource_ids;
-  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_resource_ids));
-  EXPECT_TRUE(purgeable_resource_ids.empty());
+  std::set<int64> purgeable_ids_out;
+  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_ids_out));
+  EXPECT_TRUE(purgeable_ids_out.empty());
 
   // Delete registration1.
   EXPECT_TRUE(database->DeleteRegistration(data1.registration_id, origin));
@@ -529,11 +505,11 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
       data1.registration_id, origin, &data_out, &resources_out));
   EXPECT_TRUE(resources_out.empty());
 
-  purgeable_resource_ids.clear();
-  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_resource_ids));
-  EXPECT_EQ(2u, purgeable_resource_ids.size());
-  EXPECT_TRUE(ContainsKey(purgeable_resource_ids, resource1.resource_id));
-  EXPECT_TRUE(ContainsKey(purgeable_resource_ids, resource2.resource_id));
+  purgeable_ids_out.clear();
+  EXPECT_TRUE(database->GetPurgeableResourceIds(&purgeable_ids_out));
+  EXPECT_EQ(2u, purgeable_ids_out.size());
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, resources1[0].resource_id));
+  EXPECT_TRUE(ContainsKey(purgeable_ids_out, resources1[1].resource_id));
 
   // Make sure that registration2 is still alive.
   resources_out.clear();
@@ -555,8 +531,7 @@ TEST(ServiceWorkerDatabaseTest, UncommittedResourceIds) {
 
   std::set<int64> ids_out;
   EXPECT_TRUE(database->GetUncommittedResourceIds(&ids_out));
-  EXPECT_EQ(ids1.size(), ids_out.size());
-  EXPECT_TRUE(base::STLIncludes(ids1, ids_out));
+  EXPECT_EQ(ids1, ids_out);
 
   // Write {2, 4}.
   std::set<int64> ids2;
@@ -566,11 +541,8 @@ TEST(ServiceWorkerDatabaseTest, UncommittedResourceIds) {
 
   ids_out.clear();
   EXPECT_TRUE(database->GetUncommittedResourceIds(&ids_out));
-  EXPECT_EQ(4U, ids_out.size());
-  EXPECT_TRUE(ContainsKey(ids_out, 1));
-  EXPECT_TRUE(ContainsKey(ids_out, 2));
-  EXPECT_TRUE(ContainsKey(ids_out, 3));
-  EXPECT_TRUE(ContainsKey(ids_out, 4));
+  std::set<int64> expected = base::STLSetUnion<std::set<int64> >(ids1, ids2);
+  EXPECT_EQ(expected, ids_out);
 
   // Delete {2, 3}.
   std::set<int64> ids3;
@@ -580,9 +552,8 @@ TEST(ServiceWorkerDatabaseTest, UncommittedResourceIds) {
 
   ids_out.clear();
   EXPECT_TRUE(database->GetUncommittedResourceIds(&ids_out));
-  EXPECT_EQ(2U, ids_out.size());
-  EXPECT_TRUE(ContainsKey(ids_out, 1));
-  EXPECT_TRUE(ContainsKey(ids_out, 4));
+  expected = base::STLSetDifference<std::set<int64> >(expected, ids3);
+  EXPECT_EQ(expected, ids_out);
 }
 
 TEST(ServiceWorkerDatabaseTest, PurgeableResourceIds) {
@@ -597,8 +568,7 @@ TEST(ServiceWorkerDatabaseTest, PurgeableResourceIds) {
 
   std::set<int64> ids_out;
   EXPECT_TRUE(database->GetPurgeableResourceIds(&ids_out));
-  EXPECT_EQ(ids1.size(), ids_out.size());
-  EXPECT_TRUE(base::STLIncludes(ids1, ids_out));
+  EXPECT_EQ(ids1, ids_out);
 
   // Write {2, 4}.
   std::set<int64> ids2;
@@ -608,11 +578,8 @@ TEST(ServiceWorkerDatabaseTest, PurgeableResourceIds) {
 
   ids_out.clear();
   EXPECT_TRUE(database->GetPurgeableResourceIds(&ids_out));
-  EXPECT_EQ(4U, ids_out.size());
-  EXPECT_TRUE(ContainsKey(ids_out, 1));
-  EXPECT_TRUE(ContainsKey(ids_out, 2));
-  EXPECT_TRUE(ContainsKey(ids_out, 3));
-  EXPECT_TRUE(ContainsKey(ids_out, 4));
+  std::set<int64> expected = base::STLSetUnion<std::set<int64> >(ids1, ids2);
+  EXPECT_EQ(expected, ids_out);
 
   // Delete {2, 3}.
   std::set<int64> ids3;
@@ -622,9 +589,8 @@ TEST(ServiceWorkerDatabaseTest, PurgeableResourceIds) {
 
   ids_out.clear();
   EXPECT_TRUE(database->GetPurgeableResourceIds(&ids_out));
-  EXPECT_EQ(2U, ids_out.size());
-  EXPECT_TRUE(ContainsKey(ids_out, 1));
-  EXPECT_TRUE(ContainsKey(ids_out, 4));
+  expected = base::STLSetDifference<std::set<int64> >(expected, ids3);
+  EXPECT_EQ(expected, ids_out);
 }
 
 TEST(ServiceWorkerDatabaseTest, DeleteAllDataForOrigin) {
