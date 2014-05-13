@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "tools/gn/err.h"
 #include "tools/gn/token.h"
 
@@ -37,7 +38,7 @@ class Tokenizer {
 
   static bool IsIdentifierContinuingChar(char c) {
     // Also allow digits after the first char.
-    return IsIdentifierFirstChar(c) || (c >= '0' && c <= '9');
+    return IsIdentifierFirstChar(c) || IsAsciiDigit(c);
   }
 
  private:
