@@ -243,7 +243,7 @@ class USBImager(object):
     return devices[idx]
 
   def CopyImageToDevice(self, image, device):
-    """Copies |image |to the removable |device|.
+    """Copies |image| to the removable |device|.
 
     Args:
       image: Path to the image to copy.
