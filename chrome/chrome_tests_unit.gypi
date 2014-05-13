@@ -531,6 +531,7 @@
         '../extensions/browser/api/storage/settings_test_util.h',
         '../extensions/browser/api/storage/storage_api_unittest.cc',
         '../extensions/browser/api/storage/storage_frontend_unittest.cc',
+        '../extensions/browser/content_hash_tree_unittest.cc',
         '../extensions/browser/error_map_unittest.cc',
         '../extensions/browser/event_listener_map_unittest.cc',
         '../extensions/browser/event_router_unittest.cc',

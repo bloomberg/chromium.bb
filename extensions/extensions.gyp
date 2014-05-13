@@ -316,6 +316,8 @@
         'browser/content_hash_fetcher.h',
         'browser/content_hash_reader.cc',
         'browser/content_hash_reader.h',
+        'browser/content_hash_tree.cc',
+        'browser/content_hash_tree.h',
         'browser/content_verifier.cc',
         'browser/content_verifier.h',
         'browser/content_verifier_delegate.h',
