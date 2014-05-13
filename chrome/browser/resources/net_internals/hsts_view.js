@@ -117,90 +117,48 @@ var HSTSView = (function() {
 
       var s = addNode(this.queryOutputDiv_, 'span');
       s.innerHTML = '<b>Found:</b><br/>';
-      var t;
-      var b;
 
-      addTextNode(this.queryOutputDiv_, ' domain: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt', result.domain);
-      b = addNode(this.queryOutputDiv_, 'br');
+      var keys = [
+        'domain', 'static_upgrade_mode', 'static_sts_include_subdomains',
+        'static_pkp_include_subdomains', 'static_sts_observed',
+        'static_pkp_observed', 'static_spki_hashes', 'dynamic_upgrade_mode',
+        'dynamic_sts_include_subdomains', 'dynamic_pkp_include_subdomains',
+        'dynamic_sts_observed', 'dynamic_pkp_observed', 'dynamic_spki_hashes'
+      ];
 
-      addTextNode(this.queryOutputDiv_, ' static_upgrade_mode: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          modeToString(result.static_upgrade_mode));
-      b = addNode(this.queryOutputDiv_, 'br');
+      var kStaticHashKeys = [
+        'public_key_hashes', 'preloaded_spki_hashes', 'static_spki_hashes'
+      ];
 
-      addTextNode(this.queryOutputDiv_, ' static_sts_include_subdomains: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.static_sts_include_subdomains);
-      b = addNode(this.queryOutputDiv_, 'br');
+      var staticHashes = [];
+      for (var i = 0; i < kStaticHashKeys.length; ++i) {
+        var staticHashValue = result[kStaticHashKeys[i]];
+        if (staticHashValue != undefined && staticHashValue != '')
+          staticHashes.push(staticHashValue);
+      }
 
-      addTextNode(this.queryOutputDiv_, ' static_pkp_include_subdomains: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.static_pkp_include_subdomains);
-      b = addNode(this.queryOutputDiv_, 'br');
+      for (var i = 0; i < keys.length; ++i) {
+        var key = keys[i];
+        var value = result[key];
+        addTextNode(this.queryOutputDiv_, ' ' + key + ': ');
 
-      addTextNode(this.queryOutputDiv_, ' static_sts_observed: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.static_sts_observed);
-      b = addNode(this.queryOutputDiv_, 'br');
+        // If there are no static_hashes, do not make it seem like there is a
+        // static PKP policy in place.
+        if (staticHashes.length == 0 && key.indexOf('static_pkp_') == 0) {
+          addNode(this.queryOutputDiv_, 'br');
+          continue;
+        }
 
-      addTextNode(this.queryOutputDiv_, ' static_pkp_observed: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.static_pkp_observed);
-      b = addNode(this.queryOutputDiv_, 'br');
-
-      addTextNode(this.queryOutputDiv_, ' static_spki_hashes: ');
-      t = addNode(this.queryOutputDiv_, 'tt');
-
-      // |public_key_hashes| is an old synonym for what is now
-      // |preloaded_spki_hashes|, which in turn is a legacy synonym for
-      // |static_spki_hashes|.
-      if (typeof result.public_key_hashes === 'undefined')
-        result.public_key_hashes = '';
-      if (typeof result.preloaded_spki_hashes === 'undefined')
-        result.preloaded_spki_hashes = '';
-      if (typeof result.static_spki_hashes === 'undefined')
-        result.static_spki_hashes = '';
-
-      var hashes = [];
-      if (result.public_key_hashes)
-        hashes.push(result.public_key_hashes);
-      if (result.preloaded_spki_hashes)
-        hashes.push(result.preloaded_spki_hashes);
-      if (result.static_spki_hashes)
-        hashes.push(result.static_spki_hashes);
-
-      t.textContent = hashes.join(',');
-      b = addNode(this.queryOutputDiv_, 'br');
-
-      addTextNode(this.queryOutputDiv_, ' dynamic_upgrade_mode: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          modeToString(result.dynamic_upgrade_mode));
-      b = addNode(this.queryOutputDiv_, 'br');
-
-      addTextNode(this.queryOutputDiv_, ' dynamic_sts_include_subdomains: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.dynamic_sts_include_subdomains || '');
-      b = addNode(this.queryOutputDiv_, 'br');
-
-      addTextNode(this.queryOutputDiv_, ' dynamic_pkp_include_subdomains: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.dynamic_pkp_include_subdomains || '');
-      b = addNode(this.queryOutputDiv_, 'br');
-
-      addTextNode(this.queryOutputDiv_, ' dynamic_sts_observed: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.dynamic_sts_observed || '');
-      b = addNode(this.queryOutputDiv_, 'br');
-
-      addTextNode(this.queryOutputDiv_, ' dynamic_pkp_observed: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.dynamic_pkp_observed || '');
-      b = addNode(this.queryOutputDiv_, 'br');
-
-      addTextNode(this.queryOutputDiv_, ' dynamic_spki_hashes: ');
-      t = addNodeWithText(this.queryOutputDiv_, 'tt',
-                          result.dynamic_spki_hashes || '');
+        if (key === 'static_spki_hashes') {
+          addNodeWithText(this.queryOutputDiv_, 'tt', staticHashes.join(','));
+        } else if (key.indexOf('_upgrade_mode') >= 0) {
+          addNodeWithText(this.queryOutputDiv_, 'tt', modeToString(value));
+        } else {
+          addNodeWithText(this.queryOutputDiv_, 'tt',
+                          value == undefined ? '' : value);
+        }
+        addNode(this.queryOutputDiv_, 'br');
+      }
 
       yellowFade(this.queryOutputDiv_);
     }
