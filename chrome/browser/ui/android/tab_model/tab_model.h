@@ -30,9 +30,6 @@ class TabAndroid;
 // with Android's Tabs and Tab Model.
 class TabModel : public content::NotificationObserver {
  public:
-  explicit TabModel(Profile* profile);
-  virtual ~TabModel();
-
   virtual Profile* GetProfile() const;
   virtual bool IsOffTheRecord() const;
   virtual browser_sync::SyncedWindowDelegate* GetSyncedWindowDelegate() const;
@@ -60,6 +57,9 @@ class TabModel : public content::NotificationObserver {
   virtual void OpenClearBrowsingData() const = 0;
 
  protected:
+  explicit TabModel(Profile* profile);
+  virtual ~TabModel();
+
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.
   void BroadcastSessionRestoreComplete();
