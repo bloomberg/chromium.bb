@@ -102,6 +102,11 @@
             '<(_sanitizer_type)-libcups2',
           ],
         }],
+        ['tsan==1', {
+          'dependencies!': [
+            '<(_sanitizer_type)-libpng12-0',
+          ],
+        }],
       ],
       'actions': [
         {
