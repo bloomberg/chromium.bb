@@ -108,6 +108,7 @@ public:
 
     FontFace::LoadStatus loadStatus() const { return m_fontFace->loadStatus(); }
     bool maybeScheduleFontLoad(const FontDescription&, UChar32);
+    void load(CSSFontSelector* = 0);
     void load(const FontDescription&, CSSFontSelector* = 0);
 
     bool hadBlankText() { return isValid() && m_sources.first()->hadBlankText(); }

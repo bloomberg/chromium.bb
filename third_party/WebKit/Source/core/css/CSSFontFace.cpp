@@ -33,6 +33,7 @@
 #include "core/css/RemoteFontFaceSource.h"
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 
 namespace WebCore {
@@ -85,8 +86,7 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source)
                 UseCounter::count(*document, UseCounter::SVGFontInCSS);
         } else {
             m_sources.removeFirst();
-            if (!isValid())
-                setLoadStatus(FontFace::Error);
+            load();
         }
     }
 
@@ -129,17 +129,28 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
 bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, UChar32 character)
 {
     if (m_ranges.contains(character)) {
-        load(fontDescription);
+        if (loadStatus() == FontFace::Unloaded)
+            load(fontDescription);
         return true;
     }
     return false;
 }
 
+void CSSFontFace::load(CSSFontSelector* fontSelector)
+{
+    FontDescription fontDescription;
+    FontFamily fontFamily;
+    fontFamily.setFamily(m_fontFace->family());
+    fontDescription.setFamily(fontFamily);
+    fontDescription.setTraits(m_fontFace->traits());
+    load(fontDescription, fontSelector);
+}
+
 void CSSFontFace::load(const FontDescription& fontDescription, CSSFontSelector* fontSelector)
 {
-    if (loadStatus() != FontFace::Unloaded)
-        return;
-    setLoadStatus(FontFace::Loading);
+    if (loadStatus() == FontFace::Unloaded)
+        setLoadStatus(FontFace::Loading);
+    ASSERT(loadStatus() == FontFace::Loading);
 
     while (!m_sources.isEmpty()) {
         OwnPtr<CSSFontFaceSource>& source = m_sources.first();

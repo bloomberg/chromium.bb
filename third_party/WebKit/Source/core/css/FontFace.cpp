@@ -59,7 +59,6 @@
 #include "core/svg/SVGFontFaceSource.h"
 #include "core/svg/SVGRemoteFontFaceSource.h"
 #include "platform/SharedBuffer.h"
-#include "platform/fonts/FontDescription.h"
 
 namespace WebCore {
 
@@ -419,14 +418,8 @@ void FontFace::loadInternal(ExecutionContext* context)
     if (m_status != Unloaded)
         return;
 
-    FontDescription fontDescription;
-    FontFamily fontFamily;
-    fontFamily.setFamily(m_family);
-    fontDescription.setFamily(fontFamily);
-    fontDescription.setTraits(traits());
-
     CSSFontSelector* fontSelector = toDocument(context)->styleEngine()->fontSelector();
-    m_cssFontFace->load(fontDescription, fontSelector);
+    m_cssFontFace->load(fontSelector);
     fontSelector->loadPendingFonts();
 }
 
