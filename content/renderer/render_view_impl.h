@@ -742,7 +742,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnResetPageEncodingToDefault();
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
   void OnSetActive(bool active);
-  void OnSetBackground(const SkBitmap& background);
+  void OnSetBackgroundOpaque(bool opaque);
   void OnExitFullscreen();
   void OnSetHistoryLengthAndPrune(int history_length, int32 minimum_page_id);
   void OnSetInitialFocus(bool reverse);

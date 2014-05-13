@@ -86,8 +86,7 @@ RenderWidgetHostViewChildFrame::GetNativeViewAccessible() {
   return NULL;
 }
 
-void RenderWidgetHostViewChildFrame::SetBackground(
-    const SkBitmap& background) {
+void RenderWidgetHostViewChildFrame::SetBackgroundOpaque(bool opaque) {
 }
 
 gfx::Size RenderWidgetHostViewChildFrame::GetPhysicalBackingSize() const {

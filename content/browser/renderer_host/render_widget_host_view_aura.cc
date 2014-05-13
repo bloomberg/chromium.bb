@@ -775,10 +775,10 @@ gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
   return delegated_frame_host_->GetViewBoundsWithResizeLock(bounds);
 }
 
-void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
-  host_->SetBackground(background);
-  window_->layer()->SetFillsBoundsOpaquely(background.isOpaque());
+void RenderWidgetHostViewAura::SetBackgroundOpaque(bool opaque) {
+  RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
+  host_->SetBackgroundOpaque(opaque);
+  window_->layer()->SetFillsBoundsOpaquely(opaque);
 }
 
 gfx::Size RenderWidgetHostViewAura::GetVisibleViewportSize() const {

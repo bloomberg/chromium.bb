@@ -953,9 +953,10 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   host_->SetView(view_.get());
 }
 
-// Tests setting custom background
-TEST_F(RenderWidgetHostTest, Background) {
+// Unable to include render_widget_host_view_mac.h and compile.
 #if !defined(OS_MACOSX)
+// Tests setting background transparency.
+TEST_F(RenderWidgetHostTest, Background) {
   scoped_ptr<RenderWidgetHostViewBase> view;
 #if defined(USE_AURA)
   view.reset(new RenderWidgetHostViewAura(host_.get()));
@@ -966,57 +967,25 @@ TEST_F(RenderWidgetHostTest, Background) {
 #endif
   host_->SetView(view.get());
 
-  // Create a checkerboard background to test with.
-  gfx::Canvas canvas(gfx::Size(4, 4), 1.0f, true);
-  canvas.FillRect(gfx::Rect(0, 0, 2, 2), SK_ColorBLACK);
-  canvas.FillRect(gfx::Rect(2, 0, 2, 2), SK_ColorWHITE);
-  canvas.FillRect(gfx::Rect(0, 2, 2, 2), SK_ColorWHITE);
-  canvas.FillRect(gfx::Rect(2, 2, 2, 2), SK_ColorBLACK);
-  const SkBitmap& background =
-      canvas.sk_canvas()->getDevice()->accessBitmap(false);
-
-  // Set the background and make sure we get back a copy.
-  view->SetBackground(background);
-  EXPECT_EQ(4, view->GetBackground().width());
-  EXPECT_EQ(4, view->GetBackground().height());
-  EXPECT_EQ(background.getSize(), view->GetBackground().getSize());
-  background.lockPixels();
-  view->GetBackground().lockPixels();
-  EXPECT_TRUE(0 == memcmp(background.getPixels(),
-                          view->GetBackground().getPixels(),
-                          background.getSize()));
-  view->GetBackground().unlockPixels();
-  background.unlockPixels();
+  EXPECT_TRUE(view->GetBackgroundOpaque());
+  view->SetBackgroundOpaque(false);
+  EXPECT_FALSE(view->GetBackgroundOpaque());
 
   const IPC::Message* set_background =
-      process_->sink().GetUniqueMessageMatching(ViewMsg_SetBackground::ID);
+      process_->sink().GetUniqueMessageMatching(
+          ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
-  Tuple1<SkBitmap> sent_background;
-  ViewMsg_SetBackground::Read(set_background, &sent_background);
-  EXPECT_EQ(background.getSize(), sent_background.a.getSize());
-  background.lockPixels();
-  sent_background.a.lockPixels();
-  EXPECT_TRUE(0 == memcmp(background.getPixels(),
-                          sent_background.a.getPixels(),
-                          background.getSize()));
-  sent_background.a.unlockPixels();
-  background.unlockPixels();
+  Tuple1<bool> sent_background;
+  ViewMsg_SetBackgroundOpaque::Read(set_background, &sent_background);
+  EXPECT_FALSE(sent_background.a);
 
 #if defined(USE_AURA)
   // See the comment above |InitAsChild(NULL)|.
   host_->SetView(NULL);
   static_cast<RenderWidgetHostViewBase*>(view.release())->Destroy();
 #endif
-
-#else
-  // TODO(port): Mac does not have gfx::Canvas. Maybe we can just change this
-  // test to use SkCanvas directly?
-#endif
-
-  // TODO(aa): It would be nice to factor out the painting logic so that we
-  // could test that, but it appears that would mean painting everything twice
-  // since windows HDC structures are opaque.
 }
+#endif
 
 // Test that we don't paint when we're hidden, but we still send the ACK. Most
 // of the rest of the painting is tested in the GetBackingStore* ones.

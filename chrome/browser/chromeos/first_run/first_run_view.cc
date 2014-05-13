@@ -31,12 +31,7 @@ void FirstRunView::Init(content::BrowserContext* context) {
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
 
-  SkBitmap background;
-  background.setConfig(SkBitmap::kA8_Config, 1, 1);
-  background.allocPixels();
-  background.eraseARGB(0, 0, 0, 0);
-  web_contents->GetRenderViewHost()->GetView()->
-    SetBackground(background);
+  web_contents->GetRenderViewHost()->GetView()->SetBackgroundOpaque(false);
 }
 
 FirstRunActor* FirstRunView::GetActor() {

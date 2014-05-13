@@ -1098,7 +1098,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_ThemeChanged, OnThemeChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedElement, OnClearFocusedElement)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
     IPC_MESSAGE_HANDLER(ViewMsg_EnableAutoResize, OnEnableAutoResize)
@@ -3189,13 +3189,11 @@ void RenderViewImpl::OnClearFocusedElement() {
     webview()->clearFocusedElement();
 }
 
-void RenderViewImpl::OnSetBackground(const SkBitmap& background) {
+void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {
   if (webview())
-    webview()->setIsTransparent(!background.empty());
+    webview()->setIsTransparent(!opaque);
   if (compositor_)
-    compositor_->setHasTransparentBackground(!background.empty());
-
-  SetBackground(background);
+    compositor_->setHasTransparentBackground(!opaque);
 }
 
 void RenderViewImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {

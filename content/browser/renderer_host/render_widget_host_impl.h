@@ -384,8 +384,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // perform an action. See OnUserGesture for more details.
   void StartUserGesture();
 
-  // Set the RenderView background.
-  void SetBackground(const SkBitmap& background);
+  // Set the RenderView background transparency.
+  void SetBackgroundOpaque(bool opaque);
 
   // Notifies the renderer that the next key event is bound to one or more
   // pre-defined edit commands

@@ -53,7 +53,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual gfx::NativeViewId GetNativeViewId() const OVERRIDE;
   virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
-  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual void SetBackgroundOpaque(bool opaque) OVERRIDE;
   virtual gfx::Size GetPhysicalBackingSize() const OVERRIDE;
   virtual base::string16 GetSelectedText() const OVERRIDE;
 

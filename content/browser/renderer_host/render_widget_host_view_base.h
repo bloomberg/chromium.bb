@@ -63,8 +63,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual ~RenderWidgetHostViewBase();
 
   // RenderWidgetHostView implementation.
-  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
-  virtual const SkBitmap& GetBackground() OVERRIDE;
+  virtual void SetBackgroundOpaque(bool opaque) OVERRIDE;
+  virtual bool GetBackgroundOpaque() OVERRIDE;
   virtual ui::TextInputClient* GetTextInputClient() OVERRIDE;
   virtual bool IsShowingContextMenu() const OVERRIDE;
   virtual void SetShowingContextMenu(bool showing_menu) OVERRIDE;
@@ -379,9 +379,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // autofill...).
   blink::WebPopupType popup_type_;
 
-  // A custom background to paint behind the web content. This will be tiled
-  // horizontally. Can be null, in which case we fall back to painting white.
-  SkBitmap background_;
+  // When false, the background of the web content is not fully opaque.
+  bool background_opaque_;
 
   // While the mouse is locked, the cursor is hidden from the user. Mouse events
   // are still generated. However, the position they report is the last known

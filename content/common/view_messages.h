@@ -821,10 +821,8 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
 // Tells the renderer to clear the focused element (if any).
 IPC_MESSAGE_ROUTED0(ViewMsg_ClearFocusedElement)
 
-// Make the RenderView transparent and render it onto a custom background. The
-// background will be tiled in both directions if it is not large enough.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetBackground,
-                    SkBitmap /* background */)
+// Make the RenderView background transparent or opaque.
+IPC_MESSAGE_ROUTED1(ViewMsg_SetBackgroundOpaque, bool /* opaque */)
 
 // Used to tell the renderer not to add scrollbars with height and
 // width below a threshold.

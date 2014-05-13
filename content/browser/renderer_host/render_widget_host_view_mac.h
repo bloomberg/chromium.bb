@@ -264,7 +264,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual void SpeakSelection() OVERRIDE;
   virtual bool IsSpeaking() const OVERRIDE;
   virtual void StopSpeaking() OVERRIDE;
-  virtual void SetBackground(const SkBitmap& background) OVERRIDE;
+  virtual void SetBackgroundOpaque(bool opaque) OVERRIDE;
 
   // Implementation of RenderWidgetHostViewBase.
   virtual void InitAsPopup(RenderWidgetHostView* parent_host_view,

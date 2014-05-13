@@ -1965,8 +1965,8 @@ void RenderWidgetHostImpl::Stop() {
   Send(new ViewMsg_Stop(GetRoutingID()));
 }
 
-void RenderWidgetHostImpl::SetBackground(const SkBitmap& background) {
-  Send(new ViewMsg_SetBackground(GetRoutingID(), background));
+void RenderWidgetHostImpl::SetBackgroundOpaque(bool opaque) {
+  Send(new ViewMsg_SetBackgroundOpaque(GetRoutingID(), opaque));
 }
 
 void RenderWidgetHostImpl::SetEditCommandsForNextKeyEvent(

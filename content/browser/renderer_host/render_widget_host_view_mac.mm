@@ -2171,11 +2171,10 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
   helper.ShowDefinitionForSelection();
 }
 
-void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
+void RenderWidgetHostViewMac::SetBackgroundOpaque(bool opaque) {
+  RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
   if (render_widget_host_)
-    render_widget_host_->Send(new ViewMsg_SetBackground(
-        render_widget_host_->GetRoutingID(), background));
+    render_widget_host_->SetBackgroundOpaque(opaque);
 }
 
 void RenderWidgetHostViewMac::CreateBrowserAccessibilityManagerIfNeeded() {

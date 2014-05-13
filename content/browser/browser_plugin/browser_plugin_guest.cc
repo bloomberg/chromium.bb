@@ -1383,14 +1383,7 @@ void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
 
 void BrowserPluginGuest::OnSetContentsOpaque(int instance_id, bool opaque) {
   guest_opaque_ = opaque;
-
-  SkBitmap background;
-  if (!guest_opaque_) {
-    background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    unsigned int color = 0;
-    background.setPixels(&color);
-  }
-  Send(new ViewMsg_SetBackground(routing_id(), background));
+  Send(new ViewMsg_SetBackgroundOpaque(routing_id(), guest_opaque_));
 }
 
 void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {

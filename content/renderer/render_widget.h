@@ -307,11 +307,6 @@ class CONTENT_EXPORT RenderWidget
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const blink::WebRect& pos);
 
-  // Set the background of the render widget to a bitmap. The bitmap will be
-  // tiled in both directions if it isn't big enough to fill the area. This is
-  // mainly intended to be used in conjuction with WebView::SetIsTransparent().
-  virtual void SetBackground(const SkBitmap& bitmap);
-
   // Resizes the render widget.
   void Resize(const gfx::Size& new_size,
               const gfx::Size& physical_backing_size,
@@ -632,9 +627,6 @@ class CONTENT_EXPORT RenderWidget
   // Holds all the needed plugin window moves for a scroll.
   typedef std::vector<WebPluginGeometry> WebPluginGeometryVector;
   WebPluginGeometryVector plugin_window_moves_;
-
-  // A custom background for the widget.
-  SkBitmap background_;
 
   // While we are waiting for the browser to update window sizes, we track the
   // pending size temporarily.

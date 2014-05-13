@@ -262,15 +262,9 @@ void NativeAppWindowViews::OnWidgetActivationChanged(views::Widget* widget,
 void NativeAppWindowViews::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   if (transparent_background_) {
-    // Use a background with transparency to trigger transparency in Webkit.
-    SkBitmap background;
-    background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-    background.allocPixels();
-    background.eraseARGB(0x00, 0x00, 0x00, 0x00);
-
     content::RenderWidgetHostView* view = render_view_host->GetView();
     DCHECK(view);
-    view->SetBackground(background);
+    view->SetBackgroundOpaque(false);
   }
 }
 

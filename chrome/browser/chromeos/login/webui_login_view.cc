@@ -260,13 +260,7 @@ void WebUILoginView::LoadURL(const GURL & url) {
 
   // TODO(nkostylev): Use WebContentsObserver::RenderViewCreated to track
   // when RenderView is created.
-  // Use a background with transparency to trigger transparency in Webkit.
-  SkBitmap background;
-  background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
-  background.allocPixels();
-  background.eraseARGB(0x00, 0x00, 0x00, 0x00);
-  content::RenderViewHost* host = GetWebContents()->GetRenderViewHost();
-  host->GetView()->SetBackground(background);
+  GetWebContents()->GetRenderViewHost()->GetView()->SetBackgroundOpaque(false);
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {

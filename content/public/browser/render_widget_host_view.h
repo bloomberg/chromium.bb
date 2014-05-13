@@ -102,9 +102,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual base::string16 GetSelectedText() const = 0;
 
   // Subclasses should override this method to do what is appropriate to set
-  // the custom background for their platform.
-  virtual void SetBackground(const SkBitmap& background) = 0;
-  virtual const SkBitmap& GetBackground() = 0;
+  // the background to be transparent or opaque.
+  virtual void SetBackgroundOpaque(bool opaque) = 0;
+  virtual bool GetBackgroundOpaque() = 0;
 
   // Return value indicates whether the mouse is locked successfully or not.
   virtual bool LockMouse() = 0;

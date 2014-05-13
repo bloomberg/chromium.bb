@@ -375,8 +375,8 @@ void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
   guest_->CopyFromCompositingSurface(src_subrect, dst_size, callback);
 }
 
-void RenderWidgetHostViewGuest::SetBackground(const SkBitmap& background) {
-  platform_view_->SetBackground(background);
+void RenderWidgetHostViewGuest::SetBackgroundOpaque(bool opaque) {
+  platform_view_->SetBackgroundOpaque(opaque);
 }
 
 void RenderWidgetHostViewGuest::SetScrollOffsetPinning(

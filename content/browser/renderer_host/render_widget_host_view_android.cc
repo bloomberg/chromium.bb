@@ -666,9 +666,9 @@ void RenderWidgetHostViewAndroid::SelectionRootBoundsChanged(
 void RenderWidgetHostViewAndroid::ScrollOffsetChanged() {
 }
 
-void RenderWidgetHostViewAndroid::SetBackground(const SkBitmap& background) {
-  RenderWidgetHostViewBase::SetBackground(background);
-  host_->Send(new ViewMsg_SetBackground(host_->GetRoutingID(), background));
+void RenderWidgetHostViewAndroid::SetBackgroundOpaque(bool opaque) {
+  RenderWidgetHostViewBase::SetBackgroundOpaque(opaque);
+  host_->SetBackgroundOpaque(opaque);
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
