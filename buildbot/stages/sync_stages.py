@@ -670,8 +670,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
       if manifest:
         if self._run.config.build_before_patching:
           pre_build_passed = self._RunPrePatchBuild()
-          cros_build_lib.PrintBuildbotStepName(
-              'CommitQueueSync : Apply Patches')
+          self._RenameStep('CommitQueueSync : Apply Patches')
           if not pre_build_passed:
             cros_build_lib.PrintBuildbotStepText('Pre-patch build failed.')
 

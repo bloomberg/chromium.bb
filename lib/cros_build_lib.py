@@ -642,7 +642,16 @@ def PrintBuildbotStepFailure(handle=None):
 
 def PrintBuildbotStepName(name, handle=None):
   """Marks a step name for buildbot to display."""
-  (handle or sys.stderr).write('\n@@@BUILD_STEP %s@@@\n' % name)
+  (handle or sys.stderr).write(
+      '\n@@@SEED_STEP %s@@@\n@@@STEP_CURSOR %s@@@\n@@@STEP_STARTED@@@\n' %
+      (name, name)
+  )
+
+
+def PrintBuildbotStepClose(name, handle=None):
+  """Finishes step for buildbot to display."""
+  (handle or sys.stderr).write(
+      '\n@@@STEP_CURSOR %s@@@\n@@@STEP_CLOSED@@@\n' % name)
 
 
 def ListFiles(base_dir):
