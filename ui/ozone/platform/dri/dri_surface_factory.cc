@@ -4,9 +4,7 @@
 
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 
-#include <drm.h>
 #include <errno.h>
-#include <xf86drm.h>
 
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
@@ -20,35 +18,14 @@
 #include "ui/ozone/platform/dri/dri_vsync_provider.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/screen_manager.h"
 
 namespace ui {
 
 namespace {
 
-const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
-
 // TODO(dnicoara) Read the cursor plane size from the hardware.
 const gfx::Size kCursorSize(64, 64);
-
-// DRM callback on page flip events. This callback is triggered after the
-// page flip has happened and the backbuffer is now the new frontbuffer
-// The old frontbuffer is no longer used by the hardware and can be used for
-// future draw operations.
-//
-// |device| will contain a reference to the |DriSurface| object which
-// the event belongs to.
-//
-// TODO(dnicoara) When we have a FD handler for the DRM calls in the message
-// loop, we can move this function in the handler.
-void HandlePageFlipEvent(int fd,
-                         unsigned int frame,
-                         unsigned int seconds,
-                         unsigned int useconds,
-                         void* controller) {
-  TRACE_EVENT0("dri", "HandlePageFlipEvent");
-  static_cast<HardwareDisplayController*>(controller)
-      ->OnPageFlipEvent(frame, seconds, useconds);
-}
 
 void UpdateCursorImage(DriSurface* cursor, const SkBitmap& image) {
   SkRect damage;
@@ -65,19 +42,10 @@ void UpdateCursorImage(DriSurface* cursor, const SkBitmap& image) {
   canvas->drawBitmapRectToRect(image, &damage, damage);
 }
 
-// Adapter from SurfaceOzone to DriSurfaceFactory
-//
-// This class is derived from SurfaceOzone and owned by the compositor.
-//
-// For DRI the hadware surface & canvas are owned by the platform, so
-// the compositor merely owns this proxy object.
-//
-// TODO(spang): Should the compositor own any bits of the DriSurface?
 class DriSurfaceAdapter : public gfx::SurfaceOzoneCanvas {
  public:
-  DriSurfaceAdapter(gfx::AcceleratedWidget w, DriSurfaceFactory* dri)
-      : widget_(w), dri_(dri) {}
-  virtual ~DriSurfaceAdapter() {}
+  DriSurfaceAdapter(const base::WeakPtr<HardwareDisplayController>& controller);
+  virtual ~DriSurfaceAdapter();
 
   // SurfaceOzoneCanvas:
   virtual skia::RefPtr<SkCanvas> GetCanvas() OVERRIDE;
@@ -86,12 +54,22 @@ class DriSurfaceAdapter : public gfx::SurfaceOzoneCanvas {
   virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() OVERRIDE;
 
  private:
+  void UpdateNativeSurface(const gfx::Rect& damage);
+
   skia::RefPtr<SkSurface> surface_;
   gfx::Rect last_damage_;
+  base::WeakPtr<HardwareDisplayController> controller_;
 
-  gfx::AcceleratedWidget widget_;
-  DriSurfaceFactory* dri_;
+  DISALLOW_COPY_AND_ASSIGN(DriSurfaceAdapter);
 };
+
+DriSurfaceAdapter::DriSurfaceAdapter(
+    const base::WeakPtr<HardwareDisplayController>& controller)
+    : controller_(controller) {
+}
+
+DriSurfaceAdapter::~DriSurfaceAdapter() {
+}
 
 skia::RefPtr<SkCanvas> DriSurfaceAdapter::GetCanvas() {
   return skia::SharePtr(surface_->getCanvas());
@@ -104,11 +82,21 @@ void DriSurfaceAdapter::ResizeCanvas(const gfx::Size& viewport_size) {
 }
 
 void DriSurfaceAdapter::PresentCanvas(const gfx::Rect& damage) {
-  // The underlying display is gone.
-  if (!dri_->IsWidgetValid(widget_))
+  CHECK(base::MessageLoopForUI::IsCurrent());
+  if (!controller_)
     return;
 
-  SkCanvas* canvas = dri_->GetCanvasForWidget(widget_);
+  UpdateNativeSurface(damage);
+  controller_->SchedulePageFlip();
+  controller_->WaitForPageFlipEvent();
+}
+
+scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
+  return scoped_ptr<gfx::VSyncProvider>(new DriVSyncProvider(controller_));
+}
+
+void DriSurfaceAdapter::UpdateNativeSurface(const gfx::Rect& damage) {
+  SkCanvas* canvas = controller_->surface()->GetDrawableForWidget();
 
   // The DriSurface is double buffered, so the current back buffer is
   // missing the previous update. Expand damage region.
@@ -119,11 +107,6 @@ void DriSurfaceAdapter::PresentCanvas(const gfx::Rect& damage) {
   image->draw(canvas, &real_damage, real_damage, NULL);
 
   last_damage_ = damage;
-  dri_->SchedulePageFlip(widget_);
-}
-
-scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
-  return dri_->CreateVSyncProvider(widget_);
 }
 
 }  // namespace
@@ -131,12 +114,12 @@ scoped_ptr<gfx::VSyncProvider> DriSurfaceAdapter::CreateVSyncProvider() {
 // static
 const gfx::AcceleratedWidget DriSurfaceFactory::kDefaultWidgetHandle = 1;
 
-DriSurfaceFactory::DriSurfaceFactory()
-    : drm_(),
+DriSurfaceFactory::DriSurfaceFactory(DriWrapper* drm,
+                                     ScreenManager* screen_manager)
+    : drm_(drm),
+      screen_manager_(screen_manager),
       state_(UNINITIALIZED),
-      controllers_(),
-      allocated_widgets_(0),
-      last_added_widget_(0) {
+      allocated_widgets_(0) {
 }
 
 DriSurfaceFactory::~DriSurfaceFactory() {
@@ -149,12 +132,8 @@ DriSurfaceFactory::InitializeHardware() {
   if (state_ != UNINITIALIZED)
     return state_;
 
-  // TODO(dnicoara): Short-cut right now. What we want is to look at all the
-  // graphics devices available and select the primary one.
-  drm_.reset(CreateWrapper());
   if (drm_->get_fd() < 0) {
-    LOG(ERROR) << "Cannot open graphics card '"
-               << kDefaultGraphicsCardPath << "': " << strerror(errno);
+    LOG(ERROR) << "Failed to create DRI connection";
     state_ = FAILED;
     return state_;
   }
@@ -172,10 +151,6 @@ DriSurfaceFactory::InitializeHardware() {
 
 void DriSurfaceFactory::ShutdownHardware() {
   CHECK(state_ == INITIALIZED);
-
-  controllers_.clear();
-  drm_.reset();
-
   state_ = UNINITIALIZED;
 }
 
@@ -190,18 +165,11 @@ gfx::AcceleratedWidget DriSurfaceFactory::GetAcceleratedWidget() {
 scoped_ptr<gfx::SurfaceOzoneCanvas> DriSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget w) {
   CHECK(state_ == INITIALIZED);
-  // When running with content_shell, a default Display gets created. But we
-  // can't just create a surface without a backing native display. This forces
-  // initialization of a display.
-  if (controllers_.size() == 0 && !InitializePrimaryDisplay()) {
-      LOG(ERROR) << "Failed forced initialization of primary display";
-      return scoped_ptr<gfx::SurfaceOzoneCanvas>();
-  }
-
   // Initial cursor set.
   ResetCursor(w);
 
-  return scoped_ptr<gfx::SurfaceOzoneCanvas>(new DriSurfaceAdapter(w, this));
+  return scoped_ptr<gfx::SurfaceOzoneCanvas>(
+      new DriSurfaceAdapter(screen_manager_->GetDisplayController(w)));
 }
 
 bool DriSurfaceFactory::LoadEGLGLES2Bindings(
@@ -210,117 +178,12 @@ bool DriSurfaceFactory::LoadEGLGLES2Bindings(
   return false;
 }
 
-bool DriSurfaceFactory::SchedulePageFlip(gfx::AcceleratedWidget w) {
-  TRACE_EVENT0("dri", "DriSurfaceFactory::SchedulePageFlip");
-
-  CHECK(state_ == INITIALIZED);
-  // TODO(dnicoara) Change this CHECK once we're running with the threaded
-  // compositor.
-  CHECK(base::MessageLoopForUI::IsCurrent());
-
-  if (!GetControllerForWidget(w)->SchedulePageFlip())
-    return false;
-
-  // Only wait for the page flip event to finish if it was properly scheduled.
-  //
-  // TODO(dnicoara) The following call will wait for the page flip event to
-  // complete. This means that it will block until the next VSync. Ideally the
-  // wait should happen in the message loop. The message loop would then
-  // schedule the next draw event. Alternatively, the VSyncProvider could be
-  // used to schedule the next draw. Unfortunately, at this point,
-  // DriOutputDevice does not provide any means to use any of the above
-  // solutions. Note that if the DRM callback does not schedule the next draw,
-  // then some sort of synchronization needs to take place since starting a new
-  // draw before the page flip happened is considered an error. However we can
-  // not use any lock constructs unless we're using the threaded compositor.
-  // Note that the following call does not use any locks, so it is safe to be
-  // made on the UI thread (thought not ideal).
-  WaitForPageFlipEvent(drm_->get_fd());
-
-  return true;
-}
-
-SkCanvas* DriSurfaceFactory::GetCanvasForWidget(
-    gfx::AcceleratedWidget w) {
-  CHECK(state_ == INITIALIZED);
-  return GetControllerForWidget(w)->get_surface()->GetDrawableForWidget();
-}
-
-scoped_ptr<gfx::VSyncProvider> DriSurfaceFactory::CreateVSyncProvider(
-    gfx::AcceleratedWidget w) {
-  CHECK(state_ == INITIALIZED);
-  return scoped_ptr<gfx::VSyncProvider>(new DriVSyncProvider(this, w));
-}
-
-bool DriSurfaceFactory::CreateHardwareDisplayController(
-    uint32_t connector, uint32_t crtc, const drmModeModeInfo& mode) {
-  gfx::AcceleratedWidget widget = 0;
-  scoped_ptr<HardwareDisplayController> controller;
-  for (HardwareDisplayControllerMap::iterator it = controllers_.begin();
-       it != controllers_.end(); ++it) {
-    if (it->second->connector_id() == connector &&
-        it->second->crtc_id() == crtc) {
-      if (SameMode(mode, it->second->get_mode()))
-        return true;
-
-      widget = it->first;
-      controller.reset(it->second);
-      controller->UnbindSurfaceFromController();
-      break;
-    }
-  }
-
-  if (!controller) {
-    controller.reset(
-        new HardwareDisplayController(drm_.get(), connector, crtc));
-    widget = ++last_added_widget_;
-  }
-
-  // Create a surface suitable for the current controller.
-  scoped_ptr<DriSurface> surface(CreateSurface(
-      gfx::Size(mode.hdisplay, mode.vdisplay)));
-
-  if (!surface->Initialize()) {
-    LOG(ERROR) << "Failed to initialize surface";
-    return false;
-  }
-
-  // Bind the surface to the controller. This will register the backing buffers
-  // with the hardware CRTC such that we can show the buffers and performs the
-  // initial modeset. The controller takes ownership of the surface.
-  if (!controller->BindSurfaceToController(surface.Pass(), mode)) {
-    LOG(ERROR) << "Failed to bind surface to controller";
-    return false;
-  }
-
-  controllers_.insert(std::make_pair(widget,
-                                     controller.release()));
-  return true;
-}
-
-void DriSurfaceFactory::DestroyHardwareDisplayController(
-    uint32_t connector, uint32_t crtc) {
-  for (HardwareDisplayControllerMap::iterator it = controllers_.begin();
-       it != controllers_.end(); ++it) {
-    if (it->second->connector_id() == connector &&
-        it->second->crtc_id() == crtc) {
-      delete it->second;
-      controllers_.erase(it);
-      return;
-    }
-  }
-}
-
-bool DriSurfaceFactory::DisableHardwareDisplayController(uint32_t crtc) {
-  return drm_->DisableCrtc(crtc);
-}
-
 gfx::Size DriSurfaceFactory::GetWidgetSize(gfx::AcceleratedWidget w) {
-  if (IsWidgetValid(w)) {
-    HardwareDisplayController* controller = GetControllerForWidget(w);
+  base::WeakPtr<HardwareDisplayController> controller =
+      screen_manager_->GetDisplayController(w);
+  if (controller)
     return gfx::Size(controller->get_mode().hdisplay,
                      controller->get_mode().vdisplay);
-  }
 
   return gfx::Size(0, 0);
 }
@@ -344,8 +207,10 @@ void DriSurfaceFactory::MoveHardwareCursor(gfx::AcceleratedWidget window,
   if (state_ != INITIALIZED)
     return;
 
-  if (IsWidgetValid(window))
-    GetControllerForWidget(window)->MoveCursor(location);
+  base::WeakPtr<HardwareDisplayController> controller =
+      screen_manager_->GetDisplayController(window);
+  if (controller)
+    controller->MoveCursor(location);
 }
 
 void DriSurfaceFactory::UnsetHardwareCursor(gfx::AcceleratedWidget window) {
@@ -357,80 +222,31 @@ void DriSurfaceFactory::UnsetHardwareCursor(gfx::AcceleratedWidget window) {
   ResetCursor(window);
 }
 
-bool DriSurfaceFactory::IsWidgetValid(gfx::AcceleratedWidget w) const {
-  return controllers_.find(w) != controllers_.end();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DriSurfaceFactory private
 
 DriSurface* DriSurfaceFactory::CreateSurface(const gfx::Size& size) {
-  return new DriSurface(drm_.get(), size);
-}
-
-DriWrapper* DriSurfaceFactory::CreateWrapper() {
-  return new DriWrapper(kDefaultGraphicsCardPath);
-}
-
-bool DriSurfaceFactory::InitializePrimaryDisplay() {
-  drmModeRes* resources = drmModeGetResources(drm_->get_fd());
-  DCHECK(resources) << "Failed to get DRM resources";
-  ScopedVector<HardwareDisplayControllerInfo> displays =
-      GetAvailableDisplayControllerInfos(drm_->get_fd(), resources);
-  drmModeFreeResources(resources);
-
-  if (displays.size() == 0)
-    return false;
-
-  drmModePropertyRes* dpms = drm_->GetProperty(displays[0]->connector(),
-                                               "DPMS");
-  if (dpms)
-    drm_->SetProperty(displays[0]->connector()->connector_id,
-                      dpms->prop_id,
-                      DRM_MODE_DPMS_ON);
-
-  CreateHardwareDisplayController(
-      displays[0]->connector()->connector_id,
-      displays[0]->crtc()->crtc_id,
-      displays[0]->connector()->modes[0]);
-  return true;
-}
-
-void DriSurfaceFactory::WaitForPageFlipEvent(int fd) {
-  TRACE_EVENT0("dri", "WaitForPageFlipEvent");
-
-  drmEventContext drm_event;
-  drm_event.version = DRM_EVENT_CONTEXT_VERSION;
-  drm_event.page_flip_handler = HandlePageFlipEvent;
-  drm_event.vblank_handler = NULL;
-
-  // Wait for the page-flip to complete.
-  drmHandleEvent(fd, &drm_event);
+  return new DriSurface(drm_, size);
 }
 
 void DriSurfaceFactory::ResetCursor(gfx::AcceleratedWidget w) {
-  if (!IsWidgetValid(w))
-    return;
+  base::WeakPtr<HardwareDisplayController> controller =
+      screen_manager_->GetDisplayController(w);
 
   if (!cursor_bitmap_.empty()) {
     // Draw new cursor into backbuffer.
     UpdateCursorImage(cursor_surface_.get(), cursor_bitmap_);
 
     // Reset location & buffer.
-    GetControllerForWidget(w)->MoveCursor(cursor_location_);
-    GetControllerForWidget(w)->SetCursor(cursor_surface_.get());
+    if (controller) {
+      controller->MoveCursor(cursor_location_);
+      controller->SetCursor(cursor_surface_.get());
+    }
   } else {
     // No cursor set.
-    GetControllerForWidget(w)->UnsetCursor();
+    if (controller)
+      controller->UnsetCursor();
   }
-}
-
-HardwareDisplayController* DriSurfaceFactory::GetControllerForWidget(
-    gfx::AcceleratedWidget w) {
-  HardwareDisplayControllerMap::iterator it = controllers_.find(w);
-  CHECK(it != controllers_.end());
-
-  return it->second;
 }
 
 }  // namespace ui

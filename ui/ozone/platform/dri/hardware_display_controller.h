@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/ozone/ozone_export.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 
@@ -80,7 +81,8 @@ class DriSurface;
 //
 // TODO(dnicoara) Need to have a way to detect events (such as monitor
 // connected or disconnected).
-class OZONE_EXPORT HardwareDisplayController {
+class OZONE_EXPORT HardwareDisplayController
+    : public base::SupportsWeakPtr<HardwareDisplayController> {
  public:
   HardwareDisplayController(DriWrapper* drm,
                             uint32_t connector_id,
@@ -93,6 +95,9 @@ class OZONE_EXPORT HardwareDisplayController {
                                drmModeModeInfo mode);
 
   void UnbindSurfaceFromController();
+
+  // Unbinds the surface and disables the CRTC.
+  void Disable();
 
   // Schedules the |surface_|'s framebuffer to be displayed on the next vsync
   // event. The event will be posted on the graphics card file descriptor |fd_|
@@ -112,6 +117,10 @@ class OZONE_EXPORT HardwareDisplayController {
   // Returns true if the page flip was successfully registered, false otherwise.
   bool SchedulePageFlip();
 
+  // TODO(dnicoara) This should be on the MessageLoop when Ozone can have
+  // BeginFrame can be triggered explicitly by Ozone.
+  void WaitForPageFlipEvent();
+
   // Called when the page flip event occurred. The event is provided by the
   // kernel when a VBlank event finished. This allows the controller to
   // update internal state and propagate the update to the surface.
@@ -130,12 +139,12 @@ class OZONE_EXPORT HardwareDisplayController {
   // Moves the hardware cursor to |location|.
   bool MoveCursor(const gfx::Point& location);
 
-  int get_fd() const { return drm_->get_fd(); };
-
   const drmModeModeInfo& get_mode() const { return mode_; };
   uint32_t connector_id() const { return connector_id_; }
   uint32_t crtc_id() const { return crtc_id_; }
-  DriSurface* get_surface() const { return surface_.get(); };
+  DriSurface* surface() const {
+    return surface_.get();
+  };
 
   uint64_t get_time_of_last_flip() const {
     return time_of_last_flip_;

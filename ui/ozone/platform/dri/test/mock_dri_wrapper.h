@@ -24,6 +24,7 @@ class MockDriWrapper : public ui::DriWrapper {
   int get_remove_framebuffer_call_count() const {
     return remove_framebuffer_call_count_;
   }
+  void fail_init() { fd_ = -1; }
   void set_set_crtc_expectation(bool state) { set_crtc_expectation_ = state; }
   void set_page_flip_expectation(bool state) { page_flip_expectation_ = state; }
   void set_add_framebuffer_expectation(bool state) {
@@ -61,6 +62,7 @@ class MockDriWrapper : public ui::DriWrapper {
                          uint32_t width,
                          uint32_t height) OVERRIDE;
   virtual bool MoveCursor(uint32_t crtc_id, int x, int y) OVERRIDE;
+  virtual void HandleEvent(drmEventContext& event) OVERRIDE;
 
  private:
   int get_crtc_call_count_;

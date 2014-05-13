@@ -53,8 +53,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterSurfaceIsBound) {
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
                                                    kDefaultMode));
-
-  EXPECT_TRUE(controller_->get_surface() != NULL);
+  EXPECT_TRUE(controller_->surface() != NULL);
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
@@ -64,9 +63,8 @@ TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
   EXPECT_TRUE(surface->Initialize());
   EXPECT_TRUE(controller_->BindSurfaceToController(surface.Pass(),
                                                    kDefaultMode));
-
   EXPECT_TRUE(controller_->SchedulePageFlip());
-  EXPECT_TRUE(controller_->get_surface() != NULL);
+  EXPECT_TRUE(controller_->surface() != NULL);
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
@@ -78,7 +76,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
   EXPECT_TRUE(surface->Initialize());
   EXPECT_FALSE(controller_->BindSurfaceToController(surface.Pass(),
                                                     kDefaultMode));
-  EXPECT_EQ(NULL, controller_->get_surface());
+  EXPECT_EQ(NULL, controller_->surface());
 }
 
 TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {

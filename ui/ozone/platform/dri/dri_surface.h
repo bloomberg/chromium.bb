@@ -120,7 +120,6 @@ class DriWrapper;
 class OZONE_EXPORT DriSurface {
  public:
   DriSurface(DriWrapper* dri, const gfx::Size& size);
-
   virtual ~DriSurface();
 
   // Used to allocate all necessary buffers for this surface. If the
@@ -144,8 +143,6 @@ class OZONE_EXPORT DriSurface {
   const gfx::Size& size() const { return size_; }
 
  private:
-  friend class HardwareDisplayController;
-
   DriBuffer* frontbuffer() const { return bitmaps_[front_buffer_].get(); }
   DriBuffer* backbuffer() const { return bitmaps_[front_buffer_ ^ 1].get(); }
 

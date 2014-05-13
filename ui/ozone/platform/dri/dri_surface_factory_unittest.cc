@@ -15,6 +15,7 @@
 #include "ui/ozone/platform/dri/dri_surface.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/hardware_display_controller.h"
+#include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/platform/dri/test/mock_dri_surface.h"
 #include "ui/ozone/platform/dri/test/mock_dri_wrapper.h"
 
@@ -29,22 +30,9 @@ const drmModeModeInfo kDefaultMode =
 // for buffers we use the default SkBitmap allocator.
 class MockDriSurfaceFactory : public ui::DriSurfaceFactory {
  public:
-  MockDriSurfaceFactory()
-      : DriSurfaceFactory(),
-        mock_drm_(NULL),
-        drm_wrapper_expectation_(true),
-        initialize_controller_expectation_(true) {}
+  MockDriSurfaceFactory(ui::DriWrapper* dri, ui::ScreenManager* screen_manager)
+      : DriSurfaceFactory(dri, screen_manager), dri_(dri) {}
   virtual ~MockDriSurfaceFactory() {};
-
-  void set_drm_wrapper_expectation(bool state) {
-    drm_wrapper_expectation_ = state;
-  }
-
-  void set_initialize_controller_expectation(bool state) {
-    initialize_controller_expectation_ = state;
-  }
-
-  ui::MockDriWrapper* get_drm() const { return mock_drm_; }
 
   const std::vector<ui::MockDriSurface*>& get_surfaces() const {
     return surfaces_;
@@ -52,38 +40,44 @@ class MockDriSurfaceFactory : public ui::DriSurfaceFactory {
 
  private:
   virtual ui::DriSurface* CreateSurface(const gfx::Size& size) OVERRIDE {
-    ui::MockDriSurface* surface = new ui::MockDriSurface(mock_drm_, size);
+    ui::MockDriSurface* surface = new ui::MockDriSurface(dri_, size);
     surfaces_.push_back(surface);
     return surface;
   }
 
-  virtual ui::DriWrapper* CreateWrapper() OVERRIDE {
-    if (drm_wrapper_expectation_)
-      mock_drm_ = new ui::MockDriWrapper(3);
-    else
-      mock_drm_ = new ui::MockDriWrapper(-1);
+  ui::DriWrapper* dri_;
+  std::vector<ui::MockDriSurface*> surfaces_;  // Not owned.
 
-    return mock_drm_;
+  DISALLOW_COPY_AND_ASSIGN(MockDriSurfaceFactory);
+};
+
+class MockScreenManager : public ui::ScreenManager {
+ public:
+  MockScreenManager(ui::DriWrapper* dri)
+      : ScreenManager(dri),
+        dri_(dri) {}
+  virtual ~MockScreenManager() {}
+
+  const std::vector<ui::MockDriSurface*>& get_surfaces() const {
+    return surfaces_;
   }
 
   // Normally we'd use DRM to figure out the controller configuration. But we
   // can't use DRM in unit tests, so we just create a fake configuration.
-  virtual bool InitializePrimaryDisplay() OVERRIDE {
-    if (initialize_controller_expectation_) {
-      return CreateHardwareDisplayController(1, 1, kDefaultMode);
-    } else {
-      return false;
-    }
+  virtual void ForceInitializationOfPrimaryDisplay() OVERRIDE {
+    ConfigureDisplayController(1, 2, kDefaultMode);
+  }
+  virtual ui::DriSurface* CreateSurface(const gfx::Size& size) OVERRIDE {
+    ui::MockDriSurface* surface = new ui::MockDriSurface(dri_, size);
+    surfaces_.push_back(surface);
+    return surface;
   }
 
-  virtual void WaitForPageFlipEvent(int fd) OVERRIDE {}
-
-  ui::MockDriWrapper* mock_drm_;
-  bool drm_wrapper_expectation_;
-  bool initialize_controller_expectation_;
+ private:
+  ui::DriWrapper* dri_;  // Not owned.
   std::vector<ui::MockDriSurface*> surfaces_;  // Not owned.
 
-  DISALLOW_COPY_AND_ASSIGN(MockDriSurfaceFactory);
+  DISALLOW_COPY_AND_ASSIGN(MockScreenManager);
 };
 
 }  // namespace
@@ -96,6 +90,8 @@ class DriSurfaceFactoryTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;
+  scoped_ptr<ui::MockDriWrapper> dri_;
+  scoped_ptr<MockScreenManager> screen_manager_;
   scoped_ptr<MockDriSurfaceFactory> factory_;
 
  private:
@@ -104,7 +100,9 @@ class DriSurfaceFactoryTest : public testing::Test {
 
 void DriSurfaceFactoryTest::SetUp() {
   message_loop_.reset(new base::MessageLoopForUI);
-  factory_.reset(new MockDriSurfaceFactory());
+  dri_.reset(new ui::MockDriWrapper(3));
+  screen_manager_.reset(new MockScreenManager(dri_.get()));
+  factory_.reset(new MockDriSurfaceFactory(dri_.get(), screen_manager_.get()));
 }
 
 void DriSurfaceFactoryTest::TearDown() {
@@ -113,26 +111,13 @@ void DriSurfaceFactoryTest::TearDown() {
 }
 
 TEST_F(DriSurfaceFactoryTest, FailInitialization) {
-  factory_->set_drm_wrapper_expectation(false);
-
+  dri_->fail_init();
   EXPECT_EQ(gfx::SurfaceFactoryOzone::FAILED, factory_->InitializeHardware());
 }
 
 TEST_F(DriSurfaceFactoryTest, SuccessfulInitialization) {
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
-}
-
-TEST_F(DriSurfaceFactoryTest, FailSurfaceInitialization) {
-  factory_->set_initialize_controller_expectation(false);
-
-  EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
-            factory_->InitializeHardware());
-
-  gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
-  EXPECT_EQ(ui::DriSurfaceFactory::kDefaultWidgetHandle, w);
-
-  EXPECT_FALSE(factory_->CreateCanvasForWidget(w));
 }
 
 TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
@@ -145,32 +130,37 @@ TEST_F(DriSurfaceFactoryTest, SuccessfulWidgetRealization) {
   EXPECT_TRUE(factory_->CreateCanvasForWidget(w));
 }
 
-TEST_F(DriSurfaceFactoryTest, FailSchedulePageFlip) {
-  EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
-            factory_->InitializeHardware());
-
-  factory_->get_drm()->set_page_flip_expectation(false);
-
-  gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
-  EXPECT_EQ(ui::DriSurfaceFactory::kDefaultWidgetHandle, w);
-
-  scoped_ptr<gfx::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(w);
-  EXPECT_TRUE(surf);
-
-  EXPECT_FALSE(factory_->SchedulePageFlip(w));
-}
-
-TEST_F(DriSurfaceFactoryTest, SuccessfulSchedulePageFlip) {
+TEST_F(DriSurfaceFactoryTest, CheckNativeSurfaceContents) {
   EXPECT_EQ(gfx::SurfaceFactoryOzone::INITIALIZED,
             factory_->InitializeHardware());
 
   gfx::AcceleratedWidget w = factory_->GetAcceleratedWidget();
   EXPECT_EQ(ui::DriSurfaceFactory::kDefaultWidgetHandle, w);
 
-  scoped_ptr<gfx::SurfaceOzoneCanvas> surf = factory_->CreateCanvasForWidget(w);
-  EXPECT_TRUE(surf);
+  scoped_ptr<gfx::SurfaceOzoneCanvas> surface =
+      factory_->CreateCanvasForWidget(w);
 
-  EXPECT_TRUE(factory_->SchedulePageFlip(w));
+  surface->ResizeCanvas(
+      gfx::Size(kDefaultMode.hdisplay, kDefaultMode.vdisplay));
+  surface->GetCanvas()->drawColor(SK_ColorWHITE);
+  surface->PresentCanvas(
+      gfx::Rect(0, 0, kDefaultMode.hdisplay / 2, kDefaultMode.vdisplay / 2));
+
+  const std::vector<ui::DriBuffer*>& bitmaps =
+      screen_manager_->get_surfaces()[0]->bitmaps();
+
+  SkBitmap image;
+  bitmaps[1]->canvas()->readPixels(&image, 0, 0);
+
+  // Make sure the updates are correctly propagated to the native surface.
+  for (int i = 0; i < image.height(); ++i) {
+    for (int j = 0; j < image.width(); ++j) {
+      if (j < kDefaultMode.hdisplay / 2 && i < kDefaultMode.vdisplay / 2)
+        EXPECT_EQ(SK_ColorWHITE, image.getColor(j, i));
+      else
+        EXPECT_EQ(SK_ColorBLACK, image.getColor(j, i));
+    }
+  }
 }
 
 TEST_F(DriSurfaceFactoryTest, SetCursorImage) {

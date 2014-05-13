@@ -11,6 +11,8 @@
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
+#include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/screen_manager.h"
 
 #if defined(OS_CHROMEOS)
 #include "ui/ozone/platform/dri/chromeos/native_display_delegate_dri.h"
@@ -20,6 +22,8 @@ namespace ui {
 
 namespace {
 
+const char kDefaultGraphicsCardPath[] = "/dev/dri/card0";
+
 // OzonePlatform for Linux DRI (Direct Rendering Infrastructure)
 //
 // This platform is Linux without any display server (no X, wayland, or
@@ -27,7 +31,10 @@ namespace {
 class OzonePlatformDri : public OzonePlatform {
  public:
   OzonePlatformDri()
-      : device_manager_(CreateDeviceManager()),
+      : dri_(new DriWrapper(kDefaultGraphicsCardPath)),
+        screen_manager_(new ScreenManager(dri_.get())),
+        device_manager_(CreateDeviceManager()),
+        surface_factory_ozone_(dri_.get(), screen_manager_.get()),
         cursor_factory_ozone_(&surface_factory_ozone_),
         event_factory_ozone_(&cursor_factory_ozone_, device_manager_.get()) {}
   virtual ~OzonePlatformDri() {}
@@ -49,13 +56,15 @@ class OzonePlatformDri : public OzonePlatform {
 #if defined(OS_CHROMEOS)
   virtual scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
-    return scoped_ptr<ui::NativeDisplayDelegate>(
-        new NativeDisplayDelegateDri(&surface_factory_ozone_,
-                                     device_manager_.get()));
+    return scoped_ptr<ui::NativeDisplayDelegate>(new NativeDisplayDelegateDri(
+        dri_.get(), screen_manager_.get(), device_manager_.get()));
   }
 #endif
 
  private:
+  scoped_ptr<DriWrapper> dri_;
+  // TODO(dnicoara) Move ownership of |screen_manager_| to NDD.
+  scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;
 
   ui::DriSurfaceFactory surface_factory_ozone_;

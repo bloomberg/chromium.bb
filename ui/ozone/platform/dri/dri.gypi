@@ -53,6 +53,8 @@
         'hardware_display_controller.h',
         'ozone_platform_dri.cc',
         'ozone_platform_dri.h',
+        'screen_manager.cc',
+        'screen_manager.h',
       ],
     },
   ],

@@ -70,9 +70,7 @@ bool MockDriWrapper::RemoveFramebuffer(uint32_t framebuffer) {
 bool MockDriWrapper::PageFlip(uint32_t crtc_id,
                               uint32_t framebuffer,
                               void* data) {
-  static_cast<ui::HardwareDisplayController*>(data)
-      ->get_surface()
-      ->SwapBuffers();
+  static_cast<ui::HardwareDisplayController*>(data)->surface()->SwapBuffers();
   return page_flip_expectation_;
 }
 
@@ -105,6 +103,9 @@ bool MockDriWrapper::SetCursor(uint32_t crtc_id,
 
 bool MockDriWrapper::MoveCursor(uint32_t crtc_id, int x, int y) {
   return true;
+}
+
+void MockDriWrapper::HandleEvent(drmEventContext& event) {
 }
 
 }  // namespace ui

@@ -65,11 +65,11 @@ TEST_F(DriSurfaceTest, CheckFBIDOnSwap) {
                                        kDefaultMode);
 
   // Check that the framebuffer ID is correct.
-  EXPECT_EQ(2u, controller_->get_surface()->GetFramebufferId());
+  EXPECT_EQ(2u, controller_->surface()->GetFramebufferId());
 
-  controller_->get_surface()->SwapBuffers();
+  controller_->surface()->SwapBuffers();
 
-  EXPECT_EQ(1u, controller_->get_surface()->GetFramebufferId());
+  EXPECT_EQ(1u, controller_->surface()->GetFramebufferId());
 }
 
 TEST_F(DriSurfaceTest, CheckPixelPointerOnSwap) {

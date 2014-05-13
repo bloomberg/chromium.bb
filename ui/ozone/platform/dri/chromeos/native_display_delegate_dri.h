@@ -15,12 +15,14 @@ namespace ui {
 
 class DeviceManager;
 class DisplaySnapshotDri;
-class DriSurfaceFactory;
+class DriWrapper;
+class ScreenManager;
 
 class NativeDisplayDelegateDri
     : public NativeDisplayDelegate, DeviceEventObserver {
  public:
-  NativeDisplayDelegateDri(DriSurfaceFactory* surface_factory,
+  NativeDisplayDelegateDri(DriWrapper* dri,
+                           ScreenManager* screen_manager,
                            DeviceManager* device_manager);
   virtual ~NativeDisplayDelegateDri();
 
@@ -55,7 +57,14 @@ class NativeDisplayDelegateDri
   virtual void OnDeviceEvent(const DeviceEvent& event) OVERRIDE;
 
  private:
-  DriSurfaceFactory* surface_factory_;  // Not owned.
+  // Notify ScreenManager of all the displays that were present before the
+  // update but are gone after the update.
+  void NotifyScreenManager(
+      const std::vector<DisplaySnapshotDri*>& new_displays,
+      const std::vector<DisplaySnapshotDri*>& old_displays) const;
+
+  DriWrapper* dri_;  // Not owned.
+  ScreenManager* screen_manager_;  // Not owned.
   DeviceManager* device_manager_;  // Not owned.
   ScopedVector<const DisplayMode> cached_modes_;
   ScopedVector<DisplaySnapshotDri> cached_displays_;

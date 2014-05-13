@@ -5,23 +5,22 @@
 #ifndef UI_OZONE_PLATFORM_IMPL_DRI_VSYNC_PROVIDER_H_
 #define UI_OZONE_PLATFORM_IMPL_DRI_VSYNC_PROVIDER_H_
 
-#include "ui/gfx/native_widget_types.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/vsync_provider.h"
 
 namespace ui {
 
-class DriSurfaceFactory;
+class HardwareDisplayController;
 
 class DriVSyncProvider : public gfx::VSyncProvider {
  public:
-  DriVSyncProvider(DriSurfaceFactory* factory, gfx::AcceleratedWidget w);
+  DriVSyncProvider(const base::WeakPtr<HardwareDisplayController>& controller);
   virtual ~DriVSyncProvider();
 
   virtual void GetVSyncParameters(const UpdateVSyncCallback& callback) OVERRIDE;
 
  private:
-  DriSurfaceFactory* factory_;
-  gfx::AcceleratedWidget widget_;
+  base::WeakPtr<HardwareDisplayController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DriVSyncProvider);
 };

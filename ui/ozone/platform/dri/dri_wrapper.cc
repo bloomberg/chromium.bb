@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <xf86drm.h>
 #include <xf86drmMode.h>
 
 #include "base/logging.h"
@@ -153,6 +154,11 @@ bool DriWrapper::SetCursor(uint32_t crtc_id,
 bool DriWrapper::MoveCursor(uint32_t crtc_id, int x, int y) {
   CHECK(fd_ >= 0);
   return !drmModeMoveCursor(fd_, crtc_id, x, y);
+}
+
+void DriWrapper::HandleEvent(drmEventContext& event) {
+  CHECK(fd_ >= 0);
+  drmHandleEvent(fd_, &event);
 }
 
 }  // namespace ui

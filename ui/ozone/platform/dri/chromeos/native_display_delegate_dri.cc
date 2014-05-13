@@ -10,9 +10,9 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/ozone/platform/dri/chromeos/display_mode_dri.h"
 #include "ui/ozone/platform/dri/chromeos/display_snapshot_dri.h"
-#include "ui/ozone/platform/dri/dri_surface_factory.h"
 #include "ui/ozone/platform/dri/dri_util.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
+#include "ui/ozone/platform/dri/screen_manager.h"
 
 namespace ui {
 
@@ -21,21 +21,19 @@ const size_t kMaxDisplayCount = 2;
 }  // namespace
 
 NativeDisplayDelegateDri::NativeDisplayDelegateDri(
-    DriSurfaceFactory* surface_factory, DeviceManager* device_manager)
-    : surface_factory_(surface_factory),
-      device_manager_(device_manager) {}
+    DriWrapper* dri,
+    ScreenManager* screen_manager,
+    DeviceManager* device_manager)
+    : dri_(dri),
+      screen_manager_(screen_manager),
+      device_manager_(device_manager) {
+}
 
 NativeDisplayDelegateDri::~NativeDisplayDelegateDri() {
   device_manager_->RemoveObserver(this);
 }
 
 void NativeDisplayDelegateDri::Initialize() {
-  gfx::SurfaceFactoryOzone::HardwareState state =
-      surface_factory_->InitializeHardware();
-
-  CHECK_EQ(gfx::SurfaceFactoryOzone::INITIALIZED, state)
-      << "Failed to initialize hardware";
-
   device_manager_->AddObserver(this);
 }
 
@@ -53,10 +51,9 @@ void NativeDisplayDelegateDri::ForceDPMSOn() {
   for (size_t i = 0; i < cached_displays_.size(); ++i) {
     DisplaySnapshotDri* dri_output = cached_displays_[i];
     if (dri_output->dpms_property())
-      surface_factory_->drm()->SetProperty(
-          dri_output->connector(),
-          dri_output->dpms_property()->prop_id,
-          DRM_MODE_DPMS_ON);
+      dri_->SetProperty(dri_output->connector(),
+                        dri_output->dpms_property()->prop_id,
+                        DRM_MODE_DPMS_ON);
   }
 }
 
@@ -64,20 +61,14 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
   ScopedVector<DisplaySnapshotDri> old_displays(cached_displays_.Pass());
   cached_modes_.clear();
 
-  drmModeRes* resources = drmModeGetResources(
-      surface_factory_->drm()->get_fd());
+  drmModeRes* resources = drmModeGetResources(dri_->get_fd());
   DCHECK(resources) << "Failed to get DRM resources";
   ScopedVector<HardwareDisplayControllerInfo> displays =
-      GetAvailableDisplayControllerInfos(
-          surface_factory_->drm()->get_fd(),
-          resources);
+      GetAvailableDisplayControllerInfos(dri_->get_fd(), resources);
   for (size_t i = 0;
        i < displays.size() && cached_displays_.size() < kMaxDisplayCount; ++i) {
     DisplaySnapshotDri* display = new DisplaySnapshotDri(
-        surface_factory_->drm(),
-        displays[i]->connector(),
-        displays[i]->crtc(),
-        i);
+        dri_, displays[i]->connector(), displays[i]->crtc(), i);
     cached_displays_.push_back(display);
     // Modes can be shared between different displays, so we need to keep track
     // of them independently for cleanup.
@@ -88,21 +79,7 @@ std::vector<DisplaySnapshot*> NativeDisplayDelegateDri::GetDisplays() {
 
   drmModeFreeResources(resources);
 
-  for (size_t i = 0; i < old_displays.size(); ++i) {
-    bool found = false;
-    for (size_t j = 0; j < cached_displays_.size(); ++j) {
-      if (old_displays[i]->connector() == cached_displays_[j]->connector() &&
-          old_displays[i]->crtc() == cached_displays_[j]->crtc()) {
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      surface_factory_->DestroyHardwareDisplayController(
-          old_displays[i]->connector(), old_displays[i]->crtc());
-    }
-  }
+  NotifyScreenManager(cached_displays_.get(), old_displays.get());
 
   std::vector<DisplaySnapshot*> generic_displays(cached_displays_.begin(),
                                                  cached_displays_.end());
@@ -124,17 +101,17 @@ bool NativeDisplayDelegateDri::Configure(const DisplaySnapshot& output,
           << " size=" << mode->size().ToString();
 
   if (mode) {
-    if (!surface_factory_->CreateHardwareDisplayController(
-        dri_output.connector(),
-        dri_output.crtc(),
-        static_cast<const DisplayModeDri*>(mode)->mode_info())) {
+    if (!screen_manager_->ConfigureDisplayController(
+            dri_output.crtc(),
+            dri_output.connector(),
+            static_cast<const DisplayModeDri*>(mode)->mode_info())) {
       VLOG(1) << "Failed to configure: crtc=" << dri_output.crtc()
               << " connector=" << dri_output.connector();
       return false;
     }
   } else {
-    if (!surface_factory_->DisableHardwareDisplayController(
-        dri_output.crtc())) {
+    if (!screen_manager_->DisableDisplayController(dri_output.crtc(),
+                                                   dri_output.connector())) {
       VLOG(1) << "Failed to disable crtc=" << dri_output.crtc();
       return false;
     }
@@ -187,6 +164,25 @@ void NativeDisplayDelegateDri::OnDeviceEvent(const DeviceEvent& event) {
     VLOG(1) << "Got display changed event";
     FOR_EACH_OBSERVER(
         NativeDisplayObserver, observers_, OnConfigurationChanged());
+  }
+}
+
+void NativeDisplayDelegateDri::NotifyScreenManager(
+    const std::vector<DisplaySnapshotDri*>& new_displays,
+    const std::vector<DisplaySnapshotDri*>& old_displays) const {
+  for (size_t i = 0; i < old_displays.size(); ++i) {
+    bool found = false;
+    for (size_t j = 0; j < new_displays.size(); ++j) {
+      if (old_displays[i]->connector() == new_displays[j]->connector() &&
+          old_displays[i]->crtc() == new_displays[j]->crtc()) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found)
+      screen_manager_->RemoveDisplayController(old_displays[i]->crtc(),
+                                               old_displays[i]->connector());
   }
 }
 
