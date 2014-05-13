@@ -24,6 +24,7 @@ readonly SCRIPT_DIR=$(dirname $0)
 # This is where the staging sysroot is.
 readonly INSTALL_ROOT_AMD64=$(pwd)/debian_wheezy_amd64_staging
 readonly INSTALL_ROOT_I386=$(pwd)/debian_wheezy_i386_staging
+readonly INSTALL_ROOT_ARM=$(pwd)/debian_wheezy_arm_staging
 
 readonly REQUIRED_TOOLS="wget"
 
@@ -41,8 +42,10 @@ readonly RELEASE_LIST="${REPO_BASEDIR}/${RELEASE_FILE}"
 readonly RELEASE_LIST_GPG="${REPO_BASEDIR}/${RELEASE_FILE_GPG}"
 readonly PACKAGE_FILE_AMD64="main/binary-amd64/Packages.bz2"
 readonly PACKAGE_FILE_I386="main/binary-i386/Packages.bz2"
+readonly PACKAGE_FILE_ARM="main/binary-armhf/Packages.bz2"
 readonly PACKAGE_LIST_AMD64="${REPO_BASEDIR}/${PACKAGE_FILE_AMD64}"
 readonly PACKAGE_LIST_I386="${REPO_BASEDIR}/${PACKAGE_FILE_I386}"
+readonly PACKAGE_LIST_ARM="${REPO_BASEDIR}/${PACKAGE_FILE_ARM}"
 
 # Sysroot packages: these are the packages needed to build chrome.
 # NOTE: When DEBIAN_PACKAGES is modified, the packagelist files must be updated
@@ -142,7 +145,6 @@ readonly DEBIAN_PACKAGES="\
   libpulse0 \
   libpulse-dev \
   libpulse-mainloop-glib0 \
-  libquadmath0 \
   libselinux1 \
   libspeechd2 \
   libspeechd-dev \
@@ -208,8 +210,11 @@ readonly DEBIAN_PACKAGES="\
   zlib1g \
   zlib1g-dev"
 
-readonly DEBIAN_DEP_LIST_AMD64="${SCRIPT_DIR}/packagelist.debian.wheezy.amd64"
-readonly DEBIAN_DEP_LIST_I386="${SCRIPT_DIR}/packagelist.debian.wheezy.i386"
+DEBIAN_PACKAGES_X86="libquadmath0"
+
+readonly DEBIAN_DEP_LIST_AMD64="packagelist.debian.wheezy.amd64"
+readonly DEBIAN_DEP_LIST_I386="packagelist.debian.wheezy.i386"
+readonly DEBIAN_DEP_LIST_ARM="packagelist.debian.wheezy.arm"
 
 ######################################################################
 # Helper
@@ -258,7 +263,13 @@ SetEnvironmentVariables() {
   if [ -z "$ARCH" ]; then
     echo $1 | grep -qs I386$ && ARCH=I386
   fi
+  if [ -z "$ARCH" ]; then
+    echo $1 | grep -qs ARM$ && ARCH=ARM
+  fi
   case "$ARCH" in
+    ARM)
+      INSTALL_ROOT="$INSTALL_ROOT_ARM";
+      ;;
     AMD64)
       INSTALL_ROOT="$INSTALL_ROOT_AMD64";
       ;;
@@ -273,6 +284,7 @@ SetEnvironmentVariables() {
 }
 
 Cleanup() {
+  echo "Cleaning: $TMP"
   rm -rf "$TMP"
 }
 
@@ -311,7 +323,7 @@ SanityCheck() {
 
 ChangeDirectory() {
   # Change directory to where this script is.
-  cd $(dirname "$0")
+  cd ${SCRIPT_DIR}
 }
 
 
@@ -346,21 +358,36 @@ ExtractPackageBz2() {
 GeneratePackageListAmd64() {
   local output_file="$1"
   local package_list="${TMP}/Packages.wheezy_amd64.bz2"
-  DownloadOrCopy ${PACKAGE_LIST_AMD64} ${package_list}
-  VerifyPackageListing ${PACKAGE_FILE_AMD64} ${package_list}
-  ExtractPackageBz2 "$package_list" "${TMP}/Packages"
+  local tmp_package_list="${TMP}/Packages.wheezy_amd64"
+  DownloadOrCopy "${PACKAGE_LIST_AMD64}" "${package_list}"
+  VerifyPackageListing "${PACKAGE_FILE_AMD64}" "${package_list}"
+  ExtractPackageBz2 "$package_list" "$tmp_package_list"
 
-  GeneratePackageList "$output_file" "${DEBIAN_PACKAGES}"
+  GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
+  ${DEBIAN_PACKAGES_X86}"
 }
 
 GeneratePackageListI386() {
   local output_file="$1"
   local package_list="${TMP}/Packages.wheezy_i386.bz2"
-  DownloadOrCopy ${PACKAGE_LIST_I386} ${package_list}
-  VerifyPackageListing ${PACKAGE_FILE_I386} ${package_list}
-  ExtractPackageBz2 "$package_list" "${TMP}/Packages"
+  local tmp_package_list="${TMP}/Packages.wheezy_amd64"
+  DownloadOrCopy "${PACKAGE_LIST_I386}" "${package_list}"
+  VerifyPackageListing "${PACKAGE_FILE_I386}" "${package_list}"
+  ExtractPackageBz2 "$package_list" "$tmp_package_list"
 
-  GeneratePackageList "$output_file" "${DEBIAN_PACKAGES}"
+  GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
+  ${DEBIAN_PACKAGES_X86}"
+}
+
+GeneratePackageListARM() {
+  local output_file="$1"
+  local package_list="${TMP}/Packages.wheezy_arm.bz2"
+  local tmp_package_list="${TMP}/Packages.wheezy_arm"
+  DownloadOrCopy "${PACKAGE_LIST_ARM}" "${package_list}"
+  VerifyPackageListing "${PACKAGE_FILE_ARM}" "${package_list}"
+  ExtractPackageBz2 "$package_list" "$tmp_package_list"
+
+  GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}"
 }
 
 StripChecksumsFromPackageList() {
@@ -431,6 +458,25 @@ HacksAndPatchesI386() {
 }
 
 
+HacksAndPatchesARM() {
+  Banner "Misc Hacks & Patches"
+  # these are linker scripts with absolute pathnames in them
+  # which we rewrite here
+  lscripts="${INSTALL_ROOT}/usr/lib/arm-linux-gnueabihf/libpthread.so \
+            ${INSTALL_ROOT}/usr/lib/arm-linux-gnueabihf/libc.so"
+
+  #SubBanner "Rewriting Linker Scripts"
+  sed -i -e 's|/usr/lib/arm-linux-gnueabihf/||g' ${lscripts}
+  sed -i -e 's|/lib/arm-linux-gnueabihf/||g' ${lscripts}
+
+  # This is for chrome's ./build/linux/pkg-config-wrapper
+  # which overwrites PKG_CONFIG_PATH internally
+  SubBanner "Package Configs Symlink"
+  mkdir -p ${INSTALL_ROOT}/usr/share
+  ln -s ../lib/arm-linux-gnueabihf/pkgconfig ${INSTALL_ROOT}/usr/share/pkgconfig
+}
+
+
 InstallIntoSysroot() {
   Banner "Install Libs And Headers Into Jail"
 
@@ -473,11 +519,13 @@ CleanupJailSymlinks() {
     echo "${target}" | grep -qs ^/ || continue
     echo "${link}: ${target}"
     case "${link}" in
-      usr/lib/gcc/x86_64-linux-gnu/4.*/* | usr/lib/gcc/i486-linux-gnu/4.*/*)
+      usr/lib/gcc/x86_64-linux-gnu/4.*/* | usr/lib/gcc/i486-linux-gnu/4.*/* | \
+      usr/lib/gcc/arm-linux-gnueabihf/4.*/*)
         # Relativize the symlink.
         ln -snfv "../../../../..${target}" "${link}"
         ;;
-      usr/lib/x86_64-linux-gnu/* | usr/lib/i386-linux-gnu/*)
+      usr/lib/x86_64-linux-gnu/* | usr/lib/i386-linux-gnu/* | \
+      usr/lib/arm-linux-gnueabihf/*)
         # Relativize the symlink.
         ln -snfv "../../..${target}" "${link}"
         ;;
@@ -515,7 +563,7 @@ BuildSysrootAmd64() {
   local files_and_sha256sums="$(cat ${package_file})"
   StripChecksumsFromPackageList "$package_file"
   VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_AMD64"
-  InstallIntoSysroot ${files_and_sha256sums}
+  InstallIntoSysroot "${files_and_sha256sums}"
   CleanupJailSymlinks
   HacksAndPatchesAmd64
   CreateTarBall "$1"
@@ -528,25 +576,42 @@ BuildSysrootAmd64() {
 BuildSysrootI386() {
   CheckBuildSysrootArgs $@
   ClearInstallDir
-  local package_file="$TMP/package_with_sha256sum_amd64"
+  local package_file="$TMP/package_with_sha256sum_i386"
   GeneratePackageListI386 "$package_file"
   local files_and_sha256sums="$(cat ${package_file})"
   StripChecksumsFromPackageList "$package_file"
   VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_I386"
-  InstallIntoSysroot ${files_and_sha256sums}
+  InstallIntoSysroot "${files_and_sha256sums}"
   CleanupJailSymlinks
   HacksAndPatchesI386
   CreateTarBall "$1"
 }
 
+#@
+#@ BuildSysrootARM <tarball-name>
+#@
+#@    Build everything and package it
+BuildSysrootARM() {
+  CheckBuildSysrootArgs $@
+  ClearInstallDir
+  local package_file="$TMP/package_with_sha256sum_arm"
+  GeneratePackageListARM "$package_file"
+  local files_and_sha256sums="$(cat ${package_file})"
+  StripChecksumsFromPackageList "$package_file"
+  VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_ARM"
+  InstallIntoSysroot "${files_and_sha256sums}"
+  CleanupJailSymlinks
+  HacksAndPatchesARM
+  CreateTarBall "$1"
+}
+
 #
-# CheckForDebianGPGKeys
+# CheckForDebianGPGKeyring
 #
 #     Make sure the Debian GPG keys exist. Otherwise print a helpful message.
 #
-CheckForDebianGPGKeys() {
-  if [ ! -e "/etc/apt/trusted.gpg.d/debian-archive-wheezy-automatic.gpg" ]  ||
-     [ ! -e "/etc/apt/trusted.gpg.d/debian-archive-wheezy-stable.gpg" ]; then
+CheckForDebianGPGKeyring() {
+  if [ ! -e "/usr/share/keyrings/debian-archive-keyring.gpg" ]; then
     echo "Debian GPG keys missing. Install the debian-archive-keyring package."
     exit 1
   fi
@@ -563,13 +628,12 @@ VerifyPackageListing() {
   local release_file="${TMP}/${RELEASE_FILE}"
   local release_file_gpg="${TMP}/${RELEASE_FILE_GPG}"
 
-  CheckForDebianGPGKeys
+  CheckForDebianGPGKeyring
 
   DownloadOrCopy ${RELEASE_LIST} ${release_file}
   DownloadOrCopy ${RELEASE_LIST_GPG} ${release_file_gpg}
   echo "Verifying: ${release_file} with ${release_file_gpg}"
-  gpgv --keyring /etc/apt/trusted.gpg.d/debian-archive-wheezy-automatic.gpg \
-       --keyring /etc/apt/trusted.gpg.d/debian-archive-wheezy-stable.gpg \
+  gpgv --keyring /usr/share/keyrings/debian-archive-keyring.gpg \
        ${release_file_gpg} ${release_file}
 
   echo "Verifying: ${output_file}"
@@ -591,19 +655,21 @@ VerifyPackageListing() {
 #     to output file.
 #
 GeneratePackageList() {
-  local output_file="$1"
-  echo "Updating: ${output_file}"
+  local input_file="$1"
+  local output_file="$2"
+  echo "Updating: ${output_file} from ${input_file}"
   /bin/rm -f "${output_file}"
   shift
+  shift
   for pkg in $@ ; do
-    local pkg_full=$(grep -A 1 " ${pkg}\$" "${TMP}/Packages" | \
+    local pkg_full=$(grep -A 1 " ${pkg}\$" "$input_file" | \
       egrep -o "pool/.*")
     if [ -z "${pkg_full}" ]; then
         echo "ERROR: missing package: $pkg"
         exit 1
     fi
     local pkg_nopool=$(echo "$pkg_full" | sed "s/^pool\///")
-    local sha256sum=$(grep -A 4 " ${pkg}\$" "${TMP}/Packages" | \
+    local sha256sum=$(grep -A 4 " ${pkg}\$" "$input_file" | \
       grep ^SHA256: | sed 's/^SHA256: //')
     if [ "${#sha256sum}" -ne "64" ]; then
       echo "Bad sha256sum from Packages"
@@ -633,6 +699,16 @@ UpdatePackageListsAmd64() {
 UpdatePackageListsI386() {
   GeneratePackageListI386 "$DEBIAN_DEP_LIST_I386"
   StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_I386"
+}
+
+#@
+#@ UpdatePackageListsARM
+#@
+#@     Regenerate the package lists such that they contain an up-to-date
+#@     list of URLs within the Debian archive. (For arm)
+UpdatePackageListsARM() {
+  GeneratePackageListARM "$DEBIAN_DEP_LIST_ARM"
+  StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_ARM"
 }
 
 if [ $# -eq 0 ] ; then
