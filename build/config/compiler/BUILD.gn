@@ -706,11 +706,7 @@ config("no_optimize") {
       "-fdata-sections",
       "-ffunction-sections",
     ]
-    ldflags = [
-      "-Wl,-O1",
-      "-Wl,--as-needed",
-      "-Wl,--gc-sections",
-    ]
+    ldflags = common_optimize_on_ldflags
   } else {
     cflags = [ "-O0" ]
   }
