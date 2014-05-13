@@ -1112,6 +1112,7 @@ chromium_pfq = _config(
   chrome_rev=constants.CHROME_REV_LATEST,
   upload_hw_test_artifacts=True,
   chrome_sdk=True,
+  chroot_replace=True,
 )
 
 # TODO(davidjames): Convert this to an external config once the unified master
