@@ -16,7 +16,6 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -195,12 +194,9 @@ class MenuModelAdapterTest : public ViewEventTestBase,
         button_(NULL),
         menu_model_adapter_(&top_menu_model_),
         menu_(NULL) {
-    old_views_delegate_ = views::ViewsDelegate::views_delegate;
-    views::ViewsDelegate::views_delegate = &views_delegate_;
   }
 
   virtual ~MenuModelAdapterTest() {
-    views::ViewsDelegate::views_delegate = old_views_delegate_;
   }
 
   // ViewEventTestBase implementation.
@@ -305,9 +301,6 @@ class MenuModelAdapterTest : public ViewEventTestBase,
         ui_controls::DOWN | ui_controls::UP,
         next);
   }
-
-  views::ViewsDelegate* old_views_delegate_;
-  views::TestViewsDelegate views_delegate_;
 
   views::MenuButton* button_;
   TopMenuModel top_menu_model_;
