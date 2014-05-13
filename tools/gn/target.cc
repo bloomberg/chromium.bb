@@ -74,6 +74,8 @@ const char* Target::GetStringForOutputType(OutputType type) {
       return "Shared library";
     case STATIC_LIBRARY:
       return "Static library";
+    case SOURCE_SET:
+      return "Source set";
     case COPY_FILES:
       return "Copy";
     case ACTION:

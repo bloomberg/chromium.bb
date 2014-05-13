@@ -1,0 +1,28 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("brotli") {
+  sources = [
+    "src/brotli/dec/bit_reader.c",
+    "src/brotli/dec/bit_reader.h",
+    "src/brotli/dec/context.h",
+    "src/brotli/dec/decode.c",
+    "src/brotli/dec/decode.h",
+    "src/brotli/dec/dictionary.h",
+    "src/brotli/dec/huffman.c",
+    "src/brotli/dec/huffman.h",
+    "src/brotli/dec/prefix.h",
+    "src/brotli/dec/safe_malloc.c",
+    "src/brotli/dec/safe_malloc.h",
+    "src/brotli/dec/streams.c",
+    "src/brotli/dec/streams.h",
+    "src/brotli/dec/transform.h",
+    "src/brotli/dec/types.h",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  include_dirs = [ "src/brotli/dec" ]
+}
