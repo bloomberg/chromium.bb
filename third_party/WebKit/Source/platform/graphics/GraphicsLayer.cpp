@@ -51,6 +51,8 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
+#include <algorithm>
+
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
@@ -538,6 +540,17 @@ void GraphicsLayer::dumpLayer(TextStream& ts, int indent, LayerTreeFlags flags, 
     ts << ")\n";
 }
 
+static bool compareFloatRects(const FloatRect& a, const FloatRect& b)
+{
+    if (a.x() != b.x())
+        return a.x() > b.x();
+    if (a.y() != b.y())
+        return a.y() > b.y();
+    if (a.width() != b.width())
+        return a.width() > b.width();
+    return a.height() > b.height();
+}
+
 void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags flags, RenderingContextMap& renderingContextMap) const
 {
     if (m_position != FloatPoint()) {
@@ -654,17 +667,19 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
     }
 
     if ((flags & LayerTreeIncludesRepaintRects) && repaintRectMap().contains(this) && !repaintRectMap().get(this).isEmpty()) {
+        Vector<FloatRect> repaintRectsCopy = repaintRectMap().get(this);
+        std::sort(repaintRectsCopy.begin(), repaintRectsCopy.end(), &compareFloatRects);
         writeIndent(ts, indent + 1);
         ts << "(repaint rects\n";
-        for (size_t i = 0; i < repaintRectMap().get(this).size(); ++i) {
-            if (repaintRectMap().get(this)[i].isEmpty())
+        for (size_t i = 0; i < repaintRectsCopy.size(); ++i) {
+            if (repaintRectsCopy[i].isEmpty())
                 continue;
             writeIndent(ts, indent + 2);
             ts << "(rect ";
-            ts << repaintRectMap().get(this)[i].x() << " ";
-            ts << repaintRectMap().get(this)[i].y() << " ";
-            ts << repaintRectMap().get(this)[i].width() << " ";
-            ts << repaintRectMap().get(this)[i].height();
+            ts << repaintRectsCopy[i].x() << " ";
+            ts << repaintRectsCopy[i].y() << " ";
+            ts << repaintRectsCopy[i].width() << " ";
+            ts << repaintRectsCopy[i].height();
             ts << ")\n";
         }
         writeIndent(ts, indent + 1);
