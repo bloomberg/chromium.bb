@@ -39,10 +39,10 @@ import argparse
 
 # Scons tests can check this version number to decide whether to enable tests
 # for toolchain bug fixes or new features.  This allows tests to be enabled on
-# the toolchain buildbots/trybots before the new toolchain version is rolled
-# into TOOL_REVISIONS (i.e. before the tests would pass on the main NaCl
-# buildbots/trybots).  If you are adding a test that depends on a toolchain
-# change, you can increment this version number manually.
+# the toolchain buildbots/trybots before the new toolchain version is pinned
+# (i.e. before the tests would pass on the main NaCl buildbots/trybots).
+# If you are adding a test that depends on a toolchain change, you can
+# increment this version number manually.
 FEATURE_VERSION = 5
 
 # For backward compatibility, these key names match the directory names

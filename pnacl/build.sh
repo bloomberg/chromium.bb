@@ -2744,7 +2744,7 @@ feature-version-file-install() {
   # Scons tests can check this version number to decide whether to
   # enable tests for toolchain bug fixes or new features.  This allows
   # tests to be enabled on the toolchain buildbots/trybots before the
-  # new toolchain version is rolled into TOOL_REVISIONS (i.e. before
+  # new toolchain version is rolled into the pinned version (i.e. before
   # the tests would pass on the main NaCl buildbots/trybots).
   #
   # If you are adding a test that depends on a toolchain change, you

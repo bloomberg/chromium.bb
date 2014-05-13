@@ -222,7 +222,7 @@ def BuildScript(status, context):
           shell=True)
 
   # Skip over hooks when run inside the toolchain build because
-  # download_toolchains would overwrite the toolchain build.
+  # package_version would overwrite the toolchain build.
   if inside_toolchain:
     with Step('gyp_generate_only', status):
       CommandGypGenerate(context)
