@@ -72,8 +72,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void SetDefersLoading(int request_id, bool value);
 
   // Indicates the priority of the specified request changed.
-  void DidChangePriority(int routing_id,
-                         int request_id,
+  void DidChangePriority(int request_id,
                          net::RequestPriority new_priority,
                          int intra_priority_value);
 

@@ -215,14 +215,15 @@ void IPCResourceLoaderBridge::SetDefersLoading(bool value) {
 }
 
 void IPCResourceLoaderBridge::DidChangePriority(
-    net::RequestPriority new_priority, int intra_priority_value) {
+    net::RequestPriority new_priority,
+    int intra_priority_value) {
   if (request_id_ < 0) {
     NOTREACHED() << "Trying to change priority of an unstarted request";
     return;
   }
 
-  dispatcher_->DidChangePriority(routing_id_, request_id_, new_priority,
-                                 intra_priority_value);
+  dispatcher_->DidChangePriority(
+      request_id_, new_priority, intra_priority_value);
 }
 
 void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
@@ -675,8 +676,7 @@ void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
   }
 }
 
-void ResourceDispatcher::DidChangePriority(int routing_id,
-                                           int request_id,
+void ResourceDispatcher::DidChangePriority(int request_id,
                                            net::RequestPriority new_priority,
                                            int intra_priority_value) {
   DCHECK(ContainsKey(pending_requests_, request_id));
