@@ -837,17 +837,18 @@ cr.define('options', function() {
       $('sync-section').hidden = false;
       this.maybeShowUserSection_();
 
-      var subSection = $('sync-section').firstChild;
-      while (subSection) {
-        if (subSection.nodeType == Node.ELEMENT_NODE)
-          subSection.hidden = syncData.supervisedUser;
-        subSection = subSection.nextSibling;
-      }
+      if (cr.isChromeOS && syncData.supervisedUser) {
+        var subSection = $('sync-section').firstChild;
+        while (subSection) {
+          if (subSection.nodeType == Node.ELEMENT_NODE)
+            subSection.hidden = true;
+          subSection = subSection.nextSibling;
+        }
 
-      if (syncData.supervisedUser) {
         $('account-picture-wrapper').hidden = false;
         $('sync-general').hidden = false;
         $('sync-status').hidden = true;
+
         return;
       }
 
