@@ -22,8 +22,12 @@ class KeyboardHandler : public ::options::OptionsPageUIHandler {
   virtual void GetLocalizedValues(
       base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializePage() OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
+  // Show the keyboard shortcuts overlay from the options page.
+  void HandleShowKeyboardShortcuts(const base::ListValue* args);
+
   DISALLOW_COPY_AND_ASSIGN(KeyboardHandler);
 };
 

@@ -3390,6 +3390,10 @@ Press any key to continue exploring.
            desc="The link to open 'Language and input settings' window.">
     Change language and input settings
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_SHOW_KEYBOARD_SHORTCUTS"
+           desc="The link to open the keyboard overlay.">
+    View keyboard shortcuts
+  </message>
   <message name="IDS_OPTIONS_NO_POINTING_DEVICES" desc="Text shown when there is neither a touchpad nor a mouse.">
     No mouse or touchpad was detected.
   </message>

@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/keyboard_handler.h"
 
+#include "ash/new_window_delegate.h"
+#include "ash/shell.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/values.h"
 #include "chromeos/chromeos_switches.h"
@@ -79,6 +83,9 @@ void KeyboardHandler::GetLocalizedValues(
   localized_strings->SetString("changeLanguageAndInputSettings",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_CHANGE_LANGUAGE_AND_INPUT_SETTINGS));
+  localized_strings->SetString("showKeyboardShortcuts",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_SHOW_KEYBOARD_SHORTCUTS));
 
   for (size_t i = 0; i < arraysize(kDataValuesNames); ++i) {
     base::ListValue* list_value = new base::ListValue();
@@ -117,6 +124,18 @@ void KeyboardHandler::InitializePage() {
   web_ui()->CallJavascriptFunction(
       "options.KeyboardOverlay.showDiamondKeyOptions",
       show_diamond_key_options);
+}
+
+void KeyboardHandler::RegisterMessages() {
+  // Callback to show keyboard overlay.
+  web_ui()->RegisterMessageCallback(
+      "showKeyboardShortcuts",
+      base::Bind(&KeyboardHandler::HandleShowKeyboardShortcuts,
+                 base::Unretained(this)));
+}
+
+void KeyboardHandler::HandleShowKeyboardShortcuts(const base::ListValue* args) {
+  ash::Shell::GetInstance()->new_window_delegate()->ShowKeyboardOverlay();
 }
 
 }  // namespace options

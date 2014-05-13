@@ -8436,6 +8436,13 @@ should be able to be added at any place in this file.
   <description>Settings: Keyboard settings: Search</description>
 </action>
 
+<action name="Options_KeyboardShowKeyboardShortcuts">
+  <owner>michaelpg@chromium.org</owner>
+  <description>
+    Settings: Keyboard settings: View keyboard shortcuts
+  </description>
+</action>
+
 <action name="Options_KeyboardShowLanguageSettings">
   <owner>stevenjb@chromium.org</owner>
   <description>

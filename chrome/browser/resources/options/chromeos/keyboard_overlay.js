@@ -31,6 +31,12 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
                     ['Options_KeyboardShowLanguageSettings']);
       };
+
+      $('keyboard-shortcuts').onclick = function(e) {
+        chrome.send('showKeyboardShortcuts');
+        chrome.send('coreOptionsUserMetricsAction',
+                    ['Options_KeyboardShowKeyboardShortcuts']);
+      };
     },
 
     /**
