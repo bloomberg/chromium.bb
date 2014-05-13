@@ -16,7 +16,6 @@
 #include "base/files/file_util_proxy.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/sandbox_directory_database.h"
@@ -113,15 +112,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   virtual ~ObfuscatedFileUtil();
 
   // FileSystemFileUtil overrides.
-  virtual base::File::Error CreateOrOpen(
+  virtual base::File CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      int file_flags,
-      base::PlatformFile* file_handle,
-      bool* created) OVERRIDE;
-  virtual base::File::Error Close(
-      FileSystemOperationContext* context,
-      base::PlatformFile file) OVERRIDE;
+      int file_flags) OVERRIDE;
   virtual base::File::Error EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemURL& url, bool* created) OVERRIDE;
@@ -269,20 +263,28 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
   // database.  |dest_file_info| is an in-out parameter.  Supply the name and
   // parent_id; data_path is ignored.  On success, data_path will
   // always be set to the relative path [from the root of the type-specific
-  // filesystem directory] of a NEW backing file, and handle, if supplied, will
-  // hold open PlatformFile for the backing file, which the caller is
-  // responsible for closing.  If you supply a path in |source_path|, it will be
-  // used as a source from which to COPY data.
-  // Caveat: do not supply handle if you're also supplying a data path.  It was
-  // easier not to support this, and no code has needed it so far, so it will
-  // DCHECK and handle will hold base::kInvalidPlatformFileValue.
+  // filesystem directory] of a NEW backing file.  Returns the new file.
+  base::File CreateAndOpenFile(
+      FileSystemOperationContext* context,
+      const FileSystemURL& dest_url,
+      FileInfo* dest_file_info,
+      int file_flags);
+
+  // The same as CreateAndOpenFile except that a file is not returned and if a
+  // path is provided in |source_path|, it will be used as a source from which
+  // to COPY data.
   base::File::Error CreateFile(
       FileSystemOperationContext* context,
       const base::FilePath& source_file_path,
       const FileSystemURL& dest_url,
-      FileInfo* dest_file_info,
-      int file_flags,
-      base::PlatformFile* handle);
+      FileInfo* dest_file_info);
+
+  // Updates |db| and |dest_file_info| at the end of creating a new file.
+  base::File::Error CommitCreateFile(
+    const base::FilePath& root,
+    const base::FilePath& local_path,
+    SandboxDirectoryDatabase* db,
+    FileInfo* dest_file_info);
 
   // This converts from a relative path [as is stored in the FileInfo.data_path
   // field] to an absolute platform path that can be given to the native
@@ -321,14 +323,13 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
       SandboxDirectoryDatabase* db,
       FileSystemOperationContext* context,
       const FileSystemURL& url,
+      base::FilePath* root,
       base::FilePath* local_path);
 
-  base::File::Error CreateOrOpenInternal(
+  base::File CreateOrOpenInternal(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      int file_flags,
-      base::PlatformFile* file_handle,
-      bool* created);
+      int file_flags);
 
   bool HasIsolatedStorage(const GURL& origin);
 

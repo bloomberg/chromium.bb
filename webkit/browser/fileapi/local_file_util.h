@@ -8,7 +8,6 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 
@@ -30,15 +29,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT LocalFileUtil
   LocalFileUtil();
   virtual ~LocalFileUtil();
 
-  virtual base::File::Error CreateOrOpen(
+  virtual base::File CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      int file_flags,
-      base::PlatformFile* file_handle,
-      bool* created) OVERRIDE;
-  virtual base::File::Error Close(
-      FileSystemOperationContext* context,
-      base::PlatformFile file) OVERRIDE;
+      int file_flags) OVERRIDE;
   virtual base::File::Error EnsureFileExists(
       FileSystemOperationContext* context,
       const FileSystemURL& url, bool* created) OVERRIDE;

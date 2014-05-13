@@ -76,33 +76,18 @@ LocalFileUtil::LocalFileUtil() {}
 
 LocalFileUtil::~LocalFileUtil() {}
 
-base::File::Error LocalFileUtil::CreateOrOpen(
+base::File LocalFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
-    const FileSystemURL& url, int file_flags,
-    base::PlatformFile* file_handle, bool* created) {
-  *created = false;
+    const FileSystemURL& url, int file_flags) {
   base::FilePath file_path;
   base::File::Error error = GetLocalFilePath(context, url, &file_path);
   if (error != base::File::FILE_OK)
-    return error;
+    return base::File(error);
   // Disallow opening files in symlinked paths.
   if (base::IsLink(file_path))
-    return base::File::FILE_ERROR_NOT_FOUND;
+    return base::File(base::File::FILE_ERROR_NOT_FOUND);
 
-  // TODO(rvargas): make FileSystemFileUtil use base::File.
-  base::File file = NativeFileUtil::CreateOrOpen(file_path, file_flags);
-  if (!file.IsValid())
-    return file.error_details();
-
-  *created = file.created();
-  *file_handle = file.TakePlatformFile();
-  return base::File::FILE_OK;
-}
-
-base::File::Error LocalFileUtil::Close(FileSystemOperationContext* context,
-                                       base::PlatformFile file) {
-  base::File auto_closed(file);
-  return base::File::FILE_OK;
+  return NativeFileUtil::CreateOrOpen(file_path, file_flags);
 }
 
 base::File::Error LocalFileUtil::EnsureFileExists(

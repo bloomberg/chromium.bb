@@ -38,8 +38,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE NativeFileUtil {
   static CopyOrMoveMode CopyOrMoveModeForDestination(
       const FileSystemURL& dest_url, bool copy);
 
-  static base::File CreateOrOpen(const base::FilePath& path,
-                                 int file_flags);
+  static base::File CreateOrOpen(const base::FilePath& path, int file_flags);
   static base::File::Error EnsureFileExists(const base::FilePath& path,
                                             bool* created);
   static base::File::Error CreateDirectory(const base::FilePath& path,

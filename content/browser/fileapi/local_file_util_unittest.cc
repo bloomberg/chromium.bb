@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/platform_file.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -98,25 +97,20 @@ class LocalFileUtilTest : public testing::Test {
     return info.size;
   }
 
-  base::File::Error CreateFile(const char* file_name,
-                               base::PlatformFile* file_handle,
-                               bool* created) {
-    int file_flags = base::PLATFORM_FILE_CREATE |
-        base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_ASYNC;
+  base::File CreateFile(const char* file_name) {
+    int file_flags = base::File::FLAG_CREATE |
+                     base::File::FLAG_WRITE | base::File::FLAG_ASYNC;
 
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return file_util()->CreateOrOpen(
-        context.get(),
-        CreateURL(file_name),
-        file_flags, file_handle, created);
+    return file_util()->CreateOrOpen(context.get(), CreateURL(file_name),
+                                     file_flags);
   }
 
   base::File::Error EnsureFileExists(const char* file_name,
-      bool* created) {
+                                     bool* created) {
     scoped_ptr<FileSystemOperationContext> context(NewContext());
-    return file_util()->EnsureFileExists(
-        context.get(),
-        CreateURL(file_name), created);
+    return file_util()->EnsureFileExists(context.get(),
+                                         CreateURL(file_name), created);
   }
 
   FileSystemContext* file_system_context() {
@@ -133,18 +127,14 @@ class LocalFileUtilTest : public testing::Test {
 
 TEST_F(LocalFileUtilTest, CreateAndClose) {
   const char *file_name = "test_file";
-  base::PlatformFile file_handle;
-  bool created;
-  ASSERT_EQ(base::File::FILE_OK,
-            CreateFile(file_name, &file_handle, &created));
-  ASSERT_TRUE(created);
+  base::File file = CreateFile(file_name);
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_TRUE(file.created());
 
   EXPECT_TRUE(FileExists(file_name));
   EXPECT_EQ(0, GetSize(file_name));
 
   scoped_ptr<FileSystemOperationContext> context(NewContext());
-  EXPECT_EQ(base::File::FILE_OK,
-            file_util()->Close(context.get(), file_handle));
 }
 
 // base::CreateSymbolicLink is only supported on POSIX.
@@ -152,11 +142,9 @@ TEST_F(LocalFileUtilTest, CreateAndClose) {
 TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
   // Create symlink target file.
   const char *target_name = "symlink_target";
-  base::PlatformFile target_handle;
-  bool symlink_target_created = false;
-  ASSERT_EQ(base::File::FILE_OK,
-            CreateFile(target_name, &target_handle, &symlink_target_created));
-  ASSERT_TRUE(symlink_target_created);
+  base::File target_file = CreateFile(target_name);
+  ASSERT_TRUE(target_file.IsValid());
+  ASSERT_TRUE(target_file.created());
   base::FilePath target_path = LocalPath(target_name);
 
   // Create symlink where target must be real file.
@@ -168,13 +156,10 @@ TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
   // Try to open the symlink file which should fail.
   scoped_ptr<FileSystemOperationContext> context(NewContext());
   FileSystemURL url = CreateURL(symlink_name);
-  int file_flags = base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ;
-  base::PlatformFile file_handle;
-  bool created = false;
-  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
-            file_util()->CreateOrOpen(context.get(), url, file_flags,
-                                      &file_handle, &created));
-  EXPECT_FALSE(created);
+  int file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+  base::File file = file_util()->CreateOrOpen(context.get(), url, file_flags);
+  ASSERT_FALSE(file.IsValid());
+  EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, file.error_details());
 }
 #endif
 
@@ -193,11 +178,9 @@ TEST_F(LocalFileUtilTest, EnsureFileExists) {
 
 TEST_F(LocalFileUtilTest, TouchFile) {
   const char *file_name = "test_file";
-  base::PlatformFile file_handle;
-  bool created;
-  ASSERT_EQ(base::File::FILE_OK,
-            CreateFile(file_name, &file_handle, &created));
-  ASSERT_TRUE(created);
+  base::File file = CreateFile(file_name);
+  ASSERT_TRUE(file.IsValid());
+  ASSERT_TRUE(file.created());
 
   scoped_ptr<FileSystemOperationContext> context(NewContext());
 
@@ -215,9 +198,6 @@ TEST_F(LocalFileUtilTest, TouchFile) {
   ASSERT_TRUE(base::GetFileInfo(LocalPath(file_name), &info));
   EXPECT_EQ(new_accessed, info.last_accessed);
   EXPECT_EQ(new_modified, info.last_modified);
-
-  EXPECT_EQ(base::File::FILE_OK,
-            file_util()->Close(context.get(), file_handle));
 }
 
 TEST_F(LocalFileUtilTest, TouchDirectory) {

@@ -105,8 +105,6 @@ enum IsolatedOriginStatus {
 
 }  // namespace
 
-using base::PlatformFile;
-
 class ObfuscatedFileEnumerator
     : public FileSystemFileUtil::AbstractFileEnumerator {
  public:
@@ -273,27 +271,16 @@ ObfuscatedFileUtil::~ObfuscatedFileUtil() {
   DropDatabases();
 }
 
-base::File::Error ObfuscatedFileUtil::CreateOrOpen(
+base::File ObfuscatedFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
-    const FileSystemURL& url, int file_flags,
-    PlatformFile* file_handle, bool* created) {
-  base::File::Error error = CreateOrOpenInternal(context, url, file_flags,
-                                                 file_handle, created);
-  if (*file_handle != base::kInvalidPlatformFileValue &&
-      file_flags & base::PLATFORM_FILE_WRITE &&
+    const FileSystemURL& url, int file_flags) {
+  base::File file = CreateOrOpenInternal(context, url, file_flags);
+  if (file.IsValid() && file_flags & base::PLATFORM_FILE_WRITE &&
       context->quota_limit_type() == quota::kQuotaLimitTypeUnlimited &&
       sandbox_delegate_) {
-    DCHECK_EQ(base::File::FILE_OK, error);
     sandbox_delegate_->StickyInvalidateUsageCache(url.origin(), url.type());
   }
-  return error;
-}
-
-base::File::Error ObfuscatedFileUtil::Close(
-    FileSystemOperationContext* context,
-    base::PlatformFile file) {
-  base::File auto_closed(file);
-  return base::File::FILE_OK;
+  return file.Pass();
 }
 
 base::File::Error ObfuscatedFileUtil::EnsureFileExists(
@@ -328,8 +315,8 @@ base::File::Error ObfuscatedFileUtil::EnsureFileExists(
   int64 growth = UsageForPath(file_info.name.size());
   if (!AllocateQuota(context, growth))
     return base::File::FILE_ERROR_NO_SPACE;
-  base::File::Error error = CreateFile(
-      context, base::FilePath(), url, &file_info, 0, NULL);
+  base::File::Error error = CreateFile(context, base::FilePath(), url,
+                                       &file_info);
   if (created && base::File::FILE_OK == error) {
     *created = true;
     UpdateUsage(context, url, growth);
@@ -595,8 +582,7 @@ base::File::Error ObfuscatedFileUtil::CopyOrMoveFile(
           fileapi::NativeFileUtil::CopyOrMoveModeForDestination(
               dest_url, true /* copy */));
     } else {  // non-overwrite
-      error = CreateFile(context, src_local_path,
-                         dest_url, &dest_file_info, 0, NULL);
+      error = CreateFile(context, src_local_path, dest_url, &dest_file_info);
     }
   } else {
     if (overwrite) {
@@ -701,8 +687,7 @@ base::File::Error ObfuscatedFileUtil::CopyInForeignFile(
         fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
                                                               true /* copy */));
   } else {
-    error = CreateFile(context, src_file_path,
-                       dest_url, &dest_file_info, 0, NULL);
+    error = CreateFile(context, src_file_path, dest_url, &dest_file_info);
   }
 
   if (error != base::File::FILE_OK)
@@ -1050,36 +1035,60 @@ base::File::Error ObfuscatedFileUtil::GetFileInfoInternal(
   return error;
 }
 
+base::File ObfuscatedFileUtil::CreateAndOpenFile(
+    FileSystemOperationContext* context,
+    const FileSystemURL& dest_url,
+    FileInfo* dest_file_info, int file_flags) {
+  SandboxDirectoryDatabase* db = GetDirectoryDatabase(dest_url, true);
+
+  base::FilePath root, dest_local_path;
+  base::File::Error error = GenerateNewLocalPath(db, context, dest_url, &root,
+                                                 &dest_local_path);
+  if (error != base::File::FILE_OK)
+    return base::File(error);
+
+  if (base::PathExists(dest_local_path)) {
+    if (!base::DeleteFile(dest_local_path, true /* recursive */))
+      return base::File(base::File::FILE_ERROR_FAILED);
+    LOG(WARNING) << "A stray file detected";
+    InvalidateUsageCache(context, dest_url.origin(), dest_url.type());
+  }
+
+  base::File file = NativeFileUtil::CreateOrOpen(dest_local_path, file_flags);
+  if (!file.IsValid())
+    return file.Pass();
+
+  if (!file.created()) {
+    file.Close();
+    base::DeleteFile(dest_local_path, false /* recursive */);
+    return base::File(base::File::FILE_ERROR_FAILED);
+  }
+
+  error = CommitCreateFile(root, dest_local_path, db, dest_file_info);
+  if (error != base::File::FILE_OK) {
+    file.Close();
+    base::DeleteFile(dest_local_path, false /* recursive */);
+    return base::File(error);
+  }
+
+  return file.Pass();
+}
+
 base::File::Error ObfuscatedFileUtil::CreateFile(
     FileSystemOperationContext* context,
     const base::FilePath& src_file_path,
     const FileSystemURL& dest_url,
-    FileInfo* dest_file_info, int file_flags, PlatformFile* handle) {
-  if (handle)
-    *handle = base::kInvalidPlatformFileValue;
+    FileInfo* dest_file_info) {
   SandboxDirectoryDatabase* db = GetDirectoryDatabase(dest_url, true);
 
-  base::File::Error error = base::File::FILE_OK;
-  base::FilePath root = GetDirectoryForURL(dest_url, false, &error);
-  if (error != base::File::FILE_OK)
-    return error;
-
-  base::FilePath dest_local_path;
-  error = GenerateNewLocalPath(db, context, dest_url, &dest_local_path);
+  base::FilePath root, dest_local_path;
+  base::File::Error error = GenerateNewLocalPath(db, context, dest_url, &root,
+                                                 &dest_local_path);
   if (error != base::File::FILE_OK)
     return error;
 
   bool created = false;
-  if (!src_file_path.empty()) {
-    DCHECK(!file_flags);
-    DCHECK(!handle);
-    error = NativeFileUtil::CopyOrMoveFile(
-        src_file_path, dest_local_path,
-        FileSystemOperation::OPTION_NONE,
-        fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
-                                                              true /* copy */));
-    created = true;
-  } else {
+  if (src_file_path.empty()) {
     if (base::PathExists(dest_local_path)) {
       if (!base::DeleteFile(dest_local_path, true /* recursive */))
         return base::File::FILE_ERROR_FAILED;
@@ -1087,54 +1096,39 @@ base::File::Error ObfuscatedFileUtil::CreateFile(
       InvalidateUsageCache(context, dest_url.origin(), dest_url.type());
     }
 
-    if (handle) {
-      // TODO(rvargas): Remove PlatformFile from this code.
-      base::File file =
-          NativeFileUtil::CreateOrOpen(dest_local_path, file_flags);
-      if (file.IsValid()) {
-        created = file.created();
-        *handle = file.TakePlatformFile();
-        error = base::File::FILE_OK;
-      } else {
-        error = file.error_details();
-      }
-      // If this succeeds, we must close handle on any subsequent error.
-    } else {
-      DCHECK(!file_flags);  // file_flags is only used by CreateOrOpen.
-      error = NativeFileUtil::EnsureFileExists(dest_local_path, &created);
-    }
+    error = NativeFileUtil::EnsureFileExists(dest_local_path, &created);
+  } else {
+    error = NativeFileUtil::CopyOrMoveFile(
+        src_file_path, dest_local_path,
+        FileSystemOperation::OPTION_NONE,
+        fileapi::NativeFileUtil::CopyOrMoveModeForDestination(dest_url,
+                                                              true /* copy */));
+    created = true;
   }
   if (error != base::File::FILE_OK)
     return error;
-
-  if (!created) {
-    if (handle) {
-      DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
-      base::ClosePlatformFile(*handle);
-      base::DeleteFile(dest_local_path, false /* recursive */);
-      *handle = base::kInvalidPlatformFileValue;
-    }
+  if (!created)
     return base::File::FILE_ERROR_FAILED;
-  }
 
+  return CommitCreateFile(root, dest_local_path, db, dest_file_info);
+}
+
+base::File::Error ObfuscatedFileUtil::CommitCreateFile(
+    const base::FilePath& root,
+    const base::FilePath& local_path,
+    SandboxDirectoryDatabase* db,
+    FileInfo* dest_file_info) {
   // This removes the root, including the trailing slash, leaving a relative
   // path.
   dest_file_info->data_path = base::FilePath(
-      dest_local_path.value().substr(root.value().length() + 1));
+      local_path.value().substr(root.value().length() + 1));
 
   FileId file_id;
-  error = db->AddFileInfo(*dest_file_info, &file_id);
-  if (error != base::File::FILE_OK) {
-    if (handle) {
-      DCHECK_NE(base::kInvalidPlatformFileValue, *handle);
-      base::ClosePlatformFile(*handle);
-      *handle = base::kInvalidPlatformFileValue;
-    }
-    base::DeleteFile(dest_local_path, false /* recursive */);
+  base::File::Error error = db->AddFileInfo(*dest_file_info, &file_id);
+  if (error != base::File::FILE_OK)
     return error;
-  }
-  TouchDirectory(db, dest_file_info->parent_id);
 
+  TouchDirectory(db, dest_file_info->parent_id);
   return base::File::FILE_OK;
 }
 
@@ -1316,6 +1310,7 @@ base::File::Error ObfuscatedFileUtil::GenerateNewLocalPath(
     SandboxDirectoryDatabase* db,
     FileSystemOperationContext* context,
     const FileSystemURL& url,
+    base::FilePath* root,
     base::FilePath* local_path) {
   DCHECK(local_path);
   int64 number;
@@ -1323,13 +1318,13 @@ base::File::Error ObfuscatedFileUtil::GenerateNewLocalPath(
     return base::File::FILE_ERROR_FAILED;
 
   base::File::Error error = base::File::FILE_OK;
-  base::FilePath new_local_path = GetDirectoryForURL(url, false, &error);
+  *root = GetDirectoryForURL(url, false, &error);
   if (error != base::File::FILE_OK)
-    return base::File::FILE_ERROR_FAILED;
+    return error;
 
   // We use the third- and fourth-to-last digits as the directory.
   int64 directory_number = number % 10000 / 100;
-  new_local_path = new_local_path.AppendASCII(
+  base::FilePath new_local_path = root->AppendASCII(
       base::StringPrintf("%02" PRId64, directory_number));
 
   error = NativeFileUtil::CreateDirectory(
@@ -1342,47 +1337,43 @@ base::File::Error ObfuscatedFileUtil::GenerateNewLocalPath(
   return base::File::FILE_OK;
 }
 
-base::File::Error ObfuscatedFileUtil::CreateOrOpenInternal(
+base::File ObfuscatedFileUtil::CreateOrOpenInternal(
     FileSystemOperationContext* context,
-    const FileSystemURL& url, int file_flags,
-    PlatformFile* file_handle, bool* created) {
-  DCHECK(!(file_flags & (base::PLATFORM_FILE_DELETE_ON_CLOSE |
-        base::PLATFORM_FILE_HIDDEN | base::PLATFORM_FILE_EXCLUSIVE_READ |
-        base::PLATFORM_FILE_EXCLUSIVE_WRITE)));
+    const FileSystemURL& url, int file_flags) {
+  DCHECK(!(file_flags & (base::File::FLAG_DELETE_ON_CLOSE |
+        base::File::FLAG_HIDDEN | base::File::FLAG_EXCLUSIVE_READ |
+        base::File::FLAG_EXCLUSIVE_WRITE)));
   SandboxDirectoryDatabase* db = GetDirectoryDatabase(url, true);
   if (!db)
-    return base::File::FILE_ERROR_FAILED;
+    return base::File(base::File::FILE_ERROR_FAILED);
   FileId file_id;
   if (!db->GetFileWithPath(url.path(), &file_id)) {
     // The file doesn't exist.
-    if (!(file_flags & (base::PLATFORM_FILE_CREATE |
-        base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_OPEN_ALWAYS)))
-      return base::File::FILE_ERROR_NOT_FOUND;
+    if (!(file_flags & (base::File::FLAG_CREATE |
+        base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_OPEN_ALWAYS))) {
+      return base::File(base::File::FILE_ERROR_NOT_FOUND);
+    }
     FileId parent_id;
-    if (!db->GetFileWithPath(VirtualPath::DirName(url.path()),
-                             &parent_id))
-      return base::File::FILE_ERROR_NOT_FOUND;
+    if (!db->GetFileWithPath(VirtualPath::DirName(url.path()), &parent_id))
+      return base::File(base::File::FILE_ERROR_NOT_FOUND);
     FileInfo file_info;
     InitFileInfo(&file_info, parent_id,
                  VirtualPath::BaseName(url.path()).value());
 
     int64 growth = UsageForPath(file_info.name.size());
     if (!AllocateQuota(context, growth))
-      return base::File::FILE_ERROR_NO_SPACE;
-    base::File::Error error = CreateFile(
-        context, base::FilePath(),
-        url, &file_info, file_flags, file_handle);
-    if (created && base::File::FILE_OK == error) {
-      *created = true;
+      return base::File(base::File::FILE_ERROR_NO_SPACE);
+    base::File file = CreateAndOpenFile(context, url, &file_info, file_flags);
+    if (file.IsValid()) {
       UpdateUsage(context, url, growth);
       context->change_observers()->Notify(
           &FileChangeObserver::OnCreateFile, MakeTuple(url));
     }
-    return error;
+    return file.Pass();
   }
 
-  if (file_flags & base::PLATFORM_FILE_CREATE)
-    return base::File::FILE_ERROR_EXISTS;
+  if (file_flags & base::File::FLAG_CREATE)
+    return base::File(base::File::FILE_ERROR_EXISTS);
 
   base::File::Info platform_file_info;
   base::FilePath local_path;
@@ -1390,19 +1381,18 @@ base::File::Error ObfuscatedFileUtil::CreateOrOpenInternal(
   base::File::Error error = GetFileInfoInternal(
       db, context, url, file_id, &file_info, &platform_file_info, &local_path);
   if (error != base::File::FILE_OK)
-    return error;
+    return base::File(error);
   if (file_info.is_directory())
-    return base::File::FILE_ERROR_NOT_A_FILE;
+    return base::File(base::File::FILE_ERROR_NOT_A_FILE);
 
   int64 delta = 0;
-  if (file_flags & (base::PLATFORM_FILE_CREATE_ALWAYS |
-                    base::PLATFORM_FILE_OPEN_TRUNCATED)) {
+  if (file_flags & (base::File::FLAG_CREATE_ALWAYS |
+                    base::File::FLAG_OPEN_TRUNCATED)) {
     // The file exists and we're truncating.
     delta = -platform_file_info.size;
     AllocateQuota(context, delta);
   }
 
-  // TODO(rvargas): make FileSystemFileUtil use base::File.
   base::File file = NativeFileUtil::CreateOrOpen(local_path, file_flags);
   if (!file.IsValid()) {
     error = file.error_details();
@@ -1411,13 +1401,10 @@ base::File::Error ObfuscatedFileUtil::CreateOrOpenInternal(
       // TODO(tzik): Delete database entry after ensuring the file lost.
       InvalidateUsageCache(context, url.origin(), url.type());
       LOG(WARNING) << "Lost a backing file.";
-      error = base::File::FILE_ERROR_FAILED;
+      return base::File(base::File::FILE_ERROR_FAILED);
     }
-    return error;
+    return file.Pass();
   }
-
-  *created = file.created();
-  *file_handle = file.TakePlatformFile();
 
   // If truncating we need to update the usage.
   if (delta) {
@@ -1425,7 +1412,7 @@ base::File::Error ObfuscatedFileUtil::CreateOrOpenInternal(
     context->change_observers()->Notify(
         &FileChangeObserver::OnModifyFile, MakeTuple(url));
   }
-  return base::File::FILE_OK;
+  return file.Pass();
 }
 
 bool ObfuscatedFileUtil::HasIsolatedStorage(const GURL& origin) {

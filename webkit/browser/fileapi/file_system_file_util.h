@@ -8,7 +8,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/blob/scoped_file.h"
@@ -61,18 +60,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemFileUtil {
   // Creates or opens a file with the given flags.
   // See header comments for AsyncFileUtil::CreateOrOpen() for more details.
   // This is used only by Pepper/NaCl File API.
-  virtual base::File::Error CreateOrOpen(
+  virtual base::File CreateOrOpen(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
-      int file_flags,
-      base::PlatformFile* file_handle,
-      bool* created) = 0;
-
-  // Closes the given file handle.
-  // This is used only for Pepper/NaCl File API.
-  virtual base::File::Error Close(
-      FileSystemOperationContext* context,
-      base::PlatformFile file) = 0;
+      int file_flags) = 0;
 
   // Ensures that the given |url| exist.  This creates a empty new file
   // at |url| if the |url| does not exist.
