@@ -380,6 +380,10 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   TestPasswordManager password_manager(&client);
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       &password_manager, &client, client.GetDriver(), *observed_form(), false));
+  EXPECT_CALL(*client.GetMockDriver(), AllowPasswordGenerationForForm(_))
+      .Times(1);
+  EXPECT_CALL(*client.GetMockDriver(), IsOffTheRecord())
+      .WillRepeatedly(Return(false));
 
   password_store->AddLogin(*saved_match());
   manager->FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
@@ -411,6 +415,8 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername) {
   // This time use an alternate username
   manager.reset(new PasswordFormManager(
       &password_manager, &client, client.GetDriver(), *observed_form(), false));
+  EXPECT_CALL(*client.GetMockDriver(), AllowPasswordGenerationForForm(_))
+      .Times(1);
   password_store->Clear();
   password_store->AddLogin(*saved_match());
   manager->FetchMatchingLoginsFromPasswordStore(PasswordStore::ALLOW_PROMPT);
@@ -529,6 +535,8 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
       &password_manager, &client, client.GetDriver(), *observed_form(), false));
   EXPECT_CALL(*client.GetMockDriver(), AllowPasswordGenerationForForm(_))
       .Times(1);
+  EXPECT_CALL(*client.GetMockDriver(), IsOffTheRecord())
+      .WillRepeatedly(Return(false));
   SimulateFetchMatchingLoginsFromPasswordStore(manager.get());
   // We need add heap allocated objects to result.
   result.push_back(CreateSavedMatch(false));
@@ -556,6 +564,10 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   TestPasswordManager password_manager(&client);
   scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
       &password_manager, &client, client.GetDriver(), *observed_form(), false));
+  EXPECT_CALL(*client.GetMockDriver(), AllowPasswordGenerationForForm(_))
+      .Times(1);
+  EXPECT_CALL(*client.GetMockDriver(), IsOffTheRecord())
+      .WillRepeatedly(Return(false));
 
   // Simulate having two matches for this origin, one of which was from a form
   // with different HTML tags for elements. Because of scoring differences,
@@ -575,6 +587,9 @@ TEST_F(PasswordFormManagerTest, TestForceInclusionOfGeneratedPasswords) {
   // well are generated. They should now be sent to Autofill().
   manager.reset(new PasswordFormManager(
       &password_manager, &client, client.GetDriver(), *observed_form(), false));
+  EXPECT_CALL(*client.GetMockDriver(), AllowPasswordGenerationForForm(_))
+      .Times(1);
+
   results.push_back(CreateSavedMatch(false));
   results.push_back(CreateSavedMatch(false));
   results[1]->username_value = ASCIIToUTF16("other@gmail.com");

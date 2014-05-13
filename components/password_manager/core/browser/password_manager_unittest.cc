@@ -71,6 +71,7 @@ class PasswordManagerTest : public testing::Test {
                                            true);
 
     store_ = new MockPasswordStore;
+    EXPECT_CALL(*store_, ReportMetrics()).Times(AnyNumber());
     CHECK(store_->Init(syncer::SyncableService::StartSyncFlare()));
 
     EXPECT_CALL(client_, GetPasswordStore()).WillRepeatedly(Return(store_));
@@ -91,8 +92,6 @@ class PasswordManagerTest : public testing::Test {
     EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_)).Times(AnyNumber());
     EXPECT_CALL(driver_, GetPasswordAutofillManager())
         .WillRepeatedly(Return(password_autofill_manager_.get()));
-
-    EXPECT_CALL(*store_, ReportMetricsImpl()).Times(AnyNumber());
   }
 
   virtual void TearDown() {
