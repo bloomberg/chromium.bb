@@ -282,7 +282,7 @@ public:
     }
 
 private:
-    RefPtr<Text> m_textNode;
+    RefPtrWillBePersistent<Text> m_textNode;
     String m_text;
     String m_oldText;
 };

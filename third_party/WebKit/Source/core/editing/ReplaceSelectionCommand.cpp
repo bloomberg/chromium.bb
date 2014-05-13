@@ -1354,7 +1354,7 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
 {
     bool positionIsOffsetInAnchor = position.anchorType() == Position::PositionIsOffsetInAnchor;
     bool positionOnlyToBeUpdatedIsOffsetInAnchor = positionOnlyToBeUpdated.anchorType() == Position::PositionIsOffsetInAnchor;
-    RefPtr<Text> text = nullptr;
+    RefPtrWillBeRawPtr<Text> text = nullptr;
     if (positionIsOffsetInAnchor && position.containerNode() && position.containerNode()->isTextNode())
         text = toText(position.containerNode());
     else {
@@ -1371,7 +1371,7 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
         return;
 
     if (text->previousSibling() && text->previousSibling()->isTextNode()) {
-        RefPtr<Text> previous = toText(text->previousSibling());
+        RefPtrWillBeRawPtr<Text> previous = toText(text->previousSibling());
         insertTextIntoNode(text, 0, previous->data());
 
         if (positionIsOffsetInAnchor)
@@ -1391,7 +1391,7 @@ void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, P
         removeNode(previous);
     }
     if (text->nextSibling() && text->nextSibling()->isTextNode()) {
-        RefPtr<Text> next = toText(text->nextSibling());
+        RefPtrWillBeRawPtr<Text> next = toText(text->nextSibling());
         unsigned originalLength = text->length();
         insertTextIntoNode(text, originalLength, next->data());
 

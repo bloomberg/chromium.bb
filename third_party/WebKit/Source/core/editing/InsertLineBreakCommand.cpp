@@ -130,7 +130,7 @@ void InsertLineBreakCommand::doApply()
             if (textNode->inDocument())
                 insertTextIntoNode(textNode, 0, nonBreakingSpaceString());
             else {
-                RefPtr<Text> nbspNode = document().createTextNode(nonBreakingSpaceString());
+                RefPtrWillBeRawPtr<Text> nbspNode = document().createTextNode(nonBreakingSpaceString());
                 insertNodeAt(nbspNode.get(), positionBeforeTextNode);
                 endingPosition = firstPositionInNode(nbspNode.get());
             }

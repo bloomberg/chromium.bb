@@ -489,8 +489,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
 
     switch (m_token.type()) {
     case VTTTokenTypes::Character: {
-        RefPtr<Text> child = Text::create(document, m_token.characters());
-        m_currentNode->parserAppendChild(child);
+        m_currentNode->parserAppendChild(Text::create(document, m_token.characters()));
         break;
     }
     case VTTTokenTypes::StartTag: {

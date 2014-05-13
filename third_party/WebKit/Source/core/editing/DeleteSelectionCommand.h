@@ -65,7 +65,7 @@ private:
     void clearTransientState();
     void makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
     virtual void removeNode(PassRefPtr<Node>, ShouldAssumeContentIsAlwaysEditable = DoNotAssumeContentIsAlwaysEditable) OVERRIDE;
-    virtual void deleteTextFromNode(PassRefPtr<Text>, unsigned, unsigned) OVERRIDE;
+    virtual void deleteTextFromNode(PassRefPtrWillBeRawPtr<Text>, unsigned, unsigned) OVERRIDE;
     void removeRedundantBlocks();
 
     bool m_hasSelectionToDelete;

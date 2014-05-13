@@ -322,9 +322,9 @@ public:
 
     PassRefPtrWillBeRawPtr<Element> createElement(const AtomicString& name, ExceptionState&);
     PassRefPtr<DocumentFragment> createDocumentFragment();
-    PassRefPtr<Text> createTextNode(const String& data);
+    PassRefPtrWillBeRawPtr<Text> createTextNode(const String& data);
     PassRefPtr<Comment> createComment(const String& data);
-    PassRefPtr<CDATASection> createCDATASection(const String& data, ExceptionState&);
+    PassRefPtrWillBeRawPtr<CDATASection> createCDATASection(const String& data, ExceptionState&);
     PassRefPtr<ProcessingInstruction> createProcessingInstruction(const String& target, const String& data, ExceptionState&);
     PassRefPtr<Attr> createAttribute(const AtomicString& name, ExceptionState&);
     PassRefPtr<Attr> createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&, bool shouldIgnoreNamespaceChecks = false);
@@ -487,7 +487,7 @@ public:
     PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionState&);
 
     // Special support for editing
-    PassRefPtr<Text> createEditingTextNode(const String&);
+    PassRefPtrWillBeRawPtr<Text> createEditingTextNode(const String&);
 
     void setupFontBuilder(RenderStyle* documentStyle);
 

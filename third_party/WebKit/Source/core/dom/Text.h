@@ -35,18 +35,18 @@ class Text : public CharacterData {
 public:
     static const unsigned defaultLengthLimit = 1 << 16;
 
-    static PassRefPtr<Text> create(Document&, const String&);
-    static PassRefPtr<Text> createEditingText(Document&, const String&);
+    static PassRefPtrWillBeRawPtr<Text> create(Document&, const String&);
+    static PassRefPtrWillBeRawPtr<Text> createEditingText(Document&, const String&);
 
     // mergeNextSiblingNodesIfPossible() merges next sibling nodes if possible
     // then returns a node not merged.
-    PassRefPtr<Node> mergeNextSiblingNodesIfPossible();
-    PassRefPtr<Text> splitText(unsigned offset, ExceptionState&);
+    PassRefPtrWillBeRawPtr<Node> mergeNextSiblingNodesIfPossible();
+    PassRefPtrWillBeRawPtr<Text> splitText(unsigned offset, ExceptionState&);
 
     // DOM Level 3: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-1312295772
 
     String wholeText() const;
-    PassRefPtr<Text> replaceWholeText(const String&);
+    PassRefPtrWillBeRawPtr<Text> replaceWholeText(const String&);
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
     bool textRendererIsNeeded(const RenderStyle&, const RenderObject& parent);
@@ -71,7 +71,7 @@ private:
 
     bool needsWhitespaceRenderer();
 
-    virtual PassRefPtr<Text> cloneWithData(const String&);
+    virtual PassRefPtrWillBeRawPtr<Text> cloneWithData(const String&);
 
 #ifndef NDEBUG
     virtual void formatForDebugger(char* buffer, unsigned length) const OVERRIDE;

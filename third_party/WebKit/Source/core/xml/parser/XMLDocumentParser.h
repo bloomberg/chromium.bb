@@ -30,6 +30,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/xml/XMLErrors.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
@@ -165,7 +166,7 @@ class Text;
         ContainerNode* m_currentNode;
         Vector<ContainerNode*> m_currentNodeStack;
 
-        RefPtr<Text> m_leafTextNode;
+        RefPtrWillBePersistent<Text> m_leafTextNode;
 
         bool m_isCurrentlyParsing8BitChunk;
         bool m_sawError;

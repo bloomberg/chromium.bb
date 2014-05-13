@@ -112,7 +112,7 @@ Position::Position(PassRefPtr<Node> anchorNode, int offset, AnchorType anchorTyp
     ASSERT(anchorType == PositionIsOffsetInAnchor);
 }
 
-Position::Position(PassRefPtr<Text> textNode, unsigned offset)
+Position::Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset)
     : m_anchorNode(textNode)
     , m_offset(static_cast<int>(offset))
     , m_anchorType(PositionIsOffsetInAnchor)

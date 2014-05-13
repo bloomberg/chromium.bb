@@ -34,18 +34,18 @@ class Text;
 
 class DeleteFromTextNodeCommand FINAL : public SimpleEditCommand {
 public:
-    static PassRefPtr<DeleteFromTextNodeCommand> create(PassRefPtr<Text> node, unsigned offset, unsigned count)
+    static PassRefPtr<DeleteFromTextNodeCommand> create(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, unsigned count)
     {
         return adoptRef(new DeleteFromTextNodeCommand(node, offset, count));
     }
 
 private:
-    DeleteFromTextNodeCommand(PassRefPtr<Text>, unsigned offset, unsigned count);
+    DeleteFromTextNodeCommand(PassRefPtrWillBeRawPtr<Text>, unsigned offset, unsigned count);
 
     virtual void doApply() OVERRIDE;
     virtual void doUnapply() OVERRIDE;
 
-    RefPtr<Text> m_node;
+    RefPtrWillBePersistent<Text> m_node;
     unsigned m_offset;
     unsigned m_count;
     String m_text;

@@ -53,7 +53,7 @@ protected:
     Document& document() const { return *m_document; }
     DocumentMarkerController& markerController() const { return m_document->markers(); }
 
-    PassRefPtr<Text> createTextNode(const char*);
+    PassRefPtrWillBeRawPtr<Text> createTextNode(const char*);
     void markNodeContents(PassRefPtr<Node>);
     void setBodyInnerHTML(const char*);
 
@@ -69,7 +69,7 @@ void DocumentMarkerControllerTest::SetUp()
     ASSERT(m_document);
 }
 
-PassRefPtr<Text> DocumentMarkerControllerTest::createTextNode(const char* textContents)
+PassRefPtrWillBeRawPtr<Text> DocumentMarkerControllerTest::createTextNode(const char* textContents)
 {
     return document().createTextNode(String::fromUTF8(textContents));
 }

@@ -405,7 +405,7 @@ static void updatePositionForTextRemoval(Node* node, int offset, int count, Posi
         position.moveToOffset(offset);
 }
 
-void DeleteSelectionCommand::deleteTextFromNode(PassRefPtr<Text> node, unsigned offset, unsigned count)
+void DeleteSelectionCommand::deleteTextFromNode(PassRefPtrWillBeRawPtr<Text> node, unsigned offset, unsigned count)
 {
     // FIXME: Update the endpoints of the range being deleted.
     updatePositionForTextRemoval(node.get(), offset, count, m_endingPosition);

@@ -33,7 +33,7 @@
 
 namespace WebCore {
 
-SplitTextNodeContainingElementCommand::SplitTextNodeContainingElementCommand(PassRefPtr<Text> text, int offset)
+SplitTextNodeContainingElementCommand::SplitTextNodeContainingElementCommand(PassRefPtrWillBeRawPtr<Text> text, int offset)
     : CompositeEditCommand(text->document()), m_text(text), m_offset(offset)
 {
     ASSERT(m_text);
@@ -60,7 +60,7 @@ void SplitTextNodeContainingElementCommand::doApply()
         parent = toElement(firstChild);
     }
 
-    splitElement(parent, m_text);
+    splitElement(parent, m_text.get());
 }
 
 }

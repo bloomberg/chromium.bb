@@ -49,7 +49,7 @@ void CreateLinkCommand::doApply()
         applyStyledElement(anchorElement.get());
     else {
         insertNodeAt(anchorElement.get(), endingSelection().start());
-        RefPtr<Text> textNode = Text::create(document(), m_url);
+        RefPtrWillBeRawPtr<Text> textNode = Text::create(document(), m_url);
         appendNode(textNode.get(), anchorElement.get());
         setEndingSelection(VisibleSelection(positionInParentBeforeNode(*anchorElement), positionInParentAfterNode(*anchorElement), DOWNSTREAM, endingSelection().isDirectional()));
     }

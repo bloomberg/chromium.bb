@@ -1147,8 +1147,7 @@ void XMLDocumentParser::cdataBlock(const String& text)
 
     exitText();
 
-    RefPtr<CDATASection> newNode = CDATASection::create(m_currentNode->document(), text);
-    m_currentNode->parserAppendChild(newNode.get());
+    m_currentNode->parserAppendChild(CDATASection::create(m_currentNode->document(), text));
 }
 
 void XMLDocumentParser::comment(const String& text)

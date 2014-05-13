@@ -1182,7 +1182,7 @@ void ApplyStyleCommand::splitTextAtStart(const Position& start, const Position& 
     else
         newEnd = end;
 
-    RefPtr<Text> text = start.containerText();
+    RefPtrWillBeRawPtr<Text> text = start.containerText();
     splitTextNode(text, start.offsetInContainerNode());
     updateStartEnd(firstPositionInNode(text.get()), newEnd);
 }
@@ -1521,7 +1521,7 @@ void ApplyStyleCommand::joinChildTextNodes(Node* node, const Position& start, co
     Position newStart = start;
     Position newEnd = end;
 
-    Vector<RefPtr<Text> > textNodes;
+    WillBeHeapVector<RefPtrWillBeMember<Text> > textNodes;
     for (Node* curr = node->firstChild(); curr; curr = curr->nextSibling()) {
         if (!curr->isTextNode())
             continue;

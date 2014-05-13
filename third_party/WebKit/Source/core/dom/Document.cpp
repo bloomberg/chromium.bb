@@ -874,7 +874,7 @@ PassRefPtr<DocumentFragment> Document::createDocumentFragment()
     return DocumentFragment::create(*this);
 }
 
-PassRefPtr<Text> Document::createTextNode(const String& data)
+PassRefPtrWillBeRawPtr<Text> Document::createTextNode(const String& data)
 {
     return Text::create(*this, data);
 }
@@ -884,7 +884,7 @@ PassRefPtr<Comment> Document::createComment(const String& data)
     return Comment::create(*this, data);
 }
 
-PassRefPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<CDATASection> Document::createCDATASection(const String& data, ExceptionState& exceptionState)
 {
     if (isHTMLDocument()) {
         exceptionState.throwDOMException(NotSupportedError, "This operation is not supported for HTML documents.");
@@ -910,7 +910,7 @@ PassRefPtr<ProcessingInstruction> Document::createProcessingInstruction(const St
     return ProcessingInstruction::create(*this, target, data);
 }
 
-PassRefPtr<Text> Document::createEditingTextNode(const String& text)
+PassRefPtrWillBeRawPtr<Text> Document::createEditingTextNode(const String& text)
 {
     return Text::createEditingText(*this, text);
 }

@@ -83,7 +83,7 @@ public:
 
     // For creating before/after positions:
     Position(PassRefPtr<Node> anchorNode, AnchorType);
-    Position(PassRefPtr<Text> textNode, unsigned offset);
+    Position(PassRefPtrWillBeRawPtr<Text> textNode, unsigned offset);
 
     // For creating offset positions:
     // FIXME: This constructor should eventually go away. See bug 63040.

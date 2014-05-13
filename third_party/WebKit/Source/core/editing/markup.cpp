@@ -1045,7 +1045,7 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
     }
 
     // NOTE: This method currently always creates a text node, even if that text node will be empty.
-    RefPtr<Text> textNode = Text::create(containerNode->document(), text);
+    RefPtrWillBeRawPtr<Text> textNode = Text::create(containerNode->document(), text);
 
     // FIXME: No need to replace the child it is a text node and its contents are already == text.
     if (containerNode->hasOneChild()) {
@@ -1064,8 +1064,8 @@ void mergeWithNextTextNode(PassRefPtr<Node> node, ExceptionState& exceptionState
     if (!next || !next->isTextNode())
         return;
 
-    RefPtr<Text> textNode = toText(node.get());
-    RefPtr<Text> textNext = toText(next);
+    RefPtrWillBeRawPtr<Text> textNode = toText(node.get());
+    RefPtrWillBeRawPtr<Text> textNext = toText(next);
     textNode->appendData(textNext->data());
     if (textNext->parentNode()) // Might have been removed by mutation event.
         textNext->remove(exceptionState);

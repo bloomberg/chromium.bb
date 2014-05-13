@@ -95,7 +95,7 @@ private:
     friend class SelectionOffsetsScope;
 
     LocalFrame& m_frame;
-    RefPtr<Text> m_compositionNode;
+    RefPtrWillBePersistent<Text> m_compositionNode;
     // We don't use PlainTextRange which is immutable, for composition range.
     unsigned m_compositionStart;
     unsigned m_compositionEnd;

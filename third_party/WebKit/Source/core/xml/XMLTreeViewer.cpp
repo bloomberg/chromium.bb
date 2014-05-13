@@ -57,8 +57,7 @@ void XMLTreeViewer::transformDocumentToTreeView()
     m_document->frame()->script().executeScriptInMainWorld("prepareWebKitXMLViewer('" + noStyleMessage + "');", ScriptController::ExecuteScriptWhenScriptsDisabled);
 
     String cssString(reinterpret_cast<const char*>(XMLViewer_css), sizeof(XMLViewer_css));
-    RefPtr<Text> text = m_document->createTextNode(cssString);
-    m_document->getElementById("xml-viewer-style")->appendChild(text, IGNORE_EXCEPTION);
+    m_document->getElementById("xml-viewer-style")->appendChild(m_document->createTextNode(cssString), IGNORE_EXCEPTION);
 }
 
 } // namespace WebCore

@@ -44,24 +44,24 @@ using namespace std;
 
 namespace WebCore {
 
-PassRefPtr<Text> Text::create(Document& document, const String& data)
+PassRefPtrWillBeRawPtr<Text> Text::create(Document& document, const String& data)
 {
-    return adoptRef(new Text(document, data, CreateText));
+    return adoptRefWillBeRefCountedGarbageCollected(new Text(document, data, CreateText));
 }
 
-PassRefPtr<Text> Text::createEditingText(Document& document, const String& data)
+PassRefPtrWillBeRawPtr<Text> Text::createEditingText(Document& document, const String& data)
 {
-    return adoptRef(new Text(document, data, CreateEditingText));
+    return adoptRefWillBeRefCountedGarbageCollected(new Text(document, data, CreateEditingText));
 }
 
-PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
+PassRefPtrWillBeRawPtr<Node> Text::mergeNextSiblingNodesIfPossible()
 {
-    RefPtr<Node> protect(this);
+    RefPtrWillBeRawPtr<Node> protect(this);
 
     // Remove empty text nodes.
     if (!length()) {
         // Care must be taken to get the next node before removing the current node.
-        RefPtr<Node> nextNode(NodeTraversal::nextPostOrder(*this));
+        RefPtrWillBeRawPtr<Node> nextNode(NodeTraversal::nextPostOrder(*this));
         remove(IGNORE_EXCEPTION);
         return nextNode.release();
     }
@@ -71,7 +71,7 @@ PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
         if (nextSibling->nodeType() != TEXT_NODE)
             break;
 
-        RefPtr<Text> nextText = toText(nextSibling);
+        RefPtrWillBeRawPtr<Text> nextText = toText(nextSibling);
 
         // Remove empty text nodes.
         if (!nextText->length()) {
@@ -104,7 +104,7 @@ PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
     return NodeTraversal::nextPostOrder(*this);
 }
 
-PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState)
 {
     // IndexSizeError: Raised if the specified offset is negative or greater than
     // the number of 16-bit units in data.
@@ -115,7 +115,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState
 
     EventQueueScope scope;
     String oldStr = data();
-    RefPtr<Text> newText = cloneWithData(oldStr.substring(offset));
+    RefPtrWillBeRawPtr<Text> newText = cloneWithData(oldStr.substring(offset));
     setDataWithoutUpdate(oldStr.substring(0, offset));
 
     didModifyData(oldStr);
@@ -191,26 +191,26 @@ String Text::wholeText() const
     return result.toString();
 }
 
-PassRefPtr<Text> Text::replaceWholeText(const String& newText)
+PassRefPtrWillBeRawPtr<Text> Text::replaceWholeText(const String& newText)
 {
     // Remove all adjacent text nodes, and replace the contents of this one.
 
     // Protect startText and endText against mutation event handlers removing the last ref
-    RefPtr<Text> startText = const_cast<Text*>(earliestLogicallyAdjacentTextNode(this));
-    RefPtr<Text> endText = const_cast<Text*>(latestLogicallyAdjacentTextNode(this));
+    RefPtrWillBeRawPtr<Text> startText = const_cast<Text*>(earliestLogicallyAdjacentTextNode(this));
+    RefPtrWillBeRawPtr<Text> endText = const_cast<Text*>(latestLogicallyAdjacentTextNode(this));
 
-    RefPtr<Text> protectedThis(this); // Mutation event handlers could cause our last ref to go away
-    RefPtr<ContainerNode> parent = parentNode(); // Protect against mutation handlers moving this node during traversal
-    for (RefPtr<Node> n = startText; n && n != this && n->isTextNode() && n->parentNode() == parent;) {
-        RefPtr<Node> nodeToRemove(n.release());
+    RefPtrWillBeRawPtr<Text> protectedThis(this); // Mutation event handlers could cause our last ref to go away
+    RefPtrWillBeRawPtr<ContainerNode> parent = parentNode(); // Protect against mutation handlers moving this node during traversal
+    for (RefPtrWillBeRawPtr<Node> n = startText; n && n != this && n->isTextNode() && n->parentNode() == parent;) {
+        RefPtrWillBeRawPtr<Node> nodeToRemove(n.release());
         n = nodeToRemove->nextSibling();
         parent->removeChild(nodeToRemove.get(), IGNORE_EXCEPTION);
     }
 
     if (this != endText) {
         Node* onePastEndText = endText->nextSibling();
-        for (RefPtr<Node> n = nextSibling(); n && n != onePastEndText && n->isTextNode() && n->parentNode() == parent;) {
-            RefPtr<Node> nodeToRemove(n.release());
+        for (RefPtrWillBeRawPtr<Node> n = nextSibling(); n && n != onePastEndText && n->isTextNode() && n->parentNode() == parent;) {
+            RefPtrWillBeRawPtr<Node> nodeToRemove(n.release());
             n = nodeToRemove->nextSibling();
             parent->removeChild(nodeToRemove.get(), IGNORE_EXCEPTION);
         }
@@ -351,7 +351,7 @@ void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfRe
     textRenderer->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);
 }
 
-PassRefPtr<Text> Text::cloneWithData(const String& data)
+PassRefPtrWillBeRawPtr<Text> Text::cloneWithData(const String& data)
 {
     return create(document(), data);
 }
