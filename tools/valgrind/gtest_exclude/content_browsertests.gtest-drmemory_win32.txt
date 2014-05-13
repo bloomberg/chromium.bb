@@ -74,3 +74,4 @@ RenderViewImplTest.ReloadWhileSwappedOut
 SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
 IndexedDBBrowserTest.ConnectionsClosedOnTabClose
 ResourceFetcherTests.ResourceFetcher404
+ResourceFetcherTests.ResourceFetcherPost
