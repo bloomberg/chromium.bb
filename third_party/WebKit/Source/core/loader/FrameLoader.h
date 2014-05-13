@@ -216,7 +216,6 @@ private:
 
     void detachFromParent();
     void detachChildren();
-    void closeAndRemoveChild(LocalFrame*);
     void detachClient();
 
     void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = nullptr);
@@ -281,6 +280,8 @@ private:
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
 
     SandboxFlags m_forcedSandboxFlags;
+
+    bool m_willDetachClient;
 };
 
 } // namespace WebCore

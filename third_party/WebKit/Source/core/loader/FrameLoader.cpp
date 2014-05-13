@@ -123,6 +123,7 @@ FrameLoader::FrameLoader(LocalFrame* frame, FrameLoaderClient* client)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
     , m_forcedSandboxFlags(SandboxNone)
+    , m_willDetachClient(false)
 {
 }
 
@@ -1048,15 +1049,6 @@ void FrameLoader::detachChildren()
         (*it)->loader().detachFromParent();
 }
 
-void FrameLoader::closeAndRemoveChild(LocalFrame* child)
-{
-    child->setView(nullptr);
-    if (child->ownerElement() && child->page())
-        child->page()->decrementSubframeCount();
-    child->willDetachFrameHost();
-    child->loader().detachClient();
-}
-
 // Called every time a resource is completely loaded or an error is received.
 void FrameLoader::checkLoadComplete()
 {
@@ -1082,6 +1074,9 @@ void FrameLoader::frameDetached()
 
 void FrameLoader::detachFromParent()
 {
+    // Temporary explosions. We should never re-enter this code when this condition is true.
+    RELEASE_ASSERT(!m_willDetachClient);
+
     // stopAllLoaders can detach the LocalFrame, so protect it.
     RefPtr<LocalFrame> protect(m_frame);
 
@@ -1101,9 +1096,16 @@ void FrameLoader::detachFromParent()
     if (!m_client)
         return;
 
+    TemporaryChange<bool> willDetachClient(m_willDetachClient, true);
+
     // FIXME: All this code belongs up in Page.
     if (LocalFrame* parent = m_frame->tree().parent()) {
-        parent->loader().closeAndRemoveChild(m_frame);
+        m_frame->setView(nullptr);
+        // FIXME: Shouldn't need to check if page() is null here.
+        if (m_frame->ownerElement() && m_frame->page())
+            m_frame->page()->decrementSubframeCount();
+        m_frame->willDetachFrameHost();
+        detachClient();
         parent->loader().scheduleCheckCompleted();
     } else {
         m_frame->setView(nullptr);
@@ -1111,7 +1113,6 @@ void FrameLoader::detachFromParent()
         detachClient();
     }
     m_frame->detachFromFrameHost();
-
 }
 
 void FrameLoader::detachClient()
