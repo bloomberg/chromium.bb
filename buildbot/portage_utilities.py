@@ -314,26 +314,36 @@ class EBuild(object):
     self.is_blacklisted = False
     self._ReadEBuild(path)
 
-  def _ReadEBuild(self, path):
-    """Determine the settings of `is_workon` and `is_stable`.
+  @staticmethod
+  def Classify(ebuild_path):
+    """Return whether this ebuild is workon, stable, and/or blacklisted
 
-    `is_workon` is determined by whether the ebuild inherits from
-    the 'cros-workon' eclass.  `is_stable` is determined by whether
-    there's a '~' in the KEYWORDS setting in the ebuild.
-
-    This function is separate from __init__() to allow unit tests to
-    stub it out.
+    workon is determined by whether the ebuild inherits from the
+    'cros-workon' eclass. stable is determined by whether there's a '~'
+    in the KEYWORDS setting in the ebuild. An ebuild is considered blacklisted
+    if a line in it starts with 'CROS_WORKON_BLACKLIST='
     """
-    for line in fileinput.input(path):
+    is_workon = False
+    is_stable = False
+    is_blacklisted = False
+    for line in fileinput.input(ebuild_path):
       if line.startswith('inherit ') and 'cros-workon' in line:
-        self.is_workon = True
+        is_workon = True
       elif line.startswith('KEYWORDS='):
         for keyword in line.split('=', 1)[1].strip("\"'").split():
           if not keyword.startswith('~') and keyword != '-*':
-            self.is_stable = True
+            is_stable = True
       elif line.startswith('CROS_WORKON_BLACKLIST='):
-        self.is_blacklisted = True
+        is_blacklisted = True
     fileinput.close()
+    return is_workon, is_stable, is_blacklisted
+
+  def _ReadEBuild(self, path):
+    """Determine the settings of `is_workon`, `is_stable` and is_blacklisted
+
+    These are determined using the static Classify function.
+    """
+    self.is_workon, self.is_stable, self.is_blacklisted = EBuild.Classify(path)
 
   @staticmethod
   def GetCrosWorkonVars(ebuild_path, pkg_name):
@@ -455,6 +465,10 @@ class EBuild(object):
 
     if not os.path.exists(vers_script):
       return default
+
+    if not self.is_workon:
+      raise EbuildFormatIncorrectException(self._ebuild_path_no_version,
+        "Package has a chromeos-version.sh script but is not workon-able.")
 
     srcdirs = self.GetSourcePath(srcroot, manifest)[1]
 
@@ -790,11 +804,15 @@ def GetWorkonProjectMap(overlay, subdirectories):
     given overlay under the given subdirectories.
   """
   # Search ebuilds for project names, ignoring non-existent directories.
+  # Also filter out ebuilds which are not cros_workon.
   for subdir in subdirectories:
     for root, _dirs, files in os.walk(os.path.join(overlay, subdir)):
       for filename in files:
         if filename.endswith('-9999.ebuild'):
           full_path = os.path.join(root, filename)
+          is_workon = EBuild.Classify(full_path)[0]
+          if not is_workon:
+            continue
           pkg_name = os.path.basename(root)
           _, projects, _ = EBuild.GetCrosWorkonVars(full_path, pkg_name)
           relpath = os.path.relpath(full_path, start=overlay)
