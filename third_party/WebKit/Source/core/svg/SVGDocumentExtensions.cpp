@@ -117,8 +117,8 @@ void SVGDocumentExtensions::startAnimations()
 
 void SVGDocumentExtensions::pauseAnimations()
 {
-    HashSet<SVGSVGElement*>::iterator end = m_timeContainers.end();
-    for (HashSet<SVGSVGElement*>::iterator itr = m_timeContainers.begin(); itr != end; ++itr)
+    WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> >::iterator end = m_timeContainers.end();
+    for (WillBeHeapHashSet<RawPtrWillBeMember<SVGSVGElement> >::iterator itr = m_timeContainers.begin(); itr != end; ++itr)
         (*itr)->pauseAnimations();
 }
 
@@ -477,6 +477,7 @@ SVGSVGElement* SVGDocumentExtensions::rootElement() const
 
 void SVGDocumentExtensions::trace(Visitor* visitor)
 {
+    visitor->trace(m_timeContainers);
     visitor->trace(m_svgFontFaceElements);
     visitor->trace(m_pendingSVGFontFaceElementsForRemoval);
 }
