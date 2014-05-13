@@ -21296,6 +21296,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Renderer4.AccelContentPaintDurationMS">
+  <obsolete>
+    Deprecated 2014-05 because of impl-side painting.
+  </obsolete>
   <owner>wiltzius@chromium.org</owner>
   <summary>
     Time spent by WebKit painting the page, in milliseconds, when the GPU
@@ -21304,6 +21307,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Renderer4.AccelContentPaintMegapixPerSecond">
+  <obsolete>
+    Deprecated 2014-05 because of impl-side painting.
+  </obsolete>
   <owner>wiltzius@chromium.org</owner>
   <summary>
     WebKit paint throughput, measured in megapixels per second, when GPU

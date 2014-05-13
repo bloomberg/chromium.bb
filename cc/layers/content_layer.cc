@@ -27,30 +27,10 @@ scoped_ptr<ContentLayerPainter> ContentLayerPainter::Create(
 void ContentLayerPainter::Paint(SkCanvas* canvas,
                                 const gfx::Rect& content_rect,
                                 gfx::RectF* opaque) {
-  base::TimeTicks paint_start = base::TimeTicks::HighResNow();
   client_->PaintContents(canvas,
                          content_rect,
                          opaque,
                          ContentLayerClient::GRAPHICS_CONTEXT_ENABLED);
-  base::TimeTicks paint_end = base::TimeTicks::HighResNow();
-  // The start and end times might be the same if the paint was very fast or if
-  // our timer granularity is poor. Treat this as a very short time duration
-  // instead of none to avoid dividing by zero.
-  if (paint_end == paint_start)
-    paint_end += base::TimeDelta::FromMicroseconds(1);
-
-  double pixels_per_sec = (content_rect.width() * content_rect.height()) /
-                          (paint_end - paint_start).InSecondsF();
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintDurationMS",
-                              (paint_end - paint_start).InMilliseconds(),
-                              0,
-                              120,
-                              30);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Renderer4.AccelContentPaintMegapixPerSecond",
-                              pixels_per_sec / 1000000,
-                              10,
-                              210,
-                              30);
 }
 
 scoped_refptr<ContentLayer> ContentLayer::Create(ContentLayerClient* client) {
