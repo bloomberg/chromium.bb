@@ -6478,3 +6478,9 @@
    fun:_ZN7content5Shell15LoadURLForFrameERK4GURLRKSs
    fun:_ZN7content5Shell7LoadURLERK4GURL
 }
+{
+   bug_372832
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content27ServiceWorkerContextWrapper12InitInternalERKN4base8FilePathEPNS1_19SequencedTaskRunnerEPNS1_16MessageLoopProxyEPN5quota17QuotaManagerProxyE
+}
