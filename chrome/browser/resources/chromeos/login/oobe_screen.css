@@ -43,14 +43,19 @@
 }
 
 .step-controls {
-  -webkit-box-pack: end;
-  -webkit-padding-end: 34px;  /* Double the padding of .step */
   bottom: 21px;
   box-sizing: border-box;
-  display: -webkit-box;
+  display: flex;
   height: 28px;
+  justify-content: flex-end;
+  padding-right: 34px;  /* Double the padding of .step */
   position: absolute;
   width: 100%;
+}
+
+html[dir=rtl] .step-controls {
+  /* Hack as -webkit-padding-end doesn't catch direction. crbug.com/363836 */
+  padding-left: 34px;
 }
 
 .animation .step-controls button {
