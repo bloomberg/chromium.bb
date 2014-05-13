@@ -49,11 +49,11 @@ class MEDIA_EXPORT AudioRenderer {
 
   // Signal audio playback to start at the current rate. It is expected that
   // |time_cb| will eventually start being run with time updates.
-  virtual void Play() = 0;
+  virtual void StartRendering() = 0;
 
   // Signal audio playback to stop until further notice. It is expected that
   // |time_cb| will no longer be run.
-  virtual void Pause() = 0;
+  virtual void StopRendering() = 0;
 
   // Discard any audio data, executing |callback| when completed.
   virtual void Flush(const base::Closure& callback) = 0;

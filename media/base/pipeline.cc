@@ -197,7 +197,7 @@ void Pipeline::SetState(State next_state) {
     creation_time_ = base::TimeTicks();
   }
 
-  DVLOG(2) << GetStateString(state_) << " -> " << GetStateString(next_state);
+  DVLOG(1) << GetStateString(state_) << " -> " << GetStateString(next_state);
 
   state_ = next_state;
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(next_state));
@@ -483,10 +483,6 @@ void Pipeline::DoSeek(
   SerialRunner::Queue bound_fns;
 
   // Pause.
-  if (audio_renderer_) {
-    bound_fns.Push(base::Bind(
-        &AudioRenderer::Pause, base::Unretained(audio_renderer_.get())));
-  }
   if (text_renderer_) {
     bound_fns.Push(base::Bind(
         &TextRenderer::Pause, base::Unretained(text_renderer_.get())));
@@ -757,6 +753,9 @@ void Pipeline::SeekTask(TimeDelta time, const PipelineStatusCB& seek_cb) {
 
   // Kick off seeking!
   {
+    if (audio_renderer_)
+      audio_renderer_->StopRendering();
+
     base::AutoLock auto_lock(lock_);
     if (clock_->IsPlaying())
       clock_->Pause();
@@ -928,29 +927,31 @@ bool Pipeline::WaitingForEnoughData() const {
 }
 
 void Pipeline::StartWaitingForEnoughData() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, kPlaying);
   DCHECK(WaitingForEnoughData());
 
   if (audio_renderer_)
-    audio_renderer_->Pause();
+    audio_renderer_->StopRendering();
 
   base::AutoLock auto_lock(lock_);
   clock_->Pause();
 }
 
 void Pipeline::StartPlayback() {
+  DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, kPlaying);
   DCHECK(!WaitingForEnoughData());
 
   if (audio_renderer_) {
-    audio_renderer_->Play();
-
-    base::AutoLock auto_lock(lock_);
     // We use audio stream to update the clock. So if there is such a
     // stream, we pause the clock until we receive a valid timestamp.
+    base::AutoLock auto_lock(lock_);
     waiting_for_clock_update_ = true;
+    audio_renderer_->StartRendering();
   } else {
     base::AutoLock auto_lock(lock_);
+    DCHECK(!waiting_for_clock_update_);
     clock_->SetMaxTime(clock_->Duration());
     clock_->Play();
   }
