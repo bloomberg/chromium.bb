@@ -664,7 +664,10 @@ void BrowserViewRenderer::EnsureContinuousInvalidation(bool force_invalidate) {
   if (throttle_fallback_tick)
     return;
 
-  block_invalidates_ = compositor_needs_continuous_invalidate_;
+  {
+    base::AutoLock lock(render_thread_lock_);
+    block_invalidates_ = compositor_needs_continuous_invalidate_;
+  }
 
   // Unretained here is safe because the callback is cancelled when
   // |fallback_tick_| is destroyed.
@@ -713,8 +716,21 @@ bool BrowserViewRenderer::CompositeSW(SkCanvas* canvas) {
 }
 
 void BrowserViewRenderer::DidComposite(bool force_invalidate) {
+  {
+    base::AutoLock lock(render_thread_lock_);
+    block_invalidates_ = false;
+  }
+
+  if (!ui_task_runner_->BelongsToCurrentThread()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&BrowserViewRenderer::EnsureContinuousInvalidation,
+                   ui_thread_weak_ptr_,
+                   force_invalidate));
+    return;
+  }
+
   fallback_tick_.Cancel();
-  block_invalidates_ = false;
   EnsureContinuousInvalidation(force_invalidate);
 }
 

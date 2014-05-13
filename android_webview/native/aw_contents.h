@@ -216,14 +216,10 @@ class AwContents : public FindHelper::Listener,
  private:
   void InitDataReductionProxyIfNecessary();
   void InitAutofillIfNecessary(bool enabled);
-  void DidDrawGL(const DrawGLResult& result);
 
   void InitializeHardwareDrawIfNeeded();
   void InitializeHardwareDrawOnRenderThread();
   void ReleaseHardwareDrawOnRenderThread();
-
-  base::WeakPtrFactory<AwContents> weak_factory_on_ui_thread_;
-  base::WeakPtr<AwContents> ui_thread_weak_ptr_;
 
   JavaObjectWeakGlobalRef java_ref_;
   scoped_ptr<content::WebContents> web_contents_;
