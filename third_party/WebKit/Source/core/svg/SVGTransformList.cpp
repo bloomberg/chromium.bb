@@ -282,7 +282,7 @@ PassRefPtr<SVGTransformList> SVGTransformList::create(SVGTransformType transform
     return svgTransformList.release();
 }
 
-void SVGTransformList::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGTransformList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     if (isEmpty())
         return;

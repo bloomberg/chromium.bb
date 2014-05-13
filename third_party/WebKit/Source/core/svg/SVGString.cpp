@@ -24,7 +24,7 @@
 
 namespace WebCore {
 
-void SVGString::add(PassRefPtr<SVGPropertyBase>, SVGElement*)
+void SVGString::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }

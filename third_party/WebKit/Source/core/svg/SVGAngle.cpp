@@ -58,7 +58,7 @@ void SVGMarkerOrientEnumeration::notifyChange()
     m_angle->orientTypeChanged();
 }
 
-void SVGMarkerOrientEnumeration::add(PassRefPtr<SVGPropertyBase>, SVGElement*)
+void SVGMarkerOrientEnumeration::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     // SVGMarkerOrientEnumeration is only animated via SVGAngle
     ASSERT_NOT_REACHED();
@@ -328,7 +328,7 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType, ExceptionState& ex
     m_orientType->setEnumValue(SVGMarkerOrientAngle);
 }
 
-void SVGAngle::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
+void SVGAngle::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
     RefPtr<SVGAngle> otherAngle = toSVGAngle(other);
 

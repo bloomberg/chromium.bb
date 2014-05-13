@@ -130,7 +130,7 @@ String SVGRect::valueAsString() const
     return builder.toString();
 }
 
-void SVGRect::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
+void SVGRect::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
     m_value += toSVGRect(other)->value();
 }

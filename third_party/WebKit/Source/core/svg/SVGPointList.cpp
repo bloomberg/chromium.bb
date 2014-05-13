@@ -132,7 +132,7 @@ void SVGPointList::setValueAsString(const String& value, ExceptionState& excepti
         exceptionState.throwDOMException(SyntaxError, "Problem parsing points=\""+value+"\"");
 }
 
-void SVGPointList::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGPointList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     RefPtr<SVGPointList> otherList = toSVGPointList(other);
 

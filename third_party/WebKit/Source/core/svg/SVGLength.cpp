@@ -434,7 +434,7 @@ PassRefPtr<SVGLength> SVGLength::blend(PassRefPtr<SVGLength> passFrom, float pro
     return length;
 }
 
-void SVGLength::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGLength::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     SVGLengthContext lengthContext(contextElement);
 

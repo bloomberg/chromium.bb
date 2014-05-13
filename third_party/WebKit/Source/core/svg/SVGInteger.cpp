@@ -74,7 +74,7 @@ void SVGInteger::setValueAsString(const String& string, ExceptionState& exceptio
     }
 }
 
-void SVGInteger::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
+void SVGInteger::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
     setValue(m_value + toSVGInteger(other)->value());
 }

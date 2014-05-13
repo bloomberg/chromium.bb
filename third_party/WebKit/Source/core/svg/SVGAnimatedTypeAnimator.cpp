@@ -150,7 +150,8 @@ void SVGAnimatedTypeAnimator::calculateFromAndByValues(RefPtr<SVGPropertyBase>& 
 {
     from = constructFromString(fromString);
     to = constructFromString(byString);
-    to->add(from, m_contextElement);
+    // FIXME(oilpan): Below .get() should be removed after transition types are gone.
+    to->add(from.get(), m_contextElement);
 }
 
 namespace {

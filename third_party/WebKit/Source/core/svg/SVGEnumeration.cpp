@@ -104,7 +104,7 @@ void SVGEnumerationBase::setValueAsString(const String& string, ExceptionState& 
     notifyChange();
 }
 
-void SVGEnumerationBase::add(PassRefPtr<SVGPropertyBase>, SVGElement*)
+void SVGEnumerationBase::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }

@@ -224,7 +224,7 @@ String SVGTransform::valueAsString() const
     return emptyString();
 }
 
-void SVGTransform::add(PassRefPtr<SVGPropertyBase>, SVGElement*)
+void SVGTransform::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     // SVGTransform is not animated by itself.
     ASSERT_NOT_REACHED();

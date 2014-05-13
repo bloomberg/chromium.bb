@@ -125,7 +125,7 @@ String SVGPoint::valueAsString() const
     return builder.toString();
 }
 
-void SVGPoint::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
+void SVGPoint::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
     // SVGPoint is not animated by itself
     ASSERT_NOT_REACHED();

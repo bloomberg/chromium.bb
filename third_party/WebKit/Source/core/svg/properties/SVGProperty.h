@@ -64,7 +64,7 @@ public:
     virtual String valueAsString() const = 0;
 
     // FIXME: remove below and just have this inherit AnimatableValue in WebAnimations transition.
-    virtual void add(PassRefPtr<SVGPropertyBase>, SVGElement*) = 0;
+    virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) = 0;
     virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) = 0;
     virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) = 0;
 

@@ -62,7 +62,7 @@ void SVGBoolean::setValueAsString(const String& value, ExceptionState& exception
     }
 }
 
-void SVGBoolean::add(PassRefPtr<SVGPropertyBase>, SVGElement*)
+void SVGBoolean::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }

@@ -159,7 +159,7 @@ void SVGPathSegList::setValueAsString(const String& string, ExceptionState& exce
         exceptionState.throwDOMException(SyntaxError, "Problem parsing path \"" + string + "\"");
 }
 
-void SVGPathSegList::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
+void SVGPathSegList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
     RefPtr<SVGPathSegList> otherList = toSVGPathSegList(other);
     if (length() != otherList->length())

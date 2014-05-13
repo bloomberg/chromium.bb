@@ -397,7 +397,7 @@ String SVGPreserveAspectRatio::valueAsString() const
     }
 }
 
-void SVGPreserveAspectRatio::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
+void SVGPreserveAspectRatio::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
     ASSERT_NOT_REACHED();
 }

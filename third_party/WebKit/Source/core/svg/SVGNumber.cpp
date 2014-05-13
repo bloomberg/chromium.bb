@@ -99,7 +99,7 @@ void SVGNumber::setValueAsString(const String& string, ExceptionState& exception
     }
 }
 
-void SVGNumber::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
+void SVGNumber::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
     setValue(m_value + toSVGNumber(other)->value());
 }

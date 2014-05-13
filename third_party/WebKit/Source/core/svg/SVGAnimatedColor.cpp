@@ -48,7 +48,7 @@ static inline Color fallbackColorForCurrentColor(SVGElement* targetElement)
         return Color::transparent;
 }
 
-void SVGColorProperty::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGColorProperty::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     ASSERT(contextElement);
 

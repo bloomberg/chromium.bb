@@ -79,7 +79,7 @@ void SVGNumberOptionalNumber::setValueAsString(const String& value, ExceptionSta
     m_secondNumber->setValue(y);
 }
 
-void SVGNumberOptionalNumber::add(PassRefPtr<SVGPropertyBase> other, SVGElement*)
+void SVGNumberOptionalNumber::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
     RefPtr<SVGNumberOptionalNumber> otherNumberOptionalNumber = toSVGNumberOptionalNumber(other);
 

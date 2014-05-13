@@ -117,7 +117,7 @@ void SVGLengthList::setValueAsString(const String& value, ExceptionState& except
     }
 }
 
-void SVGLengthList::add(PassRefPtr<SVGPropertyBase> other, SVGElement* contextElement)
+void SVGLengthList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
     RefPtr<SVGLengthList> otherList = toSVGLengthList(other);
 
