@@ -20,6 +20,7 @@ import time
 import urllib
 from xml.dom import minidom
 
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
@@ -1108,7 +1109,7 @@ class ValidationFailedMessage(object):
 
   def IsInfrastructureFailure(self):
     """Check if all of the failures are infrastructure failures."""
-    return self._MatchesFailureType(results_lib.InfrastructureFailure)
+    return self._MatchesFailureType(failures_lib.InfrastructureFailure)
 
   def IsPackageBuildFailure(self):
     """Check if all of the failures are package build failures."""

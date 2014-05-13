@@ -11,17 +11,17 @@ import time
 import urllib
 
 from chromite.buildbot import constants
-from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_failures as failures_lib
 
 
 logger = logging.getLogger('chromite')
 
 
-class LabIsDownException(results_lib.TestLabFailure):
+class LabIsDownException(failures_lib.TestLabFailure):
   """Raised when the Lab is Down."""
 
 
-class BoardIsDisabledException(results_lib.TestLabFailure):
+class BoardIsDisabledException(failures_lib.TestLabFailure):
   """Raised when a certain board is disabled in the lab."""
 
 

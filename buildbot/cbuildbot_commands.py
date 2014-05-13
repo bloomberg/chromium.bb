@@ -16,6 +16,7 @@ import tempfile
 import time
 
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
@@ -772,7 +773,7 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     if result.returncode in lab_warning_codes:
       raise TestWarning('** Suite passed with a warning code **')
     elif result.returncode in infra_error_codes:
-      raise results_lib.TestLabFailure(
+      raise failures_lib.TestLabFailure(
           '** HWTest did not complete due to infrastructure issues '
           '(code %d) **' % result.returncode)
     elif result.returncode != 0:

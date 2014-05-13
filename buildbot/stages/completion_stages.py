@@ -342,7 +342,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         failed slaves.
 
     Returns:
-      True if all failures are of the results_lib.InfrastructureFailure type.
+      True if all failures are of the InfrastructureFailure type.
     """
     return all([x.IsInfrastructureFailure() for x in messages])
 

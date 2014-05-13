@@ -9,7 +9,7 @@ import os
 
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lab_status
 from chromite.buildbot import validation_pool
@@ -241,7 +241,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       # HWTest passed with warning. All builders should pass.
       logging.warning('HWTest passed with warning code.')
       return self._HandleExceptionAsWarning(exc_info)
-    elif issubclass(exc_type, results_lib.InfrastructureFailure):
+    elif issubclass(exc_type, failures_lib.InfrastructureFailure):
       # Tests did not run correctly; builders that do not check in
       # code should pass.
       logging.warning('HWTest did not complete due to infrastructure issues '

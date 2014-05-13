@@ -35,6 +35,7 @@ def LoadCheckpoint(buildroot):
     Results.RestoreCompletedStages(load_file)
 
 
+# TODO(yjhong): Move this and its subclasses to cbuildbot_failures
 class StepFailure(Exception):
   """StepFailure exceptions indicate that a cbuildbot step failed.
 
@@ -60,14 +61,6 @@ class StepFailure(Exception):
   def __str__(self):
     """Stringify the message."""
     return self.message
-
-
-class InfrastructureFailure(StepFailure):
-  """Raised if a stage fails due to infrastucture issues."""
-
-
-class TestLabFailure(InfrastructureFailure):
-  """Raised if a stage fails due to hardware lab infrastucture issues."""
 
 
 class RetriableStepFailure(StepFailure):
