@@ -108,6 +108,7 @@
               'signed_in_devices.idl',
               'streams_private.idl',
               'sync_file_system.idl',
+              'synced_notifications_private.idl',
               'system_cpu.idl',
               'system_display.idl',
               'system_indicator.idl',

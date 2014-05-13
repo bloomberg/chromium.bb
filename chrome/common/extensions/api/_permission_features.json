@@ -826,6 +826,10 @@
     "channel": "stable",
     "extension_types": ["platform_app"]
   },
+  "syncedNotificationsPrivate": {
+    "channel": "trunk",
+    "extension_types": ["platform_app"]
+  },
   "system.cpu": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app", "platform_app"]

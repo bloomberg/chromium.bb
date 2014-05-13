@@ -1,0 +1,83 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This API is designed to be used with Chrome Sync.  
+namespace syncedNotificationsPrivate {
+
+// Potential sync change types.
+enum ChangeType {
+  added,
+  updated,
+  deleted
+};
+
+// Whether or not to resync all data items if the data type context changes.
+enum RefreshRequest {
+  refresh_needed,
+  no_refresh
+};
+
+enum SyncDataType {
+  synced_notification,
+  app_info
+};
+
+dictionary SyncData {
+  SyncDataType datatype;
+  // |dataItem| will be a binary protobuf which matches the backend
+  // for the datatype.
+  ArrayBuffer dataItem;
+};
+
+// Datatype that represents a single sync change to a notification or an app
+// info.
+dictionary SyncChange {
+  SyncData data;
+  ChangeType changeType;
+};
+
+// Gets an array of SyncChange objects representing the current sync state.
+// chrome.runtime.lastError contains any errors; if that is the case then
+// changes should be undefined.
+callback GetInitialDataCallback = void (SyncData[] changes);
+// Called on completion or error of the sync operation.  lastError contains an
+// error message if required.
+callback SyncOperationCallback = void ();
+
+interface Functions {
+
+  // Gets all data from sync representing the current state (for use at
+  // startup). This returns both Synced Notifications and AppInfos (with the
+  // datatype enum set appropriately).  Can return undefined, in which case
+  // LastError will be set.  This means sync is unavailable at this time.
+  static void getInitialData(SyncDataType type,
+                             GetInitialDataCallback callback);
+
+  // Sends a changed (read state) notification back up to sync.  To keep the
+  // sync from needing to understand the protocol, we send the whole object,
+  // not just the new read state.
+  static void updateNotification(ArrayBuffer changedNotification,
+                                 SyncOperationCallback callback);
+
+  // Sets the (e.g.) Locale and DPI scale factor and list of sending services,
+  // encoded as a binary protobuf.  Sync will persist these values for this
+  // and future sessions.
+  static void setRenderContext(RefreshRequest refresh,
+                               ArrayBuffer dataTypeContext,
+                               SyncOperationCallback callback);
+
+};
+
+interface Events {
+  // Called by sync when we get new notifications or app infos from the
+  // server.
+  static void onDataChanges(SyncChange[] changes);
+
+  // Called by sync when sync becomes available.  This can be used to get the
+  // initial data for the app as soon as sync starts up, even if that is not
+  // soon after chrome startup.
+  static void onSyncStartup();
+};
+
+};

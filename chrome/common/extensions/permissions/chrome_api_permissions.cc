@@ -222,6 +222,8 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kRtcPrivate, "rtcPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
+      {APIPermission::kSyncedNotificationsPrivate,
+       "syncedNotificationsPrivate"},
       {APIPermission::kTerminalPrivate, "terminalPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kVirtualKeyboardPrivate, "virtualKeyboardPrivate",
