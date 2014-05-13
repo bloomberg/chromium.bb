@@ -7,7 +7,7 @@
 function testShiftHighlight() {
   // Start in lower case.
   mockTouchType('l');
-  var shift = getShiftKey(Alignment.LEFT);
+  var shift = getKey("leftShift");
   generateTouchEvent(shift, 'touchstart', true, true);
   generateTouchEvent(shift, 'touchend', true, true);
   // Transitioned to upper case.
@@ -19,11 +19,16 @@ function testShiftHighlight() {
 }
 
 function testCapslock() {
+  // Skip this test for compact layouts since they don't have capslock keys.
+  var id = getLayoutId();
+  if (id.indexOf("compact") > 0)
+    return;
+
   // Start in lower case.
   mockTouchType('l');
   // To upper case.
   // TODO(rsadam@): Only test this for the full layout.
-  var caps = document.querySelector('#' + CAPSLOCK_ID);
+  var caps = getKey("capslock")
   generateTouchEvent(caps, 'touchstart', true, true);
   generateTouchEvent(caps, 'touchend', true, true);
   mockTouchType('A');

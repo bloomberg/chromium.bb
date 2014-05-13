@@ -31,12 +31,15 @@ const base::FilePath::CharType kInputViewTestDir[] =
     "chromeos/virtual_keyboard/inputview/";
 const base::FilePath::CharType kBaseKeyboardTestFramework[] = "test_base.js";
 
+const char kDefaultLayout[] = "us";
+const char kCompactLayout[] = "us.compact";
+
 struct InputViewConfig : public VirtualKeyboardBrowserTestConfig {
-  explicit InputViewConfig(std::string id) {
+  explicit InputViewConfig(std::string id, std::string layout) {
     base_framework_ = kBaseKeyboardTestFramework;
     extension_id_ = id;
     test_dir_ = kInputViewTestDir;
-    url_ = "chrome-extension://" + id + "/inputview.html?id=us-altgr-intl";
+    url_ = "chrome-extension://" + id + "/inputview.html?id=" + layout;
   }
 };
 
@@ -78,11 +81,27 @@ class InputViewBrowserTest : public VirtualKeyboardBrowserTest {
 IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, TypingTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
-  RunTest(base::FilePath("typing_test.js"), InputViewConfig(id));
+  RunTest(base::FilePath("typing_test.js"),
+          InputViewConfig(id, kDefaultLayout));
+}
+
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactTypingTest) {
+  std::string id = InstallIMEExtension();
+  ASSERT_FALSE(id.empty());
+  RunTest(base::FilePath("typing_test.js"),
+          InputViewConfig(id, kCompactLayout));
 }
 
 IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, KeysetTransitionTest) {
   std::string id = InstallIMEExtension();
   ASSERT_FALSE(id.empty());
-  RunTest(base::FilePath("keyset_transition_test.js"), InputViewConfig(id));
+  RunTest(base::FilePath("keyset_transition_test.js"),
+          InputViewConfig(id, kDefaultLayout));
+}
+
+IN_PROC_BROWSER_TEST_F(InputViewBrowserTest, CompactKeysetTransitionTest) {
+  std::string id = InstallIMEExtension();
+  ASSERT_FALSE(id.empty());
+  RunTest(base::FilePath("keyset_transition_test.js"),
+          InputViewConfig(id, kCompactLayout));
 }
