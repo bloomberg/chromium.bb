@@ -50,6 +50,20 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
         os.path.join(build_root, constants.SDK_VERSION_FILE),
         ignore_missing=True)
 
+    start_time = results_lib.Results.start_time
+    start_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=start_time)
+
+    verinfo = self._run.GetVersionInfo(build_root)
+    platform_tag = getattr(self._run.attrs, 'release_tag')
+    if not platform_tag:
+      platform_tag = verinfo.VersionString()
+
+    version = {
+            'full': self._run.GetVersion(),
+            'milestone': verinfo.chrome_branch,
+            'platform': platform_tag,
+    }
+
     metadata = {
         # Version of the metadata format.
         'metadata-version': '2',
@@ -60,6 +74,10 @@ class ReportBuildStartStage(generic_stages.BuilderStage,
         'build-number': self._run.buildnumber,
         'builder-name': os.environ.get('BUILDBOT_BUILDERNAME', ''),
         'child-configs': child_configs,
+        'time': {
+            'start': start_time_stamp,
+        },
+        'version': version,
 
         # Data for the toolchain used.
         'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
@@ -259,7 +277,6 @@ class ReportStage(generic_stages.BuilderStage,
       A JSON-able dictionary representation of the metadata object.
     """
     builder_run = self._run
-    build_root = self._build_root
     config = config or builder_run.config
 
     commit_queue_stages = (sync_stages.CommitQueueSyncStage,
@@ -276,7 +293,7 @@ class ReportStage(generic_stages.BuilderStage,
     )
 
     return cbuildbot_metadata.CBuildbotMetadata.GetReportMetadataDict(
-        builder_run, build_root, get_changes_from_pool,
+        builder_run, get_changes_from_pool,
         get_statuses_from_slaves, config, stage, final_status, sync_instance,
         completion_instance)
 
