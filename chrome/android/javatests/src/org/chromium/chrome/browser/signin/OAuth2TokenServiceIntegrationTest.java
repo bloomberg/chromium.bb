@@ -350,6 +350,23 @@ public class OAuth2TokenServiceIntegrationTest extends ChromeShellTestBase {
         assertEquals(0, mObserver.getLoadedCallCount());
     }
 
+    @MediumTest
+    @UiThreadTest
+    public void testValidateAccountsFiresEventAtTheEnd() {
+        // Mark user as signed in without setting up the account.
+        mChromeSigninController.setSignedInAccountName(TEST_ACCOUNT1.name);
+        TestObserver ob = new TestObserver() {
+            @Override
+            public void onRefreshTokenAvailable(Account account) {
+                super.onRefreshTokenAvailable(account);
+                assertEquals(1, OAuth2TokenService.getAccounts(mContext).length);
+            }
+        };
+
+        addObserver(ob);
+        mOAuth2TokenService.validateAccounts(mContext);
+    }
+
     private static class TestObserver implements OAuth2TokenService.OAuth2TokenServiceObserver {
         private int mAvailableCallCount;
         private int mRevokedCallCount;

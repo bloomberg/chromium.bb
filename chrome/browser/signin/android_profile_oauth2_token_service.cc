@@ -181,8 +181,11 @@ void AndroidProfileOAuth2TokenService::ValidateAccounts(
     const std::string& signed_in_account) {
   std::vector<std::string> prev_ids = GetAccounts();
   std::vector<std::string> curr_ids = GetSystemAccounts();
+  std::vector<std::string> refreshed_ids;
+  std::vector<std::string> revoked_ids;
 
-  if (!ValidateAccounts(signed_in_account, prev_ids, curr_ids)) {
+  if (!ValidateAccounts(
+      signed_in_account, prev_ids, curr_ids, refreshed_ids, revoked_ids)) {
     curr_ids.clear();
   }
 
@@ -191,12 +194,24 @@ void AndroidProfileOAuth2TokenService::ValidateAccounts(
       base::android::ToJavaArrayOfStrings(env, curr_ids));
   Java_OAuth2TokenService_saveStoredAccounts(
       env, base::android::GetApplicationContext(), java_accounts.obj());
+
+  for (std::vector<std::string>::iterator it = refreshed_ids.begin();
+       it != refreshed_ids.end(); it++) {
+    FireRefreshTokenAvailable(*it);
+  }
+
+  for (std::vector<std::string>::iterator it = revoked_ids.begin();
+       it != revoked_ids.end(); it++) {
+    FireRefreshTokenRevoked(*it);
+  }
 }
 
 bool AndroidProfileOAuth2TokenService::ValidateAccounts(
     const std::string& signed_in_account,
     const std::vector<std::string>& prev_account_ids,
-    const std::vector<std::string>& curr_account_ids) {
+    const std::vector<std::string>& curr_account_ids,
+    std::vector<std::string>& refreshed_ids,
+    std::vector<std::string>& revoked_ids) {
   if (std::find(curr_account_ids.begin(),
                 curr_account_ids.end(),
                 signed_in_account) != curr_account_ids.end()) {
@@ -210,17 +225,17 @@ bool AndroidProfileOAuth2TokenService::ValidateAccounts(
       if (std::find(curr_account_ids.begin(),
                     curr_account_ids.end(),
                     *it) == curr_account_ids.end()) {
-        FireRefreshTokenRevoked(*it);
+        revoked_ids.push_back(*it);
       }
     }
 
     // Always fire the primary signed in account first.
-    FireRefreshTokenAvailable(signed_in_account);
+    refreshed_ids.push_back(signed_in_account);
 
     for (std::vector<std::string>::const_iterator it = curr_account_ids.begin();
          it != curr_account_ids.end(); it++) {
       if (*it != signed_in_account) {
-        FireRefreshTokenAvailable(*it);
+        refreshed_ids.push_back(*it);
       }
     }
     return true;
@@ -228,13 +243,13 @@ bool AndroidProfileOAuth2TokenService::ValidateAccounts(
     // Currently signed in account does not any longer exist among accounts on
     // system together with all other accounts.
     if (!signed_in_account.empty()) {
-      FireRefreshTokenRevoked(signed_in_account);
+      revoked_ids.push_back(signed_in_account);
     }
     for (std::vector<std::string>::const_iterator it = prev_account_ids.begin();
          it != prev_account_ids.end(); it++) {
       if (*it == signed_in_account)
         continue;
-      FireRefreshTokenRevoked(*it);
+      revoked_ids.push_back(*it);
     }
     return false;
   }

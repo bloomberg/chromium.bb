@@ -53,10 +53,6 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   // android account ids and check the token status of each.
   void ValidateAccounts(const std::string& signed_in_account);
 
-  bool ValidateAccounts(const std::string& signed_in_account,
-                        const std::vector<std::string>& prev_account_ids,
-                        const std::vector<std::string>& curr_account_ids);
-
   // Triggers a notification to all observers of the OAuth2TokenService that a
   // refresh token is now available. This may cause observers to retry
   // operations that require authentication.
@@ -112,6 +108,14 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   virtual void FireRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
   // Called to notify observers when refresh tokans have been loaded.
   virtual void FireRefreshTokensLoaded() OVERRIDE;
+
+  // Return whether |signed_in_account| is valid and we have access
+  // to all the tokens in |curr_account_ids|.
+  bool ValidateAccounts(const std::string& signed_in_account,
+                        const std::vector<std::string>& prev_account_ids,
+                        const std::vector<std::string>& curr_account_ids,
+                        std::vector<std::string>& refreshed_ids,
+                        std::vector<std::string>& revoked_ids);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
