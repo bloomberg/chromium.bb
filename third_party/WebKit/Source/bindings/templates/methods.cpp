@@ -292,42 +292,15 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {# switch (std::min({{overloads.maxarg}}, info.Length())) { #}
     switch (info.Length()) {
     {# 3. Remove from S all entries whose type list is not of length argcount. #}
-    {% for length, index, arguments_methods in overloads.length_index_arguments_methods %}
+    {% for length, tests_methods in overloads.length_tests_methods %}
     case {{length}}:
+        {% for test, method in tests_methods %}
         {# 10. If i = d, then: #}
-        {# 1. Let V be argi.
-              Note: This is the argument that will be used to resolve which
-                    overload is selected. #}
-        {# (We represent argi as info[{{index}}].) #}
-        {# FIXME: add counters (from below) #}
-        {% for argument, method in arguments_methods
-            if argument.is_wrapper_type %}
-        {# 4. Otherwise: if V is a platform object – but not a platform array
-              object – and there is an entry in S that has one of the following
-              types at position i of its type list, #}
-        {# • an interface type that V implements #}
-        {# (We distinguish wrapper types from built-in interface types.) #}
-        if (V8{{argument.idl_type}}::hasInstance(info[{{index}}], info.GetIsolate())) {
+        if ({{test}}) {
+            {# FIXME: add counters (from below) #}
             {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
             return;
         }
-        {% for argument, method in arguments_methods
-            if argument.is_numeric_type %}
-        {# 10. Otherwise: if V is a Number value, and there is an entry in S
-           that has one of the following types at position i of its type list,
-        {# • a numeric type #}
-        {# FIXME: not needed yet
-        if (info[{{index}}]->IsNumber()) {
-            {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
-            return;
-        }
-        #}
-        {# 12. Otherwise: if there is an entry in S that has one of the
-               following types at position i of its type list, #}
-        {# • a numeric type #}
-        {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
-        return;
-        {% endfor %}
         {% endfor %}
         break;
     {% endfor %}

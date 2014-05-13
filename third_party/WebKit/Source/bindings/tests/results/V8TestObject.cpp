@@ -6525,8 +6525,10 @@ static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& i
             overloadedMethodD2Method(info);
             return;
         }
-        overloadedMethodD1Method(info);
-        return;
+        if (true) {
+            overloadedMethodD1Method(info);
+            return;
+        }
         break;
     }
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());

@@ -248,7 +248,7 @@ def generate_interface(interface):
     methods = [v8_methods.generate_method(interface, method)
                for method in interface.operations
                if method.name]  # Skip anonymous special operations (methods)
-    generate_overloads(methods)
+    generate_method_overloads(methods)
     for method in methods:
         method['do_generate_method_configuration'] = (
             method['do_not_check_signature'] and
@@ -302,7 +302,7 @@ def generate_constant(constant):
 # Overloads
 ################################################################################
 
-def generate_overloads(methods):
+def generate_method_overloads(methods):
     # Regular methods
     generate_overloads_by_type([method for method in methods
                                 if not method['is_static']])
@@ -314,12 +314,20 @@ def generate_overloads(methods):
 def generate_overloads_by_type(methods):
     """Generates |method.overload*| template values.
 
-    Modifies |method| in place for |method| in |methods|.
     Called separately for static and non-static (regular) methods,
     as these are overloaded separately.
+    Modifies |method| in place for |method| in |methods|.
     Doesn't change the |methods| list itself (only the values, i.e. individual
     methods), so ok to treat these separately.
     """
+    # Add overload information only to overloaded methods, so template code can
+    # easily verify if a function is overloaded
+    for name, overloads in method_overloads_by_name(methods):
+        generate_overloads_by_name(name, overloads)
+
+
+def method_overloads_by_name(methods):
+    """Returns list of overloaded methods, grouped by name: [name, [method]]"""
     # Filter to only methods that are actually overloaded
     method_counts = Counter(method['name'] for method in methods)
     overloaded_method_names = set(name
@@ -329,88 +337,67 @@ def generate_overloads_by_type(methods):
                           if method['name'] in overloaded_method_names]
 
     # Group by name (generally will be defined together, but not necessarily)
-    method_overloads = dict(sort_and_groupby(overloaded_methods,
-                                             itemgetter('name')))
-
-    # Add overload information only to overloaded methods, so template code can
-    # easily verify if a function is overloaded
-    for name, overloads in method_overloads.iteritems():
-        effective_overloads_by_length = effective_overload_set_by_length(overloads)
-        minimum_number_of_required_arguments = min(
-            method['number_of_required_arguments'] for method in overloads)
-
-        for index, method in enumerate(overloads, 1):
-            method.update({
-                'overload_index': index,
-                'overload_resolution_expression':
-                    overload_resolution_expression(method),
-            })
-            # Overloaded methods have length checked during overload, and
-            # a single check for required arguments afterwards.
-            del method['number_of_required_arguments']
-
-        # FIXME: temporary flag so can switch incrementally
-        is_use_spec_algorithm = False
-        # Use spec algorithm if:
-        # * all type lists have the same length,
-        # * all distinguishing types are (non-nullable) wrapper types
-        #   or numeric types,
-        # * all distinguishing types are distinct.
-        if len(effective_overloads_by_length) == 1:
-            effective_overloads = effective_overloads_by_length[0][1]
-            index = distinguishing_argument_index(effective_overloads)
-            type_lists = [effective_overload[1]
-                          for effective_overload in effective_overloads]
-            distinguishing_argument_types = [type_list[index]
-                                             for type_list in type_lists]
-            distinguishing_argument_type_names = [
-                idl_type.name for idl_type in distinguishing_argument_types]
-            if (all(((distinguishing_argument_type.is_wrapper_type or
-                      distinguishing_argument_type.is_numeric_type) and
-                     not distinguishing_argument_type.is_nullable)
-                    for distinguishing_argument_type in distinguishing_argument_types) and
-                len(set(distinguishing_argument_type_names)) == len(distinguishing_argument_type_names)):
-                is_use_spec_algorithm = True
-
-        # Resolution function is generated after last overloaded function;
-        # package necessary information into |method.overloads| for that method.
-        overloads[-1]['overloads'] = {
-            'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
-            'has_exception_state': bool(minimum_number_of_required_arguments),
-            'is_use_spec_algorithm': is_use_spec_algorithm,
-            'length_index_arguments_methods':
-                length_index_arguments_methods(effective_overloads_by_length),
-            # 1. Let maxarg be the length of the longest type list of the
-            # entries in S.
-            'maxarg': max(i for i, _ in effective_overloads_by_length),
-            'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
-            'methods': overloads,
-            'minimum_number_of_required_arguments': minimum_number_of_required_arguments,
-            'name': name,
-        }
+    return sort_and_groupby(overloaded_methods, itemgetter('name'))
 
 
-def length_index_arguments_methods(effective_overloads_by_length):
-    """Returns list of distinguishing argument and associated method, by length.
+def generate_overloads_by_name(name, overloads):
+    """Generates |method.overload*| template values for a single name.
 
-    This builds the main data structure for the overload resolution loop.
-    For a given argument length, check argument at distinguishing argument
-    index: if it is compatible with type required by an overloaded method,
-    resolve to that method.
-
-    Returns:
-        [(length, index, [(argument, method)])]
+    Modifies |method| in place for |method| in |overloads|.
     """
-    def compute_arguments_methods(length, effective_overloads):
-        index = distinguishing_argument_index(effective_overloads)
-        methods = [effective_overload[0]
-                   for effective_overload in effective_overloads]
-        arguments = [method['arguments'][index] for method in methods]
-        return length, index, zip(arguments, methods)
+    effective_overloads_by_length = effective_overload_set_by_length(overloads)
+    minimum_number_of_required_arguments = min(
+        method['number_of_required_arguments'] for method in overloads)
 
-    return [compute_arguments_methods(length, effective_overloads)
-            for length, effective_overloads in effective_overloads_by_length
-            if len(effective_overloads) > 1]
+    for index, method in enumerate(overloads, 1):
+        method['overload_index'] = index
+        # FIXME: remove this per-method expression, as does not work in
+        # general (may need to test several times for one method)
+        method['overload_resolution_expression'] = overload_resolution_expression(method)
+        # Overloaded methods have length checked during overload, and
+        # a single check for required arguments afterwards.
+        del method['number_of_required_arguments']
+
+    # Resolution function is generated after last overloaded function;
+    # package necessary information into |method.overloads| for that method.
+    overloads[-1]['overloads'] = {
+        'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
+        'has_exception_state': bool(minimum_number_of_required_arguments),
+        'is_use_spec_algorithm': is_use_spec_algorithm(effective_overloads_by_length),  # FIXME: temporary flag so can switch incrementally
+        'length_tests_methods': length_tests_methods(effective_overloads_by_length),
+        # 1. Let maxarg be the length of the longest type list of the
+        # entries in S.
+        'maxarg': max(i for i, _ in effective_overloads_by_length),
+        'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
+        'methods': overloads,  # FIXME: remove; need to use |length_tests_methods| instead
+        'minimum_number_of_required_arguments': minimum_number_of_required_arguments,
+        'name': name,
+    }
+
+
+def is_use_spec_algorithm(effective_overloads_by_length):
+    # FIXME: temporary function so can switch incrementally
+    # Use spec algorithm if:
+    # * all type lists have the same length,
+    # * all distinguishing types are (non-nullable) wrapper types
+    #   or numeric types,
+    # * all distinguishing types are distinct.
+    if len(effective_overloads_by_length) != 1:
+        return False
+
+    effective_overloads = effective_overloads_by_length[0][1]
+    index = distinguishing_argument_index(effective_overloads)
+    type_lists = [effective_overload[1]
+                  for effective_overload in effective_overloads]
+    distinguishing_argument_types = [type_list[index]
+                                     for type_list in type_lists]
+    distinguishing_argument_type_names = [
+        idl_type.name for idl_type in distinguishing_argument_types]
+    return (all((distinguishing_argument_type.is_wrapper_type or
+                 distinguishing_argument_type.is_numeric_type) and
+                not distinguishing_argument_type.is_nullable
+                for distinguishing_argument_type in distinguishing_argument_types) and
+            len(set(distinguishing_argument_type_names)) == len(distinguishing_argument_type_names))
 
 
 def effective_overload_set(F):
@@ -572,6 +559,84 @@ def distinguishing_argument_index(entries):
     # FIXME: check distinguishability
 
     return index
+
+
+def length_tests_methods(effective_overloads_by_length):
+    """Returns sorted list of resolution tests and associated methods, by length.
+
+    This builds the main data structure for the overload resolution loop.
+    For a given argument length, bindings test argument at distinguishing
+    argument index, in order given by spec: if it is compatible with
+    (optionality or) type required by an overloaded method, resolve to that
+    method.
+
+    Returns:
+        [(length, [(test, method)])]
+    """
+    return [(length, list(resolution_tests_methods(effective_overloads)))
+            for length, effective_overloads in effective_overloads_by_length
+            if len(effective_overloads) > 1]
+
+
+def resolution_tests_methods(effective_overloads):
+    """Yields resolution test and associated method, in resolution order.
+
+    This is the heart of the resolution algorithm.
+    http://heycam.github.io/webidl/#dfn-overload-resolution-algorithm
+
+    Note that a given method can be listed multiple times, with different tests!
+    This is to handle implicit type conversion.
+
+    Returns:
+        [(test, method)]
+    """
+    methods = [effective_overload[0]
+               for effective_overload in effective_overloads]
+    # 10. If i = d, then:
+    # (d is the distinguishing argument index)
+    index = distinguishing_argument_index(effective_overloads)
+    cpp_value = 'info[%s]' % index
+    # 1. Let V be argi.
+    #     Note: This is the argument that will be used to resolve which
+    #           overload is selected.
+
+    # Extract argument and IDL type to simplify accessing these in each loop.
+    # FIXME: mostly just need type, but need argument itself for optionality
+    arguments = [method['arguments'][index] for method in methods]
+    idl_types = [argument['idl_type_object'] for argument in arguments]
+    idl_types_methods = zip(idl_types, methods)
+
+    # We can't do a single loop through all methods or simply sort them, because
+    # a method may be listed in multiple steps of the resolution algorithm, and
+    # which test to apply differs depending on the step.
+    # Instead, we need to loop through all methods at each step, filtering to
+    # matches and generating an appropriate test.
+    for idl_type, method in idl_types_methods:
+        # 4. Otherwise: if V is a platform object – but not a platform array
+        # object – and there is an entry in S that has one of the following
+        # types at position i of its type list,
+        # • an interface type that V implements
+        # (We distinguish wrapper types from built-in interface types.)
+        if idl_type.is_wrapper_type:
+            test = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
+            yield test, method
+
+    # FIXME: not needed yet
+    # for idl_type, method in idl_types_methods:
+    #     # 10. Otherwise: if V is a Number value, and there is an entry in S
+    #     # that has one of the following types at position i of its type
+    #     # list,
+    #     # • a numeric type
+    #     if idl_type.is_numeric_type:
+    #         test = '%s->IsNumber()' % cpp_value
+    #         yield test, method
+
+    for idl_type, method in idl_types_methods:
+        # 12. Otherwise: if there is an entry in S that has one of the
+        # following types at position i of its type list,
+        # • a numeric type
+        if idl_type.is_numeric_type:
+            yield 'true', method
 
 
 def overload_resolution_expression(method):
