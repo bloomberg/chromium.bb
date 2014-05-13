@@ -95,40 +95,6 @@ struct OpenManifestEntryResource {
   OpenManifestEntryAsyncCallback* callback;
 };
 
-struct CloseManifestEntryResource {
- public:
-  CloseManifestEntryResource(int32_t desc_to_close,
-                             bool* op_complete,
-                             bool* op_result)
-      : desc(desc_to_close),
-        op_complete_ptr(op_complete),
-        op_result_ptr(op_result) {}
-
-  int32_t desc;
-  bool* op_complete_ptr;
-  bool* op_result_ptr;
-};
-
-struct QuotaRequest {
- public:
-  QuotaRequest(PP_Resource pp_resource,
-               int64_t start_offset,
-               int64_t quota_bytes_requested,
-               int64_t* quota_bytes_granted,
-               bool* op_complete)
-      : resource(pp_resource),
-        offset(start_offset),
-        bytes_requested(quota_bytes_requested),
-        bytes_granted(quota_bytes_granted),
-        op_complete_ptr(op_complete) { }
-
-  PP_Resource resource;
-  int64_t offset;
-  int64_t bytes_requested;
-  int64_t* bytes_granted;
-  bool* op_complete_ptr;
-};
-
 // Do not invoke from the main thread, since the main methods will
 // invoke CallOnMainThread and then wait on a condvar for the task to
 // complete: if invoked from the main thread, the main method not
@@ -186,10 +152,6 @@ class PluginReverseInterface: public nacl::ReverseInterface {
   virtual void StreamAsFile_MainThreadContinuation(
       OpenManifestEntryResource* p,
       int32_t result);
-
-  virtual void CloseManifestEntry_MainThreadContinuation(
-      CloseManifestEntryResource* cls,
-      int32_t err);
 
  private:
   nacl::WeakRefAnchor* anchor_;  // holds a ref

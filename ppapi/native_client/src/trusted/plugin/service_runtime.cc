@@ -452,45 +452,9 @@ void PluginReverseInterface::StreamAsFile_MainThreadContinuation(
 }
 
 bool PluginReverseInterface::CloseManifestEntry(int32_t desc) {
-  bool op_complete = false;
-  bool op_result;
-  CloseManifestEntryResource* to_close =
-      new CloseManifestEntryResource(desc, &op_complete, &op_result);
-
-  plugin::WeakRefCallOnMainThread(
-      anchor_,
-      0,
-      this,
-      &plugin::PluginReverseInterface::
-        CloseManifestEntry_MainThreadContinuation,
-      to_close);
-
-  // wait for completion or surf-away.
-  {
-    nacl::MutexLocker take(&mu_);
-    while (!shutting_down_ && !op_complete)
-      NaClXCondVarWait(&cv_, &mu_);
-    if (shutting_down_)
-      return false;
-  }
-
-  // op_result true if close was successful; false otherwise (e.g., bad desc).
-  return op_result;
-}
-
-void PluginReverseInterface::CloseManifestEntry_MainThreadContinuation(
-    CloseManifestEntryResource* cls,
-    int32_t err) {
-  UNREFERENCED_PARAMETER(err);
-
-  nacl::MutexLocker take(&mu_);
-  // TODO(bsy): once the plugin has a reliable way to report that the
-  // file usage is done -- and sel_ldr uses this RPC call -- we should
-  // tell the plugin that the associated resources can be freed.
-  *cls->op_result_ptr = true;
-  *cls->op_complete_ptr = true;
-  NaClXCondVarBroadcast(&cv_);
-  // cls automatically deleted
+  // We don't take any action on a call to CloseManifestEntry today, so always
+  // return success.
+  return true;
 }
 
 void PluginReverseInterface::ReportCrash() {
