@@ -141,13 +141,6 @@ std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
     height = (lines + 1) * line_height;
   }
 
-  // Try to ensure that the width is no smaller than the width of the text's
-  // characters to avoid the http://crbug.com/237700 infinite loop.
-  // TODO(dharcourt): Remove when http://crbug.com/237700 is fixed.
-  width = std::max(width,
-                   2 * gfx::GetStringWidth(base::UTF8ToUTF16("W"),
-                                           font_list()));
-
   // Wrap, using INT_MAX for -1 widths that indicate no wrapping.
   std::vector<base::string16> wrapped;
   gfx::ElideRectangleText(text(), font_list(),
