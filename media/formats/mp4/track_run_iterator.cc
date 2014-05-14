@@ -130,17 +130,18 @@ static void PopulateSampleInfo(const TrackExtends& trex,
   if (sample_depends_on == kSampleDependsOnUnknown)
     sample_depends_on = sdtp_sample_depends_on;
 
-  // ISO/IEC 14496-12  Section 8.8.3.1 : The flag |sample_is_non_sync_sample|
-  // provides the same information as the sync sample table [8.6.2]. When this
-  // value is set 0 for a sample, it is the same as if the sample were not in a
-  // movie fragment and marked with an entry in the sync sample table
-  // (or, if all samples are sync samples, the sync sample table were absent).
-  bool sample_is_non_sync_sample = flags & kSampleIsNonSyncSample;
-  sample_info->is_random_access_point = !sample_is_non_sync_sample;
+  // ISO/IEC 14496-12  Section 8.8.3.1 : The negation of |sample_is_sync_sample|
+  // provides the same information as the sync sample table [8.6.2]. When
+  // |sample_is_sync_sample| is true for a sample, it is the same as if the
+  // sample were not in a movie fragment and marked with an entry in the sync
+  // sample table (or, if all samples are sync samples, the sync sample table
+  // were absent).
+  bool sample_is_sync_sample = !(flags & kSampleIsNonSyncSample);
+  sample_info->is_random_access_point = sample_is_sync_sample;
 
   switch (sample_depends_on) {
     case kSampleDependsOnUnknown:
-      sample_info->is_keyframe = !sample_is_non_sync_sample;
+      sample_info->is_keyframe = sample_is_sync_sample;
       break;
 
     case kSampleDependsOnOthers:
