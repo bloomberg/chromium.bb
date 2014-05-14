@@ -2,16 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
-
 from metrics import Metric
-from telemetry.core.platform import factory
 
 
 class PowerMetric(Metric):
   """A metric for measuring power usage."""
-
-  enabled = True
 
   def __init__(self):
     super(PowerMetric, self).__init__()
@@ -39,25 +34,7 @@ class PowerMetric(Metric):
       self._results['cpu_stats'] = (
           _SubtractCpuStats(self._browser.cpu_stats, self._starting_cpu_stats))
 
-  @classmethod
-  def CustomizeBrowserOptions(cls, options):
-    PowerMetric.enabled = options.report_root_metrics
-
-    # Friendly informational messages if measurement won't run.
-    system_supports_power_monitoring = (
-        factory.GetPlatformBackendForCurrentOS().CanMonitorPower())
-    if system_supports_power_monitoring:
-      if not PowerMetric.enabled:
-        logging.warning(
-            "--report-root-metrics omitted, power measurement disabled.")
-    else:
-      logging.info("System doesn't support power monitoring, power measurement"
-          " disabled.")
-
   def Start(self, _, tab):
-    if not PowerMetric.enabled:
-      return
-
     if not tab.browser.platform.CanMonitorPower():
       return
 
@@ -71,9 +48,6 @@ class PowerMetric(Metric):
     self._running = True
 
   def Stop(self, _, tab):
-    if not PowerMetric.enabled:
-      return
-
     if not tab.browser.platform.CanMonitorPower():
       return
 

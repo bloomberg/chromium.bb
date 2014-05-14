@@ -28,16 +28,15 @@ class Startup(page_measurement.PageMeasurement):
 
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
-    pass
+    cls._cold = args.cold
     # TODO: Once the bots start running benchmarks, enforce that either --warm
     # or --cold is explicitly specified.
     # if args.warm == args.cold:
     #   parser.error('You must specify either --warm or --cold')
 
   def CustomizeBrowserOptions(self, options):
-    if options.cold:
-      browser_options = options.browser_options
-      browser_options.clear_sytem_cache_for_browser_and_profile_on_start = True
+    if self._cold:
+      options.clear_sytem_cache_for_browser_and_profile_on_start = True
     else:
       self.discard_first_result = True
 

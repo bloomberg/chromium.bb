@@ -3,16 +3,15 @@
 # found in the LICENSE file.
 
 from metrics import Metric
-from telemetry.core.platform import factory
 from telemetry.value import scalar
+
 
 class IOMetric(Metric):
   """IO-related metrics, obtained via telemetry.core.Browser."""
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
-    os_name = factory.GetPlatformBackendForCurrentOS().GetOSName()
-    if os_name != 'mac':
+    if options.platform.GetOSName() != 'mac':
       # FIXME: Get rid of this on all platforms - http://crbug.com/361049 .
       options.AppendExtraBrowserArgs('--no-sandbox')
 

@@ -51,7 +51,9 @@ class FakeTab(object):
     return 1
   def WaitForJavaScriptExpression(self, _, __):
     pass
-
+  @property
+  def browser(self):
+    return FakeBrowser()
 
 class FakeBrowser(object):
   _iteration = 0
@@ -67,6 +69,16 @@ class FakeBrowser(object):
         'Gpu': {'CpuProcessTime': FakeBrowser._iteration,
                  'TotalTime': FakeBrowser._iteration * 4}
     }
+  @property
+  def platform(self):
+    return FakePlatform()
+
+
+class FakePlatform(object):
+  def GetOSName(self):
+    return 'fake'
+  def CanMonitorPower(self):
+    return False
 
 
 class PageCyclerUnitTest(unittest.TestCase):
@@ -74,6 +86,7 @@ class PageCyclerUnitTest(unittest.TestCase):
   def SetUpCycler(self, args, setup_memory_module=False):
     cycler = page_cycler.PageCycler()
     options = browser_options.BrowserFinderOptions()
+    options.browser_options.platform = FakePlatform()
     parser = options.CreateParser()
     page_runner.AddCommandLineArgs(parser)
     cycler.AddCommandLineArgs(parser)
@@ -81,7 +94,7 @@ class PageCyclerUnitTest(unittest.TestCase):
     parser.parse_args(args)
     page_runner.ProcessCommandLineArgs(parser, options)
     cycler.ProcessCommandLineArgs(parser, options)
-    cycler.CustomizeBrowserOptions(options)
+    cycler.CustomizeBrowserOptions(options.browser_options)
 
     if setup_memory_module:
       # Mock out memory metrics; the real ones require a real browser.
