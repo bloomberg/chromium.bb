@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/test/browser_test_utils.h"
+#include "media/base/media_switches.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 

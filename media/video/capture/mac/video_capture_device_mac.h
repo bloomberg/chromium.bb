@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // MacOSX implementation of generic VideoCaptureDevice, using either QTKit or
-// AVFoundation as native capture API. QTKit is used in OSX versions 10.6 and
-// previous, and AVFoundation is used in the rest.
+// AVFoundation as native capture API. QTKit is available in all OSX versions,
+// although namely deprecated in 10.9, and AVFoundation is available in versions
+// 10.7 (Lion) and later.
 
 #ifndef MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
 #define MEDIA_VIDEO_CAPTURE_MAC_VIDEO_CAPTURE_DEVICE_MAC_H_
@@ -25,20 +26,20 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-// Called by VideoCaptureManager to open, close and start, stop video capture
-// devices.
+// Called by VideoCaptureManager to open, close and start, stop Mac video
+// capture devices.
 class VideoCaptureDeviceMac : public VideoCaptureDevice {
  public:
   explicit VideoCaptureDeviceMac(const Name& device_name);
   virtual ~VideoCaptureDeviceMac();
 
   // VideoCaptureDevice implementation.
-  virtual void AllocateAndStart(const VideoCaptureParams& params,
-                                scoped_ptr<VideoCaptureDevice::Client> client)
-      OVERRIDE;
+  virtual void AllocateAndStart(
+      const VideoCaptureParams& params,
+      scoped_ptr<VideoCaptureDevice::Client> client) OVERRIDE;
   virtual void StopAndDeAllocate() OVERRIDE;
 
-  bool Init();
+  bool Init(VideoCaptureDevice::Name::CaptureApiType capture_api_type);
 
   // Called to deliver captured video frames.
   void ReceiveFrame(const uint8* video_frame,

@@ -27,4 +27,7 @@ specific_include_rules = {
   "shell_views\.cc": [
     "+ui/wm/test"
   ],
+  "content_browser_tests_android\.cc": [
+    "+media/base"
+  ],
 }
