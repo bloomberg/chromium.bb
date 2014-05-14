@@ -22,10 +22,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum BiquadFilterType {
+    "lowpass",
+    "highpass",
+    "bandpass",
+    "lowshelf",
+    "highshelf",
+    "peaking",
+    "notch",
+    "allpass"
+};
+
 [
     Conditional=WEB_AUDIO
 ] interface BiquadFilterNode : AudioNode {
-    attribute DOMString type;
+    attribute BiquadFilterType type;
 
     readonly attribute AudioParam frequency; // in Hertz
     readonly attribute AudioParam detune; // in Cents

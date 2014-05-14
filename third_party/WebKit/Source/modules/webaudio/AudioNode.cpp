@@ -307,9 +307,7 @@ void AudioNode::setChannelCountMode(const String& mode, ExceptionState& exceptio
     } else if (mode == "explicit") {
         m_channelCountMode = Explicit;
     } else {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "invalid mode '" + mode + "'; must be 'max', 'clamped-max', or 'explicit'.");
+        ASSERT_NOT_REACHED();
     }
 
     if (m_channelCountMode != oldMode)
@@ -338,9 +336,7 @@ void AudioNode::setChannelInterpretation(const String& interpretation, Exception
     } else if (interpretation == "discrete") {
         m_channelInterpretation = AudioBus::Discrete;
     } else {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "invalid interpretation '" + interpretation + "'; must be 'speakers' or 'discrete'.");
+        ASSERT_NOT_REACHED();
     }
 }
 

@@ -104,9 +104,18 @@ function runTest() {
     // Invalid channel count: NotSupportedError
     shouldThrow("node.channelCount = 99");
     // Invalid mode or interpretation (unspecified error)
-    mode = "fancy";
-    shouldThrow("node.channelCountMode = mode");
-    shouldThrow("node.channelInterpretation = mode");
+    currentMode = node.channelCountMode;
+    currentInterpretation = node.channelInterpretation;
+    shouldNotThrow("node.channelCountMode = 'fancy'");
+    if (node.channelCountMode == currentMode)
+      testPassed("Invalid channelCountMode value did not change mode");
+    else
+      testFailed("node.channelCountMode incorrectly changed to invalid value " + node.channelCountMode);  
+    shouldNotThrow("node.channelInterpretation = mode");
+    if (node.channelInterpretation == currentInterpretation)
+      testPassed("Invalid channelInterpration value did not change mode");
+    else
+      testFailed("node.channelInterpretation incorrectly changed to invalid value " + node.channelInterpreation);  
 
     // Destination: IndexSizeError
     shouldThrow("context.destination.channelCount = 99");
@@ -126,7 +135,12 @@ function runTest() {
 
     // WaveShaper types
     node = context.createWaveShaper();
-    shouldThrow("node.oversample = '9x'");
+    currentOversample = node.oversample;
+    shouldNotThrow("node.oversample = '9x'");
+    if (node.oversample == currentOversample)
+      testPassed("Invalid oversample value did not change node.oversample");
+    else
+      testFailed("node.oversample incorrectly changed to invalid value " + node.oversample);
 
     // Start/stop for AudioBufferSourceNodes
     buffer = context.createBuffer(1,1, context.sampleRate);

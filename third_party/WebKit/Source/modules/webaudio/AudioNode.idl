@@ -22,6 +22,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum ChannelCountMode {
+    "max",
+    "clamped-max",
+    "explicit"
+};
+
+enum ChannelInterpretation {
+    "speakers",
+    "discrete"
+};
+
 [
     WillBeGarbageCollected,
     Conditional=WEB_AUDIO,
@@ -33,9 +44,9 @@
 
     [RaisesException=Setter] attribute unsigned long channelCount;
 
-    [RaisesException=Setter] attribute DOMString channelCountMode;
+    [RaisesException=Setter] attribute ChannelCountMode channelCountMode;
 
-    [RaisesException=Setter] attribute DOMString channelInterpretation;
+    [RaisesException=Setter] attribute ChannelInterpretation channelInterpretation;
 
     [RaisesException] void connect(AudioNode? destination, [Default=Undefined] optional unsigned long output, [Default=Undefined] optional unsigned long input);
 

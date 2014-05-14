@@ -22,12 +22,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum OscillatorType {
+    "sine",
+    "square",
+    "sawtooth",
+    "triangle",
+    "custom"
+};
+    
 // OscillatorNode is an audio generator of periodic waveforms.
 [
     Conditional=WEB_AUDIO
 ] interface OscillatorNode : AudioSourceNode {
 
-    attribute DOMString type;
+    attribute OscillatorType type;
 
     readonly attribute AudioParam frequency; // in Hertz
     readonly attribute AudioParam detune; // in Cents

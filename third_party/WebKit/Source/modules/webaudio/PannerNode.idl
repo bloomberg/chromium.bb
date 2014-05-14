@@ -22,12 +22,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+enum PanningModelType {
+    "equalpower",
+    "HRTF"
+};
+
+enum DistanceModelType {
+    "linear",
+    "inverse",
+    "exponential"
+};
+
 [
     NoInterfaceObject,
     Conditional=WEB_AUDIO
 ] interface PannerNode : AudioNode {
     // Default model for stereo is HRTF
-    attribute DOMString panningModel;
+    attribute PanningModelType panningModel;
 
     // Uses a 3D cartesian coordinate system
     void setPosition(float x, float y, float z);
@@ -35,7 +46,7 @@
     void setVelocity(float x, float y, float z);
 
     // Distance model
-    attribute DOMString distanceModel;
+    attribute DistanceModelType distanceModel;
 
     attribute double refDistance;
     attribute double maxDistance;
