@@ -5,13 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_HASHED_AD_NETWORK_DATABASE_H_
 #define CHROME_BROWSER_EXTENSIONS_ACTIVITY_LOG_HASHED_AD_NETWORK_DATABASE_H_
 
-#include "base/containers/hash_tables.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/activity_log/ad_network_database.h"
-
-namespace base {
-class RefCountedStaticMemory;
-}
 
 namespace extensions {
 
@@ -19,16 +13,24 @@ namespace extensions {
 // a list of hashes of ad networks.
 class HashedAdNetworkDatabase : public AdNetworkDatabase {
  public:
-  explicit HashedAdNetworkDatabase(
-      scoped_refptr<base::RefCountedStaticMemory> memory);
+  HashedAdNetworkDatabase();
   virtual ~HashedAdNetworkDatabase();
+
+  void set_entries_for_testing(const char** entries, int num_entries) {
+    entries_ = entries;
+    num_entries_ = num_entries;
+  }
 
  private:
   // AdNetworkDatabase implementation.
   virtual bool IsAdNetwork(const GURL& url) const OVERRIDE;
 
-  // The set of partial hashes for known ad networks.
-  base::hash_set<int64> entries_;
+  // Points to the array of hash entries. In practice, this is always set to
+  // kHashedAdNetworks, but is exposed via set_entries_for_testing().
+  const char** entries_;
+
+  // The number of entries.
+  int num_entries_;
 };
 
 }  // namespace extensions

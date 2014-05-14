@@ -120,6 +120,8 @@
         'browser/extensions/activity_log/fullstream_ui_policy.h',
         'browser/extensions/activity_log/hashed_ad_network_database.cc',
         'browser/extensions/activity_log/hashed_ad_network_database.h',
+        'browser/extensions/activity_log/hashed_ad_networks.cc',
+        'browser/extensions/activity_log/hashed_ad_networks.h',
         'browser/extensions/activity_log/uma_policy.cc',
         'browser/extensions/activity_log/uma_policy.h',
         'browser/extensions/activity_log/web_request_constants.cc',

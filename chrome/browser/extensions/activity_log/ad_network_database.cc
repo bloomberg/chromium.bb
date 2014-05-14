@@ -30,11 +30,8 @@ AdNetworkDatabaseFactory::~AdNetworkDatabaseFactory() {}
 
 const AdNetworkDatabase* AdNetworkDatabaseFactory::GetDatabase() {
   // Construct a new database, if we don't have one.
-  if (!database_.get()) {
-    database_.reset(new HashedAdNetworkDatabase(
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-            IDR_AD_NETWORK_HASHES)));
-  }
+  if (!database_.get())
+    database_.reset(new HashedAdNetworkDatabase());
 
   return database_.get();
 }
