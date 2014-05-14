@@ -1134,6 +1134,41 @@ function testLoadAbortIllegalJavaScriptURL() {
   document.body.appendChild(webview);
 }
 
+// Verifies that navigating to invalid URL (e.g. 'http:') doesn't cause a crash.
+function testLoadAbortInvalidNavigation() {
+  var webview = document.createElement('webview');
+  var validSchemeWithEmptyURL = 'http:';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('', e.url);
+    embedder.test.succeed();
+  });
+  webview.addEventListener('exit', function(e) {
+    // We should not crash.
+    embedder.test.fail();
+  });
+  webview.setAttribute('src', validSchemeWithEmptyURL);
+  document.body.appendChild(webview);
+}
+
+// Verifies that navigation to a URL that is valid but not web-safe or
+// pseudo-scheme fires loadabort and doesn't cause a crash.
+function testLoadAbortNonWebSafeScheme() {
+  var webview = document.createElement('webview');
+  var chromeGuestURL = 'chrome-guest://abc123';
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq('ERR_ABORTED', e.reason);
+    embedder.test.assertEq('chrome-guest://abc123/', e.url);
+    embedder.test.succeed();
+  });
+  webview.addEventListener('exit', function(e) {
+    // We should not crash.
+    embedder.test.fail();
+  });
+  webview.setAttribute('src', chromeGuestURL);
+  document.body.appendChild(webview);
+};
+
 // This test verifies that the reload method on webview functions as expected.
 function testReload() {
   var triggerNavUrl = 'data:text/html,trigger navigation';
@@ -1614,6 +1649,8 @@ embedder.test.testList = {
   'testLoadAbortIllegalChromeURL': testLoadAbortIllegalChromeURL,
   'testLoadAbortIllegalFileURL': testLoadAbortIllegalFileURL,
   'testLoadAbortIllegalJavaScriptURL': testLoadAbortIllegalJavaScriptURL,
+  'testLoadAbortInvalidNavigation': testLoadAbortInvalidNavigation,
+  'testLoadAbortNonWebSafeScheme': testLoadAbortNonWebSafeScheme,
   'testNavigateAfterResize': testNavigateAfterResize,
   'testNavigationToExternalProtocol': testNavigationToExternalProtocol,
   'testReload': testReload,
