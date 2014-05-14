@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "sync/protocol/unique_position.pb.h"
@@ -22,8 +21,7 @@ bool UniquePosition::IsValidSuffix(const std::string& suffix) {
   // The suffix must be exactly the specified length, otherwise unique suffixes
   // are not sufficient to guarantee unique positions (because prefix + suffix
   // == p + refixsuffix).
-  return suffix.length() == kSuffixLength
-      && suffix[kSuffixLength-1] != 0;
+  return suffix.length() == kSuffixLength;
 }
 
 // static.
@@ -35,13 +33,6 @@ bool UniquePosition::IsValidBytes(const std::string& bytes) {
   // result.
   return bytes.length() >= kSuffixLength
       && bytes[bytes.length()-1] != 0;
-}
-
-// static.
-std::string UniquePosition::RandomSuffix() {
-  // Users random data for all but the last byte.  The last byte must not be
-  // zero.  We arbitrarily set it to 0x7f.
-  return base::RandBytesAsString(kSuffixLength - 1) + "\x7f";
 }
 
 // static.
