@@ -707,10 +707,6 @@ Page* InspectorOverlay::overlayPage()
     overlaySettings.setScriptEnabled(true);
     overlaySettings.setPluginsEnabled(false);
     overlaySettings.setLoadsImagesAutomatically(true);
-    // FIXME: http://crbug.com/363843. Inspector should probably create its
-    // own graphics layers and attach them to the tree rather than going
-    // through some non-composited paint function.
-    overlaySettings.setAcceleratedCompositingEnabled(false);
 
     RefPtr<LocalFrame> frame = LocalFrame::create(dummyFrameLoaderClient, &m_overlayPage->frameHost(), 0);
     frame->setView(FrameView::create(frame.get()));
