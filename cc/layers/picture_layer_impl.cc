@@ -824,11 +824,12 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
     if (twin_low_res)
       twin_high_res = GetTwinTiling(high_res);
   }
-  // If this layer and its twin have different transforms, then don't compare
-  // them and only allow activating to high res tiles, since tiles on each layer
-  // will be in different places on screen.
+  // If this layer and its twin have different bounds or transforms, then don't
+  // compare them and only allow activating to high res tiles, since tiles on
+  // each layer will occupy different areas of the screen.
   if (!twin_high_res || !twin_low_res ||
       twin_layer_->layer_tree_impl()->RequiresHighResToDraw() ||
+      bounds() != twin_layer_->bounds() ||
       draw_properties().screen_space_transform !=
           twin_layer_->draw_properties().screen_space_transform) {
     twin_high_res = NULL;

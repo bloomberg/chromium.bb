@@ -1609,6 +1609,25 @@ TEST_F(PictureLayerImplTest, HighResRequiredIfActiveCantHaveTiles) {
   AssertNoTilesRequired(pending_layer_->LowResTiling());
 }
 
+TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveHasDifferentBounds) {
+  gfx::Size layer_bounds(200, 200);
+  gfx::Size tile_size(100, 100);
+  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size);
+
+  gfx::Size pending_layer_bounds(400, 400);
+  pending_layer_->SetBounds(pending_layer_bounds);
+
+  CreateHighLowResAndSetAllTilesVisible();
+
+  active_layer_->SetAllTilesReady();
+
+  // Since the active layer has different bounds, the pending layer needs all
+  // high res tiles in order to activate.
+  pending_layer_->MarkVisibleResourcesAsRequired();
+  AssertAllTilesRequired(pending_layer_->HighResTiling());
+  AssertNoTilesRequired(pending_layer_->LowResTiling());
+}
+
 TEST_F(PictureLayerImplTest, ActivateUninitializedLayer) {
   gfx::Size tile_size(100, 100);
   gfx::Size layer_bounds(400, 400);
