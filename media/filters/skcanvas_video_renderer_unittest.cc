@@ -348,4 +348,62 @@ TEST_F(SkCanvasVideoRendererTest, SlowPaint_CroppedFrame) {
                                                           kHeight * 3 / 6));
 }
 
+TEST_F(SkCanvasVideoRendererTest, FastPaint_CroppedFrame_NoScaling) {
+  SkCanvas canvas(AllocBitmap(kWidth, kHeight, true /* opaque */));
+  const gfx::Rect crop_rect = cropped_frame()->visible_rect();
+
+  // Force painting to a non-zero position on the destination bitmap, to check
+  // if the coordinates are calculated properly.
+  const int offset_x = 10;
+  const int offset_y = 15;
+  canvas.translate(offset_x, offset_y);
+
+  // Create a destination canvas with dimensions and scale which would not
+  // cause scaling. This is to detect the code path using libyuv in FastPaint.
+  canvas.scale(static_cast<SkScalar>(crop_rect.width()) / kWidth,
+               static_cast<SkScalar>(crop_rect.height()) / kHeight);
+
+  Paint(cropped_frame(), &canvas, kNone);
+
+  // Check the corners.
+  EXPECT_EQ(SK_ColorBLACK, GetColorAt(&canvas, offset_x, offset_y));
+  EXPECT_EQ(SK_ColorRED,
+            GetColorAt(&canvas, offset_x + crop_rect.width() - 1, offset_y));
+  EXPECT_EQ(SK_ColorGREEN,
+            GetColorAt(&canvas, offset_x, offset_y + crop_rect.height() - 1));
+  EXPECT_EQ(SK_ColorBLUE,
+            GetColorAt(&canvas,
+                       offset_x + crop_rect.width() - 1,
+                       offset_y + crop_rect.height() - 1));
+}
+
+TEST_F(SkCanvasVideoRendererTest, SlowPaint_CroppedFrame_NoScaling) {
+  SkCanvas canvas(AllocBitmap(kWidth, kHeight, false /* opaque */));
+  const gfx::Rect crop_rect = cropped_frame()->visible_rect();
+
+  // Force painting to a non-zero position on the destination bitmap, to check
+  // if the coordinates are calculated properly.
+  const int offset_x = 10;
+  const int offset_y = 15;
+  canvas.translate(offset_x, offset_y);
+
+  // Create a destination canvas with dimensions and scale which would not
+  // cause scaling.
+  canvas.scale(static_cast<SkScalar>(crop_rect.width()) / kWidth,
+               static_cast<SkScalar>(crop_rect.height()) / kHeight);
+
+  Paint(cropped_frame(), &canvas, kNone);
+
+  // Check the corners.
+  EXPECT_EQ(SK_ColorBLACK, GetColorAt(&canvas, offset_x, offset_y));
+  EXPECT_EQ(SK_ColorRED,
+            GetColorAt(&canvas, offset_x + crop_rect.width() - 1, offset_y));
+  EXPECT_EQ(SK_ColorGREEN,
+            GetColorAt(&canvas, offset_x, offset_y + crop_rect.height() - 1));
+  EXPECT_EQ(SK_ColorBLUE,
+            GetColorAt(&canvas,
+                       offset_x + crop_rect.width() - 1,
+                       offset_y + crop_rect.height() - 1));
+}
+
 }  // namespace media

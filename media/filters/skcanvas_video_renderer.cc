@@ -7,8 +7,23 @@
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
+#include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
+
+// Skia internal format depends on a platform. On Android it is ABGR, on others
+// it is ARGB.
+#if SK_B32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_R32_SHIFT == 16 && \
+    SK_A32_SHIFT == 24
+#define LIBYUV_I420_TO_ARGB libyuv::I420ToARGB
+#define LIBYUV_I422_TO_ARGB libyuv::I422ToARGB
+#elif SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
+    SK_A32_SHIFT == 24
+#define LIBYUV_I420_TO_ARGB libyuv::I420ToABGR
+#define LIBYUV_I422_TO_ARGB libyuv::I422ToABGR
+#else
+#error Unexpected Skia ARGB_8888 layout!
+#endif
 
 namespace media {
 
@@ -115,13 +130,6 @@ static void FastPaint(
   // At this point |local_dest_irect| contains the rect that we should draw
   // to within the clipping rect.
 
-  // Calculate the address for the top left corner of destination rect in
-  // the canvas that we will draw to. The address is obtained by the base
-  // address of the canvas shifted by "left" and "top" of the rect.
-  uint8* dest_rect_pointer = static_cast<uint8*>(bitmap.getPixels()) +
-      local_dest_irect.fTop * bitmap.rowBytes() +
-      local_dest_irect.fLeft * 4;
-
   // Project the clip rect to the original video frame, obtains the
   // dimensions of the projected clip rect, "left" and "top" of the rect.
   // The math here are all integer math so we won't have rounding error and
@@ -132,9 +140,11 @@ static void FastPaint(
   DCHECK_NE(0, dest_rect.width());
   DCHECK_NE(0, dest_rect.height());
   size_t frame_clip_width = local_dest_irect.width() *
-      video_frame->visible_rect().width() / local_dest_irect_saved.width();
+                            video_frame->visible_rect().width() /
+                            local_dest_irect_saved.width();
   size_t frame_clip_height = local_dest_irect.height() *
-      video_frame->visible_rect().height() / local_dest_irect_saved.height();
+                             video_frame->visible_rect().height() /
+                             local_dest_irect_saved.height();
 
   // Project the "left" and "top" of the final destination rect to local
   // coordinates of the video frame, use these values to find the offsets
@@ -142,21 +152,32 @@ static void FastPaint(
   size_t frame_clip_left =
       video_frame->visible_rect().x() +
       (local_dest_irect.fLeft - local_dest_irect_saved.fLeft) *
-      video_frame->visible_rect().width() / local_dest_irect_saved.width();
+          video_frame->visible_rect().width() / local_dest_irect_saved.width();
   size_t frame_clip_top =
       video_frame->visible_rect().y() +
       (local_dest_irect.fTop - local_dest_irect_saved.fTop) *
-      video_frame->visible_rect().height() / local_dest_irect_saved.height();
+          video_frame->visible_rect().height() /
+          local_dest_irect_saved.height();
 
   // Use the "left" and "top" of the destination rect to locate the offset
   // in Y, U and V planes.
-  size_t y_offset = (video_frame->stride(media::VideoFrame::kYPlane) *
-                     frame_clip_top) + frame_clip_left;
+  size_t y_offset =
+      (video_frame->stride(media::VideoFrame::kYPlane) * frame_clip_top) +
+      frame_clip_left;
 
   // For format YV12, there is one U, V value per 2x2 block.
   // For format YV16, there is one U, V value per 2x1 block.
   size_t uv_offset = (video_frame->stride(media::VideoFrame::kUPlane) *
-                      (frame_clip_top >> y_shift)) + (frame_clip_left >> 1);
+                      (frame_clip_top >> y_shift)) +
+                     (frame_clip_left >> 1);
+
+  // Calculate the address for the top left corner of destination rect in
+  // the canvas that we will draw to. The address is obtained by the base
+  // address of the canvas shifted by "left" and "top" of the rect.
+  uint8* dest_rect_pointer = static_cast<uint8*>(bitmap.getPixels()) +
+                             local_dest_irect.fTop * bitmap.rowBytes() +
+                             local_dest_irect.fLeft * 4;
+
   uint8* frame_clip_y =
       video_frame->data(media::VideoFrame::kYPlane) + y_offset;
   uint8* frame_clip_u =
@@ -167,6 +188,46 @@ static void FastPaint(
   // TODO(hclam): do rotation and mirroring here.
   // TODO(fbarchard): switch filtering based on performance.
   bitmap.lockPixels();
+
+  // If there is no scaling and the frame format is supported, then use faster
+  // libyuv.
+  if (frame_clip_width == static_cast<size_t>(local_dest_irect.width()) &&
+      frame_clip_height == static_cast<size_t>(local_dest_irect.height())) {
+    switch (yuv_type) {
+      case media::YV12:
+        LIBYUV_I420_TO_ARGB(frame_clip_y,
+                            video_frame->stride(media::VideoFrame::kYPlane),
+                            frame_clip_u,
+                            video_frame->stride(media::VideoFrame::kUPlane),
+                            frame_clip_v,
+                            video_frame->stride(media::VideoFrame::kVPlane),
+                            dest_rect_pointer,
+                            bitmap.rowBytes(),
+                            local_dest_irect.width(),
+                            local_dest_irect.height());
+        bitmap.unlockPixels();
+        return;
+
+      case media::YV16:
+        LIBYUV_I422_TO_ARGB(frame_clip_y,
+                            video_frame->stride(media::VideoFrame::kYPlane),
+                            frame_clip_u,
+                            video_frame->stride(media::VideoFrame::kUPlane),
+                            frame_clip_v,
+                            video_frame->stride(media::VideoFrame::kVPlane),
+                            dest_rect_pointer,
+                            bitmap.rowBytes(),
+                            local_dest_irect.width(),
+                            local_dest_irect.height());
+        bitmap.unlockPixels();
+        return;
+
+      default:
+        break;
+    }
+  }
+
+  // Fallback to media, since the operation is not supported by libyuv.
   media::ScaleYUVToRGB32(frame_clip_y,
                          frame_clip_u,
                          frame_clip_v,
@@ -229,17 +290,17 @@ static void ConvertVideoFrameToBitmap(
   switch (video_frame->format()) {
     case media::VideoFrame::YV12:
     case media::VideoFrame::I420:
-      media::ConvertYUVToRGB32(
+      LIBYUV_I420_TO_ARGB(
           video_frame->data(media::VideoFrame::kYPlane) + y_offset,
-          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
-          static_cast<uint8*>(bitmap->getPixels()),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
           video_frame->stride(media::VideoFrame::kYPlane),
+          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
           video_frame->stride(media::VideoFrame::kUPlane),
+          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
+          video_frame->stride(media::VideoFrame::kVPlane),
+          static_cast<uint8*>(bitmap->getPixels()),
           bitmap->rowBytes(),
-          media::YV12);
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height());
       break;
 
     case media::VideoFrame::YV12J:
@@ -257,20 +318,23 @@ static void ConvertVideoFrameToBitmap(
       break;
 
     case media::VideoFrame::YV16:
-      media::ConvertYUVToRGB32(
+      LIBYUV_I422_TO_ARGB(
           video_frame->data(media::VideoFrame::kYPlane) + y_offset,
-          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
-          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
-          static_cast<uint8*>(bitmap->getPixels()),
-          video_frame->visible_rect().width(),
-          video_frame->visible_rect().height(),
           video_frame->stride(media::VideoFrame::kYPlane),
+          video_frame->data(media::VideoFrame::kUPlane) + uv_offset,
           video_frame->stride(media::VideoFrame::kUPlane),
+          video_frame->data(media::VideoFrame::kVPlane) + uv_offset,
+          video_frame->stride(media::VideoFrame::kVPlane),
+          static_cast<uint8*>(bitmap->getPixels()),
           bitmap->rowBytes(),
-          media::YV16);
+          video_frame->visible_rect().width(),
+          video_frame->visible_rect().height());
       break;
 
     case media::VideoFrame::YV12A:
+      // Since libyuv doesn't support YUVA, fallback to media, which is not ARM
+      // optimized.
+      // TODO(fbarchard, mtomasz): Use libyuv, then copy the alpha channel.
       media::ConvertYUVAToARGB(
           video_frame->data(media::VideoFrame::kYPlane) + y_offset,
           video_frame->data(media::VideoFrame::kUPlane) + uv_offset,

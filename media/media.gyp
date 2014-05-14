@@ -638,6 +638,11 @@
             'formats/webm/chromeos/webm_encoder.h',
           ],
         }],
+        ['OS!="ios"', {
+          'dependencies': [
+            '../third_party/libyuv/libyuv.gyp:libyuv',
+          ],
+        }],
         ['use_alsa==1', {
           'link_settings': {
             'libraries': [

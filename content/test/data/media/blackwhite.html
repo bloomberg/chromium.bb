@@ -136,11 +136,20 @@
 
         // Check one pixel in each quadrant (in the upper left, away from
         // boundaries and the text, to avoid compression artifacts).
-        // Also allow an error of 1, for the same reason.
-        return checkColor(videoData, 30, 30, videoElem.videoWidth, 0xff, 1) &&
-               checkColor(videoData, 150, 30, videoElem.videoWidth, 0x00, 1) &&
-               checkColor(videoData, 30, 150, videoElem.videoWidth, 0x10, 1) &&
-               checkColor(videoData, 150, 150, videoElem.videoWidth, 0xef, 1);
+        // Also allow a small error, for the same reason.
+
+        // TODO(mtomasz): Once code.google.com/p/libyuv/issues/detail?id=324 is
+        // fixed, the allowedError should be decreased to 1.
+        var allowedError = 2;
+
+        return checkColor(videoData, 30, 30, videoElem.videoWidth, 0xff,
+                          allowedError) &&
+               checkColor(videoData, 150, 30, videoElem.videoWidth, 0x00,
+                          allowedError) &&
+               checkColor(videoData, 30, 150, videoElem.videoWidth, 0x10,
+                          allowedError) &&
+               checkColor(videoData, 150, 150, videoElem.videoWidth, 0xef,
+                          allowedError);
       }
 
       // Compute a standard diff image, plus a high-contrast mask that shows
