@@ -239,7 +239,6 @@ void PrintDialogGtk2::ShowDialog(
     const PrintingContextLinux::PrintSettingsCallback& callback) {
   callback_ = callback;
 
-  // TODO(mukai): take care of parent as select_file_dialog_impl_gtk2.
   dialog_ = gtk_print_unix_dialog_new(NULL, NULL);
   libgtk2ui::SetGtkTransientForAura(dialog_, parent_view);
   parent_view->AddObserver(this);
