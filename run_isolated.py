@@ -696,6 +696,9 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
     try:
       with tools.Profiler('RunTest'):
         result = subprocess.call(command, cwd=cwd, env=env)
+        logging.info(
+            'Command finished with exit code %d (%s)',
+            result, hex(0xffffffff & result))
     except OSError as e:
       tools.report_error('Failed to run %s; cwd=%s: %s' % (command, cwd, e))
       result = 1

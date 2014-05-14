@@ -415,7 +415,7 @@ class TestGetSwarmResults(TestCase):
       'config_instance_index': 0,
       'exit_codes': '0',
       'machine_id': 0,
-      'output': 'Foo',
+      'output': 'Foo\n',
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
@@ -425,9 +425,10 @@ class TestGetSwarmResults(TestCase):
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
         '================================================================\n\n'
-        'Foo================================================================\n'
-        'End output from shard index 0 (machine tag: 0, id: unknown). Return 0'
-          '\n'
+        'Foo\n'
+        '================================================================\n'
+        'End output from shard index 0 (machine tag: 0, id: unknown).\n'
+        'Exit code 0 (0x0).\n'
         '================================================================\n\n',
         '')
 
@@ -437,7 +438,7 @@ class TestGetSwarmResults(TestCase):
       'config_instance_index': 0,
       'exit_codes': '0,8',
       'machine_id': 0,
-      'output': 'Foo',
+      'output': 'Foo\n',
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
@@ -447,9 +448,33 @@ class TestGetSwarmResults(TestCase):
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
         '================================================================\n\n'
-        'Foo================================================================\n'
-        'End output from shard index 0 (machine tag: 0, id: unknown). Return 8'
-          '\n'
+        'Foo\n'
+        '================================================================\n'
+        'End output from shard index 0 (machine tag: 0, id: unknown).\n'
+        'Exit code 8 (0x8).\n'
+        '================================================================\n\n',
+        '')
+
+  def test_collect_negative_exit_code(self):
+    self.mock(swarming, 'get_task_keys', lambda *_: ['task_key'])
+    data = {
+      'config_instance_index': 0,
+      'exit_codes': '-1073741515,0',
+      'machine_id': 0,
+      'output': 'Foo\n',
+    }
+    self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
+    self.assertEqual(
+        -1073741515,
+        swarming.collect('url', 'name', 1, 'timeout', 'decorate', True, None))
+    self._check_output(
+        '\n================================================================\n'
+        'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
+        '================================================================\n\n'
+        'Foo\n'
+        '================================================================\n'
+        'End output from shard index 0 (machine tag: 0, id: unknown).\n'
+        'Exit code -1073741515 (0xc0000135).\n'
         '================================================================\n\n',
         '')
 
@@ -459,7 +484,7 @@ class TestGetSwarmResults(TestCase):
       'config_instance_index': 0,
       'exit_codes': '0',
       'machine_id': 0,
-      'output': 'Foo',
+      'output': 'Foo\n',
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
@@ -469,9 +494,10 @@ class TestGetSwarmResults(TestCase):
         '\n================================================================\n'
         'Begin output from shard index 0 (machine tag: 0, id: unknown)\n'
         '================================================================\n\n'
-        'Foo================================================================\n'
-        'End output from shard index 0 (machine tag: 0, id: unknown). Return 0'
-          '\n'
+        'Foo\n'
+        '================================================================\n'
+        'End output from shard index 0 (machine tag: 0, id: unknown).\n'
+        'Exit code 0 (0x0).\n'
         '================================================================\n\n',
         'Results from some shards are missing: 1\n')
 

@@ -764,9 +764,10 @@ def decorate_shard_output(shard_index, result, shard_exit_code):
     '\n'
     '%s'
     '================================================================\n'
-    'End output from shard %s. Return %d\n'
-    '================================================================\n'
-    ) % (tag, result['output'] or NO_OUTPUT_FOUND, tag, shard_exit_code)
+    'End output from shard %s.\nExit code %d (%s).\n'
+    '================================================================\n') % (
+        tag, result['output'] or NO_OUTPUT_FOUND, tag,
+        shard_exit_code, hex(0xffffffff & shard_exit_code))
 
 
 def collect(
@@ -801,8 +802,14 @@ def collect(
     for index, output in yield_results(
         url, task_keys, timeout, None, print_status_updates, output_collector):
       seen_shards.add(index)
-      shard_exit_codes = (output['exit_codes'] or '1').split(',')
-      shard_exit_code = max(int(i) for i in shard_exit_codes)
+
+      # Grab first non-zero exit code as an overall shard exit code.
+      shard_exit_code = 0
+      for code in map(int, (output['exit_codes'] or '1').split(',')):
+        if code:
+          shard_exit_code = code
+          break
+
       if decorate:
         print decorate_shard_output(index, output, shard_exit_code)
       else:
@@ -812,6 +819,7 @@ def collect(
                 output['machine_tag'],
                 output['exit_codes']))
         print(''.join('  %s\n' % l for l in output['output'].splitlines()))
+
       exit_code = exit_code or shard_exit_code
   finally:
     if output_collector:
