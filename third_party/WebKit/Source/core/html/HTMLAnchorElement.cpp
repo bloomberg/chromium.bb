@@ -70,11 +70,11 @@ void preconnectToURL(const KURL& url, blink::WebPreconnectMotivation motivation)
 
 }
 
-class HTMLAnchorElement::PrefetchEventHandler {
+class HTMLAnchorElement::PrefetchEventHandler FINAL : public NoBaseWillBeGarbageCollected<HTMLAnchorElement::PrefetchEventHandler> {
 public:
-    static PassOwnPtr<PrefetchEventHandler> create(HTMLAnchorElement* anchorElement)
+    static PassOwnPtrWillBeRawPtr<PrefetchEventHandler> create(HTMLAnchorElement* anchorElement)
     {
-        return adoptPtr(new HTMLAnchorElement::PrefetchEventHandler(anchorElement));
+        return adoptPtrWillBeNoop(new HTMLAnchorElement::PrefetchEventHandler(anchorElement));
     }
 
     void reset();
@@ -82,6 +82,8 @@ public:
     void handleEvent(Event* e);
     void didChangeHREF() { m_hadHREFChanged = true; }
     bool hasIssuedPreconnect() const { return m_hasIssuedPreconnect; }
+
+    void trace(Visitor* visitor) { visitor->trace(m_anchorElement); }
 
 private:
     explicit PrefetchEventHandler(HTMLAnchorElement*);
@@ -96,7 +98,7 @@ private:
     bool shouldPrefetch(const KURL&);
     void prefetch(blink::WebPreconnectMotivation);
 
-    HTMLAnchorElement* m_anchorElement;
+    RawPtrWillBeMember<HTMLAnchorElement> m_anchorElement;
     double m_mouseOverTimestamp;
     double m_mouseDownTimestamp;
     double m_tapDownTimestamp;
@@ -580,6 +582,12 @@ void HTMLAnchorElement::PrefetchEventHandler::prefetch(blink::WebPreconnectMotiv
 bool HTMLAnchorElement::isInteractiveContent() const
 {
     return isLink();
+}
+
+void HTMLAnchorElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_prefetchEventHandler);
+    HTMLElement::trace(visitor);
 }
 
 }
