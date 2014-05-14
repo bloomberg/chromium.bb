@@ -2582,7 +2582,7 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
         && (isDocumentElement() || (isBody() && document().documentElement()->renderer()->style()->logicalHeight().isPercent())) && !isInline();
     if (stretchesToViewport() || paginatedContentNeedsBaseHeight) {
         LayoutUnit margins = collapsedMarginBefore() + collapsedMarginAfter();
-        LayoutUnit visibleHeight = viewLogicalHeightForPercentages();
+        LayoutUnit visibleHeight = view()->viewLogicalHeightForPercentages();
         if (isDocumentElement())
             computedValues.m_extent = max(computedValues.m_extent, visibleHeight - margins);
         else {
@@ -2590,13 +2590,6 @@ void RenderBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
             computedValues.m_extent = max(computedValues.m_extent, visibleHeight - marginsBordersPadding);
         }
     }
-}
-
-LayoutUnit RenderBox::viewLogicalHeightForPercentages() const
-{
-    if (document().printing())
-        return static_cast<LayoutUnit>(view()->pageLogicalHeight());
-    return view()->viewLogicalHeight();
 }
 
 LayoutUnit RenderBox::computeLogicalHeightUsing(const Length& height, LayoutUnit intrinsicContentHeight) const
@@ -2734,7 +2727,7 @@ LayoutUnit RenderBox::computePercentageLogicalHeight(const Length& height) const
         cb->computeLogicalHeight(cb->logicalHeight(), 0, computedValues);
         availableHeight = computedValues.m_extent - cb->borderAndPaddingLogicalHeight() - cb->scrollbarLogicalHeight();
     } else if (cb->isRenderView())
-        availableHeight = viewLogicalHeightForPercentages();
+        availableHeight = view()->viewLogicalHeightForPercentages();
 
     if (availableHeight == -1)
         return availableHeight;

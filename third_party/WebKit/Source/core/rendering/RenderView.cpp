@@ -840,6 +840,13 @@ int RenderView::viewLogicalHeight() const
     return style()->isHorizontalWritingMode() ? viewHeight(ExcludeScrollbars) : viewWidth(ExcludeScrollbars);
 }
 
+LayoutUnit RenderView::viewLogicalHeightForPercentages() const
+{
+    if (shouldUsePrintingLayout())
+        return pageLogicalHeight();
+    return viewLogicalHeight();
+}
+
 float RenderView::zoomFactor() const
 {
     return m_frameView->frame().pageZoomFactor();

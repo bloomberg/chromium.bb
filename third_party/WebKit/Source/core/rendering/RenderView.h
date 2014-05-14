@@ -69,6 +69,7 @@ public:
         return style()->isHorizontalWritingMode() ? viewWidth(ExcludeScrollbars) : viewHeight(ExcludeScrollbars);
     }
     int viewLogicalHeight() const;
+    LayoutUnit viewLogicalHeightForPercentages() const;
 
     float zoomFactor() const;
 
