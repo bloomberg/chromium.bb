@@ -68,6 +68,7 @@ public:
     static float convertTextStrokeWidth(StyleResolverState&, CSSValue*);
 
     static bool convertGridTrackList(CSSValue*, Vector<GridTrackSize>&, NamedGridLinesMap&, OrderedNamedGridLines&, StyleResolverState&);
+    static void createImplicitNamedGridLinesFromGridArea(const NamedGridAreaMap&, NamedGridLinesMap&, GridTrackSizingDirection);
 };
 
 template <typename T>

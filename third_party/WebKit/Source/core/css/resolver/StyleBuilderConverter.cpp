@@ -104,7 +104,6 @@ EGlyphOrientation StyleBuilderConverter::convertGlyphOrientation(StyleResolverSt
     return GO_270DEG;
 }
 
-
 GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&, CSSValue* value)
 {
     // We accept the specification's grammar:
@@ -208,6 +207,24 @@ bool StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
     // this is not conformant to the syntax.
     ASSERT(!trackSizes.isEmpty());
     return true;
+}
+
+void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(const NamedGridAreaMap& namedGridAreas, NamedGridLinesMap& namedGridLines, GridTrackSizingDirection direction)
+{
+    NamedGridAreaMap::const_iterator end = namedGridAreas.end();
+    for (NamedGridAreaMap::const_iterator it = namedGridAreas.begin(); it != end; ++it) {
+        GridSpan areaSpan = direction == ForRows ? it->value.rows : it->value.columns;
+        {
+            NamedGridLinesMap::AddResult startResult = namedGridLines.add(it->key + "-start", Vector<size_t>());
+            startResult.storedValue->value.append(areaSpan.resolvedInitialPosition.toInt());
+            std::sort(startResult.storedValue->value.begin(), startResult.storedValue->value.end());
+        }
+        {
+            NamedGridLinesMap::AddResult endResult = namedGridLines.add(it->key + "-end", Vector<size_t>());
+            endResult.storedValue->value.append(areaSpan.resolvedFinalPosition.toInt() + 1);
+            std::sort(endResult.storedValue->value.begin(), endResult.storedValue->value.end());
+        }
+    }
 }
 
 Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue* value)

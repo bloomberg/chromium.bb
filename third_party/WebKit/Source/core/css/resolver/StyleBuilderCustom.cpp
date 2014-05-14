@@ -323,7 +323,16 @@ void StyleBuilderFunctions::applyValueCSSPropertyGridTemplateAreas(StyleResolver
     }
 
     CSSGridTemplateAreasValue* gridTemplateAreasValue = toCSSGridTemplateAreasValue(value);
-    state.style()->setNamedGridArea(gridTemplateAreasValue->gridAreaMap());
+    const NamedGridAreaMap& newNamedGridAreas = gridTemplateAreasValue->gridAreaMap();
+
+    NamedGridLinesMap namedGridColumnLines = state.style()->namedGridColumnLines();
+    NamedGridLinesMap namedGridRowLines = state.style()->namedGridRowLines();
+    StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(newNamedGridAreas, namedGridColumnLines, ForColumns);
+    StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(newNamedGridAreas, namedGridRowLines, ForRows);
+    state.style()->setNamedGridColumnLines(namedGridColumnLines);
+    state.style()->setNamedGridRowLines(namedGridRowLines);
+
+    state.style()->setNamedGridArea(newNamedGridAreas);
     state.style()->setNamedGridAreaRowCount(gridTemplateAreasValue->rowCount());
     state.style()->setNamedGridAreaColumnCount(gridTemplateAreasValue->columnCount());
 }

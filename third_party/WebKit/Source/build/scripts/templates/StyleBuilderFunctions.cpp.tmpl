@@ -446,6 +446,9 @@ namespace WebCore {
     OrderedNamedGridLines orderedNamedGridLines;
     if (!StyleBuilderConverter::convertGridTrackList(value, trackSizes, namedGridLines, orderedNamedGridLines, state))
         return;
+    const NamedGridAreaMap& namedGridAreas = state.style()->namedGridArea();
+    if (!namedGridAreas.isEmpty())
+        StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(namedGridAreas, namedGridLines, For{{type}}s);
     state.style()->setGridTemplate{{type}}s(trackSizes);
     state.style()->setNamedGrid{{type}}Lines(namedGridLines);
     state.style()->setOrderedNamedGrid{{type}}Lines(orderedNamedGridLines);
