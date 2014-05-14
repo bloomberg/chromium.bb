@@ -251,22 +251,21 @@ void QuicSentPacketManager::RetransmitUnackedPackets(
 }
 
 void QuicSentPacketManager::NeuterUnencryptedPackets() {
-  QuicUnackedPacketMap::const_iterator unacked_it = unacked_packets_.begin();
-  while (unacked_it != unacked_packets_.end()) {
+  for (QuicUnackedPacketMap::const_iterator it = unacked_packets_.begin();
+       it != unacked_packets_.end(); ++it) {
     const RetransmittableFrames* frames =
-        unacked_it->second.retransmittable_frames;
+        it->second.retransmittable_frames;
     if (frames != NULL && frames->encryption_level() == ENCRYPTION_NONE) {
-      // Since once you're forward secure, no unencrypted packets will be sent,
-      // crypto or otherwise. Unencrypted packets are neutered and abandoned, to
-      // ensure they are not retransmitted or considered lost from a congestion
-      // control perspective.
-      pending_retransmissions_.erase(unacked_it->first);
+      // Once you're forward secure, no unencrypted packets will be sent, crypto
+      // or otherwise. Unencrypted packets are neutered and abandoned, to ensure
+      // they are not retransmitted or considered lost from a congestion control
+      // perspective.
+      pending_retransmissions_.erase(it->first);
       // TODO(ianswett): This may cause packets to linger forever in the
       // UnackedPacketMap.
-      unacked_packets_.NeuterPacket(unacked_it->first);
-      unacked_packets_.SetNotPending(unacked_it->first);
+      unacked_packets_.NeuterPacket(it->first);
+      unacked_packets_.SetNotPending(it->first);
     }
-    ++unacked_it;
   }
 }
 

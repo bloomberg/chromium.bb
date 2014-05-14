@@ -37,5 +37,5 @@ bool FLAGS_quic_allow_oversized_packets_for_test = false;
 // When true, the use time based loss detection instead of nack.
 bool FLAGS_quic_use_time_loss_detection = false;
 
-// If true, allow port migration of established QUIC connections.
+// If true, allow peer port migration of established QUIC connections.
 bool FLAGS_quic_allow_port_migration = true;

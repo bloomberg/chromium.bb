@@ -1204,7 +1204,7 @@ bool QuicConnection::ProcessValidatedPacket() {
       peer_ip_changed_ || self_ip_changed_ || self_port_changed_) {
     SendConnectionCloseWithDetails(
         QUIC_ERROR_MIGRATING_ADDRESS,
-        "IP or port migration is not yet a supported feature");
+        "Neither IP address migration, nor self port migration are supported.");
     return false;
   }
 

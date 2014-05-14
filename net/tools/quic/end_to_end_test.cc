@@ -660,7 +660,7 @@ TEST_P(EndToEndTest, LargePostFEC) {
 TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {
   ASSERT_TRUE(Initialize());
   SetPacketSendDelay(QuicTime::Delta::FromMicroseconds(1));
-  // 256KB per second with a 256k buffer from server to client.  Wireless
+  // 256KB per second with a 256KB buffer from server to client.  Wireless
   // clients commonly have larger buffers, but our max CWND is 200.
   server_writer_->set_max_bandwidth_and_buffer_size(
       QuicBandwidth::FromBytesPerSecond(256 * 1024), 256 * 1024);

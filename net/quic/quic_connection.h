@@ -753,7 +753,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool self_ip_changed_;
 
   // Set to true if the UDP packet headers are addressed to a different port.
-  // If true, and the IP has not changed, then we can migrate the connection.
+  // We do not support connection migration when the self port changed.
   bool self_port_changed_;
 
   // If non-empty this contains the set of versions received in a
