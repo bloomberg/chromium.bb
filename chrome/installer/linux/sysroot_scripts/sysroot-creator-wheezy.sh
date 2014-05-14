@@ -50,7 +50,6 @@ DEBIAN_PACKAGES="\
   libfreetype6 \
   libfreetype6-dev \
   libgcc1 \
-  libgcc1 \
   libgconf-2-4 \
   libgconf2-4 \
   libgconf2-dev \
