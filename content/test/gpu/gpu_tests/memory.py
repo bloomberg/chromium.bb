@@ -63,10 +63,10 @@ class _MemoryValidator(page_test.PageTest):
         mb_used = counter.samples[-1] / 1048576
 
     if mb_used + WIGGLE_ROOM_MB < SINGLE_TAB_LIMIT_MB:
-      raise page_test.Failure('Memory allocation too low')
+      raise page_test.Failure(self._FormatException('low', mb_used))
 
     if mb_used - WIGGLE_ROOM_MB > MEMORY_LIMIT_MB:
-      raise page_test.Failure('Memory allocation too high')
+      raise page_test.Failure(self._FormatException('high', mb_used))
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-logging')
@@ -76,6 +76,10 @@ class _MemoryValidator(page_test.PageTest):
   def WillNavigateToPage(self, page, tab):
     custom_categories = ['webkit.console', 'gpu']
     tab.browser.StartTracing(','.join(custom_categories), 60)
+
+  def _FormatException(self, low_or_high, mb_used):
+    return 'Memory allocation too %s (was %d MB, should be %d MB +/- %d MB)' % (
+      low_or_high, mb_used, SINGLE_TAB_LIMIT_MB, WIGGLE_ROOM_MB)
 
 class Memory(test.Test):
   """Tests GPU memory limits"""
