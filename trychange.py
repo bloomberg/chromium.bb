@@ -771,7 +771,7 @@ def _SendChangeGerrit(bot_spec, options):
                               labels={'Tryjob-Request': 1})
       except gerrit_util.GerritError, e:
         if e.http_status == 400:
-          raise Error(e.reason)
+          raise Error(e.message)
         else:
           raise
 
