@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/macros.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {
 
-TEST(BluetoothUUIDTest, MainTest) {
+TEST(BluetoothUUIDTest, BluetoothUUID) {
   const char kValid128Bit0[] = "12345678-1234-5678-9abc-def123456789";
   const char kValid128Bit1[] = "00001101-0000-1000-8000-00805f9b34fb";
   const char kInvalid36Char0[] = "1234567-1234-5678-9abc-def123456789";
@@ -71,6 +72,36 @@ TEST(BluetoothUUIDTest, MainTest) {
   EXPECT_EQ(uuid5, uuid6);
   EXPECT_EQ(uuid1, uuid5);
   EXPECT_EQ(uuid1, uuid6);
+}
+
+// Verify that UUIDs are parsed case-insensitively
+TEST(BluetoothUUIDTest, BluetoothUUID_CaseInsensitive) {
+  const char k16Bit[] = "1abc";
+  const char k32Bit[] = "00001abc";
+  const char k128Bit[] = "00001abc-0000-1000-8000-00805f9b34fb";
+
+  struct TestCase {
+    const std::string input_uuid;
+    const std::string expected_value;
+  } test_cases[] = {
+    { "1abc", k16Bit },
+    { "1ABC", k16Bit },
+    { "1aBc", k16Bit },
+    { "00001abc", k32Bit },
+    { "00001ABC", k32Bit },
+    { "00001aBc", k32Bit },
+    { "00001abc-0000-1000-8000-00805f9b34fb", k128Bit },
+    { "00001ABC-0000-1000-8000-00805F9B34FB", k128Bit },
+    { "00001aBc-0000-1000-8000-00805F9b34fB", k128Bit },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    SCOPED_TRACE("Input UUID: " + test_cases[i].input_uuid);
+    BluetoothUUID uuid(test_cases[i].input_uuid);
+    EXPECT_TRUE(uuid.IsValid());
+    EXPECT_EQ(test_cases[i].expected_value, uuid.value());
+    EXPECT_EQ(k128Bit, uuid.canonical_value());
+  }
 }
 
 }  // namespace device

@@ -14,7 +14,6 @@ namespace {
 
 const char* kCommonUuidPostfix = "-0000-1000-8000-00805f9b34fb";
 const char* kCommonUuidPrefix = "0000";
-const int kUuidSize = 36;
 
 // Returns the canonical, 128-bit canonical, and the format of the UUID
 // in |canonical|, |canonical_128|, and |format| based on |uuid|.
@@ -36,24 +35,7 @@ void GetCanonicalUuid(std::string uuid,
   if (!(uuid.size() == 4 || uuid.size() == 8 || uuid.size() == 36))
     return;
 
-  if (uuid.size() == 4 || uuid.size() == 8) {
-    for (size_t i = 0; i < uuid.size(); ++i) {
-      if (!IsHexDigit(uuid[i]))
-        return;
-    }
-    if (uuid.size() == 4) {
-      canonical->assign(uuid);
-      canonical_128->assign(kCommonUuidPrefix + uuid + kCommonUuidPostfix);
-      *format = BluetoothUUID::kFormat16Bit;
-      return;
-    }
-    canonical->assign(uuid);
-    canonical_128->assign(uuid + kCommonUuidPostfix);
-    *format = BluetoothUUID::kFormat32Bit;
-    return;
-  }
-
-  for (int i = 0; i < kUuidSize; ++i) {
+  for (size_t i = 0; i < uuid.size(); ++i) {
     if (i == 8 || i == 13 || i == 18 || i == 23) {
       if (uuid[i] != '-')
         return;
@@ -65,8 +47,16 @@ void GetCanonicalUuid(std::string uuid,
   }
 
   canonical->assign(uuid);
-  canonical_128->assign(uuid);
-  *format = BluetoothUUID::kFormat128Bit;
+  if (uuid.size() == 4) {
+    canonical_128->assign(kCommonUuidPrefix + uuid + kCommonUuidPostfix);
+    *format = BluetoothUUID::kFormat16Bit;
+  } else if (uuid.size() == 8) {
+    canonical_128->assign(uuid + kCommonUuidPostfix);
+    *format = BluetoothUUID::kFormat32Bit;
+  } else {
+    canonical_128->assign(uuid);
+    *format = BluetoothUUID::kFormat128Bit;
+  }
 }
 
 }  // namespace

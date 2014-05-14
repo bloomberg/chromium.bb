@@ -27,11 +27,11 @@ class BluetoothUUID {
   // Single argument constructor. |uuid| can be a 16, 32, or 128 bit UUID
   // represented as a 4, 8, or 36 character string with the following
   // formats:
-  //   XXXX
-  //   0xXXXX
-  //   XXXXXXXX
-  //   0xXXXXXXXX
-  //   XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  //   xxxx
+  //   0xxxxx
+  //   xxxxxxxx
+  //   0xxxxxxxxx
+  //   xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   //
   // 16 and 32 bit UUIDs will be internally converted to a 128 bit UUID using
   // the base UUID defined in the Bluetooth specification, hence custom UUIDs
@@ -57,15 +57,15 @@ class BluetoothUUID {
   // Returns the value of the UUID as a string. The representation format is
   // based on what was passed in during construction. For the supported sizes,
   // this representation can have the following formats:
-  //   - 16 bit:  XXXX
-  //   - 32 bit:  XXXXXXXX
-  //   - 128 bit: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-  // where X is a lowercase hex digit.
+  //   - 16 bit:  xxxx
+  //   - 32 bit:  xxxxxxxx
+  //   - 128 bit: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  // where x is a lowercase hex digit.
   const std::string& value() const { return value_; }
 
   // Returns the underlying 128-bit value as a string in the following format:
-  //   XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-  // where X is a lowercase hex digit.
+  //   xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+  // where x is a lowercase hex digit.
   const std::string& canonical_value() const { return canonical_value_; }
 
   // Permit sufficient comparison to allow a UUID to be used as a key in a
@@ -79,9 +79,9 @@ class BluetoothUUID {
  private:
   // String representation of the UUID that was used during construction. For
   // the supported sizes, this representation can have the following formats:
-  //   - 16 bit:  XXXX
-  //   - 32 bit:  XXXXXXXX
-  //   - 128 bit: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+  //   - 16 bit:  xxxx
+  //   - 32 bit:  xxxxxxxx
+  //   - 128 bit: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
   Format format_;
   std::string value_;
 
