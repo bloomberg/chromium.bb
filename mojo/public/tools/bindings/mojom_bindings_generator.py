@@ -76,8 +76,8 @@ def MakeImportStackMessage(imported_filename_stack):
 # Disable Check for dangerous default arguments (they're "private" keyword
 # arguments):
 # pylint: disable=W0102
-def ProcessFile(args, generator_modules, filename, _processed_files={},
-                _imported_filename_stack=[]):
+def ProcessFile(args, remaining_args, generator_modules, filename,
+                _processed_files={}, _imported_filename_stack=[]):
   # Memoized results.
   if filename in _processed_files:
     return _processed_files[filename]
@@ -112,7 +112,7 @@ def ProcessFile(args, generator_modules, filename, _processed_files={},
   for import_data in mojom['imports']:
     import_filename = os.path.join(dirname, import_data['filename'])
     import_data['module'] = ProcessFile(
-        args, generator_modules, import_filename,
+        args, remaining_args, generator_modules, import_filename,
         _processed_files=_processed_files,
         _imported_filename_stack=_imported_filename_stack + [filename])
 
@@ -127,7 +127,11 @@ def ProcessFile(args, generator_modules, filename, _processed_files={},
 
   for generator_module in generator_modules:
     generator = generator_module.Generator(module, args.output_dir)
-    generator.GenerateFiles()
+    filtered_args = []
+    if hasattr(generator_module, 'GENERATOR_PREFIX'):
+      prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
+      filtered_args = [arg for arg in remaining_args if arg.startswith(prefix)]
+    generator.GenerateFiles(filtered_args)
 
   # Save result.
   _processed_files[filename] = module
@@ -151,7 +155,7 @@ def main():
                       help="print the intermediate representation")
   parser.add_argument("--use_chromium_bundled_pylibs", action="store_true",
                       help="use Python modules bundled in the Chromium source")
-  args = parser.parse_args()
+  (args, remaining_args) = parser.parse_known_args()
 
   generator_modules = LoadGenerators(args.generators_string)
 
@@ -159,7 +163,7 @@ def main():
     os.makedirs(args.output_dir)
 
   for filename in args.filename:
-    ProcessFile(args, generator_modules, filename)
+    ProcessFile(args, remaining_args, generator_modules, filename)
 
   return 0
 

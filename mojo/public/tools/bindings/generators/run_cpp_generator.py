@@ -25,4 +25,4 @@ dir = None
 if len(sys.argv) > 2:
   dir = sys.argv[2]
 cpp = mojom_cpp_generator.Generator(module, ".", dir)
-cpp.GenerateFiles()
+cpp.GenerateFiles([])

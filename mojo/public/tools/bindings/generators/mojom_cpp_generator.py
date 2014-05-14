@@ -222,7 +222,7 @@ class Generator(generator.Generator):
   def GenerateModuleSource(self):
     return self.GetJinjaExports()
 
-  def GenerateFiles(self):
+  def GenerateFiles(self, args):
     self.Write(self.GenerateModuleHeader(), "%s.h" % self.module.name)
     self.Write(self.GenerateModuleInternalHeader(),
         "%s-internal.h" % self.module.name)

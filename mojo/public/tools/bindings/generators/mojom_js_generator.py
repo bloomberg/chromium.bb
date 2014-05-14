@@ -172,7 +172,7 @@ class Generator(generator.Generator):
       "interfaces": self.module.interfaces,
     }
 
-  def GenerateFiles(self):
+  def GenerateFiles(self, args):
     self.Write(self.GenerateJsModule(), "%s.js" % self.module.name)
 
   def GetImports(self):
