@@ -78,6 +78,7 @@ class MEDIA_EXPORT TrackRunIterator {
   TimeDelta cts() const;
   TimeDelta duration() const;
   bool is_keyframe() const;
+  bool is_random_access_point() const;
 
   // Only call when is_encrypted() is true and AuxInfoNeedsToBeCached() is
   // false. Result is owned by caller.

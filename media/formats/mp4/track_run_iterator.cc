@@ -11,10 +11,6 @@
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
 
-namespace {
-static const uint32 kSampleIsDifferenceSampleFlagMask = 0x10000;
-}
-
 namespace media {
 namespace mp4 {
 
@@ -23,6 +19,7 @@ struct SampleInfo {
   int duration;
   int cts_offset;
   bool is_keyframe;
+  bool is_random_access_point;
   uint32 cenc_group_description_index;
 };
 
@@ -93,7 +90,8 @@ static void PopulateSampleInfo(const TrackExtends& trex,
                                const int64 edit_list_offset,
                                const uint32 i,
                                SampleInfo* sample_info,
-                               const SampleDependsOn sample_depends_on) {
+                               const SampleDependsOn sdtp_sample_depends_on,
+                               bool is_sync_sample) {
   if (i < trun.sample_sizes.size()) {
     sample_info->size = trun.sample_sizes[i];
   } else if (tfhd.default_sample_size > 0) {
@@ -126,9 +124,23 @@ static void PopulateSampleInfo(const TrackExtends& trex,
     flags = trex.default_sample_flags;
   }
 
+  SampleDependsOn sample_depends_on =
+      static_cast<SampleDependsOn>((flags >> 24) & 0x3);
+
+  if (sample_depends_on == kSampleDependsOnUnknown)
+    sample_depends_on = sdtp_sample_depends_on;
+
+  // ISO/IEC 14496-12  Section 8.8.3.1 : The flag |sample_is_non_sync_sample|
+  // provides the same information as the sync sample table [8.6.2]. When this
+  // value is set 0 for a sample, it is the same as if the sample were not in a
+  // movie fragment and marked with an entry in the sync sample table
+  // (or, if all samples are sync samples, the sync sample table were absent).
+  bool sample_is_non_sync_sample = flags & kSampleIsNonSyncSample;
+  sample_info->is_random_access_point = !sample_is_non_sync_sample;
+
   switch (sample_depends_on) {
     case kSampleDependsOnUnknown:
-      sample_info->is_keyframe = !(flags & kSampleIsDifferenceSampleFlagMask);
+      sample_info->is_keyframe = !sample_is_non_sync_sample;
       break;
 
     case kSampleDependsOnOthers:
@@ -224,8 +236,8 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
 
     int64 run_start_dts = traf.decode_time.decode_time;
     int sample_count_sum = 0;
-    bool is_sync_sample_box_present =
-        trak->media.information.sample_table.sync_sample.is_present;
+    const SyncSample& sync_sample =
+        trak->media.information.sample_table.sync_sample;
     for (size_t j = 0; j < traf.runs.size(); j++) {
       const TrackFragmentRun& trun = traf.runs[j];
       TrackRunInfo tri;
@@ -287,16 +299,9 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
       tri.samples.resize(trun.sample_count);
       for (size_t k = 0; k < trun.sample_count; k++) {
         PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset,
-                           k, &tri.samples[k], traf.sdtp.sample_depends_on(k));
+                           k, &tri.samples[k], traf.sdtp.sample_depends_on(k),
+                           sync_sample.IsSyncSample(k));
         run_start_dts += tri.samples[k].duration;
-
-        // ISO-14496-12 Section 8.20.1 : If the sync sample box is not present,
-        // every sample is a random access point.
-        //
-        // NOTE: MPEG's "is random access point" concept is equivalent to this
-        // and downstream code's "is keyframe" concept.
-        if (!is_sync_sample_box_present)
-          tri.samples[k].is_keyframe = true;
 
         if (!is_sample_to_group_valid) {
           // Set group description index to 0 to read encryption information
@@ -486,6 +491,11 @@ TimeDelta TrackRunIterator::duration() const {
 bool TrackRunIterator::is_keyframe() const {
   DCHECK(IsSampleValid());
   return sample_itr_->is_keyframe;
+}
+
+bool TrackRunIterator::is_random_access_point() const {
+  DCHECK(IsSampleValid());
+  return sample_itr_->is_random_access_point;
 }
 
 const TrackEncryption& TrackRunIterator::track_encryption() const {

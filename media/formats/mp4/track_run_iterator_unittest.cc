@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_split.h"
 #include "media/formats/mp4/box_definitions.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/track_run_iterator.h"
@@ -16,8 +17,6 @@ static const int kSumAscending1 = 45;
 
 static const int kAudioScale = 48000;
 static const int kVideoScale = 25;
-
-static const uint32 kSampleIsDifferenceSampleFlagMask = 0x10000;
 
 static const uint8 kAuxInfo[] = {
   0x41, 0x54, 0x65, 0x73, 0x74, 0x49, 0x76, 0x31,
@@ -72,7 +71,7 @@ class TrackRunIteratorTest : public testing::Test {
     moov_.extends.tracks[0].track_id = 1;
     moov_.extends.tracks[0].default_sample_description_index = 1;
     moov_.tracks[0].media.information.sample_table.sync_sample.is_present =
-        true;
+        false;
     moov_.tracks[1].header.track_id = 2;
     moov_.tracks[1].media.header.timescale = kVideoScale;
     SampleDescription& desc2 =
@@ -84,11 +83,93 @@ class TrackRunIteratorTest : public testing::Test {
     desc2.video_entries.push_back(vid_desc);
     moov_.extends.tracks[1].track_id = 2;
     moov_.extends.tracks[1].default_sample_description_index = 1;
-    moov_.tracks[1].media.information.sample_table.sync_sample.is_present =
-        true;
+    SyncSample& video_sync_sample =
+        moov_.tracks[1].media.information.sample_table.sync_sample;
+    video_sync_sample.is_present = true;
+    video_sync_sample.entries.resize(1);
+    video_sync_sample.entries[0] = 0;
 
     moov_.tracks[2].header.track_id = 3;
     moov_.tracks[2].media.information.sample_table.description.type = kHint;
+  }
+
+  uint32 ToSampleFlags(const std::string& str) {
+    CHECK_EQ(str.length(), 2u);
+
+    SampleDependsOn sample_depends_on = kSampleDependsOnReserved;
+    bool is_non_sync_sample = false;
+    switch(str[0]) {
+      case 'U':
+        sample_depends_on = kSampleDependsOnUnknown;
+        break;
+      case 'O':
+        sample_depends_on = kSampleDependsOnOthers;
+        break;
+      case 'N':
+        sample_depends_on = kSampleDependsOnNoOther;
+        break;
+      default:
+        CHECK(false) << "Invalid sample dependency character '"
+                     << str[0] << "'";
+        break;
+    }
+
+    switch(str[1]) {
+      case 'S':
+        is_non_sync_sample = false;
+        break;
+      case 'N':
+        is_non_sync_sample = true;
+        break;
+      default:
+        CHECK(false) << "Invalid sync sample character '"
+                     << str[1] << "'";
+        break;
+    }
+    uint32 flags = static_cast<uint32>(sample_depends_on) << 24;
+    if (is_non_sync_sample)
+      flags |= kSampleIsNonSyncSample;
+    return flags;
+  }
+
+  void SetFlagsOnSamples(const std::string& sample_info,
+                         TrackFragmentRun* trun) {
+    // US - SampleDependsOnUnknown & IsSyncSample
+    // UN - SampleDependsOnUnknown & IsNonSyncSample
+    // OS - SampleDependsOnOthers & IsSyncSample
+    // ON - SampleDependsOnOthers & IsNonSyncSample
+    // NS - SampleDependsOnNoOthers & IsSyncSample
+    // NN - SampleDependsOnNoOthers & IsNonSyncSample
+    std::vector<std::string> flags_data;
+    base::SplitString(sample_info, ' ', &flags_data);
+
+    if (flags_data.size() == 1u) {
+      // Simulates the first_sample_flags_present set scenario,
+      // where only one sample_flag value is set and the default
+      // flags are used for everything else.
+      ASSERT_GE(trun->sample_count, flags_data.size());
+    } else {
+      ASSERT_EQ(trun->sample_count, flags_data.size());
+    }
+
+    trun->sample_flags.resize(flags_data.size());
+    for (size_t i = 0; i < flags_data.size(); i++)
+      trun->sample_flags[i] = ToSampleFlags(flags_data[i]);
+  }
+
+  std::string KeyframeAndRAPInfo(TrackRunIterator* iter) {
+    CHECK(iter->IsRunValid());
+    std::stringstream ss;
+    ss << iter->track_id();
+
+    while (iter->IsSampleValid()) {
+      ss << " " << (iter->is_keyframe() ? "K" : "P");
+      if (iter->is_random_access_point())
+        ss << "R";
+      iter->AdvanceSample();
+    }
+
+    return ss.str();
   }
 
   MovieFragment CreateFragment() {
@@ -97,6 +178,7 @@ class TrackRunIteratorTest : public testing::Test {
     moof.tracks[0].decode_time.decode_time = 0;
     moof.tracks[0].header.track_id = 1;
     moof.tracks[0].header.has_default_sample_flags = true;
+    moof.tracks[0].header.default_sample_flags = ToSampleFlags("US");
     moof.tracks[0].header.default_sample_duration = 1024;
     moof.tracks[0].header.default_sample_size = 4;
     moof.tracks[0].runs.resize(2);
@@ -115,11 +197,7 @@ class TrackRunIteratorTest : public testing::Test {
     moof.tracks[1].runs[0].data_offset = 200;
     SetAscending(&moof.tracks[1].runs[0].sample_sizes);
     SetAscending(&moof.tracks[1].runs[0].sample_durations);
-    moof.tracks[1].runs[0].sample_flags.resize(10);
-    for (size_t i = 1; i < moof.tracks[1].runs[0].sample_flags.size(); i++) {
-      moof.tracks[1].runs[0].sample_flags[i] =
-          kSampleIsDifferenceSampleFlagMask;
-    }
+    SetFlagsOnSamples("US UN UN UN UN UN UN UN UN UN", &moof.tracks[1].runs[0]);
 
     return moof;
   }
@@ -258,8 +336,7 @@ TEST_F(TrackRunIteratorTest, BasicOperationTest) {
 TEST_F(TrackRunIteratorTest, TrackExtendsDefaultsTest) {
   moov_.extends.tracks[0].default_sample_duration = 50;
   moov_.extends.tracks[0].default_sample_size = 3;
-  moov_.extends.tracks[0].default_sample_flags =
-    kSampleIsDifferenceSampleFlagMask;
+  moov_.extends.tracks[0].default_sample_flags = ToSampleFlags("UN");
   iter_.reset(new TrackRunIterator(&moov_, log_cb_));
   MovieFragment moof = CreateFragment();
   moof.tracks[0].header.has_default_sample_flags = false;
@@ -282,14 +359,14 @@ TEST_F(TrackRunIteratorTest, FirstSampleFlagTest) {
   iter_.reset(new TrackRunIterator(&moov_, log_cb_));
   MovieFragment moof = CreateFragment();
   moof.tracks[1].header.has_default_sample_flags = true;
-  moof.tracks[1].header.default_sample_flags =
-    kSampleIsDifferenceSampleFlagMask;
-  moof.tracks[1].runs[0].sample_flags.resize(1);
+  moof.tracks[1].header.default_sample_flags = ToSampleFlags("UN");
+  SetFlagsOnSamples("US", &moof.tracks[1].runs[0]);
+
   ASSERT_TRUE(iter_->Init(moof));
+  EXPECT_EQ("1 KR KR KR KR KR KR KR KR KR KR", KeyframeAndRAPInfo(iter_.get()));
+
   iter_->AdvanceRun();
-  EXPECT_TRUE(iter_->is_keyframe());
-  iter_->AdvanceSample();
-  EXPECT_FALSE(iter_->is_keyframe());
+  EXPECT_EQ("2 KR P P P P P P P P P", KeyframeAndRAPInfo(iter_.get()));
 }
 
 TEST_F(TrackRunIteratorTest, ReorderingTest) {
@@ -545,77 +622,43 @@ TEST_F(TrackRunIteratorTest, UnexpectedOrderingTest) {
   EXPECT_EQ(iter_->GetMaxClearOffset(), 10000);
 }
 
-TEST_F(TrackRunIteratorTest, MissingStssMakesAllSamplesKeyframes) {
-  iter_.reset(new TrackRunIterator(&moov_, log_cb_));
+TEST_F(TrackRunIteratorTest, MissingAndEmptyStss) {
   MovieFragment moof = CreateFragment();
 
-  // Test that runs are sorted correctly, and that properties of the initial
-  // sample of the first run are correct
-  ASSERT_TRUE(iter_->Init(moof));
-  EXPECT_TRUE(iter_->IsRunValid());
+  // Setup track 0 to not have an stss box, which means that all samples should
+  // be marked as random access points unless the kSampleIsNonSyncSample flag is
+  // set in the sample flags.
+  moov_.tracks[0].media.information.sample_table.sync_sample.is_present = false;
+  moov_.tracks[0].media.information.sample_table.sync_sample.entries.resize(0);
+  moof.tracks[0].runs.resize(1);
+  moof.tracks[0].runs[0].sample_count = 6;
+  moof.tracks[0].runs[0].data_offset = 100;
+  SetFlagsOnSamples("US UN OS ON NS NN", &moof.tracks[0].runs[0]);
 
-  // Count the number of non-keyframes for each run with the default
-  // sync_sample info.
+  // Setup track 1 to have an stss box with no entries, which normally means
+  // that none of the samples should be random access points. If the
+  // kSampleIsNonSyncSample flag is NOT set though, the sample should be
+  // considered a random access point.
+  moov_.tracks[1].media.information.sample_table.sync_sample.is_present = true;
+  moov_.tracks[1].media.information.sample_table.sync_sample.entries.resize(0);
+  moof.tracks[1].runs.resize(1);
+  moof.tracks[1].runs[0].sample_count = 6;
+  moof.tracks[1].runs[0].data_offset = 200;
+  SetFlagsOnSamples("US UN OS ON NS NN", &moof.tracks[1].runs[0]);
 
-  EXPECT_TRUE(moov_.tracks[0].media.information.sample_table.sync_sample.
-              is_present);
-  EXPECT_TRUE(moov_.tracks[1].media.information.sample_table.sync_sample.
-              is_present);
-
-  int first_run_non_keyframe_count = 0;
-  int second_run_non_keyframe_count = 0;
-
-  EXPECT_TRUE(iter_->IsRunValid());
-  while (iter_->IsSampleValid()) {
-    EXPECT_EQ(iter_->track_id(), 1u);
-
-    if (!iter_->is_keyframe())
-      first_run_non_keyframe_count++;
-
-    iter_->AdvanceSample();
-  }
-
-  iter_->AdvanceRun();
-
-  EXPECT_TRUE(iter_->IsRunValid());
-  while (iter_->IsSampleValid()) {
-    EXPECT_EQ(iter_->track_id(), 2u);
-
-    if (!iter_->is_keyframe())
-      second_run_non_keyframe_count++;
-
-    iter_->AdvanceSample();
-  }
-
-  EXPECT_EQ(0, first_run_non_keyframe_count);
-  EXPECT_EQ(9, second_run_non_keyframe_count);
-
-  // Update sync_sample info to reflect that the box is not present on
-  // both tracks.
-  moov_.tracks[0].media.information.sample_table.sync_sample.is_present =
-      false;
-  moov_.tracks[1].media.information.sample_table.sync_sample.is_present =
-      false;
-
-  // Reinitialize the iterator and verify that all samples are keyframes
-  // on both tracks now.
+  iter_.reset(new TrackRunIterator(&moov_, log_cb_));
 
   ASSERT_TRUE(iter_->Init(moof));
   EXPECT_TRUE(iter_->IsRunValid());
-  while (iter_->IsSampleValid()) {
-    EXPECT_EQ(iter_->track_id(), 1u);
-    EXPECT_TRUE(iter_->is_keyframe());
-    iter_->AdvanceSample();
-  }
+
+  // Verify that all samples except for the ones that have the
+  // kSampleIsNonSyncSample flag set are marked as random access points.
+  EXPECT_EQ("1 KR P PR P KR K", KeyframeAndRAPInfo(iter_.get()));
 
   iter_->AdvanceRun();
-  EXPECT_TRUE(iter_->IsRunValid());
 
-  while (iter_->IsSampleValid()) {
-    EXPECT_EQ(iter_->track_id(), 2u);
-    EXPECT_TRUE(iter_->is_keyframe());
-    iter_->AdvanceSample();
-  }
+  // Verify that nothing is marked as a random access point.
+  EXPECT_EQ("2 KR P PR P KR K", KeyframeAndRAPInfo(iter_.get()));
 }
 
 

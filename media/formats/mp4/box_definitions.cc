@@ -256,20 +256,34 @@ bool SyncSample::Parse(BoxReader* reader) {
 
   is_present = true;
 
+  entries.resize(entry_count);
+
   if (entry_count == 0)
     return true;
 
-  // Skip over the entries since we don't actually care about
-  // them right now. In most fragmented files with an stss, there
-  // aren't any entries anyways because the random access point info
-  // is signalled in the fragments.
-  int64 skip_size = 4 * entry_count;
-  if (skip_size > INT_MAX)
-    return false;
-
-  RCHECK(reader->SkipBytes(skip_size));
+  for (size_t i = 0; i < entry_count; ++i)
+    RCHECK(reader->Read4(&entries[i]));
 
   return true;
+}
+
+bool SyncSample::IsSyncSample(size_t k) const {
+  // ISO/IEC 14496-12 Section 8.6.2.1 : If the sync sample box is not present,
+  // every sample is a sync sample.
+  if (!is_present)
+    return true;
+
+  // ISO/IEC 14496-12  Section 8.6.2.3 : If entry_count is zero, there are no
+  // sync samples within the stream.
+  if (entries.size() == 0u)
+    return false;
+
+  for (size_t i = 0; i < entries.size(); ++i) {
+    if (entries[i] == k)
+      return true;
+  }
+
+  return false;
 }
 
 SampleTable::SampleTable() {}

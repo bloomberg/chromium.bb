@@ -26,6 +26,10 @@ enum TrackType {
   kHint
 };
 
+enum SampleFlags {
+  kSampleIsNonSyncSample = 0x10000
+};
+
 #define DECLARE_BOX_METHODS(T) \
   T(); \
   virtual ~T(); \
@@ -228,7 +232,12 @@ struct MEDIA_EXPORT SampleDescription : Box {
 struct MEDIA_EXPORT SyncSample : Box {
   DECLARE_BOX_METHODS(SyncSample);
 
+  // Returns true if the |k|th sample is a sync sample (aka a random
+  // access point). Returns false if sample |k| is not a sync sample.
+  bool IsSyncSample(size_t k) const;
+
   bool is_present;
+  std::vector<uint32> entries;
 };
 
 struct MEDIA_EXPORT SampleTable : Box {
