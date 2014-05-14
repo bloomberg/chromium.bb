@@ -244,9 +244,9 @@ bool HTMLScriptRunner::executeScriptsWaitingForParsing()
     return true;
 }
 
-void HTMLScriptRunner::requestParsingBlockingScript(const ResourcePtr<ScriptResource>& resource, Element* element)
+void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
 {
-    if (!requestPendingScript(resource, m_parserBlockingScript, element))
+    if (!requestPendingScript(m_parserBlockingScript, element))
         return;
 
     ASSERT(m_parserBlockingScript.resource());
@@ -258,26 +258,27 @@ void HTMLScriptRunner::requestParsingBlockingScript(const ResourcePtr<ScriptReso
         watchForLoad(m_parserBlockingScript);
 }
 
-void HTMLScriptRunner::requestDeferredScript(const ResourcePtr<ScriptResource>& resource, Element* element)
+void HTMLScriptRunner::requestDeferredScript(Element* element)
 {
     PendingScript pendingScript;
-    if (!requestPendingScript(resource, pendingScript, element))
+    if (!requestPendingScript(pendingScript, element))
         return;
 
     ASSERT(pendingScript.resource());
     m_scriptsToExecuteAfterParsing.append(pendingScript);
 }
 
-bool HTMLScriptRunner::requestPendingScript(const ResourcePtr<ScriptResource>& resource, PendingScript& pendingScript, Element* script) const
+bool HTMLScriptRunner::requestPendingScript(PendingScript& pendingScript, Element* script) const
 {
     ASSERT(!pendingScript.element());
     pendingScript.setElement(script);
     // This should correctly return 0 for empty or invalid srcValues.
+    ScriptResource* resource = toScriptLoaderIfPossible(script)->resource().get();
     if (!resource) {
         notImplemented(); // Dispatch error event.
         return false;
     }
-    pendingScript.setScriptResource(resource.get());
+    pendingScript.setScriptResource(resource);
     return true;
 }
 
@@ -306,13 +307,13 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
         InsertionPointRecord insertionPointRecord(m_host->inputStream());
         NestingLevelIncrementer nestingLevelIncrementer(m_scriptNestingLevel);
 
-        ScriptPrep prep = scriptLoader->prepareScript(scriptStartPosition);
+        scriptLoader->prepareScript(scriptStartPosition);
 
         if (!scriptLoader->willBeParserExecuted())
             return;
 
         if (scriptLoader->willExecuteWhenDocumentFinishedParsing()) {
-            requestDeferredScript(prep.resource(), script);
+            requestDeferredScript(script);
         } else if (scriptLoader->readyToBeParserExecuted()) {
             if (m_scriptNestingLevel == 1) {
                 m_parserBlockingScript.setElement(script);
@@ -322,7 +323,7 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
                 scriptLoader->executeScript(sourceCode);
             }
         } else {
-            requestParsingBlockingScript(prep.resource(), script);
+            requestParsingBlockingScript(script);
         }
     }
 }
