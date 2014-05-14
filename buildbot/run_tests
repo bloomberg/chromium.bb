@@ -193,6 +193,11 @@ main() {
   # or not it's needed.  'sudo true' will do what we want.
   sudo true
 
+  # Switch to CHROMITE_PATH, in case cwd is outside of the repo. This ensures
+  # that "repo list" looks at the right repo, and sets up a consistent test
+  # environment.
+  cd "${CHROMITE_PATH}"
+
   SKIP_CHROOT_TESTS=false
   if ! repo list 2>/dev/null | grep -q chromiumos-overlay; then
     echo "chromiumos-overlay is not present. Skipping chroot tests..."
