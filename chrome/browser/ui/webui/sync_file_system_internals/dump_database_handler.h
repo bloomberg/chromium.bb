@@ -22,6 +22,7 @@ class DumpDatabaseHandler : public content::WebUIMessageHandler {
 
  private:
   void GetDatabaseDump(const base::ListValue* args);
+  void DidGetDatabaseDump(const base::ListValue& list);
 
   Profile* profile_;
 

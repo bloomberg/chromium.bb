@@ -354,9 +354,13 @@ void SyncEngine::DumpFiles(const GURL& origin,
       callback);
 }
 
-scoped_ptr<base::ListValue> SyncEngine::DumpDatabase() {
-  // TODO(peria): Make this route asynchronous.
-  return sync_worker_->DumpDatabase();
+void SyncEngine::DumpDatabase(const ListCallback& callback) {
+  PostTaskAndReplyWithResult(
+      worker_task_runner_,
+      FROM_HERE,
+      base::Bind(&SyncWorker::DumpDatabase,
+                 base::Unretained(sync_worker_.get())),
+      callback);
 }
 
 void SyncEngine::SetSyncEnabled(bool enabled) {

@@ -199,7 +199,7 @@ class RemoteFileSyncService {
                          const ListCallback& callback) = 0;
 
   // Returns the dump of internal database.
-  virtual scoped_ptr<base::ListValue> DumpDatabase() = 0;
+  virtual void DumpDatabase(const ListCallback& callback) = 0;
 
   // Enables or disables the background sync.
   // Setting this to false should disable the synchronization (and make

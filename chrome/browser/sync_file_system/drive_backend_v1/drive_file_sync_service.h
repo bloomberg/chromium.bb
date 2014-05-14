@@ -104,7 +104,7 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) OVERRIDE;
   virtual void DumpFiles(const GURL& origin,
                          const ListCallback& callback) OVERRIDE;
-  virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
+  virtual void DumpDatabase(const ListCallback& callback) OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;
   virtual SyncStatusCode SetDefaultConflictResolutionPolicy(
       ConflictResolutionPolicy policy) OVERRIDE;

@@ -256,9 +256,9 @@ void DriveFileSyncService::DumpFiles(const GURL& origin,
   callback.Run(metadata_store_->DumpFiles(origin).Pass());
 }
 
-scoped_ptr<base::ListValue> DriveFileSyncService::DumpDatabase() {
+void DriveFileSyncService::DumpDatabase(const ListCallback& callback) {
   // Not implemented (yet).
-  return scoped_ptr<base::ListValue>();
+  callback.Run(scoped_ptr<base::ListValue>());
 }
 
 void DriveFileSyncService::SetSyncEnabled(bool enabled) {

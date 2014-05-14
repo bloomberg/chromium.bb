@@ -59,8 +59,8 @@ void MockRemoteFileSyncService::DumpFiles(const GURL& origin,
   callback.Run(scoped_ptr<base::ListValue>());
 }
 
-scoped_ptr<base::ListValue> MockRemoteFileSyncService::DumpDatabase() {
-  return scoped_ptr<base::ListValue>();
+void MockRemoteFileSyncService::DumpDatabase(const ListCallback& callback) {
+  callback.Run(scoped_ptr<base::ListValue>());
 }
 
 void MockRemoteFileSyncService::SetServiceState(RemoteServiceState state) {

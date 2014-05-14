@@ -72,7 +72,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
 
   virtual void DumpFiles(const GURL& origin,
                          const ListCallback& callback) OVERRIDE;
-  virtual scoped_ptr<base::ListValue> DumpDatabase() OVERRIDE;
+  virtual void DumpDatabase(const ListCallback& callback) OVERRIDE;
 
   void SetServiceState(RemoteServiceState state);
 
