@@ -13,7 +13,6 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 
 extern const char kEnableAutomaticPasswordSaving[];
-extern const char kEnablePasswordManagerInternalsUI[];
 
 }  // namespace switches
 

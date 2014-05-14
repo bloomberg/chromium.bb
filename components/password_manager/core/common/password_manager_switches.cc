@@ -13,10 +13,6 @@ namespace switches {
 const char kEnableAutomaticPasswordSaving[] =
     "enable-automatic-password-saving";
 
-// Enables the chrome://password-manager-internals/ page.
-const char kEnablePasswordManagerInternalsUI[] =
-    "enable-password-manager-internals-ui";
-
 }  // namespace switches
 
 }  // namespace password_manager

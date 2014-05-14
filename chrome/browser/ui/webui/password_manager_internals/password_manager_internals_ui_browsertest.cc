@@ -21,7 +21,6 @@ class PasswordManagerInternalsWebUIBrowserTest : public WebUIBrowserTest {
   virtual ~PasswordManagerInternalsWebUIBrowserTest();
 
   virtual void SetUpOnMainThread() OVERRIDE;
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
  protected:
   content::WebContents* GetWebContents();
@@ -44,12 +43,6 @@ PasswordManagerInternalsWebUIBrowserTest::
 void PasswordManagerInternalsWebUIBrowserTest::SetUpOnMainThread() {
   WebUIBrowserTest::SetUpOnMainThread();
   OpenNewTabWithTheInternalsPage();
-}
-
-void PasswordManagerInternalsWebUIBrowserTest::SetUpCommandLine(
-    CommandLine* command_line) {
-  command_line->AppendSwitch(
-      password_manager::switches::kEnablePasswordManagerInternalsUI);
 }
 
 content::WebContents*
