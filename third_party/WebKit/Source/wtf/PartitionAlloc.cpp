@@ -929,8 +929,12 @@ void partitionDumpStats(const PartitionRoot& root)
         size_t numFreeableBytes = 0;
         size_t numActivePages = 0;
         const PartitionPage* page = bucket.activePagesHead;
-        do {
-            if (page != &PartitionRootGeneric::gSeedPage) {
+        while (page) {
+            ASSERT(page != &PartitionRootGeneric::gSeedPage);
+            // A page may be on the active list but freed and not yet swept.
+            if (!page->freelistHead && !page->numUnprovisionedSlots && !page->numAllocatedSlots) {
+                ++numFreePages;
+            } else {
                 ++numActivePages;
                 numActiveBytes += (page->numAllocatedSlots * bucketSlotSize);
                 size_t pageBytesResident = (bucketNumSlots - page->numUnprovisionedSlots) * bucketSlotSize;
@@ -941,7 +945,7 @@ void partitionDumpStats(const PartitionRoot& root)
                     numFreeableBytes += pageBytesResident;
             }
             page = page->nextPage;
-        } while (page != bucket.activePagesHead);
+        }
         totalLive += numActiveBytes;
         totalResident += numResidentBytes;
         totalFreeable += numFreeableBytes;

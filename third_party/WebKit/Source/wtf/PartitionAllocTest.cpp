@@ -73,6 +73,12 @@ static void TestSetup()
 
 static void TestShutdown()
 {
+#ifndef NDEBUG
+    // Test that the partition statistic dumping code works. Previously, it
+    // bitrotted because no test calls it.
+    partitionDumpStats(*allocator.root());
+#endif
+
     // We expect no leaks in the general case. We have a test for leak
     // detection.
     EXPECT_TRUE(allocator.shutdown());

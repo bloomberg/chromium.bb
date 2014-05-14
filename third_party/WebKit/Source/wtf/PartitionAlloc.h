@@ -308,6 +308,10 @@ WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionRootBase*, int, si
 WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPage*);
 WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRootGeneric*, void*, size_t);
 
+#ifndef NDEBUG
+WTF_EXPORT void partitionDumpStats(const PartitionRoot&);
+#endif
+
 ALWAYS_INLINE PartitionFreelistEntry* partitionFreelistMask(PartitionFreelistEntry* ptr)
 {
     // We use bswap on little endian as a fast mask for two reasons:
