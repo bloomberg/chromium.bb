@@ -153,14 +153,14 @@ void NtpOverriddenBubbleDelegate::RestrictToSingleExtension(
 }
 
 void NtpOverriddenBubbleDelegate::LogExtensionCount(size_t count) {
-  UMA_HISTOGRAM_COUNTS_100("NtpOverriddenBubble.ExtensionCount", count);
 }
 
 void NtpOverriddenBubbleDelegate::LogAction(
     ExtensionMessageBubbleController::BubbleAction action) {
-  UMA_HISTOGRAM_ENUMERATION("NtpOverriddenBubble.UserSelection",
-                            action,
-                            ExtensionMessageBubbleController::ACTION_BOUNDARY);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ExtensionOverrideBubble.NtpOverriddenUserSelection",
+      action,
+      ExtensionMessageBubbleController::ACTION_BOUNDARY);
 }
 
 }  // namespace

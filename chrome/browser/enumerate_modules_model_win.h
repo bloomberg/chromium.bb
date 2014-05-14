@@ -250,9 +250,6 @@ class EnumerateModulesModel {
 
   static EnumerateModulesModel* GetInstance();
 
-  // Record via UMA what the user selected.
-  static void RecordLearnMoreStat(bool from_menu);
-
   // Returns true if we should show the conflict notification. The conflict
   // notification is only shown once during the lifetime of the process.
   bool ShouldShowConflictWarning() const;

@@ -105,13 +105,13 @@ bool DevModeBubbleDelegate::ShouldShowExtensionList() const {
 
 void DevModeBubbleDelegate::LogExtensionCount(size_t count) {
   UMA_HISTOGRAM_COUNTS_100(
-      "DevModeExtensionBubble.ExtensionsInDevModeCount", count);
+      "ExtensionBubble.ExtensionsInDevModeCount", count);
 }
 
 void DevModeBubbleDelegate::LogAction(
     ExtensionMessageBubbleController::BubbleAction action) {
   UMA_HISTOGRAM_ENUMERATION(
-      "DevModeExtensionBubble.UserSelection",
+      "ExtensionBubble.DevModeUserSelection",
       action, ExtensionMessageBubbleController::ACTION_BOUNDARY);
 }
 

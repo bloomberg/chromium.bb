@@ -180,7 +180,6 @@ void ShowConflicts(Browser* browser) {
   if (model->modules_to_notify_about() > 0) {
     GURL help_center_url = model->GetFirstNotableConflict();
     if (help_center_url.is_valid()) {
-      EnumerateModulesModel::RecordLearnMoreStat(true);
       ShowSingletonTab(browser, help_center_url);
       model->AcknowledgeConflictNotification();
       return;

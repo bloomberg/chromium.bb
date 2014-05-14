@@ -243,14 +243,30 @@ bool SettingsApiBubbleDelegate::ShouldShowExtensionList() const {
 }
 
 void SettingsApiBubbleDelegate::LogExtensionCount(size_t count) {
-  UMA_HISTOGRAM_COUNTS_100("SettingsApiBubble.ExtensionCount", count);
 }
 
 void SettingsApiBubbleDelegate::LogAction(
     ExtensionMessageBubbleController::BubbleAction action) {
-  UMA_HISTOGRAM_ENUMERATION("SettingsApiBubble.UserSelection",
-                            action,
-                            ExtensionMessageBubbleController::ACTION_BOUNDARY);
+  switch (type_) {
+    case extensions::BUBBLE_TYPE_HOME_PAGE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ExtensionOverrideBubble.SettingsApiUserSelectionHomePage",
+          action,
+          ExtensionMessageBubbleController::ACTION_BOUNDARY);
+      break;
+    case extensions::BUBBLE_TYPE_STARTUP_PAGES:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ExtensionOverrideBubble.SettingsApiUserSelectionStartupPage",
+          action,
+          ExtensionMessageBubbleController::ACTION_BOUNDARY);
+      break;
+    case extensions::BUBBLE_TYPE_SEARCH_ENGINE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ExtensionOverrideBubble.SettingsApiUserSelectionSearchEngine",
+          action,
+          ExtensionMessageBubbleController::ACTION_BOUNDARY);
+      break;
+  }
 }
 
 }  // namespace

@@ -5640,6 +5640,44 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ExtensionBubble.DevModeUserSelection"
+    enum="ExtensionBubbleAction">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    The action taken by the user when seeing the bubble, logged right after the
+    action is taken.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBubble.ExtensionsInDevModeCount"
+    units="Developer Mode Extensions">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    The total number of extensions found to be loaded under Developer Mode,
+    logged when the devmode bubble is shown (once per startup per profile, if
+    any devmode extension is found).
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBubble.ExtensionWipeoutCount" units="Extensions">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    The total number of extensions found to be wiped by SideloadWipeout, logged
+    when the wipeout bubble is shown, which is once per startup per profile (as
+    long as wiped extensions were found). Not logged if no extensions of that
+    nature were found.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionBubble.WipeoutUserSelection"
+    enum="ExtensionBubbleAction">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    The action taken by the user when seeing the bubble, logged right after the
+    action is taken.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionInstalledLoader.ForceDisabled"
     enum="BooleanForceDisabled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -5722,6 +5760,45 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     The outcome for each call to InstallVerifier::MustRemainDisabled.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionOverrideBubble.NtpOverriddenUserSelection"
+    enum="ExtensionBubbleAction">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    The action taken by the user when seeing the bubble, notifing them of an
+    extension overriding their new tab page. Logged right after the action is
+    taken.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionOverrideBubble.SettingsApiUserSelectionHomePage"
+    enum="ExtensionBubbleAction">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    The action taken by the user when seeing the bubble, notifing them of an
+    extension overriding their homepage. Logged right after the action is taken.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionOverrideBubble.SettingsApiUserSelectionSearchEngine"
+    enum="ExtensionBubbleAction">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    The action taken by the user when seeing the bubble, notifing them of an
+    extension overriding their search engine. Logged right after the action is
+    taken.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionOverrideBubble.SettingsApiUserSelectionStartupPage"
+    enum="ExtensionBubbleAction">
+  <owner>finnur@chromium.org</owner>
+  <summary>
+    The action taken by the user when seeing the bubble, notifing them of an
+    extension overriding their startup page. Logged right after the action is
+    taken.
   </summary>
 </histogram>
 
@@ -33519,6 +33596,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="None"/>
   <int value="1" label="Persistent"/>
   <int value="2" label="Event Page"/>
+</enum>
+
+<enum name="ExtensionBubbleAction" type="int">
+  <int value="0" label="Learn more"/>
+  <int value="1" label="Execute"/>
+  <int value="2" label="Dismiss"/>
 </enum>
 
 <enum name="ExtensionCreationFlags" type="int">

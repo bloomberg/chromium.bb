@@ -105,13 +105,13 @@ SuspiciousExtensionBubbleDelegate::ShouldShowExtensionList() const {
 void SuspiciousExtensionBubbleDelegate::LogExtensionCount(
     size_t count) {
   UMA_HISTOGRAM_COUNTS_100(
-      "ExtensionWipeoutBubble.ExtensionWipeoutCount", count);
+      "ExtensionBubble.ExtensionWipeoutCount", count);
 }
 
 void SuspiciousExtensionBubbleDelegate::LogAction(
     ExtensionMessageBubbleController::BubbleAction action) {
   UMA_HISTOGRAM_ENUMERATION(
-      "ExtensionWipeoutBubble.UserSelection",
+      "ExtensionBubble.WipeoutUserSelection",
       action, ExtensionMessageBubbleController::ACTION_BOUNDARY);
 }
 

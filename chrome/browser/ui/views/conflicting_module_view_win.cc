@@ -193,7 +193,6 @@ void ConflictingModuleView::Init() {
 void ConflictingModuleView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
   if (sender == learn_more_button_) {
-    EnumerateModulesModel::RecordLearnMoreStat(false);
     browser_->OpenURL(
         content::OpenURLParams(help_center_url_,
                                content::Referrer(),

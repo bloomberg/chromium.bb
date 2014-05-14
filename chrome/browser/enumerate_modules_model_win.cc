@@ -814,13 +814,6 @@ EnumerateModulesModel* EnumerateModulesModel::GetInstance() {
   return Singleton<EnumerateModulesModel>::get();
 }
 
-// static
-void EnumerateModulesModel::RecordLearnMoreStat(bool from_menu) {
-  UMA_HISTOGRAM_ENUMERATION("ConflictingModule.UserSelection",
-      from_menu ? ACTION_MENU_LEARN_MORE : ACTION_BUBBLE_LEARN_MORE,
-      ACTION_BOUNDARY);
-}
-
 bool EnumerateModulesModel::ShouldShowConflictWarning() const {
   // If the user has acknowledged the conflict notification, then we don't need
   // to show it again (because the scanning only happens once per the lifetime
