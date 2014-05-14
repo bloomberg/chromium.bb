@@ -270,12 +270,14 @@ are declared in build/common.gypi.
       change nontranslateable parts of the messages into placeholders (using the
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
-      <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE" desc="The title of the balloon that is displayed when a background app is installed">
-        New background app added
-      </message>
-      <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY" desc="The contents of the balloon that is displayed when a background app is installed">
-        <ph name="APP_NAME">$1<ex>Background App</ex></ph> will launch at system startup and continue to run in the background even once you've closed all other <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph> windows.
-      </message>
+      <if expr="is_win">
+        <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_TITLE" desc="The title of the balloon that is displayed when a background app is installed">
+          New background app added
+        </message>
+        <message name="IDS_BACKGROUND_APP_INSTALLED_BALLOON_BODY" desc="The contents of the balloon that is displayed when a background app is installed">
+          <ph name="APP_NAME">$1<ex>Background App</ex></ph> will launch at system startup and continue to run in the background even once you've closed all other <ph name="PRODUCT_NAME">$2<ex>Google Chrome</ex></ph> windows.
+        </message>
+      </if>
       <message name="IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE" desc="The contents of the balloon that is displayed when a background app crashes">
         <ph name="APP_NAME">$1<ex>Background App</ex></ph> has crashed. Click this balloon to restart the app.
       </message>
@@ -407,9 +409,6 @@ are declared in build/common.gypi.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_BLOCK" desc="The text of the menu item of a permissions menu on the Website Settings UI that sets the setting to allow.">
         Always block on this site
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_DEFAULT_PERMISSION_LABEL" desc="The label for the global default setting that is used in a permissions dropdown.">
-        Use global default (<ph name="PERMISSION_VALUE">$1<ex>allow</ex></ph>)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_PERMISSION_TYPE" desc="The label that is used to display permission types in the Website Settings popup. ">
         <ph name="PERMISSION_TYPE_LABEL">$1<ex>Plugins</ex></ph>:
@@ -596,12 +595,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       <message name="IDS_DONE" desc="A generic term for Done on buttons and menus.">
         Done
       </message>
-      <message name="IDS_SKIP" desc="A generic term for Skip on buttons and menus.">
-        Skip
-      </message>
-      <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role">
-        Tab
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role">
+          Tab
+        </message>
+      </if>
       <message name="IDS_SAVE" desc="Used on a button to save information you are editing.">
         Save
       </message>
@@ -623,7 +621,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
 
       <!-- content area context menus. Android does not use it -->
       <if expr="not is_android">
-        <if expr="is_macosx or is_linux">
+        <if expr="is_macosx">
             <message name="IDS_CONTENT_CONTEXT_LOOK_UP_IN_DICTIONARY" desc="The name of the 'Look Up in Dictionary' item in the content area context menu.  To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
               Look Up in Dictionary
             </message>
@@ -826,18 +824,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_CONTENT_CONTEXT_ADDSEARCHENGINE" desc="The name of the Add as Search Engine command in the content area context menu">
             Add as search en&amp;gine...
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="The name of the input method submenu in the content area context menu">
-            Input &amp;methods
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU" desc="The name of the Speech input options submenu in the content area context menu">
-            Voice recognition options
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES" desc="The name of the offensive word filtering command in the content area context menu">
-            Block offensive words
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT" desc="The name of the Speech input About command in the content area context menu">
-            About voice recognition
           </message>
         </if>
         <if expr="use_titlecase">
@@ -1053,15 +1039,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="In Title Case: The name of the input method submenu in the content area context menu">
             Input &amp;Methods
           </message>
-          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU" desc="In Title Case: The name of the Speech input options submenu in the content area context menu">
-            Voice Recognition Options
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_FILTER_PROFANITIES" desc="In Title Case: The name of the offensive word filtering command in the content area context menu">
-            Block Offensive Words
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_ABOUT" desc="In Title Case: The name of the Speech input About command in the content area context menu">
-            About Voice Recognition
-          </message>
         </if>
 
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
@@ -1125,12 +1102,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
             &amp;Language settings...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="The name of the Show Spelling Panel command in the content area context menu">
-            &amp;Show spelling panel
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="The name of the Hide Spelling Panel command in the content area context menu">
-            &amp;Hide spelling panel
-          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
@@ -1138,12 +1109,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
             &amp;Language Settings...
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="In Title Case: The name of the Show Spelling Panel command in the content area context menu">
-            &amp;Show Spelling Panel
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="In Title Case: The name of the Hide Spelling Panel command in the content area context menu">
-            &amp;Hide Spelling Panel
           </message>
         </if>
         <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
@@ -1169,9 +1134,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_PIN_TO_START_SCREEN" desc="The text label of the Pin to start screen menu item">
             Pin this page to Start screen...
           </message>
-          <message name="IDS_UNPIN_FROM_START_SCREEN" desc="The text label of the unpin from start screen menu item">
-            Unpin this page from Start screen...
-          </message>
+          <if expr="is_win">
+            <message name="IDS_UNPIN_FROM_START_SCREEN" desc="The text label of the unpin from start screen menu item">
+              Unpin this page from Start screen...
+            </message>
+          </if>
           <message name="IDS_EDIT2" desc="The text label before the cut/copy/paste buttons in the merged menu">
             Edit
           </message>
@@ -1186,9 +1153,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_DELETE" desc="The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
             &amp;Delete
-          </message>
-          <message name="IDS_SELECT_ALL" desc="The text label of the Select All menu item">
-            Select &amp;all
           </message>
           <message name="IDS_FIND" desc="The text label of the Find... menu item">
             &amp;Find...
@@ -1252,9 +1216,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           <message name="IDS_PIN_TO_START_SCREEN" desc="In Title Case: The text label of the Pin to start screen menu item">
             Pin this Page to Start Screen...
           </message>
-          <message name="IDS_UNPIN_FROM_START_SCREEN" desc="In Title Case: The text label of the Unpin from start screen menu item">
-            Unpin this Page from Start Screen...
-          </message>
           <message name="IDS_CUT" desc="In Title Case: The text label of the Cut menu item">
             Cu&amp;t
           </message>
@@ -1266,9 +1227,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_DELETE" desc="In Title Case: The text label of the Delete menu item (which deletes selected text without copying to clipboard)">
             &amp;Delete
-          </message>
-          <message name="IDS_SELECT_ALL" desc="In Title Case: The text label of the Select All menu item">
-            Select &amp;All
           </message>
           <message name="IDS_FIND" desc="In Title Case: The text label of the Find... menu item">
             &amp;Find...
@@ -1315,9 +1273,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </if>
       </if>
 
-      <message name="IDS_VISIT_DESKTOP_OF_LRU_USER" desc="The text label of the menu item which allows the user to move a window from one users desktop to another.">
-        Move window to <ph name="USER_NAME">$1<ex>User name</ex></ph> (<ph name="USER_EMAIL">$2<ex>john@google.com</ex></ph>)
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_VISIT_DESKTOP_OF_LRU_USER" desc="The text label of the menu item which allows the user to move a window from one users desktop to another.">
+          Move window to <ph name="USER_NAME">$1<ex>User name</ex></ph> (<ph name="USER_EMAIL">$2<ex>john@google.com</ex></ph>)
+        </message>
+      </if>
 
       <message name="IDS_ACCNAME_ZOOM_PLUS2" desc="The accessible description of the Make Text Larger menu item in the merged menu">
         Make Text Larger
@@ -1406,9 +1366,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_TASK_MANAGER" desc="The text label of the Task Manager menu item">
           &amp;Task manager
         </message>
-        <message name="IDS_TAKE_SCREENSHOT" desc="The text label of the Take Screenshot menu item">
-          T&amp;ake screenshot
-        </message>
         <message name="IDS_RESTORE_TAB" desc="The text label of the Restore Tab menu item">
           R&amp;eopen closed tab
         </message>
@@ -1435,9 +1392,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_TASK_MANAGER" desc="In Title Case: The text label of the Task Manager menu item">
           &amp;Task Manager
         </message>
-        <message name="IDS_TAKE_SCREENSHOT" desc="The text label of the Take Screenshot menu item">
-          T&amp;ake Screenshot
-        </message>
         <message name="IDS_RESTORE_TAB" desc="In Title Case: The text label of the Restore Tab menu item">
           R&amp;eopen Closed Tab
         </message>
@@ -1458,9 +1412,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
       </if>
 
       <!-- App menu -->
-      <message name="IDS_TOGGLE_REQUEST_TABLET_SITE" desc="The toggle to request tablet site on a touch dev.">
-        Request tablet site
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_TOGGLE_REQUEST_TABLET_SITE" desc="The toggle to request tablet site on a touch dev.">
+          Request tablet site
+        </message>
+      </if>
       <if expr="not use_titlecase">
         <message name="IDS_SHOW_HISTORY" desc="The show history menu in the app menu">
           &amp;History
@@ -1495,9 +1451,11 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         <message name="IDS_HELP_PAGE" desc="The text label of the Help menu item">
           H&amp;elp
         </message>
-        <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
-          Software incompatibility: Learn more
-        </message>
+        <if expr="is_win">
+          <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
+            Software incompatibility: Learn more
+          </message>
+        </if>
         <message name="IDS_EXIT" desc="The text label of the Exit menu item">
           E&amp;xit
         </message>
@@ -1532,9 +1490,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_HELP_PAGE" desc="In Title Case: The text label of the Help menu item">
           H&amp;elp
-        </message>
-        <message name="IDS_VIEW_INCOMPATIBILITIES" desc="The text label of the View incompatibilities menu item">
-          Software Incompatibility: Learn More
         </message>
         <message name="IDS_EXIT" desc="In Title Case: The text label of the Exit menu item">
           E&amp;xit
@@ -1910,14 +1865,6 @@ Even if you have downloaded files from this website before, the website might ha
                desc="Text for the button used to dismiss a malicious download notification.">
         Dismiss
       </message>
-      <message name="IDS_REPORT_AND_DISCARD_DOWNLOAD"
-               desc="Text for the button used to upload a malicious file to Google for analysis and then discard it.">
-        Report &amp; Discard
-      </message>
-      <message name="IDS_REPORT_AND_DISMISS_DOWNLOAD"
-               desc="Text for the button used to dismiss a malicious download notification and upload the file to Google for analysis.">
-        Report &amp; Dismiss
-      </message>
 
       <!-- Download Tab Items -->
       <message name="IDS_DOWNLOAD_LINK_PAUSE"
@@ -2210,9 +2157,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE" desc="Title of the second tab in the dialog, which lists the specific permissions that the app has.">
           Permissions
         </message>
-        <message name="IDS_APPLICATION_INFO_MANAGE_TAB_TITLE" desc="Title of the third tab in the dialog, which displays the app's usage information and some tools for managing the app's status.">
-          Manage
-        </message>
         <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="Text for the link that opens the app in the Web Store.">
           View in Web Store
         </message>
@@ -2229,9 +2173,6 @@ Even if you have downloaded files from this website before, the website might ha
         </message>
         <message name="IDS_APPLICATION_INFO_PERMISSIONS_TAB_TITLE" desc="In Title Case: Title of the second tab in the dialog, which lists the specific permissions that the app has.">
           Permissions
-        </message>
-        <message name="IDS_APPLICATION_INFO_MANAGE_TAB_TITLE" desc="In Title Case: Title of the third tab in the dialog, which displays the app's usage information and some tools for managing the app's status.">
-          Manage
         </message>
         <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="In Title Case: Text for the link that opens the app in the Web Store..">
           View in Web Store
@@ -2279,15 +2220,17 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_CREATE_SHORTCUTS_APP_FOLDER_CHKBOX" desc="Label of the checkbox to create an application shortcut in the system's applications folder.">
         Applications folder
       </message>
-      <message name="IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX" desc="Label of the checkbox to create an application shortcut in the start menu.">
-        Start menu
-      </message>
-      <message name="IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX" desc="Label of the checkbox to create an application shortcut in quick launch bar.">
-        Quick launch bar
-      </message>
-      <message name="IDS_PIN_TO_TASKBAR_CHKBOX" desc="Label of the checkbox to pin an application shortcut to taskbar.">
-        Pin to Taskbar
-      </message>
+      <if expr="is_win">
+        <message name="IDS_CREATE_SHORTCUTS_START_MENU_CHKBOX" desc="Label of the checkbox to create an application shortcut in the start menu.">
+          Start menu
+        </message>
+        <message name="IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX" desc="Label of the checkbox to create an application shortcut in quick launch bar.">
+          Quick launch bar
+        </message>
+        <message name="IDS_PIN_TO_TASKBAR_CHKBOX" desc="Label of the checkbox to pin an application shortcut to taskbar.">
+          Pin to Taskbar
+        </message>
+      </if>
       <message name="IDS_CREATE_SHORTCUTS_COMMIT" desc="Title of the button to actually create the shortcuts.">
         Create
       </message>
@@ -2435,9 +2378,11 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_BLOCKED_JAVASCRIPT_LINK" desc="Link to JavaScript section of content blocking management dialog, displayed in bubble when a page tries to run JavaScript.">
         Manage JavaScript blocking...
       </message>
-      <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to display plug-ins.">
-        The following plug-ins were blocked on this page:
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_BLOCKED_PLUGINS_TITLE" desc="Bubble info header text when a page is not allowed to display plug-ins.">
+          The following plug-ins were blocked on this page:
+        </message>
+      </if>
       <message name="IDS_BLOCKED_PLUGINS_MESSAGE" desc="Tooltip and message when a page is not allowed to display plug-ins.">
         Plug-ins were blocked on this page.
       </message>
@@ -3441,9 +3386,11 @@ Even if you have downloaded files from this website before, the website might ha
       </if>
 
       <!-- Add Client Certificate Dialog -->
-      <message name="IDS_ADD_CERT_DIALOG_ADD" desc="Title of the button that adds the certificate in the Add Client Certificate dialog">
-        Add Certificate
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_ADD_CERT_DIALOG_ADD" desc="Title of the button that adds the certificate in the Add Client Certificate dialog">
+          Add Certificate
+        </message>
+      </if>
       <message name="IDS_ADD_CERT_ERR_INVALID_CERT" desc="Error message when the server returns an invalid client certificate after key generation">
         The server returned an invalid client certificate. Error <ph name="ERROR_number">$1<ex>207</ex></ph> (<ph name="ERROR_NAME">$2<ex>net::ERR_CERT_INVALID</ex></ph>).
       </message>
@@ -3460,12 +3407,14 @@ Even if you have downloaded files from this website before, the website might ha
       </message>
 
       <!-- Autolaunch infobar -->
-      <message name="IDS_AUTO_LAUNCH_OK" desc="Label for OK button on Autolaunch confirmation infobar.">
-        OK
-      </message>
-      <message name="IDS_AUTO_LAUNCH_REVERT" desc="Label for button (on Autolaunch confirmation infobar) that disables autolaunching.">
-        Cut it out!
-      </message>
+      <if expr="is_win">
+        <message name="IDS_AUTO_LAUNCH_OK" desc="Label for OK button on Autolaunch confirmation infobar.">
+          OK
+        </message>
+        <message name="IDS_AUTO_LAUNCH_REVERT" desc="Label for button (on Autolaunch confirmation infobar) that disables autolaunching.">
+          Cut it out!
+        </message>
+      </if>
 
       <!-- DevTools attached infobar -->
       <message name="IDS_DEV_TOOLS_INFOBAR_LABEL" desc="Label displayed in an infobar when external debugger is attached to the page">
@@ -3517,9 +3466,11 @@ Make sure you do not expose any sensitive information.
         Log In
       </message>
       <!-- User Image Selection Dialog -->
-      <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the user image selection dialog">
-        Choose your account picture
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the user image selection dialog">
+          Choose your account picture
+        </message>
+      </if>
 
       <!-- FindInPage strings -->
       <message name="IDS_FIND_IN_PAGE_COUNT" desc="How many matches found and what item we are showing">
@@ -3611,12 +3562,6 @@ Make sure you do not expose any sensitive information.
           <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
             JavaScript memory
           </message>
-          <message name="IDS_TASK_MANAGER_INSPECT" desc="Menu item initiating resource inspection">
-            Inspect
-          </message>
-          <message name="IDS_TASK_MANAGER_ACTIVATE" desc="Menu item initiating page activation">
-            Activate
-          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_TASK_MANAGER_KILL" desc="The caption of the Task Manager kill button">
@@ -3681,12 +3626,6 @@ Make sure you do not expose any sensitive information.
           </message>
           <message name="IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN" desc="Task manager JavaScript memory allocated column.  Shows the amount of memory used by JavaScript within a process">
             JavaScript Memory
-          </message>
-          <message name="IDS_TASK_MANAGER_INSPECT" desc="Menu item initiating resource inspection">
-            Inspect
-          </message>
-          <message name="IDS_TASK_MANAGER_ACTIVATE" desc="Menu item initiating page activation">
-            Activate
           </message>
         </if>
         <message name="IDS_TASK_MANAGER_ABOUT_MEMORY_LINK" desc="The caption of the Task Manager link to about:memory">
@@ -3754,9 +3693,6 @@ Make sure you do not expose any sensitive information.
         </message>
         <message name="IDS_TASK_MANAGER_GPU_PREFIX" desc="Task Manager row for the GPU process, which is the process doing all accelerated graphics rendering">
           GPU Process
-        </message>
-        <message name="IDS_TASK_MANAGER_NOTIFICATION_PREFIX" desc="The prefix for a Desktop Notification in the Task Manager">
-          Notification: <ph name="NOTIFICATION_NAME">$1<ex>http://www.domain.com</ex></ph>
         </message>
         <message name="IDS_TASK_MANAGER_WEBVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in webview tag in the Task Manager">
           Webview: <ph name="WEBVIEW_TAG_NAME">$1<ex>Google</ex></ph>
@@ -5243,9 +5179,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Packaged Apps -->
-      <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
-        Install app
-      </message>
+      <if expr="is_win">
+        <message name="IDS_APP_INSTALL_TITLE" desc="Caption for installing an ephemeral app">
+          Install app
+        </message>
+      </if>
 
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">
@@ -5694,9 +5632,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_OVERLAY_SCROLLBARS_DESCRIPTION" desc="Description for the flag to turn on overlay scrollbars">
         Enable the experimental overlay scrollbars implementation. You must also enable threaded compositing to have the scrollbars animate.
       </message>
-      <message desc="Message to display when auto-login fails. [CHAR-LIMIT=64]" name="IDS_AUTO_LOGIN_FAILED">
-        Automatic sign-in failed
-      </message>
+      <if expr="is_android">
+        <message name="IDS_AUTO_LOGIN_FAILED" desc="Message to display when auto-login fails. [CHAR-LIMIT=64]">
+          Automatic sign-in failed
+        </message>
+      </if>
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_NAME" desc="Title for the flag to show Autofill field type predictions for all forms">
         Show Autofill predictions
       </message>
@@ -6726,9 +6666,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is not allowed.
       </message>
-      <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
-        This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plug-in.">
+          This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.
+        </message>
+      </if>
       <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated plug-in.">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is out of date.
       </message>
@@ -6926,9 +6868,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_VERSION_TITLE" desc="Title on the about:version page">
         About Version
       </message>
-      <message name="IDS_ABOUT_VERSION_APPLICATION" desc="label for the application on the about:version page">
-        Application
-      </message>
+      <if expr="is_android">
+        <message name="IDS_ABOUT_VERSION_APPLICATION" desc="label for the application on the about:version page">
+          Application
+        </message>
+      </if>
       <message name="IDS_ABOUT_VERSION_OFFICIAL" desc="official build on the about:version page">
         Official Build
       </message>
@@ -6944,9 +6888,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_VERSION_COMMAND_LINE" desc="label for the command line on the about:version page">
         Command Line
       </message>
-      <message name="IDS_ABOUT_VERSION_BUILD_DATE" desc="label for build date on the about:version page">
-        Build Date
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_ABOUT_VERSION_BUILD_DATE" desc="label for build date on the about:version page">
+          Build Date
+        </message>
+      </if>
       <message name="IDS_ABOUT_VERSION_EXECUTABLE_PATH" desc="label for the executable path on the about:version page">
         Executable Path
       </message>
@@ -6959,9 +6905,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_VERSION_VARIATIONS" desc="label for the variations list on the about:version page">
         Variations
       </message>
-      <message name="IDS_ABOUT_VERSION_BUILD_ID" desc="label for the build identifier on the about:version page">
-        Build ID
-      </message>
+      <if expr="is_android">
+        <message name="IDS_ABOUT_VERSION_BUILD_ID" desc="label for the build identifier on the about:version page">
+          Build ID
+        </message>
+      </if>
 
       <!-- JavaScript Dialog Box strings -->
       <message name="IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE" desc="Title for JavaScript alert originating from a webpage if there is no hostname to display">
@@ -6981,12 +6929,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- About box strings -->
-      <message name="IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK" desc="The error label for errors that occurred while checking for updates in the About box.">
-        An error occurred while checking for updates: <ph name="ERROR">$1<ex>Unable to contact Google Update</ex></ph>
-      </message>
-      <message name="IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED" desc="The error message for the specific case when we cannot create the Google Update component">
-        Update check failed to start (error code <ph name="ERROR">$1<ex>0x80000005</ex></ph>).
-      </message>
+      <if expr="is_win">
+        <message name="IDS_ABOUT_BOX_ERROR_DURING_UPDATE_CHECK" desc="The error label for errors that occurred while checking for updates in the About box.">
+          An error occurred while checking for updates: <ph name="ERROR">$1<ex>Unable to contact Google Update</ex></ph>
+        </message>
+        <message name="IDS_ABOUT_BOX_ERROR_UPDATE_CHECK_FAILED" desc="The error message for the specific case when we cannot create the Google Update component">
+          Update check failed to start (error code <ph name="ERROR">$1<ex>0x80000005</ex></ph>).
+        </message>
+      </if>
 
       <!-- "Before Unload" Dialog Box strings -->
       <message name="IDS_BEFOREUNLOAD_MESSAGEBOX_TITLE" desc="Title for the 'before unload' dialog.">
@@ -7085,9 +7035,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TOOLTIP_STOP" desc="The tooltip for the stop button">
         Stop loading this page
       </message>
-      <message name="IDS_TOOLTIP_CLOSE_TAB" desc="The tooltip for the close tab button">
-        Close
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_TOOLTIP_CLOSE_TAB" desc="The tooltip for the close tab button">
+          Close
+        </message>
+      </if>
       <message name="IDS_TOOLTIP_LOCATION_ICON" desc="The tooltip for location icon in the omnibox">
         View site information
       </message>
@@ -7113,12 +7065,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Reset to Default
         </message>
       </if>
-      <if expr="not use_titlecase">
-        <message name="IDS_ZOOM_SET_DEFAULT_SHORT" desc="The short text label of a button which, when clicked, returns the page to default zoom">
-          Reset
-        </message>
-      </if>
-      <if expr="use_titlecase">
+      <if expr="is_macosx">
         <message name="IDS_ZOOM_SET_DEFAULT_SHORT" desc="In Title Case: The short text label of a button which, when clicked, returns the page to default zoom">
           Reset
         </message>
@@ -7392,18 +7339,20 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
         </if> <!-- is_macosx -->
       </if> <!-- not is_android -->
 
-      <!-- Confirm to quit panel -->
-      <message name="IDS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Instructions for how the user should confirm quitting.">
-        Hold <ph name="KEY_EQUIVALENT">$1<ex>⌘Q</ex></ph> to Quit.
-      </message>
-      <message name="IDS_CONFIRM_TO_QUIT_OPTION" desc="The label of the checkbox preference that enables the confirm-to-quit feature.">
-        Warn Before Quitting (<ph name="KEY_EQUIVALENT">$1<ex>⌘Q</ex></ph>)
-      </message>
+      <if expr="is_macosx">
+        <!-- Confirm to quit panel -->
+        <message name="IDS_CONFIRM_TO_QUIT_DESCRIPTION" desc="Instructions for how the user should confirm quitting.">
+          Hold <ph name="KEY_EQUIVALENT">$1<ex>⌘Q</ex></ph> to Quit.
+        </message>
+        <message name="IDS_CONFIRM_TO_QUIT_OPTION" desc="The label of the checkbox preference that enables the confirm-to-quit feature.">
+          Warn Before Quitting (<ph name="KEY_EQUIVALENT">$1<ex>⌘Q</ex></ph>)
+        </message>
 
-      <!-- Show/Hide notifications menubar extra -->
-      <message name="IDS_HIDE_NOTIFICATION_CENTER_OPTION" desc="The label of the checkbox preference that disables the notification center feature.">
-        Hide Notifications Icon
-      </message>
+        <!-- Show/Hide notifications menubar extra -->
+        <message name="IDS_HIDE_NOTIFICATION_CENTER_OPTION" desc="The label of the checkbox preference that disables the notification center feature.">
+          Hide Notifications Icon
+        </message>
+      </if>
 
       <!-- Importer Lock Dialog -->
       <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
@@ -7694,12 +7643,14 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_POPUP_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for preventing showing pop-up windows on any sites.">
         Do not allow any site to show pop-ups (recommended)
       </message>
-      <message name="IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW" desc="Pop-up Blocking Show Button [CHAR-LIMIT=32]">
-        Always show
-      </message>
-      <message name="IDS_POPUPS_BLOCKED_INFOBAR_TEXT" desc="Pop-up Blocking Title [CHAR-LIMIT=32]">
-        Pop-ups blocked (<ph name="POP_UP_COUNT">$1<ex>3</ex></ph>)
-      </message>
+      <if expr="is_android">
+        <message name="IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW" desc="Pop-up Blocking Show Button [CHAR-LIMIT=32]">
+          Always show
+        </message>
+        <message name="IDS_POPUPS_BLOCKED_INFOBAR_TEXT" desc="Pop-up Blocking Title [CHAR-LIMIT=32]">
+          Pop-ups blocked (<ph name="POP_UP_COUNT">$1<ex>3</ex></ph>)
+        </message>
+      </if>
       <message name="IDS_PLUGIN_TAB_LABEL" desc="Label for Plug-ins tab on Content Settings dialog">
         Plug-ins
       </message>
@@ -7926,9 +7877,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_UPGRADE_DISABLED_BY_POLICY" desc="Status label: Upgrades disabled by policy">
         Updates are disabled by the administrator
       </message>
-      <message name="IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL" desc="Status label: Manual upgrades disabled by policy, automatic upgrades ok">
-        Manual updates are disabled by the administrator.  Automatic updates are enabled.
-      </message>
+      <if expr="is_win">
+        <message name="IDS_UPGRADE_DISABLED_BY_POLICY_MANUAL" desc="Status label: Manual upgrades disabled by policy, automatic upgrades ok">
+          Manual updates are disabled by the administrator.  Automatic updates are enabled.
+        </message>
+      </if>
       <message name="IDS_REPORT_AN_ISSUE" desc="Text of the button which allows the user to report an issue with Chrome.">
         Report an issue
       </message>
@@ -8437,9 +8390,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_ERRORPAGES_BUTTON_LOAD_STALE_HELP" desc="Explanation for the BUTTON_LOAD_STALE button">
         Load a stale (i.e. known to be out of date) copy of this page.
       </message>
-      <message name="IDS_ERRORPAGES_BUTTON_DIAGNOSE" desc="Label for the button that invokes the connection diagnostic tool on the error page">
-        Diagnose errors...
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_ERRORPAGES_BUTTON_DIAGNOSE" desc="Label for the button that invokes the connection diagnostic tool on the error page">
+          Diagnose errors...
+        </message>
+      </if>
       <if expr="is_android">
         <message name="IDS_ERRORPAGES_BUTTON_SETTINGS" desc="Mobile: Label for the button on an error page to launch system settings menu">
           Settings
@@ -9313,9 +9268,11 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       </message>
 
       <!-- Menus -->
-      <message name="IDS_MENU_EMPTY_SUBMENU" desc="Used when a submenu has no entries">
-        (empty)
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_MENU_EMPTY_SUBMENU" desc="Used when a submenu has no entries">
+          (empty)
+        </message>
+      </if>
 
       <!-- Mac First-run dialog messages -->
       <if expr="is_macosx">
@@ -9398,24 +9355,28 @@ Chrome ran out of memory.
       </message>
 
       <!-- Default Browser related messages -->
-      <message name="IDS_HIDE_ICONS_NOT_SUPPORTED" desc="Message to explain we only support uninstall and not hide-icons.">
-To hide access to this program, you need to uninstall it by using
-<ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph> in Control Panel.
+      <if expr="is_win">
+        <message name="IDS_HIDE_ICONS_NOT_SUPPORTED" desc="Message to explain we only support uninstall and not hide-icons.">
+  To hide access to this program, you need to uninstall it by using
+  <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph> in Control Panel.
 
-Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph>?
-      </message>
+  Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Programs</ex></ph>?
+        </message>
+      </if>
 
       <!-- chrome://help -->
       <if expr="not is_android">
         <message name="IDS_HELP_TITLE" desc="Label used for title of the help page.">
           Help
         </message>
-        <message name="IDS_SHOW_MORE_INFO" desc="The label of the 'More info' link.">
-          More info...
-        </message>
-        <message name="IDS_HIDE_MORE_INFO" desc="The label of the 'Hide info' link.">
-          Hide info...
-        </message>
+        <if expr="chromeos">
+          <message name="IDS_SHOW_MORE_INFO" desc="The label of the 'More info' link.">
+            More info...
+          </message>
+          <message name="IDS_HIDE_MORE_INFO" desc="The label of the 'Hide info' link.">
+            Hide info...
+          </message>
+        </if>
 
         <!-- The About page is now part of options. -->
         <message name="IDS_ABOUT_TAB_TITLE" desc="Label used for tab of about page.">
@@ -9820,9 +9781,11 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_DIALOG_TITLE">
           Languages
         </message>
-        <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AND_INPUT_DIALOG_TITLE">
-          Languages and input
-        </message>
+        <if expr="chromeos">
+          <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AND_INPUT_DIALOG_TITLE">
+            Languages and input
+          </message>
+        </if>
         <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_LANGUAGES" desc="The label for the list of languages">
           Languages
         </message>
@@ -10344,9 +10307,11 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_APPEARANCE_GROUP_NAME" desc="The title of the appearance group">
         Appearance
       </message>
-      <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
-        Themes
-      </message>
+      <if expr="not is_linux or chromeos">
+        <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
+          Themes
+        </message>
+      </if>
       <message name="IDS_THEMES_RESET_BUTTON" desc="The button to reset your theme">
         Reset to default theme
       </message>
@@ -10401,15 +10366,17 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_COLLECTED_COOKIES_SESSION_RULE_CREATED" desc="A notification that is displayed when a content exception to allow cookies for session only was created.">
         Cookies from <ph name="DOMAIN">$1<ex>example.com</ex></ph> will be cleared on exit.
       </message>
-      <message name="IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies were created.">
-        Cookies from multiple sites allowed.
-      </message>
-      <message name="IDS_COLLECTED_COOKIES_MULTIPLE_BLOCK_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to block cookies were created.">
-        Cookies from multiple sites blocked.
-      </message>
-      <message name="IDS_COLLECTED_COOKIES_MULTIPLE_SESSION_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies for session only were created.">
-        Cookies from multiple sites will be cleared on exit.
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_COLLECTED_COOKIES_MULTIPLE_ALLOW_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies were created.">
+          Cookies from multiple sites allowed.
+        </message>
+        <message name="IDS_COLLECTED_COOKIES_MULTIPLE_BLOCK_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to block cookies were created.">
+          Cookies from multiple sites blocked.
+        </message>
+        <message name="IDS_COLLECTED_COOKIES_MULTIPLE_SESSION_RULES_CREATED" desc="A notification that is displayed when multiple content exceptions to allow cookies for session only were created.">
+          Cookies from multiple sites will be cleared on exit.
+        </message>
+      </if>
       <message name="IDS_COLLECTED_COOKIES_ALLOWED_COOKIES_TAB_LABEL" desc="The label in a tabbed pane that holds the UI controls for the cookies allowed while loading the page.">
         Allowed
       </message>
@@ -10598,12 +10565,14 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME" desc="The the name displayed for a Database with an empty name attribute.">
         &lt;unnamed&gt;
       </message>
-      <message name="IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL" desc="The label of the Local Storage key being set">
-        Key:
-      </message>
-      <message name="IDS_COOKIES_LOCAL_STORAGE_VALUE_LABEL" desc="The label of the Local Storage value being set">
-        Value:
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_COOKIES_LOCAL_STORAGE_KEY_LABEL" desc="The label of the Local Storage key being set">
+          Key:
+        </message>
+        <message name="IDS_COOKIES_LOCAL_STORAGE_VALUE_LABEL" desc="The label of the Local Storage value being set">
+          Value:
+        </message>
+      </if>
       <message name="IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL" desc="The Local Storage Origin label">
         Origin:
       </message>
@@ -10628,18 +10597,22 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_COOKIES_APPLICATION_CACHE_MANIFEST_LABEL" desc="The Manifest label (manifest is a URL specified by the application cache)">
         Manifest:
       </message>
-      <message name="IDS_COOKIES_SIZE_LABEL" desc="The Size label, to indicate how much space is taken by a database or application cache">
-        Size:
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_COOKIES_SIZE_LABEL" desc="The Size label, to indicate how much space is taken by a database or application cache">
+          Size:
+        </message>
+      </if>
       <message name="IDS_COOKIES_DATABASE_STORAGE" desc="The text shown when there is either Web Database or Indexed Database Storage (names of HTML standards) in the Cookies table">
         Database storage
       </message>
       <message name="IDS_COOKIES_WEB_DATABASES" desc="Label for the folder under which a list of web databases (name of an HTML standard) are displayed">
         Web databases
       </message>
-      <message name="IDS_COOKIES_WEB_DATABASE_NAME" desc="Label for the name of an individual web databases (name of an HTML standard) are displayed">
-        Database name:
-      </message>
+      <if expr="is_macosx">
+        <message name="IDS_COOKIES_WEB_DATABASE_NAME" desc="Label for the name of an individual web databases (name of an HTML standard) are displayed">
+          Database name:
+        </message>
+      </if>
       <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of an HTML standard)">
         Local storage
       </message>
@@ -10953,18 +10926,13 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PROFILES_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
         Users
       </message>
-      <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME" desc="Title of the avatar bubble menu for accessibility">
-        Switch Users
-      </message>
-      <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The help text for the avatar bubble.">
-        Switch to a different user.
-      </message>
-      <if expr="not use_titlecase">
-        <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="Create new profile menu item and button title.">
-          Add new user
+      <if expr="is_macosx">
+        <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_NAME" desc="Title of the avatar bubble menu for accessibility">
+          Switch Users
         </message>
-      </if>
-      <if expr="use_titlecase">
+        <message name="IDS_PROFILES_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The help text for the avatar bubble.">
+          Switch to a different user.
+        </message>
         <message name="IDS_PROFILES_CREATE_NEW_PROFILE_OPTION" desc="In Title Case. Create new profile menu item and button title.">
           Add New User
         </message>
@@ -11158,12 +11126,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Shadow
       </message>
 
-      <if expr="not use_titlecase">
-        <message name="IDS_PROFILES_CUSTOMIZE_PROFILE" desc="Customize profile menu item and button title.">
-          Customize user...
-        </message>
-      </if>
-      <if expr="use_titlecase">
+      <if expr="is_macosx">
         <message name="IDS_PROFILES_CUSTOMIZE_PROFILE" desc="In Title Case. Customize profile menu item.">
           Customize User...
         </message>
@@ -11420,9 +11383,11 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_PLUGIN_CRASHED_PROMPT" desc="Info Bar message to notify about a crashed plugin">
        <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex> has crashed.</ph>
       </message>
-      <message name="IDS_PLUGIN_DISCONNECTED_PROMPT" desc="Info Bar message to notify that the channel connecting to a plugin has encountered an error.">
-        <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex> has encountered an error.</ph>
-      </message>
+      <if expr="is_win">
+        <message name="IDS_PLUGIN_DISCONNECTED_PROMPT" desc="Info Bar message to notify that the channel connecting to a plugin has encountered an error.">
+          <ph name="PLUGIN_NAME">$1<ex>Shockwave</ex> has encountered an error.</ph>
+        </message>
+      </if>
       <message name="IDS_RELOAD_PAGE_WITH_PLUGIN" desc="Info Bar button to reload the page where a plugin crashed or disconnected.">
         Reload
       </message>
@@ -13355,9 +13320,6 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
           Add User
         </message>
-        <message name="IDS_LAUNCH_APP_BUTTON" desc="Test shown on the button that launches kiosk app from Chrome OS login UI">
-          Launch App
-        </message>
         <message name="IDS_SCREEN_LOCK_SIGN_OUT">
           Sign out
         </message>
@@ -13372,9 +13334,6 @@ After you create a new supervised user, you can manage their settings at any tim
         <message name="IDS_ADD_USER_BUTTON" desc="Text shown on an add user button on login/locker screen">
           Add user
         </message>
-        <message name="IDS_LAUNCH_APP_BUTTON" desc="Test shown on the button that launches kiosk app from Chrome OS login UI">
-          Launch app
-        </message>
         <message name="IDS_SCREEN_LOCK_SIGN_OUT">
           Sign out
         </message>
@@ -13383,6 +13342,11 @@ After you create a new supervised user, you can manage their settings at any tim
         </message>
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON" desc="Text shown on a button that confirms removal of a user.">
           Remove this user
+        </message>
+      </if>
+      <if expr="chromeos">
+        <message name="IDS_LAUNCH_APP_BUTTON" desc="Text shown on the button that launches kiosk app from Chrome OS login UI">
+          Launch app
         </message>
       </if>
       <message name="IDS_USER_MANAGER_SCREEN_TITLE" desc="String to be displayed in the title bar of the user manager page">
@@ -13409,9 +13373,11 @@ After you create a new supervised user, you can manage their settings at any tim
       <message name="IDS_LOGIN_POD_MENU_REMOVE_ITEM_ACCESSIBLE_NAME" desc="Text to be spoken when 'Remove user' item is selected on the pod menu.">
         Remove this user
       </message>
-      <message name="IDS_LOGIN_EASY_UNLOCK_TOOLTIP" desc="Tooltip text shown on lock screen when Easy Unlock is first setup.">
-        This icon appears when you and your phone are nearby and Easy Unlock is available. Just click to enter, no password needed.
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_LOGIN_EASY_UNLOCK_TOOLTIP" desc="Tooltip text shown on lock screen when Easy Unlock is first setup.">
+          This icon appears when you and your phone are nearby and Easy Unlock is available. Just click to enter, no password needed.
+        </message>
+      </if>
       <if expr="chromeos">
         <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING" desc="Text shown as a warning when attempting to remove supervised user.">
           All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
@@ -14166,9 +14132,11 @@ Do you accept?
     </message>
 
     <!-- Accessibility alerts -->
-    <message name="IDS_A11Y_ALERT_WINDOW_NEEDED" desc="Alert sent to the accessibility api when the user attempts a keyboard command that requires a window to work.">
-      Command unavailable. Press control-N to open a new window.
-    </message>
+    <if expr="chromeos">
+      <message name="IDS_A11Y_ALERT_WINDOW_NEEDED" desc="Alert sent to the accessibility api when the user attempts a keyboard command that requires a window to work.">
+        Command unavailable. Press control-N to open a new window.
+      </message>
+    </if>
     <message name="IDS_A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED" desc="The accessible text read when the user enters window overview mode in Ash.">
       Entered window overview mode
     </message>
