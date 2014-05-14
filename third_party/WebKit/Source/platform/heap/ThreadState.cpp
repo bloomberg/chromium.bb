@@ -45,6 +45,10 @@
 extern "C" void* __libc_stack_end;  // NOLINT
 #endif
 
+#if defined(MEMORY_SANITIZER)
+#include <sanitizer/msan_interface.h>
+#endif
+
 namespace WebCore {
 
 static void* getStackStart()
@@ -462,8 +466,14 @@ void ThreadState::visitStack(Visitor* visitor)
     current = reinterpret_cast<Address*>(reinterpret_cast<intptr_t>(current) & ~(sizeof(Address) - 1));
 
     for (; current < start; ++current) {
-        Heap::checkAndMarkPointer(visitor, *current);
-        visitAsanFakeStackForPointer(visitor, *current);
+        Address ptr = *current;
+#if defined(MEMORY_SANITIZER)
+        // ptr may be uninitialized by design. Mark it as initialized to keep
+        // MSan from complaining.
+        __msan_unpoison(&ptr, sizeof(ptr));
+#endif
+        Heap::checkAndMarkPointer(visitor, ptr);
+        visitAsanFakeStackForPointer(visitor, ptr);
     }
 
     for (Vector<Address>::iterator it = m_safePointStackCopy.begin(); it != m_safePointStackCopy.end(); ++it) {
