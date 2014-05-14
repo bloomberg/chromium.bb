@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -2176,12 +2175,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
       *no_javascript_access = true;
 
     return true;
-  }
-
-  // No new browser window (popup or tab) in app mode.
-  if (container_type == WINDOW_CONTAINER_TYPE_NORMAL &&
-      chrome::IsRunningInForcedAppMode()) {
-    return false;
   }
 
   if (is_guest)
