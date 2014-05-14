@@ -527,3 +527,9 @@ system call NtGdiCreateCompatibleDC
 *!WebCore::RenderBlockFlow::layoutBlockFlow
 *!WebCore::RenderBlockFlow::layoutBlock
 *!WebCore::RenderBlock::layout
+
+HANDLE LEAK
+name=https://code.google.com/p/drmemory/issues/detail?id=1545
+system call NtGdiCreateCompatibleDC
+GDI32.dll!CreateCompatibleDC
+skia.dll!LogFontTypeface::onGetTableData
