@@ -4,8 +4,8 @@
 
 #include "content/shell/renderer/test_runner/SpellCheckClient.h"
 
-#include "content/shell/renderer/test_runner/MockGrammarCheck.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
+#include "content/shell/renderer/test_runner/mock_grammar_check.h"
 #include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
@@ -76,7 +76,7 @@ void SpellCheckClient::checkTextOfParagraph(const WebString& text, WebTextChecki
         }
     }
     if (mask & WebTextCheckingTypeGrammar)
-        MockGrammarCheck::checkGrammarOfString(text, &results);
+        MockGrammarCheck::CheckGrammarOfString(text, &results);
     webResults->assign(results);
 }
 
@@ -123,7 +123,7 @@ void SpellCheckClient::finishLastTextCheck()
             text = text.substr(misspelledPosition + misspelledLength);
             offset += misspelledPosition + misspelledLength;
         }
-        MockGrammarCheck::checkGrammarOfString(m_lastRequestedTextCheckString, &results);
+        MockGrammarCheck::CheckGrammarOfString(m_lastRequestedTextCheckString, &results);
     }
     m_lastRequestedTextCheckingCompletion->didFinishCheckingText(results);
     m_lastRequestedTextCheckingCompletion = 0;
