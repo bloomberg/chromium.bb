@@ -46,7 +46,7 @@ namespace {
 
 // The length of the control message:
 const unsigned kControlMsgSize =
-    CMSG_SPACE(2*sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
+    CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
 // The length of the regular payload:
 const unsigned kCrashContextSize = sizeof(ExceptionHandler::CrashContext);
 
@@ -219,7 +219,6 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   // Walk the control payload an extract the file descriptor and validated pid.
   pid_t crashing_pid = -1;
-  int partner_fd = -1;
   int signal_fd = -1;
   for (struct cmsghdr *hdr = CMSG_FIRSTHDR(&msg); hdr;
        hdr = CMSG_NXTHDR(&msg, hdr)) {
@@ -230,7 +229,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
           (((uint8_t*)CMSG_DATA(hdr)) - (uint8_t*)hdr);
       DCHECK_EQ(len % sizeof(int), 0u);
       const unsigned num_fds = len / sizeof(int);
-      if (num_fds != 2) {
+      if (num_fds != 1) {
         // A nasty process could try and send us too many descriptors and
         // force a leak.
         LOG(ERROR) << "Death signal contained wrong number of descriptors;"
@@ -239,8 +238,7 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
           close(reinterpret_cast<int*>(CMSG_DATA(hdr))[i]);
         return;
       } else {
-        partner_fd = reinterpret_cast<int*>(CMSG_DATA(hdr))[0];
-        signal_fd = reinterpret_cast<int*>(CMSG_DATA(hdr))[1];
+        signal_fd = reinterpret_cast<int*>(CMSG_DATA(hdr))[0];
       }
     } else if (hdr->cmsg_type == SCM_CREDENTIALS) {
       const struct ucred *cred =
@@ -249,45 +247,13 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     }
   }
 
-  if (crashing_pid == -1 || partner_fd == -1 || signal_fd == -1) {
+  if (crashing_pid == -1 || signal_fd == -1) {
     LOG(ERROR) << "Death signal message didn't contain all expected control"
                << " messages";
-    if (partner_fd >= 0)
-      close(partner_fd);
     if (signal_fd >= 0)
       close(signal_fd);
     return;
   }
-
-  // Kernel bug workaround (broken in 2.6.30 and 2.6.32, working in 2.6.38).
-  // The kernel doesn't translate PIDs in SCM_CREDENTIALS across PID
-  // namespaces. Thus |crashing_pid| might be garbage from our point of view.
-  // In the future we can remove this workaround, but we have to wait a couple
-  // of years to be sure that it's worked its way out into the world.
-  // TODO(thestig) Remove the workaround when Ubuntu Lucid is deprecated.
-
-  // The crashing process closes its copy of the signal_fd immediately after
-  // calling sendmsg(). We can thus not reliably look for with with
-  // FindProcessHoldingSocket(). But by necessity, it has to keep the
-  // partner_fd open until the crashdump is complete.
-  ino_t inode_number;
-  if (!base::FileDescriptorGetInode(&inode_number, partner_fd)) {
-    LOG(WARNING) << "Failed to get inode number for passed socket";
-    close(partner_fd);
-    close(signal_fd);
-    return;
-  }
-  close(partner_fd);
-
-  pid_t actual_crashing_pid = -1;
-  if (!base::FindProcessHoldingSocket(&actual_crashing_pid, inode_number)) {
-    LOG(WARNING) << "Failed to find process holding other end of crash reply "
-                    "socket";
-    close(signal_fd);
-    return;
-  }
-
-  crashing_pid = actual_crashing_pid;
 
   // The crashing TID set inside the compromised context via
   // sys_gettid() in ExceptionHandler::HandleSignal might be wrong (if

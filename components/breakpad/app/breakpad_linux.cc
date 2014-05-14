@@ -797,7 +797,7 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
                               // browser to convert namespace tids.
 
     // The length of the control message:
-    static const unsigned kControlMsgSize = sizeof(fds);
+    static const unsigned kControlMsgSize = sizeof(int);
     static const unsigned kControlMsgSpaceSize = CMSG_SPACE(kControlMsgSize);
     static const unsigned kControlMsgLenSize = CMSG_LEN(kControlMsgSize);
 
@@ -837,8 +837,7 @@ class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
     hdr->cmsg_level = SOL_SOCKET;
     hdr->cmsg_type = SCM_RIGHTS;
     hdr->cmsg_len = kControlMsgLenSize;
-    ((int*) CMSG_DATA(hdr))[0] = fds[0];
-    ((int*) CMSG_DATA(hdr))[1] = fds[1];
+    ((int*)CMSG_DATA(hdr))[0] = fds[1];
 
     if (HANDLE_EINTR(sys_sendmsg(server_fd_, &msg, 0)) < 0) {
       static const char errmsg[] = "Failed to tell parent about crash.\n";
