@@ -12,6 +12,7 @@ import pixel_expectations
 
 from telemetry import test
 from telemetry.core import bitmap
+from telemetry.page import cloud_storage
 from telemetry.page import page_test
 
 test_data_dir = os.path.abspath(os.path.join(
@@ -81,7 +82,20 @@ class _PixelValidator(cloud_storage_test_base.ValidatorBase):
     elif self.options.download_refimg_from_cloud_storage:
       # This bot doesn't have the ability to properly generate a
       # reference image, so download it from cloud storage.
-      ref_png = self._DownloadFromCloudStorage(image_name, page, tab)
+      try:
+        ref_png = self._DownloadFromCloudStorage(image_name, page, tab)
+      except cloud_storage.NotFoundError as e:
+        # There is no reference image yet in cloud storage. This
+        # happens when the revision of the test is incremented or when
+        # a new test is added, because the trybots are not allowed to
+        # produce reference images, only the bots on the main
+        # waterfalls. Report this as a failure so the developer has to
+        # take action by explicitly suppressing the failure and
+        # removing the suppression once the reference images have been
+        # generated. Otherwise silent failures could happen for long
+        # periods of time.
+        raise page_test.Failure('Could not find image %s in cloud storage' %
+                                image_name)
     else:
       # Legacy path using on-disk results.
       ref_png = self._GetReferenceImage(self.options.reference_dir,
