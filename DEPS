@@ -28,7 +28,6 @@ vars = {
   "webkit_revision": "173975",
   "chromium_git": "https://chromium.googlesource.com",
   "chromiumos_git": "https://chromium.googlesource.com/chromiumos",
-  "skia_git": "https://skia.googlesource.com",
   "swig_revision": "230490",
   "nacl_revision": "13167",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
@@ -47,8 +46,7 @@ vars = {
 
   "sfntly_revision": "228",
   "lighttpd_revision": "33737",
-  "skia_revision": "14688",
-  "skia_hash": "24f6e29fc133f1082c73e2a96f30bee92e3123aa",
+  "skia_revision": "eaa674987f99687c0bfa337eaa27f00ffe3faa4b",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
@@ -160,14 +158,8 @@ deps = {
     (Var("googlecode_url") % "sfntly") + "/trunk/cpp/src@" +
     Var("sfntly_revision"),
 
-  "src/third_party/skia/src":
-    (Var("googlecode_url") % "skia") + "/trunk/src@" + Var("skia_revision"),
-
-  "src/third_party/skia/gyp":
-    (Var("googlecode_url") % "skia") + "/trunk/gyp@" + Var("skia_revision"),
-
-  "src/third_party/skia/include":
-    (Var("googlecode_url") % "skia") + "/trunk/include@" + Var("skia_revision"),
+  "src/third_party/skia":
+    Var("chromium_git") + "/skia.git@" + Var("skia_revision"),
 
   "src/third_party/ots":
     (Var("googlecode_url") % "ots") + "/trunk@113",
