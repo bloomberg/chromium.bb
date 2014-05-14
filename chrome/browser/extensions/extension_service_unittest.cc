@@ -1969,10 +1969,10 @@ TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
 }
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
 // Tests that the granted permissions full_access bit gets set correctly when
-// an extension contains an NPAPI plugin. Don't run this test on Chrome OS
-// since they don't support plugins.
+// an extension contains an NPAPI plugin.
+// Only run this on platforms that support NPAPI plugins.
 TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
   InitPluginService();
 
@@ -2932,8 +2932,9 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   EXPECT_EQ("1.0", loaded_[0]->VersionString());
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
 // LOAD extensions with plugins require approval.
+// Only run this on platforms that support NPAPI plugins.
 TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   base::FilePath extension_with_plugin_path = good1_path();
   base::FilePath extension_no_plugin_path = good2_path();
@@ -3004,7 +3005,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   EXPECT_EQ(2u, registry_->enabled_extensions().size());
   EXPECT_EQ(0u, registry_->disabled_extensions().size());
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_POSIX) || defined(OS_MACOSX)
 
 namespace {
 

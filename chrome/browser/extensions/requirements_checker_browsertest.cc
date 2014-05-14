@@ -5,13 +5,11 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/requirements_checker.h"
 #include "chrome/common/chrome_paths.h"
@@ -22,7 +20,6 @@
 #include "gpu/config/gpu_info.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gl/gl_switches.h"
 
 namespace extensions {
 
@@ -37,7 +34,7 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
                                    .AppendASCII(extension_dir_name);
     scoped_refptr<const Extension> extension = file_util::LoadExtension(
         extension_path, Manifest::UNPACKED, 0, &load_error);
-    CHECK(load_error.length() == 0u);
+    CHECK_EQ(0U, load_error.length());
     return extension;
   }
 
@@ -51,6 +48,12 @@ class RequirementsCheckerBrowserTest : public ExtensionBrowserTest {
   // will result in stale information in the GPUDataManager which will throw off
   // the RequirementsChecker.
   void BlackListGPUFeatures(const std::vector<std::string>& features) {
+#if !defined(NDEBUG)
+    static bool called = false;
+    DCHECK(!called);
+    called = true;
+#endif
+
     static const std::string json_blacklist =
       "{\n"
       "  \"name\": \"gpu blacklist\",\n"
@@ -88,11 +91,10 @@ IN_PROC_BROWSER_TEST_F(RequirementsCheckerBrowserTest, CheckNpapiExtension) {
   ASSERT_TRUE(extension.get());
 
   std::vector<std::string> expected_errors;
-  // NPAPI plugins are disallowed on ChromeOS.
-#if defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   expected_errors.push_back(l10n_util::GetStringUTF8(
       IDS_EXTENSION_NPAPI_NOT_SUPPORTED));
-#endif  // defined(OS_CHROMEOS)
+#endif
 
   checker_.Check(extension, base::Bind(
       &RequirementsCheckerBrowserTest::ValidateRequirementErrors,

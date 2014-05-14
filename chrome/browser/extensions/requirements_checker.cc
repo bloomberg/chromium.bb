@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/requirements_checker.h"
 
 #include "base/bind.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
@@ -17,7 +16,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
-#endif // defined(OS_WIN)
+#endif
 
 namespace extensions {
 
@@ -37,23 +36,23 @@ void RequirementsChecker::Check(scoped_refptr<const Extension> extension,
       RequirementsInfo::GetRequirements(extension.get());
 
   if (requirements.npapi) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
     errors_.push_back(
         l10n_util::GetStringUTF8(IDS_EXTENSION_NPAPI_NOT_SUPPORTED));
-#endif  // defined(OS_CHROMEOS)
+#endif
 #if defined(OS_WIN)
     if (base::win::IsMetroProcess()) {
       errors_.push_back(
           l10n_util::GetStringUTF8(IDS_EXTENSION_NPAPI_NOT_SUPPORTED));
     }
-#endif  // defined(OS_WIN)
+#endif
   }
 
   if (requirements.window_shape) {
 #if !defined(USE_AURA)
     errors_.push_back(
         l10n_util::GetStringUTF8(IDS_EXTENSION_WINDOW_SHAPE_NOT_SUPPORTED));
-#endif  // !defined(USE_AURA)
+#endif
   }
 
   if (requirements.webgl) {
