@@ -3,90 +3,69 @@
 <head>
   <style>
     .shouldComposite {
-      position: absolute;
-      width: 50px;
-      height: 50px;
+      width: 30px;
+      height: 30px;
+      margin: 4px;
       background-color: green;
     }
 
     .shouldNotComposite {
-      position: absolute;
-      width: 50px;
-      height: 50px;
+      width: 30px;
+      height: 30px;
+      margin: 4px;
       background-color: red;
+    }
+
+    .positioned {
+      position: relative;
     }
 
     #willChangeAuto {
       will-change: auto;
-      top: 0px;
-      left: 0px;
     }
 
     #willChangeOpacity {
       will-change: opacity;
-      top: 0px;
-      left: 60px;
     }
 
     #willChangeTransform {
       will-change: -webkit-transform;
-      top: 0px;
-      left: 120px;
     }
 
     #willChangeLeft {
       will-change: left;
-      top: 0px;
-      left: 180px;
     }
 
     #willChangeRight {
       will-change: right;
-      top: 0px;
-      left: 240px;
     }
 
     #willChangeTop {
-      will-change: right;
-      top: 60px;
-      left: 0px;
+      will-change: top;
     }
 
     #willChangeBottom {
       will-change: bottom;
-      top: 60px;
-      left: 60px;
     }
 
     #willChangeFilter {
       will-change: -webkit-filter;
-      top: 60px;
-      left: 120px;
     }
 
     #willChangeCombinationThatComposites {
-      will-change: transition, -webkit-animation, top, z-index;
-      top: 60px;
-      left: 180px;
+      will-change: transition, -webkit-animation, opacity, z-index;
     }
 
     #willChangeZIndex {
       will-change: z-index;
-      top: 60px;
-      left: 240px
     }
   </style>
 
   <script>
-    if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.waitUntilDone();
-    }
-
     window.addEventListener('load', function() {
       if (window.testRunner) {
         document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document);
-        testRunner.notifyDone();
+        testRunner.dumpAsText();
       }
     }, false);
   </script>
@@ -96,9 +75,13 @@
   <div id="willChangeOpacity" class="shouldComposite"></div>
   <div id="willChangeTransform" class="shouldComposite"></div>
   <div id="willChangeLeft" class="shouldNotComposite"></div>
+  <div id="willChangeLeft" class="positioned shouldComposite"></div>
   <div id="willChangeRight" class="shouldNotComposite"></div>
+  <div id="willChangeRight" class="positioned shouldComposite"></div>
   <div id="willChangeTop" class="shouldNotComposite"></div>
+  <div id="willChangeTop" class="positioned shouldComposite"></div>
   <div id="willChangeBottom" class="shouldNotComposite"></div>
+  <div id="willChangeBottom" class="positioned shouldComposite"></div>
   <div id="willChangeFilter" class="shouldNotComposite"></div>
   <div id="willChangeCombinationThatComposites" class="shouldComposite"></div>
   <div id="willChangeZIndex" class="shouldNotComposite"></div>

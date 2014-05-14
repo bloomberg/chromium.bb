@@ -871,6 +871,10 @@ bool RenderStyle::hasWillChangeCompositingHint() const
         case CSSPropertyOpacity:
         case CSSPropertyTransform:
         case CSSPropertyWebkitTransform:
+        case CSSPropertyTop:
+        case CSSPropertyLeft:
+        case CSSPropertyBottom:
+        case CSSPropertyRight:
             return true;
         default:
             break;
