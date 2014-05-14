@@ -217,12 +217,6 @@ void FakeFileSystem::MarkCacheFileAsUnmounted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::GetCacheEntry(
-    const base::FilePath& drive_file_path,
-    const GetCacheEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeFileSystem::AddPermission(const base::FilePath& drive_file_path,
                                    const std::string& email,
                                    google_apis::drive::PermissionRole role,

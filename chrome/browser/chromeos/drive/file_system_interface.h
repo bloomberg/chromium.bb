@@ -124,10 +124,6 @@ typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path)>
     MarkMountedCallback;
 
-// Callback for GetCacheEntry.
-typedef base::Callback<void(FileError error, const FileCacheEntry& cache_entry)>
-    GetCacheEntryCallback;
-
 // Used to get file path.
 typedef base::Callback<void(FileError error, const base::FilePath& file_path)>
     GetFilePathCallback;
@@ -414,13 +410,6 @@ class FileSystemInterface {
   virtual void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) = 0;
-
-  // Gets the cache entry for file corresponding to |drive_file_path| and runs
-  // |callback| with true and the found entry if the entry exists in the cache
-  // map. Otherwise, runs |callback| with false.
-  // |callback| must not be null.
-  virtual void GetCacheEntry(const base::FilePath& drive_file_path,
-                             const GetCacheEntryCallback& callback) = 0;
 
   // Adds permission as |role| to |email| for the entry at |drive_file_path|.
   // |callback| must not be null.

@@ -86,6 +86,11 @@ void FillDriveEntryPropertiesValue(const drive::ResourceEntry& entry_proto,
       new bool(file_specific_info.is_hosted_document()));
   properties->content_mime_type.reset(
       new std::string(file_specific_info.content_mime_type()));
+
+  properties->is_pinned.reset(
+      new bool(file_specific_info.cache_state().is_pinned()));
+  properties->is_present.reset(
+      new bool(file_specific_info.cache_state().is_present()));
 }
 
 // Creates entry definition list for (metadata) search result info list.
@@ -313,26 +318,7 @@ class SingleDriveEntryPropertiesGetter {
       }
     }
 
-    file_system->GetCacheEntry(
-        file_path_,
-        base::Bind(&SingleDriveEntryPropertiesGetter::CacheStateReceived,
-                   GetWeakPtr()));
-  }
-
-  void CacheStateReceived(drive::FileError error,
-                          const drive::FileCacheEntry& cache_entry) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-    if (error == drive::FILE_ERROR_OK) {
-      properties_->is_pinned.reset(new bool(cache_entry.is_pinned()));
-      properties_->is_present.reset(new bool(cache_entry.is_present()));
-    } else if (error == drive::FILE_ERROR_NOT_FOUND) {
-      // NOT_FOUND is not an error, return OK instead.
-      error = drive::FILE_ERROR_OK;
-      properties_->is_pinned.reset(new bool(false));
-      properties_->is_present.reset(new bool(false));
-    }
-    CompleteGetFileProperties(error);
+    CompleteGetFileProperties(drive::FILE_ERROR_OK);
   }
 
   void CompleteGetFileProperties(drive::FileError error) {

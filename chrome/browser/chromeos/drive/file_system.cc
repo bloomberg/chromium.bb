@@ -156,27 +156,6 @@ void RunMarkMountedCallback(const MarkMountedCallback& callback,
   callback.Run(error, *cache_file_path);
 }
 
-// Used to implement GetCacheEntry.
-FileError GetCacheEntryInternal(internal::ResourceMetadata* resource_metadata,
-                                internal::FileCache* cache,
-                                const base::FilePath& drive_file_path,
-                                FileCacheEntry* cache_entry) {
-  std::string id;
-  FileError error = resource_metadata->GetIdByPath(drive_file_path, &id);
-  if (error != FILE_ERROR_OK)
-    return error;
-
-  return cache->GetCacheEntry(id, cache_entry);
-}
-
-// Runs the callback with arguments.
-void RunGetCacheEntryCallback(const GetCacheEntryCallback& callback,
-                              const FileCacheEntry* cache_entry,
-                              FileError error) {
-  DCHECK(!callback.is_null());
-  callback.Run(error, *cache_entry);
-}
-
 // Callback for ResourceMetadata::GetLargestChangestamp.
 // |callback| must not be null.
 void OnGetLargestChangestamp(
@@ -932,26 +911,6 @@ void FileSystem::MarkCacheFileAsUnmounted(
                  base::Unretained(cache_),
                  cache_file_path),
       callback);
-}
-
-void FileSystem::GetCacheEntry(
-    const base::FilePath& drive_file_path,
-    const GetCacheEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  FileCacheEntry* cache_entry = new FileCacheEntry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&GetCacheEntryInternal,
-                 resource_metadata_,
-                 cache_,
-                 drive_file_path,
-                 cache_entry),
-      base::Bind(&RunGetCacheEntryCallback,
-                 callback,
-                 base::Owned(cache_entry)));
 }
 
 void FileSystem::AddPermission(const base::FilePath& drive_file_path,
