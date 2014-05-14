@@ -234,7 +234,12 @@ static std::string GetMimeType(const std::string& filename) {
     return "image/png";
   } else if (EndsWith(filename, ".gif", false)) {
     return "image/gif";
+  } else if (EndsWith(filename, ".json", false)) {
+    return "application/json";
   }
+  LOG(ERROR) << "GetMimeType doesn't know mime type for: "
+             << filename
+             << " text/plain will be returned";
   NOTREACHED();
   return "text/plain";
 }
