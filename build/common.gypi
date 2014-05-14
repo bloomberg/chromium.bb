@@ -4240,10 +4240,20 @@
             ],
             'target_conditions': [
               ['_type=="executable"', {
+                # Force android tools to export the "main" symbol so they can be
+                # loaded on ICS using the run_pie wrapper. See crbug.com/373219.
+                # TODO(primiano): remove -fvisibility and -rdynamic flags below
+                # when ICS support will be dropped.
+                'cflags': [
+                  '-fPIE',
+                  '-fvisibility=default',
+                ],
                 'ldflags': [
                   '-Bdynamic',
                   '-Wl,--gc-sections',
                   '-Wl,-z,nocopyreloc',
+                  '-pie',
+                  '-rdynamic',
                   # crtbegin_dynamic.o should be the last item in ldflags.
                   '<(android_ndk_lib)/crtbegin_dynamic.o',
                 ],
@@ -4251,16 +4261,6 @@
                   # crtend_android.o needs to be the last item in libraries.
                   # Do not add any libraries after this!
                   '<(android_ndk_lib)/crtend_android.o',
-                ],
-                'conditions': [
-                  ['asan==1', {
-                    'cflags': [
-                      '-fPIE',
-                    ],
-                    'ldflags': [
-                      '-pie',
-                    ],
-                  }],
                 ],
               }],
               ['_type=="shared_library" or _type=="loadable_module"', {

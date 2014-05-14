@@ -15,6 +15,7 @@
         'forwarder2/forwarder.gyp:forwarder2',
         'md5sum/md5sum.gyp:md5sum',
         'purge_ashmem/purge_ashmem.gyp:purge_ashmem',
+        'run_pie/run_pie.gyp:run_pie',
         '../../tools/telemetry/telemetry.gyp:*#host',
       ],
     },

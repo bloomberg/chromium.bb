@@ -64,10 +64,8 @@ def PushAndLaunchAdbReboot(devices, target):
     device.old_interface.PushIfNeeded(adb_reboot, '/data/local/tmp/')
     # Launch adb_reboot
     print '  Launching adb_reboot ...'
-    # TODO(jbudorick) Try to convert this to RunShellCommand.
-    p = subprocess.Popen(['adb', '-s', device_serial, 'shell'],
-                         stdin=subprocess.PIPE)
-    p.communicate('/data/local/tmp/adb_reboot; exit\n')
+    device.old_interface.GetAndroidToolStatusAndOutput(
+        '/data/local/tmp/adb_reboot')
   LaunchHostHeartbeat()
 
 

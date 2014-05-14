@@ -7,19 +7,6 @@
     {
       'target_name': 'ps_ext-unstripped',
       'type': 'executable',
-      'conditions': [
-        # Warning: A PIE tool cannot run on ICS 4.0.4, so only
-        #          build it as position-independent when ASAN
-        #          is activated. See b/6587214 for details.
-        [ 'asan==1', {
-          'cflags': [
-            '-fPIE',
-          ],
-          'ldflags': [
-            '-pie',
-          ],
-        }],
-      ],
       'sources': [
         'ps_ext.c',
       ],

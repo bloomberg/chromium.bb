@@ -11,7 +11,6 @@ Assumes adb binary is currently on system path.
 import collections
 import datetime
 import inspect
-import json
 import logging
 import os
 import re
@@ -66,7 +65,8 @@ KEYCODE_MENU = 82
 
 MD5SUM_DEVICE_FOLDER = constants.TEST_EXECUTABLE_DIR + '/md5sum/'
 MD5SUM_DEVICE_PATH = MD5SUM_DEVICE_FOLDER + 'md5sum_bin'
-MD5SUM_LD_LIBRARY_PATH = 'LD_LIBRARY_PATH=%s' % MD5SUM_DEVICE_FOLDER
+
+PIE_WRAPPER_PATH = constants.TEST_EXECUTABLE_DIR + '/run_pie'
 
 CONTROL_USB_CHARGING_COMMANDS = [
   {
@@ -295,6 +295,7 @@ class AndroidCommands(object):
     }
     self._protected_file_access_method_initialized = None
     self._privileged_command_runner = None
+    self._pie_wrapper = None
 
   @property
   def system_properties(self):
@@ -647,6 +648,40 @@ class AndroidCommands(object):
                    (base_command, preferred_apis[base_command]))
       raise ValueError(error_msg)
 
+  def GetAndroidToolStatusAndOutput(self, command, lib_path=None, *args, **kw):
+    """Runs a native Android binary, wrapping the command as necessary.
+
+    This is a specialization of GetShellCommandStatusAndOutput, which is meant
+    for running tools/android/ binaries and handle properly: (1) setting the
+    lib path (for component=shared_library), (2) using the PIE wrapper on ICS.
+    See crbug.com/373219 for more context.
+
+    Args:
+      command: String containing the command to send.
+      lib_path: (optional) path to the folder containing the dependent libs.
+      Same other arguments of GetCmdStatusAndOutput.
+    """
+    # The first time this command is run the device is inspected to check
+    # whether a wrapper for running PIE executable is needed (only Android ICS)
+    # or not. The results is cached, so the wrapper is pushed only once.
+    if self._pie_wrapper is None:
+      # None: did not check; '': did check and not needed; '/path': use /path.
+      self._pie_wrapper = ''
+      if self.GetBuildId().startswith('I'):  # Ixxxx = Android ICS.
+        run_pie_dist_path = os.path.join(constants.GetOutDirectory(), 'run_pie')
+        assert os.path.exists(run_pie_dist_path), 'Please build run_pie'
+        # The PIE loader must be pushed manually (i.e. no PushIfNeeded) because
+        # PushIfNeeded requires md5sum and md5sum requires the wrapper as well.
+        command = 'push %s %s' % (run_pie_dist_path, PIE_WRAPPER_PATH)
+        assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
+        self._pie_wrapper = PIE_WRAPPER_PATH
+
+    if self._pie_wrapper:
+      command = '%s %s' % (self._pie_wrapper, command)
+    if lib_path:
+      command = 'LD_LIBRARY_PATH=%s %s' % (lib_path, command)
+    return self.GetShellCommandStatusAndOutput(command, *args, **kw)
+
   # It is tempting to turn this function into a generator, however this is not
   # possible without using a private (local) adb_shell instance (to ensure no
   # other command interleaves usage of it), which would defeat the main aim of
@@ -924,10 +959,11 @@ class AndroidCommands(object):
     command = 'push %s %s' % (md5sum_dist_path, MD5SUM_DEVICE_FOLDER)
     assert _HasAdbPushSucceeded(self._adb.SendCommand(command))
 
-    cmd = (MD5SUM_LD_LIBRARY_PATH + ' ' + self._util_wrapper + ' ' +
-           MD5SUM_DEVICE_PATH + ' ' + device_path)
-    device_hash_tuples = _ParseMd5SumOutput(
-        self.RunShellCommand(cmd, timeout_time=2 * 60))
+    (_, md5_device_output) = self.GetAndroidToolStatusAndOutput(
+        self._util_wrapper + ' ' + MD5SUM_DEVICE_PATH + ' ' + device_path,
+        lib_path=MD5SUM_DEVICE_FOLDER,
+        timeout_time=2 * 60)
+    device_hash_tuples = _ParseMd5SumOutput(md5_device_output)
     assert os.path.exists(host_path), 'Local path not found %s' % host_path
     md5sum_output = cmd_helper.GetCmdOutput(
         [os.path.join(constants.GetOutDirectory(), 'md5sum_bin_host'),

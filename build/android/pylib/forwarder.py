@@ -50,7 +50,6 @@ class Forwarder(object):
                               '/forwarder/')
   _DEVICE_FORWARDER_PATH = (constants.TEST_EXECUTABLE_DIR +
                             '/forwarder/device_forwarder')
-  _LD_LIBRARY_PATH = 'LD_LIBRARY_PATH=%s' % _DEVICE_FORWARDER_FOLDER
   _LOCK_PATH = '/tmp/chrome.forwarder.lock'
   _MULTIPROCESSING_ENV_VAR = 'CHROME_FORWARDER_USE_MULTIPROCESSING'
   # Defined in host_forwarder_main.cc
@@ -293,9 +292,9 @@ class Forwarder(object):
     device.old_interface.PushIfNeeded(
         self._device_forwarder_path_on_host,
         Forwarder._DEVICE_FORWARDER_FOLDER)
-    (exit_code, output) = device.old_interface.GetShellCommandStatusAndOutput(
-        '%s %s %s' % (Forwarder._LD_LIBRARY_PATH, tool.GetUtilWrapper(),
-                      Forwarder._DEVICE_FORWARDER_PATH))
+    cmd = '%s %s' % (tool.GetUtilWrapper(), Forwarder._DEVICE_FORWARDER_PATH)
+    (exit_code, output) = device.old_interface.GetAndroidToolStatusAndOutput(
+        cmd, lib_path=Forwarder._DEVICE_FORWARDER_FOLDER)
     if exit_code != 0:
       raise Exception(
           'Failed to start device forwarder:\n%s' % '\n'.join(output))
@@ -331,9 +330,12 @@ class Forwarder(object):
     if not device.old_interface.FileExistsOnDevice(
         Forwarder._DEVICE_FORWARDER_PATH):
       return
-    device.old_interface.GetShellCommandStatusAndOutput(
-        '%s %s --kill-server' % (tool.GetUtilWrapper(),
-                                 Forwarder._DEVICE_FORWARDER_PATH))
+
+    cmd = '%s %s --kill-server' % (tool.GetUtilWrapper(),
+                                   Forwarder._DEVICE_FORWARDER_PATH)
+    device.old_interface.GetAndroidToolStatusAndOutput(
+        cmd, lib_path=Forwarder._DEVICE_FORWARDER_FOLDER)
+
     # TODO(pliard): Remove the following call to KillAllBlocking() when we are
     # sure that the old version of device_forwarder (not supporting
     # 'kill-server') is not running on the bots anymore.
