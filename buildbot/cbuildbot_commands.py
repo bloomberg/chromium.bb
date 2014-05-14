@@ -97,7 +97,7 @@ def _RunBuildScript(buildroot, cmd, chromite_cmd=False, possibly_flaky=False,
     cmd = cmd[:]
     if enter_chroot:
       cmd[0] = git.ReinterpretPathForChroot(
-          os.path.join(constants.CHROMITE_BIN_SUBDIR, cmd[0]))
+          os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR, cmd[0]))
     else:
       cmd[0] = os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR, cmd[0])
 
