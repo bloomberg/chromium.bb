@@ -56,6 +56,14 @@ WebDOMFileSystem WebDOMFileSystem::fromV8Value(v8::Handle<v8::Value> value)
     return WebDOMFileSystem(domFileSystem);
 }
 
+WebURL WebDOMFileSystem::createFileSystemURL(v8::Handle<v8::Value> value)
+{
+    const FileEntry* const entry = V8FileEntry::toNativeWithTypeCheck(v8::Isolate::GetCurrent(), value);
+    if (entry)
+        return entry->filesystem()->createFileSystemURL(entry);
+    return WebURL();
+}
+
 WebDOMFileSystem WebDOMFileSystem::create(
     WebLocalFrame* frame,
     WebFileSystemType type,

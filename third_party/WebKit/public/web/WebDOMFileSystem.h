@@ -72,6 +72,8 @@ public:
     }
 
     BLINK_EXPORT static WebDOMFileSystem fromV8Value(v8::Handle<v8::Value>);
+    // Create file system URL from the given entry.
+    BLINK_EXPORT static WebURL createFileSystemURL(v8::Handle<v8::Value> entry);
 
     // FIXME: Deprecate the last argument when all filesystems become
     // serializable.
