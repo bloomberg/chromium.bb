@@ -1067,7 +1067,6 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexImage2D) {
            GL_RGBA,
            4,
            4,
-           0,
            GL_RGBA,
            GL_UNSIGNED_BYTE,
            kSharedMemoryId,
@@ -1128,7 +1127,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerCopyTexImage2D) {
       .Times(1)
       .RetiresOnSaturation();
   CopyTexImage2D cmd;
-  cmd.Init(target, level, internal_format, 0, 0, width, height, border);
+  cmd.Init(target, level, internal_format, 0, 0, width, height);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(128u, memory_tracker->GetPoolSize(MemoryTracker::kUnmanaged));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());

@@ -25,7 +25,6 @@ ValueValidator<GLenum> dst_blend_factor;
 ValueValidator<GLenum> equation;
 ValueValidator<GLenum> face_mode;
 ValueValidator<GLenum> face_type;
-ValueValidator<GLboolean> false_only;
 ValueValidator<GLenum> frame_buffer_parameter;
 ValueValidator<GLenum> frame_buffer_target;
 ValueValidator<GLenum> g_l_state;
@@ -55,7 +54,6 @@ ValueValidator<GLenum> src_blend_factor;
 ValueValidator<GLenum> stencil_op;
 ValueValidator<GLenum> string_type;
 ValueValidator<GLenum> texture_bind_target;
-ValueValidator<GLint> texture_border;
 ValueValidator<GLenum> texture_format;
 ValueValidator<GLenum> texture_internal_format;
 ValueValidator<GLenum> texture_internal_format_storage;
@@ -70,6 +68,5 @@ ValueValidator<GLint> vertex_attrib_size;
 ValueValidator<GLenum> vertex_attrib_type;
 ValueValidator<GLenum> vertex_attribute;
 ValueValidator<GLenum> vertex_pointer;
-ValueValidator<GLint> zero_only;
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_AUTOGEN_H_

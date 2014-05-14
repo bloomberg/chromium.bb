@@ -913,7 +913,7 @@ void GLES2DecoderTestBase::DoTexImage2D(
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   cmds::TexImage2D cmd;
-  cmd.Init(target, level, internal_format, width, height, border, format,
+  cmd.Init(target, level, internal_format, width, height, format,
            type, shared_memory_id, shared_memory_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
@@ -935,7 +935,7 @@ void GLES2DecoderTestBase::DoTexImage2DConvertInternalFormat(
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   cmds::TexImage2D cmd;
-  cmd.Init(target, level, requested_internal_format, width, height, border,
+  cmd.Init(target, level, requested_internal_format, width, height,
            format, type, shared_memory_id, shared_memory_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
@@ -958,7 +958,7 @@ void GLES2DecoderTestBase::DoCompressedTexImage2D(
   bucket->SetSize(size);
   cmds::CompressedTexImage2DBucket cmd;
   cmd.Init(
-      target, level, format, width, height, border,
+      target, level, format, width, height,
       bucket_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
@@ -996,7 +996,7 @@ void GLES2DecoderTestBase::DoFramebufferTexture2D(
       .WillOnce(Return(error))
       .RetiresOnSaturation();
   cmds::FramebufferTexture2D cmd;
-  cmd.Init(target, attachment, textarget, texture_client_id, level);
+  cmd.Init(target, attachment, textarget, texture_client_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 

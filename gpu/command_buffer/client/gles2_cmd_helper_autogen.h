@@ -198,7 +198,6 @@ void CompressedTexImage2D(GLenum target,
                           GLenum internalformat,
                           GLsizei width,
                           GLsizei height,
-                          GLint border,
                           GLsizei imageSize,
                           uint32_t data_shm_id,
                           uint32_t data_shm_offset) {
@@ -210,7 +209,6 @@ void CompressedTexImage2D(GLenum target,
             internalformat,
             width,
             height,
-            border,
             imageSize,
             data_shm_id,
             data_shm_offset);
@@ -222,12 +220,11 @@ void CompressedTexImage2DBucket(GLenum target,
                                 GLenum internalformat,
                                 GLsizei width,
                                 GLsizei height,
-                                GLint border,
                                 GLuint bucket_id) {
   gles2::cmds::CompressedTexImage2DBucket* c =
       GetCmdSpace<gles2::cmds::CompressedTexImage2DBucket>();
   if (c) {
-    c->Init(target, level, internalformat, width, height, border, bucket_id);
+    c->Init(target, level, internalformat, width, height, bucket_id);
   }
 }
 
@@ -278,11 +275,10 @@ void CopyTexImage2D(GLenum target,
                     GLint x,
                     GLint y,
                     GLsizei width,
-                    GLsizei height,
-                    GLint border) {
+                    GLsizei height) {
   gles2::cmds::CopyTexImage2D* c = GetCmdSpace<gles2::cmds::CopyTexImage2D>();
   if (c) {
-    c->Init(target, level, internalformat, x, y, width, height, border);
+    c->Init(target, level, internalformat, x, y, width, height);
   }
 }
 
@@ -517,12 +513,11 @@ void FramebufferRenderbuffer(GLenum target,
 void FramebufferTexture2D(GLenum target,
                           GLenum attachment,
                           GLenum textarget,
-                          GLuint texture,
-                          GLint level) {
+                          GLuint texture) {
   gles2::cmds::FramebufferTexture2D* c =
       GetCmdSpace<gles2::cmds::FramebufferTexture2D>();
   if (c) {
-    c->Init(target, attachment, textarget, texture, level);
+    c->Init(target, attachment, textarget, texture);
   }
 }
 
@@ -1096,7 +1091,6 @@ void TexImage2D(GLenum target,
                 GLint internalformat,
                 GLsizei width,
                 GLsizei height,
-                GLint border,
                 GLenum format,
                 GLenum type,
                 uint32_t pixels_shm_id,
@@ -1108,7 +1102,6 @@ void TexImage2D(GLenum target,
             internalformat,
             width,
             height,
-            border,
             format,
             type,
             pixels_shm_id,
@@ -1407,19 +1400,17 @@ void Uniform4ivImmediate(GLint location, GLsizei count, const GLint* v) {
 
 void UniformMatrix2fv(GLint location,
                       GLsizei count,
-                      GLboolean transpose,
                       uint32_t value_shm_id,
                       uint32_t value_shm_offset) {
   gles2::cmds::UniformMatrix2fv* c =
       GetCmdSpace<gles2::cmds::UniformMatrix2fv>();
   if (c) {
-    c->Init(location, count, transpose, value_shm_id, value_shm_offset);
+    c->Init(location, count, value_shm_id, value_shm_offset);
   }
 }
 
 void UniformMatrix2fvImmediate(GLint location,
                                GLsizei count,
-                               GLboolean transpose,
                                const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix2fvImmediate::ComputeSize(count);
@@ -1427,25 +1418,23 @@ void UniformMatrix2fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix2fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, transpose, value);
+    c->Init(location, count, value);
   }
 }
 
 void UniformMatrix3fv(GLint location,
                       GLsizei count,
-                      GLboolean transpose,
                       uint32_t value_shm_id,
                       uint32_t value_shm_offset) {
   gles2::cmds::UniformMatrix3fv* c =
       GetCmdSpace<gles2::cmds::UniformMatrix3fv>();
   if (c) {
-    c->Init(location, count, transpose, value_shm_id, value_shm_offset);
+    c->Init(location, count, value_shm_id, value_shm_offset);
   }
 }
 
 void UniformMatrix3fvImmediate(GLint location,
                                GLsizei count,
-                               GLboolean transpose,
                                const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix3fvImmediate::ComputeSize(count);
@@ -1453,25 +1442,23 @@ void UniformMatrix3fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix3fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, transpose, value);
+    c->Init(location, count, value);
   }
 }
 
 void UniformMatrix4fv(GLint location,
                       GLsizei count,
-                      GLboolean transpose,
                       uint32_t value_shm_id,
                       uint32_t value_shm_offset) {
   gles2::cmds::UniformMatrix4fv* c =
       GetCmdSpace<gles2::cmds::UniformMatrix4fv>();
   if (c) {
-    c->Init(location, count, transpose, value_shm_id, value_shm_offset);
+    c->Init(location, count, value_shm_id, value_shm_offset);
   }
 }
 
 void UniformMatrix4fvImmediate(GLint location,
                                GLsizei count,
-                               GLboolean transpose,
                                const GLfloat* value) {
   const uint32_t size =
       gles2::cmds::UniformMatrix4fvImmediate::ComputeSize(count);
@@ -1479,7 +1466,7 @@ void UniformMatrix4fvImmediate(GLint location,
       GetImmediateCmdSpaceTotalSize<gles2::cmds::UniformMatrix4fvImmediate>(
           size);
   if (c) {
-    c->Init(location, count, transpose, value);
+    c->Init(location, count, value);
   }
 }
 
@@ -1667,12 +1654,11 @@ void FramebufferTexture2DMultisampleEXT(GLenum target,
                                         GLenum attachment,
                                         GLenum textarget,
                                         GLuint texture,
-                                        GLint level,
                                         GLsizei samples) {
   gles2::cmds::FramebufferTexture2DMultisampleEXT* c =
       GetCmdSpace<gles2::cmds::FramebufferTexture2DMultisampleEXT>();
   if (c) {
-    c->Init(target, attachment, textarget, texture, level, samples);
+    c->Init(target, attachment, textarget, texture, samples);
   }
 }
 
@@ -2144,7 +2130,6 @@ void AsyncTexImage2DCHROMIUM(GLenum target,
                              GLint internalformat,
                              GLsizei width,
                              GLsizei height,
-                             GLint border,
                              GLenum format,
                              GLenum type,
                              uint32_t pixels_shm_id,
@@ -2160,7 +2145,6 @@ void AsyncTexImage2DCHROMIUM(GLenum target,
             internalformat,
             width,
             height,
-            border,
             format,
             type,
             pixels_shm_id,

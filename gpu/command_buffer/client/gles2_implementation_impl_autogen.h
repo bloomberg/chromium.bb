@@ -232,8 +232,11 @@ void GLES2Implementation::CopyTexImage2D(GLenum target,
     SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D", "height < 0");
     return;
   }
-  helper_->CopyTexImage2D(
-      target, level, internalformat, x, y, width, height, border);
+  if (border != 0) {
+    SetGLError(GL_INVALID_VALUE, "glCopyTexImage2D", "border GL_INVALID_VALUE");
+    return;
+  }
+  helper_->CopyTexImage2D(target, level, internalformat, x, y, width, height);
   CheckGLError();
 }
 
@@ -462,7 +465,12 @@ void GLES2Implementation::FramebufferTexture2D(GLenum target,
                      << GLES2Util::GetStringAttachment(attachment) << ", "
                      << GLES2Util::GetStringTextureTarget(textarget) << ", "
                      << texture << ", " << level << ")");
-  helper_->FramebufferTexture2D(target, attachment, textarget, texture, level);
+  if (level != 0) {
+    SetGLError(
+        GL_INVALID_VALUE, "glFramebufferTexture2D", "level GL_INVALID_VALUE");
+    return;
+  }
+  helper_->FramebufferTexture2D(target, attachment, textarget, texture);
   CheckGLError();
 }
 
@@ -1488,7 +1496,12 @@ void GLES2Implementation::UniformMatrix2fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv", "count < 0");
     return;
   }
-  helper_->UniformMatrix2fvImmediate(location, count, transpose, value);
+  if (transpose != false) {
+    SetGLError(
+        GL_INVALID_VALUE, "glUniformMatrix2fv", "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix2fvImmediate(location, count, value);
   CheckGLError();
 }
 
@@ -1515,7 +1528,12 @@ void GLES2Implementation::UniformMatrix3fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv", "count < 0");
     return;
   }
-  helper_->UniformMatrix3fvImmediate(location, count, transpose, value);
+  if (transpose != false) {
+    SetGLError(
+        GL_INVALID_VALUE, "glUniformMatrix3fv", "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix3fvImmediate(location, count, value);
   CheckGLError();
 }
 
@@ -1545,7 +1563,12 @@ void GLES2Implementation::UniformMatrix4fv(GLint location,
     SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv", "count < 0");
     return;
   }
-  helper_->UniformMatrix4fvImmediate(location, count, transpose, value);
+  if (transpose != false) {
+    SetGLError(
+        GL_INVALID_VALUE, "glUniformMatrix4fv", "transpose GL_INVALID_VALUE");
+    return;
+  }
+  helper_->UniformMatrix4fvImmediate(location, count, value);
   CheckGLError();
 }
 
@@ -1767,6 +1790,12 @@ void GLES2Implementation::FramebufferTexture2DMultisampleEXT(GLenum target,
                      << GLES2Util::GetStringAttachment(attachment) << ", "
                      << GLES2Util::GetStringTextureTarget(textarget) << ", "
                      << texture << ", " << level << ", " << samples << ")");
+  if (level != 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glFramebufferTexture2DMultisampleEXT",
+               "level GL_INVALID_VALUE");
+    return;
+  }
   if (samples < 0) {
     SetGLError(GL_INVALID_VALUE,
                "glFramebufferTexture2DMultisampleEXT",
@@ -1774,7 +1803,7 @@ void GLES2Implementation::FramebufferTexture2DMultisampleEXT(GLenum target,
     return;
   }
   helper_->FramebufferTexture2DMultisampleEXT(
-      target, attachment, textarget, texture, level, samples);
+      target, attachment, textarget, texture, samples);
   CheckGLError();
 }
 

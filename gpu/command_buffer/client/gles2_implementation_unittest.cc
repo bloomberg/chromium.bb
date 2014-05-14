@@ -2309,7 +2309,7 @@ TEST_F(GLES2ImplementationTest, TexImage2D) {
 
   Cmds expected;
   expected.tex_image_2d.Init(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      kTarget, kLevel, kFormat, kWidth, kHeight, kFormat, kType,
       mem1.id, mem1.offset);
   expected.set_token.Init(GetNextToken());
   gl_->TexImage2D(
@@ -2326,7 +2326,7 @@ TEST_F(GLES2ImplementationTest, TexImage2D) {
   ExpectedMemoryInfo mem2 = GetExpectedMemory(sizeof(pixels));
   Cmds2 expected2;
   expected2.tex_image_2d.Init(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      kTarget, kLevel, kFormat, kWidth, kHeight, kFormat, kType,
       mem2.id, mem2.offset);
   expected2.set_token.Init(GetNextToken());
   const void* commands2 = GetPut();
@@ -2381,7 +2381,7 @@ TEST_F(GLES2ImplementationTest, TexImage2D2Writes) {
 
   Cmds expected;
   expected.tex_image_2d.Init(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      kTarget, kLevel, kFormat, kWidth, kHeight, kFormat, kType,
       0, 0);
   expected.tex_sub_image_2d1.Init(
       kTarget, kLevel, 0, 0, kWidth, kHeight / 2, kFormat, kType,
@@ -2414,7 +2414,7 @@ TEST_F(GLES2ImplementationTest, TexImage2D2Writes) {
   ExpectedMemoryInfo mem3 = GetExpectedMemory(half_size);
   ExpectedMemoryInfo mem4 = GetExpectedMemory(half_size);
   expected.tex_image_2d.Init(
-      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      kTarget, kLevel, kFormat, kWidth, kHeight, kFormat, kType,
       0, 0);
   expected.tex_sub_image_2d1.Init(
       kTarget, kLevel, 0, kHeight / 2, kWidth, kHeight / 2, kFormat, kType,
@@ -2478,7 +2478,7 @@ TEST_F(GLES2ImplementationTest, TexSubImage2DFlipY) {
   Cmds expected;
   expected.pixel_store_i1.Init(GL_UNPACK_ALIGNMENT, kPixelStoreUnpackAlignment);
   expected.tex_image_2d.Init(
-      kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kBorder, kFormat,
+      kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kFormat,
       kType, 0, 0);
   expected.pixel_store_i2.Init(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
   expected.tex_sub_image_2d1.Init(kTarget, kLevel, kSubImageXOffset,
@@ -2590,7 +2590,7 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
           texSubImageExpected.pixel_store_i2.Init(
               GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
           texSubImageExpected.tex_image_2d.Init(
-              GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight, kBorder,
+              GL_TEXTURE_2D, kLevel, kFormat, kTexWidth, kTexHeight,
               kFormat, kType, 0, 0);
           texSubImageExpected.tex_sub_image_2d.Init(
               GL_TEXTURE_2D, kLevel, kTexSubXOffset, kTexSubYOffset,
@@ -2608,7 +2608,7 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
               GL_UNPACK_FLIP_Y_CHROMIUM, flip_y);
           texImageExpected.tex_image_2d.Init(
               GL_TEXTURE_2D, kLevel, kFormat, kSrcSubImageWidth,
-              kSrcSubImageHeight, kBorder, kFormat, kType, mem.id, mem.offset);
+              kSrcSubImageHeight, kFormat, kType, mem.id, mem.offset);
           EXPECT_EQ(0, memcmp(
               &texImageExpected, commands, sizeof(texImageExpected)));
         }
@@ -2630,6 +2630,93 @@ TEST_F(GLES2ImplementationTest, SubImageUnpack) {
     }
   }
 }
+
+// Test texture related calls with invalid arguments.
+TEST_F(GLES2ImplementationTest, TextureInvalidArguments) {
+  struct Cmds {
+    cmds::TexImage2D tex_image_2d;
+    cmd::SetToken set_token;
+  };
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLenum kFormat = GL_RGB;
+  const GLsizei kWidth = 3;
+  const GLsizei kHeight = 4;
+  const GLint kBorder = 0;
+  const GLint kInvalidBorder = 1;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kPixelStoreUnpackAlignment = 4;
+  static uint8 pixels[] = {
+    11, 12, 13, 13, 14, 15, 15, 16, 17, 101, 102, 103,
+    21, 22, 23, 23, 24, 25, 25, 26, 27, 201, 202, 203,
+    31, 32, 33, 33, 34, 35, 35, 36, 37, 123, 124, 125,
+    41, 42, 43, 43, 44, 45, 45, 46, 47,
+  };
+
+  // Verify that something works.
+
+  ExpectedMemoryInfo mem1 = GetExpectedMemory(sizeof(pixels));
+
+  Cmds expected;
+  expected.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kFormat, kType,
+      mem1.id, mem1.offset);
+  expected.set_token.Init(GetNextToken());
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kBorder, kFormat, kType,
+      pixels);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kWidth, kHeight, kFormat, kType, kPixelStoreUnpackAlignment, false,
+      pixels, mem1.ptr));
+
+  ClearCommands();
+
+  // Use invalid border.
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kInvalidBorder, kFormat, kType,
+      pixels);
+
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+
+  ClearCommands();
+
+  gl_->AsyncTexImage2DCHROMIUM(
+      kTarget, kLevel, kFormat, kWidth, kHeight, kInvalidBorder, kFormat, kType,
+      NULL);
+
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+
+  ClearCommands();
+
+  // Checking for CompressedTexImage2D argument validation is a bit tricky due
+  // to (runtime-detected) compression formats. Try to infer the error with an
+  // aux check.
+  const GLenum kCompressedFormat = GL_ETC1_RGB8_OES;
+  gl_->CompressedTexImage2D(
+      kTarget, kLevel, kCompressedFormat, kWidth, kHeight, kBorder,
+      arraysize(pixels), pixels);
+
+  // In the above, kCompressedFormat and arraysize(pixels) are possibly wrong
+  // values. First ensure that these do not cause failures at the client. If
+  // this check ever fails, it probably means that client checks more than at
+  // the time of writing of this test. In this case, more code needs to be
+  // written for this test.
+  EXPECT_FALSE(NoCommandsWritten());
+
+  ClearCommands();
+
+  // Changing border to invalid border should make the call fail at the client
+  // checks.
+  gl_->CompressedTexImage2D(
+      kTarget, kLevel, kCompressedFormat, kWidth, kHeight, kInvalidBorder,
+      arraysize(pixels), pixels);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(GL_INVALID_VALUE, CheckError());
+}
+
 
 // Binds can not be cached with bind_generates_resource = false because
 // our id might not be valid. More specifically if you bind on contextA then

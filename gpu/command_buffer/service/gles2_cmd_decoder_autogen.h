@@ -401,11 +401,6 @@ error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopyTexImage2D", "height < 0");
     return error::kNoError;
   }
-  if (!validators_->texture_border.IsValid(border)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glCopyTexImage2D", "border GL_INVALID_VALUE");
-    return error::kNoError;
-  }
   DoCopyTexImage2D(target, level, internalformat, x, y, width, height, border);
   return error::kNoError;
 }
@@ -761,11 +756,6 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2D(
   if (!validators_->texture_target.IsValid(textarget)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(
         "glFramebufferTexture2D", textarget, "textarget");
-    return error::kNoError;
-  }
-  if (!validators_->zero_only.IsValid(level)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glFramebufferTexture2D", "level GL_INVALID_VALUE");
     return error::kNoError;
   }
   DoFramebufferTexture2D(target, attachment, textarget, texture, level);
@@ -2383,11 +2373,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fv(
   }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
-  if (!validators_->false_only.IsValid(transpose)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glUniformMatrix2fv", "transpose GL_INVALID_VALUE");
-    return error::kNoError;
-  }
   if (value == NULL) {
     return error::kOutOfBounds;
   }
@@ -2410,11 +2395,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
   }
   const GLfloat* value =
       GetImmediateDataAs<const GLfloat*>(c, data_size, immediate_data_size);
-  if (!validators_->false_only.IsValid(transpose)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glUniformMatrix2fv", "transpose GL_INVALID_VALUE");
-    return error::kNoError;
-  }
   if (value == NULL) {
     return error::kOutOfBounds;
   }
@@ -2434,11 +2414,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fv(
   }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
-  if (!validators_->false_only.IsValid(transpose)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glUniformMatrix3fv", "transpose GL_INVALID_VALUE");
-    return error::kNoError;
-  }
   if (value == NULL) {
     return error::kOutOfBounds;
   }
@@ -2461,11 +2436,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
   }
   const GLfloat* value =
       GetImmediateDataAs<const GLfloat*>(c, data_size, immediate_data_size);
-  if (!validators_->false_only.IsValid(transpose)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glUniformMatrix3fv", "transpose GL_INVALID_VALUE");
-    return error::kNoError;
-  }
   if (value == NULL) {
     return error::kOutOfBounds;
   }
@@ -2485,11 +2455,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fv(
   }
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
-  if (!validators_->false_only.IsValid(transpose)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glUniformMatrix4fv", "transpose GL_INVALID_VALUE");
-    return error::kNoError;
-  }
   if (value == NULL) {
     return error::kOutOfBounds;
   }
@@ -2512,11 +2477,6 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
   }
   const GLfloat* value =
       GetImmediateDataAs<const GLfloat*>(c, data_size, immediate_data_size);
-  if (!validators_->false_only.IsValid(transpose)) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glUniformMatrix4fv", "transpose GL_INVALID_VALUE");
-    return error::kNoError;
-  }
   if (value == NULL) {
     return error::kOutOfBounds;
   }
@@ -2881,12 +2841,6 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2DMultisampleEXT(
   if (!validators_->texture_target.IsValid(textarget)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(
         "glFramebufferTexture2DMultisampleEXT", textarget, "textarget");
-    return error::kNoError;
-  }
-  if (!validators_->zero_only.IsValid(level)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE,
-                       "glFramebufferTexture2DMultisampleEXT",
-                       "level GL_INVALID_VALUE");
     return error::kNoError;
   }
   if (samples < 0) {

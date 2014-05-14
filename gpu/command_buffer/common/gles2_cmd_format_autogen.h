@@ -932,7 +932,6 @@ struct CompressedTexImage2D {
             GLenum _internalformat,
             GLsizei _width,
             GLsizei _height,
-            GLint _border,
             GLsizei _imageSize,
             uint32_t _data_shm_id,
             uint32_t _data_shm_offset) {
@@ -942,7 +941,6 @@ struct CompressedTexImage2D {
     internalformat = _internalformat;
     width = _width;
     height = _height;
-    border = _border;
     imageSize = _imageSize;
     data_shm_id = _data_shm_id;
     data_shm_offset = _data_shm_offset;
@@ -954,7 +952,6 @@ struct CompressedTexImage2D {
             GLenum _internalformat,
             GLsizei _width,
             GLsizei _height,
-            GLint _border,
             GLsizei _imageSize,
             uint32_t _data_shm_id,
             uint32_t _data_shm_offset) {
@@ -963,7 +960,6 @@ struct CompressedTexImage2D {
                                        _internalformat,
                                        _width,
                                        _height,
-                                       _border,
                                        _imageSize,
                                        _data_shm_id,
                                        _data_shm_offset);
@@ -976,14 +972,14 @@ struct CompressedTexImage2D {
   uint32_t internalformat;
   int32_t width;
   int32_t height;
-  int32_t border;
   int32_t imageSize;
   uint32_t data_shm_id;
   uint32_t data_shm_offset;
+  static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(CompressedTexImage2D) == 40,
-               Sizeof_CompressedTexImage2D_is_not_40);
+COMPILE_ASSERT(sizeof(CompressedTexImage2D) == 36,
+               Sizeof_CompressedTexImage2D_is_not_36);
 COMPILE_ASSERT(offsetof(CompressedTexImage2D, header) == 0,
                OffsetOf_CompressedTexImage2D_header_not_0);
 COMPILE_ASSERT(offsetof(CompressedTexImage2D, target) == 4,
@@ -996,14 +992,12 @@ COMPILE_ASSERT(offsetof(CompressedTexImage2D, width) == 16,
                OffsetOf_CompressedTexImage2D_width_not_16);
 COMPILE_ASSERT(offsetof(CompressedTexImage2D, height) == 20,
                OffsetOf_CompressedTexImage2D_height_not_20);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, border) == 24,
-               OffsetOf_CompressedTexImage2D_border_not_24);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, imageSize) == 28,
-               OffsetOf_CompressedTexImage2D_imageSize_not_28);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, data_shm_id) == 32,
-               OffsetOf_CompressedTexImage2D_data_shm_id_not_32);
-COMPILE_ASSERT(offsetof(CompressedTexImage2D, data_shm_offset) == 36,
-               OffsetOf_CompressedTexImage2D_data_shm_offset_not_36);
+COMPILE_ASSERT(offsetof(CompressedTexImage2D, imageSize) == 24,
+               OffsetOf_CompressedTexImage2D_imageSize_not_24);
+COMPILE_ASSERT(offsetof(CompressedTexImage2D, data_shm_id) == 28,
+               OffsetOf_CompressedTexImage2D_data_shm_id_not_28);
+COMPILE_ASSERT(offsetof(CompressedTexImage2D, data_shm_offset) == 32,
+               OffsetOf_CompressedTexImage2D_data_shm_offset_not_32);
 
 struct CompressedTexImage2DBucket {
   typedef CompressedTexImage2DBucket ValueType;
@@ -1022,7 +1016,6 @@ struct CompressedTexImage2DBucket {
             GLenum _internalformat,
             GLsizei _width,
             GLsizei _height,
-            GLint _border,
             GLuint _bucket_id) {
     SetHeader();
     target = _target;
@@ -1030,7 +1023,6 @@ struct CompressedTexImage2DBucket {
     internalformat = _internalformat;
     width = _width;
     height = _height;
-    border = _border;
     bucket_id = _bucket_id;
   }
 
@@ -1040,10 +1032,9 @@ struct CompressedTexImage2DBucket {
             GLenum _internalformat,
             GLsizei _width,
             GLsizei _height,
-            GLint _border,
             GLuint _bucket_id) {
-    static_cast<ValueType*>(cmd)->Init(
-        _target, _level, _internalformat, _width, _height, _border, _bucket_id);
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _level, _internalformat, _width, _height, _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1053,12 +1044,12 @@ struct CompressedTexImage2DBucket {
   uint32_t internalformat;
   int32_t width;
   int32_t height;
-  int32_t border;
   uint32_t bucket_id;
+  static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(CompressedTexImage2DBucket) == 32,
-               Sizeof_CompressedTexImage2DBucket_is_not_32);
+COMPILE_ASSERT(sizeof(CompressedTexImage2DBucket) == 28,
+               Sizeof_CompressedTexImage2DBucket_is_not_28);
 COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, header) == 0,
                OffsetOf_CompressedTexImage2DBucket_header_not_0);
 COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, target) == 4,
@@ -1071,10 +1062,8 @@ COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, width) == 16,
                OffsetOf_CompressedTexImage2DBucket_width_not_16);
 COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, height) == 20,
                OffsetOf_CompressedTexImage2DBucket_height_not_20);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, border) == 24,
-               OffsetOf_CompressedTexImage2DBucket_border_not_24);
-COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, bucket_id) == 28,
-               OffsetOf_CompressedTexImage2DBucket_bucket_id_not_28);
+COMPILE_ASSERT(offsetof(CompressedTexImage2DBucket, bucket_id) == 24,
+               OffsetOf_CompressedTexImage2DBucket_bucket_id_not_24);
 
 struct CompressedTexSubImage2D {
   typedef CompressedTexSubImage2D ValueType;
@@ -1274,8 +1263,7 @@ struct CopyTexImage2D {
             GLint _x,
             GLint _y,
             GLsizei _width,
-            GLsizei _height,
-            GLint _border) {
+            GLsizei _height) {
     SetHeader();
     target = _target;
     level = _level;
@@ -1284,7 +1272,6 @@ struct CopyTexImage2D {
     y = _y;
     width = _width;
     height = _height;
-    border = _border;
   }
 
   void* Set(void* cmd,
@@ -1294,10 +1281,9 @@ struct CopyTexImage2D {
             GLint _x,
             GLint _y,
             GLsizei _width,
-            GLsizei _height,
-            GLint _border) {
-    static_cast<ValueType*>(cmd)->Init(
-        _target, _level, _internalformat, _x, _y, _width, _height, _border);
+            GLsizei _height) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _level, _internalformat, _x, _y, _width, _height);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1309,10 +1295,10 @@ struct CopyTexImage2D {
   int32_t y;
   int32_t width;
   int32_t height;
-  int32_t border;
+  static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(CopyTexImage2D) == 36, Sizeof_CopyTexImage2D_is_not_36);
+COMPILE_ASSERT(sizeof(CopyTexImage2D) == 32, Sizeof_CopyTexImage2D_is_not_32);
 COMPILE_ASSERT(offsetof(CopyTexImage2D, header) == 0,
                OffsetOf_CopyTexImage2D_header_not_0);
 COMPILE_ASSERT(offsetof(CopyTexImage2D, target) == 4,
@@ -1329,8 +1315,6 @@ COMPILE_ASSERT(offsetof(CopyTexImage2D, width) == 24,
                OffsetOf_CopyTexImage2D_width_not_24);
 COMPILE_ASSERT(offsetof(CopyTexImage2D, height) == 28,
                OffsetOf_CopyTexImage2D_height_not_28);
-COMPILE_ASSERT(offsetof(CopyTexImage2D, border) == 32,
-               OffsetOf_CopyTexImage2D_border_not_32);
 
 struct CopyTexSubImage2D {
   typedef CopyTexSubImage2D ValueType;
@@ -2389,24 +2373,21 @@ struct FramebufferTexture2D {
   void Init(GLenum _target,
             GLenum _attachment,
             GLenum _textarget,
-            GLuint _texture,
-            GLint _level) {
+            GLuint _texture) {
     SetHeader();
     target = _target;
     attachment = _attachment;
     textarget = _textarget;
     texture = _texture;
-    level = _level;
   }
 
   void* Set(void* cmd,
             GLenum _target,
             GLenum _attachment,
             GLenum _textarget,
-            GLuint _texture,
-            GLint _level) {
+            GLuint _texture) {
     static_cast<ValueType*>(cmd)
-        ->Init(_target, _attachment, _textarget, _texture, _level);
+        ->Init(_target, _attachment, _textarget, _texture);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2415,11 +2396,11 @@ struct FramebufferTexture2D {
   uint32_t attachment;
   uint32_t textarget;
   uint32_t texture;
-  int32_t level;
+  static const int32_t level = 0;
 };
 
-COMPILE_ASSERT(sizeof(FramebufferTexture2D) == 24,
-               Sizeof_FramebufferTexture2D_is_not_24);
+COMPILE_ASSERT(sizeof(FramebufferTexture2D) == 20,
+               Sizeof_FramebufferTexture2D_is_not_20);
 COMPILE_ASSERT(offsetof(FramebufferTexture2D, header) == 0,
                OffsetOf_FramebufferTexture2D_header_not_0);
 COMPILE_ASSERT(offsetof(FramebufferTexture2D, target) == 4,
@@ -2430,8 +2411,6 @@ COMPILE_ASSERT(offsetof(FramebufferTexture2D, textarget) == 12,
                OffsetOf_FramebufferTexture2D_textarget_not_12);
 COMPILE_ASSERT(offsetof(FramebufferTexture2D, texture) == 16,
                OffsetOf_FramebufferTexture2D_texture_not_16);
-COMPILE_ASSERT(offsetof(FramebufferTexture2D, level) == 20,
-               OffsetOf_FramebufferTexture2D_level_not_20);
 
 struct FrontFace {
   typedef FrontFace ValueType;
@@ -5278,7 +5257,6 @@ struct TexImage2D {
             GLint _internalformat,
             GLsizei _width,
             GLsizei _height,
-            GLint _border,
             GLenum _format,
             GLenum _type,
             uint32_t _pixels_shm_id,
@@ -5289,7 +5267,6 @@ struct TexImage2D {
     internalformat = _internalformat;
     width = _width;
     height = _height;
-    border = _border;
     format = _format;
     type = _type;
     pixels_shm_id = _pixels_shm_id;
@@ -5302,7 +5279,6 @@ struct TexImage2D {
             GLint _internalformat,
             GLsizei _width,
             GLsizei _height,
-            GLint _border,
             GLenum _format,
             GLenum _type,
             uint32_t _pixels_shm_id,
@@ -5312,7 +5288,6 @@ struct TexImage2D {
                                        _internalformat,
                                        _width,
                                        _height,
-                                       _border,
                                        _format,
                                        _type,
                                        _pixels_shm_id,
@@ -5326,14 +5301,14 @@ struct TexImage2D {
   int32_t internalformat;
   int32_t width;
   int32_t height;
-  int32_t border;
   uint32_t format;
   uint32_t type;
   uint32_t pixels_shm_id;
   uint32_t pixels_shm_offset;
+  static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(TexImage2D) == 44, Sizeof_TexImage2D_is_not_44);
+COMPILE_ASSERT(sizeof(TexImage2D) == 40, Sizeof_TexImage2D_is_not_40);
 COMPILE_ASSERT(offsetof(TexImage2D, header) == 0,
                OffsetOf_TexImage2D_header_not_0);
 COMPILE_ASSERT(offsetof(TexImage2D, target) == 4,
@@ -5346,16 +5321,14 @@ COMPILE_ASSERT(offsetof(TexImage2D, width) == 16,
                OffsetOf_TexImage2D_width_not_16);
 COMPILE_ASSERT(offsetof(TexImage2D, height) == 20,
                OffsetOf_TexImage2D_height_not_20);
-COMPILE_ASSERT(offsetof(TexImage2D, border) == 24,
-               OffsetOf_TexImage2D_border_not_24);
-COMPILE_ASSERT(offsetof(TexImage2D, format) == 28,
-               OffsetOf_TexImage2D_format_not_28);
-COMPILE_ASSERT(offsetof(TexImage2D, type) == 32,
-               OffsetOf_TexImage2D_type_not_32);
-COMPILE_ASSERT(offsetof(TexImage2D, pixels_shm_id) == 36,
-               OffsetOf_TexImage2D_pixels_shm_id_not_36);
-COMPILE_ASSERT(offsetof(TexImage2D, pixels_shm_offset) == 40,
-               OffsetOf_TexImage2D_pixels_shm_offset_not_40);
+COMPILE_ASSERT(offsetof(TexImage2D, format) == 24,
+               OffsetOf_TexImage2D_format_not_24);
+COMPILE_ASSERT(offsetof(TexImage2D, type) == 28,
+               OffsetOf_TexImage2D_type_not_28);
+COMPILE_ASSERT(offsetof(TexImage2D, pixels_shm_id) == 32,
+               OffsetOf_TexImage2D_pixels_shm_id_not_32);
+COMPILE_ASSERT(offsetof(TexImage2D, pixels_shm_offset) == 36,
+               OffsetOf_TexImage2D_pixels_shm_offset_not_36);
 
 struct TexParameterf {
   typedef TexParameterf ValueType;
@@ -6856,13 +6829,11 @@ struct UniformMatrix2fv {
 
   void Init(GLint _location,
             GLsizei _count,
-            GLboolean _transpose,
             uint32_t _value_shm_id,
             uint32_t _value_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
-    transpose = _transpose;
     value_shm_id = _value_shm_id;
     value_shm_offset = _value_shm_offset;
   }
@@ -6870,36 +6841,33 @@ struct UniformMatrix2fv {
   void* Set(void* cmd,
             GLint _location,
             GLsizei _count,
-            GLboolean _transpose,
             uint32_t _value_shm_id,
             uint32_t _value_shm_offset) {
     static_cast<ValueType*>(cmd)
-        ->Init(_location, _count, _transpose, _value_shm_id, _value_shm_offset);
+        ->Init(_location, _count, _value_shm_id, _value_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  uint32_t transpose;
   uint32_t value_shm_id;
   uint32_t value_shm_offset;
+  static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix2fv) == 24,
-               Sizeof_UniformMatrix2fv_is_not_24);
+COMPILE_ASSERT(sizeof(UniformMatrix2fv) == 20,
+               Sizeof_UniformMatrix2fv_is_not_20);
 COMPILE_ASSERT(offsetof(UniformMatrix2fv, header) == 0,
                OffsetOf_UniformMatrix2fv_header_not_0);
 COMPILE_ASSERT(offsetof(UniformMatrix2fv, location) == 4,
                OffsetOf_UniformMatrix2fv_location_not_4);
 COMPILE_ASSERT(offsetof(UniformMatrix2fv, count) == 8,
                OffsetOf_UniformMatrix2fv_count_not_8);
-COMPILE_ASSERT(offsetof(UniformMatrix2fv, transpose) == 12,
-               OffsetOf_UniformMatrix2fv_transpose_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix2fv, value_shm_id) == 16,
-               OffsetOf_UniformMatrix2fv_value_shm_id_not_16);
-COMPILE_ASSERT(offsetof(UniformMatrix2fv, value_shm_offset) == 20,
-               OffsetOf_UniformMatrix2fv_value_shm_offset_not_20);
+COMPILE_ASSERT(offsetof(UniformMatrix2fv, value_shm_id) == 12,
+               OffsetOf_UniformMatrix2fv_value_shm_id_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix2fv, value_shm_offset) == 16,
+               OffsetOf_UniformMatrix2fv_value_shm_offset_not_16);
 
 struct UniformMatrix2fvImmediate {
   typedef UniformMatrix2fvImmediate ValueType;
@@ -6920,23 +6888,15 @@ struct UniformMatrix2fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location,
-            GLsizei _count,
-            GLboolean _transpose,
-            const GLfloat* _value) {
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
-    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd,
-            GLint _location,
-            GLsizei _count,
-            GLboolean _transpose,
-            const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -6944,19 +6904,17 @@ struct UniformMatrix2fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  uint32_t transpose;
+  static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix2fvImmediate) == 16,
-               Sizeof_UniformMatrix2fvImmediate_is_not_16);
+COMPILE_ASSERT(sizeof(UniformMatrix2fvImmediate) == 12,
+               Sizeof_UniformMatrix2fvImmediate_is_not_12);
 COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, header) == 0,
                OffsetOf_UniformMatrix2fvImmediate_header_not_0);
 COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, location) == 4,
                OffsetOf_UniformMatrix2fvImmediate_location_not_4);
 COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, count) == 8,
                OffsetOf_UniformMatrix2fvImmediate_count_not_8);
-COMPILE_ASSERT(offsetof(UniformMatrix2fvImmediate, transpose) == 12,
-               OffsetOf_UniformMatrix2fvImmediate_transpose_not_12);
 
 struct UniformMatrix3fv {
   typedef UniformMatrix3fv ValueType;
@@ -6972,13 +6930,11 @@ struct UniformMatrix3fv {
 
   void Init(GLint _location,
             GLsizei _count,
-            GLboolean _transpose,
             uint32_t _value_shm_id,
             uint32_t _value_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
-    transpose = _transpose;
     value_shm_id = _value_shm_id;
     value_shm_offset = _value_shm_offset;
   }
@@ -6986,36 +6942,33 @@ struct UniformMatrix3fv {
   void* Set(void* cmd,
             GLint _location,
             GLsizei _count,
-            GLboolean _transpose,
             uint32_t _value_shm_id,
             uint32_t _value_shm_offset) {
     static_cast<ValueType*>(cmd)
-        ->Init(_location, _count, _transpose, _value_shm_id, _value_shm_offset);
+        ->Init(_location, _count, _value_shm_id, _value_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  uint32_t transpose;
   uint32_t value_shm_id;
   uint32_t value_shm_offset;
+  static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix3fv) == 24,
-               Sizeof_UniformMatrix3fv_is_not_24);
+COMPILE_ASSERT(sizeof(UniformMatrix3fv) == 20,
+               Sizeof_UniformMatrix3fv_is_not_20);
 COMPILE_ASSERT(offsetof(UniformMatrix3fv, header) == 0,
                OffsetOf_UniformMatrix3fv_header_not_0);
 COMPILE_ASSERT(offsetof(UniformMatrix3fv, location) == 4,
                OffsetOf_UniformMatrix3fv_location_not_4);
 COMPILE_ASSERT(offsetof(UniformMatrix3fv, count) == 8,
                OffsetOf_UniformMatrix3fv_count_not_8);
-COMPILE_ASSERT(offsetof(UniformMatrix3fv, transpose) == 12,
-               OffsetOf_UniformMatrix3fv_transpose_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix3fv, value_shm_id) == 16,
-               OffsetOf_UniformMatrix3fv_value_shm_id_not_16);
-COMPILE_ASSERT(offsetof(UniformMatrix3fv, value_shm_offset) == 20,
-               OffsetOf_UniformMatrix3fv_value_shm_offset_not_20);
+COMPILE_ASSERT(offsetof(UniformMatrix3fv, value_shm_id) == 12,
+               OffsetOf_UniformMatrix3fv_value_shm_id_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix3fv, value_shm_offset) == 16,
+               OffsetOf_UniformMatrix3fv_value_shm_offset_not_16);
 
 struct UniformMatrix3fvImmediate {
   typedef UniformMatrix3fvImmediate ValueType;
@@ -7036,23 +6989,15 @@ struct UniformMatrix3fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location,
-            GLsizei _count,
-            GLboolean _transpose,
-            const GLfloat* _value) {
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
-    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd,
-            GLint _location,
-            GLsizei _count,
-            GLboolean _transpose,
-            const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -7060,19 +7005,17 @@ struct UniformMatrix3fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  uint32_t transpose;
+  static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix3fvImmediate) == 16,
-               Sizeof_UniformMatrix3fvImmediate_is_not_16);
+COMPILE_ASSERT(sizeof(UniformMatrix3fvImmediate) == 12,
+               Sizeof_UniformMatrix3fvImmediate_is_not_12);
 COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, header) == 0,
                OffsetOf_UniformMatrix3fvImmediate_header_not_0);
 COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, location) == 4,
                OffsetOf_UniformMatrix3fvImmediate_location_not_4);
 COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, count) == 8,
                OffsetOf_UniformMatrix3fvImmediate_count_not_8);
-COMPILE_ASSERT(offsetof(UniformMatrix3fvImmediate, transpose) == 12,
-               OffsetOf_UniformMatrix3fvImmediate_transpose_not_12);
 
 struct UniformMatrix4fv {
   typedef UniformMatrix4fv ValueType;
@@ -7088,13 +7031,11 @@ struct UniformMatrix4fv {
 
   void Init(GLint _location,
             GLsizei _count,
-            GLboolean _transpose,
             uint32_t _value_shm_id,
             uint32_t _value_shm_offset) {
     SetHeader();
     location = _location;
     count = _count;
-    transpose = _transpose;
     value_shm_id = _value_shm_id;
     value_shm_offset = _value_shm_offset;
   }
@@ -7102,36 +7043,33 @@ struct UniformMatrix4fv {
   void* Set(void* cmd,
             GLint _location,
             GLsizei _count,
-            GLboolean _transpose,
             uint32_t _value_shm_id,
             uint32_t _value_shm_offset) {
     static_cast<ValueType*>(cmd)
-        ->Init(_location, _count, _transpose, _value_shm_id, _value_shm_offset);
+        ->Init(_location, _count, _value_shm_id, _value_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  uint32_t transpose;
   uint32_t value_shm_id;
   uint32_t value_shm_offset;
+  static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix4fv) == 24,
-               Sizeof_UniformMatrix4fv_is_not_24);
+COMPILE_ASSERT(sizeof(UniformMatrix4fv) == 20,
+               Sizeof_UniformMatrix4fv_is_not_20);
 COMPILE_ASSERT(offsetof(UniformMatrix4fv, header) == 0,
                OffsetOf_UniformMatrix4fv_header_not_0);
 COMPILE_ASSERT(offsetof(UniformMatrix4fv, location) == 4,
                OffsetOf_UniformMatrix4fv_location_not_4);
 COMPILE_ASSERT(offsetof(UniformMatrix4fv, count) == 8,
                OffsetOf_UniformMatrix4fv_count_not_8);
-COMPILE_ASSERT(offsetof(UniformMatrix4fv, transpose) == 12,
-               OffsetOf_UniformMatrix4fv_transpose_not_12);
-COMPILE_ASSERT(offsetof(UniformMatrix4fv, value_shm_id) == 16,
-               OffsetOf_UniformMatrix4fv_value_shm_id_not_16);
-COMPILE_ASSERT(offsetof(UniformMatrix4fv, value_shm_offset) == 20,
-               OffsetOf_UniformMatrix4fv_value_shm_offset_not_20);
+COMPILE_ASSERT(offsetof(UniformMatrix4fv, value_shm_id) == 12,
+               OffsetOf_UniformMatrix4fv_value_shm_id_not_12);
+COMPILE_ASSERT(offsetof(UniformMatrix4fv, value_shm_offset) == 16,
+               OffsetOf_UniformMatrix4fv_value_shm_offset_not_16);
 
 struct UniformMatrix4fvImmediate {
   typedef UniformMatrix4fvImmediate ValueType;
@@ -7152,23 +7090,15 @@ struct UniformMatrix4fvImmediate {
     header.SetCmdByTotalSize<ValueType>(ComputeSize(count));
   }
 
-  void Init(GLint _location,
-            GLsizei _count,
-            GLboolean _transpose,
-            const GLfloat* _value) {
+  void Init(GLint _location, GLsizei _count, const GLfloat* _value) {
     SetHeader(_count);
     location = _location;
     count = _count;
-    transpose = _transpose;
     memcpy(ImmediateDataAddress(this), _value, ComputeDataSize(_count));
   }
 
-  void* Set(void* cmd,
-            GLint _location,
-            GLsizei _count,
-            GLboolean _transpose,
-            const GLfloat* _value) {
-    static_cast<ValueType*>(cmd)->Init(_location, _count, _transpose, _value);
+  void* Set(void* cmd, GLint _location, GLsizei _count, const GLfloat* _value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _count, _value);
     const uint32_t size = ComputeSize(_count);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
@@ -7176,19 +7106,17 @@ struct UniformMatrix4fvImmediate {
   gpu::CommandHeader header;
   int32_t location;
   int32_t count;
-  uint32_t transpose;
+  static const uint32_t transpose = false;
 };
 
-COMPILE_ASSERT(sizeof(UniformMatrix4fvImmediate) == 16,
-               Sizeof_UniformMatrix4fvImmediate_is_not_16);
+COMPILE_ASSERT(sizeof(UniformMatrix4fvImmediate) == 12,
+               Sizeof_UniformMatrix4fvImmediate_is_not_12);
 COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, header) == 0,
                OffsetOf_UniformMatrix4fvImmediate_header_not_0);
 COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, location) == 4,
                OffsetOf_UniformMatrix4fvImmediate_location_not_4);
 COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, count) == 8,
                OffsetOf_UniformMatrix4fvImmediate_count_not_8);
-COMPILE_ASSERT(offsetof(UniformMatrix4fvImmediate, transpose) == 12,
-               OffsetOf_UniformMatrix4fvImmediate_transpose_not_12);
 
 struct UseProgram {
   typedef UseProgram ValueType;
@@ -8111,14 +8039,12 @@ struct FramebufferTexture2DMultisampleEXT {
             GLenum _attachment,
             GLenum _textarget,
             GLuint _texture,
-            GLint _level,
             GLsizei _samples) {
     SetHeader();
     target = _target;
     attachment = _attachment;
     textarget = _textarget;
     texture = _texture;
-    level = _level;
     samples = _samples;
   }
 
@@ -8127,10 +8053,9 @@ struct FramebufferTexture2DMultisampleEXT {
             GLenum _attachment,
             GLenum _textarget,
             GLuint _texture,
-            GLint _level,
             GLsizei _samples) {
     static_cast<ValueType*>(cmd)
-        ->Init(_target, _attachment, _textarget, _texture, _level, _samples);
+        ->Init(_target, _attachment, _textarget, _texture, _samples);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8139,12 +8064,12 @@ struct FramebufferTexture2DMultisampleEXT {
   uint32_t attachment;
   uint32_t textarget;
   uint32_t texture;
-  int32_t level;
   int32_t samples;
+  static const int32_t level = 0;
 };
 
-COMPILE_ASSERT(sizeof(FramebufferTexture2DMultisampleEXT) == 28,
-               Sizeof_FramebufferTexture2DMultisampleEXT_is_not_28);
+COMPILE_ASSERT(sizeof(FramebufferTexture2DMultisampleEXT) == 24,
+               Sizeof_FramebufferTexture2DMultisampleEXT_is_not_24);
 COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, header) == 0,
                OffsetOf_FramebufferTexture2DMultisampleEXT_header_not_0);
 COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, target) == 4,
@@ -8155,10 +8080,8 @@ COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, textarget) == 12,
                OffsetOf_FramebufferTexture2DMultisampleEXT_textarget_not_12);
 COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, texture) == 16,
                OffsetOf_FramebufferTexture2DMultisampleEXT_texture_not_16);
-COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, level) == 20,
-               OffsetOf_FramebufferTexture2DMultisampleEXT_level_not_20);
-COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, samples) == 24,
-               OffsetOf_FramebufferTexture2DMultisampleEXT_samples_not_24);
+COMPILE_ASSERT(offsetof(FramebufferTexture2DMultisampleEXT, samples) == 20,
+               OffsetOf_FramebufferTexture2DMultisampleEXT_samples_not_20);
 
 struct TexStorage2DEXT {
   typedef TexStorage2DEXT ValueType;
@@ -10257,7 +10180,6 @@ struct AsyncTexImage2DCHROMIUM {
             GLint _internalformat,
             GLsizei _width,
             GLsizei _height,
-            GLint _border,
             GLenum _format,
             GLenum _type,
             uint32_t _pixels_shm_id,
@@ -10271,7 +10193,6 @@ struct AsyncTexImage2DCHROMIUM {
     internalformat = _internalformat;
     width = _width;
     height = _height;
-    border = _border;
     format = _format;
     type = _type;
     pixels_shm_id = _pixels_shm_id;
@@ -10287,7 +10208,6 @@ struct AsyncTexImage2DCHROMIUM {
             GLint _internalformat,
             GLsizei _width,
             GLsizei _height,
-            GLint _border,
             GLenum _format,
             GLenum _type,
             uint32_t _pixels_shm_id,
@@ -10300,7 +10220,6 @@ struct AsyncTexImage2DCHROMIUM {
                                        _internalformat,
                                        _width,
                                        _height,
-                                       _border,
                                        _format,
                                        _type,
                                        _pixels_shm_id,
@@ -10317,7 +10236,6 @@ struct AsyncTexImage2DCHROMIUM {
   int32_t internalformat;
   int32_t width;
   int32_t height;
-  int32_t border;
   uint32_t format;
   uint32_t type;
   uint32_t pixels_shm_id;
@@ -10325,10 +10243,11 @@ struct AsyncTexImage2DCHROMIUM {
   uint32_t async_upload_token;
   uint32_t sync_data_shm_id;
   uint32_t sync_data_shm_offset;
+  static const int32_t border = 0;
 };
 
-COMPILE_ASSERT(sizeof(AsyncTexImage2DCHROMIUM) == 56,
-               Sizeof_AsyncTexImage2DCHROMIUM_is_not_56);
+COMPILE_ASSERT(sizeof(AsyncTexImage2DCHROMIUM) == 52,
+               Sizeof_AsyncTexImage2DCHROMIUM_is_not_52);
 COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, header) == 0,
                OffsetOf_AsyncTexImage2DCHROMIUM_header_not_0);
 COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, target) == 4,
@@ -10341,22 +10260,20 @@ COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, width) == 16,
                OffsetOf_AsyncTexImage2DCHROMIUM_width_not_16);
 COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, height) == 20,
                OffsetOf_AsyncTexImage2DCHROMIUM_height_not_20);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, border) == 24,
-               OffsetOf_AsyncTexImage2DCHROMIUM_border_not_24);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, format) == 28,
-               OffsetOf_AsyncTexImage2DCHROMIUM_format_not_28);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, type) == 32,
-               OffsetOf_AsyncTexImage2DCHROMIUM_type_not_32);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_id) == 36,
-               OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_id_not_36);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_offset) == 40,
-               OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_offset_not_40);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, async_upload_token) == 44,
-               OffsetOf_AsyncTexImage2DCHROMIUM_async_upload_token_not_44);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_id) == 48,
-               OffsetOf_AsyncTexImage2DCHROMIUM_sync_data_shm_id_not_48);
-COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_offset) == 52,
-               OffsetOf_AsyncTexImage2DCHROMIUM_sync_data_shm_offset_not_52);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, format) == 24,
+               OffsetOf_AsyncTexImage2DCHROMIUM_format_not_24);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, type) == 28,
+               OffsetOf_AsyncTexImage2DCHROMIUM_type_not_28);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_id) == 32,
+               OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_id_not_32);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, pixels_shm_offset) == 36,
+               OffsetOf_AsyncTexImage2DCHROMIUM_pixels_shm_offset_not_36);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, async_upload_token) == 40,
+               OffsetOf_AsyncTexImage2DCHROMIUM_async_upload_token_not_40);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_id) == 44,
+               OffsetOf_AsyncTexImage2DCHROMIUM_sync_data_shm_id_not_44);
+COMPILE_ASSERT(offsetof(AsyncTexImage2DCHROMIUM, sync_data_shm_offset) == 48,
+               OffsetOf_AsyncTexImage2DCHROMIUM_sync_data_shm_offset_not_48);
 
 struct WaitAsyncTexImage2DCHROMIUM {
   typedef WaitAsyncTexImage2DCHROMIUM ValueType;

@@ -122,8 +122,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DWithNoBoundTarget) {
   cmd.Init(GL_FRAMEBUFFER,
            GL_COLOR_ATTACHMENT0,
            GL_TEXTURE_2D,
-           client_texture_id_,
-           0);
+           client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
@@ -218,8 +217,7 @@ TEST_P(GLES2DecoderTest, GetFramebufferAttachmentParameterivWithTexture) {
   fbtex_cmd.Init(GL_FRAMEBUFFER,
                  GL_COLOR_ATTACHMENT0,
                  GL_TEXTURE_2D,
-                 client_texture_id_,
-                 0);
+                 client_texture_id_);
   cmd.Init(GL_FRAMEBUFFER,
            GL_COLOR_ATTACHMENT0,
            GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
@@ -1329,8 +1327,7 @@ TEST_P(GLES2DecoderTest, FramebufferTexture2DGLError) {
   fbtex_cmd.Init(GL_FRAMEBUFFER,
                  GL_COLOR_ATTACHMENT0,
                  GL_TEXTURE_2D,
-                 client_texture_id_,
-                 0);
+                 client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(fbtex_cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
@@ -1805,7 +1802,6 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImageWithInCompleteFBOFails) {
   GLenum internal_format = GL_RGBA;
   GLsizei width = 2;
   GLsizei height = 4;
-  GLint border = 0;
   SetupTexture();
   DoBindRenderbuffer(
       GL_RENDERBUFFER, client_renderbuffer_id_, kServiceRenderbufferId);
@@ -1823,7 +1819,7 @@ TEST_P(GLES2DecoderWithShaderTest, CopyTexImageWithInCompleteFBOFails) {
       .Times(0)
       .RetiresOnSaturation();
   CopyTexImage2D cmd;
-  cmd.Init(target, level, internal_format, 0, 0, width, height, border);
+  cmd.Init(target, level, internal_format, 0, 0, width, height);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_FRAMEBUFFER_OPERATION, GetGLError());
 }
@@ -1961,7 +1957,7 @@ void GLES2DecoderWithShaderTest::CheckTextureChangesMarkFBOAsNotComplete(
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   CopyTexImage2D cmd;
-  cmd.Init(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1, 1, 0);
+  cmd.Init(GL_TEXTURE_2D, 0, GL_RGB, 0, 0, 1, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_FALSE(framebuffer_manager->IsComplete(framebuffer));
 

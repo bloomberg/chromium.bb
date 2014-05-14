@@ -73,10 +73,6 @@ static const GLenum valid_face_type_table[] = {
     GL_FRONT, GL_BACK, GL_FRONT_AND_BACK,
 };
 
-static const GLboolean valid_false_only_table[] = {
-    false,
-};
-
 static const GLenum valid_frame_buffer_parameter_table[] = {
     GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
     GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
@@ -323,10 +319,6 @@ static const GLenum valid_texture_bind_target_table[] = {
     GL_TEXTURE_2D, GL_TEXTURE_CUBE_MAP,
 };
 
-static const GLint valid_texture_border_table[] = {
-    0,
-};
-
 static const GLenum valid_texture_format_table[] = {
     GL_ALPHA, GL_LUMINANCE, GL_LUMINANCE_ALPHA, GL_RGB, GL_RGBA,
 };
@@ -393,10 +385,6 @@ static const GLenum valid_vertex_pointer_table[] = {
     GL_VERTEX_ATTRIB_ARRAY_POINTER,
 };
 
-static const GLint valid_zero_only_table[] = {
-    0,
-};
-
 Validators::Validators()
     : attachment(valid_attachment_table, arraysize(valid_attachment_table)),
       backbuffer_attachment(valid_backbuffer_attachment_table,
@@ -418,7 +406,6 @@ Validators::Validators()
       equation(valid_equation_table, arraysize(valid_equation_table)),
       face_mode(valid_face_mode_table, arraysize(valid_face_mode_table)),
       face_type(valid_face_type_table, arraysize(valid_face_type_table)),
-      false_only(valid_false_only_table, arraysize(valid_false_only_table)),
       frame_buffer_parameter(valid_frame_buffer_parameter_table,
                              arraysize(valid_frame_buffer_parameter_table)),
       frame_buffer_target(valid_frame_buffer_target_table,
@@ -467,8 +454,6 @@ Validators::Validators()
       string_type(valid_string_type_table, arraysize(valid_string_type_table)),
       texture_bind_target(valid_texture_bind_target_table,
                           arraysize(valid_texture_bind_target_table)),
-      texture_border(valid_texture_border_table,
-                     arraysize(valid_texture_border_table)),
       texture_format(valid_texture_format_table,
                      arraysize(valid_texture_format_table)),
       texture_internal_format(valid_texture_internal_format_table,
@@ -497,8 +482,7 @@ Validators::Validators()
       vertex_attribute(valid_vertex_attribute_table,
                        arraysize(valid_vertex_attribute_table)),
       vertex_pointer(valid_vertex_pointer_table,
-                     arraysize(valid_vertex_pointer_table)),
-      zero_only(valid_zero_only_table, arraysize(valid_zero_only_table)) {
+                     arraysize(valid_vertex_pointer_table)) {
 }
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_

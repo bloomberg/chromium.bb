@@ -507,9 +507,16 @@ _STATES = {
   },
 }
 
-# This is a list of enum names and their valid values. It is used to map
-# GLenum arguments to a specific set of valid values.
-_ENUM_LISTS = {
+# Named type info object represents a named type that is used in OpenGL call
+# arguments.  Each named type defines a set of valid OpenGL call arguments.  The
+# named types are used in 'cmd_buffer_functions.txt'.
+# type: The actual GL type of the named type.
+# valid: The list of values that are valid for both the client and the service.
+# invalid: Examples of invalid values for the type. At least these values
+#          should be tested to be invalid.
+# is_complete: The list of valid values of type are final and will not be
+#              modified during runtime.
+_NAMED_TYPE_INFO = {
   'BlitFilter': {
     'type': 'GLenum',
     'valid': [
@@ -1152,6 +1159,7 @@ _ENUM_LISTS = {
   },
   'TextureBorder': {
     'type': 'GLint',
+    'is_complete': True,
     'valid': [
       '0',
     ],
@@ -1174,6 +1182,7 @@ _ENUM_LISTS = {
   },
   'ZeroOnly': {
     'type': 'GLint',
+    'is_complete': True,
     'valid': [
       '0',
     ],
@@ -1183,6 +1192,7 @@ _ENUM_LISTS = {
   },
   'FalseOnly': {
     'type': 'GLboolean',
+    'is_complete': True,
     'valid': [
       'false',
     ],
@@ -2733,6 +2743,12 @@ class TypeHandler(object):
     args = func.GetCmdArgs()
     for arg in args:
       file.Write("  %s %s;\n" % (arg.cmd_type, arg.name))
+
+    consts = func.GetCmdConstants()
+    for const in consts:
+      file.Write("  static const %s %s = %s;\n" %
+                 (const.cmd_type, const.name, const.GetConstantValue()))
+
     file.Write("};\n")
     file.Write("\n")
 
@@ -2901,16 +2917,18 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
       file.Write("    return error;\n")
 
   def WriteValidUnitTest(self, func, file, test, extra = {}):
-    """Writes a valid unit test."""
+    """Writes a valid unit test for the service implementation."""
     if func.GetInfo('expectation') == False:
       test = self._remove_expected_call_re.sub('', test)
     name = func.name
-    arg_strings = []
-    for count, arg in enumerate(func.GetOriginalArgs()):
-      arg_strings.append(arg.GetValidArg(func, count, 0))
-    gl_arg_strings = []
-    for count, arg in enumerate(func.GetOriginalArgs()):
-      gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
+    arg_strings = [
+      arg.GetValidArg(func) \
+      for arg in func.GetOriginalArgs() if not arg.IsConstant()
+    ]
+    gl_arg_strings = [
+      arg.GetValidGLArg(func) \
+      for arg in func.GetOriginalArgs()
+    ]
     gl_func_name = func.GetGLTestFunctionName()
     vars = {
       'test_name': 'GLES2DecoderTest%d' % file.file_num,
@@ -2927,19 +2945,26 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write(test % vars)
 
   def WriteInvalidUnitTest(self, func, file, test, extra = {}):
-    """Writes a invalid unit test."""
-    for arg_index, arg in enumerate(func.GetOriginalArgs()):
-      num_invalid_values = arg.GetNumInvalidValues(func)
+    """Writes an invalid unit test for the service implementation."""
+    for invalid_arg_index, invalid_arg in enumerate(func.GetOriginalArgs()):
+      # Service implementation does not test constants, as they are not part of
+      # the call in the service side.
+      if invalid_arg.IsConstant():
+        continue
+
+      num_invalid_values = invalid_arg.GetNumInvalidValues(func)
       for value_index in range(0, num_invalid_values):
         arg_strings = []
         parse_result = "kNoError"
         gl_error = None
-        for count, arg in enumerate(func.GetOriginalArgs()):
-          if count == arg_index:
+        for arg in func.GetOriginalArgs():
+          if arg.IsConstant():
+            continue
+          if invalid_arg is arg:
             (arg_string, parse_result, gl_error) = arg.GetInvalidArg(
-                count, value_index)
+                value_index)
           else:
-            arg_string = arg.GetValidArg(func, count, 0)
+            arg_string = arg.GetValidArg(func)
           arg_strings.append(arg_string)
         gl_arg_strings = []
         for arg in func.GetOriginalArgs():
@@ -2952,7 +2977,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         vars = {
           'test_name': 'GLES2DecoderTest%d' % file.file_num ,
           'name': func.name,
-          'arg_index': arg_index,
+          'arg_index': invalid_arg_index,
           'value_index': value_index,
           'gl_func_name': gl_func_name,
           'args': ", ".join(arg_strings),
@@ -3111,7 +3136,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
       for arg in func.GetOriginalArgs():
         arg.WriteClientSideValidationCode(file, func)
       file.Write("  helper_->%s(%s);\n" %
-                 (func.name, func.MakeOriginalArgString("")))
+                 (func.name, func.MakeHelperArgString("")))
       file.Write("  CheckGLError();\n")
       self.WriteClientGLReturnLog(func, file)
       file.Write("}\n")
@@ -3157,17 +3182,45 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 """
-      cmd_arg_strings = []
-      for count, arg in enumerate(func.GetCmdArgs()):
-        cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
-        count += 1
-      gl_arg_strings = []
-      for count, arg in enumerate(func.GetOriginalArgs()):
-        gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+      cmd_arg_strings = [
+        arg.GetValidClientSideCmdArg(func) for arg in func.GetCmdArgs()
+      ]
+
+      gl_arg_strings = [
+        arg.GetValidClientSideArg(func) for arg in func.GetOriginalArgs()
+      ]
+
       file.Write(code % {
             'name': func.name,
             'args': ", ".join(gl_arg_strings),
             'cmd_args': ", ".join(cmd_arg_strings),
+          })
+
+      # Test constants for invalid values, as they are not tested by the
+      # service.
+      constants = [arg for arg in func.GetOriginalArgs() if arg.IsConstant()]
+      if constants:
+        code = """
+TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
+  gl_->%(name)s(%(args)s);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(%(gl_error)s, CheckError());
+}
+"""
+        for invalid_arg in constants:
+          gl_arg_strings = []
+          invalid = invalid_arg.GetInvalidArg(func)
+          for arg in func.GetOriginalArgs():
+            if arg is invalid_arg:
+              gl_arg_strings.append(invalid[0])
+            else:
+              gl_arg_strings.append(arg.GetValidClientSideArg(func))
+
+          file.Write(code % {
+            'name': func.name,
+            'invalid_index': func.GetOriginalArgs().index(invalid_arg),
+            'args': ", ".join(gl_arg_strings),
+            'gl_error': invalid[2],
           })
     else:
       if client_test != False:
@@ -3302,9 +3355,11 @@ TEST_P(%(test_name)s, %(name)sInvalidValue%(ndx)d_%(check_ndx)d) {
 }
 """
           name = func.name
-          arg_strings = []
-          for count, arg in enumerate(func.GetOriginalArgs()):
-            arg_strings.append(arg.GetValidArg(func, count, 0))
+          arg_strings = [
+            arg.GetValidArg(func) \
+            for arg in func.GetOriginalArgs() if not arg.IsConstant()
+          ]
+
           arg_strings[ndx] = range_check['test_value']
           vars = {
             'test_name': 'GLES2DecoderTest%d' % file.file_num,
@@ -3820,8 +3875,8 @@ TEST_P(%(test_name)s, %(name)sValidArgsNewId) {
 }
 """
       self.WriteValidUnitTest(func, file, valid_test, {
-          'first_arg': func.GetOriginalArgs()[0].GetValidArg(func, 0, 0),
-          'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(func, 0, 0),
+          'first_arg': func.GetOriginalArgs()[0].GetValidArg(func),
+          'first_gl_arg': func.GetOriginalArgs()[0].GetValidGLArg(func),
           'resource_type': func.GetOriginalArgs()[1].resource_type,
           'gl_gen_func_name': func.GetInfo("gen_func"),
       })
@@ -3903,13 +3958,13 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   EXPECT_TRUE(NoCommandsWritten());
 }
 """
-    cmd_arg_strings = []
-    for count, arg in enumerate(func.GetCmdArgs()):
-      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
-      count += 1
-    gl_arg_strings = []
-    for count, arg in enumerate(func.GetOriginalArgs()):
-      gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+    cmd_arg_strings = [
+      arg.GetValidClientSideCmdArg(func) for arg in func.GetCmdArgs()
+    ]
+    gl_arg_strings = [
+      arg.GetValidClientSideArg(func) for arg in func.GetOriginalArgs()
+    ]
+
     file.Write(code % {
           'name': func.name,
           'args': ", ".join(gl_arg_strings),
@@ -4594,7 +4649,9 @@ class GETnHandler(TypeHandler):
       arg_string = (
           ", ".join(["%s" % arg.name for arg in all_but_last_args]))
       all_arg_string = (
-          ", ".join(["%s" % arg.name for arg in func.GetOriginalArgs()]))
+          ", ".join([
+            "%s" % arg.name
+              for arg in func.GetOriginalArgs() if not arg.IsConstant()]))
       self.WriteTraceEvent(func, file)
       code = """  if (%(func_name)sHelper(%(all_arg_string)s)) {
     return;
@@ -4643,14 +4700,18 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   EXPECT_EQ(static_cast<Result::Type>(1), result);
 }
 """
-    cmd_arg_strings = []
-    for count, arg in enumerate(func.GetCmdArgs()[0:-2]):
-      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
-    cmd_arg_strings[0] = '123'
-    gl_arg_strings = []
-    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
-      gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
-    gl_arg_strings[0] = '123'
+    first_cmd_arg = func.GetCmdArgs()[0].GetValidNonCachedClientSideCmdArg(func)
+    if not first_cmd_arg:
+      return
+
+    first_gl_arg = func.GetCmdArgs()[0].GetValidNonCachedClientSideArg(func)
+    cmd_arg_strings = [first_cmd_arg]
+    for arg in func.GetCmdArgs()[1:-2]:
+      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func))
+    gl_arg_strings = [first_gl_arg]
+    for arg in func.GetOriginalArgs()[1:-1]:
+      gl_arg_strings.append(arg.GetValidClientSideArg(func))
+
     file.Write(code % {
           'name': func.name,
           'args': ", ".join(gl_arg_strings),
@@ -4681,8 +4742,8 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 """
     gl_arg_strings = []
     valid_pname = ''
-    for count, arg in enumerate(func.GetOriginalArgs()[:-1]):
-      arg_value = arg.GetValidGLArg(func, count, 0)
+    for arg in func.GetOriginalArgs()[:-1]:
+      arg_value = arg.GetValidGLArg(func)
       gl_arg_strings.append(arg_value)
       if arg.name == 'pname':
         valid_pname = arg_value
@@ -4745,9 +4806,9 @@ class PUTHandler(ArrayArgTypeHandler):
     """Writes the service unit test for a command."""
     expected_call = "EXPECT_CALL(*gl_, %(gl_func_name)s(%(gl_args)s));"
     if func.GetInfo("first_element_only"):
-      gl_arg_strings = []
-      for count, arg in enumerate(func.GetOriginalArgs()):
-        gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
+      gl_arg_strings = [
+        arg.GetValidGLArg(func) for arg in func.GetOriginalArgs()
+      ]
       gl_arg_strings[-1] = "*" + gl_arg_strings[-1]
       expected_call = ("EXPECT_CALL(*gl_, %%(gl_func_name)s(%s));" %
           ", ".join(gl_arg_strings))
@@ -4798,11 +4859,11 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 """
-    gl_arg_strings = []
-    gl_any_strings = []
-    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
-      gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
-      gl_any_strings.append("_")
+    gl_arg_strings = [
+      arg.GetValidGLArg(func) for arg in func.GetOriginalArgs()[0:-1]
+    ]
+    gl_any_strings = ["_"] * len(gl_arg_strings)
+
     extra = {
       'data_ref': ("*" if func.GetInfo('first_element_only') else ""),
       'data_type': self.GetArrayType(func),
@@ -4885,12 +4946,13 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 """
-    cmd_arg_strings = []
-    for count, arg in enumerate(func.GetCmdArgs()[0:-2]):
-      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
-    gl_arg_strings = []
-    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
-      gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+    cmd_arg_strings = [
+      arg.GetValidClientSideCmdArg(func) for arg in func.GetCmdArgs()[0:-2]
+    ]
+    gl_arg_strings = [
+      arg.GetValidClientSideArg(func) for arg in func.GetOriginalArgs()[0:-1]
+    ]
+
     file.Write(code % {
           'name': func.name,
           'type': self.GetArrayType(func),
@@ -5040,8 +5102,9 @@ TEST_P(%(test_name)s, %(name)sValidArgsCountTooLarge) {
         # the number of elements requested in the command.
         arg_strings.append("5")
       else:
-        gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
-        arg_strings.append(arg.GetValidArg(func, count, 0))
+        gl_arg_strings.append(arg.GetValidGLArg(func))
+        if not arg.IsConstant():
+          arg_strings.append(arg.GetValidArg(func))
     extra = {
       'gl_args': ", ".join(gl_arg_strings),
       'args': ", ".join(arg_strings),
@@ -5068,10 +5131,11 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
     gl_arg_strings = []
     gl_any_strings = []
     arg_strings = []
-    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
-      gl_arg_strings.append(arg.GetValidGLArg(func, count, 0))
+    for arg in func.GetOriginalArgs()[0:-1]:
+      gl_arg_strings.append(arg.GetValidGLArg(func))
       gl_any_strings.append("_")
-      arg_strings.append(arg.GetValidArg(func, count, 0))
+      if not arg.IsConstant():
+        arg_strings.append(arg.GetValidArg(func))
     extra = {
       'data_type': self.GetArrayType(func),
       'data_count': self.GetArrayCount(func),
@@ -5128,7 +5192,7 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     for arg in func.GetOriginalArgs():
       arg.WriteClientSideValidationCode(file, func)
     file.Write("  helper_->%sImmediate(%s);\n" %
-               (func.name, func.MakeOriginalArgString("")))
+               (func.name, func.MakeInitString("")))
     file.Write("  CheckGLError();\n")
     file.Write("}\n")
     file.Write("\n")
@@ -5154,15 +5218,16 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 """
-    cmd_arg_strings = []
-    for count, arg in enumerate(func.GetCmdArgs()[0:-2]):
-      cmd_arg_strings.append(arg.GetValidClientSideCmdArg(func, count, 0))
+    cmd_arg_strings = [
+      arg.GetValidClientSideCmdArg(func) for arg in func.GetCmdArgs()[0:-2]
+    ]
     gl_arg_strings = []
     count_param = 0
-    for count, arg in enumerate(func.GetOriginalArgs()[0:-1]):
-      gl_arg_strings.append(arg.GetValidClientSideArg(func, count, 0))
+    for arg in func.GetOriginalArgs()[0:-1]:
+      valid_value = arg.GetValidClientSideArg(func)
+      gl_arg_strings.append(valid_value)
       if arg.name == "count":
-        count_param = int(arg.GetValidClientSideArg(func, count, 0))
+        count_param = int(valid_value)
     file.Write(code % {
           'name': func.name,
           'type': self.GetArrayType(func),
@@ -5171,6 +5236,50 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
           'cmd_args': ", ".join(cmd_arg_strings),
           'count_param': count_param,
         })
+
+    # Test constants for invalid values, as they are not tested by the
+    # service.
+    constants = [
+      arg for arg in func.GetOriginalArgs()[0:-1] if arg.IsConstant()
+    ]
+    if not constants:
+      return
+
+    code = """
+TEST_F(GLES2ImplementationTest, %(name)sInvalidConstantArg%(invalid_index)d) {
+  %(type)s data[%(count_param)d][%(count)d] = {{0}};
+  for (int ii = 0; ii < %(count_param)d; ++ii) {
+    for (int jj = 0; jj < %(count)d; ++jj) {
+      data[ii][jj] = static_cast<%(type)s>(ii * %(count)d + jj);
+    }
+  }
+  gl_->%(name)s(%(args)s, &data[0][0]);
+  EXPECT_TRUE(NoCommandsWritten());
+  EXPECT_EQ(%(gl_error)s, CheckError());
+}
+"""
+    for invalid_arg in constants:
+      gl_arg_strings = []
+      invalid = invalid_arg.GetInvalidArg(func)
+      for arg in func.GetOriginalArgs()[0:-1]:
+        if arg is invalid_arg:
+          gl_arg_strings.append(invalid[0])
+        else:
+          valid_value = arg.GetValidClientSideArg(func)
+          gl_arg_strings.append(valid_value)
+          if arg.name == "count":
+            count_param = int(valid_value)
+
+      file.Write(code % {
+        'name': func.name,
+        'invalid_index': func.GetOriginalArgs().index(invalid_arg),
+        'type': self.GetArrayType(func),
+        'count': self.GetArrayCount(func),
+        'args': ", ".join(gl_arg_strings),
+        'gl_error': invalid[2],
+        'count_param': count_param,
+      })
+
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -5239,17 +5348,17 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 """
     file.Write(code % {
           "name": func.name,
-          "typed_args": func.MakeTypedOriginalArgString(""),
-          "args": func.MakeOriginalArgString(""),
+          "typed_args": func.MakeTypedInitString(""),
+          "args": func.MakeInitString("")
         })
 
   def WriteImmediateFormatTest(self, func, file):
     """Overrriden from TypeHandler."""
     args = func.GetCmdArgs()
     count_param = 0
-    for value, arg in enumerate(args):
+    for arg in args:
       if arg.name == "count":
-        count_param = int(arg.GetValidClientSideArg(func, value, 0))
+        count_param = int(arg.GetValidClientSideCmdArg(func))
     file.Write("TEST_F(GLES2FormatTest, %s) {\n" % func.name)
     file.Write("  const int kSomeBaseValueToTestWith = 51;\n")
     file.Write("  static %s data[] = {\n" % self.GetArrayType(func))
@@ -5322,7 +5431,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 }
 """
     args = func.GetOriginalArgs()
-    local_args = "%s, 1, _" % args[0].GetValidGLArg(func, 0, 0)
+    local_args = "%s, 1, _" % args[0].GetValidGLArg(func)
     self.WriteValidUnitTest(func, file, valid_test, {
         'name': func.name,
         'count': self.GetArrayCount(func),
@@ -5382,7 +5491,7 @@ class GLcharHandler(CustomHandler):
 
 """
     file.Write(code % {
-          "typed_args": func.MakeTypedOriginalArgString("_"),
+          "typed_args": func.MakeTypedArgString("_"),
           "set_code": "\n".join(set_code),
           "last_arg": last_arg.name
         })
@@ -5391,9 +5500,9 @@ class GLcharHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     last_arg = func.GetLastOriginalArg()
     file.Write("  void* Set(void* cmd%s, uint32_t _data_size) {\n" %
-               func.MakeTypedOriginalArgString("_", True))
+               func.MakeTypedCmdArgString("_", True))
     file.Write("    static_cast<ValueType*>(cmd)->Init(%s, _data_size);\n" %
-               func.MakeOriginalArgString("_"))
+               func.MakeCmdArgString("_"))
     file.Write("    return NextImmediateCmdAddress<ValueType>("
                "cmd, _data_size);\n")
     file.Write("  }\n")
@@ -5740,7 +5849,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 }
 """
     args = func.GetOriginalArgs()
-    id_name = args[0].GetValidGLArg(func, 0, 0)
+    id_name = args[0].GetValidGLArg(func)
     get_len_func = func.GetInfo('get_len_func')
     get_len_enum = func.GetInfo('get_len_enum')
     sub = {
@@ -5748,8 +5857,8 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
         'get_len_func': get_len_func,
         'get_len_enum': get_len_enum,
         'gl_args': '%s, strlen(kInfo) + 1, _, _' %
-             args[0].GetValidGLArg(func, 0, 0),
-        'args': '%s, kBucketId' % args[0].GetValidArg(func, 0, 0),
+             args[0].GetValidGLArg(func),
+        'args': '%s, kBucketId' % args[0].GetValidArg(func),
         'expect_len_code': '',
     }
     if get_len_func and get_len_func[0:2] == 'gl':
@@ -5775,6 +5884,41 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     pass
+
+class NamedType(object):
+  """A class that represents a type of an argument in a client function.
+
+  A type of an argument that is to be passed through in the command buffer
+  command. Currently used only for the arguments that are specificly named in
+  the 'cmd_buffer_functions.txt' file, mostly enums.
+  """
+
+  def __init__(self, info):
+    assert not 'is_complete' in info or info['is_complete'] == True
+    self.info = info
+    self.valid = info['valid']
+    if 'invalid' in info:
+      self.invalid = info['invalid']
+    else:
+      self.invalid = []
+
+  def GetType(self):
+    return self.info['type']
+
+  def GetInvalidValues(self):
+    return self.invalid
+
+  def GetValidValues(self):
+    return self.valid
+
+  def IsConstant(self):
+    if not 'is_complete' in self.info:
+      return False
+
+    return len(self.GetValidValues()) == 1
+
+  def GetConstantValue(self):
+    return self.GetValidValues()[0]
 
 class Argument(object):
   """A class that represents a function argument."""
@@ -5806,41 +5950,73 @@ class Argument(object):
     """Returns true if argument is a pointer."""
     return False
 
+  def IsConstant(self):
+    """Returns true if the argument has only one valid value."""
+    return False
+
   def AddCmdArgs(self, args):
     """Adds command arguments for this argument to the given list."""
-    return args.append(self)
+    if not self.IsConstant():
+      return args.append(self)
 
   def AddInitArgs(self, args):
     """Adds init arguments for this argument to the given list."""
-    return args.append(self)
+    if not self.IsConstant():
+      return args.append(self)
 
-  def GetValidArg(self, func, offset, index):
+  def GetValidArg(self, func):
     """Gets a valid value for this argument."""
-    valid_arg = func.GetValidArg(offset)
+    valid_arg = func.GetValidArg(self)
     if valid_arg != None:
       return valid_arg
-    return str(offset + 1)
 
-  def GetValidClientSideArg(self, func, offset, index):
+    index = func.GetOriginalArgs().index(self)
+    return str(index + 1)
+
+  def GetValidClientSideArg(self, func):
     """Gets a valid value for this argument."""
-    return str(offset + 1)
+    valid_arg = func.GetValidArg(self)
+    if valid_arg != None:
+      return valid_arg
 
-  def GetValidClientSideCmdArg(self, func, offset, index):
+    index = func.GetOriginalArgs().index(self)
+    return str(index + 1)
+
+  def GetValidClientSideCmdArg(self, func):
     """Gets a valid value for this argument."""
-    return str(offset + 1)
+    valid_arg = func.GetValidArg(self)
+    if valid_arg != None:
+      return valid_arg
+    try:
+      index = func.GetOriginalArgs().index(self)
+      return str(index + 1)
+    except ValueError:
+      pass
+    index = func.GetCmdArgs().index(self)
+    return str(index + 1)
 
-  def GetValidGLArg(self, func, offset, index):
+  def GetValidGLArg(self, func):
     """Gets a valid GL value for this argument."""
-    valid_arg = func.GetValidArg(offset)
-    if valid_arg != None:
-      return valid_arg
-    return str(offset + 1)
+    return self.GetValidArg(func)
+
+  def GetValidNonCachedClientSideArg(self, func):
+    """Returns a valid value for this argument in a GL call.
+    Using the value will produce a command buffer service invocation.
+    Returns None if there is no such value."""
+    return '123'
+
+  def GetValidNonCachedClientSideCmdArg(self, func):
+    """Returns a valid value for this argument in a command buffer command.
+    Calling the GL function with the value returned by
+    GetValidNonCachedClientSideArg will result in a command buffer command
+    that contains the value returned by this function. """
+    return '123'
 
   def GetNumInvalidValues(self, func):
     """returns the number of invalid values to be tested."""
     return 0
 
-  def GetInvalidArg(self, offset, index):
+  def GetInvalidArg(self, index):
     """returns an invalid value and expected parse result by index."""
     return ("---ERROR0---", "---ERROR2---", None)
 
@@ -5899,19 +6075,19 @@ class BoolArgument(Argument):
   def __init__(self, name, type):
     Argument.__init__(self, name, 'GLboolean')
 
-  def GetValidArg(self, func, offset, index):
+  def GetValidArg(self, func):
     """Gets a valid value for this argument."""
     return 'true'
 
-  def GetValidClientSideArg(self, func, offset, index):
+  def GetValidClientSideArg(self, func):
     """Gets a valid value for this argument."""
     return 'true'
 
-  def GetValidClientSideCmdArg(self, func, offset, index):
+  def GetValidClientSideCmdArg(self, func):
     """Gets a valid value for this argument."""
     return 'true'
 
-  def GetValidGLArg(self, func, offset, index):
+  def GetValidGLArg(self, func):
     """Gets a valid GL value for this argument."""
     return 'true'
 
@@ -5927,11 +6103,6 @@ class UniformLocationArgument(Argument):
     code = """  %s %s = static_cast<%s>(c.%s);
 """
     file.Write(code % (self.type, self.name, self.type, self.name))
-
-  def GetValidArg(self, func, offset, index):
-    """Gets a valid value for this argument."""
-    return "%d" % (offset + 1)
-
 
 class DataSizeArgument(Argument):
   """class for data_size which Bucket commands do not need."""
@@ -5955,7 +6126,7 @@ class SizeArgument(Argument):
       return 0
     return 1
 
-  def GetInvalidArg(self, offset, index):
+  def GetInvalidArg(self, index):
     """overridden from Argument."""
     return ("-1", "kNoError", "GL_INVALID_VALUE")
 
@@ -5984,7 +6155,7 @@ class SizeNotNegativeArgument(SizeArgument):
   def __init__(self, name, type, gl_type):
     SizeArgument.__init__(self, name, gl_type)
 
-  def GetInvalidArg(self, offset, index):
+  def GetInvalidArg(self, index):
     """overridden from SizeArgument."""
     return ("-1", "kOutOfBounds", "GL_NO_ERROR")
 
@@ -6003,11 +6174,19 @@ class EnumBaseArgument(Argument):
     self.gl_error = gl_error
     name = type[len(gl_type):]
     self.type_name = name
-    self.enum_info = _ENUM_LISTS[name]
+    self.named_type = NamedType(_NAMED_TYPE_INFO[name])
+
+  def IsConstant(self):
+    return self.named_type.IsConstant()
+
+  def GetConstantValue(self):
+    return self.named_type.GetConstantValue()
 
   def WriteValidationCode(self, file, func):
+    if self.named_type.IsConstant():
+      return
     file.Write("  if (!validators_->%s.IsValid(%s)) {\n" %
-        (ToUnderscore(self.type_name), self.name))
+               (ToUnderscore(self.type_name), self.name))
     if self.gl_error == "GL_INVALID_ENUM":
       file.Write(
           "    LOCAL_SET_GL_ERROR_INVALID_ENUM(\"gl%s\", %s, \"%s\");\n" %
@@ -6019,41 +6198,67 @@ class EnumBaseArgument(Argument):
     file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
 
-  def GetValidArg(self, func, offset, index):
-    valid_arg = func.GetValidArg(offset)
+  def WriteClientSideValidationCode(self, file, func):
+    if not self.named_type.IsConstant():
+      return
+    file.Write("  if (%s != %s) {" % (self.name,
+                                      self.GetConstantValue()))
+    file.Write(
+      "    SetGLError(%s, \"gl%s\", \"%s %s\");\n" %
+      (self.gl_error, func.original_name, self.name, self.gl_error))
+    if func.return_type == "void":
+      file.Write("    return;\n")
+    else:
+      file.Write("    return %s;\n" % func.GetErrorReturnString())
+    file.Write("  }\n")
+
+  def GetValidArg(self, func):
+    valid_arg = func.GetValidArg(self)
     if valid_arg != None:
       return valid_arg
-    if 'valid' in self.enum_info:
-      valid = self.enum_info['valid']
+    valid = self.named_type.GetValidValues()
+    if valid:
       num_valid = len(valid)
-      if index >= num_valid:
-        index = num_valid - 1
-      return valid[index]
-    return str(offset + 1)
+      return valid[0]
 
-  def GetValidClientSideArg(self, func, offset, index):
-    """Gets a valid value for this argument."""
-    return self.GetValidArg(func, offset, index)
+    index = func.GetOriginalArgs().index(self)
+    return str(index + 1)
 
-  def GetValidClientSideCmdArg(self, func, offset, index):
+  def GetValidClientSideArg(self, func):
     """Gets a valid value for this argument."""
-    return self.GetValidArg(func, offset, index)
+    return self.GetValidArg(func)
 
-  def GetValidGLArg(self, func, offset, index):
+  def GetValidClientSideCmdArg(self, func):
     """Gets a valid value for this argument."""
-    return self.GetValidArg(func, offset, index)
+    valid_arg = func.GetValidArg(self)
+    if valid_arg != None:
+      return valid_arg
+
+    valid = self.named_type.GetValidValues()
+    if valid:
+      num_valid = len(valid)
+      return valid[0]
+
+    try:
+      index = func.GetOriginalArgs().index(self)
+      return str(index + 1)
+    except ValueError:
+      pass
+    index = func.GetCmdArgs().index(self)
+    return str(index + 1)
+
+  def GetValidGLArg(self, func):
+    """Gets a valid value for this argument."""
+    return self.GetValidArg(func)
 
   def GetNumInvalidValues(self, func):
     """returns the number of invalid values to be tested."""
-    if 'invalid' in self.enum_info:
-      invalid = self.enum_info['invalid']
-      return len(invalid)
-    return 0
+    return len(self.named_type.GetInvalidValues())
 
-  def GetInvalidArg(self, offset, index):
+  def GetInvalidArg(self, index):
     """returns an invalid value by index."""
-    if 'invalid' in self.enum_info:
-      invalid = self.enum_info['invalid']
+    invalid = self.named_type.GetInvalidValues()
+    if invalid:
       num_invalid = len(invalid)
       if index >= num_invalid:
         index = num_invalid - 1
@@ -6194,11 +6399,11 @@ class PointerArgument(Argument):
     assert match
     return match.groupdict()['element_type']
 
-  def GetValidArg(self, func, offset, index):
+  def GetValidArg(self, func):
     """Overridden from Argument."""
     return "shared_memory_id_, shared_memory_offset_"
 
-  def GetValidGLArg(self, func, offset, index):
+  def GetValidGLArg(self, func):
     """Overridden from Argument."""
     return "reinterpret_cast<%s>(shared_memory_address_)" % self.type
 
@@ -6206,7 +6411,7 @@ class PointerArgument(Argument):
     """Overridden from Argument."""
     return 2
 
-  def GetInvalidArg(self, offset, index):
+  def GetInvalidArg(self, index):
     """Overridden from Argument."""
     if index == 0:
       return ("kInvalidSharedMemoryId, 0", "kOutOfBounds", None)
@@ -6285,10 +6490,10 @@ class InputStringBucketArgument(Argument):
         'name': self.name,
       })
 
-  def GetValidArg(self, func, offset, index):
+  def GetValidArg(self, func):
     return "kNameBucketId"
 
-  def GetValidGLArg(self, func, offset, index):
+  def GetValidGLArg(self, func):
     return "_"
 
 
@@ -6320,10 +6525,10 @@ class ResourceIdArgument(Argument):
     """Overridden from Argument."""
     file.Write("  %s %s = c.%s;\n" % (self.type, self.name, self.name))
 
-  def GetValidArg(self, func, offset, index):
+  def GetValidArg(self, func):
     return "client_%s_id_" % self.resource_type.lower()
 
-  def GetValidGLArg(self, func, offset, index):
+  def GetValidGLArg(self, func):
     return "kService%sId" % self.resource_type
 
 
@@ -6342,10 +6547,10 @@ class ResourceIdBindArgument(Argument):
 """
     file.Write(code % {'type': self.type, 'name': self.name})
 
-  def GetValidArg(self, func, offset, index):
+  def GetValidArg(self, func):
     return "client_%s_id_" % self.resource_type.lower()
 
-  def GetValidGLArg(self, func, offset, index):
+  def GetValidGLArg(self, func):
     return "kService%sId" % self.resource_type
 
 
@@ -6362,17 +6567,17 @@ class ResourceIdZeroArgument(Argument):
     """Overridden from Argument."""
     file.Write("  %s %s = c.%s;\n" % (self.type, self.name, self.name))
 
-  def GetValidArg(self, func, offset, index):
+  def GetValidArg(self, func):
     return "client_%s_id_" % self.resource_type.lower()
 
-  def GetValidGLArg(self, func, offset, index):
+  def GetValidGLArg(self, func):
     return "kService%sId" % self.resource_type
 
   def GetNumInvalidValues(self, func):
     """returns the number of invalid values to be tested."""
     return 1
 
-  def GetInvalidArg(self, offset, index):
+  def GetInvalidArg(self, index):
     """returns an invalid value by index."""
     return ("kInvalidClientId", "kNoError", "GL_INVALID_VALUE")
 
@@ -6477,8 +6682,14 @@ class Function(object):
       return self.info[name]
     return default
 
-  def GetValidArg(self, index):
-    """Gets a valid arg from the function info if one exists."""
+  def GetValidArg(self, arg):
+    """Gets a valid argument value for the parameter arg from the function info
+    if one exists."""
+    try:
+      index = self.GetOriginalArgs().index(arg)
+    except ValueError:
+      return None
+
     valid_args = self.GetInfo('valid_args')
     if valid_args and str(index) in valid_args:
       return valid_args[str(index)]
@@ -6500,6 +6711,15 @@ class Function(object):
 
   def InAnyPepperExtension(self):
     return self.IsCoreGLFunction() or self.GetInfo('pepper_interface')
+
+  def GetErrorReturnString(self):
+    if self.GetInfo("error_return"):
+      return self.GetInfo("error_return")
+    elif self.return_type == "GLboolean":
+      return "GL_FALSE"
+    elif "*" in self.return_type:
+      return "NULL"
+    return "0"
 
   def GetGLFunctionName(self):
     """Gets the function to call to execute GL for this command."""
@@ -6528,6 +6748,10 @@ class Function(object):
   def ClearCmdArgs(self):
     """Clears the command args for this function."""
     self.cmd_args = []
+
+  def GetCmdConstants(self):
+    """Gets the constants for this function."""
+    return [arg for arg in self.args_for_cmds if arg.IsConstant()]
 
   def GetInitArgs(self):
     """Gets the init args for this function."""
@@ -6560,6 +6784,25 @@ class Function(object):
     args = self.GetOriginalArgs()
     arg_string = separator.join(
         ["%s%s" % (prefix, arg.name) for arg in args])
+    return self.__MaybePrependComma(arg_string, add_comma)
+
+  def MakeTypedHelperArgString(self, prefix, add_comma = False):
+    """Gets a list of typed GL arguments after removing unneeded arguments."""
+    args = self.GetOriginalArgs()
+    arg_string = ", ".join(
+        ["%s %s%s" % (
+          arg.type,
+          prefix,
+          arg.name,
+        ) for arg in args if not arg.IsConstant()])
+    return self.__MaybePrependComma(arg_string, add_comma)
+
+  def MakeHelperArgString(self, prefix, add_comma = False, separator = ", "):
+    """Gets a list of GL arguments after removing unneeded arguments."""
+    args = self.GetOriginalArgs()
+    arg_string = separator.join(
+        ["%s%s" % (prefix, arg.name)
+         for arg in args if not arg.IsConstant()])
     return self.__MaybePrependComma(arg_string, add_comma)
 
   def MakeTypedPepperArgString(self, prefix):
@@ -7659,53 +7902,58 @@ extern const NameToFunc g_gles2_function_table[] = {
   def WriteServiceUtilsHeader(self, filename):
     """Writes the gles2 auto generated utility header."""
     file = CHeaderWriter(filename)
-    for enum in sorted(_ENUM_LISTS.keys()):
+    for name in sorted(_NAMED_TYPE_INFO.keys()):
+      named_type = NamedType(_NAMED_TYPE_INFO[name])
+      if named_type.IsConstant():
+        continue
       file.Write("ValueValidator<%s> %s;\n" %
-                 (_ENUM_LISTS[enum]['type'], ToUnderscore(enum)))
+                 (named_type.GetType(), ToUnderscore(name)))
     file.Write("\n")
     file.Close()
 
   def WriteServiceUtilsImplementation(self, filename):
     """Writes the gles2 auto generated utility implementation."""
     file = CHeaderWriter(filename)
-    enums = sorted(_ENUM_LISTS.keys())
-    for enum in enums:
-      if len(_ENUM_LISTS[enum]['valid']) > 0:
+    names = sorted(_NAMED_TYPE_INFO.keys())
+    for name in names:
+      named_type = NamedType(_NAMED_TYPE_INFO[name])
+      if named_type.IsConstant():
+        continue
+      if named_type.GetValidValues():
         file.Write("static const %s valid_%s_table[] = {\n" %
-                   (_ENUM_LISTS[enum]['type'], ToUnderscore(enum)))
-        for value in _ENUM_LISTS[enum]['valid']:
+                   (named_type.GetType(), ToUnderscore(name)))
+        for value in named_type.GetValidValues():
           file.Write("  %s,\n" % value)
         file.Write("};\n")
         file.Write("\n")
-    file.Write("Validators::Validators()\n")
-    pre = ': '
-    post = ','
-    for count, enum in enumerate(enums):
-      if count + 1 == len(enums):
-        post = ' {'
-      if len(_ENUM_LISTS[enum]['valid']) > 0:
-        code = """    %(pre)s%(name)s(
-          valid_%(name)s_table, arraysize(valid_%(name)s_table))%(post)s
-"""
+    file.Write("Validators::Validators()")
+    pre = '    : '
+    for count, name in enumerate(names):
+      named_type = NamedType(_NAMED_TYPE_INFO[name])
+      if named_type.IsConstant():
+        continue
+      if named_type.GetValidValues():
+        code = """%(pre)s%(name)s(
+          valid_%(name)s_table, arraysize(valid_%(name)s_table))"""
       else:
-        code = """    %(pre)s%(name)s()%(post)s
-"""
+        code = "%(pre)s%(name)s()"
       file.Write(code % {
-          'name': ToUnderscore(enum),
-          'pre': pre,
-          'post': post,
-        })
-      pre = '  '
+        'name': ToUnderscore(name),
+        'pre': pre,
+      })
+      pre = ',\n    '
+    file.Write(" {\n");
     file.Write("}\n\n");
     file.Close()
 
   def WriteCommonUtilsHeader(self, filename):
     """Writes the gles2 common utility header."""
     file = CHeaderWriter(filename)
-    enums = sorted(_ENUM_LISTS.keys())
-    for enum in enums:
-      if _ENUM_LISTS[enum]['type'] == 'GLenum':
-        file.Write("static std::string GetString%s(uint32_t value);\n" % enum)
+    type_infos = sorted(_NAMED_TYPE_INFO.keys())
+    for type_info in type_infos:
+      if _NAMED_TYPE_INFO[type_info]['type'] == 'GLenum':
+        file.Write("static std::string GetString%s(uint32_t value);\n" %
+                   type_info)
     file.Write("\n")
     file.Close()
 
@@ -7740,14 +7988,14 @@ const size_t GLES2Util::enum_to_string_table_len_ =
 
 """)
 
-    enums = sorted(_ENUM_LISTS.keys())
+    enums = sorted(_NAMED_TYPE_INFO.keys())
     for enum in enums:
-      if _ENUM_LISTS[enum]['type'] == 'GLenum':
+      if _NAMED_TYPE_INFO[enum]['type'] == 'GLenum':
         file.Write("std::string GLES2Util::GetString%s(uint32_t value) {\n" %
                    enum)
-        if len(_ENUM_LISTS[enum]['valid']) > 0:
+        if len(_NAMED_TYPE_INFO[enum]['valid']) > 0:
           file.Write("  static const EnumToString string_table[] = {\n")
-          for value in _ENUM_LISTS[enum]['valid']:
+          for value in _NAMED_TYPE_INFO[enum]['valid']:
             file.Write('    { %s, "%s" },\n' % (value, value))
           file.Write("""  };
   return GLES2Util::GetQualifiedEnumString(
@@ -7862,14 +8110,7 @@ const size_t GLES2Util::enum_to_string_table_len_ =
         file.Write("\n")
       else:
         file.Write(" else {\n")
-        error_return = "0"
-        if func.GetInfo("error_return"):
-          error_return = func.GetInfo("error_return")
-        elif func.return_type == "GLboolean":
-          error_return = "GL_FALSE"
-        elif "*" in func.return_type:
-          error_return = "NULL"
-        file.Write("    return %s;\n" % error_return)
+        file.Write("    return %s;\n" % func.GetErrorReturnString())
         file.Write("  }\n")
       file.Write("}\n\n")
 
@@ -7975,14 +8216,15 @@ def main(argv):
   for state_name in sorted(_STATES.keys()):
     state = _STATES[state_name]
     if 'enum' in state:
-      _ENUM_LISTS['GLState']['valid'].append(state['enum'])
+      _NAMED_TYPE_INFO['GLState']['valid'].append(state['enum'])
     else:
       for item in state['states']:
         if 'extension_flag' in item:
           continue
-        _ENUM_LISTS['GLState']['valid'].append(item['enum'])
+        _NAMED_TYPE_INFO['GLState']['valid'].append(item['enum'])
   for capability in _CAPABILITY_FLAGS:
-    _ENUM_LISTS['GLState']['valid'].append("GL_%s" % capability['name'].upper())
+    _NAMED_TYPE_INFO['GLState']['valid'].append("GL_%s" %
+                                                capability['name'].upper())
 
   # This script lives under gpu/command_buffer, cd to base directory.
   os.chdir(os.path.dirname(__file__) + "/../..")

@@ -199,7 +199,7 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
     {
       valid_uniform = accepts_apis & Program::kUniformMatrix2f;
       cmds::UniformMatrix2fv cmd;
-      cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
+      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
       EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
@@ -208,7 +208,7 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
     {
       valid_uniform = accepts_apis & Program::kUniformMatrix3f;
       cmds::UniformMatrix3fv cmd;
-      cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
+      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
       EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());
@@ -217,7 +217,7 @@ class GLES2DecoderTest2 : public GLES2DecoderTestBase {
     {
       valid_uniform = accepts_apis & Program::kUniformMatrix4f;
       cmds::UniformMatrix4fv cmd;
-      cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
+      cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
       EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
       EXPECT_EQ(valid_uniform ? GL_NO_ERROR : GL_INVALID_OPERATION,
                 GetGLError());

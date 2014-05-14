@@ -505,7 +505,6 @@ TEST_P(GLES2DecoderTest, TexImage2DRedefinitionSucceeds) {
                GL_RGBA,
                kWidth,
                kHeight,
-               0,
                GL_RGBA,
                GL_UNSIGNED_BYTE,
                kSharedMemoryId,
@@ -526,7 +525,6 @@ TEST_P(GLES2DecoderTest, TexImage2DRedefinitionSucceeds) {
                GL_RGBA,
                kWidth,
                kHeight,
-               0,
                GL_RGBA,
                GL_UNSIGNED_BYTE,
                0,
@@ -601,7 +599,6 @@ TEST_P(GLES2DecoderTest, TexImage2DGLError) {
            internal_format,
            width,
            height,
-           border,
            format,
            type,
            kSharedMemoryId,
@@ -634,7 +631,7 @@ TEST_P(GLES2DecoderTest, CopyTexImage2DGLError) {
       .Times(1)
       .RetiresOnSaturation();
   CopyTexImage2D cmd;
-  cmd.Init(target, level, internal_format, 0, 0, width, height, border);
+  cmd.Init(target, level, internal_format, 0, 0, width, height);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
   EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D, level, &width, &height));
@@ -655,7 +652,6 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DBucketBadBucket) {
            GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
            4,
            4,
-           0,
            kBadBucketId);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   CompressedTexSubImage2DBucket cmd2;
@@ -715,7 +711,7 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test bad width.
-    cmd.Init(GL_TEXTURE_2D, 0, test.format, 5, 4, 0, kBucketId);
+    cmd.Init(GL_TEXTURE_2D, 0, test.format, 5, 4, kBucketId);
     bucket->SetSize(test.block_size * 2);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -726,7 +722,7 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test too bad height.
-    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 5, 0, kBucketId);
+    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 5, kBucketId);
     bucket->SetSize(test.block_size * 2);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
@@ -742,13 +738,13 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DS3TC) {
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
     // test size too large.
-    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 4, 0, kBucketId);
+    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 4, kBucketId);
     bucket->SetSize(test.block_size * 2);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 
     // test size too small.
-    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 4, 0, kBucketId);
+    cmd.Init(GL_TEXTURE_2D, 0, test.format, 4, 4, kBucketId);
     bucket->SetSize(test.block_size / 2);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
@@ -862,13 +858,13 @@ TEST_P(GLES2DecoderManualInitTest, CompressedTexImage2DETC1) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // test size too large.
-  cmd.Init(GL_TEXTURE_2D, 0, kFormat, 4, 4, 0, kBucketId);
+  cmd.Init(GL_TEXTURE_2D, 0, kFormat, 4, 4, kBucketId);
   bucket->SetSize(kBlockSize * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 
   // test size too small.
-  cmd.Init(GL_TEXTURE_2D, 0, kFormat, 4, 4, 0, kBucketId);
+  cmd.Init(GL_TEXTURE_2D, 0, kFormat, 4, 4, kBucketId);
   bucket->SetSize(kBlockSize / 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
@@ -1071,7 +1067,6 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
   GLenum internal_format = GL_RGBA;
   GLsizei width = 2;
   GLsizei height = 4;
-  GLint border = 0;
   GLenum format = GL_RGBA;
   GLenum type = GL_UNSIGNED_BYTE;
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
@@ -1082,7 +1077,6 @@ TEST_P(GLES2DecoderManualInitTest, EGLImageExternalTexImage2DError) {
            internal_format,
            width,
            height,
-           border,
            format,
            type,
            kSharedMemoryId,
@@ -1295,7 +1289,6 @@ TEST_P(GLES2DecoderManualInitTest, NoDefaultTexImage2D) {
             GL_RGBA,
             2,
             2,
-            0,
             GL_RGBA,
             GL_UNSIGNED_BYTE,
             kSharedMemoryId,
@@ -1491,7 +1484,6 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DError) {
   GLenum internal_format = GL_RGBA;
   GLsizei width = 2;
   GLsizei height = 4;
-  GLint border = 0;
   GLenum format = GL_RGBA;
   GLenum type = GL_UNSIGNED_BYTE;
   DoBindTexture(
@@ -1503,7 +1495,6 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DError) {
            internal_format,
            width,
            height,
-           border,
            format,
            type,
            kSharedMemoryId,
@@ -1661,7 +1652,6 @@ TEST_P(
              GL_RGBA,
              2,
              2,
-             0,
              GL_RGBA,
              GL_UNSIGNED_BYTE,
              kSharedMemoryId,
@@ -1726,7 +1716,7 @@ TEST_P(GLES2DecoderTest, TexSubImage2DClearsAfterTexImage2DWithDataThenNULL) {
   // Put in no data.
   TexImage2D tex_cmd;
   tex_cmd.Init(
-      GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
+      GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, 0, 0);
   // It won't actually call TexImage2D, just mark it as uncleared.
   EXPECT_EQ(error::kNoError, ExecuteCmd(tex_cmd));
   // Next call to TexSubImage2d should clear.
@@ -1785,7 +1775,7 @@ TEST_P(GLES2DecoderTest, CopyTexImage2DMarksTextureAsCleared) {
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   CopyTexImage2D cmd;
-  cmd.Init(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1, 1, 0);
+  cmd.Init(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, 1, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   EXPECT_TRUE(texture->SafeToRenderFrom());
@@ -1840,7 +1830,6 @@ TEST_P(GLES2DecoderManualInitTest, CompressedImage2DMarksTextureAsCleared) {
            GL_COMPRESSED_RGB_S3TC_DXT1_EXT,
            4,
            4,
-           0,
            8,
            kSharedMemoryId,
            kSharedMemoryOffset);
@@ -1960,7 +1949,6 @@ TEST_P(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
                GL_DEPTH_COMPONENT,
                1,
                1,
-               0,
                GL_DEPTH_COMPONENT,
                GL_UNSIGNED_INT,
                kSharedMemoryId,
@@ -1973,7 +1961,6 @@ TEST_P(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
                GL_DEPTH_COMPONENT,
                1,
                1,
-               0,
                GL_DEPTH_COMPONENT,
                GL_UNSIGNED_INT,
                0,
@@ -2011,7 +1998,7 @@ TEST_P(GLES2DecoderManualInitTest, DepthTextureBadArgs) {
 
   // Check that trying to CopyTexImage2D fails
   CopyTexImage2D copy_tex_cmd;
-  copy_tex_cmd.Init(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 0, 0, 1, 1, 0);
+  copy_tex_cmd.Init(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 0, 0, 1, 1);
   EXPECT_EQ(error::kNoError, ExecuteCmd(copy_tex_cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 
@@ -2286,8 +2273,7 @@ TEST_P(GLES2DecoderWithShaderTest, UseTexImage) {
   fbtex_cmd.Init(GL_FRAMEBUFFER,
                  GL_COLOR_ATTACHMENT0,
                  GL_TEXTURE_2D,
-                 client_texture_id_,
-                 0);
+                 client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(fbtex_cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
