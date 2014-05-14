@@ -367,7 +367,7 @@ class ToughSchedulingCasesPageSet(page_set_module.PageSet):
     self.AddPage(Page3(self))
     self.AddPage(Page4(self))
     self.AddPage(Page5(self))
-    self.AddPage(Page6(self))
+    # self.AddPage(Page6(self)) Flaky crbug.com/368532
     # Why: Touch handler scrolling baseline
     self.AddPage(ToughSchedulingCasesPage(
       'file://tough_scheduling_cases/touch_handler_scrolling.html',
