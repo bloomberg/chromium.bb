@@ -65,14 +65,12 @@ void PlatformEventSource::RemovePlatformEventObserver(
 
 uint32_t PlatformEventSource::DispatchEvent(PlatformEvent platform_event) {
   uint32_t action = POST_DISPATCH_PERFORM_DEFAULT;
-  bool should_quit = false;
 
   FOR_EACH_OBSERVER(PlatformEventObserver, observers_,
                     WillProcessEvent(platform_event));
   // Give the overridden dispatcher a chance to dispatch the event first.
   if (overridden_dispatcher_)
     action = overridden_dispatcher_->DispatchEvent(platform_event);
-  should_quit = !!(action & POST_DISPATCH_QUIT_LOOP);
 
   if ((action & POST_DISPATCH_PERFORM_DEFAULT) &&
       dispatchers_.might_have_observers()) {
@@ -80,8 +78,6 @@ uint32_t PlatformEventSource::DispatchEvent(PlatformEvent platform_event) {
     while (PlatformEventDispatcher* dispatcher = iter.GetNext()) {
       if (dispatcher->CanDispatchEvent(platform_event))
         action = dispatcher->DispatchEvent(platform_event);
-      if (action & POST_DISPATCH_QUIT_LOOP)
-        should_quit = true;
       if (action & POST_DISPATCH_STOP_PROPAGATION)
         break;
     }
@@ -89,23 +85,20 @@ uint32_t PlatformEventSource::DispatchEvent(PlatformEvent platform_event) {
   FOR_EACH_OBSERVER(PlatformEventObserver, observers_,
                     DidProcessEvent(platform_event));
 
-  // Terminate the message-loop if the dispatcher requested for it.
-  if (should_quit) {
-    base::MessageLoop::current()->QuitNow();
-    action |= POST_DISPATCH_QUIT_LOOP;
-  }
-
   // If an overridden dispatcher has been destroyed, then the platform
   // event-source should halt dispatching the current stream of events, and wait
   // until the next message-loop iteration for dispatching events. This lets any
   // nested message-loop to unwind correctly and any new dispatchers to receive
   // the correct sequence of events.
   if (overridden_dispatcher_restored_)
-    action |= POST_DISPATCH_QUIT_LOOP;
+    StopCurrentEventStream();
 
   overridden_dispatcher_restored_ = false;
 
   return action;
+}
+
+void PlatformEventSource::StopCurrentEventStream() {
 }
 
 void PlatformEventSource::OnDispatcherListChanged() {

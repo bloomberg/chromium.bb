@@ -69,7 +69,7 @@ class AcceleratorDispatcherLinux : public AcceleratorDispatcher,
 #else
         NOTIMPLEMENTED();
 #endif
-        return ui::POST_DISPATCH_QUIT_LOOP;
+        return ui::POST_DISPATCH_NONE;
       }
 
       if (AcceleratorProcessedForKeyEvent(key_event))

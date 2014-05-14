@@ -15,9 +15,8 @@ namespace ui {
 // explanation of the meaning of the flags.
 enum PostDispatchAction {
   POST_DISPATCH_NONE = 0x0,
-  POST_DISPATCH_QUIT_LOOP = 0x1,
-  POST_DISPATCH_PERFORM_DEFAULT = 0x2,
-  POST_DISPATCH_STOP_PROPAGATION = 0x4,
+  POST_DISPATCH_PERFORM_DEFAULT = 0x1,
+  POST_DISPATCH_STOP_PROPAGATION = 0x2,
 };
 
 // PlatformEventDispatcher receives events from a PlatformEventSource and
@@ -30,12 +29,9 @@ class EVENTS_EXPORT PlatformEventDispatcher {
   // Dispatches |event|. If this is not the default dispatcher, then the
   // dispatcher can request that the default dispatcher gets a chance to
   // dispatch the event by setting POST_DISPATCH_PERFORM_DEFAULT to the return
-  // value. If a nested message-loop is active, then the dispatcher can signal
-  // that the nested message-loop should be terminated by setting
-  // POST_DISPATCH_QUIT_LOOP flag on the return value. If the dispatcher has
-  // processed the event, and no other dispatcher should be allowed to dispatch
-  // the event, then the dispatcher should set POST_DISPATCH_STOP_PROPAGATION
-  // flag on the return value.
+  // value. If the dispatcher has processed the event, and no other dispatcher
+  // should be allowed to dispatch the event, then the dispatcher should set
+  // POST_DISPATCH_STOP_PROPAGATION flag on the return value.
   virtual uint32_t DispatchEvent(const PlatformEvent& event) = 0;
 
  protected:

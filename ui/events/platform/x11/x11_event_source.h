@@ -47,9 +47,14 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
  private:
   // PlatformEventSource:
   virtual uint32_t DispatchEvent(XEvent* xevent) OVERRIDE;
+  virtual void StopCurrentEventStream() OVERRIDE;
 
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
+
+  // Keeps track of whether this source should continue to dispatch all the
+  // available events.
+  bool continue_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(X11EventSource);
 };

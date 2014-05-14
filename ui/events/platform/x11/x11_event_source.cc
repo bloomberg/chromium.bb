@@ -80,7 +80,8 @@ bool InitializeXkb(XDisplay* display) {
 }  // namespace
 
 X11EventSource::X11EventSource(XDisplay* display)
-    : display_(display) {
+    : display_(display),
+      continue_stream_(true) {
   CHECK(display_);
   InitializeXInput2(display_);
   InitializeXkb(display_);
@@ -102,12 +103,11 @@ void X11EventSource::DispatchXEvents() {
   // Handle all pending events.
   // It may be useful to eventually align this event dispatch with vsync, but
   // not yet.
-  while (XPending(display_)) {
+  continue_stream_ = true;
+  while (XPending(display_) && continue_stream_) {
     XEvent xevent;
     XNextEvent(display_, &xevent);
-    uint32_t action = DispatchEvent(&xevent);
-    if (action & POST_DISPATCH_QUIT_LOOP)
-      break;
+    DispatchEvent(&xevent);
   }
 }
 
@@ -140,6 +140,10 @@ uint32_t X11EventSource::DispatchEvent(XEvent* xevent) {
   if (have_cookie)
     XFreeEventData(xevent->xgeneric.display, &xevent->xcookie);
   return action;
+}
+
+void X11EventSource::StopCurrentEventStream() {
+  continue_stream_ = false;
 }
 
 }  // namespace ui

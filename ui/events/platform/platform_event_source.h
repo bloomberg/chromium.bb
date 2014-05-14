@@ -70,6 +70,11 @@ class EVENTS_EXPORT PlatformEventSource {
   friend class ScopedEventDispatcher;
   static PlatformEventSource* instance_;
 
+  // Called to indicate that the source should stop dispatching the current
+  // stream of events and wait until the next iteration of the message-loop to
+  // dispatch the rest of the events.
+  virtual void StopCurrentEventStream();
+
   // This is invoked when the list of dispatchers changes (i.e. a new dispatcher
   // is added, or a dispatcher is removed).
   virtual void OnDispatcherListChanged();

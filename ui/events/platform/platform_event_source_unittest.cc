@@ -45,7 +45,9 @@ void AddDispatcher(PlatformEventDispatcher* dispatcher) {
 
 class TestPlatformEventSource : public PlatformEventSource {
  public:
-  TestPlatformEventSource() {}
+  TestPlatformEventSource()
+      : stop_stream_(false) {
+  }
   virtual ~TestPlatformEventSource() {}
 
   uint32_t Dispatch(const PlatformEvent& event) { return DispatchEvent(event); }
@@ -53,22 +55,32 @@ class TestPlatformEventSource : public PlatformEventSource {
   // Dispatches the stream of events, and returns the number of events that are
   // dispatched before it is requested to stop.
   size_t DispatchEventStream(const ScopedVector<PlatformEvent>& events) {
+    stop_stream_ = false;
     for (size_t count = 0; count < events.size(); ++count) {
-      uint32_t action = DispatchEvent(*events[count]);
-      if (action & POST_DISPATCH_QUIT_LOOP)
+      DispatchEvent(*events[count]);
+      if (stop_stream_)
         return count + 1;
     }
     return events.size();
   }
 
+  // PlatformEventSource:
+  virtual void StopCurrentEventStream() OVERRIDE {
+    stop_stream_ = true;
+  }
+
  private:
+  bool stop_stream_;
   DISALLOW_COPY_AND_ASSIGN(TestPlatformEventSource);
 };
 
 class TestPlatformEventDispatcher : public PlatformEventDispatcher {
  public:
   TestPlatformEventDispatcher(int id, std::vector<int>* list)
-      : id_(id), list_(list), post_dispatch_action_(POST_DISPATCH_NONE) {
+      : id_(id),
+        list_(list),
+        post_dispatch_action_(POST_DISPATCH_NONE),
+        stop_stream_(false) {
     PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
   }
   virtual ~TestPlatformEventDispatcher() {
@@ -94,6 +106,7 @@ class TestPlatformEventDispatcher : public PlatformEventDispatcher {
   int id_;
   std::vector<int>* list_;
   uint32_t post_dispatch_action_;
+  bool stop_stream_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformEventDispatcher);
 };
@@ -562,6 +575,10 @@ class DestroyScopedHandleDispatcher : public TestPlatformEventDispatcher {
     handler_ = handler.Pass();
   }
 
+  void set_callback(const base::Closure& callback) {
+    callback_ = callback;
+  }
+
  private:
   // PlatformEventDispatcher:
   virtual bool CanDispatchEvent(const PlatformEvent& event) OVERRIDE {
@@ -570,10 +587,16 @@ class DestroyScopedHandleDispatcher : public TestPlatformEventDispatcher {
 
   virtual uint32_t DispatchEvent(const PlatformEvent& event) OVERRIDE {
     handler_.reset();
-    return TestPlatformEventDispatcher::DispatchEvent(event);
+    uint32_t action = TestPlatformEventDispatcher::DispatchEvent(event);
+    if (!callback_.is_null()) {
+      callback_.Run();
+      callback_ = base::Closure();
+    }
+    return action;
   }
 
   scoped_ptr<ScopedEventDispatcher> handler_;
+  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DestroyScopedHandleDispatcher);
 };
@@ -696,8 +719,9 @@ class ConsecutiveOverriddenDispatcherInTheSameMessageLoopIteration
     list->clear();
 
     second_overriding.SetScopedHandle(second_override_handle.Pass());
-    second_overriding.set_post_dispatch_action(POST_DISPATCH_QUIT_LOOP);
+    second_overriding.set_post_dispatch_action(POST_DISPATCH_NONE);
     base::RunLoop run_loop;
+    second_overriding.set_callback(run_loop.QuitClosure());
     base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
     base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
     loop->PostTask(
