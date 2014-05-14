@@ -8213,18 +8213,22 @@ def main(argv):
   (options, args) = parser.parse_args(args=argv)
 
   # Add in states and capabilites to GLState
+  gl_state_valid = _NAMED_TYPE_INFO['GLState']['valid']
   for state_name in sorted(_STATES.keys()):
     state = _STATES[state_name]
     if 'enum' in state:
-      _NAMED_TYPE_INFO['GLState']['valid'].append(state['enum'])
+      if not state['enum'] in gl_state_valid:
+        gl_state_valid.append(state['enum'])
     else:
       for item in state['states']:
         if 'extension_flag' in item:
           continue
-        _NAMED_TYPE_INFO['GLState']['valid'].append(item['enum'])
+        if not item['enum'] in gl_state_valid:
+          gl_state_valid.append(item['enum'])
   for capability in _CAPABILITY_FLAGS:
-    _NAMED_TYPE_INFO['GLState']['valid'].append("GL_%s" %
-                                                capability['name'].upper())
+    valid_value = "GL_%s" % capability['name'].upper()
+    if not valid_value in gl_state_valid:
+      gl_state_valid.append(valid_value)
 
   # This script lives under gpu/command_buffer, cd to base directory.
   os.chdir(os.path.dirname(__file__) + "/../..")
