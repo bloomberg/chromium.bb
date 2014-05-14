@@ -20,7 +20,7 @@ __start:
 bundle_altering_t6:
    addiu   JUMP_MASK, JUMP_MASK, 64       # Error, changing read-only register.
    and     JUMP_MASK, JUMP_MASK, $a2      # Error, changing read-only register.
-   lui     JUMP_MASK, $f0                 # Error, changing read-only register.
+   lui     JUMP_MASK, 0x21                # Error, changing read-only register.
    clo     JUMP_MASK, $a2                 # Error, changing read-only register.
    ins     JUMP_MASK, $s3, 2, 10          # Error, changing read-only register.
    lui     JUMP_MASK, 0x1f                # Error, changing read-only register.
@@ -36,7 +36,7 @@ bundle_altering_t6:
 bundle_altering_t7:
    addiu   STORE_MASK, STORE_MASK, 64     # Error, changing read-only register.
    and     STORE_MASK, STORE_MASK, $a2    # Error, changing read-only register.
-   lui     STORE_MASK, $f0                # Error, changing read-only register.
+   lui     STORE_MASK, 0x21               # Error, changing read-only register.
    clo     STORE_MASK, $a2                # Error, changing read-only register.
 
    # Testing instructions that alter t8 (TLS index).
