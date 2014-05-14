@@ -15,7 +15,6 @@
 #include "base/timer/timer.h"
 #include "components/autofill/content/renderer/form_cache.h"
 #include "components/autofill/content/renderer/page_click_listener.h"
-#include "components/autofill/core/common/forms_seen_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
@@ -167,6 +166,9 @@ class AutofillAgent : public content::RenderViewObserver,
   void PreviewFieldWithValue(const base::string16& value,
                              blink::WebInputElement* node);
 
+  // Notifies browser of new fillable forms in |frame|.
+  void ProcessForms(const blink::WebLocalFrame& frame);
+
   // Hides any currently showing Autofill popup.
   void HidePopup();
 
@@ -218,8 +220,10 @@ class AutofillAgent : public content::RenderViewObserver,
   // messages to close the Autofill popup when it can't possibly be showing.
   bool is_popup_possibly_visible_;
 
-  // Timestamp of first time forms are seen.
-  base::TimeTicks forms_seen_timestamp_;
+  // True if a message has already been sent about forms for the main frame.
+  // When the main frame is first loaded, a message is sent even if no forms
+  // exist in the frame. Otherwise, such messages are supressed.
+  bool main_frame_processed_;
 
   base::WeakPtrFactory<AutofillAgent> weak_ptr_factory_;
 

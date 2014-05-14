@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -68,22 +69,11 @@ FormCache::FormCache() {
 FormCache::~FormCache() {
 }
 
-void FormCache::ExtractForms(const WebFrame& frame,
-                             std::vector<FormData>* forms) {
-  ExtractFormsAndFormElements(frame, kRequiredAutofillFields, forms, NULL);
-}
-
-bool FormCache::ExtractFormsAndFormElements(
-    const WebFrame& frame,
-    size_t minimum_required_fields,
-    std::vector<FormData>* forms,
-    std::vector<WebFormElement>* web_form_elements) {
-  // Reset the cache for this frame.
-  ResetFrame(frame);
-
+void FormCache::ExtractNewForms(const WebFrame& frame,
+                                std::vector<FormData>* forms) {
   WebDocument document = frame.document();
   if (document.isNull())
-    return false;
+    return;
 
   web_documents_.insert(document);
 
@@ -91,7 +81,6 @@ bool FormCache::ExtractFormsAndFormElements(
   document.forms(web_forms);
 
   size_t num_fields_seen = 0;
-  bool has_skipped_forms = false;
   for (size_t i = 0; i < web_forms.size(); ++i) {
     WebFormElement form_element = web_forms[i];
 
@@ -128,9 +117,8 @@ bool FormCache::ExtractFormsAndFormElements(
     // To avoid overly expensive computation, we impose a minimum number of
     // allowable fields.  The corresponding maximum number of allowable fields
     // is imposed by WebFormElementToFormData().
-    if (num_editable_elements < minimum_required_fields &&
+    if (num_editable_elements < kRequiredAutofillFields &&
         control_elements.size() > 0) {
-      has_skipped_forms = true;
       continue;
     }
 
@@ -147,17 +135,12 @@ bool FormCache::ExtractFormsAndFormElements(
     if (num_fields_seen > kMaxParseableFields)
       break;
 
-    if (form.fields.size() >= minimum_required_fields) {
+    if (form.fields.size() >= kRequiredAutofillFields &&
+        !parsed_forms_[&frame].count(form)) {
       forms->push_back(form);
-      if (web_form_elements)
-        web_form_elements->push_back(form_element);
-    } else {
-      has_skipped_forms = true;
+      parsed_forms_[&frame].insert(form);
     }
   }
-
-  // Return true if there are any WebFormElements skipped, else false.
-  return has_skipped_forms;
 }
 
 void FormCache::ResetFrame(const WebFrame& frame) {
@@ -175,6 +158,7 @@ void FormCache::ResetFrame(const WebFrame& frame) {
     web_documents_.erase(*it);
   }
 
+  parsed_forms_[&frame].clear();
   RemoveOldElements(frame, &initial_select_values_);
   RemoveOldElements(frame, &initial_checked_state_);
 }

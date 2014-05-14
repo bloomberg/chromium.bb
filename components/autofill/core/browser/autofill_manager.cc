@@ -303,7 +303,7 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
         base::Bind(&AutofillManager::UploadFormDataAsyncCallback,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Owned(submitted_form.release()),
-                   forms_loaded_timestamp_,
+                   forms_loaded_timestamps_[form],
                    initial_interaction_timestamp_,
                    timestamp));
   }
@@ -312,15 +312,9 @@ bool AutofillManager::OnFormSubmitted(const FormData& form,
 }
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
-                                  const TimeTicks& timestamp,
-                                  autofill::FormsSeenState state) {
+                                  const TimeTicks& timestamp) {
   if (!IsValidFormDataVector(forms))
     return;
-
-  bool is_post_document_load = state == autofill::DYNAMIC_FORMS_SEEN;
-  // If new forms were added dynamically, treat as a new page.
-  if (is_post_document_load)
-    Reset();
 
   if (!driver_->RendererIsAvailable())
     return;
@@ -334,7 +328,10 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
   if (!enabled)
     return;
 
-  forms_loaded_timestamp_ = timestamp;
+  for (size_t i = 0; i < forms.size(); ++i) {
+    forms_loaded_timestamps_[forms[i]] = timestamp;
+  }
+
   ParseForms(forms);
 }
 
@@ -797,7 +794,7 @@ void AutofillManager::Reset() {
   user_did_type_ = false;
   user_did_autofill_ = false;
   user_did_edit_autofilled_field_ = false;
-  forms_loaded_timestamp_ = TimeTicks();
+  forms_loaded_timestamps_.clear();
   initial_interaction_timestamp_ = TimeTicks();
   external_delegate_->Reset();
 }
