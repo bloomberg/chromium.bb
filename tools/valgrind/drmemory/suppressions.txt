@@ -512,3 +512,18 @@ NPCTRL.dll!DllGetClassObject
 NPCTRL.dll!DllGetClassObject
 NPCTRL.dll!DllGetClassObject
 NPCTRL.dll!DllGetClassObject
+
+HANDLE LEAK
+name=http://crbug.com/373333
+system call NtGdiCreateCompatibleDC
+*!CreateCompatibleDC
+*!SkScalerContext_GDI::SkScalerContext_GDI
+*!LogFontTypeface::onCreateScalerContext
+*!SkTypeface::createScalerContext
+*!SkGlyphCache::VisitCache
+...
+*!SkPaint::descriptorProc
+...
+*!WebCore::RenderBlockFlow::layoutBlockFlow
+*!WebCore::RenderBlockFlow::layoutBlock
+*!WebCore::RenderBlock::layout
