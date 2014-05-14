@@ -77,6 +77,15 @@ const char kSettingHeaderFooterURL[] = "url";
 // Page orientation: true for landscape, false for portrait.
 const char kSettingLandscape[] = "landscape";
 
+// Key that specifies the requested media size.
+const char kSettingMediaSize[] = "mediaSize";
+
+// Key that specifies the requested media height in microns.
+const char kSettingMediaSizeHeightMicrons[] = "height_microns";
+
+// Key that specifies the requested media width in microns.
+const char kSettingMediaSizeWidthMicrons[] = "width_microns";
+
 // Key that specifies the bottom margin of the page.
 const char kSettingMarginBottom[] = "marginBottom";
 

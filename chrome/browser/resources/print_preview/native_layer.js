@@ -188,6 +188,7 @@ cr.define('print_preview', function() {
 
       var ticket = {
         'pageRange': printTicketStore.pageRange.getDocumentPageRanges(),
+        'mediaSize': printTicketStore.mediaSize.getValue(),
         'landscape': printTicketStore.landscape.getValue(),
         'color': printTicketStore.color.getValue() ?
             NativeLayer.ColorMode_.COLOR : NativeLayer.ColorMode_.GRAY,

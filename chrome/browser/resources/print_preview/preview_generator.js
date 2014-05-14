@@ -58,6 +58,13 @@ cr.define('print_preview', function() {
     this.inFlightRequestId_ = -1;
 
     /**
+     * Media size to generate preview with. {@code null} indicates default size.
+     * @type {cp.cdd.MediaSizeTicketItem}
+     * @private
+     */
+    this.mediaSize_ = null;
+
+    /**
      * Whether the previews are being generated in landscape mode.
      * @type {boolean}
      * @private
@@ -164,6 +171,7 @@ cr.define('print_preview', function() {
         this.marginsType_ = this.printTicketStore_.marginsType.getValue();
         return false;
       }
+      this.mediaSize_ = this.printTicketStore_.mediaSize.getValue();
       this.isLandscapeEnabled_ = this.printTicketStore_.landscape.getValue();
       this.isHeaderFooterEnabled_ =
           this.printTicketStore_.headerFooter.getValue();
@@ -263,6 +271,7 @@ cr.define('print_preview', function() {
     hasPreviewChanged_: function() {
       var ticketStore = this.printTicketStore_;
       return this.inFlightRequestId_ == -1 ||
+          !ticketStore.mediaSize.isValueEqual(this.mediaSize_) ||
           !ticketStore.landscape.isValueEqual(this.isLandscapeEnabled_) ||
           !ticketStore.headerFooter.isValueEqual(this.isHeaderFooterEnabled_) ||
           !ticketStore.color.isValueEqual(this.colorValue_) ||
