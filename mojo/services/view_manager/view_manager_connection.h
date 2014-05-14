@@ -78,7 +78,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   bool SetViewImpl(const NodeId& node_id, const ViewId& view_id);
 
   // Overridden from IViewManager:
-  virtual void CreateNode(TransportConnectionSpecificNodeId node_id,
+  virtual void CreateNode(TransportNodeId transport_node_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteNode(TransportNodeId transport_node_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
@@ -93,7 +93,7 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   virtual void GetNodeTree(
       TransportNodeId node_id,
       const Callback<void(Array<INode>)>& callback) OVERRIDE;
-  virtual void CreateView(TransportConnectionSpecificViewId view_id,
+  virtual void CreateView(TransportViewId transport_view_id,
                           const Callback<void(bool)>& callback) OVERRIDE;
   virtual void DeleteView(TransportViewId transport_view_id,
                           const Callback<void(bool)>& callback) OVERRIDE;

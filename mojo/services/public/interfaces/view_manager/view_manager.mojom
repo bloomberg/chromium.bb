@@ -17,16 +17,16 @@ struct INode {
 // made in a well defined order.
 //
 // Nodes and Views are identified by a uint32. The upper 16 bits are the
-// connection id, and the lower 16 the id assigned by the client. Functions
-// that take a 16 bit value (such as CreateNode()) use the id of the current
-// connection.
+// connection id, and the lower 16 the id assigned by the client.
 //
 // The root node is identified with a connection id of 0, and value of 1.
 [Client=IViewManagerClient]
 interface IViewManager {
   // Creates a new node with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
-  CreateNode(uint16 node_id) => (bool success);
+  // Additionally the connection id (embedded in |node_id|) must match that of
+  // the connection.
+  CreateNode(uint32 node_id) => (bool success);
 
   // Deletes a node. This does not recurse. Children are removed from the node
   // before it is destroyed. Deletion is always allowed and implicitly advances
@@ -57,7 +57,9 @@ interface IViewManager {
 
   // Creates a new view with the specified id. It is up to the client to ensure
   // the id is unique to the connection (the id need not be globally unique).
-  CreateView(uint16 view_id) => (bool success);
+  // Additionally the connection id (embedded in |view_id|) must match that of
+  // the connection.
+  CreateView(uint32 view_id) => (bool success);
 
   // Deletes the view with the specified id.
   DeleteView(uint32 view_id) => (bool success);

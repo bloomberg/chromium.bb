@@ -18,10 +18,6 @@ typedef uint16_t TransportConnectionId;
 typedef uint32_t TransportNodeId;
 typedef uint32_t TransportViewId;
 
-// These types are used in two cases:
-// 1. when a connection is creating a node/view. In this case the connection id
-//    from the current connection is used, so no need to explicitly specific it.
-// 2. When the connection id is stored along side this.
 typedef uint16_t TransportConnectionSpecificNodeId;
 typedef uint16_t TransportConnectionSpecificViewId;
 

@@ -191,14 +191,15 @@ bool ViewManagerConnection::SetViewImpl(const NodeId& node_id,
 }
 
 void ViewManagerConnection::CreateNode(
-    TransportConnectionSpecificNodeId node_id,
+    TransportNodeId transport_node_id,
     const Callback<void(bool)>& callback) {
-  // Negative values are reserved.
-  if (node_map_.find(node_id) != node_map_.end()) {
+  const NodeId node_id(NodeIdFromTransportId(transport_node_id));
+  if (node_id.connection_id != id_ ||
+      node_map_.find(node_id.node_id) != node_map_.end()) {
     callback.Run(false);
     return;
   }
-  node_map_[node_id] = new Node(this, NodeId(id_, node_id));
+  node_map_[node_id.node_id] = new Node(this, node_id);
   callback.Run(true);
 }
 
@@ -265,13 +266,14 @@ void ViewManagerConnection::GetNodeTree(
 }
 
 void ViewManagerConnection::CreateView(
-    TransportConnectionSpecificViewId view_id,
+    TransportViewId transport_view_id,
     const Callback<void(bool)>& callback) {
-  if (view_map_.count(view_id)) {
+  const ViewId view_id(ViewIdFromTransportId(transport_view_id));
+  if (view_id.connection_id != id_ || view_map_.count(view_id.view_id)) {
     callback.Run(false);
     return;
   }
-  view_map_[view_id] = new View(ViewId(id_, view_id));
+  view_map_[view_id.view_id] = new View(view_id);
   callback.Run(true);
 }
 

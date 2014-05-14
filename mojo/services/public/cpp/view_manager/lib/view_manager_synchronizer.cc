@@ -115,7 +115,7 @@ class ViewManagerTransaction {
 
 class CreateViewTransaction : public ViewManagerTransaction {
  public:
-  CreateViewTransaction(uint16_t view_id,
+  CreateViewTransaction(TransportViewId view_id,
                         ViewManagerSynchronizer* synchronizer)
       : ViewManagerTransaction(TYPE_CREATE_VIEW, synchronizer),
         view_id_(view_id) {}
@@ -133,7 +133,7 @@ class CreateViewTransaction : public ViewManagerTransaction {
     // TODO(beng): failure.
   }
 
-  const uint16_t view_id_;
+  const TransportViewId view_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateViewTransaction);
 };
@@ -165,7 +165,7 @@ class DestroyViewTransaction : public ViewManagerTransaction {
 
 class CreateViewTreeNodeTransaction : public ViewManagerTransaction {
  public:
-  CreateViewTreeNodeTransaction(uint16_t node_id,
+  CreateViewTreeNodeTransaction(TransportNodeId node_id,
                                 ViewManagerSynchronizer* synchronizer)
       : ViewManagerTransaction(TYPE_CREATE_VIEW_TREE_NODE, synchronizer),
         node_id_(node_id) {}
@@ -186,7 +186,7 @@ class CreateViewTreeNodeTransaction : public ViewManagerTransaction {
     //             out what to do.
   }
 
-  const uint16_t node_id_;
+  const TransportNodeId node_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateViewTreeNodeTransaction);
 };
@@ -324,10 +324,12 @@ ViewManagerSynchronizer::~ViewManagerSynchronizer() {
 
 TransportNodeId ViewManagerSynchronizer::CreateViewTreeNode() {
   DCHECK(connected_);
-  uint16_t id = ++next_id_;
-  pending_transactions_.push_back(new CreateViewTreeNodeTransaction(id, this));
+  const TransportNodeId node_id(
+      MakeTransportId(connection_id_, ++next_id_));
+  pending_transactions_.push_back(
+      new CreateViewTreeNodeTransaction(node_id, this));
   Sync();
-  return MakeTransportId(connection_id_, id);
+  return node_id;
 }
 
 void ViewManagerSynchronizer::DestroyViewTreeNode(TransportNodeId node_id) {
@@ -339,10 +341,11 @@ void ViewManagerSynchronizer::DestroyViewTreeNode(TransportNodeId node_id) {
 
 TransportViewId ViewManagerSynchronizer::CreateView() {
   DCHECK(connected_);
-  uint16_t id = ++next_id_;
-  pending_transactions_.push_back(new CreateViewTransaction(id, this));
+  const TransportNodeId view_id(
+      MakeTransportId(connection_id_, ++next_id_));
+  pending_transactions_.push_back(new CreateViewTransaction(view_id, this));
   Sync();
-  return MakeTransportId(connection_id_, id);
+  return view_id;
 }
 
 void ViewManagerSynchronizer::DestroyView(TransportViewId view_id) {

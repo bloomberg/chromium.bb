@@ -91,9 +91,11 @@ TransportViewId CreateViewId(TransportConnectionId connection_id,
 // Creates a node with the specified id. Returns true on success. Blocks until
 // we get back result from server.
 bool CreateNode(IViewManager* view_manager,
-                TransportConnectionSpecificNodeId id) {
+                TransportConnectionId connection_id,
+                TransportConnectionSpecificNodeId node_id) {
   bool result = false;
-  view_manager->CreateNode(id, base::Bind(&BooleanCallback, &result));
+  view_manager->CreateNode(CreateNodeId(connection_id, node_id),
+                           base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
 }
@@ -141,9 +143,11 @@ void GetNodeTree(IViewManager* view_manager,
 // Creates a view with the specified id. Returns true on success. Blocks until
 // we get back result from server.
 bool CreateView(IViewManager* view_manager,
+                TransportConnectionId connection_id,
                 TransportConnectionSpecificViewId id) {
   bool result = false;
-  view_manager->CreateView(id, base::Bind(&BooleanCallback, &result));
+  view_manager->CreateView(CreateViewId(connection_id, id),
+                           base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
 }
@@ -320,16 +324,24 @@ TEST_F(ViewManagerConnectionTest, TwoClientsGetDifferentConnectionIds) {
 
 // Verifies client gets a valid id.
 TEST_F(ViewManagerConnectionTest, CreateNode) {
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
 
   // Can't create a node with the same id.
-  ASSERT_FALSE(CreateNode(view_manager_.get(), 1));
+  ASSERT_FALSE(CreateNode(view_manager_.get(), 1, 1));
+}
+
+TEST_F(ViewManagerConnectionTest, CreateNodeFailsWithBogusConnectionId) {
+  EXPECT_FALSE(CreateNode(view_manager_.get(), 2, 1));
+}
+
+TEST_F(ViewManagerConnectionTest, CreateViewFailsWithBogusConnectionId) {
+  EXPECT_FALSE(CreateView(view_manager_.get(), 2, 1));
 }
 
 // Verifies hierarchy changes.
 TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
 
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
@@ -374,8 +386,8 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
 
 // Verifies AddNode fails when node is already in position.
 TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
 
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
@@ -414,8 +426,8 @@ TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
 
 // Verifies AddNode fails when node is already in position.
 TEST_F(ViewManagerConnectionTest, AddAncestorFails) {
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
 
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
@@ -455,8 +467,8 @@ TEST_F(ViewManagerConnectionTest, AddAncestorFails) {
 // Verifies adding with an invalid id fails.
 TEST_F(ViewManagerConnectionTest, AddWithInvalidServerId) {
   // Create two nodes.
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
 
   // Make 2 a child of 1. Supply an invalid change id, which should fail.
   {
@@ -472,8 +484,8 @@ TEST_F(ViewManagerConnectionTest, AddWithInvalidServerId) {
 
 // Verifies adding to root sends right notifications.
 TEST_F(ViewManagerConnectionTest, AddToRoot) {
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 21));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 3));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 21));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 3));
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
   EstablishSecondConnection();
@@ -518,8 +530,8 @@ TEST_F(ViewManagerConnectionTest, AddToRoot) {
 
 // Verifies DeleteNode works.
 TEST_F(ViewManagerConnectionTest, DeleteNode) {
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
   EstablishSecondConnection();
@@ -584,9 +596,9 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
 
 // Assertions around setting a view.
 TEST_F(ViewManagerConnectionTest, SetView) {
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
-  ASSERT_TRUE(CreateView(view_manager_.get(), 11));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
+  ASSERT_TRUE(CreateView(view_manager_.get(), 1, 11));
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
   EstablishSecondConnection();
@@ -628,9 +640,9 @@ TEST_F(ViewManagerConnectionTest, SetView) {
 
 // Verifies deleting a node with a view sends correct notifications.
 TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
-  ASSERT_TRUE(CreateView(view_manager_.get(), 11));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
+  ASSERT_TRUE(CreateView(view_manager_.get(), 1, 11));
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
 
   // Set view 11 on node 1.
@@ -675,14 +687,14 @@ TEST_F(ViewManagerConnectionTest, SetViewFromSecondConnection) {
   EstablishSecondConnection();
 
   // Create two nodes in first connection.
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 2));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
 
   EXPECT_TRUE(client_.GetAndClearChanges().empty());
   EXPECT_TRUE(client2_.GetAndClearChanges().empty());
 
   // Create a view in the second connection.
-  ASSERT_TRUE(CreateView(view_manager2_.get(), 51));
+  ASSERT_TRUE(CreateView(view_manager2_.get(), 2, 51));
 
   // Attach view to node 1 in the first connectoin.
   {
@@ -712,8 +724,8 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
   EstablishSecondConnection();
 
   // Create two nodes in first connection, 1 and 11 (11 is a child of 1).
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 1));
-  ASSERT_TRUE(CreateNode(view_manager_.get(), 11));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 11));
   ASSERT_TRUE(AddNode(view_manager_.get(),
                       CreateNodeId(0, 1),
                       CreateNodeId(client_.id(), 1),
@@ -724,8 +736,8 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
                       2));
 
   // Create two nodes in second connection, 2 and 3, both children of the root.
-  ASSERT_TRUE(CreateNode(view_manager2_.get(), 2));
-  ASSERT_TRUE(CreateNode(view_manager2_.get(), 3));
+  ASSERT_TRUE(CreateNode(view_manager2_.get(), 2, 2));
+  ASSERT_TRUE(CreateNode(view_manager2_.get(), 2, 3));
   ASSERT_TRUE(AddNode(view_manager2_.get(),
                       CreateNodeId(0, 1),
                       CreateNodeId(client2_.id(), 2),
@@ -736,7 +748,7 @@ TEST_F(ViewManagerConnectionTest, GetNodeTree) {
                       4));
 
   // Attach view to node 11 in the first connection.
-  ASSERT_TRUE(CreateView(view_manager_.get(), 51));
+  ASSERT_TRUE(CreateView(view_manager_.get(), 1, 51));
   ASSERT_TRUE(SetView(view_manager_.get(),
                       CreateNodeId(client_.id(), 11),
                       CreateViewId(client_.id(), 51)));
