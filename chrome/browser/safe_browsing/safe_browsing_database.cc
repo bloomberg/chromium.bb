@@ -651,10 +651,10 @@ bool SafeBrowsingDatabaseNew::ResetDatabase() {
 bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
     const GURL& url,
     std::vector<SBPrefix>* prefix_hits,
-    std::vector<SBFullHashResult>* cached_hits) {
+    std::vector<SBFullHashResult>* cache_hits) {
   // Clear the results first.
   prefix_hits->clear();
-  cached_hits->clear();
+  cache_hits->clear();
 
   std::vector<SBFullHash> full_hashes;
   BrowseFullHashesToCheck(url, false, &full_hashes);
@@ -687,8 +687,7 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
 
   // Find matching cached gethash responses.
   std::sort(prefix_hits->begin(), prefix_hits->end());
-  GetCachedFullHashesForBrowse(*prefix_hits, cached_browse_hashes_,
-                               cached_hits);
+  GetCachedFullHashesForBrowse(*prefix_hits, cached_browse_hashes_, cache_hits);
 
   return true;
 }

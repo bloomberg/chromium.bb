@@ -367,10 +367,10 @@ bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   }
 
   std::vector<SBPrefix> prefix_hits;
-  std::vector<SBFullHashResult> cached_hits;
+  std::vector<SBFullHashResult> cache_hits;
 
   bool prefix_match =
-      database_->ContainsBrowseUrl(url, &prefix_hits, &cached_hits);
+      database_->ContainsBrowseUrl(url, &prefix_hits, &cache_hits);
 
   UMA_HISTOGRAM_TIMES("SB2.FilterCheck", base::TimeTicks::Now() - start);
 
@@ -384,9 +384,9 @@ bool SafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
                                                    client,
                                                    safe_browsing_util::MALWARE,
                                                    expected_threats);
-  check->need_get_hash = cached_hits.empty();
+  check->need_get_hash = cache_hits.empty();
   check->prefix_hits.swap(prefix_hits);
-  check->full_hits.swap(cached_hits);
+  check->cache_hits.swap(cache_hits);
   checks_.insert(check);
 
   BrowserThread::PostTask(
@@ -714,7 +714,7 @@ void SafeBrowsingDatabaseManager::OnCheckDone(SafeBrowsingCheck* check) {
   } else {
     // We may have cached results for previous GetHash queries.  Since
     // this data comes from cache, don't histogram hits.
-    HandleOneCheck(check, check->full_hits);
+    HandleOneCheck(check, check->cache_hits);
   }
 }
 

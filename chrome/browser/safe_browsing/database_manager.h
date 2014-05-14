@@ -76,7 +76,7 @@ class SafeBrowsingDatabaseManager
     safe_browsing_util::ListType check_type;  // See comment in constructor.
     std::vector<SBThreatType> expected_threats;
     std::vector<SBPrefix> prefix_hits;
-    std::vector<SBFullHashResult> full_hits;
+    std::vector<SBFullHashResult> cache_hits;
 
     // Vends weak pointers for TimeoutCallback().  If the response is
     // received before the timeout fires, factory is destructed and

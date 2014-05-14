@@ -104,13 +104,13 @@ class SafeBrowsingDatabase {
   virtual bool ResetDatabase() = 0;
 
   // Returns false if |url| is not in the browse database.  If it returns true,
-  // then |prefix_hits| contains the list of prefix matches, and |cached_hits|
+  // then |prefix_hits| contains the list of prefix matches, and |cache_hits|
   // contains the cached gethash results for those prefixes (if any).  This
   // function is safe to call from threads other than the creation thread.
   virtual bool ContainsBrowseUrl(
       const GURL& url,
       std::vector<SBPrefix>* prefix_hits,
-      std::vector<SBFullHashResult>* cached_hits) = 0;
+      std::vector<SBFullHashResult>* cache_hits) = 0;
 
   // Returns false if none of |urls| are in Download database. If it returns
   // true, |prefix_hits| should contain the prefixes for the URLs that were in
@@ -306,7 +306,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual bool ContainsBrowseUrl(
       const GURL& url,
       std::vector<SBPrefix>* prefix_hits,
-      std::vector<SBFullHashResult>* cached_hits) OVERRIDE;
+      std::vector<SBFullHashResult>* cache_hits) OVERRIDE;
   virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
                                    std::vector<SBPrefix>* prefix_hits) OVERRIDE;
   virtual bool ContainsCsdWhitelistedUrl(const GURL& url) OVERRIDE;
