@@ -27,7 +27,6 @@ interface DocumentType : Node {
 
     readonly attribute DOMString publicId;
     readonly attribute DOMString systemId;
-    [TreatReturnedNullStringAs=Null, MeasureAs=DocumentTypeInternalSubset] readonly attribute DOMString internalSubset; // Removed from DOM4.
 };
 
 DocumentType implements ChildNode;

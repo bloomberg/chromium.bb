@@ -40,7 +40,6 @@ public:
     const String& name() const { return m_name; }
     const String& publicId() const { return m_publicId; }
     const String& systemId() const { return m_systemId; }
-    const String& internalSubset() const { return m_subset; }
 
 private:
     DocumentType(Document*, const String& name, const String& publicId, const String& systemId);
@@ -56,7 +55,6 @@ private:
     String m_name;
     String m_publicId;
     String m_systemId;
-    String m_subset;
 };
 
 DEFINE_NODE_TYPE_CASTS(DocumentType, isDocumentTypeNode());

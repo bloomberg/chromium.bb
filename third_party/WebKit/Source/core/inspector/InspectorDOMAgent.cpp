@@ -1539,7 +1539,6 @@ PassRefPtr<TypeBuilder::DOM::Node> InspectorDOMAgent::buildObjectForNode(Node* n
         DocumentType* docType = toDocumentType(node);
         value->setPublicId(docType->publicId());
         value->setSystemId(docType->systemId());
-        value->setInternalSubset(docType->internalSubset());
     } else if (node->isAttributeNode()) {
         Attr* attribute = toAttr(node);
         value->setName(attribute->name());

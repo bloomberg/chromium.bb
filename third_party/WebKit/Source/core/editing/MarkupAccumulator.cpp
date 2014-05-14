@@ -367,11 +367,6 @@ void MarkupAccumulator::appendDocumentType(StringBuilder& result, const Document
         result.append(n.systemId());
         result.append('"');
     }
-    if (!n.internalSubset().isEmpty()) {
-        result.appendLiteral(" [");
-        result.append(n.internalSubset());
-        result.append(']');
-    }
     result.append('>');
 }
 

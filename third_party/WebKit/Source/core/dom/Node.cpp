@@ -1309,9 +1309,6 @@ bool Node::isEqualNode(Node* other) const
 
         if (documentTypeThis->systemId() != documentTypeOther->systemId())
             return false;
-
-        if (documentTypeThis->internalSubset() != documentTypeOther->internalSubset())
-            return false;
     }
 
     return true;
