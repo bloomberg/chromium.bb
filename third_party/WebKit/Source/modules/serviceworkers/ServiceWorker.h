@@ -66,6 +66,8 @@ public:
 
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, ExceptionState&);
 
+    String scope() const;
+    String url() const;
     const AtomicString& state() const;
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 

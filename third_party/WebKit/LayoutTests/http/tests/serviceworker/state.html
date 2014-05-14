@@ -10,7 +10,7 @@
     var scope = '/state/*';
 
     service_worker_unregister_and_register(
-        t, 'resources/state-worker.js', scope, onRegister);
+        t, 'resources/worker-no-op.js', scope, onRegister);
 
     function onRegister(sw) {
         sw.addEventListener('statechange', t.step_func(onStateChange));

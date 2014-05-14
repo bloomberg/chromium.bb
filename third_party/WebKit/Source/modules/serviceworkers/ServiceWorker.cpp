@@ -95,6 +95,16 @@ void ServiceWorker::dispatchStateChangeEvent()
     this->dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
+String ServiceWorker::scope() const
+{
+    return m_outerWorker->scope().string();
+}
+
+String ServiceWorker::url() const
+{
+    return m_outerWorker->url().string();
+}
+
 const AtomicString& ServiceWorker::state() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, unknown, ("unknown", AtomicString::ConstructFromLiteral));

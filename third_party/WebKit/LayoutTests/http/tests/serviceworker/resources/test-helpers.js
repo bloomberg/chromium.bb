@@ -56,3 +56,7 @@ function with_iframe(url, f) {
   };
   document.body.appendChild(frame);
 }
+
+function normalizeURL(url) {
+  return new URL(url, document.location).toString();
+}

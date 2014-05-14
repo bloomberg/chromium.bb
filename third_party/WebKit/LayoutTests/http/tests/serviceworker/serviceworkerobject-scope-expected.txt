@@ -1,0 +1,8 @@
+
+FAIL Verify the scope and url property: default assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+FAIL Verify the scope and url property: wildcard assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+FAIL Verify the scope and url property: relative path assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+FAIL Verify the scope and url property: relative path with wildcard assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+FAIL Verify the scope and url property: absolute url assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+FAIL Verify the scope and url property: absolute url with wildcard assert_unreached: Unregister should not fail: NotSupportedError Reached unreachable code
+
