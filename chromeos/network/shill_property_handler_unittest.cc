@@ -229,7 +229,11 @@ class ShillPropertyHandlerTest : public testing::Test {
                               const std::string& ipconfig_path,
                               bool add_to_watch_list) {
     ASSERT_TRUE(IsValidType(type));
-    service_test_->AddServiceWithIPConfig(id, id, type, state,
+    service_test_->AddServiceWithIPConfig(id, /* service_path */
+                                          "" /* guid */,
+                                          id /* name */,
+                                          type,
+                                          state,
                                           ipconfig_path,
                                           true /* visible */,
                                           add_to_watch_list);

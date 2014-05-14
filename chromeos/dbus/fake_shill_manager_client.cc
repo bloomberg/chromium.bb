@@ -250,7 +250,10 @@ void FakeShillManagerClient::ConfigureService(
   if (!existing_properties) {
     // Add a new service to the service client stub because none exists, yet.
     // This calls AddManagerService.
-    service_client->AddServiceWithIPConfig(service_path, guid, type,
+    service_client->AddServiceWithIPConfig(service_path,
+                                           guid /* guid */,
+                                           guid /* name */,
+                                           type,
                                            shill::kStateIdle, ipconfig_path,
                                            true /* visible */,
                                            true /* watch */);

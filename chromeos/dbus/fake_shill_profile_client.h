@@ -53,11 +53,21 @@ class CHROMEOS_EXPORT FakeShillProfileClient :
                         const base::DictionaryValue& properties) OVERRIDE;
   virtual bool AddService(const std::string& profile_path,
                           const std::string& service_path) OVERRIDE;
+  virtual bool UpdateService(const std::string& profile_path,
+                             const std::string& service_path) OVERRIDE;
   virtual void GetProfilePaths(std::vector<std::string>* profiles) OVERRIDE;
+  virtual bool GetService(const std::string& service_path,
+                          std::string* profile_path,
+                          base::DictionaryValue* properties) OVERRIDE;
+  virtual void ClearProfiles() OVERRIDE;
 
  private:
   struct ProfileProperties;
   typedef std::map<std::string, ProfileProperties*> ProfileMap;
+
+  bool AddOrUpdateServiceImpl(const std::string& profile_path,
+                              const std::string& service_path,
+                              ProfileProperties* profile);
 
   ProfileProperties* GetProfile(const dbus::ObjectPath& profile_path,
                                 const ErrorCallback& error_callback);

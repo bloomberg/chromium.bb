@@ -51,6 +51,7 @@ class CHROMEOS_EXPORT ShillServiceClient : public DBusClient {
                             bool add_to_visible_list,
                             bool add_to_watch_list) = 0;
     virtual void AddServiceWithIPConfig(const std::string& service_path,
+                                        const std::string& guid,
                                         const std::string& name,
                                         const std::string& type,
                                         const std::string& state,

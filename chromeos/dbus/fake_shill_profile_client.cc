@@ -22,8 +22,8 @@
 namespace chromeos {
 
 struct FakeShillProfileClient::ProfileProperties {
-  base::DictionaryValue entries;
-  base::DictionaryValue properties;
+  base::DictionaryValue entries;  // Dictionary of Service Dictionaries
+  base::DictionaryValue properties;  // Dictionary of Profile properties
 };
 
 namespace {
@@ -143,8 +143,7 @@ void FakeShillProfileClient::AddEntry(const std::string& profile_path,
   ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
                                           ErrorCallback());
   DCHECK(profile);
-  profile->entries.SetWithoutPathExpansion(entry_path,
-                                           properties.DeepCopy());
+  profile->entries.SetWithoutPathExpansion(entry_path, properties.DeepCopy());
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddManagerService(entry_path, false /* visible */, false /* watch */);
 }
@@ -154,10 +153,37 @@ bool FakeShillProfileClient::AddService(const std::string& profile_path,
   ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
                                           ErrorCallback());
   if (!profile) {
-    LOG(ERROR) << "No matching profile: " << profile_path;
+    LOG(ERROR) << "AddService: No matching profile: " << profile_path;
     return false;
   }
+  if (profile->entries.HasKey(service_path)) {
+    LOG(ERROR) << "AddService: Profile: " << profile_path
+               << " already contains Service: " << service_path;
+    return false;
+  }
+  return AddOrUpdateServiceImpl(profile_path, service_path, profile);
+}
 
+bool FakeShillProfileClient::UpdateService(const std::string& profile_path,
+                                           const std::string& service_path) {
+  ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
+                                          ErrorCallback());
+  if (!profile) {
+    LOG(ERROR) << "UpdateService: No matching profile: " << profile_path;
+    return false;
+  }
+  if (!profile->entries.HasKey(service_path)) {
+    LOG(ERROR) << "UpdateService: Profile: " << profile_path
+               << " does not contain Service: " << service_path;
+    return false;
+  }
+  return AddOrUpdateServiceImpl(profile_path, service_path, profile);
+}
+
+bool FakeShillProfileClient::AddOrUpdateServiceImpl(
+    const std::string& profile_path,
+    const std::string& service_path,
+    ProfileProperties* profile) {
   ShillServiceClient::TestInterface* service_test =
       DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
   const base::DictionaryValue* service_properties =
@@ -169,16 +195,17 @@ bool FakeShillProfileClient::AddService(const std::string& profile_path,
   std::string service_profile_path;
   service_properties->GetStringWithoutPathExpansion(shill::kProfileProperty,
                                                     &service_profile_path);
-  if (!service_profile_path.empty() && service_profile_path != profile_path) {
+  if (service_profile_path.empty()) {
+    base::StringValue profile_path_value(profile_path);
+    service_test->SetServiceProperty(service_path,
+                                     shill::kProfileProperty,
+                                     profile_path_value);
+  } else if (service_profile_path != profile_path) {
     LOG(ERROR) << "Service has non matching profile path: "
                << service_profile_path;
     return false;
   }
 
-  base::StringValue profile_path_value(profile_path);
-  service_test->SetServiceProperty(service_path,
-                                   shill::kProfileProperty,
-                                   profile_path_value);
   profile->entries.SetWithoutPathExpansion(service_path,
                                            service_properties->DeepCopy());
   return true;
@@ -190,6 +217,29 @@ void FakeShillProfileClient::GetProfilePaths(
        iter != profiles_.end(); ++iter) {
     profiles->push_back(iter->first);
   }
+}
+
+bool FakeShillProfileClient::GetService(const std::string& service_path,
+                                        std::string* profile_path,
+                                        base::DictionaryValue* properties) {
+  properties->Clear();
+  for (ProfileMap::const_iterator iter = profiles_.begin();
+       iter != profiles_.end(); ++iter) {
+    const ProfileProperties* profile = iter->second;
+    const base::DictionaryValue* entry;
+    if (!profile->entries.GetDictionaryWithoutPathExpansion(
+            service_path, &entry)) {
+      continue;
+    }
+    *profile_path = iter->first;
+    properties->MergeDictionary(entry);
+    return true;
+  }
+  return false;
+}
+
+void FakeShillProfileClient::ClearProfiles() {
+  STLDeleteValues(&profiles_);
 }
 
 FakeShillProfileClient::ProfileProperties* FakeShillProfileClient::GetProfile(

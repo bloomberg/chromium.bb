@@ -13,6 +13,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "chromeos/network/shill_property_util.h"
 #include "dbus/bus.h"
@@ -309,12 +310,14 @@ void FakeShillServiceClient::AddService(const std::string& service_path,
                                         const std::string& state,
                                         bool add_to_visible_list,
                                         bool add_to_watch_list) {
-  AddServiceWithIPConfig(service_path, name, type, state, "",
+  AddServiceWithIPConfig(service_path, "" /* guid */, name,
+                         type, state, "" /* ipconfig_path */,
                          add_to_visible_list, add_to_watch_list);
 }
 
 void FakeShillServiceClient::AddServiceWithIPConfig(
     const std::string& service_path,
+    const std::string& guid,
     const std::string& name,
     const std::string& type,
     const std::string& state,
@@ -330,27 +333,59 @@ void FakeShillServiceClient::AddServiceWithIPConfig(
   base::DictionaryValue* properties =
       GetModifiableServiceProperties(service_path, true);
   connect_behavior_.erase(service_path);
+
+  std::string profile_path;
+  base::DictionaryValue profile_properties;
+  if (DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
+      GetService(service_path, &profile_path, &profile_properties)) {
+    properties->SetWithoutPathExpansion(
+        shill::kProfileProperty,
+        new base::StringValue(profile_path));
+  }
+
+  // If |guid| is provided, set Service.GUID to that. Otherwise if a GUID is
+  // stored in a profile entry, use that. Otherwise leave it blank. Shill does
+  // not enforce a valid guid, we do that at the NetworkStateHandler layer.
+  std::string guid_to_set = guid;
+  if (guid_to_set.empty()) {
+    profile_properties.GetStringWithoutPathExpansion(
+        shill::kGuidProperty, &guid_to_set);
+  }
+  if (!guid_to_set.empty()) {
+    properties->SetWithoutPathExpansion(shill::kGuidProperty,
+                                        new base::StringValue(guid_to_set));
+  }
   shill_property_util::SetSSID(name, properties);
   properties->SetWithoutPathExpansion(
       shill::kNameProperty,
-      base::Value::CreateStringValue(name));
+      new base::StringValue(name));
   properties->SetWithoutPathExpansion(
       shill::kDeviceProperty,
-      base::Value::CreateStringValue(device_path));
+      new base::StringValue(device_path));
   properties->SetWithoutPathExpansion(
       shill::kTypeProperty,
-      base::Value::CreateStringValue(type));
+      new base::StringValue(type));
   properties->SetWithoutPathExpansion(
       shill::kStateProperty,
-      base::Value::CreateStringValue(state));
+      new base::StringValue(state));
   if (!ipconfig_path.empty()) {
     properties->SetWithoutPathExpansion(
         shill::kIPConfigProperty,
-        base::Value::CreateStringValue(ipconfig_path));
+        new base::StringValue(ipconfig_path));
+  }
+  if (type == shill::kTypeWifi) {
+    properties->SetWithoutPathExpansion(
+        shill::kSecurityProperty,
+        new base::StringValue(shill::kSecurityNone));
   }
 
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       SortManagerServices();
+
+  if (!profile_path.empty()) {
+    DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
+        UpdateService(profile_path, service_path);
+  }
 }
 
 void FakeShillServiceClient::RemoveService(const std::string& service_path) {
@@ -389,6 +424,24 @@ bool FakeShillServiceClient::SetServiceProperty(const std::string& service_path,
   }
 
   dict->MergeDictionary(&new_properties);
+
+  // Add or update the profile entry.
+  if (property == shill::kProfileProperty) {
+    std::string profile_path;
+    if (value.GetAsString(&profile_path)) {
+      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
+          AddService(profile_path, service_path);
+    } else {
+      LOG(ERROR) << "Profile value is not a String!";
+    }
+  } else {
+    std::string profile_path;
+    if (dict->GetStringWithoutPathExpansion(
+            shill::kProfileProperty, &profile_path) && !profile_path.empty()) {
+      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface()->
+          UpdateService(profile_path, service_path);
+    }
+  }
 
   // Notify the Manager if the state changed (affects DefaultService).
   if (property == shill::kStateProperty) {
@@ -503,7 +556,7 @@ void FakeShillServiceClient::SetOtherServicesOffline(
       continue;
     properties->SetWithoutPathExpansion(
         shill::kStateProperty,
-        base::Value::CreateStringValue(shill::kStateIdle));
+        new base::StringValue(shill::kStateIdle));
   }
 }
 

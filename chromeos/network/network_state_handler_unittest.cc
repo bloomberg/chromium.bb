@@ -32,8 +32,8 @@ void ErrorCallbackFunction(const std::string& error_name,
 }
 
 const std::string kShillManagerClientStubDefaultService = "eth1";
-const std::string kShillManagerClientStubDefaultWireless = "wifi1";
-const std::string kShillManagerClientStubWireless2 = "wifi2";
+const std::string kShillManagerClientStubDefaultWifi = "wifi1";
+const std::string kShillManagerClientStubWifi2 = "wifi2";
 const std::string kShillManagerClientStubCellular = "cellular1";
 
 using chromeos::NetworkState;
@@ -139,7 +139,10 @@ namespace chromeos {
 class NetworkStateHandlerTest : public testing::Test {
  public:
   NetworkStateHandlerTest()
-      : device_test_(NULL), manager_test_(NULL), service_test_(NULL) {}
+      : device_test_(NULL),
+        manager_test_(NULL),
+        profile_test_(NULL),
+        service_test_(NULL) {}
   virtual ~NetworkStateHandlerTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -165,6 +168,15 @@ class NetworkStateHandlerTest : public testing::Test {
   }
 
  protected:
+  void AddService(const std::string& service_path,
+                  const std::string& name,
+                  const std::string& type,
+                  const std::string& state) {
+    service_test_->AddService(service_path, name, type, state,
+                              true /* add_to_visible */,
+                              true /* add_to_watchlist */);
+  }
+
   void SetupDefaultShillState() {
     message_loop_.RunUntilIdle();  // Process any pending updates
     device_test_ =
@@ -181,36 +193,37 @@ class NetworkStateHandlerTest : public testing::Test {
         DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface();
     ASSERT_TRUE(manager_test_);
 
+    profile_test_ =
+        DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+    ASSERT_TRUE(profile_test_);
+    profile_test_->ClearProfiles();
+
     service_test_ =
         DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     ASSERT_TRUE(service_test_);
     service_test_->ClearServices();
-    const bool add_to_visible = true;
-    const bool add_to_watchlist = true;
-    service_test_->AddService(kShillManagerClientStubDefaultService,
-                              kShillManagerClientStubDefaultService,
-                              shill::kTypeEthernet,
-                              shill::kStateOnline,
-                              add_to_visible,
-                              add_to_watchlist);
-    service_test_->AddService(kShillManagerClientStubDefaultWireless,
-                              kShillManagerClientStubDefaultWireless,
-                              shill::kTypeWifi,
-                              shill::kStateOnline,
-                              add_to_visible,
-                              add_to_watchlist);
-    service_test_->AddService(kShillManagerClientStubWireless2,
-                              kShillManagerClientStubWireless2,
-                              shill::kTypeWifi,
-                              shill::kStateIdle,
-                              add_to_visible,
-                              add_to_watchlist);
-    service_test_->AddService(kShillManagerClientStubCellular,
-                              kShillManagerClientStubCellular,
-                              shill::kTypeCellular,
-                              shill::kStateIdle,
-                              add_to_visible,
-                              add_to_watchlist);
+    AddService(kShillManagerClientStubDefaultService,
+               kShillManagerClientStubDefaultService,
+               shill::kTypeEthernet,
+               shill::kStateOnline);
+    AddService(kShillManagerClientStubDefaultWifi,
+               kShillManagerClientStubDefaultWifi,
+               shill::kTypeWifi,
+               shill::kStateOnline);
+    AddService(kShillManagerClientStubWifi2,
+               kShillManagerClientStubWifi2,
+               shill::kTypeWifi,
+               shill::kStateIdle);
+    AddService(kShillManagerClientStubCellular,
+               kShillManagerClientStubCellular,
+               shill::kTypeCellular,
+               shill::kStateIdle);
+  }
+
+  void UpdateManagerProperties() {
+    message_loop_.RunUntilIdle();
+    network_state_handler_->UpdateManagerProperties();
+    message_loop_.RunUntilIdle();
   }
 
   base::MessageLoopForUI message_loop_;
@@ -218,6 +231,7 @@ class NetworkStateHandlerTest : public testing::Test {
   scoped_ptr<TestObserver> test_observer_;
   ShillDeviceClient::TestInterface* device_test_;
   ShillManagerClient::TestInterface* manager_test_;
+  ShillProfileClient::TestInterface* profile_test_;
   ShillServiceClient::TestInterface* service_test_;
 
  private:
@@ -238,9 +252,9 @@ TEST_F(NetworkStateHandlerTest, NetworkStateHandlerStub) {
   EXPECT_EQ(kShillManagerClientStubDefaultService,
             network_state_handler_->ConnectedNetworkByType(
                 NetworkTypePattern::Ethernet())->path());
-  EXPECT_EQ(kShillManagerClientStubDefaultWireless,
+  EXPECT_EQ(kShillManagerClientStubDefaultWifi,
             network_state_handler_->ConnectedNetworkByType(
-                NetworkTypePattern::Wireless())->path());
+                NetworkTypePattern::WiFi())->path());
   EXPECT_EQ(kShillManagerClientStubCellular,
             network_state_handler_->FirstNetworkByType(
                 NetworkTypePattern::Mobile())->path());
@@ -345,13 +359,11 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
 
 TEST_F(NetworkStateHandlerTest, FavoriteState) {
   // Set the profile entry of a service
-  const std::string wifi1 = kShillManagerClientStubDefaultWireless;
-  ShillProfileClient::TestInterface* profile_test =
-      DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
-  EXPECT_TRUE(profile_test->AddService("/profile/default", wifi1));
-  message_loop_.RunUntilIdle();
-  network_state_handler_->UpdateManagerProperties();
-  message_loop_.RunUntilIdle();
+  const std::string profile = "/profile/profile1";
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
+  profile_test_->AddProfile(profile, "" /* userhash */);
+  EXPECT_TRUE(profile_test_->AddService(profile, wifi1));
+  UpdateManagerProperties();
   EXPECT_EQ(1u, test_observer_->favorite_count());
 }
 
@@ -375,7 +387,7 @@ TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
 
 TEST_F(NetworkStateHandlerTest, DefaultServiceDisconnected) {
   const std::string eth1 = kShillManagerClientStubDefaultService;
-  const std::string wifi1 = kShillManagerClientStubDefaultWireless;
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
 
   // Disconnect ethernet.
   test_observer_->reset_network_change_count();
@@ -399,7 +411,7 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceDisconnected) {
 
 TEST_F(NetworkStateHandlerTest, DefaultServiceConnected) {
   const std::string eth1 = kShillManagerClientStubDefaultService;
-  const std::string wifi1 = kShillManagerClientStubDefaultWireless;
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
 
   // Disconnect ethernet and wifi.
   base::StringValue connection_state_idle_value(shill::kStateIdle);
@@ -429,7 +441,7 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
 
   // Change the default network by changing Manager.DefaultService.
   test_observer_->reset_network_change_count();
-  const std::string wifi1 = kShillManagerClientStubDefaultWireless;
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
   base::StringValue wifi1_value(wifi1);
   manager_test_->SetManagerProperty(
       shill::kDefaultServiceProperty, wifi1_value);
@@ -468,14 +480,13 @@ TEST_F(NetworkStateHandlerTest, DefaultServiceChanged) {
 }
 
 TEST_F(NetworkStateHandlerTest, RequestUpdate) {
-  // Request an update for kShillManagerClientStubDefaultWireless.
+  // Request an update for kShillManagerClientStubDefaultWifi.
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(
-      kShillManagerClientStubDefaultWireless));
+      kShillManagerClientStubDefaultWifi));
   network_state_handler_->RequestUpdateForNetwork(
-      kShillManagerClientStubDefaultWireless);
+      kShillManagerClientStubDefaultWifi);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(
-      kShillManagerClientStubDefaultWireless));
+      kShillManagerClientStubDefaultWifi));
 }
-
 }  // namespace chromeos

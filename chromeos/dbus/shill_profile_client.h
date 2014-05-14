@@ -58,13 +58,30 @@ class CHROMEOS_EXPORT ShillProfileClient : public DBusClient {
                           const base::DictionaryValue& properties) = 0;
 
     // Adds a service to the profile, copying properties from the
-    // ShillServiceClient entry (which must be present). Also sets the Profile
-    // property of the service in ShillServiceClient.
+    // ShillServiceClient entry matching |service_path|. Returns false if no
+    // Service entry exists or if a Profile entry already exists. Also sets
+    // the Profile property of the service in ShillServiceClient.
     virtual bool AddService(const std::string& profile_path,
                             const std::string& service_path) = 0;
 
+    // Copies properties from the ShillServiceClient entry matching
+    // |service_path| to the profile entry matching |profile_path|. Returns
+    // false if no Service entry exits or if no Profile entry exists.
+    virtual bool UpdateService(const std::string& profile_path,
+                               const std::string& service_path) = 0;
+
     // Sets |profiles| to the current list of profile paths.
     virtual void GetProfilePaths(std::vector<std::string>* profiles) = 0;
+
+    // Sets |properties| to the entry for |service_path|, sets |profile_path|
+    // to the path of the profile with the entry, and returns true if the
+    // service exists in any profile.
+    virtual bool GetService(const std::string& service_path,
+                            std::string* profile_path,
+                            base::DictionaryValue* properties) = 0;
+
+    // Remove all profile entries.
+    virtual void ClearProfiles() = 0;
 
    protected:
     virtual ~TestInterface() {}
