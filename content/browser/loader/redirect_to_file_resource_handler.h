@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "content/browser/loader/layered_resource_handler.h"
 #include "content/browser/loader/temporary_file_stream.h"
 #include "content/common/content_export.h"

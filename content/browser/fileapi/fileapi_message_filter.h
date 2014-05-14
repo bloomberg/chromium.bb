@@ -14,7 +14,6 @@
 #include "base/files/file_util_proxy.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
-#include "base/platform_file.h"
 #include "content/browser/streams/stream.h"
 #include "content/browser/streams/stream_context.h"
 #include "content/common/content_export.h"

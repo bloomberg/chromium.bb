@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "base/platform_file.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"

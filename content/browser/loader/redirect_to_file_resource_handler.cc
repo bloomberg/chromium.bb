@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/temporary_file_stream.h"

@@ -5,7 +5,6 @@
 #include "content/child/fileapi/webfilewriter_impl.h"
 
 #include "base/bind.h"
-#include "base/platform_file.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"

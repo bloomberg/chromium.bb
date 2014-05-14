@@ -8,7 +8,6 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "content/common/content_export.h"
 
 namespace net {
