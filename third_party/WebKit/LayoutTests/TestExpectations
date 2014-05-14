@@ -868,11 +868,6 @@ crbug.com/353763 http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/f
 crbug.com/353754 fast/scrolling/hover-during-scroll.html [ Pass Failure ]
 crbug.com/353790 [ Linux Win ] virtual/threaded/animations/import.html [ Pass Timeout ]
 
-Bug(eae) [ Mac ] fast/block/lineboxcontain/block-glyphs-replaced.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/block/lineboxcontain/block-glyphs.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/block/lineboxcontain/glyphs.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] fast/repaint/stacked-diacritics.html [ NeedsRebaseline ]
-
 crbug.com/356567 inspector/sources/debugger/async-callstack-promises.html [ Skip ]
 
 crbug.com/355274 http/tests/navigation/same-and-different-back.html [ Pass Failure ]
