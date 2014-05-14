@@ -479,6 +479,15 @@ void RemoteDesktopBrowserTest::Cleanup() {
   ASSERT_TRUE(TimeoutWaiter(base::TimeDelta::FromSeconds(2)).Wait());
 }
 
+void RemoteDesktopBrowserTest::SetUpTestForMe2Me() {
+  VerifyInternetAccess();
+  Install();
+  LaunchChromotingApp();
+  Auth();
+  ExpandMe2Me();
+  LoadScript(app_web_content(), FILE_PATH_LITERAL("browser_test.js"));
+}
+
 void RemoteDesktopBrowserTest::Auth() {
   Authorize();
   Authenticate();

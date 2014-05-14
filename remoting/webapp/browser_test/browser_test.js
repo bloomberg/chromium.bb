@@ -17,17 +17,17 @@
  * method.
  * For example:
  *
- * browserTest.My_Test = function(myObjectLiteral) {};
- * browserTest.My_Test.prototype.run() = function() { ... };
+ * browserTest.My_Test = function() {};
+ * browserTest.My_Test.prototype.run(myObjectLiteral) = function() { ... };
  *
  * The browser test is async in nature.  It will keep running until
  * browserTest.fail("My error message.") or browserTest.pass() is called.
  *
  * For example:
  *
- * browserTest.My_Test.prototype.run() = function() {
+ * browserTest.My_Test.prototype.run(myObjectLiteral) = function() {
  *   window.setTimeout(function() {
- *     if (doSomething()) {
+ *     if (doSomething(myObjectLiteral)) {
  *       browserTest.pass();
  *     } else {
  *       browserTest.fail('My error message.');
@@ -38,7 +38,7 @@
  * You will then invoke the test in C++ by calling:
  *
  *   RunJavaScriptTest(web_content, "My_Test", "{"
- *    "pin: 123123"
+ *    "pin: '123123'"
  *  "}");
  */
 
@@ -57,21 +57,28 @@ browserTest.init = function() {
       if (result.succeeded) {
         console.log('Test Passed.');
       } else {
-        console.error(result.error_message);
+        console.error('Test Failed.\n' +
+            result.error_message + '\n' + result.stack_trace);
       }
     }
   };
 };
 
-browserTest.assert = function(expr, message) {
+browserTest.expect = function(expr, message) {
   if (!expr) {
     message = (message) ? '<' + message + '>' : '';
-    browserTest.fail('Assertion failed.' + message);
+    browserTest.fail('Expectation failed.' + message);
   }
 };
 
-browserTest.fail = function(error_message, opt_stack_trace) {
-  var stack_trace = opt_stack_trace || base.debug.callstack();
+browserTest.fail = function(error) {
+  var error_message = error;
+  var stack_trace = base.debug.callstack();
+
+  if (error instanceof Error) {
+    error_message = error.toString();
+    stack_trace = error.stack;
+  }
 
   // To run browserTest locally:
   // 1. Go to |remoting_webapp_files| and look for
@@ -100,7 +107,7 @@ browserTest.pass = function() {
 
 browserTest.clickOnControl = function(id) {
   var element = document.getElementById(id);
-  browserTest.assert(element);
+  browserTest.expect(element);
   element.click();
 };
 
@@ -110,45 +117,96 @@ browserTest.Timeout = {
   DEFAULT: 5000
 };
 
-browserTest.waitForUIMode = function(expectedMode, callback, opt_timeout) {
-  var uiModeChanged = remoting.testEvents.Names.uiModeChanged;
-  var timerId = null;
-
-  if (opt_timeout === undefined) {
-    opt_timeout = browserTest.Timeout.DEFAULT;
+browserTest.onUIMode = function(expectedMode, opt_timeout) {
+  if (expectedMode == remoting.currentMode) {
+    // If the current mode is the same as the expected mode, return a fulfilled
+    // promise.  For some reason, if we fulfill the promise in the same
+    // callstack, V8 will assert at V8RecursionScope.h(66) with
+    // ASSERT(!ScriptForbiddenScope::isScriptForbidden()).
+    // To avoid the assert, execute the callback in a different callstack.
+    return base.Promise.sleep(0);
   }
 
-  function onTimeout() {
-    remoting.testEvents.removeEventListener(uiModeChanged, onUIModeChanged);
-    browserTest.fail('Timeout waiting for ' + expectedMode);
-  }
+  return new Promise (function(fulfill, reject) {
+    var uiModeChanged = remoting.testEvents.Names.uiModeChanged;
+    var timerId = null;
 
-  function onUIModeChanged (mode) {
-    if (mode == expectedMode) {
+    if (opt_timeout === undefined) {
+      opt_timeout = browserTest.Timeout.DEFAULT;
+    }
+
+    function onTimeout() {
       remoting.testEvents.removeEventListener(uiModeChanged, onUIModeChanged);
-      window.clearTimeout(timerId);
-      timerId = null;
-      try {
-        callback();
-      } catch (e) {
-        browserTest.fail(e.toString(), e.stack);
+      reject('Timeout waiting for ' + expectedMode);
+    }
+
+    function onUIModeChanged(mode) {
+      if (mode == expectedMode) {
+        remoting.testEvents.removeEventListener(uiModeChanged, onUIModeChanged);
+        window.clearTimeout(timerId);
+        timerId = null;
+        fulfill();
       }
     }
-  }
 
-  if (opt_timeout != browserTest.Timeout.NONE) {
-    timerId = window.setTimeout(onTimeout.bind(window, timerId), opt_timeout);
-  }
-  remoting.testEvents.addEventListener(uiModeChanged, onUIModeChanged);
+    if (opt_timeout != browserTest.Timeout.NONE) {
+      timerId = window.setTimeout(onTimeout, opt_timeout);
+    }
+    remoting.testEvents.addEventListener(uiModeChanged, onUIModeChanged);
+  });
+};
+
+browserTest.expectMe2MeError = function(errorTag) {
+  var AppMode = remoting.AppMode;
+  var Timeout = browserTest.Timeout;
+
+  var onConnected = browserTest.onUIMode(AppMode.IN_SESSION, Timeout.None);
+  var onFailure = browserTest.onUIMode(AppMode.CLIENT_CONNECT_FAILED_ME2ME);
+
+  onConnected = onConnected.then(function() {
+    return Promise.reject(
+        'Expected the Me2Me connection to fail.');
+  });
+
+  onFailure = onFailure.then(function() {
+    var errorDiv = document.getElementById('connect-error-message');
+    var actual = errorDiv.innerText;
+    var expected = l10n.getTranslationOrError(errorTag);
+
+    browserTest.clickOnControl('client-finished-me2me-button');
+
+    if (actual != expected) {
+      return Promise.reject('Unexpected failure. actual:' + actual +
+                     ' expected:' + expected);
+    }
+  });
+
+  return Promise.race([onConnected, onFailure]);
+};
+
+browserTest.expectMe2MeConnected = function() {
+  var AppMode = remoting.AppMode;
+  // Timeout if the session is not connected within 30 seconds.
+  var SESSION_CONNECTION_TIMEOUT = 30000;
+  var onConnected = browserTest.onUIMode(AppMode.IN_SESSION,
+                                         SESSION_CONNECTION_TIMEOUT);
+  var onFailure = browserTest.onUIMode(AppMode.CLIENT_CONNECT_FAILED_ME2ME,
+                                       browserTest.Timeout.NONE);
+  onFailure = onFailure.then(function() {
+    var errorDiv = document.getElementById('connect-error-message');
+    var errorMsg = errorDiv.innerText;
+    return Promise.reject('Unexpected error - ' + errorMsg);
+  });
+  return Promise.race([onConnected, onFailure]);
 };
 
 browserTest.runTest = function(testClass, data) {
   try {
-    var test = new testClass(data);
-    browserTest.assert(typeof test.run == 'function');
-    test.run();
+    var test = new testClass();
+    browserTest.expect(typeof test.run == 'function');
+    test.run(data);
   } catch (e) {
-    browserTest.fail(e.toString(), e.stack);
+    browserTest.fail(e);
   }
 };
 

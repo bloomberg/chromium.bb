@@ -122,10 +122,15 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
   // Install the chromoting extension
   void Install();
 
+  // Perform all necessary steps (installation, authorization, authentication,
+  // expanding the me2me section) so that the app is ready for a me2me
+  // connection.
+  void SetUpTestForMe2Me();
+
   // Clean up after the test.
   void Cleanup();
 
-  // Perform all the auth steps: authorization, authenticattion, etc.
+  // Perform all the auth steps: authorization, authentication, etc.
   // It starts from the chromoting main page unauthenticated and ends up back
   // on the chromoting main page authenticated and ready to go.
   void Auth();

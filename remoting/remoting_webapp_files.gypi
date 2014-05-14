@@ -123,6 +123,9 @@
     # browser test JavaScript files.
     'remoting_webapp_js_browser_test_files': [
       'webapp/browser_test/browser_test.js',
+      'webapp/browser_test/cancel_pin_browser_test.js',
+      'webapp/browser_test/invalid_pin_browser_test.js',
+      'webapp/browser_test/update_pin_browser_test.js',
     ],
     # The JavaScript files required by main.html.
     'remoting_webapp_main_html_js_files': [

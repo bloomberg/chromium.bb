@@ -167,3 +167,46 @@ var MediaSource = function() {}
  * @return {SourceBuffer}
  */
 MediaSource.prototype.addSourceBuffer = function(format) {}
+
+/**
+ * @constructor
+ * @param {function(function(*), function(*)) : void} init
+ */
+var Promise = function (init) {};
+
+/**
+ * @param {function(*) : void} onFulfill
+ * @param {function(*) : void} onReject
+ * @return {Promise}
+ */
+Promise.prototype.then = function (onFulfill, onReject) {};
+
+/**
+ * @param {function(*) : void} onReject
+ * @return {Promise}
+ */
+Promise.prototype['catch'] = function (onReject) {};
+
+/**
+ * @param {Array.<Promise>} promises
+ * @return {Promise}
+ */
+Promise.prototype.race = function (promises) {}
+
+/**
+ * @param {Array.<Promise>} promises
+ * @return {Promise}
+ */
+Promise.prototype.all = function (promises) {};
+
+/**
+ * @param {*} reason
+ * @return {Promise}
+ */
+Promise.reject = function (reason) {};
+
+/**
+ * @param {*} value
+ * @return {Promise}
+ */
+Promise.resolve = function (value) {};

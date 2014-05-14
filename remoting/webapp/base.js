@@ -12,7 +12,7 @@
 'use strict';
 
 var base = {};
-base.debug = function () {};
+base.debug = function() {};
 
 /**
  * Whether to break in debugger and alert when an assertion fails.
@@ -104,11 +104,25 @@ base.doNothing = function() {};
  * @param {!Object} dict
  * @return {Array}
  */
-base.values = function (dict) {
+base.values = function(dict) {
   return Object.keys(dict).map(
     /** @param {string} key */
     function(key) {
       return dict[key];
+    });
+};
+
+base.Promise = function() {};
+
+/**
+ * @param {number} delay
+ * @return {Promise} a Promise that will be fulfilled after |delay| ms.
+ */
+base.Promise.sleep = function(delay) {
+  return new Promise(
+    /** @param {function():void} fulfill */
+    function(fulfill) {
+      window.setTimeout(fulfill, delay);
     });
 };
 
