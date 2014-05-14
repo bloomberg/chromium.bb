@@ -35,6 +35,7 @@ class WebScreenOrientationListener;
 }
 
 namespace content {
+class BatteryStatusDispatcher;
 class DeviceMotionEventPump;
 class DeviceOrientationEventPump;
 class QuotaMessageFilter;
@@ -145,9 +146,11 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
   virtual void setScreenOrientationListener(
-    blink::WebScreenOrientationListener*) OVERRIDE;
+      blink::WebScreenOrientationListener*) OVERRIDE;
   virtual void lockOrientation(blink::WebScreenOrientationLockType) OVERRIDE;
   virtual void unlockOrientation() OVERRIDE;
+  virtual void setBatteryStatusListener(
+      blink::WebBatteryStatusListener* listener) OVERRIDE;
 
   // Disables the WebSandboxSupport implementation for testing.
   // Tests that do not set up a full sandbox environment should call
@@ -229,6 +232,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<ScreenOrientationDispatcher> screen_orientation_dispatcher_;
 
   scoped_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
+
+  scoped_ptr<BatteryStatusDispatcher> battery_status_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebKitPlatformSupportImpl);
 };

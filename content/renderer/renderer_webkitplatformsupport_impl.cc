@@ -37,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/battery_status/battery_status_dispatcher.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
 #include "content/renderer/device_sensors/device_orientation_event_pump.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
@@ -60,6 +61,7 @@
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationListener.h"
@@ -1179,6 +1181,17 @@ void RendererWebKitPlatformSupportImpl::queryStorageUsageAndQuota(
           storage_partition,
           static_cast<quota::StorageType>(type),
           QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
+}
+
+//------------------------------------------------------------------------------
+
+void RendererWebKitPlatformSupportImpl::setBatteryStatusListener(
+    blink::WebBatteryStatusListener* listener) {
+  if (!battery_status_dispatcher_) {
+    battery_status_dispatcher_.reset(
+        new BatteryStatusDispatcher(RenderThreadImpl::current()));
+  }
+  battery_status_dispatcher_->SetListener(listener);
 }
 
 }  // namespace content
