@@ -53,8 +53,7 @@ class ChromePasswordManagerClient
   virtual base::FieldTrial::Probability GetProbabilityForExperiment(
       const std::string& experiment_name) OVERRIDE;
   virtual bool IsPasswordSyncEnabled() OVERRIDE;
-  virtual void SetLogger(password_manager::PasswordManagerLogger* logger)
-      OVERRIDE;
+  virtual void OnLogRouterAvailabilityChanged(bool router_can_be_used) OVERRIDE;
   virtual void LogSavePasswordProgress(const std::string& text) OVERRIDE;
   virtual bool IsLoggingActive() const OVERRIDE;
 
@@ -107,7 +106,7 @@ class ChromePasswordManagerClient
   void ShowPasswordEditingPopup(
       const gfx::RectF& bounds, const autofill::PasswordForm& form);
 
-  Profile* GetProfile();
+  Profile* const profile_;
 
   password_manager::ContentPasswordManagerDriver driver_;
 
@@ -121,10 +120,8 @@ class ChromePasswordManagerClient
   // Allows authentication callbacks to be destroyed when this client is gone.
   base::WeakPtrFactory<ChromePasswordManagerClient> weak_factory_;
 
-  // Points to an active logger instance to use for, e.g., reporting progress on
-  // saving passwords. If there is no active logger (most of the time), the
-  // pointer will be NULL.
-  password_manager::PasswordManagerLogger* logger_;
+  // True if |this| is registered with some LogRouter which can accept logs.
+  bool can_use_log_router_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

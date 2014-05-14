@@ -21,8 +21,10 @@
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_logger.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
@@ -32,6 +34,9 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/password_authentication_manager.h"
 #endif  // OS_ANDROID
+
+using password_manager::PasswordManagerInternalsService;
+using password_manager::PasswordManagerInternalsServiceFactory;
 
 namespace {
 
@@ -71,12 +76,23 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
     content::WebContents* web_contents,
     autofill::AutofillManagerDelegate* autofill_manager_delegate)
     : content::WebContentsObserver(web_contents),
+      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       driver_(web_contents, this, autofill_manager_delegate),
       observer_(NULL),
       weak_factory_(this),
-      logger_(NULL) {}
+      can_use_log_router_(false) {
+  PasswordManagerInternalsService* service =
+      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
+  if (service)
+    can_use_log_router_ = service->RegisterClient(this);
+}
 
-ChromePasswordManagerClient::~ChromePasswordManagerClient() {}
+ChromePasswordManagerClient::~ChromePasswordManagerClient() {
+  PasswordManagerInternalsService* service =
+      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
+  if (service)
+    service->UnregisterClient(this);
+}
 
 bool ChromePasswordManagerClient::IsAutomaticPasswordSavingEnabled() const {
   return CommandLine::ForCurrentProcess()->HasSwitch(
@@ -136,17 +152,13 @@ void ChromePasswordManagerClient::AuthenticateAutofillAndFillForm(
 #endif  // OS_ANDROID
 }
 
-Profile* ChromePasswordManagerClient::GetProfile() {
-  return Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-}
-
 void ChromePasswordManagerClient::HidePasswordGenerationPopup() {
   if (popup_controller_)
     popup_controller_->HideAndDestroy();
 }
 
 PrefService* ChromePasswordManagerClient::GetPrefs() {
-  return GetProfile()->GetPrefs();
+  return profile_->GetPrefs();
 }
 
 password_manager::PasswordStore*
@@ -154,8 +166,8 @@ ChromePasswordManagerClient::GetPasswordStore() {
   // Always use EXPLICIT_ACCESS as the password manager checks IsOffTheRecord
   // itself when it shouldn't access the PasswordStore.
   // TODO(gcasto): Is is safe to change this to Profile::IMPLICIT_ACCESS?
-  return PasswordStoreFactory::GetForProfile(GetProfile(),
-                                             Profile::EXPLICIT_ACCESS).get();
+  return PasswordStoreFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS)
+      .get();
 }
 
 password_manager::PasswordManagerDriver*
@@ -183,7 +195,7 @@ ChromePasswordManagerClient::GetProbabilityForExperiment(
 
 bool ChromePasswordManagerClient::IsPasswordSyncEnabled() {
   ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(GetProfile());
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   // Don't consider sync enabled if the user has a custom passphrase. See
   // crbug.com/358998 for more details.
   if (sync_service &&
@@ -195,29 +207,35 @@ bool ChromePasswordManagerClient::IsPasswordSyncEnabled() {
   return false;
 }
 
-void ChromePasswordManagerClient::SetLogger(
-    password_manager::PasswordManagerLogger* logger) {
-  // We should never be replacing one logger with a different one, because that
-  // will leave the first without further updates, and the user likely confused.
-  // TODO(vabr): For the reason above, before moving the internals page from
-  // behind the flag, make sure to restrict the number of internals page
-  // instances to 1 in normal profiles, and 0 in incognito.
-  DCHECK(!logger || !logger_);
-  logger_ = logger;
+void ChromePasswordManagerClient::OnLogRouterAvailabilityChanged(
+    bool router_can_be_used) {
+  if (can_use_log_router_ == router_can_be_used)
+    return;
+  can_use_log_router_ = router_can_be_used;
+
+  if (!web_contents())
+    return;
 
   // Also inform the renderer process to start or stop logging.
   web_contents()->GetRenderViewHost()->Send(new AutofillMsg_ChangeLoggingState(
-      web_contents()->GetRenderViewHost()->GetRoutingID(), logger != NULL));
+      web_contents()->GetRenderViewHost()->GetRoutingID(),
+      can_use_log_router_));
 }
 
 void ChromePasswordManagerClient::LogSavePasswordProgress(
     const std::string& text) {
-  if (IsLoggingActive())
-    logger_->LogSavePasswordProgress(text);
+  if (!IsLoggingActive())
+    return;
+  PasswordManagerInternalsService* service =
+      PasswordManagerInternalsServiceFactory::GetForBrowserContext(profile_);
+  if (service)
+    service->ProcessLog(text);
 }
 
 bool ChromePasswordManagerClient::IsLoggingActive() const {
-  return logger_ != NULL;
+  // WebUI tabs do not need to log password saving progress. In particular, the
+  // internals page itself should not send any logs.
+  return can_use_log_router_ && !web_contents()->GetWebUI();
 }
 
 // static

@@ -16,7 +16,6 @@ namespace password_manager {
 class PasswordFormManager;
 class PasswordManagerDriver;
 class PasswordStore;
-class PasswordManagerLogger;
 
 // An abstraction of operations that depend on the embedders (e.g. Chrome)
 // environment.
@@ -73,10 +72,13 @@ class PasswordManagerClient {
   // implementation returns false.
   virtual bool IsPasswordSyncEnabled();
 
-  // Attach or detach (setting NULL) a logger for this client.
-  virtual void SetLogger(PasswordManagerLogger* logger);
+  // Only for clients which registered with a LogRouter: If called with
+  // |router_can_be_used| set to false, the client may no longer use the
+  // LogRouter. If |router_can_be_used| is true, the LogRouter can be used after
+  // the return from OnLogRouterAvailabilityChanged.
+  virtual void OnLogRouterAvailabilityChanged(bool router_can_be_used);
 
-  // Send |text| to the logger.
+  // Forward |text| for display to the LogRouter (if registered with one).
   virtual void LogSavePasswordProgress(const std::string& text);
 
   // Returns true if logs recorded via LogSavePasswordProgress will be

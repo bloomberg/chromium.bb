@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/web_ui_browsertest.h"
+#include "components/password_manager/content/browser/password_manager_internals_service_factory.h"
+#include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
 #include "content/public/browser/web_contents.h"
 
@@ -26,10 +29,6 @@ class PasswordManagerInternalsWebUIBrowserTest : public WebUIBrowserTest {
   // Opens a new tab, and navigates to the internals page in that. Also assigns
   // the corresponding UI controller to |controller_|.
   void OpenNewTabWithTheInternalsPage();
-
-  PasswordManagerInternalsUI* controller() {
-    return controller_;
-  };
 
  private:
   PasswordManagerInternalsUI* controller_;
@@ -75,7 +74,11 @@ PasswordManagerInternalsWebUIBrowserTest::OpenNewTabWithTheInternalsPage() {
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
                        LogSavePasswordProgress) {
-  controller()->LogSavePasswordProgress("<script> text for testing");
+  password_manager::PasswordManagerInternalsService* service =
+      password_manager::PasswordManagerInternalsServiceFactory::
+          GetForBrowserContext(browser()->profile());
+  ASSERT_TRUE(service);
+  service->ProcessLog("<script> text for testing");
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
 }
 
@@ -84,12 +87,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
 // logs created before the second tab was opened, and also that the second tab
 // waits with displaying until the internals page is ready (trying to display
 // the old logs just on construction time would fail).
-// TODO(vabr): Disabled until multiple tabs with the internals page can exist
-// without crashing.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInternalsWebUIBrowserTest,
-                       DISABLED_LogSavePasswordProgress_MultipleTabsIdentical) {
+                       LogSavePasswordProgress_MultipleTabsIdentical) {
   // First, open one tab with the internals page, and log something.
-  controller()->LogSavePasswordProgress("<script> text for testing");
+  password_manager::PasswordManagerInternalsService* service =
+      password_manager::PasswordManagerInternalsServiceFactory::
+          GetForBrowserContext(browser()->profile());
+  ASSERT_TRUE(service);
+  service->ProcessLog("<script> text for testing");
   ASSERT_TRUE(RunJavascriptTest("testLogText"));
   // Now open a second tab with the internals page, but do not log anything.
   OpenNewTabWithTheInternalsPage();

@@ -18,7 +18,8 @@ PasswordManagerClient::GetProbabilityForExperiment(
 
 bool PasswordManagerClient::IsPasswordSyncEnabled() { return false; }
 
-void PasswordManagerClient::SetLogger(PasswordManagerLogger* logger) {
+void PasswordManagerClient::OnLogRouterAvailabilityChanged(
+    bool router_can_be_used) {
 }
 
 void PasswordManagerClient::LogSavePasswordProgress(const std::string& text) {

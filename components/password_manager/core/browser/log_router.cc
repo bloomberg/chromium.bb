@@ -40,8 +40,10 @@ std::string LogRouter::RegisterReceiver(PasswordManagerLogger* receiver) {
   DCHECK(receiver);
   DCHECK(accumulated_logs_.empty() || receivers_.might_have_observers());
 
-  // TODO(vabr): Once the clients provide API for that, notify them if the
-  // number of receivers went from 0 to 1.
+  if (!receivers_.might_have_observers()) {
+    FOR_EACH_OBSERVER(
+        PasswordManagerClient, clients_, OnLogRouterAvailabilityChanged(true));
+  }
   receivers_.AddObserver(receiver);
   return accumulated_logs_;
 }
@@ -51,8 +53,8 @@ void LogRouter::UnregisterReceiver(PasswordManagerLogger* receiver) {
   receivers_.RemoveObserver(receiver);
   if (!receivers_.might_have_observers()) {
     accumulated_logs_.clear();
-    // TODO(vabr): Once the clients provide API for that, notify them that the
-    // number of receivers went from 1 to 0.
+    FOR_EACH_OBSERVER(
+        PasswordManagerClient, clients_, OnLogRouterAvailabilityChanged(false));
   }
 }
 
