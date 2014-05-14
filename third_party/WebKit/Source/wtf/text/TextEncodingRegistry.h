@@ -48,6 +48,8 @@ const char* atomicCanonicalTextEncodingName(const String&);
 bool noExtendedTextEncodingNameUsed();
 bool isJapaneseEncoding(const char* canonicalEncodingName);
 bool shouldShowBackslashAsCurrencySymbolIn(const char* canonicalEncodingName);
+bool isReplacementEncoding(const char* alias);
+bool isReplacementEncoding(const String& alias);
 
 #ifndef NDEBUG
 void dumpTextEncodingNameMap();

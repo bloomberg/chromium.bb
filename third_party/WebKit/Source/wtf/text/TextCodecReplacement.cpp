@@ -18,10 +18,10 @@ TextCodecReplacement::TextCodecReplacement()
 
 void TextCodecReplacement::registerEncodingNames(EncodingNameRegistrar registrar)
 {
-    // FIXME: The 'replacement' label itself should not be referenceable by
+    // The 'replacement' label itself should not be referenceable by
     // resources or script - it's a specification convenience - but much of
     // the wtf/text API asserts that an encoding name is a label for itself.
-    // crbug.com/277037
+    // This is handled in TextEncoding by marking it as not valid.
     registrar("replacement", "replacement");
 
     registrar("csiso2022kr", "replacement");

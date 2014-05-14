@@ -23,10 +23,9 @@ const char* replacementAlias = "iso-2022-kr";
 
 TEST(TextCodecReplacement, Aliases)
 {
-    // FIXME: The 'replacement' label itself should not be referenceable by
-    // resources or script - it's a specification convenience - but much of
-    // the wtf/text API asserts that an encoding name is a label for itself.
-    // crbug.com/277037
+    // "replacement" is not a valid alias for itself
+    EXPECT_FALSE(TextEncoding("replacement").isValid());
+    EXPECT_FALSE(TextEncoding("rEpLaCeMeNt").isValid());
 
     EXPECT_TRUE(TextEncoding(replacementAlias).isValid());
     EXPECT_STREQ("replacement", TextEncoding(replacementAlias).name());
