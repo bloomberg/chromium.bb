@@ -88,8 +88,10 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       registration_id_(kInvalidServiceWorkerVersionId),
       status_(NEW),
       context_(context),
+      script_cache_map_(this),
       weak_factory_(this) {
   DCHECK(context_);
+  DCHECK(registration);
   if (registration) {
     registration_id_ = registration->id();
     script_url_ = registration->script_url();
@@ -548,20 +550,6 @@ void ServiceWorkerVersion::OnSyncEventFinished(
   scoped_refptr<ServiceWorkerVersion> protect(this);
   callback->Run(SERVICE_WORKER_OK);
   sync_callbacks_.Remove(request_id);
-}
-
-void ServiceWorkerVersion::AddToScriptCache(
-    const GURL& url, int64 resource_id) {
-  DCHECK_EQ(kInvalidServiceWorkerResponseId, LookupInScriptCache(url));
-  DCHECK_EQ(NEW, status_);
-  script_cache_map_[url] = resource_id;
-}
-
-int64 ServiceWorkerVersion::LookupInScriptCache(const GURL& url) {
-  ResourceIDMap::const_iterator found = script_cache_map_.find(url);
-  if (found == script_cache_map_.end())
-    return kInvalidServiceWorkerResponseId;
-  return found->second;
 }
 
 void ServiceWorkerVersion::OnPostMessageToDocument(

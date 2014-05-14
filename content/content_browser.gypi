@@ -1191,6 +1191,8 @@
     'browser/service_worker/service_worker_registration_status.h',
     'browser/service_worker/service_worker_request_handler.cc',
     'browser/service_worker/service_worker_request_handler.h',
+    'browser/service_worker/service_worker_script_cache_map.cc',
+    'browser/service_worker/service_worker_script_cache_map.h',
     'browser/service_worker/service_worker_storage.cc',
     'browser/service_worker/service_worker_storage.h',
     'browser/service_worker/service_worker_unregister_job.cc',
