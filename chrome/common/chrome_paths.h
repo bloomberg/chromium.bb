@@ -103,6 +103,7 @@ enum {
                                 // binary data (e.g., html files and images
                                 // used by internal pages).
   DIR_RESOURCES_EXTENSION,      // Full path to extension resources.
+  DIR_RECOVERY_BASE,            // Full path to the dir for Recovery component.
 #if defined(OS_CHROMEOS)
   DIR_CHROMEOS_WALLPAPERS,      // Directory where downloaded chromeos
                                 // wallpapers reside.

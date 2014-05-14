@@ -352,6 +352,12 @@ bool PathProvider(int key, base::FilePath* result) {
 #endif
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
+    case chrome::DIR_RECOVERY_BASE:
+      if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("recovery"));
+      create_dir = true;
+      break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     case chrome::FILE_O1D_PLUGIN:
       if (!PathService::Get(base::DIR_MODULE, &cur))

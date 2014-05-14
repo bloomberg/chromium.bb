@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
@@ -114,11 +115,23 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   if (current_version_.CompareTo(version) >= 0)
     return false;
-  base::FilePath main_file = unpack_path.Append(kRecoveryFileName);
+
+  // Passed the basic tests. Copy the installation to a permanent directory.
+  base::FilePath path;
+  if (!PathService::Get(chrome::DIR_RECOVERY_BASE, &path))
+    return false;
+  path = path.AppendASCII(version.GetString());
+  if (base::PathExists(path) && !base::DeleteFile(path, true))
+      return false;
+  if (!base::Move(unpack_path, path)) {
+    DVLOG(1) << "Recovery component move failed.";
+    return false;
+  }
+
+  base::FilePath main_file = path.Append(kRecoveryFileName);
   if (!base::PathExists(main_file))
     return false;
-  // Passed the basic tests. The installation continues with the
-  // recovery component itself running from the temp directory.
+  // Run the recovery component.
   CommandLine cmdline(main_file);
   std::string arguments;
   if (manifest.GetStringASCII("x-recovery-args", &arguments))
