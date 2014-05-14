@@ -57,23 +57,15 @@ bool ExamplesMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void ExamplesMainDelegate::PreSandboxStartup() {
-  InitializeResourceBundle();
+  base::FilePath ui_test_pak_path;
+  DCHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 }
 
 content::ContentBrowserClient*
     ExamplesMainDelegate::CreateContentBrowserClient() {
   browser_client_.reset(new ExamplesContentBrowserClient);
   return browser_client_.get();
-}
-
-void ExamplesMainDelegate::InitializeResourceBundle() {
-  base::FilePath pak_dir;
-  PathService::Get(base::DIR_MODULE, &pak_dir);
-
-  base::FilePath pak_file;
-  pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
-
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 
 }  // namespace examples

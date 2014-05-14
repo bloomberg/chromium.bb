@@ -58,6 +58,11 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("paks"));
       break;
 #endif
+    case UI_TEST_PAK:
+      if (!PathService::Get(base::DIR_MODULE, &cur))
+        return false;
+      cur = cur.AppendASCII("ui_test.pak");
+      break;
     default:
       return false;
   }

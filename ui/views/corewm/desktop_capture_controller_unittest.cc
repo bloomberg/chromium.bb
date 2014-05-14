@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
@@ -34,11 +35,10 @@ class DesktopCaptureControllerTest : public ViewsTestBase {
 
   virtual void SetUp() OVERRIDE {
     gfx::GLSurface::InitializeOneOffForTests();
-    base::FilePath pak_dir;
-    PathService::Get(base::DIR_MODULE, &pak_dir);
-    base::FilePath pak_file;
-    pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+
+    base::FilePath ui_test_pak_path;
+    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
     ViewsTestBase::SetUp();
   }

@@ -28,8 +28,6 @@ class ExamplesMainDelegate : public content::ContentMainDelegate {
   virtual content::ContentBrowserClient* CreateContentBrowserClient() OVERRIDE;
 
  private:
-  void InitializeResourceBundle();
-
   scoped_ptr<ExamplesContentBrowserClient> browser_client_;
   content::ShellContentClient content_client_;
 
