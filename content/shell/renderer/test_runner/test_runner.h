@@ -51,7 +51,7 @@ class TestRunner : public WebTestRunner,
 
   void Reset();
 
-  WebTaskList* taskList() { return &task_list_; }
+  WebTaskList* mutable_task_list() { return &task_list_; }
 
   void SetTestIsRunning(bool);
   bool TestIsRunning() const { return test_is_running_; }
@@ -150,7 +150,7 @@ class TestRunner : public WebTestRunner,
 
     void set_frozen(bool frozen) { frozen_ = frozen; }
     bool is_empty() { return queue_.empty(); }
-    WebTaskList* taskList() { return &task_list_; }
+    WebTaskList* mutable_task_list() { return &task_list_; }
 
    private:
     void ProcessWork();

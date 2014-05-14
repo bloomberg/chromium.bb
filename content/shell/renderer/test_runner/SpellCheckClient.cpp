@@ -6,7 +6,7 @@
 
 #include "content/shell/renderer/test_runner/MockGrammarCheck.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
-#include "content/shell/renderer/test_runner/WebTestProxy.h"
+#include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
@@ -128,7 +128,7 @@ void SpellCheckClient::finishLastTextCheck()
     m_lastRequestedTextCheckingCompletion->didFinishCheckingText(results);
     m_lastRequestedTextCheckingCompletion = 0;
 
-    m_webTestProxy->postSpellCheckEvent(WebString("finishLastTextCheck"));
+    m_webTestProxy->PostSpellCheckEvent(WebString("finishLastTextCheck"));
 }
 
 WebString SpellCheckClient::autoCorrectWord(const WebString&)

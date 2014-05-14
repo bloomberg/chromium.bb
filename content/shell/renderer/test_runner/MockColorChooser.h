@@ -26,7 +26,7 @@ public:
     virtual void endChooser() OVERRIDE;
 
     void invokeDidEndChooser();
-    WebTaskList* taskList() { return &m_taskList; }
+    WebTaskList* mutable_task_list() { return &m_taskList; }
 
 private:
     blink::WebColorChooserClient* m_client;

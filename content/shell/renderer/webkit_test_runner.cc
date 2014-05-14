@@ -33,8 +33,8 @@
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
-#include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/shell/renderer/test_runner/WebTestRunner.h"
+#include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "skia/ext/platform_canvas.h"
@@ -612,8 +612,8 @@ void WebKitTestRunner::DidFailProvisionalLoad(WebLocalFrame* frame,
 
 void WebKitTestRunner::Reset() {
   // The proxy_ is always non-NULL, it is set right after construction.
-  proxy_->setWidget(render_view()->GetWebView());
-  proxy_->reset();
+  proxy_->set_widget(render_view()->GetWebView());
+  proxy_->Reset();
   prefs_.Reset();
   routing_ids_.clear();
   session_histories_.clear();
@@ -645,14 +645,14 @@ void WebKitTestRunner::CaptureDump() {
     Send(new ShellViewHostMsg_AudioDump(routing_id(), vector_data));
   } else {
     Send(new ShellViewHostMsg_TextDump(routing_id(),
-                                       proxy()->captureTree(false)));
+                                       proxy()->CaptureTree(false)));
 
     if (test_config_.enable_pixel_dumping &&
         interfaces->testRunner()->shouldGeneratePixelResults()) {
       // TODO(danakj): Remove when kForceCompositingMode is everywhere.
       if (!render_view()->GetWebView()->isAcceleratedCompositingActive()) {
         SkBitmap snapshot;
-        CopyCanvasToBitmap(proxy()->capturePixels(), &snapshot);
+        CopyCanvasToBitmap(proxy()->CapturePixels(), &snapshot);
         CaptureDumpPixels(snapshot);
       } else {
         proxy()->CapturePixelsAsync(base::Bind(

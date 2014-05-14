@@ -44,7 +44,7 @@ public:
     virtual void stop() OVERRIDE;
 
     // WebTask related methods
-    WebTaskList* taskList() { return &m_taskList; }
+    WebTaskList* mutable_task_list() { return &m_taskList; }
 
 private:
     MockWebRTCPeerConnectionHandler();

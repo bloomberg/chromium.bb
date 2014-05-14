@@ -28,7 +28,7 @@ public:
     virtual bool insertDTMF(const blink::WebString& tones, long duration, long interToneGap) OVERRIDE;
 
     // WebTask related methods
-    WebTaskList* taskList() { return &m_taskList; }
+    WebTaskList* mutable_task_list() { return &m_taskList; }
     void clearToneBuffer() { m_toneBuffer.reset(); }
 
 private:

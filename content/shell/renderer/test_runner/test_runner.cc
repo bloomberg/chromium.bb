@@ -12,8 +12,8 @@
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebPermissions.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
-#include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/shell/renderer/test_runner/notification_presenter.h"
+#include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
@@ -1757,7 +1757,7 @@ void TestRunner::NotifyDone() {
     return;
 
   // Test didn't timeout. Kill the timeout timer.
-  taskList()->revokeAll();
+  task_list_.revokeAll();
 
   CompleteNotifyDone();
 }
@@ -2472,7 +2472,7 @@ void TestRunner::CloseWebInspector() {
 }
 
 bool TestRunner::IsChooserShown() {
-  return proxy_->isChooserShown();
+  return proxy_->IsChooserShown();
 }
 
 void TestRunner::EvaluateInWebInspector(int call_id,
@@ -2503,7 +2503,7 @@ std::string TestRunner::PathToLocalResource(const std::string& path) {
 void TestRunner::SetBackingScaleFactor(double value,
                                        v8::Handle<v8::Function> callback) {
   delegate_->setDeviceScaleFactor(value);
-  proxy_->discardBackingStore();
+  proxy_->DiscardBackingStore();
   delegate_->postTask(new InvokeCallbackTask(this, callback));
 }
 
@@ -2525,7 +2525,7 @@ void TestRunner::SetMIDISysexPermission(bool value) {
   const std::vector<WebTestProxyBase*>& windowList =
       test_interfaces_->windowList();
   for (unsigned i = 0; i < windowList.size(); ++i)
-    windowList.at(i)->midiClientMock()->setSysexPermission(value);
+    windowList.at(i)->GetMIDIClientMock()->setSysexPermission(value);
 }
 
 void TestRunner::GrantWebNotificationPermission(const std::string& origin,
@@ -2539,18 +2539,18 @@ bool TestRunner::SimulateWebNotificationClick(const std::string& value) {
 
 void TestRunner::AddMockSpeechRecognitionResult(const std::string& transcript,
                                                 double confidence) {
-  proxy_->speechRecognizerMock()->addMockResult(
+  proxy_->GetSpeechRecognizerMock()->addMockResult(
       WebString::fromUTF8(transcript), confidence);
 }
 
 void TestRunner::SetMockSpeechRecognitionError(const std::string& error,
                                                const std::string& message) {
-  proxy_->speechRecognizerMock()->setError(WebString::fromUTF8(error),
+  proxy_->GetSpeechRecognizerMock()->setError(WebString::fromUTF8(error),
                                            WebString::fromUTF8(message));
 }
 
 bool TestRunner::WasMockSpeechRecognitionAborted() {
-  return proxy_->speechRecognizerMock()->wasAborted();
+  return proxy_->GetSpeechRecognizerMock()->wasAborted();
 }
 
 void TestRunner::AddWebPageOverlay() {
@@ -2569,13 +2569,13 @@ void TestRunner::RemoveWebPageOverlay() {
 }
 
 void TestRunner::DisplayAsync() {
-  proxy_->displayAsyncThen(base::Closure());
+  proxy_->DisplayAsyncThen(base::Closure());
 }
 
 void TestRunner::DisplayAsyncThen(v8::Handle<v8::Function> callback) {
   scoped_ptr<InvokeCallbackTask> task(
       new InvokeCallbackTask(this, callback));
-  proxy_->displayAsyncThen(base::Bind(&TestRunner::InvokeCallback,
+  proxy_->DisplayAsyncThen(base::Bind(&TestRunner::InvokeCallback,
                                       base::Unretained(this),
                                       base::Passed(&task)));
 }

@@ -11,7 +11,7 @@
 #include "content/shell/renderer/test_runner/MockSpellCheck.h"
 #include "content/shell/renderer/test_runner/TestInterfaces.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
-#include "content/shell/renderer/test_runner/WebTestProxy.h"
+#include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
@@ -1378,8 +1378,8 @@ void EventSender::ZoomPageIn() {
   const std::vector<WebTestProxyBase*>& window_list = interfaces_->windowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webView()->setZoomLevel(
-        window_list.at(i)->webView()->zoomLevel() + 1);
+    window_list.at(i)->GetWebView()->setZoomLevel(
+        window_list.at(i)->GetWebView()->zoomLevel() + 1);
   }
 }
 
@@ -1387,8 +1387,8 @@ void EventSender::ZoomPageOut() {
   const std::vector<WebTestProxyBase*>& window_list = interfaces_->windowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webView()->setZoomLevel(
-        window_list.at(i)->webView()->zoomLevel() - 1);
+    window_list.at(i)->GetWebView()->setZoomLevel(
+        window_list.at(i)->GetWebView()->zoomLevel() - 1);
   }
 }
 
@@ -1396,7 +1396,7 @@ void EventSender::SetPageZoomFactor(double zoom_factor) {
   const std::vector<WebTestProxyBase*>& window_list = interfaces_->windowList();
 
   for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webView()->setZoomLevel(
+    window_list.at(i)->GetWebView()->setZoomLevel(
         ZoomFactorToZoomLevel(zoom_factor));
   }
 }

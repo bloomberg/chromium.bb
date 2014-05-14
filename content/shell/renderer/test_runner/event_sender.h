@@ -64,7 +64,7 @@ class EventSender : public base::SupportsWeakPtr<EventSender> {
                int modifiers,
                KeyLocationCode location);
 
-  WebTaskList* taskList() { return &task_list_; }
+  WebTaskList* mutable_task_list() { return &task_list_; }
 
  private:
   friend class EventSenderBindings;

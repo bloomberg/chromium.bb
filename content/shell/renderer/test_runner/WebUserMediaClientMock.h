@@ -27,7 +27,7 @@ public:
     virtual void cancelMediaDevicesRequest(const blink::WebMediaDevicesRequest&) OVERRIDE;
 
     // Task related methods
-    WebTaskList* taskList() { return &m_taskList; }
+    WebTaskList* mutable_task_list() { return &m_taskList; }
 
 private:
     WebTaskList m_taskList;

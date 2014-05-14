@@ -22,7 +22,7 @@ public:
 
     void setDelegate(WebTestDelegate*);
 
-    WebTaskList* taskList() { return &m_taskList; }
+    WebTaskList* mutable_task_list() { return &m_taskList; }
     MockSpellCheck* mockSpellCheck() { return &m_spellcheck; }
 
     // blink::WebSpellCheckClient implementation.

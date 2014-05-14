@@ -18,8 +18,8 @@
 #include "content/shell/renderer/shell_render_process_observer.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
 #include "content/shell/renderer/test_runner/WebTestInterfaces.h"
-#include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/shell/renderer/test_runner/WebTestRunner.h"
+#include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/shell/renderer/webkit_test_runner.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
@@ -104,7 +104,7 @@ void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {
   WebKitTestRunner* test_runner = WebKitTestRunner::Get(render_view);
   test_runner->Reset();
   render_view->GetWebView()->setSpellCheckClient(
-      test_runner->proxy()->spellCheckClient());
+      test_runner->proxy()->GetSpellCheckClient());
   WebTestDelegate* delegate =
       ShellRenderProcessObserver::GetInstance()->test_delegate();
   if (delegate == static_cast<WebTestDelegate*>(test_runner))
@@ -186,9 +186,9 @@ void ShellContentRendererClient::WebTestProxyCreated(RenderView* render_view,
   test_runner->set_proxy(proxy);
   if (!ShellRenderProcessObserver::GetInstance()->test_delegate())
     ShellRenderProcessObserver::GetInstance()->SetTestDelegate(test_runner);
-  proxy->setInterfaces(
+  proxy->SetInterfaces(
       ShellRenderProcessObserver::GetInstance()->test_interfaces());
-  test_runner->proxy()->setDelegate(
+  test_runner->proxy()->SetDelegate(
       ShellRenderProcessObserver::GetInstance()->test_delegate());
 }
 

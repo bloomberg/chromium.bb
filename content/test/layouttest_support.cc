@@ -16,8 +16,8 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
-#include "content/shell/renderer/test_runner/WebFrameTestProxy.h"
-#include "content/shell/renderer/test_runner/WebTestProxy.h"
+#include "content/shell/renderer/test_runner/web_frame_test_proxy.h"
+#include "content/shell/renderer/test_runner/web_test_proxy.h"
 #include "content/test/test_media_stream_client.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
@@ -64,7 +64,7 @@ RenderFrameImpl* CreateWebFrameTestProxy(
   typedef WebFrameTestProxy<RenderFrameImpl, RenderViewImpl*, int32> FrameProxy;
 
   FrameProxy* render_frame_proxy = new FrameProxy(render_view, routing_id);
-  render_frame_proxy->setBaseProxy(GetWebTestProxyBase(render_view));
+  render_frame_proxy->set_base_proxy(GetWebTestProxyBase(render_view));
 
   UseMockMediaStreams(render_frame_proxy);
 
@@ -138,7 +138,7 @@ void ForceResizeRenderView(RenderView* render_view,
                            const WebSize& new_size) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
   render_view_impl->ForceResizeForTesting(new_size);
-  GetWebTestProxyBase(render_view_impl)->didForceResize();
+  GetWebTestProxyBase(render_view_impl)->DidForceResize();
 }
 
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {

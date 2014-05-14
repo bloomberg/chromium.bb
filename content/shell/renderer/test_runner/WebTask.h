@@ -41,12 +41,12 @@ private:
 
 // A task containing an object pointer of class T. Derived classes should
 // override runIfValid() which in turn can safely invoke methods on the
-// m_object. The Class T must have "WebTaskList* taskList()".
+// m_object. The Class T must have "WebTaskList* mutable_task_list()".
 template<class T>
 class WebMethodTask : public WebTask {
 public:
     explicit WebMethodTask(T* object)
-        : WebTask(object->taskList())
+        : WebTask(object->mutable_task_list())
         , m_object(object)
     {
     }
