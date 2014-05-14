@@ -829,7 +829,7 @@ def _AdjustSourcesForRules(spec, rules, sources, excluded_sources):
         outputs = OrderedSet(_FixPaths(outputs))
         inputs.remove(_FixPath(trigger_file))
         sources.update(inputs)
-        if not spec.get('msvs_external_builder'):
+        if spec['type'] != 'none' and not spec.get('msvs_external_builder'):
           excluded_sources.update(inputs)
         sources.update(outputs)
 
@@ -1388,7 +1388,7 @@ def _PrepareListOfSources(spec, generator_flags, gyp_file):
     # Add all inputs to sources and excluded sources.
     inputs = OrderedSet(inputs)
     sources.update(inputs)
-    if not spec.get('msvs_external_builder'):
+    if spec['type'] != 'none' and not spec.get('msvs_external_builder'):
       excluded_sources.update(inputs)
     if int(a.get('process_outputs_as_sources', False)):
       _AddNormalizedSources(sources, a.get('outputs', []))
