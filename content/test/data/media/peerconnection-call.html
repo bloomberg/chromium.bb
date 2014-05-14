@@ -96,8 +96,9 @@
   }
 
   // First makes a call between pc1 and pc2, and then makes a call between pc3
-  // and pc4 where the remote streams from pc1 and pc2 will be used as the local
-  // streams of pc3 and pc4.
+  // and pc4. The stream sent from pc3 to pc4 is the stream received on pc1.
+  // The stream sent from pc4 to pc3 is cloned from the stream received on pc2
+  // to test that cloning of remote video tracks works as intended.
   function callAndForwardRemoteStream(constraints) {
     createConnections(null);
     navigator.webkitGetUserMedia(constraints,
@@ -127,7 +128,7 @@
       thirdConnection.addStream(gRemoteStreams['remote-view-1']);
 
       fourthConnection = createConnection(null, 'remote-view-4');
-      fourthConnection.addStream(gRemoteStreams['remote-view-2']);
+      fourthConnection.addStream(gRemoteStreams['remote-view-2'].clone());
 
       negotiateBetween(thirdConnection, fourthConnection);
 

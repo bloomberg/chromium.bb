@@ -53,8 +53,16 @@ void CreateNativeVideoMediaStreamTrack(
       MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
   blink::WebMediaStreamTrack writable_track(track);
+  // TODO(perkj): The constraints to use here should be passed from blink when
+  // a new track is created. For cloning, it should be the constraints of the
+  // cloned track and not the originating source.
+  // Also - source.constraints() returns an uninitialized constraint if the
+  // source is coming from a remote video track. See http://crbug/287805.
+  blink::WebMediaConstraints constraints = source.constraints();
+  if (constraints.isNull())
+    constraints.initialize();
   writable_track.setExtraData(
-      new MediaStreamVideoTrack(native_source, source.constraints(),
+      new MediaStreamVideoTrack(native_source, constraints,
                                 MediaStreamVideoSource::ConstraintsCallback(),
                                 track.isEnabled()));
 }

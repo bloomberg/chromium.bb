@@ -404,6 +404,7 @@ void MediaStreamVideoSource::AddTrack(
     const blink::WebMediaConstraints& constraints,
     const ConstraintsCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!constraints.isNull());
   DCHECK(std::find(tracks_.begin(), tracks_.end(),
                    track) == tracks_.end());
   tracks_.push_back(track);

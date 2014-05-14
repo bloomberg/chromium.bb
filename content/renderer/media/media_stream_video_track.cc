@@ -114,6 +114,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
                                                     enabled)),
       constraints_(constraints),
       source_(source) {
+  DCHECK(!constraints.isNull());
   source->AddTrack(this,
                    base::Bind(
                        &MediaStreamVideoTrack::FrameDeliverer::DeliverFrameOnIO,

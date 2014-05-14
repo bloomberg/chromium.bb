@@ -133,6 +133,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 // Below 2 test will make a complete PeerConnection-based call between pc1 and
 // pc2, and then use the remote stream to setup a call between pc3 and pc4, and
 // then verify that video is received on pc3 and pc4.
+// The stream sent from pc3 to pc4 is the stream received on pc1.
+// The stream sent from pc4 to pc3 is cloned from stream the stream received
+// on pc2.
 // Flaky on win xp. http://crbug.com/304775
 #if defined(OS_WIN)
 #define MAYBE_CanForwardRemoteStream DISABLED_CanForwardRemoteStream
