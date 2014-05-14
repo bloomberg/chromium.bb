@@ -45,6 +45,10 @@ bool IsEnableWebBasedSignin() {
   return CheckProfileManagementFlag(switches::kEnableWebBasedSignin, false);
 }
 
+bool IsExtensionsMultiAccount() {
+  return CheckProfileManagementFlag(switches::kExtensionsMultiAccount, true);
+}
+
 bool IsFastUserSwitching() {
   bool use_mirror_promo_menu =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewAvatarMenu) &&

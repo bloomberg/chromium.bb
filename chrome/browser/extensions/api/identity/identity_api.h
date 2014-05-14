@@ -108,6 +108,10 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   const CachedTokens& GetAllCachedTokens();
 
+  // Account queries.
+  std::vector<std::string> GetAccounts() const;
+
+  // Global error reporting.
   void ReportAuthError(const GoogleServiceAuthError& error);
   GoogleServiceAuthError GetAuthStatusForTest() const;
 
@@ -123,6 +127,8 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   void AddShutdownObserver(ShutdownObserver* observer);
   void RemoveShutdownObserver(ShutdownObserver* observer);
+
+  void SetAccountStateForTest(AccountIds ids, bool is_signed_in);
 
  private:
   friend class BrowserContextKeyedAPIFactory<IdentityAPI>;
@@ -140,6 +146,20 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
 template <>
 void BrowserContextKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies();
+
+class IdentityGetAccountsFunction : public ChromeUIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("identity.getAccounts",
+                             IDENTITY_GETACCOUNTS);
+
+  IdentityGetAccountsFunction();
+
+ private:
+  virtual ~IdentityGetAccountsFunction();
+
+  // UIThreadExtensionFunction implementation.
+  virtual ExtensionFunction::ResponseAction Run() OVERRIDE;
+};
 
 // identity.getAuthToken fetches an OAuth 2 function for the
 // caller. The request has three sub-flows: non-interactive,

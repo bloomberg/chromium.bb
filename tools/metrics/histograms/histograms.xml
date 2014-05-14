@@ -34340,6 +34340,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="767" label="SYNCEDNOTIFICATIONSPRIVATE_GETINITIALDATA"/>
   <int value="768" label="SYNCEDNOTIFICATIONSPRIVATE_UPDATENOTIFICATION"/>
   <int value="769" label="SYNCEDNOTIFICATIONSPRIVATE_SETRENDERCONTEXT"/>
+  <int value="770" label="IDENTITY_GETACCOUNTS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

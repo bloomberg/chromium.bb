@@ -828,6 +828,7 @@ enum HistogramValue {
   SYNCEDNOTIFICATIONSPRIVATE_GETINITIALDATA,
   SYNCEDNOTIFICATIONSPRIVATE_UPDATENOTIFICATION,
   SYNCEDNOTIFICATIONSPRIVATE_SETRENDERCONTEXT,
+  IDENTITY_GETACCOUNTS,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms/histograms.xml.
   ENUM_BOUNDARY

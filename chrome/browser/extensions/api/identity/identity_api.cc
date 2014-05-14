@@ -28,6 +28,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension.h"
@@ -168,6 +169,23 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
   return token_cache_;
 }
 
+std::vector<std::string> IdentityAPI::GetAccounts() const {
+  const std::vector<AccountIds> ids = account_tracker_.GetAccounts();
+  std::vector<std::string> gaia_ids;
+
+  if (switches::IsExtensionsMultiAccount()) {
+    for (std::vector<AccountIds>::const_iterator it = ids.begin();
+         it != ids.end();
+         ++it) {
+      gaia_ids.push_back(it->gaia);
+    }
+  } else if (ids.size() >= 1) {
+    gaia_ids.push_back(ids[0].gaia);
+  }
+
+  return gaia_ids;
+}
+
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
   account_tracker_.ReportAuthError(GetPrimaryAccountId(browser_context_),
                                    error);
@@ -197,6 +215,12 @@ void IdentityAPI::OnAccountRemoved(const AccountIds& ids) {}
 
 void IdentityAPI::OnAccountSignInChanged(const AccountIds& ids,
                                          bool is_signed_in) {
+  const std::string primary_account_id = GetPrimaryAccountId(browser_context_);
+  if (primary_account_id != ids.account_key &&
+      !switches::IsExtensionsMultiAccount()) {
+    return;
+  }
+
   api::identity::AccountInfo account_info;
   account_info.id = ids.gaia;
 
@@ -217,10 +241,42 @@ void IdentityAPI::RemoveShutdownObserver(ShutdownObserver* observer) {
   shutdown_observer_list_.RemoveObserver(observer);
 }
 
+void IdentityAPI::SetAccountStateForTest(AccountIds ids, bool is_signed_in) {
+  account_tracker_.SetAccountStateForTest(ids, is_signed_in);
+}
+
 template <>
 void BrowserContextKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+}
+
+IdentityGetAccountsFunction::IdentityGetAccountsFunction() {
+}
+
+IdentityGetAccountsFunction::~IdentityGetAccountsFunction() {
+}
+
+ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
+  if (GetProfile()->IsOffTheRecord()) {
+    return RespondNow(Error(identity_constants::kOffTheRecord));
+  }
+
+  std::vector<std::string> gaia_ids =
+      IdentityAPI::GetFactoryInstance()->Get(GetProfile())->GetAccounts();
+  DCHECK(gaia_ids.size() < 2 || switches::IsExtensionsMultiAccount());
+
+  base::ListValue* infos = new base::ListValue();
+
+  for (std::vector<std::string>::const_iterator it = gaia_ids.begin();
+       it != gaia_ids.end();
+       ++it) {
+    api::identity::AccountInfo account_info;
+    account_info.id = *it;
+    infos->Append(account_info.ToValue().release());
+  }
+
+  return RespondNow(MultipleArguments(infos));
 }
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()

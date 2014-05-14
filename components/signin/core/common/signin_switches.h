@@ -11,6 +11,7 @@ namespace switches {
 // alongside the definition of their values in the .cc file.
 extern const char kClearTokenService[];
 extern const char kEnableWebBasedSignin[];
+extern const char kExtensionsMultiAccount[];
 extern const char kFastUserSwitching[];
 extern const char kGoogleProfileInfo[];
 extern const char kNewAvatarMenu[];

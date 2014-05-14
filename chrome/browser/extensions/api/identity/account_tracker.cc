@@ -53,6 +53,30 @@ void AccountTracker::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+std::vector<AccountIds> AccountTracker::GetAccounts() const {
+  const std::string primary_account_id = signin_manager_account_id();
+  std::vector<AccountIds> accounts;
+
+  for (std::map<std::string, AccountState>::const_iterator it =
+           accounts_.begin();
+       it != accounts_.end();
+       ++it) {
+    const AccountState& state = it->second;
+    bool is_visible = state.is_signed_in && !state.ids.gaia.empty();
+
+    if (it->first == primary_account_id) {
+      if (is_visible)
+        accounts.insert(accounts.begin(), state.ids);
+      else
+        return std::vector<AccountIds>();
+
+    } else if (is_visible) {
+      accounts.push_back(state.ids);
+    }
+  }
+  return accounts;
+}
+
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
   // Ignore refresh tokens if there is no primary account ID at all.
   if (signin_manager_account_id().empty())
@@ -89,7 +113,24 @@ void AccountTracker::GoogleSignedOut(const std::string& username) {
   }
 }
 
-const std::string AccountTracker::signin_manager_account_id() {
+void AccountTracker::SetAccountStateForTest(AccountIds ids, bool is_signed_in) {
+  accounts_[ids.account_key].ids = ids;
+  accounts_[ids.account_key].is_signed_in = is_signed_in;
+
+  DVLOG(1) << "SetAccountStateForTest " << ids.account_key << ":"
+           << is_signed_in;
+
+  if (VLOG_IS_ON(1)) {
+    for (std::map<std::string, AccountState>::const_iterator it =
+             accounts_.begin();
+         it != accounts_.end();
+         ++it) {
+      DVLOG(1) << it->first << ":" << it->second.is_signed_in;
+    }
+  }
+}
+
+const std::string AccountTracker::signin_manager_account_id() const {
   return SigninManagerFactory::GetForProfile(profile_)
       ->GetAuthenticatedAccountId();
 }

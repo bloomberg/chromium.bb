@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/observer_list.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -59,6 +60,11 @@ class AccountTracker : public OAuth2TokenService::Observer,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Returns the list of accounts that are signed in, and for which gaia IDs
+  // have been fetched. The primary account for the profile will be first
+  // in the vector. Additional accounts will be in order of their gaia IDs.
+  std::vector<AccountIds> GetAccounts() const;
+
   // OAuth2TokenService::Observer implementation.
   virtual void OnRefreshTokenAvailable(const std::string& account_key) OVERRIDE;
   virtual void OnRefreshTokenRevoked(const std::string& account_key) OVERRIDE;
@@ -76,13 +82,16 @@ class AccountTracker : public OAuth2TokenService::Observer,
                                      const std::string& password) OVERRIDE;
   virtual void GoogleSignedOut(const std::string& username) OVERRIDE;
 
+  // Sets the state of an account. Does not fire notifications.
+  void SetAccountStateForTest(AccountIds ids, bool is_signed_in);
+
  private:
   struct AccountState {
     AccountIds ids;
     bool is_signed_in;
   };
 
-  const std::string signin_manager_account_id();
+  const std::string signin_manager_account_id() const;
 
   void NotifyAccountAdded(const AccountState& account);
   void NotifyAccountRemoved(const AccountState& account);

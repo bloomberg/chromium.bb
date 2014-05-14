@@ -46,10 +46,16 @@ namespace identity {
   };
 
   callback GetAuthTokenCallback = void (optional DOMString token);
+  callback GetAccountsCallback = void (AccountInfo[] accounts);
   callback InvalidateAuthTokenCallback = void ();
   callback LaunchWebAuthFlowCallback = void (optional DOMString responseUrl);
 
   interface Functions {
+    // Retrieves a list of AccountInfo objects describing the accounts
+    // present on the profile.<br>
+    // <code>getAccounts</code> is only supported on dev channel.
+    static void getAccounts(GetAccountsCallback callback);
+
     // Gets an OAuth2 access token using the client ID and scopes
     // specified in the <a
     // href="app_identity.html#update_manifest"><code>oauth2</code>
