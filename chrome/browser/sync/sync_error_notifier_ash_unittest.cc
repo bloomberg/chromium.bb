@@ -184,7 +184,13 @@ class SyncErrorNotifierTest : public AshTestBase  {
 
 // Test that SyncErrorNotifier shows an notification if a passphrase is
 // required.
-TEST_F(SyncErrorNotifierTest, PassphraseNotification) {
+// Disabled on Windows: http://crbug.com/373238
+#if defined(OS_WIN)
+#define MAYBE_PassphraseNotification DISABLED_PassphraseNotification
+#else
+#define MAYBE_PassphraseNotification PassphraseNotification
+#endif
+TEST_F(SyncErrorNotifierTest, MAYBE_PassphraseNotification) {
   ASSERT_FALSE(notification_ui_manager_->FindById(kNotificationId));
 
   browser_sync::SyncBackendHost::Status status;
