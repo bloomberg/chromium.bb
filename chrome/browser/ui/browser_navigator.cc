@@ -612,20 +612,15 @@ void Navigate(NavigateParams* params) {
       // same as the source.
       DCHECK(params->source_contents);
       params->target_contents = params->source_contents;
-      DCHECK(params->target_contents);
-      // Prerender expects |params->target_contents| to be attached to a browser
-      // window, so only call for CURRENT_TAB navigations. (Others are currently
-      // unsupported because of session storage namespaces anyway.)
-      // Notice that this includes middle-clicking, since middle clicking
-      // translates into a chrome::Navigate call with no URL followed by a
-      // CURRENT_TAB navigation.
-      // TODO(tburkard): We can actually swap in in non-CURRENT_TAB cases, as
-      // long as the WebContents we swap into is part of a TabStrip model.
-      // Therefore, we should swap in regardless of CURRENT_TAB, and instead,
-      // check in the swapin function whether the WebContents is not in a
-      // TabStrip model, in which case we must not swap in.
-      swapped_in_prerender = SwapInPrerender(url, params);
     }
+
+    // Note: at this point, if |params->disposition| is not CURRENT_TAB,
+    // |params->target_contents| has not been attached to a Browser yet. (That
+    // happens later in this function.) However, in that case, the
+    // sessionStorage namespace could not match, so prerender will use the
+    // asynchronous codepath and still swap.
+    DCHECK(params->target_contents);
+    swapped_in_prerender = SwapInPrerender(url, params);
 
     if (user_initiated)
       params->target_contents->UserGestureDone();
