@@ -277,8 +277,7 @@ crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout
 # FIXME: This is flaky on XP, too, but we omit that until things are rebaselined.
 crbug.com/317806 [ Mac ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ImageOnlyFailure ]
 
-crbug.com/341435 [ Win ] http/tests/images/image-with-origin-header.html [ Failure Timeout ]
-crbug.com/341435 [ Linux Mac ] http/tests/images/image-with-origin-header.html [ Pass Timeout ]
+crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/animation-border-overflow.html [ Pass Timeout ]
