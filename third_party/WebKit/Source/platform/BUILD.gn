@@ -2,6 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+platform_gypi = exec_script(
+    "//build/gypi_to_gn.py",
+    [ rebase_path("blink_platform.gypi") ],
+    "scope",
+    [ "blink_platform.gypi" ])
+
 component("blink_common") {
   sources = [
     "exported/WebCString.cpp",
@@ -15,7 +21,7 @@ component("blink_common") {
   ]
 
   configs += [
-    "//build/config/compiler:wexit_time_destructors"
+    "//build/config/compiler:wexit_time_destructors",
     "//third_party/WebKit/Source:config",
   ]
 
@@ -61,10 +67,12 @@ if (is_mac) {
 # complete.
 #
 # TODO(brettw) Objective C Renaming postbuild steps on Mac.
-component("blink_platform") {
-  sources = [
-    # TODO(brettw) reference these from .gypi.
-  ]
+component("platform") {
+  output_name = "blink_platform"
+
+  # TODO(brettw) enable this when the sources compile (they currently depend on
+  # some of the unconverted targets).
+  #sources = platform_gypi.platform_files
 
   configs += [
     "//third_party/WebKit/Source:config",
@@ -82,21 +90,34 @@ component("blink_platform") {
 
   deps = [
     ":blink_common",
+    "//skia",
+    "//third_party:jpeg",
+    "//third_party/iccjpeg",
+    "//third_party/icu",
+    "//third_party/libpng",
+    "//third_party/libwebp",
+    "//third_party/ots",
+    "//third_party/qcms",
     "//third_party/WebKit/Source/wtf",
+    "//third_party/WebKit/Source/platform/heap",
+    "//url",
     #'blink_heap_asm_stubs',
     #'<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
-    #'<(DEPTH)/skia/skia.gyp:skia',
-    #'<(DEPTH)/third_party/icu/icu.gyp:icui18n',
-    #'<(DEPTH)/third_party/icu/icu.gyp:icuuc',
-    #'<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
-    #'<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
-    #'<(DEPTH)/third_party/ots/ots.gyp:ots',
-    #'<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
-    #'<(DEPTH)/url/url.gyp:url_lib',
     #'<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
     #'platform_generated.gyp:make_platform_generated',
-    #'<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
-    #'<(libjpeg_gyp_path):libjpeg',
+  ]
+
+  forward_dependent_configs_from = [
+    "//skia",
+    "//third_party:jpeg",
+    "//third_party/iccjpeg",
+    "//third_party/libpng",
+    "//third_party/libwebp",
+    "//third_party/ots",
+    "//third_party/qcms",
+    "//url",
+    #'<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
+    #'<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
   ]
 
   if (is_mac) {
