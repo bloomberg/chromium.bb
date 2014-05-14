@@ -1592,6 +1592,7 @@ void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
 
   if (!template_url->sync_guid().empty())
     guid_to_template_map_.erase(template_url->sync_guid());
+  // |provider_map_| is only initialized after loading has completed.
   if (loaded_) {
     UIThreadSearchTermsData search_terms_data(template_url->profile());
     provider_map_->Remove(template_url, search_terms_data);
@@ -1622,6 +1623,7 @@ void TemplateURLService::AddToMaps(TemplateURL* template_url) {
 
   if (!template_url->sync_guid().empty())
     guid_to_template_map_[template_url->sync_guid()] = template_url;
+  // |provider_map_| is only initialized after loading has completed.
   if (loaded_) {
     UIThreadSearchTermsData search_terms_data(profile_);
     provider_map_->Add(template_url, search_terms_data);
@@ -1718,7 +1720,6 @@ bool TemplateURLService::UpdateNoNotify(
     TemplateURL* existing_turl,
     const TemplateURL& new_values,
     const SearchTermsData& old_search_terms_data) {
-  DCHECK(loaded_);
   DCHECK(existing_turl);
   if (std::find(template_urls_.begin(), template_urls_.end(), existing_turl) ==
       template_urls_.end())
@@ -1729,12 +1730,18 @@ bool TemplateURLService::UpdateNoNotify(
   if (!existing_turl->sync_guid().empty())
     guid_to_template_map_.erase(existing_turl->sync_guid());
 
-  provider_map_->Remove(existing_turl, old_search_terms_data);
+  // |provider_map_| is only initialized after loading has completed.
+  if (loaded_)
+    provider_map_->Remove(existing_turl, old_search_terms_data);
+
   TemplateURLID previous_id = existing_turl->id();
   existing_turl->CopyFrom(new_values);
   existing_turl->data_.id = previous_id;
-  UIThreadSearchTermsData new_search_terms_data(profile_);
-  provider_map_->Add(existing_turl, new_search_terms_data);
+
+  if (loaded_) {
+    UIThreadSearchTermsData new_search_terms_data(profile_);
+    provider_map_->Add(existing_turl, new_search_terms_data);
+  }
 
   const base::string16& keyword = existing_turl->keyword();
   KeywordToTemplateMap::const_iterator i =
@@ -2054,7 +2061,19 @@ bool TemplateURLService::AddNoNotify(TemplateURL* template_url,
   // model.
   TemplateURL* existing_keyword_turl =
       GetTemplateURLForKeyword(template_url->keyword());
-  if (existing_keyword_turl != NULL) {
+
+  // Check whether |template_url|'s keyword conflicts with any already in the
+  // model.  Note that we can reach here during the loading phase while
+  // processing the template URLs from the web data service.  In this case,
+  // GetTemplateURLForKeyword() will look not only at what's already in the
+  // model, but at the |initial_default_search_provider_|.  Since this engine
+  // will presumably also be present in the web data, we need to double-check
+  // that any "pre-existing" entries we find are actually coming from
+  // |template_urls_|, lest we detect a "conflict" between the
+  // |initial_default_search_provider_| and the web data version of itself.
+  if (existing_keyword_turl &&
+      (std::find(template_urls_.begin(), template_urls_.end(),
+                 existing_keyword_turl) != template_urls_.end())) {
     DCHECK_NE(existing_keyword_turl, template_url);
     // Only replace one of the TemplateURLs if they are either both extensions,
     // or both not extensions.
@@ -2118,7 +2137,7 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
                               DELETE_ENGINE_USER_ACTION, DELETE_ENGINE_MAX);
   }
 
-  if (profile_) {
+  if (loaded_ && profile_) {
     content::Source<Profile> source(profile_);
     TemplateURLID id = template_url->id();
     content::NotificationService::current()->Notify(
@@ -2136,8 +2155,6 @@ bool TemplateURLService::ResetTemplateURLNoNotify(
     const base::string16& title,
     const base::string16& keyword,
     const std::string& search_url) {
-  if (!loaded_)
-    return false;
   DCHECK(!keyword.empty());
   DCHECK(!search_url.empty());
   TemplateURLData data(url->data());
