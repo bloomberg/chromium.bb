@@ -67,11 +67,10 @@ TEST_P(SpdyFrameBuilderTest, OverwriteFlags) {
     return;
   }
   SpdyHeadersIR headers_ir(1);
-  headers_ir.set_end_headers(false);
   scoped_ptr<SpdyFrame> expected(framer.SerializeHeaders(headers_ir));
   SpdyFrameBuilder builder(expected->size(), spdy_version_);
-  builder.BeginNewFrame(framer, HEADERS, HEADERS_FLAG_END_HEADERS, 1);
-  builder.OverwriteFlags(framer, 0);
+  builder.BeginNewFrame(framer, HEADERS, 0, 1);
+  builder.OverwriteFlags(framer, HEADERS_FLAG_END_HEADERS);
   scoped_ptr<SpdyFrame> built(builder.take());
   EXPECT_EQ(base::StringPiece(expected->data(), expected->size()),
             base::StringPiece(built->data(), built->size()));

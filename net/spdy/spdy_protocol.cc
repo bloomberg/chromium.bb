@@ -706,6 +706,10 @@ size_t SpdyConstants::GetFrameMaximumSize(SpdyMajorVersion version) {
   }
 }
 
+size_t SpdyConstants::GetSizeOfSizeField(SpdyMajorVersion version) {
+  return (version < SPDY3) ? sizeof(uint16) : sizeof(uint32);
+}
+
 void SpdyDataIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitData(*this);
 }

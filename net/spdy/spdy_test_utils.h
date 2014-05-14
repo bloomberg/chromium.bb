@@ -31,6 +31,8 @@ void SetFrameLength(SpdyFrame* frame,
                     size_t length,
                     SpdyMajorVersion spdy_version);
 
+std::string a2b_hex(const char* hex_data);
+
 }  // namespace test
 
 }  // namespace net

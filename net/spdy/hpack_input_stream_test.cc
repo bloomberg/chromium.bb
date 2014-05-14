@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "net/spdy/hpack_constants.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -19,26 +20,28 @@ namespace {
 
 using base::StringPiece;
 using std::string;
+using test::a2b_hex;
 
 const size_t kLiteralBound = 1024;
 
 class HpackInputStreamTest : public ::testing::Test {
+ protected:
   virtual void SetUp() {
     std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
     EXPECT_TRUE(huffman_table.Initialize(&code[0], code.size()));
   }
 
- protected:
   HpackHuffmanTable huffman_table;
 };
 
-const char kEncodedFixture[] = "\x33"  // Length prefix.
-  "\xc5\xad\xb7\x7f\x87\x6f\xc7\xfb\xf7\xfd\xbf\xbe\xbf\xf3\xf7\xf4"
-  "\xfb\x7e\xbb\xbe\x9f\x5f\x87\xe3\x7f\xef\xed\xfa\xee\xfa\x7c\x3f"
-  "\x1d\x5d\x1a\x23\xce\x54\x64\x36\xcd\x49\x4b\xd5\xd1\xcc\x5f\x05"
-  "\x35\x96\x9b";
+// Hex representation of encoded length and Huffman string.
+const char kEncodedHuffmanFixture[] = "31"  // Length prefix.
+  "e0d6cf9f6e8f9fd3e5f6fa76fefd3c7e"
+  "df9eff1f2f0f3cfe9f6fcf7f8f879f61"
+  "ad4f4cc9a973a2200ec3725e18b1b74e"
+  "3f";
 
-const char kDecodedFixture[] =
+const char kDecodedHuffmanFixture[] =
   "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1";
 
 // Utility function to decode an assumed-valid uint32 with an N-bit
@@ -49,7 +52,7 @@ uint32 DecodeValidUint32(uint8 N, StringPiece str) {
   HpackInputStream input_stream(kLiteralBound, str);
   input_stream.SetBitOffsetForTest(8 - N);
   uint32 I;
-  EXPECT_TRUE(input_stream.DecodeNextUint32ForTest(&I));
+  EXPECT_TRUE(input_stream.DecodeNextUint32(&I));
   return I;
 }
 
@@ -61,7 +64,7 @@ void ExpectDecodeUint32Invalid(uint8 N, StringPiece str) {
   HpackInputStream input_stream(kLiteralBound, str);
   input_stream.SetBitOffsetForTest(8 - N);
   uint32 I;
-  EXPECT_FALSE(input_stream.DecodeNextUint32ForTest(&I));
+  EXPECT_FALSE(input_stream.DecodeNextUint32(&I));
 }
 
 uint32 bits32(const string& bitstring) {
@@ -514,19 +517,19 @@ TEST_F(HpackInputStreamTest, DecodeNextIdentityStringNotEnoughInput) {
 }
 
 TEST_F(HpackInputStreamTest, DecodeNextHuffmanString) {
-  string output, input(kEncodedFixture, arraysize(kEncodedFixture)-1);
-  HpackInputStream input_stream(arraysize(kDecodedFixture)-1, input);
+  string output, input(a2b_hex(kEncodedHuffmanFixture));
+  HpackInputStream input_stream(arraysize(kDecodedHuffmanFixture)-1, input);
 
   EXPECT_TRUE(input_stream.HasMoreData());
   EXPECT_TRUE(input_stream.DecodeNextHuffmanString(huffman_table, &output));
-  EXPECT_EQ(kDecodedFixture, output);
+  EXPECT_EQ(kDecodedHuffmanFixture, output);
   EXPECT_FALSE(input_stream.HasMoreData());
 }
 
 TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringSizeLimit) {
-  string output, input(kEncodedFixture, arraysize(kEncodedFixture)-1);
+  string output, input(a2b_hex(kEncodedHuffmanFixture));
   // Max string literal is one byte shorter than the decoded fixture.
-  HpackInputStream input_stream(arraysize(kDecodedFixture)-2, input);
+  HpackInputStream input_stream(arraysize(kDecodedHuffmanFixture)-2, input);
 
   // Decoded string overflows the max string literal.
   EXPECT_TRUE(input_stream.HasMoreData());
@@ -534,9 +537,9 @@ TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringSizeLimit) {
 }
 
 TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringNotEnoughInput) {
-  string output, input(kEncodedFixture, arraysize(kEncodedFixture)-1);
+  string output, input(a2b_hex(kEncodedHuffmanFixture));
   input[0]++;  // Input prefix is one byte larger than available input.
-  HpackInputStream input_stream(arraysize(kDecodedFixture)-1, input);
+  HpackInputStream input_stream(arraysize(kDecodedHuffmanFixture)-1, input);
 
   // Not enough buffer for declared encoded length.
   EXPECT_TRUE(input_stream.HasMoreData());

@@ -701,8 +701,8 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   scoped_ptr<z_stream> header_compressor_;
   scoped_ptr<z_stream> header_decompressor_;
 
-  HpackEncoder hpack_encoder_;
-  HpackDecoder hpack_decoder_;
+  scoped_ptr<HpackEncoder> hpack_encoder_;
+  scoped_ptr<HpackDecoder> hpack_decoder_;
 
   SpdyFramerVisitorInterface* visitor_;
   SpdyFramerDebugVisitorInterface* debug_visitor_;

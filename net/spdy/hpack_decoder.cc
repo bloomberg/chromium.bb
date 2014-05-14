@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "net/spdy/hpack_constants.h"
 #include "net/spdy/hpack_output_stream.h"
 
@@ -20,6 +19,8 @@ namespace {
 const uint8 kNoState = 0;
 // Set on entries added to the reference set during this decoding.
 const uint8 kReferencedThisEncoding = 1;
+
+const char kCookieKey[] = "cookie";
 
 }  // namespace
 
@@ -71,9 +72,8 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(SpdyStreamId id) {
     }
   }
   // Emit the Cookie header, if any crumbles were encountered.
-  if (!cookie_name_.empty()) {
-    decoded_block_[cookie_name_] = cookie_value_;
-    cookie_name_.clear();
+  if (!cookie_value_.empty()) {
+    decoded_block_[kCookieKey] = cookie_value_;
     cookie_value_.clear();
   }
   return true;
@@ -83,11 +83,8 @@ void HpackDecoder::HandleHeaderRepresentation(StringPiece name,
                                               StringPiece value) {
   typedef std::pair<std::map<string, string>::iterator, bool> InsertResult;
 
-  // TODO(jgraettinger): HTTP/2 requires strict lowercasing of headers,
-  // and the permissiveness here isn't wanted. Back this out in upstream.
-  if (LowerCaseEqualsASCII(name.begin(), name.end(), "cookie")) {
-    if (cookie_name_.empty()) {
-      cookie_name_.assign(name.data(), name.size());
+  if (name == kCookieKey) {
+    if (cookie_value_.empty()) {
       cookie_value_.assign(value.data(), value.size());
     } else {
       cookie_value_ += "; ";
@@ -106,11 +103,6 @@ void HpackDecoder::HandleHeaderRepresentation(StringPiece name,
 }
 
 bool HpackDecoder::DecodeNextOpcode(HpackInputStream* input_stream) {
-  // Implements 4.4: Encoding context update. Context updates are a special-case
-  // of indexed header, and must be tested prior to |kIndexedOpcode| below.
-  if (input_stream->MatchPrefixAndConsume(kEncodingContextOpcode)) {
-    return DecodeNextContextUpdate(input_stream);
-  }
   // Implements 4.2: Indexed Header Field Representation.
   if (input_stream->MatchPrefixAndConsume(kIndexedOpcode)) {
     return DecodeNextIndexedHeader(input_stream);
@@ -122,6 +114,15 @@ bool HpackDecoder::DecodeNextOpcode(HpackInputStream* input_stream) {
   // Implements 4.3.2: Literal Header Field with Incremental Indexing.
   if (input_stream->MatchPrefixAndConsume(kLiteralIncrementalIndexOpcode)) {
     return DecodeNextLiteralHeader(input_stream, true);
+  }
+  // Implements 4.3.3: Literal Header Field never Indexed.
+  // TODO(jgraettinger): Preserve the never-indexed bit.
+  if (input_stream->MatchPrefixAndConsume(kLiteralNeverIndexOpcode)) {
+    return DecodeNextLiteralHeader(input_stream, false);
+  }
+  // Implements 4.4: Encoding context update.
+  if (input_stream->MatchPrefixAndConsume(kEncodingContextOpcode)) {
+    return DecodeNextContextUpdate(input_stream);
   }
   // Unrecognized opcode.
   return false;
@@ -151,9 +152,6 @@ bool HpackDecoder::DecodeNextIndexedHeader(HpackInputStream* input_stream) {
   uint32 index = 0;
   if (!input_stream->DecodeNextUint32(&index))
     return false;
-
-  // If index == 0, |kEncodingContextOpcode| would have matched.
-  CHECK_NE(index, 0u);
 
   HpackEntry* entry = header_table_.GetByIndex(index);
   if (entry == NULL)

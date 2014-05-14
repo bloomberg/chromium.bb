@@ -17,7 +17,7 @@
 #include "net/spdy/hpack_output_stream.h"
 
 // An HpackEncoder encodes header sets as outlined in
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
 
 namespace net {
 

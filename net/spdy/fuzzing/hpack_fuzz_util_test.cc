@@ -10,14 +10,18 @@
 #include "base/file_util.h"
 #include "base/files/file.h"
 #include "base/path_service.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
+namespace {
+
 using base::StringPiece;
 using std::map;
 using std::string;
+using test::a2b_hex;
 
 TEST(HpackFuzzUtilTest, GeneratorContextInitialization) {
   HpackFuzzUtil::GeneratorContext context;
@@ -91,15 +95,13 @@ TEST(HpackFuzzUtilTest, SerializedHeaderBlockPrefixes) {
 
 TEST(HpackFuzzUtilTest, PassValidInputThroughAllStages) {
   // Example lifted from HpackDecoderTest.SectionD3RequestHuffmanExamples.
-  char input[] =
-      "\x82\x87\x86\x04\x8b\xdb\x6d\x88\x3e\x68\xd1\xcb\x12\x25\xba\x7f";
+  string input = a2b_hex("828786448ce7cf9bebe89b6fb16fa9b6ff");
 
   HpackFuzzUtil::FuzzerContext context;
   HpackFuzzUtil::InitializeFuzzerContext(&context);
 
-  EXPECT_TRUE(HpackFuzzUtil::RunHeaderBlockThroughFuzzerStages(
-      &context,
-      StringPiece(input, arraysize(input) - 1)));
+  EXPECT_TRUE(
+      HpackFuzzUtil::RunHeaderBlockThroughFuzzerStages(&context, input));
 
   std::map<string, string> expect;
   expect[":method"] = "GET";
@@ -119,7 +121,7 @@ TEST(HpackFuzzUtilTest, ValidFuzzExamplesRegressionTest) {
       source_root.Append(FILE_PATH_LITERAL("net"))
                  .Append(FILE_PATH_LITERAL("data"))
                  .Append(FILE_PATH_LITERAL("spdy_tests"))
-                 .Append(FILE_PATH_LITERAL("examples.hpack")),
+                 .Append(FILE_PATH_LITERAL("examples_07.hpack")),
       &input.input));
 
   HpackFuzzUtil::FuzzerContext context;
@@ -143,5 +145,7 @@ TEST(HpackFuzzUtilTest, FlipBitsMutatesBuffer) {
                           1);
   EXPECT_NE(unmodified, buffer);
 }
+
+}  // namespace
 
 }  // namespace net

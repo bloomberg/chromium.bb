@@ -18,7 +18,7 @@
 #include "net/spdy/spdy_protocol.h"
 
 // An HpackDecoder decodes header sets as outlined in
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
 
 namespace net {
 
@@ -85,9 +85,8 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   const uint32 max_string_literal_size_;
   HpackHeaderTable header_table_;
 
-  // Incrementally reconstructed cookie value. Name is also kept to preserve
-  // input casing.
-  std::string cookie_value_, cookie_name_;
+  // Incrementally reconstructed cookie value.
+  std::string cookie_value_;
 
   // TODO(jgraettinger): Buffer for headers data, and storage for the last-
   // processed headers block. Both will be removed with the switch to

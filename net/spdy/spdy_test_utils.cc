@@ -5,9 +5,11 @@
 #include "net/spdy/spdy_test_utils.h"
 
 #include <cstring>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -129,6 +131,13 @@ void SetFrameLength(SpdyFrame* frame,
   }
 }
 
+std::string a2b_hex(const char* hex_data) {
+  std::vector<uint8> output;
+  std::string result;
+  if (base::HexStringToBytes(hex_data, &output))
+    result.assign(reinterpret_cast<const char*>(&output[0]), output.size());
+  return result;
+}
 
 }  // namespace test
 

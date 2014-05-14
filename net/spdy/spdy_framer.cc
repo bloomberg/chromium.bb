@@ -123,8 +123,6 @@ bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
 SpdyFramer::SpdyFramer(SpdyMajorVersion version)
     : current_frame_buffer_(new char[kControlFrameBufferSize]),
       enable_compression_(true),
-      hpack_encoder_(ObtainHpackHuffmanTable()),
-      hpack_decoder_(ObtainHpackHuffmanTable()),
       visitor_(NULL),
       debug_visitor_(NULL),
       display_protocol_("SPDY"),
@@ -136,6 +134,12 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version)
   DCHECK_GE(spdy_version_, SPDY_MIN_VERSION);
   DCHECK_LE(spdy_version_, SPDY_MAX_VERSION);
   Reset();
+
+  // SPDY4 and up use HPACK. Allocate instances for these protocol versions.
+  if (spdy_version_ > SPDY3) {
+    hpack_encoder_.reset(new HpackEncoder(ObtainHpackHuffmanTable()));
+    hpack_decoder_.reset(new HpackDecoder(ObtainHpackHuffmanTable()));
+  }
 }
 
 SpdyFramer::~SpdyFramer() {
@@ -1477,9 +1481,9 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
   }
   size_t process_bytes = std::min(data_len, remaining_data_length_);
   if (is_hpack_header_block) {
-    if (!hpack_decoder_.HandleControlFrameHeadersData(current_frame_stream_id_,
-                                                      data,
-                                                      process_bytes)) {
+    if (!hpack_decoder_->HandleControlFrameHeadersData(current_frame_stream_id_,
+                                                       data,
+                                                       process_bytes)) {
       // TODO(jgraettinger): Finer-grained HPACK error codes.
       set_error(SPDY_DECOMPRESS_FAILURE);
       processed_successfully = false;
@@ -1499,7 +1503,7 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
   if (remaining_data_length_ == 0 && processed_successfully) {
     if (expect_continuation_ == 0) {
       if (is_hpack_header_block) {
-        if (!hpack_decoder_.HandleControlFrameHeadersComplete(
+        if (!hpack_decoder_->HandleControlFrameHeadersComplete(
             current_frame_stream_id_)) {
           set_error(SPDY_DECOMPRESS_FAILURE);
           processed_successfully = false;
@@ -1595,7 +1599,7 @@ void SpdyFramer::DeliverHpackBlockAsSpdy3Block() {
   DCHECK_LT(SPDY3, protocol_version());
   DCHECK_EQ(0u, remaining_data_length_);
 
-  const SpdyNameValueBlock& block = hpack_decoder_.decoded_block();
+  const SpdyNameValueBlock& block = hpack_decoder_->decoded_block();
   if (block.empty()) {
     // Special-case this to make tests happy.
     ProcessControlFrameHeaderBlock(NULL, 0, false);
@@ -2144,10 +2148,10 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
   string hpack_encoding;
   if (protocol_version() > SPDY3) {
     if (enable_compression_) {
-      hpack_encoder_.EncodeHeaderSet(
+      hpack_encoder_->EncodeHeaderSet(
           syn_stream.name_value_block(), &hpack_encoding);
     } else {
-      hpack_encoder_.EncodeHeaderSetWithoutCompression(
+      hpack_encoder_->EncodeHeaderSetWithoutCompression(
           syn_stream.name_value_block(), &hpack_encoding);
     }
     size += hpack_encoding.size();
@@ -2209,10 +2213,10 @@ SpdySerializedFrame* SpdyFramer::SerializeSynReply(
   string hpack_encoding;
   if (protocol_version() > SPDY3) {
     if (enable_compression_) {
-      hpack_encoder_.EncodeHeaderSet(
+      hpack_encoder_->EncodeHeaderSet(
           syn_reply.name_value_block(), &hpack_encoding);
     } else {
-      hpack_encoder_.EncodeHeaderSetWithoutCompression(
+      hpack_encoder_->EncodeHeaderSetWithoutCompression(
           syn_reply.name_value_block(), &hpack_encoding);
     }
     size += hpack_encoding.size();
@@ -2407,12 +2411,8 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
     flags |= CONTROL_FLAG_FIN;
   }
   if (protocol_version() > SPDY3) {
-    // TODO(mlavan): If we overflow into a CONTINUATION frame, this will
-    // get overwritten below, so we should probably just get rid of the
-    // end_headers field.
-    if (headers.end_headers()) {
-      flags |= HEADERS_FLAG_END_HEADERS;
-    }
+    // This will get overwritten if we overflow into a CONTINUATION frame.
+    flags |= HEADERS_FLAG_END_HEADERS;
     if (headers.has_priority()) {
       flags |= HEADERS_FLAG_PRIORITY;
     }
@@ -2433,10 +2433,10 @@ SpdySerializedFrame* SpdyFramer::SerializeHeaders(
   string hpack_encoding;
   if (protocol_version() > SPDY3) {
     if (enable_compression_) {
-      hpack_encoder_.EncodeHeaderSet(
+      hpack_encoder_->EncodeHeaderSet(
           headers.name_value_block(), &hpack_encoding);
     } else {
-      hpack_encoder_.EncodeHeaderSetWithoutCompression(
+      hpack_encoder_->EncodeHeaderSetWithoutCompression(
           headers.name_value_block(), &hpack_encoding);
     }
     size += hpack_encoding.size();
@@ -2518,22 +2518,18 @@ SpdyFrame* SpdyFramer::SerializePushPromise(
     const SpdyPushPromiseIR& push_promise) {
   DCHECK_LT(SPDY3, protocol_version());
   uint8 flags = 0;
-  // TODO(mlavan): If we overflow into a CONTINUATION frame, this will
-  // get overwritten below, so we should probably just get rid of the
-  // end_push_promise field.
-  if (push_promise.end_push_promise()) {
-    flags |= PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
-  }
+  // This will get overwritten if we overflow into a CONTINUATION frame.
+  flags |= PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
   // The size of this frame, including variable-length name-value block.
   size_t size = GetPushPromiseMinimumSize();
 
   string hpack_encoding;
   if (protocol_version() > SPDY3) {
     if (enable_compression_) {
-      hpack_encoder_.EncodeHeaderSet(
+      hpack_encoder_->EncodeHeaderSet(
           push_promise.name_value_block(), &hpack_encoding);
     } else {
-      hpack_encoder_.EncodeHeaderSetWithoutCompression(
+      hpack_encoder_->EncodeHeaderSetWithoutCompression(
           push_promise.name_value_block(), &hpack_encoding);
     }
     size += hpack_encoding.size();
@@ -2590,10 +2586,10 @@ SpdyFrame* SpdyFramer::SerializeContinuation(
   size_t size = GetContinuationMinimumSize();
   string hpack_encoding;
   if (enable_compression_) {
-    hpack_encoder_.EncodeHeaderSet(
+    hpack_encoder_->EncodeHeaderSet(
         continuation.name_value_block(), &hpack_encoding);
   } else {
-    hpack_encoder_.EncodeHeaderSetWithoutCompression(
+    hpack_encoder_->EncodeHeaderSetWithoutCompression(
         continuation.name_value_block(), &hpack_encoding);
   }
   size += hpack_encoding.size();

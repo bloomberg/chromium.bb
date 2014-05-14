@@ -15,7 +15,7 @@
 #include "net/spdy/hpack_constants.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
 
 namespace net {
 

@@ -13,6 +13,7 @@
 #include "net/spdy/hpack_encoder.h"
 #include "net/spdy/hpack_input_stream.h"
 #include "net/spdy/hpack_output_stream.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,14 +35,8 @@ class HpackDecoderPeer {
   bool DecodeNextName(HpackInputStream* in, StringPiece* out) {
     return decoder_->DecodeNextName(in, out);
   }
-  const HpackHeaderTable& header_table() {
-    return decoder_->header_table_;
-  }
-  void set_cookie_name(string name) {
-    decoder_->cookie_name_ = name;
-  }
-  string cookie_name() {
-    return decoder_->cookie_name_;
+  HpackHeaderTable* header_table() {
+    return &decoder_->header_table_;
   }
   void set_cookie_value(string value) {
     decoder_->cookie_value_ = value;
@@ -66,6 +61,7 @@ namespace {
 
 using base::StringPiece;
 using std::string;
+using test::a2b_hex;
 
 using testing::ElementsAre;
 using testing::Pair;
@@ -82,16 +78,30 @@ class HpackDecoderTest : public ::testing::Test {
     return decoder_.HandleControlFrameHeadersData(0, str.data(), str.size()) &&
         decoder_.HandleControlFrameHeadersComplete(0);
   }
+
   const std::map<string, string>& decoded_block() const {
     // TODO(jgraettinger): HpackDecoderTest should implement
     // SpdyHeadersHandlerInterface, and collect headers for examination.
     return decoder_peer_.decoded_block();
   }
-  // TODO(jgraettinger): Eliminate uses of this in tests below. Prefer
-  // DecodeHeaderBlock().
-  const std::map<string, string>& DecodeUniqueHeaderSet(StringPiece str) {
+
+  const std::map<string, string>& DecodeBlockExpectingSuccess(StringPiece str) {
     EXPECT_TRUE(DecodeHeaderBlock(str));
     return decoded_block();
+  }
+
+  void expectEntry(size_t index, size_t size, const string& name,
+                   const string& value) {
+    HpackEntry* entry = decoder_peer_.header_table()->GetByIndex(index);
+    EXPECT_EQ(name, entry->name()) << "index " << index;
+    EXPECT_EQ(value, entry->value());
+    EXPECT_EQ(size, entry->Size());
+    EXPECT_EQ(index, entry->Index());
+  }
+
+  void expectStaticEntry(size_t index) {
+    HpackEntry* entry = decoder_peer_.header_table()->GetByIndex(index);
+    EXPECT_TRUE(entry->IsStatic()) << "index " << index;
   }
 
   HpackDecoder decoder_;
@@ -116,7 +126,6 @@ TEST_F(HpackDecoderTest, HandleControlFrameHeadersComplete) {
   // Decode a block which toggles two static headers into the reference set.
   EXPECT_TRUE(DecodeHeaderBlock("\x82\x86"));
 
-  decoder_peer_.set_cookie_name("CooKie");
   decoder_peer_.set_cookie_value("foobar=baz");
 
   // Headers in the reference set should be emitted.
@@ -127,15 +136,13 @@ TEST_F(HpackDecoderTest, HandleControlFrameHeadersComplete) {
   EXPECT_THAT(decoded_block(), ElementsAre(
       Pair(":method", "GET"),
       Pair(":path", "/index.html"),
-      Pair("CooKie", "foobar=baz")));
-
-  EXPECT_EQ(decoder_peer_.cookie_name(), "");
+      Pair("cookie", "foobar=baz")));
   EXPECT_EQ(decoder_peer_.cookie_value(), "");
 }
 
 TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
-  // Casing of first Cookie is retained, but all instances are joined.
-  decoder_peer_.HandleHeaderRepresentation("cOOkie", " part 1");
+  // All cookie crumbs are joined.
+  decoder_peer_.HandleHeaderRepresentation("cookie", " part 1");
   decoder_peer_.HandleHeaderRepresentation("cookie", "part 2 ");
   decoder_peer_.HandleHeaderRepresentation("cookie", "part3");
 
@@ -158,13 +165,13 @@ TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
   decoder_peer_.HandleHeaderRepresentation("empty-joined", "");
 
   // Non-contiguous cookie crumb.
-  decoder_peer_.HandleHeaderRepresentation("Cookie", " fin!");
+  decoder_peer_.HandleHeaderRepresentation("cookie", " fin!");
 
   // Finish and emit all headers.
   decoder_.HandleControlFrameHeadersComplete(0);
 
   EXPECT_THAT(decoded_block(), ElementsAre(
-      Pair("cOOkie", " part 1; part 2 ; part3;  fin!"),
+      Pair("cookie", " part 1; part 2 ; part3;  fin!"),
       Pair("empty", ""),
       Pair("empty-joined", string("\0foo\0\0", 6)),
       Pair("joineD", string("value 1\0value 2", 15)),
@@ -183,9 +190,8 @@ TEST_F(HpackDecoderTest, DecodeNextNameLiteral) {
 }
 
 TEST_F(HpackDecoderTest, DecodeNextNameLiteralWithHuffmanEncoding) {
-  char input[] = "\x00\x88\x4e\xb0\x8b\x74\x97\x90\xfa\x7f";
-  StringPiece foo(input, arraysize(input) - 1);
-  HpackInputStream input_stream(kLiteralBound, foo);
+  string input = a2b_hex("0088571c5cdb737b2faf");
+  HpackInputStream input_stream(kLiteralBound, input);
 
   StringPiece string_piece;
   EXPECT_TRUE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
@@ -206,7 +212,7 @@ TEST_F(HpackDecoderTest, DecodeNextNameIndexed) {
 // Decoding an encoded name with an invalid index should fail.
 TEST_F(HpackDecoderTest, DecodeNextNameInvalidIndex) {
   // One more than the number of static table entries.
-  HpackInputStream input_stream(kLiteralBound, "\x3d");
+  HpackInputStream input_stream(kLiteralBound, "\x3e");
 
   StringPiece string_piece;
   EXPECT_FALSE(decoder_peer_.DecodeNextName(&input_stream, &string_piece));
@@ -221,7 +227,7 @@ TEST_F(HpackDecoderTest, IndexedHeaderBasic) {
   // then toggle on static table entry #5 (which is now #6 because of
   // the copy of #2).
   std::map<string, string> header_set1 =
-      DecodeUniqueHeaderSet("\x82\x86");
+      DecodeBlockExpectingSuccess("\x82\x86");
   std::map<string, string> expected_header_set1;
   expected_header_set1[":method"] = "GET";
   expected_header_set1[":path"] = "/index.html";
@@ -231,55 +237,61 @@ TEST_F(HpackDecoderTest, IndexedHeaderBasic) {
   expected_header_set2[":path"] = "/index.html";
   // Toggle off the copy of static table entry #5.
   std::map<string, string> header_set2 =
-      DecodeUniqueHeaderSet("\x82");
+      DecodeBlockExpectingSuccess("\x82");
   EXPECT_EQ(expected_header_set2, header_set2);
 }
 
 // Test a too-large indexed header.
 TEST_F(HpackDecoderTest, InvalidIndexedHeader) {
   // High-bit set, and a prefix of one more than the number of static entries.
-  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\xbd", 1)));
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\xbe", 1)));
 }
 
 TEST_F(HpackDecoderTest, ContextUpdateMaximumSize) {
   EXPECT_EQ(kDefaultHeaderTableSizeSetting,
-            decoder_peer_.header_table().max_size());
+            decoder_peer_.header_table()->max_size());
+  string input;
   {
     // Maximum-size update with size 126. Succeeds.
-    EXPECT_TRUE(DecodeHeaderBlock(StringPiece("\x80\x7e", 2)));
-    EXPECT_EQ(126u, decoder_peer_.header_table().max_size());
+    HpackOutputStream output_stream;
+    output_stream.AppendPrefix(kEncodingContextOpcode);
+    output_stream.AppendPrefix(kEncodingContextNewMaximumSize);
+    output_stream.AppendUint32(126);
+
+    output_stream.TakeString(&input);
+    EXPECT_TRUE(DecodeHeaderBlock(StringPiece(input)));
+    EXPECT_EQ(126u, decoder_peer_.header_table()->max_size());
   }
-  string input;
   {
     // Maximum-size update with kDefaultHeaderTableSizeSetting. Succeeds.
     HpackOutputStream output_stream;
-    output_stream.AppendBits(0x80, 8);  // Context update.
-    output_stream.AppendBits(0x00, 1);  // Size update.
+    output_stream.AppendPrefix(kEncodingContextOpcode);
+    output_stream.AppendPrefix(kEncodingContextNewMaximumSize);
     output_stream.AppendUint32(kDefaultHeaderTableSizeSetting);
 
     output_stream.TakeString(&input);
     EXPECT_TRUE(DecodeHeaderBlock(StringPiece(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
-              decoder_peer_.header_table().max_size());
+              decoder_peer_.header_table()->max_size());
   }
   {
     // Maximum-size update with kDefaultHeaderTableSizeSetting + 1. Fails.
     HpackOutputStream output_stream;
-    output_stream.AppendBits(0x80, 8);  // Context update.
-    output_stream.AppendBits(0x00, 1);  // Size update.
+    output_stream.AppendPrefix(kEncodingContextOpcode);
+    output_stream.AppendPrefix(kEncodingContextNewMaximumSize);
     output_stream.AppendUint32(kDefaultHeaderTableSizeSetting + 1);
 
     output_stream.TakeString(&input);
     EXPECT_FALSE(DecodeHeaderBlock(StringPiece(input)));
     EXPECT_EQ(kDefaultHeaderTableSizeSetting,
-              decoder_peer_.header_table().max_size());
+              decoder_peer_.header_table()->max_size());
   }
 }
 
 TEST_F(HpackDecoderTest, ContextUpdateClearReferenceSet) {
   // Toggle on a couple of headers.
   std::map<string, string> header_set1 =
-      DecodeUniqueHeaderSet("\x82\x86");
+      DecodeBlockExpectingSuccess("\x82\x86");
   std::map<string, string> expected_header_set1;
   expected_header_set1[":method"] = "GET";
   expected_header_set1[":path"] = "/index.html";
@@ -287,7 +299,7 @@ TEST_F(HpackDecoderTest, ContextUpdateClearReferenceSet) {
 
   // Send a context update to clear the reference set.
   std::map<string, string> header_set2 =
-      DecodeUniqueHeaderSet("\x80\x80");
+      DecodeBlockExpectingSuccess("\x30");
   std::map<string, string> expected_header_set2;
   EXPECT_EQ(expected_header_set2, header_set2);
 }
@@ -297,9 +309,9 @@ TEST_F(HpackDecoderTest, ContextUpdateClearReferenceSet) {
 TEST_F(HpackDecoderTest, LiteralHeaderNoIndexing) {
   // First header with indexed name, second header with string literal
   // name.
+  const char input[] = "\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2";
   std::map<string, string> header_set =
-      DecodeUniqueHeaderSet(
-          "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2");
+      DecodeBlockExpectingSuccess(StringPiece(input, arraysize(input) - 1));
 
   std::map<string, string> expected_header_set;
   expected_header_set[":path"] = "/sample/path";
@@ -311,8 +323,9 @@ TEST_F(HpackDecoderTest, LiteralHeaderNoIndexing) {
 // indexing and string literal names should work and add the headers
 // to the reference set.
 TEST_F(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
-  std::map<string, string> header_set = DecodeUniqueHeaderSet(
-      StringPiece("\x04\x0c/sample/path\x00\x06:path2\x0e/sample/path/2", 37));
+  const char input[] = "\x44\x0c/sample/path\x40\x06:path2\x0e/sample/path/2";
+  std::map<string, string> header_set =
+      DecodeBlockExpectingSuccess(StringPiece(input, arraysize(input) - 1));
 
   std::map<string, string> expected_header_set;
   expected_header_set[":path"] = "/sample/path";
@@ -320,24 +333,31 @@ TEST_F(HpackDecoderTest, LiteralHeaderIncrementalIndexing) {
   EXPECT_EQ(expected_header_set, header_set);
 
   // Decoding an empty string should just return the reference set.
-  std::map<string, string> header_set2 = DecodeUniqueHeaderSet("");
+  std::map<string, string> header_set2 = DecodeBlockExpectingSuccess("");
   EXPECT_EQ(expected_header_set, header_set2);
 }
 
-// Decoding literal headers with invalid indices should fail
-// gracefully.
-TEST_F(HpackDecoderTest, LiteralHeaderInvalidIndices) {
-  // No indexing.
+TEST_F(HpackDecoderTest, LiteralHeaderWithIndexingInvalidNameIndex) {
+  decoder_.ApplyHeaderTableSizeSetting(0);
 
-  // One more than the number of static table entries.
-  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x7d", 1)));
-  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x40", 1)));
+  // Name is the last static index. Works.
+  EXPECT_TRUE(DecodeHeaderBlock(StringPiece("\x7d\x03ooo")));
+  // Name is one beyond the last static index. Fails.
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x7e\x03ooo")));
+}
 
-  // Incremental indexing.
+TEST_F(HpackDecoderTest, LiteralHeaderNoIndexingInvalidNameIndex) {
+  // Name is the last static index. Works.
+  EXPECT_TRUE(DecodeHeaderBlock(StringPiece("\x0f\x2e\x03ooo")));
+  // Name is one beyond the last static index. Fails.
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x0f\x2f\x03ooo")));
+}
 
-  // One more than the number of static table entries.
-  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x3d", 1)));
-  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x00", 1)));
+TEST_F(HpackDecoderTest, LiteralHeaderNeverIndexedInvalidNameIndex) {
+  // Name is the last static index. Works.
+  EXPECT_TRUE(DecodeHeaderBlock(StringPiece("\x1f\x2e\x03ooo")));
+  // Name is one beyond the last static index. Fails.
+  EXPECT_FALSE(DecodeHeaderBlock(StringPiece("\x1f\x2f\x03ooo")));
 }
 
 // Round-tripping the header set from E.2.1 should work.
@@ -370,38 +390,42 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
   // 86                                      | == Indexed - Add ==
   //                                         |   idx = 6
   //                                         | -> :path: /
-  // 04                                      | == Literal indexed ==
+  // 44                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 4)
   //                                         |     :authority
-  // 8b                                      |   Literal value (len = 15)
+  // 8c                                      |   Literal value (len = 15)
   //                                         |     Huffman encoded:
-  // db6d 883e 68d1 cb12 25ba 7f             | .m..h...%..
+  // e7cf 9beb e89b 6fb1 6fa9 b6ff           | ......o.o...
   //                                         |     Decoded:
   //                                         | www.example.com
   //                                         | -> :authority: www.example.com
-  char first[] =
-      "\x82\x87\x86\x04\x8b\xdb\x6d\x88\x3e\x68\xd1\xcb\x12\x25\xba\x7f";
-  header_set = DecodeUniqueHeaderSet(StringPiece(first, arraysize(first)-1));
+  string first = a2b_hex("828786448ce7cf9bebe89b6fb16fa9b6ff");
+  header_set = DecodeBlockExpectingSuccess(first);
 
-  // TODO(jgraettinger): Create HpackEncodingContext and
-  // HpackDecoder peers, and inspect the header table here.
   EXPECT_THAT(header_set, ElementsAre(
       Pair(":authority", "www.example.com"),
       Pair(":method", "GET"),
       Pair(":path", "/"),
       Pair(":scheme", "http")));
 
-  // 1b                                      | == Literal indexed ==
-  //                                         |   Indexed name (idx = 27)
+  expectEntry(1, 57, ":authority", "www.example.com");
+  expectEntry(2, 38, ":path", "/");
+  expectEntry(3, 43, ":scheme", "http");
+  expectEntry(4, 42, ":method", "GET");
+  expectStaticEntry(5);
+  EXPECT_EQ(180u, decoder_peer_.header_table()->size());
+
+  // 5c                                      | == Literal indexed ==
+  //                                         |   Indexed name (idx = 28)
   //                                         |     cache-control
   // 86                                      |   Literal value (len = 8)
   //                                         |     Huffman encoded:
-  // 6365 4a13 98ff                          | ceJ...
+  // b9b9 9495 56bf                          | ....V.
   //                                         |     Decoded:
   //                                         | no-cache
   //                                         | -> cache-control: no-cache
-  char second[] = "\x1b\x86\x63\x65\x4a\x13\x98\xff";
-  header_set = DecodeUniqueHeaderSet(StringPiece(second, arraysize(second)-1));
+  string second = a2b_hex("5c86b9b9949556bf");
+  header_set = DecodeBlockExpectingSuccess(second);
 
   EXPECT_THAT(header_set, ElementsAre(
       Pair(":authority", "www.example.com"),
@@ -410,7 +434,15 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
       Pair(":scheme", "http"),
       Pair("cache-control", "no-cache")));
 
-  // 8080                                    | == Empty reference set ==
+  expectEntry(1, 53, "cache-control", "no-cache");
+  expectEntry(2, 57, ":authority", "www.example.com");
+  expectEntry(3, 38, ":path", "/");
+  expectEntry(4, 43, ":scheme", "http");
+  expectEntry(5, 42, ":method", "GET");
+  expectStaticEntry(6);
+  EXPECT_EQ(233u, decoder_peer_.header_table()->size());
+
+  // 30                                      | == Empty reference set ==
   //                                         |   idx = 0
   //                                         |   flag = 1
   // 85                                      | == Indexed - Add ==
@@ -425,22 +457,21 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
   // 84                                      | == Indexed - Add ==
   //                                         |   idx = 4
   //                                         | -> :authority: www.example.com
-  // 00                                      | == Literal indexed ==
+  // 40                                      | == Literal indexed ==
   // 88                                      |   Literal name (len = 10)
   //                                         |     Huffman encoded:
-  // 4eb0 8b74 9790 fa7f                     | N..t....
+  // 571c 5cdb 737b 2faf                     | W.\.s{/.
   //                                         |     Decoded:
   //                                         | custom-key
   // 89                                      |   Literal value (len = 12)
   //                                         |     Huffman encoded:
-  // 4eb0 8b74 979a 17a8 ff                  | N..t.....
+  // 571c 5cdb 7372 4d9c 57                  | W.\.srM.W
   //                                         |     Decoded:
   //                                         | custom-value
   //                                         | -> custom-key: custom-value
-  char third[] =
-      "\x80\x80\x85\x8c\x8b\x84\x00\x88\x4e\xb0\x8b\x74\x97\x90\xfa\x7f\x89"
-      "\x4e\xb0\x8b\x74\x97\x9a\x17\xa8\xff";
-  header_set = DecodeUniqueHeaderSet(StringPiece(third, arraysize(third)-1));
+  string third = a2b_hex("30858c8b844088571c5cdb737b2faf89"
+                         "571c5cdb73724d9c57");
+  header_set = DecodeBlockExpectingSuccess(third);
 
   EXPECT_THAT(header_set, ElementsAre(
       Pair(":authority", "www.example.com"),
@@ -448,58 +479,69 @@ TEST_F(HpackDecoderTest, SectionD3RequestHuffmanExamples) {
       Pair(":path", "/index.html"),
       Pair(":scheme", "https"),
       Pair("custom-key", "custom-value")));
+
+  expectEntry(1, 54, "custom-key", "custom-value");
+  expectEntry(2, 48, ":path", "/index.html");
+  expectEntry(3, 44, ":scheme", "https");
+  expectEntry(4, 53, "cache-control", "no-cache");
+  expectEntry(5, 57, ":authority", "www.example.com");
+  expectEntry(6, 38, ":path", "/");
+  expectEntry(7, 43, ":scheme", "http");
+  expectEntry(8, 42, ":method", "GET");
+  expectStaticEntry(9);
+  EXPECT_EQ(379u, decoder_peer_.header_table()->size());
 }
 
 TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   std::map<string, string> header_set;
   decoder_.ApplyHeaderTableSizeSetting(256);
 
-  // 08                                      | == Literal indexed ==
+  // 48                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 8)
   //                                         |     :status
   // 82                                      |   Literal value (len = 3)
   //                                         |     Huffman encoded:
-  // 98a7                                    | ..
+  // 4017                                    | @.
   //                                         |     Decoded:
   //                                         | 302
   //                                         | -> :status: 302
-  // 18                                      | == Literal indexed ==
-  //                                         |   Indexed name (idx = 24)
+  // 59                                      | == Literal indexed ==
+  //                                         |   Indexed name (idx = 25)
   //                                         |     cache-control
   // 85                                      |   Literal value (len = 7)
   //                                         |     Huffman encoded:
-  // 73d5 cd11 1f                            | s....
+  // bf06 724b 97                            | ..rK.
   //                                         |     Decoded:
   //                                         | private
   //                                         | -> cache-control: private
-  // 22                                      | == Literal indexed ==
-  //                                         |   Indexed name (idx = 34)
+  // 63                                      | == Literal indexed ==
+  //                                         |   Indexed name (idx = 35)
   //                                         |     date
-  // 98                                      |   Literal value (len = 29)
+  // 93                                      |   Literal value (len = 29)
   //                                         |     Huffman encoded:
-  // ef6b 3a7a 0e6e 8fa2 63d0 729a 6e83 97d8 | .k:z.n..c.r.n...
-  // 69bd 8737 47bb bfc7                     | i..7G...
+  // d6db b298 84de 2a71 8805 0620 9851 3109 | ......*q... .Q1.
+  // b56b a3                                 | .k.
   //                                         |     Decoded:
   //                                         | Mon, 21 Oct 2013 20:13:21
   //                                         | GMT
   //                                         | -> date: Mon, 21 Oct 2013
   //                                         |   20:13:21 GMT
-  // 30                                      | == Literal indexed ==
-  //                                         |   Indexed name (idx = 48)
+  // 71                                      | == Literal indexed ==
+  //                                         |   Indexed name (idx = 49)
   //                                         |     location
-  // 90                                      |   Literal value (len = 23)
+  // 91                                      |   Literal value (len = 23)
   //                                         |     Huffman encoded:
-  // ce31 743d 801b 6db1 07cd 1a39 6244 b74f | .1t=..m....9bD.O
+  // adce bf19 8e7e 7cf9 bebe 89b6 fb16 fa9b | ......|.........
+  // 6f                                      | o
   //                                         |     Decoded:
   //                                         | https://www.example.com
   //                                         | -> location: https://www.e
   //                                         |    xample.com
-  char first[] =
-      "\x08\x82\x98\xa7\x18\x85\x73\xd5\xcd\x11\x1f\x22\x98\xef\x6b"
-      "\x3a\x7a\x0e\x6e\x8f\xa2\x63\xd0\x72\x9a\x6e\x83\x97\xd8\x69\xbd\x87"
-      "\x37\x47\xbb\xbf\xc7\x30\x90\xce\x31\x74\x3d\x80\x1b\x6d\xb1\x07\xcd"
-      "\x1a\x39\x62\x44\xb7\x4f";
-  header_set = DecodeUniqueHeaderSet(StringPiece(first, arraysize(first)-1));
+  string first = a2b_hex("488240175985bf06724b976393d6dbb2"
+                         "9884de2a718805062098513109b56ba3"
+                         "7191adcebf198e7e7cf9bebe89b6fb16"
+                         "fa9b6f");
+  header_set = DecodeBlockExpectingSuccess(first);
 
   EXPECT_THAT(header_set, ElementsAre(
       Pair(":status", "302"),
@@ -507,12 +549,19 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
       Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
       Pair("location", "https://www.example.com")));
 
+  expectEntry(1, 63, "location", "https://www.example.com");
+  expectEntry(2, 65, "date", "Mon, 21 Oct 2013 20:13:21 GMT");
+  expectEntry(3, 52, "cache-control", "private");
+  expectEntry(4, 42, ":status", "302");
+  expectStaticEntry(5);
+  EXPECT_EQ(222u, decoder_peer_.header_table()->size());
+
   // 8c                                      | == Indexed - Add ==
   //                                         |   idx = 12
   //                                         | - evict: :status: 302
   //                                         | -> :status: 200
-  char second[] = "\x8c";
-  header_set = DecodeUniqueHeaderSet(StringPiece(second, arraysize(second)-1));
+  string second = a2b_hex("8c");
+  header_set = DecodeBlockExpectingSuccess(second);
 
   EXPECT_THAT(header_set, ElementsAre(
       Pair(":status", "200"),
@@ -520,19 +569,26 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
       Pair("date", "Mon, 21 Oct 2013 20:13:21 GMT"),
       Pair("location", "https://www.example.com")));
 
+  expectEntry(1, 42, ":status", "200");
+  expectEntry(2, 63, "location", "https://www.example.com");
+  expectEntry(3, 65, "date", "Mon, 21 Oct 2013 20:13:21 GMT");
+  expectEntry(4, 52, "cache-control", "private");
+  expectStaticEntry(5);
+  EXPECT_EQ(222u, decoder_peer_.header_table()->size());
+
   // 84                                      | == Indexed - Remove ==
   //                                         |   idx = 4
   //                                         | -> cache-control: private
   // 84                                      | == Indexed - Add ==
   //                                         |   idx = 4
   //                                         | -> cache-control: private
-  // 03                                      | == Literal indexed ==
+  // 43                                      | == Literal indexed ==
   //                                         |   Indexed name (idx = 3)
   //                                         |     date
-  // 98                                      |   Literal value (len = 29)
+  // 93                                      |   Literal value (len = 29)
   //                                         |     Huffman encoded:
-  // ef6b 3a7a 0e6e 8fa2 63d0 729a 6e83 97d8 | .k:z.n..c.r.n...
-  // 69bd 873f 47bb bfc7                     | i..?G...
+  // d6db b298 84de 2a71 8805 0620 9851 3111 | ......*q... .Q1.
+  // b56b a3                                 | .k.
   //                                         |     Decoded:
   //                                         | Mon, 21 Oct 2013 20:13:22
   //                                         | GMT
@@ -540,12 +596,12 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   //                                         |   ivate
   //                                         | -> date: Mon, 21 Oct 2013
   //                                         |   20:13:22 GMT
-  // 1d                                      | == Literal indexed ==
-  //                                         |   Indexed name (idx = 29)
+  // 5e                                      | == Literal indexed ==
+  //                                         |   Indexed name (idx = 30)
   //                                         |     content-encoding
-  // 83                                      |   Literal value (len = 4)
+  // 84                                      |   Literal value (len = 4)
   //                                         |     Huffman encoded:
-  // cbd5 4e                                 | ..N
+  // abdd 97ff                               | ....
   //                                         |     Decoded:
   //                                         | gzip
   //                                         | - evict: date: Mon, 21 Oct
@@ -565,15 +621,15 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   // 83                                      | == Indexed - Add ==
   //                                         |   idx = 3
   //                                         | -> :status: 200
-  // 3a                                      | == Literal indexed ==
-  //                                         |   Indexed name (idx = 58)
+  // 7b                                      | == Literal indexed ==
+  //                                         |   Indexed name (idx = 59)
   //                                         |     set-cookie
-  // b3                                      |   Literal value (len = 56)
+  // b1                                      |   Literal value (len = 56)
   //                                         |     Huffman encoded:
-  // c5ad b77f 876f c7fb f7fd bfbe bff3 f7f4 | .....o..........
-  // fb7e bbbe 9f5f 87e3 7fef edfa eefa 7c3f | ....._........|?
-  // 1d5d 1a23 ce54 6436 cd49 4bd5 d1cc 5f05 | .].#.Td6.IK..._.
-  // 3596 9b                                 | 5..
+  // e0d6 cf9f 6e8f 9fd3 e5f6 fa76 fefd 3c7e | ....n......v....
+  // df9e ff1f 2f0f 3cfe 9f6f cf7f 8f87 9f61 | ..../....o.....a
+  // ad4f 4cc9 a973 a220 0ec3 725e 18b1 b74e | .OL..s. ..r^...N
+  // 3f                                      | ?
   //                                         |     Decoded:
   //                                         | foo=ASDJKHQKBZXOQWEOPIUAXQ
   //                                         | WEOIU; max-age=3600; versi
@@ -584,14 +640,13 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
   //                                         | -> set-cookie: foo=ASDJKHQ
   //                                         |   KBZXOQWEOPIUAXQWEOIU; ma
   //                                         |   x-age=3600; version=1
-  char third[] =
-      "\x84\x84\x03\x98\xef\x6b\x3a\x7a\x0e\x6e\x8f\xa2\x63\xd0\x72"
-      "\x9a\x6e\x83\x97\xd8\x69\xbd\x87\x3f\x47\xbb\xbf\xc7\x1d\x83\xcb\xd5"
-      "\x4e\x84\x84\x83\x83\x3a\xb3\xc5\xad\xb7\x7f\x87\x6f\xc7\xfb\xf7\xfd"
-      "\xbf\xbe\xbf\xf3\xf7\xf4\xfb\x7e\xbb\xbe\x9f\x5f\x87\xe3\x7f\xef\xed"
-      "\xfa\xee\xfa\x7c\x3f\x1d\x5d\x1a\x23\xce\x54\x64\x36\xcd\x49\x4b\xd5"
-      "\xd1\xcc\x5f\x05\x35\x96\x9b";
-  header_set = DecodeUniqueHeaderSet(StringPiece(third, arraysize(third)-1));
+  string third = a2b_hex("84844393d6dbb29884de2a7188050620"
+                         "98513111b56ba35e84abdd97ff848483"
+                         "837bb1e0d6cf9f6e8f9fd3e5f6fa76fe"
+                         "fd3c7edf9eff1f2f0f3cfe9f6fcf7f8f"
+                         "879f61ad4f4cc9a973a2200ec3725e18"
+                         "b1b74e3f");
+  header_set = DecodeBlockExpectingSuccess(third);
 
   EXPECT_THAT(header_set, ElementsAre(
       Pair(":status", "200"),
@@ -601,6 +656,13 @@ TEST_F(HpackDecoderTest, SectionD5ResponseHuffmanExamples) {
       Pair("location", "https://www.example.com"),
       Pair("set-cookie", "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
            " max-age=3600; version=1")));
+
+  expectEntry(1, 98, "set-cookie", "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
+              " max-age=3600; version=1");
+  expectEntry(2, 52, "content-encoding", "gzip");
+  expectEntry(3, 65, "date", "Mon, 21 Oct 2013 20:13:22 GMT");
+  expectStaticEntry(4);
+  EXPECT_EQ(215u, decoder_peer_.header_table()->size());
 }
 
 }  // namespace

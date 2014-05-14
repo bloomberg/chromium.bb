@@ -11,10 +11,12 @@
 #include "net/spdy/hpack_constants.h"
 #include "net/spdy/hpack_input_stream.h"
 #include "net/spdy/hpack_output_stream.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
+using net::test::a2b_hex;
 using std::string;
 using testing::ElementsAre;
 using testing::ElementsAreArray;
@@ -389,13 +391,13 @@ TEST_F(HpackHuffmanTableTest, SpecRequestExamples) {
 
   string buffer;
   string test_table[] = {
-    "\xdb\x6d\x88\x3e\x68\xd1\xcb\x12\x25\xba\x7f",
+    a2b_hex("e7cf9bebe89b6fb16fa9b6ff"),
     "www.example.com",
-    "\x63\x65\x4a\x13\x98\xff",
+    a2b_hex("b9b9949556bf"),
     "no-cache",
-    "\x4e\xb0\x8b\x74\x97\x90\xfa\x7f",
+    a2b_hex("571c5cdb737b2faf"),
     "custom-key",
-    "\x4e\xb0\x8b\x74\x97\x9a\x17\xa8\xff",
+    a2b_hex("571c5cdb73724d9c57"),
     "custom-value",
   };
   // Round-trip each test example.
@@ -418,19 +420,20 @@ TEST_F(HpackHuffmanTableTest, SpecResponseExamples) {
 
   string buffer;
   string test_table[] = {
-    "\x98\xa7",
+    a2b_hex("4017"),
     "302",
-    "\x73\xd5\xcd\x11\x1f",
+    a2b_hex("bf06724b97"),
     "private",
-    "\xef\x6b\x3a\x7a\x0e\x6e\x8f\xa2\x63\xd0\x72\x9a\x6e\x83\x97\xd8"
-        "\x69\xbd\x87\x37\x47\xbb\xbf\xc7",
+    a2b_hex("d6dbb29884de2a718805062098513109"
+            "b56ba3"),
     "Mon, 21 Oct 2013 20:13:21 GMT",
-    "\xce\x31\x74\x3d\x80\x1b\x6d\xb1\x07\xcd\x1a\x39\x62\x44\xb7\x4f",
+    a2b_hex("adcebf198e7e7cf9bebe89b6fb16fa9b"
+            "6f"),
     "https://www.example.com",
-    "\xc5\xad\xb7\x7f\x87\x6f\xc7\xfb\xf7\xfd\xbf\xbe\xbf\xf3\xf7\xf4"
-        "\xfb\x7e\xbb\xbe\x9f\x5f\x87\xe3\x7f\xef\xed\xfa\xee\xfa\x7c\x3f"
-        "\x1d\x5d\x1a\x23\xce\x54\x64\x36\xcd\x49\x4b\xd5\xd1\xcc\x5f\x05"
-        "\x35\x96\x9b",
+    a2b_hex("e0d6cf9f6e8f9fd3e5f6fa76fefd3c7e"
+            "df9eff1f2f0f3cfe9f6fcf7f8f879f61"
+            "ad4f4cc9a973a2200ec3725e18b1b74e"
+            "3f"),
     "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU; max-age=3600; version=1",
   };
   // Round-trip each test example.

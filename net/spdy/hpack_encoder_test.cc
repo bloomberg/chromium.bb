@@ -316,8 +316,8 @@ TEST_F(HpackEncoderTest, StringsDynamicallySelectHuffmanCoding) {
   // Compactable string. Uses Huffman coding.
   peer_.EmitString("feedbeef");
   expected_.AppendPrefix(kStringLiteralHuffmanEncoded);
-  expected_.AppendUint32(5);
-  expected_.AppendBytes("\xC4G\v\xC4q");
+  expected_.AppendUint32(6);
+  expected_.AppendBytes("\xE0\xB5\xD3\xBDk\xE1");
 
   // Non-compactable. Uses identity coding.
   peer_.EmitString("@@@@@@");

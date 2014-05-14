@@ -30,15 +30,16 @@ bool HpackInputStream::MatchPrefixAndConsume(HpackPrefix prefix) {
   DCHECK_GT(prefix.bit_size, 0u);
   DCHECK_LE(prefix.bit_size, 8u);
 
-  uint8 next_octet = 0;
-  if (!PeekNextOctet(&next_octet))
+  uint32 peeked = 0;
+  size_t peeked_count = 0;
+
+  if (!PeekBits(&peeked_count, &peeked))
     return false;
 
-  if ((next_octet >> (8 - prefix.bit_size)) == prefix.bits) {
+  if ((peeked >> (32 - prefix.bit_size)) == prefix.bits) {
     ConsumeBits(prefix.bit_size);
     return true;
   }
-
   return false;
 }
 

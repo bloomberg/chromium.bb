@@ -15,7 +15,7 @@
 #include "net/spdy/hpack_huffman_table.h"
 
 // All section references below are to
-// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-06
+// http://tools.ietf.org/html/draft-ietf-httpbis-header-compression-07
 
 namespace net {
 
@@ -31,9 +31,8 @@ class NET_EXPORT_PRIVATE HpackInputStream {
   // Returns whether or not there is more data to process.
   bool HasMoreData() const;
 
-  // If the next octet has the top |size| bits equal to |bits|,
-  // consumes it and returns true. Otherwise, consumes nothing and
-  // returns false.
+  // If the next bits of input match |prefix|, consumes them and returns true.
+  // Otherwise, consumes nothing and returns false.
   bool MatchPrefixAndConsume(HpackPrefix prefix);
 
   // The Decode* functions return true and fill in their arguments if
@@ -62,10 +61,6 @@ class NET_EXPORT_PRIVATE HpackInputStream {
 
   void SetBitOffsetForTest(size_t bit_offset) {
     bit_offset_ = bit_offset;
-  }
-
-  bool DecodeNextUint32ForTest(uint32* I) {
-    return DecodeNextUint32(I);
   }
 
  private:

@@ -495,6 +495,10 @@ class NET_EXPORT_PRIVATE SpdyConstants {
 
   static size_t GetFrameMaximumSize(SpdyMajorVersion version);
 
+  // Returns the size of a header block size field. Valid only for SPDY
+  // versions <= 3.
+  static size_t GetSizeOfSizeField(SpdyMajorVersion version);
+
   static SpdyMajorVersion ParseMajorVersion(int version_number);
 
   static int SerializeMajorVersion(SpdyMajorVersion version);
@@ -826,21 +830,17 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithNameValueBlockIR {
  public:
   explicit SpdyHeadersIR(SpdyStreamId stream_id)
     : SpdyFrameWithNameValueBlockIR(stream_id),
-      end_headers_(true),
       has_priority_(false),
       priority_(0) {}
 
   virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
-  bool end_headers() const { return end_headers_; }
-  void set_end_headers(bool end_headers) {end_headers_ = end_headers;}
   bool has_priority() const { return has_priority_; }
   void set_has_priority(bool has_priority) { has_priority_ = has_priority; }
   uint32 priority() const { return priority_; }
   void set_priority(SpdyPriority priority) { priority_ = priority; }
 
  private:
-  bool end_headers_;
   bool has_priority_;
   // 31-bit priority.
   uint32 priority_;
@@ -885,20 +885,14 @@ class NET_EXPORT_PRIVATE SpdyPushPromiseIR
  public:
   SpdyPushPromiseIR(SpdyStreamId stream_id, SpdyStreamId promised_stream_id)
       : SpdyFrameWithNameValueBlockIR(stream_id),
-        promised_stream_id_(promised_stream_id),
-        end_push_promise_(true) {}
+        promised_stream_id_(promised_stream_id) {}
   SpdyStreamId promised_stream_id() const { return promised_stream_id_; }
   void set_promised_stream_id(SpdyStreamId id) { promised_stream_id_ = id; }
-  bool end_push_promise() const { return end_push_promise_; }
-  void set_end_push_promise(bool end_push_promise) {
-    end_push_promise_ = end_push_promise;
-  }
 
   virtual void Visit(SpdyFrameVisitor* visitor) const OVERRIDE;
 
  private:
   SpdyStreamId promised_stream_id_;
-  bool end_push_promise_;
   DISALLOW_COPY_AND_ASSIGN(SpdyPushPromiseIR);
 };
 
