@@ -28,9 +28,6 @@ void EventFactoryOzone::SetInstance(EventFactoryOzone* impl) { impl_ = impl; }
 
 void EventFactoryOzone::StartProcessingEvents() {}
 
-void EventFactoryOzone::SetFileTaskRunner(
-    scoped_refptr<base::TaskRunner> task_runner) {}
-
 void EventFactoryOzone::WarpCursorTo(gfx::AcceleratedWidget widget,
                                      const gfx::PointF& location) {
   NOTIMPLEMENTED();

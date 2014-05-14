@@ -36,8 +36,6 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone,
 
   // EventFactoryOzone:
   virtual void StartProcessingEvents() OVERRIDE;
-  virtual void SetFileTaskRunner(scoped_refptr<base::TaskRunner> task_runner)
-      OVERRIDE;
   virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) OVERRIDE;
 
@@ -70,9 +68,6 @@ class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone,
 
   // Task runner for event dispatch.
   scoped_refptr<base::TaskRunner> ui_task_runner_;
-
-  // Task runner for file I/O.
-  scoped_refptr<base::TaskRunner> file_task_runner_;
 
   // Modifier key state (shift, ctrl, etc).
   EventModifiersEvdev modifiers_;

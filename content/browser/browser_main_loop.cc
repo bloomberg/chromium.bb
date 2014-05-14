@@ -124,7 +124,6 @@
 
 #if defined(USE_OZONE)
 #include "ui/ozone/ozone_platform.h"
-#include "ui/events/ozone/event_factory_ozone.h"
 #endif
 
 // One of the linux specific headers defines this as a macro.
@@ -961,8 +960,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::Initialize();
-  ui::EventFactoryOzone::GetInstance()->SetFileTaskRunner(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 #endif
 
   // RDH needs the IO thread to be created
