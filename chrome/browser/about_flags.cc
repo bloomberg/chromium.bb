@@ -4,7 +4,6 @@
 
 #include "chrome/browser/about_flags.h"
 
-#include <algorithm>
 #include <iterator>
 #include <map>
 #include <set>
@@ -13,6 +12,7 @@
 #include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -1970,11 +1970,9 @@ void SanitizeList(FlagsStorage* flags_storage) {
 
   std::set<std::string> enabled_experiments = flags_storage->GetFlags();
 
-  std::set<std::string> new_enabled_experiments;
-  std::set_intersection(
-      known_experiments.begin(), known_experiments.end(),
-      enabled_experiments.begin(), enabled_experiments.end(),
-      std::inserter(new_enabled_experiments, new_enabled_experiments.begin()));
+  std::set<std::string> new_enabled_experiments =
+      base::STLSetIntersection<std::set<std::string> >(
+          known_experiments, enabled_experiments);
 
   if (new_enabled_experiments != enabled_experiments)
     flags_storage->SetFlags(new_enabled_experiments);
@@ -2027,11 +2025,9 @@ void GetSanitizedEnabledFlagsForCurrentPlatform(
 #endif
   }
 
-  std::set<std::string> new_enabled_experiments;
-  std::set_intersection(
-      platform_experiments.begin(), platform_experiments.end(),
-      result->begin(), result->end(),
-      std::inserter(new_enabled_experiments, new_enabled_experiments.begin()));
+  std::set<std::string> new_enabled_experiments =
+      base::STLSetIntersection<std::set<std::string> >(
+          platform_experiments, *result);
 
   result->swap(new_enabled_experiments);
 }

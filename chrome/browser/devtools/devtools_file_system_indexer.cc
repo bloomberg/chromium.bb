@@ -13,6 +13,7 @@
 #include "base/files/file_util_proxy.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -192,12 +193,8 @@ vector<FilePath> Index::Search(string query) {
       first = false;
       continue;
     }
-    set<FileId> intersection;
-    std::set_intersection(file_ids.begin(),
-                          file_ids.end(),
-                          index_[trigram].begin(),
-                          index_[trigram].end(),
-                          std::inserter(intersection, intersection.begin()));
+    set<FileId> intersection = base::STLSetIntersection<set<FileId> >(
+        file_ids, index_[trigram]);
     file_ids.swap(intersection);
   }
   vector<FilePath> result;

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/url_index_private_data.h"
 
-#include <algorithm>
 #include <functional>
 #include <iterator>
 #include <limits>
@@ -535,11 +534,8 @@ HistoryIDSet URLIndexPrivateData::HistoryIDSetFromWords(
     if (iter == words.begin()) {
       history_id_set.swap(term_history_set);
     } else {
-      HistoryIDSet new_history_id_set;
-      std::set_intersection(history_id_set.begin(), history_id_set.end(),
-                            term_history_set.begin(), term_history_set.end(),
-                            std::inserter(new_history_id_set,
-                                          new_history_id_set.begin()));
+      HistoryIDSet new_history_id_set = base::STLSetIntersection<HistoryIDSet>(
+          history_id_set, term_history_set);
       history_id_set.swap(new_history_id_set);
     }
   }
@@ -610,11 +606,8 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
       if (prefix_chars.empty()) {
         word_id_set.swap(leftover_set);
       } else {
-        WordIDSet new_word_id_set;
-        std::set_intersection(word_id_set.begin(), word_id_set.end(),
-                              leftover_set.begin(), leftover_set.end(),
-                              std::inserter(new_word_id_set,
-                                            new_word_id_set.begin()));
+        WordIDSet new_word_id_set = base::STLSetIntersection<WordIDSet>(
+            word_id_set, leftover_set);
         word_id_set.swap(new_word_id_set);
       }
     }
@@ -680,11 +673,8 @@ WordIDSet URLIndexPrivateData::WordIDSetForTermChars(
       word_id_set = char_word_id_set;
     } else {
       // Subsequent character results get intersected in.
-      WordIDSet new_word_id_set;
-      std::set_intersection(word_id_set.begin(), word_id_set.end(),
-                            char_word_id_set.begin(), char_word_id_set.end(),
-                            std::inserter(new_word_id_set,
-                                          new_word_id_set.begin()));
+      WordIDSet new_word_id_set = base::STLSetIntersection<WordIDSet>(
+          word_id_set, char_word_id_set);
       word_id_set.swap(new_word_id_set);
     }
   }
@@ -762,10 +752,7 @@ void URLIndexPrivateData::AddRowWordsToIndex(const URLRow& row,
       bookmark_utils::CleanUpTitleForMatching(row.title());
   String16Set title_words = String16SetFromString16(title,
       word_starts ? &word_starts->title_word_starts_ : NULL);
-  String16Set words;
-  std::set_union(url_words.begin(), url_words.end(),
-                 title_words.begin(), title_words.end(),
-                 std::insert_iterator<String16Set>(words, words.begin()));
+  String16Set words = base::STLSetUnion<String16Set>(url_words, title_words);
   for (String16Set::iterator word_iter = words.begin();
        word_iter != words.end(); ++word_iter)
     AddWordToIndex(*word_iter, history_id);
