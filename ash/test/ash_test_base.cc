@@ -19,6 +19,7 @@
 #include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/window_positioner.h"
 #include "base/command_line.h"
+#include "content/public/test/web_contents_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -79,6 +80,13 @@ class AshEventGeneratorDelegate : public aura::test::EventGeneratorDelegate {
 };
 
 }  // namespace
+
+content::WebContents* AshTestViewsDelegate::CreateWebContents(
+    content::BrowserContext* browser_context,
+    content::SiteInstance* site_instance) {
+  return content::WebContentsTester::CreateTestWebContents(browser_context,
+                                                           site_instance);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 

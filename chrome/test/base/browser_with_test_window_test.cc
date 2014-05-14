@@ -25,7 +25,6 @@
 
 #if defined(USE_ASH)
 #include "ash/test/ash_test_helper.h"
-#include "ash/test/ash_test_views_delegate.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -60,8 +59,7 @@ void BrowserWithTestWindowTest::SetUp() {
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Windows Ash support. This will require refactoring
   // AshTestHelper and AuraTestHelper so they can be used at the same time,
-  // perhaps by AshTestHelper owning an AuraTestHelper. Also, need to cleanup
-  // CreateViewsDelegate() below when cleanup done.
+  // perhaps by AshTestHelper owning an AuraTestHelper.
   ash_test_helper_.reset(new ash::test::AshTestHelper(
       base::MessageLoopForUI::current()));
   ash_test_helper_->SetUp(true);
@@ -75,8 +73,9 @@ void BrowserWithTestWindowTest::SetUp() {
   aura_test_helper_->SetUp();
   new wm::DefaultActivationClient(aura_test_helper_->root_window());
 #endif  // USE_AURA
-#if !defined(OS_CHROMEOS) && defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
   views_delegate_.reset(CreateViewsDelegate());
+  views::ViewsDelegate::views_delegate = views_delegate_.get();
 #endif
 
   // Subclasses can provide their own Profile.
@@ -114,6 +113,7 @@ void BrowserWithTestWindowTest::TearDown() {
   base::MessageLoop::current()->Run();
 
 #if defined(TOOLKIT_VIEWS)
+  views::ViewsDelegate::views_delegate = NULL;
   views_delegate_.reset(NULL);
 #endif
 }
@@ -241,12 +241,8 @@ Browser* BrowserWithTestWindowTest::CreateBrowser(
   return new Browser(params);
 }
 
-#if !defined(OS_CHROMEOS) && defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 views::ViewsDelegate* BrowserWithTestWindowTest::CreateViewsDelegate() {
-#if defined(USE_ASH)
-  return new ash::test::AshTestViewsDelegate;
-#else
   return new views::TestViewsDelegate;
-#endif
 }
 #endif

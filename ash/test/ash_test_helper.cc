@@ -7,7 +7,6 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
-#include "ash/test/ash_test_views_delegate.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
@@ -23,6 +22,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/message_center/message_center.h"
 #include "ui/wm/core/capture_controller.h"
+#include "ui/wm/core/wm_state.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -56,7 +56,7 @@ AshTestHelper::~AshTestHelper() {
 }
 
 void AshTestHelper::SetUp(bool start_session) {
-  views_delegate_.reset(new AshTestViewsDelegate);
+  wm_state_.reset(new wm::WMState);
 
   // Disable animations during tests.
   zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
@@ -133,7 +133,7 @@ void AshTestHelper::TearDown() {
 
   CHECK(!wm::ScopedCaptureClient::IsActive());
 
-  views_delegate_.reset();
+  wm_state_.reset();
 }
 
 void AshTestHelper::RunAllPendingInMessageLoop() {

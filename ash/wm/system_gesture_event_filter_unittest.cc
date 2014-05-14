@@ -35,9 +35,7 @@
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "ui/views/window/non_client_view.h"
 
 namespace ash {
 namespace test {

@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/ash/test_views_delegate_with_parent.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -919,6 +920,10 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     DCHECK(it != created_profiles_.end());
     profile_manager_->DeleteTestingProfile(it->second);
     created_profiles_.erase(it);
+  }
+
+  virtual views::ViewsDelegate* CreateViewsDelegate() OVERRIDE {
+    return new TestViewsDelegateWithParent;
   }
 
  private:

@@ -157,13 +157,13 @@ class BrowserWithTestWindowTest : public testing::Test {
                                  chrome::HostDesktopType host_desktop_type,
                                  BrowserWindow* browser_window);
 
- private:
-#if !defined(OS_CHROMEOS) && defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
   // Creates the ViewsDelegate to use, may be overriden to create a different
   // ViewsDelegate.
-  views::ViewsDelegate* CreateViewsDelegate();
+  virtual views::ViewsDelegate* CreateViewsDelegate();
 #endif
 
+ private:
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   content::TestBrowserThreadBundle thread_bundle_;
   base::ShadowingAtExitManager at_exit_manager_;
