@@ -566,8 +566,6 @@ crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure P
 
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
-Bug(eae) [ Win ] virtual/windows-directwrite/fast/text/complex-text-opacity.html [ NeedsRebaseline ]
-Bug(eae) [ Mac ] virtual/mac-antialiasedtext/fast/text/complex-text-opacity.html [ NeedsRebaseline ]
 
 # Mac has overlay scrollbars depending on external settings.
 crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320-2x.html [ Failure ]
