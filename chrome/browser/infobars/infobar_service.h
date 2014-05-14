@@ -55,8 +55,6 @@ class InfoBarService : public infobars::InfoBarManager,
   virtual void NotifyInfoBarAdded(infobars::InfoBar* infobar) OVERRIDE;
   virtual void NotifyInfoBarRemoved(infobars::InfoBar* infobar,
                                     bool animate) OVERRIDE;
-  virtual void NotifyInfoBarReplaced(infobars::InfoBar* old_infobar,
-                                     infobars::InfoBar* new_infobar) OVERRIDE;
 
   // content::WebContentsObserver:
   virtual void RenderProcessGone(base::TerminationStatus status) OVERRIDE;

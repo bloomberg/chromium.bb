@@ -23,10 +23,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/infobars/core/infobar.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
+#include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -132,8 +129,7 @@ bool SSLCertResultInfoBarDelegate::Accept() {
 
 // SSLTabHelper::SSLAddCertData ------------------------------------------------
 
-class SSLTabHelper::SSLAddCertData
-    : public content::NotificationObserver {
+class SSLTabHelper::SSLAddCertData : public infobars::InfoBarManager::Observer {
  public:
   explicit SSLAddCertData(InfoBarService* infobar_service);
   virtual ~SSLAddCertData();
@@ -142,14 +138,14 @@ class SSLTabHelper::SSLAddCertData
   void ShowInfoBar(const base::string16& message, net::X509Certificate* cert);
 
  private:
-  // content::NotificationObserver:
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
+  // infobars::InfoBarManager::Observer:
+  virtual void OnInfoBarRemoved(infobars::InfoBar* infobar,
+                                bool animate) OVERRIDE;
+  virtual void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
+                                 infobars::InfoBar* new_infobar) OVERRIDE;
 
   InfoBarService* infobar_service_;
   infobars::InfoBar* infobar_;
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLAddCertData);
 };
@@ -157,14 +153,11 @@ class SSLTabHelper::SSLAddCertData
 SSLTabHelper::SSLAddCertData::SSLAddCertData(InfoBarService* infobar_service)
     : infobar_service_(infobar_service),
       infobar_(NULL) {
-  content::Source<InfoBarService> source(infobar_service_);
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                 source);
-  registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
-                 source);
+  infobar_service_->AddObserver(this);
 }
 
 SSLTabHelper::SSLAddCertData::~SSLAddCertData() {
+  infobar_service_->RemoveObserver(this);
 }
 
 void SSLTabHelper::SSLAddCertData::ShowInfoBar(const base::string16& message,
@@ -173,20 +166,17 @@ void SSLTabHelper::SSLAddCertData::ShowInfoBar(const base::string16& message,
                                                   message, cert);
 }
 
-void SSLTabHelper::SSLAddCertData::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED ||
-         type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED);
-  if (infobar_ ==
-      ((type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED) ?
-            content::Details<infobars::InfoBar::RemovedDetails>(
-                details)->first :
-            content::Details<infobars::InfoBar::ReplacedDetails>(
-                details)->first)) {
+void SSLTabHelper::SSLAddCertData::OnInfoBarRemoved(infobars::InfoBar* infobar,
+                                                    bool animate) {
+  if (infobar_ == infobar)
     infobar_ = NULL;
-  }
+}
+
+void SSLTabHelper::SSLAddCertData::OnInfoBarReplaced(
+    infobars::InfoBar* old_infobar,
+    infobars::InfoBar* new_infobar) {
+  if (infobar_ == old_infobar)
+    infobar_ = NULL;
 }
 
 

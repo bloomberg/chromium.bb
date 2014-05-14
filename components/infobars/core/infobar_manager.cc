@@ -80,7 +80,9 @@ InfoBar* InfoBarManager::ReplaceInfoBar(InfoBar* old_infobar,
   // to AddInfoBar() or similar, we don't dupe-check against this infobar.
   infobars_.erase(++i);
 
-  NotifyInfoBarReplaced(old_infobar, new_infobar_ptr);
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    OnInfoBarReplaced(old_infobar, new_infobar_ptr));
 
   old_infobar->CloseSoon();
   return new_infobar_ptr;
@@ -128,13 +130,6 @@ void InfoBarManager::NotifyInfoBarAdded(InfoBar* infobar) {
 void InfoBarManager::NotifyInfoBarRemoved(InfoBar* infobar, bool animate) {
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnInfoBarRemoved(infobar, animate));
-}
-
-void InfoBarManager::NotifyInfoBarReplaced(InfoBar* old_infobar,
-                                           InfoBar* new_infobar) {
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    OnInfoBarReplaced(old_infobar, new_infobar));
 }
 
 void InfoBarManager::RemoveInfoBarInternal(InfoBar* infobar, bool animate) {

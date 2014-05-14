@@ -39,7 +39,6 @@ class InfoBar : public gfx::AnimationDelegate {
   // These are the types passed as Details for infobar-related notifications.
   typedef InfoBar AddedDetails;
   typedef std::pair<InfoBar*, bool> RemovedDetails;
-  typedef std::pair<InfoBar*, InfoBar*> ReplacedDetails;
 
   // Platforms must define these.
   static const int kDefaultBarTargetHeight;

@@ -98,8 +98,6 @@ class InfoBarManager {
   // overrides are removed (see http://crbug.com/354380).
   virtual void NotifyInfoBarAdded(InfoBar* infobar);
   virtual void NotifyInfoBarRemoved(InfoBar* infobar, bool animate);
-  virtual void NotifyInfoBarReplaced(InfoBar* old_infobar,
-                                     InfoBar* new_infobar);
 
  private:
   // InfoBars associated with this InfoBarManager.  We own these pointers.

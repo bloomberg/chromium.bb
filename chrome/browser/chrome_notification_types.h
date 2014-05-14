@@ -131,12 +131,6 @@ enum NotificationType {
   // Details<InfoBar::RemovedDetails>.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
 
-  // This message is sent when an InfoBar is replacing another infobar in an
-  // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
-  // the InfoBarService the InfoBar was removed from.  The details is a
-  // Details<InfoBar::ReplacedDetails>.
-  NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
-
   // Used to fire notifications about how long various events took to
   // complete.  E.g., this is used to get more fine grained timings from the
   // new tab page.  The source is a WebContents and the details is a
