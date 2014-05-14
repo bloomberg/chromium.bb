@@ -21,8 +21,8 @@
         {
           'action_name': 'generate_usb_ids',
           'variables': {
-            'usb_ids_path%': '<(DEPTH)/third_party/usb_ids/usb.ids',
-            'usb_ids_py_path': '<(DEPTH)/tools/usb_ids/usb_ids.py',
+            'usb_ids_path%': '../../third_party/usb_ids/usb.ids',
+            'usb_ids_py_path': 'tools/usb_ids.py',
           },
           'inputs': [
             '<(usb_ids_path)',

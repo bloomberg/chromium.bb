@@ -19,7 +19,7 @@ static_library("usb") {
 }
 
 action("usb_device_ids") {
-  script = "//tools/usb_ids/usb_ids.py"
+  script = "//device/usb/tools/usb_ids.py"
   source_prereqs = [ source_ids ]
   outputs = [ generated_ids ]
   args = [
