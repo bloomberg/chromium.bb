@@ -11,9 +11,9 @@ import os
 import re
 import sys
 
-from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import cbuildbot_metadata
-from chromite.buildbot import constants
+from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import cbuildbot_metadata
+from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gdata_lib

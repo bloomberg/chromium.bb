@@ -11,11 +11,11 @@ complete sysroot from extracted prebuilt packages.
 
 import os
 
-from chromite.buildbot import portage_utilities
+from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import commandline
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 
 _CREATE_BATCH_CMD = ('rsync',)
 _CREATE_BATCH_EXCLUDE = ('--exclude=/tmp/', '--exclude=/var/cache/',

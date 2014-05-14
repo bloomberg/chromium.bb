@@ -15,7 +15,7 @@ import re
 import shlex
 import shutil
 
-from chromite.buildbot import cbuildbot_failures as failures_lib
+from chromite.cbuildbot import cbuildbot_failures as failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 

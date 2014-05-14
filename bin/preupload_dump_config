@@ -3,14 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-bin/cbuildbot_view_config -d --pretty > buildbot/config_dump.json
-if [ "$(git diff buildbot/config_dump.json)" ]; then
-  echo "You have uncommitted changes to buildbot/config_dump.json"
-  echo "This is likely because you have modified buildbot/cbuildbot_config.py"
+bin/cbuildbot_view_config -d --pretty > cbuildbot/config_dump.json
+if [ "$(git diff cbuildbot/config_dump.json)" ]; then
+  echo "You have uncommitted changes to cbuildbot/config_dump.json"
+  echo "This is likely because you have modified cbuildbot/cbuildbot_config.py"
   echo "Please --amend your commit to include config_dump.json."
   echo
   echo "In future, you can update the dump file with the command"
-  echo "bin/cbuildbot_view_config -d --pretty > buildbot/config_dump.json"
+  echo "bin/cbuildbot_view_config -d --pretty > cbuildbot/config_dump.json"
   exit 1
 fi
 

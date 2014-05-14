@@ -13,7 +13,7 @@ import time
 import urlparse
 
 from chromite import cros
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import dev_server_wrapper as ds_wrapper
 from chromite.lib import osutils

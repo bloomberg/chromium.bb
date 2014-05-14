@@ -8,8 +8,8 @@ import optparse
 import os
 
 from chromite.lib import cros_build_lib
-from chromite.buildbot import constants
-from chromite.buildbot import portage_utilities
+from chromite.cbuildbot import constants
+from chromite.cbuildbot import portage_utilities
 
 
 def _ParseArguments(argv):

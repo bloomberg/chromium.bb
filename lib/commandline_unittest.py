@@ -18,7 +18,7 @@ from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import partial_mock
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 
 # pylint: disable=W0212
 class TestShutDownException(cros_test_lib.TestCase):

@@ -59,7 +59,7 @@ rcfile=../pylintrc
 # W0212: Access to protected member
 # W0311: Bad indentation.
 # W0312: Found indentation with tabs instead of spaces
-# W0403: Relative import 'constants', should be 'chromite.buildbot.constants'
+# W0403: Relative import 'constants', should be 'chromite.cbuildbot.constants'
 # W0511: Used when a warning note as FIXME or XXX is detected.
 # W0622: Redefining built-in
 # R0904: Too many public methods

@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.scripts import gather_builder_stats
-from chromite.buildbot import cbuildbot_metadata
-from chromite.buildbot import constants
+from chromite.cbuildbot import cbuildbot_metadata
+from chromite.cbuildbot import constants
 
 import mock
 

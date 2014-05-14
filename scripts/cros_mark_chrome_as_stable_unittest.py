@@ -7,7 +7,7 @@
 """Unit tests for cros_mark_chrome_as_stable.py."""
 
 # run with:
-#    cros_sdk ../../chromite/buildbot/cros_mark_chrome_as_stable_unittest.py
+#    cros_sdk ../../chromite.cbuildbot/cros_mark_chrome_as_stable_unittest.py
 
 import mox
 import os
@@ -15,8 +15,8 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-from chromite.buildbot import constants
-from chromite.buildbot import portage_utilities
+from chromite.cbuildbot import constants
+from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gclient

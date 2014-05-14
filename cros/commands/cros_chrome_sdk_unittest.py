@@ -13,7 +13,7 @@ import shutil
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.cros.commands import cros_chrome_sdk
 from chromite.cros.commands import init_unittest
 from chromite.lib import cache

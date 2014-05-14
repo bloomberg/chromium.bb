@@ -7,7 +7,7 @@
 import os
 import logging
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import parallel
 from chromite.scripts import cros_list_modified_packages as workon

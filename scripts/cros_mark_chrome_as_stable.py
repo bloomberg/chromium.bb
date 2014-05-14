@@ -22,8 +22,8 @@ import re
 import sys
 import time
 
-from chromite.buildbot import constants
-from chromite.buildbot import portage_utilities
+from chromite.cbuildbot import constants
+from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient
 from chromite.lib import git

@@ -25,7 +25,7 @@ import sys
 import unittest
 import urllib
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 import cros_build_lib
 import gob_util
 import osutils

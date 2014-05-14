@@ -10,7 +10,7 @@ import random
 import re
 import time
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gob_util

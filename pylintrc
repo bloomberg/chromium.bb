@@ -53,7 +53,7 @@ load-plugins=chromite.cros.commands.lint
 # W0122: Use of the exec statement
 # W0141: Used builtin function ''
 # W0142: Used * or ** magic
-# W0403: Relative import 'constants', should be 'chromite.buildbot.constants'
+# W0403: Relative import 'constants', should be 'chromite.cbuildbot.constants'
 # W0511: Used when a warning note as FIXME or XXX is detected.
 # W0703: Catching too general exception Exception.
 # R0904: Too many public methods

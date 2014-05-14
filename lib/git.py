@@ -21,7 +21,7 @@ from xml import sax
 _path = os.path.realpath(__file__)
 _path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
 sys.path.insert(0, _path)
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import retry_util
@@ -629,7 +629,7 @@ class ManifestCheckout(Manifest):
     """Find the associated checkouts for a given |path|.
 
     The |path| can either be to the root of a project, or within the
-    project itself (chromite/buildbot for example).  It may be relative
+    project itself (chromite.cbuildbot for example).  It may be relative
     to the repo root, or an absolute path.  If |path| is not within a
     checkout, return None.
 

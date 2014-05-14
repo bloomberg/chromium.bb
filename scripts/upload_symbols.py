@@ -36,7 +36,7 @@ import time
 import urllib2
 import urlparse
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import cache
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib

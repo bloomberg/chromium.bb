@@ -6,7 +6,7 @@
 
 import os
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 
 
 SIGNING_DIR = os.path.join(constants.CHROMITE_DIR, 'signing')

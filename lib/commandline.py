@@ -20,9 +20,9 @@ import sys
 import tempfile
 import urlparse
 
-# TODO(build): sort the buildbot.constants/lib.constants issue;
+# TODO(build): sort the cbuildbot.constants/lib.constants issue;
 # lib shouldn't have to import from buildbot like this.
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gs

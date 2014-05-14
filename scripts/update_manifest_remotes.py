@@ -18,8 +18,8 @@ import os
 
 from xml.etree import ElementTree
 
-from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import manifest_version
+from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import manifest_version
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils

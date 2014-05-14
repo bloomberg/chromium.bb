@@ -6,7 +6,7 @@
 
 import operator
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import gob_util
@@ -46,7 +46,7 @@ class GerritHelper(object):
     Args:
       host: Hostname (without protocol prefix) of the gerrit server.
       remote: The symbolic name of a known remote git host,
-          taken from buildbot.contants.
+          taken from cbuildbot.contants.
       print_cmd: Determines whether all RunCommand invocations will be echoed.
           Set to False for quiet operation.
     """

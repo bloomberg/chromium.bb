@@ -22,27 +22,27 @@ import sys
 import time
 import traceback
 
-from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import cbuildbot_failures as failures_lib
-from chromite.buildbot import cbuildbot_results as results_lib
-from chromite.buildbot import cbuildbot_run
-from chromite.buildbot import constants
-from chromite.buildbot import manifest_version
-from chromite.buildbot import remote_try
-from chromite.buildbot import repository
-from chromite.buildbot import tee
-from chromite.buildbot import trybot_patch_pool
-from chromite.buildbot.stages import artifact_stages
-from chromite.buildbot.stages import branch_stages
-from chromite.buildbot.stages import build_stages
-from chromite.buildbot.stages import chrome_stages
-from chromite.buildbot.stages import completion_stages
-from chromite.buildbot.stages import generic_stages
-from chromite.buildbot.stages import release_stages
-from chromite.buildbot.stages import report_stages
-from chromite.buildbot.stages import sdk_stages
-from chromite.buildbot.stages import sync_stages
-from chromite.buildbot.stages import test_stages
+from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import cbuildbot_failures as failures_lib
+from chromite.cbuildbot import cbuildbot_results as results_lib
+from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot import constants
+from chromite.cbuildbot import manifest_version
+from chromite.cbuildbot import remote_try
+from chromite.cbuildbot import repository
+from chromite.cbuildbot import tee
+from chromite.cbuildbot import trybot_patch_pool
+from chromite.cbuildbot.stages import artifact_stages
+from chromite.cbuildbot.stages import branch_stages
+from chromite.cbuildbot.stages import build_stages
+from chromite.cbuildbot.stages import chrome_stages
+from chromite.cbuildbot.stages import completion_stages
+from chromite.cbuildbot.stages import generic_stages
+from chromite.cbuildbot.stages import release_stages
+from chromite.cbuildbot.stages import report_stages
+from chromite.cbuildbot.stages import sdk_stages
+from chromite.cbuildbot.stages import sync_stages
+from chromite.cbuildbot.stages import test_stages
 
 
 from chromite.lib import cgroups

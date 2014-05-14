@@ -27,7 +27,7 @@ import types
 _path = os.path.realpath(__file__)
 _path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
 sys.path.insert(0, _path)
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import signals
 # Now restore it so that relative scripts don't get cranky.
 sys.path.pop(0)

@@ -13,10 +13,10 @@ import logging
 import os
 import shutil
 import tempfile
-from chromite.buildbot import cbuildbot_archive
-from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import constants
-from chromite.buildbot import manifest_version
+from chromite.cbuildbot import cbuildbot_archive
+from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import constants
+from chromite.cbuildbot import manifest_version
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gclient

@@ -9,7 +9,7 @@ import logging
 import urlparse
 
 from chromite import cros
-from chromite.buildbot import portage_utilities
+from chromite.cbuildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import remote_access
 

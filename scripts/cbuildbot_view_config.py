@@ -7,7 +7,7 @@
 import json
 import pprint
 
-from chromite.buildbot import cbuildbot_config
+from chromite.cbuildbot import cbuildbot_config
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 

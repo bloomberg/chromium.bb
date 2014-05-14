@@ -12,7 +12,7 @@ import pwd
 import sys
 import urlparse
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import cgroups
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib

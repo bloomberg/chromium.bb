@@ -13,7 +13,7 @@ import signal
 import time
 import urllib
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import signals
 
 

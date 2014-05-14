@@ -4,7 +4,7 @@
 
 """Print the environment whitelist."""
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 
 
 def main(_argv):

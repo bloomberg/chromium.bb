@@ -21,8 +21,8 @@ from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import stats
-from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import constants
+from chromite.cbuildbot import cbuildbot_config
+from chromite.cbuildbot import constants
 
 
 COMMAND_NAME = 'chrome-sdk'

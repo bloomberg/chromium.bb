@@ -6,7 +6,7 @@
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib, git
-from chromite.buildbot import repository
+from chromite.cbuildbot import repository
 from chromite.lib import osutils
 
 

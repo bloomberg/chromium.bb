@@ -11,7 +11,7 @@ import glob
 import json
 import os
 
-from chromite.buildbot import constants
+from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
