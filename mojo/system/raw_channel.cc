@@ -321,7 +321,7 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
         return;
       }
 
-      scoped_ptr<embedder::PlatformHandleVector> platform_handles;
+      embedder::ScopedPlatformHandleVectorPtr platform_handles;
       if (message_view.transport_data_buffer()) {
         size_t num_platform_handles;
         const void* platform_handle_table;

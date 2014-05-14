@@ -117,7 +117,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
     WaitReadable(client_handle.get());
 
     char buf[10000] = {};
-    scoped_ptr<PlatformHandleVector> received_handles;
+    ScopedPlatformHandleVectorPtr received_handles;
     ssize_t result = PlatformChannelRecvmsg(client_handle.get(), buf,
                                             sizeof(buf), &received_handles);
     EXPECT_EQ(static_cast<ssize_t>(send_string.size()), result);
@@ -152,7 +152,7 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     WaitReadable(client_handle.get());
 
     char buf[100] = { 'a' };
-    scoped_ptr<PlatformHandleVector> received_handles;
+    ScopedPlatformHandleVectorPtr received_handles;
     EXPECT_EQ(1, PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
                                         &received_handles));
     EXPECT_EQ('\0', buf[0]);
@@ -199,7 +199,7 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   WaitReadable(client_handle.get());
 
   // Start with an invalid handle in the vector.
-  scoped_ptr<PlatformHandleVector> handles(new PlatformHandleVector());
+  ScopedPlatformHandleVectorPtr handles(new PlatformHandleVector());
   handles->push_back(PlatformHandle());
 
   char buf[100] = { 'a' };

@@ -7,12 +7,11 @@
 namespace mojo {
 namespace embedder {
 
-void CloseAllHandlesAndClear(PlatformHandleVector* platform_handles) {
+void CloseAllHandles(PlatformHandleVector* platform_handles) {
   for (PlatformHandleVector::iterator it = platform_handles->begin();
        it != platform_handles->end();
        ++it)
     it->CloseIfNecessary();
-  platform_handles->clear();
 }
 
 }  // namespace embedder

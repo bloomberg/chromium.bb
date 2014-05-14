@@ -105,7 +105,7 @@ bool PlatformChannelSendHandles(PlatformHandle h,
 ssize_t PlatformChannelRecvmsg(PlatformHandle h,
                                void* buf,
                                size_t num_bytes,
-                               scoped_ptr<PlatformHandleVector>* handles) {
+                               ScopedPlatformHandleVectorPtr* handles) {
   DCHECK(buf);
   DCHECK_GT(num_bytes, 0u);
   DCHECK(handles);

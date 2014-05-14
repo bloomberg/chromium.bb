@@ -42,7 +42,7 @@ class RawChannelPosix : public RawChannel,
   // |RawChannel| protected methods:
   virtual IOResult Read(size_t* bytes_read) OVERRIDE;
   virtual IOResult ScheduleRead() OVERRIDE;
-  virtual scoped_ptr<embedder::PlatformHandleVector> GetReadPlatformHandles(
+  virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
       const void* platform_handle_table) OVERRIDE;
   virtual IOResult WriteNoLock(size_t* platform_handles_written,
@@ -68,7 +68,7 @@ class RawChannelPosix : public RawChannel,
 
   bool pending_read_;
 
-  scoped_ptr<embedder::PlatformHandleVector> read_platform_handles_;
+  embedder::ScopedPlatformHandleVectorPtr read_platform_handles_;
 
   // The following members are used on multiple threads and protected by
   // |write_lock()|:
@@ -138,7 +138,6 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
 
     if (read_platform_handles_->size() > TransportData::kMaxPlatformHandles) {
       LOG(WARNING) << "Received too many platform handles";
-      embedder::CloseAllHandlesAndClear(read_platform_handles_.get());
       read_platform_handles_.reset();
       return IO_FAILED;
     }
@@ -166,17 +165,15 @@ RawChannel::IOResult RawChannelPosix::ScheduleRead() {
   return IO_PENDING;
 }
 
-scoped_ptr<embedder::PlatformHandleVector>
-    RawChannelPosix::GetReadPlatformHandles(
-        size_t num_platform_handles,
-        const void* /*platform_handle_table*/) {
+embedder::ScopedPlatformHandleVectorPtr RawChannelPosix::GetReadPlatformHandles(
+    size_t num_platform_handles,
+    const void* /*platform_handle_table*/) {
   DCHECK_GT(num_platform_handles, 0u);
 
   if (!read_platform_handles_ ||
       read_platform_handles_->size() != num_platform_handles) {
-    embedder::CloseAllHandlesAndClear(read_platform_handles_.get());
     read_platform_handles_.reset();
-    return scoped_ptr<embedder::PlatformHandleVector>();
+    return embedder::ScopedPlatformHandleVectorPtr();
   }
 
   return read_platform_handles_.Pass();

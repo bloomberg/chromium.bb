@@ -55,7 +55,7 @@ MOJO_SYSTEM_IMPL_EXPORT ssize_t PlatformChannelRecvmsg(
     PlatformHandle h,
     void* buf,
     size_t num_bytes,
-    scoped_ptr<PlatformHandleVector>* handles);
+    ScopedPlatformHandleVectorPtr* handles);
 
 }  // namespace embedder
 }  // namespace mojo

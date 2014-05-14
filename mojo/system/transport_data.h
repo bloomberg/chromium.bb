@@ -13,6 +13,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/embedder/platform_handle.h"
+#include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/system/dispatcher.h"
 #include "mojo/system/system_impl_export.h"
 
@@ -165,7 +166,7 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   // transport). The vector (if any) owns the handles that it contains (and is
   // responsible for closing them).
   // TODO(vtl): With C++11, change it to a vector of |ScopedPlatformHandles|.
-  scoped_ptr<std::vector<embedder::PlatformHandle> > platform_handles_;
+  embedder::ScopedPlatformHandleVectorPtr platform_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(TransportData);
 };

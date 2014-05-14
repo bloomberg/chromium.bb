@@ -125,7 +125,7 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
 
   if (estimated_num_platform_handles > 0) {
     DCHECK(!platform_handles_);
-    platform_handles_.reset(new std::vector<embedder::PlatformHandle>());
+    platform_handles_.reset(new embedder::PlatformHandleVector());
   }
 
   Header* header = reinterpret_cast<Header*>(buffer_.get());
@@ -194,8 +194,6 @@ TransportData::TransportData(scoped_ptr<DispatcherVector> dispatchers,
 }
 
 TransportData::~TransportData() {
-  if (platform_handles_)
-    embedder::CloseAllHandlesAndClear(platform_handles_.get());
 }
 
 // static

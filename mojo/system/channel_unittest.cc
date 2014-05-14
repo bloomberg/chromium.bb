@@ -139,10 +139,10 @@ class MockRawChannelOnInitFails : public RawChannel {
     CHECK(false);
     return IO_FAILED;
   }
-  virtual scoped_ptr<embedder::PlatformHandleVector> GetReadPlatformHandles(
+  virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t, const void*) OVERRIDE {
     CHECK(false);
-    return scoped_ptr<embedder::PlatformHandleVector>();
+    return embedder::ScopedPlatformHandleVectorPtr();
   }
   virtual IOResult WriteNoLock(size_t*, size_t*) OVERRIDE {
     CHECK(false);

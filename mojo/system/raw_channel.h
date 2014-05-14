@@ -214,7 +214,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
   // called when |num_platform_handles| is nonzero. Returns null if the
   // |num_platform_handles| handles are not available. Only called on the I/O
   // thread (without |write_lock_| held).
-  virtual scoped_ptr<embedder::PlatformHandleVector> GetReadPlatformHandles(
+  virtual embedder::ScopedPlatformHandleVectorPtr GetReadPlatformHandles(
       size_t num_platform_handles,
       const void* platform_handle_table) = 0;
 
