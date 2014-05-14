@@ -25,12 +25,12 @@ class ServiceDiscoveryClientMdns::Proxy {
       : client_(client),
         weak_ptr_factory_(this) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    client_->proxies_.AddObserver(this);
+    client_->proxies_.insert(this);
   }
 
   virtual ~Proxy() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    client_->proxies_.RemoveObserver(this);
+    client_->proxies_.erase(this);
   }
 
   // Notify proxies that mDNS layer is going to be destroyed.
@@ -80,7 +80,6 @@ class ServiceDiscoveryClientMdns::Proxy {
 
 namespace {
 
-const int kMaxDelayedTasks = 10000;
 const int kMaxRestartAttempts = 10;
 const int kRestartDelayOnNetworkChangeSeconds = 3;
 
@@ -329,7 +328,8 @@ ServiceDiscoveryClientMdns::CreateLocalDomainResolver(
 ServiceDiscoveryClientMdns::~ServiceDiscoveryClientMdns() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
-  DestroyMdns();
+  DCHECK(proxies_.empty());
+  Reset();
 }
 
 void ServiceDiscoveryClientMdns::OnNetworkChanged(
@@ -342,7 +342,8 @@ void ServiceDiscoveryClientMdns::OnNetworkChanged(
 
 void ServiceDiscoveryClientMdns::ScheduleStartNewClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  OnBeforeMdnsDestroy();
+  // Reset pointer to abort another restart request, if already scheduled.
+  weak_ptr_factory_.InvalidateWeakPtrs();
   if (restart_attempts_ < kMaxRestartAttempts) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
@@ -358,7 +359,7 @@ void ServiceDiscoveryClientMdns::ScheduleStartNewClient() {
 void ServiceDiscoveryClientMdns::StartNewClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ++restart_attempts_;
-  DestroyMdns();
+  Reset();
   mdns_.reset(net::MDnsClient::CreateDefault().release());
   client_.reset(new ServiceDiscoveryClientImpl(mdns_.get()));
   BrowserThread::PostTaskAndReplyWithResult(
@@ -378,6 +379,11 @@ void ServiceDiscoveryClientMdns::OnInterfaceListReady(
                             weak_ptr_factory_.GetWeakPtr()),
                  interfaces,
                  base::Unretained(mdns_.get())));
+  // Initialization is posted, no need to delay tasks.
+  need_dalay_mdns_tasks_ = false;
+  for (size_t i = 0; i < delayed_tasks_.size(); ++i)
+    mdns_runner_->PostTask(FROM_HERE, delayed_tasks_[i]);
+  delayed_tasks_.clear();
 }
 
 void ServiceDiscoveryClientMdns::OnMdnsInitialized(bool success) {
@@ -388,13 +394,9 @@ void ServiceDiscoveryClientMdns::OnMdnsInitialized(bool success) {
   }
   ReportSuccess();
 
-  // Initialization is done, no need to delay tasks.
-  need_dalay_mdns_tasks_ = false;
-  for (size_t i = 0; i < delayed_tasks_.size(); ++i)
-    mdns_runner_->PostTask(FROM_HERE, delayed_tasks_[i]);
-  delayed_tasks_.clear();
-
-  FOR_EACH_OBSERVER(Proxy, proxies_, OnNewMdnsReady());
+  std::set<Proxy*> tmp_proxies(proxies_);
+  std::for_each(tmp_proxies.begin(), tmp_proxies.end(),
+                std::mem_fun(&Proxy::OnNewMdnsReady));
 }
 
 void ServiceDiscoveryClientMdns::ReportSuccess() {
@@ -403,17 +405,14 @@ void ServiceDiscoveryClientMdns::ReportSuccess() {
                            restart_attempts_);
 }
 
-void ServiceDiscoveryClientMdns::OnBeforeMdnsDestroy() {
+void ServiceDiscoveryClientMdns::Reset() {
   need_dalay_mdns_tasks_ = true;
   delayed_tasks_.clear();
-  weak_ptr_factory_.InvalidateWeakPtrs();
-  FOR_EACH_OBSERVER(Proxy, proxies_, OnMdnsDestroy());
-}
 
-void ServiceDiscoveryClientMdns::DestroyMdns() {
-  OnBeforeMdnsDestroy();
-  // After calling |Proxy::OnMdnsDestroy| all references to client_ and mdns_
-  // should be destroyed.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  std::for_each(proxies_.begin(), proxies_.end(),
+                std::mem_fun(&Proxy::OnMdnsDestroy));
   if (client_)
     mdns_runner_->DeleteSoon(FROM_HERE, client_.release());
   if (mdns_)
@@ -423,12 +422,11 @@ void ServiceDiscoveryClientMdns::DestroyMdns() {
 bool ServiceDiscoveryClientMdns::PostToMdnsThread(const base::Closure& task) {
   // The first task on IO thread for each |mdns_| instance must be |InitMdns|.
   // |OnInterfaceListReady| could be delayed by |GetMDnsInterfacesToBind|
-  // running on FILE thread, so |PostToMdnsThread| could be called to post
-  // task for |mdns_| that is not initialized yet.
+  // running on FILE thread, so |PostToMdnsThread| could to post task for
+  // |mdns_| that is not posted initialization for.
   if (!need_dalay_mdns_tasks_)
     return mdns_runner_->PostTask(FROM_HERE, task);
-  if (kMaxDelayedTasks > delayed_tasks_.size())
-    delayed_tasks_.push_back(task);
+  delayed_tasks_.push_back(task);
   return true;
 }
 
