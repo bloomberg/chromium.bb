@@ -20,3 +20,6 @@ fun:*WebCore*RenderLayerCompositor*updateIfNeeded*
 # Fixed in clang r207227.
 # http://code.google.com/p/memory-sanitizer/issues/detail?id=53
 fun:getc_unlocked
+
+# http://crbug.com/158510
+fun:_ZN7WebCore11RenderTable6layoutEv
