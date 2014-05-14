@@ -136,7 +136,7 @@ EXTRA_ENV = {
       '--allow-unresolved=_Unwind_SetIP}',
 
   'BCLD_FLAGS':
-    '--oformat ${BCLD_OFORMAT} -Ttext=0x20000 ' +
+    '--oformat ${BCLD_OFORMAT} ' +
     '${!RELOCATABLE ? --undef-sym-check ${BCLD_ALLOW_UNRESOLVED}} ' +
     '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
   'RUN_BCLD': ('${LD} ${BCLD_FLAGS} ${inputs} -o ${output}'),
