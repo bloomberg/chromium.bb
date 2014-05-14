@@ -745,7 +745,7 @@ class SendProcess {
 namespace {
 void UpdateCastTransportStatus(
     media::cast::transport::CastTransportStatus status) {
-  VLOG(21) << "Transport status: " << status;
+  VLOG(1) << "Transport status: " << status;
 }
 
 void LogRawEvents(
@@ -758,6 +758,7 @@ void LogRawEvents(
        ++it) {
     cast_environment->Logging()->InsertPacketEvent(it->timestamp,
                                                    it->type,
+                                                   it->media_type,
                                                    it->rtp_timestamp,
                                                    it->frame_id,
                                                    it->packet_id,

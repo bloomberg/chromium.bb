@@ -1892,6 +1892,7 @@
         'renderer/extensions/module_system_unittest.cc',
         'renderer/extensions/renderer_permissions_policy_delegate_unittest.cc',
         'renderer/extensions/safe_builtins_unittest.cc',
+        'renderer/media/cast_ipc_dispatcher_unittest.cc',
         'renderer/media/chrome_webrtc_log_message_delegate_unittest.cc',
         'renderer/net/net_error_helper_core_unittest.cc',
         'renderer/net/predictor_queue_unittest.cc',

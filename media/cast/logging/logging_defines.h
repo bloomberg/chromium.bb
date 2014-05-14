@@ -40,7 +40,12 @@ enum CastLoggingEvent {
 const char* CastLoggingToString(CastLoggingEvent event);
 
 // CastLoggingEvent are classified into one of three following types.
-enum EventMediaType { AUDIO_EVENT, VIDEO_EVENT, UNKNOWN_EVENT };
+enum EventMediaType {
+  AUDIO_EVENT,
+  VIDEO_EVENT,
+  UNKNOWN_EVENT,
+  EVENT_MEDIA_TYPE_LAST = UNKNOWN_EVENT
+};
 
 struct FrameEvent {
   FrameEvent();

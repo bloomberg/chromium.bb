@@ -25,6 +25,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::cast::transport::CastTransportStatus,
                           media::cast::transport::CAST_TRANSPORT_STATUS_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::cast::CastLoggingEvent,
                           media::cast::kNumOfLoggingEvents)
+IPC_ENUM_TRAITS_MAX_VALUE(media::cast::EventMediaType,
+                          media::cast::EVENT_MEDIA_TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedAudioFrame)
   IPC_STRUCT_TRAITS_MEMBER(codec)
@@ -94,6 +96,7 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::PacketEvent)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(timestamp)
   IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(media_type)
 IPC_STRUCT_TRAITS_END()
 
 // Cast messages sent from the browser to the renderer.

@@ -116,6 +116,7 @@ void EncodingEventSubscriber::OnReceivePacketEvent(
 
   if (event_media_type_ != packet_event.media_type)
     return;
+
   RtpTimestamp relative_rtp_timestamp =
       GetRelativeRtpTimestamp(packet_event.rtp_timestamp);
   PacketEventMap::iterator it =
