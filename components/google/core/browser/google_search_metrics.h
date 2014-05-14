@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GOOGLE_GOOGLE_SEARCH_METRICS_H_
-#define CHROME_BROWSER_GOOGLE_GOOGLE_SEARCH_METRICS_H_
+#ifndef COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_SEARCH_METRICS_H_
+#define COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_SEARCH_METRICS_H_
 
 // A thin helper class used by parties interested in reporting Google search
 // metrics (mostly counts of searches from different access points). This class
@@ -33,4 +33,4 @@ class GoogleSearchMetrics {
   virtual void RecordGoogleSearch(AccessPoint ap) const;
 };
 
-#endif  // CHROME_BROWSER_GOOGLE_GOOGLE_SEARCH_METRICS_H_
+#endif  // COMPONENTS_GOOGLE_CORE_BROWSER_GOOGLE_SEARCH_METRICS_H_

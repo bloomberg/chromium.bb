@@ -24,6 +24,7 @@
     'favicon.gypi',
     'favicon_base.gypi',
     'feedback.gypi',  # crbug.com/368738
+    'google.gypi',
     'infobars.gypi',
     'json_schema.gypi',
     'keyed_service.gypi',

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/google/google_search_counter.h"
-#include "chrome/browser/google/google_search_metrics.h"
+#include "components/google/core/browser/google_search_metrics.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"

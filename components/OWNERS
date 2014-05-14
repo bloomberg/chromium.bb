@@ -43,6 +43,9 @@ per-file favicon*=blundell@chromium.org
 # Temporary for the duration of the favicon componentization.
 per-file favicon*=droger@chromium.org
 
+per-file google*=isherman@chromium.org
+per-file google*=pkasting@chromium.org
+
 per-file infobars.gypi=pkasting@chromium.org
 
 per-file json_schema.gypi=asargent@chromium.org

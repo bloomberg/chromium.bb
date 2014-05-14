@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_GOOGLE_GOOGLE_SEARCH_COUNTER_H_
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/google/google_search_metrics.h"
+#include "components/google/core/browser/google_search_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
