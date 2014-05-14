@@ -26,28 +26,7 @@ BlueButton::BlueButton(ButtonListener* listener, const base::string16& text)
     : LabelButton(listener, text) {
   // Inherit STYLE_BUTTON insets, minimum size, alignment, etc.
   SetStyle(STYLE_BUTTON);
-
-  // Insets for splitting the images.
-  const gfx::Insets insets(5, 5, 5, 5);
-  scoped_ptr<LabelButtonBorder> button_border(new LabelButtonBorder(style()));
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  button_border->SetPainter(false, STATE_NORMAL, Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_NORMAL), insets));
-  button_border->SetPainter(false, STATE_HOVERED, Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_HOVER), insets));
-  button_border->SetPainter(false, STATE_PRESSED, Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_PRESSED), insets));
-  button_border->SetPainter(false, STATE_DISABLED, Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
-  button_border->SetPainter(true, STATE_NORMAL, Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_NORMAL), insets));
-  button_border->SetPainter(true, STATE_HOVERED, Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_HOVER), insets));
-  button_border->SetPainter(true, STATE_PRESSED, Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_PRESSED), insets));
-  button_border->SetPainter(true, STATE_DISABLED, Painter::CreateImagePainter(
-          *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
-  UpdateThemedBorder(button_border.PassAs<Border>());
+  UpdateThemedBorder();
 }
 
 BlueButton::~BlueButton() {}
@@ -64,6 +43,30 @@ void BlueButton::ResetColorsFromNativeTheme() {
 
 const char* BlueButton::GetClassName() const {
   return BlueButton::kViewClassName;
+}
+
+scoped_ptr<Border> BlueButton::CreateDefaultBorder() const {
+  // Insets for splitting the images.
+  const gfx::Insets insets(5, 5, 5, 5);
+  scoped_ptr<LabelButtonBorder> button_border(new LabelButtonBorder(style()));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  button_border->SetPainter(false, STATE_NORMAL, Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_NORMAL), insets));
+  button_border->SetPainter(false, STATE_HOVERED, Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_HOVER), insets));
+  button_border->SetPainter(false, STATE_PRESSED, Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_PRESSED), insets));
+  button_border->SetPainter(false, STATE_DISABLED, Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
+  button_border->SetPainter(true, STATE_NORMAL, Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_NORMAL), insets));
+  button_border->SetPainter(true, STATE_HOVERED, Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_HOVER), insets));
+  button_border->SetPainter(true, STATE_PRESSED, Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_FOCUSED_PRESSED), insets));
+  button_border->SetPainter(true, STATE_DISABLED, Painter::CreateImagePainter(
+      *rb.GetImageSkiaNamed(IDR_BLUE_BUTTON_DISABLED), insets));
+  return button_border.PassAs<Border>();
 }
 
 }  // namespace views

@@ -266,6 +266,10 @@ const char* LabelButton::GetClassName() const {
   return kViewClassName;
 }
 
+scoped_ptr<Border> LabelButton::CreateDefaultBorder() const {
+  return scoped_ptr<Border>(new LabelButtonBorder(style_));
+}
+
 void LabelButton::SetBorder(scoped_ptr<Border> border) {
   border_is_themed_border_ = false;
   View::SetBorder(border.Pass());
@@ -351,10 +355,12 @@ void LabelButton::UpdateImage() {
   image_->SetImage(GetImage(state()));
 }
 
-void LabelButton::UpdateThemedBorder(scoped_ptr<Border> label_button_border) {
+void LabelButton::UpdateThemedBorder() {
   // Don't override borders set by others.
   if (!border_is_themed_border_)
     return;
+
+  scoped_ptr<Border> label_button_border = CreateDefaultBorder();
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   views::LinuxUI* linux_ui = views::LinuxUI::instance();
@@ -386,7 +392,7 @@ void LabelButton::ChildPreferredSizeChanged(View* child) {
 
 void LabelButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   ResetColorsFromNativeTheme();
-  UpdateThemedBorder(scoped_ptr<Border>(new LabelButtonBorder(style_)));
+  UpdateThemedBorder();
   // Invalidate the layout to pickup the new insets from the border.
   InvalidateLayout();
 }

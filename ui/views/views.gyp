@@ -618,6 +618,7 @@
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',
         'bubble/bubble_window_targeter_unittest.cc',
+        'controls/button/blue_button_unittest.cc',
         'controls/button/custom_button_unittest.cc',
         'controls/button/image_button_unittest.cc',
         'controls/button/label_button_unittest.cc',

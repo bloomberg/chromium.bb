@@ -87,6 +87,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
   // Fill |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
@@ -94,13 +95,16 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Resets colors from the NativeTheme, explicitly set colors are unchanged.
   virtual void ResetColorsFromNativeTheme();
 
+  // Creates the default border for this button. This can be overridden by
+  // subclasses or by LinuxUI.
+  virtual scoped_ptr<Border> CreateDefaultBorder() const;
+
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();
 
-  // Updates our border with a specific Border instance which has different
-  // insets, etc. This may wrap the border in an object which will draw a
-  // native style border.
-  void UpdateThemedBorder(scoped_ptr<Border> border);
+  // Updates the border as per the NativeTheme, unless a different border was
+  // set with SetBorder.
+  void UpdateThemedBorder();
 
   // NativeThemeDelegate:
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
@@ -117,7 +121,6 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // View:
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
-  virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
   // NativeThemeDelegate:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
