@@ -6,12 +6,6 @@ cr.define('options', function() {
   /** @const */ var OptionsPage = options.OptionsPage;
   /** @const */ var ArrayDataModel = cr.ui.ArrayDataModel;
 
-  // The GUID of the loaded address.
-  var guid;
-
-  // The BCP 47 language code for the layout of input fields.
-  var languageCode;
-
   /**
    * AutofillEditAddressOverlay class
    * Encapsulated handling of the 'Add Page' overlay page.
@@ -27,6 +21,18 @@ cr.define('options', function() {
 
   AutofillEditAddressOverlay.prototype = {
     __proto__: OptionsPage.prototype,
+
+    /**
+     * The GUID of the loaded address.
+     * @type {string}
+     */
+    guid_: '',
+
+    /**
+     * The BCP 47 language code for the layout of input fields.
+     * @type {string}
+     */
+    languageCode_: '',
 
     /**
      * Initializes the page.
@@ -68,15 +74,15 @@ cr.define('options', function() {
         event.preventDefault();
       };
 
-      this.guid = '';
+      this.guid_ = '';
       this.populateCountryList_();
       this.rebuildInputFields_(
           loadTimeData.getValue('autofillDefaultCountryComponents'));
-      this.languageCode =
+      this.languageCode_ =
           loadTimeData.getString('autofillDefaultCountryLanguageCode');
       this.connectInputEvents_();
       this.setInputFields_({});
-      this.getCountrySelector_().onchange = function(event) {
+      this.getCountrySwitcher_().onchange = function(event) {
         self.countryChanged_();
       };
     },
@@ -108,7 +114,7 @@ cr.define('options', function() {
 
     /**
      * Updates the data model for the |list| with the values from |entries|.
-     * @param {element} list The list to update.
+     * @param {cr.ui.List} list The list to update.
      * @param {Array} entries The list of items to be added to the list.
      * @private
      */
@@ -135,23 +141,22 @@ cr.define('options', function() {
     dismissOverlay_: function() {
       this.setInputFields_({});
       this.inputFieldChanged_();
-      this.guid = '';
-      this.languageCode = '';
+      this.guid_ = '';
+      this.languageCode_ = '';
       OptionsPage.closeOverlay();
     },
 
     /**
-     * Returns the country selector element.
-     * @return {element} The country selector.
+     * @return {Element} The element used to switch countries.
      * @private
      */
-    getCountrySelector_: function() {
+    getCountrySwitcher_: function() {
       return this.pageDiv.querySelector('[field=country]');
     },
 
     /**
      * Returns all list elements.
-     * @return {NodeList} The list elements.
+     * @return {!NodeList} The list elements.
      * @private
      */
     getLists_: function() {
@@ -160,22 +165,20 @@ cr.define('options', function() {
 
     /**
      * Returns all text input elements.
-     * @return {NodeList} The text input elements.
+     * @return {!NodeList} The text input elements.
      * @private
      */
     getTextFields_: function() {
-      return this.pageDiv.querySelectorAll(
-          ':-webkit-any(textarea, input)[field]');
+      return this.pageDiv.querySelectorAll('textarea[field], input[field]');
     },
 
     /**
-     * Aggregates the values in the input fields into an object.
-     * @return {object} The mapping from field names to values.
+     * Creates a map from type => value for all text fields.
+     * @return {Object} The mapping from field names to values.
      * @private
      */
     getInputFields_: function() {
-      var address = {};
-      address['country'] = this.getCountrySelector_().value;
+      var address = {country: this.getCountrySwitcher_().value};
 
       var lists = this.getLists_();
       for (var i = 0; i < lists.length; i++) {
@@ -197,7 +200,7 @@ cr.define('options', function() {
      * @private
      */
     setInputFields_: function(address) {
-      this.getCountrySelector_().value = address['country'] || '';
+      this.getCountrySwitcher_().value = address.country || '';
 
       var lists = this.getLists_();
       for (var i = 0; i < lists.length; i++) {
@@ -218,22 +221,21 @@ cr.define('options', function() {
      */
     saveAddress_: function() {
       var inputFields = this.getInputFields_();
-      var address = new Array();
-      var argCounter = 0;
-      address[argCounter++] = this.guid;
-      address[argCounter++] = inputFields['fullName'] || [];
-      address[argCounter++] = inputFields['companyName'] || '';
-      address[argCounter++] = inputFields['addrLines'] || '';
-      address[argCounter++] = inputFields['dependentLocality'] || '';
-      address[argCounter++] = inputFields['city'] || '';
-      address[argCounter++] = inputFields['state'] || '';
-      address[argCounter++] = inputFields['postalCode'] || '';
-      address[argCounter++] = inputFields['sortingCode'] || '';
-      address[argCounter++] = inputFields['country'] || '';
-      address[argCounter++] = inputFields['phone'] || [];
-      address[argCounter++] = inputFields['email'] || [];
-      address[argCounter++] = this.languageCode;
-
+      var address = [
+        this.guid_,
+        inputFields.fullName || [],
+        inputFields.companyName || '',
+        inputFields.addrLines || '',
+        inputFields.dependentLocality || '',
+        inputFields.city || '',
+        inputFields.state || '',
+        inputFields.postalCode || '',
+        inputFields.sortingCode || '',
+        inputFields.country || '',
+        inputFields.phone || [],
+        inputFields.email || [],
+        this.languageCode_,
+      ];
       chrome.send('setAddress', address);
     },
 
@@ -244,10 +246,9 @@ cr.define('options', function() {
      * @private
      */
     connectInputEvents_: function() {
-      var self = this;
       var fields = this.getTextFields_();
       for (var i = 0; i < fields.length; i++) {
-        fields[i].oninput = function(event) { self.inputFieldChanged_(); };
+        fields[i].oninput = this.inputFieldChanged_.bind(this);
       }
     },
 
@@ -256,10 +257,7 @@ cr.define('options', function() {
      * @private
      */
     inputFieldChanged_: function() {
-      var disabled = true;
-      if (this.getCountrySelector_().value)
-        disabled = false;
-
+      var disabled = !this.getCountrySwitcher_().value;
       if (disabled) {
         // Length of lists are tested for > 1 due to the "add" placeholder item
         // in the list.
@@ -290,7 +288,7 @@ cr.define('options', function() {
      * @private
      */
     countryChanged_: function() {
-      var countryCode = this.getCountrySelector_().value;
+      var countryCode = this.getCountrySwitcher_().value;
       if (countryCode)
         chrome.send('loadAddressEditorComponents', [countryCode]);
       else
@@ -305,7 +303,7 @@ cr.define('options', function() {
       var countryList = loadTimeData.getValue('autofillCountrySelectList');
 
       // Add the countries to the country <select> list.
-      var countrySelect = this.getCountrySelector_();
+      var countrySelect = this.getCountrySwitcher_();
       // Add an empty option.
       countrySelect.appendChild(new Option('', ''));
       for (var i = 0; i < countryList.length; i++) {
@@ -319,6 +317,7 @@ cr.define('options', function() {
     /**
      * Loads the address data from |address|, sets the input fields based on
      * this data, and stores the GUID and language code of the address.
+     * @param {!Object} address Lots of info about an address from the browser.
      * @private
      */
     loadAddress_: function(address) {
@@ -326,38 +325,40 @@ cr.define('options', function() {
       this.setInputFields_(address);
       this.inputFieldChanged_();
       this.connectInputEvents_();
-      this.guid = address.guid;
-      this.languageCode = address.languageCode;
+      this.guid_ = address.guid;
+      this.languageCode_ = address.languageCode;
     },
 
     /**
      * Takes a snapshot of the input values, clears the input values, loads the
      * address input layout from |input.components|, restores the input values
      * from snapshot, and stores the |input.languageCode| for the address.
+     * @param {{languageCode: string, components: Array.<Array.<Object>>}} input
+     *     Info about how to layout inputs fields in this dialog.
      * @private
      */
     loadAddressComponents_: function(input) {
-      var address = this.getInputFields_();
+      var inputFields = this.getInputFields_();
       this.rebuildInputFields_(input.components);
-      this.setInputFields_(address);
+      this.setInputFields_(inputFields);
       this.inputFieldChanged_();
       this.connectInputEvents_();
-      this.languageCode = input.languageCode;
+      this.languageCode_ = input.languageCode;
     },
 
     /**
      * Clears address inputs and rebuilds the input fields according to
      * |components|.
+     * @param {Array.<Array.<Object>>} components A list of information about
+     *     each input field.
      * @private
      */
     rebuildInputFields_: function(components) {
       var content = $('autofill-edit-address-fields');
-      while (content.firstChild) {
-        content.removeChild(content.firstChild);
-      }
+      content.innerHTML = '';
 
-      var customContainerElements = {'fullName': 'div'};
-      var customInputElements = {'fullName': 'list', 'addrLines': 'textarea'};
+      var customContainerElements = {fullName: 'div'};
+      var customInputElements = {fullName: 'list', addrLines: 'textarea'};
 
       for (var i in components) {
         var row = document.createElement('div');

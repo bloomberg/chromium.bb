@@ -15,7 +15,7 @@ function getField(field) {
 /**
  * Returns the size of the |list|.
  * @param {HTMLElement} list The list to check.
- * @return {int} The size of the list.
+ * @return {number} The size of the list.
  */
 function getListSize(list) {
   // Remove 1 for placeholder input field.
@@ -53,38 +53,11 @@ function AutofillEditAddressWebUITest() {}
 AutofillEditAddressWebUITest.prototype = {
   __proto__: testing.Test.prototype,
 
-  /**
-   * Browse to autofill edit address overlay.
-   */
-  browsePreload: 'chrome://settings-frame/autofillEditAddress',
-
   /** @override  */
-  isAsync: true,
+  browsePreload: 'chrome://settings-frame/autofillEditAddress',
 };
 
-TEST_F('AutofillEditAddressWebUITest',
-       'testAutofillPhoneValueListDoneValidating',
-       function() {
-  assertEquals(this.browsePreload, document.location.href);
-
-  var phoneList = getField('phone');
-  expectEquals(0, phoneList.validationRequests_);
-  phoneList.doneValidating().then(function() {
-    phoneList.focus();
-    var input = phoneList.querySelector('input');
-    input.focus();
-    document.execCommand('insertText', false, '111-222-333');
-    assertEquals('111-222-333', input.value);
-    input.blur();
-    phoneList.doneValidating().then(function() {
-      testDone();
-    });
-  });
-});
-
-TEST_F('AutofillEditAddressWebUITest',
-       'testInitialFormLayout',
-       function() {
+TEST_F('AutofillEditAddressWebUITest', 'testInitialFormLayout', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   assertEquals(getField('country').value, '');
@@ -96,9 +69,7 @@ TEST_F('AutofillEditAddressWebUITest',
   testDone();
 });
 
-TEST_F('AutofillEditAddressWebUITest',
-       'testLoadAddress',
-       function() {
+TEST_F('AutofillEditAddressWebUITest', 'testLoadAddress', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var testAddress = {
@@ -129,9 +100,9 @@ TEST_F('AutofillEditAddressWebUITest',
   };
   AutofillEditAddressOverlay.loadAddress(testAddress);
 
-  assertEquals(testAddress.guid, AutofillEditAddressOverlay.getInstance().guid);
-  assertEquals(testAddress.languageCode,
-               AutofillEditAddressOverlay.getInstance().languageCode);
+  var overlay = AutofillEditAddressOverlay.getInstance();
+  assertEquals(testAddress.guid, overlay.guid_);
+  assertEquals(testAddress.languageCode, overlay.languageCode_);
 
   var lists = ['fullName', 'email', 'phone'];
   for (var i in lists) {
@@ -156,13 +127,9 @@ TEST_F('AutofillEditAddressWebUITest',
   var country = getField('country');
   assertEquals(testAddress.country, country.value);
   assertTrue(country instanceof HTMLSelectElement);
-
-  testDone();
 });
 
-TEST_F('AutofillEditAddressWebUITest',
-       'testLoadAddressComponents',
-       function() {
+TEST_F('AutofillEditAddressWebUITest', 'testLoadAddressComponents', function() {
   assertEquals(this.browsePreload, document.location.href);
 
   var testInput = {
@@ -172,8 +139,41 @@ TEST_F('AutofillEditAddressWebUITest',
   };
   AutofillEditAddressOverlay.loadAddressComponents(testInput);
 
-  assertEquals('fr', AutofillEditAddressOverlay.getInstance().languageCode);
+  assertEquals('fr', AutofillEditAddressOverlay.getInstance().languageCode_);
   expectEquals(2, $('autofill-edit-address-fields').children.length);
+});
 
-  testDone();
+/**
+ * Class to test the autofill edit address overlay asynchronously.
+ * @extends {testing.Test}
+ * @constructor
+ */
+function AutofillEditAddressAsyncWebUITest() {}
+
+AutofillEditAddressAsyncWebUITest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings-frame/autofillEditAddress',
+
+  /** @override */
+  isAsync: true,
+};
+
+TEST_F('AutofillEditAddressAsyncWebUITest',
+       'testAutofillPhoneValueListDoneValidating',
+       function() {
+  assertEquals(this.browsePreload, document.location.href);
+
+  var phoneList = getField('phone');
+  expectEquals(0, phoneList.validationRequests_);
+  phoneList.doneValidating().then(function() {
+    phoneList.focus();
+    var input = phoneList.querySelector('input');
+    input.focus();
+    document.execCommand('insertText', false, '111-222-333');
+    assertEquals('111-222-333', input.value);
+    input.blur();
+    phoneList.doneValidating().then(testDone);
+  });
 });
