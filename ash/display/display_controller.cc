@@ -61,7 +61,8 @@ namespace {
 // accessed after Shell is deleted. A separate display instance is created
 // during the shutdown instead of always keeping two display instances
 // (one here and another one in display_manager) in sync, which is error prone.
-int64 primary_display_id = gfx::Display::kInvalidDisplayID;
+// This is initialized in the constructor, and then in CreatePrimaryHost().
+int64 primary_display_id = -1;
 
 // Specifies how long the display change should have been disabled
 // after each display change operations.

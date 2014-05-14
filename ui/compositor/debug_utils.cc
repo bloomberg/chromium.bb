@@ -8,7 +8,7 @@
 
 #include <cmath>
 #include <iomanip>
-#include <iostream>
+#include <ostream>
 #include <string>
 
 #include "base/logging.h"
