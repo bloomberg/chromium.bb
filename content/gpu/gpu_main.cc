@@ -51,6 +51,10 @@
 #include "content/public/common/sandbox_init.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/message_loop/message_pump_mac.h"
+#endif
+
 const int kGpuTimeout = 10000;
 
 namespace content {
@@ -129,8 +133,8 @@ int GpuMain(const MainFunctionParams& parameters) {
   // GpuMsg_Initialize message from the browser.
   bool dead_on_arrival = false;
 
-  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_IO;
 #if defined(OS_WIN)
+  base::MessageLoop::Type message_loop_type = base::MessageLoop::TYPE_IO;
   // Unless we're running on desktop GL, we don't need a UI message
   // loop, so avoid its use to work around apparent problems with some
   // third-party software.
@@ -139,11 +143,18 @@ int GpuMain(const MainFunctionParams& parameters) {
           gfx::kGLImplementationDesktopName) {
     message_loop_type = base::MessageLoop::TYPE_UI;
   }
+  base::MessageLoop main_message_loop(message_loop_type);
 #elif defined(OS_LINUX)
-  message_loop_type = base::MessageLoop::TYPE_DEFAULT;
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
+#elif defined(OS_MACOSX)
+  // This is necessary for CoreAnimation layers hosted in the GPU process to be
+  // drawn. See http://crbug.com/312462.
+  scoped_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
+  base::MessageLoop main_message_loop(pump.Pass());
+#else
+  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_IO);
 #endif
 
-  base::MessageLoop main_message_loop(message_loop_type);
   base::PlatformThread::SetName("CrGpuMain");
 
   // In addition to disabling the watchdog if the command line switch is

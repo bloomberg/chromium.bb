@@ -219,7 +219,7 @@ class MessagePumpCFRunLoopBase : public MessagePump {
   DISALLOW_COPY_AND_ASSIGN(MessagePumpCFRunLoopBase);
 };
 
-class MessagePumpCFRunLoop : public MessagePumpCFRunLoopBase {
+class BASE_EXPORT MessagePumpCFRunLoop : public MessagePumpCFRunLoopBase {
  public:
   MessagePumpCFRunLoop();
   virtual ~MessagePumpCFRunLoop();
@@ -238,9 +238,9 @@ class MessagePumpCFRunLoop : public MessagePumpCFRunLoopBase {
   DISALLOW_COPY_AND_ASSIGN(MessagePumpCFRunLoop);
 };
 
-class MessagePumpNSRunLoop : public MessagePumpCFRunLoopBase {
+class BASE_EXPORT MessagePumpNSRunLoop : public MessagePumpCFRunLoopBase {
  public:
-  BASE_EXPORT MessagePumpNSRunLoop();
+  MessagePumpNSRunLoop();
   virtual ~MessagePumpNSRunLoop();
 
   virtual void DoRun(Delegate* delegate) OVERRIDE;
@@ -317,7 +317,7 @@ class MessagePumpCrApplication : public MessagePumpNSApplication {
 };
 #endif  // !defined(OS_IOS)
 
-class MessagePumpMac {
+class BASE_EXPORT MessagePumpMac {
  public:
   // If not on the main thread, returns a new instance of
   // MessagePumpNSRunLoop.
@@ -335,11 +335,11 @@ class MessagePumpMac {
   // UsingCrApp() returns false if the message pump was created before
   // NSApp was initialized, or if NSApp does not implement
   // CrAppProtocol.  NSApp must be initialized before calling.
-  BASE_EXPORT static bool UsingCrApp();
+  static bool UsingCrApp();
 
   // Wrapper to query -[NSApp isHandlingSendEvent] from C++ code.
   // Requires NSApp to implement CrAppProtocol.
-  BASE_EXPORT static bool IsHandlingSendEvent();
+  static bool IsHandlingSendEvent();
 #endif  // !defined(OS_IOS)
 
  private:
