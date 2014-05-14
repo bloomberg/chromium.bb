@@ -295,6 +295,13 @@ public class ImeAdapter {
         return isTextInputType(mTextInputType);
     }
 
+    /**
+     * @return true if the selected text is of password.
+     */
+    public boolean isSelectionPassword() {
+        return mTextInputType == sTextInputTypePassword;
+    }
+
     public boolean dispatchKeyEvent(KeyEvent event) {
         return translateAndSendNativeEvents(event);
     }

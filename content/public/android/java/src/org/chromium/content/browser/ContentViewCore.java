@@ -2052,6 +2052,11 @@ public class ContentViewCore
             }
 
             @Override
+            public boolean isSelectionPassword() {
+                return mImeAdapter.isSelectionPassword();
+            }
+
+            @Override
             public boolean isSelectionEditable() {
                 return mSelectionEditable;
             }
