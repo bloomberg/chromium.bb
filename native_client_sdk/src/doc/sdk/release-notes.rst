@@ -13,7 +13,10 @@ PNaCl
   <http://clang.llvm.org/docs/LanguageExtensions.html#vectors-and-extended-vectors>`_
   and `GCC vectors
   <http://gcc.gnu.org/onlinedocs/gcc/Vector-Extensions.html>`_ for SIMD
-  vectors.
+  vectors through :ref:`Portable SIMD Vectors
+  <portable_simd_vectors>`. Note that this is still an early release,
+  and performance is expected to become acceptable for version 37 of
+  Chrome. More SIMD instructions will be added in later releases.
 
 Chrome/Pepper 35 (31 Mar 2014)
 ==============================

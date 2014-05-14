@@ -194,6 +194,10 @@ PNaCl this barrier is only guaranteed to order ``volatile`` and atomic
 memory accesses, though in practice the implementation attempts to also
 prevent reordering of memory accesses to objects which may escape.
 
+PNaCl supports :ref:`Portable SIMD Vectors <portable_simd_vectors>`,
+which are traditionally expressed through target-specific intrinsics or
+inline assembly.
+
 NaCl supports a fairly wide subset of inline assembly through GCC's
 inline assembly syntax, with the restriction that the sandboxing model
 for the target architecture has to be respected.
@@ -209,9 +213,9 @@ of SIMD vector datatypes and operations which map well to modern
 architectures and offer performance which matches or approaches
 hardware-specific uses.
 
-SIMD vector support was added to Portable Native Client for version 36
-of Chrome, and more features are expected to be added in subsequent
-releases.
+SIMD vector support was added to Portable Native Client for version 37
+of Chrome and more features, including performance enhancements, are
+expected to be added in subsequent releases.
 
 Hand-Coding Vector Extensions
 -----------------------------

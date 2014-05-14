@@ -109,7 +109,8 @@ non-portable NaCl:
 
 * By its nature, PNaCl does not support architecture-specific
   instructions in an application (i.e., inline assembly), but tries to
-  offer high-performance portable equivalents.
+  offer high-performance portable equivalents. One such example is
+  PNaCl's :ref:`Portable SIMD Vectors <portable_simd_vectors>`.
 * Currently PNaCl only supports static linking with the ``newlib``
   C standard library (the Native Client SDK provides a PNaCl port of
   ``newlib``). Dynamic linking and ``glibc`` are not yet supported.

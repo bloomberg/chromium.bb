@@ -182,6 +182,9 @@ consistent memory barrier (equivalent to <code>__sync_synchronize()</code>). In
 PNaCl this barrier is only guaranteed to order <code>volatile</code> and atomic
 memory accesses, though in practice the implementation attempts to also
 prevent reordering of memory accesses to objects which may escape.</p>
+<p>PNaCl supports <a class="reference internal" href="#portable-simd-vectors"><em>Portable SIMD Vectors</em></a>,
+which are traditionally expressed through target-specific intrinsics or
+inline assembly.</p>
 <p>NaCl supports a fairly wide subset of inline assembly through GCC&#8217;s
 inline assembly syntax, with the restriction that the sandboxing model
 for the target architecture has to be respected.</p>
@@ -192,9 +195,9 @@ very hardware-specific. Portable Native Client offers a portable version
 of SIMD vector datatypes and operations which map well to modern
 architectures and offer performance which matches or approaches
 hardware-specific uses.</p>
-<p>SIMD vector support was added to Portable Native Client for version 36
-of Chrome, and more features are expected to be added in subsequent
-releases.</p>
+<p>SIMD vector support was added to Portable Native Client for version 37
+of Chrome and more features, including performance enhancements, are
+expected to be added in subsequent releases.</p>
 <section id="hand-coding-vector-extensions">
 <h3 id="hand-coding-vector-extensions">Hand-Coding Vector Extensions</h3>
 <p>The initial vector support in Portable Native Client adds <a class="reference external" href="http://clang.llvm.org/docs/LanguageExtensions.html#vectors-and-extended-vectors">LLVM vectors</a>
