@@ -224,8 +224,14 @@ void ResourceMetadataStorage::Iterator::Advance() {
     if (!IsChildEntryKey(it_->key()) &&
         !IsCacheEntryKey(it_->key()) &&
         !IsIdEntryKey(it_->key()) &&
-        entry_.ParseFromArray(it_->value().data(), it_->value().size()))
+        entry_.ParseFromArray(it_->value().data(), it_->value().size())) {
+      FileCacheEntry cache_entry;
+      if (GetCacheEntry(&cache_entry)) {
+        *entry_.mutable_file_specific_info()->mutable_cache_state() =
+            cache_entry;
+      }
       break;
+    }
   }
 }
 
@@ -650,12 +656,29 @@ FileError ResourceMetadataStorage::PutEntry(const ResourceEntry& entry) {
       batch.Put(GetIdEntryKey(entry.resource_id()), id);
   }
 
-  // Put the entry itself.
-  if (!entry.SerializeToString(&serialized_entry)) {
-    DLOG(ERROR) << "Failed to serialize the entry: " << id;
-    return FILE_ERROR_FAILED;
+  // Put the cache entry.
+  // TODO(hashimoto): Change DB layout and remove this.
+  if (entry.file_specific_info().has_cache_state()) {
+    if (!entry.file_specific_info().cache_state().SerializeToString(
+            &serialized_entry)) {
+      DLOG(ERROR) << "Failed to serialize the cache entry.";
+      return FILE_ERROR_FAILED;
+    }
+    batch.Put(GetCacheEntryKey(id), serialized_entry);
   }
-  batch.Put(id, serialized_entry);
+
+  // Put the entry itself.
+  {
+    // Clear cache state as it's stored separately.
+    // TODO(hashimoto): Change DB layout and remove this.
+    ResourceEntry entry_copied(entry);
+    entry_copied.mutable_file_specific_info()->clear_cache_state();
+    if (!entry_copied.SerializeToString(&serialized_entry)) {
+      DLOG(ERROR) << "Failed to serialize the entry: " << id;
+      return FILE_ERROR_FAILED;
+    }
+    batch.Put(id, serialized_entry);
+  }
 
   status = resource_map_->Write(leveldb::WriteOptions(), &batch);
   return LevelDBStatusToFileError(status);
@@ -666,14 +689,27 @@ FileError ResourceMetadataStorage::GetEntry(const std::string& id,
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!id.empty());
 
+  // Get the cache entry.
+  // TODO(hashimoto): Change DB layout and remove this.
+  FileCacheEntry cache_entry;
+  FileError cache_error = GetCacheEntry(id, &cache_entry);
+  if (cache_error != FILE_ERROR_OK && cache_error != FILE_ERROR_NOT_FOUND)
+    return cache_error;
+
   std::string serialized_entry;
   const leveldb::Status status = resource_map_->Get(leveldb::ReadOptions(),
                                                     leveldb::Slice(id),
                                                     &serialized_entry);
   if (!status.ok())
     return LevelDBStatusToFileError(status);
-  return out_entry->ParseFromString(serialized_entry) ?
-      FILE_ERROR_OK : FILE_ERROR_FAILED;
+  if (!out_entry->ParseFromString(serialized_entry))
+    return FILE_ERROR_FAILED;
+
+  if (cache_error == FILE_ERROR_OK) {
+    *out_entry->mutable_file_specific_info()->mutable_cache_state() =
+        cache_entry;
+  }
+  return FILE_ERROR_OK;
 }
 
 FileError ResourceMetadataStorage::RemoveEntry(const std::string& id) {
@@ -694,6 +730,10 @@ FileError ResourceMetadataStorage::RemoveEntry(const std::string& id) {
   // Remove resource ID-local ID mapping entry.
   if (!entry.resource_id().empty())
     batch.Delete(GetIdEntryKey(entry.resource_id()));
+
+  // Remove the cache entry.
+  // TODO(hashimoto): Change DB layout and remove this.
+  batch.Delete(GetCacheEntryKey(id));
 
   // Remove the entry itself.
   batch.Delete(id);

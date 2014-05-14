@@ -71,14 +71,13 @@ void CollectBacklog(ResourceMetadata* metadata,
         break;
     }
 
-    FileCacheEntry cache_entry;
-    if (it->GetCacheEntry(&cache_entry)) {
-      if (cache_entry.is_pinned() && !cache_entry.is_present())
-        to_fetch->push_back(local_id);
+    if (entry.file_specific_info().cache_state().is_pinned() &&
+        !entry.file_specific_info().cache_state().is_present())
+      to_fetch->push_back(local_id);
 
-      if (cache_entry.is_dirty())
-        should_update = true;
-    }
+    if (entry.file_specific_info().cache_state().is_dirty())
+      should_update = true;
+
     if (should_update)
       to_update->push_back(local_id);
   }

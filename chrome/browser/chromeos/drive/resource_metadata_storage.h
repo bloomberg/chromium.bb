@@ -56,9 +56,6 @@ class ResourceMetadataStorage {
     // Returns the entry currently pointed by this object.
     const ResourceEntry& GetValue() const;
 
-    // Gets the cache entry which corresponds to |entry_| if available.
-    bool GetCacheEntry(FileCacheEntry* cache_entry);
-
     // Advances to the next entry.
     void Advance();
 
@@ -66,6 +63,9 @@ class ResourceMetadataStorage {
     bool HasError() const;
 
    private:
+    // Gets the cache entry which corresponds to |entry_| if available.
+    bool GetCacheEntry(FileCacheEntry* cache_entry);
+
     ResourceEntry entry_;
     scoped_ptr<leveldb::Iterator> it_;
 

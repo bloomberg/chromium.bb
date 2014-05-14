@@ -166,29 +166,17 @@ TEST_F(ResourceMetadataStorageTest, Iterator) {
 
   // Iterate and check the result.
   std::map<std::string, ResourceEntry> found_entries;
-  std::map<std::string, FileCacheEntry> found_cache_entries;
   scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
   ASSERT_TRUE(it);
   for (; !it->IsAtEnd(); it->Advance()) {
     const ResourceEntry& entry = it->GetValue();
     found_entries[it->GetID()] = entry;
-
-    FileCacheEntry cache_entry;
-    if (it->GetCacheEntry(&cache_entry))
-      found_cache_entries[it->GetID()] = cache_entry;
   }
   EXPECT_FALSE(it->HasError());
 
   EXPECT_EQ(keys.size(), found_entries.size());
   for (size_t i = 0; i < keys.size(); ++i)
     EXPECT_EQ(1U, found_entries.count(keys[i]));
-
-  EXPECT_EQ(cache_entries.size(), found_cache_entries.size());
-  for (std::map<std::string, FileCacheEntry>::iterator it =
-           cache_entries.begin(); it != cache_entries.end(); ++it) {
-    ASSERT_EQ(1U, found_cache_entries.count(it->first));
-    EXPECT_EQ(it->second.md5(), found_cache_entries[it->first].md5());
-  }
 }
 
 TEST_F(ResourceMetadataStorageTest, PutCacheEntry) {

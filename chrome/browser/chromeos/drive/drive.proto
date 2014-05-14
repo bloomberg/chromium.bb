@@ -53,6 +53,9 @@ message FileSpecificInfo {
 
   // Rotation of the image in clockwise degrees (if an image).
   optional int64 image_rotation = 10;
+
+  // Cache related states.
+  optional FileCacheEntry cache_state = 11;
 }
 
 // Directory specific info, which is a part of ResourceEntry.
