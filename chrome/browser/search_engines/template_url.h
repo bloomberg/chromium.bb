@@ -105,6 +105,9 @@ class TemplateURLRef {
     // True for searches issued with the bookmark bar pref set to shown.
     bool bookmark_bar_pinned;
 
+    // Optional session token.
+    std::string session_token;
+
     // Additional query params provided by the suggest server.
     std::string suggest_query_params;
 
@@ -273,6 +276,7 @@ class TemplateURLRef {
     GOOGLE_RLZ,
     GOOGLE_SEARCH_CLIENT,
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
+    GOOGLE_SESSION_TOKEN,
     GOOGLE_SUGGEST_CLIENT,
     GOOGLE_SUGGEST_REQUEST_ID,
     GOOGLE_UNESCAPED_SEARCH_TERMS,

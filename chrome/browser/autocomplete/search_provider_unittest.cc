@@ -3103,3 +3103,73 @@ TEST_F(SearchProviderTest, CheckDuplicateMatchesSaved) {
 
   EXPECT_EQ(0U, match_apricot.duplicate_matches.size());
 }
+
+#if defined(OS_ANDROID)
+TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableAnswersInSuggest);
+
+  TemplateURLService* turl_model =
+      TemplateURLServiceFactory::GetForProfile(&profile_);
+
+  TemplateURLData data;
+  data.short_name = ASCIIToUTF16("default");
+  data.SetKeyword(data.short_name);
+  data.SetURL("http://example/{searchTerms}{google:sessionToken}");
+  data.suggestions_url =
+      "http://suggest/?q={searchTerms}&{google:sessionToken}";
+  default_t_url_ = new TemplateURL(&profile_, data);
+  turl_model->Add(default_t_url_);
+  turl_model->SetUserSelectedDefaultSearchProvider(default_t_url_);
+
+  base::string16 term = term1_.substr(0, term1_.length() - 1);
+  QueryForInput(term, false, false);
+
+  // Make sure the default provider's suggest service was queried.
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDefaultProviderURLFetcherID);
+  ASSERT_TRUE(fetcher);
+
+  // And the URL matches what we expected.
+  TemplateURLRef::SearchTermsArgs search_terms_args(term);
+  search_terms_args.session_token = provider_->current_token_;
+  GURL expected_url(default_t_url_->suggestions_url_ref().ReplaceSearchTerms(
+      search_terms_args));
+  EXPECT_EQ(fetcher->GetOriginalURL().spec(), expected_url.spec());
+
+  // Complete running the fetcher to clean up.
+  fetcher->set_response_code(200);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  RunTillProviderDone();
+}
+#endif
+
+TEST_F(SearchProviderTest, SessionToken) {
+  // Subsequent calls always get the same token.
+  std::string token = provider_->GetSessionToken();
+  std::string token2 = provider_->GetSessionToken();
+  EXPECT_EQ(token, token2);
+  EXPECT_FALSE(token.empty());
+
+  // Calls do not regenerate a token.
+  provider_->current_token_ = "PRE-EXISTING TOKEN";
+  token = provider_->GetSessionToken();
+  EXPECT_EQ(token, "PRE-EXISTING TOKEN");
+
+  // ... unless the token has expired.
+  provider_->current_token_.clear();
+  const base::TimeDelta kSmallDelta = base::TimeDelta::FromMilliseconds(1);
+  provider_->token_expiration_time_ = base::TimeTicks::Now() - kSmallDelta;
+  token = provider_->GetSessionToken();
+  EXPECT_FALSE(token.empty());
+  EXPECT_EQ(token, provider_->current_token_);
+
+  // The expiration time is always updated.
+  provider_->GetSessionToken();
+  base::TimeTicks expiration_time_1 = provider_->token_expiration_time_;
+  base::PlatformThread::Sleep(kSmallDelta);
+  provider_->GetSessionToken();
+  base::TimeTicks expiration_time_2 = provider_->token_expiration_time_;
+  EXPECT_GT(expiration_time_2, expiration_time_1);
+  EXPECT_GE(expiration_time_2, expiration_time_1 + kSmallDelta);
+}

@@ -66,6 +66,8 @@ class SearchProvider : public BaseSearchProvider {
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveStaleResultsTest);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, TestDeleteMatch);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestQueryUsesToken);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SessionToken);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, ClearPrefetchedResults);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, SetPrefetchQuery);
@@ -270,6 +272,9 @@ class SearchProvider : public BaseSearchProvider {
   // Updates the value of |done_| from the internal state.
   void UpdateDone();
 
+  // Obtains a session token, regenerating if necessary.
+  std::string GetSessionToken();
+
   // The amount of time to wait before sending a new suggest request after the
   // previous one.  Non-const because some unittests modify this value.
   static int kMinimumTimeBetweenSuggestQueriesMs;
@@ -303,6 +308,10 @@ class SearchProvider : public BaseSearchProvider {
   Results keyword_results_;
 
   GURL current_page_url_;
+
+  // Session token management.
+  std::string current_token_;
+  base::TimeTicks token_expiration_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);
 };

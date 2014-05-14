@@ -87,6 +87,7 @@ const char kGoogleSearchFieldtrialParameter[] =
 #if defined (OS_ANDROID)
 const char kGoogleSearchVersion[] = "google:searchVersion";
 #endif
+const char kGoogleSessionToken[] = "google:sessionToken";
 const char kGoogleSourceIdParameter[] = "google:sourceId";
 const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
 const char kGoogleSuggestClient[] = "google:suggestClient";
@@ -611,6 +612,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
       url->insert(start, "gs_rn=42&");
     }
 #endif
+  } else if (parameter == kGoogleSessionToken) {
+    replacements->push_back(Replacement(GOOGLE_SESSION_TOKEN, start));
   } else if (parameter == kGoogleSourceIdParameter) {
 #if defined(OS_ANDROID)
     url->insert(start, "sourceid=chrome-mobile&");
@@ -975,6 +978,13 @@ std::string TemplateURLRef::HandleReplacements(
         // url.  If we do, then we'd have some conditional insert such as:
         // url.insert(i->index, used_www ? "gcx=w&" : "gcx=c&");
         break;
+
+      case GOOGLE_SESSION_TOKEN: {
+        std::string token = search_terms_args.session_token;
+        if (!token.empty())
+          HandleReplacement("psi", token, *i, &url);
+        break;
+      }
 
       case GOOGLE_SUGGEST_CLIENT:
         HandleReplacement(
