@@ -29,9 +29,6 @@ class WindowTreeHost;
 // A singleton object that tracks general state within Aura.
 class AURA_EXPORT Env : public ui::EventTarget {
  public:
-  Env();
-  virtual ~Env();
-
   // Creates the single Env instance (if it hasn't been created yet). If
   // |create_event_source| is true a PlatformEventSource is created.
   // TODO(sky): nuke |create_event_source|. Only necessary while mojo's
@@ -67,6 +64,9 @@ class AURA_EXPORT Env : public ui::EventTarget {
   friend class Window;
   friend class WindowTreeHost;
 
+  Env();
+  virtual ~Env();
+
   // See description of CreateInstance() for deatils of |create_event_source|.
   void Init(bool create_event_source);
 
@@ -87,7 +87,6 @@ class AURA_EXPORT Env : public ui::EventTarget {
 
   ObserverList<EnvObserver> observers_;
 
-  static Env* instance_;
   int mouse_button_flags_;
   // Location of last mouse event, in screen coordinates.
   gfx::Point last_mouse_location_;
