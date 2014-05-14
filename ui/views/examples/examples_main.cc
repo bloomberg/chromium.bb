@@ -12,7 +12,6 @@
 #include "ui/aura/env.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_paths.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/gfx/screen.h"
 #include "ui/gl/gl_surface.h"
@@ -59,11 +58,13 @@ int main(int argc, char** argv) {
 
   base::i18n::InitializeICU();
 
-  ui::RegisterPathProvider();
+  base::FilePath pak_dir;
+  PathService::Get(base::DIR_MODULE, &pak_dir);
 
-  base::FilePath ui_test_pak_path;
-  DCHECK(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+  base::FilePath pak_file;
+  pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
+
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 
   aura::Env::CreateInstance(true);
 

@@ -7,7 +7,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -156,9 +155,11 @@ class WidgetTestInteractive : public WidgetTest {
 
   virtual void SetUp() OVERRIDE {
     gfx::GLSurface::InitializeOneOffForTests();
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+    base::FilePath pak_dir;
+    PathService::Get(base::DIR_MODULE, &pak_dir);
+    base::FilePath pak_file;
+    pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
     WidgetTest::SetUp();
   }
 };
@@ -739,9 +740,11 @@ class WidgetCaptureTest : public ViewsTestBase {
 
   virtual void SetUp() OVERRIDE {
     gfx::GLSurface::InitializeOneOffForTests();
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+    base::FilePath pak_dir;
+    PathService::Get(base::DIR_MODULE, &pak_dir);
+    base::FilePath pak_file;
+    pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
     ViewsTestBase::SetUp();
   }
 

@@ -8,7 +8,6 @@
 #include "base/path_service.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/gl_surface.h"
@@ -23,9 +22,13 @@ class ViewTestSuite : public base::TestSuite {
     gfx::GLSurface::InitializeOneOffForTests();
     ui::RegisterPathProvider();
 
-    base::FilePath ui_test_pak_path;
-    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
+    base::FilePath pak_dir;
+    PathService::Get(base::DIR_MODULE, &pak_dir);
+
+    base::FilePath pak_file;
+    pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
+
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
   }
 
   virtual void Shutdown() OVERRIDE {

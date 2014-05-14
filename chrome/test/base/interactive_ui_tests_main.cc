@@ -6,7 +6,6 @@
 
 #include "chrome/test/base/chrome_test_suite.h"
 #include "ui/base/test/ui_controls.h"
-#include "ui/base/ui_base_paths.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/test/ui_controls_factory_aura.h"
@@ -33,8 +32,6 @@ class InteractiveUITestSuite : public ChromeTestSuite {
   // ChromeTestSuite overrides:
   virtual void Initialize() OVERRIDE {
     ChromeTestSuite::Initialize();
-
-    ui::RegisterPathProvider();
 
     // Only allow ui_controls to be used in interactive_ui_tests, since they
     // depend on focus and can't be sharded.
