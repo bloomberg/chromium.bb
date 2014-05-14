@@ -218,9 +218,9 @@ float Font::floatWidthForComplexText(const TextRun& run, HashSet<const SimpleFon
         return 0;
 
     if (glyphOverflow) {
-        glyphOverflow->top = std::max<int>(glyphOverflow->top, ceilf(-shaper.glyphBoundingBox().top()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().ascent()));
+        glyphOverflow->top = std::max<int>(glyphOverflow->top, floorf(-shaper.glyphBoundingBox().top()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().ascent()));
         glyphOverflow->bottom = std::max<int>(glyphOverflow->bottom, ceilf(shaper.glyphBoundingBox().bottom()) - (glyphOverflow->computeBounds ? 0 : fontMetrics().descent()));
-        glyphOverflow->left = std::max<int>(0, ceilf(-shaper.glyphBoundingBox().left()));
+        glyphOverflow->left = std::max<int>(0, floorf(-shaper.glyphBoundingBox().left()));
         glyphOverflow->right = std::max<int>(0, ceilf(shaper.glyphBoundingBox().right() - shaper.totalWidth()));
     }
     return shaper.totalWidth();
