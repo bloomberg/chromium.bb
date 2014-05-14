@@ -12,12 +12,9 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/focus/widget_focus_manager.h"
+#include "ui/wm/public/activation_change_observer.h"
 #include "url/gurl.h"
 
-#if defined(USE_AURA)
-#include "ui/wm/public/activation_change_observer.h"
-#endif
 
 class Browser;
 namespace views {
@@ -33,16 +30,14 @@ class ExtensionViewHost;
 }
 
 class ExtensionPopup : public views::BubbleDelegateView,
-#if defined(USE_AURA)
                        public aura::client::ActivationChangeObserver,
-#endif
                        public ExtensionViewViews::Container,
                        public content::NotificationObserver,
                        public TabStripModelObserver {
  public:
   enum ShowAction {
     SHOW,
-    SHOW_AND_INSPECT
+    SHOW_AND_INSPECT,
   };
 
   virtual ~ExtensionPopup();
@@ -74,17 +69,17 @@ class ExtensionPopup : public views::BubbleDelegateView,
 
   // views::View overrides.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) OVERRIDE;
 
-  // views::BubbleDelegateView overrides.
+  // views::WidgetObserver overrides.
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
   virtual void OnWidgetActivationChanged(views::Widget* widget,
                                          bool active) OVERRIDE;
 
-#if defined(USE_AURA)
   // aura::client::ActivationChangeObserver overrides.
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
-#endif
 
   // TabStripModelObserver overrides.
   virtual void ActiveTabChanged(content::WebContents* old_contents,
@@ -119,6 +114,8 @@ class ExtensionPopup : public views::BubbleDelegateView,
   content::NotificationRegistrar registrar_;
 
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
+
+  bool widget_initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopup);
 };

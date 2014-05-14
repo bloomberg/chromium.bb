@@ -5,58 +5,29 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
-#include "chrome/browser/platform_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/window.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
-#endif
 
 #if defined(OS_WIN)
 #include "ui/views/win/hwnd_util.h"
 #endif
-
-using content::BrowserContext;
-using content::RenderViewHost;
-using content::WebContents;
-
-namespace {
-
-// Returns true if |possible_owner| is the owner of |child|.
-bool IsOwnerOf(gfx::NativeView child, gfx::NativeView possible_owner) {
-  if (!child)
-    return false;
-#if defined(OS_WIN)
-  if (::GetWindow(views::HWNDForNativeView(child), GW_OWNER) ==
-      views::HWNDForNativeView(possible_owner))
-    return true;
-#endif
-  return false;
-}
-
-}  // namespace
 
 // The minimum/maximum dimensions of the popup.
 // The minimum is just a little larger than the size of the button itself.
@@ -73,7 +44,8 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
     : BubbleDelegateView(anchor_view, arrow),
       host_(host),
       devtools_callback_(base::Bind(
-          &ExtensionPopup::OnDevToolsStateChanged, base::Unretained(this))) {
+          &ExtensionPopup::OnDevToolsStateChanged, base::Unretained(this))),
+      widget_initialized_(false) {
   inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
   // Adjust the margin so that contents fit better.
   const int margin = views::BubbleBorder::GetCornerRadius() / 2;
@@ -81,16 +53,16 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
   SetLayoutManager(new views::FillLayout());
   AddChildView(host->view());
   host->view()->set_container(this);
-  // Use OnNativeFocusChange to check for child window activation on deactivate.
+  // ExtensionPopup closes itself on very specific de-activation conditions.
   set_close_on_deactivate(false);
 
   // Wait to show the popup until the contained host finishes loading.
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-                 content::Source<WebContents>(host->host_contents()));
+                 content::Source<content::WebContents>(host->host_contents()));
 
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<BrowserContext>(host->browser_context()));
+      content::Source<content::BrowserContext>(host->browser_context()));
   content::DevToolsManager::GetInstance()->AddAgentStateCallback(
       devtools_callback_);
 
@@ -109,7 +81,8 @@ void ExtensionPopup::Observe(int type,
                              const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME:
-      DCHECK(content::Source<WebContents>(host()->host_contents()) == source);
+      DCHECK_EQ(host()->host_contents(),
+                content::Source<content::WebContents>(source).ptr());
       // Show when the content finishes loading and its width is computed.
       ShowBubble();
       break;
@@ -124,7 +97,8 @@ void ExtensionPopup::Observe(int type,
 }
 
 void ExtensionPopup::OnDevToolsStateChanged(
-    content::DevToolsAgentHost* agent_host, bool attached) {
+    content::DevToolsAgentHost* agent_host,
+    bool attached) {
   // First check that the devtools are being opened on this popup.
   if (host()->render_view_host() != agent_host->GetRenderViewHost())
     return;
@@ -152,9 +126,16 @@ gfx::Size ExtensionPopup::GetPreferredSize() {
   return sz;
 }
 
+void ExtensionPopup::ViewHierarchyChanged(
+  const ViewHierarchyChangedDetails& details) {
+  // TODO(msw): Find any remaining crashes related to http://crbug.com/327776
+  // No view hierarchy changes are expected if the widget no longer exists.
+  widget_initialized_ |= details.child == this && details.is_add && GetWidget();
+  CHECK(GetWidget() || !widget_initialized_);
+}
+
 void ExtensionPopup::OnWidgetDestroying(views::Widget* widget) {
   BubbleDelegateView::OnWidgetDestroying(widget);
-#if defined(USE_AURA)
   aura::Window* bubble_window = GetWidget()->GetNativeWindow();
   aura::client::ActivationClient* activation_client =
       aura::client::GetActivationClient(bubble_window->GetRootWindow());
@@ -162,46 +143,36 @@ void ExtensionPopup::OnWidgetDestroying(views::Widget* widget) {
   // closed, then the root window and activation client are already destroyed.
   if (activation_client)
     activation_client->RemoveObserver(this);
-#endif
 }
 
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
-  // Dismiss only if the window being activated is not owned by this popup's
-  // window. In particular, don't dismiss when we lose activation to a child
-  // dialog box. Possibly relevant: http://crbug.com/106723 and
-  // http://crbug.com/179786
-  views::Widget* this_widget = GetWidget();
+  // TODO(msw): Find any remaining crashes related to http://crbug.com/327776
+  // No calls are expected if the widget isn't initialized or no longer exists.
+  CHECK(widget_initialized_);
+  CHECK(GetWidget());
 
-  // TODO(msw): Resolve crashes and remove checks. See: http://crbug.com/327776
-  CHECK(!close_on_deactivate());
-  CHECK(this_widget);
-  CHECK(widget);
-
-  gfx::NativeView activated_view = widget->GetNativeView();
-  gfx::NativeView this_view = this_widget->GetNativeView();
-  if (active && !inspect_with_devtools_ && activated_view != this_view &&
-      !IsOwnerOf(activated_view, this_view))
-    this_widget->Close();
+  // Close on anchor window activation (ie. user clicked the browser window).
+  if (!inspect_with_devtools_ && widget && active &&
+      widget->GetNativeWindow() == anchor_widget()->GetNativeWindow())
+    GetWidget()->Close();
 }
 
-#if defined(USE_AURA)
 void ExtensionPopup::OnWindowActivated(aura::Window* gained_active,
                                        aura::Window* lost_active) {
+  // TODO(msw): Find any remaining crashes related to http://crbug.com/327776
+  // No calls are expected if the widget isn't initialized or no longer exists.
+  CHECK(widget_initialized_);
+  CHECK(GetWidget());
+
+  // Close on anchor window activation (ie. user clicked the browser window).
   // DesktopNativeWidgetAura does not trigger the expected browser widget
   // [de]activation events when activating widgets in its own root window.
   // This additional check handles those cases. See: http://crbug.com/320889
-  aura::Window* this_window = GetWidget()->GetNativeWindow();
-  aura::Window* anchor_window = anchor_widget()->GetNativeWindow();
-  chrome::HostDesktopType host_desktop_type =
-      chrome::GetHostDesktopTypeForNativeWindow(this_window);
-  if (!inspect_with_devtools_ && anchor_window == gained_active &&
-      host_desktop_type != chrome::HOST_DESKTOP_TYPE_ASH &&
-      this_window->GetRootWindow() == anchor_window->GetRootWindow() &&
-      wm::GetTransientParent(gained_active) != this_window)
+  if (!inspect_with_devtools_ &&
+      gained_active == anchor_widget()->GetNativeWindow())
     GetWidget()->Close();
 }
-#endif
 
 void ExtensionPopup::ActiveTabChanged(content::WebContents* old_contents,
                                       content::WebContents* new_contents,
@@ -222,27 +193,20 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
       show_action);
   views::BubbleDelegateView::CreateBubble(popup);
 
-#if defined(USE_AURA)
   gfx::NativeView native_view = popup->GetWidget()->GetNativeView();
   wm::SetWindowVisibilityAnimationType(
-      native_view,
-      wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  wm::SetWindowVisibilityAnimationVerticalPosition(
-      native_view,
-      -3.0f);
-#endif
+      native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  wm::SetWindowVisibilityAnimationVerticalPosition(native_view, -3.0f);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
   if (host->did_stop_loading())
     popup->ShowBubble();
 
-#if defined(USE_AURA)
   aura::Window* bubble_window = popup->GetWidget()->GetNativeWindow();
   aura::client::ActivationClient* activation_client =
       aura::client::GetActivationClient(bubble_window->GetRootWindow());
   activation_client->AddObserver(popup);
-#endif
 
   return popup;
 }

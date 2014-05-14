@@ -59,6 +59,10 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
   return base::SysNSStringToUTF8(tooltip);
 }
 
+gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
+  return [[ExtensionPopupController popup] view];
+}
+
 bool BrowserActionTestUtil::HasPopup() {
   return [ExtensionPopupController popup] != nil;
 }

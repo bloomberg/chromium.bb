@@ -8,6 +8,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "ui/gfx/native_widget_types.h"
 
 class Browser;
 class ExtensionAction;
@@ -52,6 +53,8 @@ class BrowserActionTestUtil {
 
   // Returns the current tooltip for the browser action button.
   std::string GetTooltip(int index);
+
+  gfx::NativeView GetPopupNativeView();
 
   // Returns whether a browser action popup is being shown currently.
   bool HasPopup();

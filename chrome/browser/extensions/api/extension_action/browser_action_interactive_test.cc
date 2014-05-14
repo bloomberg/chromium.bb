@@ -9,16 +9,21 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/permissions/permissions_data.h"
+
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif
 
 namespace extensions {
 namespace {
@@ -48,6 +53,19 @@ class BrowserActionInteractiveTest : public ExtensionApiTest {
     return true;
 #endif
   }
+
+  // Open an extension popup via the chrome.browserAction.openPopup API.
+  void OpenExtensionPopupViaAPI() {
+    // Setup the notification observer to wait for the popup to finish loading.
+    content::WindowedNotificationObserver frame_observer(
+        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
+        content::NotificationService::AllSources());
+    // Show first popup in first window and expect it to have loaded.
+    ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
+                                    "open_popup_succeeds.html")) << message_;
+    frame_observer.Wait();
+    EXPECT_TRUE(BrowserActionTestUtil(browser()).HasPopup());
+  }
 };
 
 // Tests opening a popup using the chrome.browserAction.openPopup API. This test
@@ -61,14 +79,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TestOpenPopup) {
   // Setup extension message listener to wait for javascript to finish running.
   ExtensionTestMessageListener listener("ready", true);
   {
-    // Setup the notification observer to wait for the popup to finish loading.
-    content::WindowedNotificationObserver frame_observer(
-        content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-        content::NotificationService::AllSources());
-    // Show first popup in first window and expect it to have loaded.
-    ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
-                                    "open_popup_succeeds.html")) << message_;
-    frame_observer.Wait();
+    OpenExtensionPopupViaAPI();
     EXPECT_TRUE(browserActionBar.HasPopup());
     browserActionBar.HidePopup();
   }
@@ -181,13 +192,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest,
   if (!ShouldRunPopupTest())
     return;
 
-  content::WindowedNotificationObserver frame_observer(
-      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::NotificationService::AllSources());
-  ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
-                                  "open_popup_succeeds.html")) << message_;
-  frame_observer.Wait();
-
+  OpenExtensionPopupViaAPI();
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
   ASSERT_FALSE(PermissionsData::HasAPIPermissionForTab(
@@ -244,18 +249,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, TabSwitchClosesPopup) {
   if (!ShouldRunPopupTest())
     return;
 
-  // Add a second tab to the browser.
+  // Add a second tab to the browser and open an extension popup.
   chrome::NewTab(browser());
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
-
-  // Open an extension popup via the chrome.browserAction.openPopup API.
-  content::WindowedNotificationObserver frame_observer(
-      content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
-      content::NotificationService::AllSources());
-  ASSERT_TRUE(RunExtensionSubtest("browser_action/open_popup",
-                                  "open_popup_succeeds.html")) << message_;
-  frame_observer.Wait();
-  EXPECT_TRUE(BrowserActionTestUtil(browser()).HasPopup());
+  OpenExtensionPopupViaAPI();
 
   // Press CTRL+TAB to change active tabs, the extension popup should close.
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -287,6 +284,34 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, CloseBrowserWithDevTools) {
   chrome::CloseWindow(browser());
 }
 #endif  // TOOLKIT_VIEWS
+
+#if defined(OS_WIN)
+// Test that forcibly closing the browser and popup HWND does not cause a crash.
+IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, DestroyHWNDDoesNotCrash) {
+  if (!ShouldRunPopupTest())
+    return;
+
+  OpenExtensionPopupViaAPI();
+  BrowserActionTestUtil test_util(browser());
+  const gfx::NativeView view = test_util.GetPopupNativeView();
+  EXPECT_NE(static_cast<gfx::NativeView>(NULL), view);
+  const HWND hwnd = views::HWNDForNativeView(view);
+  EXPECT_EQ(hwnd,
+            views::HWNDForNativeView(browser()->window()->GetNativeWindow()));
+  EXPECT_EQ(TRUE, ::IsWindow(hwnd));
+
+  // Create a new browser window to prevent the message loop from terminating.
+  Browser* new_browser = chrome::FindBrowserWithWebContents(
+      browser()->OpenURL(content::OpenURLParams(
+          GURL("about:"), content::Referrer(), NEW_WINDOW,
+          content::PAGE_TRANSITION_TYPED, false)));
+
+  // Forcibly closing the browser HWND should not cause a crash.
+  EXPECT_EQ(TRUE, ::CloseWindow(hwnd));
+  EXPECT_EQ(TRUE, ::DestroyWindow(hwnd));
+  EXPECT_EQ(FALSE, ::IsWindow(hwnd));
+}
+#endif  // OS_WIN
 
 }  // namespace
 }  // namespace extensions

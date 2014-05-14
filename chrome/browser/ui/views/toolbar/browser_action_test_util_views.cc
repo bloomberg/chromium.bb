@@ -71,6 +71,10 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
   return base::UTF16ToUTF8(text);
 }
 
+gfx::NativeView BrowserActionTestUtil::GetPopupNativeView() {
+  return GetContainer(browser_)->TestGetPopup()->GetWidget()->GetNativeView();
+}
+
 bool BrowserActionTestUtil::HasPopup() {
   return GetContainer(browser_)->TestGetPopup() != NULL;
 }
