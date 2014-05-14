@@ -25,7 +25,6 @@
 
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/native_client/src/trusted/plugin/utility.h"
-#include "ppapi/utility/completion_callback_factory.h"
 
 struct NaClFileInfo;
 
@@ -39,7 +38,6 @@ class FileIO;
 
 namespace plugin {
 
-class ErrorInfo;
 class OpenManifestEntryAsyncCallback;
 class Plugin;
 class SrpcClient;
@@ -226,10 +224,10 @@ class ServiceRuntime {
 
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-  bool SetupCommandChannel(ErrorInfo* error_info);
-  bool LoadModule(nacl::DescWrapper* shm, ErrorInfo* error_info);
-  bool InitReverseService(ErrorInfo* error_info);
-  bool StartModule(ErrorInfo* error_info);
+  bool SetupCommandChannel();
+  bool LoadModule(nacl::DescWrapper* shm);
+  bool InitReverseService();
+  bool StartModule();
 
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
@@ -242,15 +240,10 @@ class ServiceRuntime {
 
   PluginReverseInterface* rev_interface_;
 
-  // Mutex to protect exit_status_.
-  // Also, in conjunction with cond_ it is used to signal when
-  // StartSelLdr is complete with either success or error.
+  // Mutex and CondVar to protect start_sel_ldr_done_.
   NaClMutex mu_;
   NaClCondVar cond_;
-  int exit_status_;
   bool start_sel_ldr_done_;
-
-  pp::CompletionCallbackFactory<ServiceRuntime> callback_factory_;
 };
 
 }  // namespace plugin

@@ -521,42 +521,47 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                                 manifest_id,
                                                 this,
                                                 init_done_cb, crash_cb)),
-      exit_status_(-1),
-      start_sel_ldr_done_(false),
-      callback_factory_(this) {
+      start_sel_ldr_done_(false) {
   NaClSrpcChannelInitialize(&command_channel_);
   NaClXMutexCtor(&mu_);
   NaClXCondVarCtor(&cond_);
 }
 
-bool ServiceRuntime::SetupCommandChannel(ErrorInfo* error_info) {
+bool ServiceRuntime::SetupCommandChannel() {
   NaClLog(4, "ServiceRuntime::SetupCommand (this=%p, subprocess=%p)\n",
           static_cast<void*>(this),
           static_cast<void*>(subprocess_.get()));
   if (!subprocess_->SetupCommand(&command_channel_)) {
-    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
-                          "ServiceRuntime: command channel creation failed");
+    if (main_service_runtime_) {
+      ErrorInfo error_info;
+      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+                           "ServiceRuntime: command channel creation failed");
+      plugin_->ReportLoadError(error_info);
+    }
     return false;
   }
   return true;
 }
 
-bool ServiceRuntime::LoadModule(nacl::DescWrapper* nacl_desc,
-                                ErrorInfo* error_info) {
+bool ServiceRuntime::LoadModule(nacl::DescWrapper* nacl_desc) {
   NaClLog(4, "ServiceRuntime::LoadModule"
           " (this=%p, subprocess=%p)\n",
           static_cast<void*>(this),
           static_cast<void*>(subprocess_.get()));
   CHECK(nacl_desc);
   if (!subprocess_->LoadModule(&command_channel_, nacl_desc)) {
-    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
-                          "ServiceRuntime: load module failed");
+    if (main_service_runtime_) {
+      ErrorInfo error_info;
+      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_CMD_CHANNEL,
+                           "ServiceRuntime: load module failed");
+      plugin_->ReportLoadError(error_info);
+    }
     return false;
   }
   return true;
 }
 
-bool ServiceRuntime::InitReverseService(ErrorInfo* error_info) {
+bool ServiceRuntime::InitReverseService() {
   if (uses_nonsfi_mode_) {
     // In non-SFI mode, no reverse service is set up. Just returns success.
     return true;
@@ -571,8 +576,12 @@ bool ServiceRuntime::InitReverseService(ErrorInfo* error_info) {
                                 &out_conn_cap);
 
   if (NACL_SRPC_RESULT_OK != rpc_result) {
-    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SETUP,
-                          "ServiceRuntime: reverse setup rpc failed");
+    if (main_service_runtime_) {
+      ErrorInfo error_info;
+      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SETUP,
+                           "ServiceRuntime: reverse setup rpc failed");
+      plugin_->ReportLoadError(error_info);
+    }
     return false;
   }
   //  Get connection capability to service runtime where the IMC
@@ -582,22 +591,30 @@ bool ServiceRuntime::InitReverseService(ErrorInfo* error_info) {
   nacl::DescWrapper* conn_cap = plugin_->wrapper_factory()->MakeGenericCleanup(
       out_conn_cap);
   if (conn_cap == NULL) {
-    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_WRAPPER,
-                          "ServiceRuntime: wrapper allocation failure");
+    if (main_service_runtime_) {
+      ErrorInfo error_info;
+      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_WRAPPER,
+                           "ServiceRuntime: wrapper allocation failure");
+      plugin_->ReportLoadError(error_info);
+    }
     return false;
   }
   out_conn_cap = NULL;  // ownership passed
   NaClLog(4, "ServiceRuntime::InitReverseService: starting reverse service\n");
   reverse_service_ = new nacl::ReverseService(conn_cap, rev_interface_->Ref());
   if (!reverse_service_->Start()) {
-    error_info->SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
-                          "ServiceRuntime: starting reverse services failed");
+    if (main_service_runtime_) {
+      ErrorInfo error_info;
+      error_info.SetReport(PP_NACL_ERROR_SEL_LDR_COMMUNICATION_REV_SERVICE,
+                           "ServiceRuntime: starting reverse services failed");
+      plugin_->ReportLoadError(error_info);
+    }
     return false;
   }
   return true;
 }
 
-bool ServiceRuntime::StartModule(ErrorInfo* error_info) {
+bool ServiceRuntime::StartModule() {
   // start the module.  otherwise we cannot connect for multimedia
   // subsystem since that is handled by user-level code (not secure!)
   // in libsrpc.
@@ -613,20 +630,28 @@ bool ServiceRuntime::StartModule(ErrorInfo* error_info) {
                                   &load_status);
 
     if (NACL_SRPC_RESULT_OK != rpc_result) {
-      error_info->SetReport(PP_NACL_ERROR_SEL_LDR_START_MODULE,
-                            "ServiceRuntime: could not start nacl module");
+      if (main_service_runtime_) {
+        ErrorInfo error_info;
+        error_info.SetReport(PP_NACL_ERROR_SEL_LDR_START_MODULE,
+                             "ServiceRuntime: could not start nacl module");
+        plugin_->ReportLoadError(error_info);
+      }
       return false;
     }
   }
 
   NaClLog(4, "ServiceRuntime::StartModule (load_status=%d)\n", load_status);
-  if (main_service_runtime_) {
+  if (main_service_runtime_)
     plugin_->ReportSelLdrLoadStatus(load_status);
-  }
+
   if (LOAD_OK != load_status) {
-    error_info->SetReport(
-        PP_NACL_ERROR_SEL_LDR_START_STATUS,
-        NaClErrorString(static_cast<NaClErrorCode>(load_status)));
+    if (main_service_runtime_) {
+      ErrorInfo error_info;
+      error_info.SetReport(
+          PP_NACL_ERROR_SEL_LDR_START_STATUS,
+          NaClErrorString(static_cast<NaClErrorCode>(load_status)));
+      plugin_->ReportLoadError(error_info);
+    }
     return false;
   }
   return true;
@@ -705,16 +730,11 @@ bool ServiceRuntime::LoadNexeAndStart(nacl::DescWrapper* nacl_desc,
                                       const pp::CompletionCallback& crash_cb) {
   NaClLog(4, "ServiceRuntime::LoadNexeAndStart (nacl_desc=%p)\n",
           reinterpret_cast<void*>(nacl_desc));
-  ErrorInfo error_info;
-
-  bool ok = SetupCommandChannel(&error_info) &&
-            InitReverseService(&error_info) &&
-            LoadModule(nacl_desc, &error_info) &&
-            StartModule(&error_info);
+  bool ok = SetupCommandChannel() &&
+            InitReverseService() &&
+            LoadModule(nacl_desc) &&
+            StartModule();
   if (!ok) {
-    if (main_service_runtime_) {
-      plugin_->ReportLoadError(error_info);
-    }
     // On a load failure the service runtime does not crash itself to
     // avoid a race where the no-more-senders error on the reverse
     // channel esrvice thread might cause the crash-detection logic to
@@ -797,9 +817,8 @@ ServiceRuntime::~ServiceRuntime() {
           static_cast<void*>(this));
   // We do this just in case Shutdown() was not called.
   subprocess_.reset(NULL);
-  if (reverse_service_ != NULL) {
+  if (reverse_service_ != NULL)
     reverse_service_->Unref();
-  }
 
   rev_interface_->Unref();
 
