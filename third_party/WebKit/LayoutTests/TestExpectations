@@ -13,15 +13,8 @@ crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.htm
 crbug.com/364267 [ Win Mac ] http/tests/security/webgl-remote-read-remote-image-blocked-no-crossorigin.html [ Pass Timeout ]
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
-# -----------------------------------------------------------------
-# Inspector tests
-# -----------------------------------------------------------------
 
 crbug.com/364088 inspector/audits/audits-panel-noimages-functional.html [ Pass Failure ]
-
-# -----------------------------------------------------------------
-# Plugin tests
-# -----------------------------------------------------------------
 
 crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
 
@@ -930,7 +923,6 @@ crbug.com/364614 [ Mac ] fast/scroll-behavior/sub-frame-scroll.html [ Failure ]
 
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
-#crbug.com/316145 [ XP ] fast/text/justify-ideograph-complex.html [ Failure Pass ]
 
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 crbug.com/310323 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock-prefixed.html [ Crash Pass ]
@@ -1063,9 +1055,6 @@ crbug.com/342574 [ Debug ] fast/css-generated-content/crash-selection-editing-re
 
 crbug.com/346151 css3/filters/effect-reference-hidpi-hw.html [ Pass ImageOnlyFailure ]
 
-# crbug.com/333242 svg/dynamic-updates/SVGUseElement-dom-href1-attr.html [ Pass ImageOnlyFailure ]
-# crbug.com/333242 svg/dynamic-updates/SVGUseElement-svgdom-href1-prop.html [ Pass ImageOnlyFailure ]
-
 crbug.com/337732 fast/css/fontfaceset-download-error.html [ Pass Timeout ]
 
 crbug.com/349552 [ Android ] compositing/animation/animated-composited-inside-hidden.html [ Pass Timeout ]
@@ -1088,6 +1077,8 @@ crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-001.html [ Skip ]
 crbug.com/323130 w3c/web-platform-tests/shadow-dom/styles/test-002.html [ Skip ]
 
 crbug.com/246077 [ Linux ] virtual/android/fullscreen/parent-flow-inline-with-block-child.html [ Failure ]
+
+crbug.com/373072 fast/loader/resource-request-callbacks.html [ Pass Failure ]
 
 crbug.com/338475 crbug.com/307777 [ Android ] css1/cascade/important.html [ Failure Timeout ]
 crbug.com/338475 crbug.com/307777 [ Android ] css1/classification/list_style.html [ Failure Timeout ]
