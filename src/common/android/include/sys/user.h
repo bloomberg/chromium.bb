@@ -192,13 +192,18 @@ struct user_fpregs_struct {
 };
 
 #elif defined(__x86_64__)
-#include <sys/types.h>
-#include_next <sys/user.h>
 
-// This struct is essentially the same as user_i387_struct in sys/user.h
+// Bionic's user_fpregs_struct calls the tag word twd instead of ftw.  To avoid
+// changing lots of Bionic, uUse an ugly macro renaming trick with
+// #include_next.
+// TODO(rmcilroy): Remove when NDK headers are fixed.
+#define user_fpregs_struct __bionic_user_fpregs_struct
+#include_next <sys/user.h>
+#undef user_fpregs_struct
+
+// This struct is the same as user_fpregs_struct in Bionic's sys/user.h
 // except that the struct name and individual field names are chosen here
 // to match the ones used in breakpad for other x86_64 platforms.
-
 struct user_fpregs_struct {
   __u16 cwd;
   __u16 swd;
