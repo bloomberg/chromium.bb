@@ -123,9 +123,16 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
           gfx::ToCeiledInt(image.width() * scale),
           gfx::ToCeiledInt(image.height() * scale));
     } else if (!unscaled) {
-      image = PlatformScaleImage(image,
-                                 ui::GetScaleForScaleFactor(scale_factor),
-                                 scale);
+      SkBitmap scaled_image =
+          PlatformScaleImage(image,
+                             ui::GetScaleForScaleFactor(scale_factor),
+                             scale);
+      if (scaled_image.isNull())
+        scale = GetScaleForScaleFactor(scale_factor);
+      else
+        image = scaled_image;
+    } else {
+      scale = GetScaleForScaleFactor(scale_factor);
     }
     return gfx::ImageSkiaRep(image, unscaled ? 0.0f : scale);
   }
@@ -811,7 +818,7 @@ bool ResourceBundle::DecodePNG(const unsigned char* buf,
 SkBitmap ResourceBundle::PlatformScaleImage(const SkBitmap& image,
                                             float loaded_image_scale,
                                             float desired_scale) {
-  return image;
+  return SkBitmap();
 }
 #endif
 

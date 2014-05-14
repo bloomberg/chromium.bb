@@ -358,10 +358,10 @@ class UI_BASE_EXPORT ResourceBundle {
   // |image| is the bitmap to be scaled.
   // |loaded_image_scale| is the current scale of the bitmap.
   // |desired_scale| is the desired scale of the bitmap.
-  // Returns the scaled bitmap or the original bitmap.
- static SkBitmap PlatformScaleImage(const SkBitmap& image,
-                                    float loaded_image_scale,
-                                    float desired_scale);
+  // Returns the scaled bitmap or null bitmap if scaling is disabled.
+  static SkBitmap PlatformScaleImage(const SkBitmap& image,
+                                     float loaded_image_scale,
+                                     float desired_scale);
 
   // This pointer is guaranteed to outlive the ResourceBundle instance and may
   // be NULL.
