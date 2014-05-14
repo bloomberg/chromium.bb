@@ -91,7 +91,7 @@ class IPCMessageParameterTest : public testing::Test {
     bool msg_is_ok = true;
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(IPCMessageParameterTest, message,
-                                     msg_is_ok, std::string, &extra_param_) 
+                                     msg_is_ok, &extra_param_)
       IPC_MESSAGE_HANDLER(TestMsgClassEmpty, OnEmpty)
       IPC_MESSAGE_HANDLER(TestMsgClassI, OnInt)
       //IPC_MESSAGE_HANDLER(TestMsgClassIS, OnSync)

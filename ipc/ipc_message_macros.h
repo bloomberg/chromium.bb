@@ -897,26 +897,36 @@
 
 
 #define IPC_BEGIN_MESSAGE_MAP_EX(class_name, msg, msg_is_ok) \
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, msg_is_ok, void, NULL)
+  { \
+    typedef class_name _IpcMessageHandlerClass; \
+    void* param__ = NULL; \
+    const IPC::Message& ipc_message__ = msg; \
+    bool& msg_is_ok__ = msg_is_ok; \
+    switch (ipc_message__.type()) {
 
 #define IPC_BEGIN_MESSAGE_MAP(class_name, msg) \
   { \
     typedef class_name _IpcMessageHandlerClass; \
-    typedef void _ParamClass; \
-    _ParamClass* param__ = NULL; \
+    void* param__ = NULL; \
     const IPC::Message& ipc_message__ = msg; \
     bool msg_is_ok__ = true; \
-    switch (ipc_message__.type()) { \
+    switch (ipc_message__.type()) {
 
-#define IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, msg_is_ok,           \
-                                         param_type, param)                    \
+// gcc gives the following error now when using decltype so type typeof there:
+//   error: identifier 'decltype' will become a keyword in C++0x [-Werror=c++0x-compat]
+#if defined(OS_WIN)
+#define IPC_DECLTYPE decltype
+#else
+#define IPC_DECLTYPE typeof
+#endif
+
+#define IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, msg_is_ok, param)    \
   {                                                                            \
     typedef class_name _IpcMessageHandlerClass;                                \
-    typedef param_type _ParamClass;                                            \
-    _ParamClass* param__ = param;                                              \
+    IPC_DECLTYPE(param) param__ = param;                                       \
     const IPC::Message& ipc_message__ = msg;                                   \
     bool& msg_is_ok__ = msg_is_ok;                                             \
-    switch (ipc_message__.type()) {                                            \
+    switch (ipc_message__.type()) {
 
 #define IPC_MESSAGE_FORWARD(msg_class, obj, member_func)                       \
     case msg_class::ID: {                                                      \
