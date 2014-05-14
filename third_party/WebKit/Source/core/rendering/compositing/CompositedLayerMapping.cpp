@@ -456,13 +456,16 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration(GraphicsLayerUpdat
     }
 
     bool hasChildClippingLayer = compositor->clipsCompositingDescendants(&m_owningLayer) && (hasClippingLayer() || hasScrollingLayer());
-    // If we have a border radius on a scrolling layer, we need a clipping mask to properly clip the scrolled contents,
-    // even if there are no composited descendants.
-    // FIXME: This also needs to be extended to include clip path for scrolled layers.
-    bool needsChildClippingMaskForScrollableBorderRadius = renderer->style()->hasBorderRadius() && hasScrollingLayer();
-    bool needsChildClippingMask = needsChildClippingMaskForScrollableBorderRadius || ((renderer->style()->clipPath() || renderer->style()->hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(renderer)));
+    // If we have a border radius or clip path on a scrolling layer, we need a clipping mask to properly
+    // clip the scrolled contents, even if there are no composited descendants.
+    bool hasClipPath = renderer->style()->clipPath();
+    bool needsChildClippingMask = (hasClipPath || renderer->style()->hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(renderer) || hasScrollingLayer());
     if (updateClippingMaskLayers(needsChildClippingMask)) {
-        if (hasClippingLayer())
+        // Clip path clips the entire subtree, including scrollbars. It must be attached directly onto
+        // the main m_graphicsLayer.
+        if (hasClipPath)
+            m_graphicsLayer->setMaskLayer(m_childClippingMaskLayer.get());
+        else if (hasClippingLayer())
             clippingLayer()->setMaskLayer(m_childClippingMaskLayer.get());
         else if (hasScrollingLayer())
             scrollingLayer()->setMaskLayer(m_childClippingMaskLayer.get());
@@ -703,6 +706,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
     if (oldSize != contentsSize)
         m_graphicsLayer->setSize(contentsSize);
 
+    bool hasClipPath = renderer()->style()->clipPath();
+
     // If we have a layer that clips children, position it.
     IntRect clippingBox;
     if (GraphicsLayer* clipLayer = clippingLayer()) {
@@ -710,7 +715,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
         clipLayer->setPosition(FloatPoint(clippingBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
         clipLayer->setSize(clippingBox.size());
         clipLayer->setOffsetFromRenderer(toIntSize(clippingBox.location()));
-        if (m_childClippingMaskLayer && !m_scrollingLayer) {
+        if (m_childClippingMaskLayer && !m_scrollingLayer && !hasClipPath) {
             m_childClippingMaskLayer->setPosition(clipLayer->position());
             m_childClippingMaskLayer->setSize(clipLayer->size());
             m_childClippingMaskLayer->setOffsetFromRenderer(clipLayer->offsetFromRenderer());
@@ -814,7 +819,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
         IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromRenderer();
         m_scrollingLayer->setOffsetFromRenderer(-toIntSize(clientBox.location()));
 
-        if (m_childClippingMaskLayer) {
+        if (m_childClippingMaskLayer && !hasClipPath) {
             m_childClippingMaskLayer->setPosition(m_scrollingLayer->position());
             m_childClippingMaskLayer->setSize(m_scrollingLayer->size());
             m_childClippingMaskLayer->setOffsetFromRenderer(toIntSize(clientBox.location()));
@@ -842,6 +847,15 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::U
             m_foregroundLayer->setNeedsDisplay();
             m_foregroundLayer->setOffsetFromRenderer(m_scrollingContentsLayer->offsetFromRenderer());
         }
+    }
+
+    if (m_childClippingMaskLayer && hasClipPath) {
+        RenderBox* renderBox = toRenderBox(renderer());
+        IntRect clientBox = enclosingIntRect(renderBox->clientBoxRect());
+
+        m_childClippingMaskLayer->setPosition(m_graphicsLayer->position());
+        m_childClippingMaskLayer->setSize(m_graphicsLayer->size());
+        m_childClippingMaskLayer->setOffsetFromRenderer(toIntSize(clientBox.location()));
     }
 
     {
