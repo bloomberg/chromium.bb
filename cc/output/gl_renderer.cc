@@ -175,6 +175,10 @@ SamplerType SamplerTypeFromTextureTarget(GLenum target) {
 // determine when anti-aliasing is unnecessary.
 const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
 
+// Block or crash if the number of pending sync queries reach this high as
+// something is seriously wrong on the service side if this happens.
+const size_t kMaxPendingSyncQueries = 16;
+
 }  // anonymous namespace
 
 class GLRenderer::ScopedUseGrContext {
@@ -246,6 +250,11 @@ class GLRenderer::SyncQuery {
     gl_->GetQueryObjectuivEXT(
         query_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
     return !available;
+  }
+
+  void Wait() {
+    unsigned result = 0;
+    gl_->GetQueryObjectuivEXT(query_id_, GL_QUERY_RESULT_EXT, &result);
   }
 
  private:
@@ -441,6 +450,15 @@ void GLRenderer::BeginDrawingFrame(DrawingFrame* frame) {
 
   scoped_refptr<ResourceProvider::Fence> read_lock_fence;
   if (use_sync_query_) {
+    // Block until oldest sync query has passed if the number of pending queries
+    // ever reach kMaxPendingSyncQueries.
+    if (pending_sync_queries_.size() >= kMaxPendingSyncQueries) {
+      LOG(ERROR) << "Reached limit of pending sync queries.";
+
+      pending_sync_queries_.front()->Wait();
+      DCHECK(!pending_sync_queries_.front()->IsPending());
+    }
+
     while (!pending_sync_queries_.empty()) {
       if (pending_sync_queries_.front()->IsPending())
         break;
