@@ -63,6 +63,7 @@ DocumentLifecycle::DeprecatedTransition::~DeprecatedTransition()
 
 DocumentLifecycle::DocumentLifecycle()
     : m_state(Uninitialized)
+    , m_detachCount(0)
 {
 }
 
