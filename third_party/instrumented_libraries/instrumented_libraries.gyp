@@ -212,7 +212,11 @@
     {
       'library_name': 'libnspr4',
       'dependencies=': [],
-      'extra_configure_flags': '--enable-64bit',
+      'extra_configure_flags': [
+        '--enable-64bit',
+        # TSan reports data races on debug variables.
+        '--disable-debug',
+      ],
       'run_before_build': 'libnspr4.sh',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
