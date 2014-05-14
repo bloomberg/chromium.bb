@@ -110,14 +110,6 @@ struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp) {
   return ndp;
 }
 
-/*
- * DEPRECATED, here for backwards compatibility.  See header file for
- * details.
- */
-struct NaClDesc *NaClDescIoDescMakeFromHandle(NaClHandle handle) {
-  return NaClDescIoDescFromHandleAllocCtor(handle, NACL_ABI_O_RDWR);
-}
-
 struct NaClDesc *NaClDescIoDescFromHandleAllocCtor(NaClHandle handle,
                                                    int flags) {
   int posix_d;

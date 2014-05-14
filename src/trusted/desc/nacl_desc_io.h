@@ -48,21 +48,6 @@ int NaClDescIoDescCtor(struct NaClDescIoDesc  *self,
 struct NaClDescIoDesc *NaClDescIoDescMake(struct NaClHostDesc *nhdp);
 
 /*
- * DEPRECATED.  NaClDescIoDescMakeFromHandle always claims that the
- * handle was opened for NACL_ABI_O_RDWR.  On Windows, this breaks
- * mmap for read-only descriptors.  Use
- * NaClDescIoDescFromHandleAllocCtor below instead.
- *
- * TODO(bsy): remove this interface.  This cannot be removed until a
- * DEPS roll to expose the replacement function
- * NaClDescIoDescFromHandleAllocCtor and the Chrome IPC adapter is
- * modified to use it instead of this interface.
- * https://code.google.com/p/chromium/issues/detail?id=183015 should
- * track this effort.
- */
-struct NaClDesc *NaClDescIoDescMakeFromHandle(NaClHandle handle);
-
-/*
  * NaClDescIoDescFromHandleAllocCtor takes ownership of the |handle|
  * argument -- when the returned NaClDesc object is destroyed
  * (refcount goes to 0), the handle will be closed.  The |flags|
