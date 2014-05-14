@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -15,8 +14,6 @@
 #include "content/browser/browser_plugin/test_browser_plugin_guest_delegate.h"
 #include "content/browser/browser_plugin/test_guest_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
@@ -26,7 +23,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -586,131 +582,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DoNotCrashOnInvalidNavigation) {
       base::StringPrintf("SetSrc('%s://abc123');", kGuestScheme));
   EXPECT_TRUE(delegate->load_aborted());
   EXPECT_TRUE(delegate->load_aborted_url().is_valid());
-}
-
-// Tests involving the threaded compositor.
-class BrowserPluginThreadedCompositorTest : public BrowserPluginHostTest {
- public:
-  BrowserPluginThreadedCompositorTest() {}
-  virtual ~BrowserPluginThreadedCompositorTest() {}
-
- protected:
-  virtual void SetUpCommandLine(CommandLine* cmd) OVERRIDE {
-    BrowserPluginHostTest::SetUpCommandLine(cmd);
-    cmd->AppendSwitch(switches::kEnableThreadedCompositing);
-  }
-};
-
-class BrowserPluginThreadedCompositorPixelTest
-    : public BrowserPluginThreadedCompositorTest {
- protected:
-  virtual void SetUp() OVERRIDE {
-    EnablePixelOutput();
-    BrowserPluginThreadedCompositorTest::SetUp();
-  }
-};
-
-static void CompareSkBitmaps(const SkBitmap& expected_bitmap,
-                             const SkBitmap& bitmap) {
-  EXPECT_EQ(expected_bitmap.width(), bitmap.width());
-  if (expected_bitmap.width() != bitmap.width())
-    return;
-  EXPECT_EQ(expected_bitmap.height(), bitmap.height());
-  if (expected_bitmap.height() != bitmap.height())
-    return;
-  EXPECT_EQ(expected_bitmap.config(), bitmap.config());
-  if (expected_bitmap.config() != bitmap.config())
-    return;
-
-  SkAutoLockPixels expected_bitmap_lock(expected_bitmap);
-  SkAutoLockPixels bitmap_lock(bitmap);
-  int fails = 0;
-  const int kAllowableError = 2;
-  for (int i = 0; i < bitmap.width() && fails < 10; ++i) {
-    for (int j = 0; j < bitmap.height() && fails < 10; ++j) {
-      SkColor expected_color = expected_bitmap.getColor(i, j);
-      SkColor color = bitmap.getColor(i, j);
-      int expected_alpha = SkColorGetA(expected_color);
-      int alpha = SkColorGetA(color);
-      int expected_red = SkColorGetR(expected_color);
-      int red = SkColorGetR(color);
-      int expected_green = SkColorGetG(expected_color);
-      int green = SkColorGetG(color);
-      int expected_blue = SkColorGetB(expected_color);
-      int blue = SkColorGetB(color);
-      EXPECT_NEAR(expected_alpha, alpha, kAllowableError)
-          << "expected_color: " << std::hex << expected_color
-          << " color: " <<  color
-          << " Failed at " << std::dec << i << ", " << j
-          << " Failure " << ++fails;
-      EXPECT_NEAR(expected_red, red, kAllowableError)
-          << "expected_color: " << std::hex << expected_color
-          << " color: " <<  color
-          << " Failed at " << std::dec << i << ", " << j
-          << " Failure " << ++fails;
-      EXPECT_NEAR(expected_green, green, kAllowableError)
-          << "expected_color: " << std::hex << expected_color
-          << " color: " <<  color
-          << " Failed at " << std::dec << i << ", " << j
-          << " Failure " << ++fails;
-      EXPECT_NEAR(expected_blue, blue, kAllowableError)
-          << "expected_color: " << std::hex << expected_color
-          << " color: " <<  color
-          << " Failed at " << std::dec << i << ", " << j
-          << " Failure " << ++fails;
-    }
-  }
-  EXPECT_LT(fails, 10);
-}
-
-static void CompareSkBitmapAndRun(const base::Closure& callback,
-                                  const SkBitmap& expected_bitmap,
-                                  bool *result,
-                                  bool succeed,
-                                  const SkBitmap& bitmap) {
-  *result = succeed;
-  if (succeed)
-    CompareSkBitmaps(expected_bitmap, bitmap);
-  callback.Run();
-}
-
-// Mac: http://crbug.com/171744
-// Aura/Ubercomp: http://crbug.com//327035
-#if defined(OS_MACOSX) || defined(USE_AURA)
-#define MAYBE_GetBackingStore DISABLED_GetBackingStore
-#else
-#define MAYBE_GetBackingStore GetBackingStore
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserPluginThreadedCompositorPixelTest,
-                       MAYBE_GetBackingStore) {
-  const char kEmbedderURL[] = "/browser_plugin_embedder.html";
-  const char kHTMLForGuest[] =
-      "data:text/html,<html><style>body { background-color: red; }</style>"
-      "<body></body></html>";
-  StartBrowserPluginTest(kEmbedderURL, kHTMLForGuest, true,
-                         std::string("SetSize(50, 60);"));
-
-  WebContentsImpl* guest_contents = test_guest()->web_contents();
-  RenderWidgetHostImpl* guest_widget_host =
-      RenderWidgetHostImpl::From(guest_contents->GetRenderViewHost());
-
-  SkBitmap expected_bitmap;
-  expected_bitmap.setConfig(SkBitmap::kARGB_8888_Config, 50, 60);
-  expected_bitmap.allocPixels();
-  expected_bitmap.eraseARGB(255, 255, 0, 0);  // #f00
-  bool result = false;
-  while (!result) {
-    base::RunLoop loop;
-    guest_widget_host->CopyFromBackingStore(
-        gfx::Rect(),
-        guest_widget_host->GetView()->GetViewBounds().size(),
-        base::Bind(&CompareSkBitmapAndRun,
-                   loop.QuitClosure(),
-                   expected_bitmap,
-                   &result),
-        SkBitmap::kARGB_8888_Config);
-    loop.Run();
-  }
 }
 
 // This test exercises the following scenario:
