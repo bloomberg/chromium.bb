@@ -258,7 +258,7 @@ DriveIntegrationService::DriveIntegrationService(
   drive_app_registry_.reset(new DriveAppRegistry(drive_service_.get()));
 
   resource_metadata_.reset(new internal::ResourceMetadata(
-      metadata_storage_.get(), blocking_task_runner_));
+      metadata_storage_.get(), cache_.get(), blocking_task_runner_));
 
   file_system_.reset(
       test_file_system ? test_file_system : new FileSystem(

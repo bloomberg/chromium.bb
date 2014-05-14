@@ -11,6 +11,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -139,8 +141,16 @@ class ResourceMetadataTest : public testing::Test {
         temp_dir_.path(), base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
+    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
+    cache_.reset(new FileCache(metadata_storage_.get(),
+                               temp_dir_.path(),
+                               base::MessageLoopProxy::current().get(),
+                               fake_free_disk_space_getter_.get()));
+    ASSERT_TRUE(cache_->Initialize());
+
     resource_metadata_.reset(new ResourceMetadata(
-        metadata_storage_.get(), base::MessageLoopProxy::current()));
+        metadata_storage_.get(), cache_.get(),
+        base::MessageLoopProxy::current()));
 
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
@@ -151,6 +161,8 @@ class ResourceMetadataTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
       metadata_storage_;
+  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
 };

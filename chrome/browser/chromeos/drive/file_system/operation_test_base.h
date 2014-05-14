@@ -116,11 +116,11 @@ class OperationTestBase : public testing::Test {
   base::SequencedTaskRunner* blocking_task_runner() {
     return blocking_task_runner_.get();
   }
-  internal::ResourceMetadata* metadata() { return metadata_.get(); }
   FakeFreeDiskSpaceGetter* fake_free_disk_space_getter() {
     return fake_free_disk_space_getter_.get();
   }
   internal::FileCache* cache() { return cache_.get(); }
+  internal::ResourceMetadata* metadata() { return metadata_.get(); }
   internal::LoaderController* loader_controller() {
     return loader_controller_.get();
   }
@@ -140,10 +140,10 @@ class OperationTestBase : public testing::Test {
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<internal::ResourceMetadataStorage,
              test_util::DestroyHelperForTests> metadata_storage_;
-  scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
-      metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
   scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
+      metadata_;
   scoped_ptr<internal::AboutResourceLoader> about_resource_loader_;
   scoped_ptr<internal::LoaderController> loader_controller_;
   scoped_ptr<internal::ChangeListLoader> change_list_loader_;

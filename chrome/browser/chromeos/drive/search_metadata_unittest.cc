@@ -55,6 +55,7 @@ class SearchMetadataTest : public testing::Test {
 
     resource_metadata_.reset(
         new ResourceMetadata(metadata_storage_.get(),
+                             cache_.get(),
                              base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 

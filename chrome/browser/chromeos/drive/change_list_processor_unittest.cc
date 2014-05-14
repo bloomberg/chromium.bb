@@ -8,6 +8,8 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
@@ -100,8 +102,16 @@ class ChangeListProcessorTest : public testing::Test {
         temp_dir_.path(), base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
+    fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
+    cache_.reset(new FileCache(metadata_storage_.get(),
+                               temp_dir_.path(),
+                               base::MessageLoopProxy::current().get(),
+                               fake_free_disk_space_getter_.get()));
+    ASSERT_TRUE(cache_->Initialize());
+
     metadata_.reset(new internal::ResourceMetadata(
-        metadata_storage_.get(), base::MessageLoopProxy::current()));
+        metadata_storage_.get(), cache_.get(),
+        base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
   }
 
@@ -151,6 +161,8 @@ class ChangeListProcessorTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_ptr<ResourceMetadataStorage,
              test_util::DestroyHelperForTests> metadata_storage_;
+  scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
+  scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
 };
 

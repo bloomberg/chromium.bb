@@ -24,6 +24,8 @@ typedef std::vector<ResourceEntry> ResourceEntryVector;
 
 namespace internal {
 
+class FileCache;
+
 // Storage for Drive Metadata.
 // All methods except the constructor and Destroy() function must be run with
 // |blocking_task_runner| unless otherwise noted.
@@ -33,6 +35,7 @@ class ResourceMetadata {
 
   ResourceMetadata(
       ResourceMetadataStorage* storage,
+      FileCache* cache,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   // Initializes this object.
@@ -129,6 +132,7 @@ class ResourceMetadata {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   ResourceMetadataStorage* storage_;
+  FileCache* cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMetadata);
 };

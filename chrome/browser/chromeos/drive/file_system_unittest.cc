@@ -116,7 +116,8 @@ class FileSystemTest : public testing::Test {
     ASSERT_TRUE(cache_->Initialize());
 
     resource_metadata_.reset(new internal::ResourceMetadata(
-        metadata_storage_.get(), base::MessageLoopProxy::current()));
+        metadata_storage_.get(), cache_.get(),
+        base::MessageLoopProxy::current()));
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
     const base::FilePath temp_file_dir = temp_dir_.path().AppendASCII("tmp");
@@ -209,9 +210,17 @@ class FileSystemTest : public testing::Test {
         new internal::ResourceMetadataStorage(
             metadata_dir, base::MessageLoopProxy::current().get()));
 
+    const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
+    scoped_ptr<internal::FileCache, test_util::DestroyHelperForTests> cache(
+        new internal::FileCache(metadata_storage.get(),
+                                cache_dir,
+                                base::MessageLoopProxy::current().get(),
+                                fake_free_disk_space_getter_.get()));
+
     scoped_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
         resource_metadata(new internal::ResourceMetadata(
-            metadata_storage_.get(), base::MessageLoopProxy::current()));
+            metadata_storage_.get(), cache.get(),
+            base::MessageLoopProxy::current()));
 
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->Initialize());
 

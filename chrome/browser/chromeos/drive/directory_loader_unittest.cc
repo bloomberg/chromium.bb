@@ -86,15 +86,16 @@ class DirectoryLoaderTest : public testing::Test {
         temp_dir_.path(), base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
-    metadata_.reset(new ResourceMetadata(
-        metadata_storage_.get(), base::MessageLoopProxy::current().get()));
-    ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
-
     cache_.reset(new FileCache(metadata_storage_.get(),
                                temp_dir_.path(),
                                base::MessageLoopProxy::current().get(),
                                NULL /* free_disk_space_getter */));
     ASSERT_TRUE(cache_->Initialize());
+
+    metadata_.reset(new ResourceMetadata(
+        metadata_storage_.get(), cache_.get(),
+        base::MessageLoopProxy::current().get()));
+    ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
     loader_controller_.reset(new LoaderController);
@@ -131,8 +132,8 @@ class DirectoryLoaderTest : public testing::Test {
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<ResourceMetadataStorage,
              test_util::DestroyHelperForTests> metadata_storage_;
-  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
+  scoped_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   scoped_ptr<AboutResourceLoader> about_resource_loader_;
   scoped_ptr<LoaderController> loader_controller_;
   scoped_ptr<DirectoryLoader> directory_loader_;

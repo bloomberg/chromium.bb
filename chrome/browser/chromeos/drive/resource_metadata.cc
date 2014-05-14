@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "content/public/browser/browser_thread.h"
@@ -59,9 +60,11 @@ FileError EntryCanUseName(ResourceMetadataStorage* storage,
 
 ResourceMetadata::ResourceMetadata(
     ResourceMetadataStorage* storage,
+    FileCache* cache,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner),
-      storage_(storage) {
+      storage_(storage),
+      cache_(cache) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -578,6 +581,11 @@ FileError ResourceMetadata::RemoveEntryRecursively(const std::string& id) {
         return error;
     }
   }
+
+  error = cache_->Remove(id);
+  if (error != FILE_ERROR_OK)
+    return error;
+
   return storage_->RemoveEntry(id);
 }
 
