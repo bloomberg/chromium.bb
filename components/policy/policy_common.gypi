@@ -203,6 +203,8 @@
         'core/common/policy_map.h',
         'core/common/policy_namespace.cc',
         'core/common/policy_namespace.h',
+        'core/common/policy_pref_names.cc',
+        'core/common/policy_pref_names.h',
         'core/common/policy_service.cc',
         'core/common/policy_service.h',
         'core/common/policy_service_stub.cc',

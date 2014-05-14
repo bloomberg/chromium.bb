@@ -11,6 +11,7 @@
     '../ui/base/ui_base.gyp:ui_base',
     '../url/url.gyp:url_lib',
     'components_strings.gyp:components_strings',
+    'url_matcher',
     'user_prefs',
   ],
   'defines': [
@@ -34,7 +35,6 @@
         'autofill_core_common',
         'cloud_policy_proto',
         'policy',
-        'url_matcher',
       ],
       'sources': [
         'core/browser/autofill_policy_handler.cc',

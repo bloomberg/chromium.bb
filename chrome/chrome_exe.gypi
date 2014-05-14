@@ -501,7 +501,6 @@
             '../breakpad/breakpad.gyp:breakpad_sender',
             '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../components/components.gyp:breakpad_component',
-            '../components/components.gyp:policy',
             '../sandbox/sandbox.gyp:sandbox',
           ],
           'sources': [
@@ -534,6 +533,13 @@
               ],
             },
           },
+          'conditions': [
+            ['configuration_policy==1', {
+              'dependencies': [
+                '<(DEPTH)/components/components.gyp:policy',
+              ],
+            }],
+          ],
           'actions': [
             {
               'action_name': 'first_run',
@@ -628,7 +634,6 @@
                 '../breakpad/breakpad.gyp:breakpad_sender_win64',
                 '../components/components.gyp:breakpad_win64',
                 '../chrome/common_constants.gyp:common_constants_win64',
-                '../components/components.gyp:policy_win64',
                 '../components/nacl.gyp:nacl_win64',
                 '../crypto/crypto.gyp:crypto_nacl_win64',
                 '../ipc/ipc.gyp:ipc_win64',
@@ -652,6 +657,13 @@
                   'msvs_target_platform': 'x64',
                 },
               },
+              'conditions': [
+                ['configuration_policy==1', {
+                  'dependencies': [
+                    '<(DEPTH)/components/components.gyp:policy_win64',
+                  ],
+                }],
+              ],
             },
           ],
         }, {  # else (disable_nacl==1)

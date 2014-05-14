@@ -11,10 +11,16 @@
         '..',
       ],
       'dependencies': [
-        'policy_path_parser',
         '../base/base.gyp:base',
         '../chrome/chrome.gyp:metro_utils',
         '../chrome/common_constants.gyp:common_constants',
+      ],
+      'conditions': [
+        ['configuration_policy==1', {
+          'dependencies': [
+            'policy_path_parser'
+          ],
+        }],
       ],
       'sources': [
         'browser/chrome_process_finder_win.cc',
