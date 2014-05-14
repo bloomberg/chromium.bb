@@ -804,6 +804,8 @@
         'test/ash_test_base.h',
         'test/ash_test_helper.cc',
         'test/ash_test_helper.h',
+        'test/ash_test_views_delegate.cc',
+        'test/ash_test_views_delegate.h',
         'test/cursor_manager_test_api.cc',
         'test/cursor_manager_test_api.h',
         'test/display_manager_test_api.cc',

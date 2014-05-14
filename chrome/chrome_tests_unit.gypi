@@ -1448,8 +1448,6 @@
         'browser/ui/ash/multi_user/multi_user_window_manager_chromeos_unittest.cc',
         'browser/ui/ash/screenshot_taker_unittest.cc',
         'browser/ui/ash/session_state_delegate_chromeos_unittest.cc',
-        'browser/ui/ash/test_views_delegate_with_parent.cc',
-        'browser/ui/ash/test_views_delegate_with_parent.h',
         'browser/ui/ash/window_positioner_unittest.cc',
         'browser/ui/autofill/account_chooser_model_unittest.cc',
         'browser/ui/autofill/autofill_dialog_controller_unittest.cc',

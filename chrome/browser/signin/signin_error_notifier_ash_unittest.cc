@@ -13,7 +13,6 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_notifier_factory_ash.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/ui/ash/test_views_delegate_with_parent.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -63,8 +62,6 @@ class ScreenTypeDelegateDesktop : public gfx::ScreenTypeDelegate {
 class SigninErrorNotifierTest : public AshTestBase {
  public:
   virtual void SetUp() OVERRIDE {
-    views::ViewsDelegate::views_delegate = &views_delegate_;
-
     // Create a signed-in profile.
     TestingProfile::Builder builder;
     builder.AddTestingFactory(SigninManagerFactory::GetInstance(),
@@ -111,7 +108,6 @@ class SigninErrorNotifierTest : public AshTestBase {
   scoped_ptr<TestingProfile> profile_;
   SigninErrorController* error_controller_;
   NotificationUIManager* notification_ui_manager_;
-  TestViewsDelegateWithParent views_delegate_;
 };
 
 TEST_F(SigninErrorNotifierTest, NoErrorAuthStatusProviders) {

@@ -11,7 +11,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/sync_error_controller.h"
-#include "chrome/browser/ui/ash/test_views_delegate_with_parent.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -98,8 +97,6 @@ class SyncErrorNotifierTest : public AshTestBase  {
   virtual ~SyncErrorNotifierTest() {}
 
   virtual void SetUp() OVERRIDE {
-    views::ViewsDelegate::views_delegate = &views_delegate_;
-
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
@@ -175,7 +172,6 @@ class SyncErrorNotifierTest : public AshTestBase  {
   TestingProfile* profile_;
   FakeLoginUI login_ui_;
   NotificationUIManager* notification_ui_manager_;
-  TestViewsDelegateWithParent views_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncErrorNotifierTest);
 };
