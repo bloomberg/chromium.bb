@@ -58,18 +58,20 @@ OptInManager.CommandFromPage = {
  */
 OptInManager.prototype.injectTab_ = function(
     tab, sendResponse, hotwordStatus) {
-  if (tab.incognito) {
+  if (tab.incognito || !hotwordStatus.available) {
     sendResponse({'doNotShowOptinMessage': true});
     return;
   }
 
-  if (!hotwordStatus.available)
+  if (!hotwordStatus.enabledSet) {
+    chrome.tabs.executeScript(tab.id, {'file': 'optin_client.js'});
+    sendResponse(hotwordStatus);
     return;
+  }
+
   if (hotwordStatus.enabled)
     chrome.tabs.executeScript(tab.id, {'file': 'audio_client.js'});
-  else if (!hotwordStatus.enabledSet)
-    chrome.tabs.executeScript(tab.id, {'file': 'optin_client.js'});
-  sendResponse(hotwordStatus);
+  sendResponse({'doNotShowOptinMessage': true});
 };
 
 
