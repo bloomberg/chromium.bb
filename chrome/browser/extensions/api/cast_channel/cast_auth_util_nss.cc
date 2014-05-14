@@ -143,25 +143,25 @@ static const unsigned char kPublicKeyICA4[] = {
 
 // Info for trusted ICA certs.
 struct ICACertInfo {
-  net::SHA1HashValue fingerprint;
+  const net::SHA1HashValue* fingerprint;
   SECItem public_key;
 };
 
 // List of allowed / trusted ICAs.
 static const ICACertInfo kAllowedICAs[] = {
-  { kFingerprintICA1,
+  { &kFingerprintICA1,
     { siDERCertBuffer,
       const_cast<unsigned char*>(kPublicKeyICA1),
       sizeof(kPublicKeyICA1) } },
-  { kFingerprintICA2,
+  { &kFingerprintICA2,
     { siDERCertBuffer,
       const_cast<unsigned char*>(kPublicKeyICA2),
       sizeof(kPublicKeyICA2) } },
-  { kFingerprintICA3,
+  { &kFingerprintICA3,
     { siDERCertBuffer,
       const_cast<unsigned char*>(kPublicKeyICA3),
       sizeof(kPublicKeyICA3) } },
-  { kFingerprintICA4,
+  { &kFingerprintICA4,
     { siDERCertBuffer,
       const_cast<unsigned char*>(kPublicKeyICA4),
       sizeof(kPublicKeyICA4) } },
@@ -176,7 +176,7 @@ typedef scoped_ptr<
 // Returns -1, if no such ICA is found.
 static int GetICAWithFingerprint(const net::SHA1HashValue& fingerprint) {
   for (size_t i = 0; i < arraysize(kAllowedICAs); ++i) {
-    if (fingerprint.Equals(kAllowedICAs[i].fingerprint))
+    if (kAllowedICAs[i].fingerprint->Equals(fingerprint))
       return static_cast<int>(i);
   }
   return -1;
