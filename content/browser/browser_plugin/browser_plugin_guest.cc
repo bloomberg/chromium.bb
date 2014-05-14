@@ -633,10 +633,9 @@ ColorChooser* BrowserPluginGuest::OpenColorChooser(
     WebContents* web_contents,
     SkColor color,
     const std::vector<ColorSuggestion>& suggestions) {
-  if (!embedder_web_contents_ || !embedder_web_contents_->GetDelegate())
+  if (!delegate_)
     return NULL;
-  return embedder_web_contents_->GetDelegate()->OpenColorChooser(
-      web_contents, color, suggestions);
+  return delegate_->OpenColorChooser(web_contents, color, suggestions);
 }
 
 bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
@@ -765,13 +764,9 @@ void BrowserPluginGuest::RendererResponsive(WebContents* source) {
 
 void BrowserPluginGuest::RunFileChooser(WebContents* web_contents,
                                         const FileChooserParams& params) {
-  if (!attached())
+  if (!delegate_)
     return;
-
-  if (!embedder_web_contents_->GetDelegate())
-    return;
-
-  embedder_web_contents_->GetDelegate()->RunFileChooser(web_contents, params);
+  delegate_->RunFileChooser(web_contents, params);
 }
 
 bool BrowserPluginGuest::ShouldFocusPageAfterCrash() {

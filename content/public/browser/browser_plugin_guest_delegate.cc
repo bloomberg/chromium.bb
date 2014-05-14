@@ -49,6 +49,13 @@ BrowserPluginGuestDelegate::GetJavaScriptDialogManager() {
   return NULL;
 }
 
+ColorChooser* BrowserPluginGuestDelegate::OpenColorChooser(
+    WebContents* web_contents,
+    SkColor color,
+    const std::vector<ColorSuggestion>& suggestions) {
+  return NULL;
+}
+
 bool BrowserPluginGuestDelegate::HandleContextMenu(
     const ContextMenuParams& params) {
   return false;

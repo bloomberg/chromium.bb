@@ -12,16 +12,20 @@
 #include "content/common/content_export.h"
 #include "content/public/common/browser_plugin_permission_type.h"
 #include "content/public/common/media_stream_request.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
 namespace content {
 
+class ColorChooser;
 class JavaScriptDialogManager;
-struct ContextMenuParams;
-struct NativeWebKeyboardEvent;
 class WebContents;
+struct ColorSuggestion;
+struct ContextMenuParams;
+struct FileChooserParams;
+struct NativeWebKeyboardEvent;
 
 // Objects implement this interface to get notified about changes in the guest
 // WebContents and to provide necessary functionality.
@@ -140,6 +144,19 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // Returns a pointer to a service to manage JavaScript dialogs. May return
   // NULL in which case dialogs aren't shown.
   virtual JavaScriptDialogManager* GetJavaScriptDialogManager();
+
+  // Called when color chooser should open. Returns the opened color chooser.
+  // Returns NULL if we failed to open the color chooser (e.g. when there is a
+  // ColorChooserDialog already open on Windows). Ownership of the returned
+  // pointer is transferred to the caller.
+  virtual ColorChooser* OpenColorChooser(
+      WebContents* web_contents,
+      SkColor color,
+      const std::vector<ColorSuggestion>& suggestions);
+
+  // Called when a file selection is to be done.
+  virtual void RunFileChooser(WebContents* web_contents,
+                              const FileChooserParams& params) {}
 
   // Returns true if the context menu operation was handled by the delegate.
   virtual bool HandleContextMenu(const ContextMenuParams& params);

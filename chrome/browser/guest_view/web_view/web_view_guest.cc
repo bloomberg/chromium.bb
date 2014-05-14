@@ -959,6 +959,24 @@ content::JavaScriptDialogManager*
   return &javascript_dialog_helper_;
 }
 
+content::ColorChooser* WebViewGuest::OpenColorChooser(
+    WebContents* web_contents,
+    SkColor color,
+    const std::vector<content::ColorSuggestion>& suggestions) {
+  if (!attached() || !embedder_web_contents()->GetDelegate())
+    return NULL;
+  return embedder_web_contents()->GetDelegate()->OpenColorChooser(
+      web_contents, color, suggestions);
+}
+
+void WebViewGuest::RunFileChooser(WebContents* web_contents,
+                                  const content::FileChooserParams& params) {
+  if (!attached() || !embedder_web_contents()->GetDelegate())
+    return;
+
+  embedder_web_contents()->GetDelegate()->RunFileChooser(web_contents, params);
+}
+
 #if defined(OS_CHROMEOS)
 void WebViewGuest::OnAccessibilityStatusChanged(
     const chromeos::AccessibilityStatusEventDetails& details) {
