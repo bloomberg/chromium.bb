@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 // NOTE(vtl): Some of these tests are inherently flaky (e.g., if run on a
-// heavily-loaded system). Sorry. |kEpsilonMicros| may be increased to increase
-// tolerance and reduce observed flakiness.
+// heavily-loaded system). Sorry. |test::EpsilonTimeout()| may be increased to
+// increase tolerance and reduce observed flakiness (though doing so reduces the
+// meaningfulness of the test).
 
 #include "mojo/system/message_pipe_dispatcher.h"
 
@@ -28,15 +29,11 @@ namespace mojo {
 namespace system {
 namespace {
 
-const int64_t kMicrosPerMs = 1000;
-const int64_t kEpsilonMicros = 30 * kMicrosPerMs;  // 30 ms.
-
 TEST(MessagePipeDispatcherTest, Basic) {
   test::Stopwatch stopwatch;
   int32_t buffer[1];
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
   uint32_t buffer_size;
-  int64_t elapsed_micros;
 
   // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
@@ -68,8 +65,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     stopwatch.Start();
     EXPECT_EQ(1, w.Wait(MOJO_DEADLINE_INDEFINITE));
-    elapsed_micros = stopwatch.Elapsed();
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     d0->RemoveWaiter(&w);
 
     // Try adding a readable waiter when already readable (from above).
@@ -94,8 +90,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
               d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
     stopwatch.Start();
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(0));
-    elapsed_micros = stopwatch.Elapsed();
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     d0->RemoveWaiter(&w);
 
     // Wait for non-zero, finite time for readability on |d0| (will time out).
@@ -103,10 +98,11 @@ TEST(MessagePipeDispatcherTest, Basic) {
     EXPECT_EQ(MOJO_RESULT_OK,
               d0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 3));
     stopwatch.Start();
-    EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, w.Wait(2 * kEpsilonMicros));
-    elapsed_micros = stopwatch.Elapsed();
-    EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
+    EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
+              w.Wait(2 * test::EpsilonTimeout().InMicroseconds()));
+    base::TimeDelta elapsed = stopwatch.Elapsed();
+    EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
     d0->RemoveWaiter(&w);
 
     EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
@@ -259,9 +255,9 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
   int32_t buffer[1];
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
   uint32_t buffer_size;
+  base::TimeDelta elapsed;
   bool did_wait;
   MojoResult result;
-  int64_t elapsed_micros;
 
   // Run this test both with |d0| as port 0, |d1| as port 1 and vice versa.
   for (unsigned i = 0; i < 2; i++) {
@@ -282,8 +278,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
                                &did_wait, &result);
       stopwatch.Start();
       thread.Start();
-      base::PlatformThread::Sleep(
-          base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+      base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
       // Wake it up by writing to |d0|.
       buffer[0] = 123456789;
       EXPECT_EQ(MOJO_RESULT_OK,
@@ -291,11 +286,11 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
                                  NULL,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
     }  // Joins the thread.
-    elapsed_micros = stopwatch.Elapsed();
+    elapsed = stopwatch.Elapsed();
+    EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(0, result);
-    EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
 
     // Now |d1| is already readable. Try waiting for it again.
     {
@@ -307,10 +302,9 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
       stopwatch.Start();
       thread.Start();
     }  // Joins the thread.
-    elapsed_micros = stopwatch.Elapsed();
+    EXPECT_LT(stopwatch.Elapsed(), test::EpsilonTimeout());
     EXPECT_FALSE(did_wait);
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS, result);
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
 
     // Consume what we wrote to |d0|.
     buffer[0] = 0;
@@ -332,15 +326,14 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
                                 &did_wait, &result);
       stopwatch.Start();
       thread.Start();
-      base::PlatformThread::Sleep(
-          base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+      base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
       EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
     }  // Joins the thread.
-    elapsed_micros = stopwatch.Elapsed();
+    elapsed = stopwatch.Elapsed();
+    EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-    EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
 
     EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
   }
@@ -364,15 +357,14 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
                                 &did_wait, &result);
       stopwatch.Start();
       thread.Start();
-      base::PlatformThread::Sleep(
-          base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+      base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
       EXPECT_EQ(MOJO_RESULT_OK, d1->Close());
     }  // Joins the thread.
-    elapsed_micros = stopwatch.Elapsed();
+    elapsed = stopwatch.Elapsed();
+    EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
     EXPECT_TRUE(did_wait);
     EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
-    EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
 
     EXPECT_EQ(MOJO_RESULT_OK, d0->Close());
   }

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// NOTE(vtl): These tests are inherently flaky (e.g., if run on a heavily-loaded
-// system). Sorry. |kEpsilonMicros| may be increased to increase tolerance and
-// reduce observed flakiness.
+// NOTE(vtl): Some of these tests are inherently flaky (e.g., if run on a
+// heavily-loaded system). Sorry. |test::EpsilonTimeout()| may be increased to
+// increase tolerance and reduce observed flakiness (though doing so reduces the
+// meaningfulness of the test).
 
 #include "mojo/system/waiter_list.h"
 
 #include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/time/time.h"
+#include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
 #include "mojo/system/waiter_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,9 +19,6 @@
 namespace mojo {
 namespace system {
 namespace {
-
-const int64_t kMicrosPerMs = 1000;
-const int64_t kEpsilonMicros = 30 * kMicrosPerMs;  // 30 ms.
 
 TEST(WaiterListTest, BasicCancel) {
   MojoResult result;
@@ -51,8 +50,7 @@ TEST(WaiterListTest, BasicCancel) {
     test::SimpleWaiterThread thread(&result);
     waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 2);
     thread.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.CancelAllWaiters();
   }  // Join |thread|.
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
@@ -94,8 +92,7 @@ TEST(WaiterListTest, BasicAwakeSatisfied) {
     test::SimpleWaiterThread thread(&result);
     waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 2);
     thread.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(MOJO_WAIT_FLAG_READABLE,
                                            MOJO_WAIT_FLAG_READABLE |
                                               MOJO_WAIT_FLAG_WRITABLE);
@@ -136,8 +133,7 @@ TEST(WaiterListTest, BasicAwakeUnsatisfiable) {
     test::SimpleWaiterThread thread(&result);
     waiter_list.AddWaiter(thread.waiter(), MOJO_WAIT_FLAG_READABLE, 2);
     thread.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(0, MOJO_WAIT_FLAG_WRITABLE);
     waiter_list.RemoveWaiter(thread.waiter());
     waiter_list.RemoveWaiter(thread.waiter());  // Double-remove okay.
@@ -160,8 +156,7 @@ TEST(WaiterListTest, MultipleWaiters) {
     test::SimpleWaiterThread thread2(&result2);
     waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 1);
     thread2.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.CancelAllWaiters();
   }  // Join threads.
   EXPECT_EQ(MOJO_RESULT_CANCELLED, result1);
@@ -176,8 +171,7 @@ TEST(WaiterListTest, MultipleWaiters) {
     test::SimpleWaiterThread thread2(&result2);
     waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 3);
     thread2.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(MOJO_WAIT_FLAG_READABLE,
                                            MOJO_WAIT_FLAG_READABLE |
                                               MOJO_WAIT_FLAG_WRITABLE);
@@ -196,8 +190,7 @@ TEST(WaiterListTest, MultipleWaiters) {
     test::SimpleWaiterThread thread2(&result2);
     waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 5);
     thread2.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     waiter_list.AwakeWaitersForStateChange(0, MOJO_WAIT_FLAG_READABLE);
     waiter_list.RemoveWaiter(thread2.waiter());
     waiter_list.CancelAllWaiters();
@@ -212,8 +205,7 @@ TEST(WaiterListTest, MultipleWaiters) {
     waiter_list.AddWaiter(thread1.waiter(), MOJO_WAIT_FLAG_READABLE, 6);
     thread1.Start();
 
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(1 * kEpsilonMicros));
+    base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
 
     // Should do nothing.
     waiter_list.AwakeWaitersForStateChange(0,
@@ -224,8 +216,7 @@ TEST(WaiterListTest, MultipleWaiters) {
     waiter_list.AddWaiter(thread2.waiter(), MOJO_WAIT_FLAG_WRITABLE, 7);
     thread2.Start();
 
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(1 * kEpsilonMicros));
+    base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
 
     // Awake #1.
     waiter_list.AwakeWaitersForStateChange(MOJO_WAIT_FLAG_READABLE,
@@ -233,8 +224,7 @@ TEST(WaiterListTest, MultipleWaiters) {
                                                MOJO_WAIT_FLAG_WRITABLE);
     waiter_list.RemoveWaiter(thread1.waiter());
 
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(1 * kEpsilonMicros));
+    base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
 
     test::SimpleWaiterThread thread3(&result3);
     waiter_list.AddWaiter(thread3.waiter(), MOJO_WAIT_FLAG_WRITABLE, 8);
@@ -244,8 +234,7 @@ TEST(WaiterListTest, MultipleWaiters) {
     waiter_list.AddWaiter(thread4.waiter(), MOJO_WAIT_FLAG_READABLE, 9);
     thread4.Start();
 
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(1 * kEpsilonMicros));
+    base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
 
     // Awake #2 and #3 for unsatisfiability.
     waiter_list.AwakeWaitersForStateChange(0, MOJO_WAIT_FLAG_READABLE);

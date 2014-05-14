@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// NOTE(vtl): These tests are inherently flaky (e.g., if run on a heavily-loaded
-// system). Sorry. |kEpsilonMicros| may be increased to increase tolerance and
-// reduce observed flakiness.
+// NOTE(vtl): Some of these tests are inherently flaky (e.g., if run on a
+// heavily-loaded system). Sorry. |test::EpsilonTimeout()| may be increased to
+// increase tolerance and reduce observed flakiness (though doing so reduces the
+// meaningfulness of the test).
 
 #include "mojo/system/waiter.h"
 
@@ -22,7 +23,6 @@ namespace system {
 namespace {
 
 const int64_t kMicrosPerMs = 1000;
-const int64_t kEpsilonMicros = 30 * kMicrosPerMs;  // 30 ms.
 const int64_t kPollTimeMicros = 10 * kMicrosPerMs;  // 10 ms.
 
 class WaitingThread : public base::SimpleThread {
@@ -31,8 +31,7 @@ class WaitingThread : public base::SimpleThread {
       : base::SimpleThread("waiting_thread"),
         deadline_(deadline),
         done_(false),
-        result_(MOJO_RESULT_UNKNOWN),
-        elapsed_micros_(-1) {
+        result_(MOJO_RESULT_UNKNOWN) {
     waiter_.Init();
   }
 
@@ -40,13 +39,13 @@ class WaitingThread : public base::SimpleThread {
     Join();
   }
 
-  void WaitUntilDone(MojoResult* result, int64_t* elapsed_micros) {
+  void WaitUntilDone(MojoResult* result, base::TimeDelta* elapsed) {
     for (;;) {
       {
         base::AutoLock locker(lock_);
         if (done_) {
           *result = result_;
-          *elapsed_micros = elapsed_micros_;
+          *elapsed = elapsed_;
           break;
         }
       }
@@ -62,17 +61,17 @@ class WaitingThread : public base::SimpleThread {
   virtual void Run() OVERRIDE {
     test::Stopwatch stopwatch;
     MojoResult result;
-    int64_t elapsed_micros;
+    base::TimeDelta elapsed;
 
     stopwatch.Start();
     result = waiter_.Wait(deadline_);
-    elapsed_micros = stopwatch.Elapsed();
+    elapsed = stopwatch.Elapsed();
 
     {
       base::AutoLock locker(lock_);
       done_ = true;
       result_ = result;
-      elapsed_micros_ = elapsed_micros;
+      elapsed_ = elapsed;
     }
   }
 
@@ -82,71 +81,69 @@ class WaitingThread : public base::SimpleThread {
   base::Lock lock_;  // Protects the following members.
   bool done_;
   MojoResult result_;
-  int64_t elapsed_micros_;
+  base::TimeDelta elapsed_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitingThread);
 };
 
 TEST(WaiterTest, Basic) {
   MojoResult result;
-  int64_t elapsed_micros;
+  base::TimeDelta elapsed;
 
   // Finite deadline.
 
   // Awake immediately after thread start.
   {
-    WaitingThread thread(static_cast<MojoDeadline>(10 * kEpsilonMicros));
+    WaitingThread thread(10 * test::EpsilonTimeout().InMicroseconds());
     thread.Start();
     thread.waiter()->Awake(0);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(0, result);
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(elapsed, test::EpsilonTimeout());
   }
 
   // Awake before after thread start.
   {
-    WaitingThread thread(static_cast<MojoDeadline>(10 * kEpsilonMicros));
+    WaitingThread thread(10 * test::EpsilonTimeout().InMicroseconds());
     thread.waiter()->Awake(MOJO_RESULT_CANCELLED);
     thread.Start();
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(elapsed, test::EpsilonTimeout());
   }
 
   // Awake some time after thread start.
   {
-    WaitingThread thread(static_cast<MojoDeadline>(10 * kEpsilonMicros));
+    WaitingThread thread(10 * test::EpsilonTimeout().InMicroseconds());
     thread.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     thread.waiter()->Awake(1);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(1, result);
-    EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
+    EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
   }
 
   // Awake some longer time after thread start.
   {
-    WaitingThread thread(static_cast<MojoDeadline>(10 * kEpsilonMicros));
+    WaitingThread thread(10 * test::EpsilonTimeout().InMicroseconds());
     thread.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(5 * kEpsilonMicros));
+    base::PlatformThread::Sleep(5 * test::EpsilonTimeout());
     thread.waiter()->Awake(1);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(1, result);
-    EXPECT_GT(elapsed_micros, (5-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (5+1) * kEpsilonMicros);
+    EXPECT_GT(elapsed, (5-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (5+1) * test::EpsilonTimeout());
   }
 
   // Don't awake -- time out (on another thread).
   {
-    WaitingThread thread(static_cast<MojoDeadline>(2 * kEpsilonMicros));
+    WaitingThread thread(2 * test::EpsilonTimeout().InMicroseconds());
     thread.Start();
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, result);
-    EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
+    EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
   }
 
   // No (indefinite) deadline.
@@ -156,9 +153,9 @@ TEST(WaiterTest, Basic) {
     WaitingThread thread(MOJO_DEADLINE_INDEFINITE);
     thread.Start();
     thread.waiter()->Awake(0);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(0, result);
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(elapsed, test::EpsilonTimeout());
   }
 
   // Awake before after thread start.
@@ -166,80 +163,78 @@ TEST(WaiterTest, Basic) {
     WaitingThread thread(MOJO_DEADLINE_INDEFINITE);
     thread.waiter()->Awake(MOJO_RESULT_CANCELLED);
     thread.Start();
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(MOJO_RESULT_CANCELLED, result);
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(elapsed, test::EpsilonTimeout());
   }
 
   // Awake some time after thread start.
   {
     WaitingThread thread(MOJO_DEADLINE_INDEFINITE);
     thread.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     thread.waiter()->Awake(1);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(1, result);
-    EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
+    EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
   }
 
   // Awake some longer time after thread start.
   {
     WaitingThread thread(MOJO_DEADLINE_INDEFINITE);
     thread.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(5 * kEpsilonMicros));
+    base::PlatformThread::Sleep(5 * test::EpsilonTimeout());
     thread.waiter()->Awake(1);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(1, result);
-    EXPECT_GT(elapsed_micros, (5-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (5+1) * kEpsilonMicros);
+    EXPECT_GT(elapsed, (5-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (5+1) * test::EpsilonTimeout());
   }
 }
 
 TEST(WaiterTest, TimeOut) {
   test::Stopwatch stopwatch;
-  int64_t elapsed_micros;
+  base::TimeDelta elapsed;
 
   Waiter waiter;
 
   waiter.Init();
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0));
-  elapsed_micros = stopwatch.Elapsed();
-  EXPECT_LT(elapsed_micros, kEpsilonMicros);
+  elapsed = stopwatch.Elapsed();
+  EXPECT_LT(elapsed, test::EpsilonTimeout());
 
   waiter.Init();
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            waiter.Wait(static_cast<MojoDeadline>(2 * kEpsilonMicros)));
-  elapsed_micros = stopwatch.Elapsed();
-  EXPECT_GT(elapsed_micros, (2-1) * kEpsilonMicros);
-  EXPECT_LT(elapsed_micros, (2+1) * kEpsilonMicros);
+            waiter.Wait(2 * test::EpsilonTimeout().InMicroseconds()));
+  elapsed = stopwatch.Elapsed();
+  EXPECT_GT(elapsed, (2-1) * test::EpsilonTimeout());
+  EXPECT_LT(elapsed, (2+1) * test::EpsilonTimeout());
 
   waiter.Init();
   stopwatch.Start();
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            waiter.Wait(static_cast<MojoDeadline>(5 * kEpsilonMicros)));
-  elapsed_micros = stopwatch.Elapsed();
-  EXPECT_GT(elapsed_micros, (5-1) * kEpsilonMicros);
-  EXPECT_LT(elapsed_micros, (5+1) * kEpsilonMicros);
+            waiter.Wait(5 * test::EpsilonTimeout().InMicroseconds()));
+  elapsed = stopwatch.Elapsed();
+  EXPECT_GT(elapsed, (5-1) * test::EpsilonTimeout());
+  EXPECT_LT(elapsed, (5+1) * test::EpsilonTimeout());
 }
 
 // The first |Awake()| should always win.
 TEST(WaiterTest, MultipleAwakes) {
   MojoResult result;
-  int64_t elapsed_micros;
+  base::TimeDelta elapsed;
 
   {
     WaitingThread thread(MOJO_DEADLINE_INDEFINITE);
     thread.Start();
     thread.waiter()->Awake(0);
     thread.waiter()->Awake(1);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(0, result);
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(elapsed, test::EpsilonTimeout());
   }
 
   {
@@ -247,36 +242,33 @@ TEST(WaiterTest, MultipleAwakes) {
     thread.waiter()->Awake(1);
     thread.Start();
     thread.waiter()->Awake(0);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(1, result);
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(elapsed, test::EpsilonTimeout());
   }
 
   {
     WaitingThread thread(MOJO_DEADLINE_INDEFINITE);
     thread.Start();
     thread.waiter()->Awake(10);
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     thread.waiter()->Awake(20);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(10, result);
-    EXPECT_LT(elapsed_micros, kEpsilonMicros);
+    EXPECT_LT(elapsed, test::EpsilonTimeout());
   }
 
   {
-    WaitingThread thread(static_cast<MojoDeadline>(10 * kEpsilonMicros));
+    WaitingThread thread(10 * test::EpsilonTimeout().InMicroseconds());
     thread.Start();
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(1 * kEpsilonMicros));
+    base::PlatformThread::Sleep(1 * test::EpsilonTimeout());
     thread.waiter()->Awake(MOJO_RESULT_FAILED_PRECONDITION);
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMicroseconds(2 * kEpsilonMicros));
+    base::PlatformThread::Sleep(2 * test::EpsilonTimeout());
     thread.waiter()->Awake(0);
-    thread.WaitUntilDone(&result, &elapsed_micros);
+    thread.WaitUntilDone(&result, &elapsed);
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION, result);
-    EXPECT_GT(elapsed_micros, (1-1) * kEpsilonMicros);
-    EXPECT_LT(elapsed_micros, (1+1) * kEpsilonMicros);
+    EXPECT_GT(elapsed, (1-1) * test::EpsilonTimeout());
+    EXPECT_LT(elapsed, (1+1) * test::EpsilonTimeout());
   }
 }
 

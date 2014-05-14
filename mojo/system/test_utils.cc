@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_timeouts.h"
 
 namespace mojo {
 namespace system {
@@ -29,6 +30,14 @@ void PostTaskAndWait(scoped_refptr<base::TaskRunner> task_runner,
   task_runner->PostTask(from_here,
                         base::Bind(&PostTaskAndWaitHelper, &event, task));
   event.Wait();
+}
+
+base::TimeDelta EpsilonTimeout() {
+  // Originally, our epsilon timeout was 10 ms, which was mostly fine but flaky
+  // on some Windows bots. So I bumped it up to 30 ms, which made things
+  // reliable. Currently, |tiny_timeout()| is 100 ms, which means that this will
+  // be 25 ms, which will hopefully be okay.
+  return TestTimeouts::tiny_timeout() / 4;
 }
 
 // TestIOThread ----------------------------------------------------------------
