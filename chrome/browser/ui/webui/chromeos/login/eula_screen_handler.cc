@@ -6,19 +6,74 @@
 
 #include <string>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
+#include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/login_web_dialog.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
+#include "url/gurl.h"
 
 namespace {
 
 const char kJsScreenPath[] = "login.EulaScreen";
+
+// Helper class to tweak display details of credits pages in the context
+// of OOBE/EULA step.
+class CreditsWebDialog : public chromeos::LoginWebDialog {
+ public:
+  CreditsWebDialog(Profile* profile,
+                   gfx::NativeWindow parent_window,
+                   int title_id,
+                   const GURL& url)
+      : chromeos::LoginWebDialog(profile, NULL, parent_window,
+                                 l10n_util::GetStringUTF16(title_id),
+                                 url,
+                                 chromeos::LoginWebDialog::STYLE_BUBBLE) {
+  }
+
+  virtual void OnLoadingStateChanged(content::WebContents* source) OVERRIDE {
+    chromeos::LoginWebDialog::OnLoadingStateChanged(source);
+    // Remove visual elements that we can handle in EULA page.
+    bool is_loading = source->IsLoading();
+    if (!is_loading && source->GetWebUI()) {
+      source->GetWebUI()->CallJavascriptFunction(
+          "(function () {"
+          "  document.body.classList.toggle('dialog', true);"
+          "  keyboard.initializeKeyboardFlow();"
+          "})");
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CreditsWebDialog);
+};
+
+void ShowCreditsDialog(Profile* profile,
+                       gfx::NativeWindow parent_window,
+                       int title_id,
+                       const GURL& credits_url) {
+  CreditsWebDialog* dialog = new CreditsWebDialog(profile,
+                                                  parent_window,
+                                                  title_id,
+                                                  credits_url);
+  gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+  dialog->SetDialogSize(l10n_util::GetLocalizedContentsWidthInPixels(
+                            IDS_CREDITS_APP_DIALOG_WIDTH_PIXELS),
+                        l10n_util::GetLocalizedContentsWidthInPixels(
+                            IDS_CREDITS_APP_DIALOG_HEIGHT_PIXELS));
+  dialog->Show();
+  // The dialog object will be deleted on dialog close.
+}
 
 }  // namespace
 
@@ -82,6 +137,9 @@ void EulaScreenHandler::DeclareLocalizedValues(
                 IDS_EULA_RLZ_ENABLE,
                 IDS_SHORT_PRODUCT_OS_NAME);
 #endif
+
+  builder->Add("chromeCreditsLink", IDS_ABOUT_VERSION_LICENSE_EULA);
+  builder->Add("chromeosCreditsLink", IDS_ABOUT_CROS_VERSION_LICENSE_EULA);
 }
 
 void EulaScreenHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -112,6 +170,11 @@ void EulaScreenHandler::Initialize() {
 void EulaScreenHandler::RegisterMessages() {
   AddCallback("eulaOnExit", &EulaScreenHandler::HandleOnExit);
   AddCallback("eulaOnLearnMore", &EulaScreenHandler::HandleOnLearnMore);
+  AddCallback("eulaOnChromeOSCredits",
+              &EulaScreenHandler::HandleOnChromeOSCredits);
+  AddCallback("eulaOnChromeCredits",
+              &EulaScreenHandler::HandleOnChromeCredits);
+  AddCallback("eulaOnLearnMore", &EulaScreenHandler::HandleOnLearnMore);
   AddCallback("eulaOnInstallationSettingsPopupOpened",
               &EulaScreenHandler::HandleOnInstallationSettingsPopupOpened);
 }
@@ -129,6 +192,24 @@ void EulaScreenHandler::HandleOnLearnMore() {
   if (!help_app_.get())
     help_app_ = new HelpAppLauncher(GetNativeWindow());
   help_app_->ShowHelpTopic(HelpAppLauncher::HELP_STATS_USAGE);
+}
+
+void EulaScreenHandler::HandleOnChromeOSCredits() {
+  ShowCreditsDialog(
+      Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext()),
+      GetNativeWindow(),
+      IDS_ABOUT_CROS_VERSION_LICENSE_EULA,
+      GURL(chrome::kChromeUIOSCreditsURL));
+}
+
+void EulaScreenHandler::HandleOnChromeCredits() {
+  ShowCreditsDialog(
+      Profile::FromBrowserContext(
+          web_ui()->GetWebContents()->GetBrowserContext()),
+      GetNativeWindow(),
+      IDS_ABOUT_VERSION_LICENSE_EULA,
+      GURL(chrome::kChromeUICreditsURL));
 }
 
 void EulaScreenHandler::HandleOnInstallationSettingsPopupOpened() {

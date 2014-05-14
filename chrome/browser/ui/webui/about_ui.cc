@@ -91,6 +91,7 @@ using content::WebContents;
 namespace {
 
 const char kCreditsJsPath[] = "credits.js";
+const char kKeyboardUtilsPath[] = "keyboard_utils.js";
 const char kMemoryJsPath[] = "memory.js";
 const char kMemoryCssPath[] = "about_memory.css";
 const char kStatsJsPath[] = "stats.js";
@@ -1003,7 +1004,12 @@ void AboutUIHTMLSource::StartDataRequest(
   if (source_name_ == chrome::kChromeUIChromeURLsHost) {
     response = ChromeURLs();
   } else if (source_name_ == chrome::kChromeUICreditsHost) {
-    int idr = (path == kCreditsJsPath) ? IDR_CREDITS_JS : IDR_CREDITS_HTML;
+    int idr = IDR_CREDITS_HTML;
+    if (path == kCreditsJsPath)
+      idr = IDR_CREDITS_JS;
+    else if (path == kKeyboardUtilsPath)
+      idr = IDR_KEYBOARD_UTILS_JS;
+
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         idr).as_string();
 #if defined(OS_CHROMEOS)
@@ -1024,8 +1030,11 @@ void AboutUIHTMLSource::StartDataRequest(
     return;
 #if defined(OS_CHROMEOS)
   } else if (source_name_ == chrome::kChromeUIOSCreditsHost) {
+    int idr = IDR_OS_CREDITS_HTML;
+    if (path == kKeyboardUtilsPath)
+      idr = IDR_KEYBOARD_UTILS_JS;
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_OS_CREDITS_HTML).as_string();
+        idr).as_string();
 #endif
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   } else if (source_name_ == chrome::kChromeUISandboxHost) {
@@ -1053,9 +1062,10 @@ void AboutUIHTMLSource::FinishDataRequest(
 }
 
 std::string AboutUIHTMLSource::GetMimeType(const std::string& path) const {
-  if (path == kCreditsJsPath ||
-      path == kStatsJsPath   ||
-      path == kStringsJsPath ||
+  if (path == kCreditsJsPath     ||
+      path == kKeyboardUtilsPath ||
+      path == kStatsJsPath       ||
+      path == kStringsJsPath     ||
       path == kMemoryJsPath) {
     return "application/javascript";
   }

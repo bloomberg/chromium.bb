@@ -49,6 +49,8 @@ class EulaScreenHandler : public EulaScreenActor,
   // JS messages handlers.
   void HandleOnExit(bool accepted, bool usager_stats_enabled);
   void HandleOnLearnMore();
+  void HandleOnChromeCredits();
+  void HandleOnChromeOSCredits();
   void HandleOnInstallationSettingsPopupOpened();
 
   EulaScreenActor::Delegate* delegate_;

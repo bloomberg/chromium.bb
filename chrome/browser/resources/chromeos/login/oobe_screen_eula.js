@@ -10,6 +10,8 @@ login.createScreen('EulaScreen', 'eula', function() {
   return {
     /** @override */
     decorate: function() {
+      $('eula-chrome-credits-link').hidden = true;
+      $('eula-chromeos-credits-link').hidden = true;
       $('stats-help-link').addEventListener('click', function(event) {
         chrome.send('eulaOnLearnMore');
       });
@@ -104,6 +106,19 @@ login.createScreen('EulaScreen', 'eula', function() {
     get defaultControl() {
       return $('accept-button').disabled ? $('back-button') :
                                            $('accept-button');
+    },
+
+    enableKeyboardFlow: function() {
+      $('eula-chrome-credits-link').hidden = false;
+      $('eula-chromeos-credits-link').hidden = false;
+      $('eula-chrome-credits-link').addEventListener('click',
+          function(event) {
+            chrome.send('eulaOnChromeCredits');
+          });
+      $('eula-chromeos-credits-link').addEventListener('click',
+          function(event) {
+            chrome.send('eulaOnChromeOSCredits');
+          });
     },
 
     /**

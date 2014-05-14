@@ -56,6 +56,12 @@ body {
 .license-packages {
   font-size:80%;
 }
+.dialog #print-link {
+  display: none;
+}
+.dialog .homepage {
+  display: none;
+}
 </style>
 <script>
 //<![CDATA[
@@ -94,7 +100,7 @@ function toggleall() {
 <span class="page-title" style="float:left;">Credits</span>
 <span style="float:right">
 <a href="javascript:toggleall()">Toggle All</a>
-<a href="javascript:window.print();">Print</a>
+<a id="print-link" href="javascript:window.print();">Print</a>
 </span>
 <div style="clear:both; overflow:auto;">
 <h2>List of Packages used in Google Chrome OS:</h2>
@@ -32632,4 +32638,5 @@ Used by these packages: x11-libs/libdrm-2.4.52 x11-base/X.Org-1.9.3 x11-apps/xse
 <!-- Note that some packages included above are used during build, but not
 shipped with ChromeOS proper /merlin -->
 </body>
+<script src="chrome://os-credits/keyboard_utils.js"></script>
 </html>

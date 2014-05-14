@@ -245,6 +245,11 @@ cr.define('cr.ui.login', function() {
       if (value) {
         keyboard.initializeKeyboardFlow();
         cr.ui.DropDown.enableKeyboardFlow();
+        for (var i = 0; i < this.screens_.length; ++i) {
+          var screen = $(this.screens_[i]);
+          if (screen.enableKeyboardFlow)
+            screen.enableKeyboardFlow();
+        }
       }
     },
 

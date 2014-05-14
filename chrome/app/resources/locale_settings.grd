@@ -408,6 +408,16 @@
             400
         </message>
 
+        <!-- The EULA credits dialog in pixels. -->
+        <message name="IDS_CREDITS_APP_DIALOG_WIDTH_PIXELS" use_name_for_id="true">
+            710
+        </message>
+
+        <!-- The EULA credits dialog in pixels. -->
+        <message name="IDS_CREDITS_APP_DIALOG_HEIGHT_PIXELS" use_name_for_id="true">
+            500
+        </message>
+
         <message name="IDS_FACTORY_RESET_HELP_URL" translateable="false">
           http://support.google.com/chromeos/bin/answer.py?answer=183084&amp;hl=[GRITLANGCODE]
         </message>
