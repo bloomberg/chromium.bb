@@ -1614,6 +1614,8 @@ class Port(object):
                               ['--force-compositing-mode']),
             PhysicalTestSuite('storage',
                               ['--force-compositing-mode']),
+            PhysicalTestSuite('svg',
+                              ['--force-compositing-mode']),
             PhysicalTestSuite('tables',
                               ['--force-compositing-mode']),
             PhysicalTestSuite('third_party',
