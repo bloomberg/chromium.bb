@@ -164,7 +164,6 @@ class CC_EXPORT Scheduler {
   void SetupNextBeginFrameWhenVSyncThrottlingEnabled(bool needs_begin_frame);
   void SetupNextBeginFrameWhenVSyncThrottlingDisabled(bool needs_begin_frame);
   void SetupPollingMechanisms(bool needs_begin_frame);
-  void ActivatePendingTree();
   void DrawAndSwapIfPossible();
   void ProcessScheduledActions();
 

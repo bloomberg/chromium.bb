@@ -159,10 +159,6 @@ void Scheduler::NotifyReadyToActivate() {
   ProcessScheduledActions();
 }
 
-void Scheduler::ActivatePendingTree() {
-  client_->ScheduledActionActivatePendingTree();
-}
-
 void Scheduler::SetNeedsCommit() {
   state_machine_.SetNeedsCommit();
   ProcessScheduledActions();
@@ -647,7 +643,7 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionUpdateVisibleTiles();
         break;
       case SchedulerStateMachine::ACTION_ACTIVATE_PENDING_TREE:
-        ActivatePendingTree();
+        client_->ScheduledActionActivatePendingTree();
         break;
       case SchedulerStateMachine::ACTION_DRAW_AND_SWAP_IF_POSSIBLE:
         DrawAndSwapIfPossible();
