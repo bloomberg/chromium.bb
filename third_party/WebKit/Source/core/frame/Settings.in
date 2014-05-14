@@ -100,7 +100,7 @@ acceleratedCompositingForFixedPositionEnabled initial=false, invalidate=Accelera
 acceleratedCompositingForOverflowScrollEnabled initial=false, invalidate=AcceleratedCompositing
 acceleratedCompositingForFixedRootBackgroundEnabled initial=false
 
-forceCompositingMode initial=false, invalidate=AcceleratedCompositing
+forceCompositingMode initial=true, invalidate=AcceleratedCompositing
 
 # Works only in conjunction with forceCompositingMode.
 compositedScrollingForFramesEnabled initial=false, invalidate=AcceleratedCompositing

@@ -50,6 +50,7 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "public/web/WebServiceWorkerContextClient.h"
 #include "public/web/WebServiceWorkerNetworkProvider.h"
+#include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
 #include "web/ServiceWorkerGlobalScopeClientImpl.h"
@@ -256,6 +257,9 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     // with SharedWorker.
     ASSERT(!m_webView);
     m_webView = WebView::create(0);
+    // FIXME: http://crbug.com/363843. This needs to find a better way to
+    // not create graphics layers.
+    m_webView->settings()->setAcceleratedCompositingEnabled(false);
     m_mainFrame = WebLocalFrame::create(this);
     m_webView->setMainFrame(m_mainFrame);
 
