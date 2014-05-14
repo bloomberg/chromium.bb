@@ -1,0 +1,86 @@
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This template defines a NaCl toolchain.
+#
+# It requires the following variables specifying the executables to run:
+#  - cc
+#  - cxx
+#  - ar
+#  - ld
+# and the following which is used in the toolchain_args
+#  - toolchain_cpu_arch  (What "cpu_arch" should be set to when invoking a
+#                         build using this toolchain.)
+
+template("nacl_toolchain") {
+  toolchain(target_name) {
+    assert(defined(invoker.cc), "nacl_toolchain() must specify a \"cc\" value")
+    assert(defined(invoker.cxx), "nacl_toolchain() must specify a \"cxx\" value")
+    assert(defined(invoker.ar), "nacl_toolchain() must specify a \"ar\" value")
+    assert(defined(invoker.ld), "nacl_toolchain() must specify a \"ld\" value")
+    assert(defined(invoker.nacl_libc), "nacl_toolchain() must specify a \"nacl_libc\" value")
+
+    # We can't do string interpolation ($ in strings) on things with dots in
+    # them. To allow us to use $cc below, for example, we create copies of
+    # these values in our scope.
+    cc = invoker.toolprefix + invoker.cc
+    cxx = invoker.toolprefix + invoker.cxx
+    ar = invoker.toolprefix + invoker.ar
+    ld = invoker.toolprefix + invoker.ld
+
+    # Make these apply to all tools below.
+    lib_prefix = "-l"
+    lib_dir_prefix="-L"
+
+    tool("cc") {
+      # cflags_pch_c
+      command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c -c \$in -o \$out"
+      description = "CC ($target_name) \$out"
+      depfile = "\$out.d"
+      deps = "gcc"
+    }
+    tool("cxx") {
+      # cflags_pch_cc
+      command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc -c \$in -o \$out"
+      description = "CXX ($target_name) \$out"
+      depfile = "\$out.d"
+      deps = "gcc"
+    }
+    tool("alink") {
+      command = "rm -f \$out && $ar rcs \$out \$in"
+      description = "AR ($target_name) \$out"
+    }
+    tool("solink") {
+      command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ]; then $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
+      description = "SOLINK ($target_name) \$lib"
+      #pool = "link_pool"
+      restat = "1"
+    }
+    tool("link") {
+      command = "$ld \$ldflags -o \$out -Wl,--start-group \$in \$solibs -Wl,--end-group \$libs"
+      description = "LINK ($target_name) \$out"
+      #pool = "link_pool"
+    }
+    if (is_win) {
+      tool("stamp") {
+        command = "$python_path gyp-win-tool stamp \$out"
+        description = "STAMP \$out"
+      }
+    } else {
+      tool("stamp") {
+        command = "touch \$out"
+        description = "STAMP \$out"
+      }
+    }
+
+    # When invoking this toolchain not as the default one, these args will be
+    # passed to the build. They are ignored when this is the default toolchain.
+    toolchain_args() {
+      cpu_arch = invoker.toolchain_cpu_arch
+      host_os = os
+      os = "nacl"
+      nacl_libc = invoker.nacl_libc
+    }
+  }
+}

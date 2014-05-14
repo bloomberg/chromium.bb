@@ -1,0 +1,26 @@
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//native_client/build/config/sysroot.gni")
+import("//native_client/build/toolchain/nacl_toolchain.gni")
+
+nacl_toolchain("newlib_x86") {
+  toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/i686-nacl-"
+  toolchain_cpu_arch = "x86"
+  cc = "gcc"
+  cxx = "g++"
+  ar = "ar"
+  ld = cxx
+  nacl_libc = "newlib"
+}
+
+nacl_toolchain("newlib_x64") {
+  toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/x86_64-nacl-"
+  toolchain_cpu_arch = "x64"
+  cc = "gcc"
+  cxx = "g++"
+  ar = "ar"
+  ld = cxx
+  nacl_libc = "newlib"
+}

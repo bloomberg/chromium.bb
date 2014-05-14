@@ -1,0 +1,89 @@
+# Copyright (c) 2014 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+#
+# Templates for untarring and prepparing the toolchain must not be in the
+# same file as the toolchain declarations to prevent circular dependencies
+# when referencing a toolchain.
+#
+# From GYP, the untar source "stamp" is:
+#  '<(DEPTH)/native_client/toolchain/.tars/<(OS)_x86/nacl_x86_newlib.json'
+#
+# From GYP, the untar dest "stamp" is:
+#  '<(SHARED_INTERMEDIATE_DIR)/sdk/<(OS)_x86/nacl_x86_newlib/nacl_x86_newlib.json'
+
+
+#
+# Untar the toolchain and generate the untar'd stamp which is really a copy
+# of the json describing the file.
+#
+template("untar_toolchain") {
+  package = invoker.package
+  action(target_name) {
+    sources = [
+      "//native_client/build/package_version/package_version.py",
+      "//native_client/toolchain/.tars/${build_os}_x86/${package}.json",
+    ]
+    outputs = [ "${root_build_dir}/toolchain/${build_os}_x86/${package}/${package}.json" ]
+    script = "//native_client/build/package_version/package_version.py"
+    args = [
+      "--quiet",
+      "--packages",
+      package,
+      "--tar-dir", rebase_path("//native_client/toolchain/.tars", root_build_dir),
+      "--dest-dir",rebase_path("${root_build_dir}/toolchain", root_build_dir),
+      "extract"
+    ]
+  }
+}
+
+#
+# Call the prep script whenever the toolchain is changed.  All cooked
+# toolchain uses must depend on the appropriate prep stamp injected in
+# BUILDCONFIG.gn.  Each prep step should be depended on via the default
+# toolchain since that provides stamp and copy tools.
+#
+template("prep_toolchain") {
+  package = invoker.package
+  toolchain_dir = "${root_build_dir}/toolchain/${build_os}_x86/${package}"
+  action(target_name) {
+    script = "//native_client/build/gn_prep_toolchain.py"
+    sources = [ "${toolchain_dir}/${package}.json"]
+    sources += invoker.sources
+
+    outputs = [ "${toolchain_dir}/stamp.prep" ]
+    args = [
+      "--package", package,
+      "--toolchain-dir", rebase_path(toolchain_dir, root_build_dir)
+      "--stamp", rebase_path("${toolchain_dir}/stamp.prep", root_build_dir),
+    ]
+    deps = [ "//native_client/build/toolchain:untar_${package}" ]
+  }
+}
+
+untar_toolchain("untar_nacl_x86_newlib") {
+  package = "nacl_x86_newlib"
+}
+
+untar_toolchain("untar_nacl_arm_newlib") {
+  package = "nacl_arm_newlib"
+}
+
+prep_toolchain("prep_x86_newlib") {
+  package = "nacl_x86_newlib"
+  sources = [
+    "//native_client/src/untrusted/stubs/crti_x86_32.S",
+    "//native_client/src/untrusted/stubs/crtn_x86_32.S",
+    "//native_client/src/untrusted/stubs/crti_x86_64.S",
+    "//native_client/src/untrusted/stubs/crtn_x86_64.S",
+  ]
+}
+
+prep_toolchain("prep_arm_newlib") {
+  package = "nacl_arm_newlib"
+  sources = [
+    "//native_client/src/untrusted/stubs/crti_arm.S",
+    "//native_client/src/untrusted/stubs/crtn_arm.S",
+  ]
+}

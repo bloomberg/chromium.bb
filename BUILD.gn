@@ -7,22 +7,29 @@
 # resolved or known not to exist (which will cause the build to fail). So if
 # you add a new build file, there must be some path of dependencies from this
 # file to your new one or GN won't know about it.
-
-# In GN, a "group" is a dummy target that just lists other targets.
-
-# This is the root trusted target which will build all trusted components.
-# Depending on this target will build all the trusted libraries.
+#
+# All targets in this file file are built by default.
+#
+# Here we declare the meta targets which pull in the various architecture
+# combinations of the real targets.
+#
 group("trusted") {
  deps = [
-   "//native_client/src/trusted/cpu_features:all_cpu_features",
-   "//native_client/src/trusted/desc:all_desc",
+   "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x86)",
+   "//native_client/src:trusted_targets(//native_client/build/toolchain/linux:trusted_x64)",
  ]
 }
 
+
 # This is the root untrusted target which will build all trusted components
 group("untrusted") {
-}
+  deps = []
 
-# This is the root test target which will build all tests
-group("tests") {
+  if (use_newlib) {
+    deps += [
+#      "//native_client:untrusted_targets(//native_client/build/toolchain/nacl:newlib_arm)",
+      "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x86)",
+      "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x64)",
+    ]
+  }
 }

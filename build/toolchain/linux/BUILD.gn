@@ -1,4 +1,4 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,6 +8,16 @@ import("//native_client/build/toolchain/gcc_toolchain.gni")
 import("//native_client/build/toolchain/goma.gni")
 
 gcc_toolchain("arm") {
+  cc = "arm-linux-gnueabi-gcc"
+  cxx = "arm-linux-gnueabi-g++"
+  ar = "arm-linux-gnueabi-ar"
+  ld = cxx
+
+  toolchain_cpu_arch = "arm"
+  toolchain_os = "linux"
+}
+
+gcc_toolchain("trusted_arm") {
   cc = "arm-linux-gnueabi-gcc"
   cxx = "arm-linux-gnueabi-g++"
   ar = "arm-linux-gnueabi-ar"
@@ -41,6 +51,52 @@ gcc_toolchain("x86") {
 }
 
 gcc_toolchain("x64") {
+  if (is_clang) {
+    if (use_clang_type_profiler) {
+      prefix = rebase_path("//third_party/llvm-allocated-type/Linux_x64/bin",
+                           root_build_dir)
+    } else {
+      prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                           root_build_dir)
+    }
+    cc = "$prefix/clang"
+    cxx = "$prefix/clang++"
+  } else {
+    cc = "gcc"
+    cxx = "g++"
+  }
+
+  ar = "ar"
+  ld = cxx
+
+  toolchain_cpu_arch = "x64"
+  toolchain_os = "linux"
+}
+
+gcc_toolchain("trusted_x86") {
+  if (is_clang) {
+    if (use_clang_type_profiler) {
+      prefix = rebase_path("//third_party/llvm-allocated-type/Linux_ia32/bin",
+                           root_build_dir)
+    } else {
+      prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                           root_build_dir)
+    }
+    cc = "$prefix/clang"
+    cxx = "$prefix/clang++"
+  } else {
+    cc = "gcc"
+    cxx = "g++"
+  }
+
+  ar = "ar"
+  ld = cxx
+
+  toolchain_cpu_arch = "x86"
+  toolchain_os = "linux"
+}
+
+gcc_toolchain("trusted_x64") {
   if (is_clang) {
     if (use_clang_type_profiler) {
       prefix = rebase_path("//third_party/llvm-allocated-type/Linux_x64/bin",

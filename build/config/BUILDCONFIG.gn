@@ -17,12 +17,17 @@
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
 declare_args() {
+  # The current NaCl build library.  When a NaCl toolchain is referenced the
+  # toolchain will override this value.
+  nacl_libc = "newlib"
+
   # How many symbols to include in the build. This affects the performance of
   # the build since the symbols are large and dealing with them is slow.
   #   2 means regular build with symbols.
   #   1 means minimal symbols, usually enough for backtraces only.
   #   0 means no symbols.
   symbol_level = 2
+
 
   # Debug build.
   is_debug = true
@@ -36,11 +41,16 @@ declare_args() {
   is_android = false
   is_chrome_branded = false
   is_chromeos = false
+  is_ios = false
 
   is_asan = false
   is_lsan = false
   is_msan = false
   is_tsan = false
+
+  use_newlib = true
+  use_glibc = false
+  use_pnacl = false
 }
 
 
@@ -73,7 +83,18 @@ if (os == "win") {
   is_mac = false
   is_posix = true
   is_win = false
+} else {
+  is_win = false
+  is_mac = false
+  is_posix = false
+  is_linux = false
 }
+
+# =============================================================================
+# HOST TOOLCHAIN NAME
+# =============================================================================
+host_toolchain = "//native_client/build/toolchain/${build_os}:${build_cpu_arch}"
+
 
 # We do not use assignment filters
 set_sources_assignment_filter([])
@@ -150,37 +171,77 @@ if (is_win) {
 }
 
 set_defaults("executable") {
-  configs = native_compiler_configs + [
-    "//build/config:default_libs",
-  ]
-  if (is_win) {
-    configs += windows_linker_configs
-  } else if (is_mac) {
-    configs += [
-      "///native_clientbuild/config/mac:mac_dynamic_flags",
-      "//native_client/build/config/mac:mac_executable_flags" ]
-  } else if (is_linux) {
-    configs += [ "//native_client/build/config/linux:executable_ldconfig" ]
+  configs = []
+  if (os != "nacl") {
+    configs = native_compiler_configs + [
+      "//native_client/build/config:default_libs",
+    ]
+    if (is_win) {
+      configs += windows_linker_configs
+    } else if (is_mac) {
+  #    configs += [
+  #      "///native_clientbuild/config/mac:mac_dynamic_flags",
+  #      "//native_client/build/config/mac:mac_executable_flags" ]
+    } else if (is_linux) {
+  #    configs += [ "//native_client/build/config/linux:executable_ldconfig" ]
+    }
+  } else {
+    if (cpu_arch == "arm") {
+      arch = "arm"
+    } else {
+      arch = "x86"
+    }
+    deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
   }
 }
 
 set_defaults("static_library") {
-  configs = native_compiler_configs
+  configs = []
+  if (os != "nacl") {
+    configs += native_compiler_configs
+  } else {
+    if (cpu_arch == "arm") {
+      arch = "arm"
+    } else {
+      arch = "x86"
+    }
+    deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+  }
 }
 
 set_defaults("shared_library") {
-  configs = native_compiler_configs + [
-    "//build/config:default_libs",
-  ]
-  if (is_win) {
-    configs += windows_linker_configs
-  } else if (is_mac) {
-    configs += [ "//build/config/mac:mac_dynamic_flags" ]
+  configs = []
+  if (os != "nacl") {
+    configs += native_compiler_configs + [
+      "//native_client/build/config:default_libs",
+    ]
+    if (is_win) {
+      configs += windows_linker_configs
+    } else if (is_mac) {
+      configs += [ "//native_client/build/config/mac:mac_dynamic_flags" ]
+    }
+  } else {
+    if (cpu_arch == "arm") {
+      arch = "arm"
+    } else {
+      arch = "x86"
+    }
+    deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
   }
 }
 
 set_defaults("source_set") {
-  configs = native_compiler_configs
+  configs = []
+  if (os != "nacl") {
+    configs = native_compiler_configs
+  } else {
+    if (cpu_arch == "arm") {
+      arch = "arm"
+    } else {
+      arch = "x86"
+    }
+    deps = ["//native_client/build/toolchain:prep_${arch}_${nacl_libc}(${host_toolchain})"]
+  }
 }
 
 # ==============================================================================
@@ -216,3 +277,4 @@ if (is_win) {
   host_toolchain = "//native_client/build/toolchain/mac:host_clang"
   set_default_toolchain("//native_client/build/toolchain/mac:clang")
 }
+
