@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/three_d_api_observer.h"
+#include "chrome/browser/gpu/three_d_api_observer.h"
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"

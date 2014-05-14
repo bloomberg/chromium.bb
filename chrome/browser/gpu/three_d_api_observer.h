@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_THREE_D_API_OBSERVER_H_
-#define CHROME_BROWSER_THREE_D_API_OBSERVER_H_
+#ifndef CHROME_BROWSER_GPU_THREE_D_API_OBSERVER_H_
+#define CHROME_BROWSER_GPU_THREE_D_API_OBSERVER_H_
 
 #include "base/compiler_specific.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -22,4 +22,4 @@ class ThreeDAPIObserver : public content::GpuDataManagerObserver {
   DISALLOW_COPY_AND_ASSIGN(ThreeDAPIObserver);
 };
 
-#endif  // CHROME_BROWSER_THREE_D_API_OBSERVER_H_
+#endif  // CHROME_BROWSER_GPU_THREE_D_API_OBSERVER_H_
