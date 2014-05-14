@@ -22,29 +22,29 @@ readonly SCRIPT_DIR=$(dirname $0)
 readonly MAKE_OPTS="-j8"
 readonly ARCH="mips32"
 
-readonly GMP_URL="http://ftp.gnu.org/gnu/gmp/gmp-4.3.2.tar.bz2"
-readonly GMP_SHA1SUM="c011e8feaf1bb89158bd55eaabd7ef8fdd101a2c"
+readonly GMP_URL="http://ftp.gnu.org/gnu/gmp/gmp-5.1.3.tar.bz2"
+readonly GMP_SHA1SUM="b35928e2927b272711fdfbf71b7cfd5f86a6b165"
 
-readonly MPFR_URL="http://ftp.gnu.org/gnu/mpfr/mpfr-2.4.2.tar.bz2"
-readonly MPFR_SHA1SUM="7ca93006e38ae6e53a995af836173cf10ee7c18c"
+readonly MPFR_URL="http://ftp.gnu.org/gnu/mpfr/mpfr-3.1.2.tar.bz2"
+readonly MPFR_SHA1SUM="46d5a11a59a4e31f74f73dd70c5d57a59de2d0b4"
 
-readonly MPC_URL="http://ftp.gnu.org/gnu/mpc/mpc-1.0.1.tar.gz"
-readonly MPC_SHA1SUM="8c7e19ad0dd9b3b5cc652273403423d6cf0c5edf"
+readonly MPC_URL="http://ftp.gnu.org/gnu/mpc/mpc-1.0.2.tar.gz"
+readonly MPC_SHA1SUM="5072d82ab50ec36cc8c0e320b5c377adb48abe70"
 
-readonly GCC_URL="http://ftp.gnu.org/gnu/gcc/gcc-4.7.2/gcc-4.7.2.tar.bz2"
-readonly GCC_SHA1SUM="a464ba0f26eef24c29bcd1e7489421117fb9ee35"
+readonly GCC_URL="http://ftp.gnu.org/gnu/gcc/gcc-4.9.0/gcc-4.9.0.tar.bz2"
+readonly GCC_SHA1SUM="fbde8eb49f2b9e6961a870887cf7337d31cd4917"
 
-readonly BINUTILS_URL="http://ftp.gnu.org/gnu/binutils/binutils-2.22.tar.bz2"
-readonly BINUTILS_SHA1SUM="65b304a0b9a53a686ce50a01173d1f40f8efe404"
+readonly BINUTILS_URL="http://ftp.gnu.org/gnu/binutils/binutils-2.24.tar.bz2"
+readonly BINUTILS_SHA1SUM="7ac75404ddb3c4910c7594b51ddfc76d4693debb"
 
-readonly KERNEL_URL="http://www.linux-mips.org/pub/linux/mips/kernel/v2.6/linux-2.6.38.4.tar.gz"
-readonly KERNEL_SHA1SUM="377fa5cf5f1d0c396759b1c4d147330e7e5b6d7f"
+readonly KERNEL_URL="http://www.linux-mips.org/pub/linux/mips/kernel/v3.x/linux-3.14.2.tar.gz"
+readonly KERNEL_SHA1SUM="9b094e817a7a9b7c09b5bc268e23de642c6c407a"
 
-readonly GDB_URL="http://ftp.gnu.org/gnu/gdb/gdb-7.5.tar.bz2"
-readonly GDB_SHA1SUM="79b61152813e5730fa670c89e5fc3c04b670b02c"
+readonly GDB_URL="http://ftp.gnu.org/gnu/gdb/gdb-7.7.1.tar.bz2"
+readonly GDB_SHA1SUM="35228319f7c715074a80be42fff64c7645227a80"
 
-readonly EGLIBC_SVN_URL="svn://svn.eglibc.org/branches/eglibc-2_14"
-readonly EGLIBC_REVISION="20996"
+readonly EGLIBC_SVN_URL="svn://svn.eglibc.org/branches/eglibc-2_19"
+readonly EGLIBC_REVISION="25243"
 
 readonly DOWNLOAD_QEMU_URL="http://wiki.qemu-project.org/download/qemu-2.0.0.tar.bz2"
 
@@ -262,14 +262,14 @@ DownloadOrCopyAndInstallToolchain() {
 
   Banner "Preparing the code"
 
-  if [ ! -d "${TMP}/eglibc-2_14/libc/ports" ]; then
-    ln -s ${TMP}/eglibc-2_14/ports ${TMP}/eglibc-2_14/libc/ports
+  if [ ! -d "${TMP}/eglibc-2_19/libc/ports" ]; then
+    ln -s ${TMP}/eglibc-2_19/ports ${TMP}/eglibc-2_19/libc/ports
   fi
 
   # Fix a minor syntax issue in tc-mips.c.
   local OLD_TEXT="as_warn_where (fragp->fr_file, fragp->fr_line, msg);"
   local NEW_TEXT="as_warn_where (fragp->fr_file, fragp->fr_line, \"%s\", msg);"
-  local FILE_NAME="${TMP}/binutils-2.22/gas/config/tc-mips.c"
+  local FILE_NAME="${TMP}/binutils-2.24/gas/config/tc-mips.c"
   sed -i "s/${OLD_TEXT}/${NEW_TEXT}/g" "${FILE_NAME}"
 
   export PATH=${INSTALL_ROOT}/bin:$PATH
@@ -282,7 +282,7 @@ DownloadOrCopyAndInstallToolchain() {
   pushd ${BUILD_DIR}/binutils/
 
   SubBanner "Configuring"
-  ${TMP}/binutils-2.22/configure \
+  ${TMP}/binutils-2.24/configure \
     --prefix=${INSTALL_ROOT}     \
     --target=mipsel-linux-gnu    \
     --with-sysroot=${JAIL_MIPS32}
@@ -303,7 +303,7 @@ DownloadOrCopyAndInstallToolchain() {
   pushd ${BUILD_DIR}/gcc/initial
 
   SubBanner "Configuring"
-  ${TMP}/gcc-4.7.2/configure \
+  ${TMP}/gcc-4.9.0/configure \
     --prefix=${INSTALL_ROOT} \
     --disable-libssp         \
     --disable-libgomp        \
@@ -332,7 +332,7 @@ DownloadOrCopyAndInstallToolchain() {
 
 
   Banner "Installing Linux kernel headers"
-  pushd ${TMP}/linux-2.6.38.4
+  pushd ${TMP}/linux-3.14.2
   make headers_install ARCH=mips INSTALL_HDR_PATH=${JAIL_MIPS32}/usr
   popd
 
@@ -351,7 +351,7 @@ DownloadOrCopyAndInstallToolchain() {
   RANLIB=mipsel-linux-gnu-ranlib    \
   CC=mipsel-linux-gnu-gcc           \
   CXX=mipsel-linux-gnu-g++          \
-  ${TMP}/eglibc-2_14/libc/configure \
+  ${TMP}/eglibc-2_19/libc/configure \
     --prefix=/usr                   \
     --enable-add-ons                \
     --build=i686-pc-linux-gnu       \
@@ -384,7 +384,7 @@ DownloadOrCopyAndInstallToolchain() {
   pushd ${BUILD_DIR}/gcc/intermediate
 
   SubBanner "Configuring"
-  ${TMP}/gcc-4.7.2/configure  \
+  ${TMP}/gcc-4.9.0/configure  \
     --prefix=${INSTALL_ROOT}  \
     --disable-libssp          \
     --disable-libgomp         \
@@ -420,7 +420,7 @@ DownloadOrCopyAndInstallToolchain() {
   RANLIB=mipsel-linux-gnu-ranlibi   \
   CC=mipsel-linux-gnu-gcc           \
   CXX=mipsel-linux-gnu-g++          \
-  ${TMP}/eglibc-2_14/libc/configure \
+  ${TMP}/eglibc-2_19/libc/configure \
     --prefix=/usr                   \
     --enable-add-ons                \
     --host=mipsel-linux-gnu         \
@@ -445,7 +445,7 @@ DownloadOrCopyAndInstallToolchain() {
   mkdir -p ${BUILD_DIR}/gcc/final
   pushd ${BUILD_DIR}/gcc/final
 
-  ${TMP}/gcc-4.7.2/configure  \
+  ${TMP}/gcc-4.9.0/configure  \
     --prefix=${INSTALL_ROOT}  \
     --disable-libssp          \
     --disable-libgomp         \
@@ -475,7 +475,7 @@ DownloadOrCopyAndInstallToolchain() {
   mkdir -p ${BUILD_DIR}/gdb/
   pushd ${BUILD_DIR}/gdb/
 
-  ${TMP}/gdb-7.5/configure   \
+  ${TMP}/gdb-7.7.1/configure   \
     --prefix=${INSTALL_ROOT} \
     --target=mipsel-linux-gnu
 
@@ -603,9 +603,9 @@ FixLinks() {
 
   pushd ${JAIL_MIPS32}/usr/lib/
     rm -f libstdc++.so*
-    ln -s ../../../mipsel-linux-gnu/lib/libstdc++.so.6.0.17 .
-    ln -s libstdc++.so.6.0.17 libstdc++.so.6
-    ln -s libstdc++.so.6.0.17 libstdc++.so
+    ln -s ../../../mipsel-linux-gnu/lib/libstdc++.so.6.0.20 .
+    ln -s libstdc++.so.6.0.20 libstdc++.so.6
+    ln -s libstdc++.so.6.0.20 libstdc++.so
 
     rm -f libgcc_s.so*
     ln -s ../../../mipsel-linux-gnu/lib/libgcc_s.so.1 .
