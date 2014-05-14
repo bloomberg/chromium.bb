@@ -352,6 +352,8 @@ TEST(BindingsSampleTest, Basic) {
 
   PortPtr port;
   service->Frobinate(foo, Service::BAZ_EXTRA, port.Pass());
+
+  delete service;
 }
 
 TEST(BindingsSampleTest, DefaultValues) {
