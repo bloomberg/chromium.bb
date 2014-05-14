@@ -23,8 +23,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dvcs.w3.org/hg/IndexedDB/raw-file/default/Overview.html#idl-def-IDBObjectStore
+
 [
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
 ] interface IDBObjectStore {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString name;
     [CallWith=ScriptState] readonly attribute any keyPath;
@@ -35,13 +37,13 @@
     [CallWith=ExecutionContext, RaisesException] IDBRequest put(any value, [Default=Undefined] optional any key);
     [CallWith=ExecutionContext, RaisesException] IDBRequest add(any value, [Default=Undefined] optional any key);
     [CallWith=ExecutionContext, ImplementedAs=deleteFunction, RaisesException] IDBRequest delete(any key);
-    [CallWith=ExecutionContext, RaisesException] IDBRequest clear();
     [CallWith=ExecutionContext, RaisesException] IDBRequest get(any key);
+    [CallWith=ExecutionContext, RaisesException] IDBRequest clear();
     [CallWith=ExecutionContext, RaisesException] IDBRequest openCursor([Default=Undefined] optional any range, [Default=NullString] optional DOMString direction);
     [CallWith=ExecutionContext, RaisesException, RuntimeEnabled=IndexedDBExperimental] IDBRequest openKeyCursor([Default=Undefined] optional any range, [Default=NullString] optional DOMString direction);
-
-    [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, sequence<DOMString> keyPath, optional Dictionary options);
+    // FIXME: should be union type http://crbug.com/240176
     [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, DOMString keyPath, optional Dictionary options);
+    [CallWith=ScriptState, RaisesException] IDBIndex createIndex(DOMString name, sequence<DOMString> keyPath, optional Dictionary options);
     [RaisesException] IDBIndex index(DOMString name);
     [RaisesException] void deleteIndex(DOMString name);
     [CallWith=ExecutionContext, RaisesException] IDBRequest count([Default=Undefined] optional any key);

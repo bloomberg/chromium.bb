@@ -6570,13 +6570,17 @@ static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1))) {
-        overloadedMethodE1Method(info);
-        return;
-    }
-    if (((info.Length() == 1) && (info[0]->IsArray()))) {
-        overloadedMethodE2Method(info);
-        return;
+    switch (info.Length()) {
+    case 1:
+        if (info[0]->IsArray()) {
+            overloadedMethodE2Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodE1Method(info);
+            return;
+        }
+        break;
     }
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {

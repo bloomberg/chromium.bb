@@ -24,24 +24,24 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dvcs.w3.org/hg/IndexedDB/raw-file/default/Overview.html#idl-def-IDBDatabase
+
 [
     ActiveDOMObject,
-    WillBeGarbageCollected
+    WillBeGarbageCollected,
 ] interface IDBDatabase : EventTarget {
     readonly attribute DOMString name;
     [CallWith=ScriptState] readonly attribute any version;
     readonly attribute DOMStringList objectStoreNames;
-
+    [RaisesException] IDBObjectStore createObjectStore(DOMString name, optional Dictionary options);
+    [RaisesException] void deleteObjectStore(DOMString name);
+    // FIXME: should be union type http://crbug.com/240176
+    [CallWith=ExecutionContext, RaisesException] IDBTransaction transaction(DOMString storeName, [Default=NullString] optional DOMString mode);
+    [CallWith=ExecutionContext, RaisesException] IDBTransaction transaction(sequence<DOMString> storeNames, [Default=NullString] optional DOMString mode);
+    [CallWith=ExecutionContext, RaisesException] IDBTransaction transaction(DOMStringList storeNames, [Default=NullString] optional DOMString mode);
+    void close();
     attribute EventHandler onabort;
     attribute EventHandler onclose;
     attribute EventHandler onerror;
     attribute EventHandler onversionchange;
-
-    [RaisesException] IDBObjectStore createObjectStore(DOMString name, optional Dictionary options);
-    [RaisesException] void deleteObjectStore(DOMString name);
-    [CallWith=ExecutionContext, RaisesException] IDBTransaction transaction(DOMStringList storeNames, [Default=NullString] optional DOMString mode);
-    [CallWith=ExecutionContext, RaisesException] IDBTransaction transaction(sequence<DOMString> storeNames, [Default=NullString] optional DOMString mode);
-    [CallWith=ExecutionContext, RaisesException] IDBTransaction transaction(DOMString storeName, [Default=NullString] optional DOMString mode);
-
-    void close();
 };

@@ -380,12 +380,11 @@ def is_use_spec_algorithm(effective_overloads_by_length):
     # Use spec algorithm if:
     # * method is not variadic,
     # * no distinguishing type is unsupported:
-    #   non-wrapper, array, callback interface, boolean, nullable,
+    #   non-wrapper, callback interface, boolean, nullable,
     # * all distinguishing types are distinct, and
     # * all distinguishing arguments are required (not optional).
     def is_unsupported_type(idl_type):
         return ((idl_type.is_interface_type and not idl_type.is_wrapper_type) or
-                idl_type.array_or_sequence_type or
                 idl_type.is_callback_interface or
                 idl_type.name == 'Boolean' or
                 idl_type.is_nullable)
@@ -655,6 +654,22 @@ def resolution_tests_methods(effective_overloads):
                              if idl_type.is_wrapper_type):
         test = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
         yield test, method
+
+    # 8. Otherwise: if V is any kind of object except for a native Date object,
+    # a native RegExp object, and there is an entry in S that has one of the
+    # following types at position i of its type list,
+    # • an array type
+    # • a sequence type
+    # (We test directly for Array instead of generic Object.)
+    # FIXME: test for Object during resolution, then have type check for Array
+    # in overloaded method: http://crbug.com/262383
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.array_or_sequence_type)
+        test = '%s->IsArray()' % cpp_value
+        yield test, method
+    except StopIteration:
+        pass
 
     # (Check for exact type matches before performing automatic type conversion;
     # only needed if distinguishing between primitive types.)
