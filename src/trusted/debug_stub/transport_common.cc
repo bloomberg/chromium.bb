@@ -384,7 +384,22 @@ SocketBinding *SocketBinding::Bind(const char *addr) {
   // Override portions address that are provided
   if (addr) BuildSockAddr(addr, &saddr);
 
-  // This is necessary to ensure that the TCP port is released
+#if NACL_WINDOWS
+  // On Windows, SO_REUSEADDR has a different meaning than on POSIX systems.
+  // SO_REUSEADDR allows hijacking of an open socket by another process.
+  // The SO_EXCLUSIVEADDRUSE flag prevents this behavior.
+  // See: http://msdn.microsoft.com/en-us/library/windows/desktop/ms740621(v=vs.85).aspx
+  //
+  // Additionally, unlike POSIX, TCP server sockets can be bound to
+  // ports in the TIME_WAIT state, without setting SO_REUSEADDR.
+  int exclusive_address = 1;
+  if (setsockopt(socket_handle, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
+                 reinterpret_cast<char *>(&exclusive_address),
+                 sizeof(exclusive_address))) {
+    NaClLog(LOG_WARNING, "Failed to set SO_EXCLUSIVEADDRUSE option.\n");
+  }
+#else
+  // On POSIX, this is necessary to ensure that the TCP port is released
   // promptly when sel_ldr exits.  Without this, the TCP port might
   // only be released after a timeout, and later processes can fail
   // to bind it.
@@ -394,6 +409,7 @@ SocketBinding *SocketBinding::Bind(const char *addr) {
                  sizeof(reuse_address))) {
     NaClLog(LOG_WARNING, "Failed to set SO_REUSEADDR option.\n");
   }
+#endif
 
   struct sockaddr *psaddr = reinterpret_cast<struct sockaddr *>(&saddr);
   if (bind(socket_handle, psaddr, addrlen)) {
