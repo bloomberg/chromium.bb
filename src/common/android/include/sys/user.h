@@ -194,7 +194,7 @@ struct user_fpregs_struct {
 #elif defined(__x86_64__)
 
 // Bionic's user_fpregs_struct calls the tag word twd instead of ftw.  To avoid
-// changing lots of Bionic, uUse an ugly macro renaming trick with
+// changing lots of Bionic, use an ugly macro renaming trick with
 // #include_next.
 // TODO(rmcilroy): Remove when NDK headers are fixed.
 #define user_fpregs_struct __bionic_user_fpregs_struct
