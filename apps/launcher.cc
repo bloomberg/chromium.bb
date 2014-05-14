@@ -20,6 +20,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
@@ -351,7 +353,19 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
     }
   }
 
-  if (command_line.GetArgs().empty()) {
+#if defined(OS_WIN)
+  base::CommandLine::StringType about_blank_url(
+      base::ASCIIToWide(content::kAboutBlankURL));
+#else
+  base::CommandLine::StringType about_blank_url(content::kAboutBlankURL);
+#endif
+  CommandLine::StringVector args = command_line.GetArgs();
+  // Browser tests will add about:blank to the command line. This should
+  // never be interpreted as a file to open, as doing so with an app that
+  // has write access will result in a file 'about' being created, which
+  // causes problems on the bots.
+  if (args.empty() || (command_line.HasSwitch(switches::kTestType) &&
+                       args[0] == about_blank_url)) {
     LaunchPlatformAppWithNoData(profile, extension);
     return;
   }
