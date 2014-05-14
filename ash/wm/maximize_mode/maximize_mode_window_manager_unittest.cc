@@ -15,6 +15,7 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -998,6 +999,160 @@ TEST_F(MaximizeModeWindowManagerTest, ExitsOverview) {
   // previous state.
   DestroyMaximizeModeWindowManager();
   EXPECT_FALSE(window_selector_controller->IsSelecting());
+}
+
+// Test that an edge swipe from the top will end full screen mode.
+TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromTop) {
+  gfx::Rect rect(10, 10, 200, 50);
+  scoped_ptr<aura::Window>
+      background_window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  scoped_ptr<aura::Window>
+      foreground_window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* background_window_state =
+      wm::GetWindowState(background_window.get());
+  wm::WindowState* foreground_window_state =
+      wm::GetWindowState(foreground_window.get());
+  wm::ActivateWindow(foreground_window.get());
+  CreateMaximizeModeWindowManager();
+
+  // Fullscreen both windows.
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  background_window_state->OnWMEvent(&event);
+  foreground_window_state->OnWMEvent(&event);
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+  EXPECT_TRUE(foreground_window_state->IsFullscreen());
+  EXPECT_EQ(foreground_window.get(), wm::GetActiveWindow());
+
+  // Do an edge swipe top into screen.
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.GestureScrollSequence(gfx::Point(50, 0),
+                                  gfx::Point(50, 100),
+                                  base::TimeDelta::FromMilliseconds(20),
+                                  10);
+
+  EXPECT_FALSE(foreground_window_state->IsFullscreen());
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+
+  // Do a second edge swipe top into screen.
+  generator.GestureScrollSequence(gfx::Point(50, 0),
+                                  gfx::Point(50, 100),
+                                  base::TimeDelta::FromMilliseconds(20),
+                                  10);
+
+  EXPECT_FALSE(foreground_window_state->IsFullscreen());
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+
+  DestroyMaximizeModeWindowManager();
+}
+
+// Test that an edge swipe from the bottom will end full screen mode.
+TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeSwipeFromBottom) {
+  gfx::Rect rect(10, 10, 200, 50);
+  scoped_ptr<aura::Window>
+      background_window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  scoped_ptr<aura::Window>
+      foreground_window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* background_window_state =
+      wm::GetWindowState(background_window.get());
+  wm::WindowState* foreground_window_state =
+      wm::GetWindowState(foreground_window.get());
+  wm::ActivateWindow(foreground_window.get());
+  CreateMaximizeModeWindowManager();
+
+  // Fullscreen both windows.
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  background_window_state->OnWMEvent(&event);
+  foreground_window_state->OnWMEvent(&event);
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+  EXPECT_TRUE(foreground_window_state->IsFullscreen());
+  EXPECT_EQ(foreground_window.get(), wm::GetActiveWindow());
+
+  // Do an edge swipe bottom into screen.
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  int y = Shell::GetPrimaryRootWindow()->bounds().bottom();
+  generator.GestureScrollSequence(gfx::Point(50, y),
+                                  gfx::Point(50, y - 100),
+                                  base::TimeDelta::FromMilliseconds(20),
+                                  10);
+
+  EXPECT_FALSE(foreground_window_state->IsFullscreen());
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+
+  DestroyMaximizeModeWindowManager();
+}
+
+// Test that an edge touch press at the top will end full screen mode.
+TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtTop) {
+  gfx::Rect rect(10, 10, 200, 50);
+  scoped_ptr<aura::Window>
+      background_window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  scoped_ptr<aura::Window>
+      foreground_window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* background_window_state =
+      wm::GetWindowState(background_window.get());
+  wm::WindowState* foreground_window_state =
+      wm::GetWindowState(foreground_window.get());
+  wm::ActivateWindow(foreground_window.get());
+  CreateMaximizeModeWindowManager();
+
+  // Fullscreen both windows.
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  background_window_state->OnWMEvent(&event);
+  foreground_window_state->OnWMEvent(&event);
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+  EXPECT_TRUE(foreground_window_state->IsFullscreen());
+  EXPECT_EQ(foreground_window.get(), wm::GetActiveWindow());
+
+  // Touch tap on the top edge.
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.GestureTapAt(gfx::Point(100, 0));
+  EXPECT_FALSE(foreground_window_state->IsFullscreen());
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+
+  // Try the same again and see that nothing changes.
+  generator.GestureTapAt(gfx::Point(100, 0));
+  EXPECT_FALSE(foreground_window_state->IsFullscreen());
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+
+  DestroyMaximizeModeWindowManager();
+}
+
+// Test that an edge touch press at the bottom will end full screen mode.
+TEST_F(MaximizeModeWindowManagerTest, ExitFullScreenWithEdgeTouchAtBottom) {
+  gfx::Rect rect(10, 10, 200, 50);
+  scoped_ptr<aura::Window>
+      background_window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  scoped_ptr<aura::Window>
+      foreground_window(CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
+  wm::WindowState* background_window_state =
+      wm::GetWindowState(background_window.get());
+  wm::WindowState* foreground_window_state =
+      wm::GetWindowState(foreground_window.get());
+  wm::ActivateWindow(foreground_window.get());
+  CreateMaximizeModeWindowManager();
+
+  // Fullscreen both windows.
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  background_window_state->OnWMEvent(&event);
+  foreground_window_state->OnWMEvent(&event);
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+  EXPECT_TRUE(foreground_window_state->IsFullscreen());
+  EXPECT_EQ(foreground_window.get(), wm::GetActiveWindow());
+
+  // Touch tap on the bottom edge.
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  generator.GestureTapAt(
+      gfx::Point(100, Shell::GetPrimaryRootWindow()->bounds().bottom() - 1));
+  EXPECT_FALSE(foreground_window_state->IsFullscreen());
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+
+  // Try the same again and see that nothing changes.
+  generator.GestureTapAt(
+      gfx::Point(100, Shell::GetPrimaryRootWindow()->bounds().bottom() - 1));
+  EXPECT_FALSE(foreground_window_state->IsFullscreen());
+  EXPECT_TRUE(background_window_state->IsFullscreen());
+
+  DestroyMaximizeModeWindowManager();
 }
 
 #endif  // OS_WIN
