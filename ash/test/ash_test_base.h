@@ -13,12 +13,15 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/views/test/test_views_delegate.h"
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
+
+namespace gfx {
+class Rect;
+}
 
 namespace aura {
 class RootWindow;
@@ -41,14 +44,6 @@ class TestSystemTrayDelegate;
 #if defined(OS_WIN)
 class TestMetroViewerProcessHost;
 #endif
-
-class AshTestViewsDelegate : public views::TestViewsDelegate {
- public:
-  // Overriden from TestViewsDelegate.
-  virtual content::WebContents* CreateWebContents(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) OVERRIDE;
-};
 
 class AshTestBase : public testing::Test {
  public:

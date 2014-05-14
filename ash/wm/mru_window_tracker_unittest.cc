@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 

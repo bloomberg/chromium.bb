@@ -18,7 +18,6 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
  public:
   ScreensaverViewTest() {
     url_ = GURL("http://www.google.com");
-    views_delegate_.reset(new AshTestViewsDelegate());
     webview_test_helper_.reset(new views::WebViewTestHelper());
   }
 
@@ -44,7 +43,6 @@ class ScreensaverViewTest : public ash::test::AshTestBase {
   GURL url_;
 
  private:
-  scoped_ptr<AshTestViewsDelegate> views_delegate_;
   scoped_ptr<views::WebViewTestHelper> webview_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreensaverViewTest);

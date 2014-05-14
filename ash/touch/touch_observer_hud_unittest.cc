@@ -17,6 +17,7 @@
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/window.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 

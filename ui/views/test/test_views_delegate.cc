@@ -17,7 +17,8 @@ TestViewsDelegate::TestViewsDelegate()
 }
 
 TestViewsDelegate::~TestViewsDelegate() {
-  ViewsDelegate::views_delegate = NULL;
+  if (ViewsDelegate::views_delegate == this)
+    ViewsDelegate::views_delegate = NULL;
 }
 
 void TestViewsDelegate::SetUseTransparentWindows(bool transparent) {
