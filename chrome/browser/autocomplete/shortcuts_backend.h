@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
@@ -22,9 +23,14 @@
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
 #include "url/gurl.h"
 
 class Profile;
+
+namespace extensions {
+class ExtensionRegistry;
+}
 
 namespace history {
 class ShortcutsDatabase;
@@ -33,7 +39,8 @@ class ShortcutsDatabase;
 // This class manages the shortcut provider backend - access to database on the
 // db thread, etc.
 class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
-                         public content::NotificationObserver {
+                         public content::NotificationObserver,
+                         public extensions::ExtensionRegistryObserver {
  public:
   typedef std::multimap<base::string16,
                         const history::ShortcutsDatabase::Shortcut> ShortcutMap;
@@ -104,6 +111,12 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // extensions::ExtensionRegistryObserver:
+  virtual void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) OVERRIDE;
+
   // Internal initialization of the back-end. Posted by Init() to the DB thread.
   // On completion posts InitCompleted() back to UI thread.
   void InitInternal();
@@ -144,6 +157,10 @@ class ShortcutsBackend : public RefcountedBrowserContextKeyedService,
   GuidMap guid_map_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
 
   // For some unit-test only.
   bool no_db_access_;
