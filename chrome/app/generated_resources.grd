@@ -5484,12 +5484,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION">
         Enable registering unregistered cloud printers from print preview.
       </message>
-      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME" desc="Title of the touch-optimized UI flag." >
-        Touch Optimized UI
-      </message>
-      <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_DESCRIPTION" desc="Description of the touch-optimized UI flag.">
-        Enables experimental layout refinements to improve user experience with touch screens.
-      </message>
       <message name="IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_NAME">
         Enable Save Password Bubble UI
       </message>
@@ -5668,12 +5662,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DISABLE_HYPERLINK_AUDITING_DESCRIPTION" desc="Description of the 'Disable hyperlink auditing' lab.">
         Disable sending hyperlink auditing pings.
       </message>
-      <message name="IDS_FLAGS_NTP_SUGGESTIONS_PAGE_NAME" desc="Name of the 'Enable suggestions page' lab.">
-        NTP Suggestions page
-      </message>
-      <message name="IDS_FLAGS_NTP_SUGGESTIONS_PAGE_DESCRIPTION" desc="Description of the 'Enable suggestions page' lab.">
-        Add 'Suggestions' card to the new tab page, which suggests the pages to be opened.
-      </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_ENABLE_NEW_NTP" desc="Title for the flag to enable the new NTP.">
           Enable the new NTP.
@@ -5714,12 +5702,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_NAME" desc="Name of the flag that enables an interactive autocomplete UI.">
-        Enable interactive autocomplete
-      </message>
-      <message name="IDS_FLAGS_ENABLE_INTERACTIVE_AUTOCOMPLETE_DESCRIPTION" desc="Description of the flag to enable an interactive autocomplete UI.">
-        Enable an interactive autocomplete UI that can be invoked by calling HTMLFormElement#requestAutocomplete.
       </message>
       <message name="IDS_FLAGS_ENABLE_TCP_FAST_OPEN_NAME" desc="Name of the flag that enables TCP Fast Open.">
         Enable TCP Fast Open
@@ -5946,35 +5928,17 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED" desc="Generic 'Disabled' experiment choice option name. E.G. shown in multi value options in about:flags.">
         Disabled
       </message>
-      <message name="IDS_FLAGS_PER_TILE_PAINTING_NAME" desc="Title for the flag to enable per-tile painting">
-        Per-tile Painting
-      </message>
-      <message name="IDS_FLAGS_PER_TILE_PAINTING_DESCRIPTION" desc="Description for the flag to enable per-tile painting">
-        Enable per-tile painting of page contents when compositing is enabled.
-      </message>
       <message name="IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_NAME" desc="Title for the flag to enable JavaScript Harmony features.">
         Enable Experimental JavaScript
       </message>
       <message name="IDS_FLAGS_ENABLE_JAVASCRIPT_HARMONY_DESCRIPTION" desc="Description for the flag to enable JavaScript Harmony features.">
         Enable web pages to use experimental JavaScript features.
       </message>
-      <message name="IDS_FLAGS_ENABLE_TAB_BROWSER_DRAGGING_NAME" desc="Title for the flag to enable detached tabs to create a real browser.">
-        Enable Tab Browser Dragging
-      </message>
-      <message name="IDS_FLAGS_ENABLE_TAB_BROWSER_DRAGGING_DESCRIPTION" desc="Description for the flag to enable detached tabs to create a real browser.">
-        Enable creating a browser window when dragging tabs.
-      </message>
       <message name="IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_NAME" desc="Title for the flag to enable the download resume feature.">
         Enable Download Resumption
       </message>
       <message name="IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_DESCRIPTION" desc="Description for the flag to enable the download resume feature.">
         Allow downloads that have been interrupted to be continued or restarted, using the Resume context menu item.
-      </message>
-      <message name="IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_NAME" desc="Title for the flag to disable restoring (more) session state after restarts and crashes.">
-        Disable Better session restore
-      </message>
-      <message name="IDS_FLAGS_DISABLE_RESTORE_SESSION_STATE_DESCRIPTION" desc="Description for the flag to disable restoring (more) session state after restarts and crashes.">
-        Disables the Better session restore features which restore more session state (e.g., session cookies) after restarts and crashes.
       </message>
       <message name="IDS_FLAGS_DISABLE_SOFTWARE_RASTERIZER_NAME" desc="Title for the flag to disable using a software rasterizer.">
         Disable 3D software rasterizer
@@ -6175,12 +6139,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable AVFoundation use for video capture and video device monitoring on OS X >= 10.7. QTKit will be used otherwise.
         </message>
       </if>
-      <message name="IDS_FLAGS_ENABLE_APPS_DEVTOOL_APP_NAME" desc="Name of the flag to enable apps-devtools app.">
-        Enable apps-devtool app.
-      </message>
-      <message name="IDS_FLAGS_ENABLE_APPS_DEVTOOL_APP_DESCRIPTION" desc="Description of flag to enable apps-devtools app.">
-        An app to develop apps / extensions.
-      </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_NAME" desc="Name of the flag to enable data compression proxy.">
           Enable Data Compression Proxy
