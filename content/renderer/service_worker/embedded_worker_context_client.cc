@@ -11,7 +11,6 @@
 #include "content/child/request_extra_data.h"
 #include "content/child/service_worker/service_worker_network_provider.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/webmessageportchannel_impl.h"
 #include "content/child/worker_task_runner.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "content/common/devtools_messages.h"
@@ -281,9 +280,8 @@ void EmbeddedWorkerContextClient::postMessageToClient(
     const blink::WebString& message,
     blink::WebMessagePortChannelArray* channels) {
   DCHECK(script_context_);
-  script_context_->PostMessageToDocument(
-      client_id, message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels));
+  script_context_->PostMessageToDocument(client_id, message,
+                                         make_scoped_ptr(channels));
 }
 
 void EmbeddedWorkerContextClient::OnMessageToWorker(

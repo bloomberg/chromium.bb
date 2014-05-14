@@ -22,9 +22,10 @@ void SendPostMessageToDocumentOnMainThread(
     int routing_id,
     int client_id,
     const base::string16& message,
-    const std::vector<int>& message_port_ids) {
+    scoped_ptr<blink::WebMessagePortChannelArray> channels) {
   sender->Send(new ServiceWorkerHostMsg_PostMessageToDocument(
-      routing_id, client_id, message, message_port_ids));
+      routing_id, client_id, message,
+      WebMessagePortChannelImpl::ExtractMessagePortIDs(channels.release())));
 }
 
 }  // namespace
@@ -92,8 +93,8 @@ void ServiceWorkerScriptContext::GetClientDocuments(
 void ServiceWorkerScriptContext::PostMessageToDocument(
     int client_id,
     const base::string16& message,
-    const std::vector<int>& message_port_ids) {
-  // This may send IDs for MessagePorts, and all internal book-keeping
+    scoped_ptr<blink::WebMessagePortChannelArray> channels) {
+  // This may send channels for MessagePorts, and all internal book-keeping
   // messages for MessagePort (e.g. QueueMessages) are sent from main thread
   // (with thread hopping), so we need to do the same thread hopping here not
   // to overtake those messages.
@@ -101,7 +102,7 @@ void ServiceWorkerScriptContext::PostMessageToDocument(
       FROM_HERE,
       base::Bind(&SendPostMessageToDocumentOnMainThread,
                  make_scoped_refptr(embedded_context_->thread_safe_sender()),
-                 GetRoutingID(), client_id, message, message_port_ids));
+                 GetRoutingID(), client_id, message, base::Passed(&channels)));
 }
 
 void ServiceWorkerScriptContext::Send(IPC::Message* message) {

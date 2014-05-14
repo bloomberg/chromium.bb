@@ -86,6 +86,9 @@ std::vector<int> WebMessagePortChannelImpl::ExtractMessagePortIDs(
     for (size_t i = 0; i < channels->size(); ++i) {
       WebMessagePortChannelImpl* webchannel =
           static_cast<WebMessagePortChannelImpl*>((*channels)[i]);
+      // The message port ids might not be set up yet if this channel
+      // wasn't created on the main thread.
+      DCHECK(webchannel->child_thread_loop_->BelongsToCurrentThread());
       message_port_ids[i] = webchannel->message_port_id();
       webchannel->QueueMessages();
       DCHECK(message_port_ids[i] != MSG_ROUTING_NONE);
