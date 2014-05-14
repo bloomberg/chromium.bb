@@ -51,6 +51,11 @@ bool DeleteFile(const FilePath& path, bool recursive) {
   if (path.value().length() >= MAX_PATH)
     return false;
 
+  // On XP SHFileOperation will return ERROR_ACCESS_DENIED instead of
+  // ERROR_FILE_NOT_FOUND, so just shortcut this here.
+  if (path.empty())
+    return true;
+
   if (!recursive) {
     // If not recursing, then first check to see if |path| is a directory.
     // If it is, then remove it with RemoveDirectory.
