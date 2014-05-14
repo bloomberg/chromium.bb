@@ -655,6 +655,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
 
   physical_backing_size_ = physical_backing_size;
   overdraw_bottom_height_ = overdraw_bottom_height;
+  visible_viewport_size_ = visible_viewport_size;
   resizer_rect_ = resizer_rect;
 
   // NOTE: We may have entered fullscreen mode without changing our size.
