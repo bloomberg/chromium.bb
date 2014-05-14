@@ -58,18 +58,18 @@ bool CompareImages(const gfx::Image& image_1, const gfx::Image& image_2) {
 
 // Factory functions for creating instances of the implementations.
 template <class T>
-scoped_refptr<ImageStore> CreateStore(base::ScopedTempDir& folder);
+ImageStore* CreateStore(base::ScopedTempDir& folder);
 
 template <>
-scoped_refptr<ImageStore> CreateStore<TestImageStore>(
+ImageStore* CreateStore<TestImageStore>(
     base::ScopedTempDir& folder) {
-  return scoped_refptr<ImageStore>(new TestImageStore());
+  return new TestImageStore();
 }
 
 template <>
-scoped_refptr<ImageStore> CreateStore<PersistentImageStore>(
+ImageStore* CreateStore<PersistentImageStore>(
     base::ScopedTempDir& folder) {
-  return scoped_refptr<ImageStore>(new PersistentImageStore(folder.path()));
+  return new PersistentImageStore(folder.path());
 }
 
 // Methods to check if persistence is on or not.
@@ -87,7 +87,7 @@ class ImageStoreUnitTest : public PlatformTest {
   virtual void SetUp() OVERRIDE {
     bool success = tempDir_.CreateUniqueTempDir();
     ASSERT_TRUE(success);
-    store_ = CreateStore<T>(tempDir_);
+    store_.reset(CreateStore<T>(tempDir_));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -96,12 +96,12 @@ class ImageStoreUnitTest : public PlatformTest {
   }
 
   bool use_persistent_store() const { return ShouldPersist<T>(); }
-  void ResetStore() { store_ = CreateStore<T>(tempDir_); }
+  void ResetStore() { store_.reset(CreateStore<T>(tempDir_)); }
 
   // The directory the database is saved into.
   base::ScopedTempDir tempDir_;
   // The object the fixture is testing, via its base interface.
-  scoped_refptr<ImageStore> store_;
+  scoped_ptr<ImageStore> store_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageStoreUnitTest);

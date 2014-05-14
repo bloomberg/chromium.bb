@@ -8,8 +8,6 @@
 #include <map>
 #include <set>
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "ui/gfx/image/image.h"
 
@@ -17,9 +15,10 @@ class GURL;
 
 // The ImageStore keeps an image for each URL.  This class is not thread safe,
 // and will check the thread using base::ThreadChecker, except the constructor.
-class ImageStore : public base::RefCounted<ImageStore> {
+class ImageStore {
  public:
   ImageStore();
+  virtual ~ImageStore();
 
   // Returns true if there is an image for this url.
   virtual bool HasKey(const GURL& page_url) = 0;
@@ -54,13 +53,9 @@ class ImageStore : public base::RefCounted<ImageStore> {
   void ChangeImageURL(const GURL& from, const GURL& to);
 
  protected:
-  virtual ~ImageStore();
-
   base::ThreadChecker thread_checker_;
 
  private:
-  friend class base::RefCounted<ImageStore>;
-
   DISALLOW_COPY_AND_ASSIGN(ImageStore);
 };
 

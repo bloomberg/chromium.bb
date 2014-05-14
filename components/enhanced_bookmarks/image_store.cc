@@ -9,6 +9,9 @@
 ImageStore::ImageStore() {
 }
 
+ImageStore::~ImageStore() {
+}
+
 void ImageStore::ChangeImageURL(const GURL& from, const GURL& to) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -18,7 +21,4 @@ void ImageStore::ChangeImageURL(const GURL& from, const GURL& to) {
   std::pair<gfx::Image, GURL> image_info = Get(from);
   Erase(from);
   Insert(to, image_info.second, image_info.first);
-}
-
-ImageStore::~ImageStore() {
 }
