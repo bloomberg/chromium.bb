@@ -1,31 +1,27 @@
-
-
-
-
-
-
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean laoreet dolor id urna eleifend aliquet. Nulla vel dolor ipsum. Aliquam ut turpis nisl, in vulputate sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Sed congue magna vitae dolor feugiat vehicula. Sed volutpat, tellus vel varius vestibulum, purus quam mollis sapien, in condimentum leo neque sed nulla. Nunc quis porta elit. Pellentesque erat lectus, ultricies a lobortis id, faucibus id quam.
-(repaint rects
-  (rect 148 128 252 160)
-  (rect 8 128 392 160)
-  (rect 400 128 392 160)
-  (rect 400 128 644 100)
-  (rect 400 128 392 160)
-  (rect 400 128 644 100)
-  (rect 8 128 140 100)
-  (rect 400 128 392 160)
-  (rect 148 128 644 100)
-  (rect 8 228 784 60)
-  (rect 8 228 784 60)
-  (rect 0 236 800 60)
-  (rect 139 128 9 100)
-  (rect 8 128 140 100)
-  (rect 148 128 644 100)
-  (rect 148 128 653 100)
-  (rect 148 128 644 100)
-  (rect 148 128 653 100)
-  (rect 8 128 131 100)
-  (rect 148 128 644 100)
-  (rect 139 128 653 100)
+(GraphicsLayer
+  (bounds 800.00 600.00)
+  (children 1
+    (GraphicsLayer
+      (bounds 800.00 600.00)
+      (contentsOpaque 1)
+      (drawsContent 1)
+      (repaint rects
+        (rect 400.00 128.00 392.00 160.00)
+        (rect 400.00 128.00 392.00 160.00)
+        (rect 148.00 128.00 644.00 100.00)
+        (rect 148.00 128.00 644.00 100.00)
+        (rect 148.00 128.00 644.00 100.00)
+        (rect 148.00 128.00 644.00 100.00)
+        (rect 148.00 128.00 252.00 160.00)
+        (rect 139.00 128.00 653.00 100.00)
+        (rect 139.00 128.00 653.00 100.00)
+        (rect 139.00 128.00 9.00 100.00)
+        (rect 8.00 228.00 784.00 60.00)
+        (rect 8.00 228.00 784.00 60.00)
+        (rect 8.00 228.00 392.00 60.00)
+        (rect 0.00 236.00 800.00 60.00)
+      )
+    )
+  )
 )
 
