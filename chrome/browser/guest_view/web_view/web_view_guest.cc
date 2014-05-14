@@ -44,6 +44,15 @@
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/base/models/simple_menu_model.h"
 
+#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/print_preview_message_handler.h"
+#include "chrome/browser/printing/print_view_manager.h"
+#else
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
+
 #if defined(ENABLE_PLUGINS)
 #include "chrome/browser/guest_view/web_view/plugin_permission_helper.h"
 #endif
@@ -127,6 +136,14 @@ void AttachWebViewHelpers(WebContents* contents) {
 #if defined(ENABLE_PLUGINS)
   PluginPermissionHelper::CreateForWebContents(contents);
 #endif
+#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
+  printing::PrintViewManager::CreateForWebContents(contents);
+  printing::PrintPreviewMessageHandler::CreateForWebContents(contents);
+#else
+  printing::PrintViewManagerBasic::CreateForWebContents(contents);
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
 }
 
 }  // namespace
