@@ -16,15 +16,14 @@ A*
 # AppApiTest.*
 # BrowserAccessibilityStateImplTest.*
 B*
-C*
+# C*: ~190 tests
 D*
 E*
 F*
 G*
-# H*: ~35  tests
-H*
+# H*: ~52  tests
 # DrM-i#1052-c#53
-# HistoryWebUITest.*
+HistoryWebUITest.*
 # I*: ~10  tests
 # DrM-i#1052-c#53
 InfoBarsTest.*
