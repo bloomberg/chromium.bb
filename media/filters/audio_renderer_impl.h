@@ -82,12 +82,6 @@ class MEDIA_EXPORT AudioRendererImpl
   virtual void ResumeAfterUnderflow() OVERRIDE;
   virtual void SetVolume(float volume) OVERRIDE;
 
-  // Disables underflow support.  When used, |state_| will never transition to
-  // kUnderflow resulting in Render calls that underflow returning 0 frames
-  // instead of some number of silence frames.  Must be called prior to
-  // Initialize().
-  void DisableUnderflowForTesting();
-
   // Allows injection of a custom time callback for non-realtime testing.
   typedef base::Callback<base::TimeTicks()> NowCB;
   void set_now_cb_for_testing(const NowCB& now_cb) {
@@ -288,8 +282,6 @@ class MEDIA_EXPORT AudioRendererImpl
   // than nothing.
   base::TimeTicks earliest_end_time_;
   size_t total_frames_filled_;
-
-  bool underflow_disabled_;
 
   // True if the renderer receives a buffer with kAborted status during preroll,
   // false otherwise. This flag is cleared on the next Preroll() call.

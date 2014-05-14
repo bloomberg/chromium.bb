@@ -325,8 +325,6 @@ class AudioRendererImplTest : public ::testing::Test {
   // number of frames read.  Since time is frozen, the audio delay will increase
   // as frames come in.
   int ConsumeAllBufferedData() {
-    renderer_->DisableUnderflowForTesting();
-
     int frames_read = 0;
     int total_frames_read = 0;
 

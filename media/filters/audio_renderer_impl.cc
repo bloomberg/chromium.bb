@@ -59,7 +59,6 @@ AudioRendererImpl::AudioRendererImpl(
       pending_read_(false),
       received_end_of_stream_(false),
       rendered_end_of_stream_(false),
-      underflow_disabled_(false),
       preroll_aborted_(false),
       weak_factory_(this) {
   audio_buffer_stream_.set_splice_observer(base::Bind(
@@ -639,8 +638,7 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
           now >= earliest_end_time_) {
         rendered_end_of_stream_ = true;
         ended_cb_.Run();
-      } else if (!received_end_of_stream_ && state_ == kPlaying &&
-                 !underflow_disabled_) {
+      } else if (!received_end_of_stream_ && state_ == kPlaying) {
         ChangeState_Locked(kUnderflow);
         underflow_cb = underflow_cb_;
       } else {
@@ -703,10 +701,6 @@ void AudioRendererImpl::OnRenderError() {
   // notifying clients. See http://crbug.com/234708 for details.
   HistogramRendererEvent(RENDER_ERROR);
   error_cb_.Run(PIPELINE_ERROR_DECODE);
-}
-
-void AudioRendererImpl::DisableUnderflowForTesting() {
-  underflow_disabled_ = true;
 }
 
 void AudioRendererImpl::HandleAbortedReadOrDecodeError(bool is_decode_error) {
