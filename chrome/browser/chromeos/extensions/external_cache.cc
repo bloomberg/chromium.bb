@@ -120,6 +120,12 @@ void ExternalCache::RemoveExtensions(const std::vector<std::string>& ids) {
   UpdateExtensionLoader();
 }
 
+bool ExternalCache::GetExtension(const std::string& id,
+                                 base::FilePath* file_path,
+                                 std::string* version) {
+  return local_cache_.GetExtension(id, file_path, version);
+}
+
 void ExternalCache::Observe(int type,
                             const content::NotificationSource& source,
                             const content::NotificationDetails& details) {

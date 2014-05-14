@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
@@ -45,18 +46,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
-#include "crypto/sha2.h"
 #include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
-
-using net::test_server::BasicHttpResponse;
-using net::test_server::HttpRequest;
-using net::test_server::HttpResponse;
 
 namespace em = enterprise_management;
 
@@ -234,7 +228,7 @@ class JsConditionWaiter {
 
 class KioskTest : public OobeBaseTest {
  public:
-  KioskTest() {
+  KioskTest() : fake_cws_(new FakeCWS) {
     set_exit_when_last_browser_closes(false);
   }
 
@@ -263,26 +257,7 @@ class KioskTest : public OobeBaseTest {
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     OobeBaseTest::SetUpCommandLine(command_line);
-
-    // Create gaia and webstore URL from test server url but using different
-    // host names. This is to avoid gaia response being tagged as from
-    // webstore in chrome_resource_dispatcher_host_delegate.cc.
-    GURL webstore_url = GetTestWebstoreUrl();
-    command_line->AppendSwitchASCII(
-        ::switches::kAppsGalleryURL,
-        webstore_url.Resolve("/chromeos/app_mode/webstore").spec());
-    command_line->AppendSwitchASCII(
-        ::switches::kAppsGalleryDownloadURL,
-        webstore_url.Resolve(
-            "/chromeos/app_mode/webstore/downloads/%s.crx").spec());
-  }
-
-  GURL GetTestWebstoreUrl() {
-    const GURL& server_url = embedded_test_server()->base_url();
-    std::string webstore_host("webstore");
-    GURL::Replacements replace_webstore_host;
-    replace_webstore_host.SetHostStr(webstore_host);
-    return server_url.ReplaceComponents(replace_webstore_host);
+    fake_cws_->Init(embedded_test_server());
   }
 
   void LaunchApp(const std::string& app_id, bool diagnostic_mode) {
@@ -534,9 +509,11 @@ class KioskTest : public OobeBaseTest {
     test_app_id_ = test_app_id;
   }
   const std::string& test_app_id() const { return test_app_id_; }
+  FakeCWS* fake_cws() { return fake_cws_.get(); }
 
  private:
   std::string test_app_id_;
+  scoped_ptr<FakeCWS> fake_cws_;
   scoped_ptr<MockUserManager> mock_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskTest);
@@ -917,89 +894,9 @@ class KioskUpdateTest : public KioskTest,
 
   virtual void SetUpOnMainThread() OVERRIDE {
     KioskTest::SetUpOnMainThread();
-
-    GURL webstore_url = GetTestWebstoreUrl();
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        ::switches::kAppsGalleryUpdateURL,
-        webstore_url.Resolve("/update_check.xml").spec());
-
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&KioskUpdateTest::HandleRequest,
-                   base::Unretained(this)));
-  }
-
-  void SetNoUpdate() {
-    SetUpdateCheckContent(
-        "chromeos/app_mode/webstore/update_check/no_update.xml",
-        GURL(),
-        "",
-        "",
-        "");
-  }
-
-  void SetUpdateCrx(const std::string& crx_file, const std::string& version) {
-    GURL webstore_url = GetTestWebstoreUrl();
-    GURL crx_download_url = webstore_url.Resolve(
-        "/chromeos/app_mode/webstore/downloads/" + crx_file);
-    base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    base::FilePath crx_file_path =
-        test_data_dir.AppendASCII("chromeos/app_mode/webstore/downloads")
-            .AppendASCII(crx_file);
-
-    std::string crx_content;
-    ASSERT_TRUE(base::ReadFileToString(crx_file_path, &crx_content));
-
-    const std::string sha256 = crypto::SHA256HashString(crx_content);
-    const std::string sha256_hex =
-        base::HexEncode(sha256.c_str(), sha256.size());
-
-    SetUpdateCheckContent(
-        "chromeos/app_mode/webstore/update_check/has_update.xml",
-        crx_download_url,
-        sha256_hex,
-        base::UintToString(crx_content.size()),
-        version);
   }
 
  private:
-  void SetUpdateCheckContent(const std::string& update_check_file,
-                             const GURL& crx_download_url,
-                             const std::string& crx_fp,
-                             const std::string& crx_size,
-                             const std::string& version) {
-    base::FilePath test_data_dir;
-    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-    base::FilePath update_file =
-        test_data_dir.AppendASCII(update_check_file.c_str());
-    ASSERT_TRUE(base::ReadFileToString(update_file, &update_check_content_));
-
-    ReplaceSubstringsAfterOffset(
-        &update_check_content_, 0, "$AppId", test_app_id());
-    ReplaceSubstringsAfterOffset(
-        &update_check_content_, 0, "$CrxDownloadUrl", crx_download_url.spec());
-    ReplaceSubstringsAfterOffset(&update_check_content_, 0, "$FP", crx_fp);
-    ReplaceSubstringsAfterOffset(&update_check_content_, 0, "$Size", crx_size);
-    ReplaceSubstringsAfterOffset(
-        &update_check_content_, 0, "$Version", version);
-  }
-
-  scoped_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
-    GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
-    std::string request_path = request_url.path();
-    if (!update_check_content_.empty() &&
-        request_path == "/update_check.xml") {
-      scoped_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
-      http_response->set_code(net::HTTP_OK);
-      http_response->set_content_type("text/xml");
-      http_response->set_content(update_check_content_);
-      return http_response.PassAs<HttpResponse>();
-    }
-
-    return scoped_ptr<HttpResponse>();
-  }
-
-  std::string update_check_content_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskUpdateTest);
 };
@@ -1018,7 +915,7 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoNetwork) {
 IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
 
-  SetNoUpdate();
+  fake_cws()->SetNoUpdate(test_app_id());
 
   PrepareAppLaunch();
   SimulateNetworkOnline();
@@ -1033,7 +930,8 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppNoUpdate) {
 IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
 
-  SetUpdateCrx("ajoggoflpgplnnjkjamcmbepjdjdnpdp.crx", "2.0.0");
+  fake_cws()->SetUpdateCrx(
+      test_app_id(), "ajoggoflpgplnnjkjamcmbepjdjdnpdp.crx", "2.0.0");
 
   PrepareAppLaunch();
   SimulateNetworkOnline();
@@ -1048,8 +946,10 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, LaunchOfflineEnabledAppHasUpdate) {
 IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PermissionChange) {
   set_test_app_id(kTestOfflineEnabledKioskApp);
 
-  SetUpdateCrx("ajoggoflpgplnnjkjamcmbepjdjdnpdp_v2_permission_change.crx",
-               "2.0.0");
+  fake_cws()->SetUpdateCrx(
+      test_app_id(),
+      "ajoggoflpgplnnjkjamcmbepjdjdnpdp_v2_permission_change.crx",
+      "2.0.0");
 
   PrepareAppLaunch();
   SimulateNetworkOnline();
@@ -1076,8 +976,10 @@ IN_PROC_BROWSER_TEST_P(KioskUpdateTest, PreserveLocalData) {
   // that reads and verifies the local data.
   set_test_app_id(kTestLocalFsKioskApp);
 
-  SetUpdateCrx("bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx",
-               "2.0.0");
+  fake_cws()->SetUpdateCrx(
+      test_app_id(),
+      "bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx",
+      "2.0.0");
 
   ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(SimulateNetworkOnlineClosure());

@@ -120,6 +120,13 @@ class ExternalCache : public content::NotificationObserver,
   // files will be removed from disk too.
   void RemoveExtensions(const std::vector<std::string>& ids);
 
+  // If extension with |id| exists in the cache, returns |true|, |file_path| and
+  // |version| for the extension. Extension will be marked as used with current
+  // timestamp.
+  bool GetExtension(const std::string& id,
+                    base::FilePath* file_path,
+                    std::string* version);
+
  private:
   // Notifies the that the cache has been updated, providing
   // extensions loader with an updated list of extensions.

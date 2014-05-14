@@ -426,8 +426,10 @@ void LocalExtensionCache::OnCacheEntryInstalled(
       callback.Run(info.file_path, true);
       return;
     }
+    it->second = info;
+  } else {
+    it = cached_extensions_.insert(std::make_pair(id, info)).first;
   }
-  it = cached_extensions_.insert(std::make_pair(id, info)).first;
   // Time from file system can have lower precision so use precise "now".
   it->second.last_used = base::Time::Now();
 

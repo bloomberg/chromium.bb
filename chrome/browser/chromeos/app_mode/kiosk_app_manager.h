@@ -212,7 +212,11 @@ class KioskAppManager : public KioskAppDataDelegate,
   AutoLoginState GetAutoLoginState() const;
   void SetAutoLoginState(AutoLoginState state);
 
-  void GetKioskAppCrxCacheDir(base::FilePath* cache_dir);
+  void GetCrxCacheDir(base::FilePath* cache_dir);
+
+  bool GetCachedCrx(const std::string& app_id,
+                    base::FilePath* file_path,
+                    std::string* version);
 
   // True if machine ownership is already established.
   bool ownership_established_;

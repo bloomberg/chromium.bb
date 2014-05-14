@@ -66,6 +66,8 @@
         'browser/browsing_data/mock_browsing_data_quota_helper.h',
         'browser/browsing_data/mock_browsing_data_server_bound_cert_helper.cc',
         'browser/browsing_data/mock_browsing_data_server_bound_cert_helper.h',
+        'browser/chromeos/app_mode/fake_cws.cc',
+        'browser/chromeos/app_mode/fake_cws.h',
         'browser/chromeos/input_method/mock_candidate_window_controller.cc',
         'browser/chromeos/input_method/mock_candidate_window_controller.h',
         'browser/chromeos/input_method/mock_input_method_engine.cc',
