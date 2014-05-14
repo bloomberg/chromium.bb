@@ -4,20 +4,21 @@
 
 #include "chrome/browser/extensions/external_component_loader.h"
 
-#include "base/command_line.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_service.h"
-#include "base/values.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/search/hotword_service_factory.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/pref_names.h"
-#include "components/sync_driver/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
-#include "content/public/browser/browser_thread.h"
+#include "components/signin/core/browser/signin_manager.h"
+
+namespace {
+
+bool IsUserSignedin(Profile* profile) {
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
+  return signin && !signin->GetAuthenticatedUsername().empty();
+}
+
+}  // namespace
 
 namespace extensions {
 
@@ -39,55 +40,14 @@ void ExternalComponentLoader::StartLoading() {
                       extension_urls::GetWebstoreUpdateUrl().spec());
   }
 
-  BookmarksExperimentState bookmarks_experiment_state_before =
-      static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
-  if (bookmarks_experiment_state_before == kBookmarksExperimentEnabled) {
-    // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
-    // "0" - user opted out.
-    if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kEnhancedBookmarksExperiment) != "0") {
-      // Experiment enabled.
-      std::string ext_id = profile_->GetPrefs()->GetString(
-          sync_driver::prefs::kEnhancedBookmarksExtensionId);
-      if (!ext_id.empty()) {
-        prefs_->SetString(ext_id + ".external_update_url",
-                          extension_urls::GetWebstoreUpdateUrl().spec());
-      }
-    } else {
-      // Experiment enabled but user opted out.
-      profile_->GetPrefs()->SetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
-          kBookmarksExperimentEnabledUserOptOut);
-    }
-  } else if (bookmarks_experiment_state_before ==
-             kBookmarksExperimentEnabledUserOptOut) {
-    if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kEnhancedBookmarksExperiment) != "0") {
-      // User opted in again.
-      profile_->GetPrefs()->SetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled,
-          kBookmarksExperimentEnabled);
-      std::string ext_id = profile_->GetPrefs()->GetString(
-          sync_driver::prefs::kEnhancedBookmarksExtensionId);
-      if (!ext_id.empty()) {
-        prefs_->SetString(ext_id + ".external_update_url",
-                          extension_urls::GetWebstoreUpdateUrl().spec());
-      }
-    }
-  } else {
-    // Experiment disabled.
-    profile_->GetPrefs()->ClearPref(
-        sync_driver::prefs::kEnhancedBookmarksExperimentEnabled);
-    profile_->GetPrefs()->ClearPref(
-        sync_driver::prefs::kEnhancedBookmarksExtensionId);
-  }
-  BookmarksExperimentState bookmarks_experiment_state =
-      static_cast<BookmarksExperimentState>(profile_->GetPrefs()->GetInteger(
-          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
-  if (bookmarks_experiment_state_before != bookmarks_experiment_state) {
-    UpdateBookmarksExperiment(g_browser_process->local_state(),
-                              bookmarks_experiment_state);
+  UpdateBookmarksExperimentState(profile_->GetPrefs(),
+                                 g_browser_process->local_state(),
+                                 IsUserSignedin(profile_));
+  std::string ext_id;
+  if (GetBookmarksExperimentExtensionID(profile_->GetPrefs(), &ext_id) &&
+      !ext_id.empty()) {
+    prefs_->SetString(ext_id + ".external_update_url",
+                      extension_urls::GetWebstoreUpdateUrl().spec());
   }
 
   LoadFinished();
