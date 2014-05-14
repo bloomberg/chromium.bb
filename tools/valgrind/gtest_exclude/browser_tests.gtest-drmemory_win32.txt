@@ -17,8 +17,8 @@ A*
 # BrowserAccessibilityStateImplTest.*
 B*
 # C*: ~190 tests
-D*
-E*
+# D*: ~210 tests
+# E*: ~535 tests
 F*
 G*
 # H*: ~52  tests
