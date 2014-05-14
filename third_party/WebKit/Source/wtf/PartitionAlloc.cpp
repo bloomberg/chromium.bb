@@ -672,6 +672,8 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
         ASSERT(!newPage->numUnprovisionedSlots);
         ASSERT(newPage->freeCacheIndex == -1);
         bucket->freePagesHead = newPage->nextPage;
+        void* addr = partitionPageToPointer(newPage);
+        recommitSystemPages(addr, newPage->bucket->numSystemPagesPerSlotSpan * kSystemPageSize);
     } else {
         // Third. If we get here, we need a brand new page.
         size_t numPartitionPages = partitionBucketPartitionPages(bucket);
@@ -826,6 +828,7 @@ bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPa
         // pages accessible again.
         size_t recommitSize = newSize - currentSize;
         setSystemPagesAccessible(charPtr + currentSize, recommitSize);
+        recommitSystemPages(charPtr + currentSize, recommitSize);
 
 #ifndef NDEBUG
         memset(charPtr + currentSize, kUninitializedByte, recommitSize);

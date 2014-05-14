@@ -291,5 +291,13 @@ void decommitSystemPages(void* addr, size_t len)
 #endif
 }
 
+void recommitSystemPages(void* addr, size_t len)
+{
+    // FIXME: experiment with a Windows implementation that uses MEM_COMMIT
+    // instead of just faulting a MEM_RESET page.
+    (void) addr;
+    ASSERT(!(len & kSystemPageOffsetMask));
+}
+
 } // namespace WTF
 
