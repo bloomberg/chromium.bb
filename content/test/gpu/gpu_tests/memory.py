@@ -33,7 +33,15 @@ test_harness_script = r"""
     // of iterations to settle).
 
     var rafCount = 0;
-    var totalRafCount = 8;
+
+    // Impl-side painting has changed the behavior of this test.
+    // Currently the background of the page shows up checkerboarded
+    // initially, causing the test to fail because the memory
+    // allocation is too low (no root layer). Temporarily increase the
+    // rAF count to 32 in order to make the test work reliably again.
+    // crbug.com/373098
+    // TODO(kbr): revert this change and put it back to 8 iterations.
+    var totalRafCount = 32;
 
     function pumpRAF() {
       if (rafCount == totalRafCount) {
