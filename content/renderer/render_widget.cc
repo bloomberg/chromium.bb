@@ -260,9 +260,7 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
   if (!applied_widget_rect_.height())
     applied_widget_rect_.set_height(original_size_.height());
 
-  if (params_.fitToView) {
-    DCHECK(!original_size_.IsEmpty());
-
+  if (params_.fitToView && !original_size_.IsEmpty()) {
     int width_with_gutter =
         std::max(original_size_.width() - 2 * params_.viewInsets.width, 1);
     int height_with_gutter =
