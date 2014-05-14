@@ -59,6 +59,9 @@ namespace {
 
 const char kTestProfileName[] = "test-profile";
 
+static const base::FilePath::CharType kTestSyncDir[] =
+    FILE_PATH_LITERAL("sync-test");
+
 ACTION_P(Signal, event) {
   event->Signal();
 }
@@ -155,7 +158,8 @@ class SyncBackendHostTest : public testing::Test {
     backend_.reset(new SyncBackendHostImpl(
         profile_->GetDebugName(),
         profile_,
-        sync_prefs_->AsWeakPtr()));
+        sync_prefs_->AsWeakPtr(),
+        base::FilePath(kTestSyncDir)));
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
 
@@ -712,7 +716,7 @@ TEST_F(SyncBackendHostTest, DownloadControlTypesRestart) {
 TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
   const char* nonsense = "slon";
   base::FilePath temp_directory =
-      profile_->GetPath().AppendASCII("Sync Data");
+      profile_->GetPath().Append(base::FilePath(kTestSyncDir));
   base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
   ASSERT_TRUE(base::CreateDirectory(temp_directory));
   ASSERT_NE(-1, base::WriteFile(sync_file, nonsense, strlen(nonsense)));

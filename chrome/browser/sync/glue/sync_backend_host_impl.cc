@@ -40,15 +40,13 @@
 
 using syncer::InternalComponentsFactory;
 
-static const base::FilePath::CharType kSyncDataFolderName[] =
-    FILE_PATH_LITERAL("Sync Data");
-
 namespace browser_sync {
 
 SyncBackendHostImpl::SyncBackendHostImpl(
     const std::string& name,
     Profile* profile,
-    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs)
+    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+    const base::FilePath& sync_folder)
     : frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_(name),
@@ -63,7 +61,7 @@ SyncBackendHostImpl::SyncBackendHostImpl(
   CHECK(invalidator_);
   core_ = new SyncBackendHostCore(
       name_,
-      profile_->GetPath().Append(kSyncDataFolderName),
+      profile_->GetPath().Append(sync_folder),
       sync_prefs_->HasSyncSetupCompleted(),
       weak_ptr_factory_.GetWeakPtr());
 }
@@ -159,7 +157,7 @@ void SyncBackendHostImpl::StartSyncingWithServer() {
 }
 
 void SyncBackendHostImpl::SetEncryptionPassphrase(const std::string& passphrase,
-                                              bool is_explicit) {
+                                                  bool is_explicit) {
   DCHECK(registrar_->sync_thread()->IsRunning());
   if (!IsNigoriEnabled()) {
     NOTREACHED() << "SetEncryptionPassphrase must never be called when nigori"

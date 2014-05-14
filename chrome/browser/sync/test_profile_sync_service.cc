@@ -32,9 +32,9 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     Profile* profile,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     base::Closure callback)
-    : browser_sync::SyncBackendHostImpl(profile->GetDebugName(),
-                                        profile,
-                                        sync_prefs),
+    : browser_sync::SyncBackendHostImpl(
+        profile->GetDebugName(), profile, sync_prefs,
+        base::FilePath(FILE_PATH_LITERAL("test"))),
       callback_(callback) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
@@ -141,7 +141,8 @@ TestProfileSyncService* TestProfileSyncService::BuildAutoStartAsyncInit(
       sync_service->components_factory_mock();
   // TODO(tim): Convert to a fake instead of mock.
   EXPECT_CALL(*components,
-              CreateSyncBackendHost(testing::_,testing::_, testing::_)).
+              CreateSyncBackendHost(testing::_,testing::_, testing::_,
+                                    testing::_)).
       WillOnce(testing::Return(
           new browser_sync::SyncBackendHostForProfileSyncTest(
               profile,

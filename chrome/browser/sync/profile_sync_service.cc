@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
@@ -146,6 +147,9 @@ const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
   // Don't use initial delay unless the last request was an error.
   false,
 };
+
+static const base::FilePath::CharType kSyncDataFolderName[] =
+    FILE_PATH_LITERAL("Sync Data");
 
 bool ShouldShowActionOnUI(
     const syncer::SyncProtocolError& error) {
@@ -605,7 +609,8 @@ void ProfileSyncService::StartUpSlowBackendComponents() {
       factory_->CreateSyncBackendHost(
           profile_->GetDebugName(),
           profile_,
-          sync_prefs_.AsWeakPtr()));
+          sync_prefs_.AsWeakPtr(),
+          base::FilePath(kSyncDataFolderName)));
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might

@@ -150,12 +150,12 @@ class ProfileSyncServiceTest : public ::testing::Test {
   }
 
   void ExpectSyncBackendHostCreation() {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _)).
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _)).
         WillOnce(ReturnNewSyncBackendHostMock());
   }
 
   void PrepareDelayedInitSyncBackendHost() {
-    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _)).
+    EXPECT_CALL(*components_factory_, CreateSyncBackendHost(_, _, _, _)).
         WillOnce(ReturnNewSyncBackendHostNoReturn());
   }
 

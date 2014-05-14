@@ -141,7 +141,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     browser_sync::SyncBackendHostMock* sync_backend_host =
         new browser_sync::SyncBackendHostMock();
     EXPECT_CALL(*components_factory_mock(),
-                CreateSyncBackendHost(_, _, _)).
+                CreateSyncBackendHost(_, _, _, _)).
         WillOnce(Return(sync_backend_host));
     return sync_backend_host;
   }
@@ -301,7 +301,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   EXPECT_CALL(*components_factory_mock(),
               CreateDataTypeManager(_, _, _, _, _, _)).Times(0);
   EXPECT_CALL(*components_factory_mock(),
-              CreateSyncBackendHost(_, _, _)).Times(0);
+              CreateSyncBackendHost(_, _, _, _)).Times(0);
   profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 

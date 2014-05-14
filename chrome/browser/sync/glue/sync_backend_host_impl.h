@@ -74,7 +74,8 @@ class SyncBackendHostImpl
   // |sync_prefs|.
   SyncBackendHostImpl(const std::string& name,
                       Profile* profile,
-                      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs);
+                      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+                      const base::FilePath& sync_folder);
   virtual ~SyncBackendHostImpl();
 
   // SyncBackendHost implementation.
