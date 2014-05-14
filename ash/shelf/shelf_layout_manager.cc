@@ -723,6 +723,14 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
 
   GetLayer(shelf_->status_area_widget())->SetOpacity(
       target_bounds.status_opacity);
+
+  // Having a window which is visible but does not have an opacity is an illegal
+  // state. We therefore show / hide the shelf here if required.
+  if (!target_bounds.status_opacity)
+    shelf_->status_area_widget()->Hide();
+  else if (target_bounds.status_opacity)
+    shelf_->status_area_widget()->Show();
+
   // TODO(harrym): Once status area widget is a child view of shelf
   // this can be simplified.
   gfx::Rect status_bounds = target_bounds.status_bounds_in_shelf;
