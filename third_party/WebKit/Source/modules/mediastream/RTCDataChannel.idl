@@ -22,35 +22,29 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://dev.w3.org/2011/webrtc/editor/webrtc.html#idl-def-RTCDataChannel
+
 [
-    NoInterfaceObject
+    NoInterfaceObject,
 ] interface RTCDataChannel : EventTarget {
     readonly attribute DOMString label;
-
-    // DEPRECATED
-    readonly attribute boolean reliable;
-
+    readonly attribute boolean reliable; // DEPRECATED
     readonly attribute boolean ordered;
     readonly attribute unsigned short maxRetransmitTime;
     readonly attribute unsigned short maxRetransmits;
     readonly attribute DOMString protocol;
     readonly attribute boolean negotiated;
     readonly attribute unsigned short id;
-    
     readonly attribute DOMString readyState;
     readonly attribute unsigned long bufferedAmount;
-
+             attribute EventHandler onopen;
+             attribute EventHandler onerror;
+             attribute EventHandler onclose;
+    void close();
+             attribute EventHandler onmessage;
     [RaisesException=Setter] attribute DOMString binaryType;
-
+    [RaisesException] void send(DOMString data);
+    [RaisesException] void send(Blob data);
     [RaisesException] void send(ArrayBuffer data);
     [RaisesException] void send(ArrayBufferView data);
-    [RaisesException] void send(Blob data);
-    [RaisesException] void send(DOMString data);
-
-    void close();
-
-    attribute EventHandler onopen;
-    attribute EventHandler onerror;
-    attribute EventHandler onclose;
-    attribute EventHandler onmessage;
 };

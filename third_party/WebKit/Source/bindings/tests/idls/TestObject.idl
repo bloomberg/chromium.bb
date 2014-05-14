@@ -408,6 +408,8 @@ interface TestObject {
     void overloadedMethodJ([Default=Null] TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
     void overloadedMethodK(TestInterface testInterfaceArg);
     void overloadedMethodK(TestInterfaceEmpty testInterfaceEmptyArg);
+    void overloadedMethodL(DOMString stringArg);
+    void overloadedMethodL(double doubleArg);
 
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();

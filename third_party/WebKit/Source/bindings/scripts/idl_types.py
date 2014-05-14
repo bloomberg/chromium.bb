@@ -173,6 +173,10 @@ class IdlType(object):
         return self.base_type in NUMERIC_TYPES and not self.array_or_sequence_type
 
     @property
+    def is_primitive_type(self):
+        return self.base_type in PRIMITIVE_TYPES and not self.array_or_sequence_type
+
+    @property
     def is_interface_type(self):
         # Anything that is not another type is an interface type.
         # http://www.w3.org/TR/WebIDL/#idl-types
@@ -286,6 +290,10 @@ class IdlUnionType(object):
 
     @property
     def is_numeric_type(self):
+        return False
+
+    @property
+    def is_primitivee_type(self):
         return False
 
     @property

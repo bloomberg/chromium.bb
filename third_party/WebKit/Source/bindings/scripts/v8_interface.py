@@ -380,15 +380,14 @@ def is_use_spec_algorithm(effective_overloads_by_length):
     # Use spec algorithm if:
     # * method is not variadic,
     # * no distinguishing type is unsupported:
-    #   non-wrapper, array, callback interface, enumeration, boolean, string, nullable,
+    #   non-wrapper, array, callback interface, boolean, nullable,
     # * all distinguishing types are distinct, and
     # * all distinguishing arguments are required (not optional).
     def is_unsupported_type(idl_type):
         return ((idl_type.is_interface_type and not idl_type.is_wrapper_type) or
                 idl_type.array_or_sequence_type or
                 idl_type.is_callback_interface or
-                idl_type.is_enum or
-                idl_type.name in ('Boolean', 'String') or
+                idl_type.name == 'Boolean' or
                 idl_type.is_nullable)
 
     for _, effective_overloads in effective_overloads_by_length:
@@ -636,37 +635,70 @@ def resolution_tests_methods(effective_overloads):
     idl_types = [argument['idl_type_object'] for argument in arguments]
     idl_types_methods = zip(idl_types, methods)
 
-    # We can't do a single loop through all methods or simply sort them, because
+    # We can’t do a single loop through all methods or simply sort them, because
     # a method may be listed in multiple steps of the resolution algorithm, and
     # which test to apply differs depending on the step.
-    # Instead, we need to loop through all methods at each step, filtering to
-    # matches and generating an appropriate test.
-    for idl_type, method in idl_types_methods:
-        # 4. Otherwise: if V is a platform object – but not a platform array
-        # object – and there is an entry in S that has one of the following
-        # types at position i of its type list,
-        # • an interface type that V implements
-        # (We distinguish wrapper types from built-in interface types.)
-        if idl_type.is_wrapper_type:
-            test = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
-            yield test, method
+    #
+    # Instead, we need to go through all methods at each step, either finding
+    # first match (if only one test is allowed) or filtering to matches (if
+    # multiple tests are allowed), and generating an appropriate tests.
 
-    # FIXME: not needed yet
-    # for idl_type, method in idl_types_methods:
-    #     # 10. Otherwise: if V is a Number value, and there is an entry in S
-    #     # that has one of the following types at position i of its type
-    #     # list,
-    #     # • a numeric type
-    #     if idl_type.is_numeric_type:
-    #         test = '%s->IsNumber()' % cpp_value
-    #         yield test, method
+    # 4. Otherwise: if V is a platform object – but not a platform array
+    # object – and there is an entry in S that has one of the following
+    # types at position i of its type list,
+    # • an interface type that V implements
+    # (Unlike most of these tests, this can return multiple methods, since we
+    #  test if it implements an interface. Thus we need a for loop, not a next.)
+    # (We distinguish wrapper types from built-in interface types.)
+    for idl_type, method in ((idl_type, method)
+                             for idl_type, method in idl_types_methods
+                             if idl_type.is_wrapper_type):
+        test = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
+        yield test, method
 
-    for idl_type, method in idl_types_methods:
-        # 12. Otherwise: if there is an entry in S that has one of the
-        # following types at position i of its type list,
-        # • a numeric type
-        if idl_type.is_numeric_type:
-            yield 'true', method
+    # (Check for exact type matches before performing automatic type conversion;
+    # only needed if distinguishing between primitive types.)
+    if len([idl_type.is_primitive_type for idl_type in idl_types]) > 1:
+        # (Only needed if match in step 11, otherwise redundant.)
+        if any(idl_type.name == 'String' or idl_type.is_enum
+               for idl_type in idl_types):
+            # 10. Otherwise: if V is a Number value, and there is an entry in S
+            # that has one of the following types at position i of its type
+            # list,
+            # • a numeric type
+            try:
+                method = next(method for idl_type, method in idl_types_methods
+                              if idl_type.is_numeric_type)
+                test = '%s->IsNumber()' % cpp_value
+                yield test, method
+            except StopIteration:
+                pass
+
+    # (Perform automatic type conversion, in order. If any of these match,
+    # that’s the end, and no other tests are needed.)
+
+    # 11. Otherwise: if there is an entry in S that has one of the following
+    # types at position i of its type list,
+    # • DOMString
+    # • an enumeration type
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.name == 'String' or idl_type.is_enum)
+        yield 'true', method
+        return
+    except StopIteration:
+        pass
+
+    # 12. Otherwise: if there is an entry in S that has one of the following
+    # types at position i of its type list,
+    # • a numeric type
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.is_numeric_type)
+        yield 'true', method
+        return
+    except StopIteration:
+        pass
 
 
 def overload_resolution_expression(method):

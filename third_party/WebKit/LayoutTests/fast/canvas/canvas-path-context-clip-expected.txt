@@ -40,13 +40,13 @@ PASS pixelDataAtPoint()[2] is within 5 of 0
 PASS pixelDataAtPoint()[3] is within 5 of 255
 
 PASS ctx.clip(null) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 ('null') is not a valid enum value..
-PASS ctx.clip(null, null) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
-PASS ctx.clip(null, 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
-PASS ctx.clip([], 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
-PASS ctx.clip({}, 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
-PASS ctx.clip(null, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
-PASS ctx.clip([], 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
-PASS ctx.clip({}, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.clip(null, null) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip(null, 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip([], 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip({}, 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip(null, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip([], 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip({}, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
 PASS ctx.clip('gazonk') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 ('gazonk') is not a valid enum value..
 PASS ctx.clip(path, 'gazonk') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 2 ('gazonk') is not a valid enum value..
 PASS successfullyParsed is true

@@ -6846,6 +6846,50 @@ static void overloadedMethodKMethodCallback(const v8::FunctionCallbackInfo<v8::V
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
+static void overloadedMethodL1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
+    impl->overloadedMethodL(stringArg);
+}
+
+static void overloadedMethodL2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObject* impl = V8TestObject::toNative(info.Holder());
+    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
+    impl->overloadedMethodL(doubleArg);
+}
+
+static void overloadedMethodLMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    switch (info.Length()) {
+    case 1:
+        if (info[0]->IsNumber()) {
+            overloadedMethodL2Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodL1Method(info);
+            return;
+        }
+        break;
+    }
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodL", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
+}
+
+static void overloadedMethodLMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectV8Internal::overloadedMethodLMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
+}
+
 static void overloadedPerWorldBindingsMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
@@ -8554,6 +8598,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"overloadedMethodI", TestObjectV8Internal::overloadedMethodIMethodCallback, 0, 1},
     {"overloadedMethodJ", TestObjectV8Internal::overloadedMethodJMethodCallback, 0, 1},
     {"overloadedMethodK", TestObjectV8Internal::overloadedMethodKMethodCallback, 0, 1},
+    {"overloadedMethodL", TestObjectV8Internal::overloadedMethodLMethodCallback, 0, 1},
     {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0},
     {"voidMethodClampUnsignedShortArg", TestObjectV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1},
     {"voidMethodClampUnsignedLongArg", TestObjectV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1},
