@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "net/base/request_priority.h"
-#include "net/http/http_transaction_unittest.h"
+#include "net/http/http_transaction_test_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

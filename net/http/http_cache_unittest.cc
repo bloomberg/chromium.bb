@@ -29,7 +29,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
-#include "net/http/http_transaction_unittest.h"
+#include "net/http/http_transaction_test_util.h"
 #include "net/http/http_util.h"
 #include "net/http/mock_http_cache.h"
 #include "net/socket/client_socket_handle.h"

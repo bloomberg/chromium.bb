@@ -11,7 +11,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
-#include "net/http/http_transaction_unittest.h"
+#include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/socket_test_util.h"

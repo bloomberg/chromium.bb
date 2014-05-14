@@ -19,7 +19,7 @@
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
-#include "net/http/http_transaction_unittest.h"
+#include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_resolver.h"

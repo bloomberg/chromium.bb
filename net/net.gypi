@@ -1386,8 +1386,6 @@
       'http/http_stream_factory_impl_request_unittest.cc',
       'http/http_stream_factory_impl_unittest.cc',
       'http/http_stream_parser_unittest.cc',
-      'http/http_transaction_unittest.cc',
-      'http/http_transaction_unittest.h',
       'http/http_util_unittest.cc',
       'http/http_vary_data_unittest.cc',
       'http/mock_allow_url_security_manager.cc',

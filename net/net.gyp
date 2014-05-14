@@ -918,6 +918,8 @@
         'dns/mock_host_resolver.h',
         'dns/mock_mdns_socket_factory.cc',
         'dns/mock_mdns_socket_factory.h',
+        'http/http_transaction_test_util.cc',
+        'http/http_transaction_test_util.h',
         'proxy/mock_proxy_resolver.cc',
         'proxy/mock_proxy_resolver.h',
         'proxy/mock_proxy_script_fetcher.cc',

@@ -23,7 +23,7 @@
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_server_properties.h"
-#include "net/http/http_transaction_unittest.h"
+#include "net/http/http_transaction_test_util.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/buffered_spdy_framer.h"

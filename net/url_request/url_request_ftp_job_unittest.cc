@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "net/base/request_priority.h"
 #include "net/ftp/ftp_auth_cache.h"
-#include "net/http/http_transaction_unittest.h"
+#include "net/http/http_transaction_test_util.h"
 #include "net/proxy/mock_proxy_resolver.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_config_service_fixed.h"

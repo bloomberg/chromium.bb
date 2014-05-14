@@ -13,7 +13,7 @@
 #include "base/containers/hash_tables.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
-#include "net/http/http_transaction_unittest.h"
+#include "net/http/http_transaction_test_util.h"
 
 //-----------------------------------------------------------------------------
 // Mock disk cache (a very basic memory cache implementation).
