@@ -18,8 +18,10 @@ const char kHighResAvatarDownloadUrlPrefix[] =
 
 ProfileAvatarDownloader::ProfileAvatarDownloader(
     size_t icon_index,
+    const base::FilePath& profile_path,
     ProfileInfoCache* cache)
     : icon_index_(icon_index),
+      profile_path_(profile_path),
       cache_(cache) {
   GURL url(std::string(kHighResAvatarDownloadUrlPrefix) +
            profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index));
@@ -51,5 +53,6 @@ void ProfileAvatarDownloader::OnFetchComplete(const GURL url,
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(*bitmap);
   cache_->SaveAvatarImageAtPath(&image,
       profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index_),
-      profiles::GetPathOfHighResAvatarAtIndex(icon_index_));
+      profiles::GetPathOfHighResAvatarAtIndex(icon_index_),
+      profile_path_);
 }

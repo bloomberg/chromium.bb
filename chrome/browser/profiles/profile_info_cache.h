@@ -136,15 +136,18 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Register cache related preferences in Local State.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Starts downloading the high res avatar at index |icon_index|.
-  void DownloadHighResAvatar(size_t icon_index);
+  // Starts downloading the high res avatar at index |icon_index| for profile
+  // with path |profile_path|.
+  void DownloadHighResAvatar(size_t icon_index,
+                             const base::FilePath& profile_path);
 
   // Saves the avatar |image| at |image_path|. This is used both for the
   // GAIA profile pictures and the ProfileAvatarDownloader that is used to
   // download the high res avatars.
   void SaveAvatarImageAtPath(const gfx::Image* image,
                              const std::string& key,
-                             const base::FilePath& image_path);
+                             const base::FilePath& image_path,
+                             const base::FilePath& profile_path);
 
   void AddObserver(ProfileInfoCacheObserver* obs);
   void RemoveObserver(ProfileInfoCacheObserver* obs);
@@ -193,7 +196,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
                              gfx::Image** image) const;
   // Called when the picture given by |file_name| has been saved to disk.
   // Used both for the GAIA profile picture and the high res avatar files.
-  void OnAvatarPictureSaved(const std::string& file_name);
+  void OnAvatarPictureSaved(const std::string& file_name,
+                            const base::FilePath& profile_path);
 
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;

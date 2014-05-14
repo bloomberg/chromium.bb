@@ -188,8 +188,10 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
 
   // If needed, start downloading the high-res avatars.
   if (switches::IsNewAvatarMenu()) {
-    for (size_t i = 0; i < GetNumberOfProfiles(); i++)
-      DownloadHighResAvatar(GetAvatarIconIndexOfProfileAtIndex(i));
+    for (size_t i = 0; i < GetNumberOfProfiles(); i++) {
+      DownloadHighResAvatar(GetAvatarIconIndexOfProfileAtIndex(i),
+                            GetPathOfProfileAtIndex(i));
+    }
   }
 }
 
@@ -520,7 +522,7 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
 
   // If needed, start downloading the high-res avatar.
   if (switches::IsNewAvatarMenu())
-    DownloadHighResAvatar(icon_index);
+    DownloadHighResAvatar(icon_index, GetPathOfProfileAtIndex(index));
 
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
   FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
@@ -637,7 +639,8 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
     new_file_name =
         old_file_name.empty() ? profiles::kGAIAPictureFileName : old_file_name;
     base::FilePath image_path = path.AppendASCII(new_file_name);
-    SaveAvatarImageAtPath(image, key, image_path);
+    SaveAvatarImageAtPath(
+        image, key, image_path, GetPathOfProfileAtIndex(index));
   }
 
   scoped_ptr<base::DictionaryValue> info(
@@ -778,7 +781,9 @@ void ProfileInfoCache::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kProfileInfoCache);
 }
 
-void ProfileInfoCache::DownloadHighResAvatar(size_t icon_index) {
+void ProfileInfoCache::DownloadHighResAvatar(
+    size_t icon_index,
+    const base::FilePath& profile_path) {
   // TODO(noms): We should check whether the file already exists on disk
   // before trying to re-download it. For now, since this is behind a flag and
   // the resources are still changing, re-download it every time the profile
@@ -794,6 +799,7 @@ void ProfileInfoCache::DownloadHighResAvatar(size_t icon_index) {
   // if that never happens, when the ProfileInfoCache is destroyed.
   ProfileAvatarDownloader* avatar_downloader = new ProfileAvatarDownloader(
       icon_index,
+      profile_path,
       this);
   avatar_images_downloads_in_progress_[file_name] = avatar_downloader;
   avatar_downloader->Start();
@@ -802,7 +808,8 @@ void ProfileInfoCache::DownloadHighResAvatar(size_t icon_index) {
 void ProfileInfoCache::SaveAvatarImageAtPath(
     const gfx::Image* image,
     const std::string& key,
-    const base::FilePath& image_path) {
+    const base::FilePath& image_path,
+    const base::FilePath& profile_path) {
   cached_avatar_images_[key] = new gfx::Image(*image);
 
   scoped_ptr<ImageData> data(new ImageData);
@@ -812,8 +819,8 @@ void ProfileInfoCache::SaveAvatarImageAtPath(
   if (!data->size()) {
     LOG(ERROR) << "Failed to PNG encode the image.";
   } else {
-    base::Closure callback = base::Bind(
-        &ProfileInfoCache::OnAvatarPictureSaved, AsWeakPtr(), key);
+    base::Closure callback = base::Bind(&ProfileInfoCache::OnAvatarPictureSaved,
+        AsWeakPtr(), key, profile_path);
 
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&SaveBitmap, base::Passed(&data), image_path, callback));
@@ -979,13 +986,19 @@ void ProfileInfoCache::OnAvatarPictureLoaded(const std::string& key,
       content::NotificationService::NoDetails());
 }
 
-void ProfileInfoCache::OnAvatarPictureSaved(const std::string& file_name) {
+void ProfileInfoCache::OnAvatarPictureSaved(
+      const std::string& file_name,
+      const base::FilePath& profile_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CACHE_PICTURE_SAVED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
+
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileAvatarChanged(profile_path));
 
   // Remove the file from the list of downloads in progress. Note that this list
   // only contains the high resolution avatars, and not the Gaia profile images.

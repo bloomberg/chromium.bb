@@ -516,7 +516,8 @@ TEST_F(ProfileInfoCacheTest, DownloadHighResAvatarTest) {
 
   // Simulate downloading a high-res avatar.
   const size_t kIconIndex = 0;
-  ProfileAvatarDownloader avatar_downloader(kIconIndex, GetCache());
+  ProfileAvatarDownloader avatar_downloader(
+      kIconIndex, GetCache()->GetPathOfProfileAtIndex(0), GetCache());
 
   // Put a real bitmap into "bitmap".  2x2 bitmap of green 32 bit pixels.
   SkBitmap bitmap;

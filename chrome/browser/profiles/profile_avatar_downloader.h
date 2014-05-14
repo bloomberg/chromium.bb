@@ -4,13 +4,16 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_AVATAR_DOWNLOADER_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_AVATAR_DOWNLOADER_H_
 
+#include "base/files/file_path.h"
 #include "chrome/browser/bitmap_fetcher.h"
 
 class ProfileInfoCache;
 
 class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
  public:
-  ProfileAvatarDownloader(size_t icon_index, ProfileInfoCache* cache);
+  ProfileAvatarDownloader(size_t icon_index,
+                          const base::FilePath& profile_path,
+                          ProfileInfoCache* cache);
   virtual ~ProfileAvatarDownloader();
 
   void Start();
@@ -24,6 +27,9 @@ class ProfileAvatarDownloader : public chrome::BitmapFetcherDelegate {
 
   // Index of the avatar being downloaded.
   size_t icon_index_;
+
+  // Path of the profile for which the avatar is being downloaded.
+  base::FilePath profile_path_;
 
   ProfileInfoCache* cache_;  // Weak.
 };
