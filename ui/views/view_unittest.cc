@@ -3363,17 +3363,6 @@ TEST_F(ViewLayerTest, AcquireLayer) {
   c1.reset();
 }
 
-// Verify that new layer scales content only if the old layer does.
-TEST_F(ViewLayerTest, RecreateLayerScaling) {
-  scoped_ptr<View> v(new View());
-  v->SetPaintToLayer(true);
-  // Set to non default value.
-  v->layer()->set_scale_content(false);
-  scoped_ptr<ui::Layer> old_layer(v->RecreateLayer());
-  ui::Layer* new_layer = v->layer();
-  EXPECT_FALSE(new_layer->scale_content());
-}
-
 // Verify the z-order of the layers as a result of calling RecreateLayer().
 TEST_F(ViewLayerTest, RecreateLayerZOrder) {
   scoped_ptr<View> v(new View());

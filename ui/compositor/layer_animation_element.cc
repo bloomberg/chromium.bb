@@ -449,11 +449,6 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
  protected:
   virtual void OnStart(LayerAnimationDelegate* delegate) OVERRIDE {
     start_ = delegate->GetTransformForAnimation();
-    float device_scale_factor = delegate->GetDeviceScaleFactor();
-    cc_start_ = Layer::ConvertTransformToCCTransform(start_,
-                                                     device_scale_factor);
-    cc_target_ = Layer::ConvertTransformToCCTransform(target_,
-                                                      device_scale_factor);
   }
 
   virtual void OnAbort(LayerAnimationDelegate* delegate) OVERRIDE {
@@ -473,8 +468,8 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
   virtual scoped_ptr<cc::Animation> CreateCCAnimation() OVERRIDE {
     scoped_ptr<cc::AnimationCurve> animation_curve(
         new TransformAnimationCurveAdapter(tween_type(),
-                                           cc_start_,
-                                           cc_target_,
+                                           start_,
+                                           target_,
                                            duration()));
     scoped_ptr<cc::Animation> animation(
         cc::Animation::Create(animation_curve.Pass(),
@@ -490,9 +485,7 @@ class ThreadedTransformTransition : public ThreadedLayerAnimationElement {
 
  private:
   gfx::Transform start_;
-  gfx::Transform cc_start_;
   const gfx::Transform target_;
-  gfx::Transform cc_target_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadedTransformTransition);
 };
@@ -529,22 +522,13 @@ class InverseTransformTransition : public ThreadedLayerAnimationElement {
 
     set_tween_type(uninverted_transition_->tween_type());
 
-    float device_scale_factor = delegate->GetDeviceScaleFactor();
-    const gfx::Transform cc_base_start = Layer::ConvertTransformToCCTransform(
-        base_transform_,
-        device_scale_factor);
-    const gfx::Transform cc_base_target = Layer::ConvertTransformToCCTransform(
-        base_target_,
-        device_scale_factor);
     TransformAnimationCurveAdapter base_curve(tween_type(),
-                                              cc_base_start,
-                                              cc_base_target,
+                                              base_transform_,
+                                              base_target_,
                                               duration());
 
-    const gfx::Transform cc_start = Layer::ConvertTransformToCCTransform(
-        start, device_scale_factor);
     animation_curve_.reset(new InverseTransformCurveAdapter(
-        base_curve, cc_start, duration()));
+        base_curve, start, duration()));
     computed_target_transform_ = ComputeWithBaseTransform(effective_start_,
                                                           base_target_);
   }

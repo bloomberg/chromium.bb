@@ -40,7 +40,6 @@ scoped_ptr<Layer> LayerOwner::RecreateLayer() {
   SetLayer(new_layer);
   new_layer->SetVisible(old_layer->GetTargetVisibility());
   new_layer->SetOpacity(old_layer->GetTargetOpacity());
-  new_layer->set_scale_content(old_layer->scale_content());
   new_layer->SetBounds(layer_bounds);
   new_layer->SetMasksToBounds(old_layer->GetMasksToBounds());
   new_layer->set_name(old_layer->name());

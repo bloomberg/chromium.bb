@@ -1905,7 +1905,6 @@ TEST_F(WindowTest, RecreateLayer) {
   w.SetBounds(gfx::Rect(0, 0, 100, 100));
 
   ui::Layer* layer = w.layer();
-  layer->set_scale_content(false);
   layer->SetVisible(false);
   layer->SetMasksToBounds(true);
 
@@ -1915,7 +1914,6 @@ TEST_F(WindowTest, RecreateLayer) {
   scoped_ptr<ui::Layer> old_layer(w.RecreateLayer());
   layer = w.layer();
   EXPECT_EQ(ui::LAYER_SOLID_COLOR, layer->type());
-  EXPECT_FALSE(layer->scale_content());
   EXPECT_FALSE(layer->visible());
   EXPECT_EQ(1u, layer->children().size());
   EXPECT_TRUE(layer->GetMasksToBounds());

@@ -74,7 +74,6 @@ Layer::Layer()
       delegate_(NULL),
       owner_(NULL),
       cc_layer_(NULL),
-      scale_content_(true),
       device_scale_factor_(1.0f) {
   CreateWebLayer();
 }
@@ -99,7 +98,6 @@ Layer::Layer(LayerType type)
       delegate_(NULL),
       owner_(NULL),
       cc_layer_(NULL),
-      scale_content_(true),
       device_scale_factor_(1.0f) {
   CreateWebLayer();
 }
@@ -442,17 +440,6 @@ bool Layer::GetTargetTransformRelativeTo(const Layer* ancestor,
   return p == ancestor;
 }
 
-// static
-gfx::Transform Layer::ConvertTransformToCCTransform(
-    const gfx::Transform& transform,
-    float device_scale_factor) {
-  gfx::Transform cc_transform;
-  cc_transform.Scale(device_scale_factor, device_scale_factor);
-  cc_transform.PreconcatTransform(transform);
-  cc_transform.Scale(1.0f / device_scale_factor, 1.0f / device_scale_factor);
-  return cc_transform;
-}
-
 void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
   if (fills_bounds_opaquely_ == fills_bounds_opaquely)
     return;
@@ -611,9 +598,7 @@ void Layer::SendDamagedRects() {
           sk_damaged.y(),
           sk_damaged.width(),
           sk_damaged.height());
-
-      gfx::Rect damaged_in_pixel = ConvertRectToPixel(this, damaged);
-      cc_layer_->SetNeedsDisplayRect(damaged_in_pixel);
+      cc_layer_->SetNeedsDisplayRect(damaged);
     }
     damaged_region_.setEmpty();
   }
@@ -634,9 +619,7 @@ void Layer::OnDeviceScaleFactorChanged(float device_scale_factor) {
     return;
   if (animator_.get())
     animator_->StopAnimatingProperty(LayerAnimationElement::TRANSFORM);
-  gfx::Transform transform = this->transform();
   device_scale_factor_ = device_scale_factor;
-  RecomputeCCTransformFromTransform(transform);
   RecomputeDrawsContentAndUVRect();
   RecomputePosition();
   SchedulePaint(gfx::Rect(bounds_.size()));
@@ -659,18 +642,8 @@ void Layer::PaintContents(SkCanvas* sk_canvas,
   TRACE_EVENT0("ui", "Layer::PaintContents");
   scoped_ptr<gfx::Canvas> canvas(gfx::Canvas::CreateCanvasWithoutScaling(
       sk_canvas, device_scale_factor_));
-
-  bool scale_content = scale_content_;
-  if (scale_content) {
-    canvas->Save();
-    canvas->sk_canvas()->scale(SkFloatToScalar(device_scale_factor_),
-                               SkFloatToScalar(device_scale_factor_));
-  }
-
   if (delegate_)
     delegate_->OnPaintLayer(canvas.get());
-  if (scale_content)
-    canvas->Restore();
 }
 
 bool Layer::FillsBoundsCompletely() const { return fills_bounds_completely_; }
@@ -788,7 +761,7 @@ void Layer::SetBoundsFromAnimation(const gfx::Rect& bounds) {
 }
 
 void Layer::SetTransformFromAnimation(const gfx::Transform& transform) {
-  RecomputeCCTransformFromTransform(transform);
+  cc_layer_->SetTransform(transform);
 }
 
 void Layer::SetOpacityFromAnimation(float opacity) {
@@ -933,17 +906,8 @@ void Layer::CreateWebLayer() {
   RecomputePosition();
 }
 
-void Layer::RecomputeCCTransformFromTransform(const gfx::Transform& transform) {
-  cc_layer_->SetTransform(ConvertTransformToCCTransform(transform,
-                                                        device_scale_factor_));
-}
-
 gfx::Transform Layer::transform() const {
-  gfx::Transform transform;
-  transform.Scale(1.0f / device_scale_factor_, 1.0f / device_scale_factor_);
-  transform.PreconcatTransform(cc_layer_->transform());
-  transform.Scale(device_scale_factor_, device_scale_factor_);
-  return transform;
+  return cc_layer_->transform();
 }
 
 void Layer::RecomputeDrawsContentAndUVRect() {
@@ -958,16 +922,13 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     texture_layer_->SetUV(uv_top_left, uv_bottom_right);
   } else if (delegated_renderer_layer_.get()) {
     size.SetToMin(frame_size_in_dip_);
-    delegated_renderer_layer_->SetDisplaySize(
-        ConvertSizeToPixel(this, frame_size_in_dip_));
+    delegated_renderer_layer_->SetDisplaySize(frame_size_in_dip_);
   }
-  cc_layer_->SetBounds(ConvertSizeToPixel(this, size));
+  cc_layer_->SetBounds(size);
 }
 
 void Layer::RecomputePosition() {
-  cc_layer_->SetPosition(gfx::ScalePoint(
-        gfx::PointF(bounds_.x(), bounds_.y()),
-        device_scale_factor_));
+  cc_layer_->SetPosition(gfx::PointF(bounds_.x(), bounds_.y()));
 }
 
 }  // namespace ui

@@ -1191,10 +1191,10 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
 
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
-  gfx::Size size_in_pixel = root->cc_layer()->bounds();
-  EXPECT_EQ("200x220", size_in_pixel.ToString());
-  size_in_pixel = l1->cc_layer()->bounds();
-  EXPECT_EQ("140x180", size_in_pixel.ToString());
+  gfx::Size cc_bounds_size = root->cc_layer()->bounds();
+  EXPECT_EQ("200x220", cc_bounds_size.ToString());
+  cc_bounds_size = l1->cc_layer()->bounds();
+  EXPECT_EQ("140x180", cc_bounds_size.ToString());
   // No scale change, so no scale notification.
   EXPECT_EQ(0.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
@@ -1206,11 +1206,11 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
-  // Pixel size must have been scaled up.
-  size_in_pixel = root->cc_layer()->bounds();
-  EXPECT_EQ("400x440", size_in_pixel.ToString());
-  size_in_pixel = l1->cc_layer()->bounds();
-  EXPECT_EQ("280x360", size_in_pixel.ToString());
+  // CC layer should still match the UI layer bounds.
+  cc_bounds_size = root->cc_layer()->bounds();
+  EXPECT_EQ("200x220", cc_bounds_size.ToString());
+  cc_bounds_size = l1->cc_layer()->bounds();
+  EXPECT_EQ("140x180", cc_bounds_size.ToString());
   // New scale factor must have been notified.
   EXPECT_EQ(2.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
@@ -1226,11 +1226,11 @@ TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(500, 500));
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
-  // Pixel size must have been scaled down.
-  size_in_pixel = root->cc_layer()->bounds();
-  EXPECT_EQ("200x220", size_in_pixel.ToString());
-  size_in_pixel = l1->cc_layer()->bounds();
-  EXPECT_EQ("140x180", size_in_pixel.ToString());
+  // CC layer should still match the UI layer bounds.
+  cc_bounds_size = root->cc_layer()->bounds();
+  EXPECT_EQ("200x220", cc_bounds_size.ToString());
+  cc_bounds_size = l1->cc_layer()->bounds();
+  EXPECT_EQ("140x180", cc_bounds_size.ToString());
   // New scale factor must have been notified.
   EXPECT_EQ(1.0f, root_delegate.device_scale_factor());
   EXPECT_EQ(1.0f, l1_delegate.device_scale_factor());
@@ -1272,8 +1272,8 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
 
   root->Add(l1.get());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
-  gfx::Size size_in_pixel = l1->cc_layer()->bounds();
-  EXPECT_EQ("140x180", size_in_pixel.ToString());
+  gfx::Size cc_bounds_size = l1->cc_layer()->bounds();
+  EXPECT_EQ("140x180", cc_bounds_size.ToString());
   EXPECT_EQ(0.0f, l1_delegate.device_scale_factor());
 
   WaitForDraw();
@@ -1287,40 +1287,17 @@ TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
   // Sanity check on root and l1.
   EXPECT_EQ("10,20 200x220", root->bounds().ToString());
-  size_in_pixel = l1->cc_layer()->bounds();
-  EXPECT_EQ("140x180", size_in_pixel.ToString());
-
+  cc_bounds_size = l1->cc_layer()->bounds();
+  EXPECT_EQ("140x180", cc_bounds_size.ToString());
 
   root->Add(l1.get());
   EXPECT_EQ("10,20 140x180", l1->bounds().ToString());
-  size_in_pixel = l1->cc_layer()->bounds();
-  EXPECT_EQ("280x360", size_in_pixel.ToString());
+  cc_bounds_size = l1->cc_layer()->bounds();
+  EXPECT_EQ("140x180", cc_bounds_size.ToString());
   EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
   WaitForDraw();
   EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
   EXPECT_EQ("2.0 2.0", l1_delegate.ToScaleString());
-}
-
-// Tests layer::set_scale_content(false).
-TEST_F(LayerWithRealCompositorTest, NoScaleCanvas) {
-  scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
-                                          gfx::Rect(10, 20, 200, 220)));
-  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
-                                        gfx::Rect(10, 20, 140, 180)));
-  l1->set_scale_content(false);
-  root->Add(l1.get());
-  TestLayerDelegate l1_delegate;
-  l1_delegate.AddColor(SK_ColorWHITE);
-  l1->set_delegate(&l1_delegate);
-
-  GetCompositor()->SetScaleAndSize(2.0f, gfx::Size(500, 500));
-  GetCompositor()->SetRootLayer(root.get());
-  // Scale factor change is notified regardless of scale_content flag.
-  EXPECT_EQ(2.0f, l1_delegate.device_scale_factor());
-
-  WaitForDraw();
-  EXPECT_EQ("280x360", l1_delegate.paint_size().ToString());
-  EXPECT_EQ("1.0 1.0", l1_delegate.ToScaleString());
 }
 
 // Verifies that when changing bounds on a layer that is invisible, and then
@@ -1415,14 +1392,14 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
   // Hi-DPI content on hi-DPI layer.
   compositor()->SetScaleAndSize(2.f, gfx::Size(1000, 1000));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
-            gfx::Size(20, 20).ToString());
+            gfx::Size(10, 10).ToString());
 
   // Low-DPI content on hi-DPI layer.
   frame_provider = new cc::DelegatedFrameProvider(
       resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
   child->SetShowDelegatedContent(frame_provider, gfx::Size(10, 10));
   EXPECT_EQ(child->cc_layer()->bounds().ToString(),
-            gfx::Size(20, 20).ToString());
+            gfx::Size(10, 10).ToString());
 }
 
 TEST_F(LayerWithDelegateTest, ExternalContent) {
