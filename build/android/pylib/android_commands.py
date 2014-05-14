@@ -55,10 +55,6 @@ LOCAL_PROPERTIES_PATH = constants.DEVICE_LOCAL_PROPERTIES_PATH
 # Property in /data/local.prop that controls Java assertions.
 JAVA_ASSERT_PROPERTY = 'dalvik.vm.enableassertions'
 
-MEMORY_INFO_RE = re.compile('^(?P<key>\w+):\s+(?P<usage_kb>\d+) kB$')
-NVIDIA_MEMORY_INFO_RE = re.compile('^\s*(?P<user>\S+)\s*(?P<name>\S+)\s*'
-                                   '(?P<pid>\d+)\s*(?P<usage_bytes>\d+)$')
-
 # Keycode "enum" suitable for passing to AndroidCommands.SendKey().
 KEYCODE_HOME = 3
 KEYCODE_BACK = 4
@@ -1598,7 +1594,7 @@ class AndroidCommands(object):
       [0]: Dict of {metric:usage_kb}, for the process which has specified pid.
       The metric keys which may be included are: Size, Rss, Pss, Shared_Clean,
       Shared_Dirty, Private_Clean, Private_Dirty, Referenced, Swap,
-      KernelPageSize, MMUPageSize, Nvidia (tablet only), VmHWM.
+      KernelPageSize, MMUPageSize, VmHWM.
       [1]: Detailed /proc/[PID]/smaps information.
     """
     usage_dict = collections.defaultdict(int)
@@ -1612,10 +1608,10 @@ class AndroidCommands(object):
         current_smap = ' '.join(items[5:])
       elif len(items) > 3:
         current_smap = ' '.join(items[3:])
-      match = re.match(MEMORY_INFO_RE, line)
-      if match:
-        key = match.group('key')
-        usage_kb = int(match.group('usage_kb'))
+      if line.endswith('kB'):
+        key, value = line.split(':')
+        key = key.strip()
+        usage_kb = int(value.strip().split()[0])
         usage_dict[key] += usage_kb
         if key not in smaps[current_smap]:
           smaps[current_smap][key] = 0
@@ -1624,18 +1620,12 @@ class AndroidCommands(object):
       # Presumably the process died between ps and calling this method.
       logging.warning('Could not find memory usage for pid ' + str(pid))
 
-    for line in self.GetProtectedFileContents('/d/nvmap/generic-0/clients'):
-      match = re.match(NVIDIA_MEMORY_INFO_RE, line)
-      if match and match.group('pid') == pid:
-        usage_bytes = int(match.group('usage_bytes'))
-        usage_dict['Nvidia'] = int(round(usage_bytes / 1000.0))  # kB
-        break
-
     peak_value_kb = 0
     for line in self.GetProtectedFileContents('/proc/%s/status' % pid):
       if not line.startswith('VmHWM:'):  # Format: 'VmHWM: +[0-9]+ kB'
         continue
       peak_value_kb = int(line.split(':')[1].strip().split(' ')[0])
+      break
     usage_dict['VmHWM'] = peak_value_kb
     if not peak_value_kb:
       logging.warning('Could not find memory peak value for pid ' + str(pid))
