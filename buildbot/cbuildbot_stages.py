@@ -76,10 +76,10 @@ class PaygenStage(artifact_stages.ArchivingStage):
   # Poll for new results every 30 seconds.
   SIGNING_PERIOD = 30
 
-  # Timeout for PushImage to finish uploading images. 1 hour in seconds.
-  PUSHIMAGE_TIMEOUT = 60 * 60
+  # Timeout for PushImage to finish uploading images. 2 hours in seconds.
+  PUSHIMAGE_TIMEOUT = 2 * 60 * 60
 
-  # Abort, if the signing takes longer than 2 hours (in seconds)
+  # Timeout for the signing process. 2 hours in seconds.
   SIGNING_TIMEOUT = 2 * 60 * 60
 
   FINISHED = 'finished'

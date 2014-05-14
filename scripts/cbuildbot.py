@@ -521,7 +521,8 @@ class SimpleBuilder(Builder):
 
     stage_list += [
         [stages.SignerTestStage, board, archive_stage],
-        [stages.PaygenStage, board, archive_stage],
+        [generic_stages.RetryStage, 1,
+         stages.PaygenStage, board, archive_stage],
         [test_stages.UnitTestStage, board],
         [artifact_stages.UploadPrebuiltsStage, board],
         [artifact_stages.DevInstallerPrebuiltsStage, board],
