@@ -5,10 +5,10 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
-#ifdef PROVIDES_SOCKET_API
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
 
 ssize_t recv(int fd, void* buf, size_t len, int flags) {
   return ki_recv(fd, buf, len, flags);
 }
 
-#endif
+#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) */

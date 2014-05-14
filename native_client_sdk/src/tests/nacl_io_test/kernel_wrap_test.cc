@@ -614,17 +614,25 @@ TEST_F(KernelWrapTest, accept) {
 }
 
 TEST_F(KernelWrapTest, bind) {
+  // The way we wrap bind does not support returning arbitrary values, so we
+  // test 0 and -1.
   struct sockaddr addr;
   EXPECT_CALL(mock, bind(kDummyInt, &addr, kDummyInt2))
-      .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, bind(kDummyInt, &addr, kDummyInt2));
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(0, bind(kDummyInt, &addr, kDummyInt2));
+  EXPECT_EQ(-1, bind(kDummyInt, &addr, kDummyInt2));
 }
 
 TEST_F(KernelWrapTest, connect) {
+  // The way we wrap connect does not support returning arbitrary values, so we
+  // test 0 and -1.
   struct sockaddr addr;
   EXPECT_CALL(mock, connect(kDummyInt, &addr, kDummyInt2))
-      .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, connect(kDummyInt, &addr, kDummyInt2));
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(0, connect(kDummyInt, &addr, kDummyInt2));
+  EXPECT_EQ(-1, connect(kDummyInt, &addr, kDummyInt2));
 }
 
 TEST_F(KernelWrapTest, gethostbyname) {
@@ -634,36 +642,55 @@ TEST_F(KernelWrapTest, gethostbyname) {
 }
 
 TEST_F(KernelWrapTest, getpeername) {
+  // The way we wrap getpeername does not support returning arbitrary values,
+  // so we test 0 and -1.
   struct sockaddr addr;
   socklen_t len;
   EXPECT_CALL(mock, getpeername(kDummyInt, &addr, &len))
-      .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, getpeername(kDummyInt, &addr, &len));
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(0, getpeername(kDummyInt, &addr, &len));
+  EXPECT_EQ(-1, getpeername(kDummyInt, &addr, &len));
 }
 
 TEST_F(KernelWrapTest, getsockname) {
+  // The way we wrap getsockname does not support returning arbitrary values,
+  // so we test 0 and -1.
   struct sockaddr addr;
   socklen_t len;
   EXPECT_CALL(mock, getsockname(kDummyInt, &addr, &len))
-      .WillOnce(Return(kDummyInt2));
-  EXPECT_EQ(kDummyInt2, getsockname(kDummyInt, &addr, &len));
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(0, getsockname(kDummyInt, &addr, &len));
+  EXPECT_EQ(-1, getsockname(kDummyInt, &addr, &len));
 }
 
 TEST_F(KernelWrapTest, getsockopt) {
+  // The way we wrap getsockname does not support returning arbitrary values,
+  // so we test 0 and -1.
   int dummy_val;
   void* dummy_void_ptr = &dummy_val;
   socklen_t len;
   EXPECT_CALL(
       mock, getsockopt(kDummyInt, kDummyInt2, kDummyInt3, dummy_void_ptr, &len))
-      .WillOnce(Return(kDummyInt4));
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
   EXPECT_EQ(
-      kDummyInt4,
+      0,
+      getsockopt(kDummyInt, kDummyInt2, kDummyInt3, dummy_void_ptr, &len));
+  EXPECT_EQ(
+      -1,
       getsockopt(kDummyInt, kDummyInt2, kDummyInt3, dummy_void_ptr, &len));
 }
 
 TEST_F(KernelWrapTest, listen) {
-  EXPECT_CALL(mock, listen(kDummyInt, kDummyInt2)).WillOnce(Return(kDummyInt3));
-  EXPECT_EQ(kDummyInt3, listen(kDummyInt, kDummyInt2));
+  // The way we wrap listen does not support returning arbitrary values, so we
+  // test 0 and -1.
+  EXPECT_CALL(mock, listen(kDummyInt, kDummyInt2))
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(0, listen(kDummyInt, kDummyInt2));
+  EXPECT_EQ(-1, listen(kDummyInt, kDummyInt2));
 }
 
 TEST_F(KernelWrapTest, recv) {
@@ -732,22 +759,33 @@ TEST_F(KernelWrapTest, sendmsg) {
 }
 
 TEST_F(KernelWrapTest, setsockopt) {
+  // The way we wrap setsockopt does not support returning arbitrary values, so
+  // we test 0 and -1.
   const socklen_t kDummySockLen = 0x50cc5;
   EXPECT_CALL(
       mock,
       setsockopt(
           kDummyInt, kDummyInt2, kDummyInt3, kDummyVoidPtr, kDummySockLen))
-      .WillOnce(Return(kDummyInt4));
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
   EXPECT_EQ(
-      kDummyInt4,
+      0,
+      setsockopt(
+          kDummyInt, kDummyInt2, kDummyInt3, kDummyVoidPtr, kDummySockLen));
+  EXPECT_EQ(
+      -1,
       setsockopt(
           kDummyInt, kDummyInt2, kDummyInt3, kDummyVoidPtr, kDummySockLen));
 }
 
 TEST_F(KernelWrapTest, shutdown) {
+  // The way we wrap shutdown does not support returning arbitrary values, so we
+  // test 0 and -1.
   EXPECT_CALL(mock, shutdown(kDummyInt, kDummyInt2))
-      .WillOnce(Return(kDummyInt3));
-  EXPECT_EQ(kDummyInt3, shutdown(kDummyInt, kDummyInt2));
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(0, shutdown(kDummyInt, kDummyInt2));
+  EXPECT_EQ(-1, shutdown(kDummyInt, kDummyInt2));
 }
 
 TEST_F(KernelWrapTest, socket) {
@@ -757,10 +795,15 @@ TEST_F(KernelWrapTest, socket) {
 }
 
 TEST_F(KernelWrapTest, socketpair) {
+  // The way we wrap socketpair does not support returning arbitrary values,
+  // so we test 0 and -1.
   int dummy_val;
   EXPECT_CALL(mock, socketpair(kDummyInt, kDummyInt2, kDummyInt3, &dummy_val))
-      .WillOnce(Return(kDummyInt4));
-  EXPECT_EQ(kDummyInt4,
+      .WillOnce(Return(0))
+      .WillOnce(Return(-1));
+  EXPECT_EQ(0,
+            socketpair(kDummyInt, kDummyInt2, kDummyInt3, &dummy_val));
+  EXPECT_EQ(-1,
             socketpair(kDummyInt, kDummyInt2, kDummyInt3, &dummy_val));
 }
 

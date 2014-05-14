@@ -5,10 +5,10 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
-#ifdef PROVIDES_SOCKET_API
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
 
 int socketpair(int domain, int type, int protocol, int* sv) {
   return ki_socketpair(domain, type, protocol, sv);
 }
 
-#endif
+#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) */

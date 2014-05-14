@@ -5,11 +5,11 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
-#ifdef PROVIDES_SOCKET_API
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
 
 ssize_t sendto(int fd, const void* buf, size_t len, int flags,
                const struct sockaddr* addr, socklen_t addrlen) {
   return ki_sendto(fd, buf, len, flags, addr, addrlen);
 }
 
-#endif
+#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) */

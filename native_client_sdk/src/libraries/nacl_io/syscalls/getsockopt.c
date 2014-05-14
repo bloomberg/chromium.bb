@@ -5,11 +5,10 @@
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 
-#ifdef PROVIDES_SOCKET_API
+#if defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__)
 
 int getsockopt(int fd, int lvl, int optname, void* optval, socklen_t* len) {
   return ki_getsockopt(fd, lvl, optname, optval, len);
 }
 
-#endif
-
+#endif  /* defined(PROVIDES_SOCKET_API) && !defined(__GLIBC__) */
