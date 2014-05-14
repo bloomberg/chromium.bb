@@ -5,11 +5,11 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
@@ -19,11 +19,13 @@ namespace extensions {
 
 namespace {
 
-bool HexStringEquals(std::string hex_string, const std::string* bytes) {
+bool Base64UrlStringEquals(std::string input, const std::string* bytes) {
   if (!bytes)
     return false;
-  std::vector<uint8> decoded;
-  if (!base::HexStringToBytes(hex_string, &decoded))
+  if (!VerifiedContents::FixupBase64Encoding(&input))
+    return false;
+  std::string decoded;
+  if (!base::Base64Decode(input, &decoded))
     return false;
   if (decoded.size() != bytes->size())
     return false;
@@ -31,7 +33,7 @@ bool HexStringEquals(std::string hex_string, const std::string* bytes) {
   if (bytes->empty())
     return true;
 
-  return memcmp(vector_as_array(&decoded), bytes->data(), bytes->size()) == 0;
+  return decoded == *bytes;
 }
 
 bool GetPublicKey(const base::FilePath& path, std::string* public_key) {
@@ -66,16 +68,16 @@ TEST(VerifiedContents, Simple) {
   EXPECT_EQ(contents.extension_id(), "abcdefghijklmnopabcdefghijklmnop");
   EXPECT_EQ("1.2.3", contents.version().GetString());
 
-  EXPECT_TRUE(HexStringEquals(
-      "fafcb22089fb8920b383b5f7202508e7065aded1bbc3bbf2882724c5974919fb",
+  EXPECT_TRUE(Base64UrlStringEquals(
+      "-vyyIIn7iSCzg7X3ICUI5wZa3tG7w7vyiCckxZdJGfs",
       contents.GetTreeHashRoot(
           base::FilePath::FromUTF8Unsafe("manifest.json"))));
-  EXPECT_TRUE(HexStringEquals(
-      "b711e21b9290bcda0f3921f915b428f596f9809db78f7a0507446ef433a7ce2c",
+  EXPECT_TRUE(Base64UrlStringEquals(
+      "txHiG5KQvNoPOSH5FbQo9Zb5gJ23j3oFB0Ru9DOnziw",
       contents.GetTreeHashRoot(
           base::FilePath::FromUTF8Unsafe("background.js"))));
-  EXPECT_TRUE(HexStringEquals(
-      "2f7ecb15b4ff866b7144bec07c664df584e95baca8cff662435a292c99f53595",
+  EXPECT_TRUE(Base64UrlStringEquals(
+      "L37LFbT_hmtxRL7AfGZN9YTpW6yoz_ZiQ1opLJn1NZU",
       contents.GetTreeHashRoot(
           base::FilePath::FromUTF8Unsafe("foo/bar.html"))));
 

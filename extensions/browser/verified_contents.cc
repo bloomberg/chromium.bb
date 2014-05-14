@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "crypto/signature_verifier.h"
@@ -29,6 +28,7 @@ const uint8 kSignatureAlgorithm[15] = {0x30, 0x0d, 0x06, 0x09, 0x2a,
 
 const char kBlockSizeKey[] = "block_size";
 const char kContentHashesKey[] = "content_hashes";
+const char kDescriptionKey[] = "description";
 const char kFilesKey[] = "files";
 const char kFormatKey[] = "format";
 const char kHashBlockSizeKey[] = "hash_block_size";
@@ -41,19 +41,33 @@ const char kProtectedKey[] = "protected";
 const char kRootHashKey[] = "root_hash";
 const char kSignatureKey[] = "signature";
 const char kSignaturesKey[] = "signatures";
+const char kSignedContentKey[] = "signed_content";
+const char kTreeHashPerFile[] = "treehash per file";
 const char kTreeHash[] = "treehash";
 const char kWebstoreKId[] = "webstore";
 
-// This function fixes up a string in base64url encoding to be in standard
-// base64.
-//
-// The JSON signing spec we're following uses "base64url" encoding (RFC 4648
-// section 5 without padding). The slight differences from regular base64
-// encoding are:
-//   1. uses '_' instead of '/'
-//   2. uses '-' instead of '+'
-//   3. omits trailing '=' padding
-bool FixupBase64Encoding(std::string* input) {
+// Helper function to iterate over a list of dictionaries, returning the
+// dictionary that has |key| -> |value| in it, if any, or NULL.
+DictionaryValue* FindDictionaryWithValue(const ListValue* list,
+                                         std::string key,
+                                         std::string value) {
+  for (ListValue::const_iterator i = list->begin(); i != list->end(); ++i) {
+    if (!(*i)->IsType(Value::TYPE_DICTIONARY))
+      continue;
+    DictionaryValue* dictionary = static_cast<DictionaryValue*>(*i);
+    std::string found_value;
+    if (dictionary->GetString(key, &found_value) && found_value == value)
+      return dictionary;
+  }
+  return NULL;
+}
+
+}  // namespace
+
+namespace extensions {
+
+// static
+bool VerifiedContents::FixupBase64Encoding(std::string* input) {
   for (std::string::iterator i = input->begin(); i != input->end(); ++i) {
     if (*i == '-')
       *i = '+';
@@ -75,10 +89,6 @@ bool FixupBase64Encoding(std::string* input) {
   return true;
 }
 
-}  // namespace
-
-namespace extensions {
-
 VerifiedContents::VerifiedContents(const uint8* public_key, int public_key_size)
     : public_key_(public_key),
       public_key_size_(public_key_size),
@@ -91,6 +101,8 @@ VerifiedContents::~VerifiedContents() {
 
 // The format of the payload json is:
 // {
+//   "item_id": "<extension id>",
+//   "item_version": "<extension version>",
 //   "content_hashes": [
 //     {
 //       "block_size": 4096,
@@ -99,7 +111,7 @@ VerifiedContents::~VerifiedContents() {
 //       "files": [
 //         {
 //           "path": "foo/bar",
-//           "root_hash": "<hex encoded bytes>"
+//           "root_hash": "<base64url encoded bytes>"
 //         },
 //         ...
 //       ]
@@ -164,16 +176,17 @@ bool VerifiedContents::InitFrom(const base::FilePath& path,
         return false;
       std::string file_path_string;
       std::string encoded_root_hash;
-      std::vector<uint8> root_hash;
+      std::string root_hash;
       if (!data->GetString(kPathKey, &file_path_string) ||
           !base::IsStringUTF8(file_path_string) ||
           !data->GetString(kRootHashKey, &encoded_root_hash) ||
-          !base::HexStringToBytes(encoded_root_hash, &root_hash))
+          !FixupBase64Encoding(&encoded_root_hash) ||
+          !base::Base64Decode(encoded_root_hash, &root_hash))
         return false;
       base::FilePath file_path =
           base::FilePath::FromUTF8Unsafe(file_path_string);
       root_hashes_[file_path] = std::string();
-      root_hashes_[file_path].append(root_hash.begin(), root_hash.end());
+      root_hashes_[file_path].swap(root_hash);
     }
 
     break;
@@ -198,28 +211,33 @@ const std::string* VerifiedContents::GetTreeHashRoot(
 // The idea is that you have some JSON that you want to sign, so you
 // base64-encode that and put it as the "payload" field in a containing
 // dictionary. There might be signatures of it done with multiple
-// alrogirhtms/parameters, so the payload is followed by a list of one or more
+// algorithms/parameters, so the payload is followed by a list of one or more
 // signature sections. Each signature section specifies the
 // algorithm/parameters in a JSON object which is base64url encoded into one
 // string and put into a "protected" field in the signature. Then the encoded
 // "payload" and "protected" strings are concatenated with a "." in between
 // them and those bytes are signed and the resulting signature is base64url
-// encoded and placed in the "signature" field. E.g.
-// {
-//   "payload": "<base64url encoded JSON to sign>",
-//   "signatures": [
-//     {
-//       "protected": "<base64url encoded JSON with algorithm/parameters>",
-//       "header": {
-//         <object with metadata about this signature, eg a key identifier>
-//       }
-//       "signature":
-//          "<base64url encoded signature done over payload || . || protected>"
-//     },
-//     ... <zero or more additional signatures> ...
-//   ]
-// }
-//
+// encoded and placed in the "signature" field. To allow for extensibility, we
+// wrap this, so we can include additional kinds of payloads in the future. E.g.
+// [
+//   {
+//     "description": "treehash per file",
+//     "signed_content": {
+//       "payload": "<base64url encoded JSON to sign>",
+//       "signatures": [
+//         {
+//           "protected": "<base64url encoded JSON with algorithm/parameters>",
+//           "header": {
+//             <object with metadata about this signature, eg a key identifier>
+//           }
+//           "signature":
+//              "<base64url encoded signature over payload || . || protected>"
+//         },
+//         ... <zero or more additional signatures> ...
+//       ]
+//     }
+//   }
+// ]
 // There might be both a signature generated with a webstore private key and a
 // signature generated with the extension's private key - for now we only
 // verify the webstore one (since the id is in the payload, so we can trust
@@ -233,35 +251,49 @@ bool VerifiedContents::GetPayload(const base::FilePath& path,
   if (!base::ReadFileToString(path, &contents))
     return false;
   scoped_ptr<base::Value> value(base::JSONReader::Read(contents));
-  if (!value.get() || !value->IsType(Value::TYPE_DICTIONARY))
+  if (!value.get() || !value->IsType(Value::TYPE_LIST))
     return false;
-  DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.get());
+  ListValue* top_list = static_cast<ListValue*>(value.get());
+
+  // Find the "treehash per file" signed content, e.g.
+  // [
+  //   {
+  //     "description": "treehash per file",
+  //     "signed_content": {
+  //       "signatures": [ ... ],
+  //       "payload": "..."
+  //     }
+  //   }
+  // ]
+  DictionaryValue* dictionary =
+      FindDictionaryWithValue(top_list, kDescriptionKey, kTreeHashPerFile);
+  DictionaryValue* signed_content = NULL;
+  if (!dictionary ||
+      !dictionary->GetDictionaryWithoutPathExpansion(kSignedContentKey,
+                                                     &signed_content)) {
+    return false;
+  }
 
   ListValue* signatures = NULL;
-  if (!dictionary->GetList(kSignaturesKey, &signatures))
+  if (!signed_content->GetList(kSignaturesKey, &signatures))
+    return false;
+
+  DictionaryValue* signature_dict =
+      FindDictionaryWithValue(signatures, kHeaderKidKey, kWebstoreKId);
+  if (!signature_dict)
     return false;
 
   std::string protected_value;
+  std::string encoded_signature;
   std::string decoded_signature;
-  for (size_t i = 0; i < signatures->GetSize(); i++) {
-    DictionaryValue* signature_dict = NULL;
-    if (!signatures->GetDictionary(i, &signature_dict))
-      return false;
-    std::string kid;
-    if (!signature_dict->GetString(kHeaderKidKey, &kid))
-      continue;
-    if (kid == std::string(kWebstoreKId)) {
-      std::string encoded_signature;
-      if (!signature_dict->GetString(kProtectedKey, &protected_value) ||
-          !signature_dict->GetString(kSignatureKey, &encoded_signature) ||
-          !FixupBase64Encoding(&encoded_signature) ||
-          !base::Base64Decode(encoded_signature, &decoded_signature))
-        return false;
-      break;
-    }
-  }
+  if (!signature_dict->GetString(kProtectedKey, &protected_value) ||
+      !signature_dict->GetString(kSignatureKey, &encoded_signature) ||
+      !FixupBase64Encoding(&encoded_signature) ||
+      !base::Base64Decode(encoded_signature, &decoded_signature))
+    return false;
+
   std::string encoded_payload;
-  if (!dictionary->GetString(kPayloadKey, &encoded_payload))
+  if (!signed_content->GetString(kPayloadKey, &encoded_payload))
     return false;
 
   valid_signature_ =

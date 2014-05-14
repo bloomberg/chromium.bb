@@ -7,15 +7,15 @@
       "files": [
         {
           "path": "manifest.json",
-          "root_hash": "fafcb22089fb8920b383b5f7202508e7065aded1bbc3bbf2882724c5974919fb"
+          "root_hash": "-vyyIIn7iSCzg7X3ICUI5wZa3tG7w7vyiCckxZdJGfs"
         },
         {
           "path": "background.js",
-          "root_hash": "b711e21b9290bcda0f3921f915b428f596f9809db78f7a0507446ef433a7ce2c"
+          "root_hash": "txHiG5KQvNoPOSH5FbQo9Zb5gJ23j3oFB0Ru9DOnziw"
         },
         {
           "path": "foo/bar.html",
-          "root_hash": "2f7ecb15b4ff866b7144bec07c664df584e95baca8cff662435a292c99f53595"
+          "root_hash": "L37LFbT_hmtxRL7AfGZN9YTpW6yoz_ZiQ1opLJn1NZU"
         }
       ]
     }
