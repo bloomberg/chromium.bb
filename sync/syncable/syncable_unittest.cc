@@ -344,7 +344,7 @@ TEST_F(OnDiskSyncableDirectoryTest,
     specifics.mutable_bookmark()->set_favicon("PNG");
     specifics.mutable_bookmark()->set_url("http://nowhere");
     create.PutSpecifics(specifics);
-    update.PutSpecifics(specifics);
+    update.PutServerSpecifics(specifics);
     create_pre_save = create.GetKernelCopy();
     update_pre_save = update.GetKernelCopy();
     create_id = create.GetId();
@@ -379,10 +379,9 @@ TEST_F(OnDiskSyncableDirectoryTest,
                   (i == TRANSACTION_VERSION ? 1 : 0),
               create_post_save.ref((Int64Field)i))
               << "int64 field #" << i << " changed during save/load";
-    EXPECT_EQ(update_pre_save.ref((Int64Field)i) +
-              (i == TRANSACTION_VERSION ? 1 : 0),
+    EXPECT_EQ(update_pre_save.ref((Int64Field)i),
               update_post_save.ref((Int64Field)i))
-              << "int64 field #" << i << " changed during save/load";
+        << "int64 field #" << i << " changed during save/load";
   }
   for ( ; i < TIME_FIELDS_END ; ++i) {
     EXPECT_EQ(create_pre_save.ref((TimeField)i),

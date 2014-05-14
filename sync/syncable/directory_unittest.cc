@@ -81,6 +81,11 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
 
   DirOpenResult open_result =
       dir_->Open(kDirectoryName, &delegate_, NullTransactionObserver());
+
+  if (open_result != OPENED) {
+    dir_.reset();
+  }
+
   return open_result;
 }
 
@@ -1219,6 +1224,38 @@ TEST_F(SyncableDirectoryTest, PositionWithNullSurvivesSaveAndReload) {
     EXPECT_TRUE(null_pos.Equals(null_ordinal_child.GetUniquePosition()));
     EXPECT_TRUE(null_pos.Equals(null_ordinal_child.GetServerUniquePosition()));
   }
+}
+
+// Any item with BOOKMARKS in their local specifics should have a valid local
+// unique position.  If there is an item in the loaded DB that does not match
+// this criteria, we consider the whole DB to be corrupt.
+TEST_F(SyncableDirectoryTest, BadPositionCountsAsCorruption) {
+  TestIdFactory id_factory;
+
+  {
+    WriteTransaction trans(FROM_HERE, UNITTEST, dir().get());
+
+    MutableEntry parent(&trans, CREATE, BOOKMARKS, id_factory.root(), "parent");
+    parent.PutIsDir(true);
+    parent.PutIsUnsynced(true);
+
+    // The code is littered with DCHECKs that try to stop us from doing what
+    // we're about to do.  Our work-around is to create a bookmark based on
+    // a server update, then update its local specifics without updating its
+    // local unique position.
+
+    MutableEntry child(
+        &trans, CREATE_NEW_UPDATE_ITEM, id_factory.MakeServer("child"));
+    sync_pb::EntitySpecifics specifics;
+    AddDefaultFieldValue(BOOKMARKS, &specifics);
+    child.PutIsUnappliedUpdate(true);
+    child.PutSpecifics(specifics);
+
+    EXPECT_TRUE(child.ShouldMaintainPosition());
+    EXPECT_TRUE(!child.GetUniquePosition().IsValid());
+  }
+
+  EXPECT_EQ(FAILED_DATABASE_CORRUPT, SimulateSaveAndReloadDir());
 }
 
 TEST_F(SyncableDirectoryTest, General) {

@@ -46,6 +46,10 @@ class SYNC_EXPORT_PRIVATE UniquePosition {
   static bool IsValidSuffix(const std::string& suffix);
   static bool IsValidBytes(const std::string& bytes);
 
+  // Returns a valid, but mostly random suffix.
+  // Avoid using this; it can lead to inconsistent sort orderings if misused.
+  static std::string RandomSuffix();
+
   // Returns an invalid position.
   static UniquePosition CreateInvalid();
 

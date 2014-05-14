@@ -123,6 +123,16 @@ scoped_ptr<EntryKernel> UnpackEntry(sql::Statement* statement) {
     kernel->mutable_ref(static_cast<AttachmentMetadataField>(i)).ParseFromArray(
         statement->ColumnBlob(i), statement->ColumnByteLength(i));
   }
+
+  // Sanity check on positions.  We risk strange and rare crashes if our
+  // assumptions about unique position values are broken.
+  if (kernel->ShouldMaintainPosition() &&
+      !kernel->ref(UNIQUE_POSITION).IsValid()) {
+    DVLOG(1) << "Unpacked invalid position on an entity that should have a "
+             << "valid position.  Assuming the DB is corrupt.";
+    return scoped_ptr<EntryKernel>();
+  }
+
   return kernel.Pass();
 }
 

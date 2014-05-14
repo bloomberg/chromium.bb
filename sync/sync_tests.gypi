@@ -302,6 +302,7 @@
           'engine/sync_scheduler_unittest.cc',
           'engine/syncer_proto_util_unittest.cc',
           'engine/syncer_unittest.cc',
+          'engine/syncer_util_unittest.cc',
           'js/js_event_details_unittest.cc',
           'js/sync_js_controller_unittest.cc',
           'protocol/proto_enum_conversions_unittest.cc',
