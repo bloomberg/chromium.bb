@@ -21,7 +21,7 @@ import threading
 from pylib import android_commands
 from pylib import constants
 from pylib.base import base_test_result
-from pylib.device import adb_wrapper
+from pylib.device import device_errors
 from pylib.utils import reraiser_thread
 from pylib.utils import watchdog_timer
 
@@ -173,7 +173,7 @@ def _RunTestsFromQueue(runner, test_collection, out_results, watcher,
         # Device is unresponsive, stop handling tests on this device.
         msg = 'Device %s is unresponsive.' % runner.device_serial
         logging.warning(msg)
-        raise adb_wrapper.DeviceUnreachableError(msg)
+        raise device_errors.DeviceUnreachableError(msg)
       result, retry = runner.RunTest(test.test)
       if tag_results_with_device:
         result = TagTestRunResults(result)
@@ -217,7 +217,7 @@ def _SetUp(runner_factory, device, out_runners, threadsafe_counter):
     runner = runner_factory(device, index)
     runner.SetUp()
     out_runners.append(runner)
-  except (adb_wrapper.DeviceUnreachableError,
+  except (device_errors.DeviceUnreachableError,
           # TODO(jbudorick) Remove this once the underlying implementations
           #                 for the above are switched or wrapped.
           android_commands.errors.DeviceUnresponsiveError) as e:
@@ -262,7 +262,7 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
   # Catch DeviceUnreachableErrors and set a warning exit code
   try:
     workers.JoinAll(watcher)
-  except (adb_wrapper.DeviceUnreachableError,
+  except (device_errors.DeviceUnreachableError,
           # TODO(jbudorick) Remove this once the underlying implementations
           #                 for the above are switched or wrapped.
           android_commands.errors.DeviceUnresponsiveError) as e:
@@ -371,7 +371,7 @@ def RunTests(tests, runner_factory, devices, shard=True,
   finally:
     try:
       _TearDownRunners(runners, setup_timeout)
-    except (adb_wrapper.DeviceUnreachableError,
+    except (device_errors.DeviceUnreachableError,
             # TODO(jbudorick) Remove this once the underlying implementations
             #                 for the above are switched or wrapped.
             android_commands.errors.DeviceUnresponsiveError) as e:

@@ -396,7 +396,7 @@ def ProvisionDevices(options):
 
   if not bb_utils.TESTING:
     # Restart adb to work around bugs, sleep to wait for usb discovery.
-    device_utils.DeviceUtils(None).old_interface.RestartAdbServer()
+    device_utils.RestartServer()
     RunCmd(['sleep', '1'])
   provision_cmd = ['build/android/provision_devices.py', '-t', options.target]
   if options.auto_reconnect:

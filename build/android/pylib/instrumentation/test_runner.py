@@ -16,7 +16,7 @@ from pylib import flag_changer
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
-from pylib.device import adb_wrapper
+from pylib.device import device_errors
 from pylib.instrumentation import json_perf_parser
 from pylib.instrumentation import test_result
 
@@ -329,7 +329,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return self.device.old_interface.RunInstrumentationTest(
           test, self.test_pkg.GetPackageName(),
           self._GetInstrumentationArgs(), timeout)
-    except (adb_wrapper.CommandTimeoutError,
+    except (device_errors.CommandTimeoutError,
             # TODO(jbudorick) Remove this once the underlying implementations
             #                 for the above are switched or wrapped.
             android_commands.errors.WaitForResponseTimedOutError):
@@ -369,8 +369,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       results.AddResult(result)
     # Catch exceptions thrown by StartInstrumentation().
     # See ../../third_party/android/testrunner/adb_interface.py
-    except (adb_wrapper.CommandTimeoutError,
-            adb_wrapper.DeviceUnreachableError,
+    except (device_errors.CommandTimeoutError,
+            device_errors.DeviceUnreachableError,
             # TODO(jbudorick) Remove these once the underlying implementations
             #                 for the above are switched or wrapped.
             android_commands.errors.WaitForResponseTimedOutError,

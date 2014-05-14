@@ -10,7 +10,7 @@ from pylib import constants
 from pylib import pexpect
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
-from pylib.device import adb_wrapper
+from pylib.device import device_errors
 from pylib.perf import perf_control
 
 
@@ -129,7 +129,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
       # We're here because either the device went offline, or the test harness
       # crashed without outputting the CRASHED marker (crbug.com/175538).
       if not self.device.old_interface.IsOnline():
-        raise adb_wrapper.DeviceUnreachableError(
+        raise device_errors.DeviceUnreachableError(
             'Device %s went offline.' % self.device.old_interface.GetDevice())
       if full_test_name:
         results.AddResult(base_test_result.BaseTestResult(

@@ -15,7 +15,7 @@ import time
 from pylib import android_commands
 from pylib import constants
 from pylib import pexpect
-from pylib.device import adb_wrapper
+from pylib.device import device_errors
 from pylib.gtest.test_package import TestPackage
 
 
@@ -64,7 +64,7 @@ class TestPackageApk(TestPackage):
         break
       time.sleep(i)
     else:
-      raise adb_wrapper.DeviceUnreachableError(
+      raise device_errors.DeviceUnreachableError(
           'Unable to find fifo on device %s ' % self._GetFifo())
     args = shlex.split(device.old_interface.Adb()._target_arg)
     args += ['shell', 'cat', self._GetFifo()]

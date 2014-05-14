@@ -38,7 +38,7 @@ def CleanupLeftoverProcesses():
     device = device_utils.DeviceUtils(device_serial)
     # Make sure we restart the host adb server only once.
     if not did_restart_host_adb:
-      device.old_interface.RestartAdbServer()
+      device_utils.RestartServer()
       did_restart_host_adb = True
     device.old_interface.RestartAdbdOnDevice()
     device.old_interface.EnableAdbRoot()

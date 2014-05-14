@@ -10,6 +10,7 @@ import time
 import unittest
 
 from pylib.device import adb_wrapper
+from pylib.device import device_errors
 
 
 class TestAdbWrapper(unittest.TestCase):
@@ -40,7 +41,7 @@ class TestAdbWrapper(unittest.TestCase):
     self.assertEqual(output.strip(), 'test')
     output = self._adb.Shell('echo test')
     self.assertEqual(output.strip(), 'test')
-    self.assertRaises(adb_wrapper.CommandFailedError, self._adb.Shell,
+    self.assertRaises(device_errors.CommandFailedError, self._adb.Shell,
         'echo test', expect_rc=1)
 
   def testPushPull(self):
@@ -55,13 +56,13 @@ class TestAdbWrapper(unittest.TestCase):
 
   def testInstall(self):
     path = self._MakeTempFile('foo')
-    self.assertRaises(adb_wrapper.CommandFailedError, self._adb.Install, path)
+    self.assertRaises(device_errors.CommandFailedError, self._adb.Install, path)
 
   def testForward(self):
-    self.assertRaises(adb_wrapper.CommandFailedError, self._adb.Forward, 0, 0)
+    self.assertRaises(device_errors.CommandFailedError, self._adb.Forward, 0, 0)
 
   def testUninstall(self):
-    self.assertRaises(adb_wrapper.CommandFailedError, self._adb.Uninstall,
+    self.assertRaises(device_errors.CommandFailedError, self._adb.Uninstall,
         'some.nonexistant.package')
 
   def testRebootWaitForDevice(self):
@@ -81,7 +82,7 @@ class TestAdbWrapper(unittest.TestCase):
       try:
         self._adb.Shell('start')
         break
-      except adb_wrapper.CommandFailedError:
+      except device_errors.CommandFailedError:
         time.sleep(1)
     self._adb.Remount()
 
