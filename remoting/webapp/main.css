@@ -20,6 +20,7 @@ tfoot, thead, tr, th, td, button {
 
 .inset {
   padding: 20px 20px 0 20px;
+  position: relative;
 }
 
 body {
@@ -29,6 +30,7 @@ body {
   margin: 0;
   direction: __MSG_@@bidi_dir__;
 }
+
 
 /*
 * The "app-v2" class is added to the <html> node by remoting.init if it's
@@ -621,7 +623,7 @@ button {
 }
 
 .dialog-screen {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;

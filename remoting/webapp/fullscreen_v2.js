@@ -102,6 +102,7 @@ remoting.FullscreenAppsV2.prototype.syncWithMaximize = function(sync) {
 remoting.FullscreenAppsV2.prototype.onFullscreened_ = function() {
   this.notifyCallbacksOnRestore_ = true;
   this.eventSource_.raiseEvent(this.kEventName_, true);
+  document.body.classList.add('fullscreen');
 };
 
 remoting.FullscreenAppsV2.prototype.onMaximized_ = function() {
@@ -111,6 +112,7 @@ remoting.FullscreenAppsV2.prototype.onMaximized_ = function() {
 };
 
 remoting.FullscreenAppsV2.prototype.onRestored_ = function() {
+  document.body.classList.remove('fullscreen');
   if (this.hookingWindowEvents_) {
     this.activate(false);
   }

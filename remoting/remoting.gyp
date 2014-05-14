@@ -206,6 +206,7 @@
           'webapp/manifest.json.jinja2',
           'webapp/paired_client_manager.js',
           'webapp/remoting.js',
+          'webapp/window_frame.js',
         ],
       },
       'actions': [

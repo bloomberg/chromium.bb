@@ -69,6 +69,8 @@ remoting.init = function() {
   if (remoting.isAppsV2) {
     remoting.identity = new remoting.Identity(consentRequired_);
     remoting.fullscreen = new remoting.FullscreenAppsV2();
+    remoting.windowFrame = new remoting.WindowFrame(
+        document.getElementById('title-bar'));
   } else {
     remoting.oauth2 = new remoting.OAuth2();
     if (!remoting.oauth2.isAuthenticated()) {

@@ -1,0 +1,174 @@
+/* Copyright 2014 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+html.apps-v2,
+html.apps-v2 body {
+  height: 100%;
+  width: 100%;
+}
+
+html.apps-v2 body:not(.fullscreen) {
+  border: 1px solid gray;  /* This is the window border. */
+}
+
+html.apps-v2 .title-bar {
+  border-bottom: 1px solid gray;
+  z-index: 100;
+}
+
+.window-title,
+.window-controls-hover-target {
+  height: 32px;
+  line-height: 32px;
+  font-size: 16px;
+  background-color: #c4c4c4;
+}
+
+.title-bar .window-title {
+  padding-__MSG_@@bidi_start_edge__: 12px;
+  width: 100%;
+  display: inline-block;
+  -webkit-app-region: drag;
+}
+
+.window-controls-hover-target {
+  -webkit-app-region: no-drag;
+  position: fixed;
+  top: 1px;
+  __MSG_@@bidi_end_edge__: 1px;
+}
+
+.window-controls-hover-target {
+  display: table;
+}
+
+.window-controls-hover-target > div:first-child {
+  display: table-row;
+}
+
+.window-control {
+  height: 32px;
+  width: 32px;
+  text-align: center;
+  display: inline-block;
+  border-__MSG_@@bidi_start_edge__: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.window-control:hover {
+  background-color: #d5d5d5;
+}
+
+.window-control:active {
+  background-color: #a6a6a6;
+}
+
+.window-control > img {
+  margin-bottom: -2px;
+}
+
+.window-controls-stub {
+  display: none;
+  -webkit-column-span: all;
+  line-height: 3px;
+  background: url("drag.webp");
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+#scroller {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+html.apps-v2 #scroller {
+  height: calc(100% - 32px);  /** Allow space for the title-bar */
+}
+
+/* Add an etched border to the window controls, title bar and stub */
+.title-bar,
+.window-control,
+.window-controls-stub {
+  position: relative;
+}
+
+.title-bar:after,
+.window-control:after,
+.window-controls-stub:after {
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+}
+
+
+/* When connected to a host, the Disconnect button is displayed. */
+body:not(.connected) .window-disconnect {
+  display: none;
+}
+
+
+/*
+ * When in full-screen mode, significant changes are made:
+ * - The scroll-bars are removed.
+ * - The window controls have a border (so the left-border of the first button
+ *   is not needed).
+ * - The title-bar (and its bottom border) are not displayed.
+ * - The stub is visible.
+ * - The window controls gain transition effects for position and opacity and
+ *   auto-hide behind the top edge of the screen.
+ * - A border is added to the window controls to ensure they stand out against
+ *   any desktop.
+ * - The window border is removed.
+ */
+
+html.apps-v2 body.fullscreen #scroller {
+  height: 100%;
+  overflow: hidden;
+}
+
+body.fullscreen .window-controls-hover-target {
+  border: 1px solid #a6a6a6;
+}
+
+body.fullscreen .window-control:first-child {
+  border-__MSG_@@bidi_start_edge__: none;
+}
+
+body.fullscreen .window-title {
+  display: none;
+}
+
+body.fullscreen .title-bar {
+  border-bottom: none;
+}
+
+body.fullscreen .window-controls-stub {
+  display: table-cell;
+}
+
+body.fullscreen .window-controls-hover-target {
+  transition-property: opacity, box-shadow, top;
+  transition-duration: 0.3s;
+  opacity: 0.7;
+  top: -33px;
+  __MSG_@@bidi_end_edge__: 8px;
+}
+
+body.fullscreen .window-controls-hover-target:hover,
+body.fullscreen .window-controls-hover-target.opened {
+  top: -4px;
+  opacity: 1.0;
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.5);
+}
+
+.fullscreen .window-controls-hover-target.opened .window-controls-stub {
+    background-color: #a6a6a6;
+}

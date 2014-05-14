@@ -287,6 +287,7 @@ var AppWindow = function() {
 
 AppWindow.prototype.close = function() {};
 AppWindow.prototype.drawAttention = function() {};
+AppWindow.prototype.maximize = function() {};
 AppWindow.prototype.minimize = function() {};
 AppWindow.prototype.restore = function() {};
 AppWindow.prototype.fullscreen = function() {};

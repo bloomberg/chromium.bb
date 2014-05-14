@@ -8,7 +8,8 @@ var kNewWindowId = 'new-window';
 function createWindow() {
   chrome.app.window.create('main.html', {
     'width': 800,
-    'height': 600
+    'height': 600,
+    'frame': 'none'
   });
 };
 

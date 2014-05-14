@@ -552,8 +552,23 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Footer text displayed at the host after an access code has been generated, but before a client connects." name="IDS_FOOTER_WAITING">
         waiting for connection…
       </message>
-      <message desc="Menu option for toggle full-screen mode. Equivalent to using the Wrench menu to do the same thing." name="IDS_FULL_SCREEN" formatter_data="android_java">
+      <message desc="Menu option for toggle full-screen mode." name="IDS_FULL_SCREEN" formatter_data="android_java">
         Full screen
+      </message>
+      <message desc="Icon to leave full-screen mode." name="IDS_EXIT_FULL_SCREEN">
+        Exit full screen
+      </message>
+      <message desc="Tool-tip for the window's close icon." name="IDS_CLOSE_WINDOW">
+        Close window
+      </message>
+      <message desc="Tool-tip for the window's maximize icon." name="IDS_MAXIMIZE_WINDOW">
+        Maximize window
+      </message>
+      <message desc="Tool-tip for the window's minimize icon." name="IDS_MINIMIZE_WINDOW">
+        Minimize window
+      </message>
+      <message desc="Tool-tip for the window's restore icon." name="IDS_RESTORE_WINDOW">
+        Restore window
       </message>
       <message desc="Button displayed underneath explanatory text for app features. Clicking causes the text, infographic and the button itself to be replaced by the actual UI for that feature." name="IDS_GET_STARTED">
         Get started

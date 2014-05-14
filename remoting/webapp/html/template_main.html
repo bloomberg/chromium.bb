@@ -5,7 +5,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<html class="scrollable full-height">
+<html class="full-height">
   <head>
     <meta charset="utf-8">
     <link rel="icon" type="image/png" href="chromoting16.webp">
@@ -14,13 +14,16 @@ found in the LICENSE file.
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="menu_button.css">
     <link rel="stylesheet" href="toolbar.css">
+    <link rel="stylesheet" href="window_frame.css">
 
     <meta-include type="javascript"/>
 
     <title i18n-content="PRODUCT_NAME"></title>
   </head>
 
-  <body class="full-height">
+  <body class="full-height inner-border-for-apps-v2">
+
+    <meta-include src="webapp/html/window_frame.html"/>
 
     <!-- loading-mode is initially visible, but becomes hidden as soon as an
          AppMode is selected by remoting.init. All other divs are initially
@@ -34,62 +37,65 @@ found in the LICENSE file.
 
     <iframe id="wcs-sandbox" src="wcs_sandbox.html" hidden></iframe>
 
-    <div class="inset" data-ui-mode="home" hidden>
+    <div id="scroller">
+      <div class="inset" data-ui-mode="home" hidden>
 
-      <meta-include src="webapp/html/ui_header.html"/>
-      <meta-include src="webapp/html/butterbar.html"/>
-      <meta-include src="webapp/html/ui_it2me.html"/>
-      <meta-include src="webapp/html/ui_me2me.html"/>
+        <meta-include src="webapp/html/ui_header.html"/>
+        <meta-include src="webapp/html/butterbar.html"/>
+        <meta-include src="webapp/html/ui_it2me.html"/>
+        <meta-include src="webapp/html/ui_me2me.html"/>
 
-    </div>
+      </div>  <!-- inset -->
 
-    <meta-include src="webapp/html/dialog_auth.html"/>
+      <meta-include src="webapp/html/dialog_auth.html"/>
 
-    <div class="dialog-screen"
-         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings"
-         hidden></div>
+      <div class="dialog-screen"
+           data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-setup home.token-refresh-failed home.manage-pairings"
+           hidden></div>
 
-    <div class="dialog-container"
-         data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
-         hidden>
+      <div class="dialog-container"
+           data-ui-mode="home.host home.client home.history home.confirm-host-delete home.host-install home.host-setup home.token-refresh-failed home.manage-pairings"
+           hidden>
 
-      <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
-      <meta-include src="webapp/html/dialog_host_setup.html"/>
-      <meta-include src="webapp/html/dialog_host_install.html"/>
-      <meta-include src="webapp/html/dialog_host.html"/>
+        <meta-include src="webapp/html/dialog_token_refresh_failed.html"/>
+        <meta-include src="webapp/html/dialog_host_setup.html"/>
+        <meta-include src="webapp/html/dialog_host_install.html"/>
+        <meta-include src="webapp/html/dialog_host.html"/>
 
-      <div id="client-dialog"
-           class="kd-modaldialog"
-           data-ui-mode="home.client">
+        <div id="client-dialog"
+             class="kd-modaldialog"
+             data-ui-mode="home.client">
 
-        <meta-include src="webapp/html/dialog_client_unconnected.html"/>
-        <meta-include src="webapp/html/dialog_client_connecting.html"/>
-        <meta-include src="webapp/html/dialog_client_host_needs_upgrade.html"/>
-        <meta-include src="webapp/html/dialog_client_pin_prompt.html"/>
-        <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
-        <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
-        <meta-include src="webapp/html/dialog_client_session_finished.html"/>
+          <meta-include src="webapp/html/dialog_client_unconnected.html"/>
+          <meta-include src="webapp/html/dialog_client_connecting.html"/>
+          <meta-include src="webapp/html/dialog_client_host_needs_upgrade.html"/>
+          <meta-include src="webapp/html/dialog_client_pin_prompt.html"/>
+          <meta-include src="webapp/html/dialog_client_third_party_auth.html"/>
+          <meta-include src="webapp/html/dialog_client_connect_failed.html"/>
+          <meta-include src="webapp/html/dialog_client_session_finished.html"/>
 
+        </div>
+
+        <meta-include src="webapp/html/dialog_connection_history.html"/>
+        <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
+        <meta-include src="webapp/html/dialog_manage_pairings.html"/>
+
+      </div>  <!-- dialog-container -->
+
+      <div id="session-mode"
+           data-ui-mode="in-session home.client"
+           class="full-height"
+           hidden>
+
+        <meta-include src="webapp/html/toolbar.html"/>
+        <meta-include src="webapp/html/client_plugin.html"/>
+
+      </div>  <!-- session-mode -->
+
+      <div id="statistics" dir="ltr" class="selectable" hidden>
       </div>
 
-      <meta-include src="webapp/html/dialog_connection_history.html"/>
-      <meta-include src="webapp/html/dialog_confirm_host_delete.html"/>
-      <meta-include src="webapp/html/dialog_manage_pairings.html"/>
-
-    </div> <!-- dialog-container -->
-
-    <div id="session-mode"
-         data-ui-mode="in-session home.client"
-         class="full-height"
-         hidden>
-
-      <meta-include src="webapp/html/toolbar.html"/>
-      <meta-include src="webapp/html/client_plugin.html"/>
-
-    </div>
-
-    <div id="statistics" dir="ltr" class="selectable" hidden>
-    </div>
+    </div>  <!-- scroller ->
 
   </body>
 </html>
