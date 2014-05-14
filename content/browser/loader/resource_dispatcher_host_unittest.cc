@@ -1067,7 +1067,7 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
   MakeTestRequest(0, 5, net::URLRequestTestJob::test_url_redirect_to_url_2());
 
   // Finish the redirection
-  ResourceHostMsg_FollowRedirect redirect_msg(5, false, GURL());
+  ResourceHostMsg_FollowRedirect redirect_msg(5);
   bool msg_was_ok;
   host_.OnMessageReceived(redirect_msg, filter_.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
@@ -2278,7 +2278,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
   SetResponse("HTTP/1.1 200 OK\n"
               "Content-Type: text/html\n\n",
               kResponseBody);
-  ResourceHostMsg_FollowRedirect redirect_msg(request_id, false, GURL());
+  ResourceHostMsg_FollowRedirect redirect_msg(request_id);
   bool msg_was_ok;
   host_.OnMessageReceived(redirect_msg, filter_.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
@@ -2353,7 +2353,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
   SetResponse("HTTP/1.1 200 OK\n"
               "Content-Type: text/plain\n\n",
               kResponseBody);
-  ResourceHostMsg_FollowRedirect redirect_msg(request_id, false, GURL());
+  ResourceHostMsg_FollowRedirect redirect_msg(request_id);
   bool msg_was_ok;
   host_.OnMessageReceived(redirect_msg, filter_.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
@@ -2436,7 +2436,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
     SetResponse("HTTP/1.1 200 OK\n"
                 "Content-Type: text/html\n\n",
                 kResponseBody);
-    ResourceHostMsg_FollowRedirect redirect_msg(request_id, false, GURL());
+    ResourceHostMsg_FollowRedirect redirect_msg(request_id);
     host_.OnMessageReceived(redirect_msg, first_filter.get(), &msg_was_ok);
     base::MessageLoop::current()->RunUntilIdle();
 
@@ -2510,7 +2510,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   // Now that we're blocked on the redirect, simulate hitting another redirect.
   SetResponse("HTTP/1.1 302 Found\n"
               "Location: http://other.com/blerg\n\n");
-  ResourceHostMsg_FollowRedirect redirect_msg(request_id, false, GURL());
+  ResourceHostMsg_FollowRedirect redirect_msg(request_id);
   bool msg_was_ok;
   host_.OnMessageReceived(redirect_msg, filter_.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
@@ -2523,7 +2523,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   SetResponse("HTTP/1.1 200 OK\n"
               "Content-Type: text/plain\n\n",
               kResponseBody);
-  ResourceHostMsg_FollowRedirect redirect_msg2(request_id, false, GURL());
+  ResourceHostMsg_FollowRedirect redirect_msg2(request_id);
   host_.OnMessageReceived(redirect_msg2, filter_.get(), &msg_was_ok);
   base::MessageLoop::current()->RunUntilIdle();
 

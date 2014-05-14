@@ -48,9 +48,8 @@ void ExtensionLocalizationPeer::OnUploadProgress(
 
 bool ExtensionLocalizationPeer::OnReceivedRedirect(
     const GURL& new_url,
-    const webkit_glue::ResourceResponseInfo& info,
-    bool* has_new_first_party_for_cookies,
-    GURL* new_first_party_for_cookies) {
+    const GURL& new_first_party_for_cookies,
+    const webkit_glue::ResourceResponseInfo& info) {
   NOTREACHED();
   return false;
 }

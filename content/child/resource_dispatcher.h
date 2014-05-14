@@ -145,6 +145,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void OnReceivedCachedMetadata(int request_id, const std::vector<char>& data);
   void OnReceivedRedirect(int request_id,
                           const GURL& new_url,
+                          const GURL& new_first_party_for_cookies,
                           const ResourceResponseHead& response_head);
   void OnSetDataBuffer(int request_id,
                        base::SharedMemoryHandle shm_handle,

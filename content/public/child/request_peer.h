@@ -37,15 +37,13 @@ class CONTENT_EXPORT RequestPeer {
 
   // Called when a redirect occurs.  The implementation may return false to
   // suppress the redirect.  The given ResponseInfo provides complete
-  // information about the redirect, and new_url is the URL that will be
-  // loaded if this method returns true.  If this method returns true, the
-  // output parameter *has_new_first_party_for_cookies indicates whether the
-  // output parameter *new_first_party_for_cookies contains the new URL that
-  // should be consulted for the third-party cookie blocking policy.
-  virtual bool OnReceivedRedirect(const GURL& new_url,
-                                  const webkit_glue::ResourceResponseInfo& info,
-                                  bool* has_new_first_party_for_cookies,
-                                  GURL* new_first_party_for_cookies) = 0;
+  // information about the redirect, and new_url is the URL that will be loaded
+  // if this method returns true. new_first_party_for_cookies is the new
+  // first-party URL for cookies should that have changed.
+  virtual bool OnReceivedRedirect(
+      const GURL& new_url,
+      const GURL& new_first_party_for_cookies,
+      const webkit_glue::ResourceResponseInfo& info) = 0;
 
   // Called when response headers are available (after all redirects have
   // been followed).

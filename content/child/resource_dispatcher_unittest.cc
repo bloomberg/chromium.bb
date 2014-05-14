@@ -46,12 +46,9 @@ class TestRequestCallback : public RequestPeer {
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const ResourceResponseInfo& info,
-      bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) OVERRIDE {
-    *has_new_first_party_for_cookies = false;
+  virtual bool OnReceivedRedirect(const GURL& new_url,
+                                  const GURL& new_first_party_for_cookies,
+                                  const ResourceResponseInfo& info) OVERRIDE {
     return true;
   }
 
@@ -269,12 +266,9 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const ResourceResponseInfo& info,
-      bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) OVERRIDE {
-    *has_new_first_party_for_cookies = false;
+  virtual bool OnReceivedRedirect(const GURL& new_url,
+                                  const GURL& new_first_party_for_cookies,
+                                  const ResourceResponseInfo& info) OVERRIDE {
     return true;
   }
 
@@ -360,11 +354,9 @@ class TimeConversionTest : public ResourceDispatcherTest,
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE {
   }
 
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const ResourceResponseInfo& info,
-      bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) OVERRIDE {
+  virtual bool OnReceivedRedirect(const GURL& new_url,
+                                  const GURL& new_first_party_for_cookies,
+                                  const ResourceResponseInfo& info) OVERRIDE {
     return true;
   }
 

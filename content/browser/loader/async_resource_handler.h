@@ -68,9 +68,7 @@ class AsyncResourceHandler : public ResourceHandler,
 
  private:
   // IPC message handlers:
-  void OnFollowRedirect(int request_id,
-                        bool has_new_first_party_for_cookies,
-                        const GURL& new_first_party_for_cookies);
+  void OnFollowRedirect(int request_id);
   void OnDataReceivedACK(int request_id);
 
   bool EnsureResourceBufferIsInitialized();

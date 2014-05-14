@@ -487,6 +487,7 @@ void ResourceDispatcher::OnDownloadedData(int request_id,
 void ResourceDispatcher::OnReceivedRedirect(
     int request_id,
     const GURL& new_url,
+    const GURL& new_first_party_for_cookies,
     const ResourceResponseHead& response_head) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedRedirect");
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
@@ -494,13 +495,10 @@ void ResourceDispatcher::OnReceivedRedirect(
     return;
   request_info->response_start = ConsumeIOTimestamp();
 
-  bool has_new_first_party_for_cookies = false;
-  GURL new_first_party_for_cookies;
   ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
-  if (request_info->peer->OnReceivedRedirect(new_url, renderer_response_info,
-                                             &has_new_first_party_for_cookies,
-                                             &new_first_party_for_cookies)) {
+  if (request_info->peer->OnReceivedRedirect(
+          new_url, new_first_party_for_cookies, renderer_response_info)) {
     // Double-check if the request is still around. The call above could
     // potentially remove it.
     request_info = GetPendingRequestInfo(request_id);
@@ -510,9 +508,7 @@ void ResourceDispatcher::OnReceivedRedirect(
     // SiteIsolationPolicy later when OnReceivedResponse is called.
     request_info->response_url = new_url;
     request_info->pending_redirect_message.reset(
-        new ResourceHostMsg_FollowRedirect(request_id,
-                                           has_new_first_party_for_cookies,
-                                           new_first_party_for_cookies));
+        new ResourceHostMsg_FollowRedirect(request_id));
     if (!request_info->is_deferred) {
       FollowPendingRedirect(request_id, *request_info);
     }

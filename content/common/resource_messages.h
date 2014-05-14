@@ -255,9 +255,10 @@ IPC_MESSAGE_CONTROL3(ResourceMsg_UploadProgress,
 // Sent when the request has been redirected.  The receiver is expected to
 // respond with either a FollowRedirect message (if the redirect is to be
 // followed) or a CancelRequest message (if it should not be followed).
-IPC_MESSAGE_CONTROL3(ResourceMsg_ReceivedRedirect,
+IPC_MESSAGE_CONTROL4(ResourceMsg_ReceivedRedirect,
                      int /* request_id */,
                      GURL /* new_url */,
+                     GURL /* new_first_party_for_cookies */,
                      content::ResourceResponseHead)
 
 // Sent to set the shared memory buffer to be used to transmit response data to
@@ -313,10 +314,8 @@ IPC_MESSAGE_CONTROL1(ResourceHostMsg_CancelRequest,
 
 // Follows a redirect that occured for the resource request with the ID given
 // as the parameter.
-IPC_MESSAGE_CONTROL3(ResourceHostMsg_FollowRedirect,
-                     int /* request_id */,
-                     bool /* has_new_first_party_for_cookies */,
-                     GURL /* new_first_party_for_cookies */)
+IPC_MESSAGE_CONTROL1(ResourceHostMsg_FollowRedirect,
+                     int /* request_id */)
 
 // Makes a synchronous resource request via the browser.
 IPC_SYNC_MESSAGE_ROUTED2_1(ResourceHostMsg_SyncLoad,

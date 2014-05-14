@@ -190,9 +190,8 @@ void PluginURLFetcher::OnUploadProgress(uint64 position, uint64 size) {
 
 bool PluginURLFetcher::OnReceivedRedirect(
     const GURL& new_url,
-    const webkit_glue::ResourceResponseInfo& info,
-    bool* has_new_first_party_for_cookies,
-    GURL* new_first_party_for_cookies) {
+    const GURL& new_first_party_for_cookies,
+    const webkit_glue::ResourceResponseInfo& info) {
   if (!plugin_stream_)
     return false;
 
@@ -218,8 +217,7 @@ bool PluginURLFetcher::OnReceivedRedirect(
     method_ = "GET";
   GURL old_url = url_;
   url_ = new_url;
-  *has_new_first_party_for_cookies = true;
-  *new_first_party_for_cookies = first_party_for_cookies_;
+  first_party_for_cookies_ = new_first_party_for_cookies;
 
   // If the plugin does not participate in url redirect notifications then just
   // block cross origin 307 POST redirects.

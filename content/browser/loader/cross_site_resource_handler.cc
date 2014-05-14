@@ -121,6 +121,11 @@ bool CrossSiteResourceHandler::OnRequestRedirected(
     const GURL& new_url,
     ResourceResponse* response,
     bool* defer) {
+  // Top-level requests change their cookie first-party URL on redirects, while
+  // subframes retain the parent's value.
+  if (GetRequestInfo()->GetResourceType() == ResourceType::MAIN_FRAME)
+    request()->set_first_party_for_cookies(new_url);
+
   // We should not have started the transition before being redirected.
   DCHECK(!in_cross_site_transition_);
   return next_handler_->OnRequestRedirected(

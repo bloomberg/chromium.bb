@@ -108,17 +108,11 @@ bool AsyncResourceHandler::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-void AsyncResourceHandler::OnFollowRedirect(
-    int request_id,
-    bool has_new_first_party_for_cookies,
-    const GURL& new_first_party_for_cookies) {
+void AsyncResourceHandler::OnFollowRedirect(int request_id) {
   if (!request()->status().is_success()) {
     DVLOG(1) << "OnFollowRedirect for invalid request";
     return;
   }
-
-  if (has_new_first_party_for_cookies)
-    request()->set_first_party_for_cookies(new_first_party_for_cookies);
 
   ResumeIfDeferred();
 }
@@ -164,8 +158,13 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
   reported_transfer_size_ = 0;
   response->head.request_start = request()->creation_time();
   response->head.response_start = TimeTicks::Now();
+  // TODO(davidben): Is it necessary to pass the new first party URL for
+  // cookies? The only case where it can change is top-level navigation requests
+  // and hopefully those will eventually all be owned by the browser. It's
+  // possible this is still needed while renderer-owned ones exist.
   return info->filter()->Send(new ResourceMsg_ReceivedRedirect(
-      request_id, new_url, response->head));
+      request_id, new_url, request()->first_party_for_cookies(),
+      response->head));
 }
 
 bool AsyncResourceHandler::OnResponseStarted(int request_id,

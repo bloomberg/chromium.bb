@@ -239,11 +239,9 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 
   // RequestPeer methods:
   virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
-  virtual bool OnReceivedRedirect(
-      const GURL& new_url,
-      const ResourceResponseInfo& info,
-      bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies) OVERRIDE;
+  virtual bool OnReceivedRedirect(const GURL& new_url,
+                                  const GURL& new_first_party_for_cookies,
+                                  const ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedResponse(const ResourceResponseInfo& info) OVERRIDE;
   virtual void OnDownloadedData(int len, int encoded_data_length) OVERRIDE;
   virtual void OnReceivedData(const char* data,
@@ -474,9 +472,8 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
     const GURL& new_url,
-    const ResourceResponseInfo& info,
-    bool* has_new_first_party_for_cookies,
-    GURL* new_first_party_for_cookies) {
+    const GURL& new_first_party_for_cookies,
+    const ResourceResponseInfo& info) {
   if (!client_)
     return false;
 
@@ -487,7 +484,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   // TODO(darin): We lack sufficient information to construct the actual
   // request that resulted from the redirect.
   WebURLRequest new_request(new_url);
-  new_request.setFirstPartyForCookies(request_.firstPartyForCookies());
+  new_request.setFirstPartyForCookies(new_first_party_for_cookies);
   new_request.setDownloadToFile(request_.downloadToFile());
 
   WebString referrer_string = WebString::fromUTF8("Referer");
@@ -507,12 +504,16 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 
   client_->willSendRequest(loader_, new_request, response);
   request_ = new_request;
-  *has_new_first_party_for_cookies = true;
-  *new_first_party_for_cookies = request_.firstPartyForCookies();
 
   // Only follow the redirect if WebKit left the URL unmodified.
-  if (new_url == GURL(new_request.url()))
+  if (new_url == GURL(new_request.url())) {
+    // First-party cookie logic moved from DocumentLoader in Blink to
+    // CrossSiteResourceHandler in the browser. Assert that Blink didn't try to
+    // change it to something else.
+    DCHECK_EQ(new_first_party_for_cookies.spec(),
+              request_.firstPartyForCookies().string().utf8());
     return true;
+  }
 
   // We assume that WebKit only changes the URL to suppress a redirect, and we
   // assume that it does so by setting it to be invalid.
