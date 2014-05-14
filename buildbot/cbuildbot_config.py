@@ -1116,13 +1116,14 @@ chromium_pfq = _config(
   upload_hw_test_artifacts=True,
   chrome_sdk=True,
   chroot_replace=True,
+  description='Preflight Chromium Uprev & Build (public)',
 )
 
 # TODO(davidjames): Convert this to an external config once the unified master
 # logic is ready.
 internal_chromium_pfq = internal.derive(
   chromium_pfq,
-  description='Preflight Chromium Build (internal)',
+  description='Preflight Chromium Uprev & Build (internal)',
   overlays=constants.BOTH_OVERLAYS,
   prebuilts=constants.PUBLIC,
 )
@@ -1148,7 +1149,7 @@ chrome_pfq = internal_chromium_pfq.derive(
   official,
   important=True,
   overlays=constants.BOTH_OVERLAYS,
-  description='Preflight Chrome build (internal)',
+  description='Preflight Chrome Uprev & Build (internal)',
   upload_hw_test_artifacts=True,
   prebuilts=constants.PRIVATE,
 )
@@ -1189,6 +1190,7 @@ chromium_info = chromium_pfq.derive(
   chrome_try,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
   chrome_sdk=False,
+  description='Informational Chromium Uprev & Build (public)',
 )
 
 telemetry_info = telemetry.derive(
@@ -1198,6 +1200,7 @@ telemetry_info = telemetry.derive(
 
 chrome_info = chromium_info.derive(
   internal, official,
+  description='Informational Chrome Uprev & Build (internal)',
 )
 
 # Config with the official flags except pdf.
