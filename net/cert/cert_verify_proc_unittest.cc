@@ -97,8 +97,10 @@ bool SupportsReturningVerifiedChain() {
 
 bool SupportsDetectingKnownRoots() {
 #if defined(OS_ANDROID)
-  // http://crbug.com/361166
-  return false;
+  // Before API level 17, Android does not expose the APIs necessary to get at
+  // the verified certificate chain and detect known roots.
+  if (base::android::BuildInfo::GetInstance()->sdk_int() < 17)
+    return false;
 #endif
   return true;
 }
