@@ -86,7 +86,7 @@ MBS_ReadHeader(int fd, MBSPatchHeader *header)
 
   return OK;
 }
-         
+
 int
 MBS_ApplyPatch(const MBSPatchHeader *header, int patchfd,
                unsigned char *fbuffer, int filefd)
@@ -263,7 +263,7 @@ int ApplyBinaryPatch(const wchar_t *old_file, const wchar_t *patch_file,
       break;
     }
 
-    MBS_ApplyPatch(&header, pfd, buf, nfd);
+    ret = MBS_ApplyPatch(&header, pfd, buf, nfd);
   } while (0);
 
   free(buf);

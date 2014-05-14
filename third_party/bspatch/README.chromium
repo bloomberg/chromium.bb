@@ -16,3 +16,4 @@ Local changes include CRC32 verification and improvements in error handling.
 
 Update(08 Sep 08): Changed ApplyBinaryPatch to accept wchar_t paths
 instead of char paths.
+Update(12 May 13): Report error on MBS_ApplyPatch failure.
