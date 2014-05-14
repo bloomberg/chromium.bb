@@ -29,6 +29,7 @@
 
 #include "native_client/src/trusted/desc/nacl_desc_effector_trusted_mem.h"
 #include "native_client/src/trusted/fault_injection/fault_injection.h"
+#include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 #include "native_client/src/trusted/service_runtime/elf_util.h"
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -567,6 +568,8 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
   struct NaClValidationMetadata metadata;
   int read_last_page_if_partial_allocation_page = 1;
   ssize_t read_ret;
+  struct NaClPerfCounter time_mmap_segment;
+  NaClPerfCounterCtor(&time_mmap_segment, "NaClElfFileMapSegment");
 
   rounded_filesz = NaClRoundAllocPage(segment_size);
 
@@ -614,6 +617,8 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
        * space, even if we had to fault in every page.
        */
       NaClLog(1, "NaClElfFileMapSegment: mapping for validation\n");
+      NaClPerfCounterMark(&time_mmap_segment, "PreMap");
+      NaClPerfCounterIntervalLast(&time_mmap_segment);
       image_sys_addr = (*NACL_VTBL(NaClDesc, ndp)->
                         Map)(ndp,
                              NaClDescEffectorTrustedMem(),
@@ -622,6 +627,8 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
                              NACL_ABI_PROT_READ,
                              NACL_ABI_MAP_PRIVATE,
                              file_offset);
+      NaClPerfCounterMark(&time_mmap_segment, "MapForValidate");
+      NaClPerfCounterIntervalLast(&time_mmap_segment);
       if (NaClPtrIsNegErrno(&image_sys_addr)) {
         NaClLog(LOG_INFO,
                 "NaClElfFileMapSegment: Could not make scratch mapping,"
@@ -643,6 +650,8 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
                      nap->cpu_features,
                      &metadata,
                      nap->validation_cache));
+      NaClPerfCounterMark(&time_mmap_segment, "ValidateMapped");
+      NaClPerfCounterIntervalLast(&time_mmap_segment);
       NaClLog(3, "NaClElfFileMapSegment: validator_status %d\n",
               validator_status);
       NaClMetadataDtor(&metadata);
@@ -722,6 +731,8 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
                        (void *) (paddr + tail_offset),
                        tail_size,
                        (nacl_off64_t) (file_offset + tail_offset));
+    NaClPerfCounterMark(&time_mmap_segment, "PRead tail");
+    NaClPerfCounterIntervalLast(&time_mmap_segment);
     if (NaClSSizeIsNegErrno(&read_ret) || (size_t) read_ret != tail_size) {
       NaClLog(LOG_ERROR,
               "NaClElfFileMapSegment: pread load of page tail failed\n");
@@ -752,6 +763,8 @@ static NaClErrorCode NaClElfFileMapSegment(struct NaClApp *nap,
                            mmap_prot,
                            NACL_ABI_MAP_PRIVATE | NACL_ABI_MAP_FIXED,
                            file_offset);
+    NaClPerfCounterMark(&time_mmap_segment, "MapFinal");
+    NaClPerfCounterIntervalLast(&time_mmap_segment);
     if (image_sys_addr != paddr) {
       NaClLog(LOG_FATAL,
               ("NaClElfFileMapSegment: map to 0x%"NACL_PRIxPTR" (prot %x) "

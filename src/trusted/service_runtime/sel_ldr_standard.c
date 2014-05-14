@@ -345,6 +345,9 @@ NaClErrorCode NaClAppLoadFileAslr(struct NaClDesc *ndp,
             ret);
   }
   subret = NaClElfImageLoad(image, ndp, nap);
+  NaClPerfCounterMark(&time_load_file,
+                      NACL_PERF_IMPORTANT_PREFIX "NaClElfImageLoad");
+  NaClPerfCounterIntervalLast(&time_load_file);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
