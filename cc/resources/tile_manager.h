@@ -286,7 +286,6 @@ class CC_EXPORT TileManager : public RasterizerClient,
   scoped_refptr<RasterTask> CreateRasterTask(Tile* tile);
   scoped_ptr<base::Value> GetMemoryRequirementsAsValue() const;
   void UpdatePrioritizedTileSetIfNeeded();
-  void CleanUpLayers();
 
   TileManagerClient* client_;
   ResourcePool* resource_pool_;

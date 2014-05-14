@@ -359,16 +359,10 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 }
 
 void PictureLayerImpl::DidUnregisterLayer() {
-  TRACE_EVENT0("cc", "PictureLayerImpl::DidUnregisterLayer");
-
   layer_needs_to_register_itself_ = true;
-  RemoveAllTilings();
 }
 
 void PictureLayerImpl::UpdateTilePriorities() {
-  TRACE_EVENT0("cc", "PictureLayerImpl::UpdateTilePriorities");
-
-  DCHECK(IsDrawnRenderSurfaceLayerListMember());
   DCHECK(!needs_post_commit_initialization_);
   CHECK(should_update_tile_priorities_);
 
