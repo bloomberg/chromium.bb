@@ -1590,36 +1590,28 @@ class AndroidCommands(object):
       pid: The pid number of the specific process running on device.
 
     Returns:
-      A tuple containg:
-      [0]: Dict of {metric:usage_kb}, for the process which has specified pid.
+      Dict of {metric:usage_kb}, for the process which has specified pid.
       The metric keys which may be included are: Size, Rss, Pss, Shared_Clean,
-      Shared_Dirty, Private_Clean, Private_Dirty, Referenced, Swap,
-      KernelPageSize, MMUPageSize, VmHWM.
-      [1]: Detailed /proc/[PID]/smaps information.
+      Shared_Dirty, Private_Clean, Private_Dirty, VmHWM.
     """
+    showmap = self.RunShellCommand('showmap %d' % pid)
+    if not showmap or not showmap[-1].endswith('TOTAL'):
+      logging.warning('Invalid output for showmap %s', str(showmap))
+      return {}
+    items = showmap[-1].split()
+    if len(items) != 9:
+      logging.warning('Invalid TOTAL for showmap %s', str(items))
+      return {}
     usage_dict = collections.defaultdict(int)
-    smaps = collections.defaultdict(dict)
-    current_smap = ''
-    for line in self.GetProtectedFileContents('/proc/%s/smaps' % pid):
-      items = line.split()
-      # See man 5 proc for more details. The format is:
-      # address perms offset dev inode pathname
-      if len(items) > 5:
-        current_smap = ' '.join(items[5:])
-      elif len(items) > 3:
-        current_smap = ' '.join(items[3:])
-      if line.endswith('kB'):
-        key, value = line.split(':')
-        key = key.strip()
-        usage_kb = int(value.strip().split()[0])
-        usage_dict[key] += usage_kb
-        if key not in smaps[current_smap]:
-          smaps[current_smap][key] = 0
-        smaps[current_smap][key] += usage_kb
-    if not usage_dict or not any(usage_dict.values()):
-      # Presumably the process died between ps and calling this method.
-      logging.warning('Could not find memory usage for pid ' + str(pid))
-
+    usage_dict.update({
+        'Size': int(items[0].strip()),
+        'Rss': int(items[1].strip()),
+        'Pss': int(items[2].strip()),
+        'Shared_Clean': int(items[3].strip()),
+        'Shared_Dirty': int(items[4].strip()),
+        'Private_Clean': int(items[5].strip()),
+        'Private_Dirty': int(items[6].strip()),
+    })
     peak_value_kb = 0
     for line in self.GetProtectedFileContents('/proc/%s/status' % pid):
       if not line.startswith('VmHWM:'):  # Format: 'VmHWM: +[0-9]+ kB'
@@ -1630,34 +1622,7 @@ class AndroidCommands(object):
     if not peak_value_kb:
       logging.warning('Could not find memory peak value for pid ' + str(pid))
 
-    return (usage_dict, smaps)
-
-  def GetMemoryUsageForPackage(self, package):
-    """Returns the memory usage for all processes whose name contains |pacakge|.
-
-    Args:
-      package: A string holding process name to lookup pid list for.
-
-    Returns:
-      A tuple containg:
-      [0]: Dict of {metric:usage_kb}, summed over all pids associated with
-           |name|.
-      The metric keys which may be included are: Size, Rss, Pss, Shared_Clean,
-      Shared_Dirty, Private_Clean, Private_Dirty, Referenced, Swap,
-      KernelPageSize, MMUPageSize, Nvidia (tablet only).
-      [1]: a list with detailed /proc/[PID]/smaps information.
-    """
-    usage_dict = collections.defaultdict(int)
-    pid_list = self.ExtractPid(package)
-    smaps = collections.defaultdict(dict)
-
-    for pid in pid_list:
-      usage_dict_per_pid, smaps_per_pid = self.GetMemoryUsageForPid(pid)
-      smaps[pid] = smaps_per_pid
-      for (key, value) in usage_dict_per_pid.items():
-        usage_dict[key] += value
-
-    return usage_dict, smaps
+    return usage_dict
 
   def ProcessesUsingDevicePort(self, device_port):
     """Lists processes using the specified device port on loopback interface.
