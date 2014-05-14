@@ -12,7 +12,7 @@ import sys
 from xml.etree import ElementTree
 
 from chromite.buildbot import cbuildbot_config
-from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
@@ -488,7 +488,7 @@ class ManifestVersionedSyncStage(SyncStage):
     if not next_manifest:
       cros_build_lib.Info('Found no work to do.')
       if self._run.attrs.manifest_manager.DidLastBuildFail():
-        raise results_lib.StepFailure('The previous build failed.')
+        raise failures_lib.StepFailure('The previous build failed.')
       else:
         sys.exit(0)
 
@@ -701,7 +701,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
               builder_run, board=board, suffix=suffix).Run()
           build_stages.BuildPackagesStage(
               builder_run, board=board, suffix=suffix).Run()
-    except results_lib.StepFailure:
+    except failures_lib.StepFailure:
       return False
 
     return True

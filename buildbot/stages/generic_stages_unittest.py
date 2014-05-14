@@ -15,6 +15,7 @@ import unittest
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config as config
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_run
 from chromite.buildbot import manifest_version
@@ -317,7 +318,7 @@ class BuilderStageTest(AbstractStageTest):
 
     stage = self.ConstructStage()
     results_lib.Results.Clear()
-    self.assertRaises(results_lib.StepFailure, self._RunCapture, stage)
+    self.assertRaises(failures_lib.StepFailure, self._RunCapture, stage)
 
     results = results_lib.Results.Get()[0]
     self.assertTrue(isinstance(results.result, TestError))
@@ -342,7 +343,7 @@ class BuilderStageTest(AbstractStageTest):
 
     stage = BadStage(self._run)
     results_lib.Results.Clear()
-    self.assertRaises(results_lib.StepFailure, self._RunCapture, stage)
+    self.assertRaises(failures_lib.StepFailure, self._RunCapture, stage)
 
     # Verify the results tracked the original exception.
     results = results_lib.Results.Get()[0]

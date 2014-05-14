@@ -12,7 +12,7 @@ import sys
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.buildbot import cbuildbot_commands as commands
-from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
@@ -78,22 +78,22 @@ class RunBuildScriptTest(cros_test_lib.TempDirTestCase):
 
   def testFailureOutsideChroot(self):
     """Test a command failure outside the chroot."""
-    self._assertRunBuildScript(raises=results_lib.BuildScriptFailure)
+    self._assertRunBuildScript(raises=failures_lib.BuildScriptFailure)
 
   def testFailureInsideChrootWithoutTempdir(self):
     """Test a command failure inside the chroot without a temp directory."""
     self._assertRunBuildScript(in_chroot=True,
-                               raises=results_lib.BuildScriptFailure)
+                               raises=failures_lib.BuildScriptFailure)
 
   def testFailureInsideChrootWithTempdir(self):
     """Test a command failure inside the chroot with a temp directory."""
     self._assertRunBuildScript(in_chroot=True, error='',
-                               raises=results_lib.BuildScriptFailure)
+                               raises=failures_lib.BuildScriptFailure)
 
   def testPackageBuildFailure(self):
     """Test detecting a package build failure."""
     self._assertRunBuildScript(in_chroot=True, error=constants.CHROME_CP,
-                               raises=results_lib.PackageBuildFailure)
+                               raises=failures_lib.PackageBuildFailure)
 
 
 class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):

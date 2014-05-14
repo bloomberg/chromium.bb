@@ -24,6 +24,7 @@ import traceback
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages as stages
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_run
 from chromite.buildbot import constants
@@ -385,7 +386,7 @@ class Builder(object):
         traceback.print_exc(file=sys.stdout)
         raise
 
-      if not (print_report and isinstance(ex, results_lib.StepFailure)):
+      if not (print_report and isinstance(ex, failures_lib.StepFailure)):
         raise
 
     finally:

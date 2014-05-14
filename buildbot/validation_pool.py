@@ -77,7 +77,7 @@ class TreeIsClosedException(Exception):
         'proceed.' % (status_text, opposite_status_text))
 
 
-class FailedToSubmitAllChangesException(results_lib.StepFailure):
+class FailedToSubmitAllChangesException(failures_lib.StepFailure):
   """Raised if we fail to submit any change."""
 
   def __init__(self, changes):
@@ -1096,7 +1096,7 @@ class ValidationFailedMessage(object):
     if len(self.tracebacks) == 1:
       # TimeoutErrors are often flaky.
       exc = self.tracebacks[0].exception
-      if (isinstance(exc, results_lib.StepFailure) and exc.possibly_flaky or
+      if (isinstance(exc, failures_lib.StepFailure) and exc.possibly_flaky or
           isinstance(exc, timeout_util.TimeoutError)):
         flaky = True
     return flaky
@@ -1114,7 +1114,7 @@ class ValidationFailedMessage(object):
 
   def IsPackageBuildFailure(self):
     """Check if all of the failures are package build failures."""
-    return self._MatchesFailureType(results_lib.PackageBuildFailure)
+    return self._MatchesFailureType(failures_lib.PackageBuildFailure)
 
   def FindPackageBuildFailureSuspects(self, changes):
     """Figure out what changes probably caused our failures.

@@ -13,6 +13,7 @@ import time
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.buildbot import cbuildbot_config as config
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_run
 from chromite.buildbot.stages import generic_stages
@@ -40,7 +41,7 @@ class Pass2Stage(generic_stages.BuilderStage):
 class FailStage(generic_stages.BuilderStage):
   """FailStage always throws an exception"""
 
-  FAIL_EXCEPTION = results_lib.StepFailure("Fail stage needs to fail.")
+  FAIL_EXCEPTION = failures_lib.StepFailure("Fail stage needs to fail.")
 
   def PerformStage(self):
     """Throw the exception to make us fail."""
@@ -157,7 +158,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     PassStage(self._run).Run()
     Pass2Stage(self._run).Run()
     self.assertRaises(
-      results_lib.StepFailure,
+      failures_lib.StepFailure,
       FailStage(self._run).Run)
 
   def _verifyRunResults(self, expectedResults, max_time=2.0):
@@ -171,7 +172,7 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
       if entry.result not in results_lib.Results.NON_FAILURE_TYPES:
         self.assertTrue(isinstance(entry.result, BaseException))
-        if isinstance(entry.result, results_lib.StepFailure):
+        if isinstance(entry.result, failures_lib.StepFailure):
           self.assertEqual(str(entry.result), entry.description)
 
       self.assertTrue(entry.time >= 0 and entry.time < max_time)

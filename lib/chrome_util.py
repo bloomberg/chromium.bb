@@ -15,7 +15,7 @@ import re
 import shlex
 import shutil
 
-from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 
@@ -105,15 +105,15 @@ class Conditions(object):
     return functools.partial(cls._StagingFlagNotSet, flag)
 
 
-class MultipleMatchError(results_lib.StepFailure):
+class MultipleMatchError(failures_lib.StepFailure):
   """A glob pattern matches multiple files but a non-dir dest was specified."""
 
 
-class MissingPathError(results_lib.StepFailure):
+class MissingPathError(failures_lib.StepFailure):
   """An expected path is non-existant."""
 
 
-class MustNotBeDirError(results_lib.StepFailure):
+class MustNotBeDirError(failures_lib.StepFailure):
   """The specified path should not be a directory, but is."""
 
 

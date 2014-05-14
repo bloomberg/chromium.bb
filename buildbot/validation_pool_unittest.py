@@ -21,6 +21,7 @@ import time
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_metadata
 from chromite.buildbot import repository
@@ -1150,7 +1151,7 @@ class TestFindSuspects(MoxBase):
       pkg: Package that failed to build.
     """
     ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
-    return results_lib.PackageBuildFailure(ex, 'bar', [pkg])
+    return failures_lib.PackageBuildFailure(ex, 'bar', [pkg])
 
   def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=(),
                       internal=False):

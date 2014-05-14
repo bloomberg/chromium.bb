@@ -17,7 +17,6 @@ import time
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_failures as failures_lib
-from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.cros.tests import cros_vm_test
@@ -56,10 +55,10 @@ _TEST_PASSED = 'PASSED'
 _TEST_FAILED = 'FAILED'
 
 
-class TestFailure(results_lib.StepFailure):
+class TestFailure(failures_lib.StepFailure):
   """Raised if a test stage (e.g. VMTest) fails."""
 
-class TestWarning(results_lib.StepFailure):
+class TestWarning(failures_lib.StepFailure):
   """Raised if a test stage (e.g. VMTest) returns a warning code."""
 
 
@@ -125,10 +124,10 @@ def _RunBuildScript(buildroot, cmd, chromite_cmd=False, possibly_flaky=False,
         status_file.seek(0)
         failed_packages = status_file.read().split()
         if failed_packages:
-          raise results_lib.PackageBuildFailure(ex, cmd[0], failed_packages)
+          raise failures_lib.PackageBuildFailure(ex, cmd[0], failed_packages)
 
       # Looks like a generic failure. Raise a BuildScriptFailure.
-      raise results_lib.BuildScriptFailure(ex, cmd[0],
+      raise failures_lib.BuildScriptFailure(ex, cmd[0],
                                            possibly_flaky=possibly_flaky)
 
 
@@ -442,7 +441,7 @@ def GenerateAuZip(buildroot, image_dir, extra_env=None):
     extra_env: A dictionary of environmental variables to set during generation.
 
   Raises:
-    results_lib.BuildScriptFailure if the called script fails.
+    failures_lib.BuildScriptFailure if the called script fails.
   """
   chroot_image_dir = git.ReinterpretPathForChroot(image_dir)
   cmd = ['./build_library/generate_au_zip.py', '-o', chroot_image_dir]
@@ -458,7 +457,7 @@ def TestAuZip(buildroot, image_dir, extra_env=None):
     extra_env: A dictionary of environmental variables to set during generation.
 
   Raises:
-    results_lib.BuildScriptFailure if the test script fails.
+    failures_lib.BuildScriptFailure if the test script fails.
   """
   cmd = ['./build_library/test_au_zip.py', '-o', image_dir]
   _RunBuildScript(buildroot, cmd,
@@ -1953,7 +1952,7 @@ def CheckPGOData(architectures, cpv):
   return True
 
 
-class MissingPGOData(results_lib.StepFailure):
+class MissingPGOData(failures_lib.StepFailure):
   """Exception thrown when necessary PGO data is missing."""
 
 

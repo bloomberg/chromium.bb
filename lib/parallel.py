@@ -24,6 +24,7 @@ import tempfile
 import time
 import traceback
 
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
@@ -57,7 +58,7 @@ def Manager():
     osutils.SetGlobalTempDir(old_tempdir_value, old_tempdir_env)
 
 
-class BackgroundFailure(results_lib.StepFailure):
+class BackgroundFailure(failures_lib.StepFailure):
   """Exception to show a step failed while running in a background process."""
 
 
@@ -323,7 +324,7 @@ class _BackgroundTask(multiprocessing.Process):
 
         # Actually launch the task.
         self._task(*self._task_args, **self._task_kwargs)
-      except results_lib.StepFailure as ex:
+      except failures_lib.StepFailure as ex:
         error = str(ex)
         possibly_flaky = ex.possibly_flaky
       except BaseException as ex:

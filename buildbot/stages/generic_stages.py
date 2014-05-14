@@ -22,6 +22,7 @@ except ImportError:
 
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_commands as commands
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
@@ -244,7 +245,7 @@ class BuilderStage(object):
       A string description of the exception.
     """
     exc_type, exc_value = exc_info[:2]
-    if issubclass(exc_type, results_lib.StepFailure):
+    if issubclass(exc_type, failures_lib.StepFailure):
       return str(exc_value)
     else:
       return ''.join(traceback.format_exception(*exc_info))
@@ -367,9 +368,9 @@ class BuilderStage(object):
       result, description, retrying = self._TopHandleStageException()
       if result not in (results_lib.Results.FORGIVEN,
                         results_lib.Results.SUCCESS):
-        raise results_lib.StepFailure()
+        raise failures_lib.StepFailure()
       elif retrying:
-        raise results_lib.RetriableStepFailure()
+        raise failures_lib.RetriableStepFailure()
     except BaseException:
       result, description, retrying = self._TopHandleStageException()
       raise
@@ -388,7 +389,7 @@ class NonHaltingBuilderStage(BuilderStage):
   def Run(self):
     try:
       super(NonHaltingBuilderStage, self).Run()
-    except results_lib.StepFailure:
+    except failures_lib.StepFailure:
       name = self.__class__.__name__
       cros_build_lib.Error('Ignoring StepFailure in %s', name)
 
@@ -440,7 +441,7 @@ class RetryStage(object):
     """Retry the given stage multiple times to see if it passes."""
     self.attempt = 1
     retry_util.RetryException(
-        results_lib.RetriableStepFailure, self.max_retry, self._PerformStage)
+        failures_lib.RetriableStepFailure, self.max_retry, self._PerformStage)
 
 
 class RepeatStage(object):

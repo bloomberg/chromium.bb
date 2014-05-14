@@ -33,7 +33,7 @@ import zipfile
 
 
 from chromite.buildbot import constants
-from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.cros.commands import cros_chrome_sdk
 from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
@@ -77,7 +77,7 @@ def _UrlBaseName(url):
   return url.rstrip('/').rpartition('/')[-1]
 
 
-class DeployFailure(results_lib.StepFailure):
+class DeployFailure(failures_lib.StepFailure):
   """Raised whenever the deploy fails."""
 
 
@@ -712,5 +712,5 @@ def main(argv):
       deploy = DeployChrome(options, tempdir, staging_dir)
       try:
         deploy.Perform()
-      except results_lib.StepFailure as ex:
+      except failures_lib.StepFailure as ex:
         raise SystemExit(str(ex).strip())

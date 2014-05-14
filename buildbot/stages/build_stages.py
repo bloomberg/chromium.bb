@@ -9,7 +9,7 @@ import glob
 import os
 
 from chromite.buildbot import cbuildbot_commands as commands
-from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
@@ -145,7 +145,7 @@ class InitSDKStage(generic_stages.BuilderStage):
       try:
         pre_ver = cros_build_lib.GetChrootVersion(chroot=chroot_path)
         commands.RunChrootUpgradeHooks(self._build_root)
-      except results_lib.BuildScriptFailure:
+      except failures_lib.BuildScriptFailure:
         cros_build_lib.PrintBuildbotStepText('Replacing broken chroot')
         cros_build_lib.PrintBuildbotStepWarnings()
         replace = True

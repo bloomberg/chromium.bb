@@ -8,6 +8,7 @@ import logging
 
 from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_config
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import constants
 from chromite.buildbot import manifest_version
@@ -40,7 +41,7 @@ class ManifestVersionedSyncCompletionStage(
         dashboard_url=self.ConstructDashboardURL())
 
 
-class ImportantBuilderFailedException(results_lib.StepFailure):
+class ImportantBuilderFailedException(failures_lib.StepFailure):
   """Exception thrown when an important build fails to build."""
 
 

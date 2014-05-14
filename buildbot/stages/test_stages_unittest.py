@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
 from chromite.buildbot import cbuildbot_config as config
 from chromite.buildbot import cbuildbot_commands as commands
-from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import cbuildbot_failures as failures_lib
 from chromite.buildbot import constants
 from chromite.buildbot import lab_status
 from chromite.buildbot.stages import artifact_stages
@@ -204,7 +204,7 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
 
     self.mox.ReplayAll()
     if fails or timeout:
-      self.assertRaises(results_lib.StepFailure, self.RunStage)
+      self.assertRaises(failures_lib.StepFailure, self.RunStage)
     else:
       self.RunStage()
     self.mox.VerifyAll()
