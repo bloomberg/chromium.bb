@@ -31,8 +31,8 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
         natives.ToggleLogging(transportId, enable);
   });
   apiFunctions.setHandleRequest('getRawEvents',
-      function(transportId, callback) {
-        natives.GetRawEvents(transportId, callback);
+      function(transportId, extraData, callback) {
+        natives.GetRawEvents(transportId, extraData, callback);
   });
   apiFunctions.setHandleRequest('getStats',
       function(transportId, callback) {

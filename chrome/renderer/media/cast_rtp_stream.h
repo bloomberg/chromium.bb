@@ -129,10 +129,11 @@ class CastRtpStream {
   // Enables or disables logging for this stream.
   void ToggleLogging(bool enable);
 
-  // Get serialized raw events for this stream and invokes |callback|
-  // with the result.
+  // Get serialized raw events for this stream with |extra_data| attached,
+  // and invokes |callback| with the result.
   void GetRawEvents(
-      const base::Callback<void(scoped_ptr<base::BinaryValue>)>& callback);
+      const base::Callback<void(scoped_ptr<base::BinaryValue>)>& callback,
+      const std::string& extra_data);
 
   // Get stats in DictionaryValue format and invokves |callback| with
   // the result.

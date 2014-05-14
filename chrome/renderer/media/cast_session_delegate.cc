@@ -120,6 +120,7 @@ void CastSessionDelegate::ToggleLogging(bool is_audio, bool enable) {
 
 void CastSessionDelegate::GetEventLogsAndReset(
     bool is_audio,
+    const std::string& extra_data,
     const EventLogsCallback& callback) {
   DCHECK(io_message_loop_proxy_->BelongsToCurrentThread());
 
@@ -140,6 +141,9 @@ void CastSessionDelegate::GetEventLogsAndReset(
   media::cast::PacketEventList packet_events;
 
   subscriber->GetEventsAndReset(&metadata, &frame_events, &packet_events);
+
+  if (!extra_data.empty())
+    metadata.set_extra_data(extra_data);
 
   scoped_ptr<char[]> serialized_log(new char[media::cast::kMaxSerializedBytes]);
   int output_bytes;

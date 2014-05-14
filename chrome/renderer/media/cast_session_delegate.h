@@ -80,7 +80,8 @@ class CastSessionDelegate {
                       create_video_encode_mem_cb);
 
   void ToggleLogging(bool is_audio, bool enable);
-  void GetEventLogsAndReset(bool is_audio, const EventLogsCallback& callback);
+  void GetEventLogsAndReset(bool is_audio,
+      const std::string& extra_data, const EventLogsCallback& callback);
   void GetStatsAndReset(bool is_audio, const StatsCallback& callback);
 
  protected:

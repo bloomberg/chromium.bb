@@ -518,8 +518,9 @@ void CastRtpStream::ToggleLogging(bool enable) {
 }
 
 void CastRtpStream::GetRawEvents(
-    const base::Callback<void(scoped_ptr<base::BinaryValue>)>& callback) {
-  cast_session_->GetEventLogsAndReset(IsAudio(), callback);
+    const base::Callback<void(scoped_ptr<base::BinaryValue>)>& callback,
+    const std::string& extra_data) {
+  cast_session_->GetEventLogsAndReset(IsAudio(), extra_data, callback);
 }
 
 void CastRtpStream::GetStats(

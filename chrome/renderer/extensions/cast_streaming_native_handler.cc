@@ -217,6 +217,8 @@ void CastStreamingNativeHandler::CreateCastSession(
   scoped_ptr<CastUdpTransport> udp_transport(
       new CastUdpTransport(session));
 
+  // TODO(imcheng): Use a weak reference to ensure we don't call into an
+  // invalid context when the callback is invoked.
   create_callback_.reset(args[2].As<v8::Function>());
 
   base::MessageLoop::current()->PostTask(
@@ -446,23 +448,32 @@ void CastStreamingNativeHandler::ToggleLogging(
 
 void CastStreamingNativeHandler::GetRawEvents(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(2, args.Length());
+  CHECK_EQ(3, args.Length());
   CHECK(args[0]->IsInt32());
-  CHECK(args[1]->IsFunction());
+  CHECK(args[1]->IsNull() || args[1]->IsString());
+  CHECK(args[2]->IsFunction());
+
   const int transport_id = args[0]->ToInt32()->Value();
+  // TODO(imcheng): Use a weak reference to ensure we don't call into an
+  // invalid context when the callback is invoked.
+  linked_ptr<ScopedPersistent<v8::Function> > callback(
+      new ScopedPersistent<v8::Function>(args[2].As<v8::Function>()));
+  std::string extra_data;
+  if (!args[1]->IsNull()) {
+    extra_data = *v8::String::Utf8Value(args[1]);
+  }
+
   CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
   if (!transport)
     return;
 
-  linked_ptr<extensions::ScopedPersistent<v8::Function> > callback(
-      new extensions::ScopedPersistent<v8::Function>);
-  callback->reset(args[1].As<v8::Function>());
   get_raw_events_callbacks_.insert(std::make_pair(transport_id, callback));
 
   transport->GetRawEvents(
       base::Bind(&CastStreamingNativeHandler::CallGetRawEventsCallback,
                  weak_factory_.GetWeakPtr(),
-                 transport_id));
+                 transport_id),
+      extra_data);
 }
 
 void CastStreamingNativeHandler::GetStats(
@@ -475,9 +486,10 @@ void CastStreamingNativeHandler::GetStats(
   if (!transport)
     return;
 
-  linked_ptr<extensions::ScopedPersistent<v8::Function> > callback(
-      new extensions::ScopedPersistent<v8::Function>);
-  callback->reset(args[1].As<v8::Function>());
+  // TODO(imcheng): Use a weak reference to ensure we don't call into an
+  // invalid context when the callback is invoked.
+  linked_ptr<ScopedPersistent<v8::Function> > callback(
+      new ScopedPersistent<v8::Function>(args[1].As<v8::Function>()));
   get_stats_callbacks_.insert(std::make_pair(transport_id, callback));
 
   transport->GetStats(

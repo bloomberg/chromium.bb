@@ -77,8 +77,10 @@ class CastSession : public base::RefCounted<CastSession> {
   void ToggleLogging(bool is_audio, bool enable);
 
   // Returns raw event logs in serialized format for either the audio or video
-  // stream since last call and returns result in |callback|.
-  void GetEventLogsAndReset(bool is_audio, const EventLogsCallback& callback);
+  // stream since last call and returns result in |callback|. Also attaches
+  // |extra_data| to the log.
+  void GetEventLogsAndReset(bool is_audio,
+      const std::string& extra_data, const EventLogsCallback& callback);
 
   // Returns stats in a DictionaryValue format for either the audio or video
   // stream since last call and returns result in |callback|.

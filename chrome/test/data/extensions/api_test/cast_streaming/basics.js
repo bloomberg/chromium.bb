@@ -47,9 +47,11 @@ chrome.test.runTests([
             stateMachine.onStopped.bind(stateMachine));
         stateMachine.onAllStopped =
             pass(function(audioId, videoId) {
+          var videoExtraData = JSON.stringify({ "videoExtraData": "100" });
           rtpStream.getRawEvents(audioId,
               stateMachine.onGotRawEvents.bind(stateMachine, audioId));
           rtpStream.getRawEvents(videoId,
+              videoExtraData,
               stateMachine.onGotRawEvents.bind(stateMachine, videoId));
         }.bind(null, audioId, videoId));
         stateMachine.onGotAllLogs =

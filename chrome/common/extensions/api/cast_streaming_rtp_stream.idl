@@ -81,7 +81,7 @@ namespace cast.streaming.rtpStream {
   // Callback from the <code>getStats</code> method.
   // |rawEvents|: dictionary object containing stats recorded for a stream.
   // The format can be found at 
-  // media/cast/logging/stats_converter.cc.
+  // media/cast/logging/stats_event_subscriber.cc.
   callback GetStatsCallback = void (object stats);
 
   interface Functions {
@@ -110,9 +110,12 @@ namespace cast.streaming.rtpStream {
     
     // Get raw events for a stream in the current session.
     // |streamId|: Stream to get events for.
+    // |extraData|: Extra data to attach to the log, e.g. system info or
+    //              experiment tags, in key-value JSON string format.
     // |callback|: Called with the raw events.
     [nocompile] static void getRawEvents(
-        long streamId, GetRawEventsCallback callback);
+        long streamId, optional DOMString extraData,
+        GetRawEventsCallback callback);
     
     // Get stats for a stream in the current session.
     // |streamId|: Stream to get stats for.

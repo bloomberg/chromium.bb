@@ -89,6 +89,10 @@ message LogMetadata {
   // of the Unix epoch. This is used for relating the timestamps in the events
   // to a real time and date.
   optional int64 reference_timestamp_ms_at_unix_epoch = 5;
+
+  // Extra data to attach to the log, e.g. system info or
+  // experiment tags, in key-value JSON string format.
+  optional string extra_data = 6;
 }
 
 message AggregatedFrameEvent {

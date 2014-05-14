@@ -107,12 +107,14 @@ void CastSession::ToggleLogging(bool is_audio, bool enable) {
 }
 
 void CastSession::GetEventLogsAndReset(
-    bool is_audio, const EventLogsCallback& callback) {
+    bool is_audio, const std::string& extra_data,
+    const EventLogsCallback& callback) {
   io_message_loop_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&CastSessionDelegate::GetEventLogsAndReset,
                  base::Unretained(delegate_.get()),
                  is_audio,
+                 extra_data,
                  media::BindToCurrentLoop(callback)));
 }
 
