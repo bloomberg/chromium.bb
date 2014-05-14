@@ -18,13 +18,16 @@ class SequencedTaskRunner;
 
 namespace gcm {
 
+class Encryptor;
+
 // An implementation of GCM Store that uses LevelDB for persistence.
 // It performs all blocking operations on the blocking task runner, and posts
 // all callbacks to the thread on which the GCMStoreImpl is created.
 class GCM_EXPORT GCMStoreImpl : public GCMStore {
  public:
   GCMStoreImpl(const base::FilePath& path,
-               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
+               scoped_ptr<Encryptor> encryptor);
   virtual ~GCMStoreImpl();
 
   // Load the directory and pass the initial state back to caller.

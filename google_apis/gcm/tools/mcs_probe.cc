@@ -23,6 +23,7 @@
 #include "base/threading/worker_pool.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
+#include "google_apis/gcm/base/fake_encryptor.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/checkin_request.h"
@@ -306,7 +307,8 @@ void MCSProbe::Start() {
                                 &recorder_));
   gcm_store_.reset(
       new GCMStoreImpl(gcm_store_path_,
-                       file_thread_.message_loop_proxy()));
+                       file_thread_.message_loop_proxy(),
+                       make_scoped_ptr<Encryptor>(new FakeEncryptor)));
   mcs_client_.reset(new MCSClient("probe",
                                   &clock_,
                                   connection_factory_.get(),

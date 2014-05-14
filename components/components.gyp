@@ -74,6 +74,7 @@
       # Android WebView fails to build if a dependency on these targets is
       # introduced.
       'includes': [
+        'gcm_driver.gypi',
         'sync_driver.gypi',
         'invalidation.gypi',
       ],
