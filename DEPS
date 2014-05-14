@@ -5,11 +5,14 @@
 #
 # To test manually, run:
 #   python tools/deps2git/deps2git.py -o .DEPS.git -w <gclientdir>
-#   gclient runhooks
 # where <gcliendir> is the absolute path to the directory containing the
 # .gclient file (the parent of "src").
-# DO NOT CHECK IN CHANGES TO .DEPS.git. It will be automatically updated by
-# a bot when you modify this one.
+#
+# Then commit .DEPS.git locally (gclient doesn't like dirty trees) and run
+#   gclient sync
+# Verify the thing happened you wanted. Then revert your .DEPS.git change
+# DO NOT CHECK IN CHANGES TO .DEPS.git upstream. It will be automatically
+# updated by a bot when you modify this one.
 #
 # When adding a new dependency, please update the top-level .gitignore file
 # to list the dependency's destination directory.
@@ -72,11 +75,19 @@ vars = {
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
   "angle_revision": "6f182c12db67a4958fa5103e7602f13bca3ad9b6",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling build tools
+  # and whatever else without interference from each other.
+  "buildtools_revision": "8349035e86305fc9e4fd871610821336120a4bad",
 }
 
 deps = {
   "src/breakpad/src":
     (Var("googlecode_url") % "google-breakpad") + "/trunk/src@1325",
+
+  "src/buildtools":
+    Var("chromium_git") + "/chromium/buildtools.git@" +
+     Var("buildtools_revision"),
 
   "src/sdch/open-vcdiff":
     (Var("googlecode_url") % "open-vcdiff") + "/trunk@42",
