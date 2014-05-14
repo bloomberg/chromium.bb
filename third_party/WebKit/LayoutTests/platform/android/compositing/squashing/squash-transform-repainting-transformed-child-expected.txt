@@ -83,10 +83,10 @@ CASE 3, hovering over the inner div
               (bounds 276.00 276.00)
               (drawsContent 1)
               (repaint rects
-                (rect 17.00 20.00 87.00 87.00)
-                (rect 17.00 20.00 87.00 87.00)
                 (rect 0.00 0.00 131.00 131.00)
                 (rect 0.00 0.00 131.00 131.00)
+                (rect 17.00 20.00 87.00 87.00)
+                (rect 17.00 20.00 87.00 87.00)
               )
             )
           )
