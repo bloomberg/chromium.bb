@@ -265,3 +265,4 @@ race:SkFontConfigInterface::GetSingletonDirectInterface
 
 # http://crbug.com/372807
 deadlock:net::X509Certificate::CreateCertificateListFromBytes
+deadlock:net::X509Certificate::CreateFromBytes
