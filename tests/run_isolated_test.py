@@ -89,11 +89,13 @@ class RunIsolatedTest(auto_stub.TestCase):
     """Where to map all files in run_isolated.run_tha_test."""
     return os.path.join(self.tempdir, 'run_tha_test')
 
-  def fake_make_temp_dir(self, _prefix=None, _root_dir=None):
+  def fake_make_temp_dir(self, prefix, _root_dir=None):
     """Predictably returns directory for run_tha_test (one per test case)."""
-    assert not os.path.isdir(self.run_test_temp_dir)
-    os.makedirs(self.run_test_temp_dir)
-    return self.run_test_temp_dir
+    self.assertIn(prefix, ('run_tha_test', 'isolated_out'))
+    temp_dir = os.path.join(self.tempdir, prefix)
+    self.assertFalse(os.path.isdir(temp_dir))
+    os.makedirs(temp_dir)
+    return temp_dir
 
   def temp_join(self, *args):
     """Shortcut for joining path with self.run_test_temp_dir."""

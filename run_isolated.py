@@ -635,7 +635,12 @@ def change_tree_read_only(rootdir, read_only):
 
 def process_command(command, out_dir):
   """Replaces isolated specific variables in a command line."""
-  return [c.replace('${ISOLATED_OUTDIR}', out_dir) for c in command]
+  filtered = []
+  for arg in command:
+    if '${ISOLATED_OUTDIR}' in arg:
+      arg = arg.replace('${ISOLATED_OUTDIR}', out_dir).replace('/', os.sep)
+    filtered.append(arg)
+  return filtered
 
 
 def run_tha_test(isolated_hash, storage, cache, extra_args):
@@ -659,7 +664,7 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
                 file.
   """
   run_dir = make_temp_dir('run_tha_test', cache.cache_dir)
-  out_dir = unicode(tempfile.mkdtemp(prefix='run_tha_test'))
+  out_dir = unicode(make_temp_dir('isolated_out', cache.cache_dir))
   result = 0
   try:
     try:
@@ -671,8 +676,7 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
           require_command=True)
     except isolateserver.ConfigError as e:
       tools.report_error(e)
-      result = 1
-      return result
+      return 1
 
     change_tree_read_only(run_dir, settings.read_only)
     cwd = os.path.normpath(os.path.join(run_dir, settings.relative_cwd))
@@ -694,6 +698,7 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
       env.setdefault('RUN_TEST_CASES_LOG_FILE',
           os.path.join(MAIN_DIR, RUN_TEST_CASES_LOG))
     try:
+      sys.stdout.flush()
       with tools.Profiler('RunTest'):
         result = subprocess.call(command, cwd=cwd, env=env)
         logging.info(
@@ -703,28 +708,8 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
       tools.report_error('Failed to run %s; cwd=%s: %s' % (command, cwd, e))
       result = 1
 
-    # Upload out_dir and generate a .isolated file out of this directory. It is
-    # only done if files were written in the directory.
-    if os.listdir(out_dir):
-      with tools.Profiler('ArchiveOutput'):
-        results = isolateserver.archive_files_to_storage(
-            storage, [out_dir], None)
-      # TODO(maruel): Implement side-channel to publish this information.
-      output_data = {
-        'hash': results[0][0],
-        'namespace': storage.namespace,
-        'storage': storage.location,
-      }
-      sys.stdout.flush()
-      sys.stderr.flush()
-      print(
-          '[run_isolated_out_hack]%s[/run_isolated_out_hack]' %
-          tools.format_json(output_data, dense=True))
-
   finally:
     try:
-      rmtree(out_dir)
-    finally:
       try:
         rmtree(run_dir)
       except OSError:
@@ -741,6 +726,33 @@ def run_tha_test(isolated_hash, storage, cache, extra_args):
         # cause accumulation of temporary hardlink trees.
         if not result:
           raise
+
+      # HACK(vadimsh): On Windows rmtree(run_dir) call above has
+      # a synchronization effect: it finishes only when all task child processes
+      # terminate (since a running process locks *.exe file). Examine out_dir
+      # only after that call completes (since child processes may
+      # write to out_dir too and we need to wait for them to finish).
+
+      # Upload out_dir and generate a .isolated file out of this directory.
+      # It is only done if files were written in the directory.
+      if os.listdir(out_dir):
+        with tools.Profiler('ArchiveOutput'):
+          results = isolateserver.archive_files_to_storage(
+              storage, [out_dir], None)
+        # TODO(maruel): Implement side-channel to publish this information.
+        output_data = {
+          'hash': results[0][0],
+          'namespace': storage.namespace,
+          'storage': storage.location,
+        }
+        sys.stdout.flush()
+        print(
+            '[run_isolated_out_hack]%s[/run_isolated_out_hack]' %
+            tools.format_json(output_data, dense=True))
+
+    finally:
+      rmtree(out_dir)
+
   return result
 
 
