@@ -39,8 +39,6 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
-typedef class _jobject* jobject;
-
 namespace v8 {
 class Context;
 template<class T> class Handle;
