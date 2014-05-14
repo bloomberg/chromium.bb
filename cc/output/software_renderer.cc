@@ -454,8 +454,7 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
     SkMatrix matrix;
     matrix.setRectToRect(sk_uv_rect, quad_rect, SkMatrix::kFill_ScaleToFit);
     skia::RefPtr<SkShader> shader = skia::AdoptRef(
-        SkShader::CreateBitmapShader(*bitmap, tile_mode, tile_mode));
-    shader->setLocalMatrix(matrix);
+        SkShader::CreateBitmapShader(*bitmap, tile_mode, tile_mode, &matrix));
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setShader(shader.get());
@@ -548,12 +547,11 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   skia::RefPtr<SkShader> shader;
   if (filter_bitmap.isNull()) {
     shader = skia::AdoptRef(SkShader::CreateBitmapShader(
-        *content, content_tile_mode, content_tile_mode));
+        *content, content_tile_mode, content_tile_mode, &content_mat));
   } else {
     shader = skia::AdoptRef(SkShader::CreateBitmapShader(
-        filter_bitmap, content_tile_mode, content_tile_mode));
+        filter_bitmap, content_tile_mode, content_tile_mode, &content_mat));
   }
-  shader->setLocalMatrix(content_mat);
   current_paint_.setShader(shader.get());
 
   if (quad->mask_resource_id) {
@@ -575,9 +573,9 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     SkMatrix mask_mat;
     mask_mat.setRectToRect(mask_rect, dest_rect, SkMatrix::kFill_ScaleToFit);
 
-    skia::RefPtr<SkShader> mask_shader = skia::AdoptRef(
-        SkShader::CreateBitmapShader(*mask, mask_tile_mode, mask_tile_mode));
-    mask_shader->setLocalMatrix(mask_mat);
+    skia::RefPtr<SkShader> mask_shader =
+        skia::AdoptRef(SkShader::CreateBitmapShader(
+            *mask, mask_tile_mode, mask_tile_mode, &mask_mat));
 
     SkPaint mask_paint;
     mask_paint.setShader(mask_shader.get());

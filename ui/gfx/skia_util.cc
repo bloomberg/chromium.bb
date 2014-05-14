@@ -73,11 +73,6 @@ skia::RefPtr<SkShader> CreateImageRepShaderForScale(
     SkShader::TileMode tile_mode,
     const SkMatrix& local_matrix,
     SkScalar scale) {
-  skia::RefPtr<SkShader> shader = skia::AdoptRef(SkShader::CreateBitmapShader(
-      image_rep.sk_bitmap(), tile_mode, tile_mode));
-  SkScalar scale_x = local_matrix.getScaleX();
-  SkScalar scale_y = local_matrix.getScaleY();
-
   // Unscale matrix by |scale| such that the bitmap is drawn at the
   // correct density.
   // Convert skew and translation to pixel coordinates.
@@ -87,10 +82,11 @@ skia::RefPtr<SkShader> CreateImageRepShaderForScale(
   //   x scale = 1, x translation = 2 pixels.
   SkMatrix shader_scale = local_matrix;
   shader_scale.preScale(scale, scale);
-  shader_scale.setScaleX(SkScalarDiv(scale_x, scale));
-  shader_scale.setScaleY(SkScalarDiv(scale_y, scale));
+  shader_scale.setScaleX(local_matrix.getScaleX() / scale);
+  shader_scale.setScaleY(local_matrix.getScaleY() / scale);
 
-  shader->setLocalMatrix(shader_scale);
+  skia::RefPtr<SkShader> shader = skia::AdoptRef(SkShader::CreateBitmapShader(
+      image_rep.sk_bitmap(), tile_mode, tile_mode, &shader_scale));
   return shader;
 }
 
