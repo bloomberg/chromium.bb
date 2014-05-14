@@ -350,9 +350,25 @@ TEST_F(WindowEventDispatcherTest, IgnoreUnknownKeys) {
   EXPECT_FALSE(unknown_event.handled());
   EXPECT_EQ(0, handler.num_key_events());
 
+  handler.Reset();
   ui::KeyEvent known_event(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
   DispatchEventUsingWindowDispatcher(&known_event);
   EXPECT_TRUE(known_event.handled());
+  EXPECT_EQ(1, handler.num_key_events());
+
+  handler.Reset();
+  ui::KeyEvent ime_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN,
+                         ui::EF_IME_FABRICATED_KEY, false);
+  DispatchEventUsingWindowDispatcher(&ime_event);
+  EXPECT_TRUE(ime_event.handled());
+  EXPECT_EQ(1, handler.num_key_events());
+
+  handler.Reset();
+  ui::KeyEvent unknown_key_with_char_event(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN,
+                                           0, false);
+  unknown_key_with_char_event.set_character(0x00e4 /* "ä" */);
+  DispatchEventUsingWindowDispatcher(&unknown_key_with_char_event);
+  EXPECT_TRUE(unknown_key_with_char_event.handled());
   EXPECT_EQ(1, handler.num_key_events());
 }
 
