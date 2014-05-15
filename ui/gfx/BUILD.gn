@@ -8,6 +8,9 @@ if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
 }
+if (use_ozone) {
+  import("//ui/ozone/ozone.gni")
+}
 
 # Several targets want to include this header file, and some of them are
 # child dependencies of "gfx". Therefore, we separate it out here so multiple
@@ -336,7 +339,7 @@ component("gfx") {
       "ozone/overlay_candidates_ozone.h",
     ]
   }
-  if (ozone_platform_dri) {
+  if (use_ozone && ozone_platform_dri) {
     configs += [ "//build/config/linux:dridrm" ]
   } else {
     sources -= [

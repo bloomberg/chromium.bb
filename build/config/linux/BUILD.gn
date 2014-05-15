@@ -65,6 +65,14 @@ config("x11") {
   ]
 }
 
+config("xcomposite") {
+  libs = [ "Xcomposite" ]
+}
+
+config("xext") {
+  libs = [ "Xext" ]
+}
+
 config("libresolv") {
   libs = [ "resolv" ]
 }

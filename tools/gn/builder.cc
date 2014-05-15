@@ -447,9 +447,10 @@ bool Builder::ResolveForwardDependentConfigs(Target* target, Err* err) {
     if (!configs[config_i].ptr) {
       *err = Err(target->defined_from(),
           "Target in forward_dependent_configs_from was not listed in the deps",
-          "The target \"" + configs[config_i].label.GetUserVisibleName(false) +
-          "\"\n was not present in the deps. This thing is used to forward\n"
-          "configs from direct dependents.");
+          "This target has a forward_dependent_configs_from entry that was "
+          "not present in\nthe deps. A target can only forward things it "
+          "depends on. It was forwarding:\n  " +
+          configs[config_i].label.GetUserVisibleName(false));
       return false;
     }
   }

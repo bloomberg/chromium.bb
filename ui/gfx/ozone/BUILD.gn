@@ -1,0 +1,25 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("ozone") {
+  output_name = "gfx_ozone"
+  saources = [
+    "impl/file_surface_factory.cc",
+    "impl/file_surface_factory.h",
+    "surface_factory_ozone.cc",
+    "surface_factory_ozone.h",
+    "surface_ozone_egl.h",
+    "surface_ozone_canvas.h",
+    "overlay_candidates_ozone.cc",
+    "overlay_candidates_ozone.h",
+  ]
+
+  defines = [ "GFX_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//ui/gfx/geometry",
+    "//skia",
+  ]
+}
