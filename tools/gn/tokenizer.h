@@ -33,7 +33,7 @@ class Tokenizer {
   static bool IsNewline(const base::StringPiece& buffer, size_t offset);
 
   static bool IsIdentifierFirstChar(char c) {
-    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '_';
+    return IsAsciiAlpha(c) || c == '_';
   }
 
   static bool IsIdentifierContinuingChar(char c) {

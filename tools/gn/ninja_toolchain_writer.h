@@ -21,7 +21,7 @@ class Toolchain;
 class NinjaToolchainWriter {
  public:
   // Takes the settings for the toolchain, as well as the list of all targets
-  // assicoated with the toolchain.
+  // associated with the toolchain.
   static bool RunAndWriteFile(const Settings* settings,
                               const Toolchain* toolchain,
                               const std::vector<const Target*>& targets);
