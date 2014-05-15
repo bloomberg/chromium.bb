@@ -57,10 +57,6 @@ class ASH_EXPORT DesktopBackgroundController
     BACKGROUND_IMAGE,
   };
 
-  // This is used to initialize Resource ID variables and to denote "no
-  // resource ID" in parameters.
-  static const int kInvalidResourceID;
-
   DesktopBackgroundController();
   virtual ~DesktopBackgroundController();
 
@@ -83,8 +79,6 @@ class ASH_EXPORT DesktopBackgroundController
   // Returns true if new image was actually set. And false when duplicate set
   // request detected.
   bool SetWallpaperImage(const gfx::ImageSkia& image, WallpaperLayout layout);
-  // The same, but image from resources is used.
-  bool SetWallpaperResource(int resource_id, WallpaperLayout layout);
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
   // when running. However, the wallpaper widgets are now created
@@ -116,10 +110,8 @@ class ASH_EXPORT DesktopBackgroundController
 
   // Returns true if the specified wallpaper is already stored
   // in |current_wallpaper_|.
-  // If |image| is NULL, resource_id is compared.
   // If |compare_layouts| is false, layout is ignored.
-  bool WallpaperIsAlreadyLoaded(const gfx::ImageSkia* image,
-                                int resource_id,
+  bool WallpaperIsAlreadyLoaded(const gfx::ImageSkia& image,
                                 bool compare_layouts,
                                 WallpaperLayout layout) const;
 

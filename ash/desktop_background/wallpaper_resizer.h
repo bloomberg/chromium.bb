@@ -26,10 +26,6 @@ class ASH_EXPORT WallpaperResizer {
   // is modified, its ID will change.
   static uint32_t GetImageId(const gfx::ImageSkia& image);
 
-  WallpaperResizer(int image_resource_id,
-                   const gfx::Size& target_size,
-                   WallpaperLayout layout);
-
   WallpaperResizer(const gfx::ImageSkia& image,
                    const gfx::Size& target_size,
                    WallpaperLayout layout);
@@ -39,8 +35,6 @@ class ASH_EXPORT WallpaperResizer {
   const gfx::ImageSkia& image() const { return image_; }
   uint32_t original_image_id() const { return original_image_id_; }
   WallpaperLayout layout() const { return layout_; }
-
-  int resource_id() const { return resource_id_; }
 
   // Called on the UI thread to run Resize() on the worker pool and post an
   // OnResizeFinished() task back to the UI thread on completion.
@@ -64,9 +58,6 @@ class ASH_EXPORT WallpaperResizer {
 
   // Unique identifier corresponding to the original (i.e. pre-resize) |image_|.
   uint32_t original_image_id_;
-
-  // kInvalidResourceID if image was not obtained from resources.
-  const int resource_id_;
 
   gfx::Size target_size_;
 

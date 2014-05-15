@@ -8,11 +8,6 @@
     <output filename="ash_resources_200_percent.pak" type="data_package" context="default_200_percent" />
   </outputs>
   <release seq="1">
-    <includes>
-      <!-- Fallback wallpaper used by Ash. -->
-      <include name="IDR_AURA_WALLPAPER_DEFAULT_LARGE" file="wallpaper/default_large.jpg" type="BINDATA" />
-      <include name="IDR_AURA_WALLPAPER_DEFAULT_SMALL" file="wallpaper/default_small.jpg" type="BINDATA" />
-    </includes>
     <structures fallback_to_low_resolution="true">
       <!-- KEEP THESE IN ALPHABETICAL ORDER!  DO NOT ADD TO RANDOM PLACES JUST
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE

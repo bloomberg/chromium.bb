@@ -7,6 +7,7 @@
 #include <numeric>
 #include <vector>
 
+#include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/shell.h"
@@ -43,8 +44,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/ash_resources.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
@@ -91,6 +91,10 @@ const unsigned kLoadDefaultDelayMs = 200;
 
 // Maximum wallpaper load delay, milliseconds.
 const unsigned kLoadMaxDelayMs = 2000;
+
+// When no wallpaper image is specified, the screen is filled with a solid
+// color.
+const SkColor kDefaultWallpaperColor = SK_ColorGRAY;
 
 // For our scaling ratios we need to round positive numbers.
 int RoundPositive(double x) {
@@ -954,9 +958,9 @@ void WallpaperManager::DoSetDefaultWallpaper(
     file = use_small ? &default_small_wallpaper_file_
                      : &default_large_wallpaper_file_;
   }
-  const ash::WallpaperLayout layout =
-      use_small ? ash::WALLPAPER_LAYOUT_CENTER
-                : ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
+  ash::WallpaperLayout layout = use_small
+                                    ? ash::WALLPAPER_LAYOUT_CENTER
+                                    : ash::WALLPAPER_LAYOUT_CENTER_CROPPED;
   DCHECK(file);
   if (!default_wallpaper_image_.get() ||
       default_wallpaper_image_->file_path() != file->value()) {
@@ -968,14 +972,13 @@ void WallpaperManager::DoSetDefaultWallpaper(
       return;
     }
 
-    const int resource_id = use_small ? IDR_AURA_WALLPAPER_DEFAULT_SMALL
-                                      : IDR_AURA_WALLPAPER_DEFAULT_LARGE;
-
-    loaded_wallpapers_ += ash::Shell::GetInstance()
-                              ->desktop_background_controller()
-                              ->SetWallpaperResource(resource_id, layout);
-    return;
+    CreateSolidDefaultWallpaper();
   }
+  // 1x1 wallpaper is actually solid color, so it should be stretched.
+  if (default_wallpaper_image_->image().width() == 1 &&
+      default_wallpaper_image_->image().height() == 1)
+    layout = ash::WALLPAPER_LAYOUT_STRETCH;
+
   ash::Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
       default_wallpaper_image_->image(), layout);
 }
@@ -1862,11 +1865,9 @@ void WallpaperManager::SetDefaultWallpaperPath(
   // as a placeholder only.
   const bool need_update_screen =
       default_wallpaper_image_.get() &&
-      dbc->WallpaperIsAlreadyLoaded(
-          &(default_wallpaper_image_->image()),
-          ash::DesktopBackgroundController::kInvalidResourceID,
-          false /* compare_layouts */,
-          ash::WALLPAPER_LAYOUT_CENTER);
+      dbc->WallpaperIsAlreadyLoaded(default_wallpaper_image_->image(),
+                                    false /* compare_layouts */,
+                                    ash::WALLPAPER_LAYOUT_CENTER);
 
   default_wallpaper_image_.reset();
   if (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL) {
@@ -1887,6 +1888,16 @@ void WallpaperManager::SetDefaultWallpaperPath(
     DoSetDefaultWallpaper(std::string(),
                           MovableOnDestroyCallbackHolder().Pass());
   }
+}
+
+void WallpaperManager::CreateSolidDefaultWallpaper() {
+  loaded_wallpapers_++;
+  SkBitmap bitmap;
+  bitmap.setConfig(SkBitmap::kARGB_8888_Config, 1, 1, 0);
+  bitmap.allocPixels();
+  bitmap.eraseColor(kDefaultWallpaperColor);
+  const gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  default_wallpaper_image_.reset(new UserImage(image));
 }
 
 }  // namespace chromeos

@@ -43,8 +43,6 @@ const int kWallpaperReloadDelayMs = 2000;
 
 }  // namespace
 
-const int DesktopBackgroundController::kInvalidResourceID = -1;
-
 DesktopBackgroundController::DesktopBackgroundController()
     : locked_(false),
       desktop_background_mode_(BACKGROUND_NONE),
@@ -85,8 +83,7 @@ bool DesktopBackgroundController::SetWallpaperImage(const gfx::ImageSkia& image,
   VLOG(1) << "SetWallpaper: image_id=" << WallpaperResizer::GetImageId(image)
           << " layout=" << layout;
 
-  if (WallpaperIsAlreadyLoaded(
-          &image, kInvalidResourceID, true /* compare_layouts */, layout)) {
+  if (WallpaperIsAlreadyLoaded(image, true /* compare_layouts */, layout)) {
     VLOG(1) << "Wallpaper is already loaded";
     return false;
   }
@@ -97,26 +94,6 @@ bool DesktopBackgroundController::SetWallpaperImage(const gfx::ImageSkia& image,
 
   FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver,
                     observers_,
-                    OnWallpaperDataChanged());
-  SetDesktopBackgroundImageMode();
-  return true;
-}
-
-bool DesktopBackgroundController::SetWallpaperResource(int resource_id,
-                                                       WallpaperLayout layout) {
-  VLOG(1) << "SetWallpaper: resource_id=" << resource_id
-          << " layout=" << layout;
-
-  if (WallpaperIsAlreadyLoaded(
-          NULL, resource_id, true /* compare_layouts */, layout)) {
-    VLOG(1) << "Wallpaper is already loaded";
-    return false;
-  }
-  current_wallpaper_.reset(
-      new WallpaperResizer(resource_id, GetMaxDisplaySizeInNative(), layout));
-  current_wallpaper_->StartResize();
-
-  FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver, observers_,
                     OnWallpaperDataChanged());
   SetDesktopBackgroundImageMode();
   return true;
@@ -198,8 +175,7 @@ gfx::Size DesktopBackgroundController::GetMaxDisplaySizeInNative() {
 }
 
 bool DesktopBackgroundController::WallpaperIsAlreadyLoaded(
-    const gfx::ImageSkia* image,
-    int resource_id,
+    const gfx::ImageSkia& image,
     bool compare_layouts,
     WallpaperLayout layout) const {
   if (!current_wallpaper_.get())
@@ -209,12 +185,8 @@ bool DesktopBackgroundController::WallpaperIsAlreadyLoaded(
   if (compare_layouts && layout != current_wallpaper_->layout())
     return false;
 
-  if (image) {
-    return WallpaperResizer::GetImageId(*image) ==
-           current_wallpaper_->original_image_id();
-  }
-
-  return current_wallpaper_->resource_id() == resource_id;
+  return WallpaperResizer::GetImageId(image) ==
+         current_wallpaper_->original_image_id();
 }
 
 void DesktopBackgroundController::SetDesktopBackgroundImageMode() {

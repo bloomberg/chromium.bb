@@ -540,6 +540,9 @@ class WallpaperManager: public content::NotificationObserver {
   // Returns wallpaper subdirectory name for current resolution.
   const char* GetCustomWallpaperSubdirForCurrentResolution();
 
+  // Init default_wallpaper_image_ with 1x1 image of default color.
+  void CreateSolidDefaultWallpaper();
+
   // The number of loaded wallpapers.
   int loaded_wallpapers_;
 

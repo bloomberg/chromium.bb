@@ -33,9 +33,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/test/test_utils.h"
-#include "grit/ash_resources.h"
 #include "ui/aura/env.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -45,9 +43,6 @@ using namespace ash;
 namespace chromeos {
 
 namespace {
-
-const int kLargeWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_LARGE;
-const int kSmallWallpaperResourceId = IDR_AURA_WALLPAPER_DEFAULT_SMALL;
 
 int kLargeWallpaperWidth = 256;
 int kLargeWallpaperHeight = chromeos::kLargeWallpaperMaxHeight;
@@ -123,19 +118,6 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
     WaitAsyncWallpaperLoadStarted();
   }
 
-  // Saves bitmap |resource_id| to disk.
-  void SaveUserWallpaperData(const base::FilePath& wallpaper_path,
-                             int resource_id) {
-    scoped_refptr<base::RefCountedStaticMemory> image_data(
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-            resource_id, ui::SCALE_FACTOR_100P));
-    int written = base::WriteFile(
-        wallpaper_path,
-        reinterpret_cast<const char*>(image_data->front()),
-        image_data->size());
-    EXPECT_EQ(static_cast<int>(image_data->size()), written);
-  }
-
   int LoadedWallpapers() {
     return WallpaperManager::Get()->loaded_wallpapers();
   }
@@ -185,10 +167,16 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest,
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
-  SaveUserWallpaperData(small_wallpaper_path,
-                        kSmallWallpaperResourceId);
-  SaveUserWallpaperData(large_wallpaper_path,
-                        kLargeWallpaperResourceId);
+  ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
+      small_wallpaper_path,
+      kSmallWallpaperWidth,
+      kSmallWallpaperHeight,
+      wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
+  ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
+      large_wallpaper_path,
+      kLargeWallpaperWidth,
+      kLargeWallpaperHeight,
+      wallpaper_manager_test_utils::kLargeDefaultWallpaperColor));
 
   std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
@@ -269,8 +257,11 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest,
       kSmallWallpaperSubDir,
       kTestUser1Hash,
       id);
-  SaveUserWallpaperData(small_wallpaper_path,
-                        kSmallWallpaperResourceId);
+  ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
+      small_wallpaper_path,
+      kSmallWallpaperWidth,
+      kSmallWallpaperHeight,
+      wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
 
   std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
@@ -314,8 +305,11 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTest,
   };
   base::FilePath user_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  SaveUserWallpaperData(user_data_dir.Append("123"),
-                        kLargeWallpaperResourceId);
+  ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
+      user_data_dir.Append("123"),
+      wallpaper_manager_test_utils::kWallpaperSize,
+      wallpaper_manager_test_utils::kWallpaperSize,
+      wallpaper_manager_test_utils::kLargeDefaultWallpaperColor));
   WallpaperManager::Get()->SetUserWallpaperInfo(kTestUser1, info, true);
 }
 
@@ -391,8 +385,11 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTestNoAnimation,
   };
   base::FilePath user_data_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir));
-  SaveUserWallpaperData(user_data_dir.Append("123"),
-                        kLargeWallpaperResourceId);
+  ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
+      user_data_dir.Append("123"),
+      wallpaper_manager_test_utils::kWallpaperSize,
+      wallpaper_manager_test_utils::kWallpaperSize,
+      wallpaper_manager_test_utils::kLargeDefaultWallpaperColor));
   WallpaperManager::Get()->SetUserWallpaperInfo(kTestUser1, info, true);
 }
 
@@ -485,10 +482,16 @@ IN_PROC_BROWSER_TEST_P(WallpaperManagerBrowserTestCacheUpdate,
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
-  SaveUserWallpaperData(small_wallpaper_path,
-                        kSmallWallpaperResourceId);
-  SaveUserWallpaperData(large_wallpaper_path,
-                        kLargeWallpaperResourceId);
+  ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
+      small_wallpaper_path,
+      kSmallWallpaperWidth,
+      kSmallWallpaperHeight,
+      wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
+  ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
+      large_wallpaper_path,
+      kLargeWallpaperWidth,
+      kLargeWallpaperHeight,
+      wallpaper_manager_test_utils::kLargeDefaultWallpaperColor));
 
   std::string relative_path = base::FilePath(kTestUser1Hash).Append(id).value();
   // Saves wallpaper info to local state for user |kTestUser1|.
