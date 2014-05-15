@@ -119,6 +119,8 @@
 // They are functions in Android because __system_property_get() doesn't
 // return a string.
 
+#if defined(ENABLE_PROFILING)
+
 #if defined(__ANDROID__) || defined(ANDROID)
 
 // Returns a pointer to a static variable.  The string pointed by the returned
@@ -177,5 +179,15 @@ inline double EnvToDouble(const char* envname, double dflt) {
   (!getenv(envname) ? (dflt) : strtod(getenv(envname), NULL))
 
 #endif  // defined(__ANDROID__) || defined(ANDROID)
+
+#else  // defined(ENABLE_PROFILING)
+
+#define EnvToString(envname, dflt) (dflt)
+#define EnvToBool(envname, dflt) (dflt)
+#define EnvToInt(envname, dflt) (dflt)
+#define EnvToInt64(envname, dflt) (dflt)
+#define EnvToDouble(envname, dflt) (dflt)
+
+#endif  // defined(ENABLE_PROFILING)
 
 #endif  // BASE_COMMANDLINEFLAGS_H_
