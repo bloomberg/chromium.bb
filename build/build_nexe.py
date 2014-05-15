@@ -465,13 +465,14 @@ class Builder(object):
 
     # Start goma support from os/arch/toolname that have been tested.
     # Set NO_NACL_GOMA=true to force to avoid using goma.
+    default_no_nacl_goma = True if pynacl.platform.IsWindows() else False
     if (arch not in ['x86-32', 'x86-64', 'pnacl']
         or toolname not in ['newlib', 'glibc']
-        or IsEnvFlagTrue('NO_NACL_GOMA', default=False)):
+        or IsEnvFlagTrue('NO_NACL_GOMA', default=default_no_nacl_goma)):
       return {}
 
     goma_config = {}
-    gomacc_base = 'gomacc.exe' if self.osname == 'win' else 'gomacc'
+    gomacc_base = 'gomacc.exe' if pynacl.platform.IsWindows() else 'gomacc'
     # Search order of gomacc:
     # --gomadir command argument -> GOMA_DIR env. -> PATH env.
     search_path = []
@@ -505,7 +506,7 @@ class Builder(object):
 
     if goma_config:
       goma_config['burst'] = IsEnvFlagTrue('NACL_GOMA_BURST')
-      default_threads = 100 if self.osname == 'linux' else 1
+      default_threads = 100 if pynacl.platform.IsLinux() else 1
       goma_config['threads'] = GetIntegerEnv('NACL_GOMA_THREADS',
                                              default=default_threads)
     return goma_config
