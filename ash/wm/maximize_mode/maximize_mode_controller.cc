@@ -11,7 +11,6 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_blocker.h"
-#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"
@@ -133,8 +132,7 @@ void ScreenshotActionHandler::OnKeyEvent(ui::KeyEvent* event) {
 
 MaximizeModeController::MaximizeModeController()
     : rotation_locked_(false),
-      have_seen_accelerometer_data_(false),
-      in_set_screen_rotation_(false) {
+      have_seen_accelerometer_data_(false) {
   Shell::GetInstance()->accelerometer_controller()->AddObserver(this);
 }
 
@@ -237,8 +235,8 @@ void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
       // Also, SetDisplayRotation will save the setting to the local store,
       // this should be stored in a way that we can distinguish what the
       // rotation was set by.
-      SetDisplayRotation(display_manager,
-                         gfx::Display::ROTATE_0);
+      display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+                                          gfx::Display::ROTATE_0);
     }
     rotation_locked_ = false;
     return;
@@ -296,18 +294,9 @@ void MaximizeModeController::HandleScreenRotation(const gfx::Vector3dF& lid) {
   // match screen orientation.
   if (new_rotation == gfx::Display::ROTATE_0 ||
       maximize_mode_engaged) {
-    SetDisplayRotation(display_manager,
-                       new_rotation);
+    display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
+                                        new_rotation);
   }
-}
-
-void MaximizeModeController::SetDisplayRotation(
-    DisplayManager* display_manager,
-    gfx::Display::Rotation rotation) {
-  base::AutoReset<bool> auto_in_set_screen_rotation(
-      &in_set_screen_rotation_, true);
-  display_manager->SetDisplayRotation(gfx::Display::InternalDisplayId(),
-                                      rotation);
 }
 
 }  // namespace ash
