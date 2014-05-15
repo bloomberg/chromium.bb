@@ -231,8 +231,8 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
         if (!IsCurrentWhitespace() && !CouldBeOperator(c) &&
             !IsScoperChar(c) && c != ',') {
           *err_ = Err(GetCurrentLocation(),
-              "This is not a valid number.",
-              "Learn to count.");
+                      "This is not a valid number.",
+                      "Learn to count.");
           // Highlight the number.
           err_->AppendRange(LocationRange(location, GetCurrentLocation()));
         }
@@ -244,19 +244,17 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
       Advance();  // Advance past initial "
       for (;;) {
         if (at_end()) {
-          *err_ = Err(LocationRange(location,
-                          Location(input_file_, line_number_, char_in_line_)),
-                     "Unterminated string literal.",
-                     "Don't leave me hanging like this!");
+          *err_ = Err(LocationRange(location, GetCurrentLocation()),
+                      "Unterminated string literal.",
+                      "Don't leave me hanging like this!");
           break;
         }
         if (IsCurrentStringTerminator(initial)) {
           Advance();  // Skip past last "
           break;
         } else if (cur_char() == '\n') {
-          *err_ = Err(LocationRange(location,
-                                   GetCurrentLocation()),
-                     "Newline in string constant.");
+          *err_ = Err(LocationRange(location, GetCurrentLocation()),
+                      "Newline in string constant.");
         }
         Advance();
       }
