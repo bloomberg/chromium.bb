@@ -459,7 +459,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
           "policy/shill_policy_on_unmanaged_wifi1.json");
 
   // The passphrase isn't sent again, because it's configured by the user and
-  // Shill doesn't sent it on GetProperties calls.
+  // Shill doesn't send it on GetProperties calls.
   expected_shill_properties->RemoveWithoutPathExpansion(
       shill::kPassphraseProperty, NULL);
 
@@ -484,6 +484,42 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
   message_loop_.RunUntilIdle();
 }
 
+TEST_F(ManagedNetworkConfigurationHandlerTest,
+       SetPolicyUpdateManagedEquivalentSecurity) {
+  InitializeStandardProfiles();
+  SetUpEntry("policy/shill_managed_wifi1_rsn.json",
+             kUser1ProfilePath,
+             "old_entry_path");
+
+  scoped_ptr<base::DictionaryValue> expected_shill_properties =
+      test_utils::ReadTestDictionary(
+          "policy/shill_policy_on_unmanaged_wifi1.json");
+
+  // The passphrase isn't sent again, because it's configured by the user and
+  // Shill doesn't send it on GetProperties calls.
+  expected_shill_properties->RemoveWithoutPathExpansion(
+      shill::kPassphraseProperty, NULL);
+
+  EXPECT_CALL(*mock_profile_client_,
+              GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
+
+  EXPECT_CALL(
+      *mock_profile_client_,
+      GetEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
+
+  // The existing entry must not be deleted because the Security type 'rsa' is
+  // equivalent to 'psk' when identifying networks.
+
+  EXPECT_CALL(
+      *mock_manager_client_,
+      ConfigureServiceForProfile(dbus::ObjectPath(kUser1ProfilePath),
+                                 IsEqualTo(expected_shill_properties.get()),
+                                 _, _));
+
+  SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
+  message_loop_.RunUntilIdle();
+}
+
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
   InitializeStandardProfiles();
   SetUpEntry("policy/shill_policy_on_unmanaged_wifi1.json",
@@ -495,7 +531,7 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
           "policy/shill_policy_on_unmanaged_wifi1.json");
 
   // The passphrase isn't sent again, because it's configured by the user and
-  // Shill doesn't sent it on GetProperties calls.
+  // Shill doesn't send it on GetProperties calls.
   expected_shill_properties->RemoveWithoutPathExpansion(
       shill::kPassphraseProperty, NULL);
 

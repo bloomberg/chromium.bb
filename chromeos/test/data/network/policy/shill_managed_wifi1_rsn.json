@@ -1,0 +1,11 @@
+{
+  "AutoConnect": true,
+  "GUID": "policy_wifi1",
+  "Mode": "managed",
+  "Passphrase": "user's passphrase",
+  "Profile": "/profile/user1/shill",
+  "WiFi.HexSSID": "7769666931", // "wifi1"
+  "Security": "rsn",
+  "Type": "wifi",
+  "UIData": "{\"onc_source\":\"user_policy\",\"user_settings\":{\"WiFi\":{\"Passphrase\":\"FAKE_CREDENTIAL_VPaJDV9x\"}}}"
+}

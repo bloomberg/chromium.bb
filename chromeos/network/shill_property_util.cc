@@ -50,10 +50,21 @@ bool CopyStringFromDictionary(const base::DictionaryValue& source,
                               base::DictionaryValue* dest) {
   std::string string_value;
   if (!source.GetStringWithoutPathExpansion(key, &string_value) ||
-      string_value.empty())
+      string_value.empty()) {
     return false;
+  }
   dest->SetStringWithoutPathExpansion(key, string_value);
   return true;
+}
+
+// This is the same normalization that Shill applies to security types for the
+// sake of comparing/identifying WiFi networks. See Shill's
+// WiFiService::GetSecurityClass.
+std::string GetSecurityClass(const std::string& security) {
+  if (security == shill::kSecurityRsn || security == shill::kSecurityWpa)
+    return shill::kSecurityPsk;
+  else
+    return security;
 }
 
 }  // namespace
@@ -229,8 +240,15 @@ bool CopyIdentifyingProperties(const base::DictionaryValue& service_properties,
   success &= !type.empty();
   dest->SetStringWithoutPathExpansion(shill::kTypeProperty, type);
   if (type == shill::kTypeWifi) {
-    success &= CopyStringFromDictionary(
-        service_properties, shill::kSecurityProperty, dest);
+    std::string security;
+    service_properties.GetStringWithoutPathExpansion(shill::kSecurityProperty,
+                                                     &security);
+    if (security.empty()) {
+      success = false;
+    } else {
+      dest->SetStringWithoutPathExpansion(shill::kSecurityProperty,
+                                          GetSecurityClass(security));
+    }
     success &=
         CopyStringFromDictionary(service_properties, shill::kWifiHexSsid, dest);
     success &= CopyStringFromDictionary(
