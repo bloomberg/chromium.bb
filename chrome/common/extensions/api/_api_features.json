@@ -319,12 +319,10 @@
   },
   "experimental.devtools.audits": {
     "dependencies": ["permission:experimental", "manifest:devtools_page"],
-    "extension_types": ["platform_app"],
     "contexts": ["blessed_extension"]
   },
   "experimental.devtools.console": {
     "dependencies": ["permission:experimental", "manifest:devtools_page"],
-    "extension_types": ["platform_app"],
     "contexts": ["blessed_extension"]
   },
   "extension": {
