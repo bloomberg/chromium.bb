@@ -5,7 +5,7 @@
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/metrics/metrics_service.h"
+#include "base/metrics/histogram.h"
 
 using base::TimeDelta;
 
