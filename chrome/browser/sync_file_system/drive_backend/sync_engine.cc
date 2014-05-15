@@ -70,6 +70,11 @@ class SyncEngine::WorkerObserver : public SyncWorker::Observer {
   virtual ~WorkerObserver() {}
 
   virtual void OnPendingFileListUpdated(int item_count) OVERRIDE {
+    if (ui_task_runner_->RunsTasksOnCurrentThread()) {
+      sync_engine_->OnPendingFileListUpdated(item_count);
+      return;
+    }
+
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::OnPendingFileListUpdated,
@@ -81,6 +86,12 @@ class SyncEngine::WorkerObserver : public SyncWorker::Observer {
                                    SyncFileStatus file_status,
                                    SyncAction sync_action,
                                    SyncDirection direction) OVERRIDE {
+    if (ui_task_runner_->RunsTasksOnCurrentThread()) {
+      sync_engine_->OnFileStatusChanged(
+          url, file_status, sync_action, direction);
+      return;
+    }
+
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::OnFileStatusChanged,
@@ -90,6 +101,11 @@ class SyncEngine::WorkerObserver : public SyncWorker::Observer {
 
   virtual void UpdateServiceState(RemoteServiceState state,
                                   const std::string& description) OVERRIDE {
+    if (ui_task_runner_->RunsTasksOnCurrentThread()) {
+      sync_engine_->UpdateServiceState(state, description);
+      return;
+    }
+
     ui_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&SyncEngine::UpdateServiceState,
@@ -167,10 +183,9 @@ scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
                      notification_manager,
                      extension_service,
                      signin_manager));
-  sync_engine->Initialize(
-      GetSyncFileSystemDir(context->GetPath()),
-      file_task_runner.get(),
-      NULL);
+  sync_engine->Initialize(GetSyncFileSystemDir(context->GetPath()),
+                          file_task_runner.get(),
+                          NULL);
 
   return sync_engine.Pass();
 }
@@ -331,8 +346,7 @@ bool SyncEngine::IsConflicting(const fileapi::FileSystemURL& url) {
 }
 
 RemoteServiceState SyncEngine::GetCurrentState() const {
-  // TODO(peria): Post task
-  return sync_worker_->GetCurrentState();
+  return service_state_;
 }
 
 void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
@@ -501,6 +515,7 @@ SyncEngine::SyncEngine(
       drive_service_wrapper_(new DriveServiceWrapper(drive_service_.get())),
       drive_uploader_(drive_uploader.Pass()),
       drive_uploader_wrapper_(new DriveUploaderWrapper(drive_uploader_.get())),
+      service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
       signin_manager_(signin_manager),
@@ -526,6 +541,8 @@ void SyncEngine::OnFileStatusChanged(const fileapi::FileSystemURL& url,
 
 void SyncEngine::UpdateServiceState(RemoteServiceState state,
                                     const std::string& description) {
+  service_state_ = state;
+
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
       OnRemoteServiceStateUpdated(state, description));

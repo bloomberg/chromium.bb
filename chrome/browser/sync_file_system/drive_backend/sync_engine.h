@@ -174,6 +174,8 @@ class SyncEngine : public RemoteFileSyncService,
 
   scoped_ptr<RemoteChangeProcessorOnWorker> remote_change_processor_on_worker_;
 
+  RemoteServiceState service_state_;
+
   // These external services are not owned by SyncEngine.
   // The owner of the SyncEngine is responsible for their lifetime.
   // I.e. the owner should declare the dependency explicitly by calling
