@@ -124,11 +124,6 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
                                        buffer,
                                        bytes_to_read,
                                        &read_platform_handles_);
-  if (read_result > 0) {
-    *bytes_read = static_cast<size_t>(read_result);
-    return IO_SUCCEEDED;
-  }
-
   if (read_platform_handles_ &&
       read_platform_handles_->size() > old_num_platform_handles) {
     if (read_result != 1) {
@@ -141,6 +136,14 @@ RawChannel::IOResult RawChannelPosix::Read(size_t* bytes_read) {
       read_platform_handles_.reset();
       return IO_FAILED;
     }
+
+    // This wasn't a data read (platform handles just get stashed).
+    return ScheduleRead();
+  }
+
+  if (read_result > 0) {
+    *bytes_read = static_cast<size_t>(read_result);
+    return IO_SUCCEEDED;
   }
 
   // |read_result == 0| means "end of file".

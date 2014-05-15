@@ -143,12 +143,17 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   // |RawChannel::Delegate| implementation:
   virtual void OnReadMessage(
-      const MessageInTransit::View& message_view) OVERRIDE;
+      const MessageInTransit::View& message_view,
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE;
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE;
 
   // Helpers for |OnReadMessage|:
-  void OnReadMessageForDownstream(const MessageInTransit::View& message_view);
-  void OnReadMessageForChannel(const MessageInTransit::View& message_view);
+  void OnReadMessageForDownstream(
+      const MessageInTransit::View& message_view,
+      embedder::ScopedPlatformHandleVectorPtr platform_handles);
+  void OnReadMessageForChannel(
+      const MessageInTransit::View& message_view,
+      embedder::ScopedPlatformHandleVectorPtr platform_handles);
 
   // Removes the message pipe endpoint with the given local ID, which must exist
   // and be a zombie, and given remote ID. Returns false on failure, in

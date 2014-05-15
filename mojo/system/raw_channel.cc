@@ -58,7 +58,7 @@ bool RawChannel::WriteBuffer::HavePlatformHandlesToSend() const {
   if (!transport_data)
     return false;
 
-  const std::vector<embedder::PlatformHandle>* all_platform_handles =
+  const embedder::PlatformHandleVector* all_platform_handles =
       transport_data->platform_handles();
   if (!all_platform_handles) {
     DCHECK_EQ(platform_handles_offset_, 0u);
@@ -79,7 +79,7 @@ void RawChannel::WriteBuffer::GetPlatformHandlesToSend(
   DCHECK(HavePlatformHandlesToSend());
 
   TransportData* transport_data = message_queue_.front()->transport_data();
-  std::vector<embedder::PlatformHandle>* all_platform_handles =
+  embedder::PlatformHandleVector* all_platform_handles =
       transport_data->platform_handles();
   *num_platform_handles =
       all_platform_handles->size() - platform_handles_offset_;
@@ -348,7 +348,7 @@ void RawChannel::OnReadCompleted(bool result, size_t bytes_read) {
 
       // Dispatch the message.
       DCHECK(delegate_);
-      delegate_->OnReadMessage(message_view);
+      delegate_->OnReadMessage(message_view, platform_handles.Pass());
       if (read_stopped_) {
         // |Shutdown()| was called in |OnReadMessage()|.
         // TODO(vtl): Add test for this case.

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "mojo/system/constants.h"
 #include "mojo/system/message_pipe_dispatcher.h"
+#include "mojo/system/platform_handle_dispatcher.h"
 
 namespace mojo {
 namespace system {
@@ -55,7 +56,7 @@ bool Dispatcher::TransportDataAccess::EndSerializeAndClose(
     Channel* channel,
     void* destination,
     size_t* actual_size,
-    std::vector<embedder::PlatformHandle>* platform_handles) {
+    embedder::PlatformHandleVector* platform_handles) {
   DCHECK(dispatcher);
   return dispatcher->EndSerializeAndClose(channel, destination, actual_size,
                                           platform_handles);
@@ -66,7 +67,8 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
     Channel* channel,
     int32_t type,
     const void* source,
-    size_t size) {
+    size_t size,
+    embedder::PlatformHandleVector* platform_handles) {
   switch (static_cast<int32_t>(type)) {
     case kTypeUnknown:
       DVLOG(2) << "Deserializing invalid handle";
@@ -76,9 +78,15 @@ scoped_refptr<Dispatcher> Dispatcher::TransportDataAccess::Deserialize(
           MessagePipeDispatcher::Deserialize(channel, source, size));
     case kTypeDataPipeProducer:
     case kTypeDataPipeConsumer:
+    case kTypeSharedBuffer:
+      // TODO(vtl): Implement.
       LOG(WARNING) << "Deserialization of dispatcher type " << type
                    << " not supported";
       return scoped_refptr<Dispatcher>();
+    case kTypePlatformHandle:
+      return scoped_refptr<Dispatcher>(
+          PlatformHandleDispatcher::Deserialize(channel, source, size,
+                                                platform_handles));
   }
   LOG(WARNING) << "Unknown dispatcher type " << type;
   return scoped_refptr<Dispatcher>();
@@ -366,7 +374,7 @@ bool Dispatcher::EndSerializeAndCloseImplNoLock(
     Channel* /*channel*/,
     void* /*destination*/,
     size_t* /*actual_size*/,
-    std::vector<embedder::PlatformHandle>* /*platform_handles*/) {
+    embedder::PlatformHandleVector* /*platform_handles*/) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
   DCHECK(is_closed_);
   // By default, serializing isn't supported, so just close.
@@ -416,7 +424,7 @@ bool Dispatcher::EndSerializeAndClose(
     Channel* channel,
     void* destination,
     size_t* actual_size,
-    std::vector<embedder::PlatformHandle>* platform_handles) {
+    embedder::PlatformHandleVector* platform_handles) {
   DCHECK(channel);
   DCHECK(actual_size);
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.

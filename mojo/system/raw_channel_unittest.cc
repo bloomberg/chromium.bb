@@ -106,8 +106,9 @@ class WriteOnlyRawChannelDelegate : public RawChannel::Delegate {
 
   // |RawChannel::Delegate| implementation:
   virtual void OnReadMessage(
-      const MessageInTransit::View& /*message_view*/) OVERRIDE {
-    NOTREACHED();
+      const MessageInTransit::View& /*message_view*/,
+      embedder::ScopedPlatformHandleVectorPtr /*platform_handles*/) OVERRIDE {
+    CHECK(false);  // Should not get called.
   }
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE {
     // We'll get a read error when the connection is closed.
@@ -225,7 +226,10 @@ class ReadCheckerRawChannelDelegate : public RawChannel::Delegate {
 
   // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(
-      const MessageInTransit::View& message_view) OVERRIDE {
+      const MessageInTransit::View& message_view,
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE {
+    EXPECT_FALSE(platform_handles);
+
     size_t position;
     size_t expected_size;
     bool should_signal = false;
@@ -347,7 +351,10 @@ class ReadCountdownRawChannelDelegate : public RawChannel::Delegate {
 
   // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(
-      const MessageInTransit::View& message_view) OVERRIDE {
+      const MessageInTransit::View& message_view,
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE {
+    EXPECT_FALSE(platform_handles);
+
     EXPECT_LT(count_, expected_count_);
     count_++;
 
@@ -559,7 +566,9 @@ class ShutdownOnReadMessageRawChannelDelegate : public RawChannel::Delegate {
 
   // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(
-      const MessageInTransit::View& message_view) OVERRIDE {
+      const MessageInTransit::View& message_view,
+      embedder::ScopedPlatformHandleVectorPtr platform_handles) OVERRIDE {
+    EXPECT_FALSE(platform_handles);
     EXPECT_FALSE(did_shutdown_);
     EXPECT_TRUE(CheckMessageData(message_view.bytes(),
                 message_view.num_bytes()));
@@ -614,7 +623,8 @@ class ShutdownOnFatalErrorRawChannelDelegate : public RawChannel::Delegate {
 
   // |RawChannel::Delegate| implementation (called on the I/O thread):
   virtual void OnReadMessage(
-      const MessageInTransit::View& /*message_view*/) OVERRIDE {
+      const MessageInTransit::View& /*message_view*/,
+      embedder::ScopedPlatformHandleVectorPtr /*platform_handles*/) OVERRIDE {
     CHECK(false);  // Should not get called.
   }
   virtual void OnFatalError(FatalError fatal_error) OVERRIDE {

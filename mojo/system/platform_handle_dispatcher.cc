@@ -4,6 +4,8 @@
 
 #include "mojo/system/platform_handle_dispatcher.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 
 namespace mojo {
@@ -31,6 +33,41 @@ embedder::ScopedPlatformHandle PlatformHandleDispatcher::PassPlatformHandle() {
 
 Dispatcher::Type PlatformHandleDispatcher::GetType() const {
   return kTypePlatformHandle;
+}
+
+// static
+scoped_refptr<PlatformHandleDispatcher> PlatformHandleDispatcher::Deserialize(
+    Channel* channel,
+    const void* source,
+    size_t size,
+    embedder::PlatformHandleVector* platform_handles) {
+  if (size != sizeof(SerializedPlatformHandleDispatcher)) {
+    LOG(ERROR) << "Invalid serialized platform handle dispatcher (bad size)";
+    return scoped_refptr<PlatformHandleDispatcher>();
+  }
+
+  const SerializedPlatformHandleDispatcher* serialization =
+      static_cast<const SerializedPlatformHandleDispatcher*>(source);
+  size_t platform_handle_index = serialization->platform_handle_index;
+
+  // Starts off invalid, which is what we want.
+  embedder::PlatformHandle platform_handle;
+
+  if (platform_handle_index != kInvalidPlatformHandleIndex) {
+    if (!platform_handles ||
+        platform_handle_index >= platform_handles->size()) {
+      LOG(ERROR)
+          << "Invalid serialized platform handle dispatcher (missing handles)";
+      return scoped_refptr<PlatformHandleDispatcher>();
+    }
+
+    // We take ownership of the handle, so we have to invalidate the one in
+    // |platform_handles|.
+    std::swap(platform_handle, (*platform_handles)[platform_handle_index]);
+  }
+
+  return scoped_refptr<PlatformHandleDispatcher>(new PlatformHandleDispatcher(
+      embedder::ScopedPlatformHandle(platform_handle)));
 }
 
 PlatformHandleDispatcher::~PlatformHandleDispatcher() {
@@ -61,7 +98,7 @@ bool PlatformHandleDispatcher::EndSerializeAndCloseImplNoLock(
     Channel* /*channel*/,
     void* destination,
     size_t* actual_size,
-    std::vector<embedder::PlatformHandle>* platform_handles) {
+    embedder::PlatformHandleVector* platform_handles) {
   DCHECK(HasOneRef());  // Only one ref => no need to take the lock.
 
   SerializedPlatformHandleDispatcher* serialization =

@@ -56,7 +56,9 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 
     // Called when a message is read. This may call |Shutdown()| (on the
     // |RawChannel|), but must not destroy it.
-    virtual void OnReadMessage(const MessageInTransit::View& message_view) = 0;
+    virtual void OnReadMessage(
+        const MessageInTransit::View& message_view,
+        embedder::ScopedPlatformHandleVectorPtr platform_handles) = 0;
 
     // Called when there's a fatal error, which leads to the channel no longer
     // being viable. This may call |Shutdown()| (on the |RawChannel()|), but

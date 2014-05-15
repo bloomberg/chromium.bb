@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "mojo/embedder/platform_handle_vector.h"
 #include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/transport_data.h"
 
@@ -272,14 +273,16 @@ Channel::~Channel() {
   DCHECK(!is_running_no_lock());
 }
 
-void Channel::OnReadMessage(const MessageInTransit::View& message_view) {
+void Channel::OnReadMessage(
+    const MessageInTransit::View& message_view,
+    embedder::ScopedPlatformHandleVectorPtr platform_handles) {
   switch (message_view.type()) {
     case MessageInTransit::kTypeMessagePipeEndpoint:
     case MessageInTransit::kTypeMessagePipe:
-      OnReadMessageForDownstream(message_view);
+      OnReadMessageForDownstream(message_view, platform_handles.Pass());
       break;
     case MessageInTransit::kTypeChannel:
-      OnReadMessageForChannel(message_view);
+      OnReadMessageForChannel(message_view, platform_handles.Pass());
       break;
     default:
       HandleRemoteError(base::StringPrintf(
@@ -295,7 +298,8 @@ void Channel::OnFatalError(FatalError fatal_error) {
 }
 
 void Channel::OnReadMessageForDownstream(
-    const MessageInTransit::View& message_view) {
+    const MessageInTransit::View& message_view,
+    embedder::ScopedPlatformHandleVectorPtr platform_handles) {
   DCHECK(message_view.type() == MessageInTransit::kTypeMessagePipeEndpoint ||
          message_view.type() == MessageInTransit::kTypeMessagePipe);
 
@@ -343,9 +347,10 @@ void Channel::OnReadMessageForDownstream(
   if (message_view.transport_data_buffer_size() > 0) {
     DCHECK(message_view.transport_data_buffer());
     message->SetDispatchers(
-        TransportData::DeserializeDispatchersFromBuffer(
+        TransportData::DeserializeDispatchers(
             message_view.transport_data_buffer(),
             message_view.transport_data_buffer_size(),
+            platform_handles.Pass(),
             this));
   }
   MojoResult result = endpoint_info.message_pipe->EnqueueMessage(
@@ -363,8 +368,17 @@ void Channel::OnReadMessageForDownstream(
 }
 
 void Channel::OnReadMessageForChannel(
-    const MessageInTransit::View& message_view) {
+    const MessageInTransit::View& message_view,
+    embedder::ScopedPlatformHandleVectorPtr platform_handles) {
   DCHECK_EQ(message_view.type(), MessageInTransit::kTypeChannel);
+
+  // Currently, no channel messages take platform handles.
+  if (platform_handles) {
+    HandleRemoteError(
+        "Received invalid channel message (has platform handles)");
+    NOTREACHED();
+    return;
+  }
 
   switch (message_view.subtype()) {
     case MessageInTransit::kSubtypeChannelRunMessagePipeEndpoint:

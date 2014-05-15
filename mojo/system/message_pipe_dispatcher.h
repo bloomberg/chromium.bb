@@ -82,7 +82,7 @@ class MOJO_SYSTEM_IMPL_EXPORT MessagePipeDispatcher : public Dispatcher {
       Channel* channel,
       void* destination,
       size_t* actual_size,
-      std::vector<embedder::PlatformHandle>* platform_handles) OVERRIDE;
+      embedder::PlatformHandleVector* platform_handles) OVERRIDE;
 
   // Protected by |lock()|:
   scoped_refptr<MessagePipe> message_pipe_;  // This will be null if closed.

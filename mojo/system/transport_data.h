@@ -99,10 +99,10 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
 
   // Gets attached platform-specific handles; this may return null if there are
   // none. Note that the caller may mutate the set of platform-specific handles.
-  const std::vector<embedder::PlatformHandle>* platform_handles() const {
+  const embedder::PlatformHandleVector* platform_handles() const {
     return platform_handles_.get();
   }
-  std::vector<embedder::PlatformHandle>* platform_handles() {
+  embedder::PlatformHandleVector* platform_handles() {
     return platform_handles_.get();
   }
 
@@ -126,11 +126,12 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
                                      const void** platform_handle_table);
 
   // Deserializes dispatchers from the given (serialized) transport data buffer
-  // (typically from a |MessageInTransit::View|). |buffer| should be non-null
-  // and |buffer_size| should be nonzero.
-  static scoped_ptr<DispatcherVector> DeserializeDispatchersFromBuffer(
+  // (typically from a |MessageInTransit::View|) and vector of platform handles.
+  // |buffer| should be non-null and |buffer_size| should be nonzero.
+  static scoped_ptr<DispatcherVector> DeserializeDispatchers(
       const void* buffer,
       size_t buffer_size,
+      embedder::ScopedPlatformHandleVectorPtr platform_handles,
       Channel* channel);
 
  private:

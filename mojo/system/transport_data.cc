@@ -292,9 +292,10 @@ void TransportData::GetPlatformHandleTable(const void* transport_data_buffer,
 }
 
 // static
-scoped_ptr<DispatcherVector> TransportData::DeserializeDispatchersFromBuffer(
+scoped_ptr<DispatcherVector> TransportData::DeserializeDispatchers(
     const void* buffer,
     size_t buffer_size,
+    embedder::ScopedPlatformHandleVectorPtr platform_handles,
     Channel* channel) {
   DCHECK(buffer);
   DCHECK_GT(buffer_size, 0u);
@@ -317,7 +318,7 @@ scoped_ptr<DispatcherVector> TransportData::DeserializeDispatchersFromBuffer(
 
     const void* source = static_cast<const char*>(buffer) + offset;
     (*dispatchers)[i] = Dispatcher::TransportDataAccess::Deserialize(
-        channel, handle_table[i].type, source, size);
+        channel, handle_table[i].type, source, size, platform_handles.get());
   }
 
   return dispatchers.Pass();
