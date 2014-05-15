@@ -147,31 +147,35 @@ void NaClForkDelegate::Init(const int sandboxdesc,
   fds_to_map.push_back(std::make_pair(fds[1], kNaClZygoteDescriptor));
   fds_to_map.push_back(std::make_pair(sandboxdesc, nacl_sandbox_descriptor));
 
-  // Using nacl_helper_bootstrap is not necessary on x86-64 because
-  // NaCl's x86-64 sandbox is not zero-address-based.  Starting
-  // nacl_helper through nacl_helper_bootstrap works on x86-64, but it
-  // leaves nacl_helper_bootstrap mapped at a fixed address at the
-  // bottom of the address space, which is undesirable because it
-  // effectively defeats ASLR.
+  bool use_nacl_bootstrap = false;
+  // For non-SFI mode, we do not use fixed address space.
+  if (!nonsfi_mode_) {
+    // Using nacl_helper_bootstrap is not necessary on x86-64 because
+    // NaCl's x86-64 sandbox is not zero-address-based.  Starting
+    // nacl_helper through nacl_helper_bootstrap works on x86-64, but it
+    // leaves nacl_helper_bootstrap mapped at a fixed address at the
+    // bottom of the address space, which is undesirable because it
+    // effectively defeats ASLR.
 #if defined(ARCH_CPU_X86_64)
-  bool kUseNaClBootstrap = false;
+    use_nacl_bootstrap = false;
 #elif defined(ARCH_CPU_X86)
-  // Performance vs. security trade-off: We prefer using a
-  // non-zero-address-based sandbox on x86-32 because it provides some
-  // ASLR and so is more secure.  However, on Atom CPUs, using a
-  // non-zero segment base is very slow, so we use a zero-based
-  // sandbox on those.
-  bool kUseNaClBootstrap = NonZeroSegmentBaseIsSlow();
+    // Performance vs. security trade-off: We prefer using a
+    // non-zero-address-based sandbox on x86-32 because it provides some
+    // ASLR and so is more secure.  However, on Atom CPUs, using a
+    // non-zero segment base is very slow, so we use a zero-based
+    // sandbox on those.
+    use_nacl_bootstrap = NonZeroSegmentBaseIsSlow();
 #else
-  bool kUseNaClBootstrap = true;
+    use_nacl_bootstrap = true;
 #endif
+  }
 
   status_ = kNaClHelperUnused;
   base::FilePath helper_exe;
   base::FilePath helper_bootstrap_exe;
   if (!PathService::Get(nacl::FILE_NACL_HELPER, &helper_exe)) {
     status_ = kNaClHelperMissing;
-  } else if (kUseNaClBootstrap &&
+  } else if (use_nacl_bootstrap &&
              !PathService::Get(nacl::FILE_NACL_HELPER_BOOTSTRAP,
                                &helper_bootstrap_exe)) {
     status_ = kNaClHelperBootstrapMissing;
@@ -181,7 +185,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
     CommandLine::StringVector argv_to_launch;
     {
       CommandLine cmd_line(CommandLine::NO_PROGRAM);
-      if (kUseNaClBootstrap)
+      if (use_nacl_bootstrap)
         cmd_line.SetProgram(helper_bootstrap_exe);
       else
         cmd_line.SetProgram(helper_exe);
@@ -201,7 +205,7 @@ void NaClForkDelegate::Init(const int sandboxdesc,
       // modified directly.
       argv_to_launch = cmd_line.argv();
     }
-    if (kUseNaClBootstrap) {
+    if (use_nacl_bootstrap) {
       // Arguments to the bootstrap helper which need to be at the start
       // of the command line, right after the helper's path.
       CommandLine::StringVector bootstrap_prepend;

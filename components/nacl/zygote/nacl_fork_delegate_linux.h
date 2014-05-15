@@ -28,7 +28,7 @@ void AddNaClZygoteForkDelegates(
 // A new delegate is passed in as an argument to ZygoteMain().
 class NaClForkDelegate : public content::ZygoteForkDelegate {
  public:
-  NaClForkDelegate(bool nonsfi_mode);
+  explicit NaClForkDelegate(bool nonsfi_mode);
   virtual ~NaClForkDelegate();
 
   virtual void Init(int sandboxdesc, bool enable_layer1_sandbox) OVERRIDE;
@@ -61,6 +61,8 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
   const bool nonsfi_mode_;
   NaClHelperStatus status_;
   int fd_;
+
+  DISALLOW_COPY_AND_ASSIGN(NaClForkDelegate);
 };
 
 }  // namespace nacl
