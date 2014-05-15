@@ -84,7 +84,6 @@
         'rtcp/rtcp_sender_unittest.cc',
         'rtcp/rtcp_unittest.cc',
         'rtcp/receiver_rtcp_event_subscriber_unittest.cc',
-        'rtcp/sender_rtcp_event_subscriber_unittest.cc',
 # TODO(miu): The following two are test utility modules.  Rename/move the files.
         'rtcp/test_rtcp_packet_builder.cc',
         'rtcp/test_rtcp_packet_builder.h',

@@ -147,8 +147,6 @@
         'rtcp/rtcp_sender.h',
         'rtcp/rtcp_utility.cc',
         'rtcp/rtcp_utility.h',
-        'rtcp/sender_rtcp_event_subscriber.cc',
-        'rtcp/sender_rtcp_event_subscriber.h',
         'rtcp/receiver_rtcp_event_subscriber.cc',
         'rtcp/receiver_rtcp_event_subscriber.cc',
       ], # source

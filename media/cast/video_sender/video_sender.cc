@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/rtcp/rtcp_defines.h"
-#include "media/cast/rtcp/sender_rtcp_event_subscriber.h"
 #include "media/cast/transport/cast_transport_config.h"
 #include "media/cast/video_sender/external_video_encoder.h"
 #include "media/cast/video_sender/video_encoder_impl.h"

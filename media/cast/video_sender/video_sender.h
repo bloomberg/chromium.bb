@@ -17,7 +17,6 @@
 #include "media/cast/congestion_control/congestion_control.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/rtcp/rtcp.h"
-#include "media/cast/rtcp/sender_rtcp_event_subscriber.h"
 
 namespace media {
 class VideoFrame;
