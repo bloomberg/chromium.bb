@@ -1,0 +1,42 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package metrics;
+
+import "perf_data.proto";
+
+// Protocol buffer for collected sample-based profiling data.
+// Contains the parameters and data from a single profile collection event.
+
+// Next tag: 5
+message SampledProfile {
+  // Indicates the event that triggered this collection.
+  enum TriggerEvent {
+    UNKNOWN_TRIGGER_EVENT = 0;
+
+    // The profile was triggered by periodic sampling.  Periodically sampled
+    // profiles are collected once per uniformly sized period interval.  Within
+    // each interval, the sampled data is collected at a random time.  For
+    // example, if the interval is 60 s, then data would be collected at a
+    // random point in each of the intervals [0, 60 s), [60 s, 120 s), etc.
+    PERIODIC_COLLECTION = 1;
+  }
+  optional TriggerEvent trigger_event = 1;
+
+  // Fields 2-3: Time durations are given in ticks, and represent system uptime
+  // rather than wall time.
+
+  // Time after system boot when the collection took place, in milliseconds.
+  optional int64 ms_after_boot = 2;
+
+  // Time after last login when the collection took place, in milliseconds.
+  optional int64 ms_after_login = 3;
+
+  // The actual perf data that was collected.
+  optional PerfDataProto perf_data = 4;
+}

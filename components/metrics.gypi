@@ -37,6 +37,7 @@
         'metrics/proto/omnibox_event.proto',
         'metrics/proto/perf_data.proto',
         'metrics/proto/profiler_event.proto',
+        'metrics/proto/sampled_profile.proto',
         'metrics/proto/system_profile.proto',
         'metrics/proto/user_action_event.proto',
       ],
