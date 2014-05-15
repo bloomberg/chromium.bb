@@ -6642,14 +6642,19 @@ static void overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    impl->overloadedMethodG();
+    if (UNLIKELY(info.Length() <= 0)) {
+        impl->overloadedMethodG();
+        return;
+    }
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
+    impl->overloadedMethodG(stringArg);
 }
 
 static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, legacyOverloadStringStringArg, info[0]);
-    impl->overloadedMethodG(legacyOverloadStringStringArg);
+    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
+    impl->overloadedMethodG(doubleArg);
 }
 
 static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6662,8 +6667,16 @@ static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     case 1:
-        if (true) {
+        if (info[0]->IsUndefined()) {
+            overloadedMethodG1Method(info);
+            return;
+        }
+        if (info[0]->IsNumber()) {
             overloadedMethodG2Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodG1Method(info);
             return;
         }
         break;

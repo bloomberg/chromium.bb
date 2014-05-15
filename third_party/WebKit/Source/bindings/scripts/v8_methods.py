@@ -151,8 +151,6 @@ def generate_argument(interface, method, argument, index):
         'has_event_listener_argument': any(
             argument_so_far for argument_so_far in method.arguments[:index]
             if argument_so_far.idl_type.name == 'EventListener'),
-        'has_legacy_overload_string':  # [LegacyOverloadString]
-            'LegacyOverloadString' in extended_attributes,
         'has_type_checking_interface':
             (has_extended_attribute_value(interface, 'TypeChecking', 'Interface') or
              has_extended_attribute_value(method, 'TypeChecking', 'Interface')) and

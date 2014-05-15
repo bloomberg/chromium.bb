@@ -184,7 +184,7 @@ enum CanvasFillRule { "nonzero", "evenodd" };
     [MeasureAs=CanvasRenderingContext2DDrawImageFromRect] void drawImageFromRect(
         HTMLImageElement? image, optional unrestricted float sx, optional unrestricted float sy, optional unrestricted float sw, optional unrestricted float sh,
         optional unrestricted float dx, optional unrestricted float dy, optional unrestricted float dw, optional unrestricted float dh, optional DOMString compositeOperation);
-    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, [LegacyOverloadString] optional DOMString color, optional unrestricted float alpha);
+    [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, optional DOMString color, optional unrestricted float alpha);
     [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float grayLevel, optional unrestricted float alpha);
     [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float r, unrestricted float g, unrestricted float b, unrestricted float a);
     [MeasureAs=CanvasRenderingContext2DSetShadow] void setShadow(unrestricted float width, unrestricted float height, unrestricted float blur, unrestricted float c, unrestricted float m, unrestricted float y, unrestricted float k, unrestricted float a);

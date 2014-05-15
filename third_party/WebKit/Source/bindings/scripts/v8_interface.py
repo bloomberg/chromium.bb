@@ -381,8 +381,7 @@ def is_use_spec_algorithm(effective_overloads_by_length):
     # * method is not variadic,
     # * no distinguishing type is unsupported:
     #   non-wrapper, callback interface, boolean, nullable,
-    # * all distinguishing types are distinct, and
-    # * all distinguishing arguments are required (not optional).
+    # * all distinguishing types are distinct.
     def is_unsupported_type(idl_type):
         return ((idl_type.is_interface_type and not idl_type.is_wrapper_type) or
                 idl_type.is_callback_interface or
@@ -412,9 +411,7 @@ def is_use_spec_algorithm(effective_overloads_by_length):
 
         if (any(is_unsupported_type(distinguishing_argument_type)
                 for distinguishing_argument_type in distinguishing_argument_types) or
-                len(set(distinguishing_argument_type_names)) != len(distinguishing_argument_type_names) or
-            any(argument['is_optional']
-                for argument in distinguishing_arguments)):
+            len(set(distinguishing_argument_type_names)) != len(distinguishing_argument_type_names)):
             return False
     return True
 
@@ -629,8 +626,8 @@ def resolution_tests_methods(effective_overloads):
     cpp_value = 'info[%s]' % index
 
     # Extract argument and IDL type to simplify accessing these in each loop.
-    # FIXME: mostly just need type, but need argument itself for optionality
     arguments = [method['arguments'][index] for method in methods]
+    arguments_methods = zip(arguments, methods)
     idl_types = [argument['idl_type_object'] for argument in arguments]
     idl_types_methods = zip(idl_types, methods)
 
@@ -641,6 +638,17 @@ def resolution_tests_methods(effective_overloads):
     # Instead, we need to go through all methods at each step, either finding
     # first match (if only one test is allowed) or filtering to matches (if
     # multiple tests are allowed), and generating an appropriate tests.
+
+    # 2. If V is undefined, and there is an entry in S whose list of
+    # optionality values has “optional” at index i, then remove from S all
+    # other entries.
+    try:
+        method = next(method for argument, method in arguments_methods
+                      if argument['is_optional'])
+        test = '%s->IsUndefined()' % cpp_value
+        yield test, method
+    except StopIteration:
+        pass
 
     # 4. Otherwise: if V is a platform object – but not a platform array
     # object – and there is an entry in S that has one of the following
@@ -772,11 +780,6 @@ def overload_check_argument(index, argument):
 
     cpp_value = 'info[%s]' % index
     idl_type = argument['idl_type_object']
-    # FIXME: proper type checking, sharing code with attributes and methods
-    if idl_type.name == 'String' and argument['has_legacy_overload_string']:
-        return ' || '.join(['isUndefinedOrNull(%s)' % cpp_value,
-                            '%s->IsString()' % cpp_value,
-                            '%s->IsObject()' % cpp_value])
     if idl_type.array_or_sequence_type:
         return '%s->IsArray()' % cpp_value
     if idl_type.is_callback_interface:

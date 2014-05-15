@@ -396,8 +396,8 @@ interface TestObject {
     void overloadedMethodE(long[] longArrayArg);
     void overloadedMethodF(long longArg);
     void overloadedMethodF(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
-    void overloadedMethodG();
-    void overloadedMethodG([LegacyOverloadString] DOMString legacyOverloadStringStringArg);
+    void overloadedMethodG(optional DOMString stringArg);
+    void overloadedMethodG(double doubleArg);
     void overloadedMethodH();
     void overloadedMethodH(TestCallbackInterface testCallbackInterfaceArg);
     // FIXME: Should be in order double, Dictionary, but Blink implementation of

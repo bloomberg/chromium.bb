@@ -62,7 +62,6 @@ Immutable
 ImplementedAs=*
 InitializedByEventConstructor
 LegacyTreatAsPartialInterface
-LegacyOverloadString
 LogActivity=|GetterOnly|SetterOnly
 LogAllWorlds
 LogPreviousValue
