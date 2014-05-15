@@ -36,30 +36,71 @@ namespace addressinput {
 namespace {
 
 int GetMessageIdForField(AddressField field,
-                         int admin_area_name_message_id,
-                         int postal_code_name_message_id) {
+                         const std::string& admin_area_name_type,
+                         const std::string& postal_code_name_type) {
   switch (field) {
     case COUNTRY:
       return IDS_LIBADDRESSINPUT_I18N_COUNTRY_LABEL;
-    case ADMIN_AREA:
-      return admin_area_name_message_id;
     case LOCALITY:
       return IDS_LIBADDRESSINPUT_I18N_LOCALITY_LABEL;
     case DEPENDENT_LOCALITY:
       return IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL;
     case SORTING_CODE:
       return IDS_LIBADDRESSINPUT_I18N_CEDEX_LABEL;
-    case POSTAL_CODE:
-      return postal_code_name_message_id;
     case STREET_ADDRESS:
       return IDS_LIBADDRESSINPUT_I18N_ADDRESS_LINE1_LABEL;
     case ORGANIZATION:
       return IDS_LIBADDRESSINPUT_I18N_ORGANIZATION_LABEL;
     case RECIPIENT:
       return IDS_LIBADDRESSINPUT_I18N_RECIPIENT_LABEL;
-    default:
-      return INVALID_MESSAGE_ID;
+
+    case ADMIN_AREA:
+      if (admin_area_name_type == "area") {
+        return IDS_LIBADDRESSINPUT_I18N_AREA;
+      }
+      if (admin_area_name_type == "county") {
+        return IDS_LIBADDRESSINPUT_I18N_COUNTY_LABEL;
+      }
+      if (admin_area_name_type == "department") {
+        return IDS_LIBADDRESSINPUT_I18N_DEPARTMENT;
+      }
+      if (admin_area_name_type == "district") {
+        return IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL;
+      }
+      if (admin_area_name_type == "do_si") {
+        return IDS_LIBADDRESSINPUT_I18N_DO_SI;
+      }
+      if (admin_area_name_type == "emirate") {
+        return IDS_LIBADDRESSINPUT_I18N_EMIRATE;
+      }
+      if (admin_area_name_type == "island") {
+        return IDS_LIBADDRESSINPUT_I18N_ISLAND;
+      }
+      if (admin_area_name_type == "parish") {
+        return IDS_LIBADDRESSINPUT_I18N_PARISH;
+      }
+      if (admin_area_name_type == "prefecture") {
+        return IDS_LIBADDRESSINPUT_I18N_PREFECTURE;
+      }
+      if (admin_area_name_type == "province") {
+        return IDS_LIBADDRESSINPUT_I18N_PROVINCE;
+      }
+      if (admin_area_name_type == "state") {
+        return IDS_LIBADDRESSINPUT_I18N_STATE_LABEL;
+      }
+      break;
+
+    case POSTAL_CODE:
+      if (postal_code_name_type == "postal") {
+        return IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL;
+      }
+      if (postal_code_name_type == "zip") {
+        return IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL;
+      }
+      break;
   }
+
+  return INVALID_MESSAGE_ID;
 }
 
 // Returns the BCP 47 language code that should be used to format the address
@@ -199,24 +240,13 @@ std::vector<AddressUiComponent> BuildComponents(
       component.field = field;
       component.name_id =
           GetMessageIdForField(field,
-                               rule.GetAdminAreaNameMessageId(),
-                               rule.GetPostalCodeNameMessageId());
+                               rule.GetAdminAreaNameType(),
+                               rule.GetPostalCodeNameType());
       result.push_back(component);
     }
   }
 
   return result;
-}
-
-std::vector<AddressField> GetRequiredFields(const std::string& region_code) {
-  Rule rule;
-  rule.CopyFrom(Rule::GetDefault());
-  if (!rule.ParseSerializedRule(
-           RegionDataConstants::GetRegionData(region_code))) {
-    return std::vector<AddressField>();
-  }
-
-  return rule.GetRequired();
 }
 
 const std::string& GetCompactAddressLinesSeparator(

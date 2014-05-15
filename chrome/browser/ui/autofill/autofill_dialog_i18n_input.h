@@ -48,7 +48,8 @@ bool CardHasCompleteAndVerifiedData(const CreditCard& card);
 
 // As above, but for the address in |profile|. Region-aware, meaning that the
 // exact set of required fields depends on the region.
-bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile);
+bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile,
+                                       const std::string& app_locale);
 
 // Returns the corresponding Autofill server type for |field|.
 ServerFieldType TypeForField(::i18n::addressinput::AddressField field,
@@ -59,12 +60,6 @@ ServerFieldType TypeForField(::i18n::addressinput::AddressField field,
 // address field. The |field| parameter can be NULL.
 bool FieldForType(ServerFieldType server_type,
                   ::i18n::addressinput::AddressField* field);
-
-// Creates an AddressData object for internationalized address display or
-// validation using |get_info| for field values.
-void CreateAddressData(
-    const base::Callback<base::string16(const AutofillType&)>& get_info,
-    ::i18n::addressinput::AddressData* address_data);
 
 // Whether or not |country_code| has a fully supported address format.
 // TODO(dbeam): remove this when filling dependent locality is supported.

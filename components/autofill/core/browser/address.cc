@@ -151,6 +151,9 @@ bool Address::SetInfo(const AutofillType& type,
 
     country_code_ = StringToUpperASCII(base::UTF16ToASCII(value));
     return true;
+  } else if (type.html_type() == HTML_TYPE_FULL_ADDRESS) {
+    // Parsing a full address is too hard.
+    return false;
   }
 
   ServerFieldType storable_type = type.GetStorableType();

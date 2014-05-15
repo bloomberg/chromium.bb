@@ -157,6 +157,7 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_COUNTRY_CODE:
     case HTML_TYPE_COUNTRY_NAME:
     case HTML_TYPE_POSTAL_CODE:
+    case HTML_TYPE_FULL_ADDRESS:
       return html_mode_ == HTML_MODE_BILLING ? ADDRESS_BILLING : ADDRESS_HOME;
 
     case HTML_TYPE_CREDIT_CARD_NAME:
@@ -308,6 +309,10 @@ ServerFieldType AutofillType::GetStorableType() const {
 
     case HTML_TYPE_POSTAL_CODE:
       return ADDRESS_HOME_ZIP;
+
+    // Full address is composed of other types; it can't be stored.
+    case HTML_TYPE_FULL_ADDRESS:
+      return UNKNOWN_TYPE;
 
     case HTML_TYPE_CREDIT_CARD_NAME:
       return CREDIT_CARD_NAME;
@@ -614,6 +619,8 @@ std::string AutofillType::ToString() const {
       return "HTML_TYPE_COUNTRY_NAME";
     case HTML_TYPE_POSTAL_CODE:
       return "HTML_TYPE_POSTAL_CODE";
+    case HTML_TYPE_FULL_ADDRESS:
+      return "HTML_TYPE_FULL_ADDRESS";
     case HTML_TYPE_CREDIT_CARD_NAME:
       return "HTML_TYPE_CREDIT_CARD_NAME";
     case HTML_TYPE_CREDIT_CARD_NUMBER:

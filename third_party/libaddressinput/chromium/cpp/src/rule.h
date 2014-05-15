@@ -139,30 +139,17 @@ class Rule {
   // Returns the postal code format, for example "\\d{5}([ \\-]\\d{4})?".
   const std::string& GetPostalCodeFormat() const { return postal_code_format_; }
 
-  // The message string identifier for admin area name. If not set, then
-  // INVALID_MESSAGE_ID.
-  int GetAdminAreaNameMessageId() const { return admin_area_name_message_id_; }
-
-  // The error message string identifier for an invalid admin area. If not set,
-  // then INVALID_MESSAGE_ID.
-  int GetInvalidAdminAreaMessageId() const {
-    return invalid_admin_area_message_id_;
+  // A string identifying the type of admin area name for this country, e.g.
+  // "state", "province", or "district".
+  const std::string& GetAdminAreaNameType() const {
+    return admin_area_name_type_;
   }
 
-  // The message string identifier for postal code name. If not set, then
-  // INVALID_MESSAGE_ID.
-  int GetPostalCodeNameMessageId() const {
-    return postal_code_name_message_id_;
+  // A string identifying the type of postal code name for this country, either
+  // "postal" or "zip".
+  const std::string& GetPostalCodeNameType() const {
+    return postal_code_name_type_;
   }
-
-  // The error message string identifier for an invalid postal code. If not set,
-  // then INVALID_MESSAGE_ID.
-  int GetInvalidPostalCodeMessageId() const {
-    return invalid_postal_code_message_id_;
-  }
-
-  // Returns the error message string identifier for an invalid |field|.
-  int GetInvalidFieldMessageId(AddressField field) const;
 
   // Outputs the sub key for a given user input. For example, Texas will map to
   // TX.
@@ -192,10 +179,8 @@ class Rule {
   std::vector<std::string> input_languages_;
   std::string language_;
   std::string postal_code_format_;
-  int admin_area_name_message_id_;
-  int invalid_admin_area_message_id_;
-  int postal_code_name_message_id_;
-  int invalid_postal_code_message_id_;
+  std::string admin_area_name_type_;
+  std::string postal_code_name_type_;
 
   DISALLOW_COPY_AND_ASSIGN(Rule);
 };

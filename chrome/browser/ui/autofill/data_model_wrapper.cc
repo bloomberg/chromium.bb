@@ -14,6 +14,7 @@
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 #include "components/autofill/content/browser/wallet/wallet_items.h"
+#include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -55,13 +56,12 @@ bool DataModelWrapper::GetDisplayText(
     return false;
 
   // Format the address.
-  ::i18n::addressinput::AddressData address_data;
-  i18ninput::CreateAddressData(
-      base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)),
-      &address_data);
-  address_data.language_code = GetLanguageCode();
+  scoped_ptr< ::i18n::addressinput::AddressData> address_data =
+      i18n::CreateAddressData(
+          base::Bind(&DataModelWrapper::GetInfo, base::Unretained(this)));
+  address_data->language_code = GetLanguageCode();
   std::vector<std::string> lines;
-  address_data.FormatForDisplay(&lines);
+  address_data->FormatForDisplay(&lines);
 
   // Email and phone number aren't part of address formatting.
   base::string16 non_address_info;

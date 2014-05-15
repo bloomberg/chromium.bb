@@ -34,6 +34,7 @@
 #include <re2/re2.h>
 
 #include "country_rules_aggregator.h"
+#include "grit.h"
 #include "grit/libaddressinput_strings.h"
 #include "region_data_constants.h"
 #include "retriever.h"
@@ -95,6 +96,71 @@ bool IsEmptyStreetAddress(const std::vector<std::string>& street_address) {
     }
   }
   return true;
+}
+
+// Returns the ID of the string that should be displayed when the given field
+// is invalid in the context of |country_rule|.
+int GetInvalidFieldMessageId(const Rule& country_rule, AddressField field) {
+  switch (field) {
+    case LOCALITY:
+      return IDS_LIBADDRESSINPUT_I18N_INVALID_LOCALITY_LABEL;
+    case DEPENDENT_LOCALITY:
+      return IDS_LIBADDRESSINPUT_I18N_INVALID_DEPENDENT_LOCALITY_LABEL;
+
+    case ADMIN_AREA: {
+      const std::string& admin_area_name_type =
+          country_rule.GetAdminAreaNameType();
+      if (admin_area_name_type == "area") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_AREA;
+      }
+      if (admin_area_name_type == "county") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_COUNTY_LABEL;
+      }
+      if (admin_area_name_type == "department") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_DEPARTMENT;
+      }
+      if (admin_area_name_type == "district") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_DEPENDENT_LOCALITY_LABEL;
+      }
+      if (admin_area_name_type == "do_si") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_DO_SI;
+      }
+      if (admin_area_name_type == "emirate") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_EMIRATE;
+      }
+      if (admin_area_name_type == "island") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_ISLAND;
+      }
+      if (admin_area_name_type == "parish") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_PARISH;
+      }
+      if (admin_area_name_type == "prefecture") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_PREFECTURE;
+      }
+      if (admin_area_name_type == "province") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_PROVINCE;
+      }
+      if (admin_area_name_type == "state") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_STATE_LABEL;
+      }
+      return INVALID_MESSAGE_ID;
+    }
+
+    case POSTAL_CODE: {
+      const std::string& postal_code_name_type =
+          country_rule.GetPostalCodeNameType();
+      if (postal_code_name_type == "postal") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_POSTAL_CODE_LABEL;
+      }
+      if (postal_code_name_type == "zip") {
+        return IDS_LIBADDRESSINPUT_I18N_INVALID_ZIP_CODE_LABEL;
+      }
+      return INVALID_MESSAGE_ID;
+    }
+
+    default:
+      return IDS_LIBADDRESSINPUT_I18N_INVALID_ENTRY;
+  }
 }
 
 // Collects rulesets based on whether they have a parent in the given list.
@@ -207,7 +273,7 @@ class AddressValidatorImpl : public AddressValidator {
       problems->push_back(AddressProblem(
           POSTAL_CODE,
           AddressProblem::UNRECOGNIZED_FORMAT,
-          country_rule.GetInvalidPostalCodeMessageId()));
+          GetInvalidFieldMessageId(country_rule, POSTAL_CODE)));
     }
 
     while (ruleset != NULL) {
@@ -224,7 +290,7 @@ class AddressValidatorImpl : public AddressValidator {
         problems->push_back(AddressProblem(
             sub_field_type,
             AddressProblem::UNKNOWN_VALUE,
-            country_rule.GetInvalidFieldMessageId(sub_field_type)));
+            GetInvalidFieldMessageId(country_rule, sub_field_type)));
       }
 
       // Validate sub-region specific postal code format. A sub-region specifies
@@ -240,7 +306,7 @@ class AddressValidatorImpl : public AddressValidator {
         problems->push_back(AddressProblem(
             POSTAL_CODE,
             AddressProblem::MISMATCHING_VALUE,
-            country_rule.GetInvalidPostalCodeMessageId()));
+            GetInvalidFieldMessageId(country_rule, POSTAL_CODE)));
       }
 
       ruleset = ruleset->GetSubRegionRuleset(sub_key);

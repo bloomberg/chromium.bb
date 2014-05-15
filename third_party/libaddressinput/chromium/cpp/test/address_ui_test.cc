@@ -77,16 +77,14 @@ TEST(AddressUiTest, RegionsAndComponentsAreValid) {
     EXPECT_EQ(2U, region_codes[i].size());
     EXPECT_TRUE(ComponentsAreValid(
         BuildComponents(region_codes[i], std::string(), NULL)));
-    EXPECT_FALSE(GetRequiredFields(region_codes[i]).empty());
   }
 }
 
-// Verifies that BuildComponents() and GetRequiredFields() return an empty
+// Verifies that BuildComponents() returns an empty
 // vector for an invalid region code.
 TEST(AddressUiTest, InvalidRegionCodeReturnsEmptyVector) {
   EXPECT_TRUE(
       BuildComponents("INVALID-REGION-CODE", std::string(), NULL).empty());
-  EXPECT_TRUE(GetRequiredFields("INVALID-REGION-CODE").empty());
 }
 
 struct SeparatorData {

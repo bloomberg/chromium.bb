@@ -54,6 +54,7 @@
 #include "components/autofill/content/browser/wallet/wallet_items.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper.h"
+#include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -511,23 +512,17 @@ ServerFieldType CountryTypeForSection(DialogSection section) {
                                        ADDRESS_BILLING_COUNTRY;
 }
 
-// profile.GetInfo() thunk.
-base::string16 GetInfoFromProfile(const AutofillProfile& profile,
-                                  const AutofillType& type) {
-  return profile.GetInfo(type, g_browser_process->GetApplicationLocale());
-}
-
 // Attempts to canonicalize the administrative area name in |profile| using the
 // rules in |validator|.
 void CanonicalizeState(const AddressValidator* validator,
                        AutofillProfile* profile) {
   base::string16 administrative_area;
-  AddressData address_data;
-  i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, *profile),
-                               &address_data);
+  scoped_ptr<AddressData> address_data =
+      i18n::CreateAddressDataFromAutofillProfile(
+          *profile, g_browser_process->GetApplicationLocale());
 
-  validator->CanonicalizeAdministrativeArea(&address_data);
-  administrative_area = base::UTF8ToUTF16(address_data.administrative_area);
+  validator->CanonicalizeAdministrativeArea(address_data.get());
+  administrative_area = base::UTF8ToUTF16(address_data->administrative_area);
 
   profile->SetInfo(AutofillType(ADDRESS_HOME_STATE),
                    administrative_area,
@@ -1961,13 +1956,13 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
   if (section != SECTION_CC) {
     AutofillProfile profile;
     FillFormGroupFromOutputs(inputs, &profile);
-    AddressData address_data;
-    i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, profile),
-                                 &address_data);
-    address_data.language_code = AddressLanguageCodeForSection(section);
+    scoped_ptr<AddressData> address_data =
+        i18n::CreateAddressDataFromAutofillProfile(
+            profile, g_browser_process->GetApplicationLocale());
+    address_data->language_code = AddressLanguageCodeForSection(section);
 
     AddressProblems problems;
-    status = GetValidator()->ValidateAddress(address_data,
+    status = GetValidator()->ValidateAddress(*address_data,
                                              AddressProblemFilter(),
                                              &problems);
     common::AddressType address_type = section == SECTION_SHIPPING ?
@@ -3036,7 +3031,8 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
       DCHECK_EQ(labels.size(), profiles.size());
       for (size_t i = 0; i < profiles.size(); ++i) {
         const AutofillProfile& profile = *profiles[i];
-        if (!i18ninput::AddressHasCompleteAndVerifiedData(profile) ||
+        if (!i18ninput::AddressHasCompleteAndVerifiedData(
+                profile, g_browser_process->GetApplicationLocale()) ||
             !i18ninput::CountryIsFullySupported(
                 base::UTF16ToASCII(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)))) {
           continue;
@@ -3357,14 +3353,14 @@ void AutofillDialogControllerImpl::GetI18nValidatorSuggestions(
   AutofillProfile profile;
   FillFormGroupFromOutputs(inputs, &profile);
 
-  AddressData user_input;
-  i18ninput::CreateAddressData(
-      base::Bind(&GetInfoFromProfile, profile), &user_input);
-  user_input.language_code = AddressLanguageCodeForSection(section);
+  scoped_ptr<AddressData> user_input =
+      i18n::CreateAddressDataFromAutofillProfile(
+          profile, g_browser_process->GetApplicationLocale());
+  user_input->language_code = AddressLanguageCodeForSection(section);
 
   static const size_t kSuggestionsLimit = 10;
   AddressValidator::Status status = GetValidator()->GetSuggestions(
-      user_input, focused_field, kSuggestionsLimit,
+      *user_input, focused_field, kSuggestionsLimit,
       &i18n_validator_suggestions_);
 
   if (status != AddressValidator::SUCCESS)
@@ -3601,12 +3597,12 @@ bool AutofillDialogControllerImpl::ShouldDisallowCcType(
 
 bool AutofillDialogControllerImpl::HasInvalidAddress(
     const AutofillProfile& profile) {
-  AddressData address_data;
-  i18ninput::CreateAddressData(base::Bind(&GetInfoFromProfile, profile),
-                               &address_data);
+  scoped_ptr<AddressData> address_data =
+      i18n::CreateAddressDataFromAutofillProfile(
+          profile, g_browser_process->GetApplicationLocale());
 
   AddressProblems problems;
-  GetValidator()->ValidateAddress(address_data,
+  GetValidator()->ValidateAddress(*address_data,
                                   AddressProblemFilter(),
                                   &problems);
   return !problems.empty();

@@ -22,8 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "grit.h"
-#include "grit/libaddressinput_strings.h"
 #include "region_data_constants.h"
 #include "util/json.h"
 #include "util/string_util.h"
@@ -137,66 +135,6 @@ void ParseAddressFieldsRequired(const std::string& required,
   }
 }
 
-int GetAdminAreaMessageId(const std::string& admin_area_type, bool error) {
-  if (admin_area_type == "area") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_AREA
-                 : IDS_LIBADDRESSINPUT_I18N_AREA;
-  }
-  if (admin_area_type == "county") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_COUNTY_LABEL
-                 : IDS_LIBADDRESSINPUT_I18N_COUNTY_LABEL;
-  }
-  if (admin_area_type == "department") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_DEPARTMENT
-                 : IDS_LIBADDRESSINPUT_I18N_DEPARTMENT;
-  }
-  if (admin_area_type == "district") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_DEPENDENT_LOCALITY_LABEL
-                 : IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL;
-  }
-  if (admin_area_type == "do_si") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_DO_SI
-                 : IDS_LIBADDRESSINPUT_I18N_DO_SI;
-  }
-  if (admin_area_type == "emirate") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_EMIRATE
-                 : IDS_LIBADDRESSINPUT_I18N_EMIRATE;
-  }
-  if (admin_area_type == "island") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_ISLAND
-                 : IDS_LIBADDRESSINPUT_I18N_ISLAND;
-  }
-  if (admin_area_type == "parish") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_PARISH
-                 : IDS_LIBADDRESSINPUT_I18N_PARISH;
-  }
-  if (admin_area_type == "prefecture") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_PREFECTURE
-                 : IDS_LIBADDRESSINPUT_I18N_PREFECTURE;
-  }
-  if (admin_area_type == "province") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_PROVINCE
-                 : IDS_LIBADDRESSINPUT_I18N_PROVINCE;
-  }
-  if (admin_area_type == "state") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_STATE_LABEL
-                 : IDS_LIBADDRESSINPUT_I18N_STATE_LABEL;
-  }
-  return INVALID_MESSAGE_ID;
-}
-
-int GetPostalCodeMessageId(const std::string& postal_code_type, bool error) {
-  if (postal_code_type == "postal") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_POSTAL_CODE_LABEL
-                 : IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL;
-  }
-  if (postal_code_type == "zip") {
-    return error ? IDS_LIBADDRESSINPUT_I18N_INVALID_ZIP_CODE_LABEL
-                 : IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL;
-  }
-  return INVALID_MESSAGE_ID;
-}
-
 // Finds |target| in |values_to_compare| and sets |selected_value| to the
 // associated value from |values_to_select|. Returns true if |target| is in
 // |values_to_compare|. |selected_value| should not be NULL. |values_to_compare|
@@ -232,24 +170,7 @@ bool FormatElement::operator==(const FormatElement& other) const {
   return field == other.field && literal == other.literal;
 }
 
-Rule::Rule()
-    : key_(),
-      name_(),
-      latin_name_(),
-      format_(),
-      latin_format_(),
-      required_(),
-      sub_keys_(),
-      sub_names_(),
-      sub_lnames_(),
-      languages_(),
-      input_languages_(),
-      language_(),
-      postal_code_format_(),
-      admin_area_name_message_id_(INVALID_MESSAGE_ID),
-      invalid_admin_area_message_id_(INVALID_MESSAGE_ID),
-      postal_code_name_message_id_(INVALID_MESSAGE_ID),
-      invalid_postal_code_message_id_(INVALID_MESSAGE_ID) {}
+Rule::Rule() {}
 
 Rule::~Rule() {}
 
@@ -280,10 +201,8 @@ void Rule::CopyFrom(const Rule& rule) {
   sub_names_ = rule.sub_names_;
   sub_lnames_ = rule.sub_lnames_;
   postal_code_format_ = rule.postal_code_format_;
-  admin_area_name_message_id_ = rule.admin_area_name_message_id_;
-  invalid_admin_area_message_id_ = rule.invalid_admin_area_message_id_;
-  postal_code_name_message_id_ = rule.postal_code_name_message_id_;
-  invalid_postal_code_message_id_ = rule.invalid_postal_code_message_id_;
+  admin_area_name_type_ = rule.admin_area_name_type_;
+  postal_code_name_type_ = rule.postal_code_name_type_;
 }
 
 bool Rule::ParseSerializedRule(const std::string& serialized_rule) {
@@ -355,13 +274,11 @@ void Rule::ParseJsonRule(const Json& json_rule) {
   }
 
   if (json_rule.GetStringValueForKey("state_name_type", &value)) {
-    admin_area_name_message_id_ = GetAdminAreaMessageId(value, false);
-    invalid_admin_area_message_id_ = GetAdminAreaMessageId(value, true);
+    admin_area_name_type_.swap(value);
   }
 
   if (json_rule.GetStringValueForKey("zip_name_type", &value)) {
-    postal_code_name_message_id_ = GetPostalCodeMessageId(value, false);
-    invalid_postal_code_message_id_ = GetPostalCodeMessageId(value, true);
+    postal_code_name_type_.swap(value);
   }
 }
 
@@ -377,21 +294,6 @@ const std::string& Rule::GetIdentityField(IdentityField identity_field) const {
       assert(false);
   }
   return key_;
-}
-
-int Rule::GetInvalidFieldMessageId(AddressField field) const {
-  switch (field) {
-    case ADMIN_AREA:
-      return invalid_admin_area_message_id_;
-    case LOCALITY:
-      return IDS_LIBADDRESSINPUT_I18N_INVALID_LOCALITY_LABEL;
-    case DEPENDENT_LOCALITY:
-      return IDS_LIBADDRESSINPUT_I18N_INVALID_DEPENDENT_LOCALITY_LABEL;
-    case POSTAL_CODE:
-      return invalid_postal_code_message_id_;
-    default:
-      return IDS_LIBADDRESSINPUT_I18N_INVALID_ENTRY;
-  }
 }
 
 bool Rule::CanonicalizeSubKey(const std::string& user_input,

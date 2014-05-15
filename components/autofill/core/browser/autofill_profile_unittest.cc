@@ -853,4 +853,49 @@ TEST(AutofillProfileTest, SetInfoTrimsWhitespace) {
             profile.GetRawInfo(EMAIL_ADDRESS));
 }
 
+TEST(AutofillProfileTest, FullAddress) {
+  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+  test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
+                       "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
+                       "Hollywood", "CA", "91601", "US",
+                       "12345678910");
+
+  AutofillType full_address(HTML_TYPE_FULL_ADDRESS, HTML_MODE_NONE);
+  base::string16 formatted_address(ASCIIToUTF16(
+      "Marion Mitchell Morrison\n"
+      "123 Zoo St.\n"
+      "unit 5\n"
+      "Hollywood, CA 91601"));
+  EXPECT_EQ(formatted_address, profile.GetInfo(full_address, "en-US"));
+  // This should fail and leave the profile unchanged.
+  EXPECT_FALSE(profile.SetInfo(full_address, ASCIIToUTF16("foobar"), "en-US"));
+  EXPECT_EQ(formatted_address, profile.GetInfo(full_address, "en-US"));
+
+  // Some things can be missing...
+  profile.SetInfo(AutofillType(ADDRESS_HOME_LINE2),
+                  base::string16(),
+                  "en-US");
+  profile.SetInfo(AutofillType(EMAIL_ADDRESS),
+                  base::string16(),
+                  "en-US");
+  EXPECT_EQ(ASCIIToUTF16("Marion Mitchell Morrison\n"
+                         "123 Zoo St.\n"
+                         "Hollywood, CA 91601"),
+            profile.GetInfo(full_address, "en-US"));
+
+  // ...but nothing comes out if a required field is missing.
+  profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), base::string16(), "en-US");
+  EXPECT_TRUE(profile.GetInfo(full_address, "en-US").empty());
+
+  // Restore the state but remove country. This should also fail.
+  profile.SetInfo(AutofillType(ADDRESS_HOME_STATE),
+                               ASCIIToUTF16("CA"),
+                               "en-US");
+  EXPECT_FALSE(profile.GetInfo(full_address, "en-US").empty());
+  profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
+                               base::string16(),
+                               "en-US");
+  EXPECT_TRUE(profile.GetInfo(full_address, "en-US").empty());
+}
+
 }  // namespace autofill

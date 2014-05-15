@@ -232,6 +232,14 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "postal-code")
     return HTML_TYPE_POSTAL_CODE;
 
+  // content_switches.h isn't accessible from here, hence we have
+  // to copy the string literal. This should be removed soon anyway.
+  if (autocomplete_attribute_value == "address" &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          "enable-experimental-web-platform-features")) {
+    return HTML_TYPE_FULL_ADDRESS;
+  }
+
   if (autocomplete_attribute_value == "cc-name")
     return HTML_TYPE_CREDIT_CARD_NAME;
 

@@ -162,6 +162,7 @@ enum HtmlFieldType {
   HTML_TYPE_COUNTRY_CODE,  // The ISO 3166-1-alpha-2 country code.
   HTML_TYPE_COUNTRY_NAME,  // The localized country name.
   HTML_TYPE_POSTAL_CODE,
+  HTML_TYPE_FULL_ADDRESS,  // The complete address, formatted for display.
 
   // Credit card types.
   HTML_TYPE_CREDIT_CARD_NAME,

@@ -49,10 +49,6 @@ std::vector<AddressUiComponent> BuildComponents(
     const std::string& ui_language_code,
     std::string* components_language_code);
 
-// Returns the fields which are required for the CLDR |region_code|. Returns an
-// empty vector on error.
-std::vector<AddressField> GetRequiredFields(const std::string& region_code);
-
 // Returns the string to use as a separator between lines when displaying the
 // address in a compact form for BCP 47 |language_code|. For example, returns
 // ", " for "en".

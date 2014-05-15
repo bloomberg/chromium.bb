@@ -7,6 +7,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -87,22 +88,14 @@ bool CardHasCompleteAndVerifiedData(const CreditCard& card) {
   return true;
 }
 
-bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile) {
+bool AddressHasCompleteAndVerifiedData(const AutofillProfile& profile,
+                                       const std::string& app_locale) {
   if (!profile.IsVerified())
     return false;
 
-  base::string16 country_code = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
-  if (country_code.empty())
+  if (!i18n::CreateAddressDataFromAutofillProfile(profile, app_locale)->
+          HasAllRequiredFields()) {
     return false;
-
-  std::vector<AddressField> required_fields =
-      ::i18n::addressinput::GetRequiredFields(base::UTF16ToUTF8(country_code));
-
-  for (size_t i = 0; i < required_fields.size(); ++i) {
-    ServerFieldType type =
-        TypeForField(required_fields[i], common::ADDRESS_TYPE_SHIPPING);
-    if (profile.GetRawInfo(type).empty())
-      return false;
   }
 
   const ServerFieldType more_required_fields[] = {
@@ -201,29 +194,6 @@ bool FieldForType(ServerFieldType server_type,
     default:
       return false;
   }
-}
-
-void CreateAddressData(
-    const base::Callback<base::string16(const AutofillType&)>& get_info,
-    AddressData* address_data) {
-  address_data->recipient = UTF16ToUTF8(get_info.Run(AutofillType(NAME_FULL)));
-  address_data->country_code = UTF16ToUTF8(
-      get_info.Run(AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_SHIPPING)));
-  DCHECK_EQ(2U, address_data->country_code.size());
-  address_data->administrative_area = UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_STATE)));
-  address_data->locality = UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_CITY)));
-  address_data->dependent_locality = UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_DEPENDENT_LOCALITY)));
-  address_data->sorting_code = UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_SORTING_CODE)));
-  address_data->postal_code = UTF16ToUTF8(
-      get_info.Run(AutofillType(ADDRESS_HOME_ZIP)));
-  base::SplitString(
-      UTF16ToUTF8(get_info.Run(AutofillType(ADDRESS_HOME_STREET_ADDRESS))),
-      '\n',
-      &address_data->address_lines);
 }
 
 bool CountryIsFullySupported(const std::string& country_code) {

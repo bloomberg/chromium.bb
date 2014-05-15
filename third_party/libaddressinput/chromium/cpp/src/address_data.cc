@@ -50,10 +50,12 @@ const std::string* GetMemberForField(const AddressData& address,
       return &address.organization;
     case RECIPIENT:
       return &address.recipient;
-    default:
-      assert(false);
-      return NULL;
+    case STREET_ADDRESS:
+      break;
   }
+
+  assert(false);
+  return NULL;
 }
 
 }  // namespace
@@ -115,6 +117,32 @@ void AddressData::SetFieldValue(AddressField field, const std::string& value) {
   if (field_value != NULL) {
     *field_value = value;
   }
+}
+
+bool AddressData::HasAllRequiredFields() const {
+  if (country_code.empty())
+    return false;
+
+  Rule rule;
+  rule.CopyFrom(Rule::GetDefault());
+  if (!rule.ParseSerializedRule(
+           RegionDataConstants::GetRegionData(country_code))) {
+    return false;
+  }
+
+  std::vector< ::i18n::addressinput::AddressField> required_fields =
+      rule.GetRequired();
+  for (size_t i = 0; i < required_fields.size(); ++i) {
+    if (required_fields[i] == STREET_ADDRESS) {
+      if (address_lines.empty() || address_lines[0].empty()) {
+        return false;
+      }
+    } else if (GetFieldValue(required_fields[i]).empty()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace addressinput
