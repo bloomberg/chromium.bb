@@ -13,7 +13,9 @@ TestViewsDelegate::TestViewsDelegate()
     : use_transparent_windows_(false) {
   DCHECK(!ViewsDelegate::views_delegate);
   ViewsDelegate::views_delegate = this;
+#if defined(USE_AURA)
   wm_state_.reset(new wm::WMState);
+#endif
 }
 
 TestViewsDelegate::~TestViewsDelegate() {

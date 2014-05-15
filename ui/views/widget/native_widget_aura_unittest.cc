@@ -12,14 +12,15 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
+#include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/default_activation_client.h"
 
 namespace views {
 namespace {
@@ -32,19 +33,17 @@ NativeWidgetAura* Init(aura::Window* parent, Widget* widget) {
   return static_cast<NativeWidgetAura*>(widget->native_widget());
 }
 
-class NativeWidgetAuraTest : public ViewsTestBase {
+class NativeWidgetAuraTest : public aura::test::AuraTestBase {
  public:
   NativeWidgetAuraTest() {}
   virtual ~NativeWidgetAuraTest() {}
 
   // testing::Test overrides:
   virtual void SetUp() OVERRIDE {
-    ViewsTestBase::SetUp();
+    AuraTestBase::SetUp();
+    new wm::DefaultActivationClient(root_window());
     host()->SetBounds(gfx::Rect(640, 480));
   }
-
- protected:
-  aura::Window* root_window() { return GetContext(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAuraTest);

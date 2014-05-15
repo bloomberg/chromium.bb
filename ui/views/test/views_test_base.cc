@@ -7,13 +7,8 @@
 #include "base/run_loop.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/ime/input_method_initializer.h"
-#include "ui/aura/env.h"
-#include "ui/aura/test/aura_test_helper.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/test/context_factories_for_test.h"
-#include "ui/wm/core/capture_controller.h"
-#include "ui/wm/core/default_activation_client.h"
-#include "ui/wm/core/wm_state.h"
+#include "ui/views/test/views_test_helper.h"
 
 namespace views {
 
@@ -38,10 +33,8 @@ void ViewsTestBase::SetUp() {
   bool enable_pixel_output = false;
   ui::InitializeContextFactoryForTests(enable_pixel_output);
 
-  aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-  aura_test_helper_->SetUp();
-  new wm::DefaultActivationClient(aura_test_helper_->root_window());
-  wm_state_.reset(new ::wm::WMState);
+  test_helper_.reset(ViewsTestHelper::Create(&message_loop_));
+  test_helper_->SetUp();
   ui::InitializeInputMethodForTesting();
 }
 
@@ -55,10 +48,8 @@ void ViewsTestBase::TearDown() {
   views_delegate_.reset();
   testing::Test::TearDown();
   ui::ShutdownInputMethodForTesting();
-  aura_test_helper_->TearDown();
+  test_helper_->TearDown();
   ui::TerminateContextFactoryForTests();
-  wm_state_.reset();
-  CHECK(!wm::ScopedCaptureClient::IsActive());
 }
 
 void ViewsTestBase::RunPendingMessages() {
@@ -69,20 +60,12 @@ void ViewsTestBase::RunPendingMessages() {
 Widget::InitParams ViewsTestBase::CreateParams(
     Widget::InitParams::Type type) {
   Widget::InitParams params(type);
-  params.context = aura_test_helper_->root_window();
+  params.context = GetContext();
   return params;
 }
 
-ui::EventProcessor* ViewsTestBase::event_processor() {
-  return aura_test_helper_->event_processor();
-}
-
-aura::WindowTreeHost* ViewsTestBase::host() {
-  return aura_test_helper_->host();
-}
-
 gfx::NativeView ViewsTestBase::GetContext() {
-  return aura_test_helper_->root_window();
+  return test_helper_->GetContext();
 }
 
 }  // namespace views

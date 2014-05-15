@@ -28,7 +28,9 @@ class TestViewsDelegate : public ViewsDelegate {
 
  private:
   bool use_transparent_windows_;
+#if defined(USE_AURA)
   scoped_ptr<wm::WMState> wm_state_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };

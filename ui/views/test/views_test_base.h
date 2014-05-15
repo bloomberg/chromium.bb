@@ -14,23 +14,9 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
-namespace aura {
-class WindowTreeHost;
-namespace test {
-class AuraTestHelper;
-}
-}
-
-namespace ui {
-class EventProcessor;
-}
-
-namespace wm {
-class WMState;
-}
-
-
 namespace views {
+
+class ViewsTestHelper;
 
 // A base class for views unit test. It creates a message loop necessary
 // to drive UI events and takes care of OLE initialization for windows.
@@ -58,9 +44,6 @@ class ViewsTestBase : public testing::Test {
 
   base::MessageLoopForUI* message_loop() { return &message_loop_; }
 
-  ui::EventProcessor* event_processor();
-  aura::WindowTreeHost* host();
-
   // Returns a context view. In aura builds, this will be the
   // RootWindow. Everywhere else, NULL.
   gfx::NativeView GetContext();
@@ -68,8 +51,7 @@ class ViewsTestBase : public testing::Test {
  private:
   base::MessageLoopForUI message_loop_;
   scoped_ptr<TestViewsDelegate> views_delegate_;
-  scoped_ptr<aura::test::AuraTestHelper> aura_test_helper_;
-  scoped_ptr<wm::WMState> wm_state_;
+  scoped_ptr<ViewsTestHelper> test_helper_;
   bool setup_called_;
   bool teardown_called_;
 
