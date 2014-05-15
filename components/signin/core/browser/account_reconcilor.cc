@@ -315,15 +315,14 @@ void AccountReconcilor::OnCookieChanged(const net::CanonicalCookie* cookie) {
       cookie->Domain() == GaiaUrls::GetInstance()->gaia_url().host() &&
       cookie->IsSecure() && cookie->IsHttpOnly()) {
     VLOG(1) << "AccountReconcilor::OnCookieChanged: LSID changed";
-#ifdef OS_CHROMEOS
-    // On Chrome OS it is possible that O2RT is not available at this moment
-    // because profile data transfer is still in progress.
+
+    // It is possible that O2RT is not available at this moment.
     if (!token_service_->GetAccounts().size()) {
       VLOG(1) << "AccountReconcilor::OnCookieChanged: cookie change is ingored"
-                 "because profile data transfer is in progress.";
+                 "because O2RT is not available yet.";
       return;
     }
-#endif
+
     StartReconcile();
   }
 }
