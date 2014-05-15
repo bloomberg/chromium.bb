@@ -19,7 +19,7 @@ import sys
 import subprocess2
 
 from git_common import current_branch, branches, tags, config_list, GIT_EXE
-from git_common import branch_config_map, root
+from git_common import get_or_create_merge_base, root
 
 from third_party import colorama
 
@@ -47,9 +47,9 @@ def main():
     stdout=subprocess2.PIPE,
     shell=False)
 
-  merge_base_map = branch_config_map('base')
   current = current_branch()
   all_branches = set(branches())
+  merge_base_map = {b: get_or_create_merge_base(b) for b in all_branches}
   if current in all_branches:
     all_branches.remove(current)
   all_tags = set(tags())
