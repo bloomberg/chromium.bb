@@ -123,7 +123,8 @@ class PrerenderHistograms {
   // Record the bytes in the prerender, whether it was used or not, and the
   // total number of bytes fetched for this profile since the last call to
   // RecordBytes.
-  void RecordNetworkBytes(bool used,
+  void RecordNetworkBytes(Origin origin,
+                          bool used,
                           int64 prerender_bytes,
                           int64 profile_bytes);
 

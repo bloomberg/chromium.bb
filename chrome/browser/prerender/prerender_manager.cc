@@ -1863,14 +1863,17 @@ void PrerenderManager::HangSessionStorageMergesForTesting() {
   g_hang_session_storage_merges_for_testing = true;
 }
 
-void PrerenderManager::RecordNetworkBytes(bool used, int64 prerender_bytes) {
+void PrerenderManager::RecordNetworkBytes(Origin origin,
+                                          bool used,
+                                          int64 prerender_bytes) {
   if (!ActuallyPrerendering())
     return;
   int64 recent_profile_bytes =
       profile_network_bytes_ - last_recorded_profile_network_bytes_;
   last_recorded_profile_network_bytes_ = profile_network_bytes_;
   DCHECK_GE(recent_profile_bytes, 0);
-  histograms_->RecordNetworkBytes(used, prerender_bytes, recent_profile_bytes);
+  histograms_->RecordNetworkBytes(
+      origin, used, prerender_bytes, recent_profile_bytes);
 }
 
 void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64 bytes) {

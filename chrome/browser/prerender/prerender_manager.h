@@ -358,7 +358,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Notification that a prerender has completed and its bytes should be
   // recorded.
-  void RecordNetworkBytes(bool used, int64 prerender_bytes);
+  void RecordNetworkBytes(Origin origin, bool used, int64 prerender_bytes);
 
   // Add to the running tally of bytes transferred over the network for this
   // profile if prerendering is currently enabled.
