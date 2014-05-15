@@ -83,10 +83,6 @@ void TiclInvalidationService::Init(
   }
 
   UpdateInvalidationNetworkChannel();
-  UMA_HISTOGRAM_ENUMERATION("Invalidations.NetworkChannel",
-                            network_channel_type_,
-                            NETWORK_CHANNELS_COUNT);
-
   if (IsReadyToStart()) {
     StartInvalidator(network_channel_type_);
   }
@@ -394,6 +390,9 @@ void TiclInvalidationService::StartInvalidator(
       return;
     }
   }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Invalidations.NetworkChannel", network_channel, NETWORK_CHANNELS_COUNT);
   invalidator_.reset(new syncer::NonBlockingInvalidator(
           network_channel_creator,
           invalidation_state_tracker_->GetInvalidatorClientId(),
