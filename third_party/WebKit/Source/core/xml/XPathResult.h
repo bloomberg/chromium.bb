@@ -76,7 +76,7 @@ public:
 
     const XPath::Value& value() const { return m_value; }
 
-    void trace(Visitor*) { }
+    void trace(Visitor*);
 
 private:
     XPathResult(Document*, const XPath::Value&);
@@ -85,7 +85,7 @@ private:
     unsigned m_nodeSetPosition;
     XPath::NodeSet m_nodeSet; // FIXME: why duplicate the node set stored in m_value?
     unsigned short m_resultType;
-    RefPtr<Document> m_document;
+    RefPtrWillBeMember<Document> m_document;
     uint64_t m_domTreeVersion;
 };
 

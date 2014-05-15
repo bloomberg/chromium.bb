@@ -35,10 +35,14 @@ namespace WebCore {
 
     namespace XPath {
 
-        class NodeSet {
-            WTF_MAKE_FAST_ALLOCATED;
+        class NodeSet : public NoBaseWillBeGarbageCollected<NodeSet> {
+            WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
         public:
+            static PassOwnPtrWillBeRawPtr<NodeSet> create() { return adoptPtrWillBeNoop(new NodeSet); }
             NodeSet() : m_isSorted(true), m_subtreesAreDisjoint(false) { }
+            NodeSet(const NodeSet&);
+            NodeSet& operator=(const NodeSet&);
+            void trace(Visitor*);
 
             size_t size() const { return m_nodes.size(); }
             bool isEmpty() const { return !m_nodes.size(); }
@@ -75,7 +79,7 @@ namespace WebCore {
 
             bool m_isSorted;
             bool m_subtreesAreDisjoint;
-            Vector<RefPtr<Node> > m_nodes;
+            WillBeHeapVector<RefPtrWillBeMember<Node> > m_nodes;
         };
 
     }

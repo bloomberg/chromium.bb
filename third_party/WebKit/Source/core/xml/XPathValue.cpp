@@ -40,14 +40,24 @@ namespace XPath {
 
 const Value::AdoptTag Value::adopt = {};
 
+void ValueData::trace(Visitor* visitor)
+{
+    visitor->trace(m_nodeSet);
+}
+
+void Value::trace(Visitor* visitor)
+{
+    visitor->trace(m_data);
+}
+
 const NodeSet& Value::toNodeSet() const
 {
     if (!isNodeSet())
         Expression::evaluationContext().hadTypeConversionError = true;
 
     if (!m_data) {
-        DEFINE_STATIC_LOCAL(NodeSet, emptyNodeSet, ());
-        return emptyNodeSet;
+        DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<NodeSet>, emptyNodeSet, (NodeSet::create()));
+        return *emptyNodeSet;
     }
 
     return m_data->m_nodeSet;

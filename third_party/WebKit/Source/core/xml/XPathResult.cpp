@@ -67,6 +67,13 @@ XPathResult::~XPathResult()
 {
 }
 
+void XPathResult::trace(Visitor* visitor)
+{
+    visitor->trace(m_value);
+    visitor->trace(m_nodeSet);
+    visitor->trace(m_document);
+}
+
 void XPathResult::convertTo(unsigned short type, ExceptionState& exceptionState)
 {
     switch (type) {
