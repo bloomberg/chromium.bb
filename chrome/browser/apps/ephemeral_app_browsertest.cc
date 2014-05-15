@@ -128,16 +128,14 @@ class EphemeralAppBrowserTest : public PlatformAppBrowserTest {
       return false;
     }
 
+    ResultCatcher catcher;
     launched_listener.Reply(test_name);
 
-    ResultCatcher catcher;
-    if (!catcher.GetNextResult()) {
-      message_ = catcher.message();
-      return false;
-    }
+    bool result = catcher.GetNextResult();
+    message_ = catcher.message();
 
     CloseApp(app->id());
-    return true;
+    return result;
   }
 
   void CloseApp(const std::string& app_id) {
