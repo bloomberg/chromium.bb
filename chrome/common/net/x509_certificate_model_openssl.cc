@@ -48,11 +48,6 @@ std::string GetCertNameOrNickname(X509Certificate::OSCertHandle cert_handle) {
   return "";
 }
 
-std::string GetNickname(X509Certificate::OSCertHandle cert_handle) {
-  // TODO(jamescook): implement me.
-  return "";
-}
-
 std::string GetTokenName(X509Certificate::OSCertHandle cert_handle) {
   // TODO(bulach): implement me.
   return "";
@@ -70,19 +65,9 @@ net::CertType GetType(X509Certificate::OSCertHandle os_cert) {
   return net::OTHER_CERT;
 }
 
-std::string GetEmailAddress(X509Certificate::OSCertHandle os_cert) {
-  // TODO(bulach): implement me.
-  return "";
-}
-
 void GetUsageStrings(X509Certificate::OSCertHandle cert_handle,
                          std::vector<std::string>* usages) {
   // TODO(bulach): implement me.
-}
-
-std::string GetKeyUsageString(X509Certificate::OSCertHandle cert_handle) {
-  // TODO(bulach): implement me.
-  return "";
 }
 
 std::string GetSerialNumberHexified(
@@ -167,19 +152,6 @@ std::string GetSubjectName(net::X509Certificate::OSCertHandle cert_handle) {
   return GetKeyValuesFromName(X509_get_subject_name(cert_handle));
 }
 
-void GetEmailAddresses(net::X509Certificate::OSCertHandle cert_handle,
-                       std::vector<std::string>* email_addresses) {
-  // TODO(bulach): implement me.
-}
-
-void GetNicknameStringsFromCertList(
-    const std::vector<scoped_refptr<net::X509Certificate> >& certs,
-    const std::string& cert_expired,
-    const std::string& cert_not_yet_valid,
-    std::vector<std::string>* nick_names) {
-  // TODO(bulach): implement me.
-}
-
 void GetExtensions(
     const std::string& critical_label,
     const std::string& non_critical_label,
@@ -258,9 +230,6 @@ std::string ProcessRawBitsSignatureWrap(
     net::X509Certificate::OSCertHandle cert_handle) {
   // TODO(bulach): implement me.
   return "";
-}
-
-void RegisterDynamicOids() {
 }
 
 }  // namespace x509_certificate_model

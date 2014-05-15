@@ -66,9 +66,20 @@ std::string ProcessExtension(
   std::string criticality =
       extension->critical.data && extension->critical.data[0] ?
           critical_label : non_critical_label;
-  return criticality + "\n" +
-      psm::ProcessExtensionData(SECOID_FindOIDTag(&extension->id),
-                                &extension->value);
+  return criticality + "\n" + psm::ProcessExtensionData(extension);
+}
+
+std::string GetNickname(net::X509Certificate::OSCertHandle cert_handle) {
+  std::string name;
+  if (cert_handle->nickname) {
+    name = cert_handle->nickname;
+    // Hack copied from mozilla: Cut off text before first :, which seems to
+    // just be the token name.
+    size_t colon_pos = name.find(':');
+    if (colon_pos != std::string::npos)
+      name = name.substr(colon_pos + 1);
+  }
+  return name;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -104,19 +115,6 @@ string GetCertNameOrNickname(X509Certificate::OSCertHandle cert_handle) {
   return GetNickname(cert_handle);
 }
 
-string GetNickname(X509Certificate::OSCertHandle cert_handle) {
-  string name;
-  if (cert_handle->nickname) {
-    name = cert_handle->nickname;
-    // Hack copied from mozilla: Cut off text before first :, which seems to
-    // just be the token name.
-    size_t colon_pos = name.find(':');
-    if (colon_pos != string::npos)
-      name = name.substr(colon_pos + 1);
-  }
-  return name;
-}
-
 string GetTokenName(X509Certificate::OSCertHandle cert_handle) {
   return psm::GetCertTokenName(cert_handle);
 }
@@ -136,26 +134,9 @@ net::CertType GetType(X509Certificate::OSCertHandle cert_handle) {
     return psm::GetCertType(cert_handle);
 }
 
-string GetEmailAddress(X509Certificate::OSCertHandle cert_handle) {
-  if (cert_handle->emailAddr)
-    return cert_handle->emailAddr;
-  return std::string();
-}
-
 void GetUsageStrings(X509Certificate::OSCertHandle cert_handle,
                      std::vector<string>* usages) {
   psm::GetCertUsageStrings(cert_handle, usages);
-}
-
-string GetKeyUsageString(X509Certificate::OSCertHandle cert_handle) {
-  SECItem key_usage;
-  key_usage.data = NULL;
-  string key_usage_str;
-  if (CERT_FindKeyUsageExtension(cert_handle, &key_usage) == SECSuccess) {
-    key_usage_str = psm::ProcessKeyUsageBitString(&key_usage, ',');
-    PORT_Free(key_usage.data);
-  }
-  return key_usage_str;
 }
 
 string GetSerialNumberHexified(X509Certificate::OSCertHandle cert_handle,
@@ -216,46 +197,6 @@ string GetIssuerName(X509Certificate::OSCertHandle cert_handle) {
 
 string GetSubjectName(X509Certificate::OSCertHandle cert_handle) {
   return psm::ProcessName(&cert_handle->subject);
-}
-
-void GetEmailAddresses(X509Certificate::OSCertHandle cert_handle,
-                       std::vector<string>* email_addresses) {
-  for (const char* addr = CERT_GetFirstEmailAddress(cert_handle);
-       addr; addr = CERT_GetNextEmailAddress(cert_handle, addr)) {
-    // The first email addr (from Subject) may be duplicated in Subject
-    // Alternative Name, so check subsequent addresses are not equal to the
-    // first one before adding to the list.
-    if (!email_addresses->size() || (*email_addresses)[0] != addr)
-      email_addresses->push_back(addr);
-  }
-}
-
-void GetNicknameStringsFromCertList(
-    const std::vector<scoped_refptr<X509Certificate> >& certs,
-    const string& cert_expired,
-    const string& cert_not_yet_valid,
-    std::vector<string>* nick_names) {
-  CERTCertList* cert_list = CERT_NewCertList();
-  for (size_t i = 0; i < certs.size(); ++i) {
-    CERT_AddCertToListTail(
-        cert_list,
-        CERT_DupCertificate(certs[i]->os_cert_handle()));
-  }
-  // Would like to use CERT_GetCertNicknameWithValidity on each cert
-  // individually instead of having to build a CERTCertList for this, but that
-  // function is not exported.
-  CERTCertNicknames* cert_nicknames = CERT_NicknameStringsFromCertList(
-      cert_list,
-      const_cast<char*>(cert_expired.c_str()),
-      const_cast<char*>(cert_not_yet_valid.c_str()));
-  DCHECK_EQ(cert_nicknames->numnicknames,
-            static_cast<int>(certs.size()));
-
-  for (int i = 0; i < cert_nicknames->numnicknames; ++i)
-    nick_names->push_back(cert_nicknames->nicknames[i]);
-
-  CERT_FreeNicknames(cert_nicknames);
-  CERT_DestroyCertList(cert_list);
 }
 
 void GetExtensions(
@@ -381,10 +322,6 @@ string ProcessSubjectPublicKeyInfo(X509Certificate::OSCertHandle cert_handle) {
 string ProcessRawBitsSignatureWrap(X509Certificate::OSCertHandle cert_handle) {
   return ProcessRawBits(cert_handle->signatureWrap.signature.data,
                         cert_handle->signatureWrap.signature.len);
-}
-
-void RegisterDynamicOids() {
-  psm::RegisterDynamicOids();
 }
 
 }  // namespace x509_certificate_model

@@ -46,6 +46,7 @@
 #include <unicode/uidna.h>
 
 #include "base/i18n/number_formatting.h"
+#include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -104,10 +105,6 @@ std::string ProcessRawBytes(SECItem* data) {
   return x509_certificate_model::ProcessRawBytes(data->data, data->len);
 }
 
-}  // namespace
-
-namespace mozilla_security_manager {
-
 SECOidTag ms_cert_ext_certtype = SEC_OID_UNKNOWN;
 SECOidTag ms_certsrv_ca_version = SEC_OID_UNKNOWN;
 SECOidTag ms_nt_principal_name = SEC_OID_UNKNOWN;
@@ -130,41 +127,48 @@ SECOidTag eku_netscape_international_step_up = SEC_OID_UNKNOWN;
 SECOidTag cert_attribute_business_category = SEC_OID_UNKNOWN;
 SECOidTag cert_attribute_ev_incorporation_country = SEC_OID_UNKNOWN;
 
-void RegisterDynamicOids() {
-  if (ms_cert_ext_certtype != SEC_OID_UNKNOWN)
-    return;
+class DynamicOidRegisterer {
+ public:
+  DynamicOidRegisterer() {
+    ms_cert_ext_certtype = RegisterDynamicOid("1.3.6.1.4.1.311.20.2");
+    ms_certsrv_ca_version = RegisterDynamicOid("1.3.6.1.4.1.311.21.1");
+    ms_nt_principal_name = RegisterDynamicOid("1.3.6.1.4.1.311.20.2.3");
+    ms_ntds_replication = RegisterDynamicOid("1.3.6.1.4.1.311.25.1");
 
-  ms_cert_ext_certtype = RegisterDynamicOid("1.3.6.1.4.1.311.20.2");
-  ms_certsrv_ca_version = RegisterDynamicOid("1.3.6.1.4.1.311.21.1");
-  ms_nt_principal_name = RegisterDynamicOid("1.3.6.1.4.1.311.20.2.3");
-  ms_ntds_replication = RegisterDynamicOid("1.3.6.1.4.1.311.25.1");
+    eku_ms_individual_code_signing = RegisterDynamicOid("1.3.6.1.4.1.311.2.1.21");
+    eku_ms_commercial_code_signing = RegisterDynamicOid("1.3.6.1.4.1.311.2.1.22");
+    eku_ms_trust_list_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.1");
+    eku_ms_time_stamping = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.2");
+    eku_ms_server_gated_crypto = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.3");
+    eku_ms_encrypting_file_system = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.4");
+    eku_ms_file_recovery = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.4.1");
+    eku_ms_windows_hardware_driver_verification = RegisterDynamicOid(
+        "1.3.6.1.4.1.311.10.3.5");
+    eku_ms_qualified_subordination = RegisterDynamicOid(
+        "1.3.6.1.4.1.311.10.3.10");
+    eku_ms_key_recovery = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.11");
+    eku_ms_document_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.12");
+    eku_ms_lifetime_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.13");
+    eku_ms_smart_card_logon = RegisterDynamicOid("1.3.6.1.4.1.311.20.2.2");
+    eku_ms_key_recovery_agent = RegisterDynamicOid("1.3.6.1.4.1.311.21.6");
+    eku_netscape_international_step_up = RegisterDynamicOid(
+        "2.16.840.1.113730.4.1");
 
-  eku_ms_individual_code_signing = RegisterDynamicOid("1.3.6.1.4.1.311.2.1.21");
-  eku_ms_commercial_code_signing = RegisterDynamicOid("1.3.6.1.4.1.311.2.1.22");
-  eku_ms_trust_list_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.1");
-  eku_ms_time_stamping = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.2");
-  eku_ms_server_gated_crypto = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.3");
-  eku_ms_encrypting_file_system = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.4");
-  eku_ms_file_recovery = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.4.1");
-  eku_ms_windows_hardware_driver_verification = RegisterDynamicOid(
-      "1.3.6.1.4.1.311.10.3.5");
-  eku_ms_qualified_subordination = RegisterDynamicOid(
-      "1.3.6.1.4.1.311.10.3.10");
-  eku_ms_key_recovery = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.11");
-  eku_ms_document_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.12");
-  eku_ms_lifetime_signing = RegisterDynamicOid("1.3.6.1.4.1.311.10.3.13");
-  eku_ms_smart_card_logon = RegisterDynamicOid("1.3.6.1.4.1.311.20.2.2");
-  eku_ms_key_recovery_agent = RegisterDynamicOid("1.3.6.1.4.1.311.21.6");
-  eku_netscape_international_step_up = RegisterDynamicOid(
-      "2.16.840.1.113730.4.1");
+    // These two OIDs will be built-in as SEC_OID_BUSINESS_CATEGORY and
+    // SEC_OID_EV_INCORPORATION_COUNTRY starting in NSS 3.13.  Until then,
+    // we need to add them dynamically.
+    cert_attribute_business_category = RegisterDynamicOid("2.5.4.15");
+    cert_attribute_ev_incorporation_country = RegisterDynamicOid(
+        "1.3.6.1.4.1.311.60.2.1.3");
+  }
+};
 
-  // These two OIDs will be built-in as SEC_OID_BUSINESS_CATEGORY and
-  // SEC_OID_EV_INCORPORATION_COUNTRY starting in NSS 3.13.  Until then,
-  // we need to add them dynamically.
-  cert_attribute_business_category = RegisterDynamicOid("2.5.4.15");
-  cert_attribute_ev_incorporation_country = RegisterDynamicOid(
-      "1.3.6.1.4.1.311.60.2.1.3");
-}
+static base::LazyInstance<DynamicOidRegisterer>::Leaky
+    g_dynamic_oid_registerer = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
+namespace mozilla_security_manager {
 
 std::string DumpOidString(SECItem* oid) {
   char* pr_string = CERT_GetOidString(oid);
@@ -178,6 +182,8 @@ std::string DumpOidString(SECItem* oid) {
 }
 
 std::string GetOIDText(SECItem* oid) {
+  g_dynamic_oid_registerer.Get();
+
   int string_id;
   SECOidTag oid_tag = SECOID_FindOIDTag(oid);
   switch (oid_tag) {
@@ -469,6 +475,7 @@ std::string ProcessGeneralName(PRArenaPool* arena,
   switch (current->type) {
     case certOtherName: {
       key = GetOIDText(&current->name.OthName.oid);
+      // g_dynamic_oid_registerer.Get() will have been run by GetOIDText.
       SECOidTag oid_tag = SECOID_FindOIDTag(&current->name.OthName.oid);
       if (oid_tag == ms_nt_principal_name) {
         // The type of this name is apparently nowhere explicitly
@@ -985,7 +992,11 @@ std::string ProcessExtKeyUsage(SECItem* extension_data) {
   return rv;
 }
 
-std::string ProcessExtensionData(SECOidTag oid_tag, SECItem* extension_data) {
+std::string ProcessExtensionData(CERTCertExtension* extension) {
+  g_dynamic_oid_registerer.Get();
+  SECOidTag oid_tag = SECOID_FindOIDTag(&extension->id);
+  SECItem* extension_data = &extension->value;
+
   // This (and its sub-functions) are based on the same-named functions in
   // security/manager/ssl/src/nsNSSCertHelper.cpp.
   switch (oid_tag) {

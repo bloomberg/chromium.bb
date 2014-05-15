@@ -50,13 +50,6 @@
 
 namespace mozilla_security_manager {
 
-extern SECOidTag ms_cert_ext_certtype;
-extern SECOidTag ms_certsrv_ca_version;
-extern SECOidTag ms_nt_principal_name;
-extern SECOidTag ms_ntds_replication;
-
-void RegisterDynamicOids();
-
 std::string DumpOidString(SECItem* oid);
 std::string GetOIDText(SECItem* oid);
 
@@ -78,7 +71,7 @@ std::string ProcessNSCertTypeExtension(SECItem* extension_data);
 std::string ProcessKeyUsageBitString(SECItem* bitstring, char sep);
 std::string ProcessKeyUsageExtension(SECItem* extension_data);
 std::string ProcessExtKeyUsage(SECItem* extension_data);
-std::string ProcessExtensionData(SECOidTag oid_tag, SECItem* extension_data);
+std::string ProcessExtensionData(CERTCertExtension* extension);
 std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki);
 
 net::CertType GetCertType(CERTCertificate *cert);
