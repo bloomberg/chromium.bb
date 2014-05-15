@@ -9,6 +9,7 @@ import("//tools/grit/grit_rule.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
 } else if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
 }
@@ -958,7 +959,21 @@ if (is_linux) {
   }
 }
 
-# TODO(GYP) Android net_jni_headers target and related.
+if (is_android) {
+  generate_jni("net_jni_headers") {
+    sources = [
+      "android/java/src/org/chromium/net/AndroidCertVerifyResult.java",
+      "android/java/src/org/chromium/net/AndroidKeyStore.java",
+      "android/java/src/org/chromium/net/AndroidNetworkLibrary.java",
+      "android/java/src/org/chromium/net/AndroidPrivateKey.java",
+      "android/java/src/org/chromium/net/GURLUtils.java",
+      "android/java/src/org/chromium/net/NetworkChangeNotifier.java",
+      "android/java/src/org/chromium/net/ProxyChangeListener.java",
+      "android/java/src/org/chromium/net/X509Util.java",
+    ]
+    jni_package = "net"
+  }
+}
 
 if (is_android || is_linux) {
   executable("disk_cache_memory_test") {
