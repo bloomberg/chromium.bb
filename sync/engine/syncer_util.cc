@@ -12,6 +12,7 @@
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "sync/engine/conflict_resolver.h"
 #include "sync/engine/syncer_proto_util.h"
@@ -278,7 +279,9 @@ UpdateAttemptResponse AttemptToUpdateEntry(
 std::string GetUniqueBookmarkTagFromUpdate(const sync_pb::SyncEntity& update) {
   if (!update.has_originator_cache_guid() ||
       !update.has_originator_client_item_id()) {
-    return std::string();
+    LOG(ERROR) << "Update is missing requirements for bookmark position."
+               << " This is a server bug.";
+    return UniquePosition::RandomSuffix();
   }
 
   return syncable::GenerateSyncableBookmarkHash(
@@ -295,7 +298,8 @@ UniquePosition GetUpdatePosition(const sync_pb::SyncEntity& update,
   } else if (update.has_position_in_parent()) {
     return UniquePosition::FromInt64(update.position_in_parent(), suffix);
   } else {
-    return UniquePosition::CreateInvalid();
+    LOG(ERROR) << "No position information in update. This is a server bug.";
+    return UniquePosition::FromInt64(0, suffix);
   }
 }
 
@@ -341,10 +345,6 @@ void UpdateBookmarkPositioning(
       GetUpdatePosition(update, local_entry->GetUniqueBookmarkTag());
   if (update_pos.IsValid()) {
     local_entry->PutServerUniquePosition(update_pos);
-  } else {
-    // TODO(sync): This and other cases of unexpected input should be handled
-    // better.
-    NOTREACHED();
   }
 }
 

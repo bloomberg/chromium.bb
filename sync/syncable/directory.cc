@@ -167,6 +167,11 @@ DirOpenResult Directory::OpenImpl(
   // Temporary indices before kernel_ initialized in case Load fails. We 0(1)
   // swap these later.
   Directory::MetahandlesMap tmp_handles_map;
+
+  // Avoids mem leaks on failure.  Harmlessly deletes the empty hash map after
+  // the swap in the success case.
+  STLValueDeleter<Directory::MetahandlesMap> deleter(&tmp_handles_map);
+
   JournalIndex delete_journals;
 
   DirOpenResult result =
