@@ -83,7 +83,13 @@ remoting.HostInstallDialog.prototype.show = function(
     }
 
     // Start downloading the package.
-    window.location = hostPackageUrl;
+    if (remoting.isAppsV2) {
+      // TODO(jamiewalch): Use chrome.downloads when it is available to
+      // apps v2 (http://crbug.com/174046)
+      window.open(hostPackageUrl);
+    } else {
+      window.location = hostPackageUrl;
+    }
 
     /** @type {function(remoting.HostController.AsyncResult):void} */
     this.onDoneHandler_ = onDone;
@@ -134,4 +140,3 @@ remoting.HostInstallDialog.prototype.onRetryClicked_ = function() {
       'click', this.onCancelClickedHandler_, false);
   remoting.setMode(remoting.AppMode.HOST_INSTALL_PROMPT);
 };
-
