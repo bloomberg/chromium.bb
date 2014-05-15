@@ -449,10 +449,6 @@ double WebMediaPlayerAndroid::maxTimeSeekable() const {
   return duration();
 }
 
-bool WebMediaPlayerAndroid::didLoadingProgress() const {
-  return const_cast<WebMediaPlayerAndroid*>(this)->didLoadingProgress();
-}
-
 bool WebMediaPlayerAndroid::didLoadingProgress() {
   bool ret = did_loading_progress_;
   did_loading_progress_ = false;

@@ -132,9 +132,6 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual double timelineOffset() const;
   virtual double currentTime() const;
 
-  // TODO(sandersd): Remove const version.
-  // http://crbug.com/360251
-  virtual bool didLoadingProgress() const;
   virtual bool didLoadingProgress();
 
   // Internal states of loading and network.

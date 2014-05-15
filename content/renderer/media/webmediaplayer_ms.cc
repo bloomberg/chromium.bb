@@ -311,11 +311,6 @@ double WebMediaPlayerMS::maxTimeSeekable() const {
   return 0.0;
 }
 
-bool WebMediaPlayerMS::didLoadingProgress() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return true;
-}
-
 bool WebMediaPlayerMS::didLoadingProgress() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return true;
