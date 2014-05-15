@@ -1221,26 +1221,6 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     }
   }
 
-  // Platform apps don't use browser windows so don't do anything if there are
-  // visible windows, otherwise, launch the browser with the same command line
-  // which should launch the app again.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kAppId)) {
-    if (hasVisibleWindows)
-      return YES;
-
-    {
-      base::AutoReset<bool> auto_reset_in_run(&g_is_opening_new_window, true);
-      int return_code;
-      StartupBrowserCreator browser_creator;
-      browser_creator.LaunchBrowser(
-          command_line, [self lastProfile], base::FilePath(),
-          chrome::startup::IS_NOT_PROCESS_STARTUP,
-          chrome::startup::IS_NOT_FIRST_RUN, &return_code);
-    }
-    return NO;
-  }
-
   // Otherwise open a new window.
   // If the last profile was locked, we have to open the User Manager, as the
   // profile requires authentication. Similarly, because guest mode is
