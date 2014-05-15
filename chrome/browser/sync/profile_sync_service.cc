@@ -1071,8 +1071,8 @@ void ProfileSyncService::OnExperimentsChanged(
           sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
   // If bookmark experiment state was changed update about flags experiment.
   if (bookmarks_experiment_state_before != bookmarks_experiment_state) {
-    UpdateBookmarksExperiment(g_browser_process->local_state(),
-                              bookmarks_experiment_state);
+    ForceFinchBookmarkExperimentIfNeeded(g_browser_process->local_state(),
+                                         bookmarks_experiment_state);
   }
 
   // If this is a first time sync for a client, this will be called before

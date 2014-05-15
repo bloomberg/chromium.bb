@@ -5,12 +5,14 @@
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/sync_driver/pref_names.h"
 #include "components/variations/variations_associated_data.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
@@ -19,13 +21,112 @@ namespace {
 
 const char kFieldTrialName[] = "EnhancedBookmarks";
 
+// Get extension id from Finch EnhancedBookmarks group parameters.
+std::string GetEnhancedBookmarksExtensionIdFromFinch() {
+  return chrome_variations::GetVariationParamValue(kFieldTrialName, "id");
+}
+
+// Returns true if enhanced bookmarks experiment is enabled from Finch.
+bool IsEnhancedBookmarksExperimentEnabledFromFinch() {
+  std::string ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
+  extensions::FeatureProvider* feature_provider =
+      extensions::FeatureProvider::GetPermissionFeatures();
+  extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
+  return feature && feature->IsIdInWhitelist(ext_id);
+}
+
 };  // namespace
 
-void UpdateBookmarksExperiment(
+bool GetBookmarksExperimentExtensionID(const PrefService* user_prefs,
+                                       std::string* extension_id) {
+  BookmarksExperimentState bookmarks_experiment_state =
+      static_cast<BookmarksExperimentState>(user_prefs->GetInteger(
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
+  if (bookmarks_experiment_state == kBookmarksExperimentEnabledFromFinch) {
+    *extension_id = GetEnhancedBookmarksExtensionIdFromFinch();
+    return !extension_id->empty();
+  }
+  if (bookmarks_experiment_state == kBookmarksExperimentEnabled) {
+    *extension_id = user_prefs->GetString(
+        sync_driver::prefs::kEnhancedBookmarksExtensionId);
+    return !extension_id->empty();
+  }
+
+  return false;
+}
+
+void UpdateBookmarksExperimentState(const PrefService* user_prefs,
+                                    PrefService* local_state,
+                                    bool user_signed_in) {
+  BookmarksExperimentState bookmarks_experiment_state_before =
+      static_cast<BookmarksExperimentState>(user_prefs->GetInteger(
+          sync_driver::prefs::kEnhancedBookmarksExperimentEnabled));
+  // If user signed out, clear possible previous state.
+  if (!user_signed_in) {
+    bookmarks_experiment_state_before = kNoBookmarksExperiment;
+    ForceFinchBookmarkExperimentIfNeeded(local_state, kNoBookmarksExperiment);
+  }
+
+  // kEnhancedBookmarksExperiment flag could have values "", "1" and "0".
+  // "0" - user opted out.
+  bool opt_out = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                     switches::kEnhancedBookmarksExperiment) == "0";
+
+  BookmarksExperimentState bookmarks_experiment_new_state =
+      kNoBookmarksExperiment;
+  bool enabled_from_finch = false;
+  if (IsEnhancedBookmarksExperimentEnabledFromFinch()) {
+    enabled_from_finch = !user_signed_in;
+    if (user_signed_in) {
+      bookmarks_experiment_new_state =
+          kBookmarksExperimentEnabledFromFinchUserSignedIn;
+    }
+  }
+
+  if (enabled_from_finch) {
+    if (opt_out) {
+      // Experiment enabled but user opted out.
+      bookmarks_experiment_new_state = kBookmarksExperimentOptOutFromFinch;
+    } else {
+      // Experiment enabled.
+      bookmarks_experiment_new_state = kBookmarksExperimentEnabledFromFinch;
+    }
+  } else if (bookmarks_experiment_state_before == kBookmarksExperimentEnabled) {
+    if (opt_out) {
+      // Experiment enabled but user opted out.
+      bookmarks_experiment_new_state = kBookmarksExperimentEnabledUserOptOut;
+    } else {
+      bookmarks_experiment_new_state = kBookmarksExperimentEnabled;
+    }
+  } else if (bookmarks_experiment_state_before ==
+             kBookmarksExperimentEnabledUserOptOut) {
+    if (opt_out) {
+      bookmarks_experiment_new_state = kBookmarksExperimentEnabledUserOptOut;
+    } else {
+      // User opted in again.
+      bookmarks_experiment_new_state = kBookmarksExperimentEnabled;
+    }
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("EnhancedBookmarks.SyncExperimentState",
+                            bookmarks_experiment_new_state,
+                            kBookmarksExperimentEnumSize);
+  if (bookmarks_experiment_state_before != bookmarks_experiment_new_state)
+    ForceFinchBookmarkExperimentIfNeeded(local_state,
+                                         bookmarks_experiment_new_state);
+}
+
+void ForceFinchBookmarkExperimentIfNeeded(
     PrefService* local_state,
     BookmarksExperimentState bookmarks_experiment_state) {
+// Chrome OS doesnt use local storage for experiments flags.
+#if !defined(OS_CHROMEOS)
+  if (!local_state)
+    return;
   ListPrefUpdate update(local_state, prefs::kEnabledLabsExperiments);
   base::ListValue* experiments_list = update.Get();
+  if (!experiments_list)
+    return;
   size_t index;
   if (bookmarks_experiment_state == kNoBookmarksExperiment) {
     experiments_list->Remove(
@@ -44,6 +145,7 @@ void UpdateBookmarksExperiment(
     experiments_list->AppendIfNotPresent(
         new base::StringValue(switches::kManualEnhancedBookmarksOptout));
   }
+#endif
 }
 
 bool IsEnhancedBookmarksExperimentEnabled() {
@@ -53,11 +155,7 @@ bool IsEnhancedBookmarksExperimentEnabled() {
     return true;
   }
 
-  std::string ext_id = GetEnhancedBookmarksExtensionIdFromFinch();
-  extensions::FeatureProvider* feature_provider =
-      extensions::FeatureProvider::GetPermissionFeatures();
-  extensions::Feature* feature = feature_provider->GetFeature("metricsPrivate");
-  return feature && feature->IsIdInWhitelist(ext_id);
+  return IsEnhancedBookmarksExperimentEnabledFromFinch();
 }
 
 bool IsEnableDomDistillerSet() {
@@ -82,8 +180,4 @@ bool IsEnableSyncArticlesSet() {
     return true;
 
   return false;
-}
-
-std::string GetEnhancedBookmarksExtensionIdFromFinch() {
-  return chrome_variations::GetVariationParamValue(kFieldTrialName, "id");
 }
