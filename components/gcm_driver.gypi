@@ -16,14 +16,54 @@
         '..',
       ],
       'sources': [
+        'gcm_driver/android/component_jni_registrar.cc',
+        'gcm_driver/android/component_jni_registrar.h',
         'gcm_driver/default_gcm_app_handler.cc',
         'gcm_driver/default_gcm_app_handler.h',
         'gcm_driver/gcm_app_handler.h',
         'gcm_driver/gcm_client_factory.cc',
         'gcm_driver/gcm_client_factory.h',
+        'gcm_driver/gcm_driver_android.cc',
+        'gcm_driver/gcm_driver_android.h',
         'gcm_driver/system_encryptor.cc',
         'gcm_driver/system_encryptor.h',
       ],
+      'conditions': [
+        ['OS == "android"', {
+          'dependencies': [
+            'gcm_driver_jni_headers',
+          ],
+        }],
+      ],
     },
+  ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'gcm_driver_java',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base',
+          ],
+          'variables': {
+            'java_in_dir': 'gcm_driver/android/java',
+          },
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'gcm_driver_jni_headers',
+          'type': 'none',
+          'sources': [
+            'gcm_driver/android/java/src/org/chromium/components/gcm_driver/GCMDriver.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'components/gcm_driver',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+      ],
+     },
+    ],
   ],
 }

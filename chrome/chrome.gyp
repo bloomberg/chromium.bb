@@ -734,6 +734,7 @@
             '../base/base.gyp:base',
             '../components/components.gyp:autofill_java',
             '../components/components.gyp:dom_distiller_core_java',
+            '../components/components.gyp:gcm_driver_java',
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:sessions',
             '../components/components.gyp:web_contents_delegate_android_java',

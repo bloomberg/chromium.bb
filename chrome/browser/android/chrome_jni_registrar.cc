@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
 #include "components/autofill/core/browser/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
+#include "components/gcm_driver/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 
@@ -82,6 +83,7 @@ namespace android {
 static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   // Register JNI for components we depend on.
   { "DomDistiller", dom_distiller::android::RegisterDomDistiller },
+  { "GCMDriver", gcm::android::RegisterGCMDriverJni },
   { "NavigationInterception",
     navigation_interception::RegisterNavigationInterceptionJni },
   { "WebContentsDelegateAndroid",
