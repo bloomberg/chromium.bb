@@ -118,11 +118,8 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     return FILE_ERROR_OK;
   }
 
-  FileCacheEntry cache_entry;
-  error = cache->GetCacheEntry(local_id, &cache_entry);
-  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
-    return error;
-  if (!cache_entry.is_present()) {  // This file has no cache file.
+  if (!entry->file_specific_info().cache_state().is_present()) {
+    // This file has no cache file.
     if (!entry->resource_id().empty()) {
       // This entry exists on the server, leave |cache_file_path| empty to
       // start download.
@@ -141,15 +138,16 @@ FileError CheckPreConditionForEnsureFileDownloaded(
     if (error != FILE_ERROR_OK)
       return error;
 
-    error = cache->GetCacheEntry(local_id, &cache_entry);
+    error = metadata->GetResourceEntryById(local_id, entry);
     if (error != FILE_ERROR_OK)
       return error;
   }
 
   // Leave |cache_file_path| empty when the stored file is obsolete and has no
   // local modification.
-  if (!cache_entry.is_dirty() &&
-      entry->file_specific_info().md5() != cache_entry.md5()) {
+  if (!entry->file_specific_info().cache_state().is_dirty() &&
+      entry->file_specific_info().md5() !=
+      entry->file_specific_info().cache_state().md5()) {
     return PrepareForDownloadFile(cache, entry->file_info().size(),
                                   temporary_file_directory,
                                   temp_download_file_path);
@@ -216,11 +214,12 @@ FileError CheckPreConditionForEnsureFileDownloadedByPath(
 // path to the cache file.
 // If failed, returns an error code with deleting |downloaded_file_path|.
 FileError UpdateLocalStateForDownloadFile(
+    internal::ResourceMetadata* metadata,
     internal::FileCache* cache,
-    const std::string& local_id,
-    const std::string& md5,
+    const ResourceEntry& entry_before_download,
     google_apis::GDataErrorCode gdata_error,
     const base::FilePath& downloaded_file_path,
+    ResourceEntry* entry_after_update,
     base::FilePath* cache_file_path) {
   DCHECK(cache);
 
@@ -233,20 +232,28 @@ FileError UpdateLocalStateForDownloadFile(
   if (error != FILE_ERROR_OK)
     return error;
 
+  const std::string& local_id = entry_before_download.local_id();
+
   // Do not overwrite locally edited file with server side contents.
-  FileCacheEntry cache_entry;
-  error = cache->GetCacheEntry(local_id, &cache_entry);
-  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
+  ResourceEntry entry;
+  error = metadata->GetResourceEntryById(local_id, &entry);
+  if (error != FILE_ERROR_OK)
     return error;
-  if (cache_entry.is_dirty())
+  if (entry.file_specific_info().cache_state().is_dirty())
     return FILE_ERROR_IN_USE;
 
   // Here the download is completed successfully, so store it into the cache.
-  error = cache->Store(local_id, md5, downloaded_file_path,
+  error = cache->Store(local_id,
+                       entry_before_download.file_specific_info().md5(),
+                       downloaded_file_path,
                        internal::FileCache::FILE_OPERATION_MOVE);
   if (error != FILE_ERROR_OK)
     return error;
   base::Closure unused_file_deleter_closure = file_deleter.Release();
+
+  error = metadata->GetResourceEntryById(local_id, entry_after_update);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   return cache->GetFile(local_id, cache_file_path);
 }
@@ -274,13 +281,12 @@ class DownloadOperation::DownloadParams {
     return base::Bind(&DownloadParams::Cancel, weak_ptr_factory_.GetWeakPtr());
   }
 
-  void OnCacheFileFound(const base::FilePath& cache_file_path) const {
-    if (initialized_callback_.is_null())
-      return;
-
-    DCHECK(entry_);
-    initialized_callback_.Run(FILE_ERROR_OK, cache_file_path,
-                              make_scoped_ptr(new ResourceEntry(*entry_)));
+  void OnCacheFileFound(const base::FilePath& cache_file_path) {
+    if (!initialized_callback_.is_null()) {
+      initialized_callback_.Run(FILE_ERROR_OK, cache_file_path,
+                                make_scoped_ptr(new ResourceEntry(*entry_)));
+    }
+    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, entry_.Pass());
   }
 
   void OnStartDownloading(const base::Closure& cancel_download_closure) {
@@ -299,8 +305,9 @@ class DownloadOperation::DownloadParams {
         error, base::FilePath(), scoped_ptr<ResourceEntry>());
   }
 
-  void OnComplete(const base::FilePath& cache_file_path) {
-    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, entry_.Pass());
+  void OnDownloadCompleted(const base::FilePath& cache_file_path,
+                           scoped_ptr<ResourceEntry> entry) const {
+    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, entry.Pass());
   }
 
   const google_apis::GetContentCallback& get_content_callback() const {
@@ -451,7 +458,6 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
   if (!cache_file_path->empty()) {
     // The cache file is found.
     params->OnCacheFileFound(*cache_file_path);
-    params->OnComplete(*cache_file_path);
     return;
   }
 
@@ -487,29 +493,32 @@ void DownloadOperation::EnsureFileDownloadedAfterDownloadFile(
     const base::FilePath& downloaded_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const std::string& local_id = params->entry().local_id();
-  const std::string& md5 = params->entry().file_specific_info().md5();
+  DownloadParams* params_ptr = params.get();
+  ResourceEntry* entry_after_update = new ResourceEntry;
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&UpdateLocalStateForDownloadFile,
-                 base::Unretained(cache_),
-                 local_id,
-                 md5,
+                 metadata_,
+                 cache_,
+                 params_ptr->entry(),
                  gdata_error,
                  downloaded_file_path,
+                 entry_after_update,
                  cache_file_path),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterUpdateLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  drive_file_path,
                  base::Passed(&params),
+                 base::Passed(make_scoped_ptr(entry_after_update)),
                  base::Owned(cache_file_path)));
 }
 
 void DownloadOperation::EnsureFileDownloadedAfterUpdateLocalState(
     const base::FilePath& file_path,
     scoped_ptr<DownloadParams> params,
+    scoped_ptr<ResourceEntry> entry_after_update,
     base::FilePath* cache_file_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -521,7 +530,7 @@ void DownloadOperation::EnsureFileDownloadedAfterUpdateLocalState(
 
   // Storing to cache changes the "offline available" status, hence notify.
   observer_->OnDirectoryChangedByOperation(file_path.DirName());
-  params->OnComplete(*cache_file_path);
+  params->OnDownloadCompleted(*cache_file_path, entry_after_update.Pass());
 }
 
 void DownloadOperation::CancelJob(JobID job_id) {

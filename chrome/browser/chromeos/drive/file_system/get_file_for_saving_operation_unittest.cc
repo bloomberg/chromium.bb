@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_test_base.h"
 #include "chrome/browser/chromeos/drive/file_write_watcher.h"
@@ -92,19 +91,8 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_Exist) {
   EXPECT_EQ(src_entry.resource_id(), entry->resource_id());
 
   // Checks that it presents in cache and marked dirty.
-  FileCacheEntry cache_entry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&internal::FileCache::GetCacheEntry,
-                 base::Unretained(cache()),
-                 GetLocalId(drive_path),
-                 &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_entry.is_dirty());
+  EXPECT_TRUE(entry->file_specific_info().cache_state().is_present());
+  EXPECT_TRUE(entry->file_specific_info().cache_state().is_dirty());
 
   // Write something to the cache and checks that the event is reported.
   {

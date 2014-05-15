@@ -104,6 +104,7 @@ class DownloadOperation {
   void EnsureFileDownloadedAfterUpdateLocalState(
       const base::FilePath& file_path,
       scoped_ptr<DownloadParams> params,
+      scoped_ptr<ResourceEntry> entry_after_update,
       base::FilePath* cache_file_path,
       FileError error);
 
