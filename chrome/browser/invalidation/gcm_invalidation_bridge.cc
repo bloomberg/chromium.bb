@@ -7,7 +7,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
-#include "chrome/browser/services/gcm/gcm_service.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -147,17 +147,17 @@ void GCMInvalidationBridge::Core::OnIncomingMessage(
 }
 
 GCMInvalidationBridge::GCMInvalidationBridge(
-    gcm::GCMService* gcm_service,
+    gcm::GCMDriver* gcm_driver,
     IdentityProvider* identity_provider)
     : OAuth2TokenService::Consumer("gcm_network_channel"),
-      gcm_service_(gcm_service),
+      gcm_driver_(gcm_driver),
       identity_provider_(identity_provider),
       subscribed_for_incoming_messages_(false),
       weak_factory_(this) {}
 
 GCMInvalidationBridge::~GCMInvalidationBridge() {
   if (subscribed_for_incoming_messages_)
-    gcm_service_->RemoveAppHandler(kInvalidationsAppId);
+    gcm_driver_->RemoveAppHandler(kInvalidationsAppId);
 }
 
 scoped_ptr<syncer::GCMNetworkChannelDelegate>
@@ -243,12 +243,12 @@ void GCMInvalidationBridge::Register(
     syncer::GCMNetworkChannelDelegate::RegisterCallback callback) {
   DCHECK(CalledOnValidThread());
   // No-op if GCMClient is disabled.
-  if (gcm_service_ == NULL)
+  if (gcm_driver_ == NULL)
     return;
 
   std::vector<std::string> sender_ids;
   sender_ids.push_back(kInvalidationsSenderId);
-  gcm_service_->Register(kInvalidationsAppId,
+  gcm_driver_->Register(kInvalidationsAppId,
                          sender_ids,
                          base::Bind(&GCMInvalidationBridge::RegisterFinished,
                                     weak_factory_.GetWeakPtr(),
@@ -271,11 +271,11 @@ void GCMInvalidationBridge::RegisterFinished(
 
 void GCMInvalidationBridge::SubscribeForIncomingMessages() {
   // No-op if GCMClient is disabled.
-  if (gcm_service_ == NULL)
+  if (gcm_driver_ == NULL)
     return;
 
   DCHECK(!subscribed_for_incoming_messages_);
-  gcm_service_->AddAppHandler(kInvalidationsAppId, this);
+  gcm_driver_->AddAppHandler(kInvalidationsAppId, this);
   subscribed_for_incoming_messages_ = true;
 }
 

@@ -74,7 +74,7 @@ void GCMProfileService::RegisterProfilePrefs(
 }
 
 GCMProfileService::GCMProfileService(Profile* profile)
-    : GCMService(scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
+    : GCMDriver(scoped_ptr<IdentityProvider>(new ProfileIdentityProvider(
           SigninManagerFactory::GetForProfile(profile),
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
 #if defined(OS_ANDROID)

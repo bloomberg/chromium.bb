@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/services/gcm/gcm_service.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
@@ -21,8 +21,8 @@ class PrefRegistrySyncable;
 
 namespace gcm {
 
-// A specialization of GCMService that is tied to a Profile.
-class GCMProfileService : public GCMService, public KeyedService {
+// A specialization of GCMDriver that is tied to a Profile.
+class GCMProfileService : public GCMDriver, public KeyedService {
  public:
   // Any change made to this enum should have corresponding change in the
   // GetGCMEnabledStateString(...) function.
@@ -55,7 +55,7 @@ class GCMProfileService : public GCMService, public KeyedService {
   std::string SignedInUserName() const;
 
  protected:
-  // Overridden from GCMService:
+  // Overridden from GCMDriver:
   virtual bool ShouldStartAutomatically() const OVERRIDE;
   virtual base::FilePath GetStorePath() const OVERRIDE;
   virtual scoped_refptr<net::URLRequestContextGetter>

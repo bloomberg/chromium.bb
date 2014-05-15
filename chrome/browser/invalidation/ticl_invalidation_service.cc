@@ -8,7 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
 #include "chrome/browser/invalidation/invalidation_service_util.h"
-#include "chrome/browser/services/gcm/gcm_service.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "chrome/common/chrome_content_client.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -56,7 +56,7 @@ namespace invalidation {
 TiclInvalidationService::TiclInvalidationService(
     scoped_ptr<IdentityProvider> identity_provider,
     scoped_ptr<TiclSettingsProvider> settings_provider,
-    gcm::GCMService* gcm_service,
+    gcm::GCMDriver* gcm_driver,
     const scoped_refptr<net::URLRequestContextGetter>& request_context)
     : OAuth2TokenService::Consumer("ticl_invalidation"),
       identity_provider_(identity_provider.Pass()),
@@ -64,7 +64,7 @@ TiclInvalidationService::TiclInvalidationService(
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       network_channel_type_(PUSH_CLIENT_CHANNEL),
-      gcm_service_(gcm_service),
+      gcm_driver_(gcm_driver),
       request_context_(request_context),
       logger_() {}
 
@@ -382,7 +382,7 @@ void TiclInvalidationService::StartInvalidator(
     }
     case GCM_NETWORK_CHANNEL: {
       gcm_invalidation_bridge_.reset(new GCMInvalidationBridge(
-          gcm_service_, identity_provider_.get()));
+          gcm_driver_, identity_provider_.get()));
       network_channel_creator =
           syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
               request_context_,

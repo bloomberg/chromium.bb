@@ -306,7 +306,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
   }
 
   bool HasAppHandlers(const std::string& app_id) const {
-    return GetGCMProfileService()->app_handlers_.count(app_id);
+    return GetGCMProfileService()->app_handlers().count(app_id);
   }
 
   Profile* profile() const { return profile_.get(); }

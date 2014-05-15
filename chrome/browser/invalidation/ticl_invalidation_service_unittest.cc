@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/invalidation/gcm_invalidation_bridge.h"
 #include "chrome/browser/invalidation/invalidation_service_test_template.h"
-#include "chrome/browser/services/gcm/gcm_service.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -35,20 +35,20 @@ class FakeTiclSettingsProvider : public TiclSettingsProvider {
   DISALLOW_COPY_AND_ASSIGN(FakeTiclSettingsProvider);
 };
 
-class FakeGCMService : public gcm::GCMService {
+class FakeGCMDriver : public gcm::GCMDriver {
  public:
-  explicit FakeGCMService(OAuth2TokenService* token_service);
-  virtual ~FakeGCMService();
+  explicit FakeGCMDriver(OAuth2TokenService* token_service);
+  virtual ~FakeGCMDriver();
 
  protected:
-  // gcm::GCMService:
+  // gcm::GCMDriver:
   virtual bool ShouldStartAutomatically() const OVERRIDE;
   virtual base::FilePath GetStorePath() const OVERRIDE;
   virtual scoped_refptr<net::URLRequestContextGetter>
       GetURLRequestContextGetter() const OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeGCMService);
+  DISALLOW_COPY_AND_ASSIGN(FakeGCMDriver);
 };
 
 FakeTiclSettingsProvider::FakeTiclSettingsProvider() {
@@ -61,24 +61,24 @@ bool FakeTiclSettingsProvider::UseGCMChannel() const {
   return false;
 }
 
-FakeGCMService::FakeGCMService(OAuth2TokenService* token_service)
-    : GCMService(scoped_ptr<IdentityProvider>(
+FakeGCMDriver::FakeGCMDriver(OAuth2TokenService* token_service)
+    : GCMDriver(scoped_ptr<IdentityProvider>(
           new FakeIdentityProvider(token_service))) {
 }
 
-FakeGCMService::~FakeGCMService() {
+FakeGCMDriver::~FakeGCMDriver() {
 }
 
-bool FakeGCMService::ShouldStartAutomatically() const {
+bool FakeGCMDriver::ShouldStartAutomatically() const {
   return false;
 }
 
-base::FilePath FakeGCMService::GetStorePath() const {
+base::FilePath FakeGCMDriver::GetStorePath() const {
   return base::FilePath();
 }
 
 scoped_refptr<net::URLRequestContextGetter>
-FakeGCMService::GetURLRequestContextGetter() const {
+FakeGCMDriver::GetURLRequestContextGetter() const {
   return NULL;
 }
 
@@ -98,7 +98,7 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   void CreateUninitializedInvalidationService() {
-    gcm_service_.reset(new FakeGCMService(&token_service_));
+    gcm_service_.reset(new FakeGCMDriver(&token_service_));
     invalidation_service_.reset(new TiclInvalidationService(
         scoped_ptr<IdentityProvider>(new FakeIdentityProvider(&token_service_)),
         scoped_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
@@ -132,7 +132,7 @@ class TiclInvalidationServiceTestDelegate {
   }
 
   FakeOAuth2TokenService token_service_;
-  scoped_ptr<gcm::GCMService> gcm_service_;
+  scoped_ptr<gcm::GCMDriver> gcm_service_;
   syncer::FakeInvalidator* fake_invalidator_;  // Owned by the service.
 
   scoped_ptr<TiclInvalidationService> invalidation_service_;

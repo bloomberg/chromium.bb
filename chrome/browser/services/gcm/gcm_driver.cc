@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/gcm_service.h"
+#include "chrome/browser/services/gcm/gcm_driver.h"
 
 #include <algorithm>
 #include <utility>
@@ -70,7 +70,7 @@ checkin_proto::ChromeBuildProto_Channel GetChannel() {
 }  // namespace
 
 // Helper class to save tasks to run until we're ready to execute them.
-class GCMService::DelayedTaskController {
+class GCMDriver::DelayedTaskController {
  public:
   DelayedTaskController();
   ~DelayedTaskController();
@@ -96,26 +96,26 @@ class GCMService::DelayedTaskController {
   DISALLOW_COPY_AND_ASSIGN(DelayedTaskController);
 };
 
-GCMService::DelayedTaskController::DelayedTaskController() : ready_(false) {
+GCMDriver::DelayedTaskController::DelayedTaskController() : ready_(false) {
 }
 
-GCMService::DelayedTaskController::~DelayedTaskController() {
+GCMDriver::DelayedTaskController::~DelayedTaskController() {
 }
 
-void GCMService::DelayedTaskController::AddTask(const base::Closure& task) {
+void GCMDriver::DelayedTaskController::AddTask(const base::Closure& task) {
   delayed_tasks_.push_back(task);
 }
 
-void GCMService::DelayedTaskController::SetReady() {
+void GCMDriver::DelayedTaskController::SetReady() {
   ready_ = true;
   RunTasks();
 }
 
-bool GCMService::DelayedTaskController::CanRunTaskWithoutDelay() const {
+bool GCMDriver::DelayedTaskController::CanRunTaskWithoutDelay() const {
   return ready_;
 }
 
-void GCMService::DelayedTaskController::RunTasks() {
+void GCMDriver::DelayedTaskController::RunTasks() {
   DCHECK(ready_);
 
   for (size_t i = 0; i < delayed_tasks_.size(); ++i)
@@ -123,7 +123,7 @@ void GCMService::DelayedTaskController::RunTasks() {
   delayed_tasks_.clear();
 }
 
-class GCMService::IOWorker : public GCMClient::Delegate {
+class GCMDriver::IOWorker : public GCMClient::Delegate {
  public:
   // Called on UI thread.
   IOWorker();
@@ -155,7 +155,7 @@ class GCMService::IOWorker : public GCMClient::Delegate {
                   const std::vector<std::string>& account_ids,
                   const scoped_refptr<net::URLRequestContextGetter>&
                       url_request_context_getter);
-  void Start(const base::WeakPtr<GCMService>& service);
+  void Start(const base::WeakPtr<GCMDriver>& service);
   void Stop();
   void CheckOut();
   void Register(const std::string& app_id,
@@ -171,22 +171,22 @@ class GCMService::IOWorker : public GCMClient::Delegate {
   GCMClient* gcm_client_for_testing() const { return gcm_client_.get(); }
 
  private:
-  base::WeakPtr<GCMService> service_;
+  base::WeakPtr<GCMDriver> service_;
 
   scoped_ptr<GCMClient> gcm_client_;
 
   DISALLOW_COPY_AND_ASSIGN(IOWorker);
 };
 
-GCMService::IOWorker::IOWorker() {
+GCMDriver::IOWorker::IOWorker() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
-GCMService::IOWorker::~IOWorker() {
+GCMDriver::IOWorker::~IOWorker() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 }
 
-void GCMService::IOWorker::Initialize(
+void GCMDriver::IOWorker::Initialize(
     scoped_ptr<GCMClientFactory> gcm_client_factory,
     const base::FilePath& store_path,
     const std::vector<std::string>& account_ids,
@@ -217,7 +217,7 @@ void GCMService::IOWorker::Initialize(
                           this);
 }
 
-void GCMService::IOWorker::OnRegisterFinished(
+void GCMDriver::IOWorker::OnRegisterFinished(
     const std::string& app_id,
     const std::string& registration_id,
     GCMClient::Result result) {
@@ -225,110 +225,110 @@ void GCMService::IOWorker::OnRegisterFinished(
 
   content::BrowserThread::PostTask(content::BrowserThread::UI,
                                    FROM_HERE,
-                                   base::Bind(&GCMService::RegisterFinished,
+                                   base::Bind(&GCMDriver::RegisterFinished,
                                               service_,
                                               app_id,
                                               registration_id,
                                               result));
 }
 
-void GCMService::IOWorker::OnUnregisterFinished(const std::string& app_id,
-                                                GCMClient::Result result) {
+void GCMDriver::IOWorker::OnUnregisterFinished(const std::string& app_id,
+                                               GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GCMService::UnregisterFinished, service_, app_id, result));
+      base::Bind(&GCMDriver::UnregisterFinished, service_, app_id, result));
 }
 
-void GCMService::IOWorker::OnSendFinished(const std::string& app_id,
-                                          const std::string& message_id,
-                                          GCMClient::Result result) {
+void GCMDriver::IOWorker::OnSendFinished(const std::string& app_id,
+                                         const std::string& message_id,
+                                         GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   content::BrowserThread::PostTask(content::BrowserThread::UI,
                                    FROM_HERE,
-                                   base::Bind(&GCMService::SendFinished,
+                                   base::Bind(&GCMDriver::SendFinished,
                                               service_,
                                               app_id,
                                               message_id,
                                               result));
 }
 
-void GCMService::IOWorker::OnMessageReceived(
+void GCMDriver::IOWorker::OnMessageReceived(
     const std::string& app_id,
     const GCMClient::IncomingMessage& message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   content::BrowserThread::PostTask(content::BrowserThread::UI,
                                    FROM_HERE,
-                                   base::Bind(&GCMService::MessageReceived,
+                                   base::Bind(&GCMDriver::MessageReceived,
                                               service_,
                                               app_id,
                                               message));
 }
 
-void GCMService::IOWorker::OnMessagesDeleted(const std::string& app_id) {
+void GCMDriver::IOWorker::OnMessagesDeleted(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   content::BrowserThread::PostTask(content::BrowserThread::UI,
                                    FROM_HERE,
-                                   base::Bind(&GCMService::MessagesDeleted,
+                                   base::Bind(&GCMDriver::MessagesDeleted,
                                               service_,
                                               app_id));
 }
 
-void GCMService::IOWorker::OnMessageSendError(
+void GCMDriver::IOWorker::OnMessageSendError(
     const std::string& app_id,
     const GCMClient::SendErrorDetails& send_error_details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   content::BrowserThread::PostTask(content::BrowserThread::UI,
                                    FROM_HERE,
-                                   base::Bind(&GCMService::MessageSendError,
+                                   base::Bind(&GCMDriver::MessageSendError,
                                               service_,
                                               app_id,
                                               send_error_details));
 }
 
-void GCMService::IOWorker::OnGCMReady() {
+void GCMDriver::IOWorker::OnGCMReady() {
   content::BrowserThread::PostTask(content::BrowserThread::UI,
                                    FROM_HERE,
-                                   base::Bind(&GCMService::GCMClientReady,
+                                   base::Bind(&GCMDriver::GCMClientReady,
                                               service_));
 }
 
-void GCMService::IOWorker::OnActivityRecorded() {
+void GCMDriver::IOWorker::OnActivityRecorded() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   // When an activity is recorded, get all the stats and refresh the UI of
   // gcm-internals page.
   GetGCMStatistics(false);
 }
 
-void GCMService::IOWorker::Start(const base::WeakPtr<GCMService>& service) {
+void GCMDriver::IOWorker::Start(const base::WeakPtr<GCMDriver>& service) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   service_ = service;
   gcm_client_->Start();
 }
 
-void GCMService::IOWorker::Stop() {
+void GCMDriver::IOWorker::Stop() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   gcm_client_->Stop();
 }
 
-void GCMService::IOWorker::CheckOut() {
+void GCMDriver::IOWorker::CheckOut() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   gcm_client_->CheckOut();
 
   // Note that we still need to keep GCMClient instance alive since the
-  // GCMService may check in again.
+  // GCMDriver may check in again.
 }
 
-void GCMService::IOWorker::Register(
+void GCMDriver::IOWorker::Register(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
@@ -336,21 +336,21 @@ void GCMService::IOWorker::Register(
   gcm_client_->Register(app_id, sender_ids);
 }
 
-void GCMService::IOWorker::Unregister(const std::string& app_id) {
+void GCMDriver::IOWorker::Unregister(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   gcm_client_->Unregister(app_id);
 }
 
-void GCMService::IOWorker::Send(const std::string& app_id,
-                                const std::string& receiver_id,
-                                const GCMClient::OutgoingMessage& message) {
+void GCMDriver::IOWorker::Send(const std::string& app_id,
+                               const std::string& receiver_id,
+                               const GCMClient::OutgoingMessage& message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   gcm_client_->Send(app_id, receiver_id, message);
 }
 
-void GCMService::IOWorker::GetGCMStatistics(bool clear_logs) {
+void GCMDriver::IOWorker::GetGCMStatistics(bool clear_logs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   gcm::GCMClient::GCMStatistics stats;
 
@@ -363,10 +363,10 @@ void GCMService::IOWorker::GetGCMStatistics(bool clear_logs) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GCMService::GetGCMStatisticsFinished, service_, stats));
+      base::Bind(&GCMDriver::GetGCMStatisticsFinished, service_, stats));
 }
 
-void GCMService::IOWorker::SetGCMRecording(bool recording) {
+void GCMDriver::IOWorker::SetGCMRecording(bool recording) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   gcm::GCMClient::GCMStatistics stats;
 
@@ -379,19 +379,19 @@ void GCMService::IOWorker::SetGCMRecording(bool recording) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GCMService::GetGCMStatisticsFinished, service_, stats));
+      base::Bind(&GCMDriver::GetGCMStatisticsFinished, service_, stats));
 }
 
-GCMService::GCMService(scoped_ptr<IdentityProvider> identity_provider)
+GCMDriver::GCMDriver(scoped_ptr<IdentityProvider> identity_provider)
     : identity_provider_(identity_provider.Pass()),
       gcm_client_ready_(false),
       weak_ptr_factory_(this) {
 }
 
-GCMService::~GCMService() {
+GCMDriver::~GCMDriver() {
 }
 
-void GCMService::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
+void GCMDriver::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
   // Get the list of available accounts.
   std::vector<std::string> account_ids;
 #if !defined(OS_ANDROID)
@@ -405,7 +405,7 @@ void GCMService::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::Initialize,
+      base::Bind(&GCMDriver::IOWorker::Initialize,
                  base::Unretained(io_worker_.get()),
                  base::Passed(&gcm_client_factory),
                  GetStorePath(),
@@ -419,13 +419,13 @@ void GCMService::Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory) {
   identity_provider_->AddObserver(this);
 }
 
-void GCMService::Start() {
+void GCMDriver::Start() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   EnsureStarted();
 }
 
-void GCMService::Stop() {
+void GCMDriver::Stop() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // No need to stop GCM service if not started yet.
@@ -437,11 +437,11 @@ void GCMService::Stop() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::Stop,
+      base::Bind(&GCMDriver::IOWorker::Stop,
                  base::Unretained(io_worker_.get())));
 }
 
-void GCMService::ShutdownService() {
+void GCMDriver::ShutdownService() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   identity_provider_->RemoveObserver(this);
   for (GCMAppHandlerMap::const_iterator iter = app_handlers_.begin();
@@ -454,8 +454,8 @@ void GCMService::ShutdownService() {
                                      io_worker_.release());
 }
 
-void GCMService::AddAppHandler(const std::string& app_id,
-                               GCMAppHandler* handler) {
+void GCMDriver::AddAppHandler(const std::string& app_id,
+                              GCMAppHandler* handler) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty());
   DCHECK(handler);
@@ -464,16 +464,16 @@ void GCMService::AddAppHandler(const std::string& app_id,
   app_handlers_[app_id] = handler;
 }
 
-void GCMService::RemoveAppHandler(const std::string& app_id) {
+void GCMDriver::RemoveAppHandler(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty());
 
   app_handlers_.erase(app_id);
 }
 
-void GCMService::Register(const std::string& app_id,
-                          const std::vector<std::string>& sender_ids,
-                          const RegisterCallback& callback) {
+void GCMDriver::Register(const std::string& app_id,
+                         const std::vector<std::string>& sender_ids,
+                         const RegisterCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty());
   DCHECK(!sender_ids.empty());
@@ -495,7 +495,7 @@ void GCMService::Register(const std::string& app_id,
 
   // Delay the register operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(base::Bind(&GCMService::DoRegister,
+    delayed_task_controller_->AddTask(base::Bind(&GCMDriver::DoRegister,
                                                  weak_ptr_factory_.GetWeakPtr(),
                                                  app_id,
                                                  sender_ids));
@@ -505,8 +505,8 @@ void GCMService::Register(const std::string& app_id,
   DoRegister(app_id, sender_ids);
 }
 
-void GCMService::DoRegister(const std::string& app_id,
-                            const std::vector<std::string>& sender_ids) {
+void GCMDriver::DoRegister(const std::string& app_id,
+                           const std::vector<std::string>& sender_ids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::map<std::string, RegisterCallback>::iterator callback_iter =
       register_callbacks_.find(app_id);
@@ -522,14 +522,14 @@ void GCMService::DoRegister(const std::string& app_id,
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::Register,
+      base::Bind(&GCMDriver::IOWorker::Register,
                  base::Unretained(io_worker_.get()),
                  app_id,
                  normalized_sender_ids));
 }
 
-void GCMService::Unregister(const std::string& app_id,
-                            const UnregisterCallback& callback) {
+void GCMDriver::Unregister(const std::string& app_id,
+                           const UnregisterCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty());
   DCHECK(!callback.is_null());
@@ -550,7 +550,7 @@ void GCMService::Unregister(const std::string& app_id,
 
   // Delay the unregister operation until GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(base::Bind(&GCMService::DoUnregister,
+    delayed_task_controller_->AddTask(base::Bind(&GCMDriver::DoUnregister,
                                                  weak_ptr_factory_.GetWeakPtr(),
                                                  app_id));
     return;
@@ -559,7 +559,7 @@ void GCMService::Unregister(const std::string& app_id,
   DoUnregister(app_id);
 }
 
-void GCMService::DoUnregister(const std::string& app_id) {
+void GCMDriver::DoUnregister(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Ask the server to unregister it. There could be a small chance that the
@@ -568,15 +568,15 @@ void GCMService::DoUnregister(const std::string& app_id) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::Unregister,
+      base::Bind(&GCMDriver::IOWorker::Unregister,
                  base::Unretained(io_worker_.get()),
                  app_id));
 }
 
-void GCMService::Send(const std::string& app_id,
-                      const std::string& receiver_id,
-                      const GCMClient::OutgoingMessage& message,
-                      const SendCallback& callback) {
+void GCMDriver::Send(const std::string& app_id,
+                     const std::string& receiver_id,
+                     const GCMClient::OutgoingMessage& message,
+                     const SendCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty());
   DCHECK(!receiver_id.empty());
@@ -599,7 +599,7 @@ void GCMService::Send(const std::string& app_id,
 
   // Delay the send operation until all GCMClient is ready.
   if (!delayed_task_controller_->CanRunTaskWithoutDelay()) {
-    delayed_task_controller_->AddTask(base::Bind(&GCMService::DoSend,
+    delayed_task_controller_->AddTask(base::Bind(&GCMDriver::DoSend,
                                                  weak_ptr_factory_.GetWeakPtr(),
                                                  app_id,
                                                  receiver_id,
@@ -610,37 +610,37 @@ void GCMService::Send(const std::string& app_id,
   DoSend(app_id, receiver_id, message);
 }
 
-void GCMService::DoSend(const std::string& app_id,
-                        const std::string& receiver_id,
-                        const GCMClient::OutgoingMessage& message) {
+void GCMDriver::DoSend(const std::string& app_id,
+                       const std::string& receiver_id,
+                       const GCMClient::OutgoingMessage& message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::Send,
+      base::Bind(&GCMDriver::IOWorker::Send,
                  base::Unretained(io_worker_.get()),
                  app_id,
                  receiver_id,
                  message));
 }
 
-GCMClient* GCMService::GetGCMClientForTesting() const {
+GCMClient* GCMDriver::GetGCMClientForTesting() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return io_worker_ ? io_worker_->gcm_client_for_testing() : NULL;
 }
 
-bool GCMService::IsStarted() const {
+bool GCMDriver::IsStarted() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return !account_id_.empty();
 }
 
-bool GCMService::IsGCMClientReady() const {
+bool GCMDriver::IsGCMClientReady() const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return gcm_client_ready_;
 }
 
-void GCMService::GetGCMStatistics(const GetGCMStatisticsCallback& callback,
-                                  bool clear_logs) {
+void GCMDriver::GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+                                 bool clear_logs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -648,34 +648,34 @@ void GCMService::GetGCMStatistics(const GetGCMStatisticsCallback& callback,
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::GetGCMStatistics,
+      base::Bind(&GCMDriver::IOWorker::GetGCMStatistics,
                  base::Unretained(io_worker_.get()),
                  clear_logs));
 }
 
-void GCMService::SetGCMRecording(const GetGCMStatisticsCallback& callback,
-                                 bool recording) {
+void GCMDriver::SetGCMRecording(const GetGCMStatisticsCallback& callback,
+                                bool recording) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   request_gcm_statistics_callback_ = callback;
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::SetGCMRecording,
+      base::Bind(&GCMDriver::IOWorker::SetGCMRecording,
                  base::Unretained(io_worker_.get()),
                  recording));
 }
 
-void GCMService::OnActiveAccountLogin() {
+void GCMDriver::OnActiveAccountLogin() {
   if (ShouldStartAutomatically())
     EnsureStarted();
 }
 
-void GCMService::OnActiveAccountLogout() {
+void GCMDriver::OnActiveAccountLogout() {
   CheckOut();
 }
 
-void GCMService::EnsureStarted() {
+void GCMDriver::EnsureStarted() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   const std::string account_id = identity_provider_->GetActiveAccountId();
   if (account_id.empty())
@@ -696,12 +696,12 @@ void GCMService::EnsureStarted() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::Start,
+      base::Bind(&GCMDriver::IOWorker::Start,
                  base::Unretained(io_worker_.get()),
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GCMService::RemoveCachedData() {
+void GCMDriver::RemoveCachedData() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Remove all the queued tasks since they no longer make sense after
   // GCM service is stopped.
@@ -714,7 +714,7 @@ void GCMService::RemoveCachedData() {
   send_callbacks_.clear();
 }
 
-void GCMService::CheckOut() {
+void GCMDriver::CheckOut() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // We still proceed with the check-out logic even if the check-in is not
@@ -726,11 +726,11 @@ void GCMService::CheckOut() {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMService::IOWorker::CheckOut,
+      base::Bind(&GCMDriver::IOWorker::CheckOut,
                  base::Unretained(io_worker_.get())));
 }
 
-GCMClient::Result GCMService::EnsureAppReady(const std::string& app_id) {
+GCMClient::Result GCMDriver::EnsureAppReady(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Starts the service if not yet.
@@ -743,15 +743,15 @@ GCMClient::Result GCMService::EnsureAppReady(const std::string& app_id) {
   return GCMClient::SUCCESS;
 }
 
-bool GCMService::IsAsyncOperationPending(const std::string& app_id) const {
+bool GCMDriver::IsAsyncOperationPending(const std::string& app_id) const {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return register_callbacks_.find(app_id) != register_callbacks_.end() ||
          unregister_callbacks_.find(app_id) != unregister_callbacks_.end();
 }
 
-void GCMService::RegisterFinished(const std::string& app_id,
-                                  const std::string& registration_id,
-                                  GCMClient::Result result) {
+void GCMDriver::RegisterFinished(const std::string& app_id,
+                                 const std::string& registration_id,
+                                 GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::map<std::string, RegisterCallback>::iterator callback_iter =
@@ -766,8 +766,8 @@ void GCMService::RegisterFinished(const std::string& app_id,
   callback.Run(registration_id, result);
 }
 
-void GCMService::UnregisterFinished(const std::string& app_id,
-                                    GCMClient::Result result) {
+void GCMDriver::UnregisterFinished(const std::string& app_id,
+                                   GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::map<std::string, UnregisterCallback>::iterator callback_iter =
@@ -780,9 +780,9 @@ void GCMService::UnregisterFinished(const std::string& app_id,
   callback.Run(result);
 }
 
-void GCMService::SendFinished(const std::string& app_id,
-                              const std::string& message_id,
-                              GCMClient::Result result) {
+void GCMDriver::SendFinished(const std::string& app_id,
+                             const std::string& message_id,
+                             GCMClient::Result result) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::map<std::pair<std::string, std::string>, SendCallback>::iterator
@@ -798,8 +798,8 @@ void GCMService::SendFinished(const std::string& app_id,
   callback.Run(message_id, result);
 }
 
-void GCMService::MessageReceived(const std::string& app_id,
-                                 GCMClient::IncomingMessage message) {
+void GCMDriver::MessageReceived(const std::string& app_id,
+                                GCMClient::IncomingMessage message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Drop the event if signed out.
@@ -809,7 +809,7 @@ void GCMService::MessageReceived(const std::string& app_id,
   GetAppHandler(app_id)->OnMessage(app_id, message);
 }
 
-void GCMService::MessagesDeleted(const std::string& app_id) {
+void GCMDriver::MessagesDeleted(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Drop the event if signed out.
@@ -819,7 +819,7 @@ void GCMService::MessagesDeleted(const std::string& app_id) {
   GetAppHandler(app_id)->OnMessagesDeleted(app_id);
 }
 
-void GCMService::MessageSendError(
+void GCMDriver::MessageSendError(
     const std::string& app_id,
     const GCMClient::SendErrorDetails& send_error_details) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -831,7 +831,7 @@ void GCMService::MessageSendError(
   GetAppHandler(app_id)->OnSendError(app_id, send_error_details);
 }
 
-void GCMService::GCMClientReady() {
+void GCMDriver::GCMClientReady() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   if (gcm_client_ready_)
@@ -841,7 +841,7 @@ void GCMService::GCMClientReady() {
   delayed_task_controller_->SetReady();
 }
 
-GCMAppHandler* GCMService::GetAppHandler(const std::string& app_id) {
+GCMAppHandler* GCMDriver::GetAppHandler(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   std::map<std::string, GCMAppHandler*>::const_iterator iter =
@@ -849,7 +849,7 @@ GCMAppHandler* GCMService::GetAppHandler(const std::string& app_id) {
   return iter == app_handlers_.end() ? &default_app_handler_ : iter->second;
 }
 
-void GCMService::GetGCMStatisticsFinished(GCMClient::GCMStatistics stats) {
+void GCMDriver::GetGCMStatisticsFinished(GCMClient::GCMStatistics stats) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Normally request_gcm_statistics_callback_ would not be null.

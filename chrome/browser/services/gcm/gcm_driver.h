@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_GCM_SERVICE_H_
-#define CHROME_BROWSER_SERVICES_GCM_GCM_SERVICE_H_
+#ifndef CHROME_BROWSER_SERVICES_GCM_GCM_DRIVER_H_
+#define CHROME_BROWSER_SERVICES_GCM_GCM_DRIVER_H_
 
 #include <map>
 #include <string>
@@ -34,8 +34,9 @@ class GCMAppHandler;
 class GCMClientFactory;
 
 // A bridge between the GCM users in Chrome and the GCMClient layer.
-class GCMService : public IdentityProvider::Observer {
+class GCMDriver : public IdentityProvider::Observer {
  public:
+  typedef std::map<std::string, GCMAppHandler*> GCMAppHandlerMap;
   typedef base::Callback<void(const std::string& registration_id,
                               GCMClient::Result result)> RegisterCallback;
   typedef base::Callback<void(const std::string& message_id,
@@ -44,8 +45,8 @@ class GCMService : public IdentityProvider::Observer {
   typedef base::Callback<void(const GCMClient::GCMStatistics& stats)>
       GetGCMStatisticsCallback;
 
-  explicit GCMService(scoped_ptr<IdentityProvider> identity_provider);
-  virtual ~GCMService();
+  explicit GCMDriver(scoped_ptr<IdentityProvider> identity_provider);
+  virtual ~GCMDriver();
 
   void Initialize(scoped_ptr<GCMClientFactory> gcm_client_factory);
 
@@ -53,8 +54,8 @@ class GCMService : public IdentityProvider::Observer {
 
   void Stop();
 
-  // This method must be called before destroying the GCMService. Once it has
-  // been called, no other GCMService methods may be used.
+  // This method must be called before destroying the GCMDriver. Once it has
+  // been called, no other GCMDriver methods may be used.
   void ShutdownService();
 
   // Adds a handler for a given app.
@@ -113,6 +114,8 @@ class GCMService : public IdentityProvider::Observer {
   virtual void OnActiveAccountLogin() OVERRIDE;
   virtual void OnActiveAccountLogout() OVERRIDE;
 
+  const GCMAppHandlerMap& app_handlers() const { return app_handlers_; }
+
  protected:
   virtual bool ShouldStartAutomatically() const = 0;
 
@@ -124,13 +127,8 @@ class GCMService : public IdentityProvider::Observer {
   scoped_ptr<IdentityProvider> identity_provider_;
 
  private:
-  friend class TestGCMServiceWrapper;
-  friend class extensions::ExtensionGCMAppHandlerTest;
-
   class DelayedTaskController;
   class IOWorker;
-
-  typedef std::map<std::string, GCMAppHandler*> GCMAppHandlerMap;
 
   // Ensures that the GCMClient is started and the GCM check-in is done if the
   // |identity_provider_| is able to supply an account ID.
@@ -209,11 +207,11 @@ class GCMService : public IdentityProvider::Observer {
   GetGCMStatisticsCallback request_gcm_statistics_callback_;
 
   // Used to pass a weak pointer to the IO worker.
-  base::WeakPtrFactory<GCMService> weak_ptr_factory_;
+  base::WeakPtrFactory<GCMDriver> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GCMService);
+  DISALLOW_COPY_AND_ASSIGN(GCMDriver);
 };
 
 }  // namespace gcm
 
-#endif  // CHROME_BROWSER_SERVICES_GCM_GCM_SERVICE_H_
+#endif  // CHROME_BROWSER_SERVICES_GCM_GCM_DRIVER_H_

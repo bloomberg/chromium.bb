@@ -25,7 +25,7 @@
 #include "sync/notifier/invalidator_registrar.h"
 
 namespace gcm {
-class GCMService;
+class GCMDriver;
 }
 
 namespace net {
@@ -62,7 +62,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
   TiclInvalidationService(
       scoped_ptr<IdentityProvider> identity_provider,
       scoped_ptr<TiclSettingsProvider> settings_provider,
-      gcm::GCMService* gcm_service,
+      gcm::GCMDriver* gcm_service,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
   virtual ~TiclInvalidationService();
 
@@ -152,7 +152,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
   net::BackoffEntry request_access_token_backoff_;
 
   InvalidationNetworkChannel network_channel_type_;
-  gcm::GCMService* gcm_service_;
+  gcm::GCMDriver* gcm_driver_;
   scoped_ptr<GCMInvalidationBridge> gcm_invalidation_bridge_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
