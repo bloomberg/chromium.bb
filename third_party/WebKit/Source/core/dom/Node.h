@@ -814,6 +814,8 @@ private:
         return NOPSEUDO;
     }
 
+    unsigned styledSubtreeSize() const;
+
 #if !ENABLE(OILPAN)
     void removedLastRef();
 #endif

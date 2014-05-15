@@ -682,33 +682,6 @@ void Node::markAncestorsWithChildNeedsDistributionRecalc()
 
 namespace {
 
-unsigned styledSubtreeSize(const Node*);
-
-unsigned styledSubtreeSizeIgnoringSelfAndShadowRoots(const Node* rootNode)
-{
-    unsigned nodeCount = 0;
-    for (Node* child = rootNode->firstChild(); child; child = child->nextSibling())
-        nodeCount += styledSubtreeSize(child);
-    return nodeCount;
-}
-
-unsigned styledSubtreeSize(const Node* rootNode)
-{
-    if (rootNode->isTextNode())
-        return 1;
-    if (!rootNode->isElementNode())
-        return 0;
-
-    // FIXME: We should use a shadow-tree aware node-iterator when such exists.
-    unsigned nodeCount = 1 + styledSubtreeSizeIgnoringSelfAndShadowRoots(rootNode);
-
-    // ShadowRoots don't have style (so don't count them), but their children might.
-    for (ShadowRoot* shadowRoot = rootNode->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
-        nodeCount += styledSubtreeSizeIgnoringSelfAndShadowRoots(shadowRoot);
-
-    return nodeCount;
-}
-
 PassRefPtr<JSONArray> jsStackAsJSONArray()
 {
     RefPtr<JSONArray> jsonArray = JSONArray::create();
@@ -731,10 +704,24 @@ PassRefPtr<JSONObject> jsonObjectForStyleInvalidation(unsigned nodeCount, const 
 
 } // anonymous namespace'd functions supporting traceStyleChange
 
+unsigned Node::styledSubtreeSize() const
+{
+    unsigned nodeCount = 0;
+
+    for (const Node* node = this; node; node = NodeTraversal::next(*node, this)) {
+        if (node->isTextNode() || node->isElementNode())
+            nodeCount++;
+        for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
+            nodeCount += root->styledSubtreeSize();
+    }
+
+    return nodeCount;
+}
+
 void Node::traceStyleChange(StyleChangeType changeType)
 {
     static const unsigned kMinLoggedSize = 100;
-    unsigned nodeCount = styledSubtreeSize(this);
+    unsigned nodeCount = styledSubtreeSize();
     if (nodeCount < kMinLoggedSize)
         return;
 
