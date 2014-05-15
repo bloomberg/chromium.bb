@@ -4,7 +4,7 @@
         "service_worker_011.wpr": [
             "http://localhost:8080/index.html"
         ], 
-        "service_worker_019.wpr": [
+        "service_worker_025.wpr": [
             "http://localhost:8091/index.html"
         ]
     }
