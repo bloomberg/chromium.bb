@@ -55,22 +55,6 @@ struct NaClDesc* OpenHostFileCommon(const char* fname, int flags, int mode) {
   return reinterpret_cast<struct NaClDesc*>(ndiodp);
 }
 
-struct NaClDesc* ImportHostDescCommon(int host_os_desc, int mode) {
-  NaClHostDesc* nhdp = NaClHostDescPosixMake(host_os_desc, mode);
-  if (NULL == nhdp) {
-    return NULL;
-  }
-  NaClDescIoDesc* ndiodp = NaClDescIoDescMake(nhdp);
-  if (NULL == ndiodp) {
-    if (0 != NaClHostDescClose(nhdp)) {
-      NaClLog(LOG_FATAL, "ImportHostDescCommon: NaClHostDescClose failed\n");
-    }
-    free(nhdp);
-    return NULL;
-  }
-  return reinterpret_cast<struct NaClDesc*>(ndiodp);
-}
-
 struct NaClDesc* MakeQuotaCommon(const uint8_t* file_id,
                                  struct NaClDesc* desc) {
   NaClDescQuota* ndqp =
@@ -308,7 +292,7 @@ int DescWrapperFactory::MakeSocketPair(DescWrapper* pair[2]) {
 }
 
 DescWrapper* DescWrapperFactory::MakeFileDesc(int host_os_desc, int mode) {
-  struct NaClDesc* desc = ImportHostDescCommon(host_os_desc, mode);
+  struct NaClDesc* desc = NaClDescIoDescFromDescAllocCtor(host_os_desc, mode);
   if (NULL == desc) {
     return NULL;
   }
@@ -318,7 +302,7 @@ DescWrapper* DescWrapperFactory::MakeFileDesc(int host_os_desc, int mode) {
 DescWrapper* DescWrapperFactory::MakeFileDescQuota(int host_os_desc,
                                                    int mode,
                                                    const uint8_t* file_id) {
-  struct NaClDesc* desc = ImportHostDescCommon(host_os_desc, mode);
+  struct NaClDesc* desc = NaClDescIoDescFromDescAllocCtor(host_os_desc, mode);
   if (NULL == desc) {
     return NULL;
   }
