@@ -1698,7 +1698,7 @@ void GraphicsContext::drawOuterPath(const SkPath& path, SkPaint& paint, int widt
 #if OS(MACOSX)
     paint.setAlpha(64);
     paint.setStrokeWidth(width);
-    paint.setPathEffect(new SkCornerPathEffect((width - 1) * 0.5f))->unref();
+    paint.setPathEffect(SkCornerPathEffect::Create((width - 1) * 0.5f))->unref();
 #else
     paint.setStrokeWidth(1);
     paint.setPathEffect(SkCornerPathEffect::Create(1))->unref();
