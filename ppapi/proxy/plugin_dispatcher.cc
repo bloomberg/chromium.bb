@@ -252,14 +252,11 @@ void PluginDispatcher::DidCreateInstance(PP_Instance instance) {
   if (!g_instance_to_dispatcher)
     g_instance_to_dispatcher = new InstanceToDispatcherMap;
   (*g_instance_to_dispatcher)[instance] = this;
-
-  instance_map_[instance] = InstanceData();
+  instance_map_.set(instance, scoped_ptr<InstanceData>(new InstanceData()));
 }
 
 void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {
-  InstanceDataMap::iterator it = instance_map_.find(instance);
-  if (it != instance_map_.end())
-    instance_map_.erase(it);
+  instance_map_.erase(instance);
 
   if (g_instance_to_dispatcher) {
     InstanceToDispatcherMap::iterator found = g_instance_to_dispatcher->find(
@@ -274,8 +271,7 @@ void PluginDispatcher::DidDestroyInstance(PP_Instance instance) {
 }
 
 InstanceData* PluginDispatcher::GetInstanceData(PP_Instance instance) {
-  InstanceDataMap::iterator it = instance_map_.find(instance);
-  return (it == instance_map_.end()) ? NULL : &it->second;
+  return instance_map_.get(instance);
 }
 
 thunk::PPB_Instance_API* PluginDispatcher::GetInstanceAPI() {

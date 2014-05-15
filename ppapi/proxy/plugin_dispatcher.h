@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
@@ -183,7 +184,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   typedef base::hash_map<std::string, const void*> InterfaceMap;
   InterfaceMap plugin_interfaces_;
 
-  typedef base::hash_map<PP_Instance, InstanceData> InstanceDataMap;
+  typedef base::ScopedPtrHashMap<PP_Instance, InstanceData> InstanceDataMap;
   InstanceDataMap instance_map_;
 
   // The preferences sent from the host. We only want to set this once, which
