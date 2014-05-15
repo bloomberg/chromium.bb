@@ -208,6 +208,12 @@ std::string ProfileOAuth2TokenServiceIOS::AccountInfo::GetAccountId() const {
   return account_id_;
 }
 
+std::string ProfileOAuth2TokenServiceIOS::AccountInfo::GetUsername() const {
+  // TODO(rogerta): when |account_id| becomes the obfuscated gaia id, this
+  // will need to be changed.
+  return account_id_;
+}
+
 GoogleServiceAuthError
 ProfileOAuth2TokenServiceIOS::AccountInfo::GetAuthStatus() const {
   return last_auth_error_;

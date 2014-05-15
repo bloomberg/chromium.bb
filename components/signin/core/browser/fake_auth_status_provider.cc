@@ -18,13 +18,19 @@ std::string FakeAuthStatusProvider::GetAccountId() const {
   return account_id_;
 }
 
+std::string FakeAuthStatusProvider::GetUsername() const {
+  return username_;
+}
+
 GoogleServiceAuthError FakeAuthStatusProvider::GetAuthStatus() const {
   return auth_error_;
 }
 
 void FakeAuthStatusProvider::SetAuthError(const std::string& account_id,
+                                          const std::string& username,
                                           const GoogleServiceAuthError& error) {
   account_id_ = account_id;
+  username_ = username;
   auth_error_ = error;
   error_provider_->AuthStatusChanged();
 }

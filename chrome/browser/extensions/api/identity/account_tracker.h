@@ -75,6 +75,7 @@ class AccountTracker : public OAuth2TokenService::Observer,
 
   // AuthStatusProvider implementation.
   virtual std::string GetAccountId() const OVERRIDE;
+  virtual std::string GetUsername() const OVERRIDE;
   virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
   // SigninManagerBase::Observer implementation.

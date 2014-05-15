@@ -109,6 +109,13 @@ MutableProfileOAuth2TokenService::AccountInfo::GetAccountId() const {
   return account_id_;
 }
 
+std::string
+MutableProfileOAuth2TokenService::AccountInfo::GetUsername() const {
+  // TODO(rogerta): when |account_id| becomes the obfuscated gaia id, this
+  // will need to be changed.
+  return account_id_;
+}
+
 GoogleServiceAuthError
 MutableProfileOAuth2TokenService::AccountInfo::GetAuthStatus() const {
   return last_auth_error_;

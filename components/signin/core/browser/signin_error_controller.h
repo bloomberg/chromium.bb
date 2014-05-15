@@ -25,6 +25,9 @@ class SigninErrorController {
     // Returns the account id with the status specified by GetAuthStatus().
     virtual std::string GetAccountId() const = 0;
 
+    // Returns the username with the status specified by GetAuthStatus().
+    virtual std::string GetUsername() const = 0;
+
     // API invoked by SigninErrorController to get the current auth status of
     // the various signed in services.
     virtual GoogleServiceAuthError GetAuthStatus() const = 0;
@@ -59,6 +62,7 @@ class SigninErrorController {
   void RemoveObserver(Observer* observer);
 
   const std::string& error_account_id() const { return error_account_id_; }
+  const std::string& error_username() const { return error_username_; }
   const GoogleServiceAuthError& auth_error() const { return auth_error_; }
 
  private:
@@ -66,6 +70,7 @@ class SigninErrorController {
 
   // The account that generated the last auth error.
   std::string error_account_id_;
+  std::string error_username_;
 
   // The auth error detected the last time AuthStatusChanged() was invoked (or
   // NONE if AuthStatusChanged() has never been invoked).

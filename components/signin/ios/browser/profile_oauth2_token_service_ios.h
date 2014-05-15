@@ -114,6 +114,7 @@ class ProfileOAuth2TokenServiceIOS : public MutableProfileOAuth2TokenService {
 
     // SigninErrorController::AuthStatusProvider implementation.
     virtual std::string GetAccountId() const OVERRIDE;
+    virtual std::string GetUsername() const OVERRIDE;
     virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
    private:

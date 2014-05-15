@@ -37,6 +37,17 @@ SigninGlobalError::~SigninGlobalError() {
       << "SigninGlobalError::Shutdown() was not called";
 }
 
+bool SigninGlobalError::HasError() {
+  return HasMenuItem();
+}
+
+void SigninGlobalError::AttemptToFixError(Browser* browser) {
+  if (!HasError())
+    return;
+
+  ExecuteMenuItem(browser);
+}
+
 void SigninGlobalError::Shutdown() {
   GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
   error_controller_->RemoveObserver(this);

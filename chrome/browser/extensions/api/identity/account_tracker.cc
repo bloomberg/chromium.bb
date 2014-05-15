@@ -247,6 +247,17 @@ std::string AccountTracker::GetAccountId() const {
     return account_errors_.begin()->first;
 }
 
+std::string AccountTracker::GetUsername() const {
+  std::string id = GetAccountId();
+  if (!id.empty()) {
+    std::map<std::string, AccountState>::const_iterator it =
+        accounts_.find(id);
+    if (it != accounts_.end())
+      return it->second.ids.email;
+  }
+  return std::string();
+}
+
 GoogleServiceAuthError AccountTracker::GetAuthStatus() const {
   if (account_errors_.size() == 0)
     return GoogleServiceAuthError::AuthErrorNone();

@@ -47,7 +47,7 @@ std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile) {
   // errors.
   SigninGlobalError* signin_error =
       SigninGlobalErrorFactory::GetForProfile(profile);
-  if (signin_error && signin_error->HasMenuItem())
+  if (signin_error && signin_error->HasError())
     errors.push_back(signin_error);
 
   // No auth error - now try other services. Currently the list is just hard-

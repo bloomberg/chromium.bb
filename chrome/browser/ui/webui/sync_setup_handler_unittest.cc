@@ -880,7 +880,7 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
   FakeAuthStatusProvider provider(
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_.get())->
           signin_error_controller());
-  provider.SetAuthError(kTestUser, error_);
+  provider.SetAuthError(kTestUser, kTestUser, error_);
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsOAuthRefreshTokenAvailable())

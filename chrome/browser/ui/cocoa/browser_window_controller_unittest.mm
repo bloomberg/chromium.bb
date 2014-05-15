@@ -694,7 +694,7 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemAuthError) {
           signin_error_controller());
   GoogleServiceAuthError error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-  provider.SetAuthError("user@gmail.com", error);
+  provider.SetAuthError("user@gmail.com", "user@gmail.com", error);
   [BrowserWindowController updateSigninItem:syncMenuItem
                                  shouldShow:YES
                              currentProfile:profile()];
