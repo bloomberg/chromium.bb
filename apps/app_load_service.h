@@ -64,7 +64,6 @@ class AppLoadService : public KeyedService,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  bool HasAppWindows(const std::string& extension_id);
   bool WasUnloadedForReload(
       const extensions::UnloadedExtensionInfo& unload_info);
   bool HasPostReloadAction(const std::string& extension_id);

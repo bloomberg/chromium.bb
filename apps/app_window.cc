@@ -238,6 +238,7 @@ AppWindow::AppWindow(BrowserContext* context,
       fullscreen_types_(FULLSCREEN_TYPE_NONE),
       show_on_first_paint_(false),
       first_paint_complete_(false),
+      is_hidden_(false),
       cached_always_on_top_(false) {
   extensions::ExtensionsBrowserClient* client =
       extensions::ExtensionsBrowserClient::Get();
@@ -278,6 +279,11 @@ void AppWindow::Init(const GURL& url,
     new_params.always_on_top = false;
 
   native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
+
+  // Prevent the browser process from shutting down while this window exists.
+  AppsClient::Get()->IncrementKeepAliveCount();
+  UpdateExtensionAppIcon();
+  AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
 
   if (new_params.hidden) {
     // Although the window starts hidden by default, calling Hide() here
@@ -330,13 +336,6 @@ void AppWindow::Init(const GURL& url,
     initial_bounds.Inset(frame_insets);
     apps::ResizeWebContents(web_contents, initial_bounds.size());
   }
-
-  // Prevent the browser process from shutting down while this window is open.
-  AppsClient::Get()->IncrementKeepAliveCount();
-
-  UpdateExtensionAppIcon();
-
-  AppWindowRegistry::Get(browser_context_)->AddAppWindow(this);
 }
 
 AppWindow::~AppWindow() {
@@ -678,6 +677,8 @@ void AppWindow::SetContentSizeConstraints(const gfx::Size& min_size,
 }
 
 void AppWindow::Show(ShowType show_type) {
+  is_hidden_ = false;
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAppsShowOnFirstPaint)) {
     show_on_first_paint_ = true;
@@ -704,6 +705,7 @@ void AppWindow::Hide() {
   // there was a non-empty paint. It should have no effect in a non-racy
   // scenario where the application is hiding then showing a window: the second
   // show will not be delayed.
+  is_hidden_ = true;
   show_on_first_paint_ = false;
   GetBaseWindow()->Hide();
   AppWindowRegistry::Get(browser_context_)->AppWindowHidden(this);

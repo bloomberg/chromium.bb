@@ -55,6 +55,60 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, RunningAppsAreRecorded) {
   restart_listener.WaitUntilSatisfied();
 }
 
+// Tests that apps are recorded in the preferences as active when and only when
+// they have visible windows.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ActiveAppsAreRecorded) {
+  ExtensionTestMessageListener ready_listener("ready", true);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("platform_apps/active_test"));
+  ASSERT_TRUE(extension);
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser()->profile());
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  // Open a visible window and check the app is marked active.
+  ready_listener.Reply("create");
+  ready_listener.Reset();
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(extension_prefs->IsActive(extension->id()));
+
+  // Close the window, then open a minimized window and check the app is active.
+  ready_listener.Reply("closeLastWindow");
+  ready_listener.Reset();
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  ready_listener.Reply("createMinimized");
+  ready_listener.Reset();
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(extension_prefs->IsActive(extension->id()));
+
+  // Close the window, then open a hidden window and check the app is not
+  // marked active.
+  ready_listener.Reply("closeLastWindow");
+  ready_listener.Reset();
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  ready_listener.Reply("createHidden");
+  ready_listener.Reset();
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  ASSERT_FALSE(extension_prefs->IsActive(extension->id()));
+
+  // Open another window and check the app is marked active.
+  ready_listener.Reply("create");
+  ready_listener.Reset();
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(extension_prefs->IsActive(extension->id()));
+
+  // Close the visible window and check the app has been marked inactive.
+  ready_listener.Reply("closeLastWindow");
+  ready_listener.Reset();
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  ASSERT_FALSE(extension_prefs->IsActive(extension->id()));
+
+  // Close the last window and exit.
+  ready_listener.Reply("closeLastWindow");
+  ready_listener.Reset();
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
+  ready_listener.Reply("exit");
+}
+
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, FileAccessIsSavedToPrefs) {
   content::WindowedNotificationObserver extension_suspended(
       chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,

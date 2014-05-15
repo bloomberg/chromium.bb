@@ -115,8 +115,10 @@ void AppLoadService::Observe(int type,
       if (!unload_info->extension->is_platform_app())
         break;
 
+      extensions::ExtensionPrefs* extension_prefs =
+          extensions::ExtensionPrefs::Get(profile_);
       if (WasUnloadedForReload(*unload_info) &&
-          HasAppWindows(unload_info->extension->id()) &&
+          extension_prefs->IsActive(unload_info->extension->id()) &&
           !HasPostReloadAction(unload_info->extension->id())) {
         post_reload_actions_[unload_info->extension->id()].action_type = LAUNCH;
       }
@@ -125,12 +127,6 @@ void AppLoadService::Observe(int type,
     default:
       NOTREACHED();
   }
-}
-
-bool AppLoadService::HasAppWindows(const std::string& extension_id) {
-  return !AppWindowRegistry::Get(profile_)
-              ->GetAppWindowsForApp(extension_id)
-              .empty();
 }
 
 bool AppLoadService::WasUnloadedForReload(

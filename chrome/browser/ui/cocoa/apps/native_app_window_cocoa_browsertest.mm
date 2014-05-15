@@ -52,58 +52,63 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   SetUpAppWithWindows(2);
   apps::AppWindowRegistry::AppWindowList windows =
       apps::AppWindowRegistry::Get(profile())->app_windows();
-  apps::NativeAppWindow* window = windows.front()->GetBaseWindow();
-  NSWindow* ns_window = window->GetNativeWindow();
-  apps::NativeAppWindow* other_window = windows.back()->GetBaseWindow();
-  NSWindow* other_ns_window = other_window->GetNativeWindow();
+
+  apps::AppWindow* app_window = windows.front();
+  apps::NativeAppWindow* native_window = app_window->GetBaseWindow();
+  NSWindow* ns_window = native_window->GetNativeWindow();
+
+  apps::AppWindow* other_app_window = windows.back();
+  apps::NativeAppWindow* other_native_window =
+      other_app_window->GetBaseWindow();
+  NSWindow* other_ns_window = other_native_window->GetNativeWindow();
 
   // Normal Hide/Show.
-  window->Hide();
+  app_window->Hide();
   EXPECT_FALSE([ns_window isVisible]);
-  window->Show();
+  app_window->Show(apps::AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
 
   // Normal Hide/ShowWithApp.
-  window->HideWithApp();
+  native_window->HideWithApp();
   EXPECT_FALSE([ns_window isVisible]);
-  window->ShowWithApp();
+  native_window->ShowWithApp();
   EXPECT_TRUE([ns_window isVisible]);
 
   // HideWithApp, Hide, ShowWithApp does not show.
-  window->HideWithApp();
-  window->Hide();
-  window->ShowWithApp();
+  native_window->HideWithApp();
+  app_window->Hide();
+  native_window->ShowWithApp();
   EXPECT_FALSE([ns_window isVisible]);
 
   // Hide, HideWithApp, ShowWithApp does not show.
-  window->HideWithApp();
-  window->ShowWithApp();
+  native_window->HideWithApp();
+  native_window->ShowWithApp();
   EXPECT_FALSE([ns_window isVisible]);
 
   // Return to shown state.
-  window->Show();
+  app_window->Show(apps::AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
 
   // HideWithApp the other window.
   EXPECT_TRUE([other_ns_window isVisible]);
-  other_window->HideWithApp();
+  other_native_window->HideWithApp();
   EXPECT_FALSE([other_ns_window isVisible]);
 
   // HideWithApp, Show shows all windows for this app.
-  window->HideWithApp();
+  native_window->HideWithApp();
   EXPECT_FALSE([ns_window isVisible]);
-  window->Show();
+  app_window->Show(apps::AppWindow::SHOW_ACTIVE);
   EXPECT_TRUE([ns_window isVisible]);
   EXPECT_TRUE([other_ns_window isVisible]);
 
   // Hide the other window.
-  other_window->Hide();
+  other_app_window->Hide();
   EXPECT_FALSE([other_ns_window isVisible]);
 
   // HideWithApp, ShowWithApp does not show the other window.
-  window->HideWithApp();
+  native_window->HideWithApp();
   EXPECT_FALSE([ns_window isVisible]);
-  window->ShowWithApp();
+  native_window->ShowWithApp();
   EXPECT_TRUE([ns_window isVisible]);
   EXPECT_FALSE([other_ns_window isVisible]);
 }

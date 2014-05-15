@@ -298,7 +298,6 @@ NativeAppWindowCocoa::NativeAppWindowCocoa(
     const AppWindow::CreateParams& params)
     : app_window_(app_window),
       has_frame_(params.frame == AppWindow::FRAME_CHROME),
-      is_hidden_(false),
       is_hidden_with_app_(false),
       is_maximized_(false),
       is_fullscreen_(false),
@@ -535,8 +534,6 @@ gfx::Rect NativeAppWindowCocoa::GetBounds() const {
 }
 
 void NativeAppWindowCocoa::Show() {
-  is_hidden_ = false;
-
   if (is_hidden_with_app_) {
     // If there is a shim to gently request attention, return here. Otherwise
     // show the window as usual.
@@ -551,12 +548,10 @@ void NativeAppWindowCocoa::Show() {
 }
 
 void NativeAppWindowCocoa::ShowInactive() {
-  is_hidden_ = false;
   [window() orderFront:window_controller_];
 }
 
 void NativeAppWindowCocoa::Hide() {
-  is_hidden_ = true;
   HideWithoutMarkingHidden();
 }
 
@@ -868,7 +863,7 @@ bool NativeAppWindowCocoa::HandledByExtensionCommand(NSEvent* event) {
 
 void NativeAppWindowCocoa::ShowWithApp() {
   is_hidden_with_app_ = false;
-  if (!is_hidden_)
+  if (!app_window_->is_hidden())
     ShowInactive();
 }
 

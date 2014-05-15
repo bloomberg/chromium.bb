@@ -62,11 +62,14 @@ class AppLifetimeMonitor : public KeyedService,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // AppWindowRegistry::Observer overrides:
-  virtual void OnAppWindowAdded(AppWindow* app_window) OVERRIDE;
   virtual void OnAppWindowRemoved(AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowHidden(apps::AppWindow* app_window) OVERRIDE;
+  virtual void OnAppWindowShown(apps::AppWindow* app_window) OVERRIDE;
 
   // KeyedService overrides:
   virtual void Shutdown() OVERRIDE;
+
+  bool HasVisibleAppWindows(apps::AppWindow* app_window) const;
 
   void NotifyAppStart(const std::string& app_id);
   void NotifyAppActivated(const std::string& app_id);
