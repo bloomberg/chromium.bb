@@ -8,7 +8,7 @@
 #include <map>
 #include <set>
 
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "ui/gfx/image/image.h"
 
 class GURL;
@@ -53,7 +53,7 @@ class ImageStore {
   void ChangeImageURL(const GURL& from, const GURL& to);
 
  protected:
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageStore);

@@ -11,7 +11,7 @@ TestImageStore::TestImageStore() {
 }
 
 bool TestImageStore::HasKey(const GURL& page_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   return store_.find(page_url) != store_.end();
 }
@@ -19,7 +19,7 @@ bool TestImageStore::HasKey(const GURL& page_url) {
 void TestImageStore::Insert(const GURL& page_url,
                               const GURL& image_url,
                               const gfx::Image& image) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   Erase(page_url);
   store_.insert(std::make_pair(
@@ -29,13 +29,13 @@ void TestImageStore::Insert(const GURL& page_url,
 }
 
 void TestImageStore::Erase(const GURL& page_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   store_.erase(page_url);
 }
 
 std::pair<gfx::Image, GURL> TestImageStore::Get(const GURL& page_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   ImageMap::const_iterator pair_enumerator = store_.find(page_url);
   if (pair_enumerator == store_.end())
@@ -45,7 +45,7 @@ std::pair<gfx::Image, GURL> TestImageStore::Get(const GURL& page_url) {
 }
 
 gfx::Size TestImageStore::GetSize(const GURL& page_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   ImageMap::const_iterator pair_enumerator = store_.find(page_url);
   if (pair_enumerator == store_.end())
@@ -55,7 +55,7 @@ gfx::Size TestImageStore::GetSize(const GURL& page_url) {
 }
 
 void TestImageStore::GetAllPageUrls(std::set<GURL>* urls) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(urls->empty());
 
   for (ImageMap::const_iterator it = store_.begin(); it != store_.end(); ++it)
@@ -63,11 +63,11 @@ void TestImageStore::GetAllPageUrls(std::set<GURL>* urls) {
 }
 
 void TestImageStore::ClearAll() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   store_.clear();
 }
 
 TestImageStore::~TestImageStore() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 }

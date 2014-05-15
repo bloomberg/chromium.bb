@@ -76,7 +76,7 @@ PersistentImageStore::PersistentImageStore(const base::FilePath& path)
 }
 
 bool PersistentImageStore::HasKey(const GURL& page_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (OpenDatabase() != sql::INIT_OK)
     return false;
 
@@ -92,7 +92,7 @@ bool PersistentImageStore::HasKey(const GURL& page_url) {
 void PersistentImageStore::Insert(const GURL& page_url,
                                   const GURL& image_url,
                                   const gfx::Image& image) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (OpenDatabase() != sql::INIT_OK)
     return;
 
@@ -122,7 +122,7 @@ void PersistentImageStore::Insert(const GURL& page_url,
 }
 
 void PersistentImageStore::Erase(const GURL& page_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (OpenDatabase() != sql::INIT_OK)
     return;
 
@@ -133,7 +133,7 @@ void PersistentImageStore::Erase(const GURL& page_url) {
 }
 
 std::pair<gfx::Image, GURL> PersistentImageStore::Get(const GURL& page_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (OpenDatabase() != sql::INIT_OK)
     return std::make_pair(gfx::Image(), GURL());
 
@@ -156,7 +156,7 @@ std::pair<gfx::Image, GURL> PersistentImageStore::Get(const GURL& page_url) {
 }
 
 gfx::Size PersistentImageStore::GetSize(const GURL& page_url) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (OpenDatabase() != sql::INIT_OK)
     return gfx::Size();
 
@@ -176,7 +176,7 @@ gfx::Size PersistentImageStore::GetSize(const GURL& page_url) {
 }
 
 void PersistentImageStore::GetAllPageUrls(std::set<GURL>* urls) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   DCHECK(urls->empty());
   if (OpenDatabase() != sql::INIT_OK)
     return;
@@ -188,7 +188,7 @@ void PersistentImageStore::GetAllPageUrls(std::set<GURL>* urls) {
 }
 
 void PersistentImageStore::ClearAll() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (OpenDatabase() != sql::INIT_OK)
     return;
 
@@ -198,11 +198,11 @@ void PersistentImageStore::ClearAll() {
 }
 
 PersistentImageStore::~PersistentImageStore() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 }
 
 sql::InitStatus PersistentImageStore::OpenDatabase() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   if (db_.is_open())
     return sql::INIT_OK;

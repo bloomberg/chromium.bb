@@ -13,7 +13,7 @@ ImageStore::~ImageStore() {
 }
 
 void ImageStore::ChangeImageURL(const GURL& from, const GURL& to) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
   if (!HasKey(from))
     return;
