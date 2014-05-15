@@ -145,7 +145,7 @@ void EventPath::calculatePath()
     while (current) {
         if (current->isShadowRoot() && m_event && determineDispatchBehavior(m_event, toShadowRoot(current), m_node) == StayInsideShadowDOM)
             break;
-        Vector<InsertionPoint*, 8> insertionPoints;
+        WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
         collectDestinationInsertionPoints(*current, insertionPoints);
         if (!insertionPoints.isEmpty()) {
             for (size_t i = 0; i < insertionPoints.size(); ++i) {

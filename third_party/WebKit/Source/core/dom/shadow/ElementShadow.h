@@ -89,7 +89,7 @@ private:
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
     void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
 
-    typedef HashMap<const Node*, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
+    typedef WillBeHeapHashMap<RawPtrWillBeMember<const Node>, DestinationInsertionPoints> NodeToDestinationInsertionPoints;
     NodeToDestinationInsertionPoints m_nodeToInsertionPoints;
 
     SelectRuleFeatureSet m_selectFeatures;

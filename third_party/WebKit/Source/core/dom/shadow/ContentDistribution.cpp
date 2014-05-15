@@ -37,7 +37,7 @@ void ContentDistribution::swap(ContentDistribution& other)
     m_indices.swap(other.m_indices);
 }
 
-void ContentDistribution::append(PassRefPtr<Node> node)
+void ContentDistribution::append(PassRefPtrWillBeRawPtr<Node> node)
 {
     ASSERT(node);
     ASSERT(!isActiveInsertionPoint(*node));
@@ -48,7 +48,7 @@ void ContentDistribution::append(PassRefPtr<Node> node)
 
 size_t ContentDistribution::find(const Node* node) const
 {
-    HashMap<const Node*, size_t>::const_iterator it = m_indices.find(node);
+    WillBeHeapHashMap<RawPtrWillBeMember<const Node>, size_t>::const_iterator it = m_indices.find(node);
     if (it == m_indices.end())
         return kNotFound;
 
@@ -69,6 +69,12 @@ Node* ContentDistribution::previousTo(const Node* node) const
     if (index == kNotFound || !index)
         return 0;
     return at(index - 1).get();
+}
+
+void ContentDistribution::trace(Visitor* visitor)
+{
+    visitor->trace(m_nodes);
+    visitor->trace(m_indices);
 }
 
 } // namespace WebCore

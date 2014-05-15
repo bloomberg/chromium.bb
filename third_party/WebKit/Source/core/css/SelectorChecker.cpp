@@ -380,7 +380,7 @@ template<typename SiblingTraversalStrategy>
 SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element* element, const SiblingTraversalStrategy& siblingTraversalStrategy, SelectorCheckingContext& nextContext, MatchResult* result) const
 {
     ASSERT(element);
-    Vector<InsertionPoint*, 8> insertionPoints;
+    WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
 
     const ContainerNode* scope = nextContext.scope;
     BehaviorAtBoundary behaviorAtBoundary = nextContext.behaviorAtBoundary;

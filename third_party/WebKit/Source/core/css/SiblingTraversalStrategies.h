@@ -115,8 +115,10 @@ inline int DOMSiblingTraversalStrategy::countElementsOfTypeAfter(Element& elemen
     return count;
 }
 
-struct ShadowDOMSiblingTraversalStrategy {
-    ShadowDOMSiblingTraversalStrategy(const Vector<Node*, 32>& siblings, int nth)
+class ShadowDOMSiblingTraversalStrategy FINAL {
+    STACK_ALLOCATED();
+public:
+    ShadowDOMSiblingTraversalStrategy(const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& siblings, int nth)
         : m_siblings(siblings)
         , m_nth(nth)
     {
@@ -133,7 +135,7 @@ struct ShadowDOMSiblingTraversalStrategy {
     int countElementsOfTypeAfter(Element&, const QualifiedName&) const;
 
 private:
-    const Vector<Node*, 32>& m_siblings;
+    const WillBeHeapVector<RawPtrWillBeMember<Node>, 32>& m_siblings;
     int m_nth;
 };
 

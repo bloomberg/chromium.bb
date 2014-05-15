@@ -38,7 +38,8 @@
 
 namespace WebCore {
 
-class DistributionPool {
+class DistributionPool FINAL {
+    STACK_ALLOCATED();
 public:
     explicit DistributionPool(const ContainerNode&);
     void clear();
@@ -48,7 +49,7 @@ public:
 
 private:
     void detachNonDistributedNodes();
-    Vector<Node*, 32> m_nodes;
+    WillBeHeapVector<RawPtrWillBeMember<Node>, 32> m_nodes;
     Vector<bool, 32> m_distributed;
 };
 
@@ -258,7 +259,7 @@ void ElementShadow::distribute()
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         HTMLShadowElement* shadowInsertionPoint = 0;
-        const Vector<RefPtr<InsertionPoint> >& insertionPoints = root->descendantInsertionPoints();
+        const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> >& insertionPoints = root->descendantInsertionPoints();
         for (size_t i = 0; i < insertionPoints.size(); ++i) {
             InsertionPoint* point = insertionPoints[i].get();
             if (!point->isActive())
@@ -355,6 +356,7 @@ void ElementShadow::clearDistribution()
 
 void ElementShadow::trace(Visitor* visitor)
 {
+    visitor->trace(m_nodeToInsertionPoints);
     // Shadow roots are linked with previous and next pointers which are traced.
     // It is therefore enough to trace one of the shadow roots here and the
     // rest will be traced from there.

@@ -97,11 +97,11 @@ public:
     unsigned childShadowRootCount() const;
 
     HTMLShadowElement* shadowInsertionPointOfYoungerShadowRoot() const;
-    void setShadowInsertionPointOfYoungerShadowRoot(PassRefPtr<HTMLShadowElement>);
+    void setShadowInsertionPointOfYoungerShadowRoot(PassRefPtrWillBeRawPtr<HTMLShadowElement>);
 
     void didAddInsertionPoint(InsertionPoint*);
     void didRemoveInsertionPoint(InsertionPoint*);
-    const Vector<RefPtr<InsertionPoint> >& descendantInsertionPoints();
+    const WillBeHeapVector<RefPtrWillBeMember<InsertionPoint> >& descendantInsertionPoints();
 
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 

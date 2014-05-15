@@ -2452,7 +2452,7 @@ void Node::updateAncestorConnectedSubframeCountForInsertion() const
 PassRefPtr<NodeList> Node::getDestinationInsertionPoints()
 {
     document().updateDistributionForNodeIfNeeded(this);
-    Vector<InsertionPoint*, 8> insertionPoints;
+    WillBeHeapVector<RawPtrWillBeMember<InsertionPoint>, 8> insertionPoints;
     collectDestinationInsertionPoints(*this, insertionPoints);
     Vector<RefPtr<Node> > filteredInsertionPoints;
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
