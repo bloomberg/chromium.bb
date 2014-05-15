@@ -143,7 +143,12 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
 #define MAYBE_CanForwardRemoteStream720p DISABLED_CanForwardRemoteStream720p
 #else
 #define MAYBE_CanForwardRemoteStream CanForwardRemoteStream
+// Flaky on TSAN v2. http://crbug.com/373637
+#if defined(THREAD_SANITIZER)
+#define MAYBE_CanForwardRemoteStream720p DISABLED_CanForwardRemoteStream720p
+#else
 #define MAYBE_CanForwardRemoteStream720p CanForwardRemoteStream720p
+#endif
 #endif
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CanForwardRemoteStream) {
 #if defined (OS_ANDROID)
@@ -231,6 +236,9 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CallWithSctpDataOnly) {
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
+#define MAYBE_CallWithDataAndMedia DISABLED_CallWithDataAndMedia
+#elif defined(THREAD_SANITIZER)
+// Flaky on TSAN v2: http://crbug.com/373637
 #define MAYBE_CallWithDataAndMedia DISABLED_CallWithDataAndMedia
 #else
 #define MAYBE_CallWithDataAndMedia CallWithDataAndMedia
