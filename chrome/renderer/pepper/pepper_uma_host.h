@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/host/resource_host.h"
@@ -63,11 +64,14 @@ class PepperUMAHost : public ppapi::host::ResourceHost {
 
   const GURL document_url_;
   bool is_plugin_in_process_;
+  base::FilePath plugin_base_name_;
 
   // Set of origins that can use UMA private APIs from NaCl.
   std::set<std::string> allowed_origins_;
   // Set of hashed histogram prefixes that can be used from this interface.
   std::set<std::string> allowed_histogram_prefixes_;
+  // Set of plugin files names that are allowed to use this interface.
+  std::set<std::string> allowed_plugin_base_names_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperUMAHost);
 };

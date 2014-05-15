@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "extensions/common/constants.h"
@@ -31,6 +32,10 @@ const char* const kWhitelistedHistogramPrefixes[] = {
     "CD190EA2B764EDF0BB97552A638D32072F3CFD41",  // see http://crbug.com/317833
 };
 
+const char* const kWhitelistedPluginBaseNames[] = {
+    "libwidevinecdmadapter.so"  // see http://crbug.com/368743
+};
+
 std::string HashPrefix(const std::string& histogram) {
   const std::string id_hash =
       base::SHA1HashString(histogram.substr(0, histogram.find('.')));
@@ -46,10 +51,17 @@ PepperUMAHost::PepperUMAHost(content::RendererPpapiHost* host,
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       document_url_(host->GetDocumentURL(instance)),
       is_plugin_in_process_(host->IsRunningInProcess()) {
+  if (host->GetPluginInstance(instance)) {
+    plugin_base_name_ =
+        host->GetPluginInstance(instance)->GetModulePath().BaseName();
+  }
+
   for (size_t i = 0; i < arraysize(kPredefinedAllowedUMAOrigins); ++i)
     allowed_origins_.insert(kPredefinedAllowedUMAOrigins[i]);
   for (size_t i = 0; i < arraysize(kWhitelistedHistogramPrefixes); ++i)
     allowed_histogram_prefixes_.insert(kWhitelistedHistogramPrefixes[i]);
+  for (size_t i = 0; i < arraysize(kWhitelistedPluginBaseNames); ++i)
+    allowed_plugin_base_names_.insert(kWhitelistedPluginBaseNames[i]);
 }
 
 PepperUMAHost::~PepperUMAHost() {}
@@ -83,6 +95,11 @@ bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
   if (IsPluginWhitelisted() &&
       allowed_histogram_prefixes_.find(HashPrefix(histogram)) !=
           allowed_histogram_prefixes_.end()) {
+    return true;
+  }
+
+  if (allowed_plugin_base_names_.find(plugin_base_name_.MaybeAsASCII()) !=
+      allowed_plugin_base_names_.end()) {
     return true;
   }
 
