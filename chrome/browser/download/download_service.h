@@ -35,8 +35,8 @@ class DownloadService : public KeyedService {
 
   // Get the interface to the history system. Returns NULL if profile is
   // incognito or if the DownloadManager hasn't been created yet or if there is
-  // no HistoryService for profile.
-  DownloadHistory* GetDownloadHistory();
+  // no HistoryService for profile. Virtual for testing.
+  virtual DownloadHistory* GetDownloadHistory();
 
 #if !defined(OS_ANDROID)
   extensions::ExtensionDownloadsEventRouter* GetExtensionEventRouter() {
@@ -88,6 +88,8 @@ class DownloadService : public KeyedService {
   // The UI controller is responsible for observing the download manager and
   // notifying the UI of any new downloads. Its lifetime matches that of the
   // associated download manager.
+  // Note on destruction order: download_ui_ depends on download_history_ and
+  // should be destroyed before the latter.
   scoped_ptr<DownloadUIController> download_ui_;
 
   // On Android, GET downloads are not handled by the DownloadManager.

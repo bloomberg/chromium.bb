@@ -117,14 +117,18 @@ class DownloadItemModel {
   void SetShouldShowInShelf(bool should_show);
 
   // Returns |true| if the UI should be notified when the download is ready to
-  // be presented in the UI. By default, this value is |false| and should be
-  // changed explicitly using SetShouldNotifyUI(). Note that this is indpendent
-  // of ShouldShowInShelf() since there might be actions other than showing in
-  // the shelf that the UI must perform.
+  // be presented in the UI. Note that this is indpendent of ShouldShowInShelf()
+  // since there might be actions other than showing in the shelf that the UI
+  // must perform.
   bool ShouldNotifyUI() const;
 
-  // Change what's returned by ShouldNotifyUI().
-  void SetShouldNotifyUI(bool should_notify);
+  // Returns |true| if the UI has been notified about this download. By default,
+  // this value is |false| and should be changed explicitly using
+  // SetWasUINotified().
+  bool WasUINotified() const;
+
+  // Change what's returned by WasUINotified().
+  void SetWasUINotified(bool should_notify);
 
   // Returns |true| if opening in the browser is preferred for this download. If
   // |false|, the download should be opened with the system default application.

@@ -63,8 +63,15 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
       static_cast<DownloadHistoryData*>(data);
   }
 
+  static const DownloadHistoryData* Get(const content::DownloadItem* item) {
+    const base::SupportsUserData::Data* data = item->GetUserData(kKey);
+    return (data == NULL) ? NULL
+                          : static_cast<const DownloadHistoryData*>(data);
+  }
+
   explicit DownloadHistoryData(content::DownloadItem* item)
-    : state_(NOT_PERSISTED) {
+      : state_(NOT_PERSISTED),
+        was_restored_from_history_(false) {
     item->SetUserData(kKey, this);
   }
 
@@ -73,6 +80,11 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
 
   PersistenceState state() const { return state_; }
   void SetState(PersistenceState s) { state_ = s; }
+
+  bool was_restored_from_history() const { return was_restored_from_history_; }
+  void set_was_restored_from_history(bool value) {
+    was_restored_from_history_ = value;
+  }
 
   // This allows DownloadHistory::OnDownloadUpdated() to see what changed in a
   // DownloadItem if anything, in order to prevent writing to the database
@@ -91,6 +103,7 @@ class DownloadHistoryData : public base::SupportsUserData::Data {
 
   PersistenceState state_;
   scoped_ptr<history::DownloadRow> info_;
+  bool was_restored_from_history_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadHistoryData);
 };
@@ -179,12 +192,12 @@ void DownloadHistory::HistoryAdapter::RemoveDownloads(
   history_->RemoveDownloads(ids);
 }
 
-
 DownloadHistory::Observer::Observer() {}
 DownloadHistory::Observer::~Observer() {}
 
-bool DownloadHistory::IsPersisted(content::DownloadItem* item) {
-  DownloadHistoryData* data = DownloadHistoryData::Get(item);
+// static
+bool DownloadHistory::IsPersisted(const content::DownloadItem* item) {
+  const DownloadHistoryData* data = DownloadHistoryData::Get(item);
   return data && (data->state() == DownloadHistoryData::PERSISTED);
 }
 
@@ -222,6 +235,19 @@ void DownloadHistory::RemoveObserver(DownloadHistory::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool DownloadHistory::WasRestoredFromHistory(
+    const content::DownloadItem* download) const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  const DownloadHistoryData* data = DownloadHistoryData::Get(download);
+
+  // The OnDownloadCreated handler sets the was_restored_from_history flag when
+  // resetting the loading_id_. So one of the two conditions below will hold for
+  // a download restored from history even if the caller of this method is
+  // racing with our OnDownloadCreated handler.
+  return (data && data->was_restored_from_history()) ||
+         download->GetId() == loading_id_;
+}
+
 void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // ManagerGoingDown() may have happened before the history loaded.
@@ -253,8 +279,8 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
       item->UpdateObservers();
     }
 #endif
-    DCHECK_EQ(DownloadHistoryData::Get(item)->state(),
-              DownloadHistoryData::PERSISTED);
+    DCHECK_EQ(DownloadHistoryData::PERSISTED,
+              DownloadHistoryData::Get(item)->state());
     ++history_size_;
   }
   notifier_.GetManager()->CheckForHistoryFilesRemoval();
@@ -346,6 +372,7 @@ void DownloadHistory::OnDownloadCreated(
   DownloadHistoryData* data = new DownloadHistoryData(item);
   if (item->GetId() == loading_id_) {
     data->SetState(DownloadHistoryData::PERSISTED);
+    data->set_was_restored_from_history(true);
     loading_id_ = content::DownloadItem::kInvalidId;
   }
   if (item->GetState() == content::DownloadItem::IN_PROGRESS) {

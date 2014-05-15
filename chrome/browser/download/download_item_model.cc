@@ -14,9 +14,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_crx_util.h"
+#include "chrome/browser/download/download_history.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -51,9 +53,9 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
     should_show_in_shelf_ = should_show_in_shelf;
   }
 
-  bool should_notify_ui() const { return should_notify_ui_; }
-  void set_should_notify_ui(bool should_notify_ui) {
-    should_notify_ui_ = should_notify_ui;
+  bool was_ui_notified() const { return was_ui_notified_; }
+  void set_was_ui_notified(bool was_ui_notified) {
+    was_ui_notified_ = was_ui_notified;
   }
 
   bool should_prefer_opening_in_browser() const {
@@ -73,9 +75,8 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
   // default.
   bool should_show_in_shelf_;
 
-  // Whether the UI should be notified when the download is ready to be
-  // presented.
-  bool should_notify_ui_;
+  // Whether the UI has been notified about this download.
+  bool was_ui_notified_;
 
   // Whether the download should be opened in the browser vs. the system handler
   // for the file type.
@@ -105,7 +106,7 @@ DownloadItemModelData* DownloadItemModelData::GetOrCreate(
 
 DownloadItemModelData::DownloadItemModelData()
     : should_show_in_shelf_(true),
-      should_notify_ui_(false),
+      was_ui_notified_(false),
       should_prefer_opening_in_browser_(false) {
 }
 
@@ -556,13 +557,37 @@ void DownloadItemModel::SetShouldShowInShelf(bool should_show) {
 }
 
 bool DownloadItemModel::ShouldNotifyUI() const {
-  const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
-  return data && data->should_notify_ui();
+  Profile* profile =
+      Profile::FromBrowserContext(download_->GetBrowserContext());
+  DownloadService* download_service =
+      DownloadServiceFactory::GetForBrowserContext(profile);
+  DownloadHistory* download_history =
+      (download_service ? download_service->GetDownloadHistory() : NULL);
+
+  // The browser is only interested in new downloads. Ones that were restored
+  // from history are not displayed on the shelf. The downloads page
+  // independently listens for new downloads when it is active. Note that the UI
+  // will be notified of downloads even if they are not meant to be displayed on
+  // the shelf (i.e. ShouldShowInShelf() returns false). This is because:
+  // *  The shelf isn't the only UI. E.g. on Android, the UI is the system
+  //    DownloadManager.
+  // *  There are other UI activities that need to be performed. E.g. if the
+  //    download was initiated from a new tab, then that tab should be closed.
+  //
+  // TODO(asanka): If an interrupted download is restored from history and is
+  // resumed, then ideally the UI should be notified.
+  return !download_history ||
+         !download_history->WasRestoredFromHistory(download_);
 }
 
-void DownloadItemModel::SetShouldNotifyUI(bool should_notify) {
+bool DownloadItemModel::WasUINotified() const {
+  const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
+  return data && data->was_ui_notified();
+}
+
+void DownloadItemModel::SetWasUINotified(bool was_ui_notified) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
-  data->set_should_notify_ui(should_notify);
+  data->set_was_ui_notified(was_ui_notified);
 }
 
 bool DownloadItemModel::ShouldPreferOpeningInBrowser() const {

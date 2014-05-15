@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_ui_controller.h"
 
+#include "base/callback.h"
 #include "base/stl_util.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -32,11 +33,17 @@ class DefaultUIControllerDelegateAndroid
 
  private:
   // DownloadUIController::Delegate
-  virtual void NotifyDownloadStarting(content::DownloadItem* item) OVERRIDE;
+  virtual void OnNewDownloadReady(content::DownloadItem* item) OVERRIDE;
 };
 
-void DefaultUIControllerDelegateAndroid::NotifyDownloadStarting(
+void DefaultUIControllerDelegateAndroid::OnNewDownloadReady(
     content::DownloadItem* item) {
+  // The Android DownloadController is only interested in IN_PROGRESS downloads.
+  // Ones which are INTERRUPTED etc. can't be handed over to the Android
+  // DownloadManager.
+  if (item->GetState() != content::DownloadItem::IN_PROGRESS)
+    return;
+
   // GET downloads without authentication are delegated to the Android
   // DownloadManager. Chrome is responsible for the rest.  See
   // InterceptDownloadResourceThrottle::ProcessDownloadRequest().
@@ -54,12 +61,12 @@ class DefaultUIControllerDelegate : public DownloadUIController::Delegate {
 
  private:
   // DownloadUIController::Delegate
-  virtual void NotifyDownloadStarting(content::DownloadItem* item) OVERRIDE;
+  virtual void OnNewDownloadReady(content::DownloadItem* item) OVERRIDE;
 
   Profile* profile_;
 };
 
-void DefaultUIControllerDelegate::NotifyDownloadStarting(
+void DefaultUIControllerDelegate::OnNewDownloadReady(
     content::DownloadItem* item) {
   content::WebContents* web_contents = item->GetWebContents();
   Browser* browser =
@@ -105,11 +112,6 @@ DownloadUIController::~DownloadUIController() {
 
 void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
                                              content::DownloadItem* item) {
-  // If this isn't a new download, there's nothing to do.
-  if (item->GetState() != content::DownloadItem::IN_PROGRESS)
-    return;
-
-  DownloadItemModel(item).SetShouldNotifyUI(true);
   // SavePackage downloads are created in a state where they can be shown in the
   // browser. Call OnDownloadUpdated() once to notify the UI immediately.
   OnDownloadUpdated(manager, item);
@@ -117,19 +119,17 @@ void DownloadUIController::OnDownloadCreated(content::DownloadManager* manager,
 
 void DownloadUIController::OnDownloadUpdated(content::DownloadManager* manager,
                                              content::DownloadItem* item) {
+  DownloadItemModel item_model(item);
+
   // Ignore if we've already notified the UI about |item| or if it isn't a new
   // download.
-  if (!DownloadItemModel(item).ShouldNotifyUI())
+  if (item_model.WasUINotified() || !item_model.ShouldNotifyUI())
     return;
 
   // Wait until the target path is determined.
   if (item->GetTargetFilePath().empty())
     return;
 
-  // Can't be complete. That would imply that we didn't receive an
-  // OnDownloadUpdated() after the target was determined.
-  DCHECK_NE(content::DownloadItem::COMPLETE, item->GetState());
-
-  DownloadItemModel(item).SetShouldNotifyUI(false);
-  delegate_->NotifyDownloadStarting(item);
+  DownloadItemModel(item).SetWasUINotified(true);
+  delegate_->OnNewDownloadReady(item);
 }

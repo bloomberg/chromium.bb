@@ -67,8 +67,11 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
     virtual void OnDownloadHistoryDestroyed() {}
   };
 
-  // Returns true if the item is persisted.
-  static bool IsPersisted(content::DownloadItem* item);
+  // Returns true if the download is persisted. Not reliable when called from
+  // within a DownloadManager::Observer::OnDownloadCreated handler since the
+  // persisted state may not yet have been updated for a download that was
+  // restored from history.
+  static bool IsPersisted(const content::DownloadItem* item);
 
   // Neither |manager| nor |history| may be NULL.
   // DownloadService creates DownloadHistory some time after DownloadManager is
@@ -81,6 +84,14 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Returns true if the download was restored from history. Safe to call from
+  // within a DownloadManager::Observer::OnDownloadCreated handler and can be
+  // used to distinguish between downloads that were created due to new requests
+  // vs. downloads that were created due to being restored from history. Note
+  // that the return value is only reliable for downloads that were restored by
+  // this specific DownloadHistory instance.
+  bool WasRestoredFromHistory(const content::DownloadItem* item) const;
 
  private:
   typedef std::set<content::DownloadItem*> ItemSet;

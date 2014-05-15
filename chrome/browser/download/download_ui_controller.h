@@ -10,27 +10,20 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 
-class Profile;
-
-namespace content {
-class WebContents;
-}
-
-// This class handles the task of observing for download notifications and
+// This class handles the task of observing a single DownloadManager for
 // notifying the UI when a new download should be displayed in the UI.
-//
-// This class monitors each IN_PROGRESS download that is created (for which
-// OnDownloadCreated is called) until:
-// - it is assigned a target path or
-// - is interrupted.
-// Then the NotifyDownloadStarting() method of the Delegate is invoked.
+// It invokes the OnNewDownloadReady() method of hte Delegate when the
+// target path is available for a new download.
 class DownloadUIController : public AllDownloadItemNotifier::Observer {
  public:
   // The delegate is responsible for figuring out how to notify the UI.
   class Delegate {
    public:
     virtual ~Delegate();
-    virtual void NotifyDownloadStarting(content::DownloadItem* item) = 0;
+
+    // This method is invoked to notify the UI of the new download |item|. Note
+    // that |item| may be in any state by the time this method is invoked.
+    virtual void OnNewDownloadReady(content::DownloadItem* item) = 0;
   };
 
   // |manager| is the download manager to observe for new downloads. If

@@ -65,9 +65,8 @@ ChromeDownloadManagerDelegate* DownloadService::GetDownloadManagerDelegate() {
 
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
-  scoped_ptr<DownloadUIController::Delegate> empty_ui_delegate;
-  download_ui_.reset(new DownloadUIController(manager,
-                                              empty_ui_delegate.Pass()));
+  download_ui_.reset(new DownloadUIController(
+      manager, scoped_ptr<DownloadUIController::Delegate>()));
 
   // Include this download manager in the set monitored by the
   // global status updater.

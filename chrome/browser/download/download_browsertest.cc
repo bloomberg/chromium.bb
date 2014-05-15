@@ -1939,6 +1939,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_History) {
   std::string last_modified = item->GetLastModifiedTime();
   base::TrimWhitespaceASCII(last_modified, base::TRIM_ALL, &last_modified);
   EXPECT_EQ("Mon, 13 Nov 2006 20:31:09 GMT", last_modified);
+
+  // Downloads that were restored from history shouldn't cause the download
+  // shelf to be displayed.
+  EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 }
 
 // Test for crbug.com/14505. This tests that chrome:// urls are still functional
