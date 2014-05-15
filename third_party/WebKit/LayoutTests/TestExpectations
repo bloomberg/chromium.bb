@@ -590,16 +590,6 @@ crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ Failure P
 crbug.com/255714 [ Linux ] editing/execCommand/switch-list-type-with-orphaned-li.html [ Failure Pass ]
 crbug.com/231910 fast/dom/vertical-scrollbar-in-rtl.html [ Failure Pass ]
 
-# Mac has overlay scrollbars depending on external settings.
-crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320-2x.html [ Failure ]
-crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320.html [ Failure ]
-crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-320-only-viewport.html [ Failure ]
-crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980-2x.html [ Failure ]
-crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980.html [ Failure ]
-crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-980-only-viewport.html [ Failure ]
-crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-restore.html [ Failure ]
-crbug.com/304841 [ SnowLeopard ] inspector/device-emulation/device-emulation-small.html [ Failure ]
-
 # Mac sets NSUserDefault setting to turn off smooth scrolling, and it cannot be turned on for a single test.
 crbug.com/364614 [ Mac ] fast/scroll-behavior/sub-frame-scroll.html [ Failure ]
 
