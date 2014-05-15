@@ -78,8 +78,8 @@ trace_translate (const char *tableList, const widechar * inbufx,
   if (tableList == NULL || inbufx == NULL || inlen == NULL || outbuf ==
       NULL || outlen == NULL)
     return 0;
-  lou_log(LOG_INFO, "Performing translation: tableList=%s, inlen=%d", tableList, *inlen);
-  logWidecharBuf(LOG_INFO, "Inbuf=", inbufx, *inlen);
+  lou_log(LOG_DEBUG, "Performing translation: tableList=%s, inlen=%d", tableList, *inlen);
+  logWidecharBuf(LOG_DEBUG, "Inbuf=", inbufx, *inlen);
   if ((modex & otherTrans))
     return other_translate (tableList, inbufx,
 			    inlen, outbuf, outlen,
@@ -273,8 +273,8 @@ trace_translate (const char *tableList, const widechar * inbufx,
     }
   if (rulesLen != NULL)
     *rulesLen = appliedRulesCount;
-  lou_log(LOG_INFO, "Translation complete: outlen=%d", *outlen);
-  logWidecharBuf(LOG_INFO, "Outbuf=", (const widechar *)outbuf, *outlen);
+  lou_log(LOG_DEBUG, "Translation complete: outlen=%d", *outlen);
+  logWidecharBuf(LOG_DEBUG, "Outbuf=", (const widechar *)outbuf, *outlen);
   return goodTrans;
 }
 
