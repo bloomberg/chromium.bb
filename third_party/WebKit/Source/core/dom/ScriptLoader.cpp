@@ -54,6 +54,7 @@ namespace WebCore {
 
 ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadyStarted)
     : m_element(element)
+    , m_resource(0)
     , m_startLineNumber(WTF::OrdinalNumber::beforeFirst())
     , m_parserInserted(parserInserted)
     , m_isExternalScript(false)
@@ -72,6 +73,7 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
 
 ScriptLoader::~ScriptLoader()
 {
+    stopLoadRequest();
 }
 
 void ScriptLoader::didNotifySubtreeInsertionsToDocument()
@@ -163,10 +165,10 @@ bool ScriptLoader::isScriptTypeSupported(LegacyTypeSupport supportLegacyTypes) c
 }
 
 // http://dev.w3.org/html5/spec/Overview.html#prepare-a-script
-ScriptPrep ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, LegacyTypeSupport supportLegacyTypes)
+bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, LegacyTypeSupport supportLegacyTypes)
 {
     if (m_alreadyStarted)
-        return ScriptPrep::failed();
+        return false;
 
     ScriptLoaderClient* client = this->client();
 
@@ -183,13 +185,13 @@ ScriptPrep ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, 
 
     // FIXME: HTML5 spec says we should check that all children are either comments or empty text nodes.
     if (!client->hasSourceAttribute() && !m_element->firstChild())
-        return ScriptPrep::failed();
+        return false;
 
     if (!m_element->inDocument())
-        return ScriptPrep::failed();
+        return false;
 
     if (!isScriptTypeSupported(supportLegacyTypes))
-        return ScriptPrep::failed();
+        return false;
 
     if (wasParserInserted) {
         m_parserInserted = true;
@@ -203,24 +205,19 @@ ScriptPrep ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, 
     Document* contextDocument = elementDocument.contextDocument().get();
 
     if (!contextDocument || !contextDocument->allowExecutingScripts(m_element))
-        return ScriptPrep::failed();
+        return false;
 
     if (!isScriptForEventSupported())
-        return ScriptPrep::failed();
+        return false;
 
     if (!client->charsetAttributeValue().isEmpty())
         m_characterEncoding = client->charsetAttributeValue();
     else
         m_characterEncoding = elementDocument.charset();
 
-    ResourcePtr<ScriptResource> resource;
     if (client->hasSourceAttribute()) {
-        resource = fetchScript(client->sourceAttributeValue());
-        if (!resource) {
-            dispatchErrorEvent();
-            return ScriptPrep::failed();
-        }
-
+        if (!fetchScript(client->sourceAttributeValue()))
+            return false;
     }
 
     if (client->hasSourceAttribute() && client->deferAttributeValue() && m_parserInserted && !client->asyncAttributeValue()) {
@@ -233,9 +230,11 @@ ScriptPrep ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, 
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
         m_willExecuteInOrder = true;
-        contextDocument->scriptRunner()->queueScriptForExecution(this, resource, ScriptRunner::IN_ORDER_EXECUTION);
+        contextDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::IN_ORDER_EXECUTION);
+        m_resource->addClient(this);
     } else if (client->hasSourceAttribute()) {
-        contextDocument->scriptRunner()->queueScriptForExecution(this, resource, ScriptRunner::ASYNC_EXECUTION);
+        contextDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::ASYNC_EXECUTION);
+        m_resource->addClient(this);
     } else {
         // Reset line numbering for nested writes.
         TextPosition position = elementDocument.isInDocumentWrite() ? TextPosition() : scriptStartPosition;
@@ -243,25 +242,18 @@ ScriptPrep ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, 
         executeScript(ScriptSourceCode(scriptContent(), scriptURL, position));
     }
 
-    // FIXME: This second "subscribing" parameter is a mess. We shouldn't have to need this.
-    if (resource)
-        setResource(resource, !m_willBeParserExecuted);
-
-    // We have to return fetchedResource instead of let callers ask ScriptLoader::resource()
-    // because resource() can be null when it is accessed: Following setResource() can trigger clearResource().
-    return ScriptPrep(true, resource);
+    return true;
 }
 
-ResourcePtr<ScriptResource> ScriptLoader::fetchScript(const String& sourceUrl)
+bool ScriptLoader::fetchScript(const String& sourceUrl)
 {
     ASSERT(m_element);
 
     RefPtrWillBeRawPtr<Document> elementDocument(m_element->document());
     if (!m_element->inDocument() || m_element->document() != elementDocument)
-        return ResourcePtr<ScriptResource>();
+        return false;
 
-    ASSERT(!resource());
-    ResourcePtr<ScriptResource> resource;
+    ASSERT(!m_resource);
     if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
         FetchRequest request(ResourceRequest(elementDocument->completeURL(sourceUrl)), m_element->localName());
 
@@ -274,11 +266,15 @@ ResourcePtr<ScriptResource> ScriptLoader::fetchScript(const String& sourceUrl)
         if (isValidScriptNonce)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
 
-        resource = elementDocument->fetcher()->fetchScript(request);
+        m_resource = elementDocument->fetcher()->fetchScript(request);
         m_isExternalScript = true;
     }
 
-    return resource;
+    if (m_resource)
+        return true;
+
+    dispatchErrorEvent();
+    return false;
 }
 
 bool isHTMLScriptLoader(Element* element)
@@ -313,7 +309,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
         return;
 
     if (m_isExternalScript) {
-        ScriptResource* resource = this->resource() ? this->resource() : sourceCode.resource();
+        ScriptResource* resource = m_resource ? m_resource.get() : sourceCode.resource();
         if (resource && !resource->mimeTypeAllowedByNosniff()) {
             contextDocument->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + resource->url().elidedString() + "' because its MIME type ('" + resource->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
             return;
@@ -345,6 +341,15 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     }
 }
 
+void ScriptLoader::stopLoadRequest()
+{
+    if (m_resource) {
+        if (!m_willBeParserExecuted)
+            m_resource->removeClient(this);
+        m_resource = 0;
+    }
+}
+
 void ScriptLoader::execute(ScriptResource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
@@ -355,13 +360,12 @@ void ScriptLoader::execute(ScriptResource* resource)
         executeScript(ScriptSourceCode(resource));
         dispatchLoadEvent();
     }
-
-    clearResource();
+    resource->removeClient(this);
 }
 
 void ScriptLoader::cancel(Document* contextDocument)
 {
-    if (!resource())
+    if (!m_resource)
         return;
     finishLoading(contextDocument, FinishWithCancel);
 }
@@ -371,12 +375,11 @@ void ScriptLoader::notifyFinished(Resource* resource)
     // Resource possibly invokes this notifyFinished() more than
     // once because ScriptLoader doesn't unsubscribe itself from
     // Resource here and does it in execute() instead.
-    // We use resource() to check if this function is already called.
-    ASSERT_UNUSED(resource, resource == this->resource());
-    if (!this->resource())
+    // We use m_resource to check if this function is already called.
+    ASSERT_UNUSED(resource, resource == m_resource);
+    if (!m_resource)
         return;
 
-    RefPtr<Element> protect(m_element);
     RefPtr<Document> elementDocument(m_element->document());
     RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
     finishLoading(contextDocument.get(), resource->errorOccurred() ? FinishWithError : FinishSuccessfully);
@@ -384,27 +387,28 @@ void ScriptLoader::notifyFinished(Resource* resource)
 
 void ScriptLoader::finishLoading(Document* contextDocument, ScriptLoader::FinishType type)
 {
-    if (!m_willBeParserExecuted && contextDocument)
-        notifyRunnerFinishLoading(contextDocument->scriptRunner(), type);
-    clearResource();
-}
+    if (!contextDocument)
+        return;
 
-void ScriptLoader::notifyRunnerFinishLoading(ScriptRunner* runner, ScriptLoader::FinishType type)
-{
     switch (type) {
     case FinishWithCancel:
-        runner->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        if (!m_willBeParserExecuted)
+            contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        stopLoadRequest();
         break;
     case FinishWithError:
+        ASSERT(!m_willBeParserExecuted);
         dispatchErrorEvent();
-        runner->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        m_resource = 0;
         break;
     case FinishSuccessfully:
-        runner->notifyScriptReady(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        ASSERT(!m_willBeParserExecuted);
+        contextDocument->scriptRunner()->notifyScriptReady(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
+        m_resource = 0;
         break;
     }
 }
-
 
 bool ScriptLoader::ignoresLoadRequest() const
 {
