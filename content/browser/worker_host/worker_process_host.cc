@@ -373,9 +373,8 @@ void WorkerProcessHost::OnProcessLaunched() {
 }
 
 bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
-  bool msg_is_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(WorkerProcessHost, message)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextClosed,
                         OnWorkerContextClosed)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextDestroyed,
@@ -393,13 +392,6 @@ bool WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
                         OnForceKillWorkerProcess)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
-
-  if (!msg_is_ok) {
-    NOTREACHED();
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_WPH"));
-    base::KillProcess(
-        process_->GetData().handle, RESULT_CODE_KILLED_BAD_MESSAGE, false);
-  }
 
   return handled;
 }

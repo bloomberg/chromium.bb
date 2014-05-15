@@ -933,6 +933,8 @@
         TRACK_RUN_IN_IPC_HANDLER(member_func);                                 \
         msg_is_ok__ = msg_class::Dispatch(&ipc_message__, obj, this,           \
                                           param__, &member_func);              \
+        if (!msg_is_ok__)                                                      \
+          ipc_message__.set_dispatch_error();                                  \
       }                                                                        \
       break;
 
@@ -944,6 +946,8 @@
         TRACK_RUN_IN_IPC_HANDLER(member_func);                                 \
         msg_is_ok__ = msg_class::DispatchDelayReply(&ipc_message__, obj,       \
                                                   param__, &member_func);      \
+        if (!msg_is_ok__)                                                      \
+          ipc_message__.set_dispatch_error();                                  \
       }                                                                        \
       break;
 

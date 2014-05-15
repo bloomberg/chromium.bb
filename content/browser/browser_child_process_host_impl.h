@@ -64,6 +64,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
+  virtual void OnBadMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Removes this host from the host list. Calls ChildProcessHost::ForceShutdown
   void ForceShutdown();
@@ -80,6 +81,8 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
 
   // Called when an instance of a particular child is created in a page.
   static void NotifyProcessInstanceCreated(const ChildProcessData& data);
+
+  static void HistogramBadMessageTerminated(int process_type);
 
   BrowserChildProcessHostDelegate* delegate() const { return delegate_; }
 

@@ -28,6 +28,9 @@ class IPC_EXPORT Listener {
   // This method is not called when a channel is closed normally.
   virtual void OnChannelError() {}
 
+  // Called when a message's deserialization failed.
+  virtual void OnBadMessageReceived(const Message& message) {}
+
 #if defined(OS_POSIX)
   // Called on the server side when a channel that listens for connections
   // denies an attempt to connect.

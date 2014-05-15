@@ -95,6 +95,8 @@ bool ChannelReader::DispatchInputData(const char* input_data,
         HandleInternalMessage(m);
       else
         listener_->OnMessageReceived(m);
+      if (m.dispatch_error())
+        listener_->OnBadMessageReceived(m);
       p = message_tail;
     } else {
       // Last message is partial.

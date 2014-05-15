@@ -219,6 +219,12 @@ void BrowserChildProcessHostImpl::NotifyProcessInstanceCreated(
                     BrowserChildProcessInstanceCreated(data));
 }
 
+void BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
+    int process_type) {
+  UMA_HISTOGRAM_ENUMERATION("ChildProcess.BadMessgeTerminated", process_type,
+                            PROCESS_TYPE_MAX);
+}
+
 base::TerminationStatus BrowserChildProcessHostImpl::GetTerminationStatus(
     bool known_dead, int* exit_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -250,6 +256,12 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32 peer_pid) {
 
 void BrowserChildProcessHostImpl::OnChannelError() {
   delegate_->OnChannelError();
+}
+
+void BrowserChildProcessHostImpl::OnBadMessageReceived(
+    const IPC::Message& message) {
+  HistogramBadMessageTerminated(data_.process_type);
+  base::KillProcess(GetHandle(), RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 
 bool BrowserChildProcessHostImpl::CanShutdown() {

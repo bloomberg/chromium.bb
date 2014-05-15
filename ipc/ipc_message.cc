@@ -47,7 +47,7 @@ Message::Message()
   header()->num_fds = 0;
   header()->pad = 0;
 #endif
-  InitLoggingVariables();
+  Init();
 }
 
 Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
@@ -60,21 +60,22 @@ Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
   header()->num_fds = 0;
   header()->pad = 0;
 #endif
-  InitLoggingVariables();
+  Init();
 }
 
 Message::Message(const char* data, int data_len) : Pickle(data, data_len) {
-  InitLoggingVariables();
+  Init();
 }
 
 Message::Message(const Message& other) : Pickle(other) {
-  InitLoggingVariables();
+  Init();
 #if defined(OS_POSIX)
   file_descriptor_set_ = other.file_descriptor_set_;
 #endif
 }
 
-void Message::InitLoggingVariables() {
+void Message::Init() {
+  dispatch_error_ = false;
 #ifdef IPC_MESSAGE_LOG_ENABLED
   received_time_ = 0;
   dont_log_ = false;

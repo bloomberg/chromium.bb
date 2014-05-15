@@ -64,6 +64,10 @@ bool ChannelProxy::Context::TryFilters(const Message& message) {
 #endif
 
   if (message_filter_router_->TryFilters(message)) {
+    if (message.dispatch_error()) {
+      listener_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&Context::OnDispatchBadMessage, this, message));
+    }
 #ifdef IPC_MESSAGE_LOG_ENABLED
     if (logger->Enabled())
       logger->OnPostDispatchMessage(message, channel_id_);
@@ -267,6 +271,8 @@ void ChannelProxy::Context::OnDispatchMessage(const Message& message) {
 #endif
 
   listener_->OnMessageReceived(message);
+  if (message.dispatch_error())
+    listener_->OnBadMessageReceived(message);
 
 #ifdef IPC_MESSAGE_LOG_ENABLED
   if (logger->Enabled())
@@ -288,6 +294,12 @@ void ChannelProxy::Context::OnDispatchConnected() {
 void ChannelProxy::Context::OnDispatchError() {
   if (listener_)
     listener_->OnChannelError();
+}
+
+// Called on the listener's thread
+void ChannelProxy::Context::OnDispatchBadMessage(const Message& message) {
+  if (listener_)
+    listener_->OnBadMessageReceived(message);
 }
 
 //-----------------------------------------------------------------------------

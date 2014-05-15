@@ -138,6 +138,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
+  virtual void OnBadMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // ChildProcessLauncher::Client implementation.
   virtual void OnProcessLaunched() OVERRIDE;

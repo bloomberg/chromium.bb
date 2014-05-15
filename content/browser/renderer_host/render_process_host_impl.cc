@@ -38,6 +38,7 @@
 #include "cc/base/switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_message_filter.h"
@@ -1308,8 +1309,7 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
   mark_child_process_activity_time();
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Dispatch control messages.
-    bool msg_is_ok = true;
-    IPC_BEGIN_MESSAGE_MAP_EX(RenderProcessHostImpl, msg, msg_is_ok)
+    IPC_BEGIN_MESSAGE_MAP(RenderProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DumpHandlesDone,
@@ -1322,15 +1322,8 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
       // Adding single handlers for your service here is fine, but once your
       // service needs more than one handler, please extract them into a new
       // message filter and add that filter to CreateMessageFilters().
-    IPC_END_MESSAGE_MAP_EX()
+    IPC_END_MESSAGE_MAP()
 
-    if (!msg_is_ok) {
-      // The message had a handler, but its de-serialization failed.
-      // We consider this a capital crime. Kill the renderer if we have one.
-      LOG(ERROR) << "bad message " << msg.type() << " terminating renderer.";
-      RecordAction(base::UserMetricsAction("BadMessageTerminate_BRPH"));
-      ReceivedBadMessage();
-    }
     return true;
   }
 
@@ -1347,11 +1340,10 @@ bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
 
     // If this is a SwapBuffers, we need to ack it if we're not going to handle
     // it so that the GPU process doesn't get stuck in unscheduled state.
-    bool msg_is_ok = true;
-    IPC_BEGIN_MESSAGE_MAP_EX(RenderProcessHostImpl, msg, msg_is_ok)
+    IPC_BEGIN_MESSAGE_MAP(RenderProcessHostImpl, msg)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CompositorSurfaceBuffersSwapped,
                           OnCompositorSurfaceBuffersSwappedNoHost)
-    IPC_END_MESSAGE_MAP_EX()
+    IPC_END_MESSAGE_MAP()
     return true;
   }
   return listener->OnMessageReceived(msg);
@@ -1370,6 +1362,15 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
 
 void RenderProcessHostImpl::OnChannelError() {
   ProcessDied(true /* already_dead */);
+}
+
+void RenderProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
+  // Message de-serialization failed. We consider this a capital crime. Kill the
+  // renderer if we have one.
+  LOG(ERROR) << "bad message " << message.type() << " terminating renderer.";
+  BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
+      PROCESS_TYPE_RENDERER);
+  ReceivedBadMessage();
 }
 
 BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {

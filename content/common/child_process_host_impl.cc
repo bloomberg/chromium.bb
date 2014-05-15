@@ -293,6 +293,10 @@ void ChildProcessHostImpl::OnChannelError() {
   delegate_->OnChildDisconnected();
 }
 
+void ChildProcessHostImpl::OnBadMessageReceived(const IPC::Message& message) {
+  delegate_->OnBadMessageReceived(message);
+}
+
 void ChildProcessHostImpl::OnAllocateSharedMemory(
     uint32 buffer_size,
     base::SharedMemoryHandle* handle) {

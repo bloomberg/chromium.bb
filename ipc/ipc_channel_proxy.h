@@ -180,6 +180,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     void AddFilter(MessageFilter* filter);
     void OnDispatchConnected();
     void OnDispatchError();
+    void OnDispatchBadMessage(const Message& message);
 
     scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;
     Listener* listener_;

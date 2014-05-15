@@ -2059,6 +2059,148 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ChildProcess.BadMessgeTerminated" enum="ProcessType2">
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Count of child processes killed because they sent an IPC that couldn't be
+    deserialized..
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.Crashed" enum="ProcessType">
+  <obsolete>
+    Deprecated 3/2013. Renamed to ChildProcess.Crashed2.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Count of child process crashes grouped by process type.</summary>
+</histogram>
+
+<histogram name="ChildProcess.Crashed2" enum="ProcessType2">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Count of child process crashes grouped by process type.</summary>
+</histogram>
+
+<histogram name="ChildProcess.CrashedWasAlive" enum="ProcessType">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process crashes that we miscounted because we took the exit
+    code too early. Grouped by process type.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.Crashes" enum="ProcessType">
+  <obsolete>
+    Deprecated 10/2011. Renamed to ChildProcess.Crashed.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Count of child process crashes grouped by process type.</summary>
+</histogram>
+
+<histogram name="ChildProcess.CrashesWasAlive" enum="ProcessType">
+  <obsolete>
+    Deprecated 10/2011. Renamed to ChildProcess.CrashedWasAlive.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process crashes that we miscounted because we took the exit
+    code too early. Grouped by process type.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.DefaultCase" enum="ProcessType">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process crashes for which we were not able to understand the
+    exit code, grouped by process type.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.Disconnected" enum="ProcessType">
+  <obsolete>
+    Deprecated 3/2013. Renamed to ChildProcess.Disconnected2.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process abnormal channel disconnects grouped by process type.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.Disconnected2" enum="ProcessType2">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process abnormal channel disconnects grouped by process type.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.DisconnectedAlive" enum="ProcessType">
+  <obsolete>
+    Deprecated 3/2013. Renamed to ChildProcess.DisconnectedAlive2.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process abnormal channel disconnects that are not classified
+    and reported because we took the exit code too early. Grouped by process
+    type.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.DisconnectedAlive2" enum="ProcessType2">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process abnormal channel disconnects that are not classified
+    and reported because we took the exit code too early. Grouped by process
+    type.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.Killed" enum="ProcessType">
+  <obsolete>
+    Deprecated 3/2013. Renamed to ChildProcess.Killed2.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Count of child process kills grouped by process type.</summary>
+</histogram>
+
+<histogram name="ChildProcess.Killed2" enum="ProcessType2">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Count of child process kills grouped by process type.</summary>
+</histogram>
+
+<histogram name="ChildProcess.KilledByExtensionAPI">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child processes killed by the extension API
+    (experimental.processes.terminate)
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.KilledWasAlive" enum="ProcessType">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process kills that we miscounted because we took the exit
+    code too early. Grouped by process type.
+  </summary>
+</histogram>
+
+<histogram name="ChildProcess.Kills" enum="ProcessType">
+  <obsolete>
+    Deprecated 10/2011. Renamed to ChildProcess.Killed.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>Count of child process kills grouped by process type.</summary>
+</histogram>
+
+<histogram name="ChildProcess.KillsWasAlive" enum="ProcessType">
+  <obsolete>
+    Deprecated 10/2011. Renamed to ChildProcess.KilledWasAlive.
+  </obsolete>
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of child process kills that we miscounted because we took the exit
+    code too early. Grouped by process type.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.Android.Activity.CrashCounts" enum="AndroidActivityId">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -40327,6 +40469,50 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="5" label="PRIVET_NOTIFICATION_CANCELED"/>
   <int value="6" label="PRIVET_NOTIFICATION_CLICKED"/>
   <int value="7" label="PRIVET_DISABLE_NOTIFICATIONS_CLICKED"/>
+</enum>
+
+<enum name="ProcessType" type="int">
+  <obsolete>
+    Deprecated 3/2013. No longer generated.
+  </obsolete>
+  <summary>
+    The value for type comes from the ProcessType enum in
+    content/public/common/process_type.h.
+  </summary>
+  <int value="1" label="UNKNOWN"/>
+  <int value="2" label="BROWSER"/>
+  <int value="3" label="RENDER"/>
+  <int value="4" label="PLUGIN"/>
+  <int value="5" label="WORKER"/>
+  <int value="6" label="NACL"/>
+  <int value="7" label="UTILITY"/>
+  <int value="8" label="PROFILE_IMPORT"/>
+  <int value="9" label="ZYGOTE"/>
+  <int value="10" label="SANDBOX_HELPER"/>
+  <int value="11" label="NACL_BROKER_PROCESS"/>
+  <int value="12" label="GPU_PROCESS"/>
+  <int value="13" label="PPAPI_PLUGIN_PROCESS"/>
+</enum>
+
+<enum name="ProcessType2" type="int">
+  <summary>
+    The value for type comes from the ProcessType enum in
+    content/public/common/process_type.h.
+  </summary>
+  <int value="1" label="UNKNOWN"/>
+  <int value="2" label="BROWSER"/>
+  <int value="3" label="RENDER"/>
+  <int value="4" label="PLUGIN"/>
+  <int value="5" label="WORKER"/>
+  <int value="6" label="UTILITY"/>
+  <int value="7" label="ZYGOTE"/>
+  <int value="8" label="SANDBOX_HELPER"/>
+  <int value="9" label="GPU_PROCESS"/>
+  <int value="10" label="PPAPI_PLUGIN_PROCESS"/>
+  <int value="11" label="PPAPI_BROKER_PROCESS"/>
+  <int value="12" label="PROFILE_IMPORT"/>
+  <int value="13" label="NACL"/>
+  <int value="14" label="NACL_BROKER_PROCESS"/>
 </enum>
 
 <enum name="ProfileAddNewUser" type="int">

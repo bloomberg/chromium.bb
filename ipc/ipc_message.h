@@ -121,6 +121,14 @@ class IPC_EXPORT Message : public Pickle {
     return (header()->flags & PUMPING_MSGS_BIT) != 0;
   }
 
+  void set_dispatch_error() const {
+    dispatch_error_ = true;
+  }
+
+  bool dispatch_error() const {
+    return dispatch_error_;
+  }
+
   uint32 type() const {
     return header()->type;
   }
@@ -236,7 +244,10 @@ class IPC_EXPORT Message : public Pickle {
     return headerT<Header>();
   }
 
-  void InitLoggingVariables();
+  void Init();
+
+  // Used internally to support IPC::Listener::OnBadMessageReceived.
+  mutable bool dispatch_error_;
 
 #if defined(OS_POSIX)
   // The set of file descriptors associated with this message.

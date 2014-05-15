@@ -127,6 +127,7 @@ class WEBVIEW_EXPORT WebView : public View,
   // instantiation of the inline IPC::Listener methods in all translation units.
   virtual void OnChannelConnected(int32 peer_id) OVERRIDE {}
   virtual void OnChannelError() OVERRIDE {}
+  virtual void OnBadMessageReceived(const IPC::Message& message) OVERRIDE {}
 
  private:
   void AttachWebContents();
