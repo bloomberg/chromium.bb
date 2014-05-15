@@ -21,14 +21,11 @@ import sys
 import test_lib
 
 GlobalPlatform=None  # for pychecker, initialized in ProcessOptions
-GlobalReportStream = [sys.stdout]
 GlobalSettings = {}
 
-# Hook print to we can print to both stdout and a file
-def Print(message):
-  for s in GlobalReportStream:
-    print >>s, message
 
+def Print(message):
+  print message
 
 
 def Banner(message):
@@ -96,7 +93,7 @@ def ResetGlobalSettings():
       'track_cmdtime': '0',
 
       'name': None,
-      'report': None,
+      'output_stamp': None,
 
       'stdin': None,
       'log_file': None,
@@ -635,9 +632,6 @@ def Main(argv):
   DisableCrashDialog()
   command = ProcessOptions(argv)
 
-  if GlobalSettings['report']:
-    GlobalReportStream.append(open(GlobalSettings['report'], 'w'))
-
   if not GlobalSettings['name']:
     GlobalSettings['name'] = command[0]
   GlobalSettings['name'] = os.path.basename(GlobalSettings['name'])
@@ -693,6 +687,10 @@ def Main(argv):
     # Bogus time, since only ProcessLogOutputCombined failed.
     Print(FailureMessage(0.0) + ' ProcessLogOutputCombined failed!')
     return 1
+  if GlobalSettings['output_stamp'] is not None:
+    # Create an empty stamp file to indicate success.
+    fh = open(GlobalSettings['output_stamp'], 'w')
+    fh.close()
   return 0
 
 if __name__ == '__main__':

@@ -1903,7 +1903,7 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   # test_wrapper because the run_test_via_ssh.py wrapper does not have
   # the ability to copy result files back from the remote host.
   if 'test_wrapper' not in ARGUMENTS:
-    script_flags.extend(['--report', name])
+    script_flags.extend(['--output_stamp', name])
 
   test_script = env.File('${SCONSTRUCT_DIR}/tools/command_tester.py')
   extra_deps = extra_deps + [env.File('${SCONSTRUCT_DIR}/tools/test_lib.py')]
