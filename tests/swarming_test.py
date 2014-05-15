@@ -442,7 +442,7 @@ class TestGetSwarmResults(TestCase):
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
-        8,
+        1,
         swarming.collect('url', 'name', 1, 'timeout', 'decorate', True, None))
     self._check_output(
         '\n================================================================\n'
@@ -465,7 +465,7 @@ class TestGetSwarmResults(TestCase):
     }
     self.mock(swarming, 'yield_results', lambda *_: [(0, data)])
     self.assertEqual(
-        -1073741515,
+        1,
         swarming.collect('url', 'name', 1, 'timeout', 'decorate', True, None))
     self._check_output(
         '\n================================================================\n'

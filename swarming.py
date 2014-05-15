@@ -795,8 +795,8 @@ def collect(
   else:
     output_collector = None
 
-  exit_code = None
   seen_shards = set()
+  exit_codes = []
 
   try:
     for index, output in yield_results(
@@ -809,6 +809,7 @@ def collect(
         if code:
           shard_exit_code = code
           break
+      exit_codes.append(shard_exit_code)
 
       if decorate:
         print decorate_shard_output(index, output, shard_exit_code)
@@ -819,8 +820,6 @@ def collect(
                 output['machine_tag'],
                 output['exit_codes']))
         print(''.join('  %s\n' % l for l in output['output'].splitlines()))
-
-      exit_code = exit_code or shard_exit_code
   finally:
     if output_collector:
       output_collector.finalize()
@@ -829,9 +828,9 @@ def collect(
     missing_shards = [x for x in range(len(task_keys)) if x not in seen_shards]
     print >> sys.stderr, ('Results from some shards are missing: %s' %
         ', '.join(map(str, missing_shards)))
-    exit_code = exit_code or 1
+    return 1
 
-  return exit_code if exit_code is not None else 1
+  return int(bool(any(exit_codes)))
 
 
 def add_filter_options(parser):
