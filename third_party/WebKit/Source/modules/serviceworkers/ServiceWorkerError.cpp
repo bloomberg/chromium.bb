@@ -41,20 +41,20 @@ PassRefPtrWillBeRawPtr<DOMException> ServiceWorkerError::from(ScriptPromiseResol
 {
     OwnPtr<WebType> webError = adoptPtr(webErrorRaw);
     switch (webError->errorType) {
-    case WebServiceWorkerError::DisabledError:
+    case WebServiceWorkerError::ErrorTypeDisabled:
         return DOMException::create(NotSupportedError, "Service Worker support is disabled.");
-    case WebServiceWorkerError::SecurityError:
+    case WebServiceWorkerError::ErrorTypeSecurity:
         return DOMException::create(SecurityError, "The Service Worker security policy prevented an action.");
-    case WebServiceWorkerError::InstallError:
+    case WebServiceWorkerError::ErrorTypeInstall:
         // FIXME: Introduce new InstallError type to ExceptionCodes?
         return DOMException::create(AbortError, "The Service Worker installation failed.");
-    case WebServiceWorkerError::ActivateError:
+    case WebServiceWorkerError::ErrorTypeActivate:
         // Not currently returned as a promise rejection.
         // FIXME: Introduce new ActivateError type to ExceptionCodes?
         return DOMException::create(AbortError, "The Service Worker activation failed.");
-    case WebServiceWorkerError::NotFoundError:
+    case WebServiceWorkerError::ErrorTypeNotFound:
         return DOMException::create(NotFoundError, "The specified Service Worker resource was not found.");
-    case WebServiceWorkerError::UnknownError:
+    case WebServiceWorkerError::ErrorTypeUnknown:
         return DOMException::create(UnknownError, "An unknown error occurred within Service Worker.");
     }
     ASSERT_NOT_REACHED();
