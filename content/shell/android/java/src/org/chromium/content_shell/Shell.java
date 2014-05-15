@@ -44,7 +44,6 @@ public class Shell extends LinearLayout {
         }
     };
 
-    private ContentView mContentView;
     private ContentViewCore mContentViewCore;
     private ContentViewClient mContentViewClient;
     private EditText mUrlTextView;
@@ -150,7 +149,7 @@ public class Shell extends LinearLayout {
                 }
                 loadUrl(mUrlTextView.getText().toString());
                 setKeyboardVisibilityForUrl(false);
-                mContentView.requestFocus();
+                mContentViewCore.getContainerView().requestFocus();
                 return true;
             }
         });
@@ -183,8 +182,8 @@ public class Shell extends LinearLayout {
         }
         mUrlTextView.clearFocus();
         // TODO(aurimas): Remove this when crbug.com/174541 is fixed.
-        mContentView.clearFocus();
-        mContentView.requestFocus();
+        mContentViewCore.getContainerView().clearFocus();
+        mContentViewCore.getContainerView().requestFocus();
     }
 
     /**
@@ -247,22 +246,24 @@ public class Shell extends LinearLayout {
 
     /**
      * Initializes the ContentView based on the native tab contents pointer passed in.
-     * @param nativeTabContents The pointer to the native tab contents object.
+     * @param nativeWebContents The pointer to the native tab contents object.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void initFromNativeTabContents(long nativeTabContents) {
-        mContentView = ContentView.newInstance(getContext(), nativeTabContents, mWindow);
-        mContentViewCore = mContentView.getContentViewCore();
+    private void initFromNativeTabContents(long nativeWebContents) {
+        Context context = getContext();
+        mContentViewCore = new ContentViewCore(context);
+        ContentView cv = ContentView.newInstance(context, mContentViewCore);
+        mContentViewCore.initialize(cv, cv, nativeWebContents, mWindow);
         mContentViewCore.setContentViewClient(mContentViewClient);
 
         if (getParent() != null) mContentViewCore.onShow();
         if (mContentViewCore.getUrl() != null) mUrlTextView.setText(mContentViewCore.getUrl());
-        ((FrameLayout) findViewById(R.id.contentview_holder)).addView(mContentView,
+        ((FrameLayout) findViewById(R.id.contentview_holder)).addView(cv,
                 new FrameLayout.LayoutParams(
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
-        mContentView.requestFocus();
+        cv.requestFocus();
         mContentViewRenderView.setCurrentContentViewCore(mContentViewCore);
     }
 
@@ -270,7 +271,7 @@ public class Shell extends LinearLayout {
      * @return The {@link ViewGroup} currently shown by this Shell.
      */
     public ViewGroup getContentView() {
-        return mContentView;
+        return mContentViewCore.getContainerView();
     }
 
     /**

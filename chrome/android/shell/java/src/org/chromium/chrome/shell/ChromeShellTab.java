@@ -36,7 +36,7 @@ public class ChromeShellTab extends Tab {
             ContentViewClient contentViewClient) {
         super(false, context, window);
         initialize();
-        initContentView();
+        initContentViewCore();
         setContentViewClient(contentViewClient);
         loadUrlWithSanitization(url);
     }

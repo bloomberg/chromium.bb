@@ -104,7 +104,7 @@ public class ChromeShellToolbar extends LinearLayout {
                 mTab.loadUrlWithSanitization(mUrlTextView.getText().toString());
                 mUrlTextView.clearFocus();
                 setKeyboardVisibilityForUrl(false);
-                mTab.getContentView().requestFocus();
+                mTab.getView().requestFocus();
                 return true;
             }
         });

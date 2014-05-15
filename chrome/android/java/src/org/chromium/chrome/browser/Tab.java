@@ -99,9 +99,6 @@ public class Tab implements NavigationClient {
     /** The current native page (e.g. chrome-native://newtab), or {@code null} if there is none. */
     private NativePage mNativePage;
 
-    /** The {@link ContentView} showing the current page or {@code null} if the tab is frozen. */
-    private ContentView mContentView;
-
     /** InfoBar container to show InfoBars for this tab. */
     private InfoBarContainer mInfoBarContainer;
 
@@ -112,9 +109,7 @@ public class Tab implements NavigationClient {
     private int mSyncId;
 
     /**
-     * The {@link ContentViewCore} for the current page, provided for convenience. This always
-     * equals {@link ContentView#getContentViewCore()}, or {@code null} if mContentView is
-     * {@code null}.
+     * The {@link ContentViewCore} showing the current page or {@code null} if the tab is frozen.
      */
     private ContentViewCore mContentViewCore;
 
@@ -448,11 +443,12 @@ public class Tab implements NavigationClient {
 
     /**
      * @return The {@link View} displaying the current page in the tab. This might be a
-     *         {@link ContentView} but could potentially be any instance of {@link View}. This can
-     *         be {@code null}, if the tab is frozen or being initialized or destroyed.
+     *         native view or a placeholder view for content rendered by the compositor.
+     *         This can be {@code null}, if the tab is frozen or being initialized or destroyed.
      */
     public View getView() {
-        return mNativePage != null ? mNativePage.getView() : mContentView;
+        return mNativePage != null ? mNativePage.getView() :
+                (mContentViewCore != null ? mContentViewCore.getContainerView() : null);
     }
 
     /**
@@ -572,18 +568,8 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * @return The {@link ContentView} associated with the current page, or {@code null} if
-     *         there is no current page or the current page is displayed using something besides a
-     *         {@link ContentView}.
-     */
-    public ContentView getContentView() {
-        return mNativePage == null ? mContentView : null;
-    }
-
-    /**
      * @return The {@link ContentViewCore} associated with the current page, or {@code null} if
-     *         there is no current page or the current page is displayed using something besides a
-     *         {@link ContentView}.
+     *         there is no current page or the current page is displayed using a native view.
      */
     public ContentViewCore getContentViewCore() {
         return mNativePage == null ? mContentViewCore : null;
@@ -715,7 +701,7 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * Hides the current {@link NativePage}, if any, and shows the {@link ContentView}.
+     * Hides the current {@link NativePage}, if any, and shows the {@link ContentViewCore}'s view.
      */
     protected void showRenderedPage() {
         if (mNativePage == null) return;
@@ -743,39 +729,42 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * A helper method to initialize a {@link ContentView} without any native WebContents pointer.
+     * A helper method to initialize a {@link ContentViewCore} without any
+     * native WebContents pointer.
      */
-    protected final void initContentView() {
-        initContentView(ContentViewUtil.createNativeWebContents(mIncognito));
+    protected final void initContentViewCore() {
+        initContentViewCore(ContentViewUtil.createNativeWebContents(mIncognito));
     }
 
     /**
-     * Creates and initializes the {@link ContentView}.
+     * Creates and initializes the {@link ContentViewCore}.
      *
      * @param nativeWebContents The native web contents pointer.
      */
-    protected void initContentView(long nativeWebContents) {
-        setContentView(ContentView.newInstance(mContext, nativeWebContents, getWindowAndroid()));
+    protected void initContentViewCore(long nativeWebContents) {
+        ContentViewCore cvc = new ContentViewCore(mContext);
+        ContentView cv = ContentView.newInstance(mContext, cvc);
+        cvc.initialize(cv, cv, nativeWebContents, getWindowAndroid());
+        setContentViewCore(cvc);
     }
 
     /**
-     * Completes the {@link ContentView} specific initialization around a native WebContents
+     * Completes the {@link ContentViewCore} specific initialization around a native WebContents
      * pointer. {@link #getNativePage()} will still return the {@link NativePage} if there is one.
      * All initialization that needs to reoccur after a web contents swap should be added here.
      * <p />
      * NOTE: If you attempt to pass a native WebContents that does not have the same incognito
      * state as this tab this call will fail.
      *
-     * @param view The content view that needs to be set as active view for the tab.
+     * @param cvc The content view core that needs to be set as active view for the tab.
      */
-    protected void setContentView(ContentView view) {
+    protected void setContentViewCore(ContentViewCore cvc) {
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
         destroyNativePageInternal(previousNativePage);
 
-        mContentView = view;
+        mContentViewCore = cvc;
 
-        mContentViewCore = mContentView.getContentViewCore();
         mWebContentsDelegate = createWebContentsDelegate();
         mWebContentsObserver = new TabWebContentsObserverAndroid(mContentViewCore);
         mVoiceSearchTabHelper = new VoiceSearchTabHelper(mContentViewCore);
@@ -792,12 +781,12 @@ public class Tab implements NavigationClient {
         if (mInfoBarContainer == null) {
             // The InfoBarContainer needs to be created after the ContentView has been natively
             // initialized.
-            WebContents webContents = view.getContentViewCore().getWebContents();
+            WebContents webContents = mContentViewCore.getWebContents();
             mInfoBarContainer = new InfoBarContainer(
-                    (Activity) mContext, createAutoLoginProcessor(), getId(), getContentView(),
-                    webContents);
+                    (Activity) mContext, createAutoLoginProcessor(), getId(),
+                    mContentViewCore.getContainerView(), webContents);
         } else {
-            mInfoBarContainer.onParentViewChanged(getId(), getContentView());
+            mInfoBarContainer.onParentViewChanged(getId(), mContentViewCore.getContainerView());
         }
 
         if (AppBannerManager.isEnabled() && mAppBannerManager == null) {
@@ -812,7 +801,7 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * Cleans up all internal state, destroying any {@link NativePage} or {@link ContentView}
+     * Cleans up all internal state, destroying any {@link NativePage} or {@link ContentViewCore}
      * currently associated with this {@link Tab}.  This also destroys the native counterpart
      * to this class, which means that all subclasses should erase their native pointers after
      * this method is called.  Once this call is made this {@link Tab} should no longer be used.
@@ -824,7 +813,7 @@ public class Tab implements NavigationClient {
         NativePage currentNativePage = mNativePage;
         mNativePage = null;
         destroyNativePageInternal(currentNativePage);
-        destroyContentView(true);
+        destroyContentViewCore(true);
 
         // Destroys the native tab after destroying the ContentView but before destroying the
         // InfoBarContainer. The native tab should be destroyed before the infobar container as
@@ -929,20 +918,19 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * Destroys the current {@link ContentView}.
+     * Destroys the current {@link ContentViewCore}.
      * @param deleteNativeWebContents Whether or not to delete the native WebContents pointer.
      */
-    protected final void destroyContentView(boolean deleteNativeWebContents) {
-        if (mContentView == null) return;
+    protected final void destroyContentViewCore(boolean deleteNativeWebContents) {
+        if (mContentViewCore == null) return;
 
-        destroyContentViewInternal(mContentView);
+        destroyContentViewCoreInternal(mContentViewCore);
 
         if (mInfoBarContainer != null && mInfoBarContainer.getParent() != null) {
             mInfoBarContainer.removeFromParentView();
         }
-        if (mContentViewCore != null) mContentViewCore.destroy();
+        mContentViewCore.destroy();
 
-        mContentView = null;
         mContentViewCore = null;
         mWebContentsDelegate = null;
         mWebContentsObserver = null;
@@ -953,12 +941,14 @@ public class Tab implements NavigationClient {
     }
 
     /**
-     * Gives subclasses the chance to clean up some state associated with this {@link ContentView}.
-     * This is because {@link #getContentView()} can return {@code null} if a {@link NativePage}
-     * is showing.
-     * @param contentView The {@link ContentView} that should have associated state cleaned up.
+     * Gives subclasses the chance to clean up some state associated with this
+     * {@link ContentViewCore}. This is because {@link #getContentViewCore()}
+     * can return {@code null} if a {@link NativePage} is showing.
+     *
+     * @param cvc The {@link ContentViewCore} that should have associated state
+     *            cleaned up.
      */
-    protected void destroyContentViewInternal(ContentView contentView) {
+    protected void destroyContentViewCoreInternal(ContentViewCore cvc) {
     }
 
     /**
@@ -1018,21 +1008,27 @@ public class Tab implements NavigationClient {
     /** This is currently called when committing a pre-rendered page. */
     @CalledByNative
     private void swapWebContents(
-            final long newWebContents, boolean didStartLoad, boolean didFinishLoad) {
-        swapContentView(ContentView.newInstance(mContext, newWebContents, getWindowAndroid()),
-                false, didStartLoad, didFinishLoad);
+            long newWebContents, boolean didStartLoad, boolean didFinishLoad) {
+        ContentViewCore cvc = new ContentViewCore(mContext);
+        ContentView cv = ContentView.newInstance(mContext, cvc);
+        cvc.initialize(cv, cv, newWebContents, getWindowAndroid());
+        swapContentViewCore(cvc, false, didStartLoad, didFinishLoad);
     }
 
     /**
      * Called to swap out the current view with the one passed in.
-     * @param view The content view that should be swapped into the tab.
-     * @param deleteOldNativeWebContents Whether to delete the native web contents of old view.
-     * @param didStartLoad Whether WebContentsObserver::DidStartProvisionalLoadForFrame() has
-     *     already been called.
-     * @param didFinishLoad Whether WebContentsObserver::DidFinishLoad() has already been called.
+     *
+     * @param newContentViewCore The content view that should be swapped into the tab.
+     * @param deleteOldNativeWebContents Whether to delete the native web
+     *         contents of old view.
+     * @param didStartLoad Whether
+     *         WebContentsObserver::DidStartProvisionalLoadForFrame() has
+     *         already been called.
+     * @param didFinishLoad Whether WebContentsObserver::DidFinishLoad() has
+     *         already been called.
      */
-    protected void swapContentView(ContentView view, boolean deleteOldNativeWebContents,
-            boolean didStartLoad, boolean didFinishLoad) {
+    protected void swapContentViewCore(ContentViewCore newContentViewCore,
+            boolean deleteOldNativeWebContents, boolean didStartLoad, boolean didFinishLoad) {
         int originalWidth = 0;
         int originalHeight = 0;
         if (mContentViewCore != null) {
@@ -1040,10 +1036,10 @@ public class Tab implements NavigationClient {
             originalHeight = mContentViewCore.getViewportHeightPix();
             mContentViewCore.onHide();
         }
-        destroyContentView(deleteOldNativeWebContents);
+        destroyContentViewCore(deleteOldNativeWebContents);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
-        setContentView(view);
+        setContentViewCore(newContentViewCore);
         // Size of the new ContentViewCore is zero at this point. If we don't call onSizeChanged(),
         // next onShow() call would send a resize message with the current ContentViewCore size
         // (zero) to the renderer process, although the new size will be set soon.

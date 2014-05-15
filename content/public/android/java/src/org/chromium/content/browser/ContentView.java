@@ -19,19 +19,15 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
 import org.chromium.base.TraceEvent;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * The containing view for {@link ContentViewCore} that exists in the Android UI hierarchy and
  * exposes the various {@link View} functionality to it.
- *
- * TODO(joth): Remove any methods overrides from this class that were added for WebView
- *             compatibility.
  */
 public class ContentView extends FrameLayout
         implements ContentViewCore.InternalAccessDelegate {
 
-    private final ContentViewCore mContentViewCore;
+    protected final ContentViewCore mContentViewCore;
 
     private final int[] mLocationInWindow = new int[2];
 
@@ -39,20 +35,18 @@ public class ContentView extends FrameLayout
      * Creates an instance of a ContentView.
      * @param context The Context the view is running in, through which it can
      *                access the current theme, resources, etc.
-     * @param nativeWebContents A pointer to the native web contents.
-     * @param windowAndroid An instance of the WindowAndroid.
+     * @param cvc A pointer to the content view core managing this content view.
      * @return A ContentView instance.
      */
-    public static ContentView newInstance(
-            Context context, long nativeWebContents, WindowAndroid windowAndroid) {
+    public static ContentView newInstance(Context context, ContentViewCore cvc) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-            return new ContentView(context, nativeWebContents, windowAndroid);
+            return new ContentView(context, cvc);
         } else {
-            return new JellyBeanContentView(context, nativeWebContents, windowAndroid);
+            return new JellyBeanContentView(context, cvc);
         }
     }
 
-    protected ContentView(Context context, long nativeWebContents, WindowAndroid windowAndroid) {
+    protected ContentView(Context context, ContentViewCore cvc) {
         super(context, null, android.R.attr.webViewStyle);
 
         if (getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
@@ -63,19 +57,8 @@ public class ContentView extends FrameLayout
         setFocusable(true);
         setFocusableInTouchMode(true);
 
-        mContentViewCore = new ContentViewCore(context);
-        mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid);
+        mContentViewCore = cvc;
     }
-
-    /**
-     * @return The core component of the ContentView that handles JNI communication.  Should only be
-     *         used for passing to native.
-     */
-    public ContentViewCore getContentViewCore() {
-        return mContentViewCore;
-    }
-
-    // FrameLayout overrides.
 
     // Needed by ContentViewCore.InternalAccessDelegate
     @Override
@@ -273,24 +256,6 @@ public class ContentView extends FrameLayout
     protected void onVisibilityChanged(View changedView, int visibility) {
         super.onVisibilityChanged(changedView, visibility);
         mContentViewCore.onVisibilityChanged(changedView, visibility);
-    }
-
-    /**
-     * Return content scroll y.
-     *
-     * @return The vertical scroll position in pixels.
-     */
-    public int getContentScrollY() {
-        return mContentViewCore.computeVerticalScrollOffset();
-    }
-
-    /**
-     * Return content height.
-     *
-     * @return The height of the content in pixels.
-     */
-    public int getContentHeight() {
-        return mContentViewCore.computeVerticalScrollRange();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

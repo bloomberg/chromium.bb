@@ -14,7 +14,6 @@ import android.widget.LinearLayout;
 import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.Tab;
 import org.chromium.content.browser.ContentVideoViewClient;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.base.WindowAndroid;
@@ -36,7 +35,7 @@ public class TabManager extends LinearLayout {
     private ChromeShellTab mCurrentTab;
 
     private String mStartupUrl = DEFAULT_URL;
-    private ContentView mCurrentContentView;
+    private View mCurrentView;
 
     /**
      * @param context The Context the view is running in.
@@ -121,17 +120,17 @@ public class TabManager extends LinearLayout {
 
     private void setCurrentTab(ChromeShellTab tab) {
         if (mCurrentTab != null) {
-            mContentViewHolder.removeView(mCurrentTab.getContentView());
+            mContentViewHolder.removeView(mCurrentTab.getView());
             mCurrentTab.destroy();
         }
 
         mCurrentTab = tab;
-        mCurrentContentView = tab.getContentView();
+        mCurrentView = tab.getView();
 
         mCurrentTab.addObserver(new EmptyTabObserver() {
             @Override
             public void onContentChanged(Tab tab) {
-                mContentViewHolder.removeView(mCurrentContentView);
+                mContentViewHolder.removeView(mCurrentView);
                 setupContent(tab);
             }
         });
@@ -141,9 +140,9 @@ public class TabManager extends LinearLayout {
     }
 
     private void setupContent(Tab tab) {
-        mContentViewHolder.addView(tab.getContentView());
+        mContentViewHolder.addView(tab.getView());
         mContentViewRenderView.setCurrentContentViewCore(tab.getContentViewCore());
-        tab.getContentView().requestFocus();
+        tab.getView().requestFocus();
         tab.getContentViewCore().onShow();
     }
 }
