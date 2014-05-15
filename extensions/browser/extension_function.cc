@@ -27,10 +27,18 @@ namespace {
 class MultipleArgumentsResponseValue
     : public ExtensionFunction::ResponseValueObject {
  public:
-  MultipleArgumentsResponseValue(ExtensionFunction* function,
-                                 base::ListValue* result) {
+  MultipleArgumentsResponseValue(const std::string& function_name,
+                                 const char* title,
+                                 ExtensionFunction* function,
+                                 base::ListValue* result)
+      : function_name_(function_name), title_(title) {
     if (function->GetResultList()) {
-      DCHECK_EQ(function->GetResultList(), result);
+      DCHECK_EQ(function->GetResultList(), result)
+          << "The result set on this function (" << function_name_ << ") "
+          << "either by calling SetResult() or directly modifying |result_| is "
+          << "different to the one passed to " << title_ << "(). "
+          << "The best way to fix this problem is to exclusively use " << title_
+          << "(). SetResult() and |result_| are deprecated.";
     } else {
       function->SetResultList(make_scoped_ptr(result));
     }
@@ -42,6 +50,10 @@ class MultipleArgumentsResponseValue
   virtual ~MultipleArgumentsResponseValue() {}
 
   virtual bool Apply() OVERRIDE { return true; }
+
+ private:
+  std::string function_name_;
+  const char* title_;
 };
 
 class ErrorResponseValue : public ExtensionFunction::ResponseValueObject {
@@ -210,29 +222,31 @@ void ExtensionFunction::SetError(const std::string& error) {
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::NoArguments() {
-  return MultipleArguments(new base::ListValue());
+  return ResponseValue(new MultipleArgumentsResponseValue(
+      name(), "NoArguments", this, new base::ListValue()));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::SingleArgument(
     base::Value* arg) {
   base::ListValue* args = new base::ListValue();
   args->Append(arg);
-  return MultipleArguments(args);
+  return ResponseValue(
+      new MultipleArgumentsResponseValue(name(), "SingleArgument", this, args));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::MultipleArguments(
     base::ListValue* args) {
-  return scoped_ptr<ResponseValueObject>(
-      new MultipleArgumentsResponseValue(this, args));
+  return ResponseValue(new MultipleArgumentsResponseValue(
+      name(), "MultipleArguments", this, args));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::Error(
     const std::string& error) {
-  return scoped_ptr<ResponseValueObject>(new ErrorResponseValue(this, error));
+  return ResponseValue(new ErrorResponseValue(this, error));
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::BadMessage() {
-  return scoped_ptr<ResponseValueObject>(new BadMessageResponseValue(this));
+  return ResponseValue(new BadMessageResponseValue(this));
 }
 
 ExtensionFunction::ResponseAction ExtensionFunction::RespondNow(
