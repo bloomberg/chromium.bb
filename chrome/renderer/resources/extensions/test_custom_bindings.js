@@ -46,10 +46,6 @@ binding.registerCustomHook(function(api) {
       chromeTest.notifyFail('Failed ' + testsFailed + ' of ' +
                              testCount + ' tests');
     }
-
-    // Try to get the script to stop running immediately.
-    // This isn't an error, just an attempt at saying "done".
-    throw "completed";
   }
 
   var pendingCallbacks = 0;
