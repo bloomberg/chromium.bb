@@ -140,7 +140,6 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
   DCHECK(!needs_post_commit_initialization_);
   gfx::Rect rect(visible_content_rect());
-  gfx::Rect content_rect(content_bounds());
 
   SharedQuadState* shared_quad_state = quad_sink->CreateSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
