@@ -39,11 +39,6 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_ClearHostResolverCache,
                             int /* result */)
 
 // Message sent from the renderer to the browser to request that the browser
-// enable or disable spdy.  Used for debugging/testing/benchmarking.
-IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_EnableSpdy,
-                     bool /* enable */)
-
-// Message sent from the renderer to the browser to request that the browser
 // clear the predictor cache.  Used for debugging/testing.
 // |result| is the returned status from the operation.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_ClearPredictorCache,

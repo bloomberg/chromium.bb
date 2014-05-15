@@ -41,10 +41,6 @@ class NetBenchmarkingWrapper : public v8::Extension {
         "  native function CloseConnections();"
         "  CloseConnections();"
         "};"
-        "chrome.benchmarking.enableSpdy = function(name) {"
-        "  native function EnableSpdy();"
-        "  EnableSpdy(name);"
-        "};"
         ) {}
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
@@ -58,8 +54,6 @@ class NetBenchmarkingWrapper : public v8::Extension {
     } else if (name->Equals(
                    v8::String::NewFromUtf8(isolate, "ClearPredictorCache"))) {
       return v8::FunctionTemplate::New(isolate, ClearPredictorCache);
-    } else if (name->Equals(v8::String::NewFromUtf8(isolate, "EnableSpdy"))) {
-      return v8::FunctionTemplate::New(isolate, EnableSpdy);
     } else if (name->Equals(
                    v8::String::NewFromUtf8(isolate, "CloseConnections"))) {
       return v8::FunctionTemplate::New(isolate, CloseConnections);
@@ -92,14 +86,6 @@ class NetBenchmarkingWrapper : public v8::Extension {
       const v8::FunctionCallbackInfo<v8::Value>& args) {
     content::RenderThread::Get()->Send(
         new ChromeViewHostMsg_CloseCurrentConnections());
-  }
-
-  static void EnableSpdy(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    if (!args.Length() || !args[0]->IsBoolean())
-      return;
-
-    content::RenderThread::Get()->Send(new ChromeViewHostMsg_EnableSpdy(
-        args[0]->BooleanValue()));
   }
 };
 
