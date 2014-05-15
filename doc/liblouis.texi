@@ -2430,7 +2430,7 @@ callback must take a single argument, the message string. By default
 log messages are printed to stderr, or if a filename was specified
 with @code{lou_logFile} then messages are logged to that
 file. @code{lou_registerLogCallback} overrides the default
-callback. Passing NULL resets to the default callback.
+callback. Passing @code{NULL} resets to the default callback.
 
 @node lou_setLogLevel, lou_logFile, lou_registerLogCallback, Programming with liblouis
 @section lou_setLogLevel
@@ -2438,7 +2438,7 @@ callback. Passing NULL resets to the default callback.
 
 @example
 typedef enum
-{
+@{
   LOG_ALL = -2147483648,
   LOG_DEBUG = 10000,
   LOG_INFO = 20000,
@@ -2446,7 +2446,7 @@ typedef enum
   LOG_ERROR = 40000,
   LOG_FATAL = 50000,
   LOG_OFF = 2147483647
-} logLevels;
+@} logLevels;
 void lou_setLogLevel(logLevels level);
 @end example
 
