@@ -285,16 +285,28 @@ TEST_F(MaximizeModeControllerTest, RotationOnlyInMaximizeMode) {
   EXPECT_EQ(gfx::Display::ROTATE_0, GetInternalDisplayRotation());
 }
 
-// Tests that maximize mode blocks keyboard events but not touch events. Mouse
-// events are blocked too but EventGenerator does not construct mouse events
-// with a NativeEvent so they would not be blocked in testing.
-TEST_F(MaximizeModeControllerTest, BlocksKeyboard) {
+// Tests that maximize mode blocks keyboard and mouse events but not touch
+// events.
+TEST_F(MaximizeModeControllerTest, BlocksKeyboardAndMouse) {
   aura::Window* root = Shell::GetPrimaryRootWindow();
   aura::test::EventGenerator event_generator(root, root);
   EventCounter counter;
 
   event_generator.PressKey(ui::VKEY_ESCAPE, 0);
   event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_GT(counter.event_count(), 0u);
+  counter.reset();
+
+  event_generator.ClickLeftButton();
+  EXPECT_GT(counter.event_count(), 0u);
+  counter.reset();
+
+  event_generator.ScrollSequence(
+      gfx::Point(), base::TimeDelta::FromMilliseconds(5), 0, 100, 5, 2);
+  EXPECT_GT(counter.event_count(), 0u);
+  counter.reset();
+
+  event_generator.MoveMouseWheel(0, 10);
   EXPECT_GT(counter.event_count(), 0u);
   counter.reset();
 
@@ -310,6 +322,19 @@ TEST_F(MaximizeModeControllerTest, BlocksKeyboard) {
 
   event_generator.PressKey(ui::VKEY_ESCAPE, 0);
   event_generator.ReleaseKey(ui::VKEY_ESCAPE, 0);
+  EXPECT_EQ(0u, counter.event_count());
+  counter.reset();
+
+  event_generator.ClickLeftButton();
+  EXPECT_EQ(0u, counter.event_count());
+  counter.reset();
+
+  event_generator.ScrollSequence(
+      gfx::Point(), base::TimeDelta::FromMilliseconds(5), 0, 100, 5, 2);
+  EXPECT_EQ(0u, counter.event_count());
+  counter.reset();
+
+  event_generator.MoveMouseWheel(0, 10);
   EXPECT_EQ(0u, counter.event_count());
   counter.reset();
 

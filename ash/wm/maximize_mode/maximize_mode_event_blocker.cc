@@ -55,21 +55,22 @@ void BlockKeyboardAndTouchpadTargeter::SetDefaultTargeter(
 ui::EventTarget* BlockKeyboardAndTouchpadTargeter::FindTargetForEvent(
     ui::EventTarget* root,
     ui::Event* event) {
-  if (event->HasNativeEvent()) {
-    if (event->IsMouseEvent())
-      return NULL;
-    if (event->IsKeyEvent()) {
-      // TODO(bruthig): Fix this to block rewritten volume keys
-      // (i.e. F9 and F10)  from the device's keyboard. https://crbug.com/368669
-      ui::KeyEvent* key_event = static_cast<ui::KeyEvent*>(event);
-      if (key_event->key_code() != ui::VKEY_VOLUME_DOWN &&
-          key_event->key_code() != ui::VKEY_VOLUME_UP
+  if (event->IsMouseEvent() ||
+      event->IsMouseWheelEvent() ||
+      event->IsScrollEvent()) {
+    return NULL;
+  }
+  if (event->IsKeyEvent() && event->HasNativeEvent()) {
+    // TODO(bruthig): Fix this to block rewritten volume keys
+    // (i.e. F9 and F10)  from the device's keyboard. https://crbug.com/368669
+    ui::KeyEvent* key_event = static_cast<ui::KeyEvent*>(event);
+    if (key_event->key_code() != ui::VKEY_VOLUME_DOWN &&
+        key_event->key_code() != ui::VKEY_VOLUME_UP
 #if defined(OS_CHROMEOS)
-          && key_event->key_code() != ui::VKEY_POWER
+        && key_event->key_code() != ui::VKEY_POWER
 #endif
-          ) {
-        return NULL;
-      }
+        ) {
+      return NULL;
     }
   }
   return default_targeter_->FindTargetForEvent(root, event);

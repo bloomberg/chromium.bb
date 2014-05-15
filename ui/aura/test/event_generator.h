@@ -131,6 +131,9 @@ class EventGenerator {
   // Generates a right button release event.
   void ReleaseRightButton();
 
+  // Moves the mouse wheel by |delta_x|, |delta_y|.
+  void MoveMouseWheel(int delta_x, int delta_y);
+
   // Generates a mouse exit.
   void SendMouseExit();
 

@@ -151,6 +151,13 @@ void EventGenerator::ReleaseRightButton() {
   ReleaseButton(ui::EF_RIGHT_MOUSE_BUTTON);
 }
 
+void EventGenerator::MoveMouseWheel(int delta_x, int delta_y) {
+  gfx::Point location = GetLocationInCurrentRoot();
+  ui::MouseEvent mouseev(ui::ET_MOUSEWHEEL, location, location, flags_, 0);
+  ui::MouseWheelEvent wheelev(mouseev, delta_x, delta_y);
+  Dispatch(&wheelev);
+}
+
 void EventGenerator::SendMouseExit() {
   gfx::Point exit_location(current_location_);
   ConvertPointToTarget(current_host_->window(), &exit_location);
