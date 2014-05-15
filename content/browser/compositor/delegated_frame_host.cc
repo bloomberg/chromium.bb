@@ -84,15 +84,13 @@ void DelegatedFrameHost::MaybeCreateResizeLock() {
 }
 
 bool DelegatedFrameHost::ShouldCreateResizeLock() {
-  // On Windows while resizing, the the resize locks makes us mis-paint a white
-  // vertical strip (including the non-client area) if the content composition
-  // is lagging the UI composition. So here we disable the throttling so that
-  // the UI bits can draw ahead of the content thereby reducing the amount of
-  // whiteout. Because this causes the content to be drawn at wrong sizes while
-  // resizing we compensate by blocking the UI thread in Compositor::Draw() by
-  // issuing a FinishAllRendering() if we are resizing.
+  // On Windows and Linux, holding pointer moves will not help throttling
+  // resizes.
+  // TODO(piman): on Windows we need to block (nested message loop?) the
+  // WM_SIZE event. On Linux we need to throttle at the WM level using
+  // _NET_WM_SYNC_REQUEST.
   // TODO(ccameron): Mac browser window resizing is incompletely implemented.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if !defined(OS_CHROMEOS)
   return false;
 #else
   RenderWidgetHostImpl* host = client_->GetHost();
