@@ -26,8 +26,8 @@ div#header {
 
 #header h1 {
   background: -webkit-image-set(
-      url('../../app/theme/default_100_percent/extensions_section.png') 1x,
-      url('../../app/theme/default_200_percent/extensions_section.png') 2x)
+      url('../../app/theme/default_100_percent/common/extensions_section.png') 1x,
+      url('../../app/theme/default_200_percent/common/extensions_section.png') 2x)
       0 20px no-repeat;
   display: inline;
   margin: 0;
@@ -38,8 +38,8 @@ div#header {
 
 html[dir=rtl] #header h1 {
   background: -webkit-image-set(
-      url('../../app/theme/default_100_percent/extensions_section.png') 1x,
-      url('../../app/theme/default_200_percent/extensions_section.png') 2x)
+      url('../../app/theme/default_100_percent/common/extensions_section.png') 1x,
+      url('../../app/theme/default_200_percent/common/extensions_section.png') 2x)
       right no-repeat;
   padding-left: 0;
   padding-right: 95px;
