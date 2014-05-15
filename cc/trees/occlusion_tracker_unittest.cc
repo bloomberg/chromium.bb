@@ -328,14 +328,6 @@ template <typename Types> class OcclusionTrackerTest : public testing::Test {
         Types::TestLayerIterator::Begin(render_surface_layer_list_.get());
   }
 
-  void SetDrawsContent(LayerImpl* layer_impl, bool draws_content) {
-    layer_impl->SetDrawsContent(draws_content);
-  }
-
-  void SetDrawsContent(Layer* layer, bool draws_content) {
-    layer->SetIsDrawable(draws_content);
-  }
-
   void EnterLayer(typename Types::LayerType* layer,
                   typename Types::OcclusionTrackerType* occlusion) {
     ASSERT_EQ(layer, *layer_iterator_);
@@ -3564,37 +3556,6 @@ class OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude
 };
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestHiddenCopyRequestDoesNotOcclude)
-
-template <class Types>
-class OcclusionTrackerTestEmptyEventLayerDoesNotOcclude
-    : public OcclusionTrackerTest<Types> {
- protected:
-  explicit OcclusionTrackerTestEmptyEventLayerDoesNotOcclude(
-      bool opaque_layers)
-      : OcclusionTrackerTest<Types>(opaque_layers) {}
-  void RunMyTest() {
-    typename Types::ContentLayerType* root = this->CreateRoot(
-        this->identity_matrix, gfx::Point(), gfx::Size(400, 400));
-    typename Types::ContentLayerType* empty_layer = this->CreateDrawingLayer(
-        root, this->identity_matrix, gfx::Point(), gfx::Size(200, 200), true);
-    this->SetDrawsContent(empty_layer, false);
-    empty_layer->SetTouchEventHandlerRegion(gfx::Rect(10, 10, 10, 10));
-
-    this->CalcDrawEtc(root);
-
-    TestOcclusionTrackerWithClip<typename Types::LayerType> occlusion(
-        gfx::Rect(0, 0, 1000, 1000));
-
-    this->VisitLayer(empty_layer, &occlusion);
-
-    EXPECT_EQ(gfx::Rect().ToString(),
-              occlusion.occlusion_from_outside_target().ToString());
-    EXPECT_EQ(gfx::Rect().ToString(),
-              occlusion.occlusion_from_inside_target().ToString());
-  }
-};
-
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestEmptyEventLayerDoesNotOcclude)
 
 }  // namespace
 }  // namespace cc

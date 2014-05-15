@@ -1001,7 +1001,7 @@ void LayerTreeHost::PaintLayerContents(
     if (it.represents_target_render_surface()) {
       PaintMasksForRenderSurface(
           *it, queue, did_paint_content, need_more_updates);
-    } else if (it.represents_itself() && it->DrawsContent()) {
+    } else if (it.represents_itself()) {
       DCHECK(!it->paint_properties().bounds.IsEmpty());
       *did_paint_content |= it->Update(queue, &occlusion_tracker);
       *need_more_updates |= it->NeedMoreUpdates();

@@ -52,8 +52,6 @@ class TiledLayerImplTest : public testing::Test {
     scoped_ptr<TiledLayerImpl> layer =
         CreateLayerNoTiles(tile_size, layer_size, border_texels);
 
-    layer->SetDrawsContent(true);
-
     ResourceProvider::ResourceId resource_id = 1;
     for (int i = 0; i < layer->TilingForTesting()->num_tiles_x(); ++i) {
       for (int j = 0; j < layer->TilingForTesting()->num_tiles_y(); ++j) {

@@ -404,9 +404,6 @@ void OcclusionTracker<LayerType>::MarkOccludedBehindLayer(
   if (stack_.empty())
     return;
 
-  if (!layer->DrawsContent())
-    return;
-
   if (!LayerOpacityKnown(layer) || layer->draw_opacity() < 1)
     return;
 

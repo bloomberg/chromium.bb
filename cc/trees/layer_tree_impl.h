@@ -295,8 +295,7 @@ class CC_EXPORT LayerTreeImpl {
   // Persisted state for non-impl-side-painting.
   int scrolling_layer_id_from_previous_tree_;
 
-  // List of visible or hit-testable layers for the most recently prepared
-  // frame. Used for rendering and input event hit testing.
+  // List of visible layers for the most recently prepared frame.
   LayerImplList render_surface_layer_list_;
 
   bool use_gpu_rasterization_;

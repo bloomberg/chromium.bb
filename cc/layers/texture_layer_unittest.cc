@@ -924,7 +924,6 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetDrawsContent(true);
     impl_layer->SetTextureMailbox(
         test_data_.mailbox1_,
         SingleReleaseCallback::Create(test_data_.release_mailbox1_));
@@ -934,7 +933,6 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetDrawsContent(true);
     impl_layer->SetTextureMailbox(TextureMailbox(),
                                   scoped_ptr<SingleReleaseCallback>());
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
@@ -944,7 +942,6 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     // Software resource.
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetDrawsContent(true);
     impl_layer->SetTextureMailbox(
         test_data_.mailbox3_,
         SingleReleaseCallback::Create(test_data_.release_mailbox3_));
@@ -955,7 +952,6 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetDrawsContent(true);
     impl_layer->SetTextureMailbox(
         test_data_.mailbox1_,
         SingleReleaseCallback::Create(test_data_.release_mailbox1_));
@@ -965,7 +961,6 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetDrawsContent(true);
     impl_layer->SetTextureMailbox(TextureMailbox(),
                                   scoped_ptr<SingleReleaseCallback>());
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
@@ -975,7 +970,6 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
     // Software resource.
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetDrawsContent(true);
     impl_layer->SetTextureMailbox(
         test_data_.mailbox3_,
         SingleReleaseCallback::Create(test_data_.release_mailbox3_));
@@ -986,7 +980,6 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
-    impl_layer->SetDrawsContent(true);
     impl_layer->SetTextureMailbox(
         test_data_.mailbox1_,
         SingleReleaseCallback::Create(test_data_.release_mailbox1_));
@@ -1069,7 +1062,6 @@ TEST_F(TextureLayerImplWithMailboxTest,
   impl_layer->SetTextureMailbox(
       test_data_.mailbox1_,
       SingleReleaseCallback::Create(test_data_.release_mailbox1_));
-  impl_layer->SetDrawsContent(true);
   impl_layer->DidBecomeActive();
   EXPECT_TRUE(impl_layer->WillDraw(
       DRAW_MODE_HARDWARE, host_impl_.active_tree()->resource_provider()));

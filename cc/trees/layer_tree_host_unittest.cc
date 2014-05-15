@@ -4645,41 +4645,6 @@ class LayerTreeHostTestMemoryLimits : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(LayerTreeHostTestMemoryLimits);
 
-class LayerTreeHostTestNoQuadsForEmptyLayer : public LayerTreeHostTest {
- protected:
-  virtual void SetupTree() OVERRIDE {
-    LayerTreeHostTest::SetupTree();
-    root_layer_ = FakeContentLayer::Create(&client_);
-    root_layer_->SetBounds(gfx::Size(10, 10));
-    root_layer_->SetIsDrawable(false);
-    root_layer_->SetHaveWheelEventHandlers(true);
-    layer_tree_host()->SetRootLayer(root_layer_);
-    LayerTreeHostTest::SetupTree();
-  }
-
-  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
-
-  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    FakeContentLayerImpl* layer_impl =
-        static_cast<FakeContentLayerImpl*>(impl->RootLayer());
-    EXPECT_FALSE(layer_impl->DrawsContent());
-    EXPECT_EQ(0u, layer_impl->append_quads_count());
-  }
-
-  virtual void DidCommit() OVERRIDE {
-    // The layer is not drawable, so it should not be updated.
-    EXPECT_EQ(0u, root_layer_->update_count());
-    EndTest();
-  }
-  virtual void AfterTest() OVERRIDE {}
-
- private:
-  FakeContentLayerClient client_;
-  scoped_refptr<FakeContentLayer> root_layer_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoQuadsForEmptyLayer);
-
 }  // namespace
 
 class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
