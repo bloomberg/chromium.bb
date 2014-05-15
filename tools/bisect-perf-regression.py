@@ -1945,31 +1945,42 @@ class BisectPerformanceMetrics(object):
       A list of floating point numbers found.
     """
     # Format is: RESULT <graph>: <trace>= <value> <units>
-    metric_formatted = re.escape('RESULT %s: %s=' % (metric[0], metric[1]))
+    metric_re = re.escape('RESULT %s: %s=' % (metric[0], metric[1]))
+
+    # The log will be parsed looking for format:
+    # <*>RESULT <graph_name>: <trace_name>= <value>
+    single_result_re = re.compile(
+        metric_re + '\s*(?P<VALUE>[-]?\d*(\.\d*)?)')
+
+    # The log will be parsed looking for format:
+    # <*>RESULT <graph_name>: <trace_name>= [<value>,value,value,...]
+    multi_results_re = re.compile(
+        metric_re + '\s*\[\s*(?P<VALUES>[-]?[\d\., ]+)\s*\]')
+
+    # The log will be parsed looking for format:
+    # <*>RESULT <graph_name>: <trace_name>= {<mean>, <std deviation>}
+    mean_stddev_re = re.compile(
+        metric_re +
+        '\s*\{\s*(?P<MEAN>[-]?\d*(\.\d*)?),\s*(?P<STDDEV>\d+(\.\d*)?)\s*\}')
 
     text_lines = text.split('\n')
     values_list = []
-
     for current_line in text_lines:
       # Parse the output from the performance test for the metric we're
       # interested in.
-      metric_re = metric_formatted +\
-                  "(\s)*(?P<values>[0-9]+(\.[0-9]*)?)"
-      metric_re = re.compile(metric_re)
-      regex_results = metric_re.search(current_line)
-
-      if not regex_results is None:
-        values_list += [regex_results.group('values')]
-      else:
-        metric_re = metric_formatted +\
-                    "(\s)*\[(\s)*(?P<values>[0-9,.]+)\]"
-        metric_re = re.compile(metric_re)
-        regex_results = metric_re.search(current_line)
-
-        if not regex_results is None:
-          metric_values = regex_results.group('values')
-
-          values_list += metric_values.split(',')
+      single_result_match = single_result_re.search(current_line)
+      multi_results_match = multi_results_re.search(current_line)
+      mean_stddev_match = mean_stddev_re.search(current_line)
+      if (not single_result_match is None and
+          single_result_match.group('VALUE')):
+        values_list += [single_result_match.group('VALUE')]
+      elif (not multi_results_match is None and
+            multi_results_match.group('VALUES')):
+        metric_values = multi_results_match.group('VALUES')
+        values_list += metric_values.split(',')
+      elif (not mean_stddev_match is None and
+            mean_stddev_match.group('MEAN')):
+        values_list += [mean_stddev_match.group('MEAN')]
 
     values_list = [float(v) for v in values_list if IsStringFloat(v)]
 

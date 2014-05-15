@@ -9,6 +9,15 @@ import unittest
 bisect_perf_module = __import__('bisect-perf-regression')
 
 
+RESULTS_OUTPUT = """RESULT write_operations: write_operations= 23089 count
+RESULT read_bytes_gpu: read_bytes_gpu= 35201 kb
+RESULT write_bytes_gpu: write_bytes_gpu= 542 kb
+RESULT telemetry_page_measurement_results: num_failed= 0 count
+RESULT telemetry_page_measurement_results: num_errored= 0 count
+*RESULT Total: Total_ref= %(value)s
+"""
+
+
 class BisectPerfRegressionTest(unittest.TestCase):
   """Test case for top-level functions in the bisect-perf-regrssion module."""
 
@@ -127,6 +136,108 @@ vars = {
     self.assertEqual(3.0, bisect_perf_module.CalculateRelativeChange(-1, 2))
     self.assertEqual(3.0, bisect_perf_module.CalculateRelativeChange(1, -2))
     self.assertEqual(1.0, bisect_perf_module.CalculateRelativeChange(-1, -2))
+
+  def testTryParseResultValuesFromOutputWithSingleValue(self):
+    """Tests result pattern <*>RESULT <graph>: <trace>= <value>"""
+    bisect_options = bisect_perf_module.BisectOptions()
+    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
+        None, bisect_options)
+    metrics = ['Total', 'Total_ref']
+    self.assertEqual(
+        [66.88], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '66.88 kb'}))
+    self.assertEqual(
+        [66.88], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '66.88kb'}))
+    self.assertEqual(
+        [66.88], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': ' 66.88 '}))
+    self.assertEqual(
+        [-66.88], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': ' -66.88 kb'}))
+    self.assertEqual(
+        [66], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '66 kb'}))
+    self.assertEqual(
+        [.66], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '.66 kb'}))
+    self.assertEqual(
+        [], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '. kb'}))
+    self.assertEqual(
+        [], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': 'aaa kb'}))
+
+  def testTryParseResultValuesFromOutputWithMulitValue(self):
+    """Tests result pattern <*>RESULT <graph>: <trace>= [<value>,<value>, ..]"""
+    bisect_options = bisect_perf_module.BisectOptions()
+    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
+        None, bisect_options)
+    metrics = ['Total', 'Total_ref']
+    self.assertEqual(
+        [66.88], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[66.88] kb'}))
+    self.assertEqual(
+        [66.88, 99.44], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[66.88, 99.44]kb'}))
+    self.assertEqual(
+        [66.88, 99.44], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[ 66.88, 99.44 ]'}))
+    self.assertEqual(
+        [-66.88, 99.44], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[-66.88,99.44] kb'}))
+    self.assertEqual(
+        [-66, 99], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[-66,99] kb'}))
+    self.assertEqual(
+        [-66, 99], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[-66,99,] kb'}))
+    self.assertEqual(
+        [.66, .99], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[.66,.99] kb'}))
+    self.assertEqual(
+        [], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[] kb'}))
+    self.assertEqual(
+        [], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '[-66,abc] kb'}))
+
+  def testTryParseResultValuesFromOutputWithMeanStd(self):
+    """Tests result pattern <*>RESULT <graph>: <trace>= {<mean, std}"""
+    bisect_options = bisect_perf_module.BisectOptions()
+    bisect_instance = bisect_perf_module.BisectPerformanceMetrics(
+        None, bisect_options)
+    metrics = ['Total', 'Total_ref']
+    self.assertEqual(
+        [33.22], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{33.22, 3.6} kb'}))
+    self.assertEqual(
+        [33.22], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{33.22,3.6}kb'}))
+    self.assertEqual(
+        [33.22], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{33.22,3.6} kb'}))
+    self.assertEqual(
+        [33.22], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{ 33.22,3.6 }kb'}))
+    self.assertEqual(
+        [-33.22], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{-33.22,3.6}kb'}))
+    self.assertEqual(
+        [22], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{22,6}kb'}))
+    self.assertEqual(
+        [.22], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{.22,6}kb'}))
+    self.assertEqual(
+        [], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{.22,6, 44}kb'}))
+    self.assertEqual(
+        [], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{}kb'}))
+    self.assertEqual(
+        [], bisect_instance.TryParseResultValuesFromOutput(
+            metrics, RESULTS_OUTPUT % {'value': '{XYZ}kb'}))
 
 
 if __name__ == '__main__':
