@@ -9,6 +9,13 @@
 
 namespace content {
 
+namespace {
+
+static const char kValueTrue[] = "true";
+static const char kValueFalse[] = "false";
+
+}  // namespace
+
 MockMediaConstraintFactory::MockMediaConstraintFactory() {
 }
 
@@ -37,6 +44,18 @@ void MockMediaConstraintFactory::AddMandatory(const std::string& key,
       base::UTF8ToUTF16(base::DoubleToString(value))));
 }
 
+void MockMediaConstraintFactory::AddMandatory(const std::string& key,
+                                              const std::string& value) {
+  mandatory_.push_back(blink::WebMediaConstraint(
+      base::UTF8ToUTF16(key), base::UTF8ToUTF16(value)));
+}
+
+void MockMediaConstraintFactory::AddMandatory(const std::string& key,
+                                              bool value) {
+  const std::string string_value = value ? kValueTrue : kValueFalse;
+  AddMandatory(key, string_value);
+}
+
 void MockMediaConstraintFactory::AddOptional(const std::string& key,
                                              int value) {
   optional_.push_back(blink::WebMediaConstraint(base::UTF8ToUTF16(key),
@@ -48,6 +67,18 @@ void MockMediaConstraintFactory::AddOptional(const std::string& key,
   optional_.push_back(blink::WebMediaConstraint(
       base::UTF8ToUTF16(key),
       base::UTF8ToUTF16(base::DoubleToString(value))));
+}
+
+void MockMediaConstraintFactory::AddOptional(const std::string& key,
+                                             const std::string& value) {
+  optional_.push_back(blink::WebMediaConstraint(
+      base::UTF8ToUTF16(key), base::UTF8ToUTF16(value)));
+}
+
+void MockMediaConstraintFactory::AddOptional(const std::string& key,
+                                              bool value) {
+  const std::string string_value = value ? kValueTrue : kValueFalse;
+  AddOptional(key, string_value);
 }
 
 void MockMediaConstraintFactory::DisableDefaultAudioConstraints() {
@@ -62,7 +93,7 @@ void MockMediaConstraintFactory::DisableDefaultAudioConstraints() {
       webrtc::MediaConstraintsInterface::kExperimentalNoiseSuppression
   };
   MockMediaConstraintFactory factory;
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kDefaultAudioConstraints); ++i) {
+  for (size_t i = 0; i < arraysize(kDefaultAudioConstraints); ++i) {
     AddMandatory(kDefaultAudioConstraints[i], false);
   }
 }

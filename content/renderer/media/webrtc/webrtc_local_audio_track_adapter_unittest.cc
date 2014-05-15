@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,11 +36,13 @@ class WebRtcLocalAudioTrackAdapterTest : public ::testing::Test {
   WebRtcLocalAudioTrackAdapterTest()
       : params_(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                 media::CHANNEL_LAYOUT_STEREO, 48000, 16, 480),
-        adapter_(WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL)),
-        capturer_(WebRtcAudioCapturer::CreateCapturer(
-            -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", ""),
-            blink::WebMediaConstraints(), NULL, NULL)),
-        track_(new WebRtcLocalAudioTrack(adapter_, capturer_, NULL)) {}
+        adapter_(WebRtcLocalAudioTrackAdapter::Create(std::string(), NULL)) {
+    MockMediaConstraintFactory constraint_factory;
+    capturer_ = WebRtcAudioCapturer::CreateCapturer(
+        -1, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE, "", ""),
+        constraint_factory.CreateWebMediaConstraints(), NULL, NULL);
+    track_.reset(new WebRtcLocalAudioTrack(adapter_, capturer_, NULL));
+  }
 
  protected:
   virtual void SetUp() OVERRIDE {

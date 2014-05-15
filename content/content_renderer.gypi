@@ -254,6 +254,8 @@
     'renderer/media/media_stream_audio_renderer.h',
     'renderer/media/media_stream_center.h',
     'renderer/media/media_stream_client.h',
+    'renderer/media/media_stream_constraints_util.cc',
+    'renderer/media/media_stream_constraints_util.h',
     'renderer/media/media_stream_dependency_factory.h',
     'renderer/media/media_stream_dispatcher.h',
     'renderer/media/media_stream_dispatcher_eventhandler.h',

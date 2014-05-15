@@ -27,6 +27,10 @@ class CONTENT_EXPORT MediaStreamSource
   typedef base::Callback<void(MediaStreamSource* source,
                               bool success)> ConstraintsCallback;
 
+  // Source constraints key for
+  // http://dev.w3.org/2011/webrtc/editor/getusermedia.html.
+  static const char kSourceId[];
+
   MediaStreamSource();
   virtual ~MediaStreamSource();
 

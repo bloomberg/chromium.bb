@@ -8,6 +8,8 @@
 
 namespace content {
 
+const char MediaStreamSource::kSourceId[] = "sourceId";
+
 MediaStreamSource::MediaStreamSource() {
 }
 

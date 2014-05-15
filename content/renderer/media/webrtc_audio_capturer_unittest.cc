@@ -158,8 +158,8 @@ class WebRtcAudioCapturerTest : public testing::Test {
 // those values should be correctly stored and passed to the track.
 TEST_F(WebRtcAudioCapturerTest, VerifyAudioParams) {
   // Use constraints with default settings.
-  blink::WebMediaConstraints constraints;
-  VerifyAudioParams(constraints, true);
+  MockMediaConstraintFactory constraint_factory;
+  VerifyAudioParams(constraint_factory.CreateWebMediaConstraints(), true);
 }
 
 TEST_F(WebRtcAudioCapturerTest, VerifyAudioParamsWithAudioProcessing) {
@@ -170,5 +170,23 @@ TEST_F(WebRtcAudioCapturerTest, VerifyAudioParamsWithAudioProcessing) {
   constraint_factory.DisableDefaultAudioConstraints();
   VerifyAudioParams(constraint_factory.CreateWebMediaConstraints(), false);
 }
+
+TEST_F(WebRtcAudioCapturerTest, FailToCreateCapturerWithWrongConstraints) {
+  EnableAudioTrackProcessing();
+  MockMediaConstraintFactory constraint_factory;
+  const std::string dummy_constraint = "dummy";
+  constraint_factory.AddMandatory(dummy_constraint, true);
+
+  scoped_refptr<WebRtcAudioCapturer> capturer(
+      WebRtcAudioCapturer::CreateCapturer(
+          0, StreamDeviceInfo(MEDIA_DEVICE_AUDIO_CAPTURE,
+                               "", "", params_.sample_rate(),
+                               params_.channel_layout(),
+                               params_.frames_per_buffer()),
+          constraint_factory.CreateWebMediaConstraints(), NULL, NULL)
+  );
+  EXPECT_TRUE(capturer == NULL);
+}
+
 
 }  // namespace content

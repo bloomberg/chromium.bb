@@ -25,7 +25,6 @@ namespace content {
 namespace {
 
 using webrtc::AudioProcessing;
-using webrtc::MediaConstraintsInterface;
 
 #if defined(OS_ANDROID)
 const int kAudioProcessingSampleRate = 16000;
@@ -167,7 +166,6 @@ bool MediaStreamAudioProcessor::IsAudioTrackProcessingEnabled() {
 MediaStreamAudioProcessor::MediaStreamAudioProcessor(
     const blink::WebMediaConstraints& constraints,
     int effects,
-    MediaStreamType type,
     WebRtcPlayoutDataSource* playout_data_source)
     : render_delay_ms_(0),
       playout_data_source_(playout_data_source),
@@ -175,7 +173,7 @@ MediaStreamAudioProcessor::MediaStreamAudioProcessor(
       typing_detected_(false) {
   capture_thread_checker_.DetachFromThread();
   render_thread_checker_.DetachFromThread();
-  InitializeAudioProcessingModule(constraints, effects, type);
+  InitializeAudioProcessingModule(constraints, effects);
 }
 
 MediaStreamAudioProcessor::~MediaStreamAudioProcessor() {
@@ -283,68 +281,53 @@ void MediaStreamAudioProcessor::GetStats(AudioProcessorStats* stats) {
 }
 
 void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
-    const blink::WebMediaConstraints& constraints, int effects,
-    MediaStreamType type) {
+    const blink::WebMediaConstraints& constraints, int effects) {
   DCHECK(!audio_processing_);
 
-  RTCMediaConstraints native_constraints(constraints);
+  MediaAudioConstraints audio_constraints(constraints, effects);
 
   // Audio mirroring can be enabled even though audio processing is otherwise
   // disabled.
-  audio_mirroring_ = GetPropertyFromConstraints(
-      &native_constraints, webrtc::MediaConstraintsInterface::kAudioMirroring);
+  audio_mirroring_ = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogAudioMirroring);
 
   if (!IsAudioTrackProcessingEnabled()) {
     RecordProcessingState(AUDIO_PROCESSING_IN_WEBRTC);
     return;
   }
 
-  // Only apply the fixed constraints for gUM of MEDIA_DEVICE_AUDIO_CAPTURE.
-  DCHECK(IsAudioMediaType(type));
-  if (type == MEDIA_DEVICE_AUDIO_CAPTURE)
-    ApplyFixedAudioConstraints(&native_constraints);
-
-  if (effects & media::AudioParameters::ECHO_CANCELLER) {
-    // If platform echo canceller is enabled, disable the software AEC.
-    native_constraints.AddMandatory(
-        MediaConstraintsInterface::kEchoCancellation,
-        MediaConstraintsInterface::kValueFalse, true);
-  }
-
 #if defined(OS_IOS)
-  // On iOS, VPIO provides built-in AEC and AGC.
-  const bool enable_aec = false;
-  const bool enable_agc = false;
+  // On iOS, VPIO provides built-in AGC and AEC.
+  const bool echo_cancellation = false;
+  const bool goog_agc = false;
 #else
-  const bool enable_aec = GetPropertyFromConstraints(
-      &native_constraints, MediaConstraintsInterface::kEchoCancellation);
-  const bool enable_agc = GetPropertyFromConstraints(
-      &native_constraints, webrtc::MediaConstraintsInterface::kAutoGainControl);
+  const bool echo_cancellation =
+      audio_constraints.GetEchoCancellationProperty();
+  const bool goog_agc = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogAutoGainControl);
 #endif
 
 #if defined(OS_IOS) || defined(OS_ANDROID)
-  const bool enable_experimental_aec = false;
-  const bool enable_typing_detection = false;
+  const bool goog_experimental_aec = false;
+  const bool goog_typing_detection = false;
 #else
-  const bool enable_experimental_aec = GetPropertyFromConstraints(
-      &native_constraints,
-      MediaConstraintsInterface::kExperimentalEchoCancellation);
-  const bool enable_typing_detection = GetPropertyFromConstraints(
-      &native_constraints, MediaConstraintsInterface::kTypingNoiseDetection);
+  const bool goog_experimental_aec = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogExperimentalEchoCancellation);
+  const bool goog_typing_detection = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogTypingNoiseDetection);
 #endif
 
-  const bool enable_ns = GetPropertyFromConstraints(
-      &native_constraints, MediaConstraintsInterface::kNoiseSuppression);
-  const bool enable_experimental_ns = GetPropertyFromConstraints(
-        &native_constraints,
-        MediaConstraintsInterface::kExperimentalNoiseSuppression);
-  const bool enable_high_pass_filter = GetPropertyFromConstraints(
-      &native_constraints, MediaConstraintsInterface::kHighpassFilter);
+  const bool goog_ns = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogNoiseSuppression);
+  const bool goog_experimental_ns = audio_constraints.GetProperty(
+      MediaAudioConstraints::kGoogExperimentalNoiseSuppression);
+ const bool goog_high_pass_filter = audio_constraints.GetProperty(
+     MediaAudioConstraints::kGoogHighpassFilter);
 
-  // Return immediately if no audio processing component is enabled.
-  if (!enable_aec && !enable_experimental_aec && !enable_ns &&
-      !enable_high_pass_filter && !enable_typing_detection && !enable_agc &&
-      !enable_experimental_ns) {
+  // Return immediately if no goog constraint is enabled.
+  if (!echo_cancellation && !goog_experimental_aec && !goog_ns &&
+      !goog_high_pass_filter && !goog_typing_detection &&
+      !goog_agc && !goog_experimental_ns) {
     RecordProcessingState(AUDIO_PROCESSING_DISABLED);
     return;
   }
@@ -359,32 +342,33 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
                                             kAudioProcessingChannelLayout));
 
   // Enable the audio processing components.
-  if (enable_aec) {
+  if (echo_cancellation) {
     EnableEchoCancellation(audio_processing_.get());
-    if (enable_experimental_aec)
+
+    if (goog_experimental_aec)
       EnableExperimentalEchoCancellation(audio_processing_.get());
 
     if (playout_data_source_)
       playout_data_source_->AddPlayoutSink(this);
   }
 
-  if (enable_ns)
+  if (goog_ns)
     EnableNoiseSuppression(audio_processing_.get());
 
-  if (enable_experimental_ns)
+  if (goog_experimental_ns)
     EnableExperimentalNoiseSuppression(audio_processing_.get());
 
-  if (enable_high_pass_filter)
+  if (goog_high_pass_filter)
     EnableHighPassFilter(audio_processing_.get());
 
-  if (enable_typing_detection) {
+  if (goog_typing_detection) {
     // TODO(xians): Remove this |typing_detector_| after the typing suppression
     // is enabled by default.
     typing_detector_.reset(new webrtc::TypingDetection());
     EnableTypingDetection(audio_processing_.get(), typing_detector_.get());
   }
 
-  if (enable_agc)
+  if (goog_agc)
     EnableAutomaticGainControl(audio_processing_.get());
 
   RecordProcessingState(AUDIO_PROCESSING_ENABLED);

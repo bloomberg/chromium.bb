@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/child/child_process.h"
+#include "content/renderer/media/media_stream_constraints_util.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/video_frame_deliverer.h"
@@ -45,8 +46,6 @@ const int MediaStreamVideoSource::kDefaultHeight = 480;
 const int MediaStreamVideoSource::kDefaultFrameRate = 30;
 
 namespace {
-// Constraints keys for http://dev.w3.org/2011/webrtc/editor/getusermedia.html
-const char kSourceId[] = "sourceId";
 
 // Google-specific key prefix. Constraints with this prefix are ignored if they
 // are unknown.
@@ -78,7 +77,7 @@ bool UpdateFormatForConstraint(
     return true;
   }
 
-  if (constraint_name == kSourceId) {
+  if (constraint_name == MediaStreamSource::kSourceId) {
     // This is a constraint that doesn't affect the format.
     return true;
   }
@@ -206,18 +205,6 @@ media::VideoCaptureFormats FilterFormats(
   return candidates;
 }
 
-bool GetConstraintValue(const blink::WebMediaConstraints& constraints,
-                        bool mandatory, const blink::WebString& name,
-                        int* value) {
-  blink::WebString value_str;
-  bool ret = mandatory ?
-      constraints.getMandatoryConstraintValue(name, value_str) :
-      constraints.getOptionalConstraintValue(name, value_str);
-  if (ret)
-    base::StringToInt(value_str.utf8(), value);
-  return ret;
-}
-
 // Returns true if |constraint| has mandatory constraints.
 bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {
   blink::WebVector<blink::WebMediaConstraint> mandatory_constraints;
@@ -228,19 +215,21 @@ bool HasMandatoryConstraints(const blink::WebMediaConstraints& constraints) {
 // Retrieve the desired max width and height from |constraints|.
 void GetDesiredMaxWidthAndHeight(const blink::WebMediaConstraints& constraints,
                                  int* desired_width, int* desired_height) {
-  bool mandatory = GetConstraintValue(constraints, true,
-                                      MediaStreamVideoSource::kMaxWidth,
-                                      desired_width);
-  mandatory |= GetConstraintValue(constraints, true,
-                                  MediaStreamVideoSource::kMaxHeight,
-                                  desired_height);
+  bool mandatory = GetMandatoryConstraintValueAsInteger(
+      constraints, MediaStreamVideoSource::kMaxWidth, desired_width);
+  mandatory |= GetMandatoryConstraintValueAsInteger(
+      constraints, MediaStreamVideoSource::kMaxHeight, desired_height);
+  // Skip the optional constraints if any of the mandatory constraint is
+  // specified.
   if (mandatory)
     return;
 
-  GetConstraintValue(constraints, false, MediaStreamVideoSource::kMaxWidth,
-                     desired_width);
-  GetConstraintValue(constraints, false, MediaStreamVideoSource::kMaxHeight,
-                     desired_height);
+  GetOptionalConstraintValueAsInteger(constraints,
+                                      MediaStreamVideoSource::kMaxWidth,
+                                      desired_width);
+  GetOptionalConstraintValueAsInteger(constraints,
+                                      MediaStreamVideoSource::kMaxHeight,
+                                      desired_height);
 }
 
 const media::VideoCaptureFormat& GetBestFormatBasedOnArea(
@@ -417,10 +406,12 @@ void MediaStreamVideoSource::AddTrack(
       // Tab capture and Screen capture needs the maximum requested height
       // and width to decide on the resolution.
       int max_requested_width = 0;
-      GetConstraintValue(constraints, true, kMaxWidth, &max_requested_width);
+      GetMandatoryConstraintValueAsInteger(constraints, kMaxWidth,
+                                           &max_requested_width);
 
       int max_requested_height = 0;
-      GetConstraintValue(constraints, true, kMaxHeight, &max_requested_height);
+      GetMandatoryConstraintValueAsInteger(constraints, kMaxHeight,
+                                           &max_requested_height);
 
       state_ = RETRIEVING_CAPABILITIES;
       GetCurrentSupportedFormats(

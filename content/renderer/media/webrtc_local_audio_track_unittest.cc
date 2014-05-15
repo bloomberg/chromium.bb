@@ -170,7 +170,7 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
   virtual void SetUp() OVERRIDE {
     params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                   media::CHANNEL_LAYOUT_STEREO, 2, 0, 48000, 16, 480);
-    blink::WebMediaConstraints constraints;
+    MockMediaConstraintFactory constraint_factory;
     blink_source_.initialize("dummy", blink::WebMediaStreamSource::TypeAudio,
                              "dummy");
     MediaStreamAudioSource* audio_source = new MediaStreamAudioSource();
@@ -178,9 +178,9 @@ class WebRtcLocalAudioTrackTest : public ::testing::Test {
 
     StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_CAPTURE,
                             std::string(), std::string());
-    capturer_ = WebRtcAudioCapturer::CreateCapturer(-1, device,
-                                                    constraints, NULL,
-                                                    audio_source);
+    capturer_ = WebRtcAudioCapturer::CreateCapturer(
+        -1, device, constraint_factory.CreateWebMediaConstraints(), NULL,
+        audio_source);
     audio_source->SetAudioCapturer(capturer_);
     capturer_source_ = new MockCapturerSource(capturer_.get());
     EXPECT_CALL(*capturer_source_.get(), OnInitialize(_, capturer_.get(), -1))
@@ -446,11 +446,13 @@ TEST_F(WebRtcLocalAudioTrackTest, ConnectTracksToDifferentCapturers) {
   track_1->AddSink(sink_1.get());
 
   // Create a new capturer with new source with different audio format.
-  blink::WebMediaConstraints constraints;
+  MockMediaConstraintFactory constraint_factory;
   StreamDeviceInfo device(MEDIA_DEVICE_AUDIO_CAPTURE,
                           std::string(), std::string());
   scoped_refptr<WebRtcAudioCapturer> new_capturer(
-      WebRtcAudioCapturer::CreateCapturer(-1, device, constraints, NULL, NULL));
+      WebRtcAudioCapturer::CreateCapturer(
+          -1, device, constraint_factory.CreateWebMediaConstraints(), NULL,
+          NULL));
   scoped_refptr<MockCapturerSource> new_source(
       new MockCapturerSource(new_capturer.get()));
   EXPECT_CALL(*new_source.get(), OnInitialize(_, new_capturer.get(), -1));

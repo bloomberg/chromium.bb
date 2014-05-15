@@ -20,8 +20,12 @@ class MockMediaConstraintFactory {
   blink::WebMediaConstraints CreateWebMediaConstraints();
   void AddMandatory(const std::string& key, int value);
   void AddMandatory(const std::string& key, double value);
+  void AddMandatory(const std::string& key, const std::string& value);
+  void AddMandatory(const std::string& key, bool value);
   void AddOptional(const std::string& key, int value);
   void AddOptional(const std::string& key, double value);
+  void AddOptional(const std::string& key, const std::string& value);
+  void AddOptional(const std::string& key, bool value);
   void DisableDefaultAudioConstraints();
 
  private:

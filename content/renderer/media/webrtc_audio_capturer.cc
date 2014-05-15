@@ -165,6 +165,11 @@ bool WebRtcAudioCapturer::Initialize() {
     return true;
   }
 
+  MediaAudioConstraints audio_constraints(constraints_,
+                                          device_info_.device.input.effects);
+  if (!audio_constraints.IsValid())
+    return false;
+
   media::ChannelLayout channel_layout = static_cast<media::ChannelLayout>(
       device_info_.device.input.channel_layout);
   DVLOG(1) << "Audio input hardware channel layout: " << channel_layout;
@@ -224,8 +229,7 @@ WebRtcAudioCapturer::WebRtcAudioCapturer(
     : constraints_(constraints),
       audio_processor_(
           new talk_base::RefCountedObject<MediaStreamAudioProcessor>(
-              constraints, device_info.device.input.effects,
-              device_info.device.type, audio_device)),
+              constraints, device_info.device.input.effects, audio_device)),
       running_(false),
       render_view_id_(render_view_id),
       device_info_(device_info),
@@ -332,8 +336,9 @@ void WebRtcAudioCapturer::SetCapturerSource(
     // Notify the |audio_processor_| of the new format.
     audio_processor_->OnCaptureFormatChanged(params);
 
-    need_audio_processing_ = NeedsAudioProcessing(
-        constraints_, device_info_.device.input.effects);
+    MediaAudioConstraints audio_constraints(constraints_,
+                                            device_info_.device.input.effects);
+    need_audio_processing_ = audio_constraints.NeedsAudioProcessing();
     // Notify all tracks about the new format.
     tracks_.TagAll();
   }

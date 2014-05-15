@@ -193,7 +193,7 @@ bool MediaStreamDependencyFactory::InitializeMediaStreamAudioSource(
   // Do additional source initialization if the audio source is a valid
   // microphone or tab audio.
   RTCMediaConstraints native_audio_constraints(audio_constraints);
-  ApplyFixedAudioConstraints(&native_audio_constraints);
+  MediaAudioConstraints::ApplyFixedAudioConstraints(&native_audio_constraints);
 
   StreamDeviceInfo device_info = source_data->device_info();
   RTCMediaConstraints constraints = native_audio_constraints;
