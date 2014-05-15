@@ -97,7 +97,7 @@ scoped_ptr<base::StringValue> StringForBrowserAccessibility(
   NSString* description = [obj role];
   id value = [obj value];
   id roleDescription = [obj roleDescription];
-  if (value != nil && ![value isEqualToString:@""]) {
+  if (value && ![value isEqual:@""]) {
     description = [NSString stringWithFormat:@"%@ %@", description, value];
   } else if ([description isEqualToString:NSAccessibilityGroupRole] &&
            roleDescription != nil &&
