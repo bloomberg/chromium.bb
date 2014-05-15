@@ -3484,8 +3484,7 @@ void GLES2Implementation::GetQueryObjectuivEXT(
       if (!query->CheckResultsAvailable(helper_)) {
         helper_->WaitForToken(query->token());
         if (!query->CheckResultsAvailable(helper_)) {
-          // TODO(gman): Speed this up.
-          WaitForCmd();
+          FinishHelper();
           CHECK(query->CheckResultsAvailable(helper_));
         }
       }
