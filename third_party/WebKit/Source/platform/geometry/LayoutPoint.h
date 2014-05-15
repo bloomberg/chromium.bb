@@ -86,13 +86,13 @@ private:
     LayoutUnit m_x, m_y;
 };
 
-inline LayoutPoint& operator+=(LayoutPoint& a, const LayoutSize& b)
+ALWAYS_INLINE LayoutPoint& operator+=(LayoutPoint& a, const LayoutSize& b)
 {
     a.move(b.width(), b.height());
     return a;
 }
 
-inline LayoutPoint& operator-=(LayoutPoint& a, const LayoutSize& b)
+ALWAYS_INLINE LayoutPoint& operator-=(LayoutPoint& a, const LayoutSize& b)
 {
     a.move(-b.width(), -b.height());
     return a;
@@ -103,12 +103,12 @@ inline LayoutPoint operator+(const LayoutPoint& a, const LayoutSize& b)
     return LayoutPoint(a.x() + b.width(), a.y() + b.height());
 }
 
-inline LayoutPoint operator+(const LayoutPoint& a, const LayoutPoint& b)
+ALWAYS_INLINE LayoutPoint operator+(const LayoutPoint& a, const LayoutPoint& b)
 {
     return LayoutPoint(a.x() + b.x(), a.y() + b.y());
 }
 
-inline LayoutSize operator-(const LayoutPoint& a, const LayoutPoint& b)
+ALWAYS_INLINE LayoutSize operator-(const LayoutPoint& a, const LayoutPoint& b)
 {
     return LayoutSize(a.x() - b.x(), a.y() - b.y());
 }
@@ -123,7 +123,7 @@ inline LayoutPoint operator-(const LayoutPoint& point)
     return LayoutPoint(-point.x(), -point.y());
 }
 
-inline bool operator==(const LayoutPoint& a, const LayoutPoint& b)
+ALWAYS_INLINE bool operator==(const LayoutPoint& a, const LayoutPoint& b)
 {
     return a.x() == b.x() && a.y() == b.y();
 }

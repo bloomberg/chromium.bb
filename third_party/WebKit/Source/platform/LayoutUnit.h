@@ -144,7 +144,7 @@ public:
             return (m_value + kFixedPointDenominator - 1) / kFixedPointDenominator;
         return toInt();
     }
-    int round() const
+    ALWAYS_INLINE int round() const
     {
         return saturatedAddition(rawValue(), kFixedPointDenominator / 2) >> kLayoutUnitFractionalBits;
     }
@@ -569,7 +569,7 @@ inline LayoutUnit operator/(unsigned long long a, const LayoutUnit& b)
     return LayoutUnit(a) / b;
 }
 
-inline LayoutUnit operator+(const LayoutUnit& a, const LayoutUnit& b)
+ALWAYS_INLINE LayoutUnit operator+(const LayoutUnit& a, const LayoutUnit& b)
 {
     LayoutUnit returnVal;
     returnVal.setRawValue(saturatedAddition(a.rawValue(), b.rawValue()));
@@ -606,7 +606,7 @@ inline double operator+(const double a, const LayoutUnit& b)
     return a + b.toDouble();
 }
 
-inline LayoutUnit operator-(const LayoutUnit& a, const LayoutUnit& b)
+ALWAYS_INLINE LayoutUnit operator-(const LayoutUnit& a, const LayoutUnit& b)
 {
     LayoutUnit returnVal;
     returnVal.setRawValue(saturatedSubtraction(a.rawValue(), b.rawValue()));

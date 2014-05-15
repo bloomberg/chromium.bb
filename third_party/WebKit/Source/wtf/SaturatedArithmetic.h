@@ -34,7 +34,7 @@
 #include <limits>
 #include <stdint.h>
 
-inline int32_t saturatedAddition(int32_t a, int32_t b)
+ALWAYS_INLINE int32_t saturatedAddition(int32_t a, int32_t b)
 {
     uint32_t ua = a;
     uint32_t ub = b;
@@ -48,7 +48,7 @@ inline int32_t saturatedAddition(int32_t a, int32_t b)
     return result;
 }
 
-inline int32_t saturatedSubtraction(int32_t a, int32_t b)
+ALWAYS_INLINE int32_t saturatedSubtraction(int32_t a, int32_t b)
 {
     uint32_t ua = a;
     uint32_t ub = b;

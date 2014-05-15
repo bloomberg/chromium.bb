@@ -62,10 +62,10 @@ public:
     void setLocation(const LayoutPoint& location) { m_location = location; }
     void setSize(const LayoutSize& size) { m_size = size; }
 
-    LayoutUnit x() const { return m_location.x(); }
-    LayoutUnit y() const { return m_location.y(); }
-    LayoutUnit maxX() const { return x() + width(); }
-    LayoutUnit maxY() const { return y() + height(); }
+    ALWAYS_INLINE LayoutUnit x() const { return m_location.x(); }
+    ALWAYS_INLINE LayoutUnit y() const { return m_location.y(); }
+    ALWAYS_INLINE LayoutUnit maxX() const { return x() + width(); }
+    ALWAYS_INLINE LayoutUnit maxY() const { return y() + height(); }
     LayoutUnit width() const { return m_size.width(); }
     LayoutUnit height() const { return m_size.height(); }
 
@@ -81,7 +81,7 @@ public:
     void setWidth(LayoutUnit width) { m_size.setWidth(width); }
     void setHeight(LayoutUnit height) { m_size.setHeight(height); }
 
-    bool isEmpty() const { return m_size.isEmpty(); }
+    ALWAYS_INLINE bool isEmpty() const { return m_size.isEmpty(); }
 
     // NOTE: The result is rounded to integer values, and thus may be not the exact
     // center point.
@@ -195,7 +195,7 @@ inline LayoutRect unionRect(const LayoutRect& a, const LayoutRect& b)
 
 PLATFORM_EXPORT LayoutRect unionRect(const Vector<LayoutRect>&);
 
-inline bool operator==(const LayoutRect& a, const LayoutRect& b)
+ALWAYS_INLINE bool operator==(const LayoutRect& a, const LayoutRect& b)
 {
     return a.location() == b.location() && a.size() == b.size();
 }
