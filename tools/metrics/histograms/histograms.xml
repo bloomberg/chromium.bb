@@ -38875,7 +38875,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <enum name="OsSuite" type="int">
   <int value="0" label="Windows Home Edition"/>
-  <int value="1" label="Windows Proffesional Edition (or better)"/>
+  <int value="1" label="Windows Professional Edition (or better)"/>
   <int value="2" label="Windows Server Edition"/>
 </enum>
 
