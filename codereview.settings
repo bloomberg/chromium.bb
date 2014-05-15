@@ -8,3 +8,4 @@ TRYSERVER_SVN_URL: svn://svn.chromium.org/chrome-try/try
 GITCL_PREUPLOAD: http://src.chromium.org/viewvc/trunk/tools/depot_tools/git-cl-upload-hook?revision=HEAD&root=chrome
 GITCL_PREDCOMMIT: http://src.chromium.org/viewvc/trunk/tools/depot_tools/git-cl-upload-hook?revision=HEAD&root=chrome
 LINT_IGNORE_REGEX: webkit/api/.*
+CANONICAL_URL: https://chromium.googlesource.com/chromium/src
