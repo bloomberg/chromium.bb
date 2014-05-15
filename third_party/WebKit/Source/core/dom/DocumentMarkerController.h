@@ -42,8 +42,8 @@ class Node;
 class Range;
 class RenderedDocumentMarker;
 
-class DocumentMarkerController {
-    WTF_MAKE_NONCOPYABLE(DocumentMarkerController); WTF_MAKE_FAST_ALLOCATED;
+class DocumentMarkerController FINAL : public NoBaseWillBeGarbageCollectedFinalized<DocumentMarkerController> {
+    WTF_MAKE_NONCOPYABLE(DocumentMarkerController); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
 
     DocumentMarkerController();
@@ -66,8 +66,6 @@ public:
     void removeMarkers(Range*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(), RemovePartiallyOverlappingMarkerOrNot = DoNotRemovePartiallyOverlappingMarker);
     void removeMarkers(Node*, unsigned startOffset, int length, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers(),  RemovePartiallyOverlappingMarkerOrNot = DoNotRemovePartiallyOverlappingMarker);
 
-    void clearWeakMembers(Visitor*);
-
     void removeMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void removeMarkers(Node*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
     void repaintMarkers(DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
@@ -82,6 +80,8 @@ public:
     Vector<DocumentMarker*> markers();
     Vector<IntRect> renderedRectsForMarkers(DocumentMarker::MarkerType);
 
+    void trace(Visitor*);
+
 #ifndef NDEBUG
     void showMarkers() const;
 #endif
@@ -91,7 +91,7 @@ private:
 
     typedef Vector<RenderedDocumentMarker> MarkerList;
     typedef Vector<OwnPtr<MarkerList>, DocumentMarker::MarkerTypeIndexesCount> MarkerLists;
-    typedef HashMap<const Node*, OwnPtr<MarkerLists> > MarkerMap;
+    typedef WillBeHeapHashMap<RawPtrWillBeWeakMember<const Node>, OwnPtr<MarkerLists> > MarkerMap;
     void mergeOverlapping(MarkerList*, DocumentMarker&);
     bool possiblyHasMarkers(DocumentMarker::MarkerTypes);
     void removeMarkersFromList(MarkerMap::iterator, DocumentMarker::MarkerTypes);

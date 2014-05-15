@@ -439,7 +439,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_containsPlugins(false)
     , m_ignoreDestructiveWriteCount(0)
     , m_titleSetExplicitly(false)
-    , m_markers(adoptPtr(new DocumentMarkerController))
+    , m_markers(adoptPtrWillBeNoop(new DocumentMarkerController))
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
     , m_cssTarget(0)
     , m_loadEventProgress(LoadEventNotRun)
@@ -5689,9 +5689,6 @@ void Document::clearWeakMembers(Visitor* visitor)
     if (m_axObjectCache)
         m_axObjectCache->clearWeakMembers(visitor);
 
-    if (m_markers)
-        m_markers->clearWeakMembers(visitor);
-
     // FIXME: Oilpan: Use a weak counted set instead.
     if (m_touchEventTargets) {
         Vector<Node*> deadNodes;
@@ -5714,6 +5711,7 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_activeHoverElement);
     visitor->trace(m_documentElement);
     visitor->trace(m_titleElement);
+    visitor->trace(m_markers);
     visitor->trace(m_currentScriptStack);
     visitor->trace(m_transformSourceDocument);
     visitor->trace(m_cssCanvasElements);

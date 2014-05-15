@@ -360,19 +360,6 @@ void DocumentMarkerController::removeMarkers(Node* node, unsigned startOffset, i
         node->renderer()->repaint();
 }
 
-// FIXME: Oilpan: Move DocumentMarkerController to the Oilpan heap and make
-// the MarkerMap a weak collection instead of this explicit weak processing.
-void DocumentMarkerController::clearWeakMembers(Visitor* visitor)
-{
-    Vector<const Node*> deadNodes;
-    for (MarkerMap::iterator it = m_markers.begin(); it != m_markers.end(); ++it) {
-        if (!visitor->isAlive(it->key))
-            deadNodes.append(it->key);
-    }
-    for (unsigned i = 0; i < deadNodes.size(); ++i)
-        removeMarkers(const_cast<Node*>(deadNodes[i]));
-}
-
 DocumentMarker* DocumentMarkerController::markerContainingPoint(const LayoutPoint& point, DocumentMarker::MarkerType markerType)
 {
     if (!possiblyHasMarkers(markerType))
@@ -492,6 +479,11 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(DocumentMarker
     }
 
     return result;
+}
+
+void DocumentMarkerController::trace(Visitor* visitor)
+{
+    visitor->trace(m_markers);
 }
 
 void DocumentMarkerController::removeMarkers(Node* node, DocumentMarker::MarkerTypes markerTypes)
