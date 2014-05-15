@@ -58,9 +58,9 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
     return Platform::current()->unitTestSupport()->readFromFile(filePath);
 }
 
-PassOwnPtr<WEBPImageDecoder> createDecoder(ImageSource::AlphaOption alphaOption = ImageSource::AlphaNotPremultiplied)
+PassOwnPtr<WEBPImageDecoder> createDecoder()
 {
-    return adoptPtr(new WEBPImageDecoder(alphaOption, ImageSource::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
+    return adoptPtr(new WEBPImageDecoder(ImageSource::AlphaNotPremultiplied, ImageSource::GammaAndColorProfileApplied, ImageDecoder::noDecodedImageByteLimit));
 }
 
 unsigned hashSkBitmap(const SkBitmap& bitmap)
@@ -206,56 +206,6 @@ void testInvalidImage(const char* webpFile, bool parseErrorExpected)
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     EXPECT_FALSE(frame);
     EXPECT_EQ(cAnimationLoopOnce, decoder->repetitionCount());
-}
-
-void VerifyFramesMatch(const char* webpFile, const ImageFrame* const a, ImageFrame* const b)
-{
-    const SkBitmap& bitmapA = a->getSkBitmap();
-    const SkBitmap& bitmapB = b->getSkBitmap();
-    ASSERT_EQ(bitmapA.width(), bitmapB.width());
-    ASSERT_EQ(bitmapA.height(), bitmapB.height());
-
-    int maxDifference = 0;
-    for (int y = 0; y < bitmapA.height(); ++y) {
-        for (int x = 0; x < bitmapA.width(); ++x) {
-            uint32_t colorA = *bitmapA.getAddr32(x, y);
-            if (!a->premultiplyAlpha())
-                colorA = SkPreMultiplyColor(colorA);
-            uint32_t colorB = *bitmapB.getAddr32(x, y);
-            if (!b->premultiplyAlpha())
-                colorB = SkPreMultiplyColor(colorB);
-            uint8_t* pixelA = reinterpret_cast<uint8_t*>(&colorA);
-            uint8_t* pixelB = reinterpret_cast<uint8_t*>(&colorB);
-            for (int channel = 0; channel < 4; ++channel) {
-                const int difference = abs(pixelA[channel] - pixelB[channel]);
-                if (difference > maxDifference)
-                    maxDifference = difference;
-            }
-        }
-    }
-
-    // Pre-multiplication could round the RGBA channel values. So, we declare
-    // that the frames match if the RGBA channel values differ by at most 2.
-    EXPECT_GE(2, maxDifference) << webpFile;
-}
-
-// Verify that result of alpha blending is similar for AlphaPremultiplied and AlphaNotPremultiplied cases.
-void testAlphaBlending(const char* webpFile)
-{
-    RefPtr<SharedBuffer> data = readFile(webpFile);
-    ASSERT_TRUE(data.get());
-
-    OwnPtr<WEBPImageDecoder> decoderA = createDecoder(ImageSource::AlphaPremultiplied);
-    decoderA->setData(data.get(), true);
-
-    OwnPtr<WEBPImageDecoder> decoderB = createDecoder(ImageSource::AlphaNotPremultiplied);
-    decoderB->setData(data.get(), true);
-
-    size_t frameCount = decoderA->frameCount();
-    ASSERT_EQ(frameCount, decoderB->frameCount());
-
-    for (size_t i = 0; i < frameCount; ++i)
-        VerifyFramesMatch(webpFile, decoderA->frameBufferAtIndex(i), decoderB->frameBufferAtIndex(i));
 }
 
 } // namespace
@@ -624,15 +574,6 @@ TEST(AnimatedWebPTests, decodeAfterReallocatingData)
 {
     testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated.webp");
     testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
-}
-
-TEST(AnimatedWebPTests, alphaBlending)
-{
-    testAlphaBlending("/LayoutTests/fast/images/resources/webp-animated.webp");
-    testAlphaBlending("/LayoutTests/fast/images/resources/webp-animated-semitransparent1.webp");
-    testAlphaBlending("/LayoutTests/fast/images/resources/webp-animated-semitransparent2.webp");
-    testAlphaBlending("/LayoutTests/fast/images/resources/webp-animated-semitransparent3.webp");
-    testAlphaBlending("/LayoutTests/fast/images/resources/webp-animated-semitransparent4.webp");
 }
 
 TEST(StaticWebPTests, truncatedImage)

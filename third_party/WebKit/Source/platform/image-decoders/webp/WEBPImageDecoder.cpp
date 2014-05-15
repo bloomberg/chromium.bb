@@ -46,80 +46,6 @@ inline WEBP_CSP_MODE outputMode(bool hasAlpha) { return hasAlpha ? MODE_rgbA : M
 inline WEBP_CSP_MODE outputMode(bool hasAlpha) { return hasAlpha ? MODE_bgrA : MODE_BGRA; }
 #endif
 
-inline uint32_t BlendSrcOverDstNonPremultiplied(uint32_t src, uint32_t dst)
-{
-    uint8_t srcA = SkGetPackedA32(src);
-    uint8_t dstA = SkGetPackedA32(dst);
-    uint8_t dstFactorA = (dstA * SkAlpha255To256(255 - srcA)) >> 8;
-    uint16_t blendA = srcA + dstFactorA;
-    if (blendA == 0)
-        return 0;
-
-    unsigned scale = (1UL << 24) / blendA;
-    unsigned blendRUnscaled = SkGetPackedR32(src) * srcA + SkGetPackedR32(dst) * dstFactorA;
-    ASSERT(blendRUnscaled < (1ULL << 32) / scale);
-    uint8_t blendR = (blendRUnscaled * scale) >> 24;
-    unsigned blendGUnscaled = SkGetPackedG32(src) * srcA + SkGetPackedG32(dst) * dstFactorA;
-    ASSERT(blendGUnscaled < (1ULL << 32) / scale);
-    uint8_t blendG = (blendGUnscaled * scale) >> 24;
-    unsigned blendBUnscaled = SkGetPackedB32(src) * srcA + SkGetPackedB32(dst) * dstFactorA;
-    ASSERT(blendBUnscaled < (1ULL << 32) / scale);
-    uint8_t blendB = (blendBUnscaled * scale) >> 24;
-
-    return (blendR << SK_R32_SHIFT) | (blendG << SK_G32_SHIFT) | (blendB << SK_B32_SHIFT) | (blendA << SK_A32_SHIFT);
-}
-
-// Returns two point ranges (<left, width> pairs) at row 'canvasY', that belong to 'src' but not 'dst'.
-// A point range is empty if the corresponding width is 0.
-inline void findBlendRangeAtRow(const WebCore::IntRect& src, const WebCore::IntRect& dst, int canvasY, int& left1, int& width1, int& left2, int& width2)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(canvasY >= src.y() && canvasY < src.maxY());
-    left1 = -1;
-    width1 = 0;
-    left2 = -1;
-    width2 = 0;
-
-    if (canvasY < dst.y() || canvasY >= dst.maxY() || src.x() >= dst.maxX() || src.maxX() <= dst.x()) {
-        left1 = src.x();
-        width1 = src.width();
-        return;
-    }
-
-    if (src.x() < dst.x()) {
-        left1 = src.x();
-        width1 = dst.x() - src.x();
-    }
-
-    if (src.maxX() > dst.maxX()) {
-        left2 = dst.maxX();
-        width2 = src.maxX() - dst.maxX();
-    }
-}
-
-void alphaBlendPremultiplied(WebCore::ImageFrame& src, WebCore::ImageFrame& dst, int canvasY, int left, int width)
-{
-    for (int x = 0; x < width; ++x) {
-        int canvasX = left + x;
-        WebCore::ImageFrame::PixelData& pixel = *src.getAddr(canvasX, canvasY);
-        if (SkGetPackedA32(pixel) != 0xff) {
-            WebCore::ImageFrame::PixelData prevPixel = *dst.getAddr(canvasX, canvasY);
-            pixel = SkPMSrcOver(pixel, prevPixel);
-        }
-    }
-}
-
-void alphaBlendNonPremultiplied(WebCore::ImageFrame& src, WebCore::ImageFrame& dst, int canvasY, int left, int width)
-{
-    for (int x = 0; x < width; ++x) {
-        int canvasX = left + x;
-        WebCore::ImageFrame::PixelData& pixel = *src.getAddr(canvasX, canvasY);
-        if (SkGetPackedA32(pixel) != 0xff) {
-            WebCore::ImageFrame::PixelData prevPixel = *dst.getAddr(canvasX, canvasY);
-            pixel = BlendSrcOverDstNonPremultiplied(pixel, prevPixel);
-        }
-    }
-}
-
 namespace WebCore {
 
 WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
@@ -141,7 +67,6 @@ WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
     , m_repetitionCount(cAnimationLoopOnce)
     , m_decodedHeight(0)
 {
-    m_blendFunction = (alphaOption == ImageSource::AlphaPremultiplied) ? alphaBlendPremultiplied : alphaBlendNonPremultiplied;
 }
 
 WEBPImageDecoder::~WEBPImageDecoder()
@@ -288,8 +213,6 @@ bool WEBPImageDecoder::updateDemuxer()
         hasAnimation = (m_formatFlags & ANIMATION_FLAG);
         if (!hasAnimation)
             m_repetitionCount = cAnimationNone;
-        else
-            m_formatFlags &= ~ICCP_FLAG; // FIXME: Implement ICC profile support for animated images.
 #if USE(QCMSLIB)
         if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
             m_hasColorProfile = true;
@@ -500,23 +423,36 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
         ImageFrame& prevBuffer = m_frameBufferCache[frameIndex - 1];
         ASSERT(prevBuffer.status() == ImageFrame::FrameComplete);
         ImageFrame::DisposalMethod prevDisposalMethod = prevBuffer.disposalMethod();
-        if (prevDisposalMethod == ImageFrame::DisposeKeep) { // Blend transparent pixels with pixels in previous canvas.
+        if (prevDisposalMethod == ImageFrame::DisposeKeep) { // Restore transparent pixels to pixels in previous canvas.
             for (int y = m_decodedHeight; y < decodedHeight; ++y) {
-                m_blendFunction(buffer, prevBuffer, top + y, left, width);
+                const int canvasY = top + y;
+                for (int x = 0; x < width; ++x) {
+                    const int canvasX = left + x;
+                    ImageFrame::PixelData& pixel = *buffer.getAddr(canvasX, canvasY);
+                    // FIXME: Use alpha-blending when alpha is between 0 and 255.
+                    // Alpha-blending is being implemented in: https://bugs.webkit.org/show_bug.cgi?id=17022
+                    if (!((pixel >> SK_A32_SHIFT) & 0xff)) {
+                        ImageFrame::PixelData prevPixel = *prevBuffer.getAddr(canvasX, canvasY);
+                        pixel = prevPixel;
+                    }
+                }
             }
         } else if (prevDisposalMethod == ImageFrame::DisposeOverwriteBgcolor) {
             const IntRect& prevRect = prevBuffer.originalFrameRect();
-            // We need to blend a transparent pixel with its value just after initFrame() call. That is:
-            //   * Blend with fully transparent pixel if it belongs to prevRect <-- This is a no-op.
-            //   * Blend with the pixel in the previous canvas otherwise <-- Needs alpha-blending.
+            // We need to restore transparent pixels to as they were just after initFrame() call. That is:
+            //   * Transparent if it belongs to prevRect <-- This is a no-op.
+            //   * Pixel in the previous canvas otherwise <-- Need to restore.
             for (int y = m_decodedHeight; y < decodedHeight; ++y) {
-                int canvasY = top + y;
-                int left1, width1, left2, width2;
-                findBlendRangeAtRow(frameRect, prevRect, canvasY, left1, width1, left2, width2);
-                if (width1 > 0)
-                    m_blendFunction(buffer, prevBuffer, canvasY, left1, width1);
-                if (width2 > 0)
-                    m_blendFunction(buffer, prevBuffer, canvasY, left2, width2);
+                const int canvasY = top + y;
+                for (int x = 0; x < width; ++x) {
+                    const int canvasX = left + x;
+                    ImageFrame::PixelData& pixel = *buffer.getAddr(canvasX, canvasY);
+                    // FIXME: Use alpha-blending when alpha is between 0 and 255.
+                    if (!((pixel >> SK_A32_SHIFT) & 0xff) && !prevRect.contains(IntPoint(canvasX, canvasY))) {
+                        ImageFrame::PixelData prevPixel = *prevBuffer.getAddr(canvasX, canvasY);
+                        pixel = prevPixel;
+                    }
+                }
             }
         }
     }
