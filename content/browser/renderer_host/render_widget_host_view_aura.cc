@@ -994,13 +994,17 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   // Additonally the legacy dummy window is needed for accessibility and for
   // scrolling to work in legacy drivers for trackpoints/trackpads, etc.
   if (GetNativeViewId()) {
+    bool show_legacy_window = false;
     if (!legacy_render_widget_host_HWND_) {
       legacy_render_widget_host_HWND_ = LegacyRenderWidgetHostHWND::Create(
           reinterpret_cast<HWND>(GetNativeViewId()));
+      show_legacy_window = window_->TargetVisibility();
     }
     if (legacy_render_widget_host_HWND_) {
       legacy_render_widget_host_HWND_->SetBounds(
           window_->GetBoundsInRootWindow());
+      if (show_legacy_window)
+        legacy_render_widget_host_HWND_->Show();
     }
   }
 
