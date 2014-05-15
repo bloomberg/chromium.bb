@@ -40,6 +40,9 @@ gfx::Vector2dF InterpolateBetween(const gfx::Vector2dF& start,
 
 namespace cc {
 
+using base::TimeTicks;
+using base::TimeDelta;
+
 scoped_ptr<PageScaleAnimation> PageScaleAnimation::Create(
     const gfx::Vector2dF& start_scroll_offset,
     float start_page_scale_factor,
@@ -66,9 +69,8 @@ PageScaleAnimation::PageScaleAnimation(
       target_anchor_(),
       viewport_size_(viewport_size),
       root_layer_size_(root_layer_size),
-      start_time_(-1.0),
-      duration_(0.0),
-      timing_function_(timing_function.Pass()) {}
+      timing_function_(timing_function.Pass()) {
+}
 
 PageScaleAnimation::~PageScaleAnimation() {}
 
@@ -78,7 +80,7 @@ void PageScaleAnimation::ZoomTo(const gfx::Vector2dF& target_scroll_offset,
   target_page_scale_factor_ = target_page_scale_factor;
   target_scroll_offset_ = target_scroll_offset;
   ClampTargetScrollOffset();
-  duration_ = duration;
+  duration_ = TimeDelta::FromSecondsD(duration);
 
   if (start_page_scale_factor_ == target_page_scale_factor) {
     start_anchor_ = start_scroll_offset_;
@@ -97,7 +99,7 @@ void PageScaleAnimation::ZoomWithAnchor(const gfx::Vector2dF& anchor,
                                         double duration) {
   start_anchor_ = anchor;
   target_page_scale_factor_ = target_page_scale_factor;
-  duration_ = duration;
+  duration_ = TimeDelta::FromSecondsD(duration);
 
   // We start zooming out from the anchor tapped by the user. But if
   // the target scale is impossible to attain without hitting the root layer
@@ -163,36 +165,37 @@ gfx::SizeF PageScaleAnimation::ViewportSizeAt(float interp) const {
 }
 
 bool PageScaleAnimation::IsAnimationStarted() const {
-  return start_time_ >= 0;
+  return start_time_ > base::TimeTicks();
 }
 
-void PageScaleAnimation::StartAnimation(double time) {
-  DCHECK_GT(0, start_time_);
+void PageScaleAnimation::StartAnimation(base::TimeTicks time) {
+  DCHECK(start_time_.is_null());
   start_time_ = time;
 }
 
-gfx::Vector2dF PageScaleAnimation::ScrollOffsetAtTime(double time) const {
-  DCHECK_GE(start_time_, 0);
+gfx::Vector2dF PageScaleAnimation::ScrollOffsetAtTime(
+    base::TimeTicks time) const {
+  DCHECK(!start_time_.is_null());
   return ScrollOffsetAt(InterpAtTime(time));
 }
 
-float PageScaleAnimation::PageScaleFactorAtTime(double time) const {
-  DCHECK_GE(start_time_, 0);
+float PageScaleAnimation::PageScaleFactorAtTime(base::TimeTicks time) const {
+  DCHECK(!start_time_.is_null());
   return PageScaleFactorAt(InterpAtTime(time));
 }
 
-bool PageScaleAnimation::IsAnimationCompleteAtTime(double time) const {
-  DCHECK_GE(start_time_, 0);
+bool PageScaleAnimation::IsAnimationCompleteAtTime(base::TimeTicks time) const {
+  DCHECK(!start_time_.is_null());
   return time >= end_time();
 }
 
-float PageScaleAnimation::InterpAtTime(double time) const {
-  DCHECK_GE(start_time_, 0);
-  DCHECK_GE(time, start_time_);
-  if (IsAnimationCompleteAtTime(time))
+float PageScaleAnimation::InterpAtTime(base::TimeTicks monotonic_time) const {
+  DCHECK(!start_time_.is_null());
+  DCHECK(monotonic_time >= start_time_);
+  if (IsAnimationCompleteAtTime(monotonic_time))
     return 1.f;
-
-  const double normalized_time = (time - start_time_) / duration_;
+  const double normalized_time =
+      (monotonic_time - start_time_).InSecondsF() / duration_.InSecondsF();
   return timing_function_->GetValue(normalized_time);
 }
 

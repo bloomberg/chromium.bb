@@ -64,14 +64,10 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve,
       target_property_(target_property),
       run_state_(WaitingForTargetAvailability),
       iterations_(1),
-      start_time_(0),
       direction_(Normal),
-      time_offset_(0),
       needs_synchronized_start_time_(false),
       received_finished_event_(false),
       suspended_(false),
-      pause_time_(0),
-      total_paused_time_(0),
       is_controlling_instance_(false),
       is_impl_only_(false),
       affects_active_observers_(true),
@@ -80,10 +76,11 @@ Animation::Animation(scoped_ptr<AnimationCurve> curve,
 
 Animation::~Animation() {
   if (run_state_ == Running || run_state_ == Paused)
-    SetRunState(Aborted, 0);
+    SetRunState(Aborted, base::TimeTicks());
 }
 
-void Animation::SetRunState(RunState run_state, double monotonic_time) {
+void Animation::SetRunState(RunState run_state,
+                            base::TimeTicks monotonic_time) {
   if (suspended_)
     return;
 
@@ -108,7 +105,7 @@ void Animation::SetRunState(RunState run_state, double monotonic_time) {
   const char* old_run_state_name = s_runStateNames[run_state_];
 
   if (run_state == Running && run_state_ == Paused)
-    total_paused_time_ += monotonic_time - pause_time_;
+    total_paused_time_ += (monotonic_time - pause_time_);
   else if (run_state == Paused)
     pause_time_ = monotonic_time;
   run_state_ = run_state;
@@ -134,33 +131,32 @@ void Animation::SetRunState(RunState run_state, double monotonic_time) {
                        TRACE_STR_COPY(state_buffer));
 }
 
-void Animation::Suspend(double monotonic_time) {
+void Animation::Suspend(base::TimeTicks monotonic_time) {
   SetRunState(Paused, monotonic_time);
   suspended_ = true;
 }
 
-void Animation::Resume(double monotonic_time) {
+void Animation::Resume(base::TimeTicks monotonic_time) {
   suspended_ = false;
   SetRunState(Running, monotonic_time);
 }
 
-bool Animation::IsFinishedAt(double monotonic_time) const {
+bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
   if (is_finished())
     return true;
 
   if (needs_synchronized_start_time_)
     return false;
 
-  return run_state_ == Running &&
-         iterations_ >= 0 &&
-         iterations_ * curve_->Duration() <= (monotonic_time -
-                                              start_time() -
-                                              total_paused_time_ +
-                                              time_offset_);
+  return run_state_ == Running && iterations_ >= 0 &&
+         iterations_ * curve_->Duration() <=
+             (monotonic_time + time_offset_ - start_time_ - total_paused_time_)
+                 .InSecondsF();
 }
 
-double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
-  double trimmed = monotonic_time + time_offset_;
+double Animation::TrimTimeToCurrentIteration(
+    base::TimeTicks monotonic_time) const {
+  base::TimeTicks trimmed = monotonic_time + time_offset_;
 
   // If we're paused, time is 'stuck' at the pause time.
   if (run_state_ == Paused)
@@ -168,16 +164,18 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
 
   // Returned time should always be relative to the start time and should
   // subtract all time spent paused.
-  trimmed -= start_time_ + total_paused_time_;
+  trimmed -= (start_time_ - base::TimeTicks()) + total_paused_time_;
 
   // If we're just starting or we're waiting on receiving a start time,
   // time is 'stuck' at the initial state.
   if ((run_state_ == Starting && !has_set_start_time()) ||
       needs_synchronized_start_time())
-    trimmed = time_offset_;
+    trimmed = base::TimeTicks() + time_offset_;
+
+  double trimmed_in_seconds = (trimmed - base::TimeTicks()).InSecondsF();
 
   // Return 0 if we are before the start of the animation
-  if (trimmed < 0)
+  if (trimmed_in_seconds < 0)
     return 0;
 
   // Always return zero if we have no iterations.
@@ -190,7 +188,8 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
 
   // check if we are past active interval
   bool is_past_total_duration =
-      (iterations_ > 0 && trimmed >= curve_->Duration() * iterations_);
+      (iterations_ > 0 &&
+       trimmed_in_seconds >= curve_->Duration() * iterations_);
 
   // We need to know the current iteration if we're alternating.
   int iteration = 0;
@@ -198,12 +197,12 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
   // If we are past the active interval, return iteration duration.
   if (is_past_total_duration) {
     iteration = iterations_ - 1;
-    trimmed = curve_->Duration();
+    trimmed_in_seconds = curve_->Duration();
   } else {
-    iteration = static_cast<int>(trimmed / curve_->Duration());
+    iteration = static_cast<int>(trimmed_in_seconds / curve_->Duration());
     // Calculate x where trimmed = x + n * curve_->Duration() for some positive
     // integer n.
-    trimmed = fmod(trimmed, curve_->Duration());
+    trimmed_in_seconds = fmod(trimmed_in_seconds, curve_->Duration());
   }
 
   // check if we are running the animation in reverse direction for the current
@@ -214,9 +213,9 @@ double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
 
   // if we are running the animation in reverse direction, reverse the result
   if (reverse)
-    return curve_->Duration() - trimmed;
+    return curve_->Duration() - trimmed_in_seconds;
 
-  return trimmed;
+  return trimmed_in_seconds;
 }
 
 scoped_ptr<Animation> Animation::CloneAndInitialize(

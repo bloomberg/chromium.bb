@@ -24,7 +24,6 @@ LayerAnimationController::LayerAnimationController(int id)
     : registrar_(0),
       id_(id),
       is_active_(false),
-      last_tick_time_(0),
       value_provider_(NULL),
       layer_animation_delegate_(NULL),
       needs_to_start_animations_(false) {
@@ -41,7 +40,7 @@ scoped_refptr<LayerAnimationController> LayerAnimationController::Create(
 }
 
 void LayerAnimationController::PauseAnimation(int animation_id,
-                                              double time_offset) {
+                                              base::TimeDelta time_offset) {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->id() == animation_id) {
       animations_[i]->SetRunState(Animation::Paused,
@@ -123,8 +122,8 @@ void LayerAnimationController::PushAnimationUpdatesTo(
   UpdateActivation(NormalActivation);
 }
 
-void LayerAnimationController::Animate(double monotonic_time) {
-  DCHECK(monotonic_time);
+void LayerAnimationController::Animate(base::TimeTicks monotonic_time) {
+  DCHECK(!monotonic_time.is_null());
   if (!HasValueObserver())
     return;
 
@@ -135,7 +134,7 @@ void LayerAnimationController::Animate(double monotonic_time) {
 }
 
 void LayerAnimationController::AccumulatePropertyUpdates(
-    double monotonic_time,
+    base::TimeTicks monotonic_time,
     AnimationEventsVector* events) {
   if (!events)
     return;
@@ -206,7 +205,7 @@ void LayerAnimationController::UpdateState(bool start_ready_animations,
   if (!HasActiveValueObserver())
     return;
 
-  DCHECK(last_tick_time_);
+  DCHECK(last_tick_time_ != base::TimeTicks());
   if (start_ready_animations)
     PromoteStartedAnimations(last_tick_time_, events);
 
@@ -304,15 +303,12 @@ void LayerAnimationController::SetAnimationRegistrar(
 
 void LayerAnimationController::NotifyAnimationStarted(
     const AnimationEvent& event) {
-  base::TimeTicks monotonic_time = base::TimeTicks::FromInternalValue(
-      event.monotonic_time * base::Time::kMicrosecondsPerSecond);
   if (event.is_impl_only) {
     FOR_EACH_OBSERVER(LayerAnimationEventObserver, event_observers_,
                       OnAnimationStarted(event));
     if (layer_animation_delegate_)
-      layer_animation_delegate_->NotifyAnimationStarted(monotonic_time,
+      layer_animation_delegate_->NotifyAnimationStarted(event.monotonic_time,
                                                         event.target_property);
-
     return;
   }
 
@@ -328,7 +324,7 @@ void LayerAnimationController::NotifyAnimationStarted(
                         OnAnimationStarted(event));
       if (layer_animation_delegate_)
         layer_animation_delegate_->NotifyAnimationStarted(
-            monotonic_time, event.target_property);
+            event.monotonic_time, event.target_property);
 
       return;
     }
@@ -337,11 +333,9 @@ void LayerAnimationController::NotifyAnimationStarted(
 
 void LayerAnimationController::NotifyAnimationFinished(
     const AnimationEvent& event) {
-  base::TimeTicks monotonic_time = base::TimeTicks::FromInternalValue(
-      event.monotonic_time * base::Time::kMicrosecondsPerSecond);
   if (event.is_impl_only) {
     if (layer_animation_delegate_)
-      layer_animation_delegate_->NotifyAnimationFinished(monotonic_time,
+      layer_animation_delegate_->NotifyAnimationFinished(event.monotonic_time,
                                                          event.target_property);
     return;
   }
@@ -352,7 +346,7 @@ void LayerAnimationController::NotifyAnimationFinished(
       animations_[i]->set_received_finished_event(true);
       if (layer_animation_delegate_)
         layer_animation_delegate_->NotifyAnimationFinished(
-            monotonic_time, event.target_property);
+            event.monotonic_time, event.target_property);
 
       return;
     }
@@ -602,7 +596,7 @@ void LayerAnimationController::PushPropertiesToImplThread(
   }
 }
 
-void LayerAnimationController::StartAnimations(double monotonic_time) {
+void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
   DCHECK(needs_to_start_animations_);
   needs_to_start_animations_ = false;
   // First collect running properties affecting each type of observer.
@@ -677,7 +671,7 @@ void LayerAnimationController::StartAnimations(double monotonic_time) {
 }
 
 void LayerAnimationController::PromoteStartedAnimations(
-    double monotonic_time,
+    base::TimeTicks monotonic_time,
     AnimationEventsVector* events) {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->run_state() == Animation::Starting &&
@@ -699,7 +693,8 @@ void LayerAnimationController::PromoteStartedAnimations(
   }
 }
 
-void LayerAnimationController::MarkFinishedAnimations(double monotonic_time) {
+void LayerAnimationController::MarkFinishedAnimations(
+    base::TimeTicks monotonic_time) {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->IsFinishedAt(monotonic_time) &&
         animations_[i]->run_state() != Animation::Aborted &&
@@ -709,7 +704,8 @@ void LayerAnimationController::MarkFinishedAnimations(double monotonic_time) {
 }
 
 void LayerAnimationController::MarkAnimationsForDeletion(
-    double monotonic_time, AnimationEventsVector* events) {
+    base::TimeTicks monotonic_time,
+    AnimationEventsVector* events) {
   bool marked_animations_for_deletions = false;
 
   // Non-aborted animations are marked for deletion after a corresponding
@@ -796,7 +792,7 @@ void LayerAnimationController::PurgeAnimationsMarkedForDeletion() {
                     animations_.end());
 }
 
-void LayerAnimationController::TickAnimations(double monotonic_time) {
+void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->run_state() == Animation::Starting ||
         animations_[i]->run_state() == Animation::Running ||

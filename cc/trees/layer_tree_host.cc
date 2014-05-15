@@ -1150,14 +1150,12 @@ scoped_ptr<base::Value> LayerTreeHost::AsValue() const {
   return state.PassAs<base::Value>();
 }
 
-void LayerTreeHost::AnimateLayers(base::TimeTicks time) {
+void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled ||
       animation_registrar_->active_animation_controllers().empty())
     return;
 
   TRACE_EVENT0("cc", "LayerTreeHost::AnimateLayers");
-
-  double monotonic_time = (time - base::TimeTicks()).InSecondsF();
 
   AnimationRegistrar::AnimationControllerMap copy =
       animation_registrar_->active_animation_controllers();

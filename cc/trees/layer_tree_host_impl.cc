@@ -2770,26 +2770,21 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   if (!page_scale_animation_)
     return;
 
-  // TODO(ajuma): http://crbug.com/178171 - Animations use double for monotonic
-  // time.
-  double monotonic_time_for_cc_animations =
-      (monotonic_time - base::TimeTicks()).InSecondsF();
   gfx::Vector2dF scroll_total = active_tree_->TotalScrollOffset();
 
   if (!page_scale_animation_->IsAnimationStarted())
-    page_scale_animation_->StartAnimation(monotonic_time_for_cc_animations);
+    page_scale_animation_->StartAnimation(monotonic_time);
 
-  active_tree_->SetPageScaleDelta(page_scale_animation_->PageScaleFactorAtTime(
-                                      monotonic_time_for_cc_animations) /
-                                  active_tree_->page_scale_factor());
-  gfx::Vector2dF next_scroll = page_scale_animation_->ScrollOffsetAtTime(
-      monotonic_time_for_cc_animations);
+  active_tree_->SetPageScaleDelta(
+      page_scale_animation_->PageScaleFactorAtTime(monotonic_time) /
+      active_tree_->page_scale_factor());
+  gfx::Vector2dF next_scroll =
+      page_scale_animation_->ScrollOffsetAtTime(monotonic_time);
 
   ScrollViewportBy(next_scroll - scroll_total);
   SetNeedsRedraw();
 
-  if (page_scale_animation_->IsAnimationCompleteAtTime(
-          monotonic_time_for_cc_animations)) {
+  if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
     page_scale_animation_.reset();
     client_->SetNeedsCommitOnImplThread();
     client_->RenewTreePriority();
@@ -2819,17 +2814,12 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time) {
     return;
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::AnimateLayers");
-
-  // TODO(ajuma): http://crbug.com/178171 - Animations use double for monotonic
-  // time.
-  double monotonic_time_for_cc_animations =
-      (monotonic_time - base::TimeTicks()).InSecondsF();
   AnimationRegistrar::AnimationControllerMap copy =
       animation_registrar_->active_animation_controllers();
   for (AnimationRegistrar::AnimationControllerMap::iterator iter = copy.begin();
        iter != copy.end();
        ++iter)
-    (*iter).second->Animate(monotonic_time_for_cc_animations);
+    (*iter).second->Animate(monotonic_time);
 
   SetNeedsAnimate();
 }

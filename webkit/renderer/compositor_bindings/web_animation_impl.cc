@@ -81,18 +81,21 @@ int WebAnimationImpl::iterations() const { return animation_->iterations(); }
 
 void WebAnimationImpl::setIterations(int n) { animation_->set_iterations(n); }
 
-double WebAnimationImpl::startTime() const { return animation_->start_time(); }
+double WebAnimationImpl::startTime() const {
+  return (animation_->start_time() - base::TimeTicks()).InSecondsF();
+}
 
 void WebAnimationImpl::setStartTime(double monotonic_time) {
-  animation_->set_start_time(monotonic_time);
+  animation_->set_start_time(base::TimeTicks::FromInternalValue(
+      monotonic_time * base::Time::kMicrosecondsPerSecond));
 }
 
 double WebAnimationImpl::timeOffset() const {
-  return animation_->time_offset();
+  return animation_->time_offset().InSecondsF();
 }
 
 void WebAnimationImpl::setTimeOffset(double monotonic_time) {
-  animation_->set_time_offset(monotonic_time);
+  animation_->set_time_offset(base::TimeDelta::FromSecondsD(monotonic_time));
 }
 
 #if WEB_ANIMATION_SUPPORTS_FULL_DIRECTION

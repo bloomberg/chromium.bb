@@ -10,7 +10,7 @@ AnimationEvent::AnimationEvent(AnimationEvent::Type type,
                                int layer_id,
                                int group_id,
                                Animation::TargetProperty target_property,
-                               double monotonic_time)
+                               base::TimeTicks monotonic_time)
     : type(type),
       layer_id(layer_id),
       group_id(group_id),

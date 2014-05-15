@@ -6,6 +6,7 @@
 #define CC_ANIMATION_SCROLL_OFFSET_ANIMATION_CURVE_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/base/cc_export.h"
 
@@ -35,7 +36,7 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
 
   gfx::Vector2dF initial_value_;
   gfx::Vector2dF target_value_;
-  double duration_;
+  base::TimeDelta duration_;
 
   scoped_ptr<TimingFunction> timing_function_;
 

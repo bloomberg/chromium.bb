@@ -568,7 +568,8 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
         layer_animation_controller();
     Animation* animation =
         controller->GetAnimation(Animation::Opacity);
-    main_start_time_ = animation->start_time();
+    main_start_time_ =
+        (animation->start_time() - base::TimeTicks()).InSecondsF();
     controller->RemoveAnimation(animation->id());
 
     if (impl_start_time_ > 0.0)
@@ -586,7 +587,8 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     if (!animation)
       return;
 
-    impl_start_time_ = animation->start_time();
+    impl_start_time_ =
+        (animation->start_time() - base::TimeTicks()).InSecondsF();
     controller->RemoveAnimation(animation->id());
 
     if (main_start_time_ > 0.0)
@@ -1367,10 +1369,10 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
         int id = ((*iter).second->id());
         if (id == host_impl->RootLayer()->id()) {
           Animation* anim = (*iter).second->GetAnimation(Animation::Transform);
-          EXPECT_GT(anim->start_time(), 0);
+          EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
         } else if (id == host_impl->RootLayer()->children()[0]->id()) {
           Animation* anim = (*iter).second->GetAnimation(Animation::Opacity);
-          EXPECT_GT(anim->start_time(), 0);
+          EXPECT_GT((anim->start_time() - base::TimeTicks()).InSecondsF(), 0);
         }
       }
     }

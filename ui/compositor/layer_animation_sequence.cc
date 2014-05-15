@@ -219,9 +219,7 @@ void LayerAnimationSequence::OnThreadedAnimationStarted(
   LayerAnimationElement::AnimatableProperty event_property =
       LayerAnimationElement::ToAnimatableProperty(event.target_property);
   DCHECK(element_properties & event_property);
-  elements_[current_index]->set_effective_start_time(
-      base::TimeTicks::FromInternalValue(
-          event.monotonic_time * base::Time::kMicrosecondsPerSecond));
+  elements_[current_index]->set_effective_start_time(event.monotonic_time);
 }
 
 void LayerAnimationSequence::OnScheduled() {

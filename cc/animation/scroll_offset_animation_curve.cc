@@ -25,9 +25,8 @@ scoped_ptr<ScrollOffsetAnimationCurve> ScrollOffsetAnimationCurve::Create(
 ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
     const gfx::Vector2dF& target_value,
     scoped_ptr<TimingFunction> timing_function)
-    : target_value_(target_value),
-      duration_(0.0),
-      timing_function_(timing_function.Pass()) {}
+    : target_value_(target_value), timing_function_(timing_function.Pass()) {
+}
 
 ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() {}
 
@@ -43,17 +42,21 @@ void ScrollOffsetAnimationCurve::SetInitialValue(
   float delta_x = std::abs(target_value_.x() - initial_value_.x());
   float delta_y = std::abs(target_value_.y() - initial_value_.y());
   float max_delta = std::max(delta_x, delta_y);
-  duration_ = std::sqrt(max_delta)/kDurationDivisor;
+  duration_ = base::TimeDelta::FromMicroseconds(
+      (std::sqrt(max_delta) / kDurationDivisor) *
+      base::Time::kMicrosecondsPerSecond);
 }
 
 gfx::Vector2dF ScrollOffsetAnimationCurve::GetValue(double t) const {
+  double duration = duration_.InSecondsF();
+
   if (t <= 0)
     return initial_value_;
 
-  if (t >= duration_)
+  if (t >= duration)
     return target_value_;
 
-  double progress = timing_function_->GetValue(t / duration_);
+  double progress = (timing_function_->GetValue(t / duration));
   return gfx::Vector2dF(gfx::Tween::FloatValueBetween(
                             progress, initial_value_.x(), target_value_.x()),
                         gfx::Tween::FloatValueBetween(
@@ -61,7 +64,7 @@ gfx::Vector2dF ScrollOffsetAnimationCurve::GetValue(double t) const {
 }
 
 double ScrollOffsetAnimationCurve::Duration() const {
-  return duration_;
+  return duration_.InSecondsF();
 }
 
 AnimationCurve::CurveType ScrollOffsetAnimationCurve::Type() const {

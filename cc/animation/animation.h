@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
@@ -62,7 +63,7 @@ class CC_EXPORT Animation {
   TargetProperty target_property() const { return target_property_; }
 
   RunState run_state() const { return run_state_; }
-  void SetRunState(RunState run_state, double monotonic_time);
+  void SetRunState(RunState run_state, base::TimeTicks monotonic_time);
 
   // This is the number of times that the animation will play. If this
   // value is zero the animation will not play. If it is negative, then
@@ -70,20 +71,25 @@ class CC_EXPORT Animation {
   int iterations() const { return iterations_; }
   void set_iterations(int n) { iterations_ = n; }
 
-  double start_time() const { return start_time_; }
-  void set_start_time(double monotonic_time) { start_time_ = monotonic_time; }
-  bool has_set_start_time() const { return !!start_time_; }
+  base::TimeTicks start_time() const { return start_time_; }
 
-  double time_offset() const { return time_offset_; }
-  void set_time_offset(double monotonic_time) { time_offset_ = monotonic_time; }
+  void set_start_time(base::TimeTicks monotonic_time) {
+    start_time_ = monotonic_time;
+  }
+  bool has_set_start_time() const { return !start_time_.is_null(); }
 
-  void Suspend(double monotonic_time);
-  void Resume(double monotonic_time);
+  base::TimeDelta time_offset() const { return time_offset_; }
+  void set_time_offset(base::TimeDelta monotonic_time) {
+    time_offset_ = monotonic_time;
+  }
+
+  void Suspend(base::TimeTicks monotonic_time);
+  void Resume(base::TimeTicks monotonic_time);
 
   Direction direction() { return direction_; }
   void set_direction(Direction direction) { direction_ = direction; }
 
-  bool IsFinishedAt(double monotonic_time) const;
+  bool IsFinishedAt(base::TimeTicks monotonic_time) const;
   bool is_finished() const {
     return run_state_ == Finished ||
         run_state_ == Aborted ||
@@ -114,9 +120,10 @@ class CC_EXPORT Animation {
 
   // Takes the given absolute time, and using the start time and the number
   // of iterations, returns the relative time in the current iteration.
-  double TrimTimeToCurrentIteration(double monotonic_time) const;
+  double TrimTimeToCurrentIteration(base::TimeTicks monotonic_time) const;
 
   scoped_ptr<Animation> CloneAndInitialize(RunState initial_run_state) const;
+
   bool is_controlling_instance() const { return is_controlling_instance_; }
 
   void PushPropertiesTo(Animation* other) const;
@@ -155,14 +162,14 @@ class CC_EXPORT Animation {
   TargetProperty target_property_;
   RunState run_state_;
   int iterations_;
-  double start_time_;
+  base::TimeTicks start_time_;
   Direction direction_;
 
   // The time offset effectively pushes the start of the animation back in time.
   // This is used for resuming paused animations -- an animation is added with a
   // non-zero time offset, causing the animation to skip ahead to the desired
   // point in time.
-  double time_offset_;
+  base::TimeDelta time_offset_;
 
   bool needs_synchronized_start_time_;
   bool received_finished_event_;
@@ -176,8 +183,8 @@ class CC_EXPORT Animation {
   // spent while paused. This is not included in AnimationState since it
   // there is absolutely no need for clients of this controller to know
   // about these values.
-  double pause_time_;
-  double total_paused_time_;
+  base::TimeTicks pause_time_;
+  base::TimeDelta total_paused_time_;
 
   // Animations lead dual lives. An active animation will be conceptually owned
   // by two controllers, one on the impl thread and one on the main. In reality,

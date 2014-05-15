@@ -48,12 +48,12 @@ void LayerAnimatorTestController::StartThreadedAnimationsIfNeeded() {
         element->effective_start_time() != base::TimeTicks())
       continue;
 
-    animator_->OnThreadedAnimationStarted(cc::AnimationEvent(
-        cc::AnimationEvent::Started,
-        0,
-        element->animation_group_id(),
-        threaded_properties[i],
-        (gfx::FrameTime::Now() - base::TimeTicks()).InSecondsF()));
+    animator_->OnThreadedAnimationStarted(
+        cc::AnimationEvent(cc::AnimationEvent::Started,
+                           0,
+                           element->animation_group_id(),
+                           threaded_properties[i],
+                           gfx::FrameTime::Now()));
   }
 }
 

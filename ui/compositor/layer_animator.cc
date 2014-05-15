@@ -322,8 +322,7 @@ void LayerAnimator::OnThreadedAnimationStarted(
   if (!running->sequence()->waiting_for_group_start())
     return;
 
-  base::TimeTicks start_time = base::TimeTicks::FromInternalValue(
-      event.monotonic_time * base::Time::kMicrosecondsPerSecond);
+  base::TimeTicks start_time = event.monotonic_time;
 
   running->sequence()->set_waiting_for_group_start(false);
 

@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/keyframed_animation_curve.h"
@@ -1119,7 +1120,8 @@ bool Layer::AddAnimation(scoped_ptr <Animation> animation) {
 }
 
 void Layer::PauseAnimation(int animation_id, double time_offset) {
-  layer_animation_controller_->PauseAnimation(animation_id, time_offset);
+  layer_animation_controller_->PauseAnimation(
+      animation_id, base::TimeDelta::FromSecondsD(time_offset));
   SetNeedsCommit();
 }
 

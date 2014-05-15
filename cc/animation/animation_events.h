@@ -21,13 +21,13 @@ struct CC_EXPORT AnimationEvent {
                  int layer_id,
                  int group_id,
                  Animation::TargetProperty target_property,
-                 double monotonic_time);
+                 base::TimeTicks monotonic_time);
 
   Type type;
   int layer_id;
   int group_id;
   Animation::TargetProperty target_property;
-  double monotonic_time;
+  base::TimeTicks monotonic_time;
   bool is_impl_only;
   float opacity;
   gfx::Transform transform;

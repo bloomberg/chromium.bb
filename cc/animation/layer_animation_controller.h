@@ -40,7 +40,7 @@ class CC_EXPORT LayerAnimationController
   int id() const { return id_; }
 
   void AddAnimation(scoped_ptr<Animation> animation);
-  void PauseAnimation(int animation_id, double time_offset);
+  void PauseAnimation(int animation_id, base::TimeDelta time_offset);
   void RemoveAnimation(int animation_id);
   void RemoveAnimation(int animation_id,
                        Animation::TargetProperty target_property);
@@ -52,8 +52,8 @@ class CC_EXPORT LayerAnimationController
   virtual void PushAnimationUpdatesTo(
       LayerAnimationController* controller_impl);
 
-  void Animate(double monotonic_time);
-  void AccumulatePropertyUpdates(double monotonic_time,
+  void Animate(base::TimeTicks monotonic_time);
+  void AccumulatePropertyUpdates(base::TimeTicks monotonic_time,
                                  AnimationEventsVector* events);
 
   void UpdateState(bool start_ready_animations,
@@ -152,15 +152,15 @@ class CC_EXPORT LayerAnimationController
   void PushPropertiesToImplThread(
       LayerAnimationController* controller_impl) const;
 
-  void StartAnimations(double monotonic_time);
-  void PromoteStartedAnimations(double monotonic_time,
+  void StartAnimations(base::TimeTicks monotonic_time);
+  void PromoteStartedAnimations(base::TimeTicks monotonic_time,
                                 AnimationEventsVector* events);
-  void MarkFinishedAnimations(double monotonic_time);
-  void MarkAnimationsForDeletion(double monotonic_time,
+  void MarkFinishedAnimations(base::TimeTicks monotonic_time);
+  void MarkAnimationsForDeletion(base::TimeTicks monotonic_time,
                                  AnimationEventsVector* events);
   void PurgeAnimationsMarkedForDeletion();
 
-  void TickAnimations(double monotonic_time);
+  void TickAnimations(base::TimeTicks monotonic_time);
 
   enum UpdateActivationType {
     NormalActivation,
@@ -193,7 +193,7 @@ class CC_EXPORT LayerAnimationController
   // This is used to ensure that we don't spam the registrar.
   bool is_active_;
 
-  double last_tick_time_;
+  base::TimeTicks last_tick_time_;
 
   ObserverList<LayerAnimationValueObserver> value_observers_;
   ObserverList<LayerAnimationEventObserver> event_observers_;
