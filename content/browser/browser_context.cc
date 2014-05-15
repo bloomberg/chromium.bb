@@ -6,10 +6,12 @@
 
 #if !defined(OS_IOS)
 #include "content/browser/download/download_manager_impl.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/site_instance.h"
@@ -194,6 +196,20 @@ void BrowserContext::ForEachStoragePartition(
 StoragePartition* BrowserContext::GetDefaultStoragePartition(
     BrowserContext* browser_context) {
   return GetStoragePartition(browser_context, NULL);
+}
+
+void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
+                                            const char* data, size_t length,
+                                            const BlobCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  ChromeBlobStorageContext* blob_context =
+      ChromeBlobStorageContext::GetFor(browser_context);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
+                 make_scoped_refptr(blob_context), data, length),
+      callback);
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {

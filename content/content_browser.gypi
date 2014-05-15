@@ -52,6 +52,7 @@
     'public/browser/android/synchronous_compositor.h',
     'public/browser/ax_event_notification_details.cc',
     'public/browser/ax_event_notification_details.h',
+    'public/browser/blob_handle.h',
     'public/browser/browser_accessibility_state.h',
     'public/browser/browser_child_process_host.h',
     'public/browser/browser_child_process_host_delegate.cc',

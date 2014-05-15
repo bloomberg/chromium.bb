@@ -15,6 +15,7 @@ class BlobStorageContext;
 }
 
 namespace content {
+class BlobHandle;
 class BrowserContext;
 struct ChromeBlobStorageContextDeleter;
 
@@ -39,6 +40,10 @@ class CONTENT_EXPORT ChromeBlobStorageContext
   webkit_blob::BlobStorageContext* context() const {
     return context_.get();
   }
+
+  // Returns a NULL scoped_ptr on failure.
+  scoped_ptr<BlobHandle> CreateMemoryBackedBlob(const char* data,
+                                                size_t length);
 
  protected:
   virtual ~ChromeBlobStorageContext();
