@@ -95,7 +95,7 @@ message DeviceUnregisterResponse {
 }
 
 // Request from device to server to upload device EMCert
-// (enteprise machine cert used for remote attestation).
+// (enterprise machine cert used for remote attestation).
 // GoogleDMToken MUST be in HTTP Authorization header.
 message DeviceCertUploadRequest {
   // EMCert in X.509 format.

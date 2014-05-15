@@ -292,7 +292,7 @@ void ParsePolicy(const RegistryDict* gpo_dict,
 
 // Collects stats about the enterprise environment that can be used to decide
 // how to parse the existing policy information.
-void CollectEntepriseUMAs() {
+void CollectEnterpriseUMAs() {
   // Collect statistics about the windows suite.
   UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.OSType",
                             base::win::OSInfo::GetInstance()->version_type(),
@@ -301,7 +301,7 @@ void CollectEntepriseUMAs() {
   // Get the computer's domain status.
   LPWSTR domain;
   NETSETUP_JOIN_STATUS join_status;
-  if(NERR_Success != ::NetGetJoinInformation(NULL, &domain, &join_status)) {
+  if (NERR_Success != ::NetGetJoinInformation(NULL, &domain, &join_status)) {
     UMA_HISTOGRAM_ENUMERATION("EnterpriseCheck.DomainCheckFailed",
                               DOMAIN_CHECK_ERROR_GET_JOIN_INFO,
                               DOMAIN_CHECK_ERROR_LAST);
@@ -377,7 +377,7 @@ scoped_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
 void PolicyLoaderWin::InitOnBackgroundThread() {
   is_initialized_ = true;
   SetupWatches();
-  CollectEntepriseUMAs();
+  CollectEnterpriseUMAs();
 }
 
 scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
