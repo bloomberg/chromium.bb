@@ -382,6 +382,24 @@ class GestureProvider::GestureListenerImpl
     return true;
   }
 
+  virtual bool OnTwoFingerTap(const MotionEvent& e1,
+                              const MotionEvent& e2) OVERRIDE {
+    // The location of the two finger tap event should be the location of the
+    // primary pointer.
+    GestureEventDetails two_finger_tap_details(ET_GESTURE_TWO_FINGER_TAP,
+                                               e1.GetTouchMajor(),
+                                               e1.GetTouchMajor());
+    provider_->Send(CreateGesture(ET_GESTURE_TWO_FINGER_TAP,
+                                  e2.GetId(),
+                                  e2.GetEventTime(),
+                                  e1.GetX(),
+                                  e1.GetY(),
+                                  e2.GetPointerCount(),
+                                  GetBoundingBox(e2),
+                                  two_finger_tap_details));
+    return true;
+  }
+
   virtual void OnShowPress(const MotionEvent& e) OVERRIDE {
     GestureEventDetails show_press_details(ET_GESTURE_SHOW_PRESS, 0, 0);
     provider_->Send(

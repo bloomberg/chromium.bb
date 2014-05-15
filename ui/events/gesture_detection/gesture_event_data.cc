@@ -22,9 +22,11 @@ GestureEventData::GestureEventData(EventType type,
       x(x),
       y(y),
       details(details) {
-  DCHECK(motion_event_id >= 0);
+  DCHECK_GE(motion_event_id, 0);
   DCHECK_NE(0, touch_point_count);
-  DCHECK(ET_GESTURE_TYPE_START <= type && type <= ET_GESTURE_TYPE_END);
+  DCHECK_GE(type, ET_GESTURE_TYPE_START);
+  DCHECK_LE(type, ET_GESTURE_TYPE_END);
+  DCHECK_EQ(type, details.type());
   this->details.set_touch_points(touch_point_count);
   this->details.set_bounding_box(bounding_box);
 }
@@ -42,9 +44,10 @@ GestureEventData::GestureEventData(EventType type,
       x(x),
       y(y),
       details(GestureEventDetails(type, 0, 0)) {
-  DCHECK(motion_event_id >= 0);
+  DCHECK_GE(motion_event_id, 0);
   DCHECK_NE(0, touch_point_count);
-  DCHECK(ET_GESTURE_TYPE_START <= type && type <= ET_GESTURE_TYPE_END);
+  DCHECK_GE(type, ET_GESTURE_TYPE_START);
+  DCHECK_LE(type, ET_GESTURE_TYPE_END);
   details.set_touch_points(touch_point_count);
   details.set_bounding_box(bounding_box);
 }

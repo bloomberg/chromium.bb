@@ -31,6 +31,12 @@ GestureDetector::Config DefaultGestureDetectorConfig() {
   config.minimum_swipe_velocity = GestureConfiguration::min_swipe_speed();
   config.maximum_swipe_deviation_angle =
       atan2(1.f, GestureConfiguration::max_swipe_deviation_ratio());
+  config.two_finger_tap_enabled = true;
+  config.two_finger_tap_max_separation =
+      GestureConfiguration::max_distance_for_two_finger_tap_in_pixels();
+  config.two_finger_tap_timeout = base::TimeDelta::FromMilliseconds(
+      GestureConfiguration::max_touch_down_duration_in_seconds_for_click() *
+      1000.);
 
   return config;
 }

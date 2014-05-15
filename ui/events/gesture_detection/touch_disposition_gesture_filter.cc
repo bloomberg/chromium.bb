@@ -102,6 +102,8 @@ DispositionHandlingInfo GetDispositionHandlingInfo(EventType type) {
       return Info(RT_NONE, ET_GESTURE_BEGIN);
     case ET_GESTURE_MULTIFINGER_SWIPE:
       return Info(RT_START, ET_GESTURE_SCROLL_BEGIN);
+    case ET_GESTURE_TWO_FINGER_TAP:
+      return Info(RT_START);
     default:
       break;
   }

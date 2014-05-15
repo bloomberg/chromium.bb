@@ -27,6 +27,7 @@ const TimeDelta kOneSecond = TimeDelta::FromSeconds(1);
 const TimeDelta kOneMicrosecond = TimeDelta::FromMicroseconds(1);
 const TimeDelta kDeltaTimeForFlingSequences = TimeDelta::FromMilliseconds(5);
 const float kMockTouchRadius = MockMotionEvent::TOUCH_MAJOR / 2;
+const float kMaxTwoFingerTapSeparation = 300;
 
 GestureProvider::Config CreateDefaultConfig() {
   GestureProvider::Config sConfig;
@@ -202,6 +203,17 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   void EnableMultiFingerSwipe() {
     GestureProvider::Config config = GetDefaultConfig();
     config.gesture_detector_config.swipe_enabled = true;
+    SetUpWithConfig(config);
+  }
+
+  void EnableTwoFingerTap(float max_distance_for_two_finger_tap,
+                          base::TimeDelta two_finger_tap_timeout) {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.gesture_detector_config.two_finger_tap_enabled = true;
+    config.gesture_detector_config.two_finger_tap_max_separation =
+        max_distance_for_two_finger_tap;
+    config.gesture_detector_config.two_finger_tap_timeout =
+        two_finger_tap_timeout;
     SetUpWithConfig(config);
   }
 
@@ -1736,6 +1748,166 @@ TEST_F(GestureProviderTest, GestureBeginAndEnd) {
   EXPECT_EQ(ET_GESTURE_END, GetMostRecentGestureEventType());
   EXPECT_EQ(12U, GetReceivedGestureCount());
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
+}
+
+
+// Test a simple two finger tap
+TEST_F(GestureProviderTest, TwoFingerTap) {
+  // The time between ACTION_POINTER_DOWN and ACTION_POINTER_UP must be <= the
+  // two finger tap delay.
+  EnableTwoFingerTap(kMaxTwoFingerTapSeparation, base::TimeDelta());
+  const float scaled_touch_slop = GetTouchSlop();
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, 0, 0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_MOVE,
+                            0,
+                            scaled_touch_slop / 2);
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_POINTER_DOWN,
+                            0,
+                            0,
+                            kMaxTwoFingerTapSeparation / 2,
+                            0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event =
+      ObtainMotionEvent(event_time,
+                        MotionEvent::ACTION_MOVE,
+                        0,
+                        -scaled_touch_slop / 2,
+                        kMaxTwoFingerTapSeparation / 2 + scaled_touch_slop / 2,
+                        0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_POINTER_UP,
+                            0,
+                            0,
+                            kMaxTwoFingerTapSeparation,
+                            0);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type);
+  EXPECT_EQ(ET_GESTURE_SCROLL_BEGIN, GetReceivedGesture(1).type);
+  EXPECT_EQ(ET_GESTURE_TWO_FINGER_TAP, GetReceivedGesture(2).type);
+  EXPECT_EQ(3U, GetReceivedGestureCount());
+
+  EXPECT_EQ(kMockTouchRadius * 2,
+            GetReceivedGesture(2).details.first_finger_width());
+  EXPECT_EQ(kMockTouchRadius * 2,
+            GetReceivedGesture(2).details.first_finger_height());
+}
+
+// Test preventing a two finger tap via finger movement.
+TEST_F(GestureProviderTest, TwoFingerTapCancelledByFingerMovement) {
+  EnableTwoFingerTap(kMaxTwoFingerTapSeparation, base::TimeDelta());
+  const float scaled_touch_slop = GetTouchSlop();
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_DOWN, kFakeCoordX, kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_POINTER_DOWN,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            kFakeCoordX,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_MOVE,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            kFakeCoordX + scaled_touch_slop + 0.1,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_POINTER_UP,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            kFakeCoordX,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type);
+  EXPECT_EQ(ET_GESTURE_SCROLL_BEGIN, GetReceivedGesture(1).type);
+  EXPECT_EQ(2U, GetReceivedGestureCount());
+}
+
+// Test preventing a two finger tap by waiting too long before releasing the
+// secondary pointer.
+TEST_F(GestureProviderTest, TwoFingerTapCancelledByDelay) {
+  base::TimeDelta two_finger_tap_timeout = kOneSecond;
+  EnableTwoFingerTap(kMaxTwoFingerTapSeparation, two_finger_tap_timeout);
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_DOWN, kFakeCoordX, kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_MOVE,
+                            kFakeCoordX,
+                            kFakeCoordY);
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_POINTER_DOWN,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            kFakeCoordX + kMaxTwoFingerTapSeparation / 2,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time + kOneSecond + kOneMicrosecond,
+                            MotionEvent::ACTION_POINTER_UP,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            kFakeCoordX + kMaxTwoFingerTapSeparation / 2,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type);
+  EXPECT_EQ(1U, GetReceivedGestureCount());
+}
+
+// Test preventing a two finger tap by pressing the secondary pointer too far
+// from the first
+TEST_F(GestureProviderTest, TwoFingerTapCancelledByDistanceBetweenPointers) {
+  EnableTwoFingerTap(kMaxTwoFingerTapSeparation, base::TimeDelta());
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event = ObtainMotionEvent(
+      event_time, MotionEvent::ACTION_DOWN, kFakeCoordX, kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_POINTER_DOWN,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            kFakeCoordX + kMaxTwoFingerTapSeparation,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  event = ObtainMotionEvent(event_time,
+                            MotionEvent::ACTION_POINTER_UP,
+                            kFakeCoordX,
+                            kFakeCoordY,
+                            kFakeCoordX + kMaxTwoFingerTapSeparation,
+                            kFakeCoordY);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetReceivedGesture(0).type);
+  EXPECT_EQ(1U, GetReceivedGestureCount());
 }
 
 }  // namespace ui
