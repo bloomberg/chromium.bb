@@ -237,13 +237,18 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
     case kVendorIDIntel:
       // In dual-GPU cases, sometimes PCI scan only gives us the
       // integrated GPU (i.e., the Intel one).
-      driver_version = CollectDriverVersionNVidia();
-      if (!driver_version.empty()) {
-        gpu_info->driver_vendor = "NVIDIA";
-        gpu_info->driver_version = driver_version;
-        // Machines with more than two GPUs are not handled.
-        if (gpu_info->secondary_gpus.size() <= 1)
+      if (gpu_info->secondary_gpus.size() == 0) {
+        driver_version = CollectDriverVersionNVidia();
+        if (!driver_version.empty()) {
+          gpu_info->driver_vendor = "NVIDIA";
+          gpu_info->driver_version = driver_version;
           gpu_info->optimus = true;
+          // Put Intel to the secondary GPU list.
+          gpu_info->secondary_gpus.push_back(gpu_info->gpu);
+          // Put NVIDIA as the primary GPU.
+          gpu_info->gpu.vendor_id = kVendorIDNVidia;
+          gpu_info->gpu.device_id = 0;  // Unknown Device.
+        }
       }
       break;
   }
