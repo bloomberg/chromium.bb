@@ -357,7 +357,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       id_generator_(0),
       needs_scroll_styles_(false),
       in_size_loop_(false),
-      touch_down_context_(false),
+      touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
       msg_handled_(FALSE) {
 }
@@ -1476,9 +1476,9 @@ void HWNDMessageHandler::OnKillFocus(HWND focused_window) {
 LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-  // Please refer to the comments in the header for the touch_down_context_
+  // Please refer to the comments in the header for the touch_down_contexts_
   // member for the if statement below.
-  if (touch_down_context_)
+  if (touch_down_contexts_)
     return MA_NOACTIVATE;
 
   // On Windows, if we select the menu item by touch and if the window at the
@@ -2104,7 +2104,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
       if (input[i].dwFlags & TOUCHEVENTF_DOWN) {
         touch_ids_.insert(input[i].dwID);
         touch_event_type = ui::ET_TOUCH_PRESSED;
-        touch_down_context_ = true;
+        touch_down_contexts_++;
         base::MessageLoop::current()->PostDelayedTask(
             FROM_HERE,
             base::Bind(&HWNDMessageHandler::ResetTouchDownContext,
@@ -2263,7 +2263,7 @@ void HWNDMessageHandler::HandleTouchEvents(const TouchEvents& touch_events) {
 }
 
 void HWNDMessageHandler::ResetTouchDownContext() {
-  touch_down_context_ = false;
+  touch_down_contexts_--;
 }
 
 LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,

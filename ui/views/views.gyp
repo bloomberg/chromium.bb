@@ -626,6 +626,7 @@
         'controls/button/custom_button_unittest.cc',
         'controls/button/image_button_unittest.cc',
         'controls/button/label_button_unittest.cc',
+        'controls/button/menu_button_unittest.cc',
         'controls/combobox/combobox_unittest.cc',
         'controls/label_unittest.cc',
         'controls/menu/menu_model_adapter_unittest.cc',

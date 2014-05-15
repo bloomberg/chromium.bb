@@ -391,6 +391,9 @@ void ProfileChooserView::ShowBubble(
     views::BubbleBorder::BubbleAlignment border_alignment,
     const gfx::Rect& anchor_rect,
     Browser* browser) {
+  if (IsShowing())
+    return;
+
   profile_bubble_ = new ProfileChooserView(anchor_view, arrow, anchor_rect,
                                            browser, view_mode);
   views::BubbleDelegateView::CreateBubble(profile_bubble_);

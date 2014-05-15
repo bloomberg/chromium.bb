@@ -202,9 +202,11 @@ void MenuButton::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void MenuButton::OnGestureEvent(ui::GestureEvent* event) {
-  if (state() != STATE_DISABLED && event->type() == ui::ET_GESTURE_TAP) {
-    if (Activate())
-      event->StopPropagation();
+  if (state() != STATE_DISABLED && event->type() == ui::ET_GESTURE_TAP &&
+      !Activate()) {
+    // When |Activate()| returns |false|, it means that a menu is shown and
+    // has handled the gesture event. So, there is no need to further process
+    // the gesture event here.
     return;
   }
   TextButton::OnGestureEvent(event);
