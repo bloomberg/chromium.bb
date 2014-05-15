@@ -1,0 +1,23 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Internal, used by fileBrowserPrivate's custom bindings.
+[platforms=("chromeos"),
+ implemented_in="chrome/browser/chromeos/extensions/file_manager/file_browser_private_api_functions.h"]
+namespace fileBrowserPrivateInternal {
+  // Entry information that renderers need to create an Entry instance.
+  dictionary EntryDescription {
+    DOMString fileSystemName;
+    DOMString fileSystemRoot;
+    DOMString fileFullPath;
+    boolean fileIsDirectory;
+  };
+
+  callback ResolveIsolatedEntriesCallback = void(EntryDescription[] entries);
+
+  interface Functions {
+    static void resolveIsolatedEntries(DOMString[] urls,
+                                       ResolveIsolatedEntriesCallback callback);
+  };
+};

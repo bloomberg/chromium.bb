@@ -17,6 +17,7 @@ class FileBrowserHandlerCustomBindings : public ObjectBackedNativeHandler {
 
  private:
   void GetExternalFileEntry(const v8::FunctionCallbackInfo<v8::Value>& args);
+  void GetEntryURL(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   DISALLOW_COPY_AND_ASSIGN(FileBrowserHandlerCustomBindings);
 };

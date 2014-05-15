@@ -71,6 +71,7 @@
               'events.json',
               'feedback_private.idl',
               'file_browser_private.idl',
+              'file_browser_private_internal.idl',
               'file_system.idl',
               'file_system_provider.idl',
               'file_system_provider_internal.idl',

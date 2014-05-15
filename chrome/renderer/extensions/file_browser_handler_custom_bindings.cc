@@ -12,6 +12,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebScriptBindings.h"
 
 namespace extensions {
 
@@ -22,6 +23,9 @@ FileBrowserHandlerCustomBindings::FileBrowserHandlerCustomBindings(
       "GetExternalFileEntry",
       base::Bind(&FileBrowserHandlerCustomBindings::GetExternalFileEntry,
                  base::Unretained(this)));
+  RouteFunction("GetEntryURL",
+                base::Bind(&FileBrowserHandlerCustomBindings::GetEntryURL,
+                           base::Unretained(this)));
 }
 
 void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
@@ -57,6 +61,16 @@ void FileBrowserHandlerCustomBindings::GetExternalFileEntry(
                 blink::WebString::fromUTF8(file_full_path),
                 entry_type));
 #endif
+}
+
+void FileBrowserHandlerCustomBindings::GetEntryURL(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  CHECK(args.Length() == 1);
+  CHECK(args[0]->IsObject());
+  const blink::WebURL& url =
+      blink::WebDOMFileSystem::createFileSystemURL(args[0]);
+  args.GetReturnValue().Set(
+      blink::WebScriptBindings::toV8String(url.string(), args.GetIsolate()));
 }
 
 }  // namespace extensions

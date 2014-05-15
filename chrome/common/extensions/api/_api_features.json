@@ -398,6 +398,12 @@
     "dependencies": ["permission:fileBrowserPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "fileBrowserPrivateInternal": {
+    "internal": true,
+    "platforms": ["chromeos"],
+    "dependencies": ["permission:fileBrowserPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "fileSystem": {
     "dependencies": ["permission:fileSystem"],
     "contexts": ["blessed_extension"]

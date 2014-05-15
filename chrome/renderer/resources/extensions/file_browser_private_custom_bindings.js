@@ -4,14 +4,21 @@
 
 // Custom binding for the fileBrowserPrivate API.
 
+// Bindings
 var binding = require('binding').Binding.create('fileBrowserPrivate');
-
 var eventBindings = require('event_bindings');
-var fileBrowserPrivateNatives = requireNative('file_browser_private');
-var GetFileSystem = fileBrowserPrivateNatives.GetFileSystem;
 
-var fileBrowserNatives = requireNative('file_browser_handler');
-var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
+// Natives
+var fileBrowserPrivateNatives = requireNative('file_browser_private');
+var fileBrowserHandlerNatives = requireNative('file_browser_handler');
+
+// Internals
+var fileBrowserPrivateInternal =
+    require('binding').Binding.create('fileBrowserPrivateInternal').generate();
+
+// Shorthands
+var GetFileSystem = fileBrowserPrivateNatives.GetFileSystem;
+var GetExternalFileEntry = fileBrowserHandlerNatives.GetExternalFileEntry;
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
@@ -59,6 +66,19 @@ binding.registerCustomHook(function(bindingsAPI) {
     if (request.callback)
       request.callback(response);
     request.callback = null;
+  });
+
+  apiFunctions.setHandleRequest('resolveIsolatedEntries',
+                                function(entries, callback) {
+    var urls = entries.map(function(entry) {
+      return fileBrowserHandlerNatives.GetEntryURL(entry);
+    });
+    fileBrowserPrivateInternal.resolveIsolatedEntries(urls, function(
+        entryDescriptions) {
+      callback(entryDescriptions.map(function(description) {
+        return GetExternalFileEntry(description);
+      }));
+    });
   });
 });
 

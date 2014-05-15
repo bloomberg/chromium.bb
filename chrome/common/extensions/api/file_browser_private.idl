@@ -506,6 +506,10 @@ callback GetProfilesCallback = void(ProfileInfo[] profiles,
                                     DOMString runningProfile,
                                     DOMString displayProfile);
 
+// |entryUrl| URL of an entry in a normal file system.
+callback ResolveEntriesCallback =
+    void([instanceOf=FileEntry] object[] entries);
+
 interface Functions {
   // Logout the current user for navigating to the re-authentication screen for
   // the Google account.
@@ -601,8 +605,8 @@ interface Functions {
   // Pins/unpins a Drive file in the cache.
   // |fileUrl| URL of a file to pin/unpin.
   // |pin| Pass true to pin the file.
-  // |callback| Completion callback. $(ref:runtime.lastError) will be set if there
-  //     was an error.
+  // |callback| Completion callback. $(ref:runtime.lastError) will be set if
+  //     there was an error.
   static void pinDriveFile(DOMString fileUrl,
                            boolean pin,
                            optional SimpleCallback callback);
@@ -612,6 +616,15 @@ interface Functions {
   // |callback|
   static void getDriveFiles(DOMString[] fileUrls,
                             GetDriveFilesCallback callback);
+
+  // Resolves file entries in the isolated file system and returns corresponding
+  // entries in the external file system mounted to Chrome OS file manager
+  // backend. If resolving entry fails, the entry will be just ignored and the
+  // corresponding entry does not appear in the result.
+  [nocompile]
+  static void resolveIsolatedEntries(
+      [instanceOf=FileEntry] object[] entries,
+      ResolveEntriesCallback callback);
 
   // Mount a resource or a file.
   // |source| Mount point source. For compressed files it is relative file path

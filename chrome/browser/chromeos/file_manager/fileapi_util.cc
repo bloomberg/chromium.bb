@@ -165,12 +165,25 @@ void FileDefinitionListConverter::OnResolvedURL(
     return;
   }
 
+  // Check the entry type.
+  if (iterator->is_directory &&
+      type == fileapi::FileSystemContext::RESOLVED_ENTRY_FILE) {
+    OnIteratorConverted(self_deleter.Pass(),
+                        iterator,
+                        CreateEntryDefinitionWithError(
+                            base::File::FILE_ERROR_NOT_A_DIRECTORY));
+  }
+  if (!iterator->is_directory &&
+      type == fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY) {
+    OnIteratorConverted(self_deleter.Pass(),
+                        iterator,
+                        CreateEntryDefinitionWithError(
+                            base::File::FILE_ERROR_NOT_A_FILE));
+  }
+
   EntryDefinition entry_definition;
   entry_definition.file_system_root_url = info.root_url.spec();
   entry_definition.file_system_name = info.name;
-  DCHECK(type == fileapi::FileSystemContext::RESOLVED_ENTRY_NOT_FOUND ||
-         iterator->is_directory ==
-             (type == fileapi::FileSystemContext::RESOLVED_ENTRY_DIRECTORY));
   entry_definition.is_directory = iterator->is_directory;
   entry_definition.error = base::File::FILE_OK;
 
