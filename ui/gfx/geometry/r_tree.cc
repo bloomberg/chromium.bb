@@ -732,6 +732,8 @@ void RTree::RemoveNode(Node* node) {
   // up to the root.
   if (parent) {
     parent->RecomputeBounds();
+  } else {
+    root_->RecomputeBounds();
   }
 
   // Now re-insert each of the orphaned nodes back into the tree.

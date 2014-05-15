@@ -251,6 +251,14 @@ TEST_F(RTreeTest, RemoveHalfStackedRects) {
   VerifyAllKeys(results);
 }
 
+TEST_F(RTreeTest, InsertDupToRoot) {
+  RTree rt(2, 5);
+  rt.Insert(Rect(0, 0, 1, 2), 1);
+  ValidateRTree(&rt);
+  rt.Insert(Rect(0, 0, 2, 1), 1);
+  ValidateRTree(&rt);
+}
+
 TEST_F(RTreeTest, InsertNegativeCoordsRect) {
   RTree rt(5, 11);
   for (int i = 1; i <= 100; ++i) {
