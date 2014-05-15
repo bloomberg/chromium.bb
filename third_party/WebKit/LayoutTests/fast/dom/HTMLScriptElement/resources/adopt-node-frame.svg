@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="400" height="400">
-<script xlink:href="do-nothing.js"></script>
-<script>
-window.top.done(document);
-</script>
-</svg>

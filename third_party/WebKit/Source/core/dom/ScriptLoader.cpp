@@ -363,15 +363,15 @@ void ScriptLoader::execute(ScriptResource* resource)
     resource->removeClient(this);
 }
 
-void ScriptLoader::cancel(Document* contextDocument)
-{
-    if (!m_resource)
-        return;
-    finishLoading(contextDocument, FinishWithCancel);
-}
-
 void ScriptLoader::notifyFinished(Resource* resource)
 {
+    ASSERT(!m_willBeParserExecuted);
+
+    RefPtr<Document> elementDocument(m_element->document());
+    RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
+    if (!contextDocument)
+        return;
+
     // Resource possibly invokes this notifyFinished() more than
     // once because ScriptLoader doesn't unsubscribe itself from
     // Resource here and does it in execute() instead.
@@ -379,35 +379,17 @@ void ScriptLoader::notifyFinished(Resource* resource)
     ASSERT_UNUSED(resource, resource == m_resource);
     if (!m_resource)
         return;
-
-    RefPtr<Document> elementDocument(m_element->document());
-    RefPtr<Document> contextDocument = elementDocument->contextDocument().get();
-    finishLoading(contextDocument.get(), resource->errorOccurred() ? FinishWithError : FinishSuccessfully);
-}
-
-void ScriptLoader::finishLoading(Document* contextDocument, ScriptLoader::FinishType type)
-{
-    if (!contextDocument)
-        return;
-
-    switch (type) {
-    case FinishWithCancel:
-        if (!m_willBeParserExecuted)
-            contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
-        stopLoadRequest();
-        break;
-    case FinishWithError:
-        ASSERT(!m_willBeParserExecuted);
+    if (m_resource->errorOccurred()) {
         dispatchErrorEvent();
         contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
-        m_resource = 0;
-        break;
-    case FinishSuccessfully:
-        ASSERT(!m_willBeParserExecuted);
-        contextDocument->scriptRunner()->notifyScriptReady(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
-        m_resource = 0;
-        break;
+        return;
     }
+    if (m_willExecuteInOrder)
+        contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::IN_ORDER_EXECUTION);
+    else
+        contextDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::ASYNC_EXECUTION);
+
+    m_resource = 0;
 }
 
 bool ScriptLoader::ignoresLoadRequest() const

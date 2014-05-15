@@ -30,7 +30,6 @@ namespace WebCore {
 
 class ScriptResource;
 class ContainerNode;
-class Document;
 class Element;
 class ScriptLoaderClient;
 class ScriptSourceCode;
@@ -72,7 +71,6 @@ public:
     void childrenChanged();
     void handleSourceAttribute(const String& sourceUrl);
     void handleAsyncAttribute();
-    void cancel(Document* contextDocument);
 
 private:
     ScriptLoader(Element*, bool createdByParser, bool isEvaluated);
@@ -87,14 +85,6 @@ private:
 
     // ResourceClient
     virtual void notifyFinished(Resource*) OVERRIDE;
-
-    enum FinishType {
-        FinishSuccessfully,
-        FinishWithCancel,
-        FinishWithError
-    };
-
-    void finishLoading(Document* contextDocument, FinishType);
 
     Element* m_element;
     ResourcePtr<ScriptResource> m_resource;
