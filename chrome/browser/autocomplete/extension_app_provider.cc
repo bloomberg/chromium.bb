@@ -29,21 +29,16 @@
 ExtensionAppProvider::ExtensionAppProvider(
     AutocompleteProviderListener* listener,
     Profile* profile)
-    : AutocompleteProvider(listener,
-                           profile,
-                           AutocompleteProvider::TYPE_EXTENSION_APP),
-      extension_registry_observer_(this) {
+    : AutocompleteProvider(listener, profile,
+          AutocompleteProvider::TYPE_EXTENSION_APP) {
   // Notifications of extensions loading and unloading always come from the
   // non-incognito profile, but we need to see them regardless, as the incognito
   // windows can be affected.
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
+                 content::Source<Profile>(profile_->GetOriginalProfile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<Profile>(profile_->GetOriginalProfile()));
-
-  // ExtensionRegistryObserver will handle getting the original profile itself
-  // as necessary.
-  extension_registry_observer_.Add(
-      extensions::ExtensionRegistry::Get(profile_));
-
   RefreshAppList();
 }
 
@@ -188,16 +183,9 @@ void ExtensionAppProvider::RefreshAppList() {
   }
 }
 
-void ExtensionAppProvider::OnExtensionLoaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension) {
-  RefreshAppList();
-}
-
 void ExtensionAppProvider::Observe(int type,
                                    const content::NotificationSource& source,
                                    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_EXTENSION_UNINSTALLED, type);
   RefreshAppList();
 }
 

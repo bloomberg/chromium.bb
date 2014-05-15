@@ -26,9 +26,7 @@ class ExtensionAppProviderTest : public testing::Test {
 
   ExtensionAppProviderTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        profile_(new TestingProfile),
-        app_provider_(new ExtensionAppProvider(NULL, profile_.get())),
-        history_service_(NULL) {}
+        history_service_(NULL) { }
   virtual ~ExtensionAppProviderTest() { }
 
   virtual void SetUp() OVERRIDE;
@@ -39,17 +37,20 @@ class ExtensionAppProviderTest : public testing::Test {
  protected:
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
-  scoped_ptr<TestingProfile> profile_;
   scoped_refptr<ExtensionAppProvider> app_provider_;
+  scoped_ptr<TestingProfile> profile_;
   HistoryService* history_service_;
 };
 
 void ExtensionAppProviderTest::SetUp() {
+  profile_.reset(new TestingProfile());
   ASSERT_TRUE(profile_->CreateHistoryService(true, false));
   profile_->BlockUntilHistoryProcessesPendingRequests();
   history_service_ =
       HistoryServiceFactory::GetForProfile(profile_.get(),
                                            Profile::EXPLICIT_ACCESS);
+
+  app_provider_ = new ExtensionAppProvider(NULL, profile_.get());
 
   struct TestExtensionApp {
     const char* app_name;

@@ -28,7 +28,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 using content::BrowserThread;
@@ -74,7 +73,6 @@ AutocompleteMatch::Type GetTypeForShortcut(AutocompleteMatch::Type type) {
 ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
     : profile_(profile),
       current_state_(NOT_INITIALIZED),
-      extension_registry_observer_(this),
       no_db_access_(suppress_db) {
   if (!suppress_db) {
     db_ = new history::ShortcutsDatabase(
@@ -83,10 +81,11 @@ ShortcutsBackend::ShortcutsBackend(Profile* profile, bool suppress_db)
   // |profile| can be NULL in tests.
   if (profile) {
     notification_registrar_.Add(
+        this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+        content::Source<Profile>(profile));
+    notification_registrar_.Add(
         this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
         content::Source<Profile>(profile));
-    extension_registry_observer_.Add(
-        extensions::ExtensionRegistry::Get(profile));
   }
 }
 
@@ -168,6 +167,17 @@ void ShortcutsBackend::ShutdownOnUIThread() {
 void ShortcutsBackend::Observe(int type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
+  if (!initialized())
+    return;
+
+  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED) {
+    // When an extension is unloaded, we want to remove any Shortcuts associated
+    // with it.
+    DeleteShortcutsWithURL(content::Details<extensions::UnloadedExtensionInfo>(
+        details)->extension->url(), false);
+    return;
+  }
+
   DCHECK_EQ(chrome::NOTIFICATION_HISTORY_URLS_DELETED, type);
   const history::URLsDeletedDetails* deleted_details =
       content::Details<const history::URLsDeletedDetails>(details).ptr();
@@ -186,18 +196,6 @@ void ShortcutsBackend::Observe(int type,
       shortcut_ids.push_back(it->first);
   }
   DeleteShortcutsWithIDs(shortcut_ids);
-}
-
-void ShortcutsBackend::OnExtensionUnloaded(
-    content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UnloadedExtensionInfo::Reason reason) {
-  if (!initialized())
-    return;
-
-  // When an extension is unloaded, we want to remove any Shortcuts associated
-  // with it.
-  DeleteShortcutsWithURL(extension->url(), false);
 }
 
 void ShortcutsBackend::InitInternal() {

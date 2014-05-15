@@ -10,25 +10,18 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/window_open_disposition.h"
-
-namespace extensions {
-class ExtensionRegistry;
-}
 
 // This provider is responsible for keeping track of which Extension Apps are
 // installed and their URLs.  An instance of it gets created and managed by
 // AutocompleteController.
 class ExtensionAppProvider : public AutocompleteProvider,
-                             public content::NotificationObserver,
-                             public extensions::ExtensionRegistryObserver {
+                             public content::NotificationObserver {
  public:
   ExtensionAppProvider(AutocompleteProviderListener* listener,
                        Profile* profile);
@@ -88,16 +81,7 @@ class ExtensionAppProvider : public AutocompleteProvider,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // extensions::ExtensionRegistryObserver implementation:
-  virtual void OnExtensionLoaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension) OVERRIDE;
-
   content::NotificationRegistrar registrar_;
-
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
 
   // Our cache of ExtensionApp objects (name + url) representing the extension
   // apps we know/care about.

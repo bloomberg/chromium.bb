@@ -32,7 +32,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -842,10 +841,12 @@ TEST_F(ShortcutsProviderTest, Extension) {
               .Set("version", "1.0"))
           .SetID("cedabbhfglmiikkmdgcpjdkocfcmbkee")
           .Build();
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(&profile_);
-  registry->TriggerOnUnloaded(
+  extensions::UnloadedExtensionInfo details(
       extension.get(), extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
+      content::Source<Profile>(&profile_),
+      content::Details<extensions::UnloadedExtensionInfo>(&details));
 
   // Now the URL should have disappeared.
   RunTest(text, false, ExpectedURLs(), std::string(), base::string16());
