@@ -244,21 +244,25 @@ function build {
 # Common configuration.  Note: --disable-everything does not in fact disable
 # everything, just non-library components such as decoders and demuxers.
 add_flag_common --disable-everything
-add_flag_common --disable-avdevice
-add_flag_common --disable-avfilter
-add_flag_common --disable-bzlib
+add_flag_common --disable-all
 add_flag_common --disable-doc
-add_flag_common --disable-ffprobe
-add_flag_common --disable-lzo
-add_flag_common --disable-network
-add_flag_common --disable-postproc
-add_flag_common --disable-swresample
-add_flag_common --disable-swscale
-add_flag_common --disable-zlib
+add_flag_common --disable-static
+add_flag_common --enable-avcodec
+add_flag_common --enable-avformat
+add_flag_common --enable-avutil
 add_flag_common --enable-fft
 add_flag_common --enable-rdft
 add_flag_common --enable-shared
+
+# Disable features.
+add_flag_common --disable-bzlib
+add_flag_common --disable-error-resilience
 add_flag_common --disable-iconv
+add_flag_common --disable-lzo
+add_flag_common --disable-network
+add_flag_common --disable-symver
+add_flag_common --disable-xlib
+add_flag_common --disable-zlib
 
 # Disable hardware decoding options which will sometimes turn on via autodetect.
 add_flag_common --disable-dxva2
@@ -278,7 +282,7 @@ add_flag_common --enable-decoder=theora,vorbis,vp8
 add_flag_common --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_f32le
 add_flag_common --enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw
 add_flag_common --enable-demuxer=ogg,matroska,wav
-add_flag_common --enable-parser=vp3,vorbis,vp8
+add_flag_common --enable-parser=opus,vp3,vorbis,vp8
 
 # Linux only.
 if [[ "$TARGET_OS" = "linux" || "$TARGET_OS" = "linux-noasm" ]]; then

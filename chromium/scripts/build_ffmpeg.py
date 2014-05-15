@@ -177,21 +177,25 @@ def main(argv):
   # everything, just non-library components such as decoders and demuxers.
   configure_flags['Common'].extend([
       '--disable-everything',
-      '--disable-avdevice',
-      '--disable-avfilter',
-      '--disable-bzlib',
+      '--disable-all',
       '--disable-doc',
-      '--disable-ffprobe',
-      '--disable-lzo',
-      '--disable-network',
-      '--disable-postproc',
-      '--disable-swresample',
-      '--disable-swscale',
-      '--disable-zlib',
+      '--disable-static',
+      '--enable-avcodec',
+      '--enable-avformat',
+      '--enable-avutil',
       '--enable-fft',
       '--enable-rdft',
       '--enable-shared',
+
+      # Disable features.
+      '--disable-bzlib',
+      '--disable-error-resilience',
       '--disable-iconv',
+      '--disable-lzo',
+      '--disable-network',
+      '--disable-symver',
+      '--disable-xlib',
+      '--disable-zlib',
 
       # Disable hardware decoding options which will sometimes turn on
       # via autodetect.
@@ -205,7 +209,7 @@ def main(argv):
       '--enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_f32le',
       '--enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw',
       '--enable-demuxer=ogg,matroska,wav',
-      '--enable-parser=vp3,vorbis,vp8',
+      '--enable-parser=opus,vp3,vorbis,vp8',
   ])
 
   # --optflags doesn't append multiple entries, so set all at once.
@@ -338,15 +342,10 @@ def main(argv):
       print('Error: Unknown target arch %r for target OS %r!' % (
           target_arch, target_os), file=sys.stderr)
 
-  # Chromium & ChromiumOS specific configuration.
-  # Though CONFIG_ERROR_RESILIENCE should already be disabled for Chromium[OS],
-  # forcing disable here to help ensure it remains this way.
-  configure_flags['Chromium'].append('--disable-error-resilience')
-
   # Google Chrome & ChromeOS specific configuration.
   configure_flags['Chrome'].extend([
       '--enable-decoder=aac,h264,mp3',
-      '--enable-demuxer=mp3,mov',
+      '--enable-demuxer=aac,mp3,mov',
       '--enable-parser=aac,h264,mpegaudio',
   ])
 
