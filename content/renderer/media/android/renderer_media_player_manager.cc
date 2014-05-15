@@ -239,6 +239,7 @@ void RendererMediaPlayerManager::EnterFullscreen(int player_id,
 
 void RendererMediaPlayerManager::ExitFullscreen(int player_id) {
   pending_fullscreen_frame_ = NULL;
+  fullscreen_frame_ = NULL;
   Send(new MediaPlayerHostMsg_ExitFullscreen(routing_id(), player_id));
 }
 
