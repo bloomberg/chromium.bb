@@ -1983,6 +1983,17 @@ void SpdySession::OnSettings(bool clear_persisted) {
         base::Bind(&NetLogSpdySettingsCallback, host_port_pair(),
                    clear_persisted));
   }
+
+  if (GetProtocolVersion() >= SPDY4) {
+    // Send an acknowledgment of the setting.
+    SpdySettingsIR settings_ir;
+    settings_ir.set_is_ack(true);
+    EnqueueSessionWrite(
+        HIGHEST,
+        SETTINGS,
+        scoped_ptr<SpdyFrame>(
+            buffered_spdy_framer_->SerializeFrame(settings_ir)));
+  }
 }
 
 void SpdySession::OnSetting(SpdySettingsIds id,

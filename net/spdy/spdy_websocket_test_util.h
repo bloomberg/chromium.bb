@@ -63,6 +63,7 @@ class SpdyWebSocketTestUtil {
 
   // Forwards to |spdy_util_|.
   SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) const;
+  SpdyFrame* ConstructSpdySettingsAck() const;
   SpdyMajorVersion spdy_version() const;
 
  private:

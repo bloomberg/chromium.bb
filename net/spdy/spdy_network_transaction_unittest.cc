@@ -1149,9 +1149,11 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
   MockWrite writes[] = {
     CreateMockWrite(*req),
+    CreateMockWrite(*settings_ack, 2),
     CreateMockWrite(*req2),
     CreateMockWrite(*req3),
   };
@@ -1161,10 +1163,10 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
     CreateMockRead(*resp),
     CreateMockRead(*body),
     CreateMockRead(*fbody),
-    CreateMockRead(*resp2, 7),
+    CreateMockRead(*resp2, 8),
     CreateMockRead(*body2),
     CreateMockRead(*fbody2),
-    CreateMockRead(*resp3, 12),
+    CreateMockRead(*resp3, 13),
     CreateMockRead(*body3),
     CreateMockRead(*fbody3),
 
@@ -1287,8 +1289,10 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
   MockWrite writes[] = { CreateMockWrite(*req),
+    CreateMockWrite(*settings_ack, 2),
     CreateMockWrite(*req2),
     CreateMockWrite(*req4),
     CreateMockWrite(*req3),
@@ -1298,12 +1302,12 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
     CreateMockRead(*resp),
     CreateMockRead(*body),
     CreateMockRead(*fbody),
-    CreateMockRead(*resp2, 7),
+    CreateMockRead(*resp2, 8),
     CreateMockRead(*body2),
     CreateMockRead(*fbody2),
-    CreateMockRead(*resp4, 13),
+    CreateMockRead(*resp4, 14),
     CreateMockRead(*fbody4),
-    CreateMockRead(*resp3, 16),
+    CreateMockRead(*resp3, 17),
     CreateMockRead(*body3),
     CreateMockRead(*fbody3),
 
@@ -1429,8 +1433,11 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
-  MockWrite writes[] = { CreateMockWrite(*req),
+  MockWrite writes[] = {
+    CreateMockWrite(*req),
+    CreateMockWrite(*settings_ack, 2),
     CreateMockWrite(*req2),
   };
   MockRead reads[] = {
@@ -1438,7 +1445,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
     CreateMockRead(*resp),
     CreateMockRead(*body),
     CreateMockRead(*fbody),
-    CreateMockRead(*resp2, 7),
+    CreateMockRead(*resp2, 8),
     CreateMockRead(*body2),
     CreateMockRead(*fbody2),
     MockRead(ASYNC, 0, 0),  // EOF
@@ -1563,8 +1570,11 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
   scoped_ptr<SpdyFrame> settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
-  MockWrite writes[] = { CreateMockWrite(*req),
+  MockWrite writes[] = {
+    CreateMockWrite(*req),
+    CreateMockWrite(*settings_ack, 2),
     CreateMockWrite(*req2),
   };
   MockRead reads[] = {
@@ -1572,7 +1582,7 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
     CreateMockRead(*resp),
     CreateMockRead(*body),
     CreateMockRead(*fin_body),
-    CreateMockRead(*resp2, 7),
+    CreateMockRead(*resp2, 8),
     MockRead(ASYNC, ERR_CONNECTION_RESET, 0),  // Abort!
   };
 
@@ -6382,6 +6392,9 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   if (GetParam().protocol >= kProtoSPDY31)
     reads.push_back(CreateMockRead(*session_window_update, i++));
 
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  writes.push_back(CreateMockWrite(*settings_ack, i++));
+
   writes.push_back(CreateMockWrite(*body3, i++));
 
   scoped_ptr<SpdyFrame> reply(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
@@ -6433,7 +6446,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   // since we're send-stalled.
   EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
 
-  data.RunFor(6);   // Read in SETTINGS frame to unstall.
+  data.RunFor(7);   // Read in SETTINGS frame to unstall.
   rv = callback.WaitForResult();
   helper.VerifyDataConsumed();
   // If stream is NULL, that means it was unstalled and closed.
@@ -6506,6 +6519,9 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
 
   reads.push_back(CreateMockRead(*window_update_init_size, i++));
 
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  writes.push_back(CreateMockWrite(*settings_ack, i++));
+
   writes.push_back(CreateMockWrite(*body3, i++));
 
   scoped_ptr<SpdyFrame> reply(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
@@ -6558,7 +6574,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   EXPECT_TRUE(stream->stream()->send_stalled_by_flow_control());
 
   // Read in WINDOW_UPDATE or SETTINGS frame.
-  data.RunFor((GetParam().protocol >= kProtoSPDY31) ? 8 : 7);
+  data.RunFor((GetParam().protocol >= kProtoSPDY31) ? 9 : 8);
   rv = callback.WaitForResult();
   helper.VerifyDataConsumed();
 }

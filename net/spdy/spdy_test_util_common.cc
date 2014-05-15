@@ -864,6 +864,18 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySettings(
   return CreateFramer(false)->SerializeFrame(settings_ir);
 }
 
+SpdyFrame* SpdyTestUtil::ConstructSpdySettingsAck() const {
+  char kEmptyWrite[] = "";
+
+  if (spdy_version() > SPDY3) {
+    SpdySettingsIR settings_ir;
+    settings_ir.set_is_ack(true);
+    return CreateFramer(false)->SerializeFrame(settings_ir);
+  }
+  // No settings ACK write occurs. Create an empty placeholder write.
+  return new SpdyFrame(kEmptyWrite, 0, false);
+}
+
 SpdyFrame* SpdyTestUtil::ConstructSpdyPing(uint32 ping_id, bool is_ack) const {
   SpdyPingIR ping_ir(ping_id);
   ping_ir.set_is_ack(is_ack);

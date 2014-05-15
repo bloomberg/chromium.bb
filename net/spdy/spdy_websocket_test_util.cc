@@ -150,6 +150,10 @@ SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdySettings(
   return spdy_util_.ConstructSpdySettings(settings);
 }
 
+SpdyFrame* SpdyWebSocketTestUtil::ConstructSpdySettingsAck() const {
+  return spdy_util_.ConstructSpdySettingsAck();
+}
+
 SpdyMajorVersion SpdyWebSocketTestUtil::spdy_version() const {
   return spdy_util_.spdy_version();
 }

@@ -1072,7 +1072,13 @@ TEST_P(SpdySessionTest, OnSettings) {
     MockRead(ASYNC, 0, 1),
   };
 
-  DeterministicSocketData data(reads, arraysize(reads), NULL, 0);
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  MockWrite writes[] = {
+    CreateMockWrite(*settings_ack, 2),
+  };
+
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
   session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
@@ -2066,6 +2072,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   new_settings[kSpdySettingsIds1] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
 
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
   scoped_ptr<SpdyFrame> req1(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
   scoped_ptr<SpdyFrame> req2(
@@ -2073,9 +2080,10 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
   scoped_ptr<SpdyFrame> req3(
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 5, LOWEST, true));
   MockWrite writes[] = {
-    CreateMockWrite(*req1, 1),
-    CreateMockWrite(*req2, 4),
-    CreateMockWrite(*req3, 7),
+    CreateMockWrite(*settings_ack, 1),
+    CreateMockWrite(*req1, 2),
+    CreateMockWrite(*req2, 5),
+    CreateMockWrite(*req3, 8),
   };
 
   // Set up the socket so we read a SETTINGS frame that sets max concurrent
@@ -2094,13 +2102,13 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
 
   MockRead reads[] = {
     CreateMockRead(*settings_frame),
-    CreateMockRead(*resp1, 2),
-    CreateMockRead(*body1, 3),
-    CreateMockRead(*resp2, 5),
-    CreateMockRead(*body2, 6),
-    CreateMockRead(*resp3, 8),
-    CreateMockRead(*body3, 9),
-    MockRead(ASYNC, 0, 10)  // EOF
+    CreateMockRead(*resp1, 3),
+    CreateMockRead(*body1, 4),
+    CreateMockRead(*resp2, 6),
+    CreateMockRead(*body2, 7),
+    CreateMockRead(*resp3, 9),
+    CreateMockRead(*body3, 10),
+    MockRead(ASYNC, 0, 11)  // EOF
   };
 
   DeterministicSocketData data(reads, arraysize(reads),
@@ -2152,7 +2160,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
 
   // Run until 1st stream is activated and then closed.
   EXPECT_EQ(0u, delegate1.stream_id());
-  data.RunFor(3);
+  data.RunFor(4);
   EXPECT_EQ(NULL, spdy_stream1.get());
   EXPECT_EQ(1u, delegate1.stream_id());
 
@@ -3062,12 +3070,17 @@ TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
     MockRead(ASYNC, 0, 1)  // EOF
   };
 
+  scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  MockWrite writes[] = {
+    CreateMockWrite(*settings_ack, 2),
+  };
+
   session_deps_.host_resolver->set_synchronous_mode(true);
 
-  scoped_ptr<DeterministicSocketData> data(
-      new DeterministicSocketData(reads, arraysize(reads), NULL, 0));
-  data->set_connect_data(connect_data);
-  session_deps_.deterministic_socket_factory->AddSocketDataProvider(data.get());
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
 
   CreateDeterministicNetworkSession();
 
@@ -3080,7 +3093,7 @@ TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
   TestCompletionCallback callback1;
   EXPECT_NE(spdy_stream1->send_window_size(), window_size);
 
-  data->RunFor(1);  // Process the SETTINGS frame, but not the EOF
+  data.RunFor(1);  // Process the SETTINGS frame, but not the EOF
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(session->stream_initial_send_window_size(), window_size);
   EXPECT_EQ(spdy_stream1->send_window_size(), window_size);

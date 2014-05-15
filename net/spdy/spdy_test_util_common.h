@@ -366,6 +366,10 @@ class SpdyTestUtil {
   // Returns the constructed frame.  The caller takes ownership of the frame.
   SpdyFrame* ConstructSpdySettings(const SettingsMap& settings) const;
 
+  // Constructs an expected SPDY SETTINGS acknowledgement frame, if the protocol
+  // version is SPDY4 or higher, or an empty placeholder frame otherwise.
+  SpdyFrame* ConstructSpdySettingsAck() const;
+
   // Construct a SPDY PING frame.
   // Returns the constructed frame.  The caller takes ownership of the frame.
   SpdyFrame* ConstructSpdyPing(uint32 ping_id, bool is_ack) const;
