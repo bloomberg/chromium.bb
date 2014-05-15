@@ -17,7 +17,6 @@
 #include "base/format_macros.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
-#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
@@ -44,14 +43,16 @@ namespace breakpad {
 
 namespace {
 
+const size_t kNumFDs = 1;
 // The length of the control message:
-const unsigned kControlMsgSize =
-    CMSG_SPACE(sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
+const size_t kControlMsgSize =
+    CMSG_SPACE(kNumFDs * sizeof(int)) + CMSG_SPACE(sizeof(struct ucred));
 // The length of the regular payload:
-const unsigned kCrashContextSize = sizeof(ExceptionHandler::CrashContext);
+const size_t kCrashContextSize = sizeof(ExceptionHandler::CrashContext);
 
 // Handles the crash dump and frees the allocated BreakpadInfo struct.
-void CrashDumpTask(CrashHandlerHostLinux* handler, BreakpadInfo* info) {
+void CrashDumpTask(CrashHandlerHostLinux* handler,
+                   scoped_ptr<BreakpadInfo> info) {
   if (handler->IsShuttingDown() && info->upload) {
     base::DeleteFile(base::FilePath(info->filename), false);
 #if defined(ADDRESS_SANITIZER)
@@ -68,7 +69,6 @@ void CrashDumpTask(CrashHandlerHostLinux* handler, BreakpadInfo* info) {
   delete[] info->process_type;
   delete[] info->distro;
   delete info->crash_keys;
-  delete info;
 }
 
 }  // namespace
@@ -93,11 +93,11 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
   // inherit some sockets. With PF_UNIX+SOCK_DGRAM, it can call sendmsg to send
   // a datagram to any (abstract) socket on the same system. With
   // SOCK_SEQPACKET, this is prevented.
-  CHECK_EQ(socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds), 0);
+  CHECK_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
   static const int on = 1;
 
   // Enable passcred on the server end of the socket
-  CHECK_EQ(setsockopt(fds[1], SOL_SOCKET, SO_PASSCRED, &on, sizeof(on)), 0);
+  CHECK_EQ(0, setsockopt(fds[1], SOL_SOCKET, SO_PASSCRED, &on, sizeof(on)));
 
   process_socket_ = fds[0];
   browser_socket_ = fds[1];
@@ -132,7 +132,7 @@ void CrashHandlerHostLinux::OnFileCanWriteWithoutBlocking(int fd) {
 }
 
 void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK_EQ(fd, browser_socket_);
+  DCHECK_EQ(browser_socket_, fd);
 
   // A process has crashed and has signaled us by writing a datagram
   // to the death signal socket. The datagram contains the crash context needed
@@ -144,16 +144,12 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   struct msghdr msg = {0};
   struct iovec iov[kCrashIovSize];
 
-  // Freed in WriteDumpFile();
-  char* crash_context = new char[kCrashContextSize];
-  // Freed in CrashDumpTask();
-  char* distro = new char[kDistroSize + 1];
+  scoped_ptr<char[]> crash_context(new char[kCrashContextSize]);
 #if defined(ADDRESS_SANITIZER)
-  asan_report_str_ = new char[kMaxAsanReportSize + 1];
+  scoped_ptr<char[]> asan_report(new char[kMaxAsanReportSize + 1]);
 #endif
 
-  // Freed in CrashDumpTask().
-  CrashKeyStorage* crash_keys = new CrashKeyStorage;
+  scoped_ptr<CrashKeyStorage> crash_keys(new CrashKeyStorage);
   google_breakpad::SerializedNonAllocatingMap* serialized_crash_keys;
   size_t crash_keys_size = crash_keys->Serialize(
       const_cast<const google_breakpad::SerializedNonAllocatingMap**>(
@@ -166,7 +162,6 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   char control[kControlMsgSize];
   const ssize_t expected_msg_size =
       kCrashContextSize +
-      kDistroSize + 1 +
       sizeof(tid_buf_addr) + sizeof(tid_fd) +
       sizeof(uptime) +
 #if defined(ADDRESS_SANITIZER)
@@ -174,23 +169,24 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 #endif
       sizeof(oom_size) +
       crash_keys_size;
-  iov[0].iov_base = crash_context;
+  iov[0].iov_base = crash_context.get();
   iov[0].iov_len = kCrashContextSize;
-  iov[1].iov_base = distro;
-  iov[1].iov_len = kDistroSize + 1;
-  iov[2].iov_base = &tid_buf_addr;
-  iov[2].iov_len = sizeof(tid_buf_addr);
-  iov[3].iov_base = &tid_fd;
-  iov[3].iov_len = sizeof(tid_fd);
-  iov[4].iov_base = &uptime;
-  iov[4].iov_len = sizeof(uptime);
-  iov[5].iov_base = &oom_size;
-  iov[5].iov_len = sizeof(oom_size);
-  iov[6].iov_base = serialized_crash_keys;
-  iov[6].iov_len = crash_keys_size;
-#if defined(ADDRESS_SANITIZER)
-  iov[7].iov_base = asan_report_str_;
-  iov[7].iov_len = kMaxAsanReportSize + 1;
+  iov[1].iov_base = &tid_buf_addr;
+  iov[1].iov_len = sizeof(tid_buf_addr);
+  iov[2].iov_base = &tid_fd;
+  iov[2].iov_len = sizeof(tid_fd);
+  iov[3].iov_base = &uptime;
+  iov[3].iov_len = sizeof(uptime);
+  iov[4].iov_base = &oom_size;
+  iov[4].iov_len = sizeof(oom_size);
+  iov[5].iov_base = serialized_crash_keys;
+  iov[5].iov_len = crash_keys_size;
+#if !defined(ADDRESS_SANITIZER)
+  COMPILE_ASSERT(5 == kCrashIovSize - 1, Incorrect_Number_Of_Iovec_Members);
+#else
+  iov[6].iov_base = asan_report.get();
+  iov[6].iov_len = kMaxAsanReportSize + 1;
+  COMPILE_ASSERT(6 == kCrashIovSize - 1, Incorrect_Number_Of_Iovec_Members);
 #endif
   msg.msg_iov = iov;
   msg.msg_iovlen = kCrashIovSize;
@@ -225,16 +221,16 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
     if (hdr->cmsg_level != SOL_SOCKET)
       continue;
     if (hdr->cmsg_type == SCM_RIGHTS) {
-      const unsigned len = hdr->cmsg_len -
+      const size_t len = hdr->cmsg_len -
           (((uint8_t*)CMSG_DATA(hdr)) - (uint8_t*)hdr);
-      DCHECK_EQ(len % sizeof(int), 0u);
-      const unsigned num_fds = len / sizeof(int);
-      if (num_fds != 1) {
+      DCHECK_EQ(0U, len % sizeof(int));
+      const size_t num_fds = len / sizeof(int);
+      if (num_fds != kNumFDs) {
         // A nasty process could try and send us too many descriptors and
         // force a leak.
         LOG(ERROR) << "Death signal contained wrong number of descriptors;"
                    << " num_fds:" << num_fds;
-        for (unsigned i = 0; i < num_fds; ++i)
+        for (size_t i = 0; i < num_fds; ++i)
           close(reinterpret_cast<int*>(CMSG_DATA(hdr))[i]);
         return;
       } else {
@@ -290,21 +286,37 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   }
 
   ExceptionHandler::CrashContext* bad_context =
-      reinterpret_cast<ExceptionHandler::CrashContext*>(crash_context);
+      reinterpret_cast<ExceptionHandler::CrashContext*>(crash_context.get());
   bad_context->tid = crashing_tid;
 
-  // Freed in CrashDumpTask();
-  BreakpadInfo* info = new BreakpadInfo;
+  scoped_ptr<BreakpadInfo> info(new BreakpadInfo);
 
   info->fd = -1;
   info->process_type_length = process_type_.length();
+  // Freed in CrashDumpTask().
   char* process_type_str = new char[info->process_type_length + 1];
   process_type_.copy(process_type_str, info->process_type_length);
   process_type_str[info->process_type_length] = '\0';
   info->process_type = process_type_str;
 
-  info->distro_length = strlen(distro);
-  info->distro = distro;
+  std::string distro = base::GetLinuxDistro();
+  info->distro_length = distro.length();
+  // Freed in CrashDumpTask().
+  char* distro_str = new char[info->distro_length + 1];
+  distro.copy(distro_str, info->distro_length);
+  distro_str[info->distro_length] = '\0';
+  info->distro = distro_str;
+
+  // Memory released from scoped_ptrs below are also freed in CrashDumpTask().
+  info->crash_keys = crash_keys.release();
+#if defined(ADDRESS_SANITIZER)
+  asan_report[kMaxAsanReportSize] = '\0';
+  info->asan_report_str = asan_report.release();
+  info->asan_report_length = strlen(info->asan_report_str);
+#endif
+
+  info->process_start_time = uptime;
+  info->oom_size = oom_size;
 #if defined(OS_ANDROID)
   // Nothing gets uploaded in android.
   info->upload = false;
@@ -312,29 +324,21 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
   info->upload = upload_;
 #endif
 
-  info->crash_keys = crash_keys;
-
-#if defined(ADDRESS_SANITIZER)
-  info->asan_report_str = asan_report_str_;
-  info->asan_report_length = strlen(asan_report_str_);
-#endif
-  info->process_start_time = uptime;
-  info->oom_size = oom_size;
 
   BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
       worker_pool_token_,
       FROM_HERE,
       base::Bind(&CrashHandlerHostLinux::WriteDumpFile,
                  base::Unretained(this),
-                 info,
+                 base::Passed(&info),
+                 base::Passed(&crash_context),
                  crashing_pid,
-                 crash_context,
                  signal_fd));
 }
 
-void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
+void CrashHandlerHostLinux::WriteDumpFile(scoped_ptr<BreakpadInfo> info,
+                                          scoped_ptr<char[]> crash_context,
                                           pid_t crashing_pid,
-                                          char* crash_context,
                                           int signal_fd) {
   DCHECK(BrowserThread::GetBlockingPool()->IsRunningSequenceOnCurrentThread(
       worker_pool_token_));
@@ -343,16 +347,16 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
   PathService::Get(base::DIR_TEMP, &dumps_path);
   if (!info->upload)
     dumps_path = dumps_path_;
-  const uint64 rand = base::RandUint64();
   const std::string minidump_filename =
       base::StringPrintf("%s/chromium-%s-minidump-%016" PRIx64 ".dmp",
                          dumps_path.value().c_str(),
                          process_type_.c_str(),
-                         rand);
+                         base::RandUint64());
 
   if (!google_breakpad::WriteMinidump(minidump_filename.c_str(),
                                       kMaxMinidumpFileSize,
-                                      crashing_pid, crash_context,
+                                      crashing_pid,
+                                      crash_context.get(),
                                       kCrashContextSize,
                                       google_breakpad::MappingList(),
                                       google_breakpad::AppMemoryList())) {
@@ -360,25 +364,18 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
   }
 #if defined(ADDRESS_SANITIZER)
   // Create a temporary file holding the AddressSanitizer report.
-  const std::string log_filename =
-      base::StringPrintf("%s/chromium-%s-minidump-%016" PRIx64 ".log",
-                         dumps_path.value().c_str(),
-                         process_type_.c_str(),
-                         rand);
-  FILE* logfile = fopen(log_filename.c_str(), "w");
-  CHECK(logfile);
-  fprintf(logfile, "%s", asan_report_str_);
-  fclose(logfile);
+  const base::FilePath log_path =
+      base::FilePath(minidump_filename).ReplaceExtension("log");
+  base::WriteFile(log_path, info->asan_report_str, info->asan_report_length);
 #endif
 
-  delete[] crash_context;
-
-  // Freed in CrashDumpTask();
+  // Freed in CrashDumpTask().
   char* minidump_filename_str = new char[minidump_filename.length() + 1];
   minidump_filename.copy(minidump_filename_str, minidump_filename.length());
   minidump_filename_str[minidump_filename.length()] = '\0';
   info->filename = minidump_filename_str;
 #if defined(ADDRESS_SANITIZER)
+  // Freed in CrashDumpTask().
   char* minidump_log_filename_str = new char[minidump_filename.length() + 1];
   minidump_filename.copy(minidump_log_filename_str, minidump_filename.length());
   memcpy(minidump_log_filename_str + minidump_filename.length() - 3, "log", 3);
@@ -391,11 +388,11 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&CrashHandlerHostLinux::QueueCrashDumpTask,
                  base::Unretained(this),
-                 info,
+                 base::Passed(&info),
                  signal_fd));
 }
 
-void CrashHandlerHostLinux::QueueCrashDumpTask(BreakpadInfo* info,
+void CrashHandlerHostLinux::QueueCrashDumpTask(scoped_ptr<BreakpadInfo> info,
                                                int signal_fd) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -407,12 +404,12 @@ void CrashHandlerHostLinux::QueueCrashDumpTask(BreakpadInfo* info,
   msg.msg_iov = &done_iov;
   msg.msg_iovlen = 1;
 
-  (void) HANDLE_EINTR(sendmsg(signal_fd, &msg, MSG_DONTWAIT | MSG_NOSIGNAL));
+  HANDLE_EINTR(sendmsg(signal_fd, &msg, MSG_DONTWAIT | MSG_NOSIGNAL));
   close(signal_fd);
 
   uploader_thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&CrashDumpTask, base::Unretained(this), info));
+      base::Bind(&CrashDumpTask, base::Unretained(this), base::Passed(&info)));
 }
 
 void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {
