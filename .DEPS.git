@@ -106,7 +106,7 @@ deps = {
     'src/third_party/openmax_dl':
         Var('git_url') + '/external/webrtc/deps/third_party/openmax.git@cf42f62aae8cb9c9e0ed021ee6985affbe118677',
     'src/third_party/openssl':
-        Var('git_url') + '/chromium/deps/openssl.git@55b9eb8eb546355b3d55945cf09a45a434cd796f',
+        Var('git_url') + '/chromium/deps/openssl.git@7f0be5dc6cd354f962618d88faa1b1d2b8e32238',
     'src/third_party/opus/src':
         Var('git_url') + '/chromium/deps/opus.git@36fa2621472ebf5b859fd16bbdb749019c68cc69',
     'src/third_party/ots':
