@@ -107,7 +107,7 @@
     Disable mobile data
   </message>
   <message name="IDS_ASH_STATUS_TRAY_SETUP_MOBILE" desc="The label used for the item to setup cellular network when no SIM card in installed.">
-    Setup mobile data
+    Set up mobile data
   </message>
   <message name="IDS_ASH_STATUS_TRAY_OTHER_MOBILE" desc="The label used for the item to display other cellular networks.">
     Mobile ...
