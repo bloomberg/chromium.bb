@@ -18,6 +18,7 @@ vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "googlecode_url": "http://%s.googlecode.com/svn",
   "native_client_trunk": "http://src.chromium.org/native_client/trunk",
+  "chromium_git": "https://chromium.googlesource.com",
 }
 
 deps = {
