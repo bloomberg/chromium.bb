@@ -639,8 +639,6 @@ void HTMLMediaElement::prepareForLoad()
     if (m_networkState == NETWORK_LOADING || m_networkState == NETWORK_IDLE)
         scheduleEvent(EventTypeNames::abort);
 
-    closeMediaSource();
-
     createMediaPlayer();
 
     // 4 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
@@ -3400,8 +3398,7 @@ void HTMLMediaElement::createMediaPlayer()
         m_audioSourceNode->lock();
 #endif
 
-    if (m_mediaSource)
-        closeMediaSource();
+    closeMediaSource();
 
     m_player = MediaPlayer::create(this);
 
