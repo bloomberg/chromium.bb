@@ -62,7 +62,6 @@ template("mojom") {
   generator_target_name = target_name + "_generator"
   action_foreach(generator_target_name) {
     visibility = target_visibility
-    hard_dep = true
     script = generator_script
     source_prereqs = generator_sources
     sources = invoker.sources
@@ -76,7 +75,6 @@ template("mojom") {
   }
 
   source_set(target_name) {
-    hard_dep = true
     sources = process_file_template(invoker.sources, generator_cpp_outputs)
     data = process_file_template(invoker.sources, generator_js_outputs)
     deps = [

@@ -208,14 +208,6 @@ void TargetGenerator::FillDependencies() {
   FillForwardDependentConfigs();
   if (err_->has_error())
     return;
-
-  // Mark the "hard_dep" variable as used. This was previously part of GN but
-  // is now unused, and we don't want to throw errors for build files setting
-  // it while the new binary is being pushed.
-  // TODO(brettw) remove this code when all hard_deps are removed.
-  const char kHardDep[] = "hard_dep";
-  if (scope_->IsSetButUnused(kHardDep))
-    scope_->MarkUsed(kHardDep);
 }
 
 void TargetGenerator::FillOutputs() {

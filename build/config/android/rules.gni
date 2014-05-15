@@ -55,7 +55,5 @@ template("generate_jni") {
         "--jarjar", rebase_path(jni_generator_jarjar_file)
       ]
     }
-
-    hard_dep = true
   }
 }

@@ -503,14 +503,6 @@ component("ui_base") {
       "device_form_factor_desktop.cc",
     ]
   }
-
-  # TODO(GYP): Port this to GN.
-  #if (use_system_icu) {
-    # When using the system icu, the icu targets generate shim headers
-    # which are included by public headers in the ui target, so we need
-    # ui to be a hard dependency for all its users.
-    #'hard_dependency': 1,
-  #}
 }
 
 source_set("ui_base_test_support") {

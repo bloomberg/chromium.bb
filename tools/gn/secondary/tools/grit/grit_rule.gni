@@ -67,7 +67,6 @@ template("grit") {
   grit_custom_target = target_name + "_grit"
   action(grit_custom_target) {
     script = "//tools/grit/grit.py"
-    hard_dep = true
     source_prereqs = grit_inputs
     outputs = grit_outputs
 
@@ -86,7 +85,6 @@ template("grit") {
   source_set(target_name) {
     # Since we generate a file, we need to be run before the targets that
     # depend on us.
-    hard_dep = true
     sources = grit_outputs
 
     # Deps set on the template invocation will go on the grit script running

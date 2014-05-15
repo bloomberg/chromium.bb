@@ -15,9 +15,6 @@
 action("last_change") {
   script = "//build/util/lastchange.py"
 
-  # This script must be run before targets depending on us.
-  hard_dep = true
-
   # Rerun the script any time this file changes.
   source_prereqs = [ "//build/util/LASTCHANGE" ]
 
