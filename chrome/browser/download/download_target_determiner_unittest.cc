@@ -626,7 +626,7 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_DangerousUrl) {
 
     {
       // 3: Automatic Dangerous URL + Dangerous file. Dangerous URL takes
-      // precendence.
+      // precedence.
       AUTOMATIC,
       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
       "http://phishing.example.com/foo.html", "",

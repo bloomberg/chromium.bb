@@ -3892,7 +3892,7 @@
                     'ldflags': [
                       # There seems to be a conflict of --icf and -pie
                       # in gold which can generate crashy binaries. As
-                      # a security measure, -pie takes precendence for
+                      # a security measure, -pie takes precedence for
                       # now.
                       #'-Wl,--icf=safe',
                       '-Wl,--icf=none',

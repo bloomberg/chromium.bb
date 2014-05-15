@@ -88,7 +88,7 @@ const float kTextBaselineShift = -1.0;
 
   // When text is rendered, linkTextAttributes override anything set via
   // addAttributes for text that has NSLinkAttributeName. Set to nil to allow
-  // custom attributes to take precendence.
+  // custom attributes to take precedence.
   [self setLinkTextAttributes:nil];
   [self setDisplaysLinkToolTips:NO];
 
