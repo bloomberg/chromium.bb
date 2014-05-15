@@ -4,12 +4,20 @@
 
 #include "content/common/gpu/sync_point_manager.h"
 
+#include <climits>
+
 #include "base/logging.h"
+#include "base/rand_util.h"
 
 namespace content {
 
+static const int kMaxSyncBase = INT_MAX;
+
 SyncPointManager::SyncPointManager()
-    : next_sync_point_(1) {
+    : next_sync_point_(base::RandInt(1, kMaxSyncBase)) {
+  // To reduce the risk that a sync point created in a previous GPU process
+  // will be in flight in the next GPU process, randomize the starting sync
+  // point number. http://crbug.com/373452
 }
 
 SyncPointManager::~SyncPointManager() {
