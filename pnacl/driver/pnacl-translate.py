@@ -55,7 +55,7 @@ EXTRA_ENV = {
   # Library Strings
   'LD_ARGS' : '${USE_STDLIB ? ${LD_ARGS_normal} : ${LD_ARGS_nostdlib}}',
 
-  # Note: we always requires a shim now, but the dummy shim is not doing
+  # Note: we always require a shim now, but the dummy shim is not doing
   # anything useful.
   # libpnacl_irt_shim.a is generated during the SDK packaging not
   # during the toolchain build and there are hacks in pnacl/driver/ldtools.py
