@@ -73,14 +73,18 @@ def MakeImportStackMessage(imported_filename_stack):
                     zip(imported_filename_stack[1:], imported_filename_stack)]))
 
 
-# Disable Check for dangerous default arguments (they're "private" keyword
-# arguments):
+# Disable check for dangerous default arguments (they're "private" keyword
+# arguments; note that we want |_processed_files| to memoize across invocations
+# of |ProcessFile()|):
 # pylint: disable=W0102
 def ProcessFile(args, remaining_args, generator_modules, filename,
-                _processed_files={}, _imported_filename_stack=[]):
+                _processed_files={}, _imported_filename_stack=None):
   # Memoized results.
   if filename in _processed_files:
     return _processed_files[filename]
+
+  if _imported_filename_stack is None:
+    _imported_filename_stack = []
 
   # Ensure we only visit each file once.
   if filename in _imported_filename_stack:
