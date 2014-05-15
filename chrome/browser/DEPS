@@ -36,6 +36,7 @@ include_rules = [
   "+components/password_manager",
   "+components/policy",
   "+components/precache",
+  "+components/pref_registry",
   "+components/query_parser",
   "+components/rappor",
   "+components/search_provider_logos",

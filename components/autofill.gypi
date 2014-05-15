@@ -107,7 +107,7 @@
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
         'os_crypt',
-        'user_prefs',
+        'pref_registry',
         'webdata_common',
       ],
       'sources': [

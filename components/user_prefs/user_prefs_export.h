@@ -12,7 +12,7 @@
 #define USER_PREFS_EXPORT __declspec(dllexport)
 #else
 #define USER_PREFS_EXPORT __declspec(dllimport)
-#endif  // defined(BASE_PREFS_IMPLEMENTATION)
+#endif  // defined(USER_PREFS_IMPLEMENTATION)
 
 #else  // defined(WIN32)
 #if defined(USER_PREFS_IMPLEMENTATION)

@@ -1,7 +1,7 @@
 include_rules = [
   "+components/autofill/core/common",
+  "+components/pref_registry",
   "+components/url_matcher",
-  "+components/user_prefs",
   "+grit/component_strings.h",
   "+third_party/icu",
   "+ui/base/l10n",

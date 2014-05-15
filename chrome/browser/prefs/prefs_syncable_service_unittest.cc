@@ -12,7 +12,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "grit/locale_settings.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/attachments/attachment_service_proxy_for_test.h"

@@ -15,7 +15,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -30,7 +30,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/core/browser/bookmark_model.h"
 #include "components/bookmarks/core/test/bookmark_test_helpers.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"

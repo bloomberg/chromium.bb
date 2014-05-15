@@ -20,7 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/auto_launch_util.h"
 #include "components/infobars/core/infobar.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"

@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_member.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 class PrefService;
 

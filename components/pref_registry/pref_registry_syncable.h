@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_USER_PREFS_PREF_REGISTRY_SYNCABLE_H_
-#define COMPONENTS_USER_PREFS_PREF_REGISTRY_SYNCABLE_H_
+#ifndef COMPONENTS_PREF_REGISTRY_PREF_REGISTRY_SYNCABLE_H_
+#define COMPONENTS_PREF_REGISTRY_PREF_REGISTRY_SYNCABLE_H_
 
 #include <set>
 #include <string>
 
 #include "base/callback.h"
 #include "base/prefs/pref_registry.h"
-#include "components/user_prefs/user_prefs_export.h"
+#include "components/pref_registry/pref_registry_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,6 +19,7 @@ class ListValue;
 class Value;
 }
 
+// TODO(tfarina): Change this namespace to pref_registry.
 namespace user_prefs {
 
 // A PrefRegistry that forces users to choose whether each registered
@@ -31,7 +32,7 @@ namespace user_prefs {
 // appropriate time before the PrefService for these preferences is
 // constructed. See e.g. chrome/browser/prefs/browser_prefs.cc which
 // does this for Chrome.
-class USER_PREFS_EXPORT PrefRegistrySyncable : public PrefRegistry {
+class PREF_REGISTRY_EXPORT PrefRegistrySyncable : public PrefRegistry {
  public:
   // Enum used when registering preferences to determine if it should
   // be synced or not. Syncable priority preferences are preferences that are
@@ -129,4 +130,4 @@ class USER_PREFS_EXPORT PrefRegistrySyncable : public PrefRegistry {
 
 }  // namespace user_prefs
 
-#endif  // COMPONENTS_USER_PREFS_PREF_REGISTRY_SYNCABLE_H_
+#endif  // COMPONENTS_PREF_REGISTRY_PREF_REGISTRY_SYNCABLE_H_

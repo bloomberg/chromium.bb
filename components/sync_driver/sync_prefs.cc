@@ -11,8 +11,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_driver/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 
 namespace sync_driver {
 

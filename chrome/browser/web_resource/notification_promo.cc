@@ -21,7 +21,7 @@
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/url_util.h"
 #include "ui/base/device_form_factor.h"

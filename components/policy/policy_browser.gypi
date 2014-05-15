@@ -11,8 +11,8 @@
     '../ui/base/ui_base.gyp:ui_base',
     '../url/url.gyp:url_lib',
     'components_strings.gyp:components_strings',
+    'pref_registry',
     'url_matcher',
-    'user_prefs',
   ],
   'defines': [
     'POLICY_COMPONENT_IMPLEMENTATION',

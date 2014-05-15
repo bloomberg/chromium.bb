@@ -12,7 +12,6 @@
         '../base/base.gyp:base_prefs',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../content/content.gyp:content_browser',
-        '../ui/base/ui_base.gyp:ui_base',
       ],
       'include_dirs': [
         '..',
@@ -21,8 +20,6 @@
         'USER_PREFS_IMPLEMENTATION',
       ],
       'sources': [
-        'user_prefs/pref_registry_syncable.cc',
-        'user_prefs/pref_registry_syncable.h',
         'user_prefs/user_prefs.cc',
         'user_prefs/user_prefs.h',
         'user_prefs/user_prefs_export.h',

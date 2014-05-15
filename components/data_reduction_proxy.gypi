@@ -9,10 +9,11 @@
       'target_name': 'data_reduction_proxy_browser',
       'type': 'static_library',
       'dependencies': [
-        'data_reduction_proxy_common',
         '../base/base.gyp:base',
         '../crypto/crypto.gyp:crypto',
         '../net/net.gyp:net',
+        'data_reduction_proxy_common',
+        'pref_registry',
       ],
       'include_dirs': [
         '..',
@@ -38,7 +39,6 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../components/components.gyp:user_prefs',
       ],
       'include_dirs': [
         '..',
@@ -54,12 +54,12 @@
       'target_name': 'data_reduction_proxy_test_support',
       'type': 'static_library',
       'dependencies' : [
-        'data_reduction_proxy_browser',
-        'data_reduction_proxy_common',
         '../base/base.gyp:base',
         '../net/net.gyp:net',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        'data_reduction_proxy_browser',
+        'data_reduction_proxy_common',
       ],
       'include_dirs': [
         '..',

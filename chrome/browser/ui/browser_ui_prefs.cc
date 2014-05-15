@@ -9,8 +9,8 @@
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/translate/core/common/translate_pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 
 namespace chrome {
 

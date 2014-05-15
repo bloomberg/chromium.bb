@@ -91,10 +91,10 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/rappor/rappor_service.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/extension_prefs.h"
 

@@ -17,7 +17,7 @@
 #include "chrome/browser/prefs/tracked/tracked_atomic_preference.h"
 #include "chrome/browser/prefs/tracked/tracked_split_preference.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 PrefHashFilter::PrefHashFilter(
     scoped_ptr<PrefHashStore> pref_hash_store,

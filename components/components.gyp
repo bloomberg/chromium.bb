@@ -36,6 +36,7 @@
     'password_manager.gypi',
     'policy.gypi',
     'precache.gypi',
+    'pref_registry.gypi',
     'query_parser.gypi',
     'rappor.gypi',
     'search_provider_logos.gypi',

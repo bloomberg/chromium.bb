@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/extensions/browser_actions_controller_prefs.h"
 
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/pref_names.h"
 
 void RegisterBrowserActionsControllerProfilePrefs(

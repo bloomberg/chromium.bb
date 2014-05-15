@@ -15,7 +15,7 @@
 #include "components/bookmarks/core/common/bookmark_pref_names.h"
 #include "components/bookmarks/core/test/bookmark_test_helpers.h"
 #include "components/bookmarks/core/test/test_bookmark_client.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 scoped_ptr<PrefService> PrefServiceForTesting() {

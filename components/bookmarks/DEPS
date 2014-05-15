@@ -1,8 +1,8 @@
 include_rules = [
   "+components/favicon_base",
+  "+components/pref_registry",
   "+components/query_parser",
   "+components/startup_metric_utils",
-  "+components/user_prefs",
   "+grit/component_strings.h",
   "+net/base",
   "+ui",

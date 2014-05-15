@@ -23,9 +23,9 @@
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/ticl_settings_provider.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/user_prefs/pref_registry_syncable.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 

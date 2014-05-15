@@ -37,7 +37,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/feedback/tracing_manager.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"

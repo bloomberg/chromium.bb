@@ -18,7 +18,7 @@
 #include "chrome/browser/prefs/tracked/tracked_preferences_migration.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace {
 

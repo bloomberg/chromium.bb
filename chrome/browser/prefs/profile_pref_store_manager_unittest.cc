@@ -24,7 +24,7 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_hash_filter.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

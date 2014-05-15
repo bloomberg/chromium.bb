@@ -1,5 +1,6 @@
 include_rules = [
   "+chromeos",
+  "+components/pref_registry",
   "+components/user_prefs",
   "+third_party/cros_system_api",
 

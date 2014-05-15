@@ -22,7 +22,7 @@
         'favicon_base',
         'query_parser',
         'startup_metric_utils',
-        'user_prefs',
+        'pref_registry',
       ],
       'sources': [
         'bookmarks/core/browser/base_bookmark_model_observer.cc',

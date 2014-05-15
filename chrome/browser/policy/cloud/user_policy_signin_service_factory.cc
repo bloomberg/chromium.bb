@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

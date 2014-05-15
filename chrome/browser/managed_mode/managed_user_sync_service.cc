@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_error.h"

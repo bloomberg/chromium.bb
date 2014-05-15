@@ -6,7 +6,7 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "components/data_reduction_proxy/common/data_reduction_proxy_pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 namespace data_reduction_proxy {
 

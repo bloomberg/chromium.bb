@@ -1,5 +1,5 @@
 include_rules = [
-  "+components/user_prefs",
+  "+components/pref_registry",
   "+crypto",
   "+net",
 ]

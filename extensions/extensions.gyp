@@ -225,8 +225,8 @@
       'type': 'static_library',
       'dependencies': [
         '../components/components.gyp:keyed_service_content',
+        '../components/components.gyp:pref_registry',
         '../components/components.gyp:usb_service',
-        '../components/components.gyp:user_prefs',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',

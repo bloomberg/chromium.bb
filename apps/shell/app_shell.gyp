@@ -71,6 +71,8 @@
         '<(DEPTH)/apps/shell/common/api/api.gyp:shell_api',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_prefs_test_support',
+        '<(DEPTH)/components/components.gyp:pref_registry',
+        '<(DEPTH)/components/components.gyp:user_prefs',
         '<(DEPTH)/content/content.gyp:content',
         '<(DEPTH)/content/content.gyp:content_gpu',
         '<(DEPTH)/content/content.gyp:content_ppapi_plugin',

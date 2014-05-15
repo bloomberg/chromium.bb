@@ -11,7 +11,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "jni/NewTabPagePrefs_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;

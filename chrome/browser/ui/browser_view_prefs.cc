@@ -6,7 +6,7 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "chrome/common/pref_names.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/base/x/x11_util.h"

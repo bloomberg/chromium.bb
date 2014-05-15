@@ -15,8 +15,8 @@
         '../url/url.gyp:url_lib',
         'components_resources.gyp:components_resources',
         'language_usage_metrics',
+        'pref_registry',
         'translate_core_common',
-        'user_prefs',
       ],
       'include_dirs': [
         '..',

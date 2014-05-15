@@ -8,7 +8,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/synced_pref_observer.h"
-#include "components/user_prefs/pref_registry_syncable.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 class PrefServiceSyncableObserver;
 class Profile;
