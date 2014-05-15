@@ -119,31 +119,6 @@ TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
       dest_directory.AppendASCII("image00000003.png")));
 }
 
-TEST_F(FileCacheTest, Iterator) {
-  base::FilePath src_file;
-  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
-
-  // Prepare entries.
-  std::map<std::string, std::string> md5s;
-  md5s["id1"] = "md5-1";
-  md5s["id2"] = "md5-2";
-  md5s["id3"] = "md5-3";
-  md5s["id4"] = "md5-4";
-  for (std::map<std::string, std::string>::iterator it = md5s.begin();
-       it != md5s.end(); ++it) {
-    EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
-        it->first, it->second, src_file, FileCache::FILE_OPERATION_COPY));
-  }
-
-  // Iterate.
-  std::map<std::string, std::string> result;
-  scoped_ptr<FileCache::Iterator> it = cache_->GetIterator();
-  for (; !it->IsAtEnd(); it->Advance())
-    result[it->GetID()] = it->GetValue().md5();
-  EXPECT_EQ(md5s, result);
-  EXPECT_FALSE(it->HasError());
-}
-
 TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   base::FilePath src_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));

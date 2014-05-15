@@ -272,8 +272,7 @@ DriveIntegrationService::DriveIntegrationService(
           cache_root_directory_.Append(kTemporaryFileDirectory)));
   download_handler_.reset(new DownloadHandler(file_system()));
   debug_info_collector_.reset(new DebugInfoCollector(
-      cache_.get(), resource_metadata_.get(), file_system(),
-      blocking_task_runner_.get()));
+      resource_metadata_.get(), file_system(), blocking_task_runner_.get()));
 
   if (preference_watcher) {
     preference_watcher_.reset(preference_watcher);

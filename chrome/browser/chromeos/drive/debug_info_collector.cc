@@ -16,11 +16,15 @@ namespace drive {
 namespace {
 
 void IterateFileCacheInternal(
-    internal::FileCache* file_cache,
+    internal::ResourceMetadata* metadata,
     const DebugInfoCollector::IterateFileCacheCallback& iteration_callback) {
-  scoped_ptr<internal::FileCache::Iterator> it = file_cache->GetIterator();
-  for (; !it->IsAtEnd(); it->Advance())
-    iteration_callback.Run(it->GetID(), it->GetValue());
+  scoped_ptr<internal::ResourceMetadata::Iterator> it = metadata->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    if (it->GetValue().file_specific_info().has_cache_state()) {
+      iteration_callback.Run(it->GetID(),
+                             it->GetValue().file_specific_info().cache_state());
+    }
+  }
   DCHECK(!it->HasError());
 }
 
@@ -48,15 +52,12 @@ void RunReadDirectoryCallback(
 }  // namespace
 
 DebugInfoCollector::DebugInfoCollector(
-    internal::FileCache* file_cache,
     internal::ResourceMetadata* metadata,
     FileSystemInterface* file_system,
     base::SequencedTaskRunner* blocking_task_runner)
-    : file_cache_(file_cache),
-      metadata_(metadata),
+    : metadata_(metadata),
       file_system_(file_system),
       blocking_task_runner_(blocking_task_runner) {
-  DCHECK(file_cache_);
   DCHECK(metadata_);
   DCHECK(file_system_);
 }
@@ -110,7 +111,7 @@ void DebugInfoCollector::IterateFileCache(
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&IterateFileCacheInternal,
-                 file_cache_,
+                 metadata_,
                  google_apis::CreateRelayCallback(iteration_callback)),
       completion_callback);
 }

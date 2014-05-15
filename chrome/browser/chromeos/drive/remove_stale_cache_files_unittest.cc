@@ -8,7 +8,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -60,65 +59,54 @@ class RemoveStaleCacheFilesTest : public testing::Test {
 TEST_F(RemoveStaleCacheFilesTest, RemoveStaleCacheFiles) {
   base::FilePath dummy_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_file));
-  std::string local_id("pdf:1a2b3c");
-  std::string md5("abcdef0123456789");
+  std::string md5_metadata("abcdef0123456789"), md5_cache("ABCDEF9876543210");
 
   // Create a stale cache file.
-  EXPECT_EQ(FILE_ERROR_OK,
-            cache_->Store(local_id, md5, dummy_file,
-                          FileCache::FILE_OPERATION_COPY));
-
-  // Verify that the cache entry exists.
-  FileCacheEntry cache_entry;
-  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(local_id, &cache_entry));
-
   ResourceEntry entry;
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
-            resource_metadata_->GetResourceEntryById(local_id, &entry));
+  std::string local_id;
+  entry.mutable_file_specific_info()->set_md5(md5_metadata);
+  entry.set_parent_local_id(util::kDriveGrandRootLocalId);
+  entry.set_title("File.txt");
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry, &local_id));
+
+  EXPECT_EQ(FILE_ERROR_OK,
+            cache_->Store(local_id, md5_cache, dummy_file,
+                          FileCache::FILE_OPERATION_COPY));
 
   // Remove stale cache files.
   RemoveStaleCacheFiles(cache_.get(), resource_metadata_.get());
 
-  // Verify that the cache entry is deleted.
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
-            cache_->GetCacheEntry(local_id, &cache_entry));
+  // Verify that the cache is deleted.
+  EXPECT_EQ(FILE_ERROR_OK,
+            resource_metadata_->GetResourceEntryById(local_id, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_present());
 }
 
 TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
   base::FilePath dummy_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_file));
 
-  // Dirty and deleted (= absent in resource_metada) cache entry.
-  std::string local_id_1("file:1");
-  EXPECT_EQ(FILE_ERROR_OK,
-            cache_->Store(local_id_1, std::string(), dummy_file,
-                          FileCache::FILE_OPERATION_COPY));
-
-  // Dirty and mismatching-MD5 entry.
-  std::string md5_2_cache("0123456789abcdef");
-  std::string md5_2_metadata("abcdef0123456789");
+  // Dirty entry.
+  std::string md5_metadata("abcdef0123456789");
 
   ResourceEntry entry;
-  std::string local_id_2;
-  entry.set_resource_id("resource_id");
-  entry.mutable_file_specific_info()->set_md5(md5_2_metadata);
+  std::string local_id;
+  entry.mutable_file_specific_info()->set_md5(md5_metadata);
   entry.set_parent_local_id(util::kDriveGrandRootLocalId);
   entry.set_title("file.txt");
-  resource_metadata_->AddEntry(entry, &local_id_2);
+  EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(entry, &local_id));
 
   EXPECT_EQ(FILE_ERROR_OK,
-            cache_->Store(local_id_2, std::string(), dummy_file,
+            cache_->Store(local_id, std::string(), dummy_file,
                           FileCache::FILE_OPERATION_COPY));
 
   // Remove stale cache files.
   RemoveStaleCacheFiles(cache_.get(), resource_metadata_.get());
 
-  // Dirty cache should be removed if and only if the entry does not exist in
-  // resource_metadata.
-  FileCacheEntry cache_entry;
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
-            cache_->GetCacheEntry(local_id_1, &cache_entry));
-  EXPECT_EQ(FILE_ERROR_OK, cache_->GetCacheEntry(local_id_2, &cache_entry));
+  // Dirty cache should not be removed even though its MD5 doesn't match.
+  EXPECT_EQ(FILE_ERROR_OK,
+            resource_metadata_->GetResourceEntryById(local_id, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
 }
 
 }  // namespace internal

@@ -78,11 +78,6 @@ FileError FileCache::GetCacheEntry(const std::string& id,
   return storage_->GetCacheEntry(id, entry);
 }
 
-scoped_ptr<FileCache::Iterator> FileCache::GetIterator() {
-  AssertOnSequencedWorkerPool();
-  return storage_->GetCacheEntryIterator();
-}
-
 bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   AssertOnSequencedWorkerPool();
 

@@ -88,28 +88,23 @@ void CollectBacklog(ResourceMetadata* metadata,
 void CheckExistingPinnedFiles(ResourceMetadata* metadata,
                               FileCache* cache,
                               std::vector<std::string>* local_ids) {
-  scoped_ptr<FileCache::Iterator> it = cache->GetIterator();
+  scoped_ptr<ResourceMetadata::Iterator> it = metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    const FileCacheEntry& cache_entry = it->GetValue();
+    const ResourceEntry& entry = it->GetValue();
+    const FileCacheEntry& cache_state =
+        entry.file_specific_info().cache_state();
     const std::string& local_id = it->GetID();
-    if (!cache_entry.is_pinned() || !cache_entry.is_present())
+    if (!cache_state.is_pinned() || !cache_state.is_present())
       continue;
-
-    ResourceEntry entry;
-    FileError error = metadata->GetResourceEntryById(local_id, &entry);
-    if (error != FILE_ERROR_OK) {
-      LOG(WARNING) << "Entry not found: " << local_id;
-      continue;
-    }
 
     // If MD5s don't match, it indicates the local cache file is stale, unless
     // the file is dirty (the MD5 is "local"). We should never re-fetch the
     // file when we have a locally modified version.
-    if (entry.file_specific_info().md5() == cache_entry.md5() ||
-        cache_entry.is_dirty())
+    if (entry.file_specific_info().md5() == cache_state.md5() ||
+        cache_state.is_dirty())
       continue;
 
-    error = cache->Remove(local_id);
+    FileError error = cache->Remove(local_id);
     if (error != FILE_ERROR_OK) {
       LOG(WARNING) << "Failed to remove cache entry: " << local_id;
       continue;

@@ -4,10 +4,6 @@
 
 #include "chrome/browser/chromeos/drive/remove_stale_cache_files.h"
 
-#include <string>
-#include <vector>
-
-#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -18,17 +14,14 @@ namespace internal {
 
 void RemoveStaleCacheFiles(FileCache* cache,
                            ResourceMetadata* resource_metadata) {
-  std::vector<std::string> resource_ids_to_be_removed;
-
-  scoped_ptr<FileCache::Iterator> it = cache->GetIterator();
+  scoped_ptr<ResourceMetadata::Iterator> it = resource_metadata->GetIterator();
   for (; !it->IsAtEnd(); it->Advance()) {
-    ResourceEntry entry;
-    FileError error = resource_metadata->GetResourceEntryById(it->GetID(),
-                                                              &entry);
-    // Stale = the entry is not found, or not dirty but the MD5 does not match.
-    if (error != FILE_ERROR_OK ||
-        (!it->GetValue().is_dirty() &&
-         it->GetValue().md5() != entry.file_specific_info().md5())) {
+    const ResourceEntry& entry = it->GetValue();
+    const FileCacheEntry& cache_state =
+        entry.file_specific_info().cache_state();
+    // Stale = not dirty but the MD5 does not match.
+    if (!cache_state.is_dirty() &&
+        cache_state.md5() != entry.file_specific_info().md5()) {
       FileError error = cache->Remove(it->GetID());
       LOG_IF(WARNING, error != FILE_ERROR_OK)
           << "Failed to remove a stale cache file. resource_id: "

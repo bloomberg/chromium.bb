@@ -11,7 +11,7 @@ namespace internal {
 class FileCache;
 class ResourceMetadata;
 
-// Removes files from |cache| which are not present in |resource_metadata|.
+// Removes files from |cache| which are not dirty but the MD5 is obsolete.
 // Must be run on the same task runner as |cache| and |resource_metadata| use.
 void RemoveStaleCacheFiles(FileCache* cache,
                            ResourceMetadata* resource_metadata);

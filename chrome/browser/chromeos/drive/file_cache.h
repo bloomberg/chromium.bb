@@ -45,8 +45,6 @@ class FileCache {
     FILE_OPERATION_COPY,
   };
 
-  typedef ResourceMetadataStorage::CacheEntryIterator Iterator;
-
   // |cache_file_directory| stores cached files.
   //
   // |blocking_task_runner| indicates the blocking worker pool for cache
@@ -71,9 +69,6 @@ class FileCache {
   // Gets the cache entry for file corresponding to |id| and returns true if
   // entry exists in cache map.
   FileError GetCacheEntry(const std::string& id, FileCacheEntry* entry);
-
-  // Returns an object to iterate over entries.
-  scoped_ptr<Iterator> GetIterator();
 
   // Frees up disk space to store a file with |num_bytes| size content, while
   // keeping cryptohome::kMinFreeSpaceInBytes bytes on the disk, if needed.

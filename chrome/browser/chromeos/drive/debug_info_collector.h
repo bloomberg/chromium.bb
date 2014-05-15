@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
-#include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 
 namespace drive {
@@ -27,8 +26,7 @@ class DebugInfoCollector {
                               const FileCacheEntry& cache_entry)>
       IterateFileCacheCallback;
 
-  DebugInfoCollector(internal::FileCache* file_cache,
-                     internal::ResourceMetadata* metadata,
+  DebugInfoCollector(internal::ResourceMetadata* metadata,
                      FileSystemInterface* file_system,
                      base::SequencedTaskRunner* blocking_task_runner);
   ~DebugInfoCollector();
@@ -55,7 +53,6 @@ class DebugInfoCollector {
   void GetMetadata(const GetFilesystemMetadataCallback& callback);
 
  private:
-  internal::FileCache* file_cache_;  // Not owned.
   internal::ResourceMetadata* metadata_;  // No owned.
   FileSystemInterface* file_system_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
