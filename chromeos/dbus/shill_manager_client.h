@@ -86,6 +86,9 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
     // Returns the interactive delay specified on the command line, 0 for none.
     virtual int GetInteractiveDelay() const = 0;
 
+    // Sets the 'best' service to connect to on a ConnectToBestServices call.
+    virtual void SetBestServiceToConnect(const std::string& service_path) = 0;
+
    protected:
     virtual ~TestInterface() {}
   };

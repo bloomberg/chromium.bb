@@ -406,19 +406,21 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
 
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForUserhash(userhash);
-  if (!profile) {
+  if (profile) {
+    scoped_refptr<PolicyApplicator> applicator =
+        new PolicyApplicator(weak_ptr_factory_.GetWeakPtr(),
+                             *profile,
+                             policies->per_network_config,
+                             policies->global_network_config,
+                             &modified_policies);
+    applicator->Run();
+  } else {
     VLOG(1) << "The relevant Shill profile isn't initialized yet, postponing "
             << "policy application.";
-    return;
+    // See OnProfileAdded.
   }
 
-  scoped_refptr<PolicyApplicator> applicator =
-      new PolicyApplicator(weak_ptr_factory_.GetWeakPtr(),
-                           *profile,
-                           policies->per_network_config,
-                           policies->global_network_config,
-                           &modified_policies);
-  applicator->Run();
+  FOR_EACH_OBSERVER(NetworkPolicyObserver, observers_, PolicyChanged(userhash));
 }
 
 void ManagedNetworkConfigurationHandlerImpl::OnProfileAdded(
@@ -429,6 +431,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileAdded(
   if (!policies) {
     VLOG(1) << "The relevant policy is not initialized, "
             << "postponing policy application.";
+    // See SetPolicy.
     return;
   }
 

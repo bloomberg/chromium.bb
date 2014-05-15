@@ -21,6 +21,7 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/tpm_token_loader.h"
+#include "components/onc/onc_constants.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "net/base/crypto_module.h"

@@ -102,8 +102,9 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
 
  private:
   friend class ClientCertResolverTest;
-  friend class NetworkHandler;
   friend class ManagedNetworkConfigurationHandlerTest;
+  friend class NetworkConnectionHandlerTest;
+  friend class NetworkHandler;
 
   struct Policies;
   typedef std::map<std::string, linked_ptr<Policies> > UserToPoliciesMap;

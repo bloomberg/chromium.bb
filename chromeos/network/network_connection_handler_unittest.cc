@@ -7,18 +7,24 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/cert_loader.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/tpm_token_loader.h"
+#include "components/onc/onc_constants.h"
 #include "crypto/nss_util.h"
 #include "crypto/nss_util_internal.h"
 #include "net/base/net_errors.h"
@@ -46,8 +52,11 @@ namespace chromeos {
 
 class NetworkConnectionHandlerTest : public testing::Test {
  public:
-  NetworkConnectionHandlerTest() : user_("userhash") {
-  }
+  NetworkConnectionHandlerTest()
+      : user_("userhash"),
+        test_manager_client_(NULL),
+        test_service_client_(NULL) {}
+
   virtual ~NetworkConnectionHandlerTest() {
   }
 
@@ -68,26 +77,50 @@ class NetworkConnectionHandlerTest : public testing::Test {
     CertLoader* cert_loader = CertLoader::Get();
     cert_loader->force_hardware_backed_for_test();
 
-    // Initialize DBusThreadManager with a stub implementation.
-    DBusThreadManager::InitializeWithStub();
-    base::RunLoop().RunUntilIdle();
-    DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()
-        ->ClearServices();
+    FakeDBusThreadManager* dbus_manager = new FakeDBusThreadManager;
+    dbus_manager->SetFakeClients();
+    DBusThreadManager::InitializeForTesting(dbus_manager);
+    test_manager_client_ =
+        dbus_manager->GetShillManagerClient()->GetTestInterface();
+    test_service_client_ =
+        dbus_manager->GetShillServiceClient()->GetTestInterface();
+
+    test_manager_client_->AddTechnology(shill::kTypeWifi, true /* enabled */);
+    dbus_manager->GetShillDeviceClient()->GetTestInterface()->AddDevice(
+        "/device/wifi1", shill::kTypeWifi, "wifi_device1");
+    test_manager_client_->AddTechnology(shill::kTypeCellular,
+                                        true /* enabled */);
+    dbus_manager->GetShillProfileClient()->GetTestInterface()->AddProfile(
+        "profile_path", std::string() /* shared profile */);
+
     base::RunLoop().RunUntilIdle();
     LoginState::Initialize();
     network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
-    network_configuration_handler_.reset(
+    network_config_handler_.reset(
         NetworkConfigurationHandler::InitializeForTest(
             network_state_handler_.get()));
 
+    network_profile_handler_.reset(new NetworkProfileHandler());
+    network_profile_handler_->Init(network_state_handler_.get());
+
+    managed_config_handler_.reset(new ManagedNetworkConfigurationHandlerImpl());
+    managed_config_handler_->Init(network_state_handler_.get(),
+                                  network_profile_handler_.get(),
+                                  network_config_handler_.get());
+
     network_connection_handler_.reset(new NetworkConnectionHandler);
     network_connection_handler_->Init(network_state_handler_.get(),
-                                      network_configuration_handler_.get());
+                                      network_config_handler_.get(),
+                                      managed_config_handler_.get());
+
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual void TearDown() OVERRIDE {
+    managed_config_handler_.reset();
+    network_profile_handler_.reset();
     network_connection_handler_.reset();
-    network_configuration_handler_.reset();
+    network_config_handler_.reset();
     network_state_handler_.reset();
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
@@ -152,8 +185,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
                                        const std::string& key) {
     std::string result;
     const base::DictionaryValue* properties =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()->
-        GetServiceProperties(service_path);
+        test_service_client_->GetServiceProperties(service_path);
     if (properties)
       properties->GetStringWithoutPathExpansion(key, &result);
     return result;
@@ -161,6 +193,12 @@ class NetworkConnectionHandlerTest : public testing::Test {
 
   void StartCertLoader() {
     CertLoader::Get()->StartWithNSSDB(test_nssdb_.get());
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void LoginToRegularUser() {
+    LoginState::Get()->SetLoggedInState(LoginState::LOGGED_IN_ACTIVE,
+                                        LoginState::LOGGED_IN_USER_REGULAR);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -181,10 +219,47 @@ class NetworkConnectionHandlerTest : public testing::Test {
     ASSERT_EQ(1U, loaded_certs->size());
   }
 
+  void SetupPolicy() {
+    const char* kNetworkConfigs =
+        "[ { \"GUID\": \"wifi1\","
+        "    \"Name\": \"wifi1\","
+        "    \"Type\": \"WiFi\","
+        "    \"WiFi\": {"
+        "      \"Security\": \"WPA-PSK\","
+        "      \"SSID\": \"wifi1\","
+        "      \"Passphrase\": \"passphrase\""
+        "    }"
+        "} ]";
+
+    std::string error;
+    scoped_ptr<base::Value> network_configs_value(
+        base::JSONReader::ReadAndReturnError(
+            kNetworkConfigs, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
+    ASSERT_TRUE(network_configs_value) << error;
+
+    base::ListValue* network_configs = NULL;
+    ASSERT_TRUE(network_configs_value->GetAsList(&network_configs));
+
+    base::DictionaryValue global_config;
+    global_config.SetBooleanWithoutPathExpansion(
+        ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+        true);
+
+    managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
+                                       "", // userhash
+                                       *network_configs,
+                                       global_config);
+    base::RunLoop().RunUntilIdle();
+  }
+
   scoped_ptr<NetworkStateHandler> network_state_handler_;
-  scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
+  scoped_ptr<NetworkConfigurationHandler> network_config_handler_;
   scoped_ptr<NetworkConnectionHandler> network_connection_handler_;
+  scoped_ptr<ManagedNetworkConfigurationHandlerImpl> managed_config_handler_;
+  scoped_ptr<NetworkProfileHandler> network_profile_handler_;
   crypto::ScopedTestNSSChromeOSUser user_;
+  ShillManagerClient::TestInterface* test_manager_client_;
+  ShillServiceClient::TestInterface* test_service_client_;
   scoped_ptr<net::NSSCertDatabaseChromeOS> test_nssdb_;
   base::MessageLoopForUI message_loop_;
   std::string result_;
@@ -326,6 +401,64 @@ TEST_F(NetworkConnectionHandlerTest,
   EXPECT_TRUE(Configure(kConfigConnectable));
   Disconnect("wifi0");
   EXPECT_EQ(NetworkConnectionHandler::kErrorNotConnected, GetResultAndReset());
+}
+
+namespace {
+
+const char* kConfigUnmanagedSharedConnected =
+    "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"online\" }";
+const char* kConfigManagedSharedConnectable =
+    "{ \"GUID\": \"wifi1\", \"Type\": \"wifi\", \"State\": \"idle\", "
+    "  \"Connectable\": true }";
+
+}  // namespace
+
+TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginEarlyPolicyLoading) {
+  EXPECT_TRUE(Configure(kConfigUnmanagedSharedConnected));
+  EXPECT_TRUE(Configure(kConfigManagedSharedConnectable));
+  test_manager_client_->SetBestServiceToConnect("wifi1");
+
+  // User login shouldn't trigger any change because policy is not loaded yet.
+  LoginToRegularUser();
+  EXPECT_EQ(shill::kStateOnline,
+            GetServiceStringProperty("wifi0", shill::kStateProperty));
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi1", shill::kStateProperty));
+
+  // Policy application should disconnect from the shared and unmanaged network.
+  SetupPolicy();
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi0", shill::kStateProperty));
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi1", shill::kStateProperty));
+
+  // Certificate loading should trigger connecting to the 'best' network.
+  StartCertLoader();
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi0", shill::kStateProperty));
+  EXPECT_EQ(shill::kStateOnline,
+            GetServiceStringProperty("wifi1", shill::kStateProperty));
+}
+
+TEST_F(NetworkConnectionHandlerTest, ReconnectOnLoginLatePolicyLoading) {
+  EXPECT_TRUE(Configure(kConfigUnmanagedSharedConnected));
+  EXPECT_TRUE(Configure(kConfigManagedSharedConnectable));
+  test_manager_client_->SetBestServiceToConnect("wifi1");
+
+  // User login and certificate loading shouldn't trigger any change until the
+  // policy is loaded.
+  LoginToRegularUser();
+  StartCertLoader();
+  EXPECT_EQ(shill::kStateOnline,
+            GetServiceStringProperty("wifi0", shill::kStateProperty));
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi1", shill::kStateProperty));
+
+  SetupPolicy();
+  EXPECT_EQ(shill::kStateIdle,
+            GetServiceStringProperty("wifi0", shill::kStateProperty));
+  EXPECT_EQ(shill::kStateOnline,
+            GetServiceStringProperty("wifi1", shill::kStateProperty));
 }
 
 }  // namespace chromeos

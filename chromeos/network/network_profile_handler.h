@@ -61,6 +61,7 @@ class CHROMEOS_EXPORT NetworkProfileHandler
 
  protected:
   friend class ClientCertResolverTest;
+  friend class NetworkConnectionHandlerTest;
   friend class NetworkHandler;
   NetworkProfileHandler();
 

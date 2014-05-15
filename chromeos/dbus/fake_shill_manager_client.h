@@ -103,6 +103,8 @@ class CHROMEOS_EXPORT FakeShillManagerClient
   virtual void SortManagerServices() OVERRIDE;
   virtual void SetupDefaultEnvironment() OVERRIDE;
   virtual int GetInteractiveDelay() const OVERRIDE;
+  virtual void SetBestServiceToConnect(
+      const std::string& service_path) OVERRIDE;
 
  private:
   void AddServiceToWatchList(const std::string& service_path);
@@ -150,6 +152,9 @@ class CHROMEOS_EXPORT FakeShillManagerClient
 
   // Track the default service for signaling Manager.DefaultService.
   std::string default_service_;
+
+  // 'Best' service to connect to on ConnectToBestServices() calls.
+  std::string best_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeShillManagerClient);
 };

@@ -14,6 +14,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/client_cert_util.h"
+#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler_callbacks.h"
@@ -149,9 +150,11 @@ struct NetworkConnectionHandler::ConnectRequest {
 NetworkConnectionHandler::NetworkConnectionHandler()
     : cert_loader_(NULL),
       network_state_handler_(NULL),
-      network_configuration_handler_(NULL),
+      configuration_handler_(NULL),
       logged_in_(false),
-      certificates_loaded_(false) {
+      certificates_loaded_(false),
+      applied_autoconnect_policy_(false),
+      requested_connect_to_best_network_(false) {
 }
 
 NetworkConnectionHandler::~NetworkConnectionHandler() {
@@ -165,12 +168,10 @@ NetworkConnectionHandler::~NetworkConnectionHandler() {
 
 void NetworkConnectionHandler::Init(
     NetworkStateHandler* network_state_handler,
-    NetworkConfigurationHandler* network_configuration_handler) {
-  if (LoginState::IsInitialized()) {
+    NetworkConfigurationHandler* network_configuration_handler,
+    ManagedNetworkConfigurationHandler* managed_network_configuration_handler) {
+  if (LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
-    logged_in_ = LoginState::Get()->IsUserLoggedIn();
-    logged_in_time_ = base::TimeTicks::Now();
-  }
 
   if (CertLoader::IsInitialized()) {
     cert_loader_ = CertLoader::Get();
@@ -189,15 +190,30 @@ void NetworkConnectionHandler::Init(
     network_state_handler_ = network_state_handler;
     network_state_handler_->AddObserver(this, FROM_HERE);
   }
-  network_configuration_handler_ = network_configuration_handler;
+  configuration_handler_ = network_configuration_handler;
+
+  if (managed_network_configuration_handler) {
+    managed_configuration_handler_ = managed_network_configuration_handler;
+    managed_configuration_handler_->AddObserver(this);
+  }
+
+  // After this point, the NetworkConnectionHandler is fully initialized (all
+  // handler references set, observers registered, ...).
+
+  if (LoginState::IsInitialized())
+    LoggedInStateChanged();
 }
 
 void NetworkConnectionHandler::LoggedInStateChanged() {
-  if (LoginState::Get()->IsUserLoggedIn()) {
-    logged_in_ = true;
-    NET_LOG_EVENT("Logged In", "");
-    logged_in_time_ = base::TimeTicks::Now();
-  }
+  LoginState* login_state = LoginState::Get();
+  if (logged_in_ || !login_state->IsUserLoggedIn())
+    return;
+
+  NET_LOG_EVENT("Logged In", "");
+  logged_in_ = true;
+  logged_in_time_ = base::TimeTicks::Now();
+
+  DisconnectIfPolicyRequires();
 }
 
 void NetworkConnectionHandler::OnCertificatesLoaded(
@@ -208,9 +224,17 @@ void NetworkConnectionHandler::OnCertificatesLoaded(
   if (queued_connect_) {
     ConnectToQueuedNetwork();
   } else if (initial_load) {
-    // Once certificates have loaded, connect to the "best" available network.
-    network_state_handler_->ConnectToBestWifiNetwork();
+    // Connecting to the "best" available network requires certificates to be
+    // loaded. Try to connect now.
+    ConnectToBestNetworkAfterLogin();
   }
+}
+
+void NetworkConnectionHandler::PolicyChanged(const std::string& userhash) {
+  // Ignore user policies.
+  if (!userhash.empty())
+    return;
+  DisconnectIfPolicyRequires();
 }
 
 void NetworkConnectionHandler::ConnectToNetwork(
@@ -287,7 +311,7 @@ void NetworkConnectionHandler::ConnectToNetwork(
   // Request additional properties to check. VerifyConfiguredAndConnect will
   // use only these properties, not cached properties, to ensure that they
   // are up to date after any recent configuration.
-  network_configuration_handler_->GetProperties(
+  configuration_handler_->GetProperties(
       service_path,
       base::Bind(&NetworkConnectionHandler::VerifyConfiguredAndConnect,
                  AsWeakPtr(), check_error_state),
@@ -495,7 +519,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
   if (!config_properties.empty()) {
     NET_LOG_EVENT("Configuring Network", service_path);
-    network_configuration_handler_->SetProperties(
+    configuration_handler_->SetProperties(
         service_path,
         config_properties,
         base::Bind(&NetworkConnectionHandler::CallShillConnect,
@@ -662,8 +686,9 @@ void NetworkConnectionHandler::CheckPendingRequest(
     NET_LOG_EVENT("Connect Request Succeeded", service_path);
     if (!request->profile_path.empty()) {
       // If a profile path was specified, set it on a successful connection.
-      network_configuration_handler_->SetNetworkProfile(
-          service_path, request->profile_path,
+      configuration_handler_->SetNetworkProfile(
+          service_path,
+          request->profile_path,
           base::Bind(&base::DoNothing),
           chromeos::network_handler::ErrorCallback());
     }
@@ -757,6 +782,69 @@ void NetworkConnectionHandler::HandleShillDisconnectSuccess(
   NET_LOG_EVENT("Disconnect Request Sent", service_path);
   if (!success_callback.is_null())
     success_callback.Run();
+}
+
+void NetworkConnectionHandler::ConnectToBestNetworkAfterLogin() {
+  if (requested_connect_to_best_network_ || !applied_autoconnect_policy_ ||
+      !certificates_loaded_) {
+    return;
+  }
+
+  requested_connect_to_best_network_ = true;
+  network_state_handler_->ConnectToBestWifiNetwork();
+}
+
+void NetworkConnectionHandler::DisconnectIfPolicyRequires() {
+  if (applied_autoconnect_policy_ || !LoginState::Get()->IsUserLoggedIn())
+    return;
+
+  const base::DictionaryValue* global_network_config =
+      managed_configuration_handler_->GetGlobalConfigFromPolicy(std::string());
+  if (!global_network_config)
+    return;
+
+  applied_autoconnect_policy_ = true;
+
+  bool only_policy_autoconnect = false;
+  global_network_config->GetBooleanWithoutPathExpansion(
+      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
+      &only_policy_autoconnect);
+
+  if (!only_policy_autoconnect)
+    return;
+
+  NET_LOG_DEBUG("DisconnectIfPolicyRequires",
+                "Disconnecting unmanaged and shared networks if any exist.");
+
+  // Get the list of unmanaged & shared networks that are connected or
+  // connecting.
+  NetworkStateHandler::NetworkStateList networks;
+  network_state_handler_->GetNetworkListByType(NetworkTypePattern::Wireless(),
+                                               &networks);
+  for (NetworkStateHandler::NetworkStateList::const_iterator it =
+           networks.begin();
+       it != networks.end();
+       ++it) {
+    const NetworkState* network = *it;
+    if (!(network->IsConnectingState() || network->IsConnectedState()))
+      break;  // Connected and connecting networks are listed first.
+
+    if (network->IsPrivate())
+      continue;
+
+    const bool network_is_policy_managed =
+        !network->profile_path().empty() && !network->guid().empty() &&
+        managed_configuration_handler_->FindPolicyByGuidAndProfile(
+            network->guid(), network->profile_path());
+    if (network_is_policy_managed)
+      continue;
+
+    NET_LOG_EVENT("Disconnect Forced by Policy", network->path());
+    CallShillDisconnect(
+        network->path(), base::Closure(), network_handler::ErrorCallback());
+  }
+
+  ConnectToBestNetworkAfterLogin();
 }
 
 }  // namespace chromeos

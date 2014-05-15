@@ -332,6 +332,13 @@ void FakeShillManagerClient::VerifyAndEncryptData(
 void FakeShillManagerClient::ConnectToBestServices(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  if (best_service_.empty()) {
+    VLOG(1) << "No 'best' service set.";
+    return;
+  }
+
+  DBusThreadManager::Get()->GetShillServiceClient()->Connect(
+      dbus::ObjectPath(best_service_), callback, error_callback);
 }
 
 ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
@@ -545,6 +552,11 @@ void FakeShillManagerClient::SortManagerServices() {
 
 int FakeShillManagerClient::GetInteractiveDelay() const {
   return interactive_delay_;
+}
+
+void FakeShillManagerClient::SetBestServiceToConnect(
+    const std::string& service_path) {
+  best_service_ = service_path;
 }
 
 void FakeShillManagerClient::SetupDefaultEnvironment() {
@@ -898,8 +910,6 @@ base::ListValue* FakeShillManagerClient::GetEnabledServiceList(
         LOG(ERROR) << "Properties not found for service: " << service_path;
         continue;
       }
-      std::string name;
-      properties->GetString(shill::kNameProperty, &name);
       std::string type;
       properties->GetString(shill::kTypeProperty, &type);
       if (TechnologyEnabled(type))

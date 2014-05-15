@@ -19,6 +19,7 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
@@ -46,6 +47,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
     : public LoginState::Observer,
       public CertLoader::Observer,
       public NetworkStateHandlerObserver,
+      public NetworkPolicyObserver,
       public base::SupportsWeakPtr<NetworkConnectionHandler> {
  public:
   // Constants for |error_name| from |error_callback| for Connect.
@@ -136,6 +138,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
                                     bool initial_load) OVERRIDE;
 
+  // NetworkPolicyObserver
+  virtual void PolicyChanged(const std::string& userhash) OVERRIDE;
+
  private:
   friend class NetworkHandler;
   friend class NetworkConnectionHandlerTest;
@@ -145,7 +150,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   NetworkConnectionHandler();
 
   void Init(NetworkStateHandler* network_state_handler,
-            NetworkConfigurationHandler* network_configuration_handler);
+            NetworkConfigurationHandler* network_configuration_handler,
+            ManagedNetworkConfigurationHandler*
+                managed_network_configuration_handler);
 
   ConnectRequest* GetPendingRequest(const std::string& service_path);
 
@@ -203,11 +210,28 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void HandleShillDisconnectSuccess(const std::string& service_path,
                                     const base::Closure& success_callback);
 
+  // If the policy to prevent unmanaged & shared networks to autoconnect is
+  // enabled, then disconnect all such networks except wired networks. Does
+  // nothing on consecutive calls.
+  // This is enforced once after a user logs in 1) to allow mananged networks to
+  // autoconnect and 2) to prevent a previous user from foisting a network on
+  // the new user. Therefore, this function is called on startup, at login and
+  // when the device policy is changed.
+  void DisconnectIfPolicyRequires();
+
+  // Requests a connect to the 'best' available network once after login and
+  // after any disconnect required by policy is executed (see
+  // DisconnectIfPolicyRequires()). To include networks with client
+  // certificates, no request is sent until certificates are loaded. Therefore,
+  // this function is called on the initial certificate load and by
+  // DisconnectIfPolicyRequires().
+  void ConnectToBestNetworkAfterLogin();
 
   // Local references to the associated handler instances.
   CertLoader* cert_loader_;
   NetworkStateHandler* network_state_handler_;
-  NetworkConfigurationHandler* network_configuration_handler_;
+  NetworkConfigurationHandler* configuration_handler_;
+  ManagedNetworkConfigurationHandler* managed_configuration_handler_;
 
   // Map of pending connect requests, used to prevent repeated attempts while
   // waiting for Shill and to trigger callbacks on eventual success or failure.
@@ -218,6 +242,14 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   bool logged_in_;
   bool certificates_loaded_;
   base::TimeTicks logged_in_time_;
+
+  // Whether the autoconnect policy was applied already, see
+  // DisconnectIfPolicyRequires().
+  bool applied_autoconnect_policy_;
+
+  // Whether the handler already requested a 'ConnectToBestNetwork' after login,
+  // see ConnectToBestNetworkAfterLogin().
+  bool requested_connect_to_best_network_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandler);
 };
