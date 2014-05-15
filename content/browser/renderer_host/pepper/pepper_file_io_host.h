@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/files/file.h"
+#include "base/files/file_proxy.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
@@ -84,6 +85,9 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       base::PassPlatformFile file,
       bool unused_created);
 
+  void OnOpenProxyCallback(ppapi::host::ReplyMessageContext reply_context,
+                           base::File::Error error_code);
+
   void GotUIThreadStuffForInternalFileSystems(
       ppapi::host::ReplyMessageContext reply_context,
       int platform_file_flags,
@@ -95,7 +99,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   void GotResolvedRenderProcessId(
       ppapi::host::ReplyMessageContext reply_context,
       base::FilePath path,
-      int platform_file_flags,
+      int file_flags,
       base::ProcessId resolved_render_process_id);
 
   void DidOpenQuotaFile(ppapi::host::ReplyMessageContext reply_context,
@@ -119,7 +123,7 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   int render_process_id_;
   base::ProcessId resolved_render_process_id_;
 
-  base::PlatformFile file_;
+  base::FileProxy file_;
   int32_t open_flags_;
 
   // The file system type specified in the Open() call. This will be
@@ -136,8 +140,6 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   bool check_quota_;
 
   ppapi::FileIOStateManager state_manager_;
-
-  scoped_refptr<base::MessageLoopProxy> file_message_loop_;
 
   base::WeakPtrFactory<PepperFileIOHost> weak_factory_;
 

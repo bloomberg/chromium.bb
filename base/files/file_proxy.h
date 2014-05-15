@@ -33,12 +33,9 @@ class Time;
 // In other words, having a sequence like
 //
 //   proxy.Write(...);
-//   delete proxy;
+//   proxy.Write(...);
 //
-// will keep the file valid during the Write operation but will cause the file
-// to be closed in the current thread, when the operation finishes. If Close is
-// called right away after Write, the second call will fail because there is an
-// operation in progress.
+// means the second Write will always fail.
 class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
  public:
   // This callback is used by methods that report only an error code. It is
@@ -88,7 +85,13 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
   // length to simulate a new file), and false otherwise.
   bool created() const { return file_.created(); }
 
+  // Claims ownership of |file|. It is an error to call this method when
+  // IsValid() returns true.
+  void SetFile(File file);
+
   File TakeFile();
+
+  PlatformFile GetPlatformFile() const;
 
   // Proxies File::Close. The callback can be null.
   // This returns false if task posting to |task_runner| has failed.
@@ -127,7 +130,6 @@ class BASE_EXPORT FileProxy : public SupportsWeakPtr<FileProxy> {
 
  private:
   friend class FileHelper;
-  void SetFile(File file);
   TaskRunner* task_runner() { return task_runner_.get(); }
 
   scoped_refptr<TaskRunner> task_runner_;

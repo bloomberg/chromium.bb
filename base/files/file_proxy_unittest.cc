@@ -207,6 +207,20 @@ TEST_F(FileProxyTest, CreateTemporary) {
   EXPECT_TRUE(base::DeleteFile(path_, false));
 }
 
+TEST_F(FileProxyTest, SetAndTake) {
+  File file(test_path(), File::FLAG_CREATE | File::FLAG_READ);
+  ASSERT_TRUE(file.IsValid());
+  FileProxy proxy(file_task_runner());
+  EXPECT_FALSE(proxy.IsValid());
+  proxy.SetFile(file.Pass());
+  EXPECT_TRUE(proxy.IsValid());
+  EXPECT_FALSE(file.IsValid());
+
+  file = proxy.TakeFile();
+  EXPECT_FALSE(proxy.IsValid());
+  EXPECT_TRUE(file.IsValid());
+}
+
 TEST_F(FileProxyTest, GetInfo) {
   // Setup.
   ASSERT_EQ(4, base::WriteFile(test_path(), "test", 4));

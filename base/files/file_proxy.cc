@@ -265,8 +265,17 @@ bool FileProxy::IsValid() const {
   return file_.IsValid();
 }
 
+void FileProxy::SetFile(File file) {
+  DCHECK(!file_.IsValid());
+  file_ = file.Pass();
+}
+
 File FileProxy::TakeFile() {
   return file_.Pass();
+}
+
+PlatformFile FileProxy::GetPlatformFile() const {
+  return file_.GetPlatformFile();
 }
 
 bool FileProxy::Close(const StatusCallback& callback) {
@@ -345,11 +354,6 @@ bool FileProxy::Flush(const StatusCallback& callback) {
       FROM_HERE,
       Bind(&GenericFileHelper::Flush, Unretained(helper)),
       Bind(&GenericFileHelper::Reply, Owned(helper), callback));
-}
-
-void FileProxy::SetFile(File file) {
-  DCHECK(!file_.IsValid());
-  file_ = file.Pass();
 }
 
 }  // namespace base
