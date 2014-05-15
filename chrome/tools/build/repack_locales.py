@@ -80,8 +80,8 @@ def calc_inputs(locale):
                 'component_strings_%s.pak' % locale))
 
   if USE_ASH:
-    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash_strings/ash_strings_da.pak',
-    inputs.append(os.path.join(SHARE_INT_DIR, 'ash_strings',
+    #e.g. '<(SHARED_INTERMEDIATE_DIR)/ash/strings/ash_strings_da.pak',
+    inputs.append(os.path.join(SHARE_INT_DIR, 'ash', 'strings',
                   'ash_strings_%s.pak' % locale))
 
   if OS != 'ios':
