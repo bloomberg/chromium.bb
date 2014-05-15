@@ -205,7 +205,7 @@ def GetGitSyncCmdsCallback(revisions):
     return [command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS[component],
                                 '%(output)s',
                                 revisions[component]),
-            command.Runnable(pnacl_commands.CmdCheckoutGitBundleForTrybot,
+            command.Runnable(None, pnacl_commands.CmdCheckoutGitBundleForTrybot,
                              component, '%(output)s')]
   return GetGitSyncCmds
 
@@ -324,7 +324,7 @@ def HostTools(host, options):
         'output_subdir': BinSubdir(host),
         'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'driver')},
         'commands': [
-            command.Runnable(pnacl_commands.InstallDriverScripts,
+            command.Runnable(None, pnacl_commands.InstallDriverScripts,
                              '%(src)s', '%(output)s',
                              host_windows=TripleIsWindows(host),
                              host_64bit=IsHost64(host))

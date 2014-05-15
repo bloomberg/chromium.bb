@@ -67,7 +67,7 @@ def CopyDriverForTargetLib(host):
   return [
       command.RemoveDirectory('driver'),
       command.Mkdir('driver'),
-      command.Runnable(pnacl_commands.InstallDriverScripts,
+      command.Runnable(None, pnacl_commands.InstallDriverScripts,
                        '%(driver)s', '%(cwd)s/driver',
                        host_windows=TripleIsWindows(host),
                        host_64bit=fnmatch.fnmatch(host, '*x86_64*'),

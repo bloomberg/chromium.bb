@@ -27,6 +27,7 @@ import archive_info
 import package_info
 
 import once
+import command_options
 
 DEFAULT_CACHE_DIR = os.path.join(SCRIPT_DIR, 'cache')
 DEFAULT_SRC_DIR = os.path.join(SCRIPT_DIR, 'src')
@@ -102,9 +103,6 @@ class PackageBuilder(object):
                # output will go into the root of the output directory.
             'commands':
               [<list of command.Command objects to run>],
-              # Objects that have a 'skip_for_incremental' attribute that
-              # evaluates to True will not be run on incremental builds unless
-              # the working directory is empty.
           },
         }
       package_targets: A dictionary with the following format. This is a
@@ -232,14 +230,20 @@ class PackageBuilder(object):
       os.makedirs(output_subdir)
 
     commands = package_info.get('commands', [])
-    if not self._options.clobber and len(os.listdir(work_dir)) > 0:
-      commands = [cmd for cmd in commands if
-                  not (hasattr(cmd, 'skip_for_incremental') and
-                       cmd.skip_for_incremental)]
+
+    # Create a command option object specifying current build.
+    cmd_options = command_options.CommandOptions(
+        work_dir=work_dir,
+        clobber_working=self._options.clobber,
+        clobber_source=self._options.clobber_source,
+        trybot=self._options.trybot,
+        buildbot=self._options.buildbot)
+
     # Do it.
     self._build_once.Run(
         package, inputs, output,
         commands=commands,
+        cmd_options=cmd_options,
         working_dir=work_dir,
         memoize=not is_source_target,
         signature_file=self._signature_file,

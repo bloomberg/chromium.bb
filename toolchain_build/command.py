@@ -89,10 +89,12 @@ def PlatformEnvironment(extra_paths):
 
 class Runnable(object):
   """An object representing a single command."""
-  def __init__(self, func, *args, **kwargs):
+  def __init__(self, run_cond, func, *args, **kwargs):
     """Construct a runnable which will call 'func' with 'args' and 'kwargs'.
 
     Args:
+      run_cond: If not None, expects a function which takes a CommandOptions
+                object and returns whether or not to run the command.
       func: Function which will be called by Invoke
       args: Positional arguments to be passed to func
       kwargs: Keyword arguments to be passed to func
@@ -106,6 +108,7 @@ class Runnable(object):
       When 'func' is called, its first argument will be a substitution object
       which it can use to substitute %-templates in its arguments.
     """
+    self._run_cond = run_cond
     self._func = func
     self._args = args or []
     self._kwargs = kwargs or {}
@@ -156,11 +159,13 @@ class Runnable(object):
 
     return '\n'.join(values)
 
-  def Invoke(self, subst):
+  def Invoke(self, cmd_options, subst):
+    if self._run_cond and not self._run_cond(cmd_options):
+      return False
     return self._func(subst, *self._args, **self._kwargs)
 
 
-def Command(command, stdout=None, **kwargs):
+def Command(command, stdout=None, run_cond=None, **kwargs):
   """Return a Runnable which invokes 'command' with check_call.
 
   Args:
@@ -202,19 +207,29 @@ def Command(command, stdout=None, **kwargs):
 
     pynacl.log_tools.CheckCall(command, stdout=stdout, **check_call_kwargs)
 
-  return Runnable(runcmd, command, stdout, **kwargs)
+  return Runnable(run_cond, runcmd, command, stdout, **kwargs)
 
-def SkipForIncrementalCommand(command, **kwargs):
-  """Return a command which has the skip_for_incremental property set on it.
 
-  This will cause the command to be skipped for incremental builds, if the
-  working directory is not empty.
+def SkipForIncrementalCommand(command, run_cond=None, **kwargs):
+  """Return a command which gets skipped for incremental builds.
+
+  Incremental builds are defined to be when the clobber flag is not on and
+  the working directory is not empty.
   """
-  cmd = Command(command, **kwargs)
-  cmd.skip_for_incremental = True
-  return cmd
+  def SkipForIncrementalCondition(cmd_opts):
+    # Check if caller passed their own run_cond.
+    if run_cond and not run_cond(cmd_opts):
+      return False
 
-def Mkdir(path, parents=False):
+    # Only run when clobbering working directory or working directory is empty.
+    return (cmd_opts.IsClobberWorking() or
+            not os.path.isdir(cmd_opts.GetWorkDir()) or
+            len(os.listdir(cmd_opts.GetWorkDir())) == 0)
+
+  return Command(command, run_cond=SkipForIncrementalCondition, **kwargs)
+
+
+def Mkdir(path, parents=False, run_cond=None):
   """Convenience method for generating mkdir commands."""
   def mkdir(subst, path):
     path = subst.SubstituteAbsPaths(path)
@@ -222,18 +237,18 @@ def Mkdir(path, parents=False):
       os.makedirs(path)
     else:
       os.mkdir(path)
-  return Runnable(mkdir, path)
+  return Runnable(run_cond, mkdir, path)
 
 
-def Copy(src, dst):
+def Copy(src, dst, run_cond=None):
   """Convenience method for generating cp commands."""
   def copy(subst, src, dst):
     shutil.copyfile(subst.SubstituteAbsPaths(src),
                     subst.SubstituteAbsPaths(dst))
-  return Runnable(copy, src, dst)
+  return Runnable(run_cond, copy, src, dst)
 
 
-def CopyTree(src, dst, exclude=[]):
+def CopyTree(src, dst, exclude=[], run_cond=None):
   """Copy a directory tree, excluding a list of top-level entries."""
   def copyTree(subst, src, dst, exclude):
     src = subst.SubstituteAbsPaths(src)
@@ -245,14 +260,14 @@ def CopyTree(src, dst, exclude=[]):
         return []
     pynacl.file_tools.RemoveDirectoryIfPresent(dst)
     shutil.copytree(src, dst, symlinks=True, ignore=ignoreExcludes)
-  return Runnable(copyTree, src, dst, exclude)
+  return Runnable(run_cond, copyTree, src, dst, exclude)
 
 
-def RemoveDirectory(path):
+def RemoveDirectory(path, run_cond=None):
   """Convenience method for generating a command to remove a directory tree."""
   def remove(subst, path):
     pynacl.file_tools.RemoveDirectoryIfPresent(subst.SubstituteAbsPaths(path))
-  return Runnable(remove, path)
+  return Runnable(run_cond, remove, path)
 
 
 def Remove(*args):
@@ -267,42 +282,43 @@ def Remove(*args):
                       (path, arg))
       for f in expanded:
         os.remove(f)
-  return Runnable(remove, *args)
+  return Runnable(None, remove, *args)
 
 
-def Rename(src, dst):
+def Rename(src, dst, run_cond=None):
   """Convenience method for generating a command to rename a file."""
   def rename(subst, src, dst):
     os.rename(subst.SubstituteAbsPaths(src), subst.SubstituteAbsPaths(dst))
-  return Runnable(rename, src, dst)
+  return Runnable(run_cond, rename, src, dst)
 
 
-def WriteData(data, dst):
+def WriteData(data, dst, run_cond=None):
   """Convenience method to write a file with fixed contents."""
   def writedata(subst, dst, data):
     with open(subst.SubstituteAbsPaths(dst), 'wb') as f:
       f.write(data)
-  return Runnable(writedata, dst, data)
+  return Runnable(run_cond, writedata, dst, data)
 
 
 def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
-                pathspec=None):
+                pathspec=None, run_cond=None):
   def sync(subst, url, dest, rev, reclone, clean, pathspec):
     pynacl.repo_tools.SyncGitRepo(url, subst.SubstituteAbsPaths(dest), revision,
                                   reclone, clean, pathspec)
-  return Runnable(sync, url, destination, revision, reclone, clean, pathspec)
+  return Runnable(run_cond, sync, url, destination, revision, reclone, clean,
+                  pathspec)
 
 
-def CleanGitWorkingDir(directory, path):
+def CleanGitWorkingDir(directory, path, run_cond=None):
   """Clean a path in a git checkout, if the checkout directory exists."""
   def clean(subst, directory, path):
     directory = subst.SubstituteAbsPaths(directory)
     if os.path.exists(directory) and len(os.listdir(directory)) > 0:
       pynacl.repo_tools.CleanGitWorkingDir(directory, path)
-  return Runnable(clean, directory, path)
+  return Runnable(run_cond, clean, directory, path)
 
 
-def GenerateGitPatches(git_dir, info):
+def GenerateGitPatches(git_dir, info, run_cond=None):
   """Generate patches from a Git repository.
 
   Args:
@@ -320,7 +336,7 @@ def GenerateGitPatches(git_dir, info):
     <upstream-name>[-g<commit-abbrev>]-nacl.patch: From the result of that
       (or from 'upstream-base' if none above) to 'rev'.
   """
-  def generatePatches(subst, git_dir, info):
+  def generatePatches(subst, git_dir, info, run_cond=None):
     git_dir_flag = '--git-dir=' + subst.SubstituteAbsPaths(git_dir)
     basename = info['upstream-name']
 
@@ -392,4 +408,4 @@ def GenerateGitPatches(git_dir, info):
       for patch in patch_files:
         f.write('\n# %s\n%s\n' % patch)
 
-  return Runnable(generatePatches, git_dir, info)
+  return Runnable(run_cond, generatePatches, git_dir, info)

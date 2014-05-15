@@ -69,11 +69,11 @@ class TestOnce(unittest.TestCase):
       o = once.Once(storage=pynacl.fake_storage.FakeStorage(),
                     print_url=stash_url, system_summary='test')
       o.Run('test', self._input_dirs, self._output_dirs[0],
-            [command.Runnable(Copy,'%(input0)s/in0', '%(output)s/out')])
+            [command.Runnable(None, Copy,'%(input0)s/in0', '%(output)s/out')])
       initial_url = self._url
       self._url = None
       o.Run('test', self._input_dirs, self._output_dirs[1],
-            [command.Runnable(Copy,'%(input0)s/in0', '%(output)s/out')])
+            [command.Runnable(None, Copy,'%(input0)s/in0', '%(output)s/out')])
       self.assertEquals(pynacl.file_tools.ReadFile(self._input_files[0]),
                         pynacl.file_tools.ReadFile(self._output_files[0]))
       self.assertEquals(pynacl.file_tools.ReadFile(self._input_files[0]),
@@ -184,9 +184,9 @@ class TestOnce(unittest.TestCase):
                     use_cached_results=False,
                     system_summary='test')
       o.Run('test', self._input_dirs, self._output_dirs[0],
-            [command.Runnable(Copy,'%(input0)s/in0', '%(output)s/out')])
+            [command.Runnable(None, Copy,'%(input0)s/in0', '%(output)s/out')])
       o.Run('test', self._input_dirs, self._output_dirs[1],
-            [command.Runnable(Copy,'%(input0)s/in0', '%(output)s/out')])
+            [command.Runnable(None, Copy,'%(input0)s/in0', '%(output)s/out')])
       self.assertEquals(2, self._tally)
       self.assertEquals(pynacl.file_tools.ReadFile(self._input_files[0]),
                         pynacl.file_tools.ReadFile(self._output_files[0]))
@@ -242,7 +242,30 @@ class TestOnce(unittest.TestCase):
                     system_summary='test')
       def CheckCores(subst):
         self.assertNotEquals(0, int(subst.Substitute('%(cores)s')))
-      o.Run('test', {}, self._output_dirs[0], [command.Runnable(CheckCores)])
+      o.Run('test', {}, self._output_dirs[0], [command.Runnable(None,
+                                                                CheckCores)])
+
+  def test_RunConditionsFalse(self):
+    # Test that a command uses run conditions to decide whether or not to run.
+    with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+      self.GenerateTestData('Command', work_dir)
+      o = once.Once(storage=pynacl.fake_storage.FakeStorage(),
+                    system_summary='test')
+      o.Run('test', self._input_dirs, self._output_dirs[0],
+            [command.Command([
+                sys.executable, '-c',
+                'import sys; open(sys.argv[1], "wb").write("hello")',
+                '%(output)s/out'],
+                run_cond=lambda cmd_opts: True),
+             command.Command([
+                 sys.executable, '-c',
+                 'import sys; open(sys.argv[1], "wb").write("not hello")',
+                 '%(output)s/out'],
+                 run_cond=lambda cmd_opts: False)])
+      self.assertEquals(
+          'hello',
+          pynacl.file_tools.ReadFile(self._output_files[0])
+      )
 
 if __name__ == '__main__':
   unittest.main()

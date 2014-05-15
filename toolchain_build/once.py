@@ -203,7 +203,7 @@ class Once(object):
     """Returns cached directory item for package or None if not processed."""
     return self._cached_dir_items.get(package, None)
 
-  def Run(self, package, inputs, output, commands,
+  def Run(self, package, inputs, output, commands, cmd_options=None,
           working_dir=None, memoize=True, signature_file=None, subdir=None):
     """Run an operation once, possibly hitting cache.
 
@@ -251,7 +251,7 @@ class Once(object):
         paths['output'] = subdir if subdir else output
         nonpath_subst['build_signature'] = build_signature
         subst = substituter.Substituter(work_dir, paths, nonpath_subst)
-        command.Invoke(subst)
+        command.Invoke(cmd_options, subst)
 
     if memoize:
       self.WriteResultToCache(package, build_signature, output)
