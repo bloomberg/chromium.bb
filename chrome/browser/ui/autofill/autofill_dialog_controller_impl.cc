@@ -820,6 +820,12 @@ void AutofillDialogControllerImpl::Show() {
                               !ShouldShowAccountChooser(),
                               metric_logger_));
 
+  acceptable_cc_types_ = form_structure_.PossibleValues(CREDIT_CARD_TYPE);
+  // Wallet generates MC virtual cards, so we have to disable it if MC is not
+  // allowed.
+  if (ShouldDisallowCcType(CreditCard::TypeForDisplay(kMasterCard)))
+    DisableWallet(wallet::WalletClient::UNSUPPORTED_MERCHANT);
+
   if (account_chooser_model_->WalletIsSelected())
     FetchWalletCookie();
 
@@ -3019,6 +3025,9 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
             cards[i]->guid(),
             cards[i]->Label(),
             rb.GetImageNamed(CreditCard::IconResourceId(cards[i]->type())));
+        suggested_cc_.SetEnabled(
+            cards[i]->guid(),
+            !ShouldDisallowCcType(cards[i]->TypeForDisplay()));
       }
 
       const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
@@ -3507,6 +3516,13 @@ base::string16 AutofillDialogControllerImpl::CreditCardNumberValidityMessage(
         IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_NUMBER);
   }
 
+  if (!IsPayingWithWallet() &&
+      ShouldDisallowCcType(CreditCard::TypeForDisplay(
+          CreditCard::GetCreditCardType(number)))) {
+    return l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_CREDIT_CARD_TYPE);
+  }
+
   base::string16 message;
   if (IsPayingWithWallet() && !wallet_items_->SupportsCard(number, &message))
     return message;
@@ -3568,6 +3584,19 @@ bool AutofillDialogControllerImpl::IsCreditCardExpirationValid(
   }
 
   return true;
+}
+
+bool AutofillDialogControllerImpl::ShouldDisallowCcType(
+    const base::string16& type) const {
+  if (acceptable_cc_types_.empty())
+    return false;
+
+  if (acceptable_cc_types_.find(base::i18n::ToUpper(type)) ==
+          acceptable_cc_types_.end()) {
+    return true;
+  }
+
+  return false;
 }
 
 bool AutofillDialogControllerImpl::HasInvalidAddress(

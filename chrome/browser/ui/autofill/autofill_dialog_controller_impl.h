@@ -523,6 +523,10 @@ class AutofillDialogControllerImpl
   bool IsCreditCardExpirationValid(const base::string16& year,
                                    const base::string16& month) const;
 
+  // Returns true if we should reject the given credit card brand. |type| should
+  // be a display string, such as "Visa".
+  bool ShouldDisallowCcType(const base::string16& type) const;
+
   // Returns true if |profile| has an address we can be sure is invalid.
   // Profiles with invalid addresses are not suggested in the dropdown menu for
   // billing and shipping addresses.
@@ -718,6 +722,10 @@ class AutofillDialogControllerImpl
   SuggestionsMenuModel suggested_billing_;
   SuggestionsMenuModel suggested_cc_billing_;
   SuggestionsMenuModel suggested_shipping_;
+
+  // The set of values for cc-type that the site accepts. Empty means all types
+  // are accepted.
+  std::set<base::string16> acceptable_cc_types_;
 
   // |DialogSection|s that are in edit mode that are based on existing data.
   std::set<DialogSection> section_editing_state_;

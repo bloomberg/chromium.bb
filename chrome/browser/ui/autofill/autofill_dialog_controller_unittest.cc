@@ -3389,6 +3389,67 @@ TEST_F(AutofillDialogControllerTest, LimitedCountryChoices) {
             billing_country_model->GetItemCount());
 }
 
+TEST_F(AutofillDialogControllerTest, LimitedCcChoices) {
+  SwitchToAutofill();
+  // Typically, MC and Visa are both valid.
+  ValidateCCNumber(SECTION_CC, kTestCCNumberMaster, true);
+  ValidateCCNumber(SECTION_CC, kTestCCNumberVisa, true);
+
+  FormData form_data;
+  FormFieldData field;
+  field.autocomplete_attribute = "billing cc-type";
+  field.option_contents.push_back(ASCIIToUTF16("Visa"));
+  field.option_values.push_back(ASCIIToUTF16("V"));
+  field.option_contents.push_back(ASCIIToUTF16("American Express"));
+  field.option_values.push_back(ASCIIToUTF16("AX"));
+  form_data.fields.push_back(field);
+  ResetControllerWithFormData(form_data);
+  controller()->Show();
+
+  // MC is not valid because it's missing from FormData.
+  ValidateCCNumber(SECTION_CC, kTestCCNumberMaster, false);
+  ValidateCCNumber(SECTION_CC, kTestCCNumberVisa, true);
+
+  CreditCard visa_card(test::GetVerifiedCreditCard());
+  CreditCard amex_card(test::GetVerifiedCreditCard2());
+
+  CreditCard master_card(base::GenerateGUID(), "chrome settings");
+  test::SetCreditCardInfo(
+      &master_card, "Mr Foo", "5105105105105100", "07", "2099");
+
+  controller()->GetTestingManager()->AddTestingCreditCard(&visa_card);
+  controller()->GetTestingManager()->AddTestingCreditCard(&amex_card);
+  controller()->GetTestingManager()->AddTestingCreditCard(&master_card);
+
+  // The stored MC is disabled in the dropdown.
+  ui::MenuModel* model = controller()->MenuModelForSection(SECTION_CC);
+  ASSERT_TRUE(model);
+  ASSERT_EQ(5, model->GetItemCount());
+  EXPECT_TRUE(model->IsEnabledAt(0));
+  EXPECT_TRUE(model->IsEnabledAt(1));
+  EXPECT_FALSE(model->IsEnabledAt(2));
+  EXPECT_TRUE(model->IsEnabledAt(3));
+  EXPECT_TRUE(model->IsEnabledAt(4));
+
+  // No MC; Wallet is disabled.
+  SetUpControllerWithFormData(form_data);
+  EXPECT_FALSE(controller()->IsPayingWithWallet());
+
+  // In Autofill mode, Discover is disallowed because it's not in FormData.
+  ValidateCCNumber(SECTION_CC, kTestCCNumberDiscover, false);
+
+  field.option_contents.push_back(ASCIIToUTF16("Mastercard"));
+  field.option_values.push_back(ASCIIToUTF16("Mastercard"));
+  form_data.fields[0] = field;
+
+  // Add MC to FormData; Wallet is enabled.
+  SetUpControllerWithFormData(form_data);
+  EXPECT_TRUE(controller()->IsPayingWithWallet());
+  // Even though Discover isn't in FormData, it's allowed because Wallet always
+  // generates a MC Virtual card.
+  ValidateCCNumber(SECTION_CC_BILLING, kTestCCNumberDiscover, true);
+}
+
 TEST_F(AutofillDialogControllerTest, CountriesWithDependentLocalityHidden) {
   ui::ComboboxModel* model =
       controller()->ComboboxModelForAutofillType(ADDRESS_BILLING_COUNTRY);

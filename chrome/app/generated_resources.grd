@@ -10285,6 +10285,9 @@ Chrome ran out of memory.
         <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_CREDIT_CARD_EXPIRATION_DATE" desc="Message displayed to user when credit card expiration date validation fails.">
           The card is expired. Please check the date or enter a new card.
         </message>
+        <message name="IDS_AUTOFILL_DIALOG_VALIDATION_UNACCEPTED_CREDIT_CARD_TYPE" desc="Message displayed to user when a site doesn't accept the credit card type they've entered.">
+          Sorry, this site doesn't accept this brand of card.
+        </message>
         <message name="IDS_AUTOFILL_DIALOG_VALIDATION_INVALID_PHONE_NUMBER" desc="Message displayed to user when phone number validation fails.">
           Invalid phone number. Please check and try again.
         </message>
