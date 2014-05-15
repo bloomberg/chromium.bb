@@ -1,51 +1,51 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>MediaKeys</title>
-        <script src=../video-test.js></script>
-        <script>
-            function stringToUint8Array(str)
-            {
-                var arr=[];
-                for(var i=0,j=str.length;i<j;++i)
-                  arr[i]=str.charCodeAt(i);
-                return new Uint8Array(arr);
-            }
-
-            var mediaKeys;
-            var mediaKeySession;
-            var initData = stringToUint8Array('mock');
-            var invalidKey = stringToUint8Array('invalid');
-            var validKey = stringToUint8Array(
-                '{"keys":[{"kty":"oct","kid":"AAECAw","k":"MTIzNDU2Nzg5MGFiY2RlZg"}]}');
-
-            function runTest() 
-            {
-                run('mediaKeys = new MediaKeys("org.w3.clearkey")');
-                run('mediaKeySession = mediaKeys.createSession("video/webm", initData)');
-                waitForEvent('message', processMessage, false, false, mediaKeySession);
-                waitForEvent('error', processError, false, false, mediaKeySession);
-                waitForEvent('ready', processReady, false, false, mediaKeySession);
-                waitForEvent('close', null, true, false, mediaKeySession);
-            }
-
-            function processMessage(event)
-            {
-                run('mediaKeySession.update(invalidKey)');
-            }
-
-            function processError(event)
-            {
-                run('mediaKeySession.update(validKey)');
-            }
-
-            function processReady(event)
-            {
-                run('mediaKeySession.release()');
-            }
-        </script>
+        <title>Verify v2 events</title>
+        <script src="encrypted-media-utils.js"></script>
+        <script src="../w3c-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
     </head>
-    <body onload="runTest()">
-        <p>This tests the events created by MediaKeys.</p>
+    <body>
+        <div id="log"></div>
+        <script>
+            async_test(function(test)
+            {
+                var mediaKeySession;
+                var initData = stringToUint8Array('mock');
+                var invalidKey = stringToUint8Array('invalid');
+                var validKeyId = stringToUint8Array('123');
+                var validKeyValue = stringToUint8Array('1234567890abcdef');
+                var validKey = stringToUint8Array(createJWKSet(createJWK(validKeyId, validKeyValue)));
+
+                function processMessage(event)
+                {
+                    mediaKeySession.update(invalidKey);
+                    waitForEventAndRunStep('error', mediaKeySession, processError, test);
+                }
+
+                function processError(event)
+                {
+                    mediaKeySession.update(validKey);
+                    waitForEventAndRunStep('ready', mediaKeySession, processReady, test);
+                }
+
+                function processReady(event)
+                {
+                    mediaKeySession.release();
+                    waitForEventAndRunStep('close', mediaKeySession, processClose, test);
+                }
+
+                function processClose(event)
+                {
+                    test.done();
+                }
+
+                var mediaKeys = new MediaKeys("org.w3.clearkey");
+                mediaKeySession = mediaKeys.createSession("video/webm", initData);
+                waitForEventAndRunStep('message', mediaKeySession, processMessage, test);
+            }, "Verify v2 events.");
+        </script>
     </body>
 </html>

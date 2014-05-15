@@ -2,27 +2,34 @@
 <html>
     <head>
         <title>Prefixed and unprefixed EME API</title>
+        <script src="../w3c-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
     </head>
     <body>
-        <video></video>
-
-        <script src=../media-file.js></script>
-        <script src=../video-test.js></script>
+        <video id="testVideo"></video>
+        <div id="log"></div>
+        <p>Call unprefixed EME API after prefixed EME API.</p>
         <script>
-            function loadStarted()
+            async_test(function(test)
             {
-                consoleWrite("Call unprefixed EME API after prefixed EME API.");
-                run("video.webkitGenerateKeyRequest('webkit-org.w3.clearkey')");
-                run('mediaKeys = new MediaKeys("org.w3.clearkey")');
-                testExpected('mediaKeys', null, '!=');
-                testDOMException('video.setMediaKeys(mediaKeys)', "DOMException.INVALID_STATE_ERR");
+                var video = document.getElementById("testVideo");
+                assert_not_equals(video, null);
 
-                endTest();
-            }
+                function loadStarted()
+                {
+                    video.webkitGenerateKeyRequest('webkit-org.w3.clearkey');
+                    var mediaKeys = new MediaKeys("org.w3.clearkey");
+                    assert_not_equals(mediaKeys, null);
+                    assert_equals(mediaKeys.keySystem, 'org.w3.clearkey');
+                    assert_throws('InvalidStateError',
+                                   function () { video.setMediaKeys(mediaKeys); });
+                    test.done();
+                }
 
-            video.src = findMediaFile("video", "../content/test");
-            consoleWrite("");
-            waitForEvent('loadstart', loadStarted);
+                video.src = "../content/test.webm";
+                waitForEventAndRunStep('loadstart', video, loadStarted, test);
+            }, "Call unprefixed EME API after prefixed EME API.");
         </script>
     </body>
 </html>

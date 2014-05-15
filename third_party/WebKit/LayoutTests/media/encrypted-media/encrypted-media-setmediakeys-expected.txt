@@ -1,46 +1,6 @@
 This tests setting MediaKeys on a video object.
 
-Test MediaKeys assignment.
-EXPECTED (video != 'null') OK
-EXPECTED (video.mediaKeys == 'null') OK
-EXPECTED (typeof video.setMediaKeys == 'function') OK
-Try setting mediaKeys to null.
-RUN(video.setMediaKeys(null))
-EXPECTED (video.mediaKeys == 'null') OK
-Try setting mediaKeys to the wrong type of object.
-TEST(video.setMediaKeys(new Date())) THROWS("TypeError: Failed to execute 'setMediaKeys' on 'HTMLMediaElement': parameter 1 is not of type 'MediaKeys'.") OK
-Create a MediaKeys object and assign it to video.
-RUN(mediaKeys = new MediaKeys("org.w3.clearkey"))
-EXPECTED (mediaKeys != 'null') OK
-EXPECTED (mediaKeys.keySystem == 'org.w3.clearkey') OK
-RUN(video.setMediaKeys(mediaKeys))
-EXPECTED (video.mediaKeys != 'null') OK
-EXPECTED (video.mediaKeys === '[object MediaKeys]') OK
-Set it a second time.
-RUN(video.setMediaKeys(mediaKeys))
-EXPECTED (video.mediaKeys != 'null') OK
-EXPECTED (video.mediaKeys === '[object MediaKeys]') OK
-Create a second MediaKeys and assign it to video.
-RUN(mediaKeys2 = new MediaKeys("org.w3.clearkey"))
-EXPECTED (mediaKeys != 'null') OK
-EXPECTED (mediaKeys.keySystem == 'org.w3.clearkey') OK
-RUN(video.setMediaKeys(mediaKeys2))
-EXPECTED (video.mediaKeys != 'null') OK
-EXPECTED (video.mediaKeys != '[object MediaKeys]') OK
-EXPECTED (video.mediaKeys === '[object MediaKeys]') OK
-Set it back to first MediaKeys.
-RUN(video.setMediaKeys(mediaKeys))
-EXPECTED (video.mediaKeys === '[object MediaKeys]') OK
-EXPECTED (video.mediaKeys != '[object MediaKeys]') OK
-Set mediaKeys to null.
-RUN(video.setMediaKeys(null))
-EXPECTED (video.mediaKeys == 'null') OK
-Set it to null a second time.
-RUN(video.setMediaKeys(null))
-EXPECTED (video.mediaKeys == 'null') OK
-Set it back to first MediaKeys again.
-RUN(video.setMediaKeys(mediaKeys))
-EXPECTED (video.mediaKeys === '[object MediaKeys]') OK
-EXPECTED (video.mediaKeys != '[object MediaKeys]') OK
-END OF TEST
+This is a testharness.js-based test.
+PASS Setting MediaKeys on a video object. 
+Harness: the test ran to completion.
 
