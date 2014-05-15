@@ -5,6 +5,7 @@
 <script>
 function test()
 {
+    WebInspector.inspectorView.showPanel("timeline");
     var tracingModel = new WebInspector.TracingModel();
     tracingModel.start(WebInspector.TracingModel.DevToolsMetadataEventCategory + ",-*", "", onTracingStarted);
 
