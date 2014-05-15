@@ -278,6 +278,13 @@ void RenderMultiColumnFlowThread::layout()
 
 void RenderMultiColumnFlowThread::setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage)
 {
+    // Only positive values are interesting (and allowed) here. Zero space shortage may be reported
+    // when we're at the top of a column and the element has zero height. Ignore this, and also
+    // ignore any negative values, which may occur when we set an early break in order to honor
+    // widows in the next column.
+    if (spaceShortage <= 0)
+        return;
+
     if (RenderMultiColumnSet* multicolSet = toRenderMultiColumnSet(regionAtBlockOffset(offset)))
         multicolSet->recordSpaceShortage(spaceShortage);
 }
