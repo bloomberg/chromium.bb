@@ -599,6 +599,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
   } else if (sender == tutorial_send_feedback_button_) {
     chrome::OpenFeedbackDialog(browser_);
   } else if (sender == end_preview_and_relaunch_button_) {
+    ProfileMetrics::LogProfileUpgradeEnrollment(
+        ProfileMetrics::PROFILE_ENROLLMENT_DISABLE_NEW_PROFILE_MGMT);
     profiles::DisableNewProfileManagementPreview();
   } else if (sender == end_preview_cancel_button_) {
     tutorial_mode_ = TUTORIAL_MODE_SEND_FEEDBACK;
