@@ -5,8 +5,10 @@
 #include "chrome/browser/extensions/api/power/power_api_manager.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -28,11 +30,20 @@ LevelToPowerSaveBlockerType(api::power::Level level) {
   return content::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep;
 }
 
+base::LazyInstance<BrowserContextKeyedAPIFactory<PowerApiManager> > g_factory =
+    LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 // static
-PowerApiManager* PowerApiManager::GetInstance() {
-  return Singleton<PowerApiManager>::get();
+PowerApiManager* PowerApiManager::Get(content::BrowserContext* context) {
+  return BrowserContextKeyedAPIFactory<PowerApiManager>::Get(context);
+}
+
+// static
+BrowserContextKeyedAPIFactory<PowerApiManager>*
+PowerApiManager::GetFactoryInstance() {
+  return g_factory.Pointer();
 }
 
 void PowerApiManager::AddRequest(const std::string& extension_id,
@@ -55,25 +66,23 @@ void PowerApiManager::SetCreateBlockerFunctionForTesting(
 void PowerApiManager::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED:
-      RemoveRequest(content::Details<extensions::UnloadedExtensionInfo>(
-          details)->extension->id());
-      UpdatePowerSaveBlocker();
-      break;
-    case chrome::NOTIFICATION_APP_TERMINATING:
-      power_save_blocker_.reset();
-      break;
-    default:
-      NOTREACHED() << "Unexpected notification " << type;
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_APP_TERMINATING);
+  power_save_blocker_.reset();
 }
 
-PowerApiManager::PowerApiManager()
-    : create_blocker_function_(base::Bind(&content::PowerSaveBlocker::Create)),
+void PowerApiManager::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionInfo::Reason reason) {
+  RemoveRequest(extension->id());
+  UpdatePowerSaveBlocker();
+}
+
+PowerApiManager::PowerApiManager(content::BrowserContext* context)
+    : browser_context_(context),
+      create_blocker_function_(base::Bind(&content::PowerSaveBlocker::Create)),
       current_level_(api::power::LEVEL_SYSTEM) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-                  content::NotificationService::AllSources());
+  ExtensionRegistry::Get(browser_context_)->AddObserver(this);
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 }
@@ -104,6 +113,12 @@ void PowerApiManager::UpdatePowerSaveBlocker() {
     power_save_blocker_.swap(new_blocker);
     current_level_ = new_level;
   }
+}
+
+void PowerApiManager::Shutdown() {
+  // Unregister here rather than in the d'tor; otherwise this call will recreate
+  // the already-deleted ExtensionRegistry.
+  ExtensionRegistry::Get(browser_context_)->RemoveObserver(this);
 }
 
 }  // namespace extensions

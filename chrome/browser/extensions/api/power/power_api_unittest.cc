@@ -67,16 +67,18 @@ class PowerSaveBlockerStub : public content::PowerSaveBlocker {
 // unblocking power management.
 class PowerSaveBlockerStubManager {
  public:
-  PowerSaveBlockerStubManager() : weak_ptr_factory_(this) {
+  explicit PowerSaveBlockerStubManager(content::BrowserContext* context)
+      : browser_context_(context),
+        weak_ptr_factory_(this) {
     // Use base::Unretained since callbacks with return values can't use
     // weak pointers.
-    PowerApiManager::GetInstance()->SetCreateBlockerFunctionForTesting(
+    PowerApiManager::Get(browser_context_)->SetCreateBlockerFunctionForTesting(
         base::Bind(&PowerSaveBlockerStubManager::CreateStub,
                    base::Unretained(this)));
   }
 
   ~PowerSaveBlockerStubManager() {
-    PowerApiManager::GetInstance()->SetCreateBlockerFunctionForTesting(
+    PowerApiManager::Get(browser_context_)->SetCreateBlockerFunctionForTesting(
         PowerApiManager::CreateBlockerFunction());
   }
 
@@ -118,6 +120,8 @@ class PowerSaveBlockerStubManager {
     requests_.push_back(request);
   }
 
+  content::BrowserContext* browser_context_;
+
   // Requests in chronological order.
   std::deque<Request> requests_;
 
@@ -132,9 +136,15 @@ class PowerApiTest : public BrowserWithTestWindowTest {
  public:
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
-    manager_.reset(new PowerSaveBlockerStubManager);
+    manager_.reset(new PowerSaveBlockerStubManager(profile()));
     extension_ = utils::CreateEmptyExtensionWithLocation(
         extensions::Manifest::UNPACKED);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    extension_ = NULL;
+    manager_.reset();
+    BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
@@ -163,12 +173,8 @@ class PowerApiTest : public BrowserWithTestWindowTest {
   // Send a notification to PowerApiManager saying that |extension| has
   // been unloaded.
   void UnloadExtension(extensions::Extension* extension) {
-    UnloadedExtensionInfo details(
-        extension, UnloadedExtensionInfo::REASON_UNINSTALL);
-    PowerApiManager::GetInstance()->Observe(
-        chrome::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-        content::Source<Profile>(browser()->profile()),
-        content::Details<UnloadedExtensionInfo>(&details));
+    PowerApiManager::Get(profile())->OnExtensionUnloaded(
+        profile(), extension, UnloadedExtensionInfo::REASON_UNINSTALL);
   }
 
   scoped_ptr<PowerSaveBlockerStubManager> manager_;

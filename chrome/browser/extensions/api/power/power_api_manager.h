@@ -10,21 +10,35 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/singleton.h"
 #include "chrome/common/extensions/api/power.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/power_save_blocker.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry_observer.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 
-class PowerApiManager : public content::NotificationObserver {
+// Handles calls made via the chrome.power API. There is a separate instance of
+// this class for each profile, as requests are tracked by extension ID, but a
+// regular and incognito profile will share the same instance.
+// TODO(derat): Move this to power_api.h and rename it to PowerApi.
+class PowerApiManager : public BrowserContextKeyedAPI,
+                        public content::NotificationObserver,
+                        public extensions::ExtensionRegistryObserver {
  public:
   typedef base::Callback<scoped_ptr<content::PowerSaveBlocker>(
       content::PowerSaveBlocker::PowerSaveBlockerType,
       const std::string&)> CreateBlockerFunction;
 
-  static PowerApiManager* GetInstance();
+  static PowerApiManager* Get(content::BrowserContext* context);
+
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<PowerApiManager>* GetFactoryInstance();
 
   // Adds an extension lock at |level| for |extension_id|, replacing the
   // extension's existing lock, if any.
@@ -43,15 +57,29 @@ class PowerApiManager : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
- private:
-  friend struct DefaultSingletonTraits<PowerApiManager>;
+  // Overridden from extensions::ExtensionRegistryObserver.
+  virtual void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                   const Extension* extension,
+                                   UnloadedExtensionInfo::Reason reason)
+      OVERRIDE;
 
-  PowerApiManager();
+ private:
+  friend class BrowserContextKeyedAPIFactory<PowerApiManager>;
+
+  explicit PowerApiManager(content::BrowserContext* context);
   virtual ~PowerApiManager();
 
   // Updates |power_save_blocker_| and |current_level_| after iterating
   // over |extension_levels_|.
   void UpdatePowerSaveBlocker();
+
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "PowerApiManager"; }
+  static const bool kServiceRedirectedInIncognito = true;
+  static const bool kServiceIsCreatedWithBrowserContext = false;
+  virtual void Shutdown() OVERRIDE;
+
+  content::BrowserContext* browser_context_;
 
   content::NotificationRegistrar registrar_;
 

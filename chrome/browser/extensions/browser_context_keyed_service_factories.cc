@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_event_router_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/browser/extensions/api/power/power_api_manager.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/processes/processes_api.h"
@@ -138,6 +139,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_PLUGINS)
   extensions::PluginManager::GetFactoryInstance();
 #endif  // defined(ENABLE_PLUGINS)
+  extensions::PowerApiManager::GetFactoryInstance();
   extensions::PreferenceAPI::GetFactoryInstance();
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();

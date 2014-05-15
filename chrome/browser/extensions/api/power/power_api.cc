@@ -14,12 +14,13 @@ bool PowerRequestKeepAwakeFunction::RunSync() {
       api::power::RequestKeepAwake::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
   EXTENSION_FUNCTION_VALIDATE(params->level != api::power::LEVEL_NONE);
-  PowerApiManager::GetInstance()->AddRequest(extension_id(), params->level);
+  PowerApiManager::Get(browser_context())->AddRequest(
+      extension_id(), params->level);
   return true;
 }
 
 bool PowerReleaseKeepAwakeFunction::RunSync() {
-  PowerApiManager::GetInstance()->RemoveRequest(extension_id());
+  PowerApiManager::Get(browser_context())->RemoveRequest(extension_id());
   return true;
 }
 
