@@ -101,7 +101,17 @@ TEST(AudioHardwareConfig, HighLatencyBufferSizes) {
                                 32);
   AudioHardwareConfig fake_config(input_params, output_params);
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_WIN)
+  for (int i = 6400; i <= 204800; i *= 2) {
+    fake_config.UpdateOutputConfig(
+        AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                        kOutputChannelLayout,
+                        i,
+                        16,
+                        i / 100));
+    EXPECT_EQ(2 * (i / 100), fake_config.GetHighLatencyBufferSize());
+  }
+#else
   EXPECT_EQ(64, fake_config.GetHighLatencyBufferSize());
 
   for (int i = 6400; i <= 204800; i *= 2) {
@@ -113,11 +123,7 @@ TEST(AudioHardwareConfig, HighLatencyBufferSizes) {
                         32));
     EXPECT_EQ(2 * (i / 100), fake_config.GetHighLatencyBufferSize());
   }
-#else
-  // If high latency buffer sizes are not supported, the value should just pass
-  // through the output buffer size.
-  EXPECT_EQ(32, fake_config.GetHighLatencyBufferSize());
-#endif
+#endif  // defined(OS_WIN)
 }
 
 }  // namespace content
