@@ -82,6 +82,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../ui/events/platform/events_platform.gyp:events_platform',
         '../url/url.gyp:url_lib',
         'bookmarks_core_browser',
       ],
@@ -90,6 +91,13 @@
         'bookmarks/core/test/bookmark_test_helpers.h',
         'bookmarks/core/test/test_bookmark_client.cc',
         'bookmarks/core/test/test_bookmark_client.h',
+      ],
+      'conditions': [
+        ['use_x11==1', {
+          'dependencies': [
+            '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
+          ],
+        }],
       ],
     },
   ],

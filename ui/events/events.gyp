@@ -120,18 +120,6 @@
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
         'ozone/events_ozone.cc',
-        'platform/platform_event_dispatcher.h',
-        'platform/platform_event_observer.h',
-        'platform/platform_event_source.cc',
-        'platform/platform_event_source.h',
-        'platform/platform_event_source_stub.cc',
-        'platform/platform_event_types.h',
-        'platform/scoped_event_dispatcher.cc',
-        'platform/scoped_event_dispatcher.h',
-        'platform/x11/x11_event_source.cc',
-        'platform/x11/x11_event_source.h',
-        'platform/x11/x11_event_source_glib.cc',
-        'platform/x11/x11_event_source_libevent.cc',
         'win/events_win.cc',
         'x/events_x.cc',
         'linux/text_edit_command_auralinux.cc',
@@ -153,28 +141,6 @@
             'linux/text_edit_command_auralinux.h',
             'linux/text_edit_key_bindings_delegate_auralinux.cc',
             'linux/text_edit_key_bindings_delegate_auralinux.h',
-          ],
-        }],
-        ['use_x11==1', {
-          'sources!': [
-            'platform/platform_event_source_stub.cc',
-          ],
-          'dependencies': [
-            '../../build/linux/system.gyp:x11',
-            '../gfx/x/gfx_x11.gyp:gfx_x11',
-          ],
-        }],
-        ['use_glib==1', {
-          'dependencies': [
-            '../../build/linux/system.gyp:glib',
-          ],
-          'sources!': [
-            'platform/x11/x11_event_source_libevent.cc',
-          ],
-        }, {
-          # use_glib == 0
-          'sources!': [
-            'platform/x11/x11_event_source_glib.cc',
           ],
         }],
       ],
@@ -240,6 +206,7 @@
         '<(DEPTH)/skia/skia.gyp:skia',
         'events',
         'events_base',
+        'platform/events_platform.gyp:events_platform',
       ],
       'sources': [
         'test/cocoa_test_event_utils.h',
@@ -285,7 +252,8 @@
         'events',
         'events_base',
         'events_test_support',
-        'gesture_detection'
+        'gesture_detection',
+        'platform/events_platform.gyp:events_platform',
       ],
       'sources': [
         'cocoa/events_mac_unittest.mm',

@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/message_loop/message_loop.h"
-#include "ui/events/event.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_observer.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"

@@ -1065,6 +1065,8 @@
             ['use_x11==1', {
               'dependencies': [
                 '../build/linux/system.gyp:x11',
+                '../ui/events/platform/events_platform.gyp:events_platform',
+                '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
               ],
             }],
           ],

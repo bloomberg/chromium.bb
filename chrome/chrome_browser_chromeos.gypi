@@ -88,6 +88,7 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/display/display.gyp:display',
         '../ui/events/events.gyp:dom4_keycode_converter',
+        '../ui/events/platform/events_platform.gyp:events_platform',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/surface/surface.gyp:surface',
         '../ui/views/controls/webview/webview.gyp:webview',
@@ -1074,6 +1075,7 @@
         ['use_aura==1 and use_x11==1', {
           'dependencies': [
             '../build/linux/system.gyp:x11',
+            '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
             '../ui/gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],

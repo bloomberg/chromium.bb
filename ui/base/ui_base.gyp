@@ -21,6 +21,7 @@
         '../../third_party/icu/icu.gyp:icuuc',
         '../../url/url.gyp:url_lib',
         '../events/events.gyp:events_base',
+        '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../resources/ui_resources.gyp:ui_resources',
@@ -499,6 +500,7 @@
             '../../build/linux/system.gyp:xext',
             '../../build/linux/system.gyp:xfixes',
             '../../build/linux/system.gyp:xrender',  # For XRender* function calls in x11_util.cc.
+            '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
         ['toolkit_views==0', {

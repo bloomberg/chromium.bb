@@ -159,6 +159,7 @@
         ['use_x11==1', {
           'dependencies': [
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+            'events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
         ['OS=="android" or OS=="ios"', {
@@ -191,6 +192,7 @@
             'events/events.gyp:events',
             'events/events.gyp:events_base',
             'events/events.gyp:events_test_support',
+            'events/platform/events_platform.gyp:events_platform',
           ],
         }],
         ['use_aura==1', {

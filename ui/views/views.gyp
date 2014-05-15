@@ -34,6 +34,7 @@
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../events/events.gyp:events_base',
+        '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../native_theme/native_theme.gyp:native_theme',
@@ -521,6 +522,7 @@
           'dependencies': [
             '../../build/linux/system.gyp:x11',
             '../../build/linux/system.gyp:xrandr',
+            '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
       ],
@@ -536,6 +538,7 @@
         '../base/ui_base.gyp:ui_base',
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
+        '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         'views',
@@ -730,6 +733,11 @@
         ['use_aura==1', {
           'dependencies': [
             '../aura/aura.gyp:aura_test_support',
+          ],
+        }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
       ],

@@ -48,6 +48,7 @@
     'dependencies': [
       '../../../base/base.gyp:base',
       '../../gfx/gfx.gyp:gfx',
+      '../platform/events_platform.gyp:events_platform',
       'events_ozone',
     ],
     'defines': [
@@ -89,6 +90,9 @@
         'sources/': [
           ['exclude', '^evdev/libgestures_glue/'],
         ],
+      }],
+      ['use_ozone_evdev==1', {
+        'defines': ['USE_OZONE_EVDEV=1'],
       }],
     ],
   }]

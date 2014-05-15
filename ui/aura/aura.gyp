@@ -20,6 +20,7 @@
         '../compositor/compositor.gyp:compositor',
         '../events/events.gyp:events',
         '../events/events.gyp:events_base',
+        '../events/platform/events_platform.gyp:events_platform',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
       ],
@@ -116,6 +117,7 @@
             '../../build/linux/system.gyp:x11',
             '../../build/linux/system.gyp:xrandr',
             '../../build/linux/system.gyp:xi',
+            '../events/platform/x11/x11_events_platform.gyp:x11_events_platform',
           ],
         }],
         ['OS=="win"', {
