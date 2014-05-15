@@ -2711,6 +2711,13 @@ error::Error GLES2DecoderImpl::HandleViewport(uint32_t immediate_data_size,
 error::Error GLES2DecoderImpl::HandleBlitFramebufferCHROMIUM(
     uint32_t immediate_data_size,
     const gles2::cmds::BlitFramebufferCHROMIUM& c) {
+  if (!features().chromium_framebuffer_multisample) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glBlitFramebufferCHROMIUM",
+                       "function not available");
+    return error::kNoError;
+  }
+
   error::Error error;
   error = WillAccessBoundFramebufferForDraw();
   if (error != error::kNoError)
@@ -2741,6 +2748,13 @@ error::Error GLES2DecoderImpl::HandleBlitFramebufferCHROMIUM(
 error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleCHROMIUM(
     uint32_t immediate_data_size,
     const gles2::cmds::RenderbufferStorageMultisampleCHROMIUM& c) {
+  if (!features().chromium_framebuffer_multisample) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glRenderbufferStorageMultisampleCHROMIUM",
+                       "function not available");
+    return error::kNoError;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei samples = static_cast<GLsizei>(c.samples);
   GLenum internalformat = static_cast<GLenum>(c.internalformat);
@@ -2783,6 +2797,13 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleCHROMIUM(
 error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
     uint32_t immediate_data_size,
     const gles2::cmds::RenderbufferStorageMultisampleEXT& c) {
+  if (!features().multisampled_render_to_texture) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glRenderbufferStorageMultisampleEXT",
+                       "function not available");
+    return error::kNoError;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei samples = static_cast<GLsizei>(c.samples);
   GLenum internalformat = static_cast<GLenum>(c.internalformat);
@@ -2822,6 +2843,13 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
 error::Error GLES2DecoderImpl::HandleFramebufferTexture2DMultisampleEXT(
     uint32_t immediate_data_size,
     const gles2::cmds::FramebufferTexture2DMultisampleEXT& c) {
+  if (!features().multisampled_render_to_texture) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glFramebufferTexture2DMultisampleEXT",
+                       "function not available");
+    return error::kNoError;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum textarget = static_cast<GLenum>(c.textarget);
@@ -3310,6 +3338,13 @@ error::Error GLES2DecoderImpl::HandleTraceEndCHROMIUM(
 error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXT(
     uint32_t immediate_data_size,
     const gles2::cmds::DiscardFramebufferEXT& c) {
+  if (!features().ext_discard_framebuffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glDiscardFramebufferEXT",
+                       "function not available");
+    return error::kNoError;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;
@@ -3333,6 +3368,13 @@ error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXT(
 error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXTImmediate(
     uint32_t immediate_data_size,
     const gles2::cmds::DiscardFramebufferEXTImmediate& c) {
+  if (!features().ext_discard_framebuffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glDiscardFramebufferEXT",
+                       "function not available");
+    return error::kNoError;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei count = static_cast<GLsizei>(c.count);
   uint32_t data_size;

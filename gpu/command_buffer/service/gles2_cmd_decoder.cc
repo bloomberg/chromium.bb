@@ -4116,13 +4116,6 @@ void GLES2DecoderImpl::DoDisableVertexAttribArray(GLuint index) {
 void GLES2DecoderImpl::DoDiscardFramebufferEXT(GLenum target,
                                                GLsizei numAttachments,
                                                const GLenum* attachments) {
-  if (!features().ext_discard_framebuffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glDiscardFramebufferEXT",
-                       "function not available");
-    return;
-  }
-
   Framebuffer* framebuffer =
       GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
 
@@ -5100,12 +5093,6 @@ void GLES2DecoderImpl::DoFramebufferTexture2D(
 void GLES2DecoderImpl::DoFramebufferTexture2DMultisample(
     GLenum target, GLenum attachment, GLenum textarget,
     GLuint client_texture_id, GLint level, GLsizei samples) {
-  if (!features().multisampled_render_to_texture) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glFramebufferTexture2DMultisample", "function not available");
-    return;
-  }
   DoFramebufferTexture2DCommon(
     "glFramebufferTexture2DMultisample", target, attachment,
     textarget, client_texture_id, level, samples);
@@ -5238,12 +5225,6 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
     GLbitfield mask, GLenum filter) {
   DCHECK(!ShouldDeferReads() && !ShouldDeferDraws());
-  if (!features().chromium_framebuffer_multisample) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glBlitFramebufferCHROMIUM", "function not available");
-    return;
-  }
 
   if (!CheckBoundFramebuffersValid("glBlitFramebufferCHROMIUM")) {
     return;
@@ -5343,13 +5324,6 @@ bool GLES2DecoderImpl::ValidateRenderbufferStorageMultisample(
 void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
     GLenum target, GLsizei samples, GLenum internalformat,
     GLsizei width, GLsizei height) {
-  if (!features().chromium_framebuffer_multisample) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-                       "glRenderbufferStorageMultisampleCHROMIUM",
-                       "function not available");
-    return;
-  }
-
   Renderbuffer* renderbuffer = GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
   if (!renderbuffer) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
@@ -5396,13 +5370,6 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
 void GLES2DecoderImpl::DoRenderbufferStorageMultisampleEXT(
     GLenum target, GLsizei samples, GLenum internalformat,
     GLsizei width, GLsizei height) {
-  if (!features().multisampled_render_to_texture) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glRenderbufferStorageMultisampleEXT", "function not available");
-    return;
-  }
-
   Renderbuffer* renderbuffer = GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
   if (!renderbuffer) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,

@@ -1274,6 +1274,11 @@ _PEPPER_INTERFACES = [
 # first_element_only: For PUT types, True if only the first element of an
 #               array is used and we end up calling the single value
 #               corresponding function. eg. TexParameteriv -> TexParameteri
+# extension:    Function is an extension to GL and should not be exposed to
+#               pepper unless pepper_interface is defined.
+# extension_flag: Function is an extension and should be enabled only when
+#               the corresponding feature info flag is enabled. Implies
+#               'extension': True.
 
 _FUNCTION_INFO = {
   'ActiveTexture': {
@@ -1318,7 +1323,7 @@ _FUNCTION_INFO = {
   'BlitFramebufferCHROMIUM': {
     'decoder_func': 'DoBlitFramebufferCHROMIUM',
     'unit_test': False,
-    'extension': True,
+    'extension_flag': 'chromium_framebuffer_multisample',
     'pepper_interface': 'FramebufferBlit',
     'pepper_name': 'BlitFramebufferEXT',
     'defer_reads': True,
@@ -1617,7 +1622,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glFramebufferTexture2DMultisampleEXT',
     'expectation': False,
     'unit_test': False,
-    'extension': True,
+    'extension_flag': 'multisampled_render_to_texture',
     'trace_level': 1,
   },
   'GenerateMipmap': {
@@ -1983,7 +1988,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glRenderbufferStorageMultisampleCHROMIUM',
     'expectation': False,
     'unit_test': False,
-    'extension': True,
+    'extension_flag': 'chromium_framebuffer_multisample',
     'pepper_interface': 'FramebufferMultisample',
     'pepper_name': 'RenderbufferStorageMultisampleEXT',
   },
@@ -1994,7 +1999,7 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glRenderbufferStorageMultisampleEXT',
     'expectation': False,
     'unit_test': False,
-    'extension': True,
+    'extension_flag': 'multisampled_render_to_texture',
   },
   'ReadPixels': {
     'cmd_comment':
@@ -2308,6 +2313,8 @@ _FUNCTION_INFO = {
     'count': 1,
     'client_test': False,
     'unit_test': False,
+    # could use 'extension_flag': 'ext_draw_buffers' but currently expected to
+    # work without.
     'extension': True,
     'pepper_interface': 'DrawBuffers',
   },
@@ -2530,7 +2537,7 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoDiscardFramebufferEXT',
     'unit_test': False,
     'client_test': False,
-    'extension': True,
+    'extension_flag': 'ext_discard_framebuffer',
   },
   'LoseContextCHROMIUM': {
     'type': 'Manual',
@@ -2847,6 +2854,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write(
         "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
         func.name)
+    self.WriteHandlerExtensionCheck(func, file)
     self.WriteHandlerDeferReadWrite(func, file);
     if len(func.GetOriginalArgs()) > 0:
       last_arg = func.GetLastOriginalArg()
@@ -2868,6 +2876,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write(
         "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
         func.name)
+    self.WriteHandlerExtensionCheck(func, file)
     self.WriteHandlerDeferReadWrite(func, file);
     last_arg = func.GetLastOriginalArg()
     all_but_last_arg = func.GetOriginalArgs()[:-1]
@@ -2888,6 +2897,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write(
         "    uint32_t immediate_data_size, const gles2::cmds::%s& c) {\n" %
         func.name)
+    self.WriteHandlerExtensionCheck(func, file)
     self.WriteHandlerDeferReadWrite(func, file);
     last_arg = func.GetLastOriginalArg()
     all_but_last_arg = func.GetOriginalArgs()[:-1]
@@ -2900,6 +2910,14 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
+
+  def WriteHandlerExtensionCheck(self, func, file):
+    if func.GetInfo('extension_flag'):
+      file.Write("  if (!features().%s) {\n" % func.GetInfo('extension_flag'))
+      file.Write("    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, \"gl%s\","
+                 " \"function not available\");\n" % func.original_name)
+      file.Write("    return error::kNoError;")
+      file.Write("  }\n\n")
 
   def WriteHandlerDeferReadWrite(self, func, file):
     """Writes the code to handle deferring reads or writes."""
@@ -6699,8 +6717,11 @@ class Function(object):
     """Adds an info."""
     self.info[name] = value
 
+  def IsExtension(self):
+    return self.GetInfo('extension') or self.GetInfo('extension_flag')
+
   def IsCoreGLFunction(self):
-    return (not self.GetInfo('extension') and
+    return (not self.IsExtension() and
             not self.GetInfo('pepper_interface'))
 
   def InPepperInterface(self, interface):
