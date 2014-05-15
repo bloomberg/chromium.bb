@@ -98,27 +98,13 @@ builders._builderFilter = function(groupName, masterName, testType)
     return null;
 }
 
-var builderToMaster = {};
+var builderToMaster;
 
+// FIXME: When we change to show multiple groups at once, this will need to
+// change to key off groupName and builderName.
 builders.master = function(builderName)
 {
     return builderToMaster[builderName];
-}
-
-function populateBuilderToMaster()
-{
-    var allMasterNames = Object.keys(builders.masters);
-
-    allMasterNames.forEach(function(masterName) {
-        var master = builders.masters[masterName];
-        var testTypes = Object.keys(master.tests);
-        testTypes.forEach(function (testType) {
-            var builderList = master.tests[testType].builders;
-            builderList.forEach(function (builderName) {
-                builderToMaster[builderName] = master;
-            });
-        });
-    });
 }
 
 builders.loadBuildersList = function(groupName, testType)
@@ -128,6 +114,7 @@ builders.loadBuildersList = function(groupName, testType)
         return new builders.BuilderGroup(false);
     }
     var builderGroup = new builders.BuilderGroup(groupName == '@ToT Blink');
+    builderToMaster = {};
 
     for (masterName in builders.masters) {
         if (!builders.masters[masterName])
@@ -143,10 +130,12 @@ builders.loadBuildersList = function(groupName, testType)
             if (builderFilter)
                 builderList = builderList.filter(builderFilter);
             builderGroup.append(builderList);
+
+            builderList.forEach(function (builderName) {
+                builderToMaster[builderName] = master;
+            });
         }
     }
-
-    populateBuilderToMaster();
 
     currentBuilderGroup = builderGroup;
     return currentBuilderGroup;
