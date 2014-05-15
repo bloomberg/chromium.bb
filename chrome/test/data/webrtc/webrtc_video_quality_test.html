@@ -20,22 +20,12 @@
         <video id="local-view" autoplay="autoplay"></video>
       </td>
       <td>
-        <!-- startFrameCapture() takes 5 parameters:
-             1. width: width of the video/canvas area.
-             2. height: height of the video area.
-             3. canvas_height: Height of the canvas.
-             4. fps: fps at which we would like to sample.
-             5. duration: The duration of the capturing. -->
+        <!-- startFrameCapture() takes 3 parameters:
+             1. reference to remote video tag.
+             2. fps: fps at which we would like to sample.
+             3. duration: The duration of the capturing. -->
         <video id="remote-view" autoplay="autoplay"
             onplay="startFrameCapture(this, 30, 5)"></video>
-      </td>
-    </tr>
-    <tr>
-      <td></td>
-      <td>
-        <div id="output">
-          <canvas id="remote-canvas"></canvas>
-        </div>
       </td>
     </tr>
   </table>
