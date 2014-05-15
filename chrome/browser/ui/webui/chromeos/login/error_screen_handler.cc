@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
+#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -60,6 +61,8 @@ void ErrorScreenHandler::Show(OobeDisplay::Screen parent_screen,
   parent_screen_ = parent_screen;
   ShowScreen(OobeUI::kScreenErrorMessage, params);
   NetworkErrorShown();
+  NetworkPortalDetector::Get()->SetStrategy(
+      PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
   if (delegate_)
     delegate_->OnErrorShow();
   LOG(WARNING) << "Offline message is displayed";
@@ -71,6 +74,8 @@ void ErrorScreenHandler::Hide() {
   std::string screen_name;
   if (GetScreenName(parent_screen_, &screen_name))
     ShowScreen(screen_name.c_str(), NULL);
+  NetworkPortalDetector::Get()->SetStrategy(
+      PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
   if (delegate_)
     delegate_->OnErrorHide();
   LOG(WARNING) << "Offline message is hidden";

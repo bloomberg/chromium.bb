@@ -9,8 +9,6 @@
 #include "chrome/browser/chromeos/login/screens/error_screen_actor.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/net/network_portal_detector.h"
-#include "chrome/browser/chromeos/net/network_portal_detector_strategy.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace chromeos {
@@ -46,15 +44,9 @@ std::string ErrorScreen::GetName() const {
   return WizardController::kErrorScreenName;
 }
 
-void ErrorScreen::OnErrorShow() {
-  NetworkPortalDetector::Get()->SetStrategy(
-      PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
-}
+void ErrorScreen::OnErrorShow() {}
 
-void ErrorScreen::OnErrorHide() {
-  NetworkPortalDetector::Get()->SetStrategy(
-      PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
-}
+void ErrorScreen::OnErrorHide() {}
 
 void ErrorScreen::OnLaunchOobeGuestSession() {
   DeviceSettingsService::Get()->GetOwnershipStatusAsync(
