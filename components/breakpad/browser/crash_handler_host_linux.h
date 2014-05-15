@@ -61,14 +61,14 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
  private:
   void Init();
 
-  // Do work in a sequenced worker pool for OnFileCanReadWithoutBlocking().
-  void WriteDumpFile(scoped_ptr<BreakpadInfo> info,
-                     scoped_ptr<char[]> crash_context,
+  // Do work on the FILE thread for OnFileCanReadWithoutBlocking().
+  void WriteDumpFile(BreakpadInfo* info,
                      pid_t crashing_pid,
+                     char* crash_context,
                      int signal_fd);
 
   // Continue OnFileCanReadWithoutBlocking()'s work on the IO thread.
-  void QueueCrashDumpTask(scoped_ptr<BreakpadInfo> info, int signal_fd);
+  void QueueCrashDumpTask(BreakpadInfo* info, int signal_fd);
 
   std::string process_type_;
   base::FilePath dumps_path_;
@@ -84,6 +84,10 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
   // Unique sequence token so that writing crash dump won't be blocked
   // by other tasks.
   base::SequencedWorkerPool::SequenceToken worker_pool_token_;
+
+#if defined(ADDRESS_SANITIZER)
+  char* asan_report_str_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(CrashHandlerHostLinux);
 };

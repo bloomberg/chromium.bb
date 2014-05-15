@@ -19,6 +19,7 @@ namespace breakpad {
 
 typedef google_breakpad::NonAllocatingMap<256, 256, 64> CrashKeyStorage;
 
+static const size_t kDistroSize = 128;
 #if defined(ADDRESS_SANITIZER)
 static const size_t kMaxAsanReportSize = 1 << 16;
 #endif
@@ -30,10 +31,10 @@ static const off_t kMaxMinidumpFileSize = 1258291;
 // The size of the iovec used to transfer crash data from a child back to the
 // browser.
 #if !defined(ADDRESS_SANITIZER)
-const size_t kCrashIovSize = 6;
+const size_t kCrashIovSize = 7;
 #else
 // Additional field to pass the AddressSanitizer log to the crash handler.
-const size_t kCrashIovSize = 7;
+const size_t kCrashIovSize = 8;
 #endif
 
 // BreakpadInfo describes a crash report.
