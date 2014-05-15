@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/invalidation/invalidation_service_util.h"
+#include "components/invalidation/invalidation_service_util.h"
 #include "sync/internal_api/public/base/invalidation.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/object_id_invalidation_map.h"

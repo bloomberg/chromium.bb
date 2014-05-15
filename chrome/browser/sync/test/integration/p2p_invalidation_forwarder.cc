@@ -4,8 +4,8 @@
 
 #include "chrome/browser/sync/test/integration/p2p_invalidation_forwarder.h"
 
-#include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "components/invalidation/p2p_invalidation_service.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 
 P2PInvalidationForwarder::P2PInvalidationForwarder(

@@ -1,12 +1,11 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/p2p_invalidation_service.h"
+#include "components/invalidation/p2p_invalidation_service.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/invalidation/invalidation_service_util.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/invalidation/invalidation_service_util.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"

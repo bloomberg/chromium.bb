@@ -24,7 +24,6 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
-#include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -51,6 +50,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/core/test/bookmark_test_helpers.h"
+#include "components/invalidation/invalidation_switches.h"
+#include "components/invalidation/p2p_invalidation_service.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -680,11 +681,11 @@ bool SyncTest::SetUpLocalPythonTestServer() {
   xmpp_host_port_pair.set_port(xmpp_port);
   xmpp_port_.reset(new net::ScopedPortException(xmpp_port));
 
-  if (!cl->HasSwitch(switches::kSyncNotificationHostPort)) {
-    cl->AppendSwitchASCII(switches::kSyncNotificationHostPort,
+  if (!cl->HasSwitch(invalidation::switches::kSyncNotificationHostPort)) {
+    cl->AppendSwitchASCII(invalidation::switches::kSyncNotificationHostPort,
                           xmpp_host_port_pair.ToString());
     // The local XMPP server only supports insecure connections.
-    cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);
+    cl->AppendSwitch(invalidation::switches::kSyncAllowInsecureXmppConnection);
   }
   DVLOG(1) << "Started local python XMPP server at "
            << xmpp_host_port_pair.ToString();

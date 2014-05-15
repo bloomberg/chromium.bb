@@ -1,14 +1,14 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/invalidation_service_util.h"
+#include "components/invalidation/invalidation_service_util.h"
 
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "chrome/common/chrome_switches.h"
+#include "components/invalidation/invalidation_switches.h"
 
 namespace invalidation {
 

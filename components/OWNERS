@@ -53,6 +53,12 @@ per-file google*=pkasting@chromium.org
 
 per-file infobars.gypi=pkasting@chromium.org
 
+per-file invalidation.gypi=dcheng@chromium.org
+per-file invalidation.gypi=nyquist@chromium.org
+per-file invalidation.gypi=rlarocque@chromium.org
+per-file invalidation.gypi=tim@chromium.org
+per-file invalidation.gypi=pavely@chromium.org
+
 per-file json_schema.gypi=asargent@chromium.org
 per-file json_schema.gypi=calamity@chromium.org
 per-file json_schema.gypi=kalman@chromium.org

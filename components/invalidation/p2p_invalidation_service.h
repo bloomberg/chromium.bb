@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "sync/notifier/p2p_invalidator.h"
 
-#ifndef CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
-#define CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
+#ifndef COMPONENTS_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
+#define COMPONENTS_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
 
 namespace net {
 class URLRequestContextGetter;
@@ -71,4 +71,4 @@ class P2PInvalidationService
 
 }  // namespace invalidation
 
-#endif  // CHROME_BROWSER_INVALIDATION_P2P_INVALIDATION_SERVICE_H_
+#endif  // COMPONENTS_INVALIDATION_P2P_INVALIDATION_SERVICE_H_

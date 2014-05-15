@@ -4,6 +4,9 @@ include_rules = [
   "+components/keyed_service",
 
   "+google/cacheinvalidation",
+  "+google_apis/gaia",
+  "+jingle/notifier",
+  "+net/url_request",
 
   "+sync/internal_api/public/base",
   "+sync/notifier",

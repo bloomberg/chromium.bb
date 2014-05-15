@@ -149,8 +149,6 @@
         'browser/extensions/test_extension_system.h',
         'browser/invalidation/fake_invalidation_service.cc',
         'browser/invalidation/fake_invalidation_service.h',
-        'browser/invalidation/p2p_invalidation_service.cc',
-        'browser/invalidation/p2p_invalidation_service.h',
         'browser/media/fake_desktop_media_list.cc',
         'browser/media/fake_desktop_media_list.h',
         'browser/media_galleries/media_galleries_test_util.cc',

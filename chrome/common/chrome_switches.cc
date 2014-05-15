@@ -1211,20 +1211,10 @@ const char kSuggestionNtpGaussianFilter[]   = "suggestion-ntp-gaussian-filter";
 // of day.
 const char kSuggestionNtpLinearFilter[]     = "suggestion-ntp-linear-filter";
 
-// Allows insecure XMPP connections for sync (for testing).
-const char kSyncAllowInsecureXmppConnection[] =
-    "sync-allow-insecure-xmpp-connection";
-
-// Invalidates any login info passed into sync's XMPP connection.
-const char kSyncInvalidateXmppLogin[]       = "sync-invalidate-xmpp-login";
-
 // This flag causes sync to retry very quickly (see polling_constants.h) the
 // when it encounters an error, as the first step towards exponential backoff.
 const char kSyncShortInitialRetryOverride[] =
     "sync-short-initial-retry-override";
-
-// Overrides the default host:port used for sync notifications.
-const char kSyncNotificationHostPort[]      = "sync-notification-host-port";
 
 // Overrides the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
@@ -1232,10 +1222,6 @@ const char kSyncServiceURL[]                = "sync-url";
 // Makes the sync code to throw an unrecoverable error after initialization.
 // Useful for testing unrecoverable error scenarios.
 const char kSyncThrowUnrecoverableError[]   = "sync-throw-unrecoverable-error";
-
-
-// Tries to connect to XMPP using SSLTCP first (for testing).
-const char kSyncTrySsltcpFirstForXmpp[]     = "sync-try-ssltcp-first-for-xmpp";
 
 // Enables deferring sync backend initialization until user initiated changes
 // occur.
