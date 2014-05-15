@@ -48,6 +48,8 @@ class UmaPolicy : public ActivityLogPolicy,
     AD_INJECTED,
     AD_REMOVED,
     AD_REPLACED,
+    AD_LIKELY_INJECTED,
+    AD_LIKELY_REPLACED,
     MAX_STATUS  // Insert new page statuses right before this one.
   };
 

@@ -41,6 +41,8 @@ const int kCreatedObject      = 1 << UmaPolicy::CREATED_OBJECT;
 const int kAdInjected         = 1 << UmaPolicy::AD_INJECTED;
 const int kAdRemoved          = 1 << UmaPolicy::AD_REMOVED;
 const int kAdReplaced         = 1 << UmaPolicy::AD_REPLACED;
+const int kAdLikelyInjected   = 1 << UmaPolicy::AD_LIKELY_INJECTED;
+const int kAdLikelyReplaced   = 1 << UmaPolicy::AD_LIKELY_REPLACED;
 
 // A mask of all the ad injection flags.
 const int kAnyAdActivity = kAdInjected | kAdRemoved | kAdReplaced;
@@ -159,6 +161,12 @@ int UmaPolicy::MatchActionToStatus(scoped_refptr<Action> action) {
     case Action::INJECTION_REPLACED_AD:
       ret_bit |= kAdReplaced;
       break;
+    case Action::INJECTION_LIKELY_NEW_AD:
+      ret_bit |= kAdLikelyInjected;
+      break;
+    case Action::INJECTION_LIKELY_REPLACED_AD:
+      ret_bit |= kAdLikelyReplaced;
+      break;
     case Action::NO_AD_INJECTION:
       break;
     case Action::NUM_INJECTION_TYPES:
@@ -233,6 +241,10 @@ void UmaPolicy::HistogramOnClose(const std::string& cleaned_url,
                              statuses[AD_REMOVED - 1]);
     UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(AD_REPLACED),
                              statuses[AD_REPLACED - 1]);
+    UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(AD_LIKELY_INJECTED),
+                             statuses[AD_LIKELY_INJECTED - 1]);
+    UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(AD_LIKELY_REPLACED),
+                             statuses[AD_LIKELY_REPLACED - 1]);
   } else {
     prefix += "Google.";
     UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(CONTENT_SCRIPT),
@@ -267,6 +279,10 @@ void UmaPolicy::HistogramOnClose(const std::string& cleaned_url,
                              statuses[AD_REMOVED - 1]);
     UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(AD_REPLACED),
                              statuses[AD_REPLACED - 1]);
+    UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(AD_LIKELY_INJECTED),
+                             statuses[AD_LIKELY_INJECTED - 1]);
+    UMA_HISTOGRAM_COUNTS_100(prefix + GetHistogramName(AD_LIKELY_REPLACED),
+                             statuses[AD_LIKELY_REPLACED - 1]);
   }
 }
 
@@ -412,6 +428,10 @@ const char* UmaPolicy::GetHistogramName(PageStatus status) {
       return "AdRemoved";
     case AD_REPLACED:
       return "AdReplaced";
+    case AD_LIKELY_INJECTED:
+      return "AdLikelyInjected";
+    case AD_LIKELY_REPLACED:
+      return "AdLikelyReplaced";
     case NONE:
     case MAX_STATUS:
     default:

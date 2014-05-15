@@ -47,11 +47,23 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
   // The type of ad injection an action performed.
   enum InjectionType {
-    NO_AD_INJECTION = 0,    // No ad injection occurred.
-    INJECTION_NEW_AD,       // A new ad was injected.
-    INJECTION_REMOVED_AD,   // An ad was removed.
-    INJECTION_REPLACED_AD,  // An ad was replaced.
-    NUM_INJECTION_TYPES     // Place any new injection types above this entry.
+    // No ad injection occurred.
+    NO_AD_INJECTION = 0,
+    // A new ad was injected.
+    INJECTION_NEW_AD,
+    // An ad was removed.
+    INJECTION_REMOVED_AD,
+    // An ad was replaced.
+    INJECTION_REPLACED_AD,
+    // Something occurred which heuristically looks like an ad injection, but we
+    // didn't categorize it as such (likely because we didn't recognize it as
+    // an ad network). If our list is effective, this should be significantly
+    // lower than the non-LIKELY counterparts.
+    INJECTION_LIKELY_NEW_AD,
+    INJECTION_LIKELY_REPLACED_AD,
+
+    // Place any new injection types above this entry.
+    NUM_INJECTION_TYPES
   };
 
   // A useful shorthand for methods that take or return collections of Action

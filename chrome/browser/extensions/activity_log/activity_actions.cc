@@ -25,6 +25,7 @@
 #include "components/rappor/rappor_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/ad_injection_constants.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/dom_action_types.h"
 #include "sql/statement.h"
 #include "url/gurl.h"
@@ -91,9 +92,19 @@ Action::InjectionType CheckDomObject(const base::DictionaryValue* object) {
 
   if (!url_key.empty()) {
     std::string url;
-    if (object->GetString(url_key, &url) &&
-        AdNetworkDatabase::Get()->IsAdNetwork(GURL(url))) {
-      return Action::INJECTION_NEW_AD;
+    if (object->GetString(url_key, &url)) {
+      GURL gurl(url);
+      if (AdNetworkDatabase::Get()->IsAdNetwork(gurl))
+        return Action::INJECTION_NEW_AD;
+      // If the extension injected an URL which is not local to itself, there is
+      // a good chance it could be a new ad, and our database missed it.
+      // This could be noisier than other metrics, because there are perfectly
+      // acceptable uses for this, like "Show my mail".
+      if (gurl.is_valid() &&
+          !gurl.is_empty() &&
+          !gurl.SchemeIs(kExtensionScheme)) {
+        return Action::INJECTION_LIKELY_NEW_AD;
+      }
     }
   }
 
@@ -104,8 +115,11 @@ Action::InjectionType CheckDomObject(const base::DictionaryValue* object) {
          i < children->GetSize() &&
              i < ad_injection_constants::kMaximumChildrenToCheck;
          ++i) {
-      if (children->GetDictionary(i, &child) && CheckDomObject(child))
-        return Action::INJECTION_NEW_AD;
+      if (children->GetDictionary(i, &child)) {
+        Action::InjectionType type = CheckDomObject(child);
+        if (type != Action::NO_AD_INJECTION)
+          return type;
+      }
     }
   }
 
@@ -161,7 +175,8 @@ Action::InjectionType Action::DidInjectAd(
     return NO_AD_INJECTION;
 
   if (api_name_ == ad_injection_constants::kHtmlIframeSrcApiName ||
-      api_name_ == ad_injection_constants::kHtmlEmbedSrcApiName) {
+      api_name_ == ad_injection_constants::kHtmlEmbedSrcApiName ||
+      api_name_ == ad_injection_constants::kHtmlAnchorHrefApiName) {
     return CheckSrcModification();
   } else if (EndsWith(api_name_,
                       ad_injection_constants::kAppendChildApiSuffix,
@@ -418,10 +433,37 @@ void Action::MaybeUploadUrl(rappor::RapporService* rappor_service) const {
 }
 
 Action::InjectionType Action::CheckSrcModification() const {
-  bool injected_ad = arg_url_.is_valid() &&
-                     !arg_url_.is_empty() &&
-                     AdNetworkDatabase::Get()->IsAdNetwork(arg_url_);
-  return injected_ad ? INJECTION_NEW_AD : NO_AD_INJECTION;
+  const AdNetworkDatabase* database = AdNetworkDatabase::Get();
+
+  bool arg_url_valid = arg_url_.is_valid() && !arg_url_.is_empty();
+
+  GURL prev_url;
+  std::string prev_url_string;
+  if (args_.get() && args_->GetString(1u, &prev_url_string))
+    prev_url = GURL(prev_url_string);
+
+  bool prev_url_valid = prev_url.is_valid() && !prev_url.is_empty();
+
+  bool injected_ad = arg_url_valid && database->IsAdNetwork(arg_url_);
+  bool replaced_ad = prev_url_valid && database->IsAdNetwork(prev_url);
+
+  if (injected_ad && replaced_ad)
+    return INJECTION_REPLACED_AD;
+  if (injected_ad)
+    return INJECTION_NEW_AD;
+  if (replaced_ad)
+    return INJECTION_REMOVED_AD;
+
+  // If the extension modified the URL with an external, valid URL then there's
+  // a good chance it's ad injection. Log it as a likely one, which also helps
+  // us determine the effectiveness of our IsAdNetwork() recognition.
+  if (arg_url_valid && !arg_url_.SchemeIs(kExtensionScheme)) {
+    if (prev_url_valid)
+      return INJECTION_LIKELY_REPLACED_AD;
+    return INJECTION_LIKELY_NEW_AD;
+  }
+
+  return NO_AD_INJECTION;
 }
 
 Action::InjectionType Action::CheckAppendChild() const {

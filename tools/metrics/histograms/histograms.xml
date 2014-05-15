@@ -5381,6 +5381,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="ExtensionActivity.AdLikelyInjected" units="Extension Count">
+  <owner>felt@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    For each pageload, the number of extensions that performed an action that
+    heuristically looks like injecting an ad, but could not be confirmed.
+  </summary>
+</histogram>
+
+<histogram name="ExtensionActivity.AdLikelyReplaced" units="Extension Count">
+  <owner>felt@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    For each pageload, the number of extensions that performed an action that
+    heuristically looks like replacing an ad, but could not be confirmed.
+  </summary>
+</histogram>
+
 <histogram name="ExtensionActivity.AdRemoved" units="Extension Count">
   <owner>felt@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>

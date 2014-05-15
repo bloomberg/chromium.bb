@@ -24,6 +24,7 @@ extern const char kHref[];
 
 extern const char kHtmlIframeSrcApiName[];
 extern const char kHtmlEmbedSrcApiName[];
+extern const char kHtmlAnchorHrefApiName[];
 extern const char kAppendChildApiSuffix[];
 
 extern const size_t kMaximumChildrenToCheck;

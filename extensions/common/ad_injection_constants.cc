@@ -20,6 +20,7 @@ const char kHref[] = "href";
 
 const char kHtmlIframeSrcApiName[] = "HTMLIFrameElement.src";
 const char kHtmlEmbedSrcApiName[] = "HTMLEmbedElement.src";
+const char kHtmlAnchorHrefApiName[] = "HTMLAnchorElement.href";
 const char kAppendChildApiSuffix[] = "appendChild";
 
 // The maximum number of children to check when we examine a newly-added
@@ -32,6 +33,7 @@ extern const size_t kMaximumDepthToCheck = 5u;
 bool ApiCanInjectAds(const std::string& api) {
   return api == kHtmlIframeSrcApiName ||
          api == kHtmlEmbedSrcApiName ||
+         api == kHtmlAnchorHrefApiName ||
          EndsWith(api, kAppendChildApiSuffix, true /* case sensitive */);
 }
 

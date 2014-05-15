@@ -5,6 +5,7 @@
 #include "base/files/file_path.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
@@ -29,7 +30,8 @@ namespace {
 
 // The "ad network" that we are using. Any src or href equal to this should be
 // considered an ad network.
-const char kAdNetwork[] = "http://www.known-ads.adnetwork";
+const char kAdNetwork1[] = "http://www.known-ads.adnetwork";
+const char kAdNetwork2[] = "http://www.also-known-ads.adnetwork";
 
 // The current stage of the test.
 enum Stage {
@@ -47,6 +49,26 @@ const char kJavascriptErrorString[] = "Testing Error";
 // The string sent by the test to indicate that we have concluded the full test.
 const char kTestCompleteString[] = "Test Complete";
 
+std::string InjectionTypeToString(Action::InjectionType type) {
+  switch (type) {
+    case Action::NO_AD_INJECTION:
+      return "No Ad Injection";
+    case Action::INJECTION_NEW_AD:
+      return "Injection New Ad";
+    case Action::INJECTION_REMOVED_AD:
+      return "Injection Removed Ad";
+    case Action::INJECTION_REPLACED_AD:
+      return "Injection Replaced Ad";
+    case Action::INJECTION_LIKELY_NEW_AD:
+      return "Injection Likely New Ad";
+    case Action::INJECTION_LIKELY_REPLACED_AD:
+      return "Injection Likely Replaced Ad";
+    case Action::NUM_INJECTION_TYPES:
+      return "Num Injection Types";
+  }
+  return std::string();
+}
+
 // An implementation of ActivityLog::Observer that, for every action, sends it
 // through Action::DidInjectAd(). This will keep track of the observed
 // injections, and can be enabled or disabled as needed (for instance, this
@@ -56,22 +78,43 @@ class ActivityLogObserver : public ActivityLog::Observer {
   explicit ActivityLogObserver(content::BrowserContext* context);
   virtual ~ActivityLogObserver();
 
-  void set_enabled(bool enabled) { enabled_ = enabled; }
-  size_t injection_count() const { return injection_count_; }
+  // Disable the observer (e.g., to reset the page).
+  void disable() { enabled_ = false; }
+
+  // Enable the observer, resetting the state.
+  void enable() {
+    injection_type_ = Action::NO_AD_INJECTION;
+    found_multiple_injections_ = false;
+    enabled_ = true;
+  }
+
+  Action::InjectionType injection_type() const { return injection_type_; }
+
+  bool found_multiple_injections() const { return found_multiple_injections_; }
 
  private:
   virtual void OnExtensionActivity(scoped_refptr<Action> action) OVERRIDE;
 
   ScopedObserver<ActivityLog, ActivityLog::Observer> scoped_observer_;
+
+  // The associated BrowserContext.
   content::BrowserContext* context_;
-  size_t injection_count_;
+
+  // The type of the last injection.
+  Action::InjectionType injection_type_;
+
+  // Whether or not we found multiple injection types (which shouldn't happen).
+  bool found_multiple_injections_;
+
+  // Whether or not the observer is enabled.
   bool enabled_;
 };
 
 ActivityLogObserver::ActivityLogObserver(content::BrowserContext* context)
     : scoped_observer_(this),
       context_(context),
-      injection_count_(0u),
+      injection_type_(Action::NO_AD_INJECTION),
+      found_multiple_injections_(false),
       enabled_(false) {
   ActivityLog::GetInstance(context_)->AddObserver(this);
 }
@@ -79,9 +122,15 @@ ActivityLogObserver::ActivityLogObserver(content::BrowserContext* context)
 ActivityLogObserver::~ActivityLogObserver() {}
 
 void ActivityLogObserver::OnExtensionActivity(scoped_refptr<Action> action) {
-  if (enabled_ && action->DidInjectAd(NULL /* no rappor service */) !=
-          Action::NO_AD_INJECTION) {
-    ++injection_count_;
+  if (!enabled_)
+    return;
+
+  Action::InjectionType type =
+      action->DidInjectAd(NULL /* no rappor service */);
+  if (type != Action::NO_AD_INJECTION) {
+    if (injection_type_ != Action::NO_AD_INJECTION)
+      found_multiple_injections_ = true;
+    injection_type_ = type;
   }
 }
 
@@ -95,14 +144,18 @@ class TestAdNetworkDatabase : public AdNetworkDatabase {
  private:
   virtual bool IsAdNetwork(const GURL& url) const OVERRIDE;
 
-  GURL ad_network_url_;
+  GURL ad_network_url1_;
+  GURL ad_network_url2_;
 };
 
-TestAdNetworkDatabase::TestAdNetworkDatabase() : ad_network_url_(kAdNetwork) {}
+TestAdNetworkDatabase::TestAdNetworkDatabase() : ad_network_url1_(kAdNetwork1),
+                                                 ad_network_url2_(kAdNetwork2) {
+}
+
 TestAdNetworkDatabase::~TestAdNetworkDatabase() {}
 
 bool TestAdNetworkDatabase::IsAdNetwork(const GURL& url) const {
-  return url == ad_network_url_;
+  return url == ad_network_url1_ || url == ad_network_url2_;
 }
 
 scoped_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -141,17 +194,10 @@ class AdInjectionBrowserTest : public ExtensionBrowserTest {
 
   ActivityLogObserver* observer() { return observer_.get(); }
 
-  void set_expected_injections(size_t expected_injections) {
-    expected_injections_ = expected_injections;
-  }
-
  private:
   // The name of the last completed test; used in case of unexpected failure for
   // debugging.
   std::string last_test_;
-
-  // The number of expected injections.
-  size_t expected_injections_;
 
   // A listener for any messages from our ad-injecting extension.
   scoped_ptr<ExtensionTestMessageListener> listener_;
@@ -163,10 +209,11 @@ class AdInjectionBrowserTest : public ExtensionBrowserTest {
   Stage stage_;
 };
 
-AdInjectionBrowserTest::AdInjectionBrowserTest()
-    : expected_injections_(0u), stage_(BEFORE_RESET) {}
+AdInjectionBrowserTest::AdInjectionBrowserTest() : stage_(BEFORE_RESET) {
+}
 
-AdInjectionBrowserTest::~AdInjectionBrowserTest() {}
+AdInjectionBrowserTest::~AdInjectionBrowserTest() {
+}
 
 void AdInjectionBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
@@ -208,7 +255,7 @@ testing::AssertionResult AdInjectionBrowserTest::HandleResetBeginStage() {
 
   // Stop looking for ad injection, since some of the reset could be considered
   // ad injection.
-  observer()->set_enabled(false);
+  observer()->disable();
   stage_ = RESETTING;
   return testing::AssertionSuccess();
 }
@@ -220,7 +267,7 @@ testing::AssertionResult AdInjectionBrowserTest::HandleResetEndStage() {
   }
 
   // Look for ad injection again, now that the reset is over.
-  observer()->set_enabled(true);
+  observer()->enable();
   stage_ = TESTING;
   return testing::AssertionSuccess();
 }
@@ -249,27 +296,27 @@ testing::AssertionResult AdInjectionBrowserTest::HandleTestingStage(
 
   last_test_ = message.substr(0, sep);
 
-  // TODO(rdevlin.cronin): Currently, we lump all kinds of ad injection into
-  // one counter, because we can't differentiate (or catch all of them). Change
-  // this when we can.
-  // Increment the expected change, and compare.
-  if (expected_change != Action::NO_AD_INJECTION)
-    ++expected_injections_;
+  Action::InjectionType expected_injection =
+      static_cast<Action::InjectionType>(expected_change);
   std::string error;
-  if (expected_injections_ != observer()->injection_count()) {
+  if (observer()->found_multiple_injections()) {
+    error = "Found multiple injection types. "
+            "Only one injection is expected per test.";
+  } else if (expected_injection != observer()->injection_type()) {
     // We need these static casts, because size_t is different on different
     // architectures, and printf becomes unhappy.
-    error =
-        base::StringPrintf("Injection Count Mismatch: Expected %u, Actual %u",
-                           static_cast<unsigned int>(expected_injections_),
-                           static_cast<unsigned int>(
-                               observer()->injection_count()));
+    error = base::StringPrintf(
+        "Incorrect Injection Found: Expected: %s, Actual: %s",
+        InjectionTypeToString(expected_injection).c_str(),
+        InjectionTypeToString(observer()->injection_type()).c_str());
   }
 
   stage_ = BEFORE_RESET;
 
-  if (!error.empty())
-    return testing::AssertionFailure() << error;
+  if (!error.empty()) {
+    return testing::AssertionFailure()
+        << "Error in Test '" << last_test_ << "': " << error;
+  }
 
   return testing::AssertionSuccess();
 }
@@ -327,10 +374,6 @@ IN_PROC_BROWSER_TEST_F(AdInjectionBrowserTest, DetectAdInjections) {
     } else {  // We're in some kind of test.
       EXPECT_TRUE(HandleTestingStage(message));
     }
-
-    // We set the expected injections to be whatever they actually are so that
-    // we only fail one test, instead of all subsequent tests.
-    set_expected_injections(observer()->injection_count());
 
     // In all cases (except for "Test Complete", in which case we already
     // break'ed), we reply with a continue message.

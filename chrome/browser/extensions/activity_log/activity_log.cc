@@ -127,6 +127,7 @@ static const ApiInfo kApiInfoTable[] = {
     {Action::ACTION_API_CALL, "webstore.install", 0, NONE, NULL},
     {Action::ACTION_API_CALL, "windows.create", 0, DICT_LOOKUP, "url"},
     {Action::ACTION_DOM_ACCESS, "Document.location", 0, NONE, NULL},
+    {Action::ACTION_DOM_ACCESS, "HTMLAnchorElement.href", 0, NONE, NULL},
     {Action::ACTION_DOM_ACCESS, "HTMLButtonElement.formAction", 0, NONE, NULL},
     {Action::ACTION_DOM_ACCESS, "HTMLEmbedElement.src", 0, NONE, NULL},
     {Action::ACTION_DOM_ACCESS, "HTMLFormElement.action", 0, NONE, NULL},
