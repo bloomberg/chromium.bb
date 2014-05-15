@@ -8,7 +8,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,21 +83,16 @@ void ProviderAsyncFileUtil::CreateOrOpen(
     int file_flags,
     const CreateOrOpenCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::PlatformFile platform_file = base::kInvalidPlatformFileValue;
-  if ((file_flags & base::PLATFORM_FILE_CREATE) ||
-      (file_flags & base::PLATFORM_FILE_OPEN_ALWAYS) ||
-      (file_flags & base::PLATFORM_FILE_CREATE_ALWAYS) ||
-      (file_flags & base::PLATFORM_FILE_OPEN_TRUNCATED)) {
-    callback.Run(base::File::FILE_ERROR_SECURITY,
-                 base::PassPlatformFile(&platform_file),
-                 base::Closure());
+  if ((file_flags & base::File::FLAG_CREATE) ||
+      (file_flags & base::File::FLAG_OPEN_ALWAYS) ||
+      (file_flags & base::File::FLAG_CREATE_ALWAYS) ||
+      (file_flags & base::File::FLAG_OPEN_TRUNCATED)) {
+    callback.Run(base::File(base::File::FILE_ERROR_SECURITY), base::Closure());
     return;
   }
 
   NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_NOT_FOUND,
-               base::PassPlatformFile(&platform_file),
-               base::Closure());
+  callback.Run(base::File(base::File::FILE_ERROR_NOT_FOUND), base::Closure());
 }
 
 void ProviderAsyncFileUtil::EnsureFileExists(

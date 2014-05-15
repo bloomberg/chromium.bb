@@ -55,17 +55,11 @@ void DidOpenSnapshot(
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref,
     base::File file) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  if (file.error_details() != base::File::FILE_OK) {
-    base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
-    callback.Run(file.error_details(),
-                 base::PassPlatformFile(&invalid_file),
-                 base::Closure());
+  if (!file.IsValid()) {
+    callback.Run(file.Pass(), base::Closure());
     return;
   }
-  base::PlatformFile platform_file = file.TakePlatformFile();
-  callback.Run(base::File::FILE_OK,
-               base::PassPlatformFile(&platform_file),
-               base::Bind(&HoldFileRef, file_ref));
+  callback.Run(file.Pass(), base::Bind(&HoldFileRef, file_ref));
 }
 
 }  // namespace
@@ -112,10 +106,7 @@ void NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen(
     const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   if (result != base::File::FILE_OK) {
-    base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
-    callback.Run(result,
-                 base::PassPlatformFile(&invalid_file),
-                 base::Closure());
+    callback.Run(base::File(), base::Closure());
     return;
   }
   base::PostTaskAndReplyWithResult(
@@ -124,9 +115,7 @@ void NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen(
       base::Bind(&fileapi::NativeFileUtil::CreateOrOpen,
                  platform_path,
                  file_flags),
-      base::Bind(&DidOpenSnapshot,
-                 callback,
-                 file_ref));
+      base::Bind(&DidOpenSnapshot, callback, file_ref));
 }
 
 void NativeMediaFileUtil::CreateOrOpen(
@@ -139,10 +128,7 @@ void NativeMediaFileUtil::CreateOrOpen(
   if (file_flags & ~(base::File::FLAG_OPEN |
                      base::File::FLAG_READ |
                      base::File::FLAG_WRITE_ATTRIBUTES)) {
-    base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
-    callback.Run(base::File::FILE_ERROR_SECURITY,
-                 base::PassPlatformFile(&invalid_file),
-                 base::Closure());
+    callback.Run(base::File(base::File::FILE_ERROR_SECURITY), base::Closure());
     return;
   }
   scoped_refptr<base::SequencedTaskRunner> task_runner = context->task_runner();

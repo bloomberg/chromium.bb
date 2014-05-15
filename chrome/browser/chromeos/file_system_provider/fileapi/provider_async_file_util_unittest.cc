@@ -10,7 +10,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/provider_async_file_util.h"
@@ -47,10 +46,12 @@ class EventLogger {
     error_.reset(new base::File::Error(error));
   }
 
-  void OnCreateOrOpen(base::File::Error error,
-                      base::PassPlatformFile platform_file,
+  void OnCreateOrOpen(base::File file,
                       const base::Closure& on_close_callback) {
-    error_.reset(new base::File::Error(error));
+    if (file.IsValid())
+      error_.reset(new base::File::Error(base::File::FILE_OK));
+
+    error_.reset(new base::File::Error(file.error_details()));
   }
 
   void OnEnsureFileExists(base::File::Error error, bool created) {
@@ -185,7 +186,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_Create) {
   async_file_util_->CreateOrOpen(
       CreateOperationContext(),
       file_url_,
-      base::PLATFORM_FILE_CREATE,
+      base::File::FLAG_CREATE,
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
@@ -198,7 +199,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_CreateAlways) {
   async_file_util_->CreateOrOpen(
       CreateOperationContext(),
       file_url_,
-      base::PLATFORM_FILE_CREATE_ALWAYS,
+      base::File::FLAG_CREATE_ALWAYS,
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
@@ -211,7 +212,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_OpenAlways) {
   async_file_util_->CreateOrOpen(
       CreateOperationContext(),
       file_url_,
-      base::PLATFORM_FILE_OPEN_ALWAYS,
+      base::File::FLAG_OPEN_ALWAYS,
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
@@ -225,7 +226,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest,
   async_file_util_->CreateOrOpen(
       CreateOperationContext(),
       file_url_,
-      base::PLATFORM_FILE_OPEN_TRUNCATED,
+      base::File::FLAG_OPEN_TRUNCATED,
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());
@@ -238,7 +239,7 @@ TEST_F(FileSystemProviderProviderAsyncFileUtilTest, CreateOrOpen_Open) {
   async_file_util_->CreateOrOpen(
       CreateOperationContext(),
       file_url_,
-      base::PLATFORM_FILE_OPEN,
+      base::File::FLAG_OPEN,
       base::Bind(&EventLogger::OnCreateOrOpen, logger.GetWeakPtr()));
 
   ASSERT_TRUE(logger.error());

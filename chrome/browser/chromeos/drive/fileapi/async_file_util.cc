@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/platform_file.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -19,6 +18,24 @@
 #include "webkit/common/blob/shareable_file_reference.h"
 
 using content::BrowserThread;
+
+namespace google_apis {
+namespace internal {
+
+// Partial specialization of helper template from google_apis/drive/task_util.h
+// to enable google_apis::CreateRelayCallback to work with CreateOrOpenCallback.
+template<typename T2>
+struct ComposedCallback<void(base::File, T2)> {
+  static void Run(
+      const base::Callback<void(const base::Closure&)>& runner,
+      const base::Callback<void(base::File, T2)>& callback,
+      base::File arg1, T2 arg2) {
+    runner.Run(base::Bind(callback, Passed(&arg1), arg2));
+  }
+};
+
+}  // namespace internal
+}  // namespace google_apis
 
 namespace drive {
 namespace internal {
@@ -48,8 +65,7 @@ void PostFileSystemCallback(
 // Runs CreateOrOpenFile callback based on the given |error| and |file|.
 void RunCreateOrOpenFileCallback(
     const AsyncFileUtil::CreateOrOpenCallback& callback,
-    base::File::Error error,
-    base::PlatformFile file,
+    base::File file,
     const base::Closure& close_callback_on_ui_thread) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -57,7 +73,7 @@ void RunCreateOrOpenFileCallback(
   // It will be provided as a FileSystem::OpenFileCallback's argument later.
   // (crbug.com/259184).
   callback.Run(
-      error, base::PassPlatformFile(&file),
+      file.Pass(),
       base::Bind(&google_apis::RunTaskOnThread,
                  BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
                  close_callback_on_ui_thread));
@@ -67,12 +83,7 @@ void RunCreateOrOpenFileCallback(
 void RunCreateOrOpenFileCallbackOnError(
     const AsyncFileUtil::CreateOrOpenCallback& callback,
     base::File::Error error) {
-  // Because the |callback| takes PassPlatformFile as its argument, and
-  // it is necessary to guarantee the pointer passed to PassPlatformFile is
-  // alive during the |callback| invocation, here we prepare a thin adapter
-  // to have PlatformFile on stack frame.
-  base::PlatformFile file = base::kInvalidPlatformFileValue;
-  callback.Run(error, base::PassPlatformFile(&file), base::Closure());
+  callback.Run(base::File(error), base::Closure());
 }
 
 // Runs EnsureFileExistsCallback based on the given |error|.
@@ -128,10 +139,7 @@ void AsyncFileUtil::CreateOrOpen(
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    base::PlatformFile platform_file = base::kInvalidPlatformFileValue;
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND,
-                 base::PassPlatformFile(&platform_file),
-                 base::Closure());
+    callback.Run(base::File(base::File::FILE_ERROR_NOT_FOUND), base::Closure());
     return;
   }
 

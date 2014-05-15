@@ -24,7 +24,6 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "webkit/common/blob/scoped_file.h"
 
@@ -66,8 +65,7 @@ typedef base::Callback<
          const base::Closure& close_callback)>
     CreateWritableSnapshotFileCallback;
 typedef base::Callback<
-    void(base::File::Error result,
-         base::PlatformFile platform_file,
+    void(base::File file,
          const base::Closure& close_callback)> OpenFileCallback;
 
 // Gets the profile of the Drive entry pointed by |url|. Used as

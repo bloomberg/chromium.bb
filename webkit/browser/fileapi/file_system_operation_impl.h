@@ -176,8 +176,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemOperationImpl
                 int64 bytes,
                 FileWriterDelegate::WriteProgressStatus write_status);
   void DidOpenFile(const OpenFileCallback& callback,
-                   base::File::Error rv,
-                   base::PassPlatformFile file,
+                   base::File file,
                    const base::Closure& on_close_callback);
 
   // Used only for internal assertions.

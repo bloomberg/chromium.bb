@@ -12,7 +12,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
 #include "webkit/common/fileapi/directory_entry.h"
@@ -54,8 +53,7 @@ class AsyncFileUtil {
   // child process. |on_close_callback|.is_null() can be true, if no operation
   // is needed on closing the file.
   typedef base::Callback<
-      void(base::File::Error result,
-           base::PassPlatformFile file,
+      void(base::File file,
            const base::Closure& on_close_callback)> CreateOrOpenCallback;
 
   typedef base::Callback<
@@ -94,9 +92,9 @@ class AsyncFileUtil {
   virtual ~AsyncFileUtil() {}
 
   // Creates or opens a file with the given flags.
-  // If PLATFORM_FILE_CREATE is set in |file_flags| it always tries to create
+  // If File::FLAG_CREATE is set in |file_flags| it always tries to create
   // a new file at the given |url| and calls back with
-  // PLATFORM_FILE_ERROR_FILE_EXISTS if the |url| already exists.
+  // File::FILE_ERROR_FILE_EXISTS if the |url| already exists.
   //
   // FileSystemOperationImpl::OpenFile calls this.
   // This is used only by Pepper/NaCl File API.
@@ -113,9 +111,9 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::CreateFile calls this.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_OK and created==true if a file has not existed and
+  // - File::FILE_OK and created==true if a file has not existed and
   //   is created at |url|.
-  // - PLATFORM_FILE_OK and created==false if the file already exists.
+  // - File::FILE_OK and created==false if the file already exists.
   // - Other error code (with created=false) if a file hasn't existed yet
   //   and there was an error while creating a new file.
   //
@@ -129,11 +127,11 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::CreateDirectory calls this.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if the |url|'s parent directory
+  // - File::FILE_ERROR_NOT_FOUND if the |url|'s parent directory
   //   does not exist and |recursive| is false.
-  // - PLATFORM_FILE_ERROR_EXISTS if a directory already exists at |url|
+  // - File::FILE_ERROR_EXISTS if a directory already exists at |url|
   //   and |exclusive| is true.
-  // - PLATFORM_FILE_ERROR_EXISTS if a file already exists at |url|
+  // - File::FILE_ERROR_EXISTS if a file already exists at |url|
   //   (regardless of |exclusive| value).
   // - Other error code if it failed to create a directory.
   //
@@ -149,7 +147,7 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::GetMetadata calls this.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if the file doesn't exist.
+  // - File::FILE_ERROR_NOT_FOUND if the file doesn't exist.
   // - Other error code if there was an error while retrieving the file info.
   //
   virtual void GetFileInfo(
@@ -171,8 +169,8 @@ class AsyncFileUtil {
   // are 'a' and 'b', but not '/path/to/dir/a' and '/path/to/dir/b'.)
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if the target directory doesn't exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_DIRECTORY if an entry exists at |url| but
+  // - File::FILE_ERROR_NOT_FOUND if the target directory doesn't exist.
+  // - File::FILE_ERROR_NOT_A_DIRECTORY if an entry exists at |url| but
   //   is a file (not a directory).
   //
   virtual void ReadDirectory(
@@ -201,7 +199,7 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::Truncate calls this.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if the file doesn't exist.
+  // - File::FILE_ERROR_NOT_FOUND if the file doesn't exist.
   //
   virtual void Truncate(
       scoped_ptr<FileSystemOperationContext> context,
@@ -222,12 +220,12 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::Copy calls this for same-filesystem copy case.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  // - File::FILE_ERROR_NOT_FOUND if |src_url|
   //   or the parent directory of |dest_url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
-  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  // - File::FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - File::FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
   //   is not a file.
-  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  // - File::FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
   virtual void CopyFileLocal(
@@ -245,12 +243,12 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::Move calls this for same-filesystem move case.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_url|
+  // - File::FILE_ERROR_NOT_FOUND if |src_url|
   //   or the parent directory of |dest_url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
-  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  // - File::FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - File::FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
   //   is not a file.
-  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  // - File::FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
   virtual void MoveFileLocal(
@@ -266,11 +264,11 @@ class AsyncFileUtil {
   // cases.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |src_file_path|
+  // - File::FILE_ERROR_NOT_FOUND if |src_file_path|
   //   or the parent directory of |dest_url| does not exist.
-  // - PLATFORM_FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
+  // - File::FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
   //   is not a file.
-  // - PLATFORM_FILE_ERROR_FAILED if |dest_url| does not exist and
+  // - File::FILE_ERROR_FAILED if |dest_url| does not exist and
   //   its parent path is a file.
   //
   virtual void CopyInForeignFile(
@@ -284,8 +282,8 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::RemoveFile calls this.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| is not a file.
+  // - File::FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - File::FILE_ERROR_NOT_A_FILE if |url| is not a file.
   //
   virtual void DeleteFile(
       scoped_ptr<FileSystemOperationContext> context,
@@ -297,9 +295,9 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::RemoveDirectory calls this.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_DIRECTORY if |url| is not a directory.
-  // - PLATFORM_FILE_ERROR_NOT_EMPTY if |url| is not empty.
+  // - File::FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - File::FILE_ERROR_NOT_A_DIRECTORY if |url| is not a directory.
+  // - File::FILE_ERROR_NOT_EMPTY if |url| is not empty.
   //
   virtual void DeleteDirectory(
       scoped_ptr<FileSystemOperationContext> context,
@@ -314,11 +312,11 @@ class AsyncFileUtil {
   // deletion can be implemented more efficiently than calling DeleteFile() and
   // DeleteDirectory() for each files/directories.
   // This method is optional, so if not supported,
-  // PLATFORM_ERROR_INVALID_OPERATION should be returned via |callback|.
+  // File::FILE_ERROR_INVALID_OPERATION should be returned via |callback|.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
-  // - PLATFORM_ERROR_INVALID_OPERATION if this operation is not supported.
+  // - File::FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - File::FILE_ERROR_INVALID_OPERATION if this operation is not supported.
   virtual void DeleteRecursively(
       scoped_ptr<FileSystemOperationContext> context,
       const FileSystemURL& url,
@@ -349,8 +347,8 @@ class AsyncFileUtil {
   // FileSystemOperationImpl::CreateSnapshotFile calls this.
   //
   // This reports following error code via |callback|:
-  // - PLATFORM_FILE_ERROR_NOT_FOUND if |url| does not exist.
-  // - PLATFORM_FILE_ERROR_NOT_A_FILE if |url| exists but is a directory.
+  // - File::FILE_ERROR_NOT_FOUND if |url| does not exist.
+  // - File::FILE_ERROR_NOT_A_FILE if |url| exists but is a directory.
   //
   // The field values of |file_info| are undefined (implementation
   // dependent) in error cases, and the caller should always

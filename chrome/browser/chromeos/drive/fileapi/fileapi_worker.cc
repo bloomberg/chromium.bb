@@ -24,24 +24,23 @@ namespace fileapi_internal {
 namespace {
 
 // The summary of opening mode is:
-// - PLATFORM_FILE_OPEN: Open the existing file. Fail if not exists.
-// - PLATFORM_FILE_CREATE: Create the file if not exists. Fail if exists.
-// - PLATFORM_FILE_OPEN_ALWAYS: Open the existing file. Create a new file
+// - File::FLAG_OPEN: Open the existing file. Fail if not exists.
+// - File::FLAG_CREATE: Create the file if not exists. Fail if exists.
+// - File::FLAG_OPEN_ALWAYS: Open the existing file. Create a new file
 //     if not exists.
-// - PLATFORM_FILE_CREATE_ALWAYS: Create a new file if not exists. If exists
+// - File::FLAG_CREATE_ALWAYS: Create a new file if not exists. If exists
 //     open it with truncate.
-// - PLATFORM_FILE_OPEN_TRUNCATE: Open the existing file with truncate.
+// - File::FLAG_OPEN_TRUNCATE: Open the existing file with truncate.
 //     Fail if not exists.
 OpenMode GetOpenMode(int file_flag) {
-  if (file_flag & (base::PLATFORM_FILE_OPEN |
-                   base::PLATFORM_FILE_OPEN_TRUNCATED))
+  if (file_flag & (base::File::FLAG_OPEN | base::File::FLAG_OPEN_TRUNCATED))
     return OPEN_FILE;
 
-  if (file_flag & base::PLATFORM_FILE_CREATE)
+  if (file_flag & base::File::FLAG_CREATE)
     return CREATE_FILE;
 
-  DCHECK(file_flag & (base::PLATFORM_FILE_OPEN_ALWAYS |
-                      base::PLATFORM_FILE_CREATE_ALWAYS));
+  DCHECK(file_flag &
+         (base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_CREATE_ALWAYS));
   return OPEN_OR_CREATE_FILE;
 }
 
@@ -144,13 +143,11 @@ void RunCreateWritableSnapshotFileCallback(
   callback.Run(FileErrorToBaseFileError(error), local_path, close_callback);
 }
 
-// Runs |callback| with |error| and |platform_file|.
+// Runs |callback| with |file|.
 void RunOpenFileCallback(const OpenFileCallback& callback,
                          const base::Closure& close_callback,
                          base::File file) {
-  base::File::Error error = file.IsValid() ? base::File::FILE_OK :
-                                             file.error_details();
-  callback.Run(error, file.TakePlatformFile(), close_callback);
+  callback.Run(file.Pass(), close_callback);
 }
 
 base::File OpenFile(const base::FilePath& path, int flags) {
@@ -166,9 +163,7 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(FileErrorToBaseFileError(error),
-                 base::kInvalidPlatformFileValue,
-                 base::Closure());
+    callback.Run(base::File(FileErrorToBaseFileError(error)), base::Closure());
     return;
   }
 
@@ -191,8 +186,7 @@ void OpenFileAfterFileSystemOpenFile(int file_flags,
   bool posted = base::PostTaskAndReplyWithResult(
       BrowserThread::GetBlockingPool(), FROM_HERE,
       base::Bind(&OpenFile, local_path, file_flags),
-      base::Bind(&RunOpenFileCallback,
-                 callback, close_callback));
+      base::Bind(&RunOpenFileCallback, callback, close_callback));
   DCHECK(posted);
 }
 
@@ -336,20 +330,19 @@ void OpenFile(const base::FilePath& file_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Returns an error if any unsupported flag is found.
-  if (file_flags & ~(base::PLATFORM_FILE_OPEN |
-                     base::PLATFORM_FILE_CREATE |
-                     base::PLATFORM_FILE_OPEN_ALWAYS |
-                     base::PLATFORM_FILE_CREATE_ALWAYS |
-                     base::PLATFORM_FILE_OPEN_TRUNCATED |
-                     base::PLATFORM_FILE_READ |
-                     base::PLATFORM_FILE_WRITE |
-                     base::PLATFORM_FILE_WRITE_ATTRIBUTES |
-                     base::PLATFORM_FILE_APPEND)) {
+  if (file_flags & ~(base::File::FLAG_OPEN |
+                     base::File::FLAG_CREATE |
+                     base::File::FLAG_OPEN_ALWAYS |
+                     base::File::FLAG_CREATE_ALWAYS |
+                     base::File::FLAG_OPEN_TRUNCATED |
+                     base::File::FLAG_READ |
+                     base::File::FLAG_WRITE |
+                     base::File::FLAG_WRITE_ATTRIBUTES |
+                     base::File::FLAG_APPEND)) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
-                   base::File::FILE_ERROR_FAILED,
-                   base::kInvalidPlatformFileValue,
+                   Passed(base::File(base::File::FILE_ERROR_FAILED)),
                    base::Closure()));
     return;
   }

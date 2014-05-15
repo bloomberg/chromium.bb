@@ -143,7 +143,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
 
   // Called when GetFileInfo method call failed to get the details of file
   // specified by the requested url. |callback| is invoked to notify the
-  // caller about the platform file |error|.
+  // caller about the file |error|.
   void OnGetFileInfoError(
       const AsyncFileUtil::GetFileInfoCallback& callback,
       base::File::Error error);

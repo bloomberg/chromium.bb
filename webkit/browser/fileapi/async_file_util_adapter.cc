@@ -136,19 +136,7 @@ void RunCreateOrOpenCallback(
     FileSystemOperationContext* context,
     const AsyncFileUtil::CreateOrOpenCallback& callback,
     base::File file) {
-  // TODO(rvargas): Remove PlatformFile from AsyncFileUtil.
-  base::File::Error error;
-  base::PlatformFile platform_file;
-  if (file.IsValid()) {
-    error = base::File::FILE_OK;
-    platform_file = file.TakePlatformFile();
-  } else {
-    error = file.error_details();
-    platform_file = base::kInvalidPlatformFileValue;
-  }
-
-  callback.Run(error, base::PassPlatformFile(&platform_file), base::Closure());
-  base::File closer(platform_file);
+  callback.Run(file.Pass(), base::Closure());
 }
 
 }  // namespace

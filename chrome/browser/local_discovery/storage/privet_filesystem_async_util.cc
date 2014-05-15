@@ -4,7 +4,6 @@
 
 #include "chrome/browser/local_discovery/storage/privet_filesystem_async_util.h"
 
-#include "base/platform_file.h"
 #include "chrome/browser/local_discovery/storage/path_util.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/blob/shareable_file_reference.h"
@@ -29,8 +28,7 @@ void PrivetFileSystemAsyncUtil::CreateOrOpen(
     int file_flags,
     const CreateOrOpenCallback& callback) {
   NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION,
-               base::PassPlatformFile(NULL),
+  callback.Run(base::File(base::File::FILE_ERROR_INVALID_OPERATION),
                base::Closure());
 }
 

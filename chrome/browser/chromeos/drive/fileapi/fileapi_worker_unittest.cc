@@ -70,32 +70,28 @@ void VerifyWrite(
     int64 expected_size,
     const base::FilePath& expected_written_path,
     const std::string& write_data,
-    base::File::Error result,
-    base::PlatformFile platform_file,
+    base::File file,
     const base::Closure& close_callback) {
-  // Check that the file is properly opened.
-  EXPECT_EQ(base::File::FILE_OK, result);
-  EXPECT_NE(base::kInvalidPlatformFileValue, platform_file);
+  // Check that the file was properly opened.
+  EXPECT_TRUE(file.IsValid());
   EXPECT_FALSE(close_callback.is_null());
 
   // Check that the file has the expected length (i.e., truncated or not)
-  base::PlatformFileInfo info;
-  EXPECT_TRUE(base::GetPlatformFileInfo(platform_file, &info));
+  base::File::Info info;
+  EXPECT_TRUE(file.GetInfo(&info));
   EXPECT_EQ(expected_size, info.size);
 
   // Write some data.
   const int data_size = static_cast<int>(write_data.size());
-  EXPECT_EQ(data_size,
-            base::WritePlatformFile(platform_file, 0, write_data.c_str(),
-                                    data_size));
-  EXPECT_TRUE(base::TruncatePlatformFile(platform_file, data_size));
+  EXPECT_EQ(data_size, file.Write(0, write_data.c_str(), data_size));
+  EXPECT_TRUE(file.SetLength(data_size));
 
   // Close.
-  base::ClosePlatformFile(platform_file);
+  file.Close();
   close_callback.Run();
 
   // Checks that the written content goes to |expected_written_path|. I.e.,
-  // the |platform_file| handle is pointing to the file.
+  // the |file| handle is pointing to the file.
   std::string written;
   EXPECT_TRUE(base::ReadFileToString(expected_written_path, &written));
   EXPECT_EQ(write_data, written);
@@ -104,27 +100,24 @@ void VerifyWrite(
 // Helper function of testing OpenFile() for read access. It checks that the
 // file is readable and contains |expected_data|.
 void VerifyRead(const std::string& expected_data,
-                base::File::Error result,
-                base::PlatformFile platform_file,
+                base::File file,
                 const base::Closure& close_callback) {
-  // Check that the file is properly opened.
-  EXPECT_EQ(base::File::FILE_OK, result);
-  EXPECT_NE(base::kInvalidPlatformFileValue, platform_file);
+  // Check that the file was properly opened.
+  EXPECT_TRUE(file.IsValid());
   EXPECT_FALSE(close_callback.is_null());
 
   // Check that the file has the expected content.
   const int data_size = static_cast<int>(expected_data.size());
-  base::PlatformFileInfo info;
-  EXPECT_TRUE(base::GetPlatformFileInfo(platform_file, &info));
+  base::File::Info info;
+  EXPECT_TRUE(file.GetInfo(&info));
   EXPECT_EQ(data_size, info.size);
 
   std::vector<char> buffer(data_size);
-  EXPECT_EQ(data_size,
-            base::ReadPlatformFile(platform_file, 0, buffer.data(), data_size));
+  EXPECT_EQ(data_size, file.Read(0, buffer.data(), data_size));
   EXPECT_EQ(expected_data, std::string(buffer.begin(), buffer.end()));
 
   // Close.
-  base::ClosePlatformFile(platform_file);
+  file.Close();
   close_callback.Run();
 }
 
@@ -172,12 +165,12 @@ TEST_F(FileApiWorkerTest, OpenFileForCreateWrite) {
   base::FilePath temp_path;
   base::CreateTemporaryFile(&temp_path);
 
-  // CREATE => CREATE (fails if file existed.)
+  // CREATE => CREATE (fails if file exists.)
   TestFileSystemForOpenFile file_system(temp_path, CREATE_FILE);
   const int64 kExpectedSize = 0;
 
   OpenFile(kDummyPath,
-           base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+           base::File::FLAG_CREATE | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
   test_util::RunBlockingPoolTask();
@@ -199,7 +192,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenAlwaysWrite) {
   const int64 kExpectedSize = static_cast<int64>(kInitialData.size());
 
   OpenFile(kDummyPath,
-           base::PLATFORM_FILE_OPEN_ALWAYS | base::PLATFORM_FILE_WRITE,
+           base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
   test_util::RunBlockingPoolTask();
@@ -221,7 +214,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenTruncatedWrite) {
   const int64 kExpectedSize = 0;
 
   OpenFile(kDummyPath,
-           base::PLATFORM_FILE_OPEN_TRUNCATED | base::PLATFORM_FILE_WRITE,
+           base::File::FLAG_OPEN_TRUNCATED | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
   test_util::RunBlockingPoolTask();
@@ -243,7 +236,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenCreateAlwaysWrite) {
   const int64 kExpectedSize = 0;
 
   OpenFile(kDummyPath,
-           base::PLATFORM_FILE_CREATE_ALWAYS | base::PLATFORM_FILE_WRITE,
+           base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE,
            base::Bind(&VerifyWrite, kExpectedSize, temp_path, kWriteData),
            &file_system);
   test_util::RunBlockingPoolTask();
@@ -262,7 +255,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenRead) {
   TestFileSystemForOpenFile file_system(temp_path, OPEN_FILE);
 
   OpenFile(kDummyPath,
-           base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+           base::File::FLAG_OPEN | base::File::FLAG_READ,
            base::Bind(&VerifyRead, kInitialData),
            &file_system);
   test_util::RunBlockingPoolTask();

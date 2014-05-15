@@ -89,10 +89,7 @@ void DeviceMediaAsyncFileUtil::CreateOrOpen(
   if (file_flags & ~(base::File::FLAG_OPEN |
                      base::File::FLAG_READ |
                      base::File::FLAG_WRITE_ATTRIBUTES)) {
-    base::PlatformFile invalid_file(base::kInvalidPlatformFileValue);
-    callback.Run(base::File::FILE_ERROR_SECURITY,
-                 base::PassPlatformFile(&invalid_file),
-                 base::Closure());
+    callback.Run(base::File(base::File::FILE_ERROR_SECURITY), base::Closure());
     return;
   }
   CreateSnapshotFile(

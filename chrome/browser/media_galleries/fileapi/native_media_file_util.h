@@ -205,7 +205,7 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
  private:
   // Like GetLocalFilePath(), but always take media_path_filter() into
   // consideration. If the media_path_filter() check fails, return
-  // PLATFORM_FILE_ERROR_SECURITY. |local_file_path| does not have to exist.
+  // Fila::FILE_ERROR_SECURITY. |local_file_path| does not have to exist.
   base::File::Error GetFilteredLocalFilePath(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& file_system_url,
@@ -216,7 +216,7 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
   // If |local_file_path| is a file, then take media_path_filter() into
   // consideration.
   // If the media_path_filter() check fails, return |failure_error|.
-  // If |local_file_path| is a directory, return PLATFORM_FILE_OK.
+  // If |local_file_path| is a directory, return File::FILE_OK.
   base::File::Error GetFilteredLocalFilePathForExistingFileOrDirectory(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& file_system_url,

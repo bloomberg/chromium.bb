@@ -545,10 +545,19 @@ void FileSystemOperationImpl::DidWrite(
 
 void FileSystemOperationImpl::DidOpenFile(
     const OpenFileCallback& callback,
-    base::File::Error rv,
-    base::PassPlatformFile file,
+    base::File file,
     const base::Closure& on_close_callback) {
-  callback.Run(rv, file.ReleaseValue(), on_close_callback);
+  // TODO(rvargas): Remove PlatformFile from FileSystemOperation.
+  base::File::Error error;
+  base::PlatformFile platform_file;
+  if (file.IsValid()) {
+    error = base::File::FILE_OK;
+    platform_file = file.TakePlatformFile();
+  } else {
+    error = file.error_details();
+    platform_file = base::kInvalidPlatformFileValue;
+  }
+  callback.Run(error, platform_file, on_close_callback);
 }
 
 bool FileSystemOperationImpl::SetPendingOperationType(OperationType type) {
