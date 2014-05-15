@@ -54,6 +54,7 @@ CQ = constants.CQ
 # normal.  Setting timeout to 3 minutes to be safe-ish.
 SUBMITTED_WAIT_TIMEOUT = 3 * 60 # Time in seconds.
 
+
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
 
@@ -1101,20 +1102,16 @@ class ValidationFailedMessage(object):
         flaky = True
     return flaky
 
-  def _MatchesFailureType(self, cls):
+  def MatchesFailureType(self, cls):
     """Check if all of the tracebacks match the specified failure type."""
     for traceback in self.tracebacks:
       if not isinstance(traceback.exception, cls):
         return False
     return True
 
-  def IsInfrastructureFailure(self):
-    """Check if all of the failures are infrastructure failures."""
-    return self._MatchesFailureType(failures_lib.InfrastructureFailure)
-
   def IsPackageBuildFailure(self):
     """Check if all of the failures are package build failures."""
-    return self._MatchesFailureType(failures_lib.PackageBuildFailure)
+    return self.MatchesFailureType(failures_lib.PackageBuildFailure)
 
   def FindPackageBuildFailureSuspects(self, changes):
     """Figure out what changes probably caused our failures.
@@ -1418,6 +1415,11 @@ class ValidationPool(object):
             self.non_manifest_changes,
             self.changes_that_failed_to_apply_earlier,
             self.pre_cq))
+
+  @classmethod
+  def FilterChromiteChanges(cls, changes):
+    """Returns a list of chromite changes in |changes|."""
+    return [x for x in changes if x.project == constants.CHROMITE_PROJECT]
 
   @classmethod
   def FilterDraftChanges(cls, changes):
@@ -2392,10 +2394,9 @@ class ValidationPool(object):
 
     will_retry_automatically = False
     if not sanity:
-      msg.append('The sanity check builder in this run failed, implying that '
-                 'either ToT or the build infrastructure itself was broken '
-                 'even without the tested patches. Thus, no changes will be '
-                 'blamed for the failure.')
+      msg.append('The build was consider not sane, meaning that either '
+                 'ToT or the build infrastructure itself was broken. Your '
+                 'change will not be blamed for the failure.')
       will_retry_automatically = True
     elif change in suspects:
       if other_suspects_str:

@@ -269,6 +269,28 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       if cbuildbot_config.IsPFQType(self._run.config.build_type):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
+  def SubmitPartialPool(self, messages):
+    """Submit partial pool if possible.
+
+    Args:
+      messages: A list of ValidationFailedMessage or NoneType objects from
+        the failed slaves.
+
+    Returns:
+      The changes that were not submitted.
+    """
+    tracebacks = set()
+    for message in messages:
+      # If there are no tracebacks, that means that the builder did not
+      # report its status properly. Don't submit anything.
+      if not message or not message.tracebacks:
+        break
+      tracebacks.update(message.tracebacks)
+    else:
+      # SubmitPartialPool submit some changes (if it is applicable),
+      # and returns changes that were not submitted.
+      return self.sync_stage.pool.SubmitPartialPool(tracebacks)
+
   def HandleFailure(self, failing, inflight):
     """Handle a build failure or timeout in the Commit Queue.
 
@@ -276,8 +298,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     fails:
       - Abort the HWTests if necessary.
       - Push any CLs that indicate that they don't care about this failure.
-      - Reject the rest of the changes, but only if the sanity check builders
-        did NOT fail.
+      - Determine what CLs to reject.
 
     See MasterSlaveSyncCompletionStage.HandleFailure.
 
@@ -299,57 +320,102 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
         self._AbortCQHWTests()
 
     if self._run.config.master:
-      # Even if there was a failure, we can submit the changes that indicate
-      # that they don't care about this failure.
+      self.CQMasterHandleFailure(failing, inflight)
 
-      # messages is a list of ValidationFailedMessage or NoneType objects.
-      messages = [self._slave_statuses[x].message for x in failing]
+  def CQMasterHandleFailure(self, failing, inflight):
+    """Handle changes in the validation pool upon build failure or timeout.
 
-      if failing and not inflight:
-        tracebacks = set()
-        for message in messages:
-          # If there are no tracebacks, that means that the builder did not
-          # report its status properly. Don't submit anything.
-          if not message or not message.tracebacks:
-            break
-          tracebacks.update(message.tracebacks)
-        else:
-          rejected = self.sync_stage.pool.SubmitPartialPool(tracebacks)
-          self.sync_stage.pool.changes = rejected
-
-      sanity_slave_failed = self._SanitySlaveFailed(
-          self._run.config.sanity_check_slaves, self._slave_statuses)
-      infrastructure_failed = self._OnlyInfrastructureFailures(messages)
-      if sanity_slave_failed:
-        logging.warning('Detected that a sanity-check builder failed. Will not '
-                        'reject patches.')
-      if infrastructure_failed:
-        logging.warning('The build failed purely due to infrastructure '
-                        'issue(s). Will not reject patches')
-
-      sanity = not (sanity_slave_failed or infrastructure_failed)
-
-      if failing:
-        self.sync_stage.pool.HandleValidationFailure(messages, sanity=sanity)
-      elif inflight:
-        self.sync_stage.pool.HandleValidationTimeout(sanity=sanity)
-
-  @staticmethod
-  def _OnlyInfrastructureFailures(messages):
-    """Returns true if all failures are infrasctructure failures.
+    This function determines whether to reject CLs and what CLs to
+    reject based on the category of the failures and whether the
+    sanity check builder(s) passed.
 
     Args:
-      messages: A list of ValidationFailedMessage objects from the
-        failed slaves.
-
-    Returns:
-      True if all failures are of the InfrastructureFailure type.
+      failing: Names of the builders that failed.
+      inflight: Names of the builders that timed out.
     """
-    return all([x.IsInfrastructureFailure() for x in messages])
+    # messages is a list of ValidationFailedMessage or NoneType objects.
+    messages = [self._slave_statuses[x].message for x in failing]
+    # Start with all the changes in the validation pool.
+    changes = self.sync_stage.pool.changes
+
+    if failing and not inflight:
+      # Even if there was a failure, we can submit the changes that indicate
+      # that they don't care about this failure.
+      changes = self.SubmitPartialPool(messages)
+
+    tot_sanity = self._ToTSanity(
+        self._run.config.sanity_check_slaves, self._slave_statuses)
+
+    if not tot_sanity:
+      # Sanity check slave failure may have been caused by bug(s)
+      # in ToT or broken infrastructure. In any of those cases, we
+      # should not reject any changes.
+      logging.warning('Detected that a sanity-check builder failed. '
+                      'Will not reject any patches.')
+      if failing:
+        self.sync_stage.pool.HandleValidationFailure(
+            messages, sanity=tot_sanity, changes=changes)
+      elif inflight:
+        self.sync_stage.pool.HandleValidationTimeout(
+            sanity=tot_sanity, changes=changes)
+      return
+
+    # ToT was sane.
+
+    if inflight and not failing:
+      # No slave failed, but some slave(s) timed out due to an unknown
+      # cause. We don't have any more information, so reject all changes.
+      self.sync_stage.pool.HandleValidationTimeout(sanity=tot_sanity,
+                                                   changes=changes)
+      return
+
+    # Some slave(s) failed. Further analyze the failures to decide
+    # what changes to reject.
+    only_lab_failures = self._AllMatchFailureType(
+        messages, failures_lib.TestLabFailure)
+    only_infra_failures = self._AllMatchFailureType(
+        messages, failures_lib.InfrastructureFailure)
+
+    # For non-chromite changes, the build was not sane if it
+    # failed purely due to infrastructure errors.
+    sanity = not only_infra_failures
+
+    if only_infra_failures and not only_lab_failures:
+      # The non-lab infrastructure errors might have been caused
+      # by chromite changes.
+      logging.warning(
+          'Detected that the build failed due to non-lab infrastructure '
+          'issue(s). Will only reject chromite changes')
+      chromite_changes = validation_pool.ValidationPool.FilterChromiteChanges(
+          changes)
+      self.sync_stage.pool.HandleValidationFailure(
+          messages, sanity=True, changes=chromite_changes)
+      # Remove chromite changes from the list.
+      changes = [x for x in changes if x not in chromite_changes]
+    elif only_lab_failures:
+      logging.warning('Detected that the build failed purely due to HW '
+                      'Test Lab failure(s). Will not reject any changes')
+
+    self.sync_stage.pool.HandleValidationFailure(messages, sanity=sanity,
+                                                 changes=changes)
 
   @staticmethod
-  def _SanitySlaveFailed(sanity_check_slaves, slave_statuses):
-    """Returns true if any sanity check slaves failed.
+  def _AllMatchFailureType(messages, cls):
+    """Returns true if all failures are instances of |cls|.
+
+    Args:
+      messages: A list of ValidationFailedMessage or NoneType objects
+        from the failed slaves.
+
+    Returns:
+      True if all objects in |messages| are non-None and all failures are
+      instances of |cls|.
+    """
+    return all(messages) and all([x.MatchesFailureType(cls) for x in messages])
+
+  @staticmethod
+  def _ToTSanity(sanity_check_slaves, slave_statuses):
+    """Returns False if any sanity check slaves failed.
 
     Args:
       sanity_check_slaves: Names of slave builders that are "sanity check"
@@ -360,8 +426,8 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       True if no sanity builders ran and failed.
     """
     sanity_check_slaves = sanity_check_slaves or []
-    return any([x in slave_statuses and slave_statuses[x].Failed() for
-                x in sanity_check_slaves])
+    return not any([x in slave_statuses and slave_statuses[x].Failed() for
+                    x in sanity_check_slaves])
 
   def PerformStage(self):
     # - If the build failed, and the builder was important, fetch a message
