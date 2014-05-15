@@ -244,10 +244,9 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
   return base::FilePath(file_name);
 }
 
-bool CreateShortcutsOnFileThread(
-    ShortcutCreationReason reason,
-    const web_app::ShortcutLocations& locations,
-    const web_app::ShortcutInfo& shortcut_info) {
+bool CreateShortcutsOnFileThread(ShortcutCreationReason reason,
+                                 const ShortcutLocations& locations,
+                                 const ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   return CreateShortcutsWithInfoOnFileThread(
@@ -256,13 +255,13 @@ bool CreateShortcutsOnFileThread(
 
 }  // namespace internals
 
-web_app::ShortcutInfo::ShortcutInfo()
+ShortcutInfo::ShortcutInfo()
     : is_platform_app(false) {
 }
 
-web_app::ShortcutInfo::~ShortcutInfo() {}
+ShortcutInfo::~ShortcutInfo() {}
 
-web_app::ShortcutLocations::ShortcutLocations()
+ShortcutLocations::ShortcutLocations()
     : on_desktop(false),
       applications_menu_location(APP_MENU_LOCATION_NONE),
       in_quick_launch_bar(false)
@@ -273,7 +272,7 @@ web_app::ShortcutLocations::ShortcutLocations()
 }
 
 void GetShortcutInfoForTab(content::WebContents* web_contents,
-                           web_app::ShortcutInfo* info) {
+                           ShortcutInfo* info) {
   DCHECK(info);  // Must provide a valid info.
 
   const FaviconTabHelper* favicon_tab_helper =
@@ -300,9 +299,9 @@ void GetShortcutInfoForTab(content::WebContents* web_contents,
 void UpdateShortcutForTabContents(content::WebContents* web_contents) {}
 #endif
 
-web_app::ShortcutInfo ShortcutInfoForExtensionAndProfile(
+ShortcutInfo ShortcutInfoForExtensionAndProfile(
     const extensions::Extension* app, Profile* profile) {
-  web_app::ShortcutInfo shortcut_info;
+  ShortcutInfo shortcut_info;
   shortcut_info.extension_id = app->id();
   shortcut_info.is_platform_app = app->is_platform_app();
   shortcut_info.url = extensions::AppLaunchInfo::GetLaunchWebURL(app);
@@ -315,10 +314,9 @@ web_app::ShortcutInfo ShortcutInfoForExtensionAndProfile(
   return shortcut_info;
 }
 
-void UpdateShortcutInfoAndIconForApp(
-    const extensions::Extension* extension,
-    Profile* profile,
-    const web_app::ShortcutInfoCallback& callback) {
+void UpdateShortcutInfoAndIconForApp(const extensions::Extension* extension,
+                                     Profile* profile,
+                                     const ShortcutInfoCallback& callback) {
   GetInfoForApp(extension,
                 profile,
                 base::Bind(&IgnoreFileHandlersInfo, callback));
@@ -359,14 +357,11 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
       GURL(extensions::AppLaunchInfo::GetLaunchWebURL(&extension)));
 }
 
-std::string GenerateApplicationNameFromInfo(
-    const web_app::ShortcutInfo& shortcut_info) {
+std::string GenerateApplicationNameFromInfo(const ShortcutInfo& shortcut_info) {
   if (!shortcut_info.extension_id.empty()) {
-    return web_app::GenerateApplicationNameFromExtensionId(
-        shortcut_info.extension_id);
+    return GenerateApplicationNameFromExtensionId(shortcut_info.extension_id);
   } else {
-    return web_app::GenerateApplicationNameFromURL(
-        shortcut_info.url);
+    return GenerateApplicationNameFromURL(shortcut_info.url);
   }
 }
 
@@ -379,7 +374,7 @@ std::string GenerateApplicationNameFromURL(const GURL& url) {
 }
 
 std::string GenerateApplicationNameFromExtensionId(const std::string& id) {
-  std::string t(web_app::kCrxAppPrefix);
+  std::string t(kCrxAppPrefix);
   t.append(id);
   return t;
 }
@@ -391,10 +386,9 @@ std::string GetExtensionIdFromApplicationName(const std::string& app_name) {
   return app_name.substr(prefix.length());
 }
 
-void CreateShortcutsForShortcutInfo(
-    web_app::ShortcutCreationReason reason,
-    const web_app::ShortcutLocations& locations,
-    const web_app::ShortcutInfo& shortcut_info) {
+void CreateShortcutsForShortcutInfo(ShortcutCreationReason reason,
+                                    const ShortcutLocations& locations,
+                                    const ShortcutInfo& shortcut_info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   BrowserThread::PostTask(
@@ -405,11 +399,10 @@ void CreateShortcutsForShortcutInfo(
           reason, locations, shortcut_info));
 }
 
-void CreateShortcuts(
-    ShortcutCreationReason reason,
-    const web_app::ShortcutLocations& locations,
-    Profile* profile,
-    const extensions::Extension* app) {
+void CreateShortcuts(ShortcutCreationReason reason,
+                     const ShortcutLocations& locations,
+                     Profile* profile,
+                     const extensions::Extension* app) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   GetInfoForApp(app,
@@ -424,7 +417,7 @@ void DeleteAllShortcuts(Profile* profile, const extensions::Extension* app) {
       BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&DeleteShortcutsOnFileThread,
-                 web_app::ShortcutInfoForExtensionAndProfile(app, profile)));
+                 ShortcutInfoForExtensionAndProfile(app, profile)));
 }
 
 void UpdateAllShortcuts(const base::string16& old_app_title,

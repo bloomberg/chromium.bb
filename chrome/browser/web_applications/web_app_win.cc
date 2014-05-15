@@ -327,9 +327,8 @@ void GetShortcutLocationsAndDeleteShortcuts(
 
 namespace web_app {
 
-base::FilePath CreateShortcutInWebAppDir(
-    const base::FilePath& web_app_dir,
-    const web_app::ShortcutInfo& shortcut_info) {
+base::FilePath CreateShortcutInWebAppDir(const base::FilePath& web_app_dir,
+                                         const ShortcutInfo& shortcut_info) {
   std::vector<base::FilePath> paths;
   paths.push_back(web_app_dir);
   std::vector<base::FilePath> out_filenames;
@@ -376,9 +375,9 @@ bool CheckAndSaveIcon(const base::FilePath& icon_file,
 
 bool CreatePlatformShortcuts(
     const base::FilePath& web_app_path,
-    const web_app::ShortcutInfo& shortcut_info,
+    const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
-    const web_app::ShortcutLocations& creation_locations,
+    const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -419,7 +418,7 @@ bool CreatePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& web_app_path,
     const base::string16& old_app_title,
-    const web_app::ShortcutInfo& shortcut_info,
+    const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
 
@@ -456,9 +455,8 @@ void UpdatePlatformShortcuts(
   CheckAndSaveIcon(icon_file, shortcut_info.favicon);
 }
 
-void DeletePlatformShortcuts(
-    const base::FilePath& web_app_path,
-    const web_app::ShortcutInfo& shortcut_info) {
+void DeletePlatformShortcuts(const base::FilePath& web_app_path,
+                             const ShortcutInfo& shortcut_info) {
   GetShortcutLocationsAndDeleteShortcuts(
       web_app_path, shortcut_info.profile_path, shortcut_info.title, NULL,
       NULL);
@@ -492,7 +490,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
 }
 
 std::vector<base::FilePath> GetShortcutPaths(
-    const web_app::ShortcutLocations& creation_locations) {
+    const ShortcutLocations& creation_locations) {
   // Shortcut paths under which to create shortcuts.
   std::vector<base::FilePath> shortcut_paths;
   // Locations to add to shortcut_paths.
@@ -505,15 +503,15 @@ std::vector<base::FilePath> GetShortcutPaths(
       ShellUtil::SHORTCUT_LOCATION_DESKTOP
     }, {
       creation_locations.applications_menu_location ==
-          web_app::APP_MENU_LOCATION_ROOT,
+          APP_MENU_LOCATION_ROOT,
       ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT
     }, {
       creation_locations.applications_menu_location ==
-          web_app::APP_MENU_LOCATION_SUBDIR_CHROME,
+          APP_MENU_LOCATION_SUBDIR_CHROME,
       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR
     }, {
       creation_locations.applications_menu_location ==
-          web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
+          APP_MENU_LOCATION_SUBDIR_CHROMEAPPS,
       ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_APPS_DIR
     }, {
       // For Win7+, |in_quick_launch_bar| indicates that we are pinning to

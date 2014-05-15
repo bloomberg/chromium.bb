@@ -20,9 +20,8 @@ namespace web_app {
 
 // Create a shortcut in the given web app data dir, returning the name of the
 // created shortcut.
-base::FilePath CreateShortcutInWebAppDir(
-    const base::FilePath& web_app_path,
-    const web_app::ShortcutInfo& shortcut_info);
+base::FilePath CreateShortcutInWebAppDir(const base::FilePath& web_app_path,
+                                         const ShortcutInfo& shortcut_info);
 
 namespace internals {
 

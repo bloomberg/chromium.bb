@@ -485,7 +485,7 @@ namespace web_app {
 
 WebAppShortcutCreator::WebAppShortcutCreator(
     const base::FilePath& app_data_dir,
-    const web_app::ShortcutInfo& shortcut_info,
+    const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info)
     : app_data_dir_(app_data_dir),
       info_(shortcut_info),
@@ -567,7 +567,7 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
 
 bool WebAppShortcutCreator::CreateShortcuts(
     ShortcutCreationReason creation_reason,
-    web_app::ShortcutLocations creation_locations) {
+    ShortcutLocations creation_locations) {
   const base::FilePath applications_dir = GetApplicationsDirname();
   if (applications_dir.empty() ||
       !base::DirectoryExists(applications_dir.DirName())) {
@@ -844,14 +844,13 @@ void WebAppShortcutCreator::RevealAppShimInFinder() const {
       inFileViewerRootedAtPath:nil];
 }
 
-base::FilePath GetAppInstallPath(
-    const web_app::ShortcutInfo& shortcut_info) {
+base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info) {
   WebAppShortcutCreator shortcut_creator(
       base::FilePath(), shortcut_info, extensions::FileHandlersInfo());
   return shortcut_creator.GetApplicationsShortcutPath();
 }
 
-void MaybeLaunchShortcut(const web_app::ShortcutInfo& shortcut_info) {
+void MaybeLaunchShortcut(const ShortcutInfo& shortcut_info) {
   if (!apps::IsAppShimsEnabled())
     return;
 
@@ -866,7 +865,7 @@ void CreateAppShortcutInfoLoaded(
     Profile* profile,
     const extensions::Extension* app,
     const base::Callback<void(bool)>& close_callback,
-    const web_app::ShortcutInfo& shortcut_info) {
+    const ShortcutInfo& shortcut_info) {
   base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
 
   NSButton* continue_button = [alert
@@ -905,10 +904,8 @@ void CreateAppShortcutInfoLoaded(
   if ([alert runModal] == NSAlertFirstButtonReturn &&
       [application_folder_checkbox state] == NSOnState) {
     dialog_accepted = true;
-    web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
-                             web_app::ShortcutLocations(),
-                             profile,
-                             app);
+    CreateShortcuts(
+        SHORTCUT_CREATION_BY_USER, ShortcutLocations(), profile, app);
   }
 
   if (!close_callback.is_null())
@@ -919,9 +916,9 @@ namespace internals {
 
 bool CreatePlatformShortcuts(
     const base::FilePath& app_data_path,
-    const web_app::ShortcutInfo& shortcut_info,
+    const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info,
-    const web_app::ShortcutLocations& creation_locations,
+    const ShortcutLocations& creation_locations,
     ShortcutCreationReason creation_reason) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   WebAppShortcutCreator shortcut_creator(
@@ -929,9 +926,8 @@ bool CreatePlatformShortcuts(
   return shortcut_creator.CreateShortcuts(creation_reason, creation_locations);
 }
 
-void DeletePlatformShortcuts(
-    const base::FilePath& app_data_path,
-    const web_app::ShortcutInfo& shortcut_info) {
+void DeletePlatformShortcuts(const base::FilePath& app_data_path,
+                             const ShortcutInfo& shortcut_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   WebAppShortcutCreator shortcut_creator(
       app_data_path, shortcut_info, extensions::FileHandlersInfo());
@@ -941,7 +937,7 @@ void DeletePlatformShortcuts(
 void UpdatePlatformShortcuts(
     const base::FilePath& app_data_path,
     const base::string16& old_app_title,
-    const web_app::ShortcutInfo& shortcut_info,
+    const ShortcutInfo& shortcut_info,
     const extensions::FileHandlersInfo& file_handlers_info) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   WebAppShortcutCreator shortcut_creator(

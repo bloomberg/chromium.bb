@@ -17,12 +17,11 @@
 namespace web_app {
 
 // Returns the full path of the .app shim that would be created by
-// web_app::CreateShortcuts().
-base::FilePath GetAppInstallPath(
-    const web_app::ShortcutInfo& shortcut_info);
+// CreateShortcuts().
+base::FilePath GetAppInstallPath(const ShortcutInfo& shortcut_info);
 
 // If necessary, launch the shortcut for an app.
-void MaybeLaunchShortcut(const web_app::ShortcutInfo& shortcut_info);
+void MaybeLaunchShortcut(const ShortcutInfo& shortcut_info);
 
 // Creates a shortcut for a web application. The shortcut is a stub app
 // that simply loads the browser framework and runs the given app.
@@ -32,7 +31,7 @@ class WebAppShortcutCreator {
   // A copy of the shortcut is placed in |app_data_dir|.
   // |chrome_bundle_id| is the CFBundleIdentifier of the Chrome browser bundle.
   WebAppShortcutCreator(const base::FilePath& app_data_dir,
-                        const web_app::ShortcutInfo& shortcut_info,
+                        const ShortcutInfo& shortcut_info,
                         const extensions::FileHandlersInfo& file_handlers_info);
 
   virtual ~WebAppShortcutCreator();
@@ -51,7 +50,7 @@ class WebAppShortcutCreator {
   base::FilePath GetInternalShortcutPath() const;
 
   bool CreateShortcuts(ShortcutCreationReason creation_reason,
-                       web_app::ShortcutLocations creation_locations);
+                       ShortcutLocations creation_locations);
   void DeleteShortcuts();
   bool UpdateShortcuts();
 
@@ -101,7 +100,7 @@ class WebAppShortcutCreator {
   base::FilePath app_data_dir_;
 
   // Information about the app.
-  web_app::ShortcutInfo info_;
+  ShortcutInfo info_;
 
   // The app's file handlers.
   extensions::FileHandlersInfo file_handlers_info_;
