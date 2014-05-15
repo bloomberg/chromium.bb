@@ -25,6 +25,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -1282,6 +1283,24 @@ void WallpaperManager::LoadWallpaper(const std::string& user_id,
                                      MovableOnDestroyCallbackHolder on_finish) {
   base::FilePath wallpaper_dir;
   base::FilePath wallpaper_path;
+
+  // Do a sanity check that file path information is not empty.
+  if (info.type == User::ONLINE || info.type == User::DEFAULT) {
+    if (info.file.empty()) {
+      if (base::SysInfo::IsRunningOnChromeOS()) {
+        NOTREACHED() << "User wallpaper info appears to be broken: " << user_id;
+      } else {
+        // Filename might be empty on debug configurations when stub users
+        // were created directly in Local State (for testing). Ignore such
+        // errors i.e. allowsuch type of debug configurations on the desktop.
+        LOG(WARNING) << "User wallpaper info is empty: " << user_id;
+
+        // |on_finish| callback will get called on destruction.
+        return;
+      }
+    }
+  }
+
   if (info.type == User::ONLINE) {
     std::string file_name = GURL(info.file).ExtractFileName();
     WallpaperResolution resolution = GetAppropriateResolution();
