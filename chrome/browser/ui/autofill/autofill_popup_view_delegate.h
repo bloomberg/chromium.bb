@@ -14,7 +14,7 @@ class Rect;
 
 namespace autofill {
 
-// Base class for Controllers of Autofill style popups. This interface is
+// Base class for Controllers of Autofill-style popups. This interface is
 // used by the relevant views to communicate with the controller.
 class AutofillPopupViewDelegate {
  public:

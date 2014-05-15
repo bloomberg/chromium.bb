@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_H_
 #define CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_VIEW_H_
 
+#include "third_party/skia/include/core/SkColor.h"
+
 namespace autofill {
 
 class PasswordGenerationPopupController;
@@ -32,6 +34,11 @@ class PasswordGenerationPopupView {
   // when Hide() is called.
   static PasswordGenerationPopupView* Create(
       PasswordGenerationPopupController* controller);
+
+  static const SkColor kExplanatoryTextBackgroundColor;
+  static const SkColor kExplanatoryTextColor;
+  static const SkColor kDividerColor;
+  static const SkColor kLinkColor;
 };
 
 }  // namespace autofill
