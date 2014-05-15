@@ -768,11 +768,7 @@ bool RenderWidgetHostViewAura::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
-  // This is the size that we want the renderer to produce. While we're waiting
-  // for the correct frame (i.e. during a resize), don't change the size so that
-  // we don't pipeline more resizes than we can handle.
-  gfx::Rect bounds(window_->GetBoundsInScreen());
-  return delegated_frame_host_->GetViewBoundsWithResizeLock(bounds);
+  return window_->GetBoundsInScreen();
 }
 
 void RenderWidgetHostViewAura::SetBackgroundOpaque(bool opaque) {

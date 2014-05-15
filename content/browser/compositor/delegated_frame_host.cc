@@ -120,14 +120,6 @@ void DelegatedFrameHost::RequestCopyOfOutput(
   client_->GetLayer()->RequestCopyOfOutput(request.Pass());
 }
 
-gfx::Rect DelegatedFrameHost::GetViewBoundsWithResizeLock(
-    const gfx::Rect& bounds) const {
-  if (resize_lock_.get())
-    return gfx::Rect(bounds.origin(), resize_lock_->expected_size());
-  else
-    return bounds;
-}
-
 void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,

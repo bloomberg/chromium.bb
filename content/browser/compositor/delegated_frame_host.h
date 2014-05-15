@@ -77,7 +77,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   DelegatedFrameHost(DelegatedFrameHostClient* client);
   virtual ~DelegatedFrameHost();
 
-  gfx::Rect GetViewBoundsWithResizeLock(const gfx::Rect& bounds) const;
   bool CanCopyToBitmap() const;
 
   // Public interface exposed to RenderWidgetHostView.
