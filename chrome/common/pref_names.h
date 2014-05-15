@@ -441,8 +441,6 @@ extern const char kMetricsResetIds[];
 #if defined(OS_ANDROID)
 extern const char kCrashReportingEnabled[];
 #endif
-extern const char kMetricsInitialLogs[];
-extern const char kMetricsOngoingLogs[];
 
 extern const char kVariationsLastFetchTime[];
 extern const char kVariationsRestrictParameter[];

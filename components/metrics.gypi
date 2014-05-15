@@ -21,6 +21,10 @@
         'metrics/metrics_log_base.h',
         'metrics/metrics_log_manager.cc',
         'metrics/metrics_log_manager.h',
+        'metrics/metrics_pref_names.cc',
+        'metrics/metrics_pref_names.h',
+        'metrics/persisted_logs.cc',
+        'metrics/persisted_logs.h',
       ],
     },
     {

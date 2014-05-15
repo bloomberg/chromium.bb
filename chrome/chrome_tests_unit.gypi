@@ -1080,7 +1080,6 @@
         'browser/metrics/extension_metrics_unittest.cc',
         'browser/metrics/machine_id_provider_win_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
-        'browser/metrics/metrics_log_serializer_unittest.cc',
         'browser/metrics/metrics_reporting_scheduler_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/metrics_state_manager_unittest.cc',

@@ -219,7 +219,7 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(log_manager->has_staged_log());
 
   metrics::ChromeUserMetricsExtension uma_log;
-  EXPECT_TRUE(uma_log.ParseFromString(log_manager->staged_log_text()));
+  EXPECT_TRUE(uma_log.ParseFromString(log_manager->staged_log()));
 
   EXPECT_TRUE(uma_log.has_client_id());
   EXPECT_TRUE(uma_log.has_session_id());

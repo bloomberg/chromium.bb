@@ -30,7 +30,10 @@ class MetricsServiceBase : public base::HistogramFlattener {
   virtual void InconsistencyDetectedInLoggedCount(int amount) OVERRIDE;
 
  protected:
-  MetricsServiceBase();
+  // The metrics service will persist it's unsent logs by storing them in
+  // |local_state|, and will not persist ongoing logs over
+  // |max_ongoing_log_size|.
+  MetricsServiceBase(PrefService* local_state, size_t max_ongoing_log_size);
   virtual ~MetricsServiceBase();
 
   // The metrics server's URL.

@@ -1385,19 +1385,6 @@ const char kCrashReportingEnabled[] =
     "user_experience_metrics_crash.reporting_enabled";
 #endif
 
-// Array of strings that are each UMA logs that were supposed to be sent in the
-// first minute of a browser session. These logs include things like crash count
-// info, etc.
-const char kMetricsInitialLogs[] =
-    "user_experience_metrics.initial_logs_as_protobufs";
-
-// Array of strings that are each UMA logs that were not sent because the
-// browser terminated before these accumulated metrics could be sent.  These
-// logs typically include histograms and memory reports, as well as ongoing
-// user activities.
-const char kMetricsOngoingLogs[] =
-    "user_experience_metrics.ongoing_logs_as_protobufs";
-
 // 64-bit integer serialization of the base::Time from the last successful seed
 // fetch (i.e. when the Variations server responds with 200 or 304).
 const char kVariationsLastFetchTime[] = "variations_last_fetch_time";

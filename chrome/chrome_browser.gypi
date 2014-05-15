@@ -1193,8 +1193,6 @@
         'browser/metrics/metrics_log.h',
         'browser/metrics/metrics_log_chromeos.cc',
         'browser/metrics/metrics_log_chromeos.h',
-        'browser/metrics/metrics_log_serializer.cc',
-        'browser/metrics/metrics_log_serializer.h',
         'browser/metrics/metrics_network_observer.cc',
         'browser/metrics/metrics_network_observer.h',
         'browser/metrics/metrics_reporting_scheduler.cc',

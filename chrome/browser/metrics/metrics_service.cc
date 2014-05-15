@@ -187,7 +187,6 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/compression_utils.h"
 #include "chrome/browser/metrics/metrics_log.h"
-#include "chrome/browser/metrics/metrics_log_serializer.h"
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
 #include "chrome/browser/metrics/metrics_state_manager.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
@@ -204,6 +203,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/metrics/metrics_log_manager.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/metrics_util.h"
 #include "content/public/browser/child_process_data.h"
@@ -444,8 +444,8 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kStabilitySavedSystemProfileHash,
                                std::string());
 
-  registry->RegisterListPref(prefs::kMetricsInitialLogs);
-  registry->RegisterListPref(prefs::kMetricsOngoingLogs);
+  registry->RegisterListPref(metrics::prefs::kMetricsInitialLogs);
+  registry->RegisterListPref(metrics::prefs::kMetricsOngoingLogs);
 
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
   registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
@@ -460,7 +460,9 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 MetricsService::MetricsService(metrics::MetricsStateManager* state_manager)
-    : state_manager_(state_manager),
+    : MetricsServiceBase(g_browser_process->local_state(),
+                         kUploadLogAvoidRetransmitSize),
+      state_manager_(state_manager),
       recording_active_(false),
       reporting_active_(false),
       test_mode_active_(false),
@@ -475,9 +477,6 @@ MetricsService::MetricsService(metrics::MetricsStateManager* state_manager)
       num_async_histogram_fetches_in_progress_(0) {
   DCHECK(IsSingleThreaded());
   DCHECK(state_manager_);
-
-  log_manager_.set_log_serializer(new MetricsLogSerializer);
-  log_manager_.set_max_ongoing_log_store_size(kUploadLogAvoidRetransmitSize);
 
   BrowserChildProcessObserver::Add(this);
 }
@@ -1188,11 +1187,11 @@ void MetricsService::PushPendingLogsToPersistentStorage() {
 
   if (log_manager_.has_staged_log()) {
     // We may race here, and send second copy of the log later.
-    MetricsLogManager::StoreType store_type;
+    metrics::PersistedLogs::StoreType store_type;
     if (current_fetch_.get())
-      store_type = MetricsLogManager::PROVISIONAL_STORE;
+      store_type = metrics::PersistedLogs::PROVISIONAL_STORE;
     else
-      store_type = MetricsLogManager::NORMAL_STORE;
+      store_type = metrics::PersistedLogs::NORMAL_STORE;
     log_manager_.StoreStagedLogAsUnsent(store_type);
   }
   DCHECK(!log_manager_.has_staged_log());
@@ -1512,7 +1511,7 @@ void MetricsService::PrepareFetchWithStagedLog() {
     current_fetch_->SetRequestContext(
         g_browser_process->system_request_context());
 
-    std::string log_text = log_manager_.staged_log_text();
+    std::string log_text = log_manager_.staged_log();
     std::string compressed_log_text;
     bool compression_successful = chrome::GzipCompress(log_text,
                                                        &compressed_log_text);
@@ -1566,7 +1565,7 @@ void MetricsService::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Provide boolean for error recovery (allow us to ignore response_code).
   bool discard_log = false;
-  const size_t log_size = log_manager_.staged_log_text().length();
+  const size_t log_size = log_manager_.staged_log().length();
   if (!upload_succeeded && log_size > kUploadLogAvoidRetransmitSize) {
     UMA_HISTOGRAM_COUNTS("UMA.Large Rejected Log was Discarded",
                          static_cast<int>(log_size));
