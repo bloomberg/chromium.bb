@@ -118,6 +118,7 @@ void ScriptExecutor::ExecuteScript(const std::string& extension_id,
                                    ScriptExecutor::ScriptType script_type,
                                    const std::string& code,
                                    ScriptExecutor::FrameScope frame_scope,
+                                   ScriptExecutor::MatchAboutBlank about_blank,
                                    UserScript::RunLocation run_at,
                                    ScriptExecutor::WorldType world_type,
                                    ScriptExecutor::ProcessType process_type,
@@ -136,13 +137,13 @@ void ScriptExecutor::ExecuteScript(const std::string& extension_id,
     active_script_controller->NotifyScriptExecuting(extension_id,
                                                     visible_entry->GetPageID());
   }
-
   ExtensionMsg_ExecuteCode_Params params;
   params.request_id = next_request_id_++;
   params.extension_id = extension_id;
   params.is_javascript = (script_type == JAVASCRIPT);
   params.code = code;
   params.all_frames = (frame_scope == ALL_FRAMES);
+  params.match_about_blank = (about_blank == MATCH_ABOUT_BLANK);
   params.run_at = static_cast<int>(run_at);
   params.in_main_world = (world_type == MAIN_WORLD);
   params.is_web_view = (process_type == WEB_VIEW_PROCESS);

@@ -84,6 +84,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptAboutBlankIframes) {
       RunExtensionTest("content_scripts/about_blank_iframes")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptAboutBlankAndSrcdoc) {
+  // The optional "*://*/*" permission is requested after verifying that
+  // content script insertion solely depends on content_scripts[*].matches.
+  // The permission is needed for chrome.tabs.executeScript tests.
+  PermissionsRequestFunction::SetAutoConfirmForTests(true);
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("content_scripts/about_blank_srcdoc"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionIframe) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/extension_iframe")) << message_;

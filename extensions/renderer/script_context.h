@@ -105,6 +105,13 @@ class ScriptContext : public RequestSender::Source {
   // committed, this is the commited URL. Otherwise it is the provisional URL.
   static GURL GetDataSourceURLForFrame(const blink::WebFrame* frame);
 
+  // Returns the first non-about:-URL in the document hierarchy above and
+  // including |frame|. The document hierarchy is only traversed if
+  // |document_url| is an about:-URL and if |match_about_blank| is true.
+  static GURL GetEffectiveDocumentURL(const blink::WebFrame* frame,
+                                      const GURL& document_url,
+                                      bool match_about_blank);
+
   // RequestSender::Source implementation.
   virtual ScriptContext* GetContext() OVERRIDE;
   virtual void OnResponseReceived(const std::string& name,

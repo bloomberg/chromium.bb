@@ -212,12 +212,15 @@ void UserScriptSlave::InjectScripts(WebFrame* frame,
     if (!extension)
       continue;
 
+    const GURL& document_url = ScriptContext::GetEffectiveDocumentURL(
+        frame, data_source_url, script->match_about_blank());
+
     // Content scripts are not tab-specific.
     const int kNoTabId = -1;
     // We don't have a process id in this context.
     const int kNoProcessId = -1;
     if (!PermissionsData::CanExecuteScriptOnPage(extension,
-                                                 data_source_url,
+                                                 document_url,
                                                  top_frame->document().url(),
                                                  kNoTabId,
                                                  script,

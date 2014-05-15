@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/extension.h"
@@ -15,8 +16,10 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/base_feature_provider.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
+#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
@@ -160,6 +163,35 @@ GURL ScriptContext::GetDataSourceURLForFrame(const blink::WebFrame* frame) {
                                           : frame->dataSource();
   CHECK(data_source);
   return GURL(data_source->request().url());
+}
+
+// static
+GURL ScriptContext::GetEffectiveDocumentURL(const blink::WebFrame* frame,
+                                            const GURL& document_url,
+                                            bool match_about_blank) {
+  // Common scenario. If |match_about_blank| is false (as is the case in most
+  // extensions), or if the frame is not an about:-page, just return
+  // |document_url| (supposedly the URL of the frame).
+  if (!match_about_blank || !document_url.SchemeIs(content::kAboutScheme))
+    return document_url;
+
+  // Non-sandboxed about:blank and about:srcdoc pages inherit their security
+  // origin from their parent frame/window. So, traverse the frame/window
+  // hierarchy to find the closest non-about:-page and return its URL.
+  const blink::WebFrame* parent = frame;
+  do {
+    parent = parent->parent() ? parent->parent() : parent->opener();
+  } while (parent != NULL &&
+           GURL(parent->document().url()).SchemeIs(content::kAboutScheme));
+
+  if (parent) {
+    // Only return the parent URL if the frame can access it.
+    const blink::WebDocument& parent_document = parent->document();
+    if (frame->document().securityOrigin().canAccess(
+            parent_document.securityOrigin()))
+      return parent_document.url();
+  }
+  return document_url;
 }
 
 ScriptContext* ScriptContext::GetContext() { return this; }

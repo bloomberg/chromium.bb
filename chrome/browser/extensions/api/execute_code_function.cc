@@ -124,6 +124,11 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
           ScriptExecutor::ALL_FRAMES :
           ScriptExecutor::TOP_FRAME;
 
+  ScriptExecutor::MatchAboutBlank match_about_blank =
+      details_->match_about_blank.get() && *details_->match_about_blank ?
+          ScriptExecutor::MATCH_ABOUT_BLANK :
+          ScriptExecutor::DONT_MATCH_ABOUT_BLANK;
+
   UserScript::RunLocation run_at =
       UserScript::UNDEFINED;
   switch (details_->run_at) {
@@ -145,6 +150,7 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
       script_type,
       code_string,
       frame_scope,
+      match_about_blank,
       run_at,
       ScriptExecutor::ISOLATED_WORLD,
       IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS

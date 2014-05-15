@@ -188,23 +188,23 @@ void UserScriptScheduler::ExecuteCodeImpl(
     // For child frames, we just skip ones the extension doesn't have access
     // to and carry on.
 
+    GURL document_url = ScriptContext::GetEffectiveDocumentURL(
+        child_frame, child_frame->document().url(), params.match_about_blank);
     bool can_execute_script =
         PermissionsData::CanExecuteScriptOnPage(extension,
-                                                child_frame->document().url(),
+                                                document_url,
                                                 top_url,
                                                 extension_helper->tab_id(),
                                                 NULL,
                                                 -1,
                                                 NULL);
     if ((!params.is_web_view && !can_execute_script) ||
-        (params.is_web_view &&
-         child_frame->document().url() != params.webview_src)) {
+        (params.is_web_view && document_url != params.webview_src)) {
       if (child_frame->parent()) {
         continue;
       } else {
         error = ErrorUtils::FormatErrorMessage(
-            manifest_errors::kCannotAccessPage,
-            child_frame->document().url().spec());
+            manifest_errors::kCannotAccessPage, document_url.spec());
         break;
       }
     }

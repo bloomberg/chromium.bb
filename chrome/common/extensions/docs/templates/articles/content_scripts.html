@@ -134,6 +134,18 @@ can have the following properties:</p>
     for information on how to exclude URLs.</td>
   </tr>
   <tr>
+    <td><code>match_about_blank<code></td>
+    <td>boolean</td>
+    <td><em>Optional.</em>
+    Whether to insert the content script on <code>about:blank</code> and
+    <code>about:srcdoc</code>. Content scripts will only be injected on pages if
+    your extension has access to the page's parent document. Scripts are only
+    inserted in a top-level <code>about:blank</code> frame when its opener is
+    accessible by the extension.
+    <br><br>
+    Defaults to <code>false</code>.</td>
+  </tr>
+  <tr>
     <td><code>css<code></td>
     <td>array of strings</td>
     <td><em>Optional.</em>

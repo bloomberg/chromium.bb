@@ -137,6 +137,7 @@ class ContentScriptLoader {
       params.code = data;
       params.run_at = extensions::UserScript::DOCUMENT_IDLE;
       params.all_frames = true;
+      params.match_about_blank = false;
       params.in_main_world = false;
 
       RenderViewHost* render_view_host =
@@ -176,6 +177,7 @@ void LoadChromeVoxExtension(Profile* profile,
     params.code = "window.INJECTED_AFTER_LOAD = true;";
     params.run_at = extensions::UserScript::DOCUMENT_IDLE;
     params.all_frames = true;
+    params.match_about_blank = false;
     params.in_main_world = false;
     render_view_host->Send(new ExtensionMsg_ExecuteCode(
         render_view_host->GetRoutingID(), params));

@@ -12,6 +12,13 @@
       "matches": ["http://*/*"],
       "js": ["content_script.js"],
       "all_frames": true
+    },
+    {
+      "run_at": "document_start",
+      "matches": ["http://does-not-match/"],
+      "match_about_blank": true,
+      "js": ["content_script2.js"],
+      "all_frames": true
     }
   ]
 }

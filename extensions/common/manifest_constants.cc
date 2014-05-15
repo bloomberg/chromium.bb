@@ -75,6 +75,7 @@ const char kLaunchWebURL[] = "app.launch.web_url";
 const char kLaunchWidth[] = "app.launch.width";
 const char kLayouts[] = "layouts";
 const char kManifestVersion[] = "manifest_version";
+const char kMatchAboutBlank[] = "match_about_blank";
 const char kMatches[] = "matches";
 const char kMinimumChromeVersion[] = "minimum_chrome_version";
 const char kMinimumVersion[] = "minimum_version";
@@ -478,6 +479,8 @@ const char kInvalidManifestVersionOld[] =
     "See developer.chrome.com/*/manifestVersion.html for details.";
 const char kInvalidMatch[] =
     "Invalid value for 'content_scripts[*].matches[*]': *";
+const char kInvalidMatchAboutBlank[] =
+    "Invalid value for 'content_scripts[*].match_about_blank'.";
 const char kInvalidMatchCount[] =
     "Invalid value for 'content_scripts[*].matches'. There must be at least "
     "one match specified.";

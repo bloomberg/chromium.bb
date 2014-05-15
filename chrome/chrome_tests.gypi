@@ -827,6 +827,7 @@
         '../apps/load_and_launch_browsertest.cc',
         '../extensions/browser/api/usb/usb_apitest.cc',
         '../extensions/browser/api/usb/usb_manual_apitest.cc',
+        '../extensions/renderer/script_context_browsertest.cc',
         # TODO(blundell): Bring up a components_browsertests target and move
         # this test to be in that target. crbug.com/283846
         '../components/autofill/content/renderer/password_form_conversion_utils_browsertest.cc',

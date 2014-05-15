@@ -69,9 +69,11 @@ UserScript::File::File() {}
 UserScript::File::~File() {}
 
 UserScript::UserScript()
-    : run_location_(DOCUMENT_IDLE), emulate_greasemonkey_(false),
-      match_all_frames_(false), incognito_enabled_(false) {
-}
+    : run_location_(DOCUMENT_IDLE),
+      emulate_greasemonkey_(false),
+      match_all_frames_(false),
+      match_about_blank_(false),
+      incognito_enabled_(false) {}
 
 UserScript::~UserScript() {
 }
@@ -127,6 +129,7 @@ void UserScript::Pickle(::Pickle* pickle) const {
   pickle->WriteString(extension_id());
   pickle->WriteBool(emulate_greasemonkey());
   pickle->WriteBool(match_all_frames());
+  pickle->WriteBool(match_about_blank());
   pickle->WriteBool(is_incognito_enabled());
 
   PickleGlobs(pickle, globs_);
@@ -175,6 +178,7 @@ void UserScript::Unpickle(const ::Pickle& pickle, PickleIterator* iter) {
   CHECK(pickle.ReadString(iter, &extension_id_));
   CHECK(pickle.ReadBool(iter, &emulate_greasemonkey_));
   CHECK(pickle.ReadBool(iter, &match_all_frames_));
+  CHECK(pickle.ReadBool(iter, &match_about_blank_));
   CHECK(pickle.ReadBool(iter, &incognito_enabled_));
 
   UnpickleGlobs(pickle, iter, &globs_);
