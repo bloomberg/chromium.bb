@@ -26,22 +26,22 @@ class FakeGCMProfileService : public GCMProfileService {
   // GCMProfileService overrides.
   virtual void Register(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
-                        RegisterCallback callback) OVERRIDE;
+                        const RegisterCallback& callback) OVERRIDE;
   virtual void Unregister(const std::string& app_id,
-                          UnregisterCallback callback) OVERRIDE;
+                          const UnregisterCallback& callback) OVERRIDE;
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const GCMClient::OutgoingMessage& message,
-                    SendCallback callback) OVERRIDE;
+                    const SendCallback& callback) OVERRIDE;
 
   void RegisterFinished(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
-                        RegisterCallback callback);
+                        const RegisterCallback& callback);
 
   void SendFinished(const std::string& app_id,
                     const std::string& receiver_id,
                     const GCMClient::OutgoingMessage& message,
-                    SendCallback callback);
+                    const SendCallback& callback);
 
   void AddExpectedUnregisterResponse(GCMClient::Result result);
   GCMClient::Result GetNextExpectedUnregisterResponse();

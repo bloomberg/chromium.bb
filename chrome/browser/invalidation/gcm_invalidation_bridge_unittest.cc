@@ -32,7 +32,7 @@ class FakeGCMProfileService : public gcm::GCMProfileService {
 
   virtual void Register(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
-                        RegisterCallback callback) OVERRIDE {
+                        const RegisterCallback& callback) OVERRIDE {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(

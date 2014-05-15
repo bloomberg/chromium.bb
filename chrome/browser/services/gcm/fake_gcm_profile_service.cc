@@ -26,7 +26,7 @@ FakeGCMProfileService::~FakeGCMProfileService() {}
 
 void FakeGCMProfileService::Register(const std::string& app_id,
                                      const std::vector<std::string>& sender_ids,
-                                     RegisterCallback callback) {
+                                     const RegisterCallback& callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMProfileService::RegisterFinished,
@@ -39,7 +39,7 @@ void FakeGCMProfileService::Register(const std::string& app_id,
 void FakeGCMProfileService::RegisterFinished(
     const std::string& app_id,
     const std::vector<std::string>& sender_ids,
-    RegisterCallback callback) {
+    const RegisterCallback& callback) {
   if (collect_) {
     last_registered_app_id_ = app_id;
     last_registered_sender_ids_ = sender_ids;
@@ -49,7 +49,7 @@ void FakeGCMProfileService::RegisterFinished(
 }
 
 void FakeGCMProfileService::Unregister(const std::string& app_id,
-                                       UnregisterCallback callback) {
+                                       const UnregisterCallback& callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(callback, GetNextExpectedUnregisterResponse()));
 }
@@ -57,7 +57,7 @@ void FakeGCMProfileService::Unregister(const std::string& app_id,
 void FakeGCMProfileService::Send(const std::string& app_id,
                                  const std::string& receiver_id,
                                  const GCMClient::OutgoingMessage& message,
-                                 SendCallback callback) {
+                                 const SendCallback& callback) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&FakeGCMProfileService::SendFinished,
@@ -72,7 +72,7 @@ void FakeGCMProfileService::SendFinished(
     const std::string& app_id,
     const std::string& receiver_id,
     const GCMClient::OutgoingMessage& message,
-    SendCallback callback) {
+    const SendCallback& callback) {
   if (collect_) {
     last_sent_message_ = message;
     last_receiver_id_ = receiver_id;

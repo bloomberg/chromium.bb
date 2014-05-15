@@ -64,7 +64,7 @@ checkin_proto::ChromeBuildProto_Channel GetChannel() {
     default:
       NOTREACHED();
       return checkin_proto::ChromeBuildProto_Channel_CHANNEL_UNKNOWN;
-  };
+  }
 }
 
 }  // namespace
@@ -473,7 +473,7 @@ void GCMService::RemoveAppHandler(const std::string& app_id) {
 
 void GCMService::Register(const std::string& app_id,
                           const std::vector<std::string>& sender_ids,
-                          RegisterCallback callback) {
+                          const RegisterCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty());
   DCHECK(!sender_ids.empty());
@@ -529,7 +529,7 @@ void GCMService::DoRegister(const std::string& app_id,
 }
 
 void GCMService::Unregister(const std::string& app_id,
-                            UnregisterCallback callback) {
+                            const UnregisterCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty());
   DCHECK(!callback.is_null());
@@ -576,7 +576,7 @@ void GCMService::DoUnregister(const std::string& app_id) {
 void GCMService::Send(const std::string& app_id,
                       const std::string& receiver_id,
                       const GCMClient::OutgoingMessage& message,
-                      SendCallback callback) {
+                      const SendCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!app_id.empty());
   DCHECK(!receiver_id.empty());
@@ -639,7 +639,7 @@ bool GCMService::IsGCMClientReady() const {
   return gcm_client_ready_;
 }
 
-void GCMService::GetGCMStatistics(GetGCMStatisticsCallback callback,
+void GCMService::GetGCMStatistics(const GetGCMStatisticsCallback& callback,
                                   bool clear_logs) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -653,7 +653,7 @@ void GCMService::GetGCMStatistics(GetGCMStatisticsCallback callback,
                  clear_logs));
 }
 
-void GCMService::SetGCMRecording(GetGCMStatisticsCallback callback,
+void GCMService::SetGCMRecording(const GetGCMStatisticsCallback& callback,
                                  bool recording) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
@@ -849,8 +849,7 @@ GCMAppHandler* GCMService::GetAppHandler(const std::string& app_id) {
   return iter == app_handlers_.end() ? &default_app_handler_ : iter->second;
 }
 
-void GCMService::GetGCMStatisticsFinished(
-    GCMClient::GCMStatistics stats) {
+void GCMService::GetGCMStatisticsFinished(GCMClient::GCMStatistics stats) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Normally request_gcm_statistics_callback_ would not be null.

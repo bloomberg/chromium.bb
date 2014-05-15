@@ -72,13 +72,13 @@ class GCMService : public IdentityProvider::Observer {
   // |callback|: to be called once the asynchronous operation is done.
   virtual void Register(const std::string& app_id,
                         const std::vector<std::string>& sender_ids,
-                        RegisterCallback callback);
+                        const RegisterCallback& callback);
 
   // Unregisters an app from using GCM.
   // |app_id|: application ID.
   // |callback|: to be called once the asynchronous operation is done.
   virtual void Unregister(const std::string& app_id,
-                          UnregisterCallback callback);
+                          const UnregisterCallback& callback);
 
   // Sends a message to a given receiver.
   // |app_id|: application ID.
@@ -88,7 +88,7 @@ class GCMService : public IdentityProvider::Observer {
   virtual void Send(const std::string& app_id,
                     const std::string& receiver_id,
                     const GCMClient::OutgoingMessage& message,
-                    SendCallback callback);
+                    const SendCallback& callback);
 
   // For testing purpose.
   GCMClient* GetGCMClientForTesting() const;
@@ -102,10 +102,12 @@ class GCMService : public IdentityProvider::Observer {
   // Get GCM client internal states and statistics.
   // If clear_logs is true then activity logs will be cleared before the stats
   // are returned.
-  void GetGCMStatistics(GetGCMStatisticsCallback callback, bool clear_logs);
+  void GetGCMStatistics(const GetGCMStatisticsCallback& callback,
+                        bool clear_logs);
 
   // Enables/disables GCM activity recording, and then returns the stats.
-  void SetGCMRecording(GetGCMStatisticsCallback callback, bool recording);
+  void SetGCMRecording(const GetGCMStatisticsCallback& callback,
+                       bool recording);
 
   // IdentityProvider::Observer:
   virtual void OnActiveAccountLogin() OVERRIDE;
