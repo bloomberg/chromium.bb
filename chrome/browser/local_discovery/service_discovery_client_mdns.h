@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/cancelable_callback.h"
+#include "base/observer_list.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "net/base/network_change_notifier.h"
@@ -50,11 +51,12 @@ class ServiceDiscoveryClientMdns
   void OnMdnsInitialized(bool success);
   void ReportSuccess();
   void InvalidateWeakPtrs();
-  void Reset();
+  void OnBeforeMdnsDestroy();
+  void DestroyMdns();
 
   bool PostToMdnsThread(const base::Closure& task);
 
-  std::set<Proxy*> proxies_;
+  ObserverList<Proxy, true> proxies_;
 
   scoped_refptr<base::SequencedTaskRunner> mdns_runner_;
 
