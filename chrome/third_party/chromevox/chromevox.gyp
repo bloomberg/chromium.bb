@@ -39,8 +39,7 @@
             {
               'destination': '<(PRODUCT_DIR)/resources/chromeos/chromevox/closure',
               'files': [
-                'closure/base.js',
-                'closure/closure_preinit.js',
+                'third_party/closure-library/closure/goog/base.js',
               ],
             },
             {

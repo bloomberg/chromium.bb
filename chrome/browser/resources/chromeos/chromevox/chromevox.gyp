@@ -148,6 +148,12 @@
       'target_name': 'chromevox_uncompiled_js_files',
       'type': 'none',
       'copies': [
+            {
+              'destination': '<(chromevox_dest_dir)/closure',
+          'files': [
+            'closure/closure_preinit.js',
+          ],
+        },
         {
           'destination': '<(chromevox_dest_dir)/chromevox/injected',
           'files': [
