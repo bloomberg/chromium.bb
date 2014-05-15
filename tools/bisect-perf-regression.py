@@ -654,7 +654,7 @@ def SetBuildSystemDefault(build_system):
     raise RuntimeError('%s build not supported.' % build_system)
 
 
-def BuildWithMake(threads, targets, build_type):
+def BuildWithMake(threads, targets, build_type='Release'):
   cmd = ['make', 'BUILDTYPE=%s' % build_type]
 
   if threads:
@@ -667,7 +667,7 @@ def BuildWithMake(threads, targets, build_type):
   return not return_code
 
 
-def BuildWithNinja(threads, targets, build_type):
+def BuildWithNinja(threads, targets, build_type='Release'):
   cmd = ['ninja', '-C', os.path.join('out', build_type)]
 
   if threads:
@@ -680,7 +680,7 @@ def BuildWithNinja(threads, targets, build_type):
   return not return_code
 
 
-def BuildWithVisualStudio(targets, build_type):
+def BuildWithVisualStudio(targets, build_type='Release'):
   path_to_devenv = os.path.abspath(
       os.path.join(os.environ['VS100COMNTOOLS'], '..', 'IDE', 'devenv.com'))
   path_to_sln = os.path.join(os.getcwd(), 'chrome', 'chrome.sln')
@@ -847,7 +847,8 @@ class AndroidBuilder(Builder):
 
     build_success = False
     if opts.build_preference == 'ninja':
-      build_success = BuildWithNinja(threads, self._GetTargets())
+      build_success = BuildWithNinja(
+          threads, self._GetTargets(), opts.target_build_type)
     else:
       assert False, 'No build system defined.'
 
