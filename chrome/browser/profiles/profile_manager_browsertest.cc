@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
@@ -94,6 +93,13 @@ class ProfileRemovalObserver : public ProfileInfoCacheObserver {
 // TODO(jeremy): crbug.com/103355 - These tests should be enabled on all
 // platforms.
 class ProfileManagerBrowserTest : public InProcessBrowserTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
+  }
 };
 
 #if defined(OS_MACOSX)
@@ -179,21 +185,17 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
 
 #if defined(OS_CHROMEOS)
 
-class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest,
-                                      public testing::WithParamInterface<bool> {
+class ProfileManagerCrOSBrowserTest : public ProfileManagerBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    if (GetParam()) {
-      command_line->AppendSwitch(::switches::kMultiProfiles);
-      // Use a user hash other than the default chrome::kTestUserProfileDir
-      // so that the prefix case is tested.
-      command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
-                                      "test-user-hash");
-    }
+    // Use a user hash other than the default chrome::kTestUserProfileDir
+    // so that the prefix case is tested.
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
+                                    "test-user-hash");
   }
 };
 
-IN_PROC_BROWSER_TEST_P(ProfileManagerCrOSBrowserTest, GetLastUsedProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerCrOSBrowserTest, GetLastUsedProfile) {
   // Make sure that last used profile is correct.
   Profile* last_used_profile = ProfileManager::GetLastUsedProfile();
   EXPECT_TRUE(last_used_profile != NULL);
@@ -201,19 +203,10 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerCrOSBrowserTest, GetLastUsedProfile) {
   base::FilePath profile_path;
   PathService::Get(chrome::DIR_USER_DATA, &profile_path);
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kMultiProfiles)) {
-    profile_path = profile_path.AppendASCII(
-        std::string(chrome::kProfileDirPrefix) + "test-user-hash");
-  } else {
-    profile_path = profile_path.AppendASCII(chrome::kTestUserProfileDir);
-  }
+  profile_path = profile_path.AppendASCII(
+      std::string(chrome::kProfileDirPrefix) + "test-user-hash");
   EXPECT_EQ(profile_path.value(), last_used_profile->GetPath().value());
 }
-
-INSTANTIATE_TEST_CASE_P(ProfileManagerCrOSBrowserTestInstantiation,
-                        ProfileManagerCrOSBrowserTest,
-                        testing::Bool());
 
 #endif  // OS_CHROMEOS
 

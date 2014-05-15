@@ -43,6 +43,10 @@
 #include "content/test/net/url_request_slow_download_job.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace {
 
 class AppModalDialogObserver {
@@ -248,6 +252,10 @@ class BrowserCloseManagerBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     if (GetParam())
       command_line->AppendSwitch(switches::kEnableFastUnload);
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
   }
 
   void CreateStalledDownload(Browser* browser) {

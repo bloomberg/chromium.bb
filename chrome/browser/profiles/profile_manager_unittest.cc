@@ -36,6 +36,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -392,7 +393,7 @@ class ProfileManagerGuestTest : public ProfileManagerTest,
       cl->AppendSwitch(switches::kMultiProfiles);
 
     cl->AppendSwitch(switches::kTestType);
-    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
+    if (profiles::IsMultipleProfilesEnabled()) {
       cl->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                             std::string(chrome::kProfileDirPrefix) +
                                 chromeos::UserManager::kGuestUserName);

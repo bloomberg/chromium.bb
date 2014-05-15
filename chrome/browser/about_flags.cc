@@ -1030,13 +1030,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableSamlSignin),
   },
   {
-    "enable-multi-profiles",
-    IDS_FLAGS_ENABLE_MULTI_PROFILES_NAME,
-    IDS_FLAGS_ENABLE_MULTI_PROFILES_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kMultiProfiles),
-  },
-  {
     "disable-display-color-calibration",
     IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_NAME,
     IDS_FLAGS_DISABLE_DISPLAY_COLOR_CALIBRATION_DESCRIPTION,

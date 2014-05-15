@@ -32,6 +32,10 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace {
 
 // An observer that returns back to test code after a new profile is
@@ -106,6 +110,10 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
         switches::kForceFieldTrials,
         std::string(chrome_prefs::internals::kSettingsEnforcementTrialName) +
             "/" + GetParam() + "/");
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -164,8 +172,6 @@ class PrefHashBrowserTest : public InProcessBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
                        MAYBE_PRE_PRE_InitializeUnloadedProfiles) {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   // Create an additional profile.
@@ -194,9 +200,6 @@ IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
                        MAYBE_PRE_InitializeUnloadedProfiles) {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
   // Creating the profile would have initialized its hash store. Also, we don't
   // know whether the newly created or original profile will be launched (does
   // creating a profile cause it to be the most recently used?).
@@ -231,9 +234,6 @@ IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(PrefHashBrowserTest,
                        MAYBE_InitializeUnloadedProfiles) {
-  if (!profiles::IsMultipleProfilesEnabled())
-    return;
-
   const base::DictionaryValue* hashes =
       g_browser_process->local_state()->GetDictionary(
           prefs::kProfilePreferenceHashes);

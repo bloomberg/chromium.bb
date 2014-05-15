@@ -34,10 +34,10 @@
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_unit_test_suite.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -206,9 +206,6 @@ class LoginUtilsTest : public testing::Test,
     CommandLine* command_line = CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(
         policy::switches::kDeviceManagementUrl, kDMServer);
-
-    if (!command_line->HasSwitch(::switches::kMultiProfiles))
-      command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
 
     // DBusThreadManager should be initialized before io_thread_state_, as
     // DBusThreadManager is used from chromeos::ProxyConfigServiceImpl,
@@ -526,28 +523,11 @@ class LoginUtilsTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(LoginUtilsTest);
 };
 
-class LoginUtilsParamTest
-    : public LoginUtilsTest,
-      public testing::WithParamInterface<bool> {
- public:
-  LoginUtilsParamTest() {}
-
-  virtual void SetUp() OVERRIDE {
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    if (GetParam())
-      command_line->AppendSwitch(::switches::kMultiProfiles);
-    LoginUtilsTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginUtilsParamTest);
-};
-
 class LoginUtilsBlockingLoginTest
     : public LoginUtilsTest,
       public testing::WithParamInterface<int> {};
 
-TEST_P(LoginUtilsParamTest, NormalLoginDoesntBlock) {
+TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
@@ -563,7 +543,7 @@ TEST_P(LoginUtilsParamTest, NormalLoginDoesntBlock) {
   EXPECT_EQ(kUsername, user_manager->GetLoggedInUser()->email());
 }
 
-TEST_P(LoginUtilsParamTest, EnterpriseLoginDoesntBlockForNormalUser) {
+TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
@@ -588,7 +568,7 @@ TEST_P(LoginUtilsParamTest, EnterpriseLoginDoesntBlockForNormalUser) {
 }
 
 #if defined(ENABLE_RLZ)
-TEST_P(LoginUtilsParamTest, RlzInitialized) {
+TEST_F(LoginUtilsTest, RlzInitialized) {
   // No RLZ brand code set initially.
   EXPECT_FALSE(local_state_.Get()->HasPrefPath(prefs::kRLZBrand));
 
@@ -722,10 +702,6 @@ INSTANTIATE_TEST_CASE_P(
     LoginUtilsBlockingLoginTestInstance,
     LoginUtilsBlockingLoginTest,
     testing::Values(0, 1, 2, 3, 4, 5));
-
-INSTANTIATE_TEST_CASE_P(LoginUtilsParamTestInstantiation,
-                        LoginUtilsParamTest,
-                        testing::Bool());
 
 }  // namespace
 

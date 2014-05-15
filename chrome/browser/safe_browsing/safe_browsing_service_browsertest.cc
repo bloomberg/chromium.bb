@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -43,6 +45,10 @@
 #include "sql/connection.h"
 #include "sql/statement.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
 
 using content::BrowserThread;
 using content::InterstitialPage;
@@ -392,6 +398,17 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
     SafeBrowsingDatabase::RegisterFactory(NULL);
     SafeBrowsingProtocolManager::RegisterFactory(NULL);
     SafeBrowsingService::RegisterFactory(NULL);
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Makes sure the auto update is not triggered during the test.
+    // This test will fill up the database using testing prefixes
+    // and urls.
+    command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
   }
 
   virtual void SetUpInProcessBrowserTestFixture() {

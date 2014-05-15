@@ -6,18 +6,22 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/chromeos/file_manager/drive_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
@@ -64,6 +68,11 @@ const char kRestrictedMountPointName[] = "restricted";
 
 // Default file content for the test files.
 const char kTestFileContent[] = "This is some test content.";
+
+// User account email and directory hash for secondary account for multi-profile
+// sensitive test cases.
+const char kSecondProfileAccount[] = "profile2@test.com";
+const char kSecondProfileHash[] = "fileBrowserApiTestProfile2";
 
 // Sets up the initial file system state for native local and restricted native
 // local file systems. The hierarchy is the same as for the drive file system.
@@ -501,11 +510,16 @@ class MultiProfileDriveFileSystemExtensionApiTest :
   MultiProfileDriveFileSystemExtensionApiTest() : second_profile(NULL) {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    base::FilePath user_data_directory;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
+    chromeos::UserManager::Get()->UserLoggedIn(kSecondProfileAccount,
+                                               kSecondProfileHash,
+                                               false);
     // Set up the secondary profile.
-    base::FilePath profile_dir;
-    base::CreateNewTempDirectory(base::FilePath::StringType(), &profile_dir);
-    profile_dir = profile_dir.AppendASCII(
-        std::string(chrome::kProfileDirPrefix) + "fileBrowserApiTestProfile2");
+    base::FilePath profile_dir =
+        user_data_directory.Append(
+            chromeos::ProfileHelper::GetUserProfileDir(
+                kSecondProfileHash).BaseName());
     second_profile =
         g_browser_process->profile_manager()->GetProfile(profile_dir);
 

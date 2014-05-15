@@ -1716,6 +1716,8 @@
             '../apps/load_and_launch_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_policy_browsertest.cc',
             'browser/printing/cloud_print/test/cloud_print_proxy_process_browsertest.cc',
+            # chromeos does not support profile list avatar menu
+            'browser/profiles/profile_list_desktop_browsertest.cc',
             'browser/service_process/service_process_control_browsertest.cc',
             'browser/signin/signin_browsertest.cc',
             # chromeos does not use cross-platform panels

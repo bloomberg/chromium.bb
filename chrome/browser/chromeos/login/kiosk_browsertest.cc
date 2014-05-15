@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -431,19 +432,12 @@ class KioskTest : public OobeBaseTest {
   // run. Note this must be called before app profile is loaded.
   void SetupAppProfile(const std::string& relative_app_profile_dir) {
     base::FilePath app_profile_dir;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            ::switches::kMultiProfiles)) {
-      KioskAppManager::App app_data;
-      CHECK(KioskAppManager::Get()->GetApp(test_app_id(), &app_data));
-      std::string app_user_id_hash =
-          CryptohomeClient::GetStubSanitizedUsername(app_data.user_id);
-      app_profile_dir =
-          ProfileHelper::GetProfilePathByUserIdHash(app_user_id_hash);
-    } else {
-      ASSERT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &app_profile_dir));
-      app_profile_dir = app_profile_dir.Append(
-          ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch());
-    }
+    KioskAppManager::App app_data;
+    CHECK(KioskAppManager::Get()->GetApp(test_app_id(), &app_data));
+    std::string app_user_id_hash =
+        CryptohomeClient::GetStubSanitizedUsername(app_data.user_id);
+    app_profile_dir =
+        ProfileHelper::GetProfilePathByUserIdHash(app_user_id_hash);
     ASSERT_TRUE(base::CreateDirectory(app_profile_dir));
 
     base::FilePath test_data_dir;

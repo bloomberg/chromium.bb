@@ -52,6 +52,7 @@
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_constants.h"
@@ -288,6 +289,7 @@ void UserManagerImpl::Shutdown() {
   multi_profile_user_controller_.reset();
   avatar_policy_observer_.reset();
   wallpaper_policy_observer_.reset();
+  registrar_.RemoveAll();
 }
 
 MultiProfileUserController* UserManagerImpl::GetMultiProfileUserController() {
@@ -314,9 +316,6 @@ const UserList& UserManagerImpl::GetUsers() const {
 }
 
 UserList UserManagerImpl::GetUsersAdmittedForMultiProfile() const {
-  if (!UserManager::IsMultipleProfilesAllowed())
-    return UserList();
-
   // Supervised users are not allowed to use multi profile.
   if (logged_in_users_.size() == 1 &&
       GetPrimaryUser()->GetType() != User::USER_TYPE_REGULAR)
@@ -415,9 +414,6 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
                                    bool browser_restart) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(::switches::kMultiProfiles))
-    DCHECK(!IsUserLoggedIn());
-
   User* user = FindUserInListAndModify(user_id);
   if (active_user_ && user) {
     user->set_is_logged_in(true);
@@ -493,9 +489,6 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
 }
 
 void UserManagerImpl::SwitchActiveUser(const std::string& user_id) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(::switches::kMultiProfiles))
-    return;
-
   User* user = FindUserAndModify(user_id);
   if (!user) {
     NOTREACHED() << "Switching to a non-existing user";
@@ -684,29 +677,37 @@ User* UserManagerImpl::GetUserByProfile(Profile* profile) const {
   if (ProfileHelper::IsSigninProfile(profile))
     return NULL;
 
-  if (IsMultipleProfilesAllowed()) {
-    const std::string username_hash =
-        ProfileHelper::GetUserIdHashFromProfile(profile);
-    const UserList& users = GetUsers();
-    const UserList::const_iterator pos = std::find_if(
-        users.begin(), users.end(), UserHashMatcher(username_hash));
-    if (pos != users.end())
-      return *pos;
-
-    // Many tests do not have their users registered with UserManager and
-    // runs here. If |active_user_| matches |profile|, returns it.
-    return active_user_ &&
-                   ProfileHelper::GetProfilePathByUserIdHash(
-                       active_user_->username_hash()) == profile->GetPath()
-               ? active_user_
-               : NULL;
+  // Special case for non-CrOS tests that do create several profiles
+  // and don't really care about mapping to the real user.
+  // Without multi-profiles on Chrome OS such tests always got active_user_.
+  // Now these tests will specify special flag to continue working.
+  // In future those tests can get a proper CrOS configuration i.e. register
+  // and login several users if they want to work with an additional profile.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreUserProfileMappingForTests)) {
+    return active_user_;
   }
-  return active_user_;
+
+  const std::string username_hash =
+      ProfileHelper::GetUserIdHashFromProfile(profile);
+  const UserList& users = GetUsers();
+  const UserList::const_iterator pos = std::find_if(
+      users.begin(), users.end(), UserHashMatcher(username_hash));
+  if (pos != users.end())
+    return *pos;
+
+  // Many tests do not have their users registered with UserManager and
+  // runs here. If |active_user_| matches |profile|, returns it.
+  return active_user_ &&
+                 ProfileHelper::GetProfilePathByUserIdHash(
+                     active_user_->username_hash()) == profile->GetPath()
+             ? active_user_
+             : NULL;
 }
 
 Profile* UserManagerImpl::GetProfileByUser(const User* user) const {
   Profile* profile = NULL;
-  if (IsMultipleProfilesAllowed() && user->is_profile_created())
+  if (user->is_profile_created())
     profile = ProfileHelper::GetProfileByUserIdHash(user->username_hash());
   else
     profile = ProfileManager::GetActiveUserProfile();
@@ -1867,19 +1868,9 @@ base::FilePath UserManagerImpl::GetUserProfileDir(
   // ProfileManager and use only this function to construct profile path.
   // TODO(nkostylev): Cleanup profile dir related code paths crbug.com/294233
   base::FilePath profile_dir;
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(::switches::kMultiProfiles)) {
-    const User* user = FindUser(user_id);
-    if (user && !user->username_hash().empty())
-      profile_dir = ProfileHelper::GetUserProfileDir(user->username_hash());
-  } else if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
-    profile_dir = ProfileHelper::GetProfileDirByLegacyLoginProfileSwitch();
-  } else {
-    // We should never be logged in with no profile dir unless
-    // multi-profiles are enabled.
-    NOTREACHED();
-    profile_dir = base::FilePath();
-  }
+  const User* user = FindUser(user_id);
+  if (user && !user->username_hash().empty())
+    profile_dir = ProfileHelper::GetUserProfileDir(user->username_hash());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_dir = profile_manager->user_data_dir().Append(profile_dir);

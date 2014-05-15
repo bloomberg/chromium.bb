@@ -66,14 +66,14 @@ void LoginManagerTest::SetExpectedCredentials(const std::string& username,
 
 bool LoginManagerTest::TryToLogin(const std::string& username,
                                   const std::string& password) {
-  if (!AddUserTosession(username, password))
+  if (!AddUserToSession(username, password))
     return false;
   if (const User* active_user = UserManager::Get()->GetActiveUser())
     return active_user->email() == username;
   return false;
 }
 
-bool LoginManagerTest::AddUserTosession(const std::string& username,
+bool LoginManagerTest::AddUserToSession(const std::string& username,
                                         const std::string& password) {
   ExistingUserController* controller =
       ExistingUserController::current_controller();
@@ -101,7 +101,7 @@ void LoginManagerTest::LoginUser(const std::string& username) {
 
 void LoginManagerTest::AddUser(const std::string& username) {
   SetExpectedCredentials(username, "password");
-  EXPECT_TRUE(AddUserTosession(username, "password"));
+  EXPECT_TRUE(AddUserToSession(username, "password"));
 }
 
 void LoginManagerTest::JSExpect(const std::string& expression) {

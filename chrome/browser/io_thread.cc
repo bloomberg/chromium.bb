@@ -102,7 +102,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #endif
 
@@ -546,17 +545,15 @@ void IOThread::InitAsync() {
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
   UpdateDnsClientEnabled();
 #if defined(OS_CHROMEOS)
-  if (chromeos::UserManager::IsMultipleProfilesAllowed()) {
-    // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-    globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
-        new chromeos::CertVerifyProcChromeOS()));
-  } else  // NOLINT Fallthrough to normal verifier if multiprofiles not allowed.
-#endif
-  {
+  // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
+  globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
+      new chromeos::CertVerifyProcChromeOS()));
+#else
     globals_->cert_verifier.reset(new net::MultiThreadedCertVerifier(
         net::CertVerifyProc::CreateDefault()));
-  }
-  globals_->transport_security_state.reset(new net::TransportSecurityState());
+#endif
+
+    globals_->transport_security_state.reset(new net::TransportSecurityState());
 #if !defined(USE_OPENSSL)
   // For now, Certificate Transparency is only implemented for platforms
   // that use NSS.

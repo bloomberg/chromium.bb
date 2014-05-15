@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
@@ -16,18 +18,46 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
+class UnittestProfileManager : public ::ProfileManagerWithoutInit {
+ public:
+  explicit UnittestProfileManager(const base::FilePath& user_data_dir)
+      : ::ProfileManagerWithoutInit(user_data_dir) {}
+
+ protected:
+  virtual Profile* CreateProfileHelper(
+      const base::FilePath& file_path) OVERRIDE {
+    if (!base::PathExists(file_path)) {
+      if (!base::CreateDirectory(file_path))
+        return NULL;
+    }
+    return new TestingProfile(file_path, NULL);
+  }
+};
+
+
 class UserManagerTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
+    CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    command_line.AppendSwitch(::switches::kTestType);
+    command_line.AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+
     cros_settings_ = CrosSettings::Get();
 
     // Replace the real DeviceSettingsProvider with a stub.
@@ -45,6 +75,14 @@ class UserManagerTest : public testing::Test {
     local_state_.reset(
         new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
 
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(
+        new UnittestProfileManager(temp_dir_.path()));
+
+    chromeos::FakeDBusThreadManager* dbus_manager =
+        new chromeos::FakeDBusThreadManager();
+    chromeos::DBusThreadManager::InitializeForTesting(dbus_manager);
+
     ResetUserManager();
   }
 
@@ -59,8 +97,10 @@ class UserManagerTest : public testing::Test {
 
     // Shut down the DeviceSettingsService.
     DeviceSettingsService::Get()->UnsetSessionManager();
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(NULL);
 
     base::RunLoop().RunUntilIdle();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
   UserManagerImpl* GetUserManagerImpl() const {
@@ -120,6 +160,7 @@ class UserManagerTest : public testing::Test {
   ScopedTestCrosSettings test_cros_settings_;
 
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  base::ScopedTempDir temp_dir_;
 };
 
 TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {

@@ -201,8 +201,7 @@ void MetricsLogChromeOS::UpdateMultiProfileUserCount() {
   metrics::SystemProfileProto* system_profile =
       uma_proto_->mutable_system_profile();
 
-  if (chromeos::UserManager::IsInitialized() &&
-      chromeos::UserManager::Get()->IsMultipleProfilesAllowed()) {
+  if (chromeos::UserManager::IsInitialized()) {
     size_t user_count = chromeos::UserManager::Get()->GetLoggedInUsers().size();
 
     // We invalidate the user count if it changed while the log was open.

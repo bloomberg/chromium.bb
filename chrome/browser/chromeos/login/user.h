@@ -258,7 +258,9 @@ class User : public ash::UserInfo {
     display_name_ = display_name;
   }
 
-  void set_given_name(const base::string16& given_name) { given_name_ = given_name; }
+  void set_given_name(const base::string16& given_name) {
+    given_name_ = given_name;
+  }
 
   void set_display_email(const std::string& display_email) {
     display_email_ = display_email;

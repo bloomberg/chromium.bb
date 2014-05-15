@@ -7,12 +7,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/extensions/api/networking_private.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -62,13 +61,8 @@ ShillManagerClient::VerificationProperties ConvertVerificationProperties(
 }
 
 std::string GetUserIdHash(Profile* profile) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
-    return g_browser_process->platform_part()->
-        profile_helper()->GetUserIdHashFromProfile(profile);
-  } else {
-    return g_browser_process->platform_part()->
-        profile_helper()->active_user_id_hash();
-  }
+  return g_browser_process->platform_part()->
+      profile_helper()->GetUserIdHashFromProfile(profile);
 }
 
 }  // namespace

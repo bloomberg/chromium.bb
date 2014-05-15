@@ -5992,12 +5992,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_DISABLE_SAML_SIGNIN_DESCRIPTION" desc="Description for the flag to disables SAML sign-in support.">
           Disables SAML sign-in support for Chrome OS sign-in.
         </message>
-        <message name="IDS_FLAGS_ENABLE_MULTI_PROFILES_NAME" desc="Name for the flag to enable multi-profile support.">
-          Enable multiprofiles mode.
-        </message>
-        <message name="IDS_FLAGS_ENABLE_MULTI_PROFILES_DESCRIPTION" desc="Description for the flag to enable multi-profile support.">
-          This is an experimental mode to run several profiles/users simultaneously during a browsing session. Features may break or change significantly.
-        </message>
       </if>
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag to disable accelerated video decode where available.">
         Disable hardware-accelerated video decode.

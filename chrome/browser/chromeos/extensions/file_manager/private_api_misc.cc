@@ -394,12 +394,6 @@ bool FileBrowserPrivateVisitDesktopFunction::RunSync() {
   const std::vector<linked_ptr<api::file_browser_private::ProfileInfo> >&
       profiles = GetLoggedInProfileInfoList(GetAssociatedWebContents());
 
-  // Check the multi-profile support.
-  if (!profiles::IsMultipleProfilesEnabled()) {
-    SetError("Multi-profile support is not enabled.");
-    return false;
-  }
-
   chrome::MultiUserWindowManager* const window_manager =
       chrome::MultiUserWindowManager::GetInstance();
   DCHECK(window_manager);

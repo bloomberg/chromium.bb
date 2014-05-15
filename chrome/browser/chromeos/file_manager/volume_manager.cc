@@ -15,6 +15,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
@@ -289,15 +290,21 @@ void VolumeManager::Initialize() {
                                       new_path);
   }
 
-  // Register 'Downloads' folder for the profile to the file system.
-  const base::FilePath downloads =
-      file_manager::util::GetDownloadsFolderForProfile(profile_);
-  const bool success = RegisterDownloadsMountPoint(profile_, downloads);
-  DCHECK(success);
+  static bool added_downloads = false;
+  if (base::SysInfo::IsRunningOnChromeOS() || !added_downloads) {
+    // Register 'Downloads' folder for the profile to the file system.
+    // On non-ChromeOS system (test+development), we should do this only for
+    // the first registered profile.
+    const base::FilePath downloads =
+        file_manager::util::GetDownloadsFolderForProfile(profile_);
+    const bool success = RegisterDownloadsMountPoint(profile_, downloads);
+    added_downloads = success;
+    DCHECK(success);
 
-  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-               CreateDownloadsVolumeInfo(downloads),
-               kNotRemounting);
+    DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+                 CreateDownloadsVolumeInfo(downloads),
+                 kNotRemounting);
+  }
 
   // Subscribe to DriveIntegrationService.
   if (drive_integration_service_) {

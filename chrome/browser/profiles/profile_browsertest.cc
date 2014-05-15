@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/prefs/pref_service.h"
@@ -21,6 +22,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
 
 namespace {
 
@@ -84,7 +89,15 @@ void SpinThreads() {
 
 }  // namespace
 
-typedef InProcessBrowserTest ProfileBrowserTest;
+class ProfileBrowserTest : public InProcessBrowserTest {
+ protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
+  }
+};
 
 // Test OnProfileCreate is called with is_new_profile set to true when
 // creating a new profile synchronously.

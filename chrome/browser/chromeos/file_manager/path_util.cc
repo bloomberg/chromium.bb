@@ -33,16 +33,13 @@ const base::FilePath::CharType kBuggyDriveFolderPath[] =
 }  // namespace
 
 base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      !chromeos::UserManager::IsMultipleProfilesAllowed()) {
-    // On the developer run on Linux desktop build, if multiple profiles are
-    // not enabled, use $HOME/Downloads for ease for accessing local files for
-    // debugging.
+  if (!base::SysInfo::IsRunningOnChromeOS()) {
+    // On the developer run on Linux desktop build, use $HOME/Downloads for ease
+    // for accessing local files for debugging.
     base::FilePath path;
     CHECK(PathService::Get(base::DIR_HOME, &path));
     return path.AppendASCII(kDownloadsFolderName);
   }
-
   return profile->GetPath().AppendASCII(kDownloadsFolderName);
 }
 

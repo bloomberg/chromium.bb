@@ -290,8 +290,10 @@ class PerformanceMonitorUncleanExitBrowserTest
  public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     PerformanceMonitorBrowserTest::SetUpCommandLine(command_line);
-    if (GetParam())
-      command_line->AppendSwitch(::switches::kMultiProfiles);
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(
+        chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
   }
 
   virtual bool SetUpUserDataDirectory() OVERRIDE {

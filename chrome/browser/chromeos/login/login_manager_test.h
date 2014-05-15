@@ -47,7 +47,7 @@ class LoginManagerTest : public InProcessBrowserTest {
   // Tries to add user to session with |username| and |password|. Returns false
   // if attempt has failed. this function does the same as TryToLogin but
   // doesn't check that new user become active user.
-  bool AddUserTosession(const std::string& username,
+  bool AddUserToSession(const std::string& username,
                         const std::string& password);
 
   // Login user with |username|. User should be registered using RegisterUser().

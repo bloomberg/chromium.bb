@@ -548,28 +548,24 @@ void WallpaperManager::EnsureLoggedInUserWallpaperLoaded() {
 void WallpaperManager::ClearDisposableWallpaperCache() {
   // Cancel callback for previous cache requests.
   weak_factory_.InvalidateWeakPtrs();
-  if (!UserManager::IsMultipleProfilesAllowed()) {
-    wallpaper_cache_.clear();
-  } else {
-    // Keep the wallpaper of logged in users in cache at multi-profile mode.
-    std::set<std::string> logged_in_users_names;
-    const UserList& logged_users = UserManager::Get()->GetLoggedInUsers();
-    for (UserList::const_iterator it = logged_users.begin();
-         it != logged_users.end();
-         ++it) {
-      logged_in_users_names.insert((*it)->email());
-    }
-
-    CustomWallpaperMap logged_in_users_cache;
-    for (CustomWallpaperMap::iterator it = wallpaper_cache_.begin();
-         it != wallpaper_cache_.end(); ++it) {
-      if (logged_in_users_names.find(it->first) !=
-          logged_in_users_names.end()) {
-        logged_in_users_cache.insert(*it);
-      }
-    }
-    wallpaper_cache_ = logged_in_users_cache;
+  // Keep the wallpaper of logged in users in cache at multi-profile mode.
+  std::set<std::string> logged_in_users_names;
+  const UserList& logged_users = UserManager::Get()->GetLoggedInUsers();
+  for (UserList::const_iterator it = logged_users.begin();
+       it != logged_users.end();
+       ++it) {
+    logged_in_users_names.insert((*it)->email());
   }
+
+  CustomWallpaperMap logged_in_users_cache;
+  for (CustomWallpaperMap::iterator it = wallpaper_cache_.begin();
+       it != wallpaper_cache_.end(); ++it) {
+    if (logged_in_users_names.find(it->first) !=
+        logged_in_users_names.end()) {
+      logged_in_users_cache.insert(*it);
+    }
+  }
+  wallpaper_cache_ = logged_in_users_cache;
 }
 
 base::FilePath WallpaperManager::GetCustomWallpaperPath(
@@ -920,8 +916,7 @@ void WallpaperManager::SetCustomWallpaper(const std::string& user_id,
     GetPendingWallpaper(user_id, false)->ResetSetWallpaperImage(image, info);
   }
 
-  if (UserManager::IsMultipleProfilesAllowed())
-    wallpaper_cache_[user_id] = image;
+  wallpaper_cache_[user_id] = image;
 }
 
 void WallpaperManager::SetDefaultWallpaperNow(const std::string& user_id) {
@@ -1101,8 +1096,7 @@ void WallpaperManager::SetWallpaperFromImageSkia(const std::string& user_id,
     return;
   WallpaperInfo info;
   info.layout = layout;
-  if (UserManager::IsMultipleProfilesAllowed())
-    wallpaper_cache_[user_id] = image;
+  wallpaper_cache_[user_id] = image;
 
   if (update_wallpaper) {
     GetPendingWallpaper(last_selected_user_, false /* Not delayed */)
@@ -1495,11 +1489,7 @@ void WallpaperManager::OnWallpaperDecoded(
     return;
   }
 
-  // Only cache the user wallpaper at login screen and for multi profile users.
-  if (!UserManager::Get()->IsUserLoggedIn() ||
-      UserManager::IsMultipleProfilesAllowed()) {
-    wallpaper_cache_[user_id] = user_image.image();
-  }
+  wallpaper_cache_[user_id] = user_image.image();
 
   if (update_wallpaper) {
     ash::Shell::GetInstance()

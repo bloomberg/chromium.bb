@@ -142,6 +142,13 @@ const char kHasChromeOSKeyboard[]           = "has-chromeos-keyboard";
 // If true, the Chromebook has a keyboard with a diamond key.
 const char kHasChromeOSDiamondKey[]         = "has-chromeos-diamond-key";
 
+// If true, profile selection in UserManager will always return active user's
+// profile.
+// TODO(nkostlyev): http://crbug.com/364604 - Get rid of this switch after we
+// turn on multi-profile feature on ChromeOS.
+const char kIgnoreUserProfileMappingForTests[] =
+    "ignore-user-profile-mapping-for-tests";
+
 // Path for the screensaver used in Kiosk mode
 const char kKioskModeScreensaverPath[]      = "kiosk-mode-screensaver-path";
 

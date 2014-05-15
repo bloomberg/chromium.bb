@@ -58,9 +58,10 @@ PendingUserSessionsRestoreFinished() {
 UserManager::UserSessionStateObserver::~UserSessionStateObserver() {
 }
 
-UserManager::UserAccountData::UserAccountData(const base::string16& display_name,
-                                              const base::string16& given_name,
-                                              const std::string& locale)
+UserManager::UserAccountData::UserAccountData(
+    const base::string16& display_name,
+    const base::string16& given_name,
+    const std::string& locale)
     : display_name_(display_name),
       given_name_(given_name),
       locale_(locale) {
@@ -91,18 +92,15 @@ UserManager* UserManager::Get() {
   return g_user_manager;
 }
 
-// static
-bool UserManager::IsMultipleProfilesAllowed() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kMultiProfiles);
-}
-
 UserManager::~UserManager() {
 }
 
 // static
 UserManager* UserManager::SetForTesting(UserManager* user_manager) {
   UserManager* previous_user_manager = g_user_manager;
+  if (previous_user_manager)
+    previous_user_manager->Shutdown();
+
   g_user_manager = user_manager;
   return previous_user_manager;
 }

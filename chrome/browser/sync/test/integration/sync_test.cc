@@ -75,6 +75,10 @@
 #include "sync/test/fake_server/fake_server_network_resources.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 using content::BrowserThread;
 using invalidation::InvalidationServiceFactory;
 
@@ -242,6 +246,10 @@ void SyncTest::TearDown() {
 void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
   AddTestSwitches(cl);
   AddOptionalTypesToCommandLine(cl);
+
+#if defined(OS_CHROMEOS)
+  cl->AppendSwitch(chromeos::switches::kIgnoreUserProfileMappingForTests);
+#endif
 }
 
 void SyncTest::AddTestSwitches(base::CommandLine* cl) {

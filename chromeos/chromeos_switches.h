@@ -57,6 +57,7 @@ CHROMEOS_EXPORT extern const char kForceLoginManagerInTests[];
 CHROMEOS_EXPORT extern const char kGuestSession[];
 CHROMEOS_EXPORT extern const char kHasChromeOSDiamondKey[];
 CHROMEOS_EXPORT extern const char kHasChromeOSKeyboard[];
+CHROMEOS_EXPORT extern const char kIgnoreUserProfileMappingForTests[];
 CHROMEOS_EXPORT extern const char kKioskModeScreensaverPath[];
 CHROMEOS_EXPORT extern const char kLoginManager[];
 CHROMEOS_EXPORT extern const char kLoginPassword[];
