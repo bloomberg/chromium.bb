@@ -2351,7 +2351,6 @@ TabStrip::DropInfo::DropInfo(int drop_index,
   params.keep_on_top = true;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
-  params.can_activate = false;
   params.bounds = gfx::Rect(drop_indicator_width, drop_indicator_height);
   params.context = context->GetNativeView();
   arrow_window->Init(params);

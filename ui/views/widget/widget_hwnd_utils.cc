@@ -41,7 +41,8 @@ void CalculateWindowStylesFromInitParams(
     *style |= WS_MINIMIZE;
   if (!params.accept_events)
     *ex_style |= WS_EX_TRANSPARENT;
-  if (!params.can_activate)
+  DCHECK_NE(Widget::InitParams::ACTIVATABLE_DEFAULT, params.activatable);
+  if (params.activatable == Widget::InitParams::ACTIVATABLE_NO)
     *ex_style |= WS_EX_NOACTIVATE;
   if (params.keep_on_top)
     *ex_style |= WS_EX_TOPMOST;

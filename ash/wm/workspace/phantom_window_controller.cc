@@ -114,7 +114,6 @@ scoped_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
   // the phantom is visible.
   params.parent = Shell::GetContainer(root_window,
                                       kShellWindowId_ShelfContainer);
-  params.can_activate = false;
   params.keep_on_top = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   phantom_widget->set_focus_on_creation(false);

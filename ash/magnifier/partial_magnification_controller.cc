@@ -144,7 +144,7 @@ void PartialMagnificationController::CreateMagnifierWindow() {
   zoom_widget_ = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-  params.can_activate = false;
+  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = false;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.parent = root_window;

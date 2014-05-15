@@ -199,7 +199,6 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // If the popup is currently closed, we need to create it.
     popup_ = (new AutocompletePopupWidget)->AsWeakPtr();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-    params.can_activate = false;
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.parent = popup_parent;
     params.bounds = GetPopupBounds();

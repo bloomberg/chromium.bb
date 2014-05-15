@@ -259,9 +259,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // instance.
   base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;
 
-  // Can we be made active?
-  bool can_activate_;
-
   // Child of the root, contains |content_window_|.
   aura::Window* content_window_container_;
 
