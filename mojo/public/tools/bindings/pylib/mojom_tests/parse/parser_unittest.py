@@ -41,13 +41,13 @@ module my_module {
 }
 """
     self.assertEquals(parser.Parse(source, "my_file.mojom"),
-                      [("MODULE", "my_module", None)])
+                      [("MODULE", "my_module", None, None)])
 
   def testSourceWithCrLfs(self):
     """Tests a .mojom source with CR-LFs instead of LFs."""
     source = "// This is a comment.\r\n\r\nmodule my_module {\r\n}\r\n"
     self.assertEquals(parser.Parse(source, "my_file.mojom"),
-                      [("MODULE", "my_module", None)])
+                      [("MODULE", "my_module", None, None)])
 
   def testUnexpectedEOF(self):
     """Tests a "truncated" .mojom source."""
@@ -76,6 +76,7 @@ struct MyStruct {
     expected = \
 [('MODULE',
   'my_module',
+  None,
   [('STRUCT',
     'MyStruct',
     None,
@@ -94,6 +95,7 @@ struct MyStruct {
     expected = \
 [('MODULE',
   '',
+  None,
   [('STRUCT',
     'MyStruct',
     None,
@@ -154,6 +156,7 @@ enum MyEnum {
     expected = \
 [('MODULE',
   'my_module',
+  None,
   [('ENUM',
     'MyEnum',
     [('ENUM_FIELD', 'MY_ENUM_1', ('EXPRESSION', ['1'])),
@@ -223,6 +226,7 @@ struct MyStruct {
     expected = \
 [('MODULE',
   'my_module',
+  None,
   [('STRUCT',
     'MyStruct',
     None,
@@ -320,6 +324,7 @@ struct MyStruct {
     expected = \
 [('MODULE',
   'my.mod',
+  None,
   [('STRUCT',
     'MyStruct',
     None,

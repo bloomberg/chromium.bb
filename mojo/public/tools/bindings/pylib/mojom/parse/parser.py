@@ -79,7 +79,7 @@ class Parser(object):
       # Generator expects a module. If one wasn't specified insert one with an
       # empty name.
       if p[1][0] != 'MODULE':
-        p[0] = [('MODULE', '', [], p[1])]
+        p[0] = [('MODULE', '', None, p[1])]
       else:
         p[0] = [p[1]]
 
