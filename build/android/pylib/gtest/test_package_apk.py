@@ -74,7 +74,8 @@ class TestPackageApk(TestPackage):
     device.old_interface.StartActivity(
         self._package_info.package,
         self._package_info.activity,
-        wait_for_completion=True,
+        # No wait since the runner waits for FIFO creation anyway.
+        wait_for_completion=False,
         action='android.intent.action.MAIN',
         force_stop=True)
 
