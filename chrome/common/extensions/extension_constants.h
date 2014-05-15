@@ -41,8 +41,13 @@ GURL GetWebstoreJsonSearchUrl(const std::string& query, const std::string& hl);
 // Returns the URL of the web store search results page for |query|.
 GURL GetWebstoreSearchPageUrl(const std::string& query);
 
-// Return the update URL used by gallery/webstore extensions/apps.
+// Return the update URL used by gallery/webstore extensions/apps. This may
+// have been overridden by a command line flag for testing purposes.
 GURL GetWebstoreUpdateUrl();
+
+// This returns the compile-time constant webstore update url. Usually you
+// should prefer using GetWebstoreUpdateUrl.
+GURL GetDefaultWebstoreUpdateUrl();
 
 // Returns whether the URL is the webstore update URL (just considering host
 // and path, not scheme, query, etc.)

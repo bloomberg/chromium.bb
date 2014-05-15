@@ -437,5 +437,13 @@ std::map<std::string, std::string>* LoadMessageBundleSubstitutionMap(
   return return_value;
 }
 
+base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path) {
+  return extension_path.Append(kMetadataFolder)
+      .Append(kVerifiedContentsFilename);
+}
+base::FilePath GetComputedHashesPath(const base::FilePath& extension_path) {
+  return extension_path.Append(kMetadataFolder).Append(kComputedHashesFilename);
+}
+
 }  // namespace file_util
 }  // namespace extensions
