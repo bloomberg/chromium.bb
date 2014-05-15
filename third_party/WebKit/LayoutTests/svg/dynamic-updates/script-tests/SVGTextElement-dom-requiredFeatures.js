@@ -23,8 +23,6 @@ function repaintTest() {
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     textElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#BogusFeature");
     shouldBe("textElement.getBBox().width", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

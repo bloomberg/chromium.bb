@@ -38,8 +38,6 @@ shouldBeEqualToString("turbulence.getAttribute('numOctaves')", "1");
 function repaintTest() {
     turbulence.setAttribute("numOctaves", "3");
     shouldBeEqualToString("turbulence.getAttribute('numOctaves')", "3");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

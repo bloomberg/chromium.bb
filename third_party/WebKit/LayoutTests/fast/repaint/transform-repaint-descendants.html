@@ -25,9 +25,6 @@
   </style>
   <script src="resources/text-based-repaint.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
-    if (window.testRunner)
-      testRunner.waitUntilDone();
-
     var gAngle = 20;
     function incrementAngle()
     {
@@ -43,11 +40,7 @@
     function startTest()
     {
       incrementAngle();
-      window.setTimeout(function() {
-        runRepaintTest();
-        if (window.testRunner)
-          testRunner.notifyDone();
-      }, 0);
+      runRepaintTest();
     }
   </script>
 </head>

@@ -49,8 +49,6 @@ shouldBeEqualToString("distantLight.getAttribute('azimuth')", "10");
 function repaintTest() {
     distantLight.setAttribute("azimuth", "100");
     shouldBeEqualToString("distantLight.getAttribute('azimuth')", "100");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

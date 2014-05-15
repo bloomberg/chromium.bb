@@ -16,8 +16,6 @@ shouldBeEqualToString("textElement.getAttribute('dy')", "0");
 function repaintTest() {
     textElement.setAttribute("dy", "-30");
     shouldBeEqualToString("textElement.getAttribute('dy')", "-30");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -223,8 +223,6 @@ function repaintTest() {
     shouldBeEqualToString("screenBlend.in1.baseVal", "SourceGraphic");
     shouldBeEqualToString("darkenBlend.in1.baseVal", "SourceGraphic");
     shouldBeEqualToString("lightenBlend.in1.baseVal", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

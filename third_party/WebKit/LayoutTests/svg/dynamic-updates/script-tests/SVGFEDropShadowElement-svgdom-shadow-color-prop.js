@@ -37,8 +37,6 @@ shouldBeEqualToString("document.defaultView.getComputedStyle(dropShadowElement).
 function repaintTest() {
     dropShadowElement.style.setProperty("flood-color", "rgb(0, 128, 0)", "");
     shouldBeEqualToString("document.defaultView.getComputedStyle(dropShadowElement).getPropertyValue('flood-color')", "rgb(0, 128, 0)");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

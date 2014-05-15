@@ -39,8 +39,6 @@ shouldBeEqualToString("maskElement.height.baseVal.valueAsString", "10%");
 function repaintTest() {
     maskElement.height.baseVal.valueAsString = "100%";
     shouldBeEqualToString("maskElement.height.baseVal.valueAsString", "100%");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

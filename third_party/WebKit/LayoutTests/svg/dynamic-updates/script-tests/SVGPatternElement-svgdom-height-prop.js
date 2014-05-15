@@ -41,8 +41,6 @@ shouldBe("patternElement.height.baseVal.value", "100");
 function repaintTest() {
     patternElement.height.baseVal.value = 50;
     shouldBe("patternElement.height.baseVal.value", "50");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

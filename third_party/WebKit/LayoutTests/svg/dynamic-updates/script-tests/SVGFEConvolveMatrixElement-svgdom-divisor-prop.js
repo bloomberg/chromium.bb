@@ -40,8 +40,6 @@ shouldBe("convolveMatrixElement.divisor.baseVal", "20");
 function repaintTest() {
     convolveMatrixElement.divisor.baseVal = 12;
     shouldBe("convolveMatrixElement.divisor.baseVal", "12");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

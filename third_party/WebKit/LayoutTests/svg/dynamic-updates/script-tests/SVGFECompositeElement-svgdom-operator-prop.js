@@ -116,8 +116,6 @@ shouldBe("overComposite1.operator.baseVal", "SVGFECompositeElement.SVG_FECOMPOSI
 function repaintTest() {
     overComposite1.operator.baseVal = SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_ARITHMETIC;
     shouldBe("overComposite1.operator.baseVal", "SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_ARITHMETIC");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

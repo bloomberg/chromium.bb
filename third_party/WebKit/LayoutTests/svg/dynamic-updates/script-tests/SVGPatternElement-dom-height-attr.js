@@ -41,8 +41,6 @@ shouldBeEqualToString("patternElement.getAttribute('height')", "100");
 function repaintTest() {
     patternElement.setAttribute("height", "50");
     shouldBeEqualToString("patternElement.getAttribute('height')", "50");
- 
-    completeTest();
 }
 
 var successfullyParsed = true;

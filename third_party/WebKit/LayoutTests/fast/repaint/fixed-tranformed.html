@@ -24,23 +24,15 @@
     <script src="../../resources/run-after-display.js"></script>
     <script src="resources/text-based-repaint.js" type="text/javascript"></script>
     <script type="text/javascript">
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-
         function repaintTest()
         {
             document.getElementById('test').style.background='green';
         }
 
-        function setupTest()
-        {
+        function setupTest() {
             window.scrollBy(0, 50);
-            runAfterDisplay(function() {
-                runRepaintTest();
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            });
-        }
+            runRepaintTest();
+        };
         window.addEventListener('load', setupTest, false);
     </script>
 </head>

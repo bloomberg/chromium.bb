@@ -40,8 +40,6 @@ shouldBeEqualToString("convolveMatrixElement.getAttribute('divisor')", "20");
 function repaintTest() {
     convolveMatrixElement.setAttribute("divisor", "12");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('divisor')", "12");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

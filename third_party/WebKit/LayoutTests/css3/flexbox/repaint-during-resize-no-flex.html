@@ -34,22 +34,15 @@ function repaintTest() {
     var div = document.getElementById("flex-item-1");
     div.classList.add("width");
 }
-function resizeFlexItem() {
-    runRepaintTest();
-    finishRepaintTest();
-};
 window.onload = function() {
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-    } else {
+    if (!window.testRunner) {
         document.body.appendChild(document.createTextNode(
             "Tests to make sure that when changing the size of one flex item changes the "
             + "location of another flex item, we properly repaint. The repaint rect should "
             + "include the three flex items."));
     }
     window.enablePixelTesting = true;
-    window.testIsAsync = true;
-    runAfterDisplay(resizeFlexItem)
+    runRepaintTest();
 };
 </script>
 </body></html>

@@ -36,8 +36,6 @@ shouldBeEqualToString("turbulence.getAttribute('stitchTiles')", "stitch");
 function repaintTest() {
     turbulence.setAttribute("stitchTiles", "noStitch");
     shouldBeEqualToString("turbulence.getAttribute('stitchTiles')", "noStitch");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

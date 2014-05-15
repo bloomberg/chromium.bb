@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="400" height="400" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
  <script xlink:href="../../../fast/repaint/resources/text-based-repaint.js"></script>
  <script type="text/javascript">
+  window.testIsAsync = true;
+  window.outputRepaintRects = false;
   var start = new Date();
  </script>
  <text x="10" y="15" font-weight="900" font-size="5">SVG Performance test.</text>
@@ -67,12 +69,8 @@
     }
     ++count;
     if (count < maxBlocks) {
-      if (window.testRunner)
-        repaintTest();
-      else {
-        window.setTimeout(repaintTest, delay);
-        t.firstChild.data = 'Test in progress... ' + count + ' of ' + maxBlocks;
-      }
+      window.setTimeout(repaintTest, delay);
+      t.firstChild.data = 'Test in progress... ' + count + ' of ' + maxBlocks;
     } else {
       if (window.testRunner)
         t.firstChild.data = 'Test completed';
@@ -82,6 +80,7 @@
         t.firstChild.data = 'Test completed in ' + elapsed.toFixed(2) + 's.';
         if (parent.reportResults) parent.reportResults(end - start);
       }
+      finishRepaintTest();
     }
   }
  ]]></script>

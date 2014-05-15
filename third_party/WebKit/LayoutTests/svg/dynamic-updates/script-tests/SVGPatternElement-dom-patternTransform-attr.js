@@ -42,8 +42,6 @@ shouldBeEqualToString("patternElement.getAttribute('patternTransform')", "matrix
 function repaintTest() {
     patternElement.setAttribute("patternTransform", "matrix(4,0,0,1,0,0)");
     shouldBeEqualToString("patternElement.getAttribute('patternTransform')", "matrix(4,0,0,1,0,0)");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -28,26 +28,15 @@
     </style>
     <script src="resources/text-based-repaint.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
-      if (window.testRunner)
-        testRunner.waitUntilDone();
-
       function repaintTest()
       {
         var paras = document.getElementsByTagName('p');
-        window.console.log('here')
         for (var i = 0; i < paras.length; ++i)
           paras[i].style.color = 'green';
       }
-
-      function startTest()
-      {
-        runRepaintTest();
-        if (window.testRunner)
-          testRunner.notifyDone();
-      }
     </script>
   </head>
-<body onload="startTest()">
+<body onload="runRepaintTest()">
   <div id="container">
     <div class="box reflect-top"  style="left: 275px; -webkit-box-reflect: above 10px;">
       <p>The color of this text in the reflection should be green</p>

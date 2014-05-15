@@ -37,8 +37,6 @@ shouldBeEqualToString("parseFloat(document.defaultView.getComputedStyle(dropShad
 function repaintTest() {
     dropShadowElement.style.setProperty("flood-opacity", ".5", "");
     shouldBeEqualToString("parseFloat(document.defaultView.getComputedStyle(dropShadowElement).getPropertyValue('flood-opacity')).toFixed(1)", "0.5");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

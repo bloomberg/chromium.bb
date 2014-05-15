@@ -43,8 +43,6 @@ shouldBe("spotLightElement.z.baseVal", "0");
 function repaintTest() {
     spotLightElement.z.baseVal = 100;
     shouldBe("spotLightElement.z.baseVal", "100");
-
-    completeTest();
 }
 
 

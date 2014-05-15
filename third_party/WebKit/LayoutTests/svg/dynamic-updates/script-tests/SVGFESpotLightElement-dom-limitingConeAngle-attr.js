@@ -43,8 +43,6 @@ shouldBeEqualToString("spotLightElement.getAttribute('limitingConeAngle')", "45"
 function repaintTest() {
     spotLightElement.setAttribute("limitingConeAngle", "15");
     shouldBeEqualToString("spotLightElement.getAttribute('limitingConeAngle')", "15");
-
-    completeTest();
 }
 
 

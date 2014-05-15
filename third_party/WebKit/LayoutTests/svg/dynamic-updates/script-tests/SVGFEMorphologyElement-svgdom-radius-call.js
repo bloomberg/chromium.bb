@@ -44,8 +44,6 @@ function repaintTest() {
     morphologyElement.setRadius(4, 4);
     shouldBe("morphologyElement.radiusX.baseVal", "4");
     shouldBe("morphologyElement.radiusY.baseVal", "4");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

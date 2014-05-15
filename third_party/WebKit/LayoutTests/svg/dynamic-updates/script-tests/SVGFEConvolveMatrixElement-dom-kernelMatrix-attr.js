@@ -39,8 +39,6 @@ shouldBeEqualToString("convolveMatrixElement.getAttribute('kernelMatrix')", "-2 
 function repaintTest() {
     convolveMatrixElement.setAttribute("kernelMatrix", "3 0 3 0 0 0 3 0 3");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('kernelMatrix')", "3 0 3 0 0 0 3 0 3");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

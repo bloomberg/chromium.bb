@@ -116,8 +116,6 @@ shouldBe("Math.round(overComposite1.k1.baseVal * 1000)", "1900");
 function repaintTest() {
     overComposite1.k1.baseVal = .5;
     shouldBe("Math.round(overComposite1.k1.baseVal * 1000)", "500");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -1,6 +1,8 @@
 // [Name] SVGUseElement-svgdom-href1-prop.js
 // [Expected rendering result] A use element first with an internal then with an external referenced document - and a series of PASS messages
 
+window.testIsAsync = true;
+
 description("Tests dynamic updates of the 'href' property of the SVGUseElement object")
 createSVGTestCase();
 
@@ -10,8 +12,8 @@ rootSVGElement.appendChild(defsElement);
 var useElement = createSVGElement("use");
 useElement.setAttribute("x", "10");
 useElement.setAttribute("y", "10");
-useElement.setAttribute("onload", "completeTest()");
 useElement.setAttributeNS(xlinkNS, "xlink:href", "#MyRect");
+useElement.setAttribute("onload", "finishRepaintTest()");
 
 var rectElement = createSVGElement("rect");
 rectElement.setAttribute("id", "MyRect");

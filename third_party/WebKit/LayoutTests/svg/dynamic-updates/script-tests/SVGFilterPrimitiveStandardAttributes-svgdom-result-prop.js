@@ -51,8 +51,6 @@ shouldBeEqualToString("gradientElement.result.baseVal", "res1");
 function repaintTest() {
     gradientElement.result.baseVal = "res2";
     shouldBeEqualToString("gradientElement.result.baseVal", "res2");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

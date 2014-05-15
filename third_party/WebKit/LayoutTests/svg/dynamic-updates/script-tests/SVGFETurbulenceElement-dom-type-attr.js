@@ -36,8 +36,6 @@ shouldBeEqualToString("turbulence.getAttribute('type')", "fractalNoise");
 function repaintTest() {
     turbulence.setAttribute("type", "turbulence");
     shouldBeEqualToString("turbulence.getAttribute('type')", "turbulence");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

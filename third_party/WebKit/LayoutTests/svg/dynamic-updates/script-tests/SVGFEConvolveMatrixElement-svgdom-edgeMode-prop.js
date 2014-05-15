@@ -40,8 +40,6 @@ shouldBe("convolveMatrixElement.edgeMode.baseVal", "SVGFEConvolveMatrixElement.S
 function repaintTest() {
     convolveMatrixElement.edgeMode.baseVal = SVGFEConvolveMatrixElement.SVG_EDGEMODE_DUPLICATE;
     shouldBe("convolveMatrixElement.edgeMode.baseVal", "SVGFEConvolveMatrixElement.SVG_EDGEMODE_DUPLICATE");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

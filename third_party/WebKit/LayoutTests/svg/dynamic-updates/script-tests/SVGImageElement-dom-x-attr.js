@@ -18,8 +18,6 @@ shouldBeEqualToString("imageElement.getAttribute('x')", "-190");
 function repaintTest() {
     imageElement.setAttribute("x", "0");
     shouldBeEqualToString("imageElement.getAttribute('x')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

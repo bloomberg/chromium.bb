@@ -40,8 +40,6 @@ shouldBeNull("patternElement.getAttribute('patternContentUnits')");
 function repaintTest() {
     patternElement.setAttribute("patternContentUnits", "objectBoundingBox");
     shouldBeEqualToString("patternElement.getAttribute('patternContentUnits')", "objectBoundingBox");
- 
-    completeTest();
 }
 
 var successfullyParsed = true;

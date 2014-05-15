@@ -36,8 +36,6 @@ shouldBe("turbulence.type.baseVal", "SVGFETurbulenceElement.SVG_TURBULENCE_TYPE_
 function repaintTest() {
     turbulence.type.baseVal = SVGFETurbulenceElement.SVG_TURBULENCE_TYPE_TURBULENCE;
     shouldBe("turbulence.type.baseVal", "SVGFETurbulenceElement.SVG_TURBULENCE_TYPE_TURBULENCE");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

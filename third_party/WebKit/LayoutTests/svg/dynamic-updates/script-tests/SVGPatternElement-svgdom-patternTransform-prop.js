@@ -70,8 +70,6 @@ function repaintTest() {
     shouldBe("patternElement.patternTransform.baseVal.getItem(0).matrix.d", "1.0");
     shouldBe("patternElement.patternTransform.baseVal.getItem(0).matrix.e", "0.0");
     shouldBe("patternElement.patternTransform.baseVal.getItem(0).matrix.f", "0.0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

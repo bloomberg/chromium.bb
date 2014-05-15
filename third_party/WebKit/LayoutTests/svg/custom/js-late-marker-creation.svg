@@ -15,11 +15,10 @@
     <path fill="none" stroke="black" stroke-width="8" marker-start="url(#markerStart)" marker-mid="url(#markerMiddle)" marker-end="url(#markerEnd)" d="M 130 135 L 180 135 L 180 185"/>
 </g>
 <script>
+    window.testIsAsync = true;
     var defs = document.getElementById("defs");
 
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
         setTimeout(createMarker, 0);
     }
 
@@ -44,8 +43,7 @@
         marker.appendChild(circle);
         defs.appendChild(marker);
 
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>
 

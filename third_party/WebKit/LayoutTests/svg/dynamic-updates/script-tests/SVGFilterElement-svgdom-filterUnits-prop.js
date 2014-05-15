@@ -42,8 +42,6 @@ shouldBe("filterElement.filterUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TYPE_USERSP
 function repaintTest() {
     filterElement.filterUnits.baseVal = SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
     shouldBe("filterElement.filterUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

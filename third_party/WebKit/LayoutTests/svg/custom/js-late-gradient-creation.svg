@@ -6,11 +6,10 @@
      <text font-size="68" fill="url(#dynGrad)"  x="20" y="70">Gradient on fill</text>
 </g>
 <script>
+    window.testIsAsync = true;
     var content = document.getElementById("content");
 
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
         setTimeout(createGradient, 0);
     }
 
@@ -34,8 +33,7 @@
 
         content.appendChild(gradient);
 
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>
 

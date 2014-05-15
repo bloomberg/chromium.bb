@@ -35,8 +35,6 @@ shouldBe("radialGradientElement.gradientUnits.baseVal", "SVGUnitTypes.SVG_UNIT_T
 function repaintTest() {
     radialGradientElement.gradientUnits.baseVal = SVGUnitTypes.SVG_UNIT_TYPE_USERSPACEONUSE;
     shouldBe("radialGradientElement.gradientUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TYPE_USERSPACEONUSE");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -46,8 +46,6 @@ shouldBe("gradientElement.width.baseVal.value", "100");
 function repaintTest() {
     gradientElement.width.baseVal.value = 200;
     shouldBe("gradientElement.width.baseVal.value", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

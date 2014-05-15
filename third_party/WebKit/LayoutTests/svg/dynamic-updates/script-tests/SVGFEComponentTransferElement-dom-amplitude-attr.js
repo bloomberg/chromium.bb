@@ -61,16 +61,14 @@ shouldBeEqualToString("feRFunc.getAttribute('amplitude')", "3");
 
 function repaintTest() {
     feRFunc.setAttribute("amplitude", "1");
-	feGFunc.setAttribute("amplitude", "1");
-	feBFunc.setAttribute("amplitude", "1");
-	feAFunc.setAttribute("amplitude", "1");
+    feGFunc.setAttribute("amplitude", "1");
+    feBFunc.setAttribute("amplitude", "1");
+    feAFunc.setAttribute("amplitude", "1");
 
     shouldBeEqualToString("feRFunc.getAttribute('amplitude')", "1");
-	shouldBeEqualToString("feGFunc.getAttribute('amplitude')", "1");
-	shouldBeEqualToString("feBFunc.getAttribute('amplitude')", "1");
-	shouldBeEqualToString("feAFunc.getAttribute('amplitude')", "1");
-
-    completeTest();
+    shouldBeEqualToString("feGFunc.getAttribute('amplitude')", "1");
+    shouldBeEqualToString("feBFunc.getAttribute('amplitude')", "1");
+    shouldBeEqualToString("feAFunc.getAttribute('amplitude')", "1");
 }
 
 var successfullyParsed = true;

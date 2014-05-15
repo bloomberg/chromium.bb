@@ -65,8 +65,6 @@ function repaintTest() {
     shouldBeEqualToString("feGFunc.getAttribute('exponent')", "1");
     shouldBeEqualToString("feBFunc.getAttribute('exponent')", "1");
     shouldBeEqualToString("feAFunc.getAttribute('exponent')", "1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

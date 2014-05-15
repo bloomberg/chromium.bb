@@ -23,8 +23,6 @@ function repaintTest() {
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     pathElement.requiredFeatures.appendItem("http://www.w3.org/TR/SVG11/feature#BogusFeature");
     shouldHaveBBox("pathElement", "0", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

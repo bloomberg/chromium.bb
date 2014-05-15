@@ -17,8 +17,6 @@ shouldBeEqualToString("ellipseElement.getAttribute('ry')", "10");
 function repaintTest() {
     ellipseElement.setAttribute("ry", "150");
     shouldBeEqualToString("ellipseElement.getAttribute('ry')", "150");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

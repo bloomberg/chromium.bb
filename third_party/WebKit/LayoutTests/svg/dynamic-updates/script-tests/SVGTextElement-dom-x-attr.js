@@ -15,8 +15,6 @@ shouldBeEqualToString("textElement.getAttribute('x')", "50");
 function repaintTest() {
     textElement.setAttribute("x", "0");
     shouldBeEqualToString("textElement.getAttribute('x')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

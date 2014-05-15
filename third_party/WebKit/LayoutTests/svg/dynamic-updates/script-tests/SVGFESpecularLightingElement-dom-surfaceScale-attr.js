@@ -57,8 +57,6 @@ shouldBeEqualToString("specularElement.getAttribute('surfaceScale')", "1");
 function repaintTest() {
     specularElement.setAttribute("surfaceScale", "10");
     shouldBeEqualToString("specularElement.getAttribute('surfaceScale')", "10");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

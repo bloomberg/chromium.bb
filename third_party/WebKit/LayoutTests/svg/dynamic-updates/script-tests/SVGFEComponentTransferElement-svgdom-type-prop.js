@@ -61,12 +61,10 @@ function repaintTest() {
     feBFunc.type.baseVal = SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR;
     feAFunc.type.baseVal = SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR;
 
-	shouldBe("feRFunc.type.baseVal", "SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR");
-	shouldBe("feGFunc.type.baseVal", "SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR");
-	shouldBe("feBFunc.type.baseVal", "SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR");
-	shouldBe("feAFunc.type.baseVal", "SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR");
-
-    completeTest();
+    shouldBe("feRFunc.type.baseVal", "SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR");
+    shouldBe("feGFunc.type.baseVal", "SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR");
+    shouldBe("feBFunc.type.baseVal", "SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR");
+    shouldBe("feAFunc.type.baseVal", "SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_LINEAR");
 }
 
 var successfullyParsed = true;

@@ -36,8 +36,6 @@ shouldBeNull("linearGradientElement.getAttribute('gradientUnits')");
 function repaintTest() {
     linearGradientElement.setAttribute("gradientUnits", "userSpaceOnUse");
     shouldBeEqualToString("linearGradientElement.getAttribute('gradientUnits')", "userSpaceOnUse");
- 
-    completeTest();
 }
 
 var successfullyParsed = true;

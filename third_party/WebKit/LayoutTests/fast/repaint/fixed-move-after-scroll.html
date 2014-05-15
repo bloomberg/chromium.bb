@@ -6,16 +6,8 @@
   <script type="text/javascript">
       function scrollAndRepaint()
       {
-          if (window.testRunner)
-              testRunner.waitUntilDone();
-
           scrollBy(0, 200);
-
-          runAfterDisplay(function() {
-              runRepaintTest();
-              if (window.testRunner)
-                  testRunner.notifyDone();
-          });
+          runRepaintTest();
       }
       function repaintTest()
       {

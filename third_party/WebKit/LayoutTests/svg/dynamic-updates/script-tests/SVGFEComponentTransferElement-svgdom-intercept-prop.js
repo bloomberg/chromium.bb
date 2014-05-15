@@ -65,8 +65,6 @@ function repaintTest() {
     shouldBe("Math.round(feGFunc.intercept.baseVal * 100)", "10");
     shouldBe("Math.round(feBFunc.intercept.baseVal * 100)", "10");
     shouldBe("Math.round(feAFunc.intercept.baseVal * 100)", "10");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

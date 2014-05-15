@@ -17,8 +17,6 @@ shouldBe("rectElement.height.baseVal.value", "50");
 function repaintTest() {
     rectElement.height.baseVal.value = 200;
     shouldBe("rectElement.height.baseVal.value", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

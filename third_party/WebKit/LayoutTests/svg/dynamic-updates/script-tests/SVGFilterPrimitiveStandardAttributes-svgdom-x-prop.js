@@ -46,8 +46,6 @@ shouldBe("gradientElement.x.baseVal.value", "100");
 function repaintTest() {
     gradientElement.x.baseVal.value = 0;
     shouldBe("gradientElement.x.baseVal.value", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

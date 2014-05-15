@@ -36,8 +36,6 @@ shouldBeEqualToString("dropShadowElement.in1.baseVal", "SourceAlpha");
 function repaintTest() {
     dropShadowElement.in1.baseVal = "SourceGraphic";
     shouldBeEqualToString("dropShadowElement.in1.baseVal", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

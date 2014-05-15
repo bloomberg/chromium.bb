@@ -50,8 +50,6 @@ shouldBeEqualToString("mergeNode1.getAttribute('in')", "SourceGraphic");
 function repaintTest() {
     mergeNode1.setAttribute("in", "off");
     shouldBeEqualToString("mergeNode1.getAttribute('in')", "off");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

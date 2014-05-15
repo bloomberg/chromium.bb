@@ -1,4 +1,5 @@
-// Asynchronous tests should manually call finishRepaintTest at the appropriate time.
+// Asynchronous tests should manually call finishRepaintTest at the appropriate
+// time.
 window.testIsAsync = false;
 window.outputRepaintRects = true;
 
@@ -12,22 +13,26 @@ function runRepaintTest()
         return;
     }
 
+    // TODO(enne): this is a workaround for multiple svg onload events.
+    // See: http://crbug.com/372946
+    if (window.hasRunRepaintTest)
+        return;
+    window.hasRunRepaintTest = true;
+
     if (window.enablePixelTesting)
         testRunner.dumpAsTextWithPixelResults();
     else
         testRunner.dumpAsText();
 
-    if (window.testIsAsync)
-        testRunner.waitUntilDone();
+    // All repaint tests are asynchronous.
+    testRunner.waitUntilDone();
 
-    forceStyleRecalc();
-
-    window.internals.startTrackingRepaints(document);
-
-    repaintTest();
-
-    if (!window.testIsAsync)
-        finishRepaintTest();
+    testRunner.displayAsyncThen(function() {
+        window.internals.startTrackingRepaints(document);
+        repaintTest();
+        if (!window.testIsAsync)
+            finishRepaintTest();
+    });
 }
 
 function runRepaintAndPixelTest()
@@ -53,12 +58,17 @@ function finishRepaintTest()
 
     internals.stopTrackingRepaints(document);
 
+    // Play nice with JS tests which may want to print out assert results.
+    if (window.isJsTest)
+        window.outputRepaintRects = false;
+
     if (window.outputRepaintRects)
         testRunner.setCustomTextOutput(repaintRects);
 
     if (window.afterTest)
         window.afterTest();
 
-    if (window.testIsAsync)
+    // Play nice with async JS tests which want to notifyDone themselves.
+    if (!window.jsTestIsAsync)
         testRunner.notifyDone();
 }

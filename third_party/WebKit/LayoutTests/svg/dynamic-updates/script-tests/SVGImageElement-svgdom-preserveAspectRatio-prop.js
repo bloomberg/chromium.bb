@@ -20,8 +20,6 @@ function repaintTest() {
     imageElement.preserveAspectRatio.baseVal.align = SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_NONE;
     shouldBe("imageElement.preserveAspectRatio.baseVal.align", "SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_NONE");
     shouldBe("imageElement.preserveAspectRatio.baseVal.meetOrSlice", "SVGPreserveAspectRatio.SVG_MEETORSLICE_MEET");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

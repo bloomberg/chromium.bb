@@ -23,8 +23,6 @@ function repaintTest() {
     debug("Check that adding something invalid to requiredFeatures makes it not render");
     polylineElement.setAttribute("requiredFeatures", "http://www.w3.org/TR/SVG11/feature#BogusFeature");
     shouldHaveBBox("polylineElement", "0", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

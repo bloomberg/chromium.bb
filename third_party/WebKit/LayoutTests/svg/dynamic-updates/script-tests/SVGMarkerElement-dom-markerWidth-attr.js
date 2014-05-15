@@ -36,8 +36,6 @@ shouldBeEqualToString("markerElement.getAttribute('markerWidth')", "0");
 function repaintTest() {
     markerElement.setAttribute("markerWidth", "2");
     shouldBeEqualToString("markerElement.getAttribute('markerWidth')", "2");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

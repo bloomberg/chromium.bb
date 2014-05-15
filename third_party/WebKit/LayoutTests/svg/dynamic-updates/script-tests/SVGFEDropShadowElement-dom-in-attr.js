@@ -36,8 +36,6 @@ shouldBeEqualToString("dropShadowElement.getAttribute('in')", "SourceAlpha");
 function repaintTest() {
     dropShadowElement.setAttribute("in", "SourceGraphic");
     shouldBeEqualToString("dropShadowElement.getAttribute('in')", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

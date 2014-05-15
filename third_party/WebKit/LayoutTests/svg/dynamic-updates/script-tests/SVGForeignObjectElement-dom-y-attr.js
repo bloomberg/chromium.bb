@@ -22,8 +22,6 @@ shouldBeEqualToString("foreignObjectElement.getAttribute('y')", "-80");
 function repaintTest() {
     foreignObjectElement.setAttribute("y", "80");
     shouldBeEqualToString("foreignObjectElement.getAttribute('y')", "80");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

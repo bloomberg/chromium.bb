@@ -185,8 +185,6 @@ function repaintTest() {
     shouldBeEqualToString("saturateElement.getAttribute('type')", "saturate");
     shouldBeEqualToString("hueRotateElement.getAttribute('type')", "hueRotate");
     shouldBeEqualToString("luminanceToAlphaElement.getAttribute('type')", "luminanceToAlpha");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

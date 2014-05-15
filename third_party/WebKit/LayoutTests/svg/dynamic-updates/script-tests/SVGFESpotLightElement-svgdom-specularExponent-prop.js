@@ -43,8 +43,6 @@ shouldBe("spotLightElement.specularExponent.baseVal", "20");
 function repaintTest() {
     spotLightElement.specularExponent.baseVal = 1;
     shouldBe("spotLightElement.specularExponent.baseVal", "1");
-
-    completeTest();
 }
 
 

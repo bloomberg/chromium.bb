@@ -39,8 +39,6 @@ shouldBeEqualToString("convolveMatrixElement.in1.baseVal", "SourceAlpha");
 function repaintTest() {
     convolveMatrixElement.in1.baseVal = "SourceGraphic";
     shouldBeEqualToString("convolveMatrixElement.in1.baseVal", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

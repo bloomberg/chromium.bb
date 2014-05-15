@@ -43,8 +43,6 @@ shouldBeEqualToString("morphologyElement.in1.baseVal", "SourceAlpha");
 function repaintTest() {
     morphologyElement.in1.baseVal = "SourceGraphic";
     shouldBeEqualToString("morphologyElement.in1.baseVal", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

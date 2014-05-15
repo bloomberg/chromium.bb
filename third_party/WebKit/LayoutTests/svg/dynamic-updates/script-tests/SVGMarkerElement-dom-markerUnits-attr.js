@@ -36,8 +36,6 @@ shouldBeEqualToString("markerElement.getAttribute('markerUnits')", "userSpaceOnU
 function repaintTest() {
     markerElement.setAttribute("markerUnits", "strokeWidth");
     shouldBeEqualToString("markerElement.getAttribute('markerUnits')", "strokeWidth");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

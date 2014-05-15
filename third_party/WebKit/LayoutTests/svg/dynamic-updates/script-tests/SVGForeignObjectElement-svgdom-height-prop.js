@@ -22,8 +22,6 @@ shouldBe("foreignObjectElement.height.baseVal.value", "2");
 function repaintTest() {
     foreignObjectElement.height.baseVal.value = 150;
     shouldBe("foreignObjectElement.height.baseVal.value", "150");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

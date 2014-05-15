@@ -50,8 +50,6 @@ shouldBeEqualToString("gradientElement.getAttribute('surfaceScale')", "0");
 function repaintTest() {
     gradientElement.setAttribute("surfaceScale", "1");
     shouldBeEqualToString("gradientElement.getAttribute('surfaceScale')", "1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

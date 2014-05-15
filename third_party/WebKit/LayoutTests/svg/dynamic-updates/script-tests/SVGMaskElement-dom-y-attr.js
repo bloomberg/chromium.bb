@@ -40,8 +40,6 @@ shouldBeEqualToString("maskElement.getAttribute('y')", "-100%");
 function repaintTest() {
     maskElement.setAttribute("y", "-10%");
     shouldBeEqualToString("maskElement.getAttribute('y')", "-10%");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

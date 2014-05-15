@@ -37,8 +37,6 @@ shouldBe("offsetElement.dx.baseVal", "50");
 function repaintTest() {
     offsetElement.dx.baseVal = 0;
     shouldBe("offsetElement.dx.baseVal", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

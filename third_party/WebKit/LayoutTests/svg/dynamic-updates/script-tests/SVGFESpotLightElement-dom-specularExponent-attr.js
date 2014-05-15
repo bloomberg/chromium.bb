@@ -43,8 +43,6 @@ shouldBeEqualToString("spotLightElement.getAttribute('specularExponent')", "20")
 function repaintTest() {
     spotLightElement.setAttribute("specularExponent", "1");
     shouldBeEqualToString("spotLightElement.getAttribute('specularExponent')", "1");
-
-    completeTest();
 }
 
 

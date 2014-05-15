@@ -204,8 +204,6 @@ function repaintTest() {
     shouldBeEqualToString("SVGNumberListToString(matrixElement.values.baseVal)", "0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 0.33 0.33 0.33 0 0 ");
     shouldBe("saturateElement.values.baseVal.getItem(0).value", "0.25");
     shouldBe("hueRotateElement.values.baseVal.getItem(0).value", "90");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

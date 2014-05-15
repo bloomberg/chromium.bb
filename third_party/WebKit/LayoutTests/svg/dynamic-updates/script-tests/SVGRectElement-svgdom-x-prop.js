@@ -17,8 +17,6 @@ shouldBe("rectElement.x.baseVal.value", "-150");
 function repaintTest() {
     rectElement.x.baseVal.value = 0;
     shouldBe("rectElement.x.baseVal.value", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

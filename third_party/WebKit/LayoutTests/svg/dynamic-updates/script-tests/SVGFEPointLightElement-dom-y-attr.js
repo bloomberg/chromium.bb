@@ -50,8 +50,6 @@ shouldBeEqualToString("pointLight.getAttribute('y')", "120");
 function repaintTest() {
     pointLight.setAttribute("y", "180");
     shouldBeEqualToString("pointLight.getAttribute('y')", "180");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

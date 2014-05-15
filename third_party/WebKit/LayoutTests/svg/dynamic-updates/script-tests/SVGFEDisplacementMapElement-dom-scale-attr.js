@@ -50,8 +50,6 @@ shouldBeEqualToString("displacementMap.getAttribute('scale')", "34");
 function repaintTest() {
     displacementMap.setAttribute("scale", "64");
     shouldBeEqualToString("displacementMap.getAttribute('scale')", "64");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

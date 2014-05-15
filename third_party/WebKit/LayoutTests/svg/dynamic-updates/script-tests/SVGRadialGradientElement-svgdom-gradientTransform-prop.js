@@ -63,8 +63,6 @@ function repaintTest() {
     shouldBe("radialGradientElement.gradientTransform.baseVal.getItem(0).matrix.d", "1.0");
     shouldBe("radialGradientElement.gradientTransform.baseVal.getItem(0).matrix.e", "50.0");
     shouldBe("radialGradientElement.gradientTransform.baseVal.getItem(0).matrix.f", "0.0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

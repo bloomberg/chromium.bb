@@ -4,6 +4,7 @@ var expected = "";
 var logEvent = false;
 var rectElement = document.getElementById("target");
 var useElement = document.getElementById("test");
+window.testIsAsync = true;
 description("Test attaching event listeners on SVG use elements in different ways: ");
 
 function eventHandler(evt)
@@ -26,8 +27,7 @@ function finishTest()
     shouldBeTrue("successfullyParsed");
     debug('<br /><span class="pass">TEST COMPLETE</span>');
 
-    if (window.testRunner)
-        testRunner.notifyDone();
+    finishRepaintTest();
 }
 
 function recordMouseEvent(type)
@@ -167,9 +167,6 @@ function driveTests()
 }
 
 function repaintTest() {
-    if (window.testRunner)
-        testRunner.waitUntilDone();
-
     if (window.eventSender)
         driveTests();
     else

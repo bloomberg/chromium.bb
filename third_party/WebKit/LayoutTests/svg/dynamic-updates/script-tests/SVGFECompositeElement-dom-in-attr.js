@@ -117,8 +117,6 @@ shouldBeEqualToString("overComposite1.getAttribute('in')", "F12");
 function repaintTest() {
     overComposite1.setAttribute("in", "F1");
     shouldBeEqualToString("overComposite1.getAttribute('in')", "F1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

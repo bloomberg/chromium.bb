@@ -42,8 +42,6 @@ shouldBe("filterElement.width.baseVal.value", "100");
 function repaintTest() {
     filterElement.width.baseVal.value = 200;
     shouldBe("filterElement.width.baseVal.value", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

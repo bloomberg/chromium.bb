@@ -16,8 +16,6 @@ shouldBe("circleElement.cy.baseVal.value", "-50");
 function repaintTest() {
     circleElement.cy.baseVal.value = 150;
     shouldBe("circleElement.cy.baseVal.value", "150");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

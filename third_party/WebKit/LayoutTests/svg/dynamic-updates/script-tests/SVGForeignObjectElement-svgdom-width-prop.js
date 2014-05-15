@@ -22,8 +22,6 @@ shouldBe("foreignObjectElement.width.baseVal.value", "2");
 function repaintTest() {
     foreignObjectElement.width.baseVal.value = 150;
     shouldBe("foreignObjectElement.width.baseVal.value", "150");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

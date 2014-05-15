@@ -117,8 +117,6 @@ shouldBeEqualToString("overComposite1.in1.baseVal", "F12");
 function repaintTest() {
     overComposite1.in1.baseVal = "F1";
     shouldBeEqualToString("overComposite1.in1.baseVal", "F1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

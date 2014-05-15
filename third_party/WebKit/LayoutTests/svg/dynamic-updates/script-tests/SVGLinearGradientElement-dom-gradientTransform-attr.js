@@ -36,8 +36,6 @@ shouldBeEqualToString("linearGradientElement.getAttribute('gradientTransform')",
 function repaintTest() {
     linearGradientElement.setAttribute("gradientTransform", "matrix(1,0,0,1,-100,0)");
     shouldBeEqualToString("linearGradientElement.getAttribute('gradientTransform')", "matrix(1,0,0,1,-100,0)");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

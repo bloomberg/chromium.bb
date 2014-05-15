@@ -38,8 +38,6 @@ shouldBeEqualToString("blurElement.getAttribute('stdDeviation')", "5");
 function repaintTest() {
     blurElement.setAttribute("stdDeviation", "10");
     shouldBeEqualToString("blurElement.getAttribute('stdDeviation')", "10");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

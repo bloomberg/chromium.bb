@@ -36,8 +36,6 @@ shouldBeEqualToString("linearGradientElement.getAttribute('y1')", "0%");
 function repaintTest() {
     linearGradientElement.setAttribute("y1", "1000%");
     shouldBeEqualToString("linearGradientElement.getAttribute('y1')", "1000%");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -40,8 +40,6 @@ shouldBeEqualToString("maskElement.y.baseVal.valueAsString", "-100%");
 function repaintTest() {
     maskElement.y.baseVal.valueAsString = "-10%";
     shouldBeEqualToString("maskElement.y.baseVal.valueAsString", "-10%");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

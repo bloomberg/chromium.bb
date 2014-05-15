@@ -19,6 +19,7 @@ if (window.testRunner) {
 
 function afterTest() {
     document.head.parentNode.classList.remove("running");
+    finishJSTest();
 }
 
 function createSVGElement(name) {
@@ -72,8 +73,4 @@ function clickAt(x, y) {
         eventSender.mouseDown();
         eventSender.mouseUp();
     }
-}
-
-function completeTest() {
-    finishJSTest();
 }

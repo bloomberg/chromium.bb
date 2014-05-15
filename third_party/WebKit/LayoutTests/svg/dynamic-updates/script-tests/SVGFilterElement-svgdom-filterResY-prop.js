@@ -43,8 +43,6 @@ shouldBe("filterElement.filterResY.baseVal", "400");
 function repaintTest() {
     filterElement.filterResY.baseVal = 200;
     shouldBe("filterElement.filterResY.baseVal", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -22,8 +22,6 @@ shouldBe("foreignObjectElement.x.baseVal.value", "-100");
 function repaintTest() {
     foreignObjectElement.x.baseVal.value = 100;
     shouldBe("foreignObjectElement.x.baseVal.value", "100");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

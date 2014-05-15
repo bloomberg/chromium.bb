@@ -223,8 +223,6 @@ function repaintTest() {
     shouldBeEqualToString("screenBlend.getAttribute('in')", "SourceGraphic");
     shouldBeEqualToString("darkenBlend.getAttribute('in')", "SourceGraphic");
     shouldBeEqualToString("lightenBlend.getAttribute('in')", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

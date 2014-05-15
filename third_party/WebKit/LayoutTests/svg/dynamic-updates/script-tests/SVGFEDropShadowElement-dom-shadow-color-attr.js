@@ -37,8 +37,6 @@ shouldBeEqualToString("dropShadowElement.getAttribute('flood-color')", "black");
 function repaintTest() {
     dropShadowElement.setAttribute("flood-color", "green");
     shouldBeEqualToString("dropShadowElement.getAttribute('flood-color')", "green");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

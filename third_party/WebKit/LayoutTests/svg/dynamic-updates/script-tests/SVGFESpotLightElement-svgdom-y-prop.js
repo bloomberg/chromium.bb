@@ -43,8 +43,6 @@ shouldBe("spotLightElement.y.baseVal", "70");
 function repaintTest() {
     spotLightElement.y.baseVal = -30;
     shouldBe("spotLightElement.y.baseVal", "-30");
-
-    completeTest();
 }
 
 

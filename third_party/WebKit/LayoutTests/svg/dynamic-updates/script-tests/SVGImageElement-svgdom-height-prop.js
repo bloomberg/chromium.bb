@@ -18,8 +18,6 @@ shouldBe("imageElement.height.baseVal.value", "100");
 function repaintTest() {
     imageElement.height.baseVal.value = 200;
     shouldBe("imageElement.height.baseVal.value", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

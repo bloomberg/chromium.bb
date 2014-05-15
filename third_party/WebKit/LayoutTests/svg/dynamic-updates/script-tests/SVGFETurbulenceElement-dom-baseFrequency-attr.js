@@ -38,8 +38,6 @@ shouldBeEqualToString("turbulence.getAttribute('baseFrequency')", "0.07");
 function repaintTest() {
     turbulence.setAttribute("baseFrequency", "0.05");
     shouldBeEqualToString("turbulence.getAttribute('baseFrequency')", "0.05");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

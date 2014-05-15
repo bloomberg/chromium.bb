@@ -62,11 +62,9 @@ function repaintTest() {
     feAFunc.setAttribute("type", "linear");
 
     shouldBeEqualToString("feRFunc.getAttribute('type')", "linear");
-	shouldBeEqualToString("feGFunc.getAttribute('type')", "linear");
-	shouldBeEqualToString("feBFunc.getAttribute('type')", "linear");
-	shouldBeEqualToString("feAFunc.getAttribute('type')", "linear");
-
-    completeTest();
+    shouldBeEqualToString("feGFunc.getAttribute('type')", "linear");
+    shouldBeEqualToString("feBFunc.getAttribute('type')", "linear");
+    shouldBeEqualToString("feAFunc.getAttribute('type')", "linear");
 }
 
 var successfullyParsed = true;

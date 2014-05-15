@@ -40,8 +40,6 @@ shouldBeEqualToString("convolveMatrixElement.getAttribute('targetX')", "2");
 function repaintTest() {
     convolveMatrixElement.setAttribute("targetX", "0");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('targetX')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

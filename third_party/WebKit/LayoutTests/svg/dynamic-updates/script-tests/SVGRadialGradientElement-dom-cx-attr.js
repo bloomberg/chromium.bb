@@ -36,8 +36,6 @@ shouldBeEqualToString("radialGradientElement.getAttribute('cx')", "0%");
 function repaintTest() {
     radialGradientElement.setAttribute("cx", "150%");
     shouldBeEqualToString("radialGradientElement.getAttribute('cx')", "150%");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

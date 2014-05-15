@@ -15,8 +15,6 @@ shouldBeNull("textElement.getAttribute('transform')", "");
 function repaintTest() {
     textElement.setAttribute("transform", "translate(0,-200)");
     shouldBeEqualToString("textElement.getAttribute('transform')", "translate(0,-200)");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

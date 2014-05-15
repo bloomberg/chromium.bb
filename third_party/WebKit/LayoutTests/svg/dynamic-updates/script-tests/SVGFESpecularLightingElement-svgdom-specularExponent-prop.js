@@ -57,8 +57,6 @@ shouldBe("specularElement.specularExponent.baseVal", "4");
 function repaintTest() {
     specularElement.specularExponent.baseVal = 1;
     shouldBe("specularElement.specularExponent.baseVal", "1");
-
-    completeTest();
 }
 
 

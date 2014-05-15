@@ -18,8 +18,6 @@ shouldBe("lineElement.x2.baseVal.value", "100");
 function repaintTest() {
     lineElement.x2.baseVal.value = 200;
     shouldBe("lineElement.x2.baseVal.value", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

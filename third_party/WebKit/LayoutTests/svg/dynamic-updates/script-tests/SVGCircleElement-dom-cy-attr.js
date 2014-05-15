@@ -16,8 +16,6 @@ shouldBeEqualToString("circleElement.getAttribute('cy')", "-50");
 function repaintTest() {
     circleElement.setAttribute("cy", "150");
     shouldBeEqualToString("circleElement.getAttribute('cy')", "150");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

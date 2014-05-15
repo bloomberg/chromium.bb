@@ -17,8 +17,6 @@ shouldBeEqualToString("rectElement.getAttribute('height')", "50");
 function repaintTest() {
     rectElement.setAttribute("height", "200");
     shouldBeEqualToString("rectElement.getAttribute('height')", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

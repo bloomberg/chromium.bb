@@ -61,8 +61,6 @@ shouldBeEqualToString("tile.in1.baseVal", "SourceGraphic");
 function repaintTest() {
     tile.in1.baseVal = "offset";
     shouldBeEqualToString("tile.in1.baseVal", "offset");
-
-    completeTest();
 }
 
 

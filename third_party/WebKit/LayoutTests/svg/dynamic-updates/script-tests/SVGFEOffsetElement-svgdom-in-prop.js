@@ -44,8 +44,6 @@ shouldBeEqualToString("offsetElement.in1.baseVal", "blur");
 function repaintTest() {
     offsetElement.in1.baseVal = "SourceGraphic";
     shouldBeEqualToString("offsetElement.in1.baseVal", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

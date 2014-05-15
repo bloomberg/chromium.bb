@@ -1,6 +1,8 @@
 // [Name] SVGUseElement-dom-href2-attr.js
 // [Expected rendering result] A use element first with an external then with an internal referenced document - and a series of PASS messages
 
+window.testIsAsync = true;
+
 description("Tests dynamic updates of the 'href' attribute of the SVGUseElement object")
 createSVGTestCase();
 
@@ -27,14 +29,13 @@ rootSVGElement.appendChild(useElement);
 
 function repaintTest() {
     // Start loading external resource, wait for it, then switch back to internal.
-	useElement.setAttributeNS(xlinkNS, "xlink:href", "../custom/resources/rgb.svg#R");
+    useElement.setAttributeNS(xlinkNS, "xlink:href", "../custom/resources/rgb.svg#R");
 }
 
 function externalLoadDone() {
     useElement.setAttributeNS(xlinkNS, "xlink:href", "#MyRect");
     shouldBeEqualToString("useElement.getAttributeNS('" + xlinkNS + "', 'href')", "#MyRect");
-
-    completeTest();
+    finishRepaintTest();
 }
 
 var successfullyParsed = true;

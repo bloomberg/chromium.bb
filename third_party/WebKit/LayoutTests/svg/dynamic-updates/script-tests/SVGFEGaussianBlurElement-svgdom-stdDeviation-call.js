@@ -40,8 +40,6 @@ function repaintTest() {
     blurElement.setStdDeviation(10, 10);
     shouldBe("blurElement.stdDeviationX.baseVal", "10");
     shouldBe("blurElement.stdDeviationY.baseVal", "10");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

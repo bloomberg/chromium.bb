@@ -43,8 +43,6 @@ function repaintTest() {
     convolveMatrixElement.orderY.baseVal = 3;
     shouldBe("convolveMatrixElement.orderX.baseVal", "3");
     shouldBe("convolveMatrixElement.orderY.baseVal", "3");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

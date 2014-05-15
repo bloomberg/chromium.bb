@@ -17,8 +17,6 @@ shouldBe("ellipseElement.cx.baseVal.value", "-50");
 function repaintTest() {
     ellipseElement.cx.baseVal.value = 150;
     shouldBe("ellipseElement.cx.baseVal.value", "150");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

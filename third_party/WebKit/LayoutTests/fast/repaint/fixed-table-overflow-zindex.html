@@ -14,15 +14,10 @@
             testRunner.dumpAsTextWithPixelResults();
         }
 
-        window.onload = function()
-        {
+        window.onload = function() {
             window.scrollTo(0, 100);
-            runAfterDisplay(function() {
-                runRepaintTest();
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            });
-        }
+            runRepaintTest();
+        };
 
         function repaintTest()
         {

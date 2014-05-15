@@ -15,8 +15,6 @@ shouldBe("textElement.rotate.baseVal.getItem(0).value", "-90");
 function repaintTest() {
     textElement.rotate.baseVal.getItem(0).value = 0;
     shouldBe("textElement.rotate.baseVal.getItem(0).value", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

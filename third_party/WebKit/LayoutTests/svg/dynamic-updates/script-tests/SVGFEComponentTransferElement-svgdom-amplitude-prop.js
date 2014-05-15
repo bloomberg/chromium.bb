@@ -65,8 +65,6 @@ function repaintTest() {
     shouldBe("feGFunc.amplitude.baseVal", "1");
     shouldBe("feBFunc.amplitude.baseVal", "1");
     shouldBe("feAFunc.amplitude.baseVal", "1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

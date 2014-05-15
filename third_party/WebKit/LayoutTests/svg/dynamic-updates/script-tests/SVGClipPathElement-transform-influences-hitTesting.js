@@ -23,7 +23,7 @@ foregroundRect.setAttribute("width", "100");
 foregroundRect.setAttribute("height", "100");
 foregroundRect.setAttribute("fill", "green");
 foregroundRect.setAttribute("clip-path", "url(#clipper)");
-foregroundRect.setAttribute("onclick", "testPassed('Hit thrown on not clipped area of rect.'); completeTest();");
+foregroundRect.setAttribute("onclick", "testPassed('Hit thrown on not clipped area of rect.');");
 rootSVGElement.appendChild(foregroundRect);
 
 // The clipPath gets scaled by 20. This should influence the hit testing,

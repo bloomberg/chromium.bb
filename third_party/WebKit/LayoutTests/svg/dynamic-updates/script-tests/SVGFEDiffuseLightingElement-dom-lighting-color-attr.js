@@ -50,8 +50,6 @@ shouldBeEqualToString("gradientElement.getAttribute('lighting-color')", "green")
 function repaintTest() {
     gradientElement.setAttribute("lighting-color", "yellow");
     shouldBeEqualToString("gradientElement.getAttribute('lighting-color')", "yellow");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

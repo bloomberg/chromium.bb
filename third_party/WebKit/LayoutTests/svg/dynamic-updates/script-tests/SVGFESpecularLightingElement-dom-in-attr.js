@@ -57,8 +57,6 @@ shouldBeEqualToString("specularElement.getAttribute('in')", "SourceAlpha");
 function repaintTest() {
     specularElement.setAttribute("in", "SourceGraphic");
     shouldBeEqualToString("specularElement.getAttribute('in')", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -57,16 +57,14 @@ shouldBeEqualToString("feAFunc.getAttribute('tableValues')", "0.5 10 1 0.5");
 
 function repaintTest() {
     feRFunc.setAttribute("tableValues", "0 1 0.9 0");
-	feGFunc.setAttribute("tableValues", "0 1 1 0.6");
-	feBFunc.setAttribute("tableValues", "0 0 1 0.2");
-	feAFunc.setAttribute("tableValues", "0.5 10 1 0.9");
-    
-	shouldBeEqualToString("feRFunc.getAttribute('tableValues')", "0 1 0.9 0");
-	shouldBeEqualToString("feGFunc.getAttribute('tableValues')", "0 1 1 0.6");
-	shouldBeEqualToString("feBFunc.getAttribute('tableValues')", "0 0 1 0.2");
-	shouldBeEqualToString("feAFunc.getAttribute('tableValues')", "0.5 10 1 0.9");
+    feGFunc.setAttribute("tableValues", "0 1 1 0.6");
+    feBFunc.setAttribute("tableValues", "0 0 1 0.2");
+    feAFunc.setAttribute("tableValues", "0.5 10 1 0.9");
 
-    completeTest();
+    shouldBeEqualToString("feRFunc.getAttribute('tableValues')", "0 1 0.9 0");
+    shouldBeEqualToString("feGFunc.getAttribute('tableValues')", "0 1 1 0.6");
+    shouldBeEqualToString("feBFunc.getAttribute('tableValues')", "0 0 1 0.2");
+    shouldBeEqualToString("feAFunc.getAttribute('tableValues')", "0.5 10 1 0.9");
 }
 
 var successfullyParsed = true;

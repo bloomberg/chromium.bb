@@ -43,8 +43,6 @@ shouldBeEqualToString("filterElement.getAttribute('filterRes')", "400");
 function repaintTest() {
     filterElement.setAttribute("filterRes", "200");
     shouldBeEqualToString("filterElement.getAttribute('filterRes')", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

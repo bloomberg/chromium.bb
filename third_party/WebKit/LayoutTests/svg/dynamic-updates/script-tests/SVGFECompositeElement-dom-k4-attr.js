@@ -116,8 +116,6 @@ shouldBeEqualToString("overComposite1.getAttribute('k4')", "2.9");
 function repaintTest() {
     overComposite1.setAttribute("k4", ".3");
     shouldBeEqualToString("overComposite1.getAttribute('k4')", ".3");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

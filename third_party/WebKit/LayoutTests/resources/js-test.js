@@ -6,6 +6,8 @@ if (self.testRunner) {
         testRunner.dumpAsText();
 }
 
+var isJsTest = true;
+
 var description, debug, successfullyParsed;
 
 var expectingError; // set by shouldHaveError()

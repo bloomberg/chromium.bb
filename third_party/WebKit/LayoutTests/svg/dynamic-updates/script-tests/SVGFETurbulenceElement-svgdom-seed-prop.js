@@ -36,8 +36,6 @@ shouldBe("turbulence.seed.baseVal", "10");
 function repaintTest() {
     turbulence.seed.baseVal = 5;
     shouldBe("turbulence.seed.baseVal", "5");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -43,8 +43,6 @@ shouldBeEqualToString("spotLightElement.getAttribute('z')", "0");
 function repaintTest() {
     spotLightElement.setAttribute("z", "100");
     shouldBeEqualToString("spotLightElement.getAttribute('z')", "100");
-
-    completeTest();
 }
 
 

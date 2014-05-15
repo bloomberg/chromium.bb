@@ -15,8 +15,6 @@ shouldBe("textElement.y.baseVal.getItem(0).value", "50");
 function repaintTest() {
     textElement.y.baseVal.getItem(0).value = 20;
     shouldBe("textElement.y.baseVal.getItem(0).value", "20");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

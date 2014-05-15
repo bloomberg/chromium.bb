@@ -17,8 +17,6 @@ shouldBeEqualToString("rectElement.getAttribute('x')", "-150");
 function repaintTest() {
     rectElement.setAttribute("x", "0");
     shouldBeEqualToString("rectElement.getAttribute('x')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

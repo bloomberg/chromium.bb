@@ -47,8 +47,6 @@ shouldBeEqualToString("filterElement.getAttribute('primitiveUnits')", "userSpace
 function repaintTest() {
     filterElement.setAttribute("primitiveUnits", "objectBoundingBox");
     shouldBeEqualToString("filterElement.getAttribute('primitiveUnits')", "objectBoundingBox");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

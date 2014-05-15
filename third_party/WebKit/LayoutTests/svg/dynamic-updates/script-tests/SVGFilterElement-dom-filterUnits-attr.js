@@ -42,8 +42,6 @@ shouldBeEqualToString("filterElement.getAttribute('filterUnits')", "userSpaceOnU
 function repaintTest() {
     filterElement.setAttribute("filterUnits", "objectBoundingBox");
     shouldBeEqualToString("filterElement.getAttribute('filterUnits')", "objectBoundingBox");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

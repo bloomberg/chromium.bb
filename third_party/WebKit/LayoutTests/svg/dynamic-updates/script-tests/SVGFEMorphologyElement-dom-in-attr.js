@@ -43,8 +43,6 @@ shouldBeEqualToString("morphologyElement.getAttribute('in')", "SourceAlpha");
 function repaintTest() {
     morphologyElement.setAttribute("in", "SourceGraphic");
     shouldBeEqualToString("morphologyElement.getAttribute('in')", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

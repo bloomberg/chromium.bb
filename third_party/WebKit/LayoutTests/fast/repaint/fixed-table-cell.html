@@ -9,21 +9,13 @@
       <script src="../../resources/run-after-display.js"></script>
     <script src="resources/text-based-repaint.js"></script>
     <script>
-        if (window.testRunner) {
-            testRunner.waitUntilDone();
+        if (window.testRunner)
             testRunner.dumpAsTextWithPixelResults();
-        }
 
-        window.onload = function()
-        {
+        window.onload = function() {
             window.scrollTo(0, 100);
-
-            runAfterDisplay(function() {
-                runRepaintTest();
-                if (window.testRunner)
-                    testRunner.notifyDone();
-            })
-        }
+            runRepaintTest();
+        };
 
         function repaintTest()
         {

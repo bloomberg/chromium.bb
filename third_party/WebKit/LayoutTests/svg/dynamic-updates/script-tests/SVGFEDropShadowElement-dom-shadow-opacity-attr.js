@@ -37,8 +37,6 @@ shouldBeEqualToString("dropShadowElement.getAttribute('flood-opacity')", "0");
 function repaintTest() {
     dropShadowElement.setAttribute("flood-opacity", "0.5");
     shouldBeEqualToString("dropShadowElement.getAttribute('flood-opacity')", "0.5");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

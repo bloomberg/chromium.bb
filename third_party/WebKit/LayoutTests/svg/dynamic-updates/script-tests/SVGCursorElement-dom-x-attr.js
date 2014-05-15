@@ -22,8 +22,6 @@ shouldBeEqualToString("cursorElement.getAttribute('x')", "100");
 function repaintTest() {
     cursorElement.setAttribute("x", "0");
     shouldBeEqualToString("cursorElement.getAttribute('x')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -18,8 +18,6 @@ shouldBeEqualToString("lineElement.getAttribute('x2')", "100");
 function repaintTest() {
     lineElement.setAttribute("x2", "200");
     shouldBeEqualToString("lineElement.getAttribute('x2')", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

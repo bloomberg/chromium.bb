@@ -49,8 +49,6 @@ shouldBeEqualToString("distantLight.getAttribute('elevation')", "50");
 function repaintTest() {
     distantLight.setAttribute("elevation", "20");
     shouldBeEqualToString("distantLight.getAttribute('elevation')", "20");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

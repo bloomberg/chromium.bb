@@ -39,8 +39,6 @@ shouldBeEqualToString("parseFloat(floodElement.getAttribute('flood-opacity')).to
 function repaintTest() {
     floodElement.setAttribute("flood-opacity", ".8");
     shouldBeEqualToString("parseFloat(floodElement.getAttribute('flood-opacity')).toFixed(1)", "0.8");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

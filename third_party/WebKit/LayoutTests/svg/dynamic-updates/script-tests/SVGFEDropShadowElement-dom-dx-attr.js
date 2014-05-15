@@ -35,8 +35,6 @@ shouldBeEqualToString("dropShadowElement.getAttribute('dx')", "0");
 function repaintTest() {
     dropShadowElement.setAttribute("dx", "10");
     shouldBeEqualToString("dropShadowElement.getAttribute('dx')", "10");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

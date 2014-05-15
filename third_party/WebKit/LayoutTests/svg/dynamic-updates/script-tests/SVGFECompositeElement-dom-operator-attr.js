@@ -116,8 +116,6 @@ shouldBeEqualToString("overComposite1.getAttribute('operator')", "in");
 function repaintTest() {
     overComposite1.setAttribute("operator", "arithmetic");
     shouldBeEqualToString("overComposite1.getAttribute('operator')", "arithmetic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

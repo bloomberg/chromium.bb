@@ -57,8 +57,6 @@ shouldBeEqualToString("specularElement.in1.baseVal", "SourceAlpha");
 function repaintTest() {
     specularElement.in1.baseVal = "SourceGraphic";
     shouldBeEqualToString("specularElement.in1.baseVal", "SourceGraphic");
-
-    completeTest();
 }
 
 

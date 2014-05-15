@@ -49,8 +49,6 @@ shouldBe("distantLight.elevation.baseVal", "50");
 function repaintTest() {
     distantLight.elevation.baseVal = 20;
     shouldBe("distantLight.elevation.baseVal", "20");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

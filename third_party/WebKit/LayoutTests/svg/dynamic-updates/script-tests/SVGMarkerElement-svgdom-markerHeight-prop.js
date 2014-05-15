@@ -36,8 +36,6 @@ shouldBe("markerElement.markerHeight.baseVal.value", "0");
 function repaintTest() {
     markerElement.markerHeight.baseVal.value = 2;
     shouldBe("markerElement.markerHeight.baseVal.value", "2");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

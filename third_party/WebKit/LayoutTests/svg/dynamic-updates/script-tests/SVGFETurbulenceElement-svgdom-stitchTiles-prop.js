@@ -36,8 +36,6 @@ shouldBe("turbulence.stitchTiles.baseVal", "SVGFETurbulenceElement.SVG_STITCHTYP
 function repaintTest() {
     turbulence.stitchTiles.baseVal = SVGFETurbulenceElement.SVG_STITCHTYPE_NOSTITCH;
     shouldBe("turbulence.stitchTiles.baseVal", "SVGFETurbulenceElement.SVG_STITCHTYPE_NOSTITCH");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

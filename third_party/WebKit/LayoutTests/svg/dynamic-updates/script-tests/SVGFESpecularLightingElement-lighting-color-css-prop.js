@@ -57,8 +57,6 @@ shouldBeEqualToString("document.defaultView.getComputedStyle(specularElement).ge
 function repaintTest() {
     specularElement.style.setProperty("lighting-color", "greenyellow", "");
     shouldBeEqualToString("document.defaultView.getComputedStyle(specularElement).getPropertyValue('lighting-color')", "rgb(173, 255, 47)");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

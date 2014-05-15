@@ -223,8 +223,6 @@ function repaintTest() {
     shouldBeEqualToString("screenBlend.in2.baseVal", "screenImg");
     shouldBeEqualToString("darkenBlend.in2.baseVal", "darkenImg");
     shouldBeEqualToString("lightenBlend.in2.baseVal", "lightenImg");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

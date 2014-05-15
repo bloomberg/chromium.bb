@@ -50,8 +50,6 @@ shouldBeEqualToString("gradientElement.in1.baseVal", "SourceGraphic");
 function repaintTest() {
     gradientElement.in1.baseVal = "blur";
     shouldBeEqualToString("gradientElement.in1.baseVal", "blur");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

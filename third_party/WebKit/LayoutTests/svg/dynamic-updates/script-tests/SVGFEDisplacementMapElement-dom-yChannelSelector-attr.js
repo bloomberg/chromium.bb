@@ -50,8 +50,6 @@ shouldBeEqualToString("displacementMap.getAttribute('yChannelSelector')", "B");
 function repaintTest() {
     displacementMap.setAttribute("yChannelSelector", "G");
     shouldBeEqualToString("displacementMap.getAttribute('yChannelSelector')", "G");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

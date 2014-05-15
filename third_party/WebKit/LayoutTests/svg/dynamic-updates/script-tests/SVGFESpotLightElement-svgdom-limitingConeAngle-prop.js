@@ -43,8 +43,6 @@ shouldBe("spotLightElement.limitingConeAngle.baseVal", "45");
 function repaintTest() {
     spotLightElement.limitingConeAngle.baseVal = 15;
     shouldBe("spotLightElement.limitingConeAngle.baseVal", "15");
-
-    completeTest();
 }
 
 

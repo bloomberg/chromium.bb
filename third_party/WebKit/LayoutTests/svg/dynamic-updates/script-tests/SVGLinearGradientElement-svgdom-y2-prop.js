@@ -37,8 +37,6 @@ shouldBeEqualToString("linearGradientElement.y2.baseVal.valueAsString", "1000%")
 function repaintTest() {
     linearGradientElement.y2.baseVal.valueAsString = "0%";
     shouldBeEqualToString("linearGradientElement.y2.baseVal.valueAsString", "0%");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

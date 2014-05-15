@@ -57,16 +57,14 @@ shouldBe("feAFunc.slope.baseVal", "1");
 
 function repaintTest() {
     feRFunc.slope.baseVal = 2;
-	feGFunc.slope.baseVal = 2;
-	feBFunc.slope.baseVal = 2;
-	feAFunc.slope.baseVal = 2;
+    feGFunc.slope.baseVal = 2;
+    feBFunc.slope.baseVal = 2;
+    feAFunc.slope.baseVal = 2;
 
     shouldBe("feRFunc.slope.baseVal", "2");
-	shouldBe("feGFunc.slope.baseVal", "2");
-	shouldBe("feBFunc.slope.baseVal", "2");
-	shouldBe("feAFunc.slope.baseVal", "2");
-
-    completeTest();
+    shouldBe("feGFunc.slope.baseVal", "2");
+    shouldBe("feBFunc.slope.baseVal", "2");
+    shouldBe("feAFunc.slope.baseVal", "2");
 }
 
 var successfullyParsed = true;

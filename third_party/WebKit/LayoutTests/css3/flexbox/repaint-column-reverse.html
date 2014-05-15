@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<script src="../../resources/run-after-display.js"></script>
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <style>
 #flexbox {
@@ -17,24 +16,15 @@ function repaintTest()
     document.getElementById("blue").style.margin = "1px";
 }
 
-function changeChildMargin()
-{
-    runRepaintTest();
-    finishRepaintTest();
-}
-
 window.onload = function() {
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-    } else {
+    if (!window.testRunner) {
         document.body.appendChild(document.createTextNode(
             "This test checks that for flex items that are moved multiple times during the layout "
             + "only the initial and final positions are repainted. Only the blue flex item should be repainted "
             + "after changing its position. If the other flex items are repainted, this test fails."));
     }
     window.enablePixelTesting = true;
-    window.testIsAsync = true;
-    runAfterDisplay(changeChildMargin)
+    runRepaintTest();
 };
 </script>
 <div id="flexbox">

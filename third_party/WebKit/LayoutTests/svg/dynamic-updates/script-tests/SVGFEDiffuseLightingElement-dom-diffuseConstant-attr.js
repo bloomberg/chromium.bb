@@ -50,8 +50,6 @@ shouldBeEqualToString("gradientElement.getAttribute('diffuseConstant')", "0");
 function repaintTest() {
     gradientElement.setAttribute("diffuseConstant", "1");
     shouldBeEqualToString("gradientElement.getAttribute('diffuseConstant')", "1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

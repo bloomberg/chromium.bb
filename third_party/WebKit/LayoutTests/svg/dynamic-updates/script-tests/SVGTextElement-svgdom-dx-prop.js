@@ -15,8 +15,6 @@ shouldBe("textElement.dx.baseVal.getItem(0).value", "0");
 
 function repaintTest() {
     textElement.dx.baseVal.getItem(0).value = -50;
-    shouldBe("textElement.dx.baseVal.getItem(0).value", "-50");
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -6,11 +6,10 @@
 <g id="content"/>
 
 <script>
+    window.testIsAsync = true;
     var content = document.getElementById("content");
 
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
         setTimeout(createObject, 0);
     }
 
@@ -45,8 +44,7 @@
         mask.appendChild(rect);
         content.appendChild(mask);
 
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>
 

@@ -40,8 +40,6 @@ shouldBeEqualToString("document.defaultView.getComputedStyle(floodElement).getPr
 function repaintTest() {
     filterElement.setAttribute("style", "flood-color:rgb(64, 128, 103)");
     shouldBeEqualToString("document.defaultView.getComputedStyle(floodElement).getPropertyValue('flood-color')", "rgb(64, 128, 103)");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -175,8 +175,6 @@ function repaintTest() {
     shouldBeEqualToString("matrixElement.getAttribute('values')", ".33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0");
     shouldBeEqualToString("saturateElement.getAttribute('values')", "0.25");
     shouldBeEqualToString("hueRotateElement.getAttribute('values')", "90");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

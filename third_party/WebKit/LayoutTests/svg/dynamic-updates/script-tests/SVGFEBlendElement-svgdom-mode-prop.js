@@ -223,8 +223,6 @@ function repaintTest() {
     shouldBe("screenBlend.mode.baseVal", "SVGFEBlendElement.SVG_FEBLEND_MODE_SCREEN");
     shouldBe("darkenBlend.mode.baseVal", "SVGFEBlendElement.SVG_FEBLEND_MODE_DARKEN");
     shouldBe("lightenBlend.mode.baseVal", "SVGFEBlendElement.SVG_FEBLEND_MODE_LIGHTEN");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

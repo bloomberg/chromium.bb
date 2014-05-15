@@ -43,8 +43,6 @@ shouldBe("patternElement.x.baseVal.value", "50");
 function repaintTest() {
     patternElement.x.baseVal.value = 0;
     shouldBe("patternElement.x.baseVal.value", "0");
- 
-    completeTest();
 }
 
 var successfullyParsed = true;

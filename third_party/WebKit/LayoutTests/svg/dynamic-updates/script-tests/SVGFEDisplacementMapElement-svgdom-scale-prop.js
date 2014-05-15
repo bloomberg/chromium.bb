@@ -50,8 +50,6 @@ shouldBe("displacementMap.scale.baseVal", "34");
 function repaintTest() {
     displacementMap.scale.baseVal = 64;
     shouldBe("displacementMap.scale.baseVal", "64");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -50,8 +50,6 @@ shouldBe("gradientElement.surfaceScale.baseVal", "0");
 function repaintTest() {
     gradientElement.surfaceScale.baseVal = 1;
     shouldBe("gradientElement.surfaceScale.baseVal", "1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

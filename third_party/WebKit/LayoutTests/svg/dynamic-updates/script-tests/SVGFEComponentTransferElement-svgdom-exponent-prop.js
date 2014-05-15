@@ -65,8 +65,6 @@ function repaintTest() {
     shouldBe("feGFunc.exponent.baseVal", "1");
     shouldBe("feBFunc.exponent.baseVal", "1");
     shouldBe("feAFunc.exponent.baseVal", "1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

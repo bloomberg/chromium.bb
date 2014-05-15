@@ -19,8 +19,6 @@ shouldBeEqualToString("imageElement.getAttribute('preserveAspectRatio')", "xMaxY
 function repaintTest() {
     imageElement.setAttribute("preserveAspectRatio", "none");
     shouldBeEqualToString("imageElement.getAttribute('preserveAspectRatio')", "none");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

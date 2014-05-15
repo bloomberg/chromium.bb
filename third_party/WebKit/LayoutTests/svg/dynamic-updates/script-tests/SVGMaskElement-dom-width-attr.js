@@ -39,8 +39,6 @@ shouldBeEqualToString("maskElement.getAttribute('width')", "10%");
 function repaintTest() {
     maskElement.setAttribute("width", "100%");
     shouldBeEqualToString("maskElement.getAttribute('width')", "100%");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

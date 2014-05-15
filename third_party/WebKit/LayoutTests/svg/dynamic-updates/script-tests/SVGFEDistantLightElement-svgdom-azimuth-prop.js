@@ -49,8 +49,6 @@ shouldBe("distantLight.azimuth.baseVal", "10");
 function repaintTest() {
     distantLight.azimuth.baseVal = 100;
     shouldBe("distantLight.azimuth.baseVal", "100");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

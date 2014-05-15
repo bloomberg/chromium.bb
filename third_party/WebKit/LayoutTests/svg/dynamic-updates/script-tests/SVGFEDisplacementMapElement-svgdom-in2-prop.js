@@ -50,8 +50,6 @@ shouldBeEqualToString("displacementMap.in2.baseVal", "Texture");
 function repaintTest() {
     displacementMap.in2.baseVal = "Map";
     shouldBeEqualToString("displacementMap.in2.baseVal", "Map");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

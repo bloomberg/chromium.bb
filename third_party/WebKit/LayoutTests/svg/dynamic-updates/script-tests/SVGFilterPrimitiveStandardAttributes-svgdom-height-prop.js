@@ -46,8 +46,6 @@ shouldBe("gradientElement.height.baseVal.value", "100");
 function repaintTest() {
     gradientElement.height.baseVal.value = 200;
     shouldBe("gradientElement.height.baseVal.value", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

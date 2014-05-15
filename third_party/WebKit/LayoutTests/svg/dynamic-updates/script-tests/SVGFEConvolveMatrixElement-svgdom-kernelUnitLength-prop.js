@@ -43,8 +43,6 @@ function repaintTest() {
     convolveMatrixElement.kernelUnitLengthY.baseVal = 0.05;
     shouldBe("Math.round(convolveMatrixElement.kernelUnitLengthX.baseVal * 1000)", "50");
     shouldBe("Math.round(convolveMatrixElement.kernelUnitLengthY.baseVal * 1000)", "50");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

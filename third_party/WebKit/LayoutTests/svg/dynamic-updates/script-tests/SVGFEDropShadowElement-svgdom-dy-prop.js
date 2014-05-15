@@ -35,8 +35,6 @@ shouldBe("dropShadowElement.dy.baseVal", "0");
 function repaintTest() {
     dropShadowElement.dy.baseVal = 10;
     shouldBe("dropShadowElement.dy.baseVal", "10");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

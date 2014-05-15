@@ -39,8 +39,6 @@ shouldBeEqualToString("convolveMatrixElement.getAttribute('in')", "SourceAlpha")
 function repaintTest() {
     convolveMatrixElement.setAttribute("in", "SourceGraphic");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('in')", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

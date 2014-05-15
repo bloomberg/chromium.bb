@@ -33,8 +33,6 @@ shouldBeEqualToString("image.getAttribute('preserveAspectRatio')", "xMinYMin sli
 function repaintTest() {
     image.setAttribute("preserveAspectRatio", "xMinYMid slice");
     shouldBeEqualToString("image.getAttribute('preserveAspectRatio')", "xMinYMid slice");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

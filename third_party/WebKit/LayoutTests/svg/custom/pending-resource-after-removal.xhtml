@@ -6,6 +6,7 @@
 <script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <title>The rectangle should be green.</title></head>
 <script>
+window.testIsAsync = true;
 
 var W = 200;
 var H = 200;
@@ -42,14 +43,10 @@ function updateFill() {
     el.setAttribute("fill", "url(#pat)");
 
     if(currentColor == 2)
-        if(window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
 }
 
 function repaintTest() {
-    if(window.testRunner)
-        testRunner.waitUntilDone();
-
     updateFill();
     setTimeout("updateFill()", 0);
 }

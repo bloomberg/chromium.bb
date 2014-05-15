@@ -36,8 +36,6 @@ shouldBeEqualToString("markerElement.getAttribute('refY')", "500");
 function repaintTest() {
     markerElement.setAttribute("refY", "5");
     shouldBeEqualToString("markerElement.getAttribute('refY')", "5");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

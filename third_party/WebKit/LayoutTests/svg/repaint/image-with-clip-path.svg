@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="startTest()">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
     <script xlink:href="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
     <text y="-10">Bug 76559: All red should disappear</text>
     <g id="g" transform="translate(0, 0)">
@@ -10,15 +10,9 @@
         <image x="-30" y="-30" width="60" height="60" clip-path="url(#p)" xlink:href=""/>
     </g>
 <script>
+    window.testIsAsync = true;
     var green = "data:image/gif;base64,R0lGODlhAQABAIAAAAD/AAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
     var red = "data:image/gif;base64,R0lGODlhAQABAIAAAP8AAAAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==";
-
-    var count = 0;
-    function startTest() {
-        if (count == 0)
-            runRepaintAndPixelTest();
-        count = count + 1;
-    }
 
     var r = document.querySelector('#r');
     var g = document.querySelector('#g');
@@ -32,14 +26,8 @@
         i.setAttributeNS('http://www.w3.org/1999/xlink', 'href', img);
     };
 
-    if (window.testRunner) {
-        testRunner.dumpAsTextWithPixelResults();
-        testRunner.waitUntilDone();
-    }
-
     function finishTest() {
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 
     function nextStep() {

@@ -50,8 +50,6 @@ shouldBe("pointLight.x.baseVal", "50");
 function repaintTest() {
     pointLight.x.baseVal = 100;
     shouldBe("pointLight.x.baseVal", "100");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

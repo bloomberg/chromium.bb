@@ -39,8 +39,6 @@ shouldBeEqualToString("parseFloat(document.defaultView.getComputedStyle(floodEle
 function repaintTest() {
     floodElement.style.setProperty("flood-opacity", ".8", "");
     shouldBeEqualToString("parseFloat(document.defaultView.getComputedStyle(floodElement).getPropertyValue('flood-opacity')).toFixed(1)", "0.8");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

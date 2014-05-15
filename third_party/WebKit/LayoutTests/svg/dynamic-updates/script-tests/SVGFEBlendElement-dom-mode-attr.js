@@ -223,8 +223,6 @@ function repaintTest() {
     shouldBeEqualToString("screenBlend.getAttribute('mode')", "screen");
     shouldBeEqualToString("darkenBlend.getAttribute('mode')", "darken");
     shouldBeEqualToString("lightenBlend.getAttribute('mode')", "lighten");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

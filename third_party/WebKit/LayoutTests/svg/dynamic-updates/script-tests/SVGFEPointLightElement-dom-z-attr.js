@@ -50,8 +50,6 @@ shouldBeEqualToString("pointLight.getAttribute('z')", "100");
 function repaintTest() {
     pointLight.setAttribute("z", "30");
     shouldBeEqualToString("pointLight.getAttribute('z')", "30");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

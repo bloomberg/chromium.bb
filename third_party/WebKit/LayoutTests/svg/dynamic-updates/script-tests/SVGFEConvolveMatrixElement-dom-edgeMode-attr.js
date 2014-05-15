@@ -41,8 +41,6 @@ shouldBeEqualToString("convolveMatrixElement.getAttribute('edgeMode')", "wrap");
 function repaintTest() {
     convolveMatrixElement.setAttribute("edgeMode", "duplicate");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('edgeMode')", "duplicate");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

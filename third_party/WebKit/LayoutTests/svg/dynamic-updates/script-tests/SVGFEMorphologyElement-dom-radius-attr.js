@@ -42,8 +42,6 @@ shouldBeEqualToString("morphologyElement.getAttribute('radius')", "6");
 function repaintTest() {
     morphologyElement.setAttribute("radius", "4");
     shouldBeEqualToString("morphologyElement.getAttribute('radius')", "4");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

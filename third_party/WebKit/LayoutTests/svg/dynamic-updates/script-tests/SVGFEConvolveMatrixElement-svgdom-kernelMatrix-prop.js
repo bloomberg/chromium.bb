@@ -55,8 +55,6 @@ function repaintTest() {
     convolveMatrixElement.kernelMatrix.baseVal.replaceItem(number, 0);
 
     shouldBeEqualToString("SVGNumberListToString(convolveMatrixElement.kernelMatrix.baseVal)", "3 0 0 0 1 0 0 0 2 ");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

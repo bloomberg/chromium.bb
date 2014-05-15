@@ -40,8 +40,6 @@ function repaintTest() {
 
     shouldBe("markerElement.orientType.baseVal", "SVGMarkerElement.SVG_MARKER_ORIENT_AUTO");
     shouldBe("markerElement.orientAngle.baseVal.value", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

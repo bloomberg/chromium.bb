@@ -36,8 +36,6 @@ shouldBeEqualToString("dropShadowElement.getAttribute('stdDeviation')", "0");
 function repaintTest() {
     dropShadowElement.setAttribute("stdDeviation", "10");
     shouldBeEqualToString("dropShadowElement.getAttribute('stdDeviation')", "10");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

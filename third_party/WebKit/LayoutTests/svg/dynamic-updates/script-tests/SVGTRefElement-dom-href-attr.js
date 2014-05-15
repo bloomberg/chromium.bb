@@ -38,8 +38,6 @@ function repaintTest() {
         var shadowRoot = internals.shadowRoot(trefElement);
         shouldBeEqualToString("shadowRoot.textContent", "Test passed");
     }
-
-    completeTest();
 }
 
 var successfullyParsed = true;

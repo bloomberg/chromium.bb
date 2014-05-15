@@ -36,8 +36,6 @@ shouldBeEqualToString("radialGradientElement.cx.baseVal.valueAsString", "0%");
 function repaintTest() {
     radialGradientElement.cx.baseVal.valueAsString = "150%";
     shouldBeEqualToString("radialGradientElement.cx.baseVal.valueAsString", "150%");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

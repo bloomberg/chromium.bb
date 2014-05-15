@@ -14,12 +14,11 @@
 <g id="content"/>
 
 <script>
+    window.testIsAsync = true;
     var defs = document.getElementById("defs");
     var content = document.getElementById("content");
 
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
         setTimeout(createObject, 0);
     }
 
@@ -59,8 +58,7 @@
         marker.appendChild(circle);
         defs.appendChild(marker);
 
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>
 

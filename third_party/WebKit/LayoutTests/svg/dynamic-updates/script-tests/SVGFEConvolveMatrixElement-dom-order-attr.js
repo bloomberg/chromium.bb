@@ -40,8 +40,6 @@ function repaintTest() {
     convolveMatrixElement.setAttribute("kernelMatrix", "3 0 3 0 0 0 3 0 3");
     convolveMatrixElement.setAttribute("order", "3 3");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('order')", "3 3");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

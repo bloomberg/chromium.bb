@@ -40,8 +40,6 @@ shouldBe("convolveMatrixElement.preserveAlpha.baseVal", "false");
 function repaintTest() {
     convolveMatrixElement.preserveAlpha.baseVal = true;
     shouldBe("convolveMatrixElement.preserveAlpha.baseVal", "true");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

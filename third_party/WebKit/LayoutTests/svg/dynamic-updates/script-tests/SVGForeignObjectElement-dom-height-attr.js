@@ -22,8 +22,6 @@ shouldBeEqualToString("foreignObjectElement.getAttribute('height')", "2");
 function repaintTest() {
     foreignObjectElement.setAttribute("height", "150");
     shouldBeEqualToString("foreignObjectElement.getAttribute('height')", "150");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

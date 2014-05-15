@@ -40,8 +40,6 @@ shouldBe("maskElement.maskContentUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TYPE_OBJ
 function repaintTest() {
     maskElement.maskContentUnits.baseVal = SVGUnitTypes.SVG_UNIT_TYPE_USERSPACEONUSE;
     shouldBe("maskElement.maskContentUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TYPE_USERSPACEONUSE");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

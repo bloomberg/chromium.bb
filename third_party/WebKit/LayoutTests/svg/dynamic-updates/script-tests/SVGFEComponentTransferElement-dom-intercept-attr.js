@@ -57,16 +57,14 @@ shouldBeEqualToString("feAFunc.getAttribute('intercept')", "0.2");
 
 function repaintTest() {
     feRFunc.setAttribute("intercept", "0.1");
-	feGFunc.setAttribute("intercept", "0.1");
-	feBFunc.setAttribute("intercept", "0.1");
-	feAFunc.setAttribute("intercept", "0.1");
-    
-	shouldBeEqualToString("feRFunc.getAttribute('intercept')", "0.1");
-	shouldBeEqualToString("feGFunc.getAttribute('intercept')", "0.1");
-	shouldBeEqualToString("feBFunc.getAttribute('intercept')", "0.1");
-	shouldBeEqualToString("feAFunc.getAttribute('intercept')", "0.1");
+    feGFunc.setAttribute("intercept", "0.1");
+    feBFunc.setAttribute("intercept", "0.1");
+    feAFunc.setAttribute("intercept", "0.1");
 
-    completeTest();
+    shouldBeEqualToString("feRFunc.getAttribute('intercept')", "0.1");
+    shouldBeEqualToString("feGFunc.getAttribute('intercept')", "0.1");
+    shouldBeEqualToString("feBFunc.getAttribute('intercept')", "0.1");
+    shouldBeEqualToString("feAFunc.getAttribute('intercept')", "0.1");
 }
 
 var successfullyParsed = true;

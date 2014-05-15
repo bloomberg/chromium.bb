@@ -44,8 +44,6 @@ shouldBeEqualToString("offsetElement.getAttribute('in')", "blur");
 function repaintTest() {
     offsetElement.setAttribute("in", "SourceGraphic");
     shouldBeEqualToString("offsetElement.getAttribute('in')", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

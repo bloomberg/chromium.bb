@@ -53,16 +53,14 @@ shouldBe("Math.round(feAFunc.offset.baseVal * 100)", "50");
 
 function repaintTest() {
     feRFunc.offset.baseVal = 0.1;
-	feGFunc.offset.baseVal = 0.1;
-	feBFunc.offset.baseVal = 0.1;
-	feAFunc.offset.baseVal = 0.1;
+    feGFunc.offset.baseVal = 0.1;
+    feBFunc.offset.baseVal = 0.1;
+    feAFunc.offset.baseVal = 0.1;
 
     shouldBe("Math.round(feRFunc.offset.baseVal * 100)", "10");
-	shouldBe("Math.round(feGFunc.offset.baseVal * 100)", "10");
-	shouldBe("Math.round(feBFunc.offset.baseVal * 100)", "10");
-	shouldBe("Math.round(feAFunc.offset.baseVal * 100)", "10");
-
-    completeTest();
+    shouldBe("Math.round(feGFunc.offset.baseVal * 100)", "10");
+    shouldBe("Math.round(feBFunc.offset.baseVal * 100)", "10");
+    shouldBe("Math.round(feAFunc.offset.baseVal * 100)", "10");
 }
 
 var successfullyParsed = true;

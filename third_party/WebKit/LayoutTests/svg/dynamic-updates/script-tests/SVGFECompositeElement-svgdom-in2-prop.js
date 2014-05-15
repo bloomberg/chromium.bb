@@ -115,8 +115,6 @@ shouldBeEqualToString("overComposite1.in2.baseVal", "SourceGraphic");
 function repaintTest() {
     overComposite1.in2.baseVal = "off1";
     shouldBeEqualToString("overComposite1.in2.baseVal", "off1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -36,8 +36,6 @@ shouldBe("markerElement.markerUnits.baseVal", "SVGMarkerElement.SVG_MARKERUNITS_
 function repaintTest() {
     markerElement.markerUnits.baseVal = SVGMarkerElement.SVG_MARKERUNITS_STROKEWIDTH;
     shouldBe("markerElement.markerUnits.baseVal", "SVGMarkerElement.SVG_MARKERUNITS_STROKEWIDTH");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

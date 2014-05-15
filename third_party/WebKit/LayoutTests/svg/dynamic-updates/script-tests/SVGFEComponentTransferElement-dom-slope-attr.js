@@ -57,16 +57,14 @@ shouldBeEqualToString("feAFunc.getAttribute('slope')", "1");
 
 function repaintTest() {
     feRFunc.setAttribute("slope", "2");
-	feGFunc.setAttribute("slope", "2");
-	feBFunc.setAttribute("slope", "2");
-	feAFunc.setAttribute("slope", "2");
+    feGFunc.setAttribute("slope", "2");
+    feBFunc.setAttribute("slope", "2");
+    feAFunc.setAttribute("slope", "2");
 
     shouldBeEqualToString("feRFunc.getAttribute('slope')", "2");
     shouldBeEqualToString("feGFunc.getAttribute('slope')", "2");
     shouldBeEqualToString("feBFunc.getAttribute('slope')", "2");
     shouldBeEqualToString("feAFunc.getAttribute('slope')", "2");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -46,8 +46,6 @@ shouldBeEqualToString("gradientElement.getAttribute('y')", "100");
 function repaintTest() {
     gradientElement.setAttribute("y", "0");
     shouldBeEqualToString("gradientElement.getAttribute('y')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

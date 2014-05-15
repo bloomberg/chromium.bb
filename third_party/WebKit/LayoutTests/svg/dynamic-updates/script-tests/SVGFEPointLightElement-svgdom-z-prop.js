@@ -50,8 +50,6 @@ shouldBe("pointLight.z.baseVal", "100");
 function repaintTest() {
     pointLight.z.baseVal = 30;
     shouldBe("pointLight.z.baseVal", "30");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

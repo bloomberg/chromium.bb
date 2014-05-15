@@ -50,8 +50,6 @@ shouldBe("gradientElement.diffuseConstant.baseVal", "0");
 function repaintTest() {
     gradientElement.diffuseConstant.baseVal = 1;
     shouldBe("gradientElement.diffuseConstant.baseVal", "1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -42,8 +42,6 @@ shouldBeEqualToString("filterElement.getAttribute('height')", "100");
 function repaintTest() {
     filterElement.setAttribute("height", "200");
     shouldBeEqualToString("filterElement.getAttribute('height')", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

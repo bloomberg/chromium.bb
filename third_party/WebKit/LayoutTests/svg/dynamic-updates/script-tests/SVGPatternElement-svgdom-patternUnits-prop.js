@@ -40,8 +40,6 @@ shouldBe("patternElement.patternUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TYPE_OBJE
 function repaintTest() {
     patternElement.patternUnits.baseVal = SVGUnitTypes.SVG_UNIT_TYPE_USERSPACEONUSE;
     shouldBe("patternElement.patternUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TYPE_USERSPACEONUSE");
- 
-    completeTest();
 }
 
 var successfullyParsed = true;

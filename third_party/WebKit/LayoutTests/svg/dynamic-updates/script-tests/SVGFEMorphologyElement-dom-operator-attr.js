@@ -42,8 +42,6 @@ shouldBeEqualToString("morphologyElement.getAttribute('operator')", "dilate");
 function repaintTest() {
     morphologyElement.setAttribute("operator", "erode");
     shouldBeEqualToString("morphologyElement.getAttribute('operator')", "erode");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

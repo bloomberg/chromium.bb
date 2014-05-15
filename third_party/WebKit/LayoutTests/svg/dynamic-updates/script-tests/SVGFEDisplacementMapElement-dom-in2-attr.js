@@ -50,8 +50,6 @@ shouldBeEqualToString("displacementMap.getAttribute('in2')", "Texture");
 function repaintTest() {
     displacementMap.setAttribute("in2", "Map");
     shouldBeEqualToString("displacementMap.getAttribute('in2')", "Map");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

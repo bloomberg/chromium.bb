@@ -40,8 +40,6 @@ shouldBe("convolveMatrixElement.targetY.baseVal", "2");
 function repaintTest() {
     convolveMatrixElement.targetY.baseVal = 0;
     shouldBe("convolveMatrixElement.targetY.baseVal", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

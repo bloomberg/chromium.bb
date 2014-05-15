@@ -40,8 +40,6 @@ shouldBeEqualToString("convolveMatrixElement.getAttribute('bias')", "0.5");
 function repaintTest() {
     convolveMatrixElement.setAttribute("bias", "0");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('bias')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

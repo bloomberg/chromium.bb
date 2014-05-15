@@ -40,8 +40,6 @@ shouldBe("patternElement.patternContentUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TY
 function repaintTest() {
     patternElement.patternContentUnits.baseVal = SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX;
     shouldBe("patternElement.patternContentUnits.baseVal", "SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX");
- 
-    completeTest();
 }
 
 var successfullyParsed = true;

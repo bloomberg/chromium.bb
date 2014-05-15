@@ -37,8 +37,6 @@ shouldBeEqualToString("markerElement.getAttribute('orient')", "45");
 function repaintTest() {
     markerElement.setAttribute("orient", "0");
     shouldBeEqualToString("markerElement.getAttribute('orient')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

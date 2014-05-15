@@ -192,8 +192,6 @@ function repaintTest() {
     shouldBe("saturateElement.type.baseVal", "SVGFEColorMatrixElement.SVG_FECOLORMATRIX_TYPE_SATURATE");
     shouldBe("hueRotateElement.type.baseVal", "SVGFEColorMatrixElement.SVG_FECOLORMATRIX_TYPE_HUEROTATE");
     shouldBe("luminanceToAlphaElement.type.baseVal", "SVGFEColorMatrixElement.SVG_FECOLORMATRIX_TYPE_LUMINANCETOALPHA");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

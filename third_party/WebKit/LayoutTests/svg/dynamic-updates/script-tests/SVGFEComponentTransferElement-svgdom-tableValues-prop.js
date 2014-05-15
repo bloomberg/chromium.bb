@@ -89,8 +89,6 @@ function repaintTest() {
     shouldBeEqualToString("SVGNumberListToString(feGFunc.tableValues.baseVal)", "0 1 1 0.6 ");
     shouldBeEqualToString("SVGNumberListToString(feBFunc.tableValues.baseVal)", "0 0 1 0.2 ");
     shouldBeEqualToString("SVGNumberListToString(feAFunc.tableValues.baseVal)", "0.5 10 1 0.9 ");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

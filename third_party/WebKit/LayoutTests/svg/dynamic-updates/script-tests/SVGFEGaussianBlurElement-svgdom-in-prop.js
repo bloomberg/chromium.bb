@@ -39,8 +39,6 @@ shouldBeEqualToString("blurElement.in1.baseVal", "SourceAlpha");
 function repaintTest() {
     blurElement.in1.baseVal = "SourceGraphic";
     shouldBeEqualToString("blurElement.in1.baseVal", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

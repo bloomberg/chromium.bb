@@ -36,8 +36,6 @@ shouldBe("turbulence.numOctaves.baseVal", "1");
 function repaintTest() {
     turbulence.numOctaves.baseVal = 3;
     shouldBe("turbulence.numOctaves.baseVal", "3");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

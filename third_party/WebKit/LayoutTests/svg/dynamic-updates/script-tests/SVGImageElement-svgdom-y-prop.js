@@ -18,8 +18,6 @@ shouldBe("imageElement.y.baseVal.value", "-190");
 function repaintTest() {
     imageElement.y.baseVal.value = 0;
     shouldBe("imageElement.y.baseVal.value", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

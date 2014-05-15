@@ -50,8 +50,6 @@ shouldBe("displacementMap.yChannelSelector.baseVal", "SVGFEDisplacementMapElemen
 function repaintTest() {
     displacementMap.yChannelSelector.baseVal = SVGFEDisplacementMapElement.SVG_CHANNEL_G;
     shouldBe("displacementMap.yChannelSelector.baseVal", "SVGFEDisplacementMapElement.SVG_CHANNEL_G");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

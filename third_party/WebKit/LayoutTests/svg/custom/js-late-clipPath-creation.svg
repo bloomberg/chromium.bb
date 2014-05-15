@@ -6,11 +6,10 @@
      <text font-size="60" fill="navy" clip-path="url(#dynClip)" x="10" y="70">Clipped. INVISIBLE.</text>
 </g>
 <script>
+    window.testIsAsync = true;
     var content = document.getElementById("content");
 
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
         setTimeout(createClipPath, 0);
     }
 
@@ -26,8 +25,7 @@
         clipPath.appendChild(path);
         content.appendChild(clipPath);
 
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>
 

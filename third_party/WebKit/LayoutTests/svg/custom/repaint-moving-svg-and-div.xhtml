@@ -69,13 +69,10 @@ var iterations = 0;
 var svgStyle = document.getElementById("svg").style;
 var htmlStyle = document.getElementById("html").style;
 
+window.testIsAsync = true;
+
 function repaintTest() {
     if (iterations < 10) {
-        if (iterations == 0) {
-            if (window.testRunner)
-                testRunner.waitUntilDone();
-        }
-
         svgLeft = svgLeft + 15;
         htmlLeft = htmlLeft + 15;
         
@@ -91,8 +88,7 @@ function repaintTest() {
         ++iterations;
         window.setTimeout(repaintTest, 0);
     } else {
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 }
 ]]>

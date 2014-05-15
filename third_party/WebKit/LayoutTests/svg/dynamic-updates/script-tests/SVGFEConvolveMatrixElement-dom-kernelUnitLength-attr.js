@@ -40,8 +40,6 @@ shouldBeEqualToString("convolveMatrixElement.getAttribute('kernelUnitLength')", 
 function repaintTest() {
     convolveMatrixElement.setAttribute("kernelUnitLength", "0.05");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('kernelUnitLength')", "0.05");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

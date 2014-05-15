@@ -2,14 +2,14 @@
 <head>
   <script src="../../fast/repaint/resources/text-based-repaint.js" type="text/javascript"></script>
   <script type="text/javascript">
+  window.testIsAsync = true;
   function repaintTest() {
     if (!window.testRunner)
       return;
 
     // The animation lasts 100ms. Wait 200ms for the repaint.
-    testRunner.waitUntilDone();
     setTimeout(function() {
-      testRunner.notifyDone();
+      finishRepaintTest();
     }, 200);
   }
   </script>

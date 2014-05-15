@@ -57,8 +57,6 @@ shouldBe("specularElement.surfaceScale.baseVal", "1");
 function repaintTest() {
     specularElement.surfaceScale.baseVal = 10;
     shouldBe("specularElement.surfaceScale.baseVal", "10");
-
-    completeTest();
 }
 
 

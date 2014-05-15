@@ -40,8 +40,6 @@ function repaintTest() {
     turbulence.baseFrequencyY.baseVal = 0.05;
     shouldBe("Math.round(turbulence.baseFrequencyX.baseVal * 1000)", "50");
     shouldBe("Math.round(turbulence.baseFrequencyY.baseVal * 1000)", "50");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

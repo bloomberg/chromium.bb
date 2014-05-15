@@ -36,8 +36,6 @@ shouldBe("markerElement.refY.baseVal.value", "500");
 function repaintTest() {
     markerElement.refY.baseVal.value = 5;
     shouldBe("markerElement.refY.baseVal.value", "5");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

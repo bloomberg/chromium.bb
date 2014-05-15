@@ -18,8 +18,6 @@ shouldBeEqualToString("imageElement.getAttribute('height')", "100");
 function repaintTest() {
     imageElement.setAttribute("height", "200");
     shouldBeEqualToString("imageElement.getAttribute('height')", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

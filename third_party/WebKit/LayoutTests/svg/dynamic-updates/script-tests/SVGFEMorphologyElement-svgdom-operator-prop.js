@@ -42,8 +42,6 @@ shouldBe("morphologyElement.operator.baseVal", "SVGFEMorphologyElement.SVG_MORPH
 function repaintTest() {
     morphologyElement.operator.baseVal = SVGFEMorphologyElement.SVG_MORPHOLOGY_OPERATOR_ERODE;
     shouldBe("morphologyElement.operator.baseVal", "SVGFEMorphologyElement.SVG_MORPHOLOGY_OPERATOR_ERODE");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

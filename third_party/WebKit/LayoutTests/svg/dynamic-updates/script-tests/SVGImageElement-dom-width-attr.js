@@ -18,8 +18,6 @@ shouldBeEqualToString("imageElement.getAttribute('width')", "100");
 function repaintTest() {
     imageElement.setAttribute("width", "200");
     shouldBeEqualToString("imageElement.getAttribute('width')", "200");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

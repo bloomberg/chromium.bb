@@ -61,8 +61,6 @@ shouldBeEqualToString("tile.getAttribute('in')", "SourceGraphic");
 function repaintTest() {
     tile.setAttribute("in", "offset");
     shouldBeEqualToString("tile.getAttribute('in')", "offset");
-
-    completeTest();
 }
 
 

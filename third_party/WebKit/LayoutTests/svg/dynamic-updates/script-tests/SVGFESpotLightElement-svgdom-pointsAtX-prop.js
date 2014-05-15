@@ -43,8 +43,6 @@ shouldBe("spotLightElement.pointsAtX.baseVal", "-30");
 function repaintTest() {
     spotLightElement.pointsAtX.baseVal = 83;
     shouldBe("spotLightElement.pointsAtX.baseVal", "83");
-
-    completeTest();
 }
 
 

@@ -50,8 +50,6 @@ shouldBeEqualToString("mergeNode1.in1.baseVal", "SourceGraphic");
 function repaintTest() {
     mergeNode1.in1.baseVal = "off";
     shouldBeEqualToString("mergeNode1.in1.baseVal", "off");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

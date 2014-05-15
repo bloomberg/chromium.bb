@@ -40,8 +40,6 @@ shouldBeEqualToString("maskElement.getAttribute('maskContentUnits')", "objectBou
 function repaintTest() {
     maskElement.setAttribute("maskContentUnits", "userSpaceOnUse");
     shouldBeEqualToString("maskElement.getAttribute('maskContentUnits')", "userSpaceOnUse");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

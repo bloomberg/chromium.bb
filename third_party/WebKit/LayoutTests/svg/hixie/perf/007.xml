@@ -1,6 +1,8 @@
  <svg viewBox="0 0 800 400" width="200" xmlns="http://www.w3.org/2000/svg" xmlns:country="http://example.com/" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintAndPixelTest()">
  <script xlink:href="../../../fast/repaint/resources/text-based-repaint.js"></script>
  <script type="text/javascript">
+  window.testIsAsync = true;
+  window.outputRepaintRects = false;
   var start = new Date();
  </script>
  <style type="text/css">
@@ -258,8 +260,6 @@
   var delta = 60;
   var current = low;
   var idealTime = ((high - low) / delta) * delay;
-  if (window.testRunner)
-    testRunner.waitUntilDone();
   function repaintTest() {
     svg.setAttribute("width", current);
     if (current < high) {
@@ -269,13 +269,13 @@
     } else {
       if (window.testRunner) {
         t.firstChild.data = 'Test completed';
-        testRunner.notifyDone();
       } else {
         var end = new Date();
         var elapsed = (end - start);
         t.firstChild.data = 'Result: ' + elapsed.toFixed(2) + 'ms (target: ' + idealTime.toFixed(1) + 'ms)';
         if (parent.reportResults) parent.reportResults(end - start);
       }
+      finishRepaintTest();
     }
   }
  ]]></script>

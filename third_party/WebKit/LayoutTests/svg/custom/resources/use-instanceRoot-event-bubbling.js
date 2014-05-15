@@ -1,7 +1,5 @@
-description("Tests wheter SVG event bubbling works accross shadow trees.");
-
-if (window.testRunner)
-    testRunner.waitUntilDone();
+window.testIsAsync = true;
+description("Tests whether SVG event bubbling works across shadow trees.");
 
 var svgNS = "http://www.w3.org/2000/svg";
 var xhtmlNS = "http://www.w3.org/1999/xhtml";
@@ -47,8 +45,7 @@ function finishTest()
     shouldBeTrue("successfullyParsed");
     debug('<br /><span class="pass">TEST COMPLETE</span>');
 
-    if (window.testRunner)
-        testRunner.notifyDone();
+    finishRepaintTest();
 }
 
 function nextTest()
@@ -122,7 +119,5 @@ use.href.baseVal = "#rectParent";
 useContainer.appendChild(use);
 
 function repaintTest() {
-    if (window.testRunner)
-        testRunner.waitUntilDone();
     nextTest();
 }

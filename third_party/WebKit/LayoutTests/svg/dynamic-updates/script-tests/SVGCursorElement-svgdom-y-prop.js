@@ -22,8 +22,6 @@ shouldBe("cursorElement.y.baseVal.value", "100");
 function repaintTest() {
     cursorElement.y.baseVal.value = 0;
     shouldBe("cursorElement.y.baseVal.value", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -178,8 +178,6 @@ function repaintTest() {
     shouldBeEqualToString("saturateElement.in1.baseVal", "SourceGraphic");
     shouldBeEqualToString("hueRotateElement.in1.baseVal", "SourceGraphic");
     shouldBeEqualToString("luminanceToAlphaElement.in1.baseVal", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

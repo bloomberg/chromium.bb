@@ -40,8 +40,6 @@ shouldBe("convolveMatrixElement.bias.baseVal", "0.5");
 function repaintTest() {
     convolveMatrixElement.bias.baseVal = 0;
     shouldBe("convolveMatrixElement.bias.baseVal", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

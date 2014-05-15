@@ -13,9 +13,6 @@
 <script>
     var video = document.getElementById("v");
     video.addEventListener("canplaythrough", runTest, true);
-    if (window.testRunner)
-        window.testRunner.waitUntilDone();
-
     function repaintTest() {
         video.volume = 0.5;
     }
@@ -23,8 +20,5 @@
     function runTest() {
         video.volume = 0;
         runRepaintTest();
-
-        if (window.testRunner)
-            window.testRunner.notifyDone();
     }
 </script>

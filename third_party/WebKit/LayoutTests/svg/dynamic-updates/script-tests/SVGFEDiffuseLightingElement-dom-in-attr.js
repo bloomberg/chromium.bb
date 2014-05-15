@@ -50,8 +50,6 @@ shouldBeEqualToString("gradientElement.getAttribute('in')", "SourceGraphic");
 function repaintTest() {
     gradientElement.setAttribute("in", "blur");
     shouldBeEqualToString("gradientElement.getAttribute('in')", "blur");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -6,14 +6,11 @@
 <animate attributeName="fill" xlink:href="#target" from="red" to="red" begin="0s" dur="1s" fill="freeze"/>
 <script type="text/ecmascript">
 <![CDATA[
-if (window.testRunner)
-    testRunner.waitUntilDone();
-
+window.testIsAsync = true;
 function repaintTest() {
     setTimeout(function() {
         document.getElementById('target').setAttribute("id", "newId");
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
    }, 200);
 }
 ]]>

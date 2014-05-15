@@ -36,8 +36,6 @@ shouldBeEqualToString("turbulence.getAttribute('seed')", "10");
 function repaintTest() {
     turbulence.setAttribute("seed", "5");
     shouldBeEqualToString("turbulence.getAttribute('seed')", "5");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

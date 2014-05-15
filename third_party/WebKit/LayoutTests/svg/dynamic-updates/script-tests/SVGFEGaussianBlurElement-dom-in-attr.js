@@ -39,8 +39,6 @@ shouldBeEqualToString("blurElement.getAttribute('in')", "SourceAlpha");
 function repaintTest() {
     blurElement.setAttribute("in", "SourceGraphic");
     shouldBeEqualToString("blurElement.getAttribute('in')", "SourceGraphic");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -57,8 +57,6 @@ shouldBeEqualToString("specularElement.getAttribute('specularExponent')", "4");
 function repaintTest() {
     specularElement.setAttribute("specularExponent", "1");
     shouldBeEqualToString("specularElement.getAttribute('specularExponent')", "1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -30,8 +30,6 @@ shouldBeEqualToString("clipPathElement.getAttribute('clipPathUnits')", "userSpac
 function repaintTest() {
     clipPathElement.setAttribute("clipPathUnits", "objectBoundingBox");
     shouldBeEqualToString("clipPathElement.getAttribute('clipPathUnits')", "objectBoundingBox");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

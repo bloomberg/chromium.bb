@@ -15,8 +15,6 @@ shouldBe("textElement.transform.baseVal.getItem(0).matrix.f", "0.0");
 function repaintTest() {
     textElement.transform.baseVal.getItem(0).matrix.f = -200;
     shouldBe("textElement.transform.baseVal.getItem(0).matrix.f", "-200.0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -20,9 +20,6 @@ function shouldHaveBBox(element, width, height)
 
 function createSVGTestCase() {
     window.jsTestIsAsync = true;
-    if (window.testRunner)
-        testRunner.waitUntilDone();
-
     rootSVGElement = createSVGElement("svg");
     rootSVGElement.setAttribute("width", "300");
     rootSVGElement.setAttribute("height", "300");
@@ -33,9 +30,6 @@ function createSVGTestCase() {
 
 function embedSVGTestCase(uri) {
     window.jsTestIsAsync = true;
-    if (window.testRunner)
-        testRunner.waitUntilDone();
-
     iframeElement = document.createElement("iframe");
     iframeElement.setAttribute("style", "width: 300px; height: 300px;");
     iframeElement.setAttribute("src", uri);

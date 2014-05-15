@@ -22,8 +22,6 @@ function repaintTest() {
     shouldBe("textElement.lengthAdjust.baseVal", "SVGTextContentElement.LENGTHADJUST_SPACINGANDGLYPHS");
     shouldBe("textElement.textLength.baseVal.value", "200");
     shouldBeTrue("textElement.getComputedTextLength() == lastLength");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

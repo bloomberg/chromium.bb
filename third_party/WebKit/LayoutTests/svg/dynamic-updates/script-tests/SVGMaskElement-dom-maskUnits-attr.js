@@ -43,8 +43,6 @@ shouldBeEqualToString("maskElement.getAttribute('maskUnits')", "objectBoundingBo
 function repaintTest() {
     maskElement.setAttribute("maskUnits", "userSpaceOnUse");
     shouldBeEqualToString("maskElement.getAttribute('maskUnits')", "userSpaceOnUse");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -53,16 +53,14 @@ shouldBeEqualToString("feAFunc.getAttribute('offset')", "0.5");
 
 function repaintTest() {
     feRFunc.setAttribute("offset", "0.1");
-	feGFunc.setAttribute("offset", "0.1");
-	feBFunc.setAttribute("offset", "0.1");
-	feAFunc.setAttribute("offset", "0.1");
+    feGFunc.setAttribute("offset", "0.1");
+    feBFunc.setAttribute("offset", "0.1");
+    feAFunc.setAttribute("offset", "0.1");
 
     shouldBeEqualToString("feRFunc.getAttribute('offset')", "0.1");
-	shouldBeEqualToString("feGFunc.getAttribute('offset')", "0.1");
-	shouldBeEqualToString("feBFunc.getAttribute('offset')", "0.1");
-	shouldBeEqualToString("feAFunc.getAttribute('offset')", "0.1");
-
-    completeTest();
+    shouldBeEqualToString("feGFunc.getAttribute('offset')", "0.1");
+    shouldBeEqualToString("feBFunc.getAttribute('offset')", "0.1");
+    shouldBeEqualToString("feAFunc.getAttribute('offset')", "0.1");
 }
 
 var successfullyParsed = true;

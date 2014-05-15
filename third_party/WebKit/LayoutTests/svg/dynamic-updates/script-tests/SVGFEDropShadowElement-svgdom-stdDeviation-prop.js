@@ -38,8 +38,6 @@ function repaintTest() {
     dropShadowElement.setStdDeviation(10, 10);
     shouldBe("dropShadowElement.stdDeviationX.baseVal", "10");
     shouldBe("dropShadowElement.stdDeviationY.baseVal", "10");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

@@ -21,7 +21,7 @@ var backgroundRect = createSVGElement("rect");
 backgroundRect.setAttribute("width", "100");
 backgroundRect.setAttribute("height", "100");
 backgroundRect.setAttribute("fill", "green");
-backgroundRect.setAttribute("onclick", "testPassed('Hit thrown on not clipped area of rect.'); completeTest()");
+backgroundRect.setAttribute("onclick", "testPassed('Hit thrown on not clipped area of rect.');");
 rootSVGElement.appendChild(backgroundRect);
 
 var foregroundRect = createSVGElement("rect");
@@ -29,7 +29,7 @@ foregroundRect.setAttribute("width", "100");
 foregroundRect.setAttribute("height", "100");
 foregroundRect.setAttribute("fill", "green");
 foregroundRect.setAttribute("clip-path", "url(#clipper)");
-foregroundRect.setAttribute("onclick", "testFailed('Clipped are of rect throw a hit'); completeTest();");
+foregroundRect.setAttribute("onclick", "testFailed('Clipped are of rect throw a hit');");
 rootSVGElement.appendChild(foregroundRect);
 
 // Two rects are drawn. One in the background and one in the foreground. The rect

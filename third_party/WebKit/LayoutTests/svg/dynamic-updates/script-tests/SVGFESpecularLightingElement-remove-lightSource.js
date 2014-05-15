@@ -54,8 +54,6 @@ rootSVGElement.appendChild(rectElement);
 
 function repaintTest() {
     specularElement.removeChild(distantElement);
-
-    completeTest();
 }
 
 

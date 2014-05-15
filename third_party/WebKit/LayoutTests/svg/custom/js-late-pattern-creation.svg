@@ -6,11 +6,10 @@
      <text font-size="68" fill="url(#dynPattern)"  x="20" y="70">Pattern on fill</text>
 </g>
 <script>
+    window.testIsAsync = true;
     var content = document.getElementById("content");
 
     function repaintTest() {
-        if (window.testRunner)
-            testRunner.waitUntilDone();
         setTimeout(createPattern, 0);
     }
 
@@ -43,8 +42,7 @@
 
         content.appendChild(pattern);
 
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishRepaintTest();
     }
 </script>
 

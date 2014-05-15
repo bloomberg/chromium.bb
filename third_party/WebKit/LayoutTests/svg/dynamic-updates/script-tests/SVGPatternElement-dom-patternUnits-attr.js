@@ -40,8 +40,6 @@ shouldBeNull("patternElement.getAttribute('patternUnits')");
 function repaintTest() {
     patternElement.setAttribute("patternUnits", "userSpaceOnUse");
     shouldBeEqualToString("patternElement.getAttribute('patternUnits')", "userSpaceOnUse");
- 
-    completeTest();
 }
 
 var successfullyParsed = true;

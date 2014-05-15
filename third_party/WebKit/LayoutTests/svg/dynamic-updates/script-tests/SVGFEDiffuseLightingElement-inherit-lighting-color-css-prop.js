@@ -51,8 +51,6 @@ shouldBeEqualToString("document.defaultView.getComputedStyle(gradientElement).ge
 function repaintTest() {
     gradientElement.style.setProperty("lighting-color", "yellow", "");
     shouldBeEqualToString("document.defaultView.getComputedStyle(gradientElement).getPropertyValue('lighting-color')", "rgb(255, 255, 0)");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

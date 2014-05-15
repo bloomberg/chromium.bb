@@ -36,8 +36,6 @@ function repaintTest() {
     image.preserveAspectRatio.baseVal.meetOrSlice = SVGPreserveAspectRatio.SVG_MEETORSLICE_SLICE;
     shouldBe("image.preserveAspectRatio.baseVal.align", "SVGPreserveAspectRatio.SVG_PRESERVEASPECTRATIO_XMINYMID");
     shouldBe("image.preserveAspectRatio.baseVal.meetOrSlice", "SVGPreserveAspectRatio.SVG_MEETORSLICE_SLICE");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

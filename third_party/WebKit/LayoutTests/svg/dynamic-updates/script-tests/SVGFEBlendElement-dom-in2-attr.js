@@ -223,8 +223,6 @@ function repaintTest() {
     shouldBeEqualToString("screenBlend.getAttribute('in2')", "screenImg");
     shouldBeEqualToString("darkenBlend.getAttribute('in2')", "darkenImg");
     shouldBeEqualToString("lightenBlend.getAttribute('in2')", "lightenImg");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

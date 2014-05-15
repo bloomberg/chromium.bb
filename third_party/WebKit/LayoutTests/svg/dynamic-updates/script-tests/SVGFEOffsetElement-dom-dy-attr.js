@@ -37,8 +37,6 @@ shouldBeEqualToString("offsetElement.getAttribute('dy')", "50");
 function repaintTest() {
     offsetElement.setAttribute("dy", "0");
     shouldBeEqualToString("offsetElement.getAttribute('dy')", "0");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

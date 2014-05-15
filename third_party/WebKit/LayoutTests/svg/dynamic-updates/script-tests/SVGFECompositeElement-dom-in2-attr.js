@@ -115,8 +115,6 @@ shouldBeEqualToString("overComposite1.getAttribute('in2')", "SourceGraphic");
 function repaintTest() {
     overComposite1.setAttribute("in2", "off1");
     shouldBeEqualToString("overComposite1.getAttribute('in2')", "off1");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

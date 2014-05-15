@@ -15,8 +15,6 @@ shouldBeEqualToString("textElement.getAttribute('dx')", "0");
 
 function repaintTest() {
     textElement.setAttribute("dx", "-50");
-    shouldBeEqualToString("textElement.getAttribute('dx')", "-50");
-    completeTest();
 }
 
 var successfullyParsed = true;

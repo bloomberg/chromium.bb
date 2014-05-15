@@ -14,10 +14,8 @@
     <rect fill="red" x="50" y="50" width="50" height="50" filter="url(#filter)"/>
 
 <script><![CDATA[
+    window.testIsAsync = true;
     function repaintTest() {
-        if (window.testRunner)
-          testRunner.waitUntilDone();
-
         document.getElementById("animation").beginElement();
         setTimeout(finishTest, 50);
 
@@ -28,12 +26,8 @@
             return;
           }
 
-          if (window.testRunner)
-            testRunner.notifyDone();
+          finishRepaintTest();
         }
     }
-
-    if (window.testRunner)
-        testRunner.dumpAsTextWithPixelResults();
 ]]></script>
 </svg>

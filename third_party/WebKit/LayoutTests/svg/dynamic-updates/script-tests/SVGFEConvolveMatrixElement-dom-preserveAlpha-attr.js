@@ -40,8 +40,6 @@ shouldBeEqualToString("convolveMatrixElement.getAttribute('preserveAlpha')", "fa
 function repaintTest() {
     convolveMatrixElement.setAttribute("preserveAlpha", "true");
     shouldBeEqualToString("convolveMatrixElement.getAttribute('preserveAlpha')", "true");
-
-    completeTest();
 }
 
 var successfullyParsed = true;

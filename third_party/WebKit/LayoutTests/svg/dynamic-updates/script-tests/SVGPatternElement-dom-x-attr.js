@@ -43,8 +43,6 @@ shouldBeEqualToString("patternElement.getAttribute('x')", "50");
 function repaintTest() {
     patternElement.setAttribute("x", "0");
     shouldBeEqualToString("patternElement.getAttribute('x')", "0");
- 
-    completeTest();
 }
 
 var successfullyParsed = true;
