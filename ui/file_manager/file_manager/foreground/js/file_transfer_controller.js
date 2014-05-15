@@ -469,15 +469,12 @@ FileTransferController.prototype = {
    * @param {Event} event A dragstart event of DOM.
    */
   onDragStart_: function(list, event) {
-    // If a user is touching, Files.app does not receive drag operations.
-    if (this.touching_) {
-      event.preventDefault();
-      return;
-    }
-
     // Check if a drag selection should be initiated or not.
     if (list.shouldStartDragSelection(event)) {
-      this.dragSelector_.startDragSelection(list, event);
+      event.preventDefault();
+      // If this drag operation is initiated by mouse, start selecting area.
+      if (!this.touching_)
+        this.dragSelector_.startDragSelection(list, event);
       return;
     }
 
@@ -518,6 +515,10 @@ FileTransferController.prototype = {
    * @param {Event} event A dragend event of DOM.
    */
   onDragEnd_: function(list, event) {
+    // TODO(fukino): This is workaround for crbug.com/373125.
+    // This should be removed after the bug is fixed.
+    this.touching_ = false;
+
     var container = this.document_.querySelector('#drag-container');
     container.textContent = '';
     this.clearDropTarget_();
@@ -696,8 +697,11 @@ FileTransferController.prototype = {
    * Handles touch end.
    */
   onTouchEnd_: function(event) {
-    if (event.touches.length === 0)
-      this.touching_ = false;
+    // TODO(fukino): We have to check if event.touches.length be 0 to support
+    // multi-touch operations, but event.touches has incorrect value by a bug
+    // (crbug.com/373125).
+    // After the bug is fixed, we should check event.touches.
+    this.touching_ = false;
   },
 
   /**
