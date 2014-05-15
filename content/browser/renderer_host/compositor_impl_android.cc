@@ -606,13 +606,13 @@ void CompositorImpl::DidPostSwapBuffers() {
 void CompositorImpl::DidCompleteSwapBuffers() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidCompleteSwapBuffers");
   DCHECK_GT(pending_swapbuffers_, 0U);
-  client_->OnSwapBuffersCompleted(pending_swapbuffers_--);
+  client_->OnSwapBuffersCompleted(--pending_swapbuffers_);
 }
 
 void CompositorImpl::DidAbortSwapBuffers() {
   TRACE_EVENT0("compositor", "CompositorImpl::DidAbortSwapBuffers");
   DCHECK_GT(pending_swapbuffers_, 0U);
-  client_->OnSwapBuffersCompleted(pending_swapbuffers_--);
+  client_->OnSwapBuffersCompleted(--pending_swapbuffers_);
 }
 
 void CompositorImpl::DidCommit() {
