@@ -206,8 +206,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     folder_delegate_ = folder_delegate;
   }
 
-  AppListItemView* activated_item_view() const {
-    return activated_item_view_;
+  AppListItemView* activated_folder_item_view() const {
+    return activated_folder_item_view_;
   }
 
  private:
@@ -535,8 +535,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   views::BoundsAnimator bounds_animator_;
 
-  // The most recent activated item view.
-  AppListItemView* activated_item_view_;
+  // The most recent activated folder item view.
+  AppListItemView* activated_folder_item_view_;
 
   // Tracks if drag_view_ is dragged out of the folder container bubble
   // when dragging a item inside a folder.

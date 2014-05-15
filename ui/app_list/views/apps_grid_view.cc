@@ -355,7 +355,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       page_flip_target_(-1),
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
       bounds_animator_(this),
-      activated_item_view_(NULL),
+      activated_folder_item_view_(NULL),
       dragging_for_reparent_item_(false) {
   SetPaintToLayer(true);
   SetFillsBoundsOpaquely(false);
@@ -390,7 +390,7 @@ void AppsGridView::SetLayout(int icon_size, int cols, int rows_per_page) {
 }
 
 void AppsGridView::ResetForShowApps() {
-  activated_item_view_ = NULL;
+  activated_folder_item_view_ = NULL;
   ClearDragState();
   layer()->SetOpacity(1.0f);
   SetVisible(true);
@@ -938,6 +938,8 @@ void AppsGridView::ViewHierarchyChanged(
   if (!details.is_add && details.parent == this) {
     if (selected_view_ == details.child)
       selected_view_ = NULL;
+    if (activated_folder_item_view_ == details.child)
+      activated_folder_item_view_ = NULL;
 
     if (drag_view_ == details.child)
       EndDrag(true);
@@ -1691,7 +1693,8 @@ void AppsGridView::ReparentItemForReorder(views::View* item_view,
   // Remove the source folder view if there is only 1 item in it, since the
   // source folder will be deleted after its only child item removed from it.
   if (source_folder->ChildItemCount() == 1u)
-    DeleteItemViewAtIndex(view_model_.GetIndexOfView(activated_item_view()));
+    DeleteItemViewAtIndex(
+        view_model_.GetIndexOfView(activated_folder_item_view()));
 
   // Move the item from its parent folder to top level item list.
   // Must move to target_model_index, the location we expect the target item
@@ -1733,7 +1736,8 @@ void AppsGridView::ReparentItemToAnotherFolder(views::View* item_view,
   // source folder will be deleted after its only child item merged into the
   // target item.
   if (source_folder->ChildItemCount() == 1u)
-    DeleteItemViewAtIndex(view_model_.GetIndexOfView(activated_item_view()));
+    DeleteItemViewAtIndex(
+        view_model_.GetIndexOfView(activated_folder_item_view()));
 
   AppListItem* target_item = target_view->item();
 
@@ -1788,8 +1792,8 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
     return;
 
   // Delete view associated with the folder item to be removed.
-  int folder_model_index = view_model_.GetIndexOfView(activated_item_view());
-  DeleteItemViewAtIndex(folder_model_index);
+  DeleteItemViewAtIndex(
+      view_model_.GetIndexOfView(activated_folder_item_view()));
 
   // Now make the data change to remove the folder item in model.
   AppListItem* last_item = source_folder->item_list()->item_at(0);
@@ -1809,7 +1813,7 @@ void AppsGridView::CancelFolderItemReparent(AppListItemView* drag_item_view) {
   CalculateIdealBounds();
 
   gfx::Rect target_icon_rect =
-      GetTargetIconRectInFolder(drag_item_view, activated_item_view_);
+      GetTargetIconRectInFolder(drag_item_view, activated_folder_item_view_);
 
   gfx::Rect drag_view_icon_to_grid =
       drag_item_view->ConvertRectToParent(drag_item_view->GetIconBounds());
@@ -1837,8 +1841,6 @@ void AppsGridView::CancelContextMenusOnCurrentPage() {
 void AppsGridView::DeleteItemViewAtIndex(int index) {
   views::View* item_view = view_model_.view_at(index);
   view_model_.Remove(index);
-  if (item_view == activated_item_view_)
-    activated_item_view_ = NULL;
   if (item_view == drag_view_)
     drag_view_ = NULL;
   delete item_view;
@@ -1859,12 +1861,20 @@ void AppsGridView::ButtonPressed(views::Button* sender,
     return;
 
   if (delegate_) {
-    // Always set the previous activated_item_view_ to be visible. This prevents
-    // a case where the item would remain hidden due the activated_item_view_
-    // changing during the animation.
-    if (activated_item_view_)
-      activated_item_view_->SetVisible(true);
-    activated_item_view_ = static_cast<AppListItemView*>(sender);
+    // Always set the previous activated_folder_item_view_ to be visible. This
+    // prevents a case where the item would remain hidden due the
+    // |activated_folder_item_view_| changing during the animation. We only
+    // need to track |activated_folder_item_view_| in the root level grid view.
+    if (!folder_delegate_) {
+      if (activated_folder_item_view_)
+        activated_folder_item_view_->SetVisible(true);
+      AppListItemView* pressed_item_view =
+          static_cast<AppListItemView*>(sender);
+      if (IsFolderItem(pressed_item_view->item()))
+        activated_folder_item_view_ = pressed_item_view;
+      else
+        activated_folder_item_view_ = NULL;
+    }
     delegate_->ActivateApp(static_cast<AppListItemView*>(sender)->item(),
                            event.flags());
   }
@@ -2042,8 +2052,8 @@ AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
   // When dragging for reparent a folder item, it should go back to its parent
   // folder item if there is no drop target.
   if (IsDraggingForReparentInRootLevelGridView()) {
-    DCHECK(activated_item_view_);
-    return GetIndexOfView(activated_item_view_);
+    DCHECK(activated_folder_item_view_);
+    return GetIndexOfView(activated_folder_item_view_);
   }
 
   return GetIndexOfView(drag_view_);

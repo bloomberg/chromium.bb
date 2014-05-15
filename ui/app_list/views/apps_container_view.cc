@@ -146,8 +146,8 @@ void AppsContainerView::OnTopIconAnimationsComplete() {
 
     // Show the folder icon when closing the folder.
     if ((show_state_ == SHOW_APPS || show_state_ == SHOW_ITEM_REPARENT) &&
-        apps_grid_view_->activated_item_view()) {
-      apps_grid_view_->activated_item_view()->SetVisible(true);
+        apps_grid_view_->activated_folder_item_view()) {
+      apps_grid_view_->activated_folder_item_view()->SetVisible(true);
     }
   }
 }
@@ -191,7 +191,8 @@ void AppsContainerView::SetShowState(ShowState show_state,
 
 Rects AppsContainerView::GetTopItemIconBoundsInActiveFolder() {
   // Get the active folder's icon bounds relative to AppsContainerView.
-  AppListItemView* folder_item_view = apps_grid_view_->activated_item_view();
+  AppListItemView* folder_item_view =
+      apps_grid_view_->activated_folder_item_view();
   gfx::Rect to_grid_view = folder_item_view->ConvertRectToParent(
       folder_item_view->GetIconBounds());
   gfx::Rect to_container = apps_grid_view_->ConvertRectToParent(to_grid_view);
@@ -228,8 +229,8 @@ void AppsContainerView::PrepareToShowApps(AppListFolderItem* folder_item) {
     CreateViewsForFolderTopItemsAnimation(folder_item, false);
 
   // Hide the active folder item until the animation completes.
-  if (apps_grid_view_->activated_item_view())
-    apps_grid_view_->activated_item_view()->SetVisible(false);
+  if (apps_grid_view_->activated_folder_item_view())
+    apps_grid_view_->activated_folder_item_view()->SetVisible(false);
 }
 
 }  // namespace app_list
