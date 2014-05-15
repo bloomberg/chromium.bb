@@ -4,3 +4,4 @@
 
 
 import chromite.buildbot.validation_pool as validation_pool
+import chromite.buildbot.validation_pool_unittest as validation_pool_unittest
