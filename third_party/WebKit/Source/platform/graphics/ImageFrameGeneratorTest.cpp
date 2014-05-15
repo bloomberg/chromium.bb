@@ -47,7 +47,7 @@ class ImageFrameGeneratorTest : public ::testing::Test, public MockImageDecoderC
 public:
     virtual void SetUp() OVERRIDE
     {
-        ImageDecodingStore::initializeOnce();
+        ImageDecodingStore::instance()->setCacheLimitInBytes(1024 * 1024);
         ImageDecodingStore::instance()->setImageCachingEnabled(true);
         m_data = SharedBuffer::create();
         m_generator = ImageFrameGenerator::create(fullSize(), m_data, false);
@@ -59,7 +59,7 @@ public:
 
     virtual void TearDown() OVERRIDE
     {
-        ImageDecodingStore::shutdown();
+        ImageDecodingStore::instance()->clear();
     }
 
     virtual void decoderBeingDestroyed() OVERRIDE

@@ -89,8 +89,6 @@ public:
     ~ImageDecodingStore();
 
     static ImageDecodingStore* instance();
-    static void initializeOnce();
-    static void shutdown();
 
     // Why do we need this?
     // ImageDecodingStore is used in two code paths:

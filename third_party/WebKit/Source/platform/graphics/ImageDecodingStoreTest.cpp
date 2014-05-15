@@ -41,7 +41,7 @@ class ImageDecodingStoreTest : public ::testing::Test, public MockImageDecoderCl
 public:
     virtual void SetUp()
     {
-        ImageDecodingStore::initializeOnce();
+        ImageDecodingStore::instance()->setCacheLimitInBytes(1024 * 1024);
         ImageDecodingStore::instance()->setImageCachingEnabled(true);
         m_data = SharedBuffer::create();
         m_generator = ImageFrameGenerator::create(SkISize::Make(100, 100), m_data, true);
@@ -50,7 +50,7 @@ public:
 
     virtual void TearDown()
     {
-        ImageDecodingStore::shutdown();
+        ImageDecodingStore::instance()->clear();
     }
 
     virtual void decoderBeingDestroyed()

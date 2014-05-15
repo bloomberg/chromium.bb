@@ -27,6 +27,7 @@
 #include "platform/graphics/ImageDecodingStore.h"
 
 #include "platform/TraceEvent.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 
@@ -37,14 +38,7 @@ namespace {
 // with a lot of (very) large images.
 static const size_t maxTotalSizeOfDiscardableEntries = 256 * 1024 * 1024;
 static const size_t defaultMaxTotalSizeOfHeapEntries = 32 * 1024 * 1024;
-static ImageDecodingStore* s_instance = 0;
 static bool s_imageCachingEnabled = true;
-
-static void setInstance(ImageDecodingStore* imageDecodingStore)
-{
-    delete s_instance;
-    s_instance = imageDecodingStore;
-}
 
 } // namespace
 
@@ -69,17 +63,8 @@ ImageDecodingStore::~ImageDecodingStore()
 
 ImageDecodingStore* ImageDecodingStore::instance()
 {
-    return s_instance;
-}
-
-void ImageDecodingStore::initializeOnce()
-{
-    setInstance(ImageDecodingStore::create().leakPtr());
-}
-
-void ImageDecodingStore::shutdown()
-{
-    setInstance(0);
+    AtomicallyInitializedStatic(ImageDecodingStore*, store = ImageDecodingStore::create().leakPtr());
+    return store;
 }
 
 void ImageDecodingStore::setImageCachingEnabled(bool enabled)

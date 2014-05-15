@@ -168,7 +168,6 @@ void initializeWithoutV8(Platform* platform)
         WebCore::ThreadState::current()->addInterruptor(s_messageLoopInterruptor);
     }
     WebCore::init();
-    WebCore::ImageDecodingStore::initializeOnce();
 
     // There are some code paths (for example, running WebKit in the browser
     // process and calling into LocalStorage before anything else) where the
@@ -224,7 +223,6 @@ void shutdown()
 void shutdownWithoutV8()
 {
     ASSERT(!s_endOfTaskRunner);
-    WebCore::ImageDecodingStore::shutdown();
     WebCore::shutdown();
     WebCore::Heap::shutdown();
     WTF::shutdown();

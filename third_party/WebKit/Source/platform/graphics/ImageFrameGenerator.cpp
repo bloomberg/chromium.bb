@@ -83,11 +83,7 @@ ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<Sha
 
 ImageFrameGenerator::~ImageFrameGenerator()
 {
-    // FIXME: This check is not really thread-safe. This should be changed to:
-    // ImageDecodingStore::removeCacheFromInstance(this);
-    // Which uses a lock internally.
-    if (ImageDecodingStore::instance())
-        ImageDecodingStore::instance()->removeCacheIndexedByGenerator(this);
+    ImageDecodingStore::instance()->removeCacheIndexedByGenerator(this);
 }
 
 void ImageFrameGenerator::setData(PassRefPtr<SharedBuffer> data, bool allDataReceived)
