@@ -1430,6 +1430,7 @@ void TestRunner::Reset() {
     delegate_->useUnfortunateSynchronousResizeMode(false);
     delegate_->disableAutoResizeMode(WebSize());
     delegate_->deleteAllCookies();
+    delegate_->resetScreenOrientation();
   }
 
   dump_editting_callbacks_ = false;

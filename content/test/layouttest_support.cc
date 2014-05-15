@@ -108,6 +108,11 @@ void SetMockScreenOrientation(
       SetMockScreenOrientationForTesting(orientation);
 }
 
+void ResetMockScreenOrientation()
+{
+  RendererWebKitPlatformSupportImpl::ResetMockScreenOrientationForTesting();
+}
+
 void EnableRendererLayoutTestMode() {
   RenderThreadImpl::current()->set_layout_test_mode(true);
 }

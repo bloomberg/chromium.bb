@@ -257,6 +257,10 @@ void WebKitTestRunner::setScreenOrientation(
   SetMockScreenOrientation(orientation);
 }
 
+void WebKitTestRunner::resetScreenOrientation() {
+  ResetMockScreenOrientation();
+}
+
 void WebKitTestRunner::printMessage(const std::string& message) {
   Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
 }

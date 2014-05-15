@@ -50,6 +50,7 @@
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
+#include "content/renderer/screen_orientation/mock_screen_orientation_controller.h"
 #include "content/renderer/screen_orientation/screen_orientation_dispatcher.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
@@ -138,6 +139,8 @@ using blink::WebVector;
 
 namespace content {
 
+namespace {
+
 static bool g_sandbox_enabled = true;
 static blink::WebGamepadListener* web_gamepad_listener = NULL;
 base::LazyInstance<WebGamepads>::Leaky g_test_gamepads =
@@ -146,8 +149,10 @@ base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
-static blink::WebScreenOrientationListener*
-    g_test_screen_orientation_listener = NULL;
+base::LazyInstance<MockScreenOrientationController>::Leaky
+    g_test_screen_orientation_controller = LAZY_INSTANCE_INITIALIZER;
+
+} // namespace
 
 //------------------------------------------------------------------------------
 
@@ -1082,6 +1087,12 @@ void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
   g_test_device_motion_data.Get() = data;
 }
 
+// static
+void RendererWebKitPlatformSupportImpl::ResetMockScreenOrientationForTesting()
+{
+  g_test_screen_orientation_controller.Get().ResetData();
+}
+
 //------------------------------------------------------------------------------
 
 void RendererWebKitPlatformSupportImpl::setDeviceOrientationListener(
@@ -1130,7 +1141,7 @@ void RendererWebKitPlatformSupportImpl::setScreenOrientationListener(
     // backend in order to let Blink get tested properly, That means that screen
     // orientation updates have to be done manually instead of from signals sent
     // by the browser process.
-    g_test_screen_orientation_listener = listener;
+    g_test_screen_orientation_controller.Get().SetListener(listener);
     return;
   }
 
@@ -1146,6 +1157,7 @@ void RendererWebKitPlatformSupportImpl::lockOrientation(
     blink::WebScreenOrientationLockType orientation) {
   if (RenderThreadImpl::current() &&
       RenderThreadImpl::current()->layout_test_mode()) {
+    g_test_screen_orientation_controller.Get().UpdateLock(orientation);
     return;
   }
   RenderThread::Get()->Send(new ScreenOrientationHostMsg_Lock(orientation));
@@ -1154,6 +1166,7 @@ void RendererWebKitPlatformSupportImpl::lockOrientation(
 void RendererWebKitPlatformSupportImpl::unlockOrientation() {
   if (RenderThreadImpl::current() &&
       RenderThreadImpl::current()->layout_test_mode()) {
+    g_test_screen_orientation_controller.Get().ResetLock();
     return;
   }
   RenderThread::Get()->Send(new ScreenOrientationHostMsg_Unlock);
@@ -1162,9 +1175,8 @@ void RendererWebKitPlatformSupportImpl::unlockOrientation() {
 // static
 void RendererWebKitPlatformSupportImpl::SetMockScreenOrientationForTesting(
     blink::WebScreenOrientationType orientation) {
-  if (!g_test_screen_orientation_listener)
-    return;
-  g_test_screen_orientation_listener->didChangeScreenOrientation(orientation);
+  g_test_screen_orientation_controller.Get()
+      .UpdateDeviceOrientation(orientation);
 }
 
 //------------------------------------------------------------------------------

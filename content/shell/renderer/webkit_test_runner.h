@@ -65,6 +65,7 @@ class WebKitTestRunner : public RenderViewObserver,
       const blink::WebDeviceOrientationData& data) OVERRIDE;
   virtual void setScreenOrientation(
       const blink::WebScreenOrientationType& orientation) OVERRIDE;
+  virtual void resetScreenOrientation() OVERRIDE;
   virtual void printMessage(const std::string& message) OVERRIDE;
   virtual void postTask(WebTask* task) OVERRIDE;
   virtual void postDelayedTask(WebTask* task, long long ms) OVERRIDE;

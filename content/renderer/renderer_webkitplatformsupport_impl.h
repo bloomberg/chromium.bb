@@ -182,6 +182,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   // Forces the screen orientation for testing purposes.
   static void SetMockScreenOrientationForTesting(
       blink::WebScreenOrientationType);
+  // Resets the mock screen orientation data used for testing.
+  static void ResetMockScreenOrientationForTesting();
 
   WebDatabaseObserverImpl* web_database_observer_impl() {
     return web_database_observer_impl_.get();

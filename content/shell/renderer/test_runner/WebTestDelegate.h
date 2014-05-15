@@ -56,6 +56,9 @@ public:
     // Set orientation to set when registering via Platform::setScreenOrientationListener().
     virtual void setScreenOrientation(const blink::WebScreenOrientationType&) = 0;
 
+    // Reset the screen orientation data used for testing.
+    virtual void resetScreenOrientation() = 0;
+
     // Add a message to the text dump for the layout test.
     virtual void printMessage(const std::string& message) = 0;
 

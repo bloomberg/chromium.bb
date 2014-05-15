@@ -63,6 +63,9 @@ void SetMockDeviceOrientationData(const blink::WebDeviceOrientationData& data);
 void SetMockScreenOrientation(
     const blink::WebScreenOrientationType& orientation);
 
+// Resets the mock screen orientation data.
+void ResetMockScreenOrientation();
+
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);
 
