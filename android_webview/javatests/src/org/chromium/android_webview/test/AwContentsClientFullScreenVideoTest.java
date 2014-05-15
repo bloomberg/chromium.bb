@@ -4,10 +4,11 @@
 
 package org.chromium.android_webview.test;
 
+import android.test.suitebuilder.annotation.MediumTest;
 import android.view.KeyEvent;
 
 import org.chromium.android_webview.test.util.VideoTestWebServer;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.test.util.TouchCommon;
 
@@ -17,12 +18,8 @@ import org.chromium.content.browser.test.util.TouchCommon;
 public class AwContentsClientFullScreenVideoTest extends AwTestBase {
     private FullScreenVideoTestAwContentsClient mContentsClient;
 
-    /**
-     * @MediumTest
-     * @Feature({"AndroidWebView"})
-     * http://crbug.com/372748
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testOnShowAndHideCustomViewWithCallback() throws Throwable {
         doOnShowAndHideCustomViewTest(new Runnable() {
             @Override
@@ -32,12 +29,8 @@ public class AwContentsClientFullScreenVideoTest extends AwTestBase {
         });
     }
 
-    /**
-     * @MediumTest
-     * @Feature({"AndroidWebView"})
-     * http://crbug.com/372748
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testOnShowAndHideCustomViewWithBackKey() throws Throwable {
         doOnShowAndHideCustomViewTest(new Runnable() {
             @Override
