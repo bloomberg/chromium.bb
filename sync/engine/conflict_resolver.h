@@ -22,6 +22,7 @@ class WriteTransaction;
 }  // namespace syncable
 
 class Cryptographer;
+struct UpdateCounters;
 
 namespace sessions {
 class StatusController;
@@ -52,14 +53,16 @@ class ConflictResolver {
   void ResolveConflicts(syncable::WriteTransaction* trans,
                         const Cryptographer* cryptographer,
                         const std::set<syncable::Id>& simple_conflict_ids,
-                        sessions::StatusController* status);
+                        sessions::StatusController* status,
+                        UpdateCounters* counters);
 
  private:
   void ProcessSimpleConflict(
       syncable::WriteTransaction* trans,
       const syncable::Id& id,
       const Cryptographer* cryptographer,
-      sessions::StatusController* status);
+      sessions::StatusController* status,
+      UpdateCounters* counters);
 
   DISALLOW_COPY_AND_ASSIGN(ConflictResolver);
 };

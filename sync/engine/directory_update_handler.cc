@@ -60,6 +60,7 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
       // A GetUpdates using the old context was in progress when the context was
       // set. Fail this get updates cycle, to force a retry.
       DVLOG(1) << "GU Context conflict detected, forcing GU retry.";
+      debug_info_emitter_->EmitUpdateCountersUpdate();
       return DATATYPE_TRIGGERED_RETRY;
     }
   }
@@ -70,6 +71,7 @@ SyncerError DirectoryUpdateHandler::ProcessGetUpdatesResponse(
     ExpireEntriesIfNeeded(&trans, progress_marker);
     UpdateProgressMarker(progress_marker);
   }
+  debug_info_emitter_->EmitUpdateCountersUpdate();
   return SYNCER_OK;
 }
 
@@ -86,6 +88,8 @@ void DirectoryUpdateHandler::ApplyUpdates(sessions::StatusController* status) {
       base::Unretained(this),
       base::Unretained(status));
   worker_->DoWorkAndWaitUntilDone(c);
+
+  debug_info_emitter_->EmitUpdateCountersUpdate();
 }
 
 void DirectoryUpdateHandler::PassiveApplyUpdates(
@@ -96,6 +100,8 @@ void DirectoryUpdateHandler::PassiveApplyUpdates(
 
   // Just do the work here instead of deferring to another thread.
   ApplyUpdatesImpl(status);
+
+  debug_info_emitter_->EmitUpdateCountersUpdate();
 }
 
 SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(
@@ -111,11 +117,21 @@ SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(
   // First set of update application passes.
   UpdateApplicator applicator(dir_->GetCryptographer(&trans));
   applicator.AttemptApplications(&trans, handles);
+
+  // The old StatusController counters.
   status->increment_num_updates_applied_by(applicator.updates_applied());
   status->increment_num_hierarchy_conflicts_by(
       applicator.hierarchy_conflicts());
   status->increment_num_encryption_conflicts_by(
       applicator.encryption_conflicts());
+
+  // The new UpdateCounter counters.
+  UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
+  counters->num_updates_applied += applicator.updates_applied();
+  counters->num_hierarchy_conflict_application_failures =
+      applicator.hierarchy_conflicts();
+  counters->num_encryption_conflict_application_failures +=
+      applicator.encryption_conflicts();
 
   if (applicator.simple_conflict_ids().size() != 0) {
     // Resolve the simple conflicts we just detected.
@@ -123,7 +139,8 @@ SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(
     resolver.ResolveConflicts(&trans,
                               dir_->GetCryptographer(&trans),
                               applicator.simple_conflict_ids(),
-                              status);
+                              status,
+                              counters);
 
     // Conflict resolution sometimes results in more updates to apply.
     handles.clear();
@@ -138,6 +155,7 @@ SyncerError DirectoryUpdateHandler::ApplyUpdatesImpl(
     // We count the number of updates from both applicator passes.
     status->increment_num_updates_applied_by(
         conflict_applicator.updates_applied());
+    counters->num_updates_applied += conflict_applicator.updates_applied();
 
     // Encryption conflicts should remain unchanged by the resolution of simple
     // conflicts.  Those can only be solved by updating our nigori key bag.
@@ -177,7 +195,10 @@ void DirectoryUpdateHandler::UpdateSyncEntities(
     syncable::ModelNeutralWriteTransaction* trans,
     const SyncEntityList& applicable_updates,
     sessions::StatusController* status) {
-  ProcessDownloadedUpdates(dir_, trans, type_, applicable_updates, status);
+  UpdateCounters* counters = debug_info_emitter_->GetMutableUpdateCounters();
+  counters->num_updates_received += applicable_updates.size();
+  ProcessDownloadedUpdates(dir_, trans, type_,
+                           applicable_updates, status, counters);
 }
 
 bool DirectoryUpdateHandler::IsValidProgressMarker(

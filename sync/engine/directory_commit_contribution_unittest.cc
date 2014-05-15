@@ -69,6 +69,9 @@ class DirectoryCommitContributionTest : public ::testing::Test {
 
   TestIdFactory id_factory_;
 
+  // Used in construction of DirectoryTypeDebugInfoEmitters.
+  ObserverList<TypeDebugInfoObserver> type_observers_;
+
  private:
   base::MessageLoop loop_;  // Neeed to initialize the directory.
   TestDirectorySetterUpper dir_maker_;
@@ -85,7 +88,7 @@ TEST_F(DirectoryCommitContributionTest, GatherByTypes) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
-  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryTypeDebugInfoEmitter emitter(PREFERENCES, &type_observers_);
   scoped_ptr<DirectoryCommitContribution> cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 5, &emitter));
   ASSERT_EQ(2U, cc->GetNumEntries());
@@ -111,7 +114,7 @@ TEST_F(DirectoryCommitContributionTest, GatherAndTruncate) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
-  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryTypeDebugInfoEmitter emitter(PREFERENCES, &type_observers_);
   scoped_ptr<DirectoryCommitContribution> cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 1, &emitter));
   ASSERT_EQ(1U, cc->GetNumEntries());
@@ -134,8 +137,8 @@ TEST_F(DirectoryCommitContributionTest, PrepareCommit) {
     CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
-  DirectoryTypeDebugInfoEmitter emitter1;
-  DirectoryTypeDebugInfoEmitter emitter2;
+  DirectoryTypeDebugInfoEmitter emitter1(PREFERENCES, &type_observers_);
+  DirectoryTypeDebugInfoEmitter emitter2(EXTENSIONS, &type_observers_);
   scoped_ptr<DirectoryCommitContribution> pref_cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter1));
   scoped_ptr<DirectoryCommitContribution> ext_cc(
@@ -188,8 +191,8 @@ TEST_F(DirectoryCommitContributionTest, ProcessCommitResponse) {
     ext1_handle = CreateUnsyncedItem(&trans, EXTENSIONS, "extension1");
   }
 
-  DirectoryTypeDebugInfoEmitter emitter1;
-  DirectoryTypeDebugInfoEmitter emitter2;
+  DirectoryTypeDebugInfoEmitter emitter1(PREFERENCES, &type_observers_);
+  DirectoryTypeDebugInfoEmitter emitter2(EXTENSIONS, &type_observers_);
   scoped_ptr<DirectoryCommitContribution> pref_cc(
       DirectoryCommitContribution::Build(dir(), PREFERENCES, 25, &emitter1));
   scoped_ptr<DirectoryCommitContribution> ext_cc(

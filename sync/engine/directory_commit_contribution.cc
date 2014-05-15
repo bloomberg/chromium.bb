@@ -7,6 +7,7 @@
 #include "sync/engine/commit_util.h"
 #include "sync/engine/get_commit_ids.h"
 #include "sync/engine/syncer_util.h"
+#include "sync/internal_api/public/sessions/commit_counters.h"
 #include "sync/syncable/model_neutral_mutable_entry.h"
 #include "sync/syncable/syncable_model_neutral_write_transaction.h"
 
@@ -66,6 +67,9 @@ void DirectoryCommitContribution::AddToCommitMessage(
             RepeatedPtrFieldBackInserter(commit_message->mutable_entries()));
   if (!context_.context().empty())
     commit_message->add_client_contexts()->Swap(&context_);
+
+  CommitCounters* counters = debug_info_emitter_->GetMutableCommitCounters();
+  counters->num_commits_attempted += entities_.size();
 }
 
 SyncerError DirectoryCommitContribution::ProcessCommitResponse(
@@ -120,6 +124,11 @@ SyncerError DirectoryCommitContribution::ProcessCommitResponse(
     MarkDeletedChildrenSynced(dir_, &trans, &deleted_folders);
   }
 
+  CommitCounters* counters = debug_info_emitter_->GetMutableCommitCounters();
+  counters->num_commits_success += successes;
+  counters->num_commits_conflict += transient_error_commits;
+  counters->num_commits_error += transient_error_commits;
+
   int commit_count = static_cast<int>(metahandles_.size());
   if (commit_count == successes) {
     return SYNCER_OK;
@@ -148,6 +157,7 @@ SyncerError DirectoryCommitContribution::ProcessCommitResponse(
 void DirectoryCommitContribution::CleanUp() {
   DCHECK(syncing_bits_set_);
   UnsetSyncingBits();
+  debug_info_emitter_->EmitCommitCountersUpdate();
 }
 
 size_t DirectoryCommitContribution::GetNumEntries() const {

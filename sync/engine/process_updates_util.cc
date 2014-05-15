@@ -8,6 +8,7 @@
 #include "sync/engine/syncer_proto_util.h"
 #include "sync/engine/syncer_types.h"
 #include "sync/engine/syncer_util.h"
+#include "sync/internal_api/public/sessions/update_counters.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/model_neutral_mutable_entry.h"
 #include "sync/syncable/syncable_model_neutral_write_transaction.h"
@@ -285,14 +286,19 @@ void ProcessDownloadedUpdates(
     syncable::ModelNeutralWriteTransaction* trans,
     ModelType type,
     const SyncEntityList& applicable_updates,
-    sessions::StatusController* status) {
+    sessions::StatusController* status,
+    UpdateCounters* counters) {
   for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
        update_it != applicable_updates.end(); ++update_it) {
     DCHECK_EQ(type, GetModelType(**update_it));
-    if (!UpdateContainsNewVersion(trans, **update_it))
+    if (!UpdateContainsNewVersion(trans, **update_it)) {
       status->increment_num_reflected_updates_downloaded_by(1);
-    if ((*update_it)->deleted())
+      counters->num_reflected_updates_received++;
+    }
+    if ((*update_it)->deleted()) {
       status->increment_num_tombstone_updates_downloaded_by(1);
+      counters->num_tombstone_updates_received++;
+    }
     VerifyResult verify_result = VerifyUpdate(trans, **update_it, type);
     if (verify_result != VERIFY_SUCCESS && verify_result != VERIFY_UNDELETE)
       continue;

@@ -11,6 +11,7 @@
 #include "base/metrics/histogram.h"
 #include "sync/engine/conflict_util.h"
 #include "sync/engine/syncer_util.h"
+#include "sync/internal_api/public/sessions/update_counters.h"
 #include "sync/sessions/status_controller.h"
 #include "sync/syncable/directory.h"
 #include "sync/syncable/mutable_entry.h"
@@ -38,7 +39,8 @@ ConflictResolver::~ConflictResolver() {
 void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
                                              const Id& id,
                                              const Cryptographer* cryptographer,
-                                             StatusController* status) {
+                                             StatusController* status,
+                                             UpdateCounters* counters) {
   MutableEntry entry(trans, syncable::GET_BY_ID, id);
   // Must be good as the entry won't have been cleaned up.
   CHECK(entry.good());
@@ -158,6 +160,7 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       DVLOG(1) << "Resolving simple conflict, ignoring server encryption "
                << " changes for: " << entry;
       status->increment_num_server_overwrites();
+      counters->num_server_overwrites++;
       conflict_util::OverwriteServerChanges(&entry);
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 IGNORE_ENCRYPTION,
@@ -169,6 +172,7 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       // assumption.
       conflict_util::OverwriteServerChanges(&entry);
       status->increment_num_server_overwrites();
+      counters->num_server_overwrites++;
       DVLOG(1) << "Resolving simple conflict, overwriting server changes "
                << "for: " << entry;
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
@@ -179,6 +183,7 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
                << entry;
       conflict_util::IgnoreLocalChanges(&entry);
       status->increment_num_local_overwrites();
+      counters->num_local_overwrites++;
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 OVERWRITE_LOCAL,
                                 CONFLICT_RESOLUTION_SIZE);
@@ -203,6 +208,7 @@ void ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     // data.
     conflict_util::OverwriteServerChanges(&entry);
     status->increment_num_server_overwrites();
+    counters->num_server_overwrites++;
     DVLOG(1) << "Resolving simple conflict, undeleting server entry: "
              << entry;
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
@@ -215,7 +221,8 @@ void ConflictResolver::ResolveConflicts(
     syncable::WriteTransaction* trans,
     const Cryptographer* cryptographer,
     const std::set<syncable::Id>& simple_conflict_ids,
-    sessions::StatusController* status) {
+    sessions::StatusController* status,
+    UpdateCounters* counters) {
   // Iterate over simple conflict items.
   set<Id>::const_iterator it;
   for (it = simple_conflict_ids.begin();
@@ -229,7 +236,7 @@ void ConflictResolver::ResolveConflicts(
       continue;
     }
 
-    ProcessSimpleConflict(trans, *it, cryptographer, status);
+    ProcessSimpleConflict(trans, *it, cryptographer, status, counters);
   }
   return;
 }

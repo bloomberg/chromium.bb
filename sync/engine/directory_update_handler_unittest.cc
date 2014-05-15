@@ -86,6 +86,10 @@ class DirectoryUpdateHandlerProcessUpdateTest : public ::testing::Test {
     return e.good() && !e.GetIsDel();
   }
 
+ protected:
+  // Used in the construction of DirectoryTypeDebugInfoEmitters.
+  ObserverList<TypeDebugInfoObserver> type_observers_;
+
  private:
   base::MessageLoop loop_;  // Needed to initialize the directory.
   TestDirectorySetterUpper dir_maker_;
@@ -125,7 +129,7 @@ static const char kCacheGuid[] = "IrcjZ2jyzHDV9Io4+zKcXQ==";
 
 // Test that the bookmark tag is set on newly downloaded items.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
-  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
@@ -164,7 +168,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, NewBookmarkTag) {
 // Test the receipt of a type root node.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
        ReceiveServerCreatedBookmarkFolders) {
-  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
@@ -199,7 +203,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest,
 
 // Test the receipt of a non-bookmark item.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
-  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryTypeDebugInfoEmitter emitter(AUTOFILL, &type_observers_);
   DirectoryUpdateHandler handler(dir(), AUTOFILL, ui_worker(), &emitter);
   sync_pb::GetUpdatesResponse gu_response;
   sessions::StatusController status;
@@ -231,7 +235,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ReceiveNonBookmarkItem) {
 
 // Tests the setting of progress markers.
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
-  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryTypeDebugInfoEmitter emitter(BOOKMARKS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), BOOKMARKS, ui_worker(), &emitter);
 
   sync_pb::DataTypeProgressMarker progress;
@@ -248,7 +252,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ProcessNewProgressMarkers) {
 }
 
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
-  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryTypeDebugInfoEmitter emitter(SYNCED_NOTIFICATIONS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS,
                                  ui_worker(), &emitter);
   sessions::StatusController status;
@@ -313,7 +317,7 @@ TEST_F(DirectoryUpdateHandlerProcessUpdateTest, GarbageCollectionByVersion) {
 }
 
 TEST_F(DirectoryUpdateHandlerProcessUpdateTest, ContextVersion) {
-  DirectoryTypeDebugInfoEmitter emitter;
+  DirectoryTypeDebugInfoEmitter emitter(SYNCED_NOTIFICATIONS, &type_observers_);
   DirectoryUpdateHandler handler(dir(), SYNCED_NOTIFICATIONS,
                                  ui_worker(), &emitter);
   sessions::StatusController status;
@@ -413,6 +417,8 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
       : ui_worker_(new FakeModelWorker(GROUP_UI)),
         password_worker_(new FakeModelWorker(GROUP_PASSWORD)),
         passive_worker_(new FakeModelWorker(GROUP_PASSIVE)),
+        bookmarks_emitter_(BOOKMARKS, &type_observers_),
+        passwords_emitter_(PASSWORDS, &type_observers_),
         update_handler_map_deleter_(&update_handler_map_) {}
 
   virtual void SetUp() OVERRIDE {
@@ -433,6 +439,14 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
   virtual void TearDown() OVERRIDE {
     dir_maker_.TearDown();
+  }
+
+  const UpdateCounters& GetBookmarksUpdateCounters() {
+    return bookmarks_emitter_.GetUpdateCounters();
+  }
+
+  const UpdateCounters& GetPasswordsUpdateCounters() {
+    return passwords_emitter_.GetUpdateCounters();
   }
 
  protected:
@@ -463,6 +477,7 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
   scoped_refptr<FakeModelWorker> password_worker_;
   scoped_refptr<FakeModelWorker> passive_worker_;
 
+  ObserverList<TypeDebugInfoObserver> type_observers_;
   DirectoryTypeDebugInfoEmitter bookmarks_emitter_;
   DirectoryTypeDebugInfoEmitter passwords_emitter_;
 
@@ -492,11 +507,12 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmark) {
 
   ApplyBookmarkUpdates(&status);
 
-  EXPECT_EQ(0, status.num_encryption_conflicts())
+  const UpdateCounters& counter = GetBookmarksUpdateCounters();
+  EXPECT_EQ(0, counter.num_encryption_conflict_application_failures)
       << "Simple update shouldn't result in conflicts";
-  EXPECT_EQ(0, status.num_hierarchy_conflicts())
+  EXPECT_EQ(0, counter.num_hierarchy_conflict_application_failures)
       << "Simple update shouldn't result in conflicts";
-  EXPECT_EQ(2, status.num_updates_applied())
+  EXPECT_EQ(2, counter.num_updates_applied)
       << "All items should have been successfully applied";
 
   {
@@ -588,9 +604,11 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SimpleBookmarkConflict) {
 
   sessions::StatusController status;
   ApplyBookmarkUpdates(&status);
-  EXPECT_EQ(1, status.num_server_overwrites())
+
+  const UpdateCounters& counters = GetBookmarksUpdateCounters();
+  EXPECT_EQ(1, counters.num_server_overwrites)
       << "Unsynced and unapplied item conflict should be resolved";
-  EXPECT_EQ(0, status.num_updates_applied())
+  EXPECT_EQ(0, counters.num_updates_applied)
       << "Update should not be applied; we should override the server.";
 
   {
@@ -626,9 +644,11 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, HierarchyAndSimpleConflict) {
 
   sessions::StatusController status;
   ApplyBookmarkUpdates(&status);
-  EXPECT_EQ(0, status.num_updates_applied());
-  EXPECT_EQ(0, status.num_server_overwrites());
-  EXPECT_EQ(1, status.num_hierarchy_conflicts());
+
+  const UpdateCounters& counters = GetBookmarksUpdateCounters();
+  EXPECT_EQ(0, counters.num_updates_applied);
+  EXPECT_EQ(0, counters.num_server_overwrites);
+  EXPECT_EQ(1, counters.num_hierarchy_conflict_application_failures);
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -673,7 +693,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, BookmarkFolderLoop) {
   ApplyBookmarkUpdates(&status);
 
   // This should count as a hierarchy conflict.
-  EXPECT_EQ(1, status.num_hierarchy_conflicts());
+  const UpdateCounters& counters = GetBookmarksUpdateCounters();
+  EXPECT_EQ(1, counters.num_hierarchy_conflict_application_failures);
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -711,7 +732,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
 
   sessions::StatusController status;
   ApplyBookmarkUpdates(&status);
-  EXPECT_EQ(1, status.num_hierarchy_conflicts());
+  const UpdateCounters& counters = GetBookmarksUpdateCounters();
+  EXPECT_EQ(1, counters.num_hierarchy_conflict_application_failures);
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -755,7 +777,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
   ApplyBookmarkUpdates(&status);
 
   // This should count as a hierarchy conflict.
-  EXPECT_EQ(1, status.num_hierarchy_conflicts());
+  const UpdateCounters& counters = GetBookmarksUpdateCounters();
+  EXPECT_EQ(1, counters.num_hierarchy_conflict_application_failures);
 
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
@@ -779,9 +802,10 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest,
   sessions::StatusController status;
   ApplyBookmarkUpdates(&status);
 
-  EXPECT_EQ(2, status.num_hierarchy_conflicts())
+  const UpdateCounters& counters = GetBookmarksUpdateCounters();
+  EXPECT_EQ(2, counters.num_hierarchy_conflict_application_failures)
       << "All updates with an unknown ancestors should be in conflict";
-  EXPECT_EQ(0, status.num_updates_applied())
+  EXPECT_EQ(0, counters.num_updates_applied)
       << "No item with an unknown ancestor should be applied";
 
   {
@@ -818,9 +842,10 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, ItemsBothKnownAndUnknown) {
   sessions::StatusController status;
   ApplyBookmarkUpdates(&status);
 
-  EXPECT_EQ(2, status.num_hierarchy_conflicts())
+  const UpdateCounters& counters = GetBookmarksUpdateCounters();
+  EXPECT_EQ(2, counters.num_hierarchy_conflict_application_failures)
       << "The updates with unknown ancestors should be in conflict";
-  EXPECT_EQ(4, status.num_updates_applied())
+  EXPECT_EQ(4, counters.num_updates_applied)
       << "The updates with known ancestors should be successfully applied";
 
   {
@@ -872,7 +897,8 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
   sessions::StatusController status;
   ApplyPasswordUpdates(&status);
 
-  EXPECT_EQ(1, status.num_updates_applied())
+  const UpdateCounters& counters = GetPasswordsUpdateCounters();
+  EXPECT_EQ(1, counters.num_updates_applied)
       << "The updates that can be decrypted should be applied";
 
   {
@@ -910,9 +936,16 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, UndecryptableData) {
   ApplyBookmarkUpdates(&status);
   ApplyPasswordUpdates(&status);
 
-  EXPECT_EQ(3, status.num_encryption_conflicts())
+  const UpdateCounters& bm_counters = GetBookmarksUpdateCounters();
+  EXPECT_EQ(2, bm_counters.num_encryption_conflict_application_failures)
       << "Updates that can't be decrypted should be in encryption conflict";
-  EXPECT_EQ(0, status.num_updates_applied())
+  EXPECT_EQ(0, bm_counters.num_updates_applied)
+      << "No update that can't be decrypted should be applied";
+
+  const UpdateCounters& pw_counters = GetPasswordsUpdateCounters();
+  EXPECT_EQ(1, pw_counters.num_encryption_conflict_application_failures)
+      << "Updates that can't be decrypted should be in encryption conflict";
+  EXPECT_EQ(0, pw_counters.num_updates_applied)
       << "No update that can't be decrypted should be applied";
 
   {
@@ -973,10 +1006,11 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
   sessions::StatusController status;
   ApplyPasswordUpdates(&status);
 
-  EXPECT_EQ(1, status.num_encryption_conflicts())
+  const UpdateCounters& counters = GetPasswordsUpdateCounters();
+  EXPECT_EQ(1, counters.num_encryption_conflict_application_failures)
       << "The updates that can't be decrypted should be in encryption "
       << "conflict";
-  EXPECT_EQ(1, status.num_updates_applied())
+  EXPECT_EQ(1, counters.num_updates_applied)
       << "The undecryptable password update shouldn't be applied";
 
   {

@@ -46,7 +46,9 @@ class SYNC_EXPORT_PRIVATE DirectoryTypeDebugInfoEmitter {
       ObserverList<TypeDebugInfoObserver>* observers);
 
   // A simple constructor for tests.  Should not be used in real code.
-  DirectoryTypeDebugInfoEmitter();
+  DirectoryTypeDebugInfoEmitter(
+      ModelType type,
+      ObserverList<TypeDebugInfoObserver>* observers);
 
   virtual ~DirectoryTypeDebugInfoEmitter();
 

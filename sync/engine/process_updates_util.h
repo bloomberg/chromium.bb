@@ -24,6 +24,8 @@ class ModelNeutralWriteTransaction;
 class Directory;
 }
 
+struct UpdateCounters;
+
 typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
 
 // Processes all the updates associated with a single ModelType.
@@ -32,7 +34,8 @@ void ProcessDownloadedUpdates(
     syncable::ModelNeutralWriteTransaction* trans,
     ModelType type,
     const SyncEntityList& applicable_updates,
-    sessions::StatusController* status);
+    sessions::StatusController* status,
+    UpdateCounters* counters);
 
 // Tombstones all entries of |type| whose versions are older than
 // |version_watermark| unless they are type root or unsynced/unapplied.

@@ -31,6 +31,9 @@
 #include "sync/internal_api/public/base/cancelation_signal.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
+#include "sync/internal_api/public/sessions/commit_counters.h"
+#include "sync/internal_api/public/sessions/status_counters.h"
+#include "sync/internal_api/public/sessions/update_counters.h"
 #include "sync/protocol/bookmark_specifics.pb.h"
 #include "sync/protocol/nigori_specifics.pb.h"
 #include "sync/protocol/preference_specifics.pb.h"
@@ -78,36 +81,103 @@ using syncable::kEncryptedString;
 using syncable::MutableEntry;
 using syncable::WriteTransaction;
 
-using syncable::BASE_VERSION;
 using syncable::CREATE;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
 using syncable::GET_BY_CLIENT_TAG;
 using syncable::GET_BY_SERVER_TAG;
-using syncable::ID;
-using syncable::IS_DEL;
-using syncable::IS_DIR;
-using syncable::IS_UNAPPLIED_UPDATE;
-using syncable::IS_UNSYNCED;
-using syncable::META_HANDLE;
-using syncable::MTIME;
-using syncable::NON_UNIQUE_NAME;
-using syncable::PARENT_ID;
-using syncable::BASE_SERVER_SPECIFICS;
-using syncable::SERVER_IS_DEL;
-using syncable::SERVER_PARENT_ID;
-using syncable::SERVER_SPECIFICS;
-using syncable::SERVER_VERSION;
-using syncable::UNIQUE_CLIENT_TAG;
-using syncable::UNIQUE_SERVER_TAG;
-using syncable::SPECIFICS;
-using syncable::SYNCING;
 using syncable::UNITTEST;
 
 using sessions::MockDebugInfoGetter;
 using sessions::StatusController;
 using sessions::SyncSessionContext;
 using sessions::SyncSession;
+
+namespace {
+
+// A helper to hold on to the counters emitted by the sync engine.
+class TypeDebugInfoCache : public TypeDebugInfoObserver {
+ public:
+  TypeDebugInfoCache();
+  virtual ~TypeDebugInfoCache();
+
+  CommitCounters GetLatestCommitCounters(ModelType type) const;
+  UpdateCounters GetLatestUpdateCounters(ModelType type) const;
+  StatusCounters GetLatestStatusCounters(ModelType type) const;
+
+  // TypeDebugInfoObserver implementation.
+  virtual void OnCommitCountersUpdated(
+      syncer::ModelType type,
+      const CommitCounters& counters) OVERRIDE;
+  virtual void OnUpdateCountersUpdated(
+      syncer::ModelType type,
+      const UpdateCounters& counters) OVERRIDE;
+  virtual void OnStatusCountersUpdated(
+      syncer::ModelType type,
+      const StatusCounters& counters) OVERRIDE;
+
+ private:
+  std::map<ModelType, CommitCounters> commit_counters_map_;
+  std::map<ModelType, UpdateCounters> update_counters_map_;
+  std::map<ModelType, StatusCounters> status_counters_map_;
+};
+
+TypeDebugInfoCache::TypeDebugInfoCache() {}
+
+TypeDebugInfoCache::~TypeDebugInfoCache() {}
+
+CommitCounters TypeDebugInfoCache::GetLatestCommitCounters(
+    ModelType type) const {
+  std::map<ModelType, CommitCounters>::const_iterator it =
+      commit_counters_map_.find(type);
+  if (it == commit_counters_map_.end()) {
+    return CommitCounters();
+  } else {
+    return it->second;
+  }
+}
+
+UpdateCounters TypeDebugInfoCache::GetLatestUpdateCounters(
+    ModelType type) const {
+  std::map<ModelType, UpdateCounters>::const_iterator it =
+      update_counters_map_.find(type);
+  if (it == update_counters_map_.end()) {
+    return UpdateCounters();
+  } else {
+    return it->second;
+  }
+}
+
+StatusCounters TypeDebugInfoCache::GetLatestStatusCounters(
+    ModelType type) const {
+  std::map<ModelType, StatusCounters>::const_iterator it =
+      status_counters_map_.find(type);
+  if (it == status_counters_map_.end()) {
+    return StatusCounters();
+  } else {
+    return it->second;
+  }
+}
+
+void TypeDebugInfoCache::OnCommitCountersUpdated(
+    syncer::ModelType type,
+    const CommitCounters& counters) {
+  commit_counters_map_[type] = counters;
+}
+
+void TypeDebugInfoCache::OnUpdateCountersUpdated(
+    syncer::ModelType type,
+    const UpdateCounters& counters) {
+  update_counters_map_[type] = counters;
+}
+
+void TypeDebugInfoCache::OnStatusCountersUpdated(
+    syncer::ModelType type,
+    const StatusCounters& counters) {
+  status_counters_map_[type] = counters;
+}
+
+} // namespace
 
 class SyncerTest : public testing::Test,
                    public SyncSession::Delegate,
@@ -224,6 +294,8 @@ class SyncerTest : public testing::Test,
     GetModelSafeRoutingInfo(&routing_info);
 
     model_type_registry_.reset(new ModelTypeRegistry(workers_, directory()));
+    model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
+        &debug_info_cache_);
 
     context_.reset(
         new SyncSessionContext(
@@ -250,11 +322,14 @@ class SyncerTest : public testing::Test,
   }
 
   virtual void TearDown() {
+    model_type_registry_->UnregisterDirectoryTypeDebugInfoObserver(
+        &debug_info_cache_);
     mock_server_.reset();
     delete syncer_;
     syncer_ = NULL;
     dir_maker_.TearDown();
   }
+
   void WriteTestDataToEntry(WriteTransaction* trans, MutableEntry* entry) {
     EXPECT_FALSE(entry->GetIsDir());
     EXPECT_FALSE(entry->GetIsDel());
@@ -400,8 +475,16 @@ class SyncerTest : public testing::Test,
     }
   }
 
-  const StatusController& status() {
-    return session_->status_controller();
+  CommitCounters GetCommitCounters(ModelType type) {
+    return debug_info_cache_.GetLatestCommitCounters(type);
+  }
+
+  UpdateCounters GetUpdateCounters(ModelType type) {
+    return debug_info_cache_.GetLatestUpdateCounters(type);
+  }
+
+  StatusCounters GetStatusCounters(ModelType type) {
+    return debug_info_cache_.GetLatestStatusCounters(type);
   }
 
   Directory* directory() {
@@ -499,6 +582,7 @@ class SyncerTest : public testing::Test,
   Syncer* syncer_;
 
   scoped_ptr<SyncSession> session_;
+  TypeDebugInfoCache debug_info_cache_;
   scoped_ptr<ModelTypeRegistry> model_type_registry_;
   scoped_ptr<SyncSessionContext> context_;
   bool saw_syncer_event_;
@@ -883,18 +967,29 @@ TEST_F(SyncerTest, EncryptionAwareConflicts) {
   }
   // First cycle resolves conflicts, second cycle commits changes.
   SyncShareNudge();
-  EXPECT_EQ(2, status().model_neutral_state().num_server_overwrites);
-  EXPECT_EQ(1, status().model_neutral_state().num_local_overwrites);
+  EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_server_overwrites);
+  EXPECT_EQ(1, GetUpdateCounters(PREFERENCES).num_server_overwrites);
+  EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_local_overwrites);
+
   // We successfully commited item(s).
-  EXPECT_EQ(status().model_neutral_state().commit_result, SYNCER_OK);
+  EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_commits_attempted);
+  EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_commits_success);
+  EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_commits_attempted);
+  EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_commits_success);
+
   SyncShareNudge();
 
   // Everything should be resolved now. The local changes should have
   // overwritten the server changes for 2 and 4, while the server changes
   // overwrote the local for entry 3.
-  EXPECT_EQ(0, status().model_neutral_state().num_server_overwrites);
-  EXPECT_EQ(0, status().model_neutral_state().num_local_overwrites);
-  EXPECT_EQ(status().model_neutral_state().commit_result, SYNCER_OK);
+  //
+  // Expect there will be no new overwrites.
+  EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_server_overwrites);
+  EXPECT_EQ(1, GetUpdateCounters(BOOKMARKS).num_local_overwrites);
+
+  EXPECT_EQ(2, GetCommitCounters(BOOKMARKS).num_commits_success);
+  EXPECT_EQ(1, GetCommitCounters(PREFERENCES).num_commits_success);
+
   syncable::ReadTransaction rtrans(FROM_HERE, directory());
   VERIFY_ENTRY(1, false, false, false, 0, 41, 41, ids_, &rtrans);
   VERIFY_ENTRY(2, false, false, false, 1, 31, 31, ids_, &rtrans);
@@ -1655,8 +1750,9 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   SyncShareNudge();
 
   // Id 3 should be in conflict now.
-  EXPECT_EQ(1, status().TotalNumConflictingItems());
-  EXPECT_EQ(1, status().num_hierarchy_conflicts());
+  EXPECT_EQ(
+      1,
+      GetUpdateCounters(BOOKMARKS).num_hierarchy_conflict_application_failures);
 
   // The only request in that loop should have been a GetUpdate.
   // At that point, we didn't know whether or not we had conflicts.
@@ -1680,8 +1776,9 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   SyncShareNudge();
   // The three items with an unresolved parent should be unapplied (3, 9, 100).
   // The name clash should also still be in conflict.
-  EXPECT_EQ(3, status().TotalNumConflictingItems());
-  EXPECT_EQ(3, status().num_hierarchy_conflicts());
+  EXPECT_EQ(
+      3,
+      GetUpdateCounters(BOOKMARKS).num_hierarchy_conflict_application_failures);
 
   // This time around, we knew that there were conflicts.
   ASSERT_TRUE(mock_server_->last_request().has_get_updates());
@@ -1778,8 +1875,9 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   }
 
   EXPECT_FALSE(saw_syncer_event_);
-  EXPECT_EQ(4, status().TotalNumConflictingItems());
-  EXPECT_EQ(4, status().num_hierarchy_conflicts());
+  EXPECT_EQ(
+      4,
+      GetUpdateCounters(BOOKMARKS).num_hierarchy_conflict_application_failures);
 }
 
 // A commit with a lost response produces an update that has to be reunited with
@@ -2410,7 +2508,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
     existing.PutIsDel(true);
   }
   SyncShareNudge();
-  EXPECT_EQ(0, status().num_server_conflicts());
+  EXPECT_EQ(0, GetCommitCounters(BOOKMARKS).num_commits_conflict);
 }
 
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
