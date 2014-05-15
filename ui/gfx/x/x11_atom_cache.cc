@@ -5,20 +5,21 @@
 #include "ui/gfx/x/x11_atom_cache.h"
 
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 
 namespace ui {
 
-X11AtomCache::X11AtomCache(Display* xdisplay, const char** to_cache)
+X11AtomCache::X11AtomCache(XDisplay* xdisplay, const char** to_cache)
     : xdisplay_(xdisplay),
       uncached_atoms_allowed_(false) {
   int cache_count = 0;
   for (const char** i = to_cache; *i != NULL; i++)
     cache_count++;
 
-  scoped_ptr< ::Atom[]> cached_atoms(new ::Atom[cache_count]);
+  scoped_ptr<Atom[]> cached_atoms(new Atom[cache_count]);
 
   // Grab all the atoms we need now to minimize roundtrips to the X11 server.
   XInternAtoms(xdisplay_,
@@ -31,11 +32,11 @@ X11AtomCache::X11AtomCache(Display* xdisplay, const char** to_cache)
 
 X11AtomCache::~X11AtomCache() {}
 
-::Atom X11AtomCache::GetAtom(const char* name) const {
-  std::map<std::string, ::Atom>::const_iterator it = cached_atoms_.find(name);
+Atom X11AtomCache::GetAtom(const char* name) const {
+  std::map<std::string, Atom>::const_iterator it = cached_atoms_.find(name);
 
   if (uncached_atoms_allowed_ && it == cached_atoms_.end()) {
-    ::Atom atom = XInternAtom(xdisplay_, name, false);
+    Atom atom = XInternAtom(xdisplay_, name, false);
     cached_atoms_.insert(std::make_pair(name, atom));
     return atom;
   }
