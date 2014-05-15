@@ -11,6 +11,7 @@
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_wrap.h"
 #include "nacl_io/kernel_wrap_real.h"
+#include "nacl_io/log.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/pepper_interface.h"
@@ -48,6 +49,7 @@ int ki_push_state_for_testing() {
 }
 
 int ki_init(void* kp) {
+  LOG_TRACE("ki_init: %p", kp);
   return ki_init_ppapi(kp, 0, NULL);
 }
 
@@ -67,6 +69,7 @@ int ki_init_ppapi(void* kp,
 }
 
 int ki_init_interface(void* kp, void* pepper_interface) {
+  LOG_TRACE("ki_init_interface: %p %p", kp, pepper_interface);
   assert(!s_state.kp);
   if (s_state.kp != NULL)
     return 1;
@@ -92,6 +95,7 @@ int ki_is_initialized() {
 }
 
 void ki_uninit() {
+  LOG_TRACE("ki_uninit");
   if (s_saved_state.kp == NULL)
     kernel_wrap_uninit();
 

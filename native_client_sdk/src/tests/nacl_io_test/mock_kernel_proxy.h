@@ -95,7 +95,6 @@ class MockKernelProxy : public nacl_io::KernelProxy {
   MOCK_METHOD3(socket, int(int, int, int));
   MOCK_METHOD4(socketpair, int(int, int, int, int*));
 #endif // PROVIDES_SOCKET_API
-
 };
 
 #endif  // TESTS_NACL_IO_TEST_MOCK_KERNEL_PROXY_H_

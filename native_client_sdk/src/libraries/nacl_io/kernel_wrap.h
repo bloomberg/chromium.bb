@@ -5,6 +5,7 @@
 #ifndef LIBRARIES_NACL_IO_KERNEL_WRAP_H_
 #define LIBRARIES_NACL_IO_KERNEL_WRAP_H_
 
+#include <assert.h>
 #include <signal.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -23,6 +24,20 @@
 #else
 #define NOTHROW
 #endif
+
+// Most kernel intercept functions (ki_*) return -1 and set the global errno.
+// However, the IRT wrappers are expected to return errno on failure. These
+// macros are used in the wrappers to check that the ki_ function actually
+// set errno and to its value.
+#define RTN_ERRNO_IF(cond) \
+  if (cond) { \
+    assert(errno != 0); \
+    return errno; \
+  }
+
+#define ERRNO_RTN(cond) \
+  RTN_ERRNO_IF(cond < 0); \
+  return 0;
 
 #if defined(WIN32)
 typedef int chmod_mode_t;
