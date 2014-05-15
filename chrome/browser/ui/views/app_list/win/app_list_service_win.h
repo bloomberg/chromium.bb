@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_
 #define CHROME_BROWSER_UI_VIEWS_APP_LIST_WIN_APP_LIST_SERVICE_WIN_H_
 
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_list/app_list_service_views.h"
 
@@ -53,8 +52,6 @@ class AppListServiceWin : public AppListServiceViews {
 
   bool enable_app_list_on_next_init_;
   scoped_ptr<ActivationTrackerWin> activation_tracker_;
-
-  base::Closure next_paint_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListServiceWin);
 };

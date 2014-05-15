@@ -53,6 +53,8 @@ namespace app_list {
 
 namespace {
 
+void (*g_next_paint_callback)();
+
 // The margin from the edge to the speech UI.
 const int kSpeechUIMargin = 12;
 
@@ -204,9 +206,9 @@ gfx::Size AppListView::GetPreferredSize() {
 
 void AppListView::Paint(gfx::Canvas* canvas, const views::CullSet& cull_set) {
   views::BubbleDelegateView::Paint(canvas, cull_set);
-  if (!next_paint_callback_.is_null()) {
-    next_paint_callback_.Run();
-    next_paint_callback_.Reset();
+  if (g_next_paint_callback) {
+    g_next_paint_callback();
+    g_next_paint_callback = NULL;
   }
 }
 
@@ -248,8 +250,8 @@ void AppListView::RemoveObserver(AppListViewObserver* observer) {
 }
 
 // static
-void AppListView::SetNextPaintCallback(const base::Closure& callback) {
-  next_paint_callback_ = callback;
+void AppListView::SetNextPaintCallback(void (*callback)()) {
+  g_next_paint_callback = callback;
 }
 
 #if defined(OS_WIN)
