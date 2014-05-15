@@ -2157,3 +2157,9 @@ ipc.dll!IPC::Channel::ChannelImpl::ProcessOutgoingMessages
 UNINITIALIZED READ
 name=bug_372254
 *!content::*::NotifyPluginProcessHostHelper
+
+UNINITIALIZED READ
+name=drm_i#1546
+*!testing::internal::CmpHelperEQ<>
+*!testing::internal::EqHelper<>::Compare<>
+*!content::BrowserPluginTest_ResizeFlowControl_Test::TestBody
