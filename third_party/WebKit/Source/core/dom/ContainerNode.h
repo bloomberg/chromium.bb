@@ -323,6 +323,12 @@ inline ContainerNode* Node::parentElementOrShadowRoot() const
     return parent && (parent->isElementNode() || parent->isShadowRoot()) ? parent : 0;
 }
 
+inline ContainerNode* Node::parentElementOrDocumentFragment() const
+{
+    ContainerNode* parent = parentNode();
+    return parent && (parent->isElementNode() || parent->isDocumentFragment()) ? parent : 0;
+}
+
 // This constant controls how much buffer is initially allocated
 // for a Node Vector that is used to store child Nodes of a given Node.
 // FIXME: Optimize the value.

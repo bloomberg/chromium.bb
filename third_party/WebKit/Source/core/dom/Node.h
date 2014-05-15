@@ -170,6 +170,7 @@ public:
     ContainerNode* parentNode() const;
     Element* parentElement() const;
     ContainerNode* parentElementOrShadowRoot() const;
+    ContainerNode* parentElementOrDocumentFragment() const;
     Node* previousSibling() const { return m_previous; }
     Node* nextSibling() const { return m_next; }
     PassRefPtr<NodeList> childNodes();
