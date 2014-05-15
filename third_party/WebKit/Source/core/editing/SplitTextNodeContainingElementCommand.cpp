@@ -60,7 +60,7 @@ void SplitTextNodeContainingElementCommand::doApply()
         parent = toElement(firstChild);
     }
 
-    splitElement(parent, m_text.get());
+    splitElement(parent, m_text);
 }
 
 }

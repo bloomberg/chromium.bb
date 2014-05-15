@@ -356,6 +356,9 @@ public:
 
     operator T*() const { return m_raw; }
     operator RawPtr<T>() const { return m_raw; }
+    // FIXME: Oilpan: Remove this ASAP. Only here to make Node transition easier.
+    template<typename U>
+    operator PassRefPtr<U>() { return PassRefPtr<U>(m_raw); }
 
     T* operator->() const { return *this; }
 

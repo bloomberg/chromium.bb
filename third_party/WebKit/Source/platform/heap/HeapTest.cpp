@@ -3122,7 +3122,7 @@ TEST(HeapTest, RefCountedGarbageCollected)
             // them is kept alive by a persistent handle.
             Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
             EXPECT_EQ(1, RefCountedAndGarbageCollected::s_destructorCalls);
-            refPtr3 = persistent;
+            refPtr3 = persistent.get();
         }
         // The persistent handle is gone but the ref count has been
         // increased to 1.
