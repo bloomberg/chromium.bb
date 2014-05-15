@@ -454,31 +454,46 @@ int32_t NaClSysAccess(struct NaClAppThread *natp,
 int32_t NaClSysReadlink(struct NaClAppThread *natp,
                         uint32_t             path,
                         uint32_t             buffer,
-                        size_t               count) {
+                        uint32_t             buffer_size) {
   struct NaClApp *nap = natp->nap;
   char           pathname[NACL_CONFIG_PATH_MAX];
   char           realpath[NACL_CONFIG_PATH_MAX];
   int32_t        retval = -NACL_ABI_EINVAL;
+  uint32_t       result_size;
 
   if (!NaClAclBypassChecks)
     return -NACL_ABI_EACCES;
-
-  if (count >= NACL_CONFIG_PATH_MAX)
-    return -NACL_ABI_EINVAL;
 
   retval = CopyPathFromUser(nap, pathname, sizeof pathname, path);
   if (0 != retval)
     return retval;
 
-  retval = NaClHostDescReadlink(pathname, realpath, count);
+  retval = NaClHostDescReadlink(pathname, realpath, sizeof(realpath));
   if (retval < 0)
     return retval;
+  result_size = retval;
+  CHECK(result_size <= sizeof(realpath));  /* Sanity check */
 
-  CHECK(retval <= (int32_t)count);
-  if (!NaClCopyOutToUser(nap, buffer, realpath, retval))
+  if (result_size == sizeof(realpath)) {
+    /*
+     * The result either got truncated or it fit exactly.  Treat it as
+     * truncation.
+     *
+     * We can't distinguish an exact fit from truncation without doing
+     * another readlink() call.  If result_size == buffer_size, we could
+     * return success here, but there's little point, because untrusted
+     * code can't distinguish the two either and we don't currently allow
+     * using a larger buffer.
+     */
+    return -NACL_ABI_ENAMETOOLONG;
+  }
+
+  if (result_size > buffer_size)
+    result_size = buffer_size;
+  if (!NaClCopyOutToUser(nap, buffer, realpath, result_size))
     return -NACL_ABI_EFAULT;
 
-  return retval;
+  return result_size;
 }
 
 int32_t NaClSysUtimes(struct NaClAppThread *natp,

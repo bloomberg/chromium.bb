@@ -72,8 +72,8 @@ int32_t NaClSysAccess(struct NaClAppThread *natp,
 
 int32_t NaClSysReadlink(struct NaClAppThread *natp,
                         uint32_t             path,
-                        uint32_t             buf,
-                        size_t               count);
+                        uint32_t             buffer,
+                        uint32_t             buffer_size);
 
 int32_t NaClSysUtimes(struct NaClAppThread *natp,
                       uint32_t             path,

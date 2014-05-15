@@ -144,7 +144,7 @@ SYSCALL_LIST = [
      ['uint32_t path', 'nacl_abi_mode_t mode']),
     ('NACL_sys_access', 'NaClSysAccess', ['uint32_t path', 'int amode']),
     ('NACL_sys_readlink', 'NaClSysReadlink',
-     ['uint32_t path', 'uint32_t buf', 'size_t count']),
+     ['uint32_t path', 'uint32_t buffer', 'uint32_t buffer_size']),
     ('NACL_sys_utimes', 'NaClSysUtimes',
      ['uint32_t filename', 'uint32_t times']),
     ('NACL_sys_pread', 'NaClSysPRead',

@@ -326,6 +326,24 @@ bool test_symlinks(const char *test_file) {
   ASSERT_EQ_MSG(S_ISLNK(buf.st_mode), 0, "stat of symlink should not ISLNK");
   ASSERT_NE_MSG(S_ISREG(buf.st_mode), 0, "stat of symlink should report ISREG");
 
+  // Test readlink().
+  char link_dest[PATH_MAX];
+  memset(link_dest, 0x77, sizeof(link_dest));
+  ssize_t result = readlink(link_filename, link_dest, sizeof(link_dest));
+  ASSERT_EQ(result, (ssize_t) strlen(basename));
+  ASSERT_EQ(memcmp(link_dest, basename, result), 0);
+  // readlink() should not write a null terminator.
+  ASSERT_EQ(link_dest[result], 0x77);
+
+  // Test readlink() with a truncated result.
+  memset(link_dest, 0x77, sizeof(link_dest));
+  result = readlink(link_filename, link_dest, 1);
+  ASSERT_EQ(result, 1);
+  ASSERT_EQ(link_dest[0], basename[0]);
+  // The rest of the buffer should not be modified.
+  for (size_t i = 1; i < sizeof(link_dest); ++i)
+    ASSERT_EQ(link_dest[i], 0x77);
+
   // calling symlink again should yield EEXIST.
   ASSERT_EQ(symlink(test_file, link_filename), -1);
   ASSERT_EQ(errno, EEXIST);
@@ -398,7 +416,7 @@ bool test_utimes(const char *test_file) {
   // fail with ENOSYS
   ASSERT_EQ(utimes("dummy", times), -1);
   ASSERT_EQ(errno, ENOSYS);
-  return passed("test_access", "all");
+  return passed("test_utimes", "all");
 }
 
 bool test_truncate(const char *test_file) {
