@@ -4,8 +4,6 @@
 # SEE http://code.google.com/p/chromium/wiki/UsingGit
 # FOR HOW TO ROLL DEPS
 vars = {
-    'ffmpeg_hash':
-         '@d3a060bd1d6a4f43e9bc7d07f193b0513df4f244',
     'webkit_url':
          'https://chromium.googlesource.com/chromium/blink.git',
     'git_url':
@@ -60,7 +58,7 @@ deps = {
     'src/third_party/cld_2/src':
         Var('git_url') + '/external/cld2.git@3fced387543ba9bed402923b3c6feb459fb61f58',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/third_party/ffmpeg.git' + Var('ffmpeg_hash'),
+        Var('git_url') + '/chromium/deps/ffmpeg.git@7673f16fb95bcc3f49b2fc8259e68014208acba8',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@71e33f190a7bb144fe4e2014897b8d15c8247198',
     'src/third_party/hunspell':
