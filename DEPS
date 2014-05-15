@@ -50,7 +50,7 @@ vars = {
 
   "sfntly_revision": "228",
   "lighttpd_revision": "33737",
-  "skia_revision": "14744",
+  "skia_revision": "14755",
   "skia_hash": "24f6e29fc133f1082c73e2a96f30bee92e3123aa",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
