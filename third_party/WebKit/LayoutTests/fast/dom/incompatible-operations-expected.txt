@@ -12,10 +12,10 @@ PASS aNode.isSameNode(void 0) is false
 PASS aNode.lookupPrefix(aDOMImplementation) is null
 PASS aNode.lookupPrefix(void 0) is null
 PASS aNode.cloneNode(aDOMImplementation) instanceof HTMLDivElement is true
-PASS aSelect.add(aDOMImplementation, aDOMImplementation) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
-PASS aSelect.add(aDOMImplementation, anOption) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
-PASS aSelect.add(void 0, void 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
-PASS aSelect.add(void 0, anOption) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': No function was found that matched the signature provided..
+PASS aSelect.add(aDOMImplementation, aDOMImplementation) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': parameter 1 is not of type 'HTMLElement'..
+PASS aSelect.add(aDOMImplementation, anOption) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': parameter 1 is not of type 'HTMLElement'..
+PASS aSelect.add(void 0, void 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': parameter 1 is not of type 'HTMLElement'..
+PASS aSelect.add(void 0, anOption) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': parameter 1 is not of type 'HTMLElement'..
 PASS aSelect.add(anOption, aDOMImplementation) is undefined.
 PASS aSelect.add(anOption, void 0) is undefined.
 PASS successfullyParsed is true

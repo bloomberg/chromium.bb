@@ -380,13 +380,12 @@ def is_use_spec_algorithm(effective_overloads_by_length):
     # Use spec algorithm if:
     # * method is not variadic,
     # * no distinguishing type is unsupported:
-    #   non-wrapper, callback interface, boolean, nullable,
+    #   non-wrapper, callback interface, boolean,
     # * all distinguishing types are distinct.
     def is_unsupported_type(idl_type):
         return ((idl_type.is_interface_type and not idl_type.is_wrapper_type) or
                 idl_type.is_callback_interface or
-                idl_type.name == 'Boolean' or
-                idl_type.is_nullable)
+                idl_type.name == 'Boolean')
 
     for _, effective_overloads in effective_overloads_by_length:
         methods = [effective_overload[0]
@@ -646,6 +645,17 @@ def resolution_tests_methods(effective_overloads):
         method = next(method for argument, method in arguments_methods
                       if argument['is_optional'])
         test = '%s->IsUndefined()' % cpp_value
+        yield test, method
+    except StopIteration:
+        pass
+
+    # 3. Otherwise: if V is null or undefined, and there is an entry in S that
+    # has one of the following types at position i of its type list,
+    # • a nullable type
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.is_nullable)
+        test = 'isUndefinedOrNull(%s)' % cpp_value
         yield test, method
     except StopIteration:
         pass

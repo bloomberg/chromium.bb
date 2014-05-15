@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#idl-def-URL
+
 [
     TypeChecking=Interface|Nullable,
 ] partial interface URL {

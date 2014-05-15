@@ -6615,13 +6615,21 @@ static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1))) {
-        overloadedMethodF1Method(info);
-        return;
-    }
-    if (((info.Length() == 1) && (info[0]->IsNull() || V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())))) {
-        overloadedMethodF2Method(info);
-        return;
+    switch (info.Length()) {
+    case 1:
+        if (isUndefinedOrNull(info[0])) {
+            overloadedMethodF2Method(info);
+            return;
+        }
+        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+            overloadedMethodF2Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodF1Method(info);
+            return;
+        }
+        break;
     }
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
@@ -6795,13 +6803,21 @@ static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1))) {
-        overloadedMethodJ1Method(info);
-        return;
-    }
-    if (((info.Length() == 1) && (isUndefinedOrNull(info[0]) || V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())))) {
-        overloadedMethodJ2Method(info);
-        return;
+    switch (info.Length()) {
+    case 1:
+        if (isUndefinedOrNull(info[0])) {
+            overloadedMethodJ2Method(info);
+            return;
+        }
+        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+            overloadedMethodJ2Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodJ1Method(info);
+            return;
+        }
+        break;
     }
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodJ", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {

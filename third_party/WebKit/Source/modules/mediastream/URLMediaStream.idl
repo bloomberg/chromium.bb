@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/mediacapture-streams/#idl-def-URL
+
 partial interface URL {
-    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaStream? stream);
+    [CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(MediaStream stream);
 };

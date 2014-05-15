@@ -23,6 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.khronos.org/registry/webgl/specs/latest/1.0/#WebGLRenderingContextBase
+
 typedef unsigned long  GLenum;
 typedef boolean        GLboolean;
 typedef unsigned long  GLbitfield;
@@ -482,11 +484,13 @@ typedef unrestricted float GLclampf;
     void blendEquationSeparate(GLenum modeRGB, GLenum modeAlpha);
     void blendFunc(GLenum sfactor, GLenum dfactor);
     void blendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
-    void bufferData(GLenum target, ArrayBuffer? data, GLenum usage);
-    void bufferData(GLenum target, ArrayBufferView? data, GLenum usage);
+    // FIXME: should be union type
+    // https://www.khronos.org/bugzilla/show_bug.cgi?id=1172
     void bufferData(GLenum target, GLsizeiptr size, GLenum usage);
+    void bufferData(GLenum target, ArrayBufferView data, GLenum usage);
+    void bufferData(GLenum target, ArrayBuffer? data, GLenum usage);
+    void bufferSubData(GLenum target, GLintptr offset, ArrayBufferView data);
     void bufferSubData(GLenum target, GLintptr offset, ArrayBuffer? data);
-    void bufferSubData(GLenum target, GLintptr offset, ArrayBufferView? data);
 
     GLenum checkFramebufferStatus(GLenum target);
     void clear(GLbitfield mask);
@@ -610,6 +614,8 @@ typedef unrestricted float GLclampf;
     void texParameteri(GLenum target, GLenum pname, GLint param);
 
     // Supported forms:
+    // FIXME: should be union type
+    // https://www.khronos.org/bugzilla/show_bug.cgi?id=1172
     [RaisesException] void texImage2D(
         GLenum target, GLint level, GLenum internalformat,
         GLsizei width, GLsizei height, GLint border,
@@ -619,13 +625,13 @@ typedef unrestricted float GLclampf;
         GLenum format, GLenum type, ImageData? pixels);
     [RaisesException] void texImage2D(
         GLenum target, GLint level, GLenum internalformat,
-        GLenum format, GLenum type, HTMLImageElement? image);
+        GLenum format, GLenum type, HTMLImageElement image);
     [RaisesException] void texImage2D(
         GLenum target, GLint level, GLenum internalformat,
-        GLenum format, GLenum type, HTMLCanvasElement? canvas);
+        GLenum format, GLenum type, HTMLCanvasElement canvas);
     [RaisesException] void texImage2D(
         GLenum target, GLint level, GLenum internalformat,
-        GLenum format, GLenum type, HTMLVideoElement? video);
+        GLenum format, GLenum type, HTMLVideoElement video);
 
     [RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
@@ -636,13 +642,13 @@ typedef unrestricted float GLclampf;
         GLenum format, GLenum type, ImageData? pixels);
     [RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, HTMLImageElement? image);
+        GLenum format, GLenum type, HTMLImageElement image);
     [RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, HTMLCanvasElement? canvas);
+        GLenum format, GLenum type, HTMLCanvasElement canvas);
     [RaisesException] void texSubImage2D(
         GLenum target, GLint level, GLint xoffset, GLint yoffset,
-        GLenum format, GLenum type, HTMLVideoElement? video);
+        GLenum format, GLenum type, HTMLVideoElement video);
 
     void uniform1f(WebGLUniformLocation? location, GLfloat x);
     [Custom] void uniform1fv(WebGLUniformLocation? location, Float32Array v);

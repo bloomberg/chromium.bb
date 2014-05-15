@@ -24,16 +24,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://url.spec.whatwg.org/#url
+
 [
-    Exposed=Window&Worker,
-    RaisesException=Constructor,
     Constructor(DOMString url),
     Constructor(DOMString url, URL base),
     Constructor(DOMString url, DOMString base),
+    Exposed=Window&Worker,
     ImplementedAs=DOMURL,
-    WillBeGarbageCollected
+    RaisesException=Constructor,
+    WillBeGarbageCollected,
 ] interface URL {
-    [RaisesException, CallWith=ExecutionContext,TreatReturnedNullStringAs=Null] static DOMString createObjectURL(Blob? blob);
+    // FIXME: should be in separate URLBlob.idl partial interface definition
+    // http://dev.w3.org/2006/webapi/FileAPI/#URL-object
+    // FIXME: should not be nullable
+    [RaisesException, CallWith=ExecutionContext, TreatReturnedNullStringAs=Null] static DOMString createObjectURL(Blob? blob);
     [CallWith=ExecutionContext] static void revokeObjectURL(DOMString url);
 };
 

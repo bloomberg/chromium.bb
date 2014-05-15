@@ -19,6 +19,8 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-button-element.html#htmlselectelement
+
 interface HTMLSelectElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
     [Reflect] attribute boolean disabled;
@@ -34,16 +36,17 @@ interface HTMLSelectElement : HTMLElement {
     [RaisesException=Setter] attribute unsigned long length;
 
     getter Element item(unsigned long index);
-    [RaisesException, TypeChecking=Interface|Nullable] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
     Element namedItem([Default=Undefined] optional DOMString name);
-    [RaisesException] void add(HTMLElement element,
-                               [Default=Null] optional HTMLElement? before);
-    [RaisesException, ImplementedAs=addBeforeOptionAtIndex] void add(HTMLElement element, long before);
+    // FIXME: should be union type http://crbug.com/240176
+    [RaisesException, TypeChecking=Interface] void add(HTMLElement element, [Default=Null] optional HTMLElement? before);
+    [ImplementedAs=addBeforeOptionAtIndex, RaisesException, TypeChecking=Interface] void add(HTMLElement element, long before);
+    [RaisesException] void remove(); // ChildNode overload
     void remove(long index);
-    [RaisesException] void remove();
+    [RaisesException, TypeChecking=Interface|Nullable] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
+
     readonly attribute HTMLCollection selectedOptions;
-    attribute long selectedIndex;
-    attribute DOMString value;
+             attribute long selectedIndex;
+             attribute DOMString value;
 
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;
