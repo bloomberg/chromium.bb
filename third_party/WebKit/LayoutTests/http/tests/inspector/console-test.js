@@ -53,12 +53,12 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
 InspectorTest.dumpConsoleTableMessage = function(viewMessage)
 {
     var table = viewMessage.contentElement();
-    var headers = table.querySelectorAll("th div");
+    var headers = table.querySelectorAll("th");
     if (!headers.length)
         return false;
 
     var headerLine = "";
-    for (var i = 0; i < headers.length; i++)
+    for (var i = 0; i < headers.length - 1; i++)
         headerLine += headers[i].textContent + " | ";
 
     InspectorTest.addResult("HEADER " + headerLine);
@@ -68,7 +68,7 @@ InspectorTest.dumpConsoleTableMessage = function(viewMessage)
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
         var rowLine = "";
-        var items = row.querySelectorAll("td > div > span");
+        var items = row.querySelectorAll("td > span");
         for (var j = 0; j < items.length; j++)
             rowLine += items[j].textContent + " | ";
 
