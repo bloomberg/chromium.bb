@@ -120,14 +120,10 @@ void ChromeMetroViewerProcessHost::OnSetTargetSurface(
     float device_scale) {
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
 
-  // Make hwnd available as early as possible for proper InputMethod
-  // initialization.
-  ash::AshRemoteWindowTreeHostWin::Init();
-  aura::RemoteWindowTreeHostWin::Instance()->
-      InitializeRemoteWindowAndScaleFactor(hwnd, device_scale);
-
-  // Now start the Ash shell environment.
-  chrome::OpenAsh();
+  gfx::InitDeviceScaleFactor(device_scale);
+  chrome::OpenAsh(hwnd);
+  DCHECK(aura::RemoteWindowTreeHostWin::Instance());
+  DCHECK_EQ(hwnd, aura::RemoteWindowTreeHostWin::Instance()->remote_window());
   ash::Shell::GetInstance()->CreateShelf();
   ash::Shell::GetInstance()->ShowShelf();
 

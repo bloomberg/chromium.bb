@@ -7,6 +7,7 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/shell_init_params.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/shell_test_api.h"
@@ -84,7 +85,9 @@ void AshTestHelper::SetUp(bool start_session) {
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
-  ash::Shell::CreateInstance(test_shell_delegate_);
+  ShellInitParams init_params;
+  init_params.delegate = test_shell_delegate_;
+  ash::Shell::CreateInstance(init_params);
   aura::test::EnvTestHelper(aura::Env::GetInstance()).SetInputStateLookup(
       scoped_ptr<aura::InputStateLookup>());
 

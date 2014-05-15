@@ -38,6 +38,7 @@ class Insets;
 
 namespace ash {
 class AshWindowTreeHost;
+struct AshWindowTreeHostInitParams;
 class CursorWindowController;
 class DisplayInfo;
 class DisplayManager;
@@ -92,8 +93,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
     return virtual_keyboard_window_controller_.get();
   }
 
-  // Create a WindowTreeHost for the primary display.
-  void CreatePrimaryHost();
+  // Create a WindowTreeHost for the primary display. This replaces
+  // |initial_bounds| in |init_params|.
+  void CreatePrimaryHost(const AshWindowTreeHostInitParams& init_params);
 
   // Initializes all displays.
   void InitDisplays();
@@ -169,7 +171,9 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   // Creates a WindowTreeHost for |display| and stores it in the
   // |window_tree_hosts_| map.
-  AshWindowTreeHost* AddWindowTreeHostForDisplay(const gfx::Display& display);
+  AshWindowTreeHost* AddWindowTreeHostForDisplay(
+      const gfx::Display& display,
+      const AshWindowTreeHostInitParams& params);
 
   void OnFadeOutForSwapDisplayFinished();
 

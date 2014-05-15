@@ -5,6 +5,8 @@
 #ifndef ASH_HOST_REMOTE_WINDOW_TREE_HOST_WIN_H_
 #define ASH_HOST_REMOTE_WINDOW_TREE_HOST_WIN_H_
 
+#include <windows.h>
+
 #include "ash/ash_export.h"
 #include "ash/host/ash_window_tree_host.h"
 #include "ash/host/transformer_helper.h"
@@ -16,17 +18,9 @@ class ASH_EXPORT AshRemoteWindowTreeHostWin
     : public AshWindowTreeHost,
       public aura::RemoteWindowTreeHostWin {
  public:
-  // Creates an instance of AshRemoteWindowTreeHostWin
-  // and sets it to RemoteWindowTreeHostWin::SetInstance.
-  static void Init();
-
-  // Returns the instance created in Init() method above.
-  // This also performs an extra check if the instance is same
-  // one that aura::RemoteWindowTreeHostWin::Instance() returns.
-  static AshRemoteWindowTreeHostWin* GetInstance();
+  explicit AshRemoteWindowTreeHostWin(HWND remote_hwnd);
 
  private:
-  AshRemoteWindowTreeHostWin();
   virtual ~AshRemoteWindowTreeHostWin();
 
   // AshWindowTreeHost:

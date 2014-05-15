@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/window_watcher.h"
+#include "ash/shell_init_params.h"
 #include "ash/system/user/login_status.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -121,7 +122,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
 
-  ash::Shell::CreateInstance(delegate_);
+  ash::ShellInitParams init_params;
+  init_params.delegate = delegate_;
+  ash::Shell::CreateInstance(init_params);
   delegate_->set_browser_context(browser_context_.get());
   ash::Shell::GetInstance()->CreateShelf();
   ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(

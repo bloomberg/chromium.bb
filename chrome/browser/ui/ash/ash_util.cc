@@ -41,7 +41,7 @@ void ToggleAshDesktop() {
     return;
 
   if (!ash::Shell::HasInstance())
-    OpenAsh();
+    OpenAsh(gfx::kNullAcceleratedWidget);
   else
     CloseAsh();
 }

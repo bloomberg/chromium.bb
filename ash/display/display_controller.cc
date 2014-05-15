@@ -16,6 +16,7 @@
 #include "ash/display/root_window_transformers.h"
 #include "ash/display/virtual_keyboard_window_controller.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -273,11 +274,12 @@ void DisplayController::Shutdown() {
   }
 }
 
-void DisplayController::CreatePrimaryHost() {
+void DisplayController::CreatePrimaryHost(
+    const AshWindowTreeHostInitParams& init_params) {
   const gfx::Display& primary_candidate =
       GetDisplayManager()->GetPrimaryDisplayCandidate();
   primary_display_id = primary_candidate.id();
-  AddWindowTreeHostForDisplay(primary_candidate);
+  AddWindowTreeHostForDisplay(primary_candidate, init_params);
 }
 
 void DisplayController::InitDisplays() {
@@ -288,7 +290,8 @@ void DisplayController::InitDisplays() {
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     const gfx::Display& display = display_manager->GetDisplayAt(i);
     if (primary_display_id != display.id()) {
-      AshWindowTreeHost* ash_host = AddWindowTreeHostForDisplay(display);
+      AshWindowTreeHost* ash_host = AddWindowTreeHostForDisplay(
+          display, AshWindowTreeHostInitParams());
       RootWindowController::CreateForSecondaryDisplay(ash_host);
     }
   }
@@ -570,7 +573,8 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     if (primary_display_id == gfx::Display::kInvalidDisplayID)
       primary_display_id = display.id();
     DCHECK(!window_tree_hosts_.empty());
-    AshWindowTreeHost* ash_host = AddWindowTreeHostForDisplay(display);
+    AshWindowTreeHost* ash_host = AddWindowTreeHostForDisplay(
+        display, AshWindowTreeHostInitParams());
     RootWindowController::CreateForSecondaryDisplay(ash_host);
   }
 }
@@ -701,12 +705,14 @@ void DisplayController::PostDisplayConfigurationChange() {
 }
 
 AshWindowTreeHost* DisplayController::AddWindowTreeHostForDisplay(
-    const gfx::Display& display) {
+    const gfx::Display& display,
+    const AshWindowTreeHostInitParams& init_params) {
   static int host_count = 0;
   const DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display.id());
-  const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
-  AshWindowTreeHost* ash_host = AshWindowTreeHost::Create(bounds_in_native);
+  AshWindowTreeHostInitParams params_with_bounds(init_params);
+  params_with_bounds.initial_bounds = display_info.bounds_in_native();
+  AshWindowTreeHost* ash_host = AshWindowTreeHost::Create(params_with_bounds);
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
 
   host->window()->SetName(base::StringPrintf("RootWindow-%d", host_count++));

@@ -29,6 +29,7 @@
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
+#include "ash/shell_init_params.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #endif
@@ -128,7 +129,9 @@ void ViewEventTestBase::SetUp() {
 #endif  // OS_CHROMEOS
   ash::test::TestShellDelegate* shell_delegate =
       new ash::test::TestShellDelegate();
-  ash::Shell::CreateInstance(shell_delegate);
+  ash::ShellInitParams init_params;
+  init_params.delegate = shell_delegate;
+  ash::Shell::CreateInstance(init_params);
   shell_delegate->test_session_state_delegate()
       ->SetActiveUserSessionStarted(true);
   context = ash::Shell::GetPrimaryRootWindow();

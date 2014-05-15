@@ -106,27 +106,19 @@ class AURA_EXPORT RemoteWindowTreeHostWin
       public ui::EventSource,
       public ui::internal::RemoteInputMethodDelegateWin {
  public:
-  // Returns the only RemoteWindowTreeHostWin, if this is the first time
-  // this function is called and the instance have never set by SetInstance,
-  // it will call Create() wiht empty bounds.
+  // Returns the current RemoteWindowTreeHostWin. This does *not* create a
+  // RemoteWindowTreeHostWin.
   static RemoteWindowTreeHostWin* Instance();
-
-  // Manually sets the instance to be used as a return value of |Instance()|
-  // method above. This should not be called if the instance has already
-  // been set or created, and doing so will result in CHECK failure.
-  static void SetInstance(RemoteWindowTreeHostWin* instance);
 
   // Returns true if there is a RemoteWindowTreeHostWin and it has a valid
   // HWND. A return value of false typically indicates we're not in metro mode.
   static bool IsValid();
 
-  // Sets the handle to the remote window and the scale factor. The
-  // |remote_window| is the actual window owned by the viewer process. Call
-  // this before Connected() for some customers like input method
-  // initialization which needs the handle.
-  // |device_scale| indicates the Windows 8 dpi scale.
-  void InitializeRemoteWindowAndScaleFactor(HWND remote_window,
-                                            float device_scale);
+  // Sets the handle to the remote window. The |remote_window| is the actual
+  // window owned by the viewer process. Call this before Connected() for some
+  // customers like input method initialization which needs the handle.
+  void SetRemoteWindowHandle(HWND remote_window);
+  HWND remote_window() { return remote_window_; }
 
   // The |host| can be used when we need to send a message to it.
   void Connected(IPC::Sender* host);
@@ -180,7 +172,7 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   bool IsForegroundWindow();
 
  protected:
-  explicit RemoteWindowTreeHostWin(const gfx::Rect& bounds);
+  RemoteWindowTreeHostWin();
   virtual ~RemoteWindowTreeHostWin();
 
  private:

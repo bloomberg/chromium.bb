@@ -8,13 +8,15 @@
 
 #include "base/logging.h"
 #include "ui/aura/remote_window_tree_host_win.h"
+#include "ui/gfx/win/dpi.h"
 
 namespace ash {
 namespace test {
 
 TestMetroViewerProcessHost::TestMetroViewerProcessHost(
     base::SingleThreadTaskRunner* ipc_task_runner)
-        : MetroViewerProcessHost(ipc_task_runner), closed_unexpectedly_(false) {
+    : MetroViewerProcessHost(ipc_task_runner),
+      closed_unexpectedly_(false) {
 }
 
 TestMetroViewerProcessHost::~TestMetroViewerProcessHost() {
@@ -30,8 +32,8 @@ void TestMetroViewerProcessHost::OnSetTargetSurface(
     float device_scale) {
   DLOG(INFO) << __FUNCTION__ << ", target_surface = " << target_surface;
   HWND hwnd = reinterpret_cast<HWND>(target_surface);
-  aura::RemoteWindowTreeHostWin::Instance()->
-      InitializeRemoteWindowAndScaleFactor(hwnd, device_scale);
+  gfx::InitDeviceScaleFactor(device_scale);
+  aura::RemoteWindowTreeHostWin::Instance()->SetRemoteWindowHandle(hwnd);
   aura::RemoteWindowTreeHostWin::Instance()->Connected(this);
 }
 

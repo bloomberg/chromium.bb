@@ -19,14 +19,16 @@ class Rect;
 }
 
 namespace ash {
+struct AshWindowTreeHostInitParams;
 class RootWindowTransformer;
 
 class ASH_EXPORT AshWindowTreeHost {
  public:
-  // Creates a new AshWindowTreeHost. The caller owns the returned value.
-  static AshWindowTreeHost* Create(const gfx::Rect& initial_bounds);
-
   virtual ~AshWindowTreeHost() {}
+
+  // Creates a new AshWindowTreeHost. The caller owns the returned value.
+  static AshWindowTreeHost* Create(
+      const AshWindowTreeHostInitParams& init_params);
 
   // Toggles the host's full screen state.
   virtual void ToggleFullScreen() = 0;

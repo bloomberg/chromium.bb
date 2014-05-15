@@ -17,6 +17,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
@@ -81,8 +82,9 @@ MirrorWindowController::~MirrorWindowController() {
 void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
   static int mirror_host_count = 0;
   if (!ash_host_.get()) {
-    const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
-    ash_host_.reset(AshWindowTreeHost::Create(bounds_in_native));
+    AshWindowTreeHostInitParams init_params;
+    init_params.initial_bounds = display_info.bounds_in_native();
+    ash_host_.reset(AshWindowTreeHost::Create(init_params));
     aura::WindowTreeHost* host = ash_host_->AsWindowTreeHost();
     host->window()->SetName(
         base::StringPrintf("MirrorRootWindow-%d", mirror_host_count++));

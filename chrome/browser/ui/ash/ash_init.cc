@@ -11,6 +11,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/shell.h"
+#include "ash/shell_init_params.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -42,7 +43,7 @@ bool ShouldOpenAshOnStartup() {
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kOpenAsh);
 }
 
-void OpenAsh() {
+void OpenAsh(gfx::AcceleratedWidget remote_window) {
 #if defined(OS_CHROMEOS)
 #if defined(USE_X11)
   if (base::SysInfo::IsRunningOnChromeOS()) {
@@ -58,8 +59,14 @@ void OpenAsh() {
     ash::Shell::set_initially_hide_cursor(true);
 #endif
 
+  ash::ShellInitParams shell_init_params;
   // Shell takes ownership of ChromeShellDelegate.
-  ash::Shell* shell = ash::Shell::CreateInstance(new ChromeShellDelegate);
+  shell_init_params.delegate = new ChromeShellDelegate;
+#if defined(OS_WIN)
+  shell_init_params.remote_hwnd = remote_window;
+#endif
+
+  ash::Shell* shell = ash::Shell::CreateInstance(shell_init_params);
   shell->accelerator_controller()->SetScreenshotDelegate(
       scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.

@@ -9,6 +9,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/root_window_transformers.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
@@ -42,8 +43,9 @@ void VirtualKeyboardWindowController::UpdateWindow(
     const DisplayInfo& display_info) {
   static int virtual_keyboard_host_count = 0;
   if (!root_window_controller_.get()) {
-    const gfx::Rect& bounds_in_native = display_info.bounds_in_native();
-    AshWindowTreeHost* ash_host = AshWindowTreeHost::Create(bounds_in_native);
+    AshWindowTreeHostInitParams init_params;
+    init_params.initial_bounds = display_info.bounds_in_native();
+    AshWindowTreeHost* ash_host = AshWindowTreeHost::Create(init_params);
     aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
 
     host->window()->SetName(base::StringPrintf("VirtualKeyboardRootWindow-%d",

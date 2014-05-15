@@ -126,6 +126,7 @@ class ShelfItemDelegateManager;
 class ShelfModel;
 class ShelfWindowWatcher;
 class ShellDelegate;
+struct ShellInitParams;
 class ShellObserver;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
@@ -174,7 +175,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // A shell must be explicitly created so that it can call |Init()| with the
   // delegate set. |delegate| can be NULL (if not required for initialization).
   // Takes ownership of |delegate|.
-  static Shell* CreateInstance(ShellDelegate* delegate);
+  static Shell* CreateInstance(const ShellInitParams& init_params);
 
   // Should never be called before |CreateInstance()|.
   static Shell* GetInstance();
@@ -581,7 +582,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   explicit Shell(ShellDelegate* delegate);
   virtual ~Shell();
 
-  void Init();
+  void Init(const ShellInitParams& init_params);
 
   // Initializes virtual keyboard controller.
   void InitKeyboard();

@@ -9,32 +9,14 @@
 #include "ui/gfx/transform.h"
 
 namespace ash {
-namespace {
-AshRemoteWindowTreeHostWin* g_instance = NULL;
+
+AshRemoteWindowTreeHostWin::AshRemoteWindowTreeHostWin(HWND remote_hwnd)
+    : aura::RemoteWindowTreeHostWin(),
+      transformer_helper_(this) {
+  SetRemoteWindowHandle(remote_hwnd);
 }
 
-// static
-void AshRemoteWindowTreeHostWin::Init() {
-  DCHECK(!g_instance);
-  g_instance = new AshRemoteWindowTreeHostWin();
-  aura::RemoteWindowTreeHostWin::SetInstance(g_instance);
-  CHECK_EQ(g_instance, aura::RemoteWindowTreeHostWin::Instance());
-}
-
-// static
-AshRemoteWindowTreeHostWin* AshRemoteWindowTreeHostWin::GetInstance() {
-  if (!g_instance)
-    Init();
-  CHECK_EQ(g_instance, aura::RemoteWindowTreeHostWin::Instance());
-  return g_instance;
-}
-
-AshRemoteWindowTreeHostWin::AshRemoteWindowTreeHostWin()
-    : aura::RemoteWindowTreeHostWin(gfx::Rect()), transformer_helper_(this) {
-  g_instance = this;
-}
-
-AshRemoteWindowTreeHostWin::~AshRemoteWindowTreeHostWin() { g_instance = NULL; }
+AshRemoteWindowTreeHostWin::~AshRemoteWindowTreeHostWin() {}
 
 void AshRemoteWindowTreeHostWin::ToggleFullScreen() {}
 

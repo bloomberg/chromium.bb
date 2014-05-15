@@ -30,6 +30,7 @@
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
+#include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/keyboard_uma_event_filter.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -47,6 +48,7 @@
 #include "ash/shelf/shelf_window_watcher.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_factory.h"
+#include "ash/shell_init_params.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/status_area_widget.h"
@@ -163,6 +165,15 @@ class AshVisibilityController : public ::wm::VisibilityController {
   DISALLOW_COPY_AND_ASSIGN(AshVisibilityController);
 };
 
+AshWindowTreeHostInitParams ShellInitParamsToAshWindowTreeHostInitParams(
+    const ShellInitParams& shell_init_params) {
+  AshWindowTreeHostInitParams ash_init_params;
+#if defined(OS_WIN)
+  ash_init_params.remote_hwnd = shell_init_params.remote_hwnd;
+#endif
+  return ash_init_params;
+}
+
 }  // namespace
 
 // static
@@ -174,10 +185,10 @@ bool Shell::initially_hide_cursor_ = false;
 // Shell, public:
 
 // static
-Shell* Shell::CreateInstance(ShellDelegate* delegate) {
+Shell* Shell::CreateInstance(const ShellInitParams& init_params) {
   CHECK(!instance_);
-  instance_ = new Shell(delegate);
-  instance_->Init();
+  instance_ = new Shell(init_params.delegate);
+  instance_->Init(init_params);
   return instance_;
 }
 
@@ -797,7 +808,7 @@ Shell::~Shell() {
   instance_ = NULL;
 }
 
-void Shell::Init() {
+void Shell::Init(const ShellInitParams& init_params) {
   delegate_->PreInit();
   if (keyboard::IsKeyboardUsabilityExperimentEnabled()) {
     display_manager_->SetSecondDisplayMode(DisplayManager::VIRTUAL_KEYBOARD);
@@ -858,7 +869,8 @@ void Shell::Init() {
   screen_position_controller_.reset(new ScreenPositionController);
 
   display_controller_->Start();
-  display_controller_->CreatePrimaryHost();
+  display_controller_->CreatePrimaryHost(
+      ShellInitParamsToAshWindowTreeHostInitParams(init_params));
   aura::Window* root_window = display_controller_->GetPrimaryRootWindow();
   target_root_window_ = root_window;
 

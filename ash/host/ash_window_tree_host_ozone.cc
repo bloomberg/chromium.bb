@@ -4,6 +4,7 @@
 
 #include "ash/host/ash_window_tree_host.h"
 
+#include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
 #include "base/command_line.h"
@@ -88,8 +89,9 @@ void AshWindowTreeHostOzone::UpdateRootWindowSize(const gfx::Size& host_size) {
 
 }  // namespace
 
-AshWindowTreeHost* AshWindowTreeHost::Create(const gfx::Rect& initial_bounds) {
-  return new AshWindowTreeHostOzone(initial_bounds);
+AshWindowTreeHost* AshWindowTreeHost::Create(
+    const AshWindowTreeHostInitParams& init_params) {
+  return new AshWindowTreeHostOzone(intial_params.initial_bounds);
 }
 
 }  // namespace ash

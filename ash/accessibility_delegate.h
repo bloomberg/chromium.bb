@@ -98,4 +98,4 @@ class ASH_EXPORT AccessibilityDelegate {
 
 }  // namespace ash
 
-#endif  // ASH_ACCESSIBILITYDELEGATE_H_
+#endif  // ASH_ACCESSIBILITY_DELEGATE_H_

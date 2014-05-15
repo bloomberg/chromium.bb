@@ -151,23 +151,17 @@ RemoteWindowTreeHostWin* g_instance = NULL;
 
 // static
 RemoteWindowTreeHostWin* RemoteWindowTreeHostWin::Instance() {
-  if (!g_instance)
-    g_instance = new RemoteWindowTreeHostWin(gfx::Rect());
   return g_instance;
 }
 
-// static
-void RemoteWindowTreeHostWin::SetInstance(RemoteWindowTreeHostWin* instance) {
-  CHECK(!g_instance);
-  g_instance = instance;
-}
-
-RemoteWindowTreeHostWin::RemoteWindowTreeHostWin(const gfx::Rect& bounds)
+RemoteWindowTreeHostWin::RemoteWindowTreeHostWin()
     : remote_window_(NULL),
       host_(NULL),
       ignore_mouse_moves_until_set_cursor_ack_(false),
       event_flags_(0),
       window_size_(aura::WindowTreeHost::GetNativeScreenSize()) {
+  CHECK(!g_instance);
+  g_instance = this;
   prop_.reset(new ui::ViewProp(NULL, kWindowTreeHostWinKey, this));
   CreateCompositor(GetAcceleratedWidget());
 }
@@ -175,6 +169,7 @@ RemoteWindowTreeHostWin::RemoteWindowTreeHostWin(const gfx::Rect& bounds)
 RemoteWindowTreeHostWin::~RemoteWindowTreeHostWin() {
   DestroyCompositor();
   DestroyDispatcher();
+  DCHECK_EQ(g_instance, this);
   g_instance = NULL;
 }
 
@@ -183,13 +178,8 @@ bool RemoteWindowTreeHostWin::IsValid() {
   return Instance()->remote_window_ != NULL;
 }
 
-void RemoteWindowTreeHostWin::InitializeRemoteWindowAndScaleFactor(
-    HWND remote_window,
-    float device_scale) {
+void RemoteWindowTreeHostWin::SetRemoteWindowHandle(HWND remote_window) {
   remote_window_ = remote_window;
-  gfx::InitDeviceScaleFactor(device_scale);
-  // Do not create compositor here, but in Connected() below.
-  // See http://crbug.com/330179 and http://crbug.com/334380.
 }
 
 void RemoteWindowTreeHostWin::Connected(IPC::Sender* host) {
