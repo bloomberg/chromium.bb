@@ -582,7 +582,8 @@ InspectorTest.columnContents = function(column, row)
     for (var node = parent.children[0]; node; node = node.traverseNextNode(true, parent, true)) {
         if (!node.selectable)
             continue;
-        var content = node.element.children[column.ordinal];
+        var cell = node.element.children[column.ordinal];
+        var content = cell.firstElementChild;
         // Do not inlcude percents
         if (content.firstElementChild)
             content = content.firstElementChild;
