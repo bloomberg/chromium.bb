@@ -36,6 +36,7 @@
 #include "bindings/v8/NPV8Object.h"  // for PrivateIdentifier
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8NPObject.h"
 #include "bindings/v8/V8NPUtils.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
@@ -180,6 +181,11 @@ NPP WebBindings::getObjectOwner(NPObject*)
 void WebBindings::unregisterObject(NPObject* object)
 {
     _NPN_UnregisterObject(object);
+}
+
+void WebBindings::dropV8WrapperForObject(NPObject* object)
+{
+    WebCore::forgetV8ObjectForNPObject(object);
 }
 
 NPUTF8* WebBindings::utf8FromIdentifier(NPIdentifier identifier)
