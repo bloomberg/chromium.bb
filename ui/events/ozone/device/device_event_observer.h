@@ -5,13 +5,13 @@
 #ifndef UI_EVENTS_OZONE_DEVICE_EVENT_OBSERVER_H_
 #define UI_EVENTS_OZONE_DEVICE_EVENT_OBSERVER_H_
 
-#include "ui/events/events_export.h"
+#include "ui/events/ozone/events_ozone_export.h"
 
 namespace ui {
 
 class DeviceEvent;
 
-class EVENTS_EXPORT DeviceEventObserver {
+class EVENTS_OZONE_EXPORT DeviceEventObserver {
  public:
   virtual ~DeviceEventObserver() {}
 

@@ -4,11 +4,7 @@
 
 #include "ui/events/ozone/event_factory_ozone.h"
 
-#include "base/command_line.h"
-#include "base/debug/trace_event.h"
-#include "base/strings/stringprintf.h"
-#include "ui/events/event.h"
-#include "ui/events/event_switches.h"
+#include "base/logging.h"
 
 namespace ui {
 

@@ -7,11 +7,11 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "ui/events/events_export.h"
+#include "ui/events/ozone/events_ozone_export.h"
 
 namespace ui {
 
-class EVENTS_EXPORT DeviceEvent {
+class EVENTS_OZONE_EXPORT DeviceEvent {
  public:
   enum DeviceType {
     INPUT,

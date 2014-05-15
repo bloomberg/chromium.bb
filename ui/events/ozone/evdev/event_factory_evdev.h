@@ -10,10 +10,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
-#include "ui/events/events_export.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
+#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 
@@ -23,9 +23,9 @@ class CursorDelegateEvdev;
 class DeviceManager;
 
 // Ozone events implementation for the Linux input subsystem ("evdev").
-class EVENTS_EXPORT EventFactoryEvdev : public EventFactoryOzone,
-                                        public DeviceEventObserver,
-                                        public PlatformEventSource {
+class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public EventFactoryOzone,
+                                                    public DeviceEventObserver,
+                                                    public PlatformEventSource {
  public:
   EventFactoryEvdev();
   EventFactoryEvdev(CursorDelegateEvdev* cursor,

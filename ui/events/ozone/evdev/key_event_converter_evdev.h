@@ -8,15 +8,15 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event.h"
-#include "ui/events/events_export.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_modifiers_evdev.h"
+#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 struct input_event;
 
 namespace ui {
 
-class EVENTS_EXPORT KeyEventConverterEvdev
+class EVENTS_OZONE_EVDEV_EXPORT KeyEventConverterEvdev
     : public EventConverterEvdev,
       public base::MessagePumpLibevent::Watcher {
  public:

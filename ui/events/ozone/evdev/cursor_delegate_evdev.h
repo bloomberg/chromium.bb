@@ -5,7 +5,7 @@
 #ifndef UI_EVENTS_OZONE_EVDEV_CURSOR_DELEGATE_EVDEV_H_
 #define UI_EVENTS_OZONE_EVDEV_CURSOR_DELEGATE_EVDEV_H_
 
-#include "ui/events/events_export.h"
+#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -15,7 +15,7 @@ class Vector2dF;
 
 namespace ui {
 
-class EVENTS_EXPORT CursorDelegateEvdev {
+class EVENTS_OZONE_EVDEV_EXPORT CursorDelegateEvdev {
  public:
   // Move the cursor.
   virtual void MoveCursor(const gfx::Vector2dF& delta) = 0;

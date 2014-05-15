@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_pump_libevent.h"
-#include "ui/events/events_export.h"
+#include "ui/events/ozone/events_ozone_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -25,7 +25,7 @@ class Event;
 // Ozone presumes that the set of file desctiprtors can vary at runtime so this
 // class supports dynamically adding and removing |EventConverterOzone|
 // instances as necessary.
-class EVENTS_EXPORT EventFactoryOzone {
+class EVENTS_OZONE_EXPORT EventFactoryOzone {
  public:
   EventFactoryOzone();
   virtual ~EventFactoryOzone();

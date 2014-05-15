@@ -119,38 +119,6 @@
         'gestures/gesture_types.h',
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
-        'ozone/device/device_event.cc',
-        'ozone/device/device_event.h',
-        'ozone/device/device_event_observer.h',
-        'ozone/device/device_manager.cc',
-        'ozone/device/device_manager.h',
-        'ozone/device/device_manager_manual.cc',
-        'ozone/device/device_manager_manual.h',
-        'ozone/device/udev/device_manager_udev.cc',
-        'ozone/device/udev/device_manager_udev.h',
-        'ozone/device/udev/scoped_udev.h',
-        'ozone/evdev/libgestures_glue/event_reader_libevdev_cros.cc',
-        'ozone/evdev/libgestures_glue/event_reader_libevdev_cros.h',
-        'ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.cc',
-        'ozone/evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h',
-        'ozone/evdev/libgestures_glue/gesture_logging.cc',
-        'ozone/evdev/libgestures_glue/gesture_logging.h',
-        'ozone/evdev/libgestures_glue/gesture_timer_provider.cc',
-        'ozone/evdev/libgestures_glue/gesture_timer_provider.h',
-        'ozone/evdev/event_converter_evdev.cc',
-        'ozone/evdev/event_converter_evdev.h',
-        'ozone/evdev/event_device_info.cc',
-        'ozone/evdev/event_device_info.h',
-        'ozone/evdev/event_factory_evdev.cc',
-        'ozone/evdev/event_factory_evdev.h',
-        'ozone/evdev/event_modifiers_evdev.cc',
-        'ozone/evdev/event_modifiers_evdev.h',
-        'ozone/evdev/key_event_converter_evdev.cc',
-        'ozone/evdev/key_event_converter_evdev.h',
-        'ozone/evdev/touch_event_converter_evdev.cc',
-        'ozone/evdev/touch_event_converter_evdev.h',
-        'ozone/event_factory_ozone.cc',
-        'ozone/event_factory_ozone.h',
         'ozone/events_ozone.cc',
         'platform/platform_event_dispatcher.h',
         'platform/platform_event_observer.h',
@@ -207,32 +175,6 @@
           # use_glib == 0
           'sources!': [
             'platform/x11/x11_event_source_glib.cc',
-          ],
-        }],
-        ['use_ozone_evdev==1', {
-          'defines': ['USE_OZONE_EVDEV=1'],
-        }],
-        ['use_ozone_evdev==1 and use_udev==1', {
-          'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:udev',
-          ],
-        }],
-        ['use_ozone_evdev==1 and use_evdev_gestures==1', {
-          'dependencies': [
-            '<(DEPTH)/build/linux/system.gyp:libgestures',
-            '<(DEPTH)/build/linux/system.gyp:libevdev-cros',
-          ],
-          'defines': [
-            'USE_EVDEV_GESTURES',
-          ],
-        }, {
-          'sources/': [
-            ['exclude', '^ozone/evdev/libgestures_glue/'],
-          ],
-        }],
-        ['use_udev==0', {
-          'sources/': [
-            ['exclude', '_udev\\.(h|cc)$'],
           ],
         }],
       ],
@@ -360,12 +302,20 @@
         'gesture_detection/touch_disposition_gesture_filter_unittest.cc',
         'keycodes/dom4/keycode_converter_unittest.cc',
         'latency_info_unittest.cc',
-        'ozone/evdev/key_event_converter_evdev_unittest.cc',
-        'ozone/evdev/touch_event_converter_evdev_unittest.cc',
         'platform/platform_event_source_unittest.cc',
         'x/events_x_unittest.cc',
       ],
       'conditions': [
+        ['use_ozone==1', {
+          'sources': [
+            'ozone/evdev/key_event_converter_evdev_unittest.cc',
+            'ozone/evdev/touch_event_converter_evdev_unittest.cc',
+          ],
+          'dependencies': [
+            'ozone/events_ozone.gyp:events_ozone',
+            'ozone/events_ozone.gyp:events_ozone_evdev',
+          ],
+        }],
         ['OS=="linux" and use_allocator!="none"', {
           'dependencies': [
             '<(DEPTH)/base/allocator/allocator.gyp:allocator',

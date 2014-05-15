@@ -129,6 +129,7 @@
         }],
         ['use_ozone==1', {
           'dependencies': [
+            '../events/ozone/events_ozone.gyp:events_ozone',
             '../ozone/ozone.gyp:ozone',
           ],
         }],

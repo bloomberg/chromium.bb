@@ -6,7 +6,7 @@
 #define UI_EVENTS_OZONE_EVDEV_EVENT_MODIFIERS_EVDEV_H_
 
 #include "base/basictypes.h"
-#include "ui/events/events_export.h"
+#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 
@@ -39,7 +39,7 @@ enum {
 // currently pressed. However some keys toggle a persistent "lock" for the
 // modifier instead, such as CapsLock. If a modifier is "locked" then its state
 // is inverted until it is unlocked.
-class EVENTS_EXPORT EventModifiersEvdev {
+class EVENTS_OZONE_EVDEV_EXPORT EventModifiersEvdev {
  public:
   EventModifiersEvdev();
   ~EventModifiersEvdev();

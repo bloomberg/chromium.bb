@@ -6,13 +6,13 @@
 #define UI_EVENTS_OZONE_DEVICE_DEVICE_MANAGER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/events/events_export.h"
+#include "ui/events/ozone/events_ozone_export.h"
 
 namespace ui {
 
 class DeviceEventObserver;
 
-class EVENTS_EXPORT DeviceManager {
+class EVENTS_OZONE_EXPORT DeviceManager {
  public:
   virtual ~DeviceManager() {}
 
@@ -29,7 +29,7 @@ class EVENTS_EXPORT DeviceManager {
   virtual void RemoveObserver(DeviceEventObserver* observer) = 0;
 };
 
-EVENTS_EXPORT scoped_ptr<DeviceManager> CreateDeviceManager();
+EVENTS_OZONE_EXPORT scoped_ptr<DeviceManager> CreateDeviceManager();
 
 }  // namespace ui
 

@@ -21,6 +21,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../events/events.gyp:events',
+        '../events/ozone/events_ozone.gyp:events_ozone_evdev',
         '../gfx/gfx.gyp:gfx',
       ],
       'sources': [

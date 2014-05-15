@@ -11,15 +11,15 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_pump_libevent.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/events_export.h"
 #include "ui/events/ozone/evdev/event_converter_evdev.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
+#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 
 class TouchEvent;
 
-class EVENTS_EXPORT TouchEventConverterEvdev
+class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
     : public EventConverterEvdev,
       public base::MessagePumpLibevent::Watcher {
  public:

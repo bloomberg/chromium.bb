@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/events/events_export.h"
+#include "ui/events/ozone/evdev/events_ozone_evdev_export.h"
 
 namespace ui {
 
@@ -18,7 +18,7 @@ class EventModifiersEvdev;
 typedef base::Callback<void(Event*)> EventDispatchCallback;
 
 // Base class for device-specific evdev event conversion.
-class EVENTS_EXPORT EventConverterEvdev {
+class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev {
  public:
   EventConverterEvdev();
   explicit EventConverterEvdev(const EventDispatchCallback& callback);
