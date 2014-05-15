@@ -85,7 +85,7 @@ automationInternal.onAccessibilityEvent.addListener(function(data) {
   }
   privates(targetTree).impl.update(data);
   var eventType = data.eventType;
-  if (eventType == 'load_complete' || eventType == 'layout_complete') {
+  if (eventType == 'loadComplete' || eventType == 'layoutComplete') {
     // If the tree wasn't available when getTree() was called, the callback will
     // have been cached in idToCallback, so call and delete it now that we
     // have the complete tree.

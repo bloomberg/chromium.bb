@@ -319,9 +319,9 @@ class Enum(object):
               'type': 'string',
               'enum': enum}
     for property_name in (
-        'inline_doc', 'noinline_doc', 'nodoc', 'cpp_omit_enum_type',):
+        'inline_doc', 'noinline_doc', 'nodoc', 'cpp_enum_prefix_override',):
       if self.node.GetProperty(property_name):
-        result[property_name] = True
+        result[property_name] = self.node.GetProperty(property_name)
     if self.node.GetProperty('deprecated'):
         result[deprecated] = self.node.GetProperty('deprecated')
     return result
@@ -407,7 +407,7 @@ class IDLSchema(object):
     internal = False
     description = None
     platforms = None
-    compiler_options = None
+    compiler_options = {}
     deprecated = None
     for node in self.idl:
       if node.cls == 'Namespace':
@@ -418,7 +418,7 @@ class IDLSchema(object):
           description = ''
         namespace = Namespace(node, description, nodoc, internal,
                               platforms=platforms,
-                              compiler_options=compiler_options,
+                              compiler_options=compiler_options or None,
                               deprecated=deprecated)
         namespaces.append(namespace.process())
         nodoc = False
@@ -437,7 +437,9 @@ class IDLSchema(object):
         elif node.name == 'platforms':
           platforms = list(node.value)
         elif node.name == 'implemented_in':
-          compiler_options = {'implemented_in': node.value}
+          compiler_options['implemented_in'] = node.value
+        elif node.name == 'camel_case_enum_to_string':
+          compiler_options['camel_case_enum_to_string'] = node.value
         elif node.name == 'deprecated':
           deprecated = str(node.value)
         else:

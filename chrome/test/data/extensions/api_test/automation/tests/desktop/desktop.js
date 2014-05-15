@@ -5,7 +5,7 @@
 var allTests = [
   function testGetDesktop() {
     chrome.automation.getDesktop(function(tree) {
-      tree.addEventListener('load_complete', function(e) {
+      tree.addEventListener('loadComplete', function(e) {
         assertEq('desktop', tree.root.role);
         assertEq('window', tree.root.firstChild().role);
         chrome.test.succeed();

@@ -19,7 +19,7 @@ var allTests = [
     assertTrue('height' in okButton.location, 'no height in location');
     assertTrue('width' in okButton.location, 'no width in location');
 
-    tree.root.addEventListener('children_changed', assertOkButtonLocation);
+    tree.root.addEventListener('childrenChanged', assertOkButtonLocation);
     chrome.tabs.executeScript({ 'code':
           'document.querySelector("button")' +
           '.setAttribute("style", "position: absolute; left: 100; top: 200; ' +

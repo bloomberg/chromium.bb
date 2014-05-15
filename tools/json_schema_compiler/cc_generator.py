@@ -893,8 +893,11 @@ class _Generator(object):
                  (maybe_namespace, classname))
     c.Sblock('switch (enum_param) {')
     for enum_value in self._type_helper.FollowRef(type_).enum_values:
+      name = enum_value.name
+      if 'camel_case_enum_to_string' in self._namespace.compiler_options:
+        name = enum_value.CamelName()
       (c.Append('case %s: ' % self._type_helper.GetEnumValue(type_, enum_value))
-        .Append('  return "%s";' % enum_value.name))
+        .Append('  return "%s";' % name))
     (c.Append('case %s:' % self._type_helper.GetEnumNoneValue(type_))
       .Append('  return "";')
       .Eblock('}')

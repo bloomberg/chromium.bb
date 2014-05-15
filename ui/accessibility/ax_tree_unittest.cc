@@ -110,9 +110,9 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   EXPECT_EQ(checkbox.role, checkbox_node->data().role);
 
   EXPECT_EQ(
-      "id=1 root_web_area FOCUSABLE FOCUSED (0, 0)-(800, 600) child_ids=2,3\n"
+      "id=1 rootWebArea FOCUSABLE FOCUSED (0, 0)-(800, 600) child_ids=2,3\n"
       "  id=2 button (20, 20)-(200, 30)\n"
-      "  id=3 check_box (20, 50)-(200, 30)\n",
+      "  id=3 checkBox (20, 50)-(200, 30)\n",
       dst_tree.ToString());
 }
 
@@ -148,8 +148,8 @@ TEST(AXTreeTest, SerializeAXTreeUpdate) {
 
   EXPECT_EQ(
       "id=3 list (0, 0)-(0, 0) child_ids=4,5,6\n"
-      "  id=5 list_item (0, 0)-(0, 0)\n"
-      "  id=6 list_item (0, 0)-(0, 0)\n"
+      "  id=5 listItem (0, 0)-(0, 0)\n"
+      "  id=6 listItem (0, 0)-(0, 0)\n"
       "id=7 button (0, 0)-(0, 0)\n",
       update.ToString());
 }

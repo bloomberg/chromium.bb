@@ -4,7 +4,7 @@
 
 // These should be kept in sync with third_party/WebKit/public/web/WebAXEnums.h
 // until the Chromium and Blink trees are merged.
-namespace ui {
+[camel_case_enum_to_string=true] namespace ui {
   enum AXEvent {
     activedescendantchanged,
     alert,
@@ -193,141 +193,141 @@ namespace ui {
     visited
   };
 
-  [cpp_omit_enum_type] enum AXStringAttribute {
+  [cpp_enum_prefix_override="ax_attr"] enum AXStringAttribute {
     // Document attributes.
-    ax_attr_doc_url,
-    ax_attr_doc_title,
-    ax_attr_doc_mimetype,
-    ax_attr_doc_doctype,
+    doc_url,
+    doc_title,
+    doc_mimetype,
+    doc_doctype,
 
     // Attributes that could apply to any node.
-    ax_attr_access_key,
-    ax_attr_action,
-    ax_attr_container_live_relevant,
-    ax_attr_container_live_status,
-    ax_attr_description,
-    ax_attr_display,
-    ax_attr_help,
-    ax_attr_html_tag,
-    ax_attr_name,
-    ax_attr_live_relevant,
-    ax_attr_live_status,
-    ax_attr_role,
-    ax_attr_shortcut,
-    ax_attr_url,
-    ax_attr_value
+    access_key,
+    action,
+    container_live_relevant,
+    container_live_status,
+    description,
+    display,
+    help,
+    html_tag,
+    name,
+    live_relevant,
+    live_status,
+    role,
+    shortcut,
+    url,
+    value
   };
 
-  [cpp_omit_enum_type] enum AXIntAttribute {
+  [cpp_enum_prefix_override="ax_attr"] enum AXIntAttribute {
     // Scrollable container attributes.
-    ax_attr_scroll_x,
-    ax_attr_scroll_x_min,
-    ax_attr_scroll_x_max,
-    ax_attr_scroll_y,
-    ax_attr_scroll_y_min,
-    ax_attr_scroll_y_max,
+    scroll_x,
+    scroll_x_min,
+    scroll_x_max,
+    scroll_y,
+    scroll_y_min,
+    scroll_y_max,
 
     // Editable text attributes.
-    ax_attr_text_sel_start,
-    ax_attr_text_sel_end,
+    text_sel_start,
+    text_sel_end,
 
     // Table attributes.
-    ax_attr_table_row_count,
-    ax_attr_table_column_count,
-    ax_attr_table_header_id,
+    table_row_count,
+    table_column_count,
+    table_header_id,
 
     // Table row attributes.
-    ax_attr_table_row_index,
-    ax_attr_table_row_header_id,
+    table_row_index,
+    table_row_header_id,
 
     // Table column attributes.
-    ax_attr_table_column_index,
-    ax_attr_table_column_header_id,
+    table_column_index,
+    table_column_header_id,
 
     // Table cell attributes.
-    ax_attr_table_cell_column_index,
-    ax_attr_table_cell_column_span,
-    ax_attr_table_cell_row_index,
-    ax_attr_table_cell_row_span,
+    table_cell_column_index,
+    table_cell_column_span,
+    table_cell_row_index,
+    table_cell_row_span,
 
     // Tree control attributes.
-    ax_attr_hierarchical_level,
+    hierarchical_level,
 
     // Relationships between this element and other elements.
-    ax_attr_title_ui_element,
-    ax_attr_activedescendant_id,
+    title_ui_element,
+    activedescendant_id,
 
     // Color value for AX_ROLE_COLOR_WELL, each component is 0..255
-    ax_attr_color_value_red,
-    ax_attr_color_value_green,
-    ax_attr_color_value_blue,
+    color_value_red,
+    color_value_green,
+    color_value_blue,
 
     // Inline text attributes.
-    ax_attr_text_direction
+    text_direction
   };
 
-  [cpp_omit_enum_type] enum AXFloatAttribute {
+  [cpp_enum_prefix_override="ax_attr"] enum AXFloatAttribute {
     // Document attributes.
-    ax_attr_doc_loading_progress,
+    doc_loading_progress,
 
     // Range attributes.
-    ax_attr_value_for_range,
-    ax_attr_min_value_for_range,
-    ax_attr_max_value_for_range
+    value_for_range,
+    min_value_for_range,
+    max_value_for_range
   };
 
-  [cpp_omit_enum_type] enum AXBoolAttribute {
+  [cpp_enum_prefix_override="ax_attr"] enum AXBoolAttribute {
     // Document attributes.
-    ax_attr_doc_loaded,
+    doc_loaded,
 
     // True if a checkbox or radio button is in the "mixed" state.
-    ax_attr_button_mixed,
+    button_mixed,
 
     // Live region attributes.
-    ax_attr_container_live_atomic,
-    ax_attr_container_live_busy,
-    ax_attr_live_atomic,
-    ax_attr_live_busy,
+    container_live_atomic,
+    container_live_busy,
+    live_atomic,
+    live_busy,
 
     // ARIA readonly flag.
-    ax_attr_aria_readonly,
+    aria_readonly,
 
     // Writeable attributes
-    ax_attr_can_set_value,
+    can_set_value,
 
     // If this is set, all of the other fields in this struct should
     // be ignored and only the locations should change.
-    ax_attr_update_location_only,
+    update_location_only,
 
     // Set on a canvas element if it has fallback content.
-    ax_attr_canvas_has_fallback
+    canvas_has_fallback
   };
 
-  [cpp_omit_enum_type] enum AXIntListAttribute {
+  [cpp_enum_prefix_override="ax_attr"] enum AXIntListAttribute {
     // Ids of nodes that are children of this node logically, but are
     // not children of this node in the tree structure. As an example,
     // a table cell is a child of a row, and an 'indirect' child of a
     // column.
-    ax_attr_indirect_child_ids,
+    indirect_child_ids,
 
     // Relationships between this element and other elements.
-    ax_attr_controls_ids,
-    ax_attr_describedby_ids,
-    ax_attr_flowto_ids,
-    ax_attr_labelledby_ids,
-    ax_attr_owns_ids,
+    controls_ids,
+    describedby_ids,
+    flowto_ids,
+    labelledby_ids,
+    owns_ids,
 
     // Character indices where line breaks occur.
-    ax_attr_line_breaks,
+    line_breaks,
 
     // For a table, the cell ids in row-major order, with duplicate entries
     // when there's a rowspan or colspan, and with -1 for missing cells.
     // There are always exactly rows * columns entries.
-    ax_attr_cell_ids,
+    cell_ids,
 
     // For a table, the unique cell ids in row-major order of their first
     // occurrence.
-    ax_attr_unique_cell_ids,
+    unique_cell_ids,
 
     // For inline text. This is the pixel position of the end of this
     // character within the bounding rectangle of this object, in the
@@ -335,18 +335,18 @@ namespace ui {
     // text, the first offset is the right coordinate of the first character
     // within the object's bounds, the second offset is the right coordinate
     // of the second character, and so on.
-    ax_attr_character_offsets,
+    character_offsets,
 
     // For inline text. These int lists must be the same size; they represent
     // the start and end character index of each word within this text.
-    ax_attr_word_starts,
-    ax_attr_word_ends
+    word_starts,
+    word_ends
   };
 
-  [cpp_omit_enum_type] enum AXTextDirection {
-    ax_text_direction_lr,
-    ax_text_direction_rl,
-    ax_text_direction_tb,
-    ax_text_direction_bt
+  [cpp_enum_prefix_override="ax"] enum AXTextDirection {
+    text_direction_lr,
+    text_direction_rl,
+    text_direction_tb,
+    text_direction_bt
   };
 };

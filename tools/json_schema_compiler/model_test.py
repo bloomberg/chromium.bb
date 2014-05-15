@@ -118,6 +118,21 @@ class ModelTest(unittest.TestCase):
     for name in expectations:
       self.assertEquals(expectations[name], model.UnixName(name))
 
+  def testCamelName(self):
+    expectations = {
+      'foo': 'foo',
+      'fooBar': 'fooBar',
+      'foo_bar_baz': 'fooBarBaz',
+      'FOO_BAR': 'FOOBar',
+      'FOO_bar': 'FOOBar',
+      '_bar': 'Bar',
+      '_bar_baz': 'BarBaz',
+      'bar_': 'bar',
+      'bar_baz_': 'barBaz',
+      }
+    for testcase, expected in expectations.iteritems():
+      self.assertEquals(expected, model.CamelName(testcase))
+
   def testPlatforms(self):
     self.assertEqual([Platforms.CHROMEOS],
                      self.idl_namespace_chromeos.platforms)

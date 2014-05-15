@@ -12,40 +12,40 @@ var RemoveUntestedStates = function(state) {
 
 var allTests = [
   function testSimplePage() {
-    var title = tree.root.attributes['ax_attr_doc_title'];
+    var title = tree.root.attributes['docTitle'];
     assertEq('Automation Tests', title);
     RemoveUntestedStates(tree.root.state);
     assertEq(
-      {enabled: true, focusable: true, read_only: true},
+      {enabled: true, focusable: true, readOnly: true},
       tree.root.state);
     var children = tree.root.children();
     assertEq(1, children.length);
 
     var body = children[0];
-    assertEq('body', body.attributes['ax_attr_html_tag']);
+    assertEq('body', body.attributes['htmlTag']);
 
     RemoveUntestedStates(body.state);
-    assertEq({enabled: true, read_only: true},
+    assertEq({enabled: true, readOnly: true},
              body.state);
 
     var contentChildren = body.children();
     assertEq(3, contentChildren.length);
     var okButton = contentChildren[0];
-    assertEq('Ok', okButton.attributes['ax_attr_name']);
+    assertEq('Ok', okButton.attributes['name']);
     RemoveUntestedStates(okButton.state);
-    assertEq({enabled: true, focusable: true, read_only: true},
+    assertEq({enabled: true, focusable: true, readOnly: true},
              okButton.state);
     var userNameInput = contentChildren[1];
     assertEq('Username',
-             userNameInput.attributes['ax_attr_description']);
+             userNameInput.attributes['description']);
     RemoveUntestedStates(userNameInput.state);
     assertEq({enabled: true, focusable: true},
              userNameInput.state);
     var cancelButton = contentChildren[2];
     assertEq('Cancel',
-             cancelButton.attributes['ax_attr_name']);
+             cancelButton.attributes['name']);
     RemoveUntestedStates(cancelButton.state);
-    assertEq({enabled: true, focusable: true, read_only: true},
+    assertEq({enabled: true, focusable: true, readOnly: true},
              cancelButton.state);
 
     // Traversal.
