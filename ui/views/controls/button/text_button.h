@@ -184,6 +184,11 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   // Calculate the size of the text size without setting any of the members.
   void CalculateTextSize(gfx::Size* text_size, int max_width);
 
+  // Paint the button's text into the specified canvas. If |mode| is
+  // |PB_FOR_DRAG|, the function paints a drag image representation. Derived
+  // can override this function to change only the text rendering.
+  virtual void OnPaintText(gfx::Canvas* canvas, PaintButtonMode mode);
+
   void set_color_enabled(SkColor color) { color_enabled_ = color; }
   void set_color_disabled(SkColor color) { color_disabled_ = color; }
   void set_color_hover(SkColor color) { color_hover_ = color; }
@@ -328,6 +333,11 @@ class VIEWS_EXPORT TextButton : public TextButtonBase {
   virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) OVERRIDE;
 
  protected:
+  // Paint the button's icon into the specified canvas. If |mode| is
+  // |PB_FOR_DRAG|, the function paints a drag image representation. Derived
+  // can override this function to change only the icon rendering.
+  virtual void OnPaintIcon(gfx::Canvas* canvas, PaintButtonMode mode);
+
   gfx::ImageSkia icon() const { return icon_; }
 
   virtual const gfx::ImageSkia& GetImageToPaint() const;
