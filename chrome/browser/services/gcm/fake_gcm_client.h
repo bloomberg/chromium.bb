@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SERVICES_GCM_GCM_CLIENT_MOCK_H_
-#define CHROME_BROWSER_SERVICES_GCM_GCM_CLIENT_MOCK_H_
+#ifndef CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_H_
+#define CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_H_
 
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -11,7 +11,7 @@
 
 namespace gcm {
 
-class GCMClientMock : public GCMClient {
+class FakeGCMClient : public GCMClient {
  public:
   enum Status {
     UNINITIALIZED,
@@ -25,8 +25,8 @@ class GCMClientMock : public GCMClient {
     DELAY_START,
   };
 
-  explicit GCMClientMock(StartMode start_mode);
-  virtual ~GCMClientMock();
+  explicit FakeGCMClient(StartMode start_mode);
+  virtual ~FakeGCMClient();
 
   // Overridden from GCMClient:
   // Called on IO thread.
@@ -84,11 +84,11 @@ class GCMClientMock : public GCMClient {
   Delegate* delegate_;
   Status status_;
   StartMode start_mode_;
-  base::WeakPtrFactory<GCMClientMock> weak_ptr_factory_;
+  base::WeakPtrFactory<FakeGCMClient> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(GCMClientMock);
+  DISALLOW_COPY_AND_ASSIGN(FakeGCMClient);
 };
 
 }  // namespace gcm
 
-#endif  // CHROME_BROWSER_SERVICES_GCM_GCM_CLIENT_MOCK_H_
+#endif  // CHROME_BROWSER_SERVICES_GCM_FAKE_GCM_CLIENT_H_

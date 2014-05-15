@@ -11,9 +11,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
 #include "chrome/browser/services/gcm/gcm_app_handler.h"
-#include "chrome/browser/services/gcm/gcm_client_mock.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -232,10 +232,10 @@ class GCMDriverTest : public testing::Test {
   void ClearUnregistrationResult();
 
   bool HasAppHandlers() const;
-  GCMClientMock* GetGCMClient();
+  FakeGCMClient* GetGCMClient();
 
   void CreateDriver(bool start_automatically,
-                    GCMClientMock::StartMode gcm_client_start_mode);
+                    FakeGCMClient::StartMode gcm_client_start_mode);
 
   void SignIn(const std::string& account_id);
   void SignOut();
@@ -314,13 +314,13 @@ bool GCMDriverTest::HasAppHandlers() const {
   return !driver_->app_handlers().empty();
 }
 
-GCMClientMock* GCMDriverTest::GetGCMClient() {
-  return static_cast<GCMClientMock*>(driver_->GetGCMClientForTesting());
+FakeGCMClient* GCMDriverTest::GetGCMClient() {
+  return static_cast<FakeGCMClient*>(driver_->GetGCMClientForTesting());
 }
 
 void GCMDriverTest::CreateDriver(
     bool start_automatically,
-    GCMClientMock::StartMode gcm_client_start_mode) {
+    FakeGCMClient::StartMode gcm_client_start_mode) {
   scoped_refptr<net::URLRequestContextGetter> request_context =
       new net::TestURLRequestContextGetter(
           content::BrowserThread::GetMessageLoopProxyForThread(
@@ -419,7 +419,7 @@ void GCMDriverTest::UnregisterCompleted(GCMClient::Result result) {
 
 TEST_F(GCMDriverTest, CreateGCMDriverBeforeSignIn) {
   // Create CreateGMCService first.
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
   EXPECT_FALSE(driver()->IsStarted());
 
   // Sign in. This will kick off the check-in.
@@ -432,12 +432,12 @@ TEST_F(GCMDriverTest, CreateGCMDriverAfterSignIn) {
   SignIn(kTestAccountID1);
 
   // Create GCMeService after sign-in.
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
   EXPECT_TRUE(driver()->IsStarted());
 }
 
 TEST_F(GCMDriverTest, Shutdown) {
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
   EXPECT_TRUE(HasAppHandlers());
 
   driver()->ShutdownService();
@@ -445,66 +445,66 @@ TEST_F(GCMDriverTest, Shutdown) {
 }
 
 TEST_F(GCMDriverTest, SignInAndSignOutUnderPositiveChannelSignal) {
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
   SignIn(kTestAccountID1);
 
   // GCMClient should be loaded.
   EXPECT_TRUE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   SignOut();
 
   // GCMClient should be checked out.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::CHECKED_OUT, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
 }
 
 TEST_F(GCMDriverTest, SignInAndSignOutUnderNonPositiveChannelSignal) {
   // Non-positive channel signal will prevent GCMClient from checking in during
   // sign-in.
-  CreateDriver(false, GCMClientMock::NO_DELAY_START);
+  CreateDriver(false, FakeGCMClient::NO_DELAY_START);
   SignIn(kTestAccountID1);
 
   // GCMClient should not be loaded.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::UNINITIALIZED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
 
   SignOut();
 
   // Check-out should still be performed.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::CHECKED_OUT, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
 }
 
 TEST_F(GCMDriverTest, SignOutAndThenSignIn) {
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
   SignIn(kTestAccountID1);
 
   // GCMClient should be loaded.
   EXPECT_TRUE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   SignOut();
 
   // GCMClient should be checked out.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::CHECKED_OUT, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
 
   // Sign-in with a different account.
   SignIn(kTestAccountID2);
 
   // GCMClient should be loaded again.
   EXPECT_TRUE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 }
 
 TEST_F(GCMDriverTest, StopAndRestartGCM) {
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
   SignIn(kTestAccountID1);
 
   // GCMClient should be loaded.
   EXPECT_TRUE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // Stops the GCM.
   driver()->Stop();
@@ -513,7 +513,7 @@ TEST_F(GCMDriverTest, StopAndRestartGCM) {
 
   // GCMClient should be stopped.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STOPPED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
 
   // Restarts the GCM.
   driver()->Start();
@@ -522,7 +522,7 @@ TEST_F(GCMDriverTest, StopAndRestartGCM) {
 
   // GCMClient should be loaded.
   EXPECT_TRUE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // Stops the GCM.
   driver()->Stop();
@@ -531,18 +531,18 @@ TEST_F(GCMDriverTest, StopAndRestartGCM) {
 
   // GCMClient should be stopped.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STOPPED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STOPPED, GetGCMClient()->status());
 
   // Sign out.
   SignOut();
 
   // GCMClient should be checked out.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::CHECKED_OUT, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::CHECKED_OUT, GetGCMClient()->status());
 }
 
 TEST_F(GCMDriverTest, RegisterWhenNotSignedIn) {
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
 
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
@@ -555,12 +555,12 @@ TEST_F(GCMDriverTest, RegisterWhenNotSignedIn) {
 TEST_F(GCMDriverTest, RegisterUnderNonPositiveChannelSignal) {
   // Non-positive channel signal will prevent GCMClient from checking in during
   // sign-in.
-  CreateDriver(false, GCMClientMock::NO_DELAY_START);
+  CreateDriver(false, FakeGCMClient::NO_DELAY_START);
   SignIn(kTestAccountID1);
 
   // GCMClient should not be checked in.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::UNINITIALIZED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
 
   // Invoking register will make GCMClient checked in.
   std::vector<std::string> sender_ids;
@@ -569,17 +569,17 @@ TEST_F(GCMDriverTest, RegisterUnderNonPositiveChannelSignal) {
 
   // GCMClient should be checked in.
   EXPECT_TRUE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // Registration should succeed.
   const std::string expected_registration_id =
-      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
 }
 
 TEST_F(GCMDriverTest, SendWhenNotSignedIn) {
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
 
   GCMClient::OutgoingMessage message;
   message.id = "1";
@@ -593,12 +593,12 @@ TEST_F(GCMDriverTest, SendWhenNotSignedIn) {
 TEST_F(GCMDriverTest, SendUnderNonPositiveChannelSignal) {
   // Non-positive channel signal will prevent GCMClient from checking in during
   // sign-in.
-  CreateDriver(false, GCMClientMock::NO_DELAY_START);
+  CreateDriver(false, FakeGCMClient::NO_DELAY_START);
   SignIn(kTestAccountID1);
 
   // GCMClient should not be checked in.
   EXPECT_FALSE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::UNINITIALIZED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::UNINITIALIZED, GetGCMClient()->status());
 
   // Invoking send will make GCMClient checked in.
   GCMClient::OutgoingMessage message;
@@ -608,7 +608,7 @@ TEST_F(GCMDriverTest, SendUnderNonPositiveChannelSignal) {
 
   // GCMClient should be checked in.
   EXPECT_TRUE(driver()->IsGCMClientReady());
-  EXPECT_EQ(GCMClientMock::STARTED, GetGCMClient()->status());
+  EXPECT_EQ(FakeGCMClient::STARTED, GetGCMClient()->status());
 
   // Sending should succeed.
   EXPECT_EQ(message.id, send_message_id());
@@ -617,7 +617,7 @@ TEST_F(GCMDriverTest, SendUnderNonPositiveChannelSignal) {
 
 TEST_F(GCMDriverTest, GCMClientNotReadyBeforeRegistration) {
   // Make GCMClient not ready initially.
-  CreateDriver(true, GCMClientMock::DELAY_START);
+  CreateDriver(true, FakeGCMClient::DELAY_START);
   SignIn(kTestAccountID1);
 
   // The registration is on hold until GCMClient is ready.
@@ -640,7 +640,7 @@ TEST_F(GCMDriverTest, GCMClientNotReadyBeforeRegistration) {
 
 TEST_F(GCMDriverTest, GCMClientNotReadyBeforeSending) {
   // Make GCMClient not ready initially.
-  CreateDriver(true, GCMClientMock::DELAY_START);
+  CreateDriver(true, FakeGCMClient::DELAY_START);
   SignIn(kTestAccountID1);
 
   // The sending is on hold until GCMClient is ready.
@@ -684,7 +684,7 @@ GCMDriverFunctionalTest::~GCMDriverFunctionalTest() {
 void GCMDriverFunctionalTest::SetUp() {
   GCMDriverTest::SetUp();
 
-  CreateDriver(true, GCMClientMock::NO_DELAY_START);
+  CreateDriver(true, FakeGCMClient::NO_DELAY_START);
   SignIn(kTestAccountID1);
 }
 
@@ -693,7 +693,7 @@ TEST_F(GCMDriverFunctionalTest, Register) {
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -714,7 +714,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithSameSenderIDs) {
   sender_ids.push_back("sender2");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -739,7 +739,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithDifferentSenderIDs) {
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);
   const std::string expected_registration_id =
-      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
 
   EXPECT_EQ(expected_registration_id, registration_id());
   EXPECT_EQ(GCMClient::SUCCESS, registration_result());
@@ -747,7 +747,7 @@ TEST_F(GCMDriverFunctionalTest, RegisterAgainWithDifferentSenderIDs) {
   // Make sender IDs different.
   sender_ids.push_back("sender2");
   const std::string expected_registration_id2 =
-      GCMClientMock::GetRegistrationIdFromSenderIds(sender_ids);
+      FakeGCMClient::GetRegistrationIdFromSenderIds(sender_ids);
 
   // Calling register 2nd time with the different sender IDs will get back a new
   // registration ID.

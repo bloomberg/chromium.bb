@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/services/gcm/gcm_client_mock.h"
+#include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 
 namespace gcm {
@@ -16,14 +16,14 @@ class GCMClient;
 
 class FakeGCMClientFactory : public GCMClientFactory {
  public:
-  explicit FakeGCMClientFactory(GCMClientMock::StartMode gcm_client_start_mode);
+  explicit FakeGCMClientFactory(FakeGCMClient::StartMode gcm_client_start_mode);
   virtual ~FakeGCMClientFactory();
 
   // GCMClientFactory:
   virtual scoped_ptr<GCMClient> BuildInstance() OVERRIDE;
 
  private:
-  GCMClientMock::StartMode gcm_client_start_mode_;
+  FakeGCMClient::StartMode gcm_client_start_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGCMClientFactory);
 };

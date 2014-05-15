@@ -20,9 +20,9 @@
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/services/gcm/fake_gcm_client.h"
 #include "chrome/browser/services/gcm/fake_gcm_client_factory.h"
 #include "chrome/browser/services/gcm/fake_signin_manager.h"
-#include "chrome/browser/services/gcm/gcm_client_mock.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -216,7 +216,7 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
                     profile(),
                     &ExtensionGCMAppHandlerTest::BuildGCMProfileService));
     scoped_ptr<gcm::GCMClientFactory> gcm_client_factory(
-        new gcm::FakeGCMClientFactory(gcm::GCMClientMock::NO_DELAY_START));
+        new gcm::FakeGCMClientFactory(gcm::FakeGCMClient::NO_DELAY_START));
     gcm_profile_service->Initialize(gcm_client_factory.Pass());
 
     // Create a fake version of ExtensionGCMAppHandler.

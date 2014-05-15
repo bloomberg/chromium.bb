@@ -10,7 +10,7 @@
 namespace gcm {
 
 FakeGCMClientFactory::FakeGCMClientFactory(
-    GCMClientMock::StartMode gcm_client_start_mode)
+    FakeGCMClient::StartMode gcm_client_start_mode)
     : gcm_client_start_mode_(gcm_client_start_mode) {
 }
 
@@ -18,7 +18,7 @@ FakeGCMClientFactory::~FakeGCMClientFactory() {
 }
 
 scoped_ptr<GCMClient> FakeGCMClientFactory::BuildInstance() {
-  return scoped_ptr<GCMClient>(new GCMClientMock(gcm_client_start_mode_));
+  return scoped_ptr<GCMClient>(new FakeGCMClient(gcm_client_start_mode_));
 }
 
 }  // namespace gcm

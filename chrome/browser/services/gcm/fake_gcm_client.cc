@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/services/gcm/gcm_client_mock.h"
+#include "chrome/browser/services/gcm/fake_gcm_client.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -14,17 +14,17 @@
 
 namespace gcm {
 
-GCMClientMock::GCMClientMock(StartMode start_mode)
+FakeGCMClient::FakeGCMClient(StartMode start_mode)
     : delegate_(NULL),
       status_(UNINITIALIZED),
       start_mode_(start_mode),
       weak_ptr_factory_(this) {
 }
 
-GCMClientMock::~GCMClientMock() {
+FakeGCMClient::~FakeGCMClient() {
 }
 
-void GCMClientMock::Initialize(
+void FakeGCMClient::Initialize(
     const checkin_proto::ChromeBuildProto& chrome_build_proto,
     const base::FilePath& store_path,
     const std::vector<std::string>& account_ids,
@@ -36,7 +36,7 @@ void GCMClientMock::Initialize(
   delegate_ = delegate;
 }
 
-void GCMClientMock::Start() {
+void FakeGCMClient::Start() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK_NE(STARTED, status_);
 
@@ -45,105 +45,105 @@ void GCMClientMock::Start() {
   DoLoading();
 }
 
-void GCMClientMock::DoLoading() {
+void FakeGCMClient::DoLoading() {
   status_ = STARTED;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GCMClientMock::CheckinFinished,
+      base::Bind(&FakeGCMClient::CheckinFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GCMClientMock::Stop() {
+void FakeGCMClient::Stop() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   status_ = STOPPED;
 }
 
-void GCMClientMock::CheckOut() {
+void FakeGCMClient::CheckOut() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   status_ = CHECKED_OUT;
 }
 
-void GCMClientMock::Register(const std::string& app_id,
+void FakeGCMClient::Register(const std::string& app_id,
                              const std::vector<std::string>& sender_ids) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   std::string registration_id = GetRegistrationIdFromSenderIds(sender_ids);
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GCMClientMock::RegisterFinished,
+      base::Bind(&FakeGCMClient::RegisterFinished,
                  weak_ptr_factory_.GetWeakPtr(),
                  app_id,
                  registration_id));
 }
 
-void GCMClientMock::Unregister(const std::string& app_id) {
+void FakeGCMClient::Unregister(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GCMClientMock::UnregisterFinished,
+      base::Bind(&FakeGCMClient::UnregisterFinished,
                  weak_ptr_factory_.GetWeakPtr(),
                  app_id));
 }
 
-void GCMClientMock::Send(const std::string& app_id,
+void FakeGCMClient::Send(const std::string& app_id,
                          const std::string& receiver_id,
                          const OutgoingMessage& message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GCMClientMock::SendFinished,
+      base::Bind(&FakeGCMClient::SendFinished,
                  weak_ptr_factory_.GetWeakPtr(),
                  app_id,
                  message));
 }
 
-void GCMClientMock::SetRecording(bool recording) {
+void FakeGCMClient::SetRecording(bool recording) {
 }
 
-void GCMClientMock::ClearActivityLogs() {
+void FakeGCMClient::ClearActivityLogs() {
 }
 
-GCMClient::GCMStatistics GCMClientMock::GetStatistics() const {
+GCMClient::GCMStatistics FakeGCMClient::GetStatistics() const {
   return GCMClient::GCMStatistics();
 }
 
-void GCMClientMock::PerformDelayedLoading() {
+void FakeGCMClient::PerformDelayedLoading() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMClientMock::DoLoading, weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&FakeGCMClient::DoLoading, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void GCMClientMock::ReceiveMessage(const std::string& app_id,
+void FakeGCMClient::ReceiveMessage(const std::string& app_id,
                                    const IncomingMessage& message) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMClientMock::MessageReceived,
+      base::Bind(&FakeGCMClient::MessageReceived,
                  weak_ptr_factory_.GetWeakPtr(),
                  app_id,
                  message));
 }
 
-void GCMClientMock::DeleteMessages(const std::string& app_id) {
+void FakeGCMClient::DeleteMessages(const std::string& app_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&GCMClientMock::MessagesDeleted,
+      base::Bind(&FakeGCMClient::MessagesDeleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  app_id));
 }
 
 // static
-std::string GCMClientMock::GetRegistrationIdFromSenderIds(
+std::string FakeGCMClient::GetRegistrationIdFromSenderIds(
     const std::vector<std::string>& sender_ids) {
   // GCMService normalizes the sender IDs by making them sorted.
   std::vector<std::string> normalized_sender_ids = sender_ids;
@@ -164,21 +164,21 @@ std::string GCMClientMock::GetRegistrationIdFromSenderIds(
   return registration_id;
 }
 
-void GCMClientMock::CheckinFinished() {
+void FakeGCMClient::CheckinFinished() {
   delegate_->OnGCMReady();
 }
 
-void GCMClientMock::RegisterFinished(const std::string& app_id,
+void FakeGCMClient::RegisterFinished(const std::string& app_id,
                                      const std::string& registrion_id) {
   delegate_->OnRegisterFinished(
       app_id, registrion_id, registrion_id.empty() ? SERVER_ERROR : SUCCESS);
 }
 
-void GCMClientMock::UnregisterFinished(const std::string& app_id) {
+void FakeGCMClient::UnregisterFinished(const std::string& app_id) {
   delegate_->OnUnregisterFinished(app_id, GCMClient::SUCCESS);
 }
 
-void GCMClientMock::SendFinished(const std::string& app_id,
+void FakeGCMClient::SendFinished(const std::string& app_id,
                                  const OutgoingMessage& message) {
   delegate_->OnSendFinished(app_id, message.id, SUCCESS);
 
@@ -190,7 +190,7 @@ void GCMClientMock::SendFinished(const std::string& app_id,
     send_error_details.additional_data = message.data;
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&GCMClientMock::MessageSendError,
+        base::Bind(&FakeGCMClient::MessageSendError,
                    weak_ptr_factory_.GetWeakPtr(),
                    app_id,
                    send_error_details),
@@ -198,18 +198,18 @@ void GCMClientMock::SendFinished(const std::string& app_id,
   }
 }
 
-void GCMClientMock::MessageReceived(const std::string& app_id,
+void FakeGCMClient::MessageReceived(const std::string& app_id,
                                     const IncomingMessage& message) {
   if (delegate_)
     delegate_->OnMessageReceived(app_id, message);
 }
 
-void GCMClientMock::MessagesDeleted(const std::string& app_id) {
+void FakeGCMClient::MessagesDeleted(const std::string& app_id) {
   if (delegate_)
     delegate_->OnMessagesDeleted(app_id);
 }
 
-void GCMClientMock::MessageSendError(
+void FakeGCMClient::MessageSendError(
     const std::string& app_id,
     const GCMClient::SendErrorDetails& send_error_details) {
   if (delegate_)
