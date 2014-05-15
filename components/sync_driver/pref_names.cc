@@ -95,6 +95,9 @@ const char kSyncSessionsGUID[] = "sync.session_sync_guid";
 const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
 #endif  // defined(OS_CHROMEOS)
 
+// Stores how many times to try rollback before giving up.
+const char kSyncRemainingRollbackTries[] = "sync.remaining_rollback_tries";
+
 }  // namespace prefs
 
 }  // namespace sync_driver

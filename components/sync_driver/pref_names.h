@@ -61,6 +61,8 @@ extern const char kSyncSessionsGUID[];
 extern const char kSyncSpareBootstrapToken[];
 #endif  // defined(OS_CHROMEOS)
 
+extern const char kSyncRemainingRollbackTries[];
+
 }  // namespace prefs
 
 }  // namespace sync_driver

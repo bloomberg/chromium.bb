@@ -29,6 +29,8 @@ SyncPrefs::SyncPrefs(PrefService* pref_service) : pref_service_(pref_service) {
       base::Bind(&SyncPrefs::OnSyncManagedPrefChanged, base::Unretained(this)));
 }
 
+SyncPrefs::SyncPrefs() : pref_service_(NULL) {}
+
 SyncPrefs::~SyncPrefs() { DCHECK(CalledOnValidThread()); }
 
 // static
@@ -135,6 +137,10 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kSyncAcknowledgedSyncTypes,
                              syncer::ModelTypeSetToValue(model_set),
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
+  registry->RegisterIntegerPref(
+      prefs::kSyncRemainingRollbackTries, 0,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -363,6 +369,14 @@ void SyncPrefs::AcknowledgeSyncedTypes(syncer::ModelTypeSet types) {
   scoped_ptr<base::ListValue> value(
       syncer::ModelTypeSetToValue(acknowledged_types));
   pref_service_->Set(prefs::kSyncAcknowledgedSyncTypes, *value);
+}
+
+int SyncPrefs::GetRemainingRollbackTries() const {
+  return pref_service_->GetInteger(prefs::kSyncRemainingRollbackTries);
+}
+
+void SyncPrefs::SetRemainingRollbackTries(int times) {
+  pref_service_->SetInteger(prefs::kSyncRemainingRollbackTries, times);
 }
 
 void SyncPrefs::OnSyncManagedPrefChanged() {

@@ -2154,6 +2154,8 @@
         'browser/sync/backend_migrator.h',
         'browser/sync/backend_unrecoverable_error_handler.cc',
         'browser/sync/backend_unrecoverable_error_handler.h',
+        'browser/sync/backup_rollback_controller.cc',
+        'browser/sync/backup_rollback_controller.h',
         'browser/sync/open_tabs_ui_delegate.cc',
         'browser/sync/open_tabs_ui_delegate.h',
         'browser/sync/glue/autofill_data_type_controller.cc',

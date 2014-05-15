@@ -1253,6 +1253,9 @@ const char kSyncEnableGetUpdateAvoidance[]   =
 const char kSyncfsEnableDirectoryOperation[] =
     "enable-syncfs-directory-operation";
 
+// Enables backup/rollback of user's data.
+const char kSyncEnableBackupRollback[] = "enable-sync-backup-rollback";
+
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 

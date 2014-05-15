@@ -340,6 +340,7 @@ extern const char kSyncDisableDeferredStartup[];
 extern const char kSyncDeferredStartupTimeoutSeconds[];
 extern const char kSyncEnableGetUpdateAvoidance[];
 extern const char kSyncfsEnableDirectoryOperation[];
+extern const char kSyncEnableBackupRollback[];
 extern const char kTabCapture[];
 extern const char kTestName[];
 extern const char kTrustedSpdyProxy[];

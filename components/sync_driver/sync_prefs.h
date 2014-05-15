@@ -54,6 +54,9 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Does not take ownership of |pref_service|.
   explicit SyncPrefs(PrefService* pref_service);
 
+  // For testing.
+  SyncPrefs();
+
   virtual ~SyncPrefs();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -123,6 +126,10 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Merges the given set of types with the set of acknowledged types.
   void AcknowledgeSyncedTypes(syncer::ModelTypeSet types);
+
+  // Get/Set number of rollback attempts allowed.
+  virtual int GetRemainingRollbackTries() const;
+  virtual void SetRemainingRollbackTries(int times);
 
   // For testing.
 
