@@ -382,22 +382,6 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestUserGestureInfobar) {
   EXPECT_EQ(1U, infobar_service->infobar_count());
 }
 
-// If this flakes, use http://crbug.com/62311.
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNoUserGestureInfobar) {
-  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
-
-  // Load a page which just does a request; no user gesture should result
-  // in no infobar.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL(
-          "/notifications/notifications_request_inline.html"));
-
-  InfoBarService* infobar_service = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
-  EXPECT_EQ(0U, infobar_service->infobar_count());
-}
-
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 

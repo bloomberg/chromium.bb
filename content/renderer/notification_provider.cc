@@ -78,10 +78,6 @@ WebNotificationPresenter::Permission NotificationProvider::checkPermission(
 void NotificationProvider::requestPermission(
     const WebSecurityOrigin& origin,
     WebNotificationPermissionCallback* callback) {
-  // We only request permission in response to a user gesture.
-  if (!WebUserGestureIndicator::isProcessingUserGesture())
-    return;
-
   int id = manager_.RegisterPermissionRequest(callback);
 
   Send(new DesktopNotificationHostMsg_RequestPermission(
