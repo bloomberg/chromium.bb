@@ -40,34 +40,6 @@ namespace {
 // exists only for testing.
 bool g_should_prompt_for_filename = true;
 
-#if !defined(OS_CHROMEOS)
-// Used for mapping between SavePageType constants and the indexes above.
-const SavePageType kIndexToSaveType[] = {
-  content::SAVE_PAGE_TYPE_UNKNOWN,
-  content::SAVE_PAGE_TYPE_AS_ONLY_HTML,
-  content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-};
-
-int SavePackageTypeToIndex(SavePageType type) {
-  for (size_t i = 0; i < arraysize(kIndexToSaveType); ++i) {
-    if (kIndexToSaveType[i] == type)
-      return i;
-  }
-  NOTREACHED();
-  return -1;
-}
-#endif
-
-// Indexes used for specifying which element in the extensions dropdown
-// the user chooses when picking a save type.
-const int kSelectFileHtmlOnlyIndex = 1;
-const int kSelectFileCompleteIndex = 2;
-
-// Used for mapping between the IDS_ string identifiers and the indexes above.
-const int kIndexToIDS[] = {
-  0, IDS_SAVE_PAGE_DESC_HTML_ONLY, IDS_SAVE_PAGE_DESC_COMPLETE,
-};
-
 void OnSavePackageDownloadCreated(content::DownloadItem* download) {
   ChromeDownloadManagerDelegate::DisableSafeBrowsing(download);
 }
@@ -93,6 +65,50 @@ void ContinueSettingUpDriveDownload(
     return;
   callback.Run(drive_tmp_download_path, save_type, base::Bind(
       &OnSavePackageDownloadCreatedChromeOS, profile, drive_path));
+}
+#endif
+
+// Adds "Webpage, HTML Only" type to FileTypeInfo.
+void AddHtmlOnlyFileTypeInfo(
+    ui::SelectFileDialog::FileTypeInfo* file_type_info,
+    const base::FilePath::StringType& extra_extension) {
+  file_type_info->extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_SAVE_PAGE_DESC_HTML_ONLY));
+
+  std::vector<base::FilePath::StringType> extensions;
+  extensions.push_back(FILE_PATH_LITERAL("htm"));
+  extensions.push_back(FILE_PATH_LITERAL("html"));
+  if (!extra_extension.empty())
+    extensions.push_back(extra_extension);
+  file_type_info->extensions.push_back(extensions);
+}
+
+// Adds "Web Archive, Single File" type to FileTypeInfo.
+void AddSingleFileFileTypeInfo(
+    ui::SelectFileDialog::FileTypeInfo* file_type_info) {
+  file_type_info->extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_SAVE_PAGE_DESC_SINGLE_FILE));
+
+  std::vector<base::FilePath::StringType> extensions;
+  extensions.push_back(FILE_PATH_LITERAL("mhtml"));
+  file_type_info->extensions.push_back(extensions);
+}
+
+// Chrome OS doesn't support HTML-Complete. crbug.com/154823
+#if !defined(OS_CHROMEOS)
+// Adds "Webpage, Complete" type to FileTypeInfo.
+void AddCompleteFileTypeInfo(
+    ui::SelectFileDialog::FileTypeInfo* file_type_info,
+    const base::FilePath::StringType& extra_extension) {
+  file_type_info->extension_description_overrides.push_back(
+      l10n_util::GetStringUTF16(IDS_SAVE_PAGE_DESC_COMPLETE));
+
+  std::vector<base::FilePath::StringType> extensions;
+  extensions.push_back(FILE_PATH_LITERAL("htm"));
+  extensions.push_back(FILE_PATH_LITERAL("html"));
+  if (!extra_extension.empty())
+    extensions.push_back(extra_extension);
+  file_type_info->extensions.push_back(extensions);
 }
 #endif
 
@@ -123,67 +139,56 @@ SavePackageFilePicker::SavePackageFilePicker(
   int file_type_index = 0;
   ui::SelectFileDialog::FileTypeInfo file_type_info;
 
-#if defined(OS_CHROMEOS)
   file_type_info.support_drive = true;
-#else
-  file_type_index = SavePackageTypeToIndex(
-      static_cast<SavePageType>(download_prefs_->save_file_type()));
-  DCHECK_NE(-1, file_type_index);
+
+  if (can_save_as_complete_) {
+    // The option index is not zero-based. Put a dummy entry.
+    save_types_.push_back(content::SAVE_PAGE_TYPE_UNKNOWN);
+
+    base::FilePath::StringType extra_extension;
+    if (ShouldSaveAsMHTML()) {
+      default_extension_copy = FILE_PATH_LITERAL("mhtml");
+      suggested_path_copy = suggested_path_copy.ReplaceExtension(
+          default_extension_copy);
+    } else {
+      if (!suggested_path_copy.FinalExtension().empty() &&
+          !suggested_path_copy.MatchesExtension(FILE_PATH_LITERAL(".htm")) &&
+          !suggested_path_copy.MatchesExtension(FILE_PATH_LITERAL(".html"))) {
+        extra_extension = suggested_path_copy.FinalExtension().substr(1);
+      }
+    }
+
+    AddHtmlOnlyFileTypeInfo(&file_type_info, extra_extension);
+    save_types_.push_back(content::SAVE_PAGE_TYPE_AS_ONLY_HTML);
+
+    if (ShouldSaveAsMHTML()) {
+      AddSingleFileFileTypeInfo(&file_type_info);
+      save_types_.push_back(content::SAVE_PAGE_TYPE_AS_MHTML);
+    }
+
+#if !defined(OS_CHROMEOS)
+    AddCompleteFileTypeInfo(&file_type_info, extra_extension);
+    save_types_.push_back(content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
 #endif
 
-  // TODO(benjhayden): Merge the first branch with the second when all of the
-  // platform-specific file selection dialog implementations fully support
-  // switching save-as file formats, and remove the flag/switch.
-  if (ShouldSaveAsMHTML()) {
-    default_extension_copy = FILE_PATH_LITERAL("mhtml");
-    suggested_path_copy = suggested_path_copy.ReplaceExtension(
-        default_extension_copy);
-  } else if (can_save_as_complete_) {
-    // NOTE: this branch will never run on chromeos because ShouldSaveAsHTML()
-    // == can_save_as_complete_ on chromeos.
-    bool add_extra_extension = false;
-    base::FilePath::StringType extra_extension;
-    if (!suggested_path_copy.FinalExtension().empty() &&
-        !suggested_path_copy.MatchesExtension(FILE_PATH_LITERAL(".htm")) &&
-        !suggested_path_copy.MatchesExtension(FILE_PATH_LITERAL(".html"))) {
-      add_extra_extension = true;
-      extra_extension = suggested_path_copy.FinalExtension().substr(1);
-    }
-
-    static const size_t kNumberExtensions = arraysize(kIndexToIDS) - 1;
-    file_type_info.extensions.resize(kNumberExtensions);
-    file_type_info.extension_description_overrides.resize(kNumberExtensions);
-
-    // Indices into kIndexToIDS are 1-based whereas indices into
-    // file_type_info.extensions are 0-based. Hence the '-1's.
-    // If you switch these resize()/direct-assignment patterns to push_back(),
-    // then you risk breaking FileSelected()'s use of |index|.
-
-    file_type_info.extension_description_overrides[
-      kSelectFileHtmlOnlyIndex - 1] = l10n_util::GetStringUTF16(kIndexToIDS[
-          kSelectFileHtmlOnlyIndex]);
-    file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
-        FILE_PATH_LITERAL("htm"));
-    file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
-        FILE_PATH_LITERAL("html"));
-    if (add_extra_extension) {
-      file_type_info.extensions[kSelectFileHtmlOnlyIndex - 1].push_back(
-          extra_extension);
-    }
-
-    file_type_info.extension_description_overrides[
-      kSelectFileCompleteIndex - 1] = l10n_util::GetStringUTF16(kIndexToIDS[
-          kSelectFileCompleteIndex]);
-    file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
-        FILE_PATH_LITERAL("htm"));
-    file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
-        FILE_PATH_LITERAL("html"));
-    if (add_extra_extension) {
-      file_type_info.extensions[kSelectFileCompleteIndex - 1].push_back(
-          extra_extension);
-    }
-
     file_type_info.include_all_files = false;
+
+    content::SavePageType preferred_save_type =
+        static_cast<content::SavePageType>(download_prefs_->save_file_type());
+    if (ShouldSaveAsMHTML())
+      preferred_save_type = content::SAVE_PAGE_TYPE_AS_MHTML;
+
+    // Select the item saved in the pref.
+    for (size_t i = 0; i < save_types_.size(); ++i) {
+      if (save_types_[i] == preferred_save_type) {
+        file_type_index = i;
+        break;
+      }
+    }
+
+    // If the item saved in the pref was not found, use the last item.
+    if (!file_type_index)
+      file_type_index = save_types_.size() - 1;
   } else {
     // The contents can not be saved as complete-HTML, so do not show the file
     // filters.
@@ -234,25 +239,20 @@ void SavePackageFilePicker::FileSelected(
     return;
   SavePageType save_type = content::SAVE_PAGE_TYPE_UNKNOWN;
 
-  if (ShouldSaveAsMHTML()) {
-    save_type = content::SAVE_PAGE_TYPE_AS_MHTML;
-  } else {
-#if defined(OS_CHROMEOS)
-    save_type = content::SAVE_PAGE_TYPE_AS_ONLY_HTML;
-#else
-    // The option index is not zero-based.
-    DCHECK(index >= kSelectFileHtmlOnlyIndex &&
-           index <= kSelectFileCompleteIndex);
-    save_type = kIndexToSaveType[index];
+  if (can_save_as_complete_) {
+    DCHECK_LT(index, static_cast<int>(save_types_.size()));
+    save_type = save_types_[index];
     if (select_file_dialog_.get() &&
         select_file_dialog_->HasMultipleFileTypeChoices())
       download_prefs_->SetSaveFileType(save_type);
-#endif
-  }
 
-  UMA_HISTOGRAM_ENUMERATION("Download.SavePageType",
-                            save_type,
-                            content::SAVE_PAGE_TYPE_MAX);
+    UMA_HISTOGRAM_ENUMERATION("Download.SavePageType",
+                              save_type,
+                              content::SAVE_PAGE_TYPE_MAX);
+  } else {
+    // Use "HTML Only" type as a dummy.
+    save_type = content::SAVE_PAGE_TYPE_AS_ONLY_HTML;
+  }
 
   base::FilePath path_copy(path);
   file_util::NormalizeFileNameEncoding(&path_copy);

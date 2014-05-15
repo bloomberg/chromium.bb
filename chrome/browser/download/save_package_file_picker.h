@@ -5,8 +5,11 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_SAVE_PACKAGE_FILE_PICKER_H_
 #define CHROME_BROWSER_DOWNLOAD_SAVE_PACKAGE_FILE_PICKER_H_
 
+#include <vector>
+
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/public/browser/save_page_type.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 class DownloadPrefs;
@@ -45,6 +48,8 @@ class SavePackageFilePicker : public ui::SelectFileDialog::Listener {
   DownloadPrefs* download_prefs_;
 
   content::SavePackagePathPickedCallback callback_;
+
+  std::vector<content::SavePageType> save_types_;
 
   // For managing select file dialogs.
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
