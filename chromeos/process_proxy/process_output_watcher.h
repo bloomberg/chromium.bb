@@ -10,12 +10,6 @@
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 
-namespace {
-
-const int kReadBufferSize = 256;
-
-}  // namespace
-
 namespace chromeos {
 
 enum ProcessOutputType {
@@ -27,6 +21,9 @@ enum ProcessOutputType {
 typedef base::Callback<void(ProcessOutputType, const std::string&)>
       ProcessOutputCallback;
 
+// Observes output on |out_fd| and invokes |callback| when some output is
+// detected. It assumes UTF8 output.
+// If output is detected in |stop_fd|, the watcher is stopped.
 // This class should live on its own thread because running class makes
 // underlying thread block. It deletes itself when watching is stopped.
 class CHROMEOS_EXPORT ProcessOutputWatcher {
@@ -52,11 +49,22 @@ class CHROMEOS_EXPORT ProcessOutputWatcher {
   // Reads data from fd, and when it's done, invokes callback function.
   void ReadFromFd(ProcessOutputType type, int* fd);
 
+  // Checks if the read buffer has any trailing incomplete UTF8 characters and
+  // returns the read buffer size without them.
+  size_t OutputSizeWithoutIncompleteUTF8();
+
+  // Processes new |read_buffer_| state and notifies observer about new process
+  // output.
+  void ReportOutput(ProcessOutputType type, size_t new_bytes_count);
+
   // It will just delete this.
   void OnStop();
 
-  char read_buffer_[kReadBufferSize];
-  ssize_t read_buffer_size_;
+  char read_buffer_[256];
+  // Maximum read buffer content size.
+  size_t read_buffer_capacity_;
+  // Current read bufferi content size.
+  size_t read_buffer_size_;
 
   int out_fd_;
   int stop_fd_;
