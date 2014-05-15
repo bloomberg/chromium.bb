@@ -127,12 +127,15 @@ void CheckDataPipe(MojoHandle data_pipe_handle) {
 
 void CheckCorruptedString(const mojo::String& arg) {
   // The values don't matter so long as all accesses are within bounds.
-  std::string name = arg.To<std::string>();
-  for (size_t i = 0; i < name.length(); ++i)
-    g_waste_accumulator += name[i];
+  if (arg.is_null())
+    return;
+  for (size_t i = 0; i < arg.size(); ++i)
+    g_waste_accumulator += arg[i];
 }
 
 void CheckCorruptedStringArray(const mojo::Array<mojo::String>& string_array) {
+  if (string_array.is_null())
+    return;
   for (size_t i = 0; i < string_array.size(); ++i)
     CheckCorruptedString(string_array[i]);
 }
