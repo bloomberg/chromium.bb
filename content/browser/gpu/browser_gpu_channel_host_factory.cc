@@ -358,14 +358,15 @@ GpuChannelHost* BrowserGpuChannelHostFactory::GetGpuChannel() {
 void BrowserGpuChannelHostFactory::GpuChannelEstablished() {
   DCHECK(IsMainThread());
   DCHECK(pending_request_);
-  if (pending_request_->channel_handle().name.empty())
-    return;
-
-  GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
-  gpu_channel_ = GpuChannelHost::Create(this,
-                                        pending_request_->gpu_info(),
-                                        pending_request_->channel_handle(),
-                                        shutdown_event_.get());
+  if (pending_request_->channel_handle().name.empty()) {
+    DCHECK(!gpu_channel_);
+  } else {
+    GetContentClient()->SetGpuInfo(pending_request_->gpu_info());
+    gpu_channel_ = GpuChannelHost::Create(this,
+                                          pending_request_->gpu_info(),
+                                          pending_request_->channel_handle(),
+                                          shutdown_event_.get());
+  }
   gpu_host_id_ = pending_request_->gpu_host_id();
   pending_request_ = NULL;
 
