@@ -871,8 +871,9 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Press Search.
   EXPECT_EQ(
-      GetExpectedResultAsString(
-          ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+      GetExpectedResultAsString(ui::VKEY_CAPITAL,
+                                ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
+                                ui::ET_KEY_PRESSED),
       GetRewrittenEventAsString(
           &rewriter, ui::VKEY_LWIN, ui::EF_COMMAND_DOWN, ui::ET_KEY_PRESSED));
   // Confirm that the Caps Lock status is changed.
@@ -888,8 +889,9 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
 
   // Press Search.
   EXPECT_EQ(
-      GetExpectedResultAsString(
-          ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+      GetExpectedResultAsString(ui::VKEY_CAPITAL,
+                                ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
+                                ui::ET_KEY_PRESSED),
       GetRewrittenEventAsString(&rewriter,
                                 ui::VKEY_LWIN,
                                 ui::EF_COMMAND_DOWN | ui::EF_CAPS_LOCK_DOWN,
@@ -906,11 +908,12 @@ TEST_F(EventRewriterTest, TestRewriteModifiersRemapToCapsLock) {
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // Press Caps Lock (on an external keyboard).
-  EXPECT_EQ(GetExpectedResultAsString(
-                ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
+                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_CAPITAL,
-                                      ui::EF_CAPS_LOCK_DOWN,
+                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
                                       ui::ET_KEY_PRESSED));
 
   // Confirm that calling RewriteForTesting() does not change the state of
@@ -937,10 +940,11 @@ TEST_F(EventRewriterTest, TestRewriteCapsLock) {
   EXPECT_FALSE(ime_keyboard.caps_lock_is_enabled_);
 
   // On Chrome OS, CapsLock is mapped to F16 with Mod3Mask.
-  EXPECT_EQ(GetExpectedResultAsString(
-                ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
+                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(
-                &rewriter, ui::VKEY_F16, ui::EF_NONE, ui::ET_KEY_PRESSED));
+                &rewriter, ui::VKEY_F16, ui::EF_MOD3_DOWN, ui::ET_KEY_PRESSED));
   EXPECT_TRUE(ime_keyboard.caps_lock_is_enabled_);
 }
 
@@ -1011,8 +1015,9 @@ TEST_F(EventRewriterTest, TestRewriteDiamondKeyWithFlag) {
 
   diamond.SetValue(chromeos::input_method::kCapsLockKey);
 
-  EXPECT_EQ(GetExpectedResultAsString(
-                ui::VKEY_CAPITAL, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED),
+  EXPECT_EQ(GetExpectedResultAsString(ui::VKEY_CAPITAL,
+                                      ui::EF_CAPS_LOCK_DOWN | ui::EF_MOD3_DOWN,
+                                      ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(
                 &rewriter, ui::VKEY_F15, ui::EF_NONE, ui::ET_KEY_PRESSED));
 
@@ -1036,7 +1041,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
       GetExpectedResultAsString(
           ui::VKEY_A, ui::EF_CONTROL_DOWN, ui::ET_KEY_PRESSED),
       GetRewrittenEventAsString(
-          &rewriter, ui::VKEY_A, ui::EF_CAPS_LOCK_DOWN, ui::ET_KEY_PRESSED));
+          &rewriter, ui::VKEY_A, ui::EF_MOD3_DOWN, ui::ET_KEY_PRESSED));
 
   // Press Control+CapsLock+a. Confirm that Mod3Mask is rewritten to ControlMask
   EXPECT_EQ(
@@ -1051,7 +1056,7 @@ TEST_F(EventRewriterTest, TestRewriteCapsLockToControl) {
                                       ui::ET_KEY_PRESSED),
             GetRewrittenEventAsString(&rewriter,
                                       ui::VKEY_A,
-                                      ui::EF_ALT_DOWN | ui::EF_CAPS_LOCK_DOWN,
+                                      ui::EF_ALT_DOWN | ui::EF_MOD3_DOWN,
                                       ui::ET_KEY_PRESSED));
 }
 
