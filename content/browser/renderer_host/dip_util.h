@@ -35,6 +35,8 @@ CONTENT_EXPORT gfx::Size ConvertSizeToDIP(
     float scale_factor, const gfx::Size& size_in_pixel);
 CONTENT_EXPORT gfx::Rect ConvertRectToDIP(
     float scale_factor, const gfx::Rect& rect_in_pixel);
+CONTENT_EXPORT gfx::Size ConvertSizeToPixel(
+    float scale_factor, const gfx::Size& size_in_pixel);
 CONTENT_EXPORT gfx::Rect ConvertRectToPixel(
     float scale_factor, const gfx::Rect& rect_in_dip);
 

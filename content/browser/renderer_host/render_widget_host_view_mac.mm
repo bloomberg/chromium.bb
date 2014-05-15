@@ -1913,17 +1913,16 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
         frame->delegated_frame_data.Pass(),
         frame->metadata.device_scale_factor,
         frame->metadata.latency_info);
-    gfx::Size size = ToCeiledSize(frame->metadata.viewport_size);
-    float scale_factor = frame->metadata.device_scale_factor;
-    if (compositor_->size() != size ||
-        compositor_->device_scale_factor() != scale_factor) {
-      // TODO(ccameron): The scale factor here does not result in the
-      // composited frame that is received having the right scale factor. Fix
-      // this.
-      compositor_->SetScaleAndSize(scale_factor, size);
-      root_layer_->SetBounds(gfx::Rect(size));
-    }
     compositor_->SetRootLayer(root_layer_.get());
+
+    // Update the compositor and root layer size and scale factor to match
+    // the frame just received.
+    float scale_factor = frame->metadata.device_scale_factor;
+    gfx::Size dip_size = ToCeiledSize(frame->metadata.viewport_size);
+    gfx::Size pixel_size = ConvertSizeToPixel(
+        scale_factor, dip_size);
+    compositor_->SetScaleAndSize(scale_factor, pixel_size);
+    root_layer_->SetBounds(gfx::Rect(dip_size));
   } else if (frame->software_frame_data) {
     if (!software_frame_manager_->SwapToNewFrame(
             output_surface_id,
