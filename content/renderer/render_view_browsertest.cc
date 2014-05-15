@@ -2256,7 +2256,7 @@ TEST_F(RenderViewImplTest, SendProgressCompletionUpdates) {
 
   // The data url has loaded, so we should see a progress change to 1.0 (done)
   // and a stop notification.
-  message = render_thread_->sink().GetFirstMessageMatching(
+  message = render_thread_->sink().GetUniqueMessageMatching(
       ViewHostMsg_DidChangeLoadProgress::ID);
   EXPECT_TRUE(message);
   ViewHostMsg_DidChangeLoadProgress::Read(message, &progress_value);
