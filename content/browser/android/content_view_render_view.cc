@@ -117,15 +117,6 @@ void ContentViewRenderView::SurfaceChanged(JNIEnv* env, jobject obj,
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
-jboolean ContentViewRenderView::CompositeToBitmap(JNIEnv* env, jobject obj,
-                                                  jobject java_bitmap) {
-  gfx::JavaBitmap bitmap(java_bitmap);
-  if (!compositor_ || bitmap.format() != ANDROID_BITMAP_FORMAT_RGBA_8888)
-    return false;
-  return compositor_->CompositeAndReadback(bitmap.pixels(),
-                                           gfx::Rect(bitmap.size()));
-}
-
 void ContentViewRenderView::SetOverlayVideoMode(
     JNIEnv* env, jobject obj, bool enabled) {
   compositor_->SetHasTransparentBackground(enabled);

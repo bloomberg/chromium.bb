@@ -34,20 +34,20 @@ class PixelTestsPageSet(page_set_module.PageSet):
     self.AddPage(PixelTestsPage(
       url='file://../../data/gpu/pixel_canvas2d.html',
       name='Pixel.Canvas2DRedBox',
-      test_rect=[0, 0, 400, 300],
-      revision=2,
+      test_rect=[0, 0, 300, 300],
+      revision=3,
       page_set=self))
 
     self.AddPage(PixelTestsPage(
       url='file://../../data/gpu/pixel_css3d.html',
       name='Pixel.CSS3DBlueBox',
-      test_rect=[0, 0, 400, 300],
-      revision=5,
+      test_rect=[0, 0, 300, 300],
+      revision=6,
       page_set=self))
 
     self.AddPage(PixelTestsPage(
       url='file://../../data/gpu/pixel_webgl.html',
       name='Pixel.WebGLGreenTriangle',
-      test_rect=[0, 0, 400, 300],
-      revision=6,
+      test_rect=[0, 0, 300, 300],
+      revision=7,
       page_set=self))

@@ -100,6 +100,8 @@ class CONTENT_EXPORT CompositorImpl
 
   // WindowAndroidCompositor implementation.
   virtual void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) OVERRIDE;
+  virtual void RequestCopyOfOutputOnRootLayer(
+      scoped_ptr<cc::CopyOutputRequest> request) OVERRIDE;
   virtual void OnVSync(base::TimeTicks frame_time,
                        base::TimeDelta vsync_period) OVERRIDE;
 

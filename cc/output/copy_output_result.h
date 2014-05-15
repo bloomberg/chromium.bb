@@ -7,13 +7,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "ui/gfx/size.h"
 
 class SkBitmap;
 
 namespace cc {
-class SingleReleaseCallback;
 class TextureMailbox;
 
 class CC_EXPORT CopyOutputResult {

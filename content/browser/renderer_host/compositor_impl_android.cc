@@ -439,10 +439,7 @@ void CompositorImpl::SetHasTransparentBackground(bool flag) {
 }
 
 bool CompositorImpl::CompositeAndReadback(void *pixels, const gfx::Rect& rect) {
-  if (host_)
-    return host_->CompositeAndReadback(pixels, rect);
-  else
-    return false;
+  return false;
 }
 
 void CompositorImpl::SetNeedsComposite() {
@@ -621,6 +618,11 @@ void CompositorImpl::DidCommit() {
 
 void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
   root_layer_->AddChild(layer);
+}
+
+void CompositorImpl::RequestCopyOfOutputOnRootLayer(
+    scoped_ptr<cc::CopyOutputRequest> request) {
+  root_layer_->RequestCopyOfOutput(request.Pass());
 }
 
 void CompositorImpl::OnVSync(base::TimeTicks frame_time,

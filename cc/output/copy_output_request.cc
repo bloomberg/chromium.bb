@@ -9,7 +9,6 @@
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

@@ -4,13 +4,13 @@
 
 #include "ui/snapshot/snapshot.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "cc/output/copy_output_request.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/android/view_android.h"
 #include "ui/base/android/window_android.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/screen.h"
+#include "ui/base/android/window_android_compositor.h"
+#include "ui/snapshot/snapshot_async.h"
 
 namespace ui {
 
@@ -24,31 +24,32 @@ bool GrabViewSnapshot(gfx::NativeView view,
 bool GrabWindowSnapshot(gfx::NativeWindow window,
                         std::vector<unsigned char>* png_representation,
                         const gfx::Rect& snapshot_bounds) {
-  gfx::Display display =
-      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
-  gfx::Rect scaled_bounds =
-      gfx::ScaleToEnclosingRect(snapshot_bounds,
-                                display.device_scale_factor());
-  return window->GrabSnapshot(
-      scaled_bounds.x(), scaled_bounds.y(), scaled_bounds.width(),
-      scaled_bounds.height(), png_representation);
+  // Not supported in Android.  Callers should fall back to the async version.
+  return false;
+}
+
+static void MakeAsyncCopyRequest(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    const cc::CopyOutputRequest::CopyOutputRequestCallback& callback) {
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateBitmapRequest(callback);
+  request->set_area(source_rect);
+  window->GetCompositor()->RequestCopyOfOutputOnRootLayer(request.Pass());
 }
 
 void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
-    const gfx::Rect& snapshot_bounds,
+    const gfx::Rect& source_rect,
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    GrabWindowSnapshotAsyncCallback callback) {
-  callback.Run(gfx::Image());
-}
-
-void GrabViewSnapshotAsync(
-    gfx::NativeView view,
-    const gfx::Rect& source_rect,
-    scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  callback.Run(scoped_refptr<base::RefCountedBytes>());
+    const GrabWindowSnapshotAsyncCallback& callback) {
+  MakeAsyncCopyRequest(window,
+                       source_rect,
+                       base::Bind(&SnapshotAsync::ScaleCopyOutputResult,
+                                  callback,
+                                  target_size,
+                                  background_task_runner));
 }
 
 void GrabWindowSnapshotAsync(
@@ -56,7 +57,20 @@ void GrabWindowSnapshotAsync(
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  callback.Run(scoped_refptr<base::RefCountedBytes>());
+  MakeAsyncCopyRequest(window,
+                       source_rect,
+                       base::Bind(&SnapshotAsync::EncodeCopyOutputResult,
+                                  callback,
+                                  background_task_runner));
+}
+
+void GrabViewSnapshotAsync(
+    gfx::NativeView view,
+    const gfx::Rect& source_rect,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrabWindowSnapshotAsyncPNGCallback& callback) {
+  GrabWindowSnapshotAsync(
+      view->GetWindowAndroid(), source_rect, background_task_runner, callback);
 }
 
 }  // namespace ui
