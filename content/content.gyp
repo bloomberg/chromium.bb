@@ -555,6 +555,7 @@
           'type': 'none',
           'variables': {
              'jni_gen_package': 'content',
+             'jni_generator_ptr_type': 'long',
              'input_java_class': 'android/view/MotionEvent.class',
            },
           'includes': [ '../build/jar_file_jni_generator.gypi' ],

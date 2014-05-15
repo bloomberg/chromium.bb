@@ -43,6 +43,7 @@
    ],
   'variables': {
     'jni_gen_package': 'content',
+    'jni_generator_ptr_type': 'long',
   },
   'includes': [ '../build/jni_generator.gypi' ],
 }

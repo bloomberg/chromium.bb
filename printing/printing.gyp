@@ -303,6 +303,7 @@
           ],
           'variables': {
             'jni_gen_package': 'printing',
+            'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
