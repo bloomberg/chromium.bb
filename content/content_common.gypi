@@ -525,7 +525,30 @@
         '../webkit/common/webkit_common.gyp:webkit_common',
         '../webkit/storage_browser.gyp:webkit_storage_browser',
         '../webkit/storage_common.gyp:webkit_storage_common',
-        'content.gyp:webkit_version',
+      ],
+      'actions': [
+        {
+          'action_name': 'generate_webkit_version',
+          'inputs': [
+            '<(script)',
+            '<(lastchange)',
+            '<(template)',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit_version.h',
+          ],
+          'action': ['python',
+                     '<(script)',
+                     '-f', '<(lastchange)',
+                     '<(template)',
+                     '<@(_outputs)',
+          ],
+          'variables': {
+            'script': '<(DEPTH)/build/util/version.py',
+            'lastchange': '<(DEPTH)/build/util/LASTCHANGE.blink',
+            'template': 'webkit_version.h.in',
+          },
+        },
       ],
     }],
     ['OS=="mac"', {
