@@ -34,6 +34,11 @@ deps = {
 }
 
 deps_os = {
+    'android':
+    {
+        'src/third_party/android_tools':
+            Var('git_url') + '/android_tools.git@aabf2a28449fe47dedeee51d3570ff8687ff015f',
+    },
     'unix':
     {
         'third_party/ragel':
