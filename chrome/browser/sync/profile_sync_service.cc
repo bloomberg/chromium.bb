@@ -523,7 +523,8 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       credentials,
       delete_stale_data,
       scoped_ptr<syncer::SyncManagerFactory>(
-          new syncer::SyncManagerFactory).Pass(),
+          new syncer::SyncManagerFactory(
+              syncer::SyncManagerFactory::NORMAL)).Pass(),
       backend_unrecoverable_error_handler.Pass(),
       &browser_sync::ChromeReportUnrecoverableError,
       network_resources_.get());

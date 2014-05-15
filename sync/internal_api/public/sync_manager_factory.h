@@ -17,12 +17,19 @@ class SyncManager;
 // Helper class to allow dependency injection of the SyncManager.
 class SYNC_EXPORT SyncManagerFactory {
  public:
-  SyncManagerFactory();
+  enum MANAGER_TYPE {
+    NORMAL,     // Normal sync manager
+    BACKUP,     // Backup sync manager
+    ROLLBACK,   // Rollback sync manager
+  };
+
+  SyncManagerFactory(MANAGER_TYPE type);
   virtual ~SyncManagerFactory();
 
   virtual scoped_ptr<SyncManager> CreateSyncManager(std::string name);
 
  private:
+  MANAGER_TYPE type_;
   DISALLOW_COPY_AND_ASSIGN(SyncManagerFactory);
 };
 

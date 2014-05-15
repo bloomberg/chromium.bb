@@ -326,7 +326,7 @@ int SyncClientMain(int argc, char* argv[]) {
   workers.push_back(passive_model_safe_worker);
 
   // Set up sync manager.
-  SyncManagerFactory sync_manager_factory;
+  SyncManagerFactory sync_manager_factory(SyncManagerFactory::NORMAL);
   scoped_ptr<SyncManager> sync_manager =
       sync_manager_factory.CreateSyncManager("sync_client manager");
   LoggingJsEventHandler js_event_handler;

@@ -10,7 +10,8 @@ namespace syncer {
 
 SyncManagerFactoryForProfileSyncTest::SyncManagerFactoryForProfileSyncTest(
     base::Closure init_callback)
-  : init_callback_(init_callback) {
+  : SyncManagerFactory(SyncManagerFactory::NORMAL),
+    init_callback_(init_callback) {
 }
 
 SyncManagerFactoryForProfileSyncTest::~SyncManagerFactoryForProfileSyncTest() {}
