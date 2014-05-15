@@ -78,6 +78,10 @@ class GFX_EXPORT ImageSkia {
   // density display.
   static ImageSkia CreateFrom1xBitmap(const SkBitmap& bitmap);
 
+  // Returns true when ImageSkia looks up the resource pack with the closest
+  // scale factor and rescale the fetched image.
+  static bool IsDSFScalingInImageSkiaEnabled();
+
   // Returns a deep copy of this ImageSkia which has its own storage with
   // the ImageSkiaRep instances that this ImageSkia currently has.
   // This can be safely passed to and manipulated by another thread.

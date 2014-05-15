@@ -6,6 +6,17 @@
 
 namespace switches {
 
+// When allowed, the ImageSkia looks up the resource pack with the closest
+// available scale factor instead of the actual device scale factor and then
+// rescale on ImageSkia side.
+// In Windows: default is allowed. Specify --disallow-... to prevent this.
+// Other platforms: default is not allowed. Specify --allow-... to do this.
+const char kAllowArbitraryScaleFactorInImageSkia[] =
+    "allow-arbitrary-scale-factor-in-image-skia";
+
+const char kDisallowArbitraryScaleFactorInImageSkia[] =
+    "disallow-arbitrary-scale-factor-in-image-skia";
+
 // Let text glyphs have X-positions that aren't snapped to the pixel grid in
 // the browser UI.
 const char kEnableBrowserTextSubpixelPositioning[] =

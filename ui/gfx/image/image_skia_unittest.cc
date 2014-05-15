@@ -4,6 +4,7 @@
 
 #include "ui/gfx/image/image_skia.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/threading/simple_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -11,6 +12,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/switches.h"
 
 // Duplicated from base/threading/non_thread_safe.h so that we can be
 // good citizens there and undef the macro.
@@ -43,17 +45,27 @@ class FixedSource : public ImageSkiaSource {
 
 class DynamicSource : public ImageSkiaSource {
  public:
-  DynamicSource(const gfx::Size& size) : size_(size) {}
+  DynamicSource(const gfx::Size& size)
+      : size_(size),
+        last_requested_scale_(0.0f) {}
 
   virtual ~DynamicSource() {
   }
 
   virtual ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+    last_requested_scale_ = scale;
     return gfx::ImageSkiaRep(size_, scale);
+  }
+
+  float GetLastRequestedScaleAndReset() {
+    float result = last_requested_scale_;
+    last_requested_scale_ = 0.0f;
+    return result;
   }
 
  private:
   gfx::Size size_;
+  float last_requested_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(DynamicSource);
 };
@@ -113,7 +125,28 @@ class TestOnThread : public base::SimpleThread {
 
 }  // namespace test
 
-TEST(ImageSkiaTest, FixedSource) {
+class ImageSkiaTest : public testing::Test {
+ public:
+  ImageSkiaTest() {
+    // In the test, we assume that we support 1.0f and 2.0f DSFs.
+    old_scales_ = ImageSkia::GetSupportedScales();
+
+    // Sets the list of scale factors supported by resource bundle.
+    std::vector<float> supported_scales;
+    supported_scales.push_back(1.0f);
+    supported_scales.push_back(2.0f);
+    ImageSkia::SetSupportedScales(supported_scales);
+  }
+  virtual ~ImageSkiaTest() {
+    ImageSkia::SetSupportedScales(old_scales_);
+  }
+
+ private:
+  std::vector<float> old_scales_;
+  DISALLOW_COPY_AND_ASSIGN(ImageSkiaTest);
+};
+
+TEST_F(ImageSkiaTest, FixedSource) {
   ImageSkiaRep image(Size(100, 200), 1.0f);
   ImageSkia image_skia(new FixedSource(image), Size(100, 200));
   EXPECT_EQ(0U, image_skia.image_reps().size());
@@ -140,7 +173,7 @@ TEST(ImageSkiaTest, FixedSource) {
   EXPECT_EQ(1U, image_skia.image_reps().size());
 }
 
-TEST(ImageSkiaTest, DynamicSource) {
+TEST_F(ImageSkiaTest, DynamicSource) {
   ImageSkia image_skia(new DynamicSource(Size(100, 200)), Size(100, 200));
   EXPECT_EQ(0U, image_skia.image_reps().size());
   const ImageSkiaRep& result_100p = image_skia.GetRepresentation(1.0f);
@@ -169,7 +202,7 @@ TEST(ImageSkiaTest, DynamicSource) {
 // Tests that image_reps returns all of the representations in the
 // image when there are multiple representations for a scale factor.
 // This currently is the case with ImageLoader::LoadImages.
-TEST(ImageSkiaTest, ManyRepsPerScaleFactor) {
+TEST_F(ImageSkiaTest, ManyRepsPerScaleFactor) {
   const int kSmallIcon1x = 16;
   const int kSmallIcon2x = 32;
   const int kLargeIcon1x = 32;
@@ -204,14 +237,14 @@ TEST(ImageSkiaTest, ManyRepsPerScaleFactor) {
   EXPECT_EQ(1, num_2x);
 }
 
-TEST(ImageSkiaTest, GetBitmap) {
+TEST_F(ImageSkiaTest, GetBitmap) {
   ImageSkia image_skia(new DynamicSource(Size(100, 200)), Size(100, 200));
   const SkBitmap* bitmap = image_skia.bitmap();
   EXPECT_NE(static_cast<SkBitmap*>(NULL), bitmap);
   EXPECT_FALSE(bitmap->isNull());
 }
 
-TEST(ImageSkiaTest, GetBitmapFromEmpty) {
+TEST_F(ImageSkiaTest, GetBitmapFromEmpty) {
   // Create an image with 1 representation and remove it so the ImageSkiaStorage
   // is left with no representations.
   ImageSkia empty_image(ImageSkiaRep(Size(100, 200), 1.0f));
@@ -226,7 +259,7 @@ TEST(ImageSkiaTest, GetBitmapFromEmpty) {
   EXPECT_TRUE(bitmap->empty());
 }
 
-TEST(ImageSkiaTest, BackedBySameObjectAs) {
+TEST_F(ImageSkiaTest, BackedBySameObjectAs) {
   // Null images should all be backed by the same object (NULL).
   ImageSkia image;
   ImageSkia unrelated;
@@ -245,7 +278,7 @@ TEST(ImageSkiaTest, BackedBySameObjectAs) {
 }
 
 #if ENABLE_NON_THREAD_SAFE
-TEST(ImageSkiaTest, EmptyOnThreadTest) {
+TEST_F(ImageSkiaTest, EmptyOnThreadTest) {
   ImageSkia empty;
   test::TestOnThread empty_on_thread(&empty);
   empty_on_thread.Start();
@@ -254,7 +287,7 @@ TEST(ImageSkiaTest, EmptyOnThreadTest) {
   EXPECT_TRUE(empty_on_thread.can_modify());
 }
 
-TEST(ImageSkiaTest, StaticOnThreadTest) {
+TEST_F(ImageSkiaTest, StaticOnThreadTest) {
   ImageSkia image(ImageSkiaRep(Size(100, 200), 1.0f));
   EXPECT_FALSE(image.IsThreadSafe());
 
@@ -323,7 +356,7 @@ TEST(ImageSkiaTest, StaticOnThreadTest) {
   EXPECT_FALSE(image.CanModify());
 }
 
-TEST(ImageSkiaTest, SourceOnThreadTest) {
+TEST_F(ImageSkiaTest, SourceOnThreadTest) {
   ImageSkia image(new DynamicSource(Size(100, 200)), Size(100, 200));
   EXPECT_FALSE(image.IsThreadSafe());
 
@@ -375,7 +408,7 @@ TEST(ImageSkiaTest, SourceOnThreadTest) {
 // Just in case we ever get lumped together with other compilation units.
 #undef ENABLE_NON_THREAD_SAFE
 
-TEST(ImageSkiaTest, Unscaled) {
+TEST_F(ImageSkiaTest, Unscaled) {
   SkBitmap bitmap;
 
   // An ImageSkia created with 1x bitmap is unscaled.
@@ -388,6 +421,132 @@ TEST(ImageSkiaTest, Unscaled) {
   image_skia.AddRepresentation(rep_2x);
   EXPECT_FALSE(image_skia.GetRepresentation(1.0f).unscaled());
   EXPECT_FALSE(image_skia.GetRepresentation(2.0f).unscaled());
+}
+
+TEST_F(ImageSkiaTest, ArbitraryScaleFactor) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowArbitraryScaleFactorInImageSkia);
+
+  // Do not test if the ImageSkia doesn't support arbitrary scale factors.
+  if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
+    return;
+
+  // source is owned by |image|
+  DynamicSource* source = new DynamicSource(Size(100, 200));
+  ImageSkia image(source, gfx::Size(100, 200));
+
+  image.GetRepresentation(1.5f);
+  EXPECT_EQ(2.0f, source->GetLastRequestedScaleAndReset());
+  std::vector<ImageSkiaRep> image_reps = image.image_reps();
+  EXPECT_EQ(2u, image_reps.size());
+
+  std::vector<float> scale_factors;
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    scale_factors.push_back(image_reps[i].scale());
+  }
+  std::sort(scale_factors.begin(), scale_factors.end());
+  EXPECT_EQ(1.5f, scale_factors[0]);
+  EXPECT_EQ(2.0f, scale_factors[1]);
+
+  // Requesting 1.75 scale factor also falls back to 2.0f and rescale.
+  // However, the image already has the 2.0f data, so it won't fetch again.
+  image.GetRepresentation(1.75f);
+  EXPECT_EQ(0.0f, source->GetLastRequestedScaleAndReset());
+  image_reps = image.image_reps();
+  EXPECT_EQ(3u, image_reps.size());
+
+  scale_factors.clear();
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    scale_factors.push_back(image_reps[i].scale());
+  }
+  std::sort(scale_factors.begin(), scale_factors.end());
+  EXPECT_EQ(1.5f, scale_factors[0]);
+  EXPECT_EQ(1.75f, scale_factors[1]);
+  EXPECT_EQ(2.0f, scale_factors[2]);
+
+  // 1.25 is falled back to 1.0.
+  image.GetRepresentation(1.25f);
+  EXPECT_EQ(1.0f, source->GetLastRequestedScaleAndReset());
+  image_reps = image.image_reps();
+  EXPECT_EQ(5u, image_reps.size());
+
+  // Scale factor less than 1.0f will be falled back to 1.0f
+  image.GetRepresentation(0.75f);
+  EXPECT_EQ(0.0f, source->GetLastRequestedScaleAndReset());
+  image_reps = image.image_reps();
+  EXPECT_EQ(6u, image_reps.size());
+
+  scale_factors.clear();
+  for (size_t i = 0; i < image_reps.size(); ++i) {
+    scale_factors.push_back(image_reps[i].scale());
+  }
+  std::sort(scale_factors.begin(), scale_factors.end());
+  EXPECT_EQ(0.75f, scale_factors[0]);
+  EXPECT_EQ(1.0f, scale_factors[1]);
+  EXPECT_EQ(1.25f, scale_factors[2]);
+  EXPECT_EQ(1.5f, scale_factors[3]);
+  EXPECT_EQ(1.75f, scale_factors[4]);
+  EXPECT_EQ(2.0f, scale_factors[5]);
+
+  // Scale factor greater than 2.0f is falled back to 2.0f because it's not
+  // supported.
+  image.GetRepresentation(3.0f);
+  EXPECT_EQ(0.0f, source->GetLastRequestedScaleAndReset());
+  image_reps = image.image_reps();
+  EXPECT_EQ(7u, image_reps.size());
+}
+
+TEST_F(ImageSkiaTest, ArbitraryScaleFactorWithMissingResource) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowArbitraryScaleFactorInImageSkia);
+
+  // Do not test if the ImageSkia doesn't support arbitrary scale factors.
+  if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
+    return;
+
+  ImageSkia image(new FixedSource(
+      ImageSkiaRep(Size(100, 200), 1.0f)), Size(100, 200));
+
+  // Requesting 1.5f -- falls back to 2.0f, but couldn't find. It should
+  // look up 1.0f and then rescale it.
+  const ImageSkiaRep& rep = image.GetRepresentation(1.5f);
+  EXPECT_EQ(1.5f, rep.scale());
+  EXPECT_EQ(2U, image.image_reps().size());
+  EXPECT_EQ(1.0f, image.image_reps()[0].scale());
+  EXPECT_EQ(1.5f, image.image_reps()[1].scale());
+}
+
+TEST_F(ImageSkiaTest, UnscaledImageForArbitraryScaleFactor) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowArbitraryScaleFactorInImageSkia);
+
+  // Do not test if the ImageSkia doesn't support arbitrary scale factors.
+  if (!ImageSkia::IsDSFScalingInImageSkiaEnabled())
+    return;
+
+  // 0.0f means unscaled.
+  ImageSkia image(new FixedSource(
+      ImageSkiaRep(Size(100, 200), 0.0f)), Size(100, 200));
+
+  // Requesting 2.0f, which should return 1.0f unscaled image.
+  const ImageSkiaRep& rep = image.GetRepresentation(2.0f);
+  EXPECT_EQ(1.0f, rep.scale());
+  EXPECT_EQ("100x200", rep.pixel_size().ToString());
+  EXPECT_TRUE(rep.unscaled());
+  EXPECT_EQ(1U, image.image_reps().size());
+
+  // Same for any other scale factors.
+  const ImageSkiaRep& rep15 = image.GetRepresentation(1.5f);
+  EXPECT_EQ(1.0f, rep15.scale());
+  EXPECT_EQ("100x200", rep15.pixel_size().ToString());
+  EXPECT_TRUE(rep15.unscaled());
+  EXPECT_EQ(1U, image.image_reps().size());
+
+  const ImageSkiaRep& rep12 = image.GetRepresentation(1.2f);
+  EXPECT_EQ(1.0f, rep12.scale());
+  EXPECT_EQ("100x200", rep12.pixel_size().ToString());
+  EXPECT_TRUE(rep12.unscaled());
+  EXPECT_EQ(1U, image.image_reps().size());
 }
 
 }  // namespace gfx

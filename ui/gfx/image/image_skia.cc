@@ -8,14 +8,17 @@
 #include <cmath>
 #include <limits>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/switches.h"
 
 namespace gfx {
 namespace {
@@ -27,6 +30,13 @@ gfx::ImageSkiaRep& NullImageRep() {
 }
 
 std::vector<float>* g_supported_scales = NULL;
+
+// The difference to fall back to the smaller scale factor rather than the
+// larger one. For example, assume 1.25 is requested but only 1.0 and 2.0 are
+// supported. In that case, not fall back to 2.0 but 1.0, and then expand
+// the image to 1.25.
+const float kFallbackToSmallerScaleDiff = 0.25f;
+
 }  // namespace
 
 namespace internal {
@@ -123,9 +133,15 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
   // Returns the iterator of the image rep whose density best matches
   // |scale|. If the image for the |scale| doesn't exist in the storage and
   // |storage| is set, it fetches new image by calling
-  // |ImageSkiaSource::GetImageForScale|. If the source returns the image with
-  // different scale (if the image doesn't exist in resource, for example), it
-  // will fallback to closest image rep.
+  // |ImageSkiaSource::GetImageForScale|. There are two modes to deal with
+  // arbitrary scale factors.
+  // 1: Invoke GetImageForScale with requested scale and if the source
+  //   returns the image with different scale (if the image doesn't exist in
+  //   resource, for example), it will fallback to closest image rep.
+  // 2: Invoke GetImageForScale with the closest known scale to the requested
+  //   one and rescale the image.
+  // Right now only Windows uses 2 and other platforms use 1 by default.
+  // TODO(mukai, oshima): abandon 1 code path and use 2 for every platforms.
   std::vector<ImageSkiaRep>::iterator FindRepresentation(
       float scale, bool fetch_new_image) const {
     ImageSkiaStorage* non_const = const_cast<ImageSkiaStorage*>(this);
@@ -157,7 +173,47 @@ class ImageSkiaStorage : public base::RefCountedThreadSafe<ImageSkiaStorage>,
       DCHECK(CalledOnValidThread()) <<
           "An ImageSkia with the source must be accessed by the same thread.";
 
-      ImageSkiaRep image = source_->GetImageForScale(scale);
+      ImageSkiaRep image;
+      float resource_scale = scale;
+      if (ImageSkia::IsDSFScalingInImageSkiaEnabled() && g_supported_scales) {
+        if (g_supported_scales->back() <= scale) {
+          resource_scale = g_supported_scales->back();
+        } else {
+          for (size_t i = 0; i < g_supported_scales->size(); ++i) {
+            if ((*g_supported_scales)[i] + kFallbackToSmallerScaleDiff >=
+                scale) {
+              resource_scale = (*g_supported_scales)[i];
+              break;
+            }
+          }
+        }
+      }
+      if (ImageSkia::IsDSFScalingInImageSkiaEnabled() &&
+          scale != resource_scale) {
+        std::vector<ImageSkiaRep>::iterator iter = FindRepresentation(
+            resource_scale, fetch_new_image);
+
+        DCHECK(iter != image_reps_.end());
+
+        if (!iter->unscaled()) {
+          SkBitmap scaled_image;
+          gfx::Size unscaled_size(iter->pixel_width(), iter->pixel_height());
+          gfx::Size scaled_size = ToCeiledSize(
+              gfx::ScaleSize(unscaled_size, scale / iter->scale()));
+
+          image = ImageSkiaRep(skia::ImageOperations::Resize(
+              iter->sk_bitmap(),
+              skia::ImageOperations::RESIZE_LANCZOS3,
+              scaled_size.width(),
+              scaled_size.height()), scale);
+          DCHECK_EQ(image.pixel_width(), scaled_size.width());
+          DCHECK_EQ(image.pixel_height(), scaled_size.height());
+        } else {
+          image = *iter;
+        }
+      } else {
+        image = source_->GetImageForScale(scale);
+      }
 
       // If the source returned the new image, store it.
       if (!image.is_null() &&
@@ -259,6 +315,17 @@ float ImageSkia::GetMaxSupportedScale() {
 // static
 ImageSkia ImageSkia::CreateFrom1xBitmap(const SkBitmap& bitmap) {
   return ImageSkia(ImageSkiaRep(bitmap, 0.0f));
+}
+
+bool ImageSkia::IsDSFScalingInImageSkiaEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+#if defined(OS_WIN)
+  return !command_line->HasSwitch(
+      switches::kDisallowArbitraryScaleFactorInImageSkia);
+#else
+  return command_line->HasSwitch(
+      switches::kAllowArbitraryScaleFactorInImageSkia);
+#endif
 }
 
 scoped_ptr<ImageSkia> ImageSkia::DeepCopy() const {

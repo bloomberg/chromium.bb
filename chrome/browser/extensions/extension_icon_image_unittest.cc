@@ -563,10 +563,12 @@ TEST_F(ExtensionIconImageTest, IconImageDestruction) {
   EXPECT_EQ(16, representation.pixel_width());
   EXPECT_TRUE(gfx::BitmapsAreEqual(representation.sk_bitmap(), bitmap_16));
 
-  // When requesting another representation, we should get blank image.
+  // When requesting another representation, we should not crash and return some
+  // image of the size. It could be blank or a rescale from the existing 1.0f
+  // icon.
   representation = image_skia.GetRepresentation(2.0f);
 
-  EXPECT_TRUE(gfx::BitmapsAreEqual(
-      representation.sk_bitmap(),
-      CreateBlankBitmapForScale(16, ui::SCALE_FACTOR_200P)));
+  EXPECT_EQ(16, representation.GetWidth());
+  EXPECT_EQ(16, representation.GetHeight());
+  EXPECT_EQ(2.0f, representation.scale());
 }
