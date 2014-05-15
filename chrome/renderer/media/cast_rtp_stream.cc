@@ -510,7 +510,8 @@ void CastRtpStream::Stop() {
   VLOG(1) << "CastRtpStream::Stop =  " << (IsAudio() ? "audio" : "video");
   audio_sink_.reset();
   video_sink_.reset();
-  stop_callback_.Run();
+  if (!stop_callback_.is_null())
+    stop_callback_.Run();
 }
 
 void CastRtpStream::ToggleLogging(bool enable) {
