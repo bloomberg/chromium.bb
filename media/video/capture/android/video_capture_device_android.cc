@@ -21,36 +21,31 @@ using base::android::ScopedJavaLocalRef;
 
 namespace media {
 
-//static
+// static
+bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+// TODO(mcasas): Remove the following static methods when they are no longer
+// referenced from VideoCaptureDeviceFactory, i.e. when all OS platforms have
+// splitted the VideoCaptureDevice into VideoCaptureDevice and
+// VideoCaptureDeviceFactory.
+
+// static
+VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
+  NOTREACHED();
+  return NULL;
+}
+// static
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
-  VideoCaptureDeviceFactoryAndroid::GetDeviceNames(device_names);
+  NOTREACHED();
 }
 
 // static
 void VideoCaptureDevice::GetDeviceSupportedFormats(
     const Name& device,
-    VideoCaptureFormats* capture_formats) {
-  VideoCaptureDeviceFactoryAndroid::GetDeviceSupportedFormats(device,
-                                                              capture_formats);
-}
-
-// static
-VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
-  return VideoCaptureDeviceAndroid::Create(device_name);
-}
-
-// static
-VideoCaptureDevice* VideoCaptureDeviceAndroid::Create(const Name& device_name) {
-  scoped_ptr<VideoCaptureDeviceAndroid> ret(
-      new VideoCaptureDeviceAndroid(device_name));
-  if (ret->Init())
-    return ret.release();
-  return NULL;
-}
-
-// static
-bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
-  return RegisterNativesImpl(env);
+    VideoCaptureFormats* supported_formats) {
+  NOTREACHED();
 }
 
 const std::string VideoCaptureDevice::Name::GetModel() const {

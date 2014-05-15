@@ -469,6 +469,8 @@
         'video/capture/file_video_capture_device.h',
         'video/capture/file_video_capture_device_factory.h',
         'video/capture/file_video_capture_device_factory.cc',
+        'video/capture/linux/video_capture_device_factory_linux.cc',
+        'video/capture/linux/video_capture_device_factory_linux.h',
         'video/capture/linux/video_capture_device_linux.cc',
         'video/capture/linux/video_capture_device_linux.h',
         'video/capture/mac/avfoundation_glue.h',

@@ -30,10 +30,16 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 #undef DEFINE_ANDROID_IMAGEFORMAT
   };
 
+  explicit VideoCaptureDeviceAndroid(const Name& device_name);
   virtual ~VideoCaptureDeviceAndroid();
 
   static VideoCaptureDevice* Create(const Name& device_name);
   static bool RegisterVideoCaptureDevice(JNIEnv* env);
+
+  // Registers the Java VideoCaptureDevice pointer, used by the rest of the
+  // methods of the class to operate the Java capture code. This method must be
+  // called after the class constructor and before AllocateAndStart().
+  bool Init();
 
   // VideoCaptureDevice implementation.
   virtual void AllocateAndStart(const VideoCaptureParams& params,
@@ -55,8 +61,6 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
     kError  // Hit error. User needs to recover by destroying the object.
   };
 
-  explicit VideoCaptureDeviceAndroid(const Name& device_name);
-  bool Init();
   VideoPixelFormat GetColorspace();
   void SetErrorState(const std::string& reason);
 

@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "jni/VideoCaptureFactory_jni.h"
+#include "media/video/capture/android/video_capture_device_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
@@ -16,8 +17,43 @@ using base::android::ScopedJavaLocalRef;
 namespace media {
 
 // static
+bool VideoCaptureDeviceFactoryAndroid::RegisterVideoCaptureDeviceFactory(
+    JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+//static
+ScopedJavaLocalRef<jobject>
+VideoCaptureDeviceFactoryAndroid::createVideoCaptureAndroid(
+    int id,
+    jlong nativeVideoCaptureDeviceAndroid) {
+  return (Java_VideoCaptureFactory_createVideoCapture(
+      AttachCurrentThread(),
+      base::android::GetApplicationContext(),
+      id,
+      nativeVideoCaptureDeviceAndroid));
+}
+
+scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryAndroid::Create(
+    const VideoCaptureDevice::Name& device_name) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  int id;
+  if (!base::StringToInt(device_name.id(), &id))
+    return scoped_ptr<VideoCaptureDevice>();
+
+  VideoCaptureDeviceAndroid* video_capture_device(
+      new VideoCaptureDeviceAndroid(device_name));
+
+  if (video_capture_device->Init())
+    return scoped_ptr<VideoCaptureDevice>(video_capture_device);
+
+  DLOG(ERROR) << "Error creating Video Capture Device.";
+  return scoped_ptr<VideoCaptureDevice>();
+}
+
 void VideoCaptureDeviceFactoryAndroid::GetDeviceNames(
     VideoCaptureDevice::Names* device_names) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   device_names->clear();
 
   JNIEnv* env = AttachCurrentThread();
@@ -45,10 +81,10 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceNames(
   }
 }
 
-// static
 void VideoCaptureDeviceFactoryAndroid::GetDeviceSupportedFormats(
     const VideoCaptureDevice::Name& device,
     VideoCaptureFormats* capture_formats) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   int id;
   if (!base::StringToInt(device.id(), &id))
     return;
@@ -89,24 +125,6 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceSupportedFormats(
         << capture_format.frame_rate << ", pixel format: "
         << capture_format.pixel_format;
   }
-}
-
-//static
-ScopedJavaLocalRef<jobject>
-VideoCaptureDeviceFactoryAndroid::createVideoCaptureAndroid(
-    int id,
-    jlong nativeVideoCaptureDeviceAndroid) {
-  return (Java_VideoCaptureFactory_createVideoCapture(
-      AttachCurrentThread(),
-      base::android::GetApplicationContext(),
-      id,
-      nativeVideoCaptureDeviceAndroid));
-}
-
-// static
-bool VideoCaptureDeviceFactoryAndroid::RegisterVideoCaptureDeviceFactory(
-    JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace media

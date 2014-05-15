@@ -56,9 +56,23 @@ static const char kVidPathTemplate[] =
 static const char kPidPathTemplate[] =
     "/sys/class/video4linux/%s/device/../idProduct";
 
+bool ReadIdFile(const std::string path, std::string* id) {
+  char id_buf[kVidPidSize];
+  FILE* file = fopen(path.c_str(), "rb");
+  if (!file)
+    return false;
+  const bool success = fread(id_buf, kVidPidSize, 1, file) == 1;
+  fclose(file);
+  if (!success)
+    return false;
+  id->append(id_buf, kVidPidSize);
+  return true;
+}
+
 // This function translates Video4Linux pixel formats to Chromium pixel formats,
 // should only support those listed in GetListOfUsableFourCCs.
-static VideoPixelFormat V4l2ColorToVideoCaptureColorFormat(
+// static
+VideoPixelFormat VideoCaptureDeviceLinux::V4l2ColorToVideoCaptureColorFormat(
     int32 v4l2_fourcc) {
   VideoPixelFormat result = PIXEL_FORMAT_UNKNOWN;
   switch (v4l2_fourcc) {
@@ -78,7 +92,9 @@ static VideoPixelFormat V4l2ColorToVideoCaptureColorFormat(
   return result;
 }
 
-static void GetListOfUsableFourCCs(bool favour_mjpeg, std::list<int>* fourccs) {
+// static
+void VideoCaptureDeviceLinux::GetListOfUsableFourCCs(bool favour_mjpeg,
+                                                     std::list<int>* fourccs) {
   for (size_t i = 0; i < arraysize(kV4l2RawFmts); ++i)
     fourccs->push_back(kV4l2RawFmts[i]);
   if (favour_mjpeg)
@@ -91,139 +107,26 @@ static void GetListOfUsableFourCCs(bool favour_mjpeg, std::list<int>* fourccs) {
   fourccs->push_back(V4L2_PIX_FMT_JPEG);
 }
 
-static bool HasUsableFormats(int fd) {
-  v4l2_fmtdesc fmtdesc;
-  std::list<int> usable_fourccs;
+// TODO(mcasas): Remove the following static methods when they are no longer
+// referenced from VideoCaptureDeviceFactory, i.e. when all OS platforms have
+// splitted the VideoCaptureDevice into VideoCaptureDevice and
+// VideoCaptureDeviceFactory.
 
-  GetListOfUsableFourCCs(false, &usable_fourccs);
-
-  memset(&fmtdesc, 0, sizeof(v4l2_fmtdesc));
-  fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-  while (HANDLE_EINTR(ioctl(fd, VIDIOC_ENUM_FMT, &fmtdesc)) == 0) {
-    if (std::find(usable_fourccs.begin(), usable_fourccs.end(),
-                  fmtdesc.pixelformat) != usable_fourccs.end())
-      return true;
-
-    fmtdesc.index++;
-  }
-  return false;
+// static
+VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
+  NOTREACHED();
+  return NULL;
 }
-
+// static
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
-  DCHECK(device_names->empty());
-  base::FilePath path("/dev/");
-  base::FileEnumerator enumerator(
-      path, false, base::FileEnumerator::FILES, "video*");
-
-  while (!enumerator.Next().empty()) {
-    base::FileEnumerator::FileInfo info = enumerator.GetInfo();
-
-    std::string unique_id = path.value() + info.GetName().value();
-    base::ScopedFD fd(HANDLE_EINTR(open(unique_id.c_str(), O_RDONLY)));
-    if (!fd.is_valid()) {
-      // Failed to open this device.
-      continue;
-    }
-    // Test if this is a V4L2 capture device.
-    v4l2_capability cap;
-    if ((HANDLE_EINTR(ioctl(fd.get(), VIDIOC_QUERYCAP, &cap)) == 0) &&
-        (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
-        !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)) {
-      // This is a V4L2 video capture device
-      if (HasUsableFormats(fd.get())) {
-        Name device_name(base::StringPrintf("%s", cap.card), unique_id);
-        device_names->push_back(device_name);
-      } else {
-        DVLOG(1) << "No usable formats reported by " << info.GetName().value();
-      }
-    }
-  }
+  NOTREACHED();
 }
 
+// static
 void VideoCaptureDevice::GetDeviceSupportedFormats(
     const Name& device,
     VideoCaptureFormats* supported_formats) {
-  if (device.id().empty())
-    return;
-  base::ScopedFD fd(HANDLE_EINTR(open(device.id().c_str(), O_RDONLY)));
-  if (!fd.is_valid()) {
-    // Failed to open this device.
-    return;
-  }
-  supported_formats->clear();
-
-  // Retrieve the caps one by one, first get pixel format, then sizes, then
-  // frame rates. See http://linuxtv.org/downloads/v4l-dvb-apis for reference.
-  v4l2_fmtdesc pixel_format = {};
-  pixel_format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-  while (HANDLE_EINTR(ioctl(fd.get(), VIDIOC_ENUM_FMT, &pixel_format)) == 0) {
-    VideoCaptureFormat supported_format;
-    supported_format.pixel_format =
-        V4l2ColorToVideoCaptureColorFormat((int32)pixel_format.pixelformat);
-    if (supported_format.pixel_format == PIXEL_FORMAT_UNKNOWN) {
-      ++pixel_format.index;
-      continue;
-    }
-
-    v4l2_frmsizeenum frame_size = {};
-    frame_size.pixel_format = pixel_format.pixelformat;
-    while (HANDLE_EINTR(ioctl(fd.get(), VIDIOC_ENUM_FRAMESIZES, &frame_size)) ==
-           0) {
-      if (frame_size.type == V4L2_FRMSIZE_TYPE_DISCRETE) {
-        supported_format.frame_size.SetSize(
-            frame_size.discrete.width, frame_size.discrete.height);
-      } else if (frame_size.type == V4L2_FRMSIZE_TYPE_STEPWISE) {
-        // TODO(mcasas): see http://crbug.com/249953, support these devices.
-        NOTIMPLEMENTED();
-      } else if (frame_size.type == V4L2_FRMSIZE_TYPE_CONTINUOUS) {
-        // TODO(mcasas): see http://crbug.com/249953, support these devices.
-        NOTIMPLEMENTED();
-      }
-      v4l2_frmivalenum frame_interval = {};
-      frame_interval.pixel_format = pixel_format.pixelformat;
-      frame_interval.width = frame_size.discrete.width;
-      frame_interval.height = frame_size.discrete.height;
-      while (HANDLE_EINTR(ioctl(
-                 fd.get(), VIDIOC_ENUM_FRAMEINTERVALS, &frame_interval)) == 0) {
-        if (frame_interval.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
-          if (frame_interval.discrete.numerator != 0) {
-            supported_format.frame_rate =
-                static_cast<float>(frame_interval.discrete.denominator) /
-                static_cast<float>(frame_interval.discrete.numerator);
-          } else {
-            supported_format.frame_rate = 0;
-          }
-        } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_CONTINUOUS) {
-          // TODO(mcasas): see http://crbug.com/249953, support these devices.
-          NOTIMPLEMENTED();
-          break;
-        } else if (frame_interval.type == V4L2_FRMIVAL_TYPE_STEPWISE) {
-          // TODO(mcasas): see http://crbug.com/249953, support these devices.
-          NOTIMPLEMENTED();
-          break;
-        }
-        supported_formats->push_back(supported_format);
-        ++frame_interval.index;
-      }
-      ++frame_size.index;
-    }
-    ++pixel_format.index;
-  }
-  return;
-}
-
-static bool ReadIdFile(const std::string path, std::string* id) {
-  char id_buf[kVidPidSize];
-  FILE* file = fopen(path.c_str(), "rb");
-  if (!file)
-    return false;
-  const bool success = fread(id_buf, kVidPidSize, 1, file) == 1;
-  fclose(file);
-  if (!success)
-    return false;
-  id->append(id_buf, kVidPidSize);
-  return true;
+  NOTREACHED();
 }
 
 const std::string VideoCaptureDevice::Name::GetModel() const {
@@ -246,23 +149,6 @@ const std::string VideoCaptureDevice::Name::GetModel() const {
     return "";
 
   return usb_id;
-}
-
-VideoCaptureDevice* VideoCaptureDevice::Create(const Name& device_name) {
-  VideoCaptureDeviceLinux* self = new VideoCaptureDeviceLinux(device_name);
-  if (!self)
-    return NULL;
-  // Test opening the device driver. This is to make sure it is available.
-  // We will reopen it again in our worker thread when someone
-  // allocates the camera.
-  base::ScopedFD fd(HANDLE_EINTR(open(device_name.id().c_str(), O_RDONLY)));
-  if (!fd.is_valid()) {
-    DVLOG(1) << "Cannot open device";
-    delete self;
-    return NULL;
-  }
-
-  return self;
 }
 
 VideoCaptureDeviceLinux::VideoCaptureDeviceLinux(const Name& device_name)

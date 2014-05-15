@@ -11,6 +11,10 @@
 
 #if defined(OS_MACOSX)
 #include "media/video/capture/mac/video_capture_device_factory_mac.h"
+#elif defined(OS_LINUX)
+#include "media/video/capture/linux/video_capture_device_factory_linux.h"
+#elif defined(OS_ANDROID)
+#include "media/video/capture/android/video_capture_device_factory_android.h"
 #endif
 
 namespace media {
@@ -33,6 +37,12 @@ scoped_ptr<VideoCaptureDeviceFactory>
 #if defined(OS_MACOSX)
     return scoped_ptr<VideoCaptureDeviceFactory>(new
         VideoCaptureDeviceFactoryMac());
+#elif defined(OS_LINUX)
+    return scoped_ptr<VideoCaptureDeviceFactory>(new
+        VideoCaptureDeviceFactoryLinux());
+#elif defined(OS_ANDROID)
+    return scoped_ptr<VideoCaptureDeviceFactory>(new
+        VideoCaptureDeviceFactoryAndroid());
 #else
     return scoped_ptr<VideoCaptureDeviceFactory>(new
         VideoCaptureDeviceFactory());
