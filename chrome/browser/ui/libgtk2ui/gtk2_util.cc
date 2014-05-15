@@ -103,9 +103,10 @@ int EventFlagsFromGdkState(guint state) {
   return flags;
 }
 
-// Set |dialog| as transient for |parent|, which will keep it on top and center
-// it above |parent|.
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent) {
+  if (!parent)
+    return;
+
   gtk_widget_realize(dialog);
   GdkWindow* gdk_window = gtk_widget_get_window(dialog);
 

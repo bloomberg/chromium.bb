@@ -44,7 +44,7 @@ GdkModifierType GetGdkModifierForAccelerator(
 int EventFlagsFromGdkState(guint state);
 
 // Sets |dialog| as transient for |parent|, which will keep it on top and center
-// it above |parent|.
+// it above |parent|. Do nothing if |parent| is NULL.
 void SetGtkTransientForAura(GtkWidget* dialog, aura::Window* parent);
 
 // Gets the transient parent aura window for |dialog|.
