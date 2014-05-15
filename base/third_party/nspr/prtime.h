@@ -73,9 +73,6 @@ typedef enum { PR_FAILURE = -1, PR_SUCCESS = 0 } PRStatus;
 #define PR_INT16_MAX 32767
 #define NSPR_API(__type) extern __type
 
-#define LL_I2L(l, i)    ((l) = (PRInt64)(i))
-#define LL_MUL(r, a, b) ((r) = (a) * (b))
-
 /**********************************************************************/
 /************************* TYPES AND CONSTANTS ************************/
 /**********************************************************************/
@@ -233,6 +230,7 @@ NSPR_API(PRTimeParameters) PR_GMTParameters(const PRExplodedTime *gmt);
  *   06/21/95 04:24:34 PM
  *   20/06/95 21:07
  *   95-06-08 19:32:48 EDT
+ *   1995-06-17T23:11:25.342156Z
  *
  * If the input string doesn't contain a description of the timezone,
  * we consult the `default_to_gmt' to decide whether the string should

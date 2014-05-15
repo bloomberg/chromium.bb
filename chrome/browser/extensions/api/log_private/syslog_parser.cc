@@ -23,8 +23,6 @@ namespace extensions {
 
 namespace {
 
-const int kExpectedTimeTokenNum = 7;
-const char kLogEntryDelimiters[] = "-:T";
 const char kProcessInfoDelimiters[] = "[]";
 
 }  // namespace
@@ -71,39 +69,15 @@ SyslogParser::Error SyslogParser::ParseEntry(
   return SyslogParser::SUCCESS;
 }
 
-SyslogParser::Error ParseTimeHelper(base::StringTokenizer* tokenizer,
-                                    std::string* output) {
-  if (!tokenizer->GetNext()) {
-    LOG(ERROR) << "Error when parsing time";
-    return SyslogParser::PARSE_ERROR;
-  }
-  *output = tokenizer->token();
-  return SyslogParser::SUCCESS;
-}
-
 SyslogParser::Error SyslogParser::ParseTime(const std::string& input,
                                             double* output) const {
-  base::StringTokenizer tokenizer(input, kLogEntryDelimiters);
-  std::string tokens[kExpectedTimeTokenNum];
-  for (int i = 0; i < kExpectedTimeTokenNum; i++) {
-    if (ParseTimeHelper(&tokenizer, &(tokens[i])) != SyslogParser::SUCCESS)
-      return SyslogParser::PARSE_ERROR;
-  }
-
-  std::string buffer = tokens[1] + '-' + tokens[2] + '-' + tokens[0] + ' ' +
-                       tokens[3] + ':' + tokens[4] + ":00";
-
   base::Time parsed_time;
-  if (!base::Time::FromString(buffer.c_str(), &parsed_time)) {
+  if (!base::Time::FromString(input.c_str(), &parsed_time)) {
     LOG(ERROR) << "Error when parsing time";
     return SyslogParser::PARSE_ERROR;
   }
 
-  double seconds;
-  base::StringToDouble(tokens[5], &seconds);
-  *output = parsed_time.ToJsTime() +
-            (seconds * base::Time::kMillisecondsPerSecond);
-
+  *output = parsed_time.ToJsTime();
   return SyslogParser::SUCCESS;
 }
 

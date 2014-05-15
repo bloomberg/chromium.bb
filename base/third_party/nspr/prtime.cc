@@ -61,6 +61,8 @@
  * 1. prtime.h
  * 2. prtypes.h
  * 3. prlong.h
+ *
+ * Unit tests are in base/time/pr_time_unittest.cc.
  */
 
 #include "base/logging.h"
@@ -132,6 +134,8 @@ PR_ImplodeTime(const PRExplodedTime *exploded)
     // Adjust for time zone and dst.  Convert from seconds to microseconds.
     result -= (exploded->tm_params.tp_gmt_offset +
                exploded->tm_params.tp_dst_offset) * kSecondsToMicroseconds;
+    // Add microseconds that cannot be represented in |st|.
+    result += exploded->tm_usec % 1000;
     return result;
 #elif defined(OS_MACOSX)
     // Create the system struct representing our exploded time.
@@ -505,6 +509,7 @@ typedef enum
  *   06/21/95 04:24:34 PM
  *   20/06/95 21:07
  *   95-06-08 19:32:48 EDT
+ *   1995-06-17T23:11:25.342156Z
  *
  * If the input string doesn't contain a description of the timezone,
  * we consult the `default_to_gmt' to decide whether the string should
@@ -531,6 +536,7 @@ PR_ParseTimeString(
   int hour = -1;
   int min = -1;
   int sec = -1;
+  int usec = -1;
 
   const char *rest = string;
 
@@ -774,6 +780,7 @@ PR_ParseTimeString(
                         int tmp_hour = -1;
                         int tmp_min = -1;
                         int tmp_sec = -1;
+                        int tmp_usec = -1;
                         const char *end = rest + 1;
                         while (*end >= '0' && *end <= '9')
                           end++;
@@ -833,14 +840,38 @@ PR_ParseTimeString(
                                 else
                                   tmp_sec = (rest[0]-'0');
 
-                                /* If we made it here, we've parsed hour and min,
-                                   and possibly sec, so it worked as a unit. */
-
-                                /* skip over whitespace and see if there's an AM or PM
-                                   directly following the time.
-                                 */
-                                if (tmp_hour <= 12)
+                                /* fractional second */
+                                rest = end;
+                                if (*rest == '.')
                                   {
+                                    rest++;
+                                    end++;
+                                    tmp_usec = 0;
+                                    /* use up to 6 digits, skip over the rest */
+                                    while (*end >= '0' && *end <= '9')
+                                      {
+                                        if (end - rest < 6)
+                                          tmp_usec = tmp_usec * 10 + *end - '0';
+                                        end++;
+                                      }
+                                    int ndigits = end - rest;
+                                    while (ndigits++ < 6)
+                                      tmp_usec *= 10;
+                                    rest = end;
+                                  }
+
+                                if (*rest == 'Z')
+                                  {
+                                    zone = TT_GMT;
+                                    rest++;
+                                  }
+                                else if (tmp_hour <= 12)
+                                  {
+                                    /* If we made it here, we've parsed hour and min,
+                                       and possibly sec, so the current token is a time.
+                                       Now skip over whitespace and see if there's an AM
+                                       or PM directly following the time.
+                                    */
                                         const char *s = end;
                                         while (*s && (*s == ' ' || *s == '\t'))
                                           s++;
@@ -858,6 +889,7 @@ PR_ParseTimeString(
                                 hour = tmp_hour;
                                 min = tmp_min;
                                 sec = tmp_sec;
+                                usec = tmp_usec;
                                 rest = end;
                                 break;
                           }
@@ -865,8 +897,7 @@ PR_ParseTimeString(
                                          end[1] >= '0' && end[1] <= '9')
                           {
                                 /* Perhaps this is 6/16/95, 16/6/95, 6-16-95, or 16-6-95
-                                   or even 95-06-05...
-                                   #### But it doesn't handle 1995-06-22.
+                                   or even 95-06-05 or 1995-06-22.
                                  */
                                 int n1, n2, n3;
                                 const char *s;
@@ -877,9 +908,19 @@ PR_ParseTimeString(
 
                                 s = rest;
 
-                                n1 = (*s++ - '0');                                /* first 1 or 2 digits */
+                                n1 = (*s++ - '0');                                /* first 1, 2 or 4 digits */
                                 if (*s >= '0' && *s <= '9')
-                                  n1 = n1*10 + (*s++ - '0');
+                                  {
+                                    n1 = n1*10 + (*s++ - '0');
+
+                                    if (*s >= '0' && *s <= '9')            /* optional digits 3 and 4 */
+                                      {
+                                        n1 = n1*10 + (*s++ - '0');
+                                        if (*s < '0' || *s > '9')
+                                          break;
+                                        n1 = n1*10 + (*s++ - '0');
+                                      }
+                                  }
 
                                 if (*s != '/' && *s != '-')                /* slash */
                                   break;
@@ -911,17 +952,21 @@ PR_ParseTimeString(
                                           n3 = n3*10 + (*s++ - '0');
                                   }
 
-                                if ((*s >= '0' && *s <= '9') ||        /* followed by non-alphanum */
-                                        (*s >= 'A' && *s <= 'Z') ||
-                                        (*s >= 'a' && *s <= 'z'))
+                                if (*s == 'T' && s[1] >= '0' && s[1] <= '9')
+                                  /* followed by ISO 8601 T delimiter and number is ok */
+                                  ;
+                                else if ((*s >= '0' && *s <= '9') ||
+                                         (*s >= 'A' && *s <= 'Z') ||
+                                         (*s >= 'a' && *s <= 'z'))
+                                  /* but other alphanumerics are not ok */
                                   break;
 
-                                /* Ok, we parsed three 1-2 digit numbers, with / or -
+                                /* Ok, we parsed three multi-digit numbers, with / or -
                                    between them.  Now decide what the hell they are
-                                   (DD/MM/YY or MM/DD/YY or YY/MM/DD.)
+                                   (DD/MM/YY or MM/DD/YY or [YY]YY/MM/DD.)
                                  */
 
-                                if (n1 > 31 || n1 == 0)  /* must be YY/MM/DD */
+                                if (n1 > 31 || n1 == 0)  /* must be [YY]YY/MM/DD */
                                   {
                                         if (n2 > 12) break;
                                         if (n3 > 31) break;
@@ -1014,26 +1059,27 @@ PR_ParseTimeString(
                         /* else, three or more than five digits - what's that? */
 
                         break;
-                  }
-                }
+                  }   /* case '0' .. '9' */
+                }   /* switch */
 
           /* Skip to the end of this token, whether we parsed it or not.
-                 Tokens are delimited by whitespace, or ,;-/
-                 But explicitly not :+-.
+             Tokens are delimited by whitespace, or ,;-+/()[] but explicitly not .:
+             'T' is also treated as delimiter when followed by a digit (ISO 8601).
            */
           while (*rest &&
                          *rest != ' ' && *rest != '\t' &&
                          *rest != ',' && *rest != ';' &&
                          *rest != '-' && *rest != '+' &&
                          *rest != '/' &&
-                         *rest != '(' && *rest != ')' && *rest != '[' && *rest != ']')
+                         *rest != '(' && *rest != ')' && *rest != '[' && *rest != ']' &&
+                         !(*rest == 'T' && rest[1] >= '0' && rest[1] <= '9')
+                )
                 rest++;
           /* skip over uninteresting chars. */
         SKIP_MORE:
-          while (*rest &&
-                         (*rest == ' ' || *rest == '\t' ||
-                          *rest == ',' || *rest == ';' || *rest == '/' ||
-                          *rest == '(' || *rest == ')' || *rest == '[' || *rest == ']'))
+          while (*rest == ' ' || *rest == '\t' ||
+                 *rest == ',' || *rest == ';' || *rest == '/' ||
+                 *rest == '(' || *rest == ')' || *rest == '[' || *rest == ']')
                 rest++;
 
           /* "-" is ignored at the beginning of a token if we have not yet
@@ -1047,7 +1093,10 @@ PR_ParseTimeString(
                   goto SKIP_MORE;
                 }
 
-        }
+          /* Skip T that may precede ISO 8601 time. */
+          if (*rest == 'T' && rest[1] >= '0' && rest[1] <= '9')
+            rest++;
+        }   /* while */
 
   if (zone != TT_UNKNOWN && zone_offset == -1)
         {
@@ -1082,6 +1131,8 @@ PR_ParseTimeString(
       return PR_FAILURE;
 
   memset(result, 0, sizeof(*result));
+  if (usec != -1)
+        result->tm_usec = usec; 
   if (sec != -1)
         result->tm_sec = sec;
   if (min != -1)
@@ -1135,11 +1186,9 @@ PR_ParseTimeString(
            */
 
           /* month, day, hours, mins and secs are always non-negative
-             so we dont need to worry about them. */  
-          if(result->tm_year >= 1970)
+             so we dont need to worry about them. */
+          if (result->tm_year >= 1970)
                 {
-                  PRInt64 usec_per_sec;
-
                   localTime.tm_sec = result->tm_sec;
                   localTime.tm_min = result->tm_min;
                   localTime.tm_hour = result->tm_hour;
@@ -1179,11 +1228,8 @@ PR_ParseTimeString(
 #endif
                   if (secs != (time_t) -1)
                     {
-                      PRTime usecs64;
-                      LL_I2L(usecs64, secs);
-                      LL_I2L(usec_per_sec, PR_USEC_PER_SEC);
-                      LL_MUL(usecs64, usecs64, usec_per_sec);
-                      *result_imploded = usecs64;
+                      *result_imploded = (PRInt64)secs * PR_USEC_PER_SEC;
+                      *result_imploded += result->tm_usec;
                       return PR_SUCCESS;
                     }
                 }

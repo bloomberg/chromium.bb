@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
 #include <time.h>
 
 #include "base/compiler_specific.h"
@@ -15,6 +16,10 @@ namespace {
 
 // time_t representation of 15th Oct 2007 12:45:00 PDT
 PRTime comparison_time_pdt = 1192477500 * Time::kMicrosecondsPerSecond;
+
+// Time with positive tz offset and fractional seconds:
+// 2013-07-08T11:28:12.441381+02:00
+PRTime comparison_time_2 = INT64_C(1373275692441381);   // represented as GMT
 
 // Specialized test fixture allowing time strings without timezones to be
 // tested by comparing them to a known time in the local zone.
@@ -36,12 +41,30 @@ class PRTimeTest : public testing::Test {
       0,            // day of year (ignored, output only)
       -1            // DST in effect, -1 tells mktime to figure it out
     };
-    comparison_time_local_ = mktime(&local_comparison_tm) *
-                             Time::kMicrosecondsPerSecond;
+    comparison_time_local_ =
+        mktime(&local_comparison_tm) * Time::kMicrosecondsPerSecond;
     ASSERT_GT(comparison_time_local_, 0);
+
+    const int microseconds = 441381;
+    struct tm local_comparison_tm_2 = {
+      12,           // second
+      28,           // minute
+      11,           // hour
+      8,            // day of month
+      7 - 1,        // month
+      2013 - 1900,  // year
+      0,            // day of week (ignored, output only)
+      0,            // day of year (ignored, output only)
+      -1            // DST in effect, -1 tells mktime to figure it out
+    };
+    comparison_time_local_2_ =
+        mktime(&local_comparison_tm_2) * Time::kMicrosecondsPerSecond;
+    ASSERT_GT(comparison_time_local_2_, 0);
+    comparison_time_local_2_ += microseconds;
   }
 
   PRTime comparison_time_local_;
+  PRTime comparison_time_local_2_;
 };
 
 // Tests the PR_ParseTimeString nspr helper function for
@@ -74,7 +97,7 @@ TEST_F(PRTimeTest, ParseTimeTest2) {
   PRStatus result = PR_ParseTimeString("Mon, 15 Oct 2007 19:45:00 GMT",
                                        PR_FALSE, &parsed_time);
   EXPECT_EQ(PR_SUCCESS, result);
-  EXPECT_EQ(parsed_time, comparison_time_pdt);
+  EXPECT_EQ(comparison_time_pdt, parsed_time);
 }
 
 TEST_F(PRTimeTest, ParseTimeTest3) {
@@ -82,7 +105,7 @@ TEST_F(PRTimeTest, ParseTimeTest3) {
   PRStatus result = PR_ParseTimeString("15 Oct 07 12:45:00", PR_FALSE,
                                        &parsed_time);
   EXPECT_EQ(PR_SUCCESS, result);
-  EXPECT_EQ(parsed_time, comparison_time_local_);
+  EXPECT_EQ(comparison_time_local_, parsed_time);
 }
 
 TEST_F(PRTimeTest, ParseTimeTest4) {
@@ -90,7 +113,7 @@ TEST_F(PRTimeTest, ParseTimeTest4) {
   PRStatus result = PR_ParseTimeString("15 Oct 07 19:45 GMT", PR_FALSE,
                                        &parsed_time);
   EXPECT_EQ(PR_SUCCESS, result);
-  EXPECT_EQ(parsed_time, comparison_time_pdt);
+  EXPECT_EQ(comparison_time_pdt, parsed_time);
 }
 
 TEST_F(PRTimeTest, ParseTimeTest5) {
@@ -98,7 +121,7 @@ TEST_F(PRTimeTest, ParseTimeTest5) {
   PRStatus result = PR_ParseTimeString("Mon Oct 15 12:45 PDT 2007",
                                        PR_FALSE, &parsed_time);
   EXPECT_EQ(PR_SUCCESS, result);
-  EXPECT_EQ(parsed_time, comparison_time_pdt);
+  EXPECT_EQ(comparison_time_pdt, parsed_time);
 }
 
 TEST_F(PRTimeTest, ParseTimeTest6) {
@@ -106,7 +129,7 @@ TEST_F(PRTimeTest, ParseTimeTest6) {
   PRStatus result = PR_ParseTimeString("Monday, Oct 15, 2007 12:45 PM",
                                        PR_FALSE, &parsed_time);
   EXPECT_EQ(PR_SUCCESS, result);
-  EXPECT_EQ(parsed_time, comparison_time_local_);
+  EXPECT_EQ(comparison_time_local_, parsed_time);
 }
 
 TEST_F(PRTimeTest, ParseTimeTest7) {
@@ -114,23 +137,123 @@ TEST_F(PRTimeTest, ParseTimeTest7) {
   PRStatus result = PR_ParseTimeString("10/15/07 12:45:00 PM", PR_FALSE,
                                        &parsed_time);
   EXPECT_EQ(PR_SUCCESS, result);
-  EXPECT_EQ(parsed_time, comparison_time_local_);
+  EXPECT_EQ(comparison_time_local_, parsed_time);
 }
 
 TEST_F(PRTimeTest, ParseTimeTest8) {
   PRTime parsed_time = 0;
-  PRStatus result = PR_ParseTimeString("15-OCT-2007 12:45pm", PR_FALSE,
+  PRStatus result = PR_ParseTimeString("10/15/07 12:45:00. PM", PR_FALSE,
                                        &parsed_time);
   EXPECT_EQ(PR_SUCCESS, result);
-  EXPECT_EQ(parsed_time, comparison_time_local_);
+  EXPECT_EQ(comparison_time_local_, parsed_time);
 }
 
 TEST_F(PRTimeTest, ParseTimeTest9) {
   PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("10/15/07 12:45:00.0 PM", PR_FALSE,
+                                       &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_local_, parsed_time);
+}
+
+TEST_F(PRTimeTest, ParseTimeTest10) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("15-OCT-2007 12:45pm", PR_FALSE,
+                                       &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_local_, parsed_time);
+}
+
+TEST_F(PRTimeTest, ParseTimeTest11) {
+  PRTime parsed_time = 0;
   PRStatus result = PR_ParseTimeString("16 Oct 2007 4:45-JST (Tuesday)",
                                        PR_FALSE, &parsed_time);
   EXPECT_EQ(PR_SUCCESS, result);
-  EXPECT_EQ(parsed_time, comparison_time_pdt);
+  EXPECT_EQ(comparison_time_pdt, parsed_time);
+}
+
+// hh:mm timezone offset.
+TEST_F(PRTimeTest, ParseTimeTest12) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-07-08T11:28:12.441381+02:00",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_2, parsed_time);
+}
+
+// hhmm timezone offset.
+TEST_F(PRTimeTest, ParseTimeTest13) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-07-08T11:28:12.441381+0200",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_2, parsed_time);
+}
+
+// hh timezone offset.
+TEST_F(PRTimeTest, ParseTimeTest14) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-07-08T11:28:12.4413819+02",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_2, parsed_time);
+}
+
+// 5 digits fractional second.
+TEST_F(PRTimeTest, ParseTimeTest15) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-07-08T09:28:12.44138Z",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_2-1, parsed_time);
+}
+
+// Fractional seconds, local timezone.
+TEST_F(PRTimeTest, ParseTimeTest16) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-07-08T11:28:12.441381",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_local_2_, parsed_time);
+}
+
+// "Z" (=GMT) timezone.
+TEST_F(PRTimeTest, ParseTimeTest17) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-07-08T09:28:12.441381Z",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_2, parsed_time);
+}
+
+// "T" delimiter replaced by space.
+TEST_F(PRTimeTest, ParseTimeTest18) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-07-08 09:28:12.441381Z",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_SUCCESS, result);
+  EXPECT_EQ(comparison_time_2, parsed_time);
+}
+
+TEST_F(PRTimeTest, ParseTimeTestInvalid1) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("201-07-08T09:28:12.441381Z",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_FAILURE, result);
+}
+
+TEST_F(PRTimeTest, ParseTimeTestInvalid2) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-007-08T09:28:12.441381Z",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_FAILURE, result);
+}
+
+TEST_F(PRTimeTest, ParseTimeTestInvalid3) {
+  PRTime parsed_time = 0;
+  PRStatus result = PR_ParseTimeString("2013-07-008T09:28:12.441381Z",
+                                       PR_FALSE, &parsed_time);
+  EXPECT_EQ(PR_FAILURE, result);
 }
 
 // This test should not crash when compiled with Visual C++ 2005 (see
