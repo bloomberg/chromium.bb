@@ -116,9 +116,11 @@ void CheckByteCounters() {
 }
 
 int main(int argc, char** argv) {
-  if (argc < 5) {
+  if (argc != 5 && argc != 3) {
     fprintf(stderr,
             "Usage: udp_proxy <localport> <remotehost> <remoteport> <type>\n"
+            "or:\n"
+            "       udp_proxy <localport> <type>\n"
             "Where type is one of: perfect, wifi, bad, evil\n");
     exit(1);
   }
@@ -127,18 +129,26 @@ int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   InitLogging(logging::LoggingSettings());
 
-  int local_port = atoi(argv[1]);
-  int remote_port = atoi(argv[3]);
   net::IPAddressNumber remote_ip_number;
   net::IPAddressNumber local_ip_number;
-
-  CHECK(net::ParseIPLiteralToNumber(argv[2], &remote_ip_number));
+  std::string network_type;
+  int local_port = atoi(argv[1]);
+  int remote_port = 0;
   CHECK(net::ParseIPLiteralToNumber("0.0.0.0", &local_ip_number));
+
+  if (argc == 5) {
+    // V2 proxy
+    CHECK(net::ParseIPLiteralToNumber(argv[2], &remote_ip_number));
+    remote_port = atoi(argv[3]);
+    network_type = argv[4];
+  } else {
+    // V1 proxy
+    network_type = argv[2];
+  }
   net::IPEndPoint remote_endpoint(remote_ip_number, remote_port);
   net::IPEndPoint local_endpoint(local_ip_number, local_port);
-
   scoped_ptr<media::cast::test::PacketPipe> in_pipe, out_pipe;
-  std::string network_type = argv[4];
+
   if (network_type == "perfect") {
     // No action needed.
   } else if (network_type == "wifi") {

@@ -371,34 +371,34 @@ void BuildPipe(scoped_ptr<PacketPipe>* pipe, PacketPipe* next) {
 scoped_ptr<PacketPipe> WifiNetwork() {
   // This represents the buffer on the sender.
   scoped_ptr<PacketPipe> pipe;
-  BuildPipe(&pipe, new Buffer(256 << 10, 5000000));
+  BuildPipe(&pipe, new Buffer(256 << 10, 20));
   BuildPipe(&pipe, new RandomDrop(0.005));
   // This represents the buffer on the router.
   BuildPipe(&pipe, new ConstantDelay(1E-3));
   BuildPipe(&pipe, new RandomSortedDelay(1E-3, 20E-3, 3));
-  BuildPipe(&pipe, new Buffer(256 << 10, 5000000));
+  BuildPipe(&pipe, new Buffer(256 << 10, 20));
   BuildPipe(&pipe, new ConstantDelay(1E-3));
   BuildPipe(&pipe, new RandomSortedDelay(1E-3, 20E-3, 3));
   BuildPipe(&pipe, new RandomDrop(0.005));
   // This represents the buffer on the receiving device.
-  BuildPipe(&pipe, new Buffer(256 << 10, 5000000));
+  BuildPipe(&pipe, new Buffer(256 << 10, 20));
   return pipe.Pass();
 }
 
 scoped_ptr<PacketPipe> BadNetwork() {
   scoped_ptr<PacketPipe> pipe;
   // This represents the buffer on the sender.
-  BuildPipe(&pipe, new Buffer(64 << 10, 5000000)); // 64 kb buf, 5mbit/s
+  BuildPipe(&pipe, new Buffer(64 << 10, 5)); // 64 kb buf, 5mbit/s
   BuildPipe(&pipe, new RandomDrop(0.05));  // 5% packet drop
   BuildPipe(&pipe, new RandomSortedDelay(2E-3, 20E-3, 1));
   // This represents the buffer on the router.
-  BuildPipe(&pipe, new Buffer(64 << 10, 2000000));  // 64 kb buf, 2mbit/s
+  BuildPipe(&pipe, new Buffer(64 << 10, 5));  // 64 kb buf, 4mbit/s
   BuildPipe(&pipe, new ConstantDelay(1E-3));
   // Random 40ms every other second
   //  BuildPipe(&pipe, new NetworkGlitchPipe(2, 40E-1));
   BuildPipe(&pipe, new RandomUnsortedDelay(5E-3));
   // This represents the buffer on the receiving device.
-  BuildPipe(&pipe, new Buffer(64 << 10, 4000000));  // 64 kb buf, 4mbit/s
+  BuildPipe(&pipe, new Buffer(64 << 10, 5));  // 64 kb buf, 5mbit/s
   return pipe.Pass();
 }
 
@@ -406,17 +406,17 @@ scoped_ptr<PacketPipe> BadNetwork() {
 scoped_ptr<PacketPipe> EvilNetwork() {
   // This represents the buffer on the sender.
   scoped_ptr<PacketPipe> pipe;
-  BuildPipe(&pipe, new Buffer(4 << 10, 2000000));
+  BuildPipe(&pipe, new Buffer(4 << 10, 5));  // 4 kb buf, 2mbit/s
   // This represents the buffer on the router.
   BuildPipe(&pipe, new RandomDrop(0.1));  // 10% packet drop
   BuildPipe(&pipe, new RandomSortedDelay(20E-3, 60E-3, 1));
-  BuildPipe(&pipe, new Buffer(4 << 10, 1000000));  // 4 kb buf, 1mbit/s
+  BuildPipe(&pipe, new Buffer(4 << 10, 2));  // 4 kb buf, 2mbit/s
   BuildPipe(&pipe, new RandomDrop(0.1));  // 10% packet drop
   BuildPipe(&pipe, new ConstantDelay(1E-3));
   BuildPipe(&pipe, new NetworkGlitchPipe(2.0, 0.3));
   BuildPipe(&pipe, new RandomUnsortedDelay(20E-3));
   // This represents the buffer on the receiving device.
-  BuildPipe(&pipe, new Buffer(4 << 10, 2000000));  // 4 kb buf, 2mbit/s
+  BuildPipe(&pipe, new Buffer(4 << 10, 2));  // 4 kb buf, 2mbit/s
   return pipe.Pass();
 }
 
@@ -429,6 +429,7 @@ class UDPProxyImpl : public UDPProxy {
                net::NetLog* net_log) :
       local_port_(local_port),
       destination_(destination),
+      destination_is_mutable_(destination.address().empty()),
       proxy_thread_("media::cast::test::UdpProxy Thread"),
       to_dest_pipe_(to_dest_pipe.Pass()),
       from_dest_pipe_(from_dest_pipe.Pass()) {
@@ -492,6 +493,11 @@ class UDPProxyImpl : public UDPProxy {
       return;
     }
     packet_->resize(len);
+    if (destination_is_mutable_ &&
+        !(recv_address_ == return_address_) &&
+        !(recv_address_ == destination_)) {
+      destination_ = recv_address_;
+    }
     if (recv_address_ == destination_) {
       from_dest_pipe_->Send(packet_.Pass());
     } else {
@@ -527,6 +533,7 @@ class UDPProxyImpl : public UDPProxy {
 
   net::IPEndPoint local_port_;
   net::IPEndPoint destination_;
+  bool destination_is_mutable_;
   net::IPEndPoint recv_address_;
   net::IPEndPoint return_address_;
   base::Thread proxy_thread_;
