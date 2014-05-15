@@ -58,7 +58,6 @@
           ],
           'variables': {
             'jni_gen_package': 'web_contents_delegate_android',
-            'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },

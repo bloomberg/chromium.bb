@@ -11,7 +11,6 @@
           'type': 'none',
           'variables': {
             'java_in_dir': '../sync/android/java',
-            'jni_generator_ptr_type': 'long',
           },
           'dependencies': [
             '../base/base.gyp:base_java',

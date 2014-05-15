@@ -3634,7 +3634,6 @@
           ],
           'variables': {
             'jni_gen_package': 'chrome',
-            'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
