@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -27,20 +28,26 @@ namespace dom_distiller {
 
 namespace {
 
-std::string ReplaceHtmlTemplateValues(const std::string& title,
-                                      const std::string& content,
-                                      const std::string& original_url) {
+std::string ReplaceHtmlTemplateValues(
+    const std::string& title,
+    const std::string& content,
+    const std::string& loading_indicator_class,
+    const std::string& original_url) {
   base::StringPiece html_template =
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_DOM_DISTILLER_VIEWER_HTML);
   std::vector<std::string> substitutions;
-  substitutions.push_back(title);         // $1
-  substitutions.push_back(kCssPath);      // $2
-  substitutions.push_back(title);         // $3
-  substitutions.push_back(content);       // $4
-  substitutions.push_back(original_url);  // $5
+  substitutions.push_back(title);                                         // $1
+  substitutions.push_back(kViewerCssPath);                                // $2
+  substitutions.push_back(kViewerJsPath);                                 // $3
+  substitutions.push_back(title);                                         // $4
+  substitutions.push_back(content);                                       // $5
+  substitutions.push_back(loading_indicator_class);                       // $6
   substitutions.push_back(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $6
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_STRING)); // $7
+  substitutions.push_back(original_url);                                  // $8
+  substitutions.push_back(
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL));  // $9
   return ReplaceStringPlaceholders(html_template, substitutions, NULL);
 }
 
@@ -48,15 +55,48 @@ std::string ReplaceHtmlTemplateValues(const std::string& title,
 
 namespace viewer {
 
-const std::string GetUnsafeHtml(const DistilledArticleProto* article_proto) {
+const std::string GetUnsafeIncrementalDistilledPageJs(
+    const DistilledPageProto* page_proto,
+    const bool is_last_page) {
+  std::string output;
+  base::StringValue value(page_proto->html());
+  base::JSONWriter::Write(&value, &output);
+  std::string page_update("addToPage(");
+  page_update += output + ");";
+  return page_update + GetToggleLoadingIndicatorJs(
+      is_last_page);
+
+}
+
+const std::string GetToggleLoadingIndicatorJs(const bool is_last_page) {
+  if (is_last_page)
+    return "showLoadingIndicator(true);";
+  else
+    return "showLoadingIndicator(false);";
+}
+
+const std::string GetUnsafePartialArticleHtml(
+    const DistilledPageProto* page_proto) {
+  DCHECK(page_proto);
+  std::string title = net::EscapeForHTML(page_proto->title());
+  std::ostringstream unsafe_output_stream;
+  unsafe_output_stream << page_proto->html();
+  std::string unsafe_article_html = unsafe_output_stream.str();
+  std::string original_url = page_proto->url();
+  return ReplaceHtmlTemplateValues(title,
+                                   unsafe_article_html,
+                                   "visible",
+                                   original_url);
+}
+
+const std::string GetUnsafeArticleHtml(
+    const DistilledArticleProto* article_proto) {
   DCHECK(article_proto);
   std::string title;
   std::string unsafe_article_html;
   if (article_proto->has_title() && article_proto->pages_size() > 0 &&
       article_proto->pages(0).has_html()) {
     title = net::EscapeForHTML(article_proto->title());
-    // TODO(shashishekhar): Add support for correcting displaying multiple pages
-    // after discussing the right way to display them.
     std::ostringstream unsafe_output_stream;
     for (int page_num = 0; page_num < article_proto->pages_size(); ++page_num) {
       unsafe_output_stream << article_proto->pages(page_num).html();
@@ -73,7 +113,10 @@ const std::string GetUnsafeHtml(const DistilledArticleProto* article_proto) {
     original_url = article_proto->pages(0).url();
   }
 
-  return ReplaceHtmlTemplateValues(title, unsafe_article_html, original_url);
+  return ReplaceHtmlTemplateValues(title,
+                                   unsafe_article_html,
+                                   "hidden",
+                                   original_url);
 }
 
 const std::string GetErrorPageHtml() {
@@ -81,12 +124,18 @@ const std::string GetErrorPageHtml() {
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_TITLE);
   std::string content = l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT);
-  return ReplaceHtmlTemplateValues(title, content, "");
+  return ReplaceHtmlTemplateValues(title, content, "hidden", "");
 }
 
 const std::string GetCss() {
   return ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_DISTILLER_CSS)
+      .as_string();
+}
+
+const std::string GetJavaScript() {
+  return ResourceBundle::GetSharedInstance()
+      .GetRawDataResource(IDR_DOM_DISTILLER_VIEWER_JS)
       .as_string();
 }
 

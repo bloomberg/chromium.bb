@@ -28,4 +28,7 @@ message DistilledPageProto {
 
   // The images referenced in the HTML.
   repeated Image image = 4;
+
+  // Title for the current page.
+  optional string title = 5;
 }

@@ -9,7 +9,8 @@ namespace dom_distiller {
 
 extern const char kEntryIdKey[];
 extern const char kUrlKey[];
-extern const char kCssPath[];
+extern const char kViewerCssPath[];
+extern const char kViewerJsPath[];
 
 }  // namespace dom_distiller
 

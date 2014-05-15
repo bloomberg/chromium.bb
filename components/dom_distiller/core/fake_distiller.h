@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_FAKE_DISTILLER_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_FAKE_DISTILLER_H_
 
+#include "base/callback.h"
 #include "components/dom_distiller/core/article_distillation_update.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/distiller.h"
@@ -32,6 +33,10 @@ class FakeDistiller : public Distiller {
   // immediately be posted to execute the callback with a simple
   // DistilledArticleProto.
   explicit FakeDistiller(bool execute_callback);
+  // TODO(yfriedman): Drop execute_callback from this and give the option of
+  // "auto-distilling" or calling the provided closure.
+  explicit FakeDistiller(bool execute_callback,
+                         const base::Closure& distillation_initiated_callback);
   virtual ~FakeDistiller();
   MOCK_METHOD0(Die, void());
 
@@ -42,6 +47,7 @@ class FakeDistiller : public Distiller {
       const DistillationUpdateCallback& page_callback) OVERRIDE;
 
   void RunDistillerCallback(scoped_ptr<DistilledArticleProto> proto);
+  void RunDistillerUpdateCallback(const ArticleDistillationUpdate& update);
 
   GURL GetUrl() { return url_; }
 
@@ -57,8 +63,9 @@ class FakeDistiller : public Distiller {
   GURL url_;
   DistillationFinishedCallback article_callback_;
   DistillationUpdateCallback page_callback_;
-
   bool destruction_allowed_;
+  // Used to notify when distillation is complete.
+  base::Closure distillation_initiated_callback_;
 };
 
 }  // namespace test

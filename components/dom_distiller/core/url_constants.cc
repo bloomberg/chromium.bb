@@ -8,6 +8,7 @@ namespace dom_distiller {
 
 const char kEntryIdKey[] = "entry_id";
 const char kUrlKey[] = "url";
-const char kCssPath[] = "readability.css";
+const char kViewerCssPath[] = "dom_distiller_viewer.css";
+const char kViewerJsPath[] = "dom_distiller_viewer.js";
 
 }  // namespace dom_distiller

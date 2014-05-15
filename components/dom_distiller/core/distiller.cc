@@ -140,8 +140,7 @@ void DistillerImpl::OnPageDistillationFinished(
     page_data->distilled_page_proto =
         new base::RefCountedData<DistilledPageProto>();
     page_data->page_num = page_num;
-    page_data->title = distilled_page->title;
-
+    page_data->distilled_page_proto->data.set_title(distilled_page->title);
     page_data->distilled_page_proto->data.set_url(page_url.spec());
     page_data->distilled_page_proto->data.set_html(distilled_page->html);
 
@@ -266,7 +265,7 @@ void DistillerImpl::RunDistillerCallbackIfDone() {
       *(article_proto->add_pages()) = page_data->distilled_page_proto->data;
 
       if (first_page) {
-        article_proto->set_title(page_data->title);
+        article_proto->set_title(page_data->distilled_page_proto->data.title());
         first_page = false;
       }
 

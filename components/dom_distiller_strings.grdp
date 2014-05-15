@@ -40,5 +40,8 @@
   <message name="IDS_DOM_DISTILLER_VIEWER_VIEW_ORIGINAL" desc="The text to show on a link of an article to view the original page.">
     View Original
   </message>
+  <message name="IDS_DOM_DISTILLER_VIEWER_LOADING_STRING" desc="The text to show indicating that the viewer is still loading more content from the article.">
+    Loading...
+  </message>
 
 </grit-part>

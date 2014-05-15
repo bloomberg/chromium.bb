@@ -15,7 +15,7 @@ FakeDB::~FakeDB() {}
 
 void FakeDB::Init(const base::FilePath& database_dir,
                   DomDistillerDatabaseInterface::InitCallback callback) {
-  dir_ = database_dir;
+ dir_ = database_dir;
   init_callback_ = callback;
 }
 

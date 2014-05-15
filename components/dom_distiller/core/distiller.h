@@ -91,7 +91,6 @@ class DistillerImpl : public Distiller {
     virtual ~DistilledPageData();
     // Relative page number of the page.
     int page_num;
-    std::string title;
     ScopedVector<DistillerURLFetcher> image_fetchers_;
     scoped_refptr<base::RefCountedData<DistilledPageProto> >
         distilled_page_proto;
