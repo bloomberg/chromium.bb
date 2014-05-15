@@ -1205,13 +1205,19 @@
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../ui/accessibility/accessibility.gyp:ax_gen',
-        '../ui/display/display.gyp:display',
         'ash_shell_lib',
         'ash_test_support',
       ],
       'sources': [
         'shell/window_watcher_unittest.cc',
         'test/ash_unittests.cc',
+      ],
+      'conditions': [
+        ['chromeos==1', {
+          'dependencies': [
+            '../ui/display/display.gyp:display',
+          ],
+        }],
       ],
     },
   ],
