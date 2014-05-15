@@ -130,16 +130,6 @@ void CloseInputDevice(const base::FilePath& path,
 
 }  // namespace
 
-EventFactoryEvdev::EventFactoryEvdev()
-    : device_manager_(NULL),
-      has_started_processing_events_(false),
-      ui_task_runner_(base::MessageLoopProxy::current()),
-      cursor_(NULL),
-      dispatch_callback_(
-          base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchUiEvent),
-                     base::Unretained(this))),
-      weak_ptr_factory_(this) {}
-
 EventFactoryEvdev::EventFactoryEvdev(
     CursorDelegateEvdev* cursor,
     DeviceManager* device_manager)

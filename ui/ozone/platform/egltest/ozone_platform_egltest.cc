@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "library_loaders/libeglplatform_shim.h"
 #include "ui/base/cursor/ozone/cursor_factory_ozone.h"
+#include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/gfx/ozone/impl/file_surface_factory.h"
 #include "ui/gfx/ozone/surface_ozone_egl.h"
@@ -205,7 +206,10 @@ const int32* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
 class OzonePlatformEgltest : public OzonePlatform {
  public:
   OzonePlatformEgltest()
-      : surface_factory_ozone_(&eglplatform_shim_), shim_initialized_(false) {}
+      : device_manager_(CreateDeviceManager()),
+        surface_factory_ozone_(&eglplatform_shim_),
+        event_factory_ozone_(NULL, device_manager_.get()),
+        shim_initialized_(false) {}
   virtual ~OzonePlatformEgltest() {
     if (shim_initialized_)
       eglplatform_shim_.ShimTerminate();
@@ -257,6 +261,7 @@ class OzonePlatformEgltest : public OzonePlatform {
 
  private:
   LibeglplatformShimLoader eglplatform_shim_;
+  scoped_ptr<DeviceManager> device_manager_;
   SurfaceFactoryEgltest surface_factory_ozone_;
   EventFactoryEvdev event_factory_ozone_;
   InputMethodContextFactoryOzone input_method_context_factory_ozone_;

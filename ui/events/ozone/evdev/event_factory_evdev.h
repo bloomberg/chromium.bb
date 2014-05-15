@@ -27,7 +27,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public EventFactoryOzone,
                                                     public DeviceEventObserver,
                                                     public PlatformEventSource {
  public:
-  EventFactoryEvdev();
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
                     DeviceManager* device_manager);
   virtual ~EventFactoryEvdev();
