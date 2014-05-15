@@ -1738,6 +1738,9 @@ def CMDsync(parser, args):
   parser.add_option('--output-json',
                     help='Output a json document to this path containing '
                          'summary information about the sync.')
+  parser.add_option('--shallow', action='store_true',
+                    help='GIT ONLY - Do a shallow clone into the cache dir. '
+                         'Requires Git 1.9+')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
 

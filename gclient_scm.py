@@ -765,7 +765,15 @@ class GitWrapper(SCMWrapper):
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
     mirror = git_cache.Mirror(url, **mirror_kwargs)
-    mirror.populate(verbose=options.verbose, bootstrap=True)
+    if options.shallow:
+      # HACK(hinoka): These repositories should be super shallow.
+      if 'flash' in url:
+        depth = 10
+      else:
+        depth = 10000
+    else:
+      depth = None
+    mirror.populate(verbose=options.verbose, bootstrap=True, depth=depth)
     mirror.unlock()
     return mirror.mirror_path if mirror.exists() else None
 
