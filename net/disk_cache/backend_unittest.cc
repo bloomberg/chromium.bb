@@ -1608,7 +1608,6 @@ void DiskCacheBackendTest::BackendDoomBetween() {
 
   AddDelay();
   Time middle_end = Time::Now();
-  AddDelay();
 
   ASSERT_EQ(net::OK, CreateEntry("fourth", &entry));
   entry->Close();
@@ -3242,7 +3241,8 @@ TEST_F(DiskCacheBackendTest, SimpleDoomRecent) {
   BackendDoomRecent();
 }
 
-TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
+// crbug.com/330926, crbug.com/370677
+TEST_F(DiskCacheBackendTest, DISABLED_SimpleDoomBetween) {
   SetSimpleCacheMode();
   BackendDoomBetween();
 }
