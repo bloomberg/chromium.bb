@@ -45,6 +45,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win7', 'intel'])
     self.Fail('conformance/rendering/gl-viewport-test.html',
         ['win7', 'intel'], bug=372511)
+    self.Fail('conformance/glsl/misc/shader-with-array-of-structs-uniform.html',
+        ['win7', 'intel', 'nvidia'], bug=373972)
 
     # Mac / Intel failures
     # Radar 13499466
