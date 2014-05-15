@@ -29,7 +29,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         bug=351396)
     self.Fail('conformance/glsl/misc/boolean_precision.html',
         bug=368874)
-    self.Fail('conformance/glsl/bugs/nested-structs-with-same-name.html',
+    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
         bug=368910)
 
     # Flaky on Win
