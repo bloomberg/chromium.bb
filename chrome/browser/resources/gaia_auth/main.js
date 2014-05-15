@@ -280,7 +280,7 @@ Authenticator.prototype = {
   onInsecureContentBlocked_: function(msg) {
     window.parent.postMessage({
       'method': 'insecureContentBlocked',
-      'url': msg.url
+      'url': stripParams(msg.url)
     }, this.parentPage_);
   },
 

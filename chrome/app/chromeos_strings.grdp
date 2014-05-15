@@ -1422,8 +1422,14 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_ERROR_TEXT" desc="Error text to show when the password typed by the user could not be verified.">
     Sorry, your password could not be verified. Please try again.
   </message>
-  <message name="IDS_LOGIN_FATAL_ERROR_TEXT_GENERIC" desc="Message to show when the authentication could not be completed due to an unspecified error.">
+  <message name="IDS_LOGIN_FATAL_ERROR_NO_EMAIL" desc="Message to show when the authentication could not be completed because the user's e-mail address could not be retrieved.">
+    Oops, couldn't sign you in. Sign-in failed because your e-mail address could not be retrieved.
+  </message>
+  <message name="IDS_LOGIN_FATAL_ERROR_NO_PASSWORD" desc="Message to show when the authentication could not be completed because the user's password could not be retrieved.">
     Something went wrong with signing in.
+  </message>
+  <message name="IDS_LOGIN_FATAL_ERROR_PASSWORD_VERIFICATION" desc="Message to show when the authentication could not be completed because two attempts to verify the user's password failed.">
+    Oops, couldn't sign you in. Sign-in failed because your password could not be verified.
   </message>
   <message name="IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL" desc="Message to show when the authentication could not be completed because a redirect to an insecure URL was detected and blocked.">
     Oops, couldn't sign you in. Sign-in failed because it was configured to use a non-secure URL (<ph name="BLOCKED_URL">$1<ex>http://www.example.com/login.html</ex></ph>).

@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -35,6 +35,7 @@
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
 #include "google_apis/gaia/gaia_switches.h"
+#include "grit/generated_resources.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -43,6 +44,7 @@
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using net::test_server::BasicHttpResponse;
@@ -363,6 +365,19 @@ class SamlTest : public InProcessBrowserTest {
     EXPECT_TRUE(result) << js;
   }
 
+  std::string WaitForAndGetFatalErrorMessage() {
+    OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+    std::string error_message;
+    if (!content::ExecuteScriptAndExtractString(
+          GetLoginUI()->GetWebContents(),
+          "window.domAutomationController.send("
+              "$('fatal-error-message').textContent);",
+          &error_message)) {
+      ADD_FAILURE();
+    }
+    return error_message;
+  }
+
   content::WebUI* GetLoginUI() {
     return static_cast<LoginDisplayHostImpl*>(
         LoginDisplayHostImpl::default_host())->GetOobeUI()->web_ui();
@@ -488,7 +503,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   SetSignFormField("Email", "fake_user");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_PASSWORD),
+            WaitForAndGetFatalErrorMessage());
 }
 
 // Types |bob@example.com| into the GAIA login form but then authenticates as
@@ -528,7 +544,8 @@ IN_PROC_BROWSER_TEST_F(SamlTest, FailToRetrieveAutenticatedUserEmailAddress) {
   SetSignFormField("Password", "fake_password");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_EMAIL),
+            WaitForAndGetFatalErrorMessage());
 }
 
 // Tests the password confirm flow: show error on the first failure and
@@ -552,10 +569,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
   OobeScreenWaiter(OobeDisplay::SCREEN_CONFIRM_PASSWORD).Wait();
   JsExpect("$('confirm-password').classList.contains('error')");
 
-  // Enter an unknown password 2nd time should go back to confirm password
-  // screen.
+  // Enter an unknown password 2nd time should go back fatal error message.
   SendConfirmPassword("wrong_password");
-  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+  EXPECT_EQ(
+      l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_PASSWORD_VERIFICATION),
+      WaitForAndGetFatalErrorMessage());
 }
 
 // Verifies that when GAIA attempts to redirect to a SAML IdP served over http,
@@ -566,24 +584,28 @@ IN_PROC_BROWSER_TEST_F(SamlTest, HTTPRedirectDisallowed) {
   WaitForSigninScreen();
   GetLoginDisplay()->ShowSigninScreenForCreds(kHTTPSAMLUserEmail, "");
 
-  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
-  JsExpect(base::StringPrintf(
-      "$('fatal-error-message').textContent.indexOf('%s') != -1",
-      embedded_test_server()->base_url().Resolve("/SAML").spec().c_str()));
+  const GURL url = embedded_test_server()->base_url().Resolve("/SAML");
+  EXPECT_EQ(l10n_util::GetStringFUTF8(
+                IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
+                base::UTF8ToUTF16(url.spec())),
+            WaitForAndGetFatalErrorMessage());
 }
 
 // Verifies that when GAIA attempts to redirect to a page served over http, not
 // https, via an HTML meta refresh, the redirect is blocked and an error message
 // is shown. This guards against regressions of http://crbug.com/359515.
 IN_PROC_BROWSER_TEST_F(SamlTest, MetaRefreshToHTTPDisallowed) {
+  const GURL url = embedded_test_server()->base_url().Resolve("/SSO");
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login_instant_meta_refresh.html");
-  fake_saml_idp()->SetRefreshURL(
-      embedded_test_server()->base_url().Resolve("/SSO"));
+  fake_saml_idp()->SetRefreshURL(url);
 
   WaitForSigninScreen();
   GetLoginDisplay()->ShowSigninScreenForCreds(kFirstSAMLUserEmail, "");
 
-  OobeScreenWaiter(OobeDisplay::SCREEN_FATAL_ERROR).Wait();
+  EXPECT_EQ(l10n_util::GetStringFUTF8(
+                IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL,
+                base::UTF8ToUTF16(url.spec())),
+            WaitForAndGetFatalErrorMessage());
 }
 
 class SAMLPolicyTest : public SamlTest {

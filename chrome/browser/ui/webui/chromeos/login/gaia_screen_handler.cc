@@ -183,7 +183,11 @@ void GaiaScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
 
   // Strings used by the fatal error dialog.
-  builder->Add("fatalErrorMessageGeneric", IDS_LOGIN_FATAL_ERROR_TEXT_GENERIC);
+  builder->Add("fatalErrorMessageNoEmail",  IDS_LOGIN_FATAL_ERROR_NO_EMAIL);
+  builder->Add("fatalErrorMessageNoPassword",
+               IDS_LOGIN_FATAL_ERROR_NO_PASSWORD);
+  builder->Add("fatalErrorMessageVerificationFailed",
+               IDS_LOGIN_FATAL_ERROR_PASSWORD_VERIFICATION);
   builder->Add("fatalErrorMessageInsecureURL",
                IDS_LOGIN_FATAL_ERROR_TEXT_INSECURE_URL);
   builder->Add("fatalErrorInstructions", IDS_LOGIN_FATAL_ERROR_INSTRUCTIONS);
