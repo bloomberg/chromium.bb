@@ -51,11 +51,7 @@ void AppendKeyValuePair(const char* key,
 
 }  // namespace subtle
 
-// Implementation of UploadDataPresenter.
-
 UploadDataPresenter::~UploadDataPresenter() {}
-
-// Implementation of RawDataPresenter.
 
 RawDataPresenter::RawDataPresenter()
   : success_(true),
@@ -102,8 +98,6 @@ void RawDataPresenter::FeedNextFile(const std::string& filename) {
                              new base::StringValue(filename),
                              list_.get());
 }
-
-// Implementation of ParsedDataPresenter.
 
 ParsedDataPresenter::ParsedDataPresenter(const net::URLRequest& request)
   : parser_(FormDataParser::Create(request)),

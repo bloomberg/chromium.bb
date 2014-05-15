@@ -19,12 +19,11 @@ namespace autofill {
 
 // This is the SavePasswordProgressLogger specialization for the renderer code,
 // which sends logs to the browser process over IPC.
-class RendererSavePasswordProgressLogger
-    : public autofill::SavePasswordProgressLogger {
+class RendererSavePasswordProgressLogger : public SavePasswordProgressLogger {
  public:
   // The logger will use |sender| and |routing_id| to send a
   // AutofillHostMsg_RecordSavePasswordProgress message with the logs to the
-  // browser.
+  // browser. The |sender| needs to outlive the constructed logger.
   RendererSavePasswordProgressLogger(IPC::Sender* sender, int routing_id);
   virtual ~RendererSavePasswordProgressLogger();
 

@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/logging.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/escape.h"
@@ -22,11 +24,13 @@ namespace extensions {
 
 namespace {
 
-#define CONTENT_DISPOSITION "content-disposition:"
-
-static const char g_escape_closing_quote[] = "\\\\E";
-static const size_t g_content_disposition_length =
-    sizeof(CONTENT_DISPOSITION) - 1;
+const char kContentDisposition[] = "content-disposition:";
+const size_t kContentDispositionLength = arraysize(kContentDisposition) - 1;
+// kCharacterPattern is an allowed character in a URL encoding. Definition is
+// from RFC 1738, end of section 2.2.
+const char kCharacterPattern[] =
+    "(?:[a-zA-Z0-9$_.+!*'(),]|-|(?:%[a-fA-F0-9]{2}))";
+const char kEscapeClosingQuote[] = "\\\\E";
 
 // A wrapper struct for static RE2 objects to be held as LazyInstance.
 struct Patterns {
@@ -54,22 +58,19 @@ Patterns::Patterns()
       crlf_free_pattern("(?:[^\\r]|\\r+[^\\r\\n])*"),
       preamble_pattern(".+?"),
       header_pattern("[!-9;-~]+:(.|\\r\\n[\\t ])*\\r\\n"),
-      content_disposition_pattern("(?i:" CONTENT_DISPOSITION ")"),
+      content_disposition_pattern(std::string("(?i:") + kContentDisposition +
+                                  ")"),
       name_pattern("\\bname=\"([^\"]*)\""),
       value_pattern("\\bfilename=\"([^\"]*)\""),
-      unquote_pattern(g_escape_closing_quote),
-// CHARACTER is an allowed character in a URL encoding. Definition is from
-// RFC 1738, end of section 2.2.
-#define CHARACTER "(?:[a-zA-Z0-9$_.+!*'(),]|-|(?:%[a-fA-F0-9]{2}))"
-      url_encoded_pattern("(" CHARACTER "*)=(" CHARACTER "*)") {}
-#undef CHARACTER
-
-#undef CONTENT_DISPOSITION
+      unquote_pattern(kEscapeClosingQuote),
+      url_encoded_pattern(std::string("(") + kCharacterPattern + "*)=(" +
+                          kCharacterPattern +
+                          "*)") {
+}
 
 Patterns::~Patterns() {}
 
-static base::LazyInstance<Patterns>::Leaky g_patterns =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<Patterns>::Leaky g_patterns = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -83,12 +84,12 @@ class FormDataParserUrlEncoded : public FormDataParser {
   // Implementation of FormDataParser.
   virtual bool AllDataReadOK() OVERRIDE;
   virtual bool GetNextNameValue(Result* result) OVERRIDE;
-  virtual bool SetSource(const base::StringPiece& source) OVERRIDE;
+  virtual bool SetSource(base::StringPiece source) OVERRIDE;
 
  private:
-  // The pattern to match a single name-value pair. This could be even static,
-  // but then we would have to spend more code on initializing the cached
-  // pointer to g_patterns.Get().
+  // Returns the pattern to match a single name-value pair. This could be even
+  // static, but then we would have to spend more code on initializing the
+  // cached pointer to g_patterns.Get().
   const RE2& pattern() const {
     return patterns_->url_encoded_pattern;
   }
@@ -182,9 +183,10 @@ class FormDataParserUrlEncoded : public FormDataParser {
 // 3. The final close-delimiter and epilogue are read and ignored.
 //
 // IMPORTANT NOTE
-// This parser supports multiple sources, i.e., SetSource can be called multiple
-// times if the input is spread over several byte blocks. However, the split
-// may only occur inside a body part, right after the trailing CRLF of headers.
+// This parser supports sources split into multiple chunks. Therefore SetSource
+// can be called multiple times if the source is spread over several chunks.
+// However, the split may only occur inside a body part, right after the
+// trailing CRLF of headers.
 class FormDataParserMultipart : public FormDataParser {
  public:
   explicit FormDataParserMultipart(const std::string& boundary_separator);
@@ -193,7 +195,7 @@ class FormDataParserMultipart : public FormDataParser {
   // Implementation of FormDataParser.
   virtual bool AllDataReadOK() OVERRIDE;
   virtual bool GetNextNameValue(Result* result) OVERRIDE;
-  virtual bool SetSource(const base::StringPiece& source) OVERRIDE;
+  virtual bool SetSource(base::StringPiece source) OVERRIDE;
 
  private:
   enum State {
@@ -206,7 +208,7 @@ class FormDataParserMultipart : public FormDataParser {
 
   // Produces a regexp to match the string "--" + |literal|. The idea is to
   // represent "--" + |literal| as a "quoted pattern", a verbatim copy enclosed
-  // in "\\Q" and "\\E". The only catch is to watch out ofr occurences of "\\E"
+  // in "\\Q" and "\\E". The only catch is to watch out for occurences of "\\E"
   // inside |literal|. Those must be excluded from the quote and the backslash
   // doubly escaped. For example, for literal == "abc\\Edef" the result is
   // "\\Q--abc\\E\\\\E\\Qdef\\E".
@@ -286,8 +288,6 @@ class FormDataParserMultipart : public FormDataParser {
   DISALLOW_COPY_AND_ASSIGN(FormDataParserMultipart);
 };
 
-// Implementation of FormDataParser and FormDataParser::Result.
-
 FormDataParser::Result::Result() {}
 FormDataParser::Result::~Result() {}
 
@@ -340,14 +340,14 @@ scoped_ptr<FormDataParser> FormDataParser::CreateFromContentTypeHeader(
       return scoped_ptr<FormDataParser>(new FormDataParserUrlEncoded());
     case MULTIPART:
       return scoped_ptr<FormDataParser>(new FormDataParserMultipart(boundary));
-    default:  // In other words, case ERROR_CHOICE:
+    case ERROR_CHOICE:
       return scoped_ptr<FormDataParser>();
   }
+  NOTREACHED();  // Some compilers do not believe this is unreachable.
+  return scoped_ptr<FormDataParser>();
 }
 
 FormDataParser::FormDataParser() {}
-
-// Implementation of FormDataParserUrlEncoded.
 
 const net::UnescapeRule::Type FormDataParserUrlEncoded::unescape_rules_ =
     net::UnescapeRule::URL_SPECIAL_CHARS | net::UnescapeRule::CONTROL_CHARS |
@@ -368,7 +368,7 @@ FormDataParserUrlEncoded::~FormDataParserUrlEncoded() {}
 
 bool FormDataParserUrlEncoded::AllDataReadOK() {
   // All OK means we read the whole source.
-  return source_set_ && source_.size() == 0 && !source_malformed_;
+  return source_set_ && source_.empty() && !source_malformed_;
 }
 
 bool FormDataParserUrlEncoded::GetNextNameValue(Result* result) {
@@ -382,14 +382,14 @@ bool FormDataParserUrlEncoded::GetNextNameValue(Result* result) {
   }
   if (source_.length() > 0) {
     if (source_[0] == '&')
-      source_.remove_prefix(1);  // Remove the trailing '&'.
+      source_.remove_prefix(1);  // Remove the leading '&'.
     else
       source_malformed_ = true;  // '&' missing between two name-value pairs.
   }
   return success && !source_malformed_;
 }
 
-bool FormDataParserUrlEncoded::SetSource(const base::StringPiece& source) {
+bool FormDataParserUrlEncoded::SetSource(base::StringPiece source) {
   if (source_set_)
     return false;  // We do not allow multiple sources for this parser.
   source_.set(source.data(), source.size());
@@ -398,18 +398,14 @@ bool FormDataParserUrlEncoded::SetSource(const base::StringPiece& source) {
   return true;
 }
 
-// Implementation of FormDataParserMultipart.
-
 // static
 std::string FormDataParserMultipart::CreateBoundaryPatternFromLiteral(
     const std::string& literal) {
-#define OPEN_QUOTE "\\Q"
-  static const char quote[] = OPEN_QUOTE;
+  static const char quote[] = "\\Q";
   static const char unquote[] = "\\E";
 
   // The result always starts with opening the qoute and then "--".
-  std::string result(OPEN_QUOTE "--");
-#undef OPEN_QUOTE
+  std::string result("\\Q--");
 
   // This StringPiece is used below to record the next occurrence of "\\E" in
   // |literal|.
@@ -421,7 +417,7 @@ std::string FormDataParserMultipart::CreateBoundaryPatternFromLiteral(
   while (RE2::FindAndConsume(&seek_unquote, unquote_pattern())) {
     copy_length = seek_unquote.data() - copy_start;
     result.append(copy_start, copy_length);
-    result.append(g_escape_closing_quote);
+    result.append(kEscapeClosingQuote);
     result.append(quote);
     copy_start = seek_unquote.data();
   }
@@ -467,8 +463,8 @@ bool FormDataParserMultipart::FinishReadingPart(base::StringPiece* data) {
       state_ = STATE_ERROR;
       return false;
     }
-    // Subtract 2u for the trailing "\r\n".
-    data->set(data_start, source_.data() - data_start - 2u);
+    // Subtract 2 for the trailing "\r\n".
+    data->set(data_start, source_.data() - data_start - 2);
   }
 
   // Finally, read the dash-boundary and either skip to the next body part, or
@@ -488,7 +484,7 @@ bool FormDataParserMultipart::FinishReadingPart(base::StringPiece* data) {
 }
 
 bool FormDataParserMultipart::GetNextNameValue(Result* result) {
-  if (source_.size() == 0 || state_ != STATE_READY)
+  if (source_.empty() || state_ != STATE_READY)
     return false;
 
   // 1. Read body-part headers.
@@ -498,7 +494,7 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
   bool value_assigned_temp;
   while (TryReadHeader(&name, &value, &value_assigned_temp))
     value_assigned |= value_assigned_temp;
-  if (name.size() == 0 || state_ == STATE_ERROR) {
+  if (name.empty() || state_ == STATE_ERROR) {
     state_ = STATE_ERROR;
     return false;
   }
@@ -512,7 +508,7 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
   // 3. Read the data of this body part, i.e., everything until the first
   // dash-boundary.
   bool return_value;
-  if (value_assigned && source_.size() == 0) {  // Wait for a new source?
+  if (value_assigned && source_.empty()) {  // Wait for a new source?
     return_value = true;
     state_ = STATE_SUSPEND;
   } else {
@@ -528,8 +524,8 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
   return return_value;
 }
 
-bool FormDataParserMultipart::SetSource(const base::StringPiece& source) {
-  if (source.data() == NULL || source_.size() != 0)
+bool FormDataParserMultipart::SetSource(base::StringPiece source) {
+  if (source.data() == NULL || !source_.empty())
     return false;
   source_.set(source.data(), source.size());
 
@@ -571,16 +567,16 @@ bool FormDataParserMultipart::TryReadHeader(base::StringPiece* name,
     return false;
   // (*) After this point we must return true, because we consumed one header.
 
-  // Subtract 2u for the trailing "\r\n".
-  re2::StringPiece header(header_start, source_.data() - header_start - 2u);
+  // Subtract 2 for the trailing "\r\n".
+  re2::StringPiece header(header_start, source_.data() - header_start - 2);
 
   if (!StartsWithPattern(header, content_disposition_pattern()))
     return true;  // Skip headers that don't describe the content-disposition.
 
-  re2::StringPiece groups[2u];
+  re2::StringPiece groups[2];
 
   if (!name_pattern().Match(header,
-                            g_content_disposition_length, header.size(),
+                            kContentDispositionLength, header.size(),
                             RE2::UNANCHORED, groups, 2)) {
     state_ = STATE_ERROR;
     return true;  // See (*) for why true.
@@ -588,7 +584,7 @@ bool FormDataParserMultipart::TryReadHeader(base::StringPiece* name,
   name->set(groups[1].data(), groups[1].size());
 
   if (value_pattern().Match(header,
-                            g_content_disposition_length, header.size(),
+                            kContentDispositionLength, header.size(),
                             RE2::UNANCHORED, groups, 2)) {
     value->set(groups[1].data(), groups[1].size());
     *value_assigned = true;

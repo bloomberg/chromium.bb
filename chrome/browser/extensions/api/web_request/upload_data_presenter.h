@@ -83,6 +83,8 @@ class RawDataPresenter : public UploadDataPresenter {
 
   bool success_;
   scoped_ptr<base::ListValue> list_;
+
+  DISALLOW_COPY_AND_ASSIGN(RawDataPresenter);
 };
 
 // This class inspects the contents of bytes elements. It uses the
@@ -118,6 +120,8 @@ class ParsedDataPresenter : public UploadDataPresenter {
   scoped_ptr<FormDataParser> parser_;
   bool success_;
   scoped_ptr<base::DictionaryValue> dictionary_;
+
+  DISALLOW_COPY_AND_ASSIGN(ParsedDataPresenter);
 };
 
 }  // namespace extensions
