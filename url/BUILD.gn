@@ -2,10 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-declare_args() {
-  # Switches to using platform functions instead of ICU on Android.
-  use_icu_alternatives_on_android = false
-}
+import("//url/config.gni")
 
 # Sets the USE_ICU_ALTERNATIVES_ON_ANDROID define based on the build flag.
 config("url_icu_config") {
