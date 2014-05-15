@@ -5,7 +5,6 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_HASH_FETCHER_H_
 #define EXTENSIONS_BROWSER_CONTENT_HASH_FETCHER_H_
 
-#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -18,7 +17,6 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionRegistry;
-class ContentHashFetcherJob;
 
 // This class is responsible for getting signed expected hashes for use in
 // extension content verification. As extensions are loaded it will fetch and
@@ -50,24 +48,11 @@ class ContentHashFetcher : public ExtensionRegistryObserver {
       UnloadedExtensionInfo::Reason reason) OVERRIDE;
 
  private:
-  // Callback for when a job getting content hashes has completed.
-  void JobFinished(ContentHashFetcherJob* job);
-
   content::BrowserContext* context_;
   ContentVerifierDelegate* delegate_;
 
-  // We keep around pointers to in-progress jobs, both so we can avoid
-  // scheduling duplicate work if fetching is already in progress, and so that
-  // we can cancel in-progress work at shutdown time.
-  typedef std::pair<ExtensionId, std::string> IdAndVersion;
-  typedef std::map<IdAndVersion, scoped_refptr<ContentHashFetcherJob> > JobMap;
-  JobMap jobs_;
-
   // For observing the ExtensionRegistry.
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
-
-  // Used for binding callbacks passed to jobs.
-  base::WeakPtrFactory<ContentHashFetcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHashFetcher);
 };

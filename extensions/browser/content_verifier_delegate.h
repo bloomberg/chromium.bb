@@ -5,12 +5,9 @@
 #ifndef EXTENSIONS_BROWSER_CONTENT_VERIFIER_DELEGATE_H_
 #define EXTENSIONS_BROWSER_CONTENT_VERIFIER_DELEGATE_H_
 
-#include <set>
-
 #include "url/gurl.h"
 
 namespace base {
-class FilePath;
 class Version;
 }
 
@@ -48,11 +45,6 @@ class ContentVerifierDelegate {
   // id/version pair.
   virtual GURL GetSignatureFetchUrl(const std::string& extension_id,
                                     const base::Version& version) = 0;
-
-  // This should return the set of file paths for images used within the
-  // browser process. (These may get transcoded during the install process).
-  virtual std::set<base::FilePath> GetBrowserImagePaths(
-      const extensions::Extension* extension) = 0;
 
   // Called when the content verifier detects that a read of a file inside
   // an extension did not match its expected hash.

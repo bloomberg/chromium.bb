@@ -19,12 +19,6 @@ const base::FilePath::CharType kMessagesFilename[] =
     FILE_PATH_LITERAL("messages.json");
 const base::FilePath::CharType kPlatformSpecificFolder[] =
     FILE_PATH_LITERAL("_platform_specific");
-const base::FilePath::CharType kMetadataFolder[] =
-    FILE_PATH_LITERAL("_metadata");
-const base::FilePath::CharType kVerifiedContentsFilename[] =
-    FILE_PATH_LITERAL("verified_contents.json");
-const base::FilePath::CharType kComputedHashesFilename[] =
-    FILE_PATH_LITERAL("computed_hashes.json");
 
 const char kInstallDirectoryName[] = "Extensions";
 

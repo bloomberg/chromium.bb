@@ -28,16 +28,6 @@ extern const base::FilePath::CharType kMessagesFilename[];
 // The base directory for subdirectories with platform-specific code.
 extern const base::FilePath::CharType kPlatformSpecificFolder[];
 
-// A directory reserved for metadata, generated either by the webstore
-// or chrome.
-extern const base::FilePath::CharType kMetadataFolder[];
-
-// Name of the verified contents file within the metadata folder.
-extern const base::FilePath::CharType kVerifiedContentsFilename[];
-
-// Name of the computed hashes file within the metadata folder.
-extern const base::FilePath::CharType kComputedHashesFilename[];
-
 // The name of the directory inside the profile where extensions are
 // installed to.
 extern const char kInstallDirectoryName[];

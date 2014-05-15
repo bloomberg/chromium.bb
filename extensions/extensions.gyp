@@ -312,8 +312,6 @@
         'browser/browser_context_keyed_api_factory.h',
         'browser/browser_context_keyed_service_factories.cc',
         'browser/browser_context_keyed_service_factories.h',
-        'browser/computed_hashes.cc',
-        'browser/computed_hashes.h',
         'browser/content_hash_fetcher.cc',
         'browser/content_hash_fetcher.h',
         'browser/content_hash_reader.cc',

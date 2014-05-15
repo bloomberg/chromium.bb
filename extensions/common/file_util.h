@@ -122,10 +122,6 @@ std::map<std::string, std::string>* LoadMessageBundleSubstitutionMap(
     const std::string& extension_id,
     const std::string& default_locale);
 
-// Helper functions for getting paths for files used in content verification.
-base::FilePath GetVerifiedContentsPath(const base::FilePath& extension_path);
-base::FilePath GetComputedHashesPath(const base::FilePath& extension_path);
-
 }  // namespace file_util
 }  // namespace extensions
 

@@ -61,11 +61,7 @@ GURL GetWebstoreUpdateUrl() {
   if (cmdline->HasSwitch(switches::kAppsGalleryUpdateURL))
     return GURL(cmdline->GetSwitchValueASCII(switches::kAppsGalleryUpdateURL));
   else
-    return GetDefaultWebstoreUpdateUrl();
-}
-
-GURL GetDefaultWebstoreUpdateUrl() {
-  return GURL(kGalleryUpdateHttpsUrl);
+    return GURL(kGalleryUpdateHttpsUrl);
 }
 
 bool IsWebstoreUpdateUrl(const GURL& update_url) {

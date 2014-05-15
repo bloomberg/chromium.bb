@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_CONTENT_HASH_READER_H_
 
 #include <string>
-#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
@@ -15,8 +14,6 @@
 #include "extensions/browser/content_verifier_delegate.h"
 
 namespace extensions {
-
-class VerifiedContents;
 
 // This class creates an object that will read expected hashes that may have
 // been fetched/calculated by the ContentHashFetcher, and vends them out for
@@ -53,22 +50,13 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
   friend class base::RefCountedThreadSafe<ContentHashReader>;
   virtual ~ContentHashReader();
 
-  enum InitStatus { NOT_INITIALIZED, SUCCESS, FAILURE };
+  bool ReadHashes(const base::FilePath& hashes_file);
 
   std::string extension_id_;
   base::Version extension_version_;
   base::FilePath extension_root_;
   base::FilePath relative_path_;
   ContentVerifierKey key_;
-
-  InitStatus status_;
-
-  // The blocksize used for generating the hashes.
-  int block_size_;
-
-  scoped_ptr<VerifiedContents> verified_contents_;
-
-  std::vector<std::string> hashes_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHashReader);
 };
