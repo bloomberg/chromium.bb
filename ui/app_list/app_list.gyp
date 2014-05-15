@@ -223,6 +223,7 @@
         'cocoa/test/apps_grid_controller_test_helper.mm',
         'test/run_all_unittests.cc',
         'views/app_list_main_view_unittest.cc',
+        'views/app_list_view_unittest.cc',
         'views/apps_grid_view_unittest.cc',
         'views/folder_header_view_unittest.cc',
         'views/search_box_view_unittest.cc',
