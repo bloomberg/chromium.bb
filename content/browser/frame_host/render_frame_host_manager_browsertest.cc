@@ -21,6 +21,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -36,6 +37,26 @@
 using base::ASCIIToUTF16;
 
 namespace content {
+
+namespace {
+
+const char kOpenUrlViaClickTargetFunc[] =
+    "(function(url) {\n"
+    "  var lnk = document.createElement(\"a\");\n"
+    "  lnk.href = url;\n"
+    "  lnk.target = \"_blank\";\n"
+    "  document.body.appendChild(lnk);\n"
+    "  lnk.click();\n"
+    "})";
+
+// Adds a link with given url and target=_blank, and clicks on it.
+void OpenUrlViaClickTarget(const internal::ToRenderFrameHost& adapter,
+                           const GURL& url) {
+  EXPECT_TRUE(ExecuteScript(adapter,
+      std::string(kOpenUrlViaClickTargetFunc) + "(\"" + url.spec() + "\");"));
+}
+
+}  // anonymous namespace
 
 class RenderFrameHostManagerTest : public ContentBrowserTest {
  public:
@@ -1391,6 +1412,54 @@ IN_PROC_BROWSER_TEST_F(RFHMProcessPerTabTest, MAYBE_BackFromWebUI) {
   EXPECT_EQ(original_url, shell()->web_contents()->GetLastCommittedURL());
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
                   shell()->web_contents()->GetRenderProcessHost()->GetID()));
+}
+
+// crbug.com/372360
+// The test loads url1, opens a link pointing to url2 in a new tab, and
+// navigates the new tab to url1.
+// The following is needed for the bug to happen:
+//  - url1 must require webui bindings;
+//  - navigating to url2 in the site instance of url1 should not swap
+//   browsing instances, but should require a new site instance.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, WebUIGetsBindings) {
+  GURL url1(std::string(kChromeUIScheme) + "://" +
+            std::string(kChromeUIGpuHost));
+  GURL url2(std::string(kChromeUIScheme) + "://" +
+            std::string(kChromeUIAccessibilityHost));
+
+  // Visit a WebUI page with bindings.
+  NavigateToURL(shell(), url1);
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+  SiteInstance* site_instance1 = shell()->web_contents()->GetSiteInstance();
+
+  // Open a new tab. Initially it gets a render view in the original tab's
+  // current site instance.
+  TestNavigationObserver nav_observer(NULL);
+  nav_observer.StartWatchingNewWebContents();
+  ShellAddedObserver shao;
+  OpenUrlViaClickTarget(shell()->web_contents(), url2);
+  nav_observer.Wait();
+  Shell* new_shell = shao.GetShell();
+  WebContentsImpl* new_web_contents = static_cast<WebContentsImpl*>(
+      new_shell->web_contents());
+  SiteInstance* site_instance2 = new_web_contents->GetSiteInstance();
+
+  EXPECT_NE(site_instance2, site_instance1);
+  EXPECT_TRUE(site_instance2->IsRelatedSiteInstance(site_instance1));
+  RenderViewHost* initial_rvh = new_web_contents->
+      GetRenderManagerForTesting()->GetSwappedOutRenderViewHost(site_instance1);
+  ASSERT_TRUE(initial_rvh);
+  // The following condition is what was causing the bug.
+  EXPECT_EQ(0, initial_rvh->GetEnabledBindings());
+
+  // Navigate to url1 and check bindings.
+  NavigateToURL(new_shell, url1);
+  // The navigation should have used the first SiteInstance, otherwise
+  // |initial_rvh| did not have a chance to be used.
+  EXPECT_EQ(new_web_contents->GetSiteInstance(), site_instance1);
+  EXPECT_EQ(BINDINGS_POLICY_WEB_UI,
+      new_web_contents->GetRenderViewHost()->GetEnabledBindings());
 }
 
 }  // namespace content

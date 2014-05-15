@@ -906,6 +906,19 @@ int RenderFrameHostManager::CreateRenderFrame(
 
       proxy_hosts_.erase(instance->GetId());
       delete proxy;
+
+      // When a new render view is created by the renderer, the new WebContents
+      // gets a RenderViewHost in the SiteInstance of its opener WebContents.
+      // If not used in the first navigation, this RVH is swapped out and is not
+      // granted bindings, so we may need to grant them when swapping it in.
+      if (pending_web_ui() && !new_render_frame_host->GetProcess()->IsGuest()) {
+        int required_bindings = pending_web_ui()->GetBindings();
+        RenderViewHost* rvh = new_render_frame_host->render_view_host();
+        if ((rvh->GetEnabledBindings() & required_bindings) !=
+                required_bindings) {
+          rvh->AllowBindings(required_bindings);
+        }
+      }
     } else {
       // Detect if this is a cross-process child frame that is navigating
       // back to the same SiteInstance as its parent.
