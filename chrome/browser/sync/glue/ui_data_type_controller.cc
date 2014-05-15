@@ -241,6 +241,9 @@ void UIDataTypeController::AbortModelLoad() {
                                             syncer::SyncError::DATATYPE_ERROR,
                                             "Aborted",
                                             type()));
+  // We don't want to continue loading models (e.g OnModelLoaded should never be
+  // called after we've decided to abort).
+  StopModels();
 }
 
 void UIDataTypeController::StartDone(
