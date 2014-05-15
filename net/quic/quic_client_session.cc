@@ -56,6 +56,21 @@ void RecordUnexpectedNotGoingAway(Location location) {
                             NUM_LOCATIONS);
 }
 
+// Histogram for recording the different reasons that a QUIC session is unable
+// to complete the handshake.
+enum HandshakeFailureReason {
+  HANDSHAKE_FAILURE_UNKNOWN = 0,
+  HANDSHAKE_FAILURE_BLACK_HOLE = 1,
+  HANDSHAKE_FAILURE_PUBLIC_RESET = 2,
+  NUM_HANDSHAKE_FAILURE_REASONS = 3,
+};
+
+void RecordHandshakeFailureReason(HandshakeFailureReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Net.QuicSession.ConnectionClose.HandshakeNotConfirmed.Reason",
+      reason, NUM_HANDSHAKE_FAILURE_REASONS);
+}
+
 // Note: these values must be kept in sync with the corresponding values in:
 // tools/metrics/histograms/histograms.xml
 enum HandshakeState {
@@ -522,6 +537,16 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
       UMA_HISTOGRAM_COUNTS(
           "Net.QuicSession.ConnectionClose.NumTotalStreams.HandshakeTimedOut",
           num_total_streams_);
+    }
+  }
+
+  if (!IsCryptoHandshakeConfirmed()) {
+    if (error == QUIC_PUBLIC_RESET) {
+      RecordHandshakeFailureReason(HANDSHAKE_FAILURE_PUBLIC_RESET);
+    } else if (connection()->GetStats().packets_received == 0) {
+      RecordHandshakeFailureReason(HANDSHAKE_FAILURE_BLACK_HOLE);
+    } else {
+      RecordHandshakeFailureReason(HANDSHAKE_FAILURE_UNKNOWN);
     }
   }
 

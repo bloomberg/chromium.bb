@@ -13215,6 +13215,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.ConnectionClose.HandshakeNotConfirmed.Reason"
+    enum="QuicHandshakeFailureReason">
+  <owner>rch@chromium.org</owner>
+  <summary>The reason a QUIC handshake failed.</summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut">
   <owner>rch@chromium.org</owner>
   <summary>The number of streams open when a QUIC session timed out.</summary>
@@ -40546,6 +40552,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="58" label="INVALID_BLOCKED_DATA"/>
   <int value="59" label="FLOW_CONTROL_ERROR"/>
   <int value="60" label="INVALID_STOP_WAITING_DATA"/>
+</enum>
+
+<enum name="QuicHandshakeFailureReason" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="BLACK_HOLE"/>
+  <int value="2" label="PUBLIC_RESET"/>
 </enum>
 
 <enum name="QuicHandshakeState" type="int">
