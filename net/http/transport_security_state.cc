@@ -626,7 +626,7 @@ bool TransportSecurityState::AddHSTSHeader(const std::string& host,
   TransportSecurityState::DomainState domain_state;
   GetDynamicDomainState(host, &domain_state);
   if (ParseHSTSHeader(value, &max_age, &domain_state.sts.include_subdomains)) {
-    // Handle max-age == 0
+    // Handle max-age == 0.
     if (max_age.InSeconds() == 0)
       domain_state.sts.upgrade_mode = DomainState::MODE_DEFAULT;
     else
@@ -653,7 +653,9 @@ bool TransportSecurityState::AddHPKPHeader(const std::string& host,
                       &max_age,
                       &domain_state.pkp.include_subdomains,
                       &domain_state.pkp.spki_hashes)) {
-    // TODO(palmer): http://crbug.com/243865 handle max-age == 0.
+    // Handle max-age == 0.
+    if (max_age.InSeconds() == 0)
+      domain_state.pkp.spki_hashes.clear();
     domain_state.pkp.last_observed = now;
     domain_state.pkp.expiry = now + max_age;
     EnableHost(host, domain_state);
