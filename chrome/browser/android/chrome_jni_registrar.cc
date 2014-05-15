@@ -22,6 +22,7 @@
 #include "chrome/browser/android/logo_bridge.h"
 #include "chrome/browser/android/most_visited_sites.h"
 #include "chrome/browser/android/new_tab_page_prefs.h"
+#include "chrome/browser/android/omnibox/autocomplete_controller_android.h"
 #include "chrome/browser/android/omnibox/omnibox_prerender.h"
 #include "chrome/browser/android/password_authentication_manager.h"
 #include "chrome/browser/android/password_ui_view_android.h"
@@ -96,6 +97,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     AndroidProfileOAuth2TokenService::Register },
   { "AppBannerManager", banners::RegisterAppBannerManager },
   { "ApplicationLifetime", RegisterApplicationLifetimeAndroid },
+  { "AutocompleteControllerAndroid", RegisterAutocompleteControllerAndroid },
   { "AutofillDialogControllerAndroid",
     autofill::AutofillDialogControllerAndroid::
         RegisterAutofillDialogControllerAndroid },
