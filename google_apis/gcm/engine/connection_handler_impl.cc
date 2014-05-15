@@ -184,9 +184,9 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
   }
 
   // Used to determine whether a Socket::Read is necessary.
-  int min_bytes_needed = 0;
+  size_t min_bytes_needed = 0;
   // Used to limit the size of the Socket::Read.
-  int max_bytes_needed = 0;
+  size_t max_bytes_needed = 0;
 
   switch(state) {
     case MCS_VERSION_TAG_AND_SIZE:
@@ -214,25 +214,39 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
   }
   DCHECK_GE(max_bytes_needed, min_bytes_needed);
 
-  int byte_count = input_stream_->UnreadByteCount();
-  if (min_bytes_needed - byte_count > 0 &&
+  size_t unread_byte_count = input_stream_->UnreadByteCount();
+  if (min_bytes_needed > unread_byte_count &&
       input_stream_->Refresh(
           base::Bind(&ConnectionHandlerImpl::WaitForData,
                      weak_ptr_factory_.GetWeakPtr(),
                      state),
-          max_bytes_needed - byte_count) == net::ERR_IO_PENDING) {
+          max_bytes_needed - unread_byte_count) == net::ERR_IO_PENDING) {
     return;
   }
 
   // Check for refresh errors.
   if (input_stream_->GetState() != SocketInputStream::READY) {
     // An error occurred.
-    int last_error = output_stream_->last_error();
+    int last_error = input_stream_->last_error();
     CloseConnection();
     // If the socket stream had an error, plumb it up, else plumb up FAILED.
     if (last_error == net::OK)
       last_error = net::ERR_FAILED;
     connection_callback_.Run(last_error);
+    return;
+  }
+
+  // Check whether read is complete, or needs to be continued (
+  // SocketInputStream::Refresh can finish without reading all the data).
+  if (input_stream_->UnreadByteCount() < min_bytes_needed) {
+    DVLOG(1) << "Socket read finished prematurely. Waiting for "
+             << min_bytes_needed - input_stream_->UnreadByteCount()
+             << " more bytes.";
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&ConnectionHandlerImpl::WaitForData,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   MCS_PROTO_BYTES));
     return;
   }
 

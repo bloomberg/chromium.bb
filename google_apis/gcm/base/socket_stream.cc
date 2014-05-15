@@ -89,8 +89,8 @@ net::Error SocketInputStream::Refresh(const base::Closure& callback,
   DCHECK_GT(byte_limit, 0);
 
   if (byte_limit > read_buffer_->BytesRemaining()) {
-    NOTREACHED() << "Out of buffer space, closing input stream.";
-    CloseStream(net::ERR_UNEXPECTED, base::Closure());
+    LOG(ERROR) << "Out of buffer space, closing input stream.";
+    CloseStream(net::ERR_FILE_TOO_BIG, base::Closure());
     return net::OK;
   }
 
