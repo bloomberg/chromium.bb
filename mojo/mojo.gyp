@@ -69,6 +69,7 @@
         }],
         ['OS == "android"', {
           'dependencies': [
+            'mojo_bindings_java',
             'mojo_public_java',
             'mojo_system_java',
             'libmojo_system_java',
@@ -737,6 +738,8 @@
           'target_name': 'mojo_test_apk',
           'type': 'none',
           'dependencies': [
+            'mojo_bindings_java',
+            'mojo_public_test_interfaces',
             'mojo_system_java',
             '../base/base.gyp:base_java_test_support',
           ],
