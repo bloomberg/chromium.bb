@@ -107,66 +107,136 @@ class PublicAccountUser : public User {
   DISALLOW_COPY_AND_ASSIGN(PublicAccountUser);
 };
 
-UserContext::UserContext() : using_oauth(true), auth_flow(AUTH_FLOW_OFFLINE) {
+UserContext::UserContext() : is_using_oauth_(true),
+                             auth_flow_(AUTH_FLOW_OFFLINE) {
 }
 
-UserContext::UserContext(const std::string& username,
+UserContext::UserContext(const std::string& user_id,
                          const std::string& password,
                          const std::string& auth_code)
-    : username(username),
-      password(password),
-      need_password_hashing(true),
-      auth_code(auth_code),
-      using_oauth(true),
-      auth_flow(AUTH_FLOW_OFFLINE) {}
+    : user_id_(user_id),
+      password_(password),
+      does_need_password_hashing_(true),
+      auth_code_(auth_code),
+      is_using_oauth_(true),
+      auth_flow_(AUTH_FLOW_OFFLINE) {
+}
 
-UserContext::UserContext(const std::string& username,
+UserContext::UserContext(const std::string& user_id,
                          const std::string& password,
                          const std::string& auth_code,
-                         const std::string& username_hash)
-    : username(username),
-      password(password),
-      need_password_hashing(true),
-      auth_code(auth_code),
-      username_hash(username_hash),
-      using_oauth(true),
-      auth_flow(AUTH_FLOW_OFFLINE) {}
+                         const std::string& user_id_hash)
+    : user_id_(user_id),
+      password_(password),
+      does_need_password_hashing_(true),
+      auth_code_(auth_code),
+      user_id_hash_(user_id_hash),
+      is_using_oauth_(true),
+      auth_flow_(AUTH_FLOW_OFFLINE) {
+}
 
-UserContext::UserContext(const std::string& username,
+UserContext::UserContext(const std::string& user_id,
                          const std::string& password,
                          const std::string& auth_code,
-                         const std::string& username_hash,
-                         bool using_oauth,
+                         const std::string& user_id_hash,
+                         bool is_using_oauth,
                          AuthFlow auth_flow)
-    : username(username),
-      password(password),
-      need_password_hashing(true),
-      auth_code(auth_code),
-      username_hash(username_hash),
-      using_oauth(using_oauth),
-      auth_flow(auth_flow) {}
+    : user_id_(user_id),
+      password_(password),
+      does_need_password_hashing_(true),
+      auth_code_(auth_code),
+      user_id_hash_(user_id_hash),
+      is_using_oauth_(is_using_oauth),
+      auth_flow_(auth_flow) {
+}
 
 UserContext::~UserContext() {
 }
 
 bool UserContext::operator==(const UserContext& context) const {
-  return context.username == username && context.password == password &&
-         context.key_label == key_label &&
-         context.need_password_hashing == need_password_hashing &&
-         context.auth_code == auth_code &&
-         context.username_hash == username_hash &&
-         context.using_oauth == using_oauth && context.auth_flow == auth_flow;
+  return context.user_id_ == user_id_ &&
+         context.password_ == password_ &&
+         context.does_need_password_hashing_ == does_need_password_hashing_ &&
+         context.key_label_ == key_label_ &&
+         context.auth_code_ == auth_code_ &&
+         context.user_id_hash_ == user_id_hash_ &&
+         context.is_using_oauth_ == is_using_oauth_ &&
+         context.auth_flow_ == auth_flow_;
 }
 
 void UserContext::CopyFrom(const UserContext& other) {
-  username = other.username;
-  password = other.password;
-  key_label = other.key_label;
-  need_password_hashing = other.need_password_hashing;
-  auth_code = other.auth_code;
-  username_hash = other.username_hash;
-  using_oauth = other.using_oauth;
-  auth_flow = other.auth_flow;
+  user_id_ = other.user_id_;
+  password_ = other.password_;
+  does_need_password_hashing_ = other.does_need_password_hashing_;
+  key_label_ = other.key_label_;
+  auth_code_ = other.auth_code_;
+  user_id_hash_ = other.user_id_hash_;
+  is_using_oauth_ = other.is_using_oauth_;
+  auth_flow_ = other.auth_flow_;
+}
+
+const std::string& UserContext::GetUserID() const {
+  return user_id_;
+}
+
+const std::string& UserContext::GetPassword() const {
+  return password_;
+}
+
+bool UserContext::DoesNeedPasswordHashing() const {
+  return does_need_password_hashing_;
+}
+
+const std::string& UserContext::GetKeyLabel() const {
+  return key_label_;
+}
+
+const std::string& UserContext::GetAuthCode() const {
+  return auth_code_;
+}
+
+const std::string& UserContext::GetUserIDHash() const {
+  return user_id_hash_;
+}
+
+bool UserContext::IsUsingOAuth() const {
+  return is_using_oauth_;
+}
+
+UserContext::AuthFlow UserContext::GetAuthFlow() const {
+  return auth_flow_;
+}
+
+bool UserContext::HasCredentials() const {
+  return (!user_id_.empty() && !password_.empty()) || !auth_code_.empty();
+}
+
+void UserContext::SetUserID(const std::string& user_id) {
+  user_id_ = user_id;
+}
+
+void UserContext::SetPassword(const std::string& password) {
+  password_ = password;
+}
+
+void UserContext::SetDoesNeedPasswordHashing(bool does_need_password_hashing) {
+  does_need_password_hashing_ = does_need_password_hashing;
+}
+
+void UserContext::SetKeyLabel(const std::string& key_label) {
+  key_label_ = key_label;
+}
+
+void UserContext::SetAuthCode(const std::string& auth_code) {
+  auth_code_ = auth_code;
+}
+
+void UserContext::SetUserIDHash(const std::string& user_id_hash) {
+  user_id_hash_ = user_id_hash;
+}
+
+void UserContext::SetIsUsingOAuth(bool is_using_oauth) {
+  is_using_oauth_ = is_using_oauth;
 }
 
 std::string User::GetEmail() const {

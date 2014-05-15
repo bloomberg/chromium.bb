@@ -93,7 +93,7 @@ void AuthAttemptState::RecordCryptohomeStatus(
 
 void AuthAttemptState::RecordUsernameHash(const std::string& username_hash) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  user_context.username_hash = username_hash;
+  user_context.SetUserIDHash(username_hash);
   username_hash_obtained_ = true;
   username_hash_valid_ = true;
 }

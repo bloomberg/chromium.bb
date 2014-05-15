@@ -229,7 +229,7 @@ void ScreenLocker::OnLoginFailure(const LoginFailure& error) {
 void ScreenLocker::OnLoginSuccess(const UserContext& user_context) {
   incorrect_passwords_count_ = 0;
   if (authentication_start_time_.is_null()) {
-    if (!user_context.username.empty())
+    if (!user_context.GetUserID().empty())
       LOG(ERROR) << "Start time is not set at authentication success";
   } else {
     base::TimeDelta delta = base::Time::Now() - authentication_start_time_;
@@ -237,9 +237,10 @@ void ScreenLocker::OnLoginSuccess(const UserContext& user_context) {
     UMA_HISTOGRAM_TIMES("ScreenLocker.AuthenticationSuccessTime", delta);
   }
 
-  if (const User* user = UserManager::Get()->FindUser(user_context.username)) {
+  const User* user = UserManager::Get()->FindUser(user_context.GetUserID());
+  if (user) {
     if (!user->is_active())
-      UserManager::Get()->SwitchActiveUser(user_context.username);
+      UserManager::Get()->SwitchActiveUser(user_context.GetUserID());
   } else {
     NOTREACHED() << "Logged in user not found.";
   }
@@ -267,12 +268,12 @@ void ScreenLocker::UnlockOnLoginSuccess() {
 
   if (login_status_consumer_) {
     login_status_consumer_->OnLoginSuccess(
-        UserContext(authentication_capture_->user_context.username,
-                    authentication_capture_->user_context.password,
-                    authentication_capture_->user_context.auth_code,
-                    authentication_capture_->user_context.username_hash,
-                    authentication_capture_->user_context.using_oauth,
-                    authentication_capture_->user_context.auth_flow));
+        UserContext(authentication_capture_->user_context.GetUserID(),
+                    authentication_capture_->user_context.GetPassword(),
+                    authentication_capture_->user_context.GetAuthCode(),
+                    authentication_capture_->user_context.GetUserIDHash(),
+                    authentication_capture_->user_context.IsUsingOAuth(),
+                    authentication_capture_->user_context.GetAuthFlow()));
   }
   authentication_capture_.reset();
   weak_factory_.InvalidateWeakPtrs();
@@ -282,7 +283,7 @@ void ScreenLocker::UnlockOnLoginSuccess() {
 }
 
 void ScreenLocker::Authenticate(const UserContext& user_context) {
-  LOG_ASSERT(IsUserLoggedIn(user_context.username))
+  LOG_ASSERT(IsUserLoggedIn(user_context.GetUserID()))
       << "Invalid user trying to unlock.";
 
   authentication_start_time_ = base::Time::Now();
@@ -292,9 +293,9 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
   // Send authentication request to chrome.screenlockPrivate API event router
   // if the authentication type is not the system password.
   LoginDisplay::AuthType auth_type =
-      FromLockHandlerAuthType(GetAuthType(user_context.username));
+      FromLockHandlerAuthType(GetAuthType(user_context.GetUserID()));
   if (auth_type != LoginDisplay::OFFLINE_PASSWORD) {
-    const User* unlock_user = FindUnlockUser(user_context.username);
+    const User* unlock_user = FindUnlockUser(user_context.GetUserID());
     LOG_ASSERT(unlock_user);
 
     Profile* profile = UserManager::Get()->GetProfileByUser(unlock_user);
@@ -302,12 +303,12 @@ void ScreenLocker::Authenticate(const UserContext& user_context) {
         extensions::ScreenlockPrivateEventRouter::GetFactoryInstance()->Get(
             profile);
     router->OnAuthAttempted(ToLockHandlerAuthType(auth_type),
-                            user_context.password);
+                            user_context.GetPassword());
     return;
   }
 
   // Special case: supervised users. Use special authenticator.
-  if (const User* user = FindUnlockUser(user_context.username)) {
+  if (const User* user = FindUnlockUser(user_context.GetUserID())) {
     if (user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) {
       UserContext updated_context =
           UserManager::Get()

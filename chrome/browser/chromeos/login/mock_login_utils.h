@@ -23,7 +23,7 @@ class Profile;
 namespace chromeos {
 
 class LoginStatusConsumer;
-struct UserContext;
+class UserContext;
 
 class MockLoginUtils : public LoginUtils {
  public:

@@ -44,7 +44,7 @@ class CoreOobeActor;
 class LocallyManagedUserCreationScreenHandler;
 class NativeWindowDelegate;
 class User;
-struct UserContext;
+class UserContext;
 
 // Helper class to pass initial parameters to the login screen.
 class LoginScreenContext {

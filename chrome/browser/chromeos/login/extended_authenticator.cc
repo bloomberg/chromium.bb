@@ -109,7 +109,7 @@ void ExtendedAuthenticator::CreateMount(
     mount.create_keys.push_back(keys[i]);
   }
   UserContext context(user_id, keys.front().key, std::string());
-  context.key_label = keys.front().label;
+  context.SetKeyLabel(keys.front().label);
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
       id,
@@ -167,9 +167,10 @@ void ExtendedAuthenticator::DoAuthenticateToMount(
 
   RecordStartMarker("MountEx");
 
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.password, user_context.key_label);
+  cryptohome::Authorization auth(user_context.GetPassword(),
+                                 user_context.GetKeyLabel());
   cryptohome::MountParameters mount(false);
 
   cryptohome::HomedirMethods::GetInstance()->MountEx(
@@ -190,9 +191,10 @@ void ExtendedAuthenticator::DoAuthenticateToCheck(
 
   RecordStartMarker("CheckKeyEx");
 
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.password, user_context.key_label);
+  cryptohome::Authorization auth(user_context.GetPassword(),
+                                 user_context.GetKeyLabel());
 
   cryptohome::HomedirMethods::GetInstance()->CheckKeyEx(
       id,
@@ -212,9 +214,10 @@ void ExtendedAuthenticator::DoAddKey(const cryptohome::KeyDefinition& key,
 
   RecordStartMarker("AddKeyEx");
 
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.password, user_context.key_label);
+  cryptohome::Authorization auth(user_context.GetPassword(),
+                                 user_context.GetKeyLabel());
 
   cryptohome::HomedirMethods::GetInstance()->AddKeyEx(
       id,
@@ -236,9 +239,10 @@ void ExtendedAuthenticator::DoUpdateKeyAuthorized(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   RecordStartMarker("UpdateKeyAuthorized");
 
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.password, user_context.key_label);
+  cryptohome::Authorization auth(user_context.GetPassword(),
+                                 user_context.GetKeyLabel());
 
   cryptohome::HomedirMethods::GetInstance()->UpdateKeyEx(
       id,
@@ -259,9 +263,10 @@ void ExtendedAuthenticator::DoRemoveKey(const std::string& key_to_remove,
 
   RecordStartMarker("RemoveKeyEx");
 
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   cryptohome::Identification id(canonicalized);
-  cryptohome::Authorization auth(user_context.password, user_context.key_label);
+  cryptohome::Authorization auth(user_context.GetPassword(),
+                                 user_context.GetKeyLabel());
 
   cryptohome::HomedirMethods::GetInstance()->RemoveKeyEx(
       id,
@@ -286,7 +291,7 @@ void ExtendedAuthenticator::OnMountComplete(
   RecordEndMarker(time_marker);
   UserContext copy;
   copy.CopyFrom(user_context);
-  copy.username_hash = mount_hash;
+  copy.SetUserIDHash(mount_hash);
   if (return_code == cryptohome::MOUNT_ERROR_NONE) {
     if (!success_callback.is_null())
       success_callback.Run(mount_hash);
@@ -359,10 +364,10 @@ void ExtendedAuthenticator::HashPasswordWithSalt(
 
 void ExtendedAuthenticator::TransformContext(const UserContext& user_context,
                                              const ContextCallback& callback) {
-  if (!user_context.need_password_hashing) {
+  if (!user_context.DoesNeedPasswordHashing()) {
     callback.Run(user_context);
   } else {
-    DoHashWithSalt(user_context.password,
+    DoHashWithSalt(user_context.GetPassword(),
                    base::Bind(&ExtendedAuthenticator::DidTransformContext,
                               this,
                               user_context,
@@ -375,11 +380,11 @@ void ExtendedAuthenticator::DidTransformContext(
     const UserContext& user_context,
     const ContextCallback& callback,
     const std::string& hashed_password) {
-  DCHECK(user_context.need_password_hashing);
+  DCHECK(user_context.DoesNeedPasswordHashing());
   UserContext context;
   context.CopyFrom(user_context);
-  context.password = hashed_password;
-  context.need_password_hashing = false;
+  context.SetPassword(hashed_password);
+  context.SetDoesNeedPasswordHashing(false);
   callback.Run(context);
 }
 

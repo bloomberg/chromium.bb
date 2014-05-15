@@ -23,8 +23,8 @@ void TestLoginUtils::PrepareProfile(
     bool has_cookies,
     bool has_active_session,
     Delegate* delegate) {
-  DCHECK_EQ(expected_username_, credentials.username);
-  DCHECK_EQ(expected_password_, credentials.password);
+  DCHECK_EQ(expected_username_, credentials.GetUserID());
+  DCHECK_EQ(expected_password_, credentials.GetPassword());
   // Profile hasn't been loaded.
   delegate->OnProfilePrepared(NULL);
 }

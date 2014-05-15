@@ -14,7 +14,7 @@
 namespace chromeos {
 
 class SupervisedUserManager;
-struct UserContext;
+class UserContext;
 
 // This is a class that encapsulates all details of password handling for
 // supervised users.

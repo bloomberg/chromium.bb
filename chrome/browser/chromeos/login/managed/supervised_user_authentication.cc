@@ -127,24 +127,24 @@ UserContext SupervisedUserAuthentication::TransformPasswordInContext(
     const UserContext& context) {
   UserContext result;
   result.CopyFrom(context);
-  int user_schema = GetPasswordSchema(context.username);
+  int user_schema = GetPasswordSchema(context.GetUserID());
   if (user_schema == SCHEMA_PLAIN)
     return result;
 
   if (user_schema == SCHEMA_SALT_HASHED) {
     base::DictionaryValue holder;
     std::string salt;
-    owner_->GetPasswordInformation(context.username, &holder);
+    owner_->GetPasswordInformation(context.GetUserID(), &holder);
     holder.GetStringWithoutPathExpansion(kSalt, &salt);
     DCHECK(!salt.empty());
-    result.password =
-        BuildPasswordForHashWithSaltSchema(salt, context.password);
-    result.need_password_hashing = false;
-    result.using_oauth = false;
-    result.key_label = kCryptohomeManagedUserKeyLabel;
+    result.SetPassword(
+        BuildPasswordForHashWithSaltSchema(salt, context.GetPassword()));
+    result.SetDoesNeedPasswordHashing(false);
+    result.SetIsUsingOAuth(false);
+    result.SetKeyLabel(kCryptohomeManagedUserKeyLabel);
     return result;
   }
-  NOTREACHED() << "Unknown password schema for " << context.username;
+  NOTREACHED() << "Unknown password schema for " << context.GetUserID();
   return context;
 }
 

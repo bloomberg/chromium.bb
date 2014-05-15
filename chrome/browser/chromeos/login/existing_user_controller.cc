@@ -353,12 +353,12 @@ void ExistingUserController::CompleteLoginInternal(
     // complete enrollment, or opt-out of it. So this controller shouldn't force
     // enrollment again if it is reused for another sign-in.
     do_auto_enrollment_ = false;
-    auto_enrollment_username_ = user_context.username;
+    auto_enrollment_username_ = user_context.GetUserID();
     resume_login_callback_ = base::Bind(
         &ExistingUserController::PerformLogin,
         weak_factory_.GetWeakPtr(),
         user_context, LoginPerformer::AUTH_MODE_EXTENSION);
-    ShowEnrollmentScreen(true, user_context.username);
+    ShowEnrollmentScreen(true, user_context.GetUserID());
     // Enable UI for the enrollment screen. SetUIEnabled(true) will post a
     // request to show the sign-in screen again when invoked at the sign-in
     // screen; invoke SetUIEnabled() after navigating to the enrollment screen.
@@ -377,8 +377,7 @@ bool ExistingUserController::IsSigninInProgress() const {
 }
 
 void ExistingUserController::Login(const UserContext& user_context) {
-  if ((user_context.username.empty() || user_context.password.empty()) &&
-      user_context.auth_code.empty())
+  if (!user_context.HasCredentials())
     return;
 
   // Stop the auto-login timer when attempting login.
@@ -387,8 +386,8 @@ void ExistingUserController::Login(const UserContext& user_context) {
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
 
-  if (last_login_attempt_username_ != user_context.username) {
-    last_login_attempt_username_ = user_context.username;
+  if (last_login_attempt_username_ != user_context.GetUserID()) {
+    last_login_attempt_username_ = user_context.GetUserID();
     num_login_attempts_ = 0;
     // Also reset state variables, which are used to determine password change.
     offline_failed_ = false;
@@ -421,11 +420,11 @@ void ExistingUserController::PerformLogin(
   }
 
   is_login_in_progress_ = true;
-  if (gaia::ExtractDomainName(user_context.username) ==
+  if (gaia::ExtractDomainName(user_context.GetUserID()) ==
           UserManager::kLocallyManagedUserDomain) {
     login_performer_->LoginAsLocallyManagedUser(
-        UserContext(user_context.username,
-                    user_context.password,
+        UserContext(user_context.GetUserID(),
+                    user_context.GetPassword(),
                     std::string()));  // auth_code
   } else {
     login_performer_->PerformLogin(user_context, auth_mode);
@@ -758,14 +757,14 @@ void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
   offline_failed_ = false;
   login_display_->set_signin_completed(true);
 
-  UserManager::Get()->GetUserFlow(user_context.username)->HandleLoginSuccess(
-      user_context);
+  UserManager::Get()->GetUserFlow(user_context.GetUserID())->
+      HandleLoginSuccess(user_context);
 
   StopPublicSessionAutoLoginTimer();
 
-  bool has_cookies =
+  const bool has_cookies =
       login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
-      user_context.auth_code.empty();
+      user_context.GetAuthCode().empty();
 
   // Login performer will be gone so cache this value to use
   // once profile is loaded.
@@ -789,7 +788,7 @@ void ExistingUserController::OnLoginSuccess(const UserContext& user_context) {
   display_email_.clear();
 
   // Notify LoginDisplay to allow it provide visual feedback to user.
-  login_display_->OnLoginSuccess(user_context.username);
+  login_display_->OnLoginSuccess(user_context.GetUserID());
 }
 
 void ExistingUserController::OnProfilePrepared(Profile* profile) {

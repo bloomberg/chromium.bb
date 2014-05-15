@@ -59,8 +59,8 @@ void FakeLoginUtils::PrepareProfile(const UserContext& user_context,
                                     bool has_active_session,
                                     LoginUtils::Delegate* delegate) {
   UserManager::Get()->UserLoggedIn(
-      user_context.username, user_context.username_hash, false);
-  User* user = UserManager::Get()->FindUserAndModify(user_context.username);
+      user_context.GetUserID(), user_context.GetUserIDHash(), false);
+  User* user = UserManager::Get()->FindUserAndModify(user_context.GetUserID());
   DCHECK(user);
 
   // Make sure that we get the real Profile instead of the login Profile.

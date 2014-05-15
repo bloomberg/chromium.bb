@@ -84,8 +84,8 @@ void Mount(AuthAttemptState* attempt,
   // that returns directly would not generate 2 OnLoginSucces() calls.
   attempt->UsernameHashRequested();
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
-      attempt->user_context.username,
-      ParallelAuthenticator::HashPassword(attempt->user_context.password,
+      attempt->user_context.GetUserID(),
+      ParallelAuthenticator::HashPassword(attempt->user_context.GetPassword(),
                                           system_salt),
       flags,
       base::Bind(&TriggerResolveWithLoginTimeMarker,
@@ -93,7 +93,7 @@ void Mount(AuthAttemptState* attempt,
                  attempt,
                  resolver));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->user_context.username,
+      attempt->user_context.GetUserID(),
       base::Bind(&TriggerResolveHash,
                  attempt,
                  resolver));
@@ -122,7 +122,7 @@ void MountGuestAndGetHash(AuthAttemptState* attempt,
                  attempt,
                  resolver));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->user_context.username,
+      attempt->user_context.GetUserID(),
       base::Bind(&TriggerResolveHash,
                  attempt,
                  resolver));
@@ -134,14 +134,14 @@ void MountPublic(AuthAttemptState* attempt,
                  int flags) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountPublic(
-      attempt->user_context.username,
+      attempt->user_context.GetUserID(),
       flags,
       base::Bind(&TriggerResolveWithLoginTimeMarker,
                  "CryptohomeMountPublic-End",
                  attempt,
                  resolver));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncGetSanitizedUsername(
-      attempt->user_context.username,
+      attempt->user_context.GetUserID(),
       base::Bind(&TriggerResolveHash,
                  attempt,
                  resolver));
@@ -160,9 +160,9 @@ void Migrate(AuthAttemptState* attempt,
       cryptohome::AsyncMethodCaller::GetInstance();
   if (passing_old_hash) {
     caller->AsyncMigrateKey(
-        attempt->user_context.username,
+        attempt->user_context.GetUserID(),
         ParallelAuthenticator::HashPassword(old_password, system_salt),
-        ParallelAuthenticator::HashPassword(attempt->user_context.password,
+        ParallelAuthenticator::HashPassword(attempt->user_context.GetPassword(),
                                             system_salt),
         base::Bind(&TriggerResolveWithLoginTimeMarker,
                    "CryptohomeMount-End",
@@ -170,8 +170,8 @@ void Migrate(AuthAttemptState* attempt,
                    resolver));
   } else {
     caller->AsyncMigrateKey(
-        attempt->user_context.username,
-        ParallelAuthenticator::HashPassword(attempt->user_context.password,
+        attempt->user_context.GetUserID(),
+        ParallelAuthenticator::HashPassword(attempt->user_context.GetPassword(),
                                             system_salt),
         ParallelAuthenticator::HashPassword(old_password, system_salt),
         base::Bind(&TriggerResolveWithLoginTimeMarker,
@@ -188,7 +188,7 @@ void Remove(AuthAttemptState* attempt,
   chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
       "CryptohomeRemove-Start", false);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      attempt->user_context.username,
+      attempt->user_context.GetUserID(),
       base::Bind(&TriggerResolveWithLoginTimeMarker,
                  "CryptohomeRemove-End",
                  attempt,
@@ -201,8 +201,8 @@ void CheckKey(AuthAttemptState* attempt,
               const std::string& system_salt) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncCheckKey(
-      attempt->user_context.username,
-      ParallelAuthenticator::HashPassword(attempt->user_context.password,
+      attempt->user_context.GetUserID(),
+      ParallelAuthenticator::HashPassword(attempt->user_context.GetPassword(),
                                           system_salt),
       base::Bind(&TriggerResolve, attempt, resolver));
 }
@@ -226,13 +226,13 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
 void ParallelAuthenticator::AuthenticateToLogin(
     Profile* profile,
     const UserContext& user_context) {
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   authentication_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(
           UserContext(canonicalized,
-                      user_context.password,
-                      user_context.auth_code),
+                      user_context.GetPassword(),
+                      user_context.GetAuthCode()),
           std::string(), // login_token, not used.
           std::string(), // login_captcha, not used.
           User::USER_TYPE_REGULAR,
@@ -249,16 +249,16 @@ void ParallelAuthenticator::AuthenticateToLogin(
 
 void ParallelAuthenticator::CompleteLogin(Profile* profile,
                                           const UserContext& user_context) {
-  std::string canonicalized = gaia::CanonicalizeEmail(user_context.username);
+  std::string canonicalized = gaia::CanonicalizeEmail(user_context.GetUserID());
   authentication_profile_ = profile;
   current_state_.reset(
       new AuthAttemptState(
           UserContext(canonicalized,
-                      user_context.password,
-                      user_context.auth_code,
-                      user_context.username_hash,
-                      user_context.using_oauth,
-                      user_context.auth_flow),
+                      user_context.GetPassword(),
+                      user_context.GetAuthCode(),
+                      user_context.GetUserIDHash(),
+                      user_context.IsUsingOAuth(),
+                      user_context.GetAuthFlow()),
           !UserManager::Get()->IsKnownUser(canonicalized)));
 
   // Reset the verified flag.
@@ -282,8 +282,8 @@ void ParallelAuthenticator::AuthenticateToUnlock(
     const UserContext& user_context) {
   current_state_.reset(
       new AuthAttemptState(
-          gaia::CanonicalizeEmail(user_context.username),
-          user_context.password));
+          gaia::CanonicalizeEmail(user_context.GetUserID()),
+          user_context.GetPassword()));
   remove_user_data_on_failure_ = false;
   check_key_attempted_ = true;
   SystemSaltGetter::Get()->GetSystemSalt(
@@ -507,7 +507,7 @@ bool ParallelAuthenticator::VerifyOwner() {
   }
   // Now we can continue reading the private key.
   DeviceSettingsService::Get()->SetUsername(
-      current_state_->user_context.username);
+      current_state_->user_context.GetUserID());
   // This should trigger certificate loading, which is needed in order to
   // correctly determine if the current user is the owner.
   if (LoginState::IsInitialized()) {
@@ -621,7 +621,7 @@ void ParallelAuthenticator::Resolve() {
       break;
     case DEMO_LOGIN:
       VLOG(2) << "Retail mode login";
-      current_state_->user_context.using_oauth = false;
+      current_state_->user_context.SetIsUsingOAuth(false);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnRetailModeLoginSuccess, this));
@@ -633,13 +633,13 @@ void ParallelAuthenticator::Resolve() {
       break;
     case KIOSK_ACCOUNT_LOGIN:
     case PUBLIC_ACCOUNT_LOGIN:
-      current_state_->user_context.using_oauth = false;
+      current_state_->user_context.SetIsUsingOAuth(false);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnLoginSuccess, this));
       break;
     case LOCALLY_MANAGED_USER_LOGIN:
-      current_state_->user_context.using_oauth = false;
+      current_state_->user_context.SetIsUsingOAuth(false);
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&ParallelAuthenticator::OnLoginSuccess, this));

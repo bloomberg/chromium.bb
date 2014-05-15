@@ -146,7 +146,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
     key.privileges = kCryptohomeManagedUserIncompleteKeyPrivileges;
 
     VLOG(1) << "Adding new schema key";
-    DCHECK_EQ(context_.key_label, std::string());
+    DCHECK(context_.GetKeyLabel().empty());
     authenticator_->AddKey(context_,
                            key,
                            false /* no key exists */,
@@ -162,7 +162,7 @@ void SupervisedUserLoginFlow::OnPasswordChangeDataLoaded(
       key.privileges = kCryptohomeManagedUserIncompleteKeyPrivileges;
     }
     // Just update the key.
-    DCHECK_EQ(context_.key_label, kCryptohomeManagedUserKeyLabel);
+    DCHECK_EQ(context_.GetKeyLabel(), kCryptohomeManagedUserKeyLabel);
     authenticator_->UpdateKeyAuthorized(
         context_,
         key,

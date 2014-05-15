@@ -14,7 +14,7 @@
 
 namespace chromeos {
 
-struct UserContext;
+class UserContext;
 
 class LoginFailure {
  public:

@@ -388,19 +388,19 @@ void LoginUtilsImpl::PrepareProfile(
     LoginUtils::Delegate* delegate) {
   BootTimesLoader* btl = BootTimesLoader::Get();
 
-  VLOG(1) << "Completing login for " << user_context.username;
+  VLOG(1) << "Completing login for " << user_context.GetUserID();
 
   if (!has_active_session) {
     btl->AddLoginTimeMarker("StartSession-Start", false);
     DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
-        user_context.username);
+        user_context.GetUserID());
     btl->AddLoginTimeMarker("StartSession-End", false);
   }
 
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   UserManager* user_manager = UserManager::Get();
-  user_manager->UserLoggedIn(user_context.username,
-                             user_context.username_hash,
+  user_manager->UserLoggedIn(user_context.GetUserID(),
+                             user_context.GetUserIDHash(),
                              false);
   btl->AddLoginTimeMarker("UserLoggedIn-End", false);
 
@@ -410,7 +410,7 @@ void LoginUtilsImpl::PrepareProfile(
 
   // Update user's displayed email.
   if (!display_email.empty())
-    user_manager->SaveUserDisplayEmail(user_context.username, display_email);
+    user_manager->SaveUserDisplayEmail(user_context.GetUserID(), display_email);
 
   user_context_ = user_context;
 
@@ -418,19 +418,19 @@ void LoginUtilsImpl::PrepareProfile(
   delegate_ = delegate;
   InitSessionRestoreStrategy();
 
-  if (DemoAppLauncher::IsDemoAppSession(user_context.username)) {
+  if (DemoAppLauncher::IsDemoAppSession(user_context.GetUserID())) {
     g_browser_process->profile_manager()->CreateProfileAsync(
-        user_manager->GetUserProfileDir(user_context.username),
+        user_manager->GetUserProfileDir(user_context.GetUserID()),
         base::Bind(&LoginUtilsImpl::OnOTRProfileCreated, AsWeakPtr(),
-                   user_context.username),
+                   user_context.GetUserID()),
         base::string16(), base::string16(), std::string());
   } else {
     // Can't use display_email because it is empty when existing user logs in
     // using sing-in pod on login screen (i.e. user didn't type email).
     g_browser_process->profile_manager()->CreateProfileAsync(
-        user_manager->GetUserProfileDir(user_context.username),
+        user_manager->GetUserProfileDir(user_context.GetUserID()),
         base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr(),
-                   user_context.username),
+                   user_context.GetUserID()),
         base::string16(), base::string16(), std::string());
   }
 }
@@ -480,12 +480,12 @@ void LoginUtilsImpl::InitSessionRestoreStrategy() {
     }
 
     if (command_line->HasSwitch(::switches::kAppModeAuthCode)) {
-      user_context_.auth_code = command_line->GetSwitchValueASCII(
-          ::switches::kAppModeAuthCode);
+      user_context_.SetAuthCode(command_line->GetSwitchValueASCII(
+          ::switches::kAppModeAuthCode));
     }
 
     DCHECK(!has_web_auth_cookies_);
-    if (!user_context_.auth_code.empty()) {
+    if (!user_context_.GetAuthCode().empty()) {
       session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;
     } else if (!oauth2_refresh_token_.empty()) {
       session_restore_strategy_ =
@@ -499,7 +499,7 @@ void LoginUtilsImpl::InitSessionRestoreStrategy() {
 
   if (has_web_auth_cookies_) {
     session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR;
-  } else if (!user_context_.auth_code.empty()) {
+  } else if (!user_context_.GetAuthCode().empty()) {
     session_restore_strategy_ = OAuth2LoginManager::RESTORE_FROM_AUTH_CODE;
   } else {
     session_restore_strategy_ =
@@ -556,7 +556,7 @@ void LoginUtilsImpl::UserProfileInitialized(Profile* user_profile) {
   BootTimesLoader* btl = BootTimesLoader::Get();
   btl->AddLoginTimeMarker("UserProfileGotten", false);
 
-  if (user_context_.using_oauth) {
+  if (user_context_.IsUsingOAuth()) {
     // Transfer proxy authentication cache, cookies (optionally) and server
     // bound certs from the profile that was used for authentication.  This
     // profile contains cookies that auth extension should have already put in
@@ -617,7 +617,7 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
           : NULL,
       session_restore_strategy_,
       oauth2_refresh_token_,
-      user_context_.auth_code);
+      user_context_.GetAuthCode());
 }
 
 void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
@@ -639,7 +639,7 @@ void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
     SAMLOfflineSigninLimiter* saml_offline_signin_limiter =
         SAMLOfflineSigninLimiterFactory::GetForProfile(user_profile);
     if (saml_offline_signin_limiter)
-      saml_offline_signin_limiter->SignedIn(user_context_.auth_flow);
+      saml_offline_signin_limiter->SignedIn(user_context_.GetAuthFlow());
   }
 
   user_profile->OnLogin();

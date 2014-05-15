@@ -18,7 +18,7 @@ namespace chromeos {
 
 class AuthAttemptState;
 class OnlineAttempt;
-struct UserContext;
+class UserContext;
 
 // Helper class which hosts OnlineAttempt for online credentials checking.
 class OnlineAttemptHost : public AuthAttemptStateResolver {

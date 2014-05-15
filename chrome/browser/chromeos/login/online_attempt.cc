@@ -127,8 +127,8 @@ void OnlineAttempt::TryClientLogin() {
       base::TimeDelta::FromMilliseconds(kClientLoginTimeoutMs));
 
   client_fetcher_->StartClientLogin(
-      attempt_->user_context.username,
-      attempt_->user_context.password,
+      attempt_->user_context.GetUserID(),
+      attempt_->user_context.GetPassword(),
       GaiaConstants::kSyncService,
       attempt_->login_token,
       attempt_->login_captcha,

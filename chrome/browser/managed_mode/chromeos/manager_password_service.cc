@@ -128,7 +128,7 @@ void ManagerPasswordService::GetManagedUsersCallback(
   }
 
   UserContext manager_key(user_id, master_key, std::string());
-  manager_key.using_oauth = false;
+  manager_key.SetIsUsingOAuth(false);
 
   // As master key can have old label, leave label field empty - it will work
   // as wildcard.
@@ -211,14 +211,14 @@ void ManagerPasswordService::OnAddKeySuccess(
 
 void ManagerPasswordService::OnContextTransformed(
     const UserContext& master_key_context) {
-  DCHECK(!master_key_context.need_password_hashing);
-  cryptohome::KeyDefinition new_master_key(master_key_context.password,
+  DCHECK(!master_key_context.DoesNeedPasswordHashing());
+  cryptohome::KeyDefinition new_master_key(master_key_context.GetPassword(),
                                            kCryptohomeMasterKeyLabel,
                                            cryptohome::PRIV_DEFAULT);
   // Use new master key for further actions.
   UserContext new_master_key_context;
   new_master_key_context.CopyFrom(master_key_context);
-  new_master_key_context.key_label = kCryptohomeMasterKeyLabel;
+  new_master_key_context.SetKeyLabel(kCryptohomeMasterKeyLabel);
   authenticator_->AddKey(
       master_key_context,
       new_master_key,
@@ -230,7 +230,7 @@ void ManagerPasswordService::OnContextTransformed(
 
 void ManagerPasswordService::OnNewManagerKeySuccess(
     const UserContext& master_key_context) {
-  VLOG(1) << "Added new master key for " << master_key_context.username;
+  VLOG(1) << "Added new master key for " << master_key_context.GetUserID();
   authenticator_->RemoveKey(
       master_key_context,
       kLegacyCryptohomeManagedUserKeyLabel,
@@ -241,7 +241,8 @@ void ManagerPasswordService::OnNewManagerKeySuccess(
 
 void ManagerPasswordService::OnOldManagedUserKeyDeleted(
     const UserContext& master_key_context) {
-  VLOG(1) << "Removed old managed user key for " << master_key_context.username;
+  VLOG(1) << "Removed old managed user key for "
+          << master_key_context.GetUserID();
   authenticator_->RemoveKey(
       master_key_context,
       kLegacyCryptohomeMasterKeyLabel,
@@ -252,7 +253,7 @@ void ManagerPasswordService::OnOldManagedUserKeyDeleted(
 
 void ManagerPasswordService::OnOldManagerKeyDeleted(
     const UserContext& master_key_context) {
-  VLOG(1) << "Removed old master key for " << master_key_context.username;
+  VLOG(1) << "Removed old master key for " << master_key_context.GetUserID();
 }
 
 void ManagerPasswordService::Shutdown() {

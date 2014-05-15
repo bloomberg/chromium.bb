@@ -16,7 +16,7 @@ class Profile;
 
 namespace chromeos {
 
-struct UserContext;
+class UserContext;
 
 // An interface for objects that will authenticate a Chromium OS user.
 // Callbacks will be called on the UI thread:

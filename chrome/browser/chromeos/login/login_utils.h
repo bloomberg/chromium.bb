@@ -23,7 +23,7 @@ namespace chromeos {
 class Authenticator;
 class LoginDisplayHost;
 class LoginStatusConsumer;
-struct UserContext;
+class UserContext;
 
 class LoginUtils {
  public:

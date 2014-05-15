@@ -270,9 +270,9 @@ void ManagedUserCreationControllerNew::OnMountSuccess(
   UserContext context(creation_context_->local_user_id,
                       creation_context_->salted_master_key,
                       std::string());
-  context.using_oauth = false;
-  context.need_password_hashing = false;
-  context.key_label = kCryptohomeMasterKeyLabel;
+  context.SetIsUsingOAuth(false);
+  context.SetDoesNeedPasswordHashing(false);
+  context.SetKeyLabel(kCryptohomeMasterKeyLabel);
 
   authenticator_->AddKey(
       context,

@@ -156,8 +156,8 @@ void KioskProfileLoader::OnLoginSuccess(const UserContext& user_context)  {
   // we switch this back to the demo user name to correctly identify this
   // user as a demo user.
   UserContext context = user_context;
-  if (context.username == UserManager::kGuestUserName)
-    context.username = DemoAppLauncher::kDemoUserName;
+  if (context.GetUserID() == UserManager::kGuestUserName)
+    context.SetUserID(DemoAppLauncher::kDemoUserName);
   LoginUtils::Get()->PrepareProfile(context,
                                     std::string(),  // display email
                                     false,  // has_cookies

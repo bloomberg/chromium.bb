@@ -97,7 +97,7 @@ void LoginPerformer::OnRetailModeLoginSuccess(
 
 void LoginPerformer::OnLoginSuccess(const UserContext& user_context) {
   content::RecordAction(UserMetricsAction("Login_Success"));
-  VLOG(1) << "LoginSuccess hash: " << user_context.username_hash;
+  VLOG(1) << "LoginSuccess hash: " << user_context.GetUserIDHash();
   DCHECK(delegate_);
   // After delegate_->OnLoginSuccess(...) is called, delegate_ releases
   // LoginPerformer ownership. LP now manages it's lifetime on its own.
@@ -166,7 +166,7 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
   }
 
   bool wildcard_match = false;
-  std::string email = gaia::CanonicalizeEmail(user_context.username);
+  std::string email = gaia::CanonicalizeEmail(user_context.GetUserID());
   bool is_whitelisted = LoginUtils::IsWhitelisted(email, &wildcard_match);
   if (is_whitelisted) {
     switch (auth_mode_) {
@@ -193,7 +193,7 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
     }
   } else {
     if (delegate_)
-      delegate_->WhiteListCheckFailed(user_context.username);
+      delegate_->WhiteListCheckFailed(user_context.GetUserID());
     else
       NOTREACHED();
   }
@@ -202,7 +202,7 @@ void LoginPerformer::PerformLogin(const UserContext& user_context,
 void LoginPerformer::LoginAsLocallyManagedUser(
     const UserContext& user_context) {
   DCHECK_EQ(UserManager::kLocallyManagedUserDomain,
-            gaia::ExtractDomainName(user_context.username));
+            gaia::ExtractDomainName(user_context.GetUserID()));
 
   CrosSettings* cros_settings = CrosSettings::Get();
   CrosSettingsProvider::TrustedStatus status =
@@ -225,15 +225,15 @@ void LoginPerformer::LoginAsLocallyManagedUser(
 
   if (!UserManager::Get()->AreLocallyManagedUsersAllowed()) {
     LOG(ERROR) << "Login attempt of locally managed user detected.";
-    delegate_->WhiteListCheckFailed(user_context.username);
+    delegate_->WhiteListCheckFailed(user_context.GetUserID());
     return;
   }
 
   SupervisedUserLoginFlow* new_flow =
-      new SupervisedUserLoginFlow(user_context.username);
+      new SupervisedUserLoginFlow(user_context.GetUserID());
   new_flow->set_host(
-      UserManager::Get()->GetUserFlow(user_context.username)->host());
-  UserManager::Get()->SetUserFlow(user_context.username, new_flow);
+      UserManager::Get()->GetUserFlow(user_context.GetUserID())->host());
+  UserManager::Get()->SetUserFlow(user_context.GetUserID(), new_flow);
 
   SupervisedUserAuthentication* authentication = UserManager::Get()->
       GetSupervisedUserManager()->GetAuthentication();
@@ -241,7 +241,7 @@ void LoginPerformer::LoginAsLocallyManagedUser(
   UserContext user_context_copy =
       authentication->TransformPasswordInContext(user_context);
 
-  if (authentication->GetPasswordSchema(user_context.username) ==
+  if (authentication->GetPasswordSchema(user_context.GetUserID()) ==
       SupervisedUserAuthentication::SCHEMA_SALT_HASHED) {
     if (extended_authenticator_.get()) {
       extended_authenticator_->SetConsumer(NULL);
@@ -339,8 +339,8 @@ void LoginPerformer::StartLoginCompletion() {
                  profile,
                  user_context_));
 
-  user_context_.password.clear();
-  user_context_.auth_code.clear();
+  user_context_.SetPassword(std::string());
+  user_context_.SetAuthCode(std::string());
 }
 
 void LoginPerformer::StartAuthentication() {
@@ -360,8 +360,8 @@ void LoginPerformer::StartAuthentication() {
   } else {
     NOTREACHED();
   }
-  user_context_.password.clear();
-  user_context_.auth_code.clear();
+  user_context_.SetPassword(std::string());
+  user_context_.SetAuthCode(std::string());
 }
 
 void LoginPerformer::OnlineWildcardLoginCheckCompleted(
@@ -370,7 +370,7 @@ void LoginPerformer::OnlineWildcardLoginCheckCompleted(
     StartLoginCompletion();
   } else {
     if (delegate_)
-      delegate_->WhiteListCheckFailed(user_context_.username);
+      delegate_->WhiteListCheckFailed(user_context_.GetUserID());
   }
 }
 

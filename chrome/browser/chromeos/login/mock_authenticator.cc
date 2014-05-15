@@ -14,8 +14,8 @@ namespace chromeos {
 
 void MockAuthenticator::AuthenticateToLogin(Profile* profile,
                                             const UserContext& user_context) {
-  if (expected_username_ == user_context.username &&
-      expected_password_ == user_context.password) {
+  if (expected_username_ == user_context.GetUserID() &&
+      expected_password_ == user_context.GetPassword()) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&MockAuthenticator::OnLoginSuccess, this));
     return;
@@ -29,8 +29,8 @@ void MockAuthenticator::AuthenticateToLogin(Profile* profile,
 
 void MockAuthenticator::CompleteLogin(Profile* profile,
                                       const UserContext& user_context) {
-  CHECK_EQ(expected_username_, user_context.username);
-  CHECK_EQ(expected_password_, user_context.password);
+  CHECK_EQ(expected_username_, user_context.GetUserID());
+  CHECK_EQ(expected_password_, user_context.GetPassword());
   OnLoginSuccess();
 }
 
@@ -44,7 +44,7 @@ void MockAuthenticator::LoginAsLocallyManagedUser(
   consumer_->OnLoginSuccess(UserContext(expected_username_,
                                         std::string(),
                                         std::string(),
-                                        user_context.username)); // hash
+                                        user_context.GetUserID())); // hash
 }
 
 void MockAuthenticator::LoginRetailMode() {
