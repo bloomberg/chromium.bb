@@ -25,8 +25,10 @@
  */
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include "libavutil/attributes.h"
+#include "libavutil/x86/asm.h"
 
 #undef PREFETCH
 #undef MOVNTQ
@@ -163,6 +165,7 @@ static inline void RENAME(rgb32tobgr24)(const uint8_t *src, uint8_t *dst, int sr
             "movq       %%mm5, %%mm7    \n\t"
             STORE_BGR24_MMX
             :: "r"(dest), "r"(s)
+              NAMED_CONSTRAINTS_ADD(mask24l,mask24h)
             :"memory");
         dest += 24;
         s += 32;
@@ -785,6 +788,7 @@ static inline void RENAME(rgb15tobgr24)(const uint8_t *src, uint8_t *dst, int sr
 
             :"=m"(*d)
             :"r"(s),"m"(mask15b),"m"(mask15g),"m"(mask15r), "m"(mmx_null)
+             NAMED_CONSTRAINTS_ADD(mul15_mid,mul15_hi)
             :"memory");
         /* borrowed 32 to 24 */
         __asm__ volatile(
@@ -801,6 +805,7 @@ static inline void RENAME(rgb15tobgr24)(const uint8_t *src, uint8_t *dst, int sr
             STORE_BGR24_MMX
 
             :: "r"(d), "m"(*s)
+              NAMED_CONSTRAINTS_ADD(mask24l,mask24h)
             :"memory");
         d += 24;
         s += 8;
@@ -890,6 +895,7 @@ static inline void RENAME(rgb16tobgr24)(const uint8_t *src, uint8_t *dst, int sr
             "por        %%mm5, %%mm3    \n\t"
             :"=m"(*d)
             :"r"(s),"m"(mask16b),"m"(mask16g),"m"(mask16r),"m"(mmx_null)
+             NAMED_CONSTRAINTS_ADD(mul15_mid,mul16_mid,mul15_hi)
             :"memory");
         /* borrowed 32 to 24 */
         __asm__ volatile(
@@ -906,6 +912,7 @@ static inline void RENAME(rgb16tobgr24)(const uint8_t *src, uint8_t *dst, int sr
             STORE_BGR24_MMX
 
             :: "r"(d), "m"(*s)
+              NAMED_CONSTRAINTS_ADD(mask24l,mask24h)
             :"memory");
         d += 24;
         s += 8;
@@ -966,6 +973,7 @@ static inline void RENAME(rgb15to32)(const uint8_t *src, uint8_t *dst, int src_s
             "pmulhw        "MANGLE(mul15_hi)", %%mm2    \n\t"
             PACK_RGB32
             ::"r"(d),"r"(s),"m"(mask15b),"m"(mask15g),"m"(mask15r) ,"m"(mul15_mid)
+              NAMED_CONSTRAINTS_ADD(mul15_hi)
             :"memory");
         d += 16;
         s += 4;
@@ -1009,6 +1017,7 @@ static inline void RENAME(rgb16to32)(const uint8_t *src, uint8_t *dst, int src_s
             "pmulhw        "MANGLE(mul15_hi)", %%mm2    \n\t"
             PACK_RGB32
             ::"r"(d),"r"(s),"m"(mask16b),"m"(mask16g),"m"(mask16r),"m"(mul15_mid)
+              NAMED_CONSTRAINTS_ADD(mul16_mid,mul15_hi)
             :"memory");
         d += 16;
         s += 4;
@@ -1133,6 +1142,7 @@ static inline void RENAME(rgb24tobgr24)(const uint8_t *src, uint8_t *dst, int sr
         "2:                                             \n\t"
         : "+a" (mmx_size)
         : "r" (src-mmx_size), "r"(dst-mmx_size)
+          NAMED_CONSTRAINTS_ADD(mask24r,mask24g,mask24b)
     );
 
     __asm__ volatile(SFENCE:::"memory");
@@ -1468,6 +1478,7 @@ static inline void RENAME(planar2x)(const uint8_t *src, uint8_t *dst, int srcWid
             :: "r" (src + mmxSize  ), "r" (src + srcStride + mmxSize  ),
                "r" (dst + mmxSize*2), "r" (dst + dstStride + mmxSize*2),
                "g" (-mmxSize)
+               NAMED_CONSTRAINTS_ADD(mmx_ff)
             : "%"REG_a
         );
 
@@ -1689,6 +1700,7 @@ static inline void RENAME(rgb24toyv12)(const uint8_t *src, uint8_t *ydst, uint8_
                 "add                        $8,      %%"REG_a"  \n\t"
                 " js                        1b                  \n\t"
                 : : "r" (src+width*3), "r" (ydst+width), "g" ((x86_reg)-width), "r"(rgb2yuv)
+                  NAMED_CONSTRAINTS_ADD(ff_w1111,ff_bgr2YOffset)
                 : "%"REG_a, "%"REG_d
             );
             ydst += lumStride;
@@ -1837,6 +1849,7 @@ static inline void RENAME(rgb24toyv12)(const uint8_t *src, uint8_t *ydst, uint8_
             "add                        $4, %%"REG_a"       \n\t"
             " js                        1b                  \n\t"
             : : "r" (src+chromWidth*6), "r" (src+srcStride+chromWidth*6), "r" (udst+chromWidth), "r" (vdst+chromWidth), "g" (-chromWidth), "r"(rgb2yuv)
+              NAMED_CONSTRAINTS_ADD(ff_w1111,ff_bgr2UVOffset)
             : "%"REG_a, "%"REG_d
         );
 
@@ -1924,23 +1937,25 @@ static void RENAME(interleaveBytes)(const uint8_t *src1, const uint8_t *src2, ui
             ::: "memory"
             );
 }
-#endif /* !COMPILE_TEMPLATE_AMD3DNOW && !COMPILE_TEMPLATE_AVX*/
+#endif /* !COMPILE_TEMPLATE_AMD3DNOW && !COMPILE_TEMPLATE_AVX */
 
+#if !COMPILE_TEMPLATE_AVX || HAVE_AVX_EXTERNAL
 #if !COMPILE_TEMPLATE_AMD3DNOW && (ARCH_X86_32 || COMPILE_TEMPLATE_SSE2) && COMPILE_TEMPLATE_MMXEXT == COMPILE_TEMPLATE_SSE2 && HAVE_YASM
 void RENAME(ff_nv12ToUV)(uint8_t *dstU, uint8_t *dstV,
-                                const uint8_t *unused0,
-                                const uint8_t *src1,
-                                const uint8_t *src2,
-                                int w, uint32_t *unused);
+                         const uint8_t *unused,
+                         const uint8_t *src1,
+                         const uint8_t *src2,
+                         int w,
+                         uint32_t *unused2);
 static void RENAME(deinterleaveBytes)(const uint8_t *src, uint8_t *dst1, uint8_t *dst2,
                                       int width, int height, int srcStride,
                                       int dst1Stride, int dst2Stride)
 {
     int h;
 
-    for (h=0; h < height; h++) {
+    for (h = 0; h < height; h++) {
         RENAME(ff_nv12ToUV)(dst1, dst2, NULL, src, NULL, width, NULL);
-        src += srcStride;
+        src  += srcStride;
         dst1 += dst1Stride;
         dst2 += dst2Stride;
     }
@@ -1951,6 +1966,7 @@ static void RENAME(deinterleaveBytes)(const uint8_t *src, uint8_t *dst1, uint8_t
             );
 }
 #endif /* !COMPILE_TEMPLATE_AMD3DNOW */
+#endif /* !COMPILE_TEMPLATE_AVX || HAVE_AVX_EXTERNAL */
 
 #if !COMPILE_TEMPLATE_SSE2
 #if !COMPILE_TEMPLATE_AMD3DNOW
@@ -2522,8 +2538,10 @@ static av_cold void RENAME(rgb2rgb_init)(void)
 
 #if !COMPILE_TEMPLATE_AMD3DNOW && !COMPILE_TEMPLATE_AVX
     interleaveBytes    = RENAME(interleaveBytes);
-#endif /* !COMPILE_TEMPLATE_AMD3DNOW  && !COMPILE_TEMPLATE_AVX*/
+#endif /* !COMPILE_TEMPLATE_AMD3DNOW && !COMPILE_TEMPLATE_AVX */
+#if !COMPILE_TEMPLATE_AVX || HAVE_AVX_EXTERNAL
 #if !COMPILE_TEMPLATE_AMD3DNOW && (ARCH_X86_32 || COMPILE_TEMPLATE_SSE2) && COMPILE_TEMPLATE_MMXEXT == COMPILE_TEMPLATE_SSE2 && HAVE_YASM
     deinterleaveBytes  = RENAME(deinterleaveBytes);
+#endif
 #endif
 }

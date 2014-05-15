@@ -25,7 +25,8 @@
 #include "libavutil/x86/cpu.h"
 #include "libavcodec/h264qpel.h"
 #include "libavcodec/mpegvideo.h"
-#include "dsputil_x86.h"
+#include "libavcodec/pixels.h"
+#include "fpel.h"
 
 #if HAVE_YASM
 void ff_put_pixels4_mmxext(uint8_t *block, const uint8_t *pixels,
@@ -49,8 +50,8 @@ void ff_avg_pixels16_l2_mmxext(uint8_t *dst, uint8_t *src1, uint8_t *src2,
 #define ff_put_pixels16_l2_sse2 ff_put_pixels16_l2_mmxext
 #define ff_avg_pixels16_l2_sse2 ff_avg_pixels16_l2_mmxext
 
-PIXELS16(static, ff_avg, , , _mmxext)
-PIXELS16(static, ff_put, , , _mmxext)
+CALL_2X_PIXELS(ff_avg_pixels16_mmxext, ff_avg_pixels8_mmxext, 8)
+CALL_2X_PIXELS(ff_put_pixels16_mmxext, ff_put_pixels8_mmxext, 8)
 
 #define DEF_QPEL(OPNAME)\
 void ff_ ## OPNAME ## _h264_qpel4_h_lowpass_mmxext(uint8_t *dst, uint8_t *src, int dstStride, int srcStride);\
@@ -496,7 +497,7 @@ QPEL16_OP(mc31, MMX)\
 QPEL16_OP(mc32, MMX)\
 QPEL16_OP(mc33, MMX)
 
-#if ARCH_X86_32 && HAVE_YASM && CONFIG_H264QPEL // ARCH_X86_64 implies SSE2+
+#if ARCH_X86_32 // ARCH_X86_64 implies SSE2+
 QPEL16(mmxext)
 #endif
 

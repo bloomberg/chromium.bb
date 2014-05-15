@@ -271,7 +271,7 @@ static int smacker_decode_header_tree(SmackVContext *smk, GetBitContext *gb, int
     huff.length = ((size + 3) >> 2) + 4;
     huff.maxlength = 0;
     huff.current = 0;
-    huff.values = av_mallocz(huff.length * sizeof(int));
+    huff.values = av_mallocz_array(huff.length, sizeof(int));
     if (!huff.values) {
         err = AVERROR(ENOMEM);
         goto error;
@@ -662,7 +662,7 @@ static int smka_decode_frame(AVCodecContext *avctx, void *data,
         av_log(avctx, AV_LOG_ERROR, "channels mismatch\n");
         return AVERROR(EINVAL);
     }
-    if (bits && avctx->sample_fmt == AV_SAMPLE_FMT_U8) {
+    if (bits == (avctx->sample_fmt == AV_SAMPLE_FMT_U8)) {
         av_log(avctx, AV_LOG_ERROR, "sample format mismatch\n");
         return AVERROR(EINVAL);
     }

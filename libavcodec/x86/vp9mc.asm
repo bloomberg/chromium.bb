@@ -87,7 +87,7 @@ SECTION .text
 
 %macro filter_h_fn 1
 %assign %%px mmsize/2
-cglobal %1_8tap_1d_h_ %+ %%px, 6, 6, 11, dst, dstride, src, sstride, h, filtery
+cglobal vp9_%1_8tap_1d_h_ %+ %%px, 6, 6, 11, dst, dstride, src, sstride, h, filtery
     mova        m6, [pw_256]
     mova        m7, [filteryq+ 0]
 %if ARCH_X86_64 && mmsize > 8
@@ -145,22 +145,76 @@ INIT_XMM ssse3
 filter_h_fn put
 filter_h_fn avg
 
+%if ARCH_X86_64
+%macro filter_hx2_fn 1
+%assign %%px mmsize
+cglobal vp9_%1_8tap_1d_h_ %+ %%px, 6, 6, 14, dst, dstride, src, sstride, h, filtery
+    mova       m13, [pw_256]
+    mova        m8, [filteryq+ 0]
+    mova        m9, [filteryq+16]
+    mova       m10, [filteryq+32]
+    mova       m11, [filteryq+48]
+.loop:
+    movu        m0, [srcq-3]
+    movu        m1, [srcq-2]
+    movu        m2, [srcq-1]
+    movu        m3, [srcq+0]
+    movu        m4, [srcq+1]
+    movu        m5, [srcq+2]
+    movu        m6, [srcq+3]
+    movu        m7, [srcq+4]
+    add       srcq, sstrideq
+    SBUTTERFLY  bw, 0, 1, 12
+    SBUTTERFLY  bw, 2, 3, 12
+    SBUTTERFLY  bw, 4, 5, 12
+    SBUTTERFLY  bw, 6, 7, 12
+    pmaddubsw   m0, m8
+    pmaddubsw   m1, m8
+    pmaddubsw   m2, m9
+    pmaddubsw   m3, m9
+    pmaddubsw   m4, m10
+    pmaddubsw   m5, m10
+    pmaddubsw   m6, m11
+    pmaddubsw   m7, m11
+    paddw       m0, m2
+    paddw       m1, m3
+    paddw       m4, m6
+    paddw       m5, m7
+    paddsw      m0, m4
+    paddsw      m1, m5
+    pmulhrsw    m0, m13
+    pmulhrsw    m1, m13
+    packuswb    m0, m1
+%ifidn %1, avg
+    pavgb       m0, [dstq]
+%endif
+    mova    [dstq], m0
+    add       dstq, dstrideq
+    dec         hd
+    jg .loop
+    RET
+%endmacro
+
+INIT_XMM ssse3
+filter_hx2_fn put
+filter_hx2_fn avg
+
+%endif ; ARCH_X86_64
+
 %macro filter_v_fn 1
 %assign %%px mmsize/2
 %if ARCH_X86_64
-cglobal %1_8tap_1d_v_ %+ %%px, 6, 8, 11, dst, dstride, src, sstride, h, filtery, src4, sstride3
+cglobal vp9_%1_8tap_1d_v_ %+ %%px, 6, 8, 11, dst, dstride, src, sstride, h, filtery, src4, sstride3
 %else
-cglobal %1_8tap_1d_v_ %+ %%px, 4, 7, 11, dst, dstride, src, sstride, filtery, src4, sstride3
+cglobal vp9_%1_8tap_1d_v_ %+ %%px, 4, 7, 11, dst, dstride, src, sstride, filtery, src4, sstride3
     mov   filteryq, r5mp
 %define hd r4mp
 %endif
-    sub       srcq, sstrideq
-    lea  sstride3q, [sstrideq*3]
-    sub       srcq, sstrideq
     mova        m6, [pw_256]
-    sub       srcq, sstrideq
+    lea  sstride3q, [sstrideq*3]
+    lea      src4q, [srcq+sstrideq]
+    sub       srcq, sstride3q
     mova        m7, [filteryq+ 0]
-    lea      src4q, [srcq+sstrideq*4]
 %if ARCH_X86_64 && mmsize > 8
     mova        m8, [filteryq+16]
     mova        m9, [filteryq+32]
@@ -220,6 +274,70 @@ INIT_XMM ssse3
 filter_v_fn put
 filter_v_fn avg
 
+%if ARCH_X86_64
+
+%macro filter_vx2_fn 1
+%assign %%px mmsize
+cglobal vp9_%1_8tap_1d_v_ %+ %%px, 6, 8, 14, dst, dstride, src, sstride, h, filtery, src4, sstride3
+    mova       m13, [pw_256]
+    lea  sstride3q, [sstrideq*3]
+    lea      src4q, [srcq+sstrideq]
+    sub       srcq, sstride3q
+    mova        m8, [filteryq+ 0]
+    mova        m9, [filteryq+16]
+    mova       m10, [filteryq+32]
+    mova       m11, [filteryq+48]
+.loop:
+    ; FIXME maybe reuse loads from previous rows, or just
+    ; more generally unroll this to prevent multiple loads of
+    ; the same data?
+    movu        m0, [srcq]
+    movu        m1, [srcq+sstrideq]
+    movu        m2, [srcq+sstrideq*2]
+    movu        m3, [srcq+sstride3q]
+    movu        m4, [src4q]
+    movu        m5, [src4q+sstrideq]
+    movu        m6, [src4q+sstrideq*2]
+    movu        m7, [src4q+sstride3q]
+    add       srcq, sstrideq
+    add      src4q, sstrideq
+    SBUTTERFLY  bw, 0, 1, 12
+    SBUTTERFLY  bw, 2, 3, 12
+    SBUTTERFLY  bw, 4, 5, 12
+    SBUTTERFLY  bw, 6, 7, 12
+    pmaddubsw   m0, m8
+    pmaddubsw   m1, m8
+    pmaddubsw   m2, m9
+    pmaddubsw   m3, m9
+    pmaddubsw   m4, m10
+    pmaddubsw   m5, m10
+    pmaddubsw   m6, m11
+    pmaddubsw   m7, m11
+    paddw       m0, m2
+    paddw       m1, m3
+    paddw       m4, m6
+    paddw       m5, m7
+    paddsw      m0, m4
+    paddsw      m1, m5
+    pmulhrsw    m0, m13
+    pmulhrsw    m1, m13
+    packuswb    m0, m1
+%ifidn %1, avg
+    pavgb       m0, [dstq]
+%endif
+    mova    [dstq], m0
+    add       dstq, dstrideq
+    dec         hd
+    jg .loop
+    RET
+%endmacro
+
+INIT_XMM ssse3
+filter_vx2_fn put
+filter_vx2_fn avg
+
+%endif ; ARCH_X86_64
+
 %macro fpel_fn 6
 %if %2 == 4
 %define %%srcfn movh
@@ -230,11 +348,11 @@ filter_v_fn avg
 %endif
 
 %if %2 <= 16
-cglobal %1%2, 5, 7, 4, dst, dstride, src, sstride, h, dstride3, sstride3
+cglobal vp9_%1%2, 5, 7, 4, dst, dstride, src, sstride, h, dstride3, sstride3
     lea  sstride3q, [sstrideq*3]
     lea  dstride3q, [dstrideq*3]
 %else
-cglobal %1%2, 5, 5, 4, dst, dstride, src, sstride, h
+cglobal vp9_%1%2, 5, 5, 4, dst, dstride, src, sstride, h
 %endif
 .loop:
     %%srcfn     m0, [srcq]
@@ -263,7 +381,7 @@ cglobal %1%2, 5, 5, 4, dst, dstride, src, sstride, h
 INIT_MMX mmx
 fpel_fn put, 4,  strideq, strideq*2, stride3q, 4
 fpel_fn put, 8,  strideq, strideq*2, stride3q, 4
-INIT_MMX sse
+INIT_MMX mmxext
 fpel_fn avg, 4,  strideq, strideq*2, stride3q, 4
 fpel_fn avg, 8,  strideq, strideq*2, stride3q, 4
 INIT_XMM sse

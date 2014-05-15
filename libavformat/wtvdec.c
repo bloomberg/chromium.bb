@@ -25,6 +25,8 @@
  * @author Peter Ross <pross@xvid.org>
  */
 
+#include <inttypes.h>
+
 #include "libavutil/channel_layout.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/intfloat.h"
@@ -35,7 +37,7 @@
 
 /* Macros for formating GUIDs */
 #define PRI_PRETTY_GUID \
-    "%08x-%04x-%04x-%02x%02x%02x%02x%02x%02x%02x%02x"
+    "%08"PRIx32"-%04"PRIx16"-%04"PRIx16"-%02x%02x%02x%02x%02x%02x%02x%02x"
 #define ARG_PRETTY_GUID(g) \
     AV_RL32(g),AV_RL16(g+4),AV_RL16(g+6),g[8],g[9],g[10],g[11],g[12],g[13],g[14],g[15]
 #define LEN_PRETTY_GUID 34
@@ -153,6 +155,7 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
     AVIOContext *pb;
     WtvFile *wf;
     uint8_t *buffer;
+    int64_t size;
 
     if (seek_by_sector(s->pb, first_sector, 0) < 0)
         return NULL;
@@ -205,7 +208,8 @@ static AVIOContext * wtvfile_open_sector(int first_sector, uint64_t length, int 
         return NULL;
     }
 
-    if ((int64_t)wf->sectors[wf->nb_sectors - 1] << WTV_SECTOR_BITS > avio_tell(s->pb))
+    size = avio_size(s->pb);
+    if (size >= 0 && (int64_t)wf->sectors[wf->nb_sectors - 1] << WTV_SECTOR_BITS > size)
         av_log(s, AV_LOG_WARNING, "truncated file\n");
 
     /* check length */
@@ -370,10 +374,6 @@ static const ff_asf_guid mediasubtype_dtvccdata =
 static const ff_asf_guid mediasubtype_mpeg2_sections =
     {0x79,0x85,0x9F,0x4A,0xF8,0x6B,0x92,0x43,0x8A,0x6D,0xD2,0xDD,0x09,0xFA,0x78,0x61};
 
-/* Formats */
-static const ff_asf_guid format_videoinfo2 =
-    {0xA0,0x76,0x2A,0xF7,0x0A,0xEB,0xD0,0x11,0xAC,0xE4,0x00,0x00,0xC0,0xCC,0x16,0xBA};
-
 static int read_probe(AVProbeData *p)
 {
     return ff_guidcmp(p->buf, ff_wtv_guid) ? 0 : AVPROBE_SCORE_MAX;
@@ -473,7 +473,7 @@ static void get_tag(AVFormatContext *s, AVIOContext *pb, const char *key, int ty
         return;
 
     if (type == 0 && length == 4) {
-        snprintf(buf, buf_size, "%"PRIi32, avio_rl32(pb));
+        snprintf(buf, buf_size, "%u", avio_rl32(pb));
     } else if (type == 1) {
         avio_get_str16le(pb, length, buf, buf_size);
         if (!strlen(buf)) {
@@ -562,7 +562,7 @@ static int parse_videoinfoheader2(AVFormatContext *s, AVStream *st)
     AVIOContext *pb = wtv->pb;
 
     avio_skip(pb, 72);  // picture aspect ratio is unreliable
-    ff_get_bmp_header(pb, st, NULL);
+    st->codec->codec_tag = ff_get_bmp_header(pb, st, NULL);
 
     return 72 + 40;
 }
@@ -635,7 +635,7 @@ static AVStream * new_stream(AVFormatContext *s, AVStream *st, int sid, int code
  */
 static AVStream * parse_media_type(AVFormatContext *s, AVStream *st, int sid,
                                    ff_asf_guid mediatype, ff_asf_guid subtype,
-                                   ff_asf_guid formattype, int size)
+                                   ff_asf_guid formattype, uint64_t size)
 {
     WtvContext *wtv = s->priv_data;
     AVIOContext *pb = wtv->pb;
@@ -689,11 +689,12 @@ static AVStream * parse_media_type(AVFormatContext *s, AVStream *st, int sid,
         st = new_stream(s, st, sid, AVMEDIA_TYPE_VIDEO);
         if (!st)
             return NULL;
-        if (!ff_guidcmp(formattype, format_videoinfo2)) {
+        if (!ff_guidcmp(formattype, ff_format_videoinfo2)) {
             int consumed = parse_videoinfoheader2(s, st);
             avio_skip(pb, FFMAX(size - consumed, 0));
         } else if (!ff_guidcmp(formattype, ff_format_mpeg2_video)) {
-            int consumed = parse_videoinfoheader2(s, st);
+            uint64_t consumed = parse_videoinfoheader2(s, st);
+            /* ignore extradata; files produced by windows media center contain meaningless mpeg1 sequence header */
             avio_skip(pb, FFMAX(size - consumed, 0));
         } else {
             if (ff_guidcmp(formattype, ff_format_none))

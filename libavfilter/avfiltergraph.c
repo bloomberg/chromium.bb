@@ -31,7 +31,6 @@
 #include "libavutil/internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
-#include "libavcodec/avcodec.h" // avcodec_find_best_pix_fmt_of_2()
 
 #include "avfilter.h"
 #include "formats.h"
@@ -281,7 +280,7 @@ static int graph_config_links(AVFilterGraph *graph, AVClass *log_ctx)
     return 0;
 }
 
-AVFilterContext *avfilter_graph_get_filter(AVFilterGraph *graph, char *name)
+AVFilterContext *avfilter_graph_get_filter(AVFilterGraph *graph, const char *name)
 {
     int i;
 
@@ -628,7 +627,7 @@ static int pick_format(AVFilterLink *link, AVFilterLink *ref)
             int i;
             for (i=0; i<link->in_formats->nb_formats; i++) {
                 enum AVPixelFormat p = link->in_formats->formats[i];
-                best= avcodec_find_best_pix_fmt_of_2(best, p, ref->format, has_alpha, NULL);
+                best= av_find_best_pix_fmt_of_2(best, p, ref->format, has_alpha, NULL);
             }
             av_log(link->src,AV_LOG_DEBUG, "picking %s out of %d ref:%s alpha:%d\n",
                    av_get_pix_fmt_name(best), link->in_formats->nb_formats,

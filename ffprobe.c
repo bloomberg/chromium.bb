@@ -66,6 +66,12 @@ static int do_show_data    = 0;
 static int do_show_program_version  = 0;
 static int do_show_library_versions = 0;
 
+static int do_show_chapter_tags = 0;
+static int do_show_format_tags = 0;
+static int do_show_frame_tags = 0;
+static int do_show_program_tags = 0;
+static int do_show_stream_tags = 0;
+
 static int show_value_unit              = 0;
 static int use_value_prefix             = 0;
 static int use_byte_value_binary_prefix = 0;
@@ -240,6 +246,7 @@ static char *value_string(char *buf, int buf_size, struct unit_value uv)
                 vald /= pow(10, index * 3);
                 prefix_string = decimal_unit_prefixes[index];
             }
+            vali = vald;
         }
 
         if (show_float || (use_value_prefix && vald != (long long int)vald))
@@ -330,7 +337,7 @@ static const AVOption writer_options[] = {
     { "replace", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = WRITER_STRING_VALIDATION_REPLACE}, .unit = "sv" },
     { "fail",    NULL, 0, AV_OPT_TYPE_CONST, {.i64 = WRITER_STRING_VALIDATION_FAIL},    .unit = "sv" },
     { "string_validation_replacement", "set string validation replacement string", OFFSET(string_validation_replacement), AV_OPT_TYPE_STRING, {.str=""}},
-    { "svr", "set string validation replacement string", OFFSET(string_validation_replacement), AV_OPT_TYPE_STRING, {.str=""}},
+    { "svr", "set string validation replacement string", OFFSET(string_validation_replacement), AV_OPT_TYPE_STRING, {.str="\xEF\xBF\xBD"}},
     { NULL }
 };
 
@@ -1719,6 +1726,8 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
     print_time("pkt_pts_time",          frame->pkt_pts, &stream->time_base);
     print_ts  ("pkt_dts",               frame->pkt_dts);
     print_time("pkt_dts_time",          frame->pkt_dts, &stream->time_base);
+    print_ts  ("best_effort_timestamp", av_frame_get_best_effort_timestamp(frame));
+    print_time("best_effort_timestamp_time", av_frame_get_best_effort_timestamp(frame), &stream->time_base);
     print_duration_ts  ("pkt_duration",      av_frame_get_pkt_duration(frame));
     print_duration_time("pkt_duration_time", av_frame_get_pkt_duration(frame), &stream->time_base);
     if (av_frame_get_pkt_pos (frame) != -1) print_fmt    ("pkt_pos", "%"PRId64, av_frame_get_pkt_pos(frame));
@@ -1764,7 +1773,8 @@ static void show_frame(WriterContext *w, AVFrame *frame, AVStream *stream,
             print_str_opt("channel_layout", "unknown");
         break;
     }
-    show_tags(w, av_frame_get_metadata(frame), SECTION_ID_FRAME_TAGS);
+    if (do_show_frame_tags)
+        show_tags(w, av_frame_get_metadata(frame), SECTION_ID_FRAME_TAGS);
 
     writer_print_section_footer(w);
 
@@ -1780,7 +1790,6 @@ static av_always_inline int process_frame(WriterContext *w,
     AVSubtitle sub;
     int ret = 0, got_frame = 0;
 
-    avcodec_get_frame_defaults(frame);
     if (dec_ctx->codec) {
         switch (dec_ctx->codec_type) {
         case AVMEDIA_TYPE_VIDEO:
@@ -1844,7 +1853,7 @@ static int read_interval_packets(WriterContext *w, AVFormatContext *fmt_ctx,
                                  const ReadInterval *interval, int64_t *cur_ts)
 {
     AVPacket pkt, pkt1;
-    AVFrame frame;
+    AVFrame *frame = NULL;
     int ret = 0, i = 0, frame_count = 0;
     int64_t start = -INT64_MAX, end = interval->end;
     int has_start = 0, has_end = interval->has_end && !interval->end_is_offset;
@@ -1878,6 +1887,11 @@ static int read_interval_packets(WriterContext *w, AVFormatContext *fmt_ctx,
         }
     }
 
+    frame = av_frame_alloc();
+    if (!frame) {
+        ret = AVERROR(ENOMEM);
+        goto end;
+    }
     while (!av_read_frame(fmt_ctx, &pkt)) {
         if (selected_streams[pkt.stream_index]) {
             AVRational tb = fmt_ctx->streams[pkt.stream_index]->time_base;
@@ -1910,7 +1924,7 @@ static int read_interval_packets(WriterContext *w, AVFormatContext *fmt_ctx,
             }
             if (do_read_frames) {
                 pkt1 = pkt;
-                while (pkt1.size && process_frame(w, fmt_ctx, &frame, &pkt1) > 0);
+                while (pkt1.size && process_frame(w, fmt_ctx, frame, &pkt1) > 0);
             }
         }
         av_free_packet(&pkt);
@@ -1922,10 +1936,11 @@ static int read_interval_packets(WriterContext *w, AVFormatContext *fmt_ctx,
     for (i = 0; i < fmt_ctx->nb_streams; i++) {
         pkt.stream_index = i;
         if (do_read_frames)
-            while (process_frame(w, fmt_ctx, &frame, &pkt) > 0);
+            while (process_frame(w, fmt_ctx, frame, &pkt) > 0);
     }
 
 end:
+    av_frame_free(&frame);
     if (ret < 0) {
         av_log(NULL, AV_LOG_ERROR, "Could not read packets in interval ");
         log_read_interval(interval, NULL, AV_LOG_ERROR);
@@ -1961,6 +1976,7 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
     const char *s;
     AVRational sar, dar;
     AVBPrint pbuf;
+    const AVCodecDescriptor *cd;
     int ret = 0;
 
     av_bprint_init(&pbuf, 1, AV_BPRINT_SIZE_UNLIMITED);
@@ -1977,6 +1993,12 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
             if (!do_bitexact) {
                 if (dec->long_name) print_str    ("codec_long_name", dec->long_name);
                 else                print_str_opt("codec_long_name", "unknown");
+            }
+        } else if ((cd = avcodec_descriptor_get(stream->codec->codec_id))) {
+            print_str_opt("codec_name", cd->name);
+            if (!do_bitexact) {
+                print_str_opt("codec_long_name",
+                              cd->long_name ? cd->long_name : "unknown");
             }
         } else {
             print_str_opt("codec_name", "unknown");
@@ -2116,7 +2138,8 @@ static int show_stream(WriterContext *w, AVFormatContext *fmt_ctx, int stream_id
     writer_print_section_footer(w);
     }
 
-    ret = show_tags(w, stream->metadata, in_program ? SECTION_ID_PROGRAM_STREAM_TAGS : SECTION_ID_STREAM_TAGS);
+    if (do_show_stream_tags)
+        ret = show_tags(w, stream->metadata, in_program ? SECTION_ID_PROGRAM_STREAM_TAGS : SECTION_ID_STREAM_TAGS);
 
     writer_print_section_footer(w);
     av_bprint_finalize(&pbuf, NULL);
@@ -2155,7 +2178,8 @@ static int show_program(WriterContext *w, AVFormatContext *fmt_ctx, AVProgram *p
     print_time("start_time", program->start_time, &AV_TIME_BASE_Q);
     print_ts("end_pts", program->end_time);
     print_time("end_time", program->end_time, &AV_TIME_BASE_Q);
-    ret = show_tags(w, program->metadata, SECTION_ID_PROGRAM_TAGS);
+    if (do_show_program_tags)
+        ret = show_tags(w, program->metadata, SECTION_ID_PROGRAM_TAGS);
     if (ret < 0)
         goto end;
 
@@ -2206,7 +2230,8 @@ static int show_chapters(WriterContext *w, AVFormatContext *fmt_ctx)
         print_time("start_time", chapter->start, &chapter->time_base);
         print_int("end", chapter->end);
         print_time("end_time", chapter->end, &chapter->time_base);
-        ret = show_tags(w, chapter->metadata, SECTION_ID_CHAPTER_TAGS);
+        if (do_show_chapter_tags)
+            ret = show_tags(w, chapter->metadata, SECTION_ID_CHAPTER_TAGS);
         writer_print_section_footer(w);
     }
     writer_print_section_footer(w);
@@ -2236,7 +2261,8 @@ static int show_format(WriterContext *w, AVFormatContext *fmt_ctx)
     if (fmt_ctx->bit_rate > 0) print_val    ("bit_rate", fmt_ctx->bit_rate, unit_bit_per_second_str);
     else                       print_str_opt("bit_rate", "N/A");
     print_int("probe_score", av_format_get_probe_score(fmt_ctx));
-    ret = show_tags(w, fmt_ctx->metadata, SECTION_ID_FORMAT_TAGS);
+    if (do_show_format_tags)
+        ret = show_tags(w, fmt_ctx->metadata, SECTION_ID_FORMAT_TAGS);
 
     writer_print_section_footer(w);
     fflush(stdout);
@@ -2381,6 +2407,7 @@ static int probe_file(WriterContext *wctx, const char *filename)
             writer_print_section_footer(wctx);
         CHECK_END;
     }
+
     if (do_show_programs) {
         ret = show_programs(wctx, fmt_ctx);
         CHECK_END;
@@ -2893,6 +2920,12 @@ int main(int argc, char **argv)
     SET_DO_SHOW(STREAMS, streams);
     SET_DO_SHOW(STREAM_DISPOSITION, stream_disposition);
     SET_DO_SHOW(PROGRAM_STREAM_DISPOSITION, stream_disposition);
+
+    SET_DO_SHOW(CHAPTER_TAGS, chapter_tags);
+    SET_DO_SHOW(FORMAT_TAGS, format_tags);
+    SET_DO_SHOW(FRAME_TAGS, frame_tags);
+    SET_DO_SHOW(PROGRAM_TAGS, program_tags);
+    SET_DO_SHOW(STREAM_TAGS, stream_tags);
 
     if (do_bitexact && (do_show_program_version || do_show_library_versions)) {
         av_log(NULL, AV_LOG_ERROR,

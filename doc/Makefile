@@ -36,15 +36,19 @@ DOCS-$(CONFIG_MANPAGES)  += $(MANPAGES)
 DOCS-$(CONFIG_TXTPAGES)  += $(TXTPAGES)
 DOCS = $(DOCS-yes)
 
-DOC_EXAMPLES-$(CONFIG_DECODING_ENCODING_EXAMPLE) += decoding_encoding
+DOC_EXAMPLES-$(CONFIG_AVIO_READING_EXAMPLE)      += avio_reading
+DOC_EXAMPLES-$(CONFIG_AVCODEC_EXAMPLE)           += avcodec
 DOC_EXAMPLES-$(CONFIG_DEMUXING_DECODING_EXAMPLE) += demuxing_decoding
+DOC_EXAMPLES-$(CONFIG_FILTER_AUDIO_EXAMPLE)      += filter_audio
 DOC_EXAMPLES-$(CONFIG_FILTERING_AUDIO_EXAMPLE)   += filtering_audio
 DOC_EXAMPLES-$(CONFIG_FILTERING_VIDEO_EXAMPLE)   += filtering_video
 DOC_EXAMPLES-$(CONFIG_METADATA_EXAMPLE)          += metadata
 DOC_EXAMPLES-$(CONFIG_MUXING_EXAMPLE)            += muxing
+DOC_EXAMPLES-$(CONFIG_REMUXING_EXAMPLE)          += remuxing
 DOC_EXAMPLES-$(CONFIG_RESAMPLING_AUDIO_EXAMPLE)  += resampling_audio
 DOC_EXAMPLES-$(CONFIG_SCALING_VIDEO_EXAMPLE)     += scaling_video
 DOC_EXAMPLES-$(CONFIG_TRANSCODE_AAC_EXAMPLE)     += transcode_aac
+DOC_EXAMPLES-$(CONFIG_TRANSCODING_EXAMPLE)       += transcoding
 ALL_DOC_EXAMPLES_LIST = $(DOC_EXAMPLES-) $(DOC_EXAMPLES-yes)
 
 DOC_EXAMPLES       := $(DOC_EXAMPLES-yes:%=doc/examples/%$(PROGSSUF)$(EXESUF))
@@ -102,11 +106,13 @@ doc/%.3: doc/%.pod $(GENTEXI)
 	$(M)pod2man --section=3 --center=" " --release=" " $< > $@
 
 $(DOCS) doc/doxy/html: | doc/
-$(DOC_EXAMPLES:%=%.o): | doc/examples
+$(DOC_EXAMPLES:%$(EXESUF)=%.o): | doc/examples
 OBJDIRS += doc/examples
 
-doc/doxy/html: $(SRC_PATH)/doc/Doxyfile $(INSTHEADERS)
-	$(M)$(SRC_PATH)/doc/doxy-wrapper.sh $(SRC_PATH) $^
+DOXY_INPUT      = $(addprefix $(SRC_PATH)/, $(INSTHEADERS) $(DOC_EXAMPLES:%$(EXESUF)=%.c) $(LIB_EXAMPLES:%$(EXESUF)=%.c))
+
+doc/doxy/html: $(SRC_PATH)/doc/Doxyfile $(DOXY_INPUT)
+	$(M)$(SRC_PATH)/doc/doxy-wrapper.sh $(SRC_PATH) $< $(DOXY_INPUT)
 
 install-doc: install-html install-man
 

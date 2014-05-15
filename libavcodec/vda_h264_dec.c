@@ -180,7 +180,7 @@ static av_cold int vdadec_init(AVCodecContext *avctx)
     VDADecoderContext *ctx = avctx->priv_data;
     struct vda_context *vda_ctx = &ctx->vda_ctx;
     OSStatus status;
-    int ret;
+    int ret, i;
 
     ctx->h264_initialized = 0;
 
@@ -234,6 +234,16 @@ static av_cold int vdadec_init(AVCodecContext *avctx)
         goto failed;
     }
     ctx->h264_initialized = 1;
+
+    for (i = 0; i < MAX_SPS_COUNT; i++) {
+        SPS *sps = ctx->h264ctx.sps_buffers[i];
+        if (sps && (sps->bit_depth_luma != 8 ||
+                sps->chroma_format_idc == 2 ||
+                sps->chroma_format_idc == 3)) {
+            av_log(avctx, AV_LOG_ERROR, "Format is not supported.\n");
+            goto failed;
+        }
+    }
 
     return 0;
 

@@ -158,7 +158,7 @@ static av_cold void dump_enc_cfg(AVCodecContext *avctx,
            width, "g_lag_in_frames:",   cfg->g_lag_in_frames);
     av_log(avctx, level, "rate control settings\n"
            "  %*s%u\n  %*s%u\n  %*s%u\n  %*s%u\n"
-           "  %*s%d\n  %*s%p(%zu)\n  %*s%u\n",
+           "  %*s%d\n  %*s%p(%"SIZE_SPECIFIER")\n  %*s%u\n",
            width, "rc_dropframe_thresh:",   cfg->rc_dropframe_thresh,
            width, "rc_resize_allowed:",     cfg->rc_resize_allowed,
            width, "rc_resize_up_thresh:",   cfg->rc_resize_up_thresh,
@@ -373,7 +373,7 @@ static av_cold int vpx_init(AVCodecContext *avctx,
         ctx->twopass_stats.buf = av_malloc(ctx->twopass_stats.sz);
         if (!ctx->twopass_stats.buf) {
             av_log(avctx, AV_LOG_ERROR,
-                   "Stat buffer alloc (%zu bytes) failed\n",
+                   "Stat buffer alloc (%"SIZE_SPECIFIER" bytes) failed\n",
                    ctx->twopass_stats.sz);
             return AVERROR(ENOMEM);
         }
@@ -616,7 +616,7 @@ static int queue_frames(AVCodecContext *avctx, AVPacket *pkt_out,
 
                 if (!cx_frame->buf) {
                     av_log(avctx, AV_LOG_ERROR,
-                           "Data buffer alloc (%zu bytes) failed\n",
+                           "Data buffer alloc (%"SIZE_SPECIFIER" bytes) failed\n",
                            cx_frame->sz);
                     av_free(cx_frame);
                     return AVERROR(ENOMEM);
@@ -626,7 +626,7 @@ static int queue_frames(AVCodecContext *avctx, AVPacket *pkt_out,
                     cx_frame->buf_alpha = av_malloc(cx_frame->sz_alpha);
                     if (!cx_frame->buf_alpha) {
                         av_log(avctx, AV_LOG_ERROR,
-                               "Data buffer alloc (%zu bytes) failed\n",
+                               "Data buffer alloc (%"SIZE_SPECIFIER" bytes) failed\n",
                                cx_frame->sz_alpha);
                         av_free(cx_frame);
                         return AVERROR(ENOMEM);
@@ -852,9 +852,6 @@ AVCodec ff_libvpx_vp8_encoder = {
 #if CONFIG_LIBVPX_VP9_ENCODER
 static av_cold int vp9_init(AVCodecContext *avctx)
 {
-    int ret;
-    if ((ret = ff_vp9_check_experimental(avctx)))
-        return ret;
     return vpx_init(avctx, &vpx_codec_vp9_cx_algo);
 }
 
@@ -878,5 +875,6 @@ AVCodec ff_libvpx_vp9_encoder = {
     .pix_fmts       = (const enum AVPixelFormat[]){ AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
     .priv_class     = &class_vp9,
     .defaults       = defaults,
+    .init_static_data = ff_vp9_init_static,
 };
 #endif /* CONFIG_LIBVPX_VP9_ENCODER */

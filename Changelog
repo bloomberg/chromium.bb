@@ -1,7 +1,32 @@
 Entries are sorted chronologically from oldest to youngest within each release,
 releases are sorted from youngest to oldest.
 
-version <next>
+version <next>:
+- AC3 fixed-point decoding
+- shuffleplanes filter
+- subfile protocol
+- Phantom Cine demuxer
+- replaygain data export
+- VP7 video decoder
+- Alias PIX image encoder and decoder
+- Improvments to the BRender PIX image decoder
+- Improvments to the XBM decoder
+- QTKit input device
+- improvments to OpenEXR image decoder
+- support decoding 16-bit RLE SGI images
+- GDI screen grabbing for Windows
+- alternative rendition support for HTTP Live Streaming
+- AVFoundation input device
+- Direct Stream Digital (DSD) decoder
+- Magic Lantern Video (MLV) demuxer
+- On2 AVC (Audio for Video) decoder
+- support for decoding through DXVA2 in ffmpeg
+- libbs2b-based stereo-to-binaural audio filter
+- libx264 reference frames count limiting depending on level
+- native Opus decoder
+
+
+version 2.2:
 
 - HNM version 4 demuxer and video decoder
 - Live HDS muxer
@@ -10,10 +35,25 @@ version <next>
 - string validation in ffprobe
 - support for decoding through VDPAU in ffmpeg (the -hwaccel option)
 - complete Voxware MetaSound decoder
-- remove mp3_header_compress bitstream filters
+- remove mp3_header_compress bitstream filter
 - Windows resource files for shared libraries
 - aeval filter
 - stereoscopic 3d metadata handling
+- WebP encoding via libwebp
+- ATRAC3+ decoder
+- VP8 in Ogg demuxing
+- side & metadata support in NUT
+- framepack filter
+- XYZ12 rawvideo support in NUT
+- Exif metadata support in WebP decoder
+- OpenGL device
+- Use metadata_header_padding to control padding in ID3 tags (currently used in
+  MP3, AIFF, and OMA files), FLAC header, and the AVI "junk" block.
+- Mirillis FIC video decoder
+- Support DNx444
+- libx265 encoder
+- dejudder filter
+- Autodetect VDA like all other hardware accelerations
 
 
 version 2.1:
@@ -75,7 +115,7 @@ version 2.0:
 - 10% faster aac encoding on x86 and MIPS
 - sine audio filter source
 - WebP demuxing and decoding support
-- new ffmpeg options -filter_script and -filter_complex_script, which allow a
+- ffmpeg options -filter_script and -filter_complex_script, which allow a
   filtergraph description to be read from a file
 - OpenCL support
 - audio phaser filter
@@ -83,7 +123,7 @@ version 2.0:
 - libquvi demuxer
 - uniform options syntax across all filters
 - telecine filter
-- new interlace filter
+- interlace filter
 - smptehdbars source
 - inverse telecine filters (fieldmatch and decimate)
 - colorbalance filter
@@ -201,7 +241,7 @@ version 1.1:
 - JSON captions for TED talks decoding support
 - SOX Resampler support in libswresample
 - aselect filter
-- SGI RLE 8-bit decoder
+- SGI RLE 8-bit / Silicon Graphics RLE 8-bit video decoder
 - Silicon Graphics Motion Video Compressor 1 & 2 decoder
 - Silicon Graphics Movie demuxer
 - apad filter
@@ -245,7 +285,9 @@ version 1.0:
 - RTMPE protocol support
 - RTMPTE protocol support
 - showwaves and showspectrum filter
-- LucasArts SMUSH playback support
+- LucasArts SMUSH SANM playback support
+- LucasArts SMUSH VIMA audio decoder (ADPCM)
+- LucasArts SMUSH demuxer
 - SAMI, RealText and SubViewer demuxers and decoders
 - Heart Of Darkness PAF playback support
 - iec61883 device
@@ -369,6 +411,7 @@ version 0.10:
 - ffwavesynth decoder
 - aviocat tool
 - ffeval tool
+- support encoding and decoding 4-channel SGI images
 
 
 version 0.9:

@@ -26,6 +26,7 @@
 #include "rawdec.h"
 #include "oggdec.h"
 #include "vorbiscomment.h"
+#include "replaygain.h"
 #include "libavcodec/bytestream.h"
 
 static int flac_read_header(AVFormatContext *s)
@@ -143,6 +144,10 @@ static int flac_read_header(AVFormatContext *s)
         }
     }
 
+    ret = ff_replaygain_export(st, s->metadata);
+    if (ret < 0)
+        return ret;
+
     return 0;
 
 fail:
@@ -157,12 +162,61 @@ static int flac_probe(AVProbeData *p)
     return AVPROBE_SCORE_EXTENSION;
 }
 
+static av_unused int64_t flac_read_timestamp(AVFormatContext *s, int stream_index,
+                                             int64_t *ppos, int64_t pos_limit)
+{
+    AVPacket pkt, out_pkt;
+    AVStream *st = s->streams[stream_index];
+    AVCodecParserContext *parser;
+    int ret;
+    int64_t pts = AV_NOPTS_VALUE;
+
+    if (avio_seek(s->pb, *ppos, SEEK_SET) < 0)
+        return AV_NOPTS_VALUE;
+
+    av_init_packet(&pkt);
+    parser = av_parser_init(st->codec->codec_id);
+    if (!parser){
+        return AV_NOPTS_VALUE;
+    }
+    parser->flags |= PARSER_FLAG_USE_CODEC_TS;
+
+    for (;;){
+        ret = ff_raw_read_partial_packet(s, &pkt);
+        if (ret < 0){
+            if (ret == AVERROR(EAGAIN))
+                continue;
+            else
+                break;
+        }
+        av_init_packet(&out_pkt);
+        ret = av_parser_parse2(parser, st->codec,
+                               &out_pkt.data, &out_pkt.size, pkt.data, pkt.size,
+                               pkt.pts, pkt.dts, *ppos);
+
+        av_free_packet(&pkt);
+        if (out_pkt.size){
+            int size = out_pkt.size;
+            if (parser->pts != AV_NOPTS_VALUE){
+                // seeking may not have started from beginning of a frame
+                // calculate frame start position from next frame backwards
+                *ppos = parser->next_frame_offset - size;
+                pts = parser->pts;
+                break;
+            }
+        }
+    }
+    av_parser_close(parser);
+    return pts;
+}
+
 AVInputFormat ff_flac_demuxer = {
     .name           = "flac",
     .long_name      = NULL_IF_CONFIG_SMALL("raw FLAC"),
     .read_probe     = flac_probe,
     .read_header    = flac_read_header,
     .read_packet    = ff_raw_read_partial_packet,
+    .read_timestamp = flac_read_timestamp,
     .flags          = AVFMT_GENERIC_INDEX,
     .extensions     = "flac",
     .raw_codec_id   = AV_CODEC_ID_FLAC,

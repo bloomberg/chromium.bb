@@ -31,7 +31,7 @@
 int64_t ff_start_tag(AVIOContext *pb, const char *tag)
 {
     ffio_wfourcc(pb, tag);
-    avio_wl32(pb, 0);
+    avio_wl32(pb, -1);
     return avio_tell(pb);
 }
 
@@ -51,10 +51,11 @@ void ff_end_tag(AVIOContext *pb, int64_t start)
 
 /* WAVEFORMATEX header */
 /* returns the size or -1 on error */
-int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
+int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc, int flags)
 {
     int bps, blkalign, bytespersec, frame_size;
-    int hdrsize = 18;
+    int hdrsize;
+    int64_t hdrstart = avio_tell(pb);
     int waveformatextensible;
     uint8_t temp[256];
     uint8_t *riff_extradata       = temp;
@@ -72,6 +73,7 @@ int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
 
     waveformatextensible = (enc->channels > 2 && enc->channel_layout) ||
                            enc->sample_rate > 48000 ||
+                           enc->codec_id == AV_CODEC_ID_EAC3 ||
                            av_get_bits_per_sample(enc->codec_id) > 16;
 
     if (waveformatextensible)
@@ -134,14 +136,12 @@ int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
     avio_wl16(pb, blkalign);    /* block align */
     avio_wl16(pb, bps);         /* bits per sample */
     if (enc->codec_id == AV_CODEC_ID_MP3) {
-        hdrsize += 12;
         bytestream_put_le16(&riff_extradata, 1);    /* wID */
         bytestream_put_le32(&riff_extradata, 2);    /* fdwFlags */
         bytestream_put_le16(&riff_extradata, 1152); /* nBlockSize */
         bytestream_put_le16(&riff_extradata, 1);    /* nFramesPerBlock */
         bytestream_put_le16(&riff_extradata, 1393); /* nCodecDelay */
     } else if (enc->codec_id == AV_CODEC_ID_MP2) {
-        hdrsize += 22;
         /* fwHeadLayer */
         bytestream_put_le16(&riff_extradata, 2);
         /* dwHeadBitrate */
@@ -159,38 +159,44 @@ int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
         /* dwPTSHigh */
         bytestream_put_le32(&riff_extradata, 0);
     } else if (enc->codec_id == AV_CODEC_ID_G723_1) {
-        hdrsize += 20;
         bytestream_put_le32(&riff_extradata, 0x9ace0002); /* extradata needed for msacm g723.1 codec */
         bytestream_put_le32(&riff_extradata, 0xaea2f732);
         bytestream_put_le16(&riff_extradata, 0xacde);
     } else if (enc->codec_id == AV_CODEC_ID_GSM_MS ||
                enc->codec_id == AV_CODEC_ID_ADPCM_IMA_WAV) {
-        hdrsize += 2;
         /* wSamplesPerBlock */
         bytestream_put_le16(&riff_extradata, frame_size);
     } else if (enc->extradata_size) {
         riff_extradata_start = enc->extradata;
         riff_extradata       = enc->extradata + enc->extradata_size;
-        hdrsize             += enc->extradata_size;
     }
     /* write WAVEFORMATEXTENSIBLE extensions */
     if (waveformatextensible) {
-        hdrsize += 22;
+        int write_channel_mask = enc->strict_std_compliance < FF_COMPLIANCE_NORMAL ||
+                                 enc->channel_layout < 0x40000;
         /* 22 is WAVEFORMATEXTENSIBLE size */
         avio_wl16(pb, riff_extradata - riff_extradata_start + 22);
         /* ValidBitsPerSample || SamplesPerBlock || Reserved */
         avio_wl16(pb, bps);
         /* dwChannelMask */
-        avio_wl32(pb, enc->channel_layout);
+        avio_wl32(pb, write_channel_mask ? enc->channel_layout : 0);
         /* GUID + next 3 */
+        if (enc->codec_id == AV_CODEC_ID_EAC3) {
+            ff_put_guid(pb, get_codec_guid(enc->codec_id, ff_codec_wav_guids));
+        } else {
         avio_wl32(pb, enc->codec_tag);
         avio_wl32(pb, 0x00100000);
         avio_wl32(pb, 0xAA000080);
         avio_wl32(pb, 0x719B3800);
-    } else {
+        }
+    } else if ((flags & FF_PUT_WAV_HEADER_FORCE_WAVEFORMATEX) ||
+               enc->codec_tag != 0x0001 /* PCM */ ||
+               riff_extradata - riff_extradata_start) {
+        /* WAVEFORMATEX */
         avio_wl16(pb, riff_extradata - riff_extradata_start); /* cbSize */
-    }
+    } /* else PCMWAVEFORMAT */
     avio_write(pb, riff_extradata_start, riff_extradata - riff_extradata_start);
+    hdrsize = avio_tell(pb) - hdrstart;
     if (hdrsize & 1) {
         hdrsize++;
         avio_w8(pb, 0);
@@ -201,10 +207,10 @@ int ff_put_wav_header(AVIOContext *pb, AVCodecContext *enc)
 
 /* BITMAPINFOHEADER header */
 void ff_put_bmp_header(AVIOContext *pb, AVCodecContext *enc,
-                       const AVCodecTag *tags, int for_asf)
+                       const AVCodecTag *tags, int for_asf, int ignore_extradata)
 {
     /* size */
-    avio_wl32(pb, 40 + enc->extradata_size);
+    avio_wl32(pb, 40 + (ignore_extradata ? 0 : enc->extradata_size));
     avio_wl32(pb, enc->width);
     //We always store RGB TopDown
     avio_wl32(pb, enc->codec_tag ? enc->height : -enc->height);
@@ -220,10 +226,12 @@ void ff_put_bmp_header(AVIOContext *pb, AVCodecContext *enc,
     avio_wl32(pb, 0);
     avio_wl32(pb, 0);
 
-    avio_write(pb, enc->extradata, enc->extradata_size);
+    if (!ignore_extradata) {
+        avio_write(pb, enc->extradata, enc->extradata_size);
 
-    if (!for_asf && enc->extradata_size & 1)
-        avio_w8(pb, 0);
+        if (!for_asf && enc->extradata_size & 1)
+            avio_w8(pb, 0);
+    }
 }
 
 void ff_parse_specific_params(AVCodecContext *stream, int *au_rate,
@@ -309,4 +317,20 @@ void ff_riff_write_info(AVFormatContext *s)
                              NULL, AV_DICT_MATCH_CASE)))
             ff_riff_write_info_tag(s->pb, t->key, t->value);
     ff_end_tag(pb, list_pos);
+}
+
+void ff_put_guid(AVIOContext *s, const ff_asf_guid *g)
+{
+    av_assert0(sizeof(*g) == 16);
+    avio_write(s, *g, sizeof(*g));
+}
+
+const ff_asf_guid *get_codec_guid(enum AVCodecID id, const AVCodecGuid *av_guid)
+{
+    int i;
+    for (i = 0; av_guid[i].id != AV_CODEC_ID_NONE; i++) {
+        if (id == av_guid[i].id)
+            return &(av_guid[i].guid);
+    }
+    return NULL;
 }

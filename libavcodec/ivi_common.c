@@ -26,8 +26,11 @@
  * Indeo5 decoders.
  */
 
+#include <inttypes.h>
+
 #define BITSTREAM_READER_LE
 #include "libavutil/attributes.h"
+#include "libavutil/timer.h"
 #include "avcodec.h"
 #include "get_bits.h"
 #include "internal.h"
@@ -297,7 +300,7 @@ av_cold int ff_ivi_init_planes(IVIPlaneDesc *planes, const IVIPicConfig *cfg)
     planes[1].num_bands = planes[2].num_bands = cfg->chroma_bands;
 
     for (p = 0; p < 3; p++) {
-        planes[p].bands = av_mallocz(planes[p].num_bands * sizeof(IVIBandDesc));
+        planes[p].bands = av_mallocz_array(planes[p].num_bands, sizeof(IVIBandDesc));
         if (!planes[p].bands)
             return AVERROR(ENOMEM);
 
@@ -363,7 +366,7 @@ static int ivi_init_tiles(IVIBandDesc *band, IVITile *ref_tile,
                                               band->mb_size);
 
             av_freep(&tile->mbs);
-            tile->mbs = av_malloc(tile->num_MBs * sizeof(IVIMbInfo));
+            tile->mbs = av_mallocz_array(tile->num_MBs, sizeof(IVIMbInfo));
             if (!tile->mbs)
                 return AVERROR(ENOMEM);
 
@@ -407,7 +410,7 @@ av_cold int ff_ivi_init_tiles(IVIPlaneDesc *planes,
             band->num_tiles = x_tiles * y_tiles;
 
             av_freep(&band->tiles);
-            band->tiles = av_mallocz(band->num_tiles * sizeof(IVITile));
+            band->tiles = av_mallocz_array(band->num_tiles, sizeof(IVITile));
             if (!band->tiles)
                 return AVERROR(ENOMEM);
 
@@ -512,7 +515,7 @@ static int ivi_decode_coded_blocks(GetBitContext *gb, IVIBandDesc *band,
             val = IVI_TOSIGNED((hi << 6) | lo);
         } else {
             if (sym >= 256U) {
-                av_log(avctx, AV_LOG_ERROR, "Invalid sym encountered: %d.\n", sym);
+                av_log(avctx, AV_LOG_ERROR, "Invalid sym encountered: %"PRIu32".\n", sym);
                 return AVERROR_INVALIDDATA;
             }
             run = rvmap->runtab[sym];
@@ -961,7 +964,7 @@ static int decode_band(IVI45DecContext *ctx,
         if (chksum != band->checksum) {
             av_log(avctx, AV_LOG_ERROR,
                    "Band checksum mismatch! Plane %d, band %d, "
-                   "received: %x, calculated: %x\n",
+                   "received: %"PRIx32", calculated: %"PRIx16"\n",
                    band->plane, band->band_num, band->checksum, chksum);
         }
     }

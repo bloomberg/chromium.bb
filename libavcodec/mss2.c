@@ -54,7 +54,7 @@ static void arith2_normalise(ArithCoder *c)
     }
 }
 
-ARITH_GET_BIT(2)
+ARITH_GET_BIT(arith2)
 
 /* L. Stuiver and A. Moffat: "Piecewise Integer Mapping for Arithmetic Coding."
  * In Proc. 8th Data Compression Conference (DCC '98), pp. 3-12, Mar. 1998 */
@@ -127,7 +127,7 @@ static int arith2_get_prob(ArithCoder *c, int16_t *probs)
     return i;
 }
 
-ARITH_GET_MODEL_SYM(2)
+ARITH_GET_MODEL_SYM(arith2)
 
 static int arith2_get_consumed_bytes(ArithCoder *c)
 {
@@ -417,12 +417,12 @@ static int decode_wmv9(AVCodecContext *avctx, const uint8_t *buf, int buf_size,
 
     ff_MPV_frame_end(s);
 
-    f = &s->current_picture.f;
+    f = s->current_picture.f;
 
     if (v->respic == 3) {
         ctx->dsp.upsample_plane(f->data[0], f->linesize[0], w,      h);
-        ctx->dsp.upsample_plane(f->data[1], f->linesize[1], w >> 1, h >> 1);
-        ctx->dsp.upsample_plane(f->data[2], f->linesize[2], w >> 1, h >> 1);
+        ctx->dsp.upsample_plane(f->data[1], f->linesize[1], w+1 >> 1, h+1 >> 1);
+        ctx->dsp.upsample_plane(f->data[2], f->linesize[2], w+1 >> 1, h+1 >> 1);
     } else if (v->respic)
         avpriv_request_sample(v->s.avctx,
                               "Asymmetric WMV9 rectangle subsampling");
@@ -739,8 +739,6 @@ static av_cold int wmv9_init(AVCodecContext *avctx)
     int ret;
 
     v->s.avctx    = avctx;
-    avctx->flags |= CODEC_FLAG_EMU_EDGE;
-    v->s.flags   |= CODEC_FLAG_EMU_EDGE;
 
     if ((ret = ff_vc1_init_common(v)) < 0)
         return ret;

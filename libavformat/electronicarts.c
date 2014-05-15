@@ -25,6 +25,8 @@
  * by Robin Kay (komadori at gekkou.co.uk)
  */
 
+#include <inttypes.h>
+
 #include "libavutil/intreadwrite.h"
 #include "avformat.h"
 #include "internal.h"
@@ -152,7 +154,7 @@ static int process_audio_header_elements(AVFormatContext *s)
                     break;
                 case 0x8A:
                     av_log(s, AV_LOG_DEBUG,
-                           "element 0x%02x set to 0x%08x\n",
+                           "element 0x%02x set to 0x%08"PRIx32"\n",
                            subbyte, read_arbitrary(pb));
                     av_log(s, AV_LOG_DEBUG, "exited audio subheader\n");
                     in_subheader = 0;
@@ -171,7 +173,7 @@ static int process_audio_header_elements(AVFormatContext *s)
                     break;
                 default:
                     av_log(s, AV_LOG_DEBUG,
-                           "element 0x%02x set to 0x%08x\n",
+                           "element 0x%02x set to 0x%08"PRIx32"\n",
                            subbyte, read_arbitrary(pb));
                     break;
                 }
@@ -183,7 +185,7 @@ static int process_audio_header_elements(AVFormatContext *s)
             break;
         default:
             av_log(s, AV_LOG_DEBUG,
-                   "header element 0x%02x set to 0x%08x\n",
+                   "header element 0x%02x set to 0x%08"PRIx32"\n",
                    byte, read_arbitrary(pb));
             break;
         }
@@ -351,13 +353,13 @@ static int process_ea_header(AVFormatContext *s)
     int i;
 
     for (i = 0; i < 5 && (!ea->audio_codec || !ea->video_codec); i++) {
-        unsigned int startpos = avio_tell(pb);
+        uint64_t startpos     = avio_tell(pb);
         int err               = 0;
 
         blockid = avio_rl32(pb);
         size    = avio_rl32(pb);
         if (i == 0)
-            ea->big_endian = size > 0x000FFFFF;
+            ea->big_endian = size > av_bswap32(size);
         if (ea->big_endian)
             size = av_bswap32(size);
 

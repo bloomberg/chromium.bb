@@ -125,6 +125,31 @@ int ff_frame_thread_encoder_init(AVCodecContext *avctx, AVDictionary *options){
        || !(avctx->codec->capabilities & CODEC_CAP_INTRA_ONLY))
         return 0;
 
+    if(   !avctx->thread_count
+       && avctx->codec_id == AV_CODEC_ID_MJPEG
+       && !(avctx->flags & CODEC_FLAG_QSCALE)) {
+        av_log(avctx, AV_LOG_DEBUG,
+               "Forcing thread count to 1 for MJPEG encoding, use -thread_type slice "
+               "or a constant quantizer if you want to use multiple cpu cores\n");
+        avctx->thread_count = 1;
+    }
+    if(   avctx->thread_count > 1
+       && avctx->codec_id == AV_CODEC_ID_MJPEG
+       && !(avctx->flags & CODEC_FLAG_QSCALE))
+        av_log(avctx, AV_LOG_WARNING,
+               "MJPEG CBR encoding works badly with frame multi-threading, consider "
+               "using -threads 1, -thread_type slice or a constant quantizer.\n");
+
+    if (avctx->codec_id == AV_CODEC_ID_HUFFYUV ||
+        avctx->codec_id == AV_CODEC_ID_FFVHUFF) {
+        // huffyuv does not support these with multiple frame threads currently
+        if (avctx->context_model > 0 || (avctx->flags & CODEC_FLAG_PASS1)) {
+            av_log(avctx, AV_LOG_WARNING,
+               "Forcing thread count to 1 for huffyuv encoding with first pass or context 1\n");
+            avctx->thread_count = 1;
+        }
+    }
+
     if(!avctx->thread_count) {
         avctx->thread_count = av_cpu_count();
         avctx->thread_count = FFMIN(avctx->thread_count, MAX_THREADS);
@@ -209,7 +234,7 @@ void ff_frame_thread_encoder_free(AVCodecContext *avctx){
     pthread_mutex_destroy(&c->buffer_mutex);
     pthread_cond_destroy(&c->task_fifo_cond);
     pthread_cond_destroy(&c->finished_task_cond);
-    av_fifo_free(c->task_fifo); c->task_fifo = NULL;
+    av_fifo_freep(&c->task_fifo);
     av_freep(&avctx->internal->frame_thread_encoder);
 }
 

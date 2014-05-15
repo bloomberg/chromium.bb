@@ -28,7 +28,7 @@
 
 /** size of probe buffer, for guessing file type from file contents */
 #define PROBE_BUF_MIN 2048
-#define PROBE_BUF_MAX (1<<20)
+#define PROBE_BUF_MAX (1 << 20)
 
 #ifdef DEBUG
 #    define hex_dump_debug(class, buf, size) av_hex_dump_log(class, AV_LOG_DEBUG, buf, size)
@@ -45,6 +45,16 @@ typedef struct CodecMime{
     char str[32];
     enum AVCodecID id;
 } CodecMime;
+
+struct AVFormatInternal {
+    /**
+     * Number of streams relevant for interleaving.
+     * Muxing only.
+     */
+    int nb_interleaved_streams;
+
+    int inject_global_side_data;
+};
 
 #ifdef __GNUC__
 #define dynarray_add(tab, nb_ptr, elem)\
@@ -350,11 +360,11 @@ enum AVCodecID ff_get_pcm_codec_id(int bps, int flt, int be, int sflags);
 /**
  * Chooses a timebase for muxing the specified stream.
  *
- * The choosen timebase allows sample accurate timestamps based
+ * The chosen timebase allows sample accurate timestamps based
  * on the framerate or sample rate for audio streams. It also is
- * at least as precisse as 1/min_precission would be.
+ * at least as precise as 1/min_precision would be.
  */
-AVRational ff_choose_timebase(AVFormatContext *s, AVStream *st, int min_precission);
+AVRational ff_choose_timebase(AVFormatContext *s, AVStream *st, int min_precision);
 
 /**
  * Generate standard extradata for AVC-Intra based on width/height and field
@@ -372,6 +382,15 @@ int ff_generate_avci_extradata(AVStream *st);
 int ff_alloc_extradata(AVCodecContext *avctx, int size);
 
 /**
+ * Allocate extradata with additional FF_INPUT_BUFFER_PADDING_SIZE at end
+ * which is always set to 0 and fill it from pb.
+ *
+ * @param size size of extradata
+ * @return >= 0 if OK, AVERROR_xxx on error
+ */
+int ff_get_extradata(AVCodecContext *avctx, AVIOContext *pb, int size);
+
+/**
  * add frame for rfps calculation.
  *
  * @param dts timestamp of the i-th frame
@@ -380,5 +399,19 @@ int ff_alloc_extradata(AVCodecContext *avctx, int size);
 int ff_rfps_add_frame(AVFormatContext *ic, AVStream *st, int64_t dts);
 
 void ff_rfps_calculate(AVFormatContext *ic);
+
+/**
+ * Flags for AVFormatContext.write_uncoded_frame()
+ */
+enum AVWriteUncodedFrameFlags {
+
+    /**
+     * Query whether the feature is possible on this stream.
+     * The frame argument is ignored.
+     */
+    AV_WRITE_UNCODED_FRAME_QUERY           = 0x0001,
+
+};
+
 
 #endif /* AVFORMAT_INTERNAL_H */

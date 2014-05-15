@@ -31,7 +31,7 @@ ffprobe:
   ffprobe.c                             Stefano Sabatini
 
 ffserver:
-  ffserver.c, ffserver.h                Baptiste Coudurier
+  ffserver.c                            Reynaldo H. Verdejo Pinochet
 
 Commandline utility code:
   cmdutils.c, cmdutils.h                Michael Niedermayer
@@ -73,6 +73,7 @@ Other:
   bprint                                Nicolas George
   bswap.h
   des                                   Reimar Doeffinger
+  dynarray.h                            Nicolas George
   eval.c, eval.h                        Michael Niedermayer
   float_dsp                             Loren Merritt
   hash                                  Reimar Doeffinger
@@ -142,6 +143,7 @@ Codecs:
   ass*                                  Aurelien Jacobs
   asv*                                  Michael Niedermayer
   atrac3*                               Benjamin Larsson
+  atrac3plus*                           Maxim Poliakovski
   bgmc.c, bgmc.h                        Thilo Borgmann
   bink.c                                Kostya Shishkov
   binkaudio.c                           Peter Ross
@@ -150,6 +152,7 @@ Codecs:
   cdxl.c                                Paul B Mahol
   celp_filters.*                        Vitor Sessak
   cinepak.c                             Roberto Togni
+  cinepakenc.c                          Rl / Aetey G.T. AB
   cljr                                  Alex Beregszaszi
   cllc.c                                Derek Buitenhuis
   cook.c, cookdata.h                    Benjamin Larsson
@@ -163,8 +166,9 @@ Codecs:
   dxa.c                                 Kostya Shishkov
   eacmv*, eaidct*, eat*                 Peter Ross
   exif.c, exif.h                        Thilo Borgmann
-  ffv1.c                                Michael Niedermayer
+  ffv1*                                 Michael Niedermayer
   ffwavesynth.c                         Nicolas George
+  fic.c                                 Derek Buitenhuis
   flac*                                 Justin Ruggles
   flashsv*                              Benjamin Larsson
   flicvideo.c                           Mike Melanson
@@ -199,6 +203,7 @@ Codecs:
   libvorbis.c                           David Conrad
   libvpx*                               James Zern
   libx264.c                             Mans Rullgard, Jason Garrett-Glaser
+  libx265.c                             Derek Buitenhuis
   libxavs.c                             Stefan Gehrer
   libzvbi-teletextdec.c                 Marton Balint
   loco.c                                Kostya Shishkov
@@ -238,7 +243,7 @@ Codecs:
   smacker.c                             Kostya Shishkov
   smc.c                                 Mike Melanson
   smvjpegdec.c                          Ash Hughes
-  snow.c                                Michael Niedermayer, Loren Merritt
+  snow*                                 Michael Niedermayer, Loren Merritt
   sonic.c                               Alex Beregszaszi
   srt*                                  Aurelien Jacobs
   sunrast.c                             Ivo van Poorten
@@ -299,15 +304,20 @@ libavdevice
     libavdevice/avdevice.h
 
 
-  dshow.c                               Roger Pack
+  avfoundation.m                        Thilo Borgmann
+  dshow.c                               Roger Pack (CC rogerdpack@gmail.com)
   fbdev_enc.c                           Lukasz Marek
+  gdigrab.c                             Roger Pack (CC rogerdpack@gmail.com)
   iec61883.c                            Georg Lippitsch
   lavfi                                 Stefano Sabatini
   libdc1394.c                           Roman Shaposhnik
+  opengl_enc.c                          Lukasz Marek
   pulse_audio_enc.c                     Lukasz Marek
+  qtkit.m                               Thilo Borgmann
   sdl                                   Stefano Sabatini
   v4l2.c                                Luca Abeni
   vfwcap.c                              Ramiro Polla
+  xv.c                                  Lukasz Marek
 
 libavfilter
 ===========
@@ -332,6 +342,7 @@ Filters:
   avf_avectorscope.c                    Paul B Mahol
   vf_blend.c                            Paul B Mahol
   vf_colorbalance.c                     Paul B Mahol
+  vf_dejudder.c                         Nicholas Robbins
   vf_delogo.c                           Jean Delvare (CC <khali@linux-fr.org>)
   vf_drawbox.c/drawgrid                 Andrey Utkin
   vf_extractplanes.c                    Paul B Mahol
@@ -388,6 +399,7 @@ Muxers/Demuxers:
   flvdec.c, flvenc.c                    Michael Niedermayer
   gxf.c                                 Reimar Doeffinger
   gxfenc.c                              Baptiste Coudurier
+  hls.c                                 Anssi Hannula
   idcin.c                               Mike Melanson
   idroqdec.c                            Mike Melanson
   iff.c                                 Jaikrishnan Menon
@@ -414,14 +426,15 @@ Muxers/Demuxers:
   mpc.c                                 Kostya Shishkov
   mpeg.c                                Michael Niedermayer
   mpegenc.c                             Michael Niedermayer
-  mpegts*                               Baptiste Coudurier
+  mpegts.c                              Marton Balint
+  mpegtsenc.c                           Baptiste Coudurier
   msnwc_tcp.c                           Ramiro Polla
   mtv.c                                 Reynaldo H. Verdejo Pinochet
   mxf*                                  Baptiste Coudurier
   mxfdec.c                              Tomas Härdin
   nistspheredec.c                       Paul B Mahol
   nsvdec.c                              Francois Revol
-  nut.c                                 Michael Niedermayer
+  nut*                                  Michael Niedermayer
   nuv.c                                 Reimar Doeffinger
   oggdec.c, oggdec.h                    David Conrad
   oggenc.c                              Baptiste Coudurier
@@ -447,6 +460,7 @@ Muxers/Demuxers:
   siff.c                                Kostya Shishkov
   smacker.c                             Kostya Shishkov
   smjpeg*                               Paul B Mahol
+  spdif*                                Anssi Hannula
   srtdec.c                              Aurelien Jacobs
   swf.c                                 Baptiste Coudurier
   takdec.c                              Paul B Mahol
@@ -496,6 +510,8 @@ Amiga / PowerPC                         Colin Ward
 Linux / PowerPC                         Luca Barbato
 Windows MinGW                           Alex Beregszaszi, Ramiro Polla
 Windows Cygwin                          Victor Paesa
+Windows MSVC                            Matthew Oliver
+Windows ICL                             Matthew Oliver
 ADI/Blackfin DSP                        Marc Hoffman
 Sparc                                   Roman Shaposhnik
 x86                                     Michael Niedermayer
@@ -504,8 +520,8 @@ x86                                     Michael Niedermayer
 Releases
 ========
 
+2.2                                     Michael Niedermayer
 2.1                                     Michael Niedermayer
-2.0                                     Michael Niedermayer
 1.2                                     Michael Niedermayer
 
 If you want to maintain an older release, please contact us

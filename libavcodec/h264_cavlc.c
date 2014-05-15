@@ -29,11 +29,11 @@
 
 #include "internal.h"
 #include "avcodec.h"
-#include "mpegvideo.h"
 #include "h264.h"
 #include "h264data.h" // FIXME FIXME FIXME
 #include "h264_mvpred.h"
 #include "golomb.h"
+#include "mpegutils.h"
 #include "libavutil/avassert.h"
 
 
@@ -615,6 +615,8 @@ static int decode_residual(H264Context *h, GetBitContext *gb, int16_t *block, in
         } \
     }
 
+    // TODO(dalecurtis): FFmpeg doesn't want this patch, but zeros_left must be
+    // checked both before and after the STORE_BLOCK() calls below.
     if(zeros_left<0){
         av_log(h->avctx, AV_LOG_ERROR, "negative number of zero coeffs at %d %d\n", h->mb_x, h->mb_y);
         return -1;
@@ -624,6 +626,11 @@ static int decode_residual(H264Context *h, GetBitContext *gb, int16_t *block, in
         STORE_BLOCK(int32_t)
     } else {
         STORE_BLOCK(int16_t)
+    }
+
+    if(zeros_left<0){
+        av_log(h->avctx, AV_LOG_ERROR, "negative number of zero coeffs at %d %d\n", h->mb_x, h->mb_y);
+        return -1;
     }
 
     return 0;

@@ -150,6 +150,8 @@ static const uint8_t rtmp_server_key[] = {
     0xE6, 0x36, 0xCF, 0xEB, 0x31, 0xAE
 };
 
+static int handle_chunk_size(URLContext *s, RTMPPacket *pkt);
+
 static int add_tracked_method(RTMPContext *rt, const char *name, int id)
 {
     int err;
@@ -408,6 +410,17 @@ static int read_connect(URLContext *s, RTMPContext *rt)
     if ((ret = ff_rtmp_packet_read(rt->stream, &pkt, rt->in_chunk_size,
                                    &rt->prev_pkt[0], &rt->nb_prev_pkt[0])) < 0)
         return ret;
+
+    if (pkt.type == RTMP_PT_CHUNK_SIZE) {
+        if ((ret = handle_chunk_size(s, &pkt)) < 0)
+            return ret;
+
+        ff_rtmp_packet_destroy(&pkt);
+        if ((ret = ff_rtmp_packet_read(rt->stream, &pkt, rt->in_chunk_size,
+                                       &rt->prev_pkt[0], &rt->nb_prev_pkt[0])) < 0)
+            return ret;
+    }
+
     cp = pkt.data;
     bytestream2_init(&gbc, cp, pkt.size);
     if (ff_amf_read_string(&gbc, command, sizeof(command), &stringlen)) {
@@ -2367,7 +2380,7 @@ static int rtmp_open(URLContext *s, const char *uri, int flags)
 {
     RTMPContext *rt = s->priv_data;
     char proto[8], hostname[256], path[1024], auth[100], *fname;
-    char *old_app;
+    char *old_app, *qmark, fname_buffer[1024];
     uint8_t buf[2048];
     int port;
     AVDictionary *opts = NULL;
@@ -2465,7 +2478,20 @@ reconnect:
     }
 
     //extract "app" part from path
-    if (!strncmp(path, "/ondemand/", 10)) {
+    qmark = strchr(path, '?');
+    if (qmark && strstr(qmark, "slist=")) {
+        char* amp;
+        // After slist we have the playpath, before the params, the app
+        av_strlcpy(rt->app, path + 1, FFMIN(qmark - path, APP_MAX_LENGTH));
+        fname = strstr(path, "slist=") + 6;
+        // Strip any further query parameters from fname
+        amp = strchr(fname, '&');
+        if (amp) {
+            av_strlcpy(fname_buffer, fname, FFMIN(amp - fname + 1,
+                                                  sizeof(fname_buffer)));
+            fname = fname_buffer;
+        }
+    } else if (!strncmp(path, "/ondemand/", 10)) {
         fname = path + 10;
         memcpy(rt->app, "ondemand", 9);
     } else {
@@ -2511,9 +2537,9 @@ reconnect:
             (!strcmp(fname + len - 4, ".f4v") ||
              !strcmp(fname + len - 4, ".mp4"))) {
             memcpy(rt->playpath, "mp4:", 5);
-        } else if (len >= 4 && !strcmp(fname + len - 4, ".flv")) {
-            fname[len - 4] = '\0';
         } else {
+            if (len >= 4 && !strcmp(fname + len - 4, ".flv"))
+                fname[len - 4] = '\0';
             rt->playpath[0] = 0;
         }
         av_strlcat(rt->playpath, fname, PLAYPATH_MAX_LENGTH);
@@ -2556,7 +2582,7 @@ reconnect:
         if ((ret = gen_connect(s, rt)) < 0)
             goto fail;
     } else {
-        if (read_connect(s, s->priv_data) < 0)
+        if ((ret = read_connect(s, s->priv_data)) < 0)
             goto fail;
     }
 

@@ -195,6 +195,15 @@ static int set_string(void *obj, const AVOption *o, const char *val, uint8_t **d
 static int set_string_number(void *obj, void *target_obj, const AVOption *o, const char *val, void *dst)
 {
     int ret = 0, notfirst = 0;
+    int num, den;
+    char c;
+
+    if (sscanf(val, "%d%*1[:/]%d%c", &num, &den, &c) == 2) {
+        if ((ret = write_number(obj, o, dst, 1, den, num)) >= 0)
+            return ret;
+        ret = 0;
+    }
+
     for (;;) {
         int i, den = 1;
         char buf[256];
@@ -295,6 +304,58 @@ static int set_string_color(void *obj, const AVOption *o, const char *val, uint8
     return 0;
 }
 
+static int set_string_fmt(void *obj, const AVOption *o, const char *val, uint8_t *dst,
+                          int fmt_nb, int ((*get_fmt)(const char *)), const char *desc)
+{
+    int fmt, min, max;
+
+    if (!val || !strcmp(val, "none")) {
+        fmt = -1;
+    } else {
+        fmt = get_fmt(val);
+        if (fmt == -1) {
+            char *tail;
+            fmt = strtol(val, &tail, 0);
+            if (*tail || (unsigned)fmt >= fmt_nb) {
+                av_log(obj, AV_LOG_ERROR,
+                       "Unable to parse option value \"%s\" as %s\n", val, desc);
+                return AVERROR(EINVAL);
+            }
+        }
+    }
+
+    min = FFMAX(o->min, -1);
+    max = FFMIN(o->max, fmt_nb-1);
+
+    // hack for compatibility with old ffmpeg
+    if(min == 0 && max == 0) {
+        min = -1;
+        max = fmt_nb-1;
+    }
+
+    if (fmt < min || fmt > max) {
+        av_log(obj, AV_LOG_ERROR,
+               "Value %d for parameter '%s' out of %s format range [%d - %d]\n",
+               fmt, o->name, desc, min, max);
+        return AVERROR(ERANGE);
+    }
+
+    *(int *)dst = fmt;
+    return 0;
+}
+
+static int set_string_pixel_fmt(void *obj, const AVOption *o, const char *val, uint8_t *dst)
+{
+    return set_string_fmt(obj, o, val, dst,
+                          AV_PIX_FMT_NB, av_get_pix_fmt, "pixel format");
+}
+
+static int set_string_sample_fmt(void *obj, const AVOption *o, const char *val, uint8_t *dst)
+{
+    return set_string_fmt(obj, o, val, dst,
+                          AV_SAMPLE_FMT_NB, av_get_sample_fmt, "sample format");
+}
+
 #if FF_API_OLD_AVOPTIONS
 int av_set_string3(void *obj, const char *name, const char *val, int alloc, const AVOption **o_out)
 {
@@ -319,6 +380,9 @@ int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
                  o->type != AV_OPT_TYPE_CHANNEL_LAYOUT))
         return AVERROR(EINVAL);
 
+    if (o->flags & AV_OPT_FLAG_READONLY)
+        return AVERROR(EINVAL);
+
     dst = ((uint8_t*)target_obj) + o->offset;
     switch (o->type) {
     case AV_OPT_TYPE_STRING:   return set_string(obj, o, val, dst);
@@ -331,38 +395,8 @@ int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
     case AV_OPT_TYPE_RATIONAL: return set_string_number(obj, target_obj, o, val, dst);
     case AV_OPT_TYPE_IMAGE_SIZE: return set_string_image_size(obj, o, val, dst);
     case AV_OPT_TYPE_VIDEO_RATE: return set_string_video_rate(obj, o, val, dst);
-    case AV_OPT_TYPE_PIXEL_FMT:
-        if (!val || !strcmp(val, "none")) {
-            ret = AV_PIX_FMT_NONE;
-        } else {
-            ret = av_get_pix_fmt(val);
-            if (ret == AV_PIX_FMT_NONE) {
-                char *tail;
-                ret = strtol(val, &tail, 0);
-                if (*tail || (unsigned)ret >= AV_PIX_FMT_NB) {
-                    av_log(obj, AV_LOG_ERROR, "Unable to parse option value \"%s\" as pixel format\n", val);
-                    return AVERROR(EINVAL);
-                }
-            }
-        }
-        *(enum AVPixelFormat *)dst = ret;
-        return 0;
-    case AV_OPT_TYPE_SAMPLE_FMT:
-        if (!val || !strcmp(val, "none")) {
-            ret = AV_SAMPLE_FMT_NONE;
-        } else {
-            ret = av_get_sample_fmt(val);
-            if (ret == AV_SAMPLE_FMT_NONE) {
-                char *tail;
-                ret = strtol(val, &tail, 0);
-                if (*tail || (unsigned)ret >= AV_SAMPLE_FMT_NB) {
-                    av_log(obj, AV_LOG_ERROR, "Unable to parse option value \"%s\" as sample format\n", val);
-                    return AVERROR(EINVAL);
-                }
-            }
-        }
-        *(enum AVSampleFormat *)dst = ret;
-        return 0;
+    case AV_OPT_TYPE_PIXEL_FMT:  return set_string_pixel_fmt(obj, o, val, dst);
+    case AV_OPT_TYPE_SAMPLE_FMT: return set_string_sample_fmt(obj, o, val, dst);
     case AV_OPT_TYPE_DURATION:
         if (!val) {
             *(int64_t *)dst = 0;
@@ -400,7 +434,7 @@ int av_opt_set(void *obj, const char *name, const char *val, int search_flags)
 #define OPT_EVAL_NUMBER(name, opttype, vartype)\
     int av_opt_eval_ ## name(void *obj, const AVOption *o, const char *val, vartype *name ## _out)\
     {\
-        if (!o || o->type != opttype)\
+        if (!o || o->type != opttype || o->flags & AV_OPT_FLAG_READONLY)\
             return AVERROR(EINVAL);\
         return set_string_number(obj, obj, o, val, name ## _out);\
     }
@@ -420,6 +454,9 @@ static int set_number(void *obj, const char *name, double num, int den, int64_t 
 
     if (!o || !target_obj)
         return AVERROR_OPTION_NOT_FOUND;
+
+    if (o->flags & AV_OPT_FLAG_READONLY)
+        return AVERROR(EINVAL);
 
     dst = ((uint8_t*)target_obj) + o->offset;
     return write_number(obj, o, dst, num, den, intnum);
@@ -477,7 +514,7 @@ int av_opt_set_bin(void *obj, const char *name, const uint8_t *val, int len, int
     if (!o || !target_obj)
         return AVERROR_OPTION_NOT_FOUND;
 
-    if (o->type != AV_OPT_TYPE_BINARY)
+    if (o->type != AV_OPT_TYPE_BINARY || o->flags & AV_OPT_FLAG_READONLY)
         return AVERROR(EINVAL);
 
     ptr = len ? av_malloc(len) : NULL;
@@ -552,15 +589,15 @@ static int set_format(void *obj, const char *name, int fmt, int search_flags,
         return AVERROR(EINVAL);
     }
 
-#if LIBAVUTIL_VERSION_MAJOR < 53
+#if LIBAVUTIL_VERSION_MAJOR < 54
     if (class->version && class->version < AV_VERSION_INT(52, 11, 100)) {
         min = -1;
         max = nb_fmts-1;
     } else
 #endif
     {
-        min = FFMIN(o->min, -1);
-        max = FFMAX(o->max, nb_fmts-1);
+        min = FFMAX(o->min, -1);
+        max = FFMIN(o->max, nb_fmts-1);
     }
     if (fmt < min || fmt > max) {
         av_log(obj, AV_LOG_ERROR,
@@ -905,6 +942,8 @@ static void log_value(void *av_log_obj, int level, double d)
         av_log(av_log_obj, level, "INT_MAX");
     } else if (d == INT_MIN) {
         av_log(av_log_obj, level, "INT_MIN");
+    } else if (d == UINT32_MAX) {
+        av_log(av_log_obj, level, "UINT32_MAX");
     } else if (d == (double)INT64_MAX) {
         av_log(av_log_obj, level, "I64_MAX");
     } else if (d == INT64_MIN) {
@@ -913,6 +952,18 @@ static void log_value(void *av_log_obj, int level, double d)
         av_log(av_log_obj, level, "FLT_MAX");
     } else if (d == FLT_MIN) {
         av_log(av_log_obj, level, "FLT_MIN");
+    } else if (d == -FLT_MAX) {
+        av_log(av_log_obj, level, "-FLT_MAX");
+    } else if (d == -FLT_MIN) {
+        av_log(av_log_obj, level, "-FLT_MIN");
+    } else if (d == DBL_MAX) {
+        av_log(av_log_obj, level, "DBL_MAX");
+    } else if (d == DBL_MIN) {
+        av_log(av_log_obj, level, "DBL_MIN");
+    } else if (d == -DBL_MAX) {
+        av_log(av_log_obj, level, "-DBL_MAX");
+    } else if (d == -DBL_MIN) {
+        av_log(av_log_obj, level, "-DBL_MIN");
     } else {
         av_log(av_log_obj, level, "%g", d);
     }
@@ -1003,6 +1054,8 @@ static void opt_list(void *obj, void *av_log_obj, const char *unit,
         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_VIDEO_PARAM   ) ? 'V' : '.');
         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_AUDIO_PARAM   ) ? 'A' : '.');
         av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_SUBTITLE_PARAM) ? 'S' : '.');
+        av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_EXPORT)         ? 'X' : '.');
+        av_log(av_log_obj, AV_LOG_INFO, "%c", (opt->flags & AV_OPT_FLAG_READONLY)       ? 'R' : '.');
 
         if (opt->help)
             av_log(av_log_obj, AV_LOG_INFO, " %s", opt->help);
@@ -1106,6 +1159,10 @@ void av_opt_set_defaults2(void *s, int mask, int flags)
         if ((opt->flags & mask) != flags)
             continue;
 #endif
+
+        if (opt->flags & AV_OPT_FLAG_READONLY)
+            continue;
+
         switch (opt->type) {
             case AV_OPT_TYPE_CONST:
                 /* Nothing to be done here */
@@ -1143,7 +1200,7 @@ void av_opt_set_defaults2(void *s, int mask, int flags)
                 set_string_video_rate(s, opt, opt->default_val.str, dst);
                 break;
             case AV_OPT_TYPE_PIXEL_FMT:
-#if LIBAVUTIL_VERSION_MAJOR < 53
+#if LIBAVUTIL_VERSION_MAJOR < 54
                 if (class->version && class->version < AV_VERSION_INT(52, 10, 100))
                     av_opt_set(s, opt->name, opt->default_val.str, 0);
                 else
@@ -1151,7 +1208,7 @@ void av_opt_set_defaults2(void *s, int mask, int flags)
                     write_number(s, opt, dst, 1, 1, opt->default_val.i64);
                 break;
             case AV_OPT_TYPE_SAMPLE_FMT:
-#if LIBAVUTIL_VERSION_MAJOR < 53
+#if LIBAVUTIL_VERSION_MAJOR < 54
                 if (class->version && class->version < AV_VERSION_INT(52, 10, 100))
                     av_opt_set(s, opt->name, opt->default_val.str, 0);
                 else
@@ -1358,14 +1415,17 @@ void av_opt_free(void *obj)
             av_freep((uint8_t *)obj + o->offset);
 }
 
-int av_opt_set_dict(void *obj, AVDictionary **options)
+int av_opt_set_dict2(void *obj, AVDictionary **options, int search_flags)
 {
     AVDictionaryEntry *t = NULL;
     AVDictionary    *tmp = NULL;
     int ret = 0;
 
+    if (!options)
+        return 0;
+
     while ((t = av_dict_get(*options, "", t, AV_DICT_IGNORE_SUFFIX))) {
-        ret = av_opt_set(obj, t->key, t->value, 0);
+        ret = av_opt_set(obj, t->key, t->value, search_flags);
         if (ret == AVERROR_OPTION_NOT_FOUND)
             av_dict_set(&tmp, t->key, t->value, 0);
         else if (ret < 0) {
@@ -1377,6 +1437,11 @@ int av_opt_set_dict(void *obj, AVDictionary **options)
     av_dict_free(options);
     *options = tmp;
     return ret;
+}
+
+int av_opt_set_dict(void *obj, AVDictionary **options)
+{
+    return av_opt_set_dict2(obj, options, 0);
 }
 
 const AVOption *av_opt_find(void *obj, const char *name, const char *unit,
@@ -1454,6 +1519,7 @@ void *av_opt_ptr(const AVClass *class, void *obj, const char *name)
 
 int av_opt_query_ranges(AVOptionRanges **ranges_arg, void *obj, const char *key, int flags)
 {
+    int ret;
     const AVClass *c = *(AVClass**)obj;
     int (*callback)(AVOptionRanges **, void *obj, const char *key, int flags) = NULL;
 
@@ -1463,7 +1529,13 @@ int av_opt_query_ranges(AVOptionRanges **ranges_arg, void *obj, const char *key,
     if (!callback)
         callback = av_opt_query_ranges_default;
 
-    return callback(ranges_arg, obj, key, flags);
+    ret = callback(ranges_arg, obj, key, flags);
+    if (ret >= 0) {
+        if (!(flags & AV_OPT_MULTI_COMPONENT_RANGE))
+            ret = 1;
+        (*ranges_arg)->nb_components = ret;
+    }
+    return ret;
 }
 
 int av_opt_query_ranges_default(AVOptionRanges **ranges_arg, void *obj, const char *key, int flags)
@@ -1484,6 +1556,7 @@ int av_opt_query_ranges_default(AVOptionRanges **ranges_arg, void *obj, const ch
     ranges->range = range_array;
     ranges->range[0] = range;
     ranges->nb_ranges = 1;
+    ranges->nb_components = 1;
     range->is_range = 1;
     range->value_min = field->min;
     range->value_max = field->max;
@@ -1527,7 +1600,7 @@ int av_opt_query_ranges_default(AVOptionRanges **ranges_arg, void *obj, const ch
     }
 
     *ranges_arg = ranges;
-    return 0;
+    return 1;
 fail:
     av_free(ranges);
     av_free(range);
@@ -1540,10 +1613,15 @@ void av_opt_freep_ranges(AVOptionRanges **rangesp)
     int i;
     AVOptionRanges *ranges = *rangesp;
 
-    for (i = 0; i < ranges->nb_ranges; i++) {
+    if (!ranges)
+        return;
+
+    for (i = 0; i < ranges->nb_ranges * ranges->nb_components; i++) {
         AVOptionRange *range = ranges->range[i];
-        av_freep(&range->str);
-        av_freep(&ranges->range[i]);
+        if (range) {
+            av_freep(&range->str);
+            av_freep(&ranges->range[i]);
+        }
     }
     av_freep(&ranges->range);
     av_freep(rangesp);
@@ -1584,8 +1662,8 @@ static const AVOption test_options[]= {
 {"lame",     "set lame flag ", 0,                AV_OPT_TYPE_CONST,    {.i64 = TEST_FLAG_LAME}, INT_MIN,  INT_MAX, 0, "flags" },
 {"mu",       "set mu flag ",   0,                AV_OPT_TYPE_CONST,    {.i64 = TEST_FLAG_MU},   INT_MIN,  INT_MAX, 0, "flags" },
 {"size",     "set size",       OFFSET(w),        AV_OPT_TYPE_IMAGE_SIZE,{0},             0,        0                   },
-{"pix_fmt",  "set pixfmt",     OFFSET(pix_fmt),  AV_OPT_TYPE_PIXEL_FMT, {.i64 = AV_PIX_FMT_NONE}, -1, AV_PIX_FMT_NB-1},
-{"sample_fmt", "set samplefmt", OFFSET(sample_fmt), AV_OPT_TYPE_SAMPLE_FMT, {.i64 = AV_SAMPLE_FMT_NONE}, -1, AV_SAMPLE_FMT_NB-1},
+{"pix_fmt",  "set pixfmt",     OFFSET(pix_fmt),  AV_OPT_TYPE_PIXEL_FMT, {.i64 = AV_PIX_FMT_NONE}, -1, INT_MAX},
+{"sample_fmt", "set samplefmt", OFFSET(sample_fmt), AV_OPT_TYPE_SAMPLE_FMT, {.i64 = AV_SAMPLE_FMT_NONE}, -1, INT_MAX},
 {"video_rate", "set videorate", OFFSET(video_rate), AV_OPT_TYPE_VIDEO_RATE,  {.str = "25"}, 0,     0                   },
 {"duration", "set duration",   OFFSET(duration), AV_OPT_TYPE_DURATION, {.i64 = 0}, 0, INT64_MAX},
 {"color", "set color",   OFFSET(color), AV_OPT_TYPE_COLOR, {.str = "pink"}, 0, 0},

@@ -22,8 +22,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "hevc.h"
 #include "golomb.h"
+#include "hevc.h"
 
 static void decode_nal_sei_decoded_picture_hash(HEVCContext *s)
 {
@@ -52,21 +52,21 @@ static void decode_nal_sei_decoded_picture_hash(HEVCContext *s)
 static void decode_nal_sei_frame_packing_arrangement(HEVCContext *s)
 {
     GetBitContext *gb = &s->HEVClc->gb;
-    int cancel, type, quincunx;
 
     get_ue_golomb(gb);                  // frame_packing_arrangement_id
-    cancel = get_bits1(gb);             // frame_packing_cancel_flag
-    if (cancel == 0) {
-        type     = get_bits(gb, 7);     // frame_packing_arrangement_type
-        quincunx = get_bits1(gb);       // quincunx_sampling_flag
-        skip_bits(gb, 6);               // content_interpretation_type
+    s->sei_frame_packing_present = !get_bits1(gb);
+
+    if (s->sei_frame_packing_present) {
+        s->frame_packing_arrangement_type = get_bits(gb, 7);
+        s->quincunx_subsampling           = get_bits1(gb);
+        s->content_interpretation_type    = get_bits(gb, 6);
 
         // the following skips spatial_flipping_flag frame0_flipped_flag
         // field_views_flag current_frame_is_frame0_flag
         // frame0_self_contained_flag frame1_self_contained_flag
         skip_bits(gb, 6);
 
-        if (quincunx == 0 && type != 5)
+        if (!s->quincunx_subsampling && s->frame_packing_arrangement_type != 5)
             skip_bits(gb, 16);  // frame[01]_grid_position_[xy]
         skip_bits(gb, 8);       // frame_packing_arrangement_reserved_byte
         skip_bits1(gb);         // frame_packing_arrangement_persistance_flag

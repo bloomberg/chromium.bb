@@ -35,6 +35,7 @@
 #include "avcodec.h"
 #include "internal.h"
 #include "msrledec.h"
+#include "libavutil/imgutils.h"
 
 typedef struct MsrleContext {
     AVCodecContext *avctx;
@@ -110,10 +111,13 @@ static int msrle_decode_frame(AVCodecContext *avctx,
 
     /* FIXME how to correctly detect RLE ??? */
     if (avctx->height * istride == avpkt->size) { /* assume uncompressed */
-        int linesize = (avctx->width * avctx->bits_per_coded_sample + 7) / 8;
+        int linesize = av_image_get_linesize(avctx->pix_fmt, avctx->width, 0);
         uint8_t *ptr = s->frame->data[0];
         uint8_t *buf = avpkt->data + (avctx->height-1)*istride;
         int i, j;
+
+        if (linesize < 0)
+            return linesize;
 
         for (i = 0; i < avctx->height; i++) {
             if (avctx->bits_per_coded_sample == 4) {

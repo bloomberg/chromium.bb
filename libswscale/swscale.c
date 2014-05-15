@@ -208,8 +208,9 @@ static void lumRangeToJpeg16_c(int16_t *_dst, int width)
 {
     int i;
     int32_t *dst = (int32_t *) _dst;
-    for (i = 0; i < width; i++)
-        dst[i] = (FFMIN(dst[i], 30189 << 4) * 4769 - (39057361 << 2)) >> 12;
+    for (i = 0; i < width; i++) {
+        dst[i] = ((int)(FFMIN(dst[i], 30189 << 4) * 4769U - (39057361 << 2))) >> 12;
+    }
 }
 
 static void lumRangeFromJpeg16_c(int16_t *_dst, int width)
@@ -704,6 +705,31 @@ static int swscale(SwsContext *c, const uint8_t *src[],
     return dstY - lastDstY;
 }
 
+av_cold void ff_sws_init_range_convert(SwsContext *c)
+{
+    c->lumConvertRange = NULL;
+    c->chrConvertRange = NULL;
+    if (c->srcRange != c->dstRange && !isAnyRGB(c->dstFormat)) {
+        if (c->dstBpc <= 14) {
+            if (c->srcRange) {
+                c->lumConvertRange = lumRangeFromJpeg_c;
+                c->chrConvertRange = chrRangeFromJpeg_c;
+            } else {
+                c->lumConvertRange = lumRangeToJpeg_c;
+                c->chrConvertRange = chrRangeToJpeg_c;
+            }
+        } else {
+            if (c->srcRange) {
+                c->lumConvertRange = lumRangeFromJpeg16_c;
+                c->chrConvertRange = chrRangeFromJpeg16_c;
+            } else {
+                c->lumConvertRange = lumRangeToJpeg16_c;
+                c->chrConvertRange = chrRangeToJpeg16_c;
+            }
+        }
+    }
+}
+
 static av_cold void sws_init_swscale(SwsContext *c)
 {
     enum AVPixelFormat srcFormat = c->srcFormat;
@@ -730,25 +756,7 @@ static av_cold void sws_init_swscale(SwsContext *c)
                                                  : hScale16To15_c;
     }
 
-    if (c->srcRange != c->dstRange && !isAnyRGB(c->dstFormat)) {
-        if (c->dstBpc <= 14) {
-            if (c->srcRange) {
-                c->lumConvertRange = lumRangeFromJpeg_c;
-                c->chrConvertRange = chrRangeFromJpeg_c;
-            } else {
-                c->lumConvertRange = lumRangeToJpeg_c;
-                c->chrConvertRange = chrRangeToJpeg_c;
-            }
-        } else {
-            if (c->srcRange) {
-                c->lumConvertRange = lumRangeFromJpeg16_c;
-                c->chrConvertRange = chrRangeFromJpeg16_c;
-            } else {
-                c->lumConvertRange = lumRangeToJpeg16_c;
-                c->chrConvertRange = chrRangeToJpeg16_c;
-            }
-        }
-    }
+    ff_sws_init_range_convert(c);
 
     if (!(isGray(srcFormat) || isGray(c->dstFormat) ||
           srcFormat == AV_PIX_FMT_MONOBLACK || srcFormat == AV_PIX_FMT_MONOWHITE))
@@ -854,7 +862,7 @@ static void rgb48Toxyz12(struct SwsContext *c, uint16_t *dst,
                          const uint16_t *src, int stride, int h)
 {
     int xp,yp;
-    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->srcFormat);
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(c->dstFormat);
 
     for (yp=0; yp<h; yp++) {
         for (xp=0; xp+2<stride; xp+=3) {
@@ -921,7 +929,7 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
     uint8_t *dst2[4];
     uint8_t *rgb0_tmp = NULL;
 
-    if (!srcSlice || !dstStride || !dst || !srcSlice) {
+    if (!srcStride || !dstStride || !dst || !srcSlice) {
         av_log(c, AV_LOG_ERROR, "One of the input parameters to sws_scale() is NULL, please check the calling code\n");
         return 0;
     }
@@ -951,9 +959,9 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
 
     if (usePal(c->srcFormat)) {
         for (i = 0; i < 256; i++) {
-            int p, r, g, b, y, u, v, a = 0xff;
+            int r, g, b, y, u, v, a = 0xff;
             if (c->srcFormat == AV_PIX_FMT_PAL8) {
-                p = ((const uint32_t *)(srcSlice[1]))[i];
+                uint32_t p = ((const uint32_t *)(srcSlice[1]))[i];
                 a = (p >> 24) & 0xFF;
                 r = (p >> 16) & 0xFF;
                 g = (p >>  8) & 0xFF;

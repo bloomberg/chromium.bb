@@ -41,8 +41,19 @@ fate-filter-drawbox: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf drawbox=224:24:88:
 FATE_FILTER_VSYNTH-$(CONFIG_FADE_FILTER) += fate-filter-fade
 fate-filter-fade: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf fade=in:5:15,fade=out:30:15
 
+FATE_FILTER_VSYNTH-$(call ALLYES, TELECINE_FILTER FIELDMATCH_FILTER) += fate-filter-fieldmatch
+fate-filter-fieldmatch: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf telecine,fieldmatch
+
 FATE_FILTER_VSYNTH-$(call ALLYES, INTERLACE_FILTER FIELDORDER_FILTER) += fate-filter-fieldorder
 fate-filter-fieldorder: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf interlace=tff,fieldorder=bff -sws_flags +accurate_rnd+bitexact
+
+define FATE_FPFILTER_SUITE
+FATE_FILTER_VSYNTH-$(CONFIG_FRAMEPACK_FILTER) += fate-filter-framepack-$(1)
+fate-filter-framepack-$(1): CMD = framecrc -c:v pgmyuv -i $(TARGET_PATH)/tests/vsynth1/%02d.pgm -c:v pgmyuv -i $(TARGET_PATH)/tests/vsynth1/%02d.pgm -filter_complex framepack=$(1) -frames 15
+endef
+
+FPMODES = columns frameseq lines sbs tab
+$(foreach MODE,$(FPMODES),$(eval $(call FATE_FPFILTER_SUITE,$(MODE))))
 
 FATE_FILTER_VSYNTH-$(CONFIG_GRADFUN_FILTER) += fate-filter-gradfun
 fate-filter-gradfun: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf gradfun
@@ -72,6 +83,9 @@ fate-filter-overlay_rgb: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_sc
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv420
 fate-filter-overlay_yuv420: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(SRC_PATH)/tests/filtergraphs/overlay_yuv420
 
+FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv422
+fate-filter-overlay_yuv422: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(SRC_PATH)/tests/filtergraphs/overlay_yuv422
+
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv444
 fate-filter-overlay_yuv444: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(SRC_PATH)/tests/filtergraphs/overlay_yuv444
 
@@ -88,6 +102,14 @@ fate-filter-select-alternate: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_scrip
 FATE_FILTER_VSYNTH-$(call ALLYES, SETPTS_FILTER  SETTB_FILTER) += fate-filter-setpts
 fate-filter-setpts: tests/data/filtergraphs/setpts
 fate-filter-setpts: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_script $(TARGET_PATH)/tests/data/filtergraphs/setpts
+
+FATE_SHUFFLEPLANES += fate-filter-shuffleplanes-dup-luma
+fate-filter-shuffleplanes-dup-luma: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf format=yuva444p,shuffleplanes=0:0:0:0
+
+FATE_SHUFFLEPLANES += fate-filter-shuffleplanes-swapuv
+fate-filter-shuffleplanes-swapuv: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf shuffleplanes=0:2:1
+
+FATE_FILTER_VSYNTH-$(CONFIG_SHUFFLEPLANES_FILTER) += $(FATE_SHUFFLEPLANES)
 
 FATE_FILTER_VSYNTH-$(CONFIG_TELECINE_FILTER) += fate-filter-telecine
 fate-filter-telecine: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf telecine
@@ -168,6 +190,9 @@ fate-filter-vflip_vflip: CMD = video_filter "vflip,vflip"
 
 FATE_FILTER_VSYNTH-$(call ALLYES, FORMAT_FILTER PERMS_FILTER EDGEDETECT_FILTER) += fate-filter-edgedetect
 fate-filter-edgedetect: CMD = video_filter "format=gray,perms=random,edgedetect"
+
+FATE_FILTER_VSYNTH-$(call ALLYES, FORMAT_FILTER PERMS_FILTER EDGEDETECT_FILTER) += fate-filter-edgedetect-colormix
+fate-filter-edgedetect-colormix: CMD = video_filter "format=gbrp,perms=random,edgedetect=mode=colormix"
 
 FATE_FILTER_VSYNTH-$(call ALLYES, PERMS_FILTER HUE_FILTER) += fate-filter-hue
 fate-filter-hue: CMD = video_filter "perms=random,hue=s=sin(2*PI*t)+1"
@@ -314,17 +339,17 @@ FILTER_METADATA_COMMAND = ffprobe$(EXESUF) -of compact=p=0 -show_entries frame=p
 SCENEDETECT_DEPS = FFPROBE LAVFI_INDEV MOVIE_FILTER SELECT_FILTER SCALE_FILTER \
                    AVCODEC AVDEVICE MOV_DEMUXER SVQ3_DECODER ZLIB
 FATE_METADATA_FILTER-$(call ALLYES, $(SCENEDETECT_DEPS)) += fate-filter-metadata-scenedetect
-fate-filter-metadata-scenedetect: SRC = $(SAMPLES)/svq3/Vertical400kbit.sorenson3.mov
+fate-filter-metadata-scenedetect: SRC = $(TARGET_SAMPLES)/svq3/Vertical400kbit.sorenson3.mov
 fate-filter-metadata-scenedetect: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;movie='$(SRC)',select=gt(scene\,.4)"
 
 SILENCEDETECT_DEPS = FFPROBE AVDEVICE LAVFI_INDEV AMOVIE_FILTER AMR_DEMUXER AMRWB_DECODER SILENCEDETECT_FILTER
 FATE_METADATA_FILTER-$(call ALLYES, $(SILENCEDETECT_DEPS)) += fate-filter-metadata-silencedetect
-fate-filter-metadata-silencedetect: SRC = $(SAMPLES)/amrwb/seed-12k65.awb
+fate-filter-metadata-silencedetect: SRC = $(TARGET_SAMPLES)/amrwb/seed-12k65.awb
 fate-filter-metadata-silencedetect: CMD = run $(FILTER_METADATA_COMMAND) "amovie='$(SRC)',silencedetect=d=-20dB"
 
 EBUR128_METADATA_DEPS = FFPROBE AVDEVICE LAVFI_INDEV AMOVIE_FILTER FLAC_DEMUXER FLAC_DECODER EBUR128_FILTER
 FATE_METADATA_FILTER-$(call ALLYES, $(EBUR128_METADATA_DEPS)) += fate-filter-metadata-ebur128
-fate-filter-metadata-ebur128: SRC = $(SAMPLES)/filter/seq-3341-7_seq-3342-5-24bit.flac
+fate-filter-metadata-ebur128: SRC = $(TARGET_SAMPLES)/filter/seq-3341-7_seq-3342-5-24bit.flac
 fate-filter-metadata-ebur128: CMD = run $(FILTER_METADATA_COMMAND) "amovie='$(SRC)',ebur128=metadata=1"
 
 FATE_SAMPLES_FFPROBE += $(FATE_METADATA_FILTER-yes)

@@ -66,6 +66,7 @@ AVDictionary *swr_opts;
 AVDictionary *format_opts, *codec_opts, *resample_opts;
 
 static FILE *report_file;
+int hide_banner = 0;
 
 void init_opts(void)
 {
@@ -491,6 +492,9 @@ void parse_loglevel(int argc, char **argv, const OptionDef *options)
             fflush(report_file);
         }
     }
+    idx = locate_option(argc, argv, options, "hide_banner");
+    if (idx)
+        hide_banner = 1;
 }
 
 static const AVOption *opt_find(void *obj, const char *name, const char *unit,
@@ -658,7 +662,7 @@ static void init_parse_context(OptionParseContext *octx,
     memset(octx, 0, sizeof(*octx));
 
     octx->nb_groups = nb_groups;
-    octx->groups    = av_mallocz(sizeof(*octx->groups) * octx->nb_groups);
+    octx->groups    = av_mallocz_array(octx->nb_groups, sizeof(*octx->groups));
     if (!octx->groups)
         exit_program(1);
 
@@ -830,10 +834,17 @@ int opt_loglevel(void *optctx, const char *opt, const char *arg)
     };
     char *tail;
     int level;
+    int flags;
     int i;
 
+    flags = av_log_get_flags();
     tail = strstr(arg, "repeat");
-    av_log_set_flags(tail ? 0 : AV_LOG_SKIP_REPEATED);
+    if (tail)
+        flags &= ~AV_LOG_SKIP_REPEATED;
+    else
+        flags |= AV_LOG_SKIP_REPEATED;
+
+    av_log_set_flags(flags);
     if (tail == arg)
         arg += 6 + (arg[6]=='+');
     if(tail && !*arg)
@@ -1083,7 +1094,7 @@ static void print_buildconf(int flags, int level)
 void show_banner(int argc, char **argv, const OptionDef *options)
 {
     int idx = locate_option(argc, argv, options, "version");
-    if (idx)
+    if (hide_banner || idx)
         return;
 
     print_program_info (INDENT|SHOW_COPYRIGHT, AV_LOG_INFO);
@@ -1373,6 +1384,9 @@ int show_codecs(void *optctx, const char *opt, const char *arg)
     for (i = 0; i < nb_codecs; i++) {
         const AVCodecDescriptor *desc = codecs[i];
         const AVCodec *codec = NULL;
+
+        if (strstr(desc->name, "_deprecated"))
+            continue;
 
         printf(" ");
         printf(avcodec_find_decoder(desc->id) ? "D" : ".");
@@ -1938,7 +1952,8 @@ AVDictionary *filter_codec_opts(AVDictionary *opts, enum AVCodecID codec_id,
             }
 
         if (av_opt_find(&cc, t->key, NULL, flags, AV_OPT_SEARCH_FAKE_OBJ) ||
-            (codec && codec->priv_class &&
+            !codec ||
+            (codec->priv_class &&
              av_opt_find(&codec->priv_class, t->key, NULL, flags,
                          AV_OPT_SEARCH_FAKE_OBJ)))
             av_dict_set(&ret, t->key, t->value, 0);
@@ -1961,7 +1976,7 @@ AVDictionary **setup_find_stream_info_opts(AVFormatContext *s,
 
     if (!s->nb_streams)
         return NULL;
-    opts = av_mallocz(s->nb_streams * sizeof(*opts));
+    opts = av_mallocz_array(s->nb_streams, sizeof(*opts));
     if (!opts) {
         av_log(NULL, AV_LOG_ERROR,
                "Could not alloc memory for stream options.\n");

@@ -29,6 +29,7 @@
 
 #include "avcodec.h"
 #include "error_resilience.h"
+#include "mpegutils.h"
 #include "mpegvideo.h"
 #include "golomb.h"
 #include "internal.h"
@@ -708,9 +709,9 @@ static inline void rv34_mc(RV34DecContext *r, const int block_type,
     }
 
     dxy = ly*4 + lx;
-    srcY = dir ? s->next_picture_ptr->f.data[0] : s->last_picture_ptr->f.data[0];
-    srcU = dir ? s->next_picture_ptr->f.data[1] : s->last_picture_ptr->f.data[1];
-    srcV = dir ? s->next_picture_ptr->f.data[2] : s->last_picture_ptr->f.data[2];
+    srcY = dir ? s->next_picture_ptr->f->data[0] : s->last_picture_ptr->f->data[0];
+    srcU = dir ? s->next_picture_ptr->f->data[1] : s->last_picture_ptr->f->data[1];
+    srcV = dir ? s->next_picture_ptr->f->data[2] : s->last_picture_ptr->f->data[2];
     src_x = s->mb_x * 16 + xoff + mx;
     src_y = s->mb_y * 16 + yoff + my;
     uvsrc_x = s->mb_x * 8 + (xoff >> 1) + umx;
@@ -1362,11 +1363,11 @@ static int rv34_decoder_alloc(RV34DecContext *r)
 {
     r->intra_types_stride = r->s.mb_width * 4 + 4;
 
-    r->cbp_chroma       = av_malloc(r->s.mb_stride * r->s.mb_height *
+    r->cbp_chroma       = av_mallocz(r->s.mb_stride * r->s.mb_height *
                                     sizeof(*r->cbp_chroma));
-    r->cbp_luma         = av_malloc(r->s.mb_stride * r->s.mb_height *
+    r->cbp_luma         = av_mallocz(r->s.mb_stride * r->s.mb_height *
                                     sizeof(*r->cbp_luma));
-    r->deblock_coefs    = av_malloc(r->s.mb_stride * r->s.mb_height *
+    r->deblock_coefs    = av_mallocz(r->s.mb_stride * r->s.mb_height *
                                     sizeof(*r->deblock_coefs));
     r->intra_types_hist = av_malloc(r->intra_types_stride * 4 * 2 *
                                     sizeof(*r->intra_types_hist));
@@ -1489,8 +1490,6 @@ av_cold int ff_rv34_decode_init(AVCodecContext *avctx)
     s->height = avctx->height;
 
     r->s.avctx = avctx;
-    avctx->flags |= CODEC_FLAG_EMU_EDGE;
-    r->s.flags |= CODEC_FLAG_EMU_EDGE;
     avctx->pix_fmt = AV_PIX_FMT_YUV420P;
     avctx->has_b_frames = 1;
     s->low_delay = 0;
@@ -1592,13 +1591,13 @@ static int finish_frame(AVCodecContext *avctx, AVFrame *pict)
         ff_thread_report_progress(&s->current_picture_ptr->tf, INT_MAX, 0);
 
     if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
-        if ((ret = av_frame_ref(pict, &s->current_picture_ptr->f)) < 0)
+        if ((ret = av_frame_ref(pict, s->current_picture_ptr->f)) < 0)
             return ret;
         ff_print_debug_info(s, s->current_picture_ptr, pict);
         ff_mpv_export_qp_table(s, pict, s->current_picture_ptr, FF_QSCALE_TYPE_MPEG1);
         got_picture = 1;
     } else if (s->last_picture_ptr != NULL) {
-        if ((ret = av_frame_ref(pict, &s->last_picture_ptr->f)) < 0)
+        if ((ret = av_frame_ref(pict, s->last_picture_ptr->f)) < 0)
             return ret;
         ff_print_debug_info(s, s->last_picture_ptr, pict);
         ff_mpv_export_qp_table(s, pict, s->last_picture_ptr, FF_QSCALE_TYPE_MPEG1);
@@ -1637,7 +1636,7 @@ int ff_rv34_decode_frame(AVCodecContext *avctx,
     if (buf_size == 0) {
         /* special case for last picture */
         if (s->low_delay==0 && s->next_picture_ptr) {
-            if ((ret = av_frame_ref(pict, &s->next_picture_ptr->f)) < 0)
+            if ((ret = av_frame_ref(pict, s->next_picture_ptr->f)) < 0)
                 return ret;
             s->next_picture_ptr = NULL;
 
@@ -1665,7 +1664,7 @@ int ff_rv34_decode_frame(AVCodecContext *avctx,
         av_log(avctx, AV_LOG_ERROR, "First slice header is incorrect\n");
         return AVERROR_INVALIDDATA;
     }
-    if ((!s->last_picture_ptr || !s->last_picture_ptr->f.data[0]) &&
+    if ((!s->last_picture_ptr || !s->last_picture_ptr->f->data[0]) &&
         si.type == AV_PICTURE_TYPE_B) {
         av_log(avctx, AV_LOG_ERROR, "Invalid decoder state: B-frame without "
                "reference data.\n");

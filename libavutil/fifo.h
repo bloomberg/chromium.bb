@@ -48,6 +48,12 @@ AVFifoBuffer *av_fifo_alloc(unsigned int size);
 void av_fifo_free(AVFifoBuffer *f);
 
 /**
+ * Free an AVFifoBuffer and reset pointer to NULL.
+ * @param f AVFifoBuffer to free
+ */
+void av_fifo_freep(AVFifoBuffer **f);
+
+/**
  * Reset the AVFifoBuffer to the state right after av_fifo_alloc, in particular it is emptied.
  * @param f AVFifoBuffer to reset
  */
@@ -59,7 +65,7 @@ void av_fifo_reset(AVFifoBuffer *f);
  * @param f AVFifoBuffer to read from
  * @return size
  */
-int av_fifo_size(AVFifoBuffer *f);
+int av_fifo_size(FF_CONST_AVUTIL53 AVFifoBuffer *f);
 
 /**
  * Return the amount of space in bytes in the AVFifoBuffer, that is the
@@ -67,7 +73,7 @@ int av_fifo_size(AVFifoBuffer *f);
  * @param f AVFifoBuffer to write into
  * @return size
  */
-int av_fifo_space(AVFifoBuffer *f);
+int av_fifo_space(FF_CONST_AVUTIL53 AVFifoBuffer *f);
 
 /**
  * Feed data from an AVFifoBuffer to a user-supplied callback.

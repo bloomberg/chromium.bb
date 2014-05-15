@@ -19,10 +19,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/eval.h"
 #include "libavutil/internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/stereo3d.h"
 #include "avcodec.h"
 #include "internal.h"
 
@@ -161,6 +163,7 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
     x264_nal_t *nal;
     int nnal, i, ret;
     x264_picture_t pic_out = {0};
+    AVFrameSideData *side_data;
 
     x264_picture_init( &x4->pic );
     x4->pic.img.i_csp   = x4->params.i_csp;
@@ -190,8 +193,42 @@ static int X264_frame(AVCodecContext *ctx, AVPacket *pkt, const AVFrame *frame,
             x4->params.vui.i_sar_width  = ctx->sample_aspect_ratio.num;
             x264_encoder_reconfig(x4->enc, &x4->params);
         }
-    }
 
+        side_data = av_frame_get_side_data(frame, AV_FRAME_DATA_STEREO3D);
+        if (side_data) {
+            AVStereo3D *stereo = (AVStereo3D *)side_data->data;
+            int fpa_type;
+
+            switch (stereo->type) {
+            case AV_STEREO3D_CHECKERBOARD:
+                fpa_type = 0;
+                break;
+            case AV_STEREO3D_LINES:
+                fpa_type = 1;
+                break;
+            case AV_STEREO3D_COLUMNS:
+                fpa_type = 2;
+                break;
+            case AV_STEREO3D_SIDEBYSIDE:
+                fpa_type = 3;
+                break;
+            case AV_STEREO3D_TOPBOTTOM:
+                fpa_type = 4;
+                break;
+            case AV_STEREO3D_FRAMESEQUENCE:
+                fpa_type = 5;
+                break;
+            default:
+                fpa_type = -1;
+                break;
+            }
+
+            if (fpa_type != x4->params.i_frame_packing) {
+                x4->params.i_frame_packing = fpa_type;
+                x264_encoder_reconfig(x4->enc, &x4->params);
+            }
+        }
+    }
     do {
         if (x264_encoder_encode(x4->enc, &nal, &nnal, frame? &x4->pic: NULL, &pic_out) < 0)
             return -1;
@@ -294,6 +331,9 @@ static av_cold int X264_init(AVCodecContext *avctx)
     X264Context *x4 = avctx->priv_data;
     int sw,sh;
 
+    if (avctx->global_quality > 0)
+        av_log(avctx, AV_LOG_WARNING, "-qscale is ignored, -crf is recommended.\n");
+
     x264_param_default(&x4->params);
 
     x4->params.b_deblocking_filter         = avctx->flags & CODEC_FLAG_LOOP_FILTER;
@@ -355,19 +395,6 @@ static av_cold int X264_init(AVCodecContext *avctx)
 
     OPT_STR("level", x4->level);
 
-    if(x4->x264opts){
-        const char *p= x4->x264opts;
-        while(p){
-            char param[256]={0}, val[256]={0};
-            if(sscanf(p, "%255[^:=]=%255[^:]", param, val) == 1){
-                OPT_STR(param, "1");
-            }else
-                OPT_STR(param, val);
-            p= strchr(p, ':');
-            p+=!!p;
-        }
-    }
-
     if (avctx->i_quant_factor > 0)
         x4->params.rc.f_ip_factor         = 1 / fabs(avctx->i_quant_factor);
 
@@ -400,6 +427,28 @@ static av_cold int X264_init(AVCodecContext *avctx)
         x4->params.rc.f_qcompress       = avctx->qcompress; /* 0.0 => cbr, 1.0 => constant qp */
     if (avctx->refs >= 0)
         x4->params.i_frame_reference    = avctx->refs;
+    else if (x4->level) {
+        int i;
+        int mbn = FF_CEIL_RSHIFT(avctx->width, 4) * FF_CEIL_RSHIFT(avctx->height, 4);
+        int level_id = -1;
+        char *tail;
+        int scale = X264_BUILD < 129 ? 384 : 1;
+
+        if (!strcmp(x4->level, "1b")) {
+            level_id = 9;
+        } else if (strlen(x4->level) <= 3){
+            level_id = av_strtod(x4->level, &tail) * 10 + 0.5;
+            if (*tail)
+                level_id = -1;
+        }
+        if (level_id <= 0)
+            av_log(avctx, AV_LOG_WARNING, "Failed to parse level\n");
+
+        for (i = 0; i<x264_levels[i].level_idc; i++)
+            if (x264_levels[i].level_idc == level_id)
+                x4->params.i_frame_reference = av_clip(x264_levels[i].dpb / mbn / scale, 1, x4->params.i_frame_reference);
+    }
+
     if (avctx->trellis >= 0)
         x4->params.analyse.i_trellis    = avctx->trellis;
     if (avctx->me_range >= 0)
@@ -521,8 +570,10 @@ static av_cold int X264_init(AVCodecContext *avctx)
     av_reduce(&sw, &sh, avctx->sample_aspect_ratio.num, avctx->sample_aspect_ratio.den, 4096);
     x4->params.vui.i_sar_width  = sw;
     x4->params.vui.i_sar_height = sh;
-    x4->params.i_fps_num = x4->params.i_timebase_den = avctx->time_base.den;
-    x4->params.i_fps_den = x4->params.i_timebase_num = avctx->time_base.num;
+    x4->params.i_timebase_den = avctx->time_base.den;
+    x4->params.i_timebase_num = avctx->time_base.num;
+    x4->params.i_fps_num = avctx->time_base.den;
+    x4->params.i_fps_den = avctx->time_base.num * avctx->ticks_per_frame;
 
     x4->params.analyse.b_psnr = avctx->flags & CODEC_FLAG_PSNR;
 
@@ -538,10 +589,31 @@ static av_cold int X264_init(AVCodecContext *avctx)
 
     x4->params.vui.b_fullrange = avctx->pix_fmt == AV_PIX_FMT_YUVJ420P ||
                                  avctx->pix_fmt == AV_PIX_FMT_YUVJ422P ||
-                                 avctx->pix_fmt == AV_PIX_FMT_YUVJ444P;
+                                 avctx->pix_fmt == AV_PIX_FMT_YUVJ444P ||
+                                 avctx->color_range == AVCOL_RANGE_JPEG;
+
+    if (avctx->colorspace != AVCOL_SPC_UNSPECIFIED)
+        x4->params.vui.i_colmatrix = avctx->colorspace;
+    if (avctx->color_primaries != AVCOL_PRI_UNSPECIFIED)
+        x4->params.vui.i_colorprim = avctx->color_primaries;
+    if (avctx->color_trc != AVCOL_TRC_UNSPECIFIED)
+        x4->params.vui.i_transfer  = avctx->color_trc;
 
     if (avctx->flags & CODEC_FLAG_GLOBAL_HEADER)
         x4->params.b_repeat_headers = 0;
+
+    if(x4->x264opts){
+        const char *p= x4->x264opts;
+        while(p){
+            char param[256]={0}, val[256]={0};
+            if(sscanf(p, "%255[^:=]=%255[^:]", param, val) == 1){
+                OPT_STR(param, "1");
+            }else
+                OPT_STR(param, val);
+            p= strchr(p, ':');
+            p+=!!p;
+        }
+    }
 
     if (x4->x264_params) {
         AVDictionary *dict    = NULL;

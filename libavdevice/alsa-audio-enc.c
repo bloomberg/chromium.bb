@@ -113,6 +113,24 @@ static int audio_write_packet(AVFormatContext *s1, AVPacket *pkt)
     return 0;
 }
 
+static int audio_write_frame(AVFormatContext *s1, int stream_index,
+                             AVFrame **frame, unsigned flags)
+{
+    AlsaData *s = s1->priv_data;
+    AVPacket pkt;
+
+    /* ff_alsa_open() should have accepted only supported formats */
+    if ((flags & AV_WRITE_UNCODED_FRAME_QUERY))
+        return av_sample_fmt_is_planar(s1->streams[stream_index]->codec->sample_fmt) ?
+               AVERROR(EINVAL) : 0;
+    /* set only used fields */
+    pkt.data     = (*frame)->data[0];
+    pkt.size     = (*frame)->nb_samples * s->frame_size;
+    pkt.dts      = (*frame)->pkt_dts;
+    pkt.duration = av_frame_get_pkt_duration(*frame);
+    return audio_write_packet(s1, &pkt);
+}
+
 static void
 audio_get_output_timestamp(AVFormatContext *s1, int stream,
     int64_t *dts, int64_t *wall)
@@ -124,6 +142,13 @@ audio_get_output_timestamp(AVFormatContext *s1, int stream,
     *dts = s->timestamp - delay;
 }
 
+static const AVClass alsa_muxer_class = {
+    .class_name     = "ALSA muxer",
+    .item_name      = av_default_item_name,
+    .version        = LIBAVUTIL_VERSION_INT,
+    .category       = AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT,
+};
+
 AVOutputFormat ff_alsa_muxer = {
     .name           = "alsa",
     .long_name      = NULL_IF_CONFIG_SMALL("ALSA audio output"),
@@ -133,6 +158,8 @@ AVOutputFormat ff_alsa_muxer = {
     .write_header   = audio_write_header,
     .write_packet   = audio_write_packet,
     .write_trailer  = ff_alsa_close,
+    .write_uncoded_frame = audio_write_frame,
     .get_output_timestamp = audio_get_output_timestamp,
     .flags          = AVFMT_NOFILE,
+    .priv_class     = &alsa_muxer_class,
 };

@@ -37,23 +37,18 @@
 #include "mjpeg.h"
 #include "mjpegenc.h"
 
-/* use two quantizer tables (one for luminance and one for chrominance) */
-/* not yet working */
-#undef TWOMATRIXES
-
-
 av_cold int ff_mjpeg_encode_init(MpegEncContext *s)
 {
     MJpegContext *m;
 
     if (s->width > 65500 || s->height > 65500) {
         av_log(s, AV_LOG_ERROR, "JPEG does not support resolutions above 65500x65500\n");
-        return -1;
+        return AVERROR(EINVAL);
     }
 
     m = av_malloc(sizeof(MJpegContext));
     if (!m)
-        return -1;
+        return AVERROR(ENOMEM);
 
     s->min_qcoeff=-1023;
     s->max_qcoeff= 1023;
@@ -108,34 +103,35 @@ static int put_huffman_table(PutBitContext *p, int table_class, int table_id,
 
 static void jpeg_table_header(AVCodecContext *avctx, PutBitContext *p,
                               ScanTable *intra_scantable,
-                              uint16_t intra_matrix[64],
+                              uint16_t luma_intra_matrix[64],
+                              uint16_t chroma_intra_matrix[64],
                               int hsample[3])
 {
     int i, j, size;
     uint8_t *ptr;
 
     if (avctx->codec_id != AV_CODEC_ID_LJPEG) {
+        int matrix_count = 1 + !!memcmp(luma_intra_matrix,
+                                        chroma_intra_matrix,
+                                        sizeof(luma_intra_matrix[0]) * 64);
     /* quant matrixes */
     put_marker(p, DQT);
-#ifdef TWOMATRIXES
-    put_bits(p, 16, 2 + 2 * (1 + 64));
-#else
-    put_bits(p, 16, 2 + 1 * (1 + 64));
-#endif
+    put_bits(p, 16, 2 + matrix_count * (1 + 64));
     put_bits(p, 4, 0); /* 8 bit precision */
     put_bits(p, 4, 0); /* table 0 */
     for(i=0;i<64;i++) {
         j = intra_scantable->permutated[i];
-        put_bits(p, 8, intra_matrix[j]);
+        put_bits(p, 8, luma_intra_matrix[j]);
     }
-#ifdef TWOMATRIXES
-    put_bits(p, 4, 0); /* 8 bit precision */
-    put_bits(p, 4, 1); /* table 1 */
-    for(i=0;i<64;i++) {
-        j = s->intra_scantable.permutated[i];
-        put_bits(p, 8, s->chroma_intra_matrix[j]);
-    }
-#endif
+
+        if (matrix_count > 1) {
+            put_bits(p, 4, 0); /* 8 bit precision */
+            put_bits(p, 4, 1); /* table 1 */
+            for(i=0;i<64;i++) {
+                j = intra_scantable->permutated[i];
+                put_bits(p, 8, chroma_intra_matrix[j]);
+            }
+        }
     }
 
     if(avctx->active_thread_type & FF_THREAD_SLICE){
@@ -232,11 +228,15 @@ void ff_mjpeg_init_hvsample(AVCodecContext *avctx, int hsample[3], int vsample[3
 
 void ff_mjpeg_encode_picture_header(AVCodecContext *avctx, PutBitContext *pb,
                                     ScanTable *intra_scantable,
-                                    uint16_t intra_matrix[64])
+                                    uint16_t luma_intra_matrix[64],
+                                    uint16_t chroma_intra_matrix[64])
 {
     const int lossless = avctx->codec_id != AV_CODEC_ID_MJPEG && avctx->codec_id != AV_CODEC_ID_AMV;
     int hsample[3], vsample[3];
     int i;
+    int chroma_matrix = !!memcmp(luma_intra_matrix,
+                                 chroma_intra_matrix,
+                                 sizeof(luma_intra_matrix[0])*64);
 
     ff_mjpeg_init_hvsample(avctx, hsample, vsample);
 
@@ -247,7 +247,7 @@ void ff_mjpeg_encode_picture_header(AVCodecContext *avctx, PutBitContext *pb,
 
     jpeg_put_comments(avctx, pb);
 
-    jpeg_table_header(avctx, pb, intra_scantable, intra_matrix, hsample);
+    jpeg_table_header(avctx, pb, intra_scantable, luma_intra_matrix, chroma_intra_matrix, hsample);
 
     switch (avctx->codec_id) {
     case AV_CODEC_ID_MJPEG:  put_marker(pb, SOF0 ); break;
@@ -276,21 +276,13 @@ void ff_mjpeg_encode_picture_header(AVCodecContext *avctx, PutBitContext *pb,
     put_bits(pb, 8, 2); /* component number */
     put_bits(pb, 4, hsample[1]); /* H factor */
     put_bits(pb, 4, vsample[1]); /* V factor */
-#ifdef TWOMATRIXES
-    put_bits(pb, 8, lossless ? 0 : 1); /* select matrix */
-#else
-    put_bits(pb, 8, 0); /* select matrix */
-#endif
+    put_bits(pb, 8, lossless ? 0 : chroma_matrix); /* select matrix */
 
     /* Cr component */
     put_bits(pb, 8, 3); /* component number */
     put_bits(pb, 4, hsample[2]); /* H factor */
     put_bits(pb, 4, vsample[2]); /* V factor */
-#ifdef TWOMATRIXES
-    put_bits(pb, 8, lossless ? 0 : 1); /* select matrix */
-#else
-    put_bits(pb, 8, 0); /* select matrix */
-#endif
+    put_bits(pb, 8, lossless ? 0 : chroma_matrix); /* select matrix */
 
     /* scan header */
     put_marker(pb, SOS);
@@ -495,7 +487,7 @@ static void encode_block(MpegEncContext *s, int16_t *block, int n)
         put_bits(&s->pb, huff_size_ac[0], huff_code_ac[0]);
 }
 
-void ff_mjpeg_encode_mb(MpegEncContext *s, int16_t block[6][64])
+void ff_mjpeg_encode_mb(MpegEncContext *s, int16_t block[12][64])
 {
     int i;
     if (s->chroma_format == CHROMA_444) {
@@ -537,23 +529,28 @@ static int amv_encode_picture(AVCodecContext *avctx, AVPacket *pkt,
 
 {
     MpegEncContext *s = avctx->priv_data;
-    AVFrame pic = *pic_arg;
-    int i;
+    AVFrame *pic;
+    int i, ret;
     int chroma_h_shift, chroma_v_shift;
 
     av_pix_fmt_get_chroma_sub_sample(avctx->pix_fmt, &chroma_h_shift, &chroma_v_shift);
 
     //CODEC_FLAG_EMU_EDGE have to be cleared
     if(s->avctx->flags & CODEC_FLAG_EMU_EDGE)
-        return -1;
+        return AVERROR(EINVAL);
 
+    pic = av_frame_clone(pic_arg);
+    if (!pic)
+        return AVERROR(ENOMEM);
     //picture should be flipped upside-down
     for(i=0; i < 3; i++) {
         int vsample = i ? 2 >> chroma_v_shift : 2;
-        pic.data[i] += (pic.linesize[i] * (vsample * (8 * s->mb_height -((s->height/V_MAX)&7)) - 1 ));
-        pic.linesize[i] *= -1;
+        pic->data[i] += (pic->linesize[i] * (vsample * (8 * s->mb_height -((s->height/V_MAX)&7)) - 1 ));
+        pic->linesize[i] *= -1;
     }
-    return ff_MPV_encode_picture(avctx, pkt, &pic, got_packet);
+    ret = ff_MPV_encode_picture(avctx, pkt, pic, got_packet);
+    av_frame_free(&pic);
+    return ret;
 }
 
 #if CONFIG_MJPEG_ENCODER

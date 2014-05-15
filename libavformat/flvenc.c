@@ -233,6 +233,9 @@ static int flv_write_header(AVFormatContext *s)
             audio_enc = enc;
             if (get_audio_flags(s, enc) < 0)
                 return AVERROR_INVALIDDATA;
+            if (enc->codec_id == AV_CODEC_ID_PCM_S16BE)
+                av_log(s, AV_LOG_WARNING,
+                       "16-bit big-endian audio in flv is valid but most likely unplayable (hardware dependent); use s16le\n");
             break;
         case AVMEDIA_TYPE_DATA:
             if (enc->codec_id != AV_CODEC_ID_TEXT) {
@@ -539,7 +542,7 @@ static int flv_write_packet(AVFormatContext *s, AVPacket *pkt)
 
     if (enc->codec_type == AVMEDIA_TYPE_DATA) {
         int data_size;
-        int metadata_size_pos = avio_tell(pb);
+        int64_t metadata_size_pos = avio_tell(pb);
         avio_w8(pb, AMF_DATA_TYPE_STRING);
         put_amf_string(pb, "onTextData");
         avio_w8(pb, AMF_DATA_TYPE_MIXEDARRAY);

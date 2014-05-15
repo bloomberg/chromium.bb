@@ -67,6 +67,12 @@ const HWAccel hwaccels[] = {
 #if HAVE_VDPAU_X11
     { "vdpau", vdpau_init, HWACCEL_VDPAU, AV_PIX_FMT_VDPAU },
 #endif
+#if HAVE_DXVA2_LIB
+    { "dxva2", dxva2_init, HWACCEL_DXVA2, AV_PIX_FMT_DXVA2_VLD },
+#endif
+#if CONFIG_VDA
+    { "vda",   vda_init,   HWACCEL_VDA,   AV_PIX_FMT_VDA },
+#endif
     { 0 },
 };
 
@@ -559,13 +565,14 @@ static AVCodec *choose_decoder(OptionsContext *o, AVFormatContext *s, AVStream *
 static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
 {
     int i;
-    char *next, *codec_tag = NULL;
 
     for (i = 0; i < ic->nb_streams; i++) {
         AVStream *st = ic->streams[i];
         AVCodecContext *dec = st->codec;
         InputStream *ist = av_mallocz(sizeof(*ist));
         char *framerate = NULL, *hwaccel = NULL, *hwaccel_device = NULL;
+        char *codec_tag = NULL;
+        char *next;
 
         if (!ist)
             exit_program(1);
@@ -590,7 +597,7 @@ static void add_input_streams(OptionsContext *o, AVFormatContext *ic)
         }
 
         ist->dec = choose_decoder(o, ic, st);
-        ist->opts = filter_codec_opts(o->g->codec_opts, ist->st->codec->codec_id, ic, st, ist->dec);
+        ist->decoder_opts = filter_codec_opts(o->g->codec_opts, ist->st->codec->codec_id, ic, st, ist->dec);
 
         ist->reinit_filters = -1;
         MATCH_PER_STREAM_OPT(reinit_filters, i, ist->reinit_filters, ic, st);
@@ -697,10 +704,9 @@ static void assert_file_overwrite(const char *filename)
         exit_program(1);
     }
 
-    if (!file_overwrite &&
-        (strchr(filename, ':') == NULL || filename[1] == ':' ||
-         av_strstart(filename, "file:", NULL))) {
-        if (avio_check(filename, 0) == 0) {
+    if (!file_overwrite) {
+        const char *proto_name = avio_find_protocol_name(filename);
+        if (proto_name && !strcmp(proto_name, "file") && avio_check(filename, 0) == 0) {
             if (stdin_interaction && !no_file_overwrite) {
                 fprintf(stderr,"File '%s' already exists. Overwrite ? [y/N] ", filename);
                 fflush(stderr);
@@ -905,7 +911,7 @@ static int open_input_file(OptionsContext *o, const char *filename)
     unused_opts = strip_specifiers(o->g->codec_opts);
     for (i = f->ist_index; i < nb_input_streams; i++) {
         e = NULL;
-        while ((e = av_dict_get(input_streams[i]->opts, "", e,
+        while ((e = av_dict_get(input_streams[i]->decoder_opts, "", e,
                                 AV_DICT_IGNORE_SUFFIX)))
             av_dict_set(&unused_opts, e->key, NULL, 0);
     }
@@ -915,8 +921,13 @@ static int open_input_file(OptionsContext *o, const char *filename)
         const AVClass *class = avcodec_get_class();
         const AVOption *option = av_opt_find(&class, e->key, NULL, 0,
                                              AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
-        if (!option)
+        const AVClass *fclass = avformat_get_class();
+        const AVOption *foption = av_opt_find(&fclass, e->key, NULL, 0,
+                                             AV_OPT_SEARCH_CHILDREN | AV_OPT_SEARCH_FAKE_OBJ);
+        if (!option || foption)
             continue;
+
+
         if (!(option->flags & AV_OPT_FLAG_DECODING_PARAM)) {
             av_log(NULL, AV_LOG_ERROR, "Codec AVOption %s (%s) specified for "
                    "input file #%d (%s) is not a decoding option.\n", e->key,
@@ -973,14 +984,14 @@ static uint8_t *get_line(AVIOContext *s)
 
 static int get_preset_file_2(const char *preset_name, const char *codec_name, AVIOContext **s)
 {
-    int i, ret = 1;
+    int i, ret = -1;
     char filename[1000];
     const char *base[3] = { getenv("AVCONV_DATADIR"),
                             getenv("HOME"),
                             AVCONV_DATADIR,
                             };
 
-    for (i = 0; i < FF_ARRAY_ELEMS(base) && ret; i++) {
+    for (i = 0; i < FF_ARRAY_ELEMS(base) && ret < 0; i++) {
         if (!base[i])
             continue;
         if (codec_name) {
@@ -988,7 +999,7 @@ static int get_preset_file_2(const char *preset_name, const char *codec_name, AV
                      i != 1 ? "" : "/.avconv", codec_name, preset_name);
             ret = avio_open2(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
         }
-        if (ret) {
+        if (ret < 0) {
             snprintf(filename, sizeof(filename), "%s%s/%s.avpreset", base[i],
                      i != 1 ? "" : "/.avconv", preset_name);
             ret = avio_open2(s, filename, AVIO_FLAG_READ, &int_cb, NULL);
@@ -1046,7 +1057,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
         AVIOContext *s = NULL;
         char *buf = NULL, *arg = NULL, *preset = NULL;
 
-        ost->opts  = filter_codec_opts(o->g->codec_opts, ost->enc->id, oc, st, ost->enc);
+        ost->encoder_opts  = filter_codec_opts(o->g->codec_opts, ost->enc->id, oc, st, ost->enc);
 
         MATCH_PER_STREAM_OPT(presets, str, preset, oc, st);
         if (preset && (!(ret = get_preset_file_2(preset, ost->enc->name, &s)))) {
@@ -1061,7 +1072,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
                     exit_program(1);
                 }
                 *arg++ = 0;
-                av_dict_set(&ost->opts, buf, arg, AV_DICT_DONT_OVERWRITE);
+                av_dict_set(&ost->encoder_opts, buf, arg, AV_DICT_DONT_OVERWRITE);
                 av_free(buf);
             } while (!s->eof_reached);
             avio_close(s);
@@ -1073,7 +1084,7 @@ static OutputStream *new_output_stream(OptionsContext *o, AVFormatContext *oc, e
             exit_program(1);
         }
     } else {
-        ost->opts = filter_codec_opts(o->g->codec_opts, AV_CODEC_ID_NONE, oc, st, NULL);
+        ost->encoder_opts = filter_codec_opts(o->g->codec_opts, AV_CODEC_ID_NONE, oc, st, NULL);
     }
 
     avcodec_get_context_defaults3(st->codec, ost->enc);
@@ -1261,6 +1272,7 @@ static OutputStream *new_video_stream(OptionsContext *o, AVFormatContext *oc, in
         char *frame_size = NULL;
         char *frame_pix_fmt = NULL;
         char *intra_matrix = NULL, *inter_matrix = NULL;
+        char *chroma_intra_matrix = NULL;
         int do_pass = 0;
         int i;
 
@@ -1292,6 +1304,16 @@ static OutputStream *new_video_stream(OptionsContext *o, AVFormatContext *oc, in
                 exit_program(1);
             }
             parse_matrix_coeffs(video_enc->intra_matrix, intra_matrix);
+        }
+        MATCH_PER_STREAM_OPT(chroma_intra_matrices, str, chroma_intra_matrix, oc, st);
+        if (chroma_intra_matrix) {
+            uint16_t *p = av_mallocz(sizeof(*video_enc->chroma_intra_matrix) * 64);
+            if (!p) {
+                av_log(NULL, AV_LOG_FATAL, "Could not allocate memory for intra matrix.\n");
+                exit_program(1);
+            }
+            av_codec_set_chroma_intra_matrix(video_enc, p);
+            parse_matrix_coeffs(p, chroma_intra_matrix);
         }
         MATCH_PER_STREAM_OPT(inter_matrices, str, inter_matrix, oc, st);
         if (inter_matrix) {
@@ -1338,11 +1360,11 @@ static OutputStream *new_video_stream(OptionsContext *o, AVFormatContext *oc, in
         if (do_pass) {
             if (do_pass & 1) {
                 video_enc->flags |= CODEC_FLAG_PASS1;
-                av_dict_set(&ost->opts, "flags", "+pass1", AV_DICT_APPEND);
+                av_dict_set(&ost->encoder_opts, "flags", "+pass1", AV_DICT_APPEND);
             }
             if (do_pass & 2) {
                 video_enc->flags |= CODEC_FLAG_PASS2;
-                av_dict_set(&ost->opts, "flags", "+pass2", AV_DICT_APPEND);
+                av_dict_set(&ost->encoder_opts, "flags", "+pass2", AV_DICT_APPEND);
             }
         }
 
@@ -1414,15 +1436,27 @@ static OutputStream *new_audio_stream(OptionsContext *o, AVFormatContext *oc, in
         /* check for channel mapping for this audio stream */
         for (n = 0; n < o->nb_audio_channel_maps; n++) {
             AudioChannelMap *map = &o->audio_channel_maps[n];
-            InputStream *ist = input_streams[ost->source_index];
-            if ((map->channel_idx == -1 || (ist->file_index == map->file_idx && ist->st->index == map->stream_idx)) &&
-                (map->ofile_idx   == -1 || ost->file_index == map->ofile_idx) &&
+            if ((map->ofile_idx   == -1 || ost->file_index == map->ofile_idx) &&
                 (map->ostream_idx == -1 || ost->st->index  == map->ostream_idx)) {
-                if (ost->audio_channels_mapped < FF_ARRAY_ELEMS(ost->audio_channels_map))
-                    ost->audio_channels_map[ost->audio_channels_mapped++] = map->channel_idx;
-                else
-                    av_log(NULL, AV_LOG_FATAL, "Max channel mapping for output %d.%d reached\n",
+                InputStream *ist;
+
+                if (map->channel_idx == -1) {
+                    ist = NULL;
+                } else if (ost->source_index < 0) {
+                    av_log(NULL, AV_LOG_FATAL, "Cannot determine input stream for channel mapping %d.%d\n",
                            ost->file_index, ost->st->index);
+                    continue;
+                } else {
+                    ist = input_streams[ost->source_index];
+                }
+
+                if (!ist || (ist->file_index == map->file_idx && ist->st->index == map->stream_idx)) {
+                    if (ost->audio_channels_mapped < FF_ARRAY_ELEMS(ost->audio_channels_map))
+                        ost->audio_channels_map[ost->audio_channels_mapped++] = map->channel_idx;
+                    else
+                        av_log(NULL, AV_LOG_FATAL, "Max channel mapping for output %d.%d reached\n",
+                               ost->file_index, ost->st->index);
+                }
             }
         }
     }
@@ -1805,7 +1839,7 @@ static int open_output_file(OptionsContext *o, const char *filename)
 
         /* subtitles: pick first */
         MATCH_PER_TYPE_OPT(codec_names, str, subtitle_codec_name, oc, "s");
-        if (!o->subtitle_disable && (oc->oformat->subtitle_codec != AV_CODEC_ID_NONE || subtitle_codec_name)) {
+        if (!o->subtitle_disable && (avcodec_find_encoder(oc->oformat->subtitle_codec) || subtitle_codec_name)) {
             for (i = 0; i < nb_input_streams; i++)
                 if (input_streams[i]->st->codec->codec_type == AVMEDIA_TYPE_SUBTITLE) {
                     new_subtitle_stream(o, oc, i);
@@ -1921,7 +1955,7 @@ loop_end:
     unused_opts = strip_specifiers(o->g->codec_opts);
     for (i = of->ost_index; i < nb_output_streams; i++) {
         e = NULL;
-        while ((e = av_dict_get(output_streams[i]->opts, "", e,
+        while ((e = av_dict_get(output_streams[i]->encoder_opts, "", e,
                                 AV_DICT_IGNORE_SUFFIX)))
             av_dict_set(&unused_opts, e->key, NULL, 0);
     }
@@ -2133,7 +2167,6 @@ static int opt_target(void *optctx, const char *opt, const char *arg)
         opt_video_codec(o, "c:v", "mpeg1video");
         opt_audio_codec(o, "c:a", "mp2");
         parse_option(o, "f", "vcd", options);
-        av_dict_set(&o->g->codec_opts, "b:v", arg, AV_DICT_DONT_OVERWRITE);
 
         parse_option(o, "s", norm == PAL ? "352x288" : "352x240", options);
         parse_option(o, "r", frame_rates[norm], options);
@@ -2766,7 +2799,7 @@ const OptionDef options[] = {
     { "frames",         OPT_INT64 | HAS_ARG | OPT_SPEC | OPT_OUTPUT, { .off = OFFSET(max_frames) },
         "set the number of frames to record", "number" },
     { "tag",            OPT_STRING | HAS_ARG | OPT_SPEC |
-                        OPT_EXPERT | OPT_OUTPUT,                     { .off = OFFSET(codec_tags) },
+                        OPT_EXPERT | OPT_OUTPUT | OPT_INPUT,         { .off = OFFSET(codec_tags) },
         "force codec tag/fourcc", "fourcc/tag" },
     { "q",              HAS_ARG | OPT_EXPERT | OPT_DOUBLE |
                         OPT_SPEC | OPT_OUTPUT,                       { .off = OFFSET(qscale) },
@@ -2857,6 +2890,9 @@ const OptionDef options[] = {
     { "inter_matrix", OPT_VIDEO | HAS_ARG | OPT_EXPERT  | OPT_STRING | OPT_SPEC |
                       OPT_OUTPUT,                                                { .off = OFFSET(inter_matrices) },
         "specify inter matrix coeffs", "matrix" },
+    { "chroma_intra_matrix", OPT_VIDEO | HAS_ARG | OPT_EXPERT  | OPT_STRING | OPT_SPEC |
+                      OPT_OUTPUT,                                                { .off = OFFSET(chroma_intra_matrices) },
+        "specify intra matrix coeffs", "matrix" },
     { "top",          OPT_VIDEO | HAS_ARG | OPT_EXPERT  | OPT_INT| OPT_SPEC |
                       OPT_INPUT | OPT_OUTPUT,                                    { .off = OFFSET(top_field_first) },
         "top=1/bottom=0/auto=-1 field first", "" },

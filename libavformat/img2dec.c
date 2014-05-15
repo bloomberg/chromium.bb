@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#define _BSD_SOURCE
 #include <sys/stat.h>
 #include "libavutil/avstring.h"
 #include "libavutil/log.h"
@@ -28,9 +29,9 @@
 #include "libavutil/parseutils.h"
 #include "avformat.h"
 #include "internal.h"
-#if HAVE_GLOB
-#include <glob.h>
+#include "img2.h"
 
+#if HAVE_GLOB
 /* Locally define as 0 (bitwise-OR no-op) any missing glob options that
    are non-posix glibc/bsd extensions. */
 #ifndef GLOB_NOMAGIC
@@ -41,31 +42,6 @@
 #endif
 
 #endif /* HAVE_GLOB */
-
-typedef struct {
-    const AVClass *class;  /**< Class for private options. */
-    int img_first;
-    int img_last;
-    int img_number;
-    int64_t pts;
-    int img_count;
-    int is_pipe;
-    int split_planes;       /**< use independent file for each Y, U, V plane */
-    char path[1024];
-    char *pixel_format;     /**< Set by a private option. */
-    int width, height;      /**< Set by a private option. */
-    AVRational framerate;   /**< Set by a private option. */
-    int loop;
-    enum { PT_GLOB_SEQUENCE, PT_GLOB, PT_SEQUENCE } pattern_type;
-    int use_glob;
-#if HAVE_GLOB
-    glob_t globstate;
-#endif
-    int start_number;
-    int start_number_range;
-    int frame_size;
-    int ts_from_file;
-} VideoDemuxData;
 
 static const int sizes[][2] = {
     { 640, 480 },
@@ -192,7 +168,7 @@ static int img_read_probe(AVProbeData *p)
     return 0;
 }
 
-static int img_read_header(AVFormatContext *s1)
+int ff_img_read_header(AVFormatContext *s1)
 {
     VideoDemuxData *s = s1->priv_data;
     int first_index, last_index;
@@ -225,7 +201,13 @@ static int img_read_header(AVFormatContext *s1)
         st->need_parsing = AVSTREAM_PARSE_FULL;
     }
 
-    if (s->ts_from_file)
+    if (s->ts_from_file == 2) {
+#if !HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC
+        av_log(s1, AV_LOG_ERROR, "POSIX.1-2008 not supported, nanosecond file timestamps unavailable\n");
+        return AVERROR(ENOSYS);
+#endif
+        avpriv_set_pts_info(st, 64, 1, 1000000000);
+    } else if (s->ts_from_file)
         avpriv_set_pts_info(st, 64, 1, 1);
     else
         avpriv_set_pts_info(st, 64, s->framerate.den, s->framerate.num);
@@ -313,6 +295,9 @@ static int img_read_header(AVFormatContext *s1)
     } else if (s1->audio_codec_id) {
         st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
         st->codec->codec_id   = s1->audio_codec_id;
+    } else if (s1->iformat->raw_codec_id) {
+        st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
+        st->codec->codec_id   = s1->iformat->raw_codec_id;
     } else {
         const char *str = strrchr(s->path, '.');
         s->split_planes       = str && !av_strcasecmp(str + 1, "y");
@@ -320,6 +305,8 @@ static int img_read_header(AVFormatContext *s1)
         st->codec->codec_id   = ff_guess_image2_codec(s->path);
         if (st->codec->codec_id == AV_CODEC_ID_LJPEG)
             st->codec->codec_id = AV_CODEC_ID_MJPEG;
+        if (st->codec->codec_id == AV_CODEC_ID_ALIAS_PIX) // we cannot distingiush this from BRENDER_PIX
+            st->codec->codec_id = AV_CODEC_ID_NONE;
     }
     if (st->codec->codec_type == AVMEDIA_TYPE_VIDEO &&
         pix_fmt != AV_PIX_FMT_NONE)
@@ -328,7 +315,7 @@ static int img_read_header(AVFormatContext *s1)
     return 0;
 }
 
-static int img_read_packet(AVFormatContext *s1, AVPacket *pkt)
+int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
 {
     VideoDemuxData *s = s1->priv_data;
     char filename_bytes[1024];
@@ -371,6 +358,27 @@ static int img_read_packet(AVFormatContext *s1, AVPacket *pkt)
             filename[strlen(filename) - 1] = 'U' + i;
         }
 
+        if (codec->codec_id == AV_CODEC_ID_NONE) {
+            AVProbeData pd;
+            AVInputFormat *ifmt;
+            uint8_t header[PROBE_BUF_MIN + AVPROBE_PADDING_SIZE];
+            int ret;
+            int score = 0;
+
+            ret = avio_read(f[0], header, PROBE_BUF_MIN);
+            if (ret < 0)
+                return ret;
+            memset(header + ret, 0, sizeof(header) - ret);
+            avio_skip(f[0], -ret);
+            pd.buf = header;
+            pd.buf_size = ret;
+            pd.filename = filename;
+
+            ifmt = av_probe_input_format3(&pd, 1, &score);
+            if (ifmt && ifmt->read_packet == ff_img_read_packet && ifmt->raw_codec_id)
+                codec->codec_id = ifmt->raw_codec_id;
+        }
+
         if (codec->codec_id == AV_CODEC_ID_RAWVIDEO && !codec->width)
             infer_size(&codec->width, &codec->height, size[0]);
     } else {
@@ -393,6 +401,10 @@ static int img_read_packet(AVFormatContext *s1, AVPacket *pkt)
         if (stat(filename, &img_stat))
             return AVERROR(EIO);
         pkt->pts = (int64_t)img_stat.st_mtime;
+#if HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC
+        if (s->ts_from_file == 2)
+            pkt->pts = 1000000000*pkt->pts + img_stat.st_mtim.tv_nsec;
+#endif
         av_add_index_entry(s1->streams[0], s->img_number, pkt->pts, 0, 0, AVINDEX_KEYFRAME);
     } else if (!s->is_pipe) {
         pkt->pts      = s->pts;
@@ -467,7 +479,10 @@ static const AVOption options[] = {
     { "start_number_range", "set range for looking at the first sequence number", OFFSET(start_number_range), AV_OPT_TYPE_INT, {.i64 = 5}, 1, INT_MAX, DEC },
     { "video_size",   "set video size",                      OFFSET(width),        AV_OPT_TYPE_IMAGE_SIZE, {.str = NULL}, 0, 0,   DEC },
     { "frame_size",   "force frame size in bytes",           OFFSET(frame_size),   AV_OPT_TYPE_INT,    {.i64 = 0   }, 0, INT_MAX, DEC },
-    { "ts_from_file", "set frame timestamp from file's one", OFFSET(ts_from_file), AV_OPT_TYPE_INT,    {.i64 = 0   }, 0, 1,       DEC },
+    { "ts_from_file", "set frame timestamp from file's one", OFFSET(ts_from_file), AV_OPT_TYPE_INT,    {.i64 = 0   }, 0, 2,       DEC, "ts_type" },
+    { "none", "none",                   0, AV_OPT_TYPE_CONST,    {.i64 = 0   }, 0, 2,       DEC, "ts_type" },
+    { "sec",  "second precision",       0, AV_OPT_TYPE_CONST,    {.i64 = 1   }, 0, 2,       DEC, "ts_type" },
+    { "ns",   "nano second precision",  0, AV_OPT_TYPE_CONST,    {.i64 = 2   }, 0, 2,       DEC, "ts_type" },
     { NULL },
 };
 
@@ -483,8 +498,8 @@ AVInputFormat ff_image2_demuxer = {
     .long_name      = NULL_IF_CONFIG_SMALL("image2 sequence"),
     .priv_data_size = sizeof(VideoDemuxData),
     .read_probe     = img_read_probe,
-    .read_header    = img_read_header,
-    .read_packet    = img_read_packet,
+    .read_header    = ff_img_read_header,
+    .read_packet    = ff_img_read_packet,
     .read_close     = img_read_close,
     .read_seek      = img_read_seek,
     .flags          = AVFMT_NOFILE,
@@ -502,8 +517,8 @@ AVInputFormat ff_image2pipe_demuxer = {
     .name           = "image2pipe",
     .long_name      = NULL_IF_CONFIG_SMALL("piped image2 sequence"),
     .priv_data_size = sizeof(VideoDemuxData),
-    .read_header    = img_read_header,
-    .read_packet    = img_read_packet,
+    .read_header    = ff_img_read_header,
+    .read_packet    = ff_img_read_packet,
     .priv_class     = &img2pipe_class,
 };
 #endif

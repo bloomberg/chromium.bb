@@ -119,7 +119,7 @@ static int rtp_write_header(AVFormatContext *s1)
         s->ssrc = av_get_random_seed();
     s->first_packet = 1;
     s->first_rtcp_ntp_time = ff_ntp_time();
-    if (s1->start_time_realtime)
+    if (s1->start_time_realtime != 0  &&  s1->start_time_realtime != AV_NOPTS_VALUE)
         /* Round the NTP time to whole milliseconds. */
         s->first_rtcp_ntp_time = (s1->start_time_realtime / 1000) * 1000 +
                                  NTP_OFFSET_US;
@@ -557,6 +557,10 @@ static int rtp_write_packet(AVFormatContext *s1, AVPacket *pkt)
             const uint8_t *mb_info =
                 av_packet_get_side_data(pkt, AV_PKT_DATA_H263_MB_INFO,
                                         &mb_info_size);
+            if (!mb_info) {
+                av_log(s1, AV_LOG_ERROR, "failed to allocate side data\n");
+                return AVERROR(ENOMEM);
+            }
             ff_rtp_send_h263_rfc2190(s1, pkt->data, size, mb_info, mb_info_size);
             break;
         }

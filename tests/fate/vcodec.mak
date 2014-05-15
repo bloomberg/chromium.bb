@@ -58,7 +58,11 @@ FATE_VCODEC-$(call ENCDEC, FFV1, AVI)   += ffv1 ffv1.0
 fate-vsynth%-ffv1:               ENCOPTS = -slices 4
 fate-vsynth%-ffv1.0:             CODEC   = ffv1
 
-FATE_VCODEC-$(call ENCDEC, FFVHUFF, AVI) += ffvhuff
+FATE_VCODEC-$(call ENCDEC, FFVHUFF, AVI) += ffvhuff ffvhuff444 ffvhuff420p12 ffvhuff422p10left ffvhuff444p16
+fate-vsynth%-ffvhuff444:         ENCOPTS = -vcodec ffvhuff -pix_fmt yuv444p
+fate-vsynth%-ffvhuff420p12:      ENCOPTS = -vcodec ffvhuff -pix_fmt yuv420p12le
+fate-vsynth%-ffvhuff422p10left:  ENCOPTS = -vcodec ffvhuff -pix_fmt yuv422p10le -pred left
+fate-vsynth%-ffvhuff444p16:      ENCOPTS = -vcodec ffvhuff -pix_fmt yuv444p16le -pred plane
 
 FATE_VCODEC-$(call ENCDEC, FLASHSV, FLV) += flashsv
 fate-vsynth%-flashsv:            ENCOPTS = -sws_flags neighbor+full_chroma_int
@@ -85,7 +89,7 @@ fate-vsynth%-h263p:              ENCOPTS = -qscale 2 -flags +aic -umv 1 -aiv 1 -
 
 FATE_VCODEC-$(call ENCDEC, HUFFYUV, AVI) += huffyuv
 fate-vsynth%-huffyuv:            ENCOPTS = -pix_fmt yuv422p -sws_flags neighbor
-fate-vsynth%-huffyuv:            DECOPTS = -strict -2 -sws_flags neighbor
+fate-vsynth%-huffyuv:            DECOPTS = -sws_flags neighbor
 
 FATE_VCODEC-$(call ENCDEC, JPEGLS, AVI) += jpegls
 fate-vsynth%-jpegls:             ENCOPTS = -sws_flags neighbor+full_chroma_int
@@ -238,15 +242,15 @@ fate-vsynth%-rv20:               ENCOPTS = -qscale 10
 fate-vsynth%-rv20:               FMT     = rm
 
 FATE_VCODEC-$(call ENCDEC, SNOW, AVI)   += snow snow-hpel snow-ll
-fate-vsynth%-snow:               ENCOPTS = -strict -2 -qscale 2 -flags +qpel \
+fate-vsynth%-snow:               ENCOPTS = -qscale 2 -flags +qpel \
                                            -me_method iter -dia_size 2       \
                                            -cmp 12 -subcmp 12 -s 128x64
 
-fate-vsynth%-snow-hpel:          ENCOPTS = -strict -2 -qscale 2              \
+fate-vsynth%-snow-hpel:          ENCOPTS = -qscale 2              \
                                            -me_method iter -dia_size 2       \
                                            -cmp 12 -subcmp 12 -s 128x64
 
-fate-vsynth%-snow-ll:            ENCOPTS = -strict -2 -qscale .001 -pred 1 \
+fate-vsynth%-snow-ll:            ENCOPTS = -qscale .001 -pred 1 \
                                            -flags +mv4+qpel
 
 FATE_VCODEC-$(call ENCDEC, SVQ1, MOV)   += svq1

@@ -49,7 +49,8 @@ configuration file.
 
 Precisely, @command{ffserver} acts as an HTTP server, accepting POST
 requests from @command{ffmpeg} to acquire the stream to publish, and
-serving HTTP clients GET requests with the stream media content.
+serving RTSP clients or HTTP clients GET requests with the stream
+media content.
 
 A feed is an @ref{FFM} stream created by @command{ffmpeg}, and sent to
 a port where @command{ffserver} is listening.
@@ -86,15 +87,22 @@ Each stream is identified by a unique name, corresponding to the name
 of the resource served by @command{ffserver}, and is configured by
 a dedicated @code{Stream} section in the configuration file.
 
-The stream access URL is given by:
+The stream access HTTP URL is given by:
 @example
 http://@var{ffserver_ip_address}:@var{http_port}/@var{stream_name}[@var{options}]
+@end example
+
+The stream access RTSP URL is given by:
+@example
+http://@var{ffserver_ip_address}:@var{rtsp_port}/@var{stream_name}[@var{options}]
 @end example
 
 @var{stream_name} is the name of the corresponding stream defined in
 the configuration file. @var{options} is a list of options specified
 after the URL which affects how the stream is served by
-@command{ffserver}.
+@command{ffserver}. @var{http_port} and @var{rtsp_port} are the HTTP
+and RTSP ports configured with the options @var{Port} and
+@var{RTSPPort} respectively.
 
 In case the stream is associated to a feed, the encoding parameters
 must be configured in the stream configuration. They are sent to
@@ -103,7 +111,7 @@ must be configured in the stream configuration. They are sent to
 the @command{ffmpeg} encoders.
 
 The @command{ffmpeg} @option{override_ffserver} commandline option
-allows to override the encoding parameters set by the server.
+allows one to override the encoding parameters set by the server.
 
 Multiple streams can be connected to the same feed.
 
@@ -550,7 +558,11 @@ for regular streams.
 @item Comment @var{value}
 @item Copyright @var{value}
 @item Title @var{value}
-Set metadata corresponding to the option.
+Set metadata corresponding to the option. All these options are
+deprecated in favor of @option{Metadata}.
+
+@item Metadata @var{key} @var{value}
+Set metadata value on the output stream.
 
 @item NoAudio
 @item NoVideo
@@ -757,7 +769,7 @@ Ogg Vorbis audio
 @example
 <Stream test.ogg>
 Feed feed1.ffm
-Title "Stream title"
+Metadata title "Stream title"
 AudioBitRate 64
 AudioChannels 2
 AudioSampleRate 44100
@@ -804,10 +816,10 @@ NoAudio
 <Stream file.asf>
 File "/usr/local/httpd/htdocs/test.asf"
 NoAudio
-Author "Me"
-Copyright "Super MegaCorp"
-Title "Test stream from disk"
-Comment "Test comment"
+Metadata author "Me"
+Metadata copyright "Super MegaCorp"
+Metadata title "Test stream from disk"
+Metadata comment "Test comment"
 </Stream>
 @end example
 @end itemize
