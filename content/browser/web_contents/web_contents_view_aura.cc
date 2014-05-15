@@ -1257,8 +1257,6 @@ void WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
     return;
 
   aura::Window* target = GetWindowToAnimateForOverscroll();
-  ui::ScopedLayerAnimationSettings settings(target->layer()->GetAnimator());
-  settings.SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
   gfx::Vector2d translate = GetTranslationForOverscroll(delta_x, delta_y);
   gfx::Transform transform;
 
