@@ -7,8 +7,10 @@
 #include "apps/app_window_registry.h"
 #include "apps/ui/native_app_window.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_browser_application_mac.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -39,14 +41,6 @@ class QuitWithAppsControllerInteractiveTest
     command_line->AppendSwitch(switches::kAppsKeepChromeAlive);
   }
 
-  virtual void SetUpOnMainThread() OVERRIDE {
-    ExtensionBrowserTest::SetUpOnMainThread();
-
-    ExtensionTestMessageListener listener("Launched", false);
-    app_ = InstallAndLaunchPlatformApp("minimal_id");
-    ASSERT_TRUE(listener.WaitUntilSatisfied());
-  }
-
   const extensions::Extension* app_;
 
  private:
@@ -62,6 +56,18 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   const Notification* notification;
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
+
+  // With no app windows open, ShouldQuit returns true.
+  EXPECT_TRUE(controller->ShouldQuit());
+  notification = g_browser_process->notification_ui_manager()->FindById(
+      QuitWithAppsController::kQuitWithAppsNotificationID);
+  EXPECT_EQ(NULL, notification);
+
+  // Open an app window.
+  ExtensionTestMessageListener listener("Launched", false);
+  app_ = InstallAndLaunchPlatformApp("minimal_id");
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
   // One browser and one app window at this point.
   EXPECT_FALSE(chrome::BrowserIterator().done());
   EXPECT_TRUE(apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
@@ -97,12 +103,11 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
   EXPECT_FALSE(chrome::BrowserIterator().done());
   EXPECT_TRUE(apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
 
-  // Normally, quitting would close all browsers, but since we're just
-  // simulating a quit, close it here.
+  // Quitting should not quit but close all browsers
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::NotificationService::AllSources());
-  chrome::BrowserIterator()->window()->Close();
+  chrome_browser_application_mac::Terminate();
   observer.Wait();
 
   EXPECT_TRUE(chrome::BrowserIterator().done());
@@ -114,14 +119,13 @@ IN_PROC_BROWSER_TEST_F(QuitWithAppsControllerInteractiveTest, QuitBehavior) {
       QuitWithAppsController::kQuitWithAppsNotificationID);
   ASSERT_TRUE(notification);
 
-  // Clicking "Quit All Apps." button closes all app windows.
+  // Clicking "Quit All Apps." button closes all app windows. With no browsers
+  // open, this should also quit Chrome.
+  content::WindowedNotificationObserver quit_observer(
+      chrome::NOTIFICATION_APP_TERMINATING,
+      content::NotificationService::AllSources());
   notification->delegate()->ButtonClick(0);
   message_center->RemoveAllNotifications(false);
   EXPECT_FALSE(apps::AppWindowRegistry::IsAppWindowRegisteredInAnyProfile(0));
-
-  // With no app windows open, ShouldQuit returns true.
-  EXPECT_TRUE(controller->ShouldQuit());
-  notification = g_browser_process->notification_ui_manager()->FindById(
-      QuitWithAppsController::kQuitWithAppsNotificationID);
-  EXPECT_EQ(NULL, notification);
+  quit_observer.Wait();
 }

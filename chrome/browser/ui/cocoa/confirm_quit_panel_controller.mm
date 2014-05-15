@@ -15,6 +15,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
@@ -154,7 +155,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 - (void)setCurrentProgress:(NSAnimationProgress)progress {
   for (NSWindow* window in [application_ windows]) {
-    [window setAlphaValue:1.0 - progress];
+    if ([[window windowController]
+            isKindOfClass:[BrowserWindowController class]]) {
+      [window setAlphaValue:1.0 - progress];
+    }
   }
 }
 

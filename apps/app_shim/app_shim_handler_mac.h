@@ -56,6 +56,11 @@ class AppShimHandler {
   // shell windows, and the app list is not visible.
   static void MaybeTerminate();
 
+  // Whether browser sessions should be restored right now. This is true if
+  // the browser has been quit but kept alive because Chrome Apps are still
+  // running.
+  static bool ShouldRestoreSession();
+
   // Invoked by the shim host when the shim process is launched. The handler
   // must call OnAppLaunchComplete to inform the shim of the result.
   // |launch_type| indicates the type of launch.

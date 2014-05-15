@@ -61,12 +61,16 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
   }
 
   void MaybeTerminate() {
-    if (!browser_opened_ever_) {
+    if (!browser_session_running_) {
       // Post this to give AppWindows a chance to remove themselves from the
       // registry.
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&TerminateIfNoAppWindows));
     }
+  }
+
+  bool ShouldRestoreSession() {
+    return !browser_session_running_;
   }
 
  private:
@@ -75,9 +79,15 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
 
   AppShimHandlerRegistry()
       : default_handler_(NULL),
-        browser_opened_ever_(false) {
+        browser_session_running_(false) {
     registrar_.Add(
         this, chrome::NOTIFICATION_BROWSER_OPENED,
+        content::NotificationService::AllBrowserContextsAndSources());
+    registrar_.Add(
+        this, chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST,
+        content::NotificationService::AllBrowserContextsAndSources());
+    registrar_.Add(
+        this, chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
         content::NotificationService::AllBrowserContextsAndSources());
   }
 
@@ -88,17 +98,23 @@ class AppShimHandlerRegistry : public content::NotificationObserver {
       int type,
       const content::NotificationSource& source,
       const content::NotificationDetails& details) OVERRIDE {
-    DCHECK_EQ(chrome::NOTIFICATION_BROWSER_OPENED, type);
-    registrar_.Remove(
-        this, chrome::NOTIFICATION_BROWSER_OPENED,
-        content::NotificationService::AllBrowserContextsAndSources());
-    browser_opened_ever_ = true;
+    switch (type) {
+      case chrome::NOTIFICATION_BROWSER_OPENED:
+      case chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED:
+        browser_session_running_ = true;
+        break;
+      case chrome::NOTIFICATION_CLOSE_ALL_BROWSERS_REQUEST:
+        browser_session_running_ = false;
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
   HandlerMap handlers_;
   AppShimHandler* default_handler_;
   content::NotificationRegistrar registrar_;
-  bool browser_opened_ever_;
+  bool browser_session_running_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimHandlerRegistry);
 };
@@ -130,6 +146,11 @@ void AppShimHandler::SetDefaultHandler(AppShimHandler* handler) {
 // static
 void AppShimHandler::MaybeTerminate() {
   AppShimHandlerRegistry::GetInstance()->MaybeTerminate();
+}
+
+// static
+bool AppShimHandler::ShouldRestoreSession() {
+  return AppShimHandlerRegistry::GetInstance()->ShouldRestoreSession();
 }
 
 }  // namespace apps
