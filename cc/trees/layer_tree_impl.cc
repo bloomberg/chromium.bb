@@ -32,19 +32,19 @@ namespace cc {
 // This class exists to split the LayerScrollOffsetDelegate between the
 // InnerViewportScrollLayer and the OuterViewportScrollLayer in a manner
 // that never requires the embedder or LayerImpl to know about.
-class LayerScrollOffsetDelegateProxy : public LayerScrollOffsetDelegate {
+class LayerScrollOffsetDelegateProxy : public LayerImpl::ScrollOffsetDelegate {
  public:
   LayerScrollOffsetDelegateProxy(LayerImpl* layer,
                                  LayerScrollOffsetDelegate* delegate,
                                  LayerTreeImpl* layer_tree)
       : layer_(layer), delegate_(delegate), layer_tree_impl_(layer_tree) {}
+  virtual ~LayerScrollOffsetDelegateProxy() {}
 
   gfx::Vector2dF last_set_scroll_offset() const {
     return last_set_scroll_offset_;
   }
 
   // LayerScrollOffsetDelegate implementation.
-
   virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_offset) OVERRIDE {
     last_set_scroll_offset_ = new_offset;
     layer_tree_impl_->UpdateScrollOffsetDelegate();
@@ -56,20 +56,6 @@ class LayerScrollOffsetDelegateProxy : public LayerScrollOffsetDelegate {
 
   virtual bool IsExternalFlingActive() const OVERRIDE {
     return delegate_->IsExternalFlingActive();
-  }
-
-  // Functions below this point are never called by LayerImpl on its
-  // LayerScrollOffsetDelegate, and so are not implemented.
-  virtual void SetMaxScrollOffset(const gfx::Vector2dF&) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual void SetTotalPageScaleFactorAndLimits(float, float, float) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual void SetScrollableSize(const gfx::SizeF& scrollable_size) OVERRIDE {
-    NOTIMPLEMENTED();
   }
 
  private:
@@ -320,7 +306,10 @@ void LayerTreeImpl::SetPageScaleFactorAndLimits(float page_scale_factor,
   page_scale_factor_ = page_scale_factor;
 
   if (root_layer_scroll_offset_delegate_) {
-    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactorAndLimits(
+    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+        TotalScrollOffset(),
+        TotalMaxScrollOffset(),
+        ScrollableSize(),
         total_page_scale_factor(),
         this->min_page_scale_factor(),
         this->max_page_scale_factor());
@@ -354,7 +343,10 @@ void LayerTreeImpl::SetPageScaleDelta(float delta) {
   set_needs_update_draw_properties();
 
   if (root_layer_scroll_offset_delegate_) {
-    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactorAndLimits(
+    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+        TotalScrollOffset(),
+        TotalMaxScrollOffset(),
+        ScrollableSize(),
         total_page_scale_factor(),
         min_page_scale_factor(),
         max_page_scale_factor());
@@ -818,12 +810,10 @@ void LayerTreeImpl::SetRootLayerScrollOffsetDelegate(
   root_layer_scroll_offset_delegate_ = root_layer_scroll_offset_delegate;
 
   if (root_layer_scroll_offset_delegate_) {
-    root_layer_scroll_offset_delegate_->SetTotalScrollOffset(
-        TotalScrollOffset());
-    root_layer_scroll_offset_delegate_->SetMaxScrollOffset(
-        TotalMaxScrollOffset());
-    root_layer_scroll_offset_delegate_->SetScrollableSize(ScrollableSize());
-    root_layer_scroll_offset_delegate_->SetTotalPageScaleFactorAndLimits(
+    root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+        TotalScrollOffset(),
+        TotalMaxScrollOffset(),
+        ScrollableSize(),
         total_page_scale_factor(),
         min_page_scale_factor(),
         max_page_scale_factor());
@@ -858,9 +848,13 @@ void LayerTreeImpl::UpdateScrollOffsetDelegate() {
   if (OuterViewportScrollLayer())
     offset += outer_viewport_scroll_delegate_proxy_->last_set_scroll_offset();
 
-  root_layer_scroll_offset_delegate_->SetTotalScrollOffset(offset);
-  root_layer_scroll_offset_delegate_->SetMaxScrollOffset(
-      TotalMaxScrollOffset());
+  root_layer_scroll_offset_delegate_->UpdateRootLayerState(
+      offset,
+      TotalMaxScrollOffset(),
+      ScrollableSize(),
+      total_page_scale_factor(),
+      min_page_scale_factor(),
+      max_page_scale_factor());
 }
 
 gfx::Vector2dF LayerTreeImpl::GetDelegatedScrollOffset(LayerImpl* layer) {

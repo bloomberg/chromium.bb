@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -71,6 +72,27 @@ class AutoResetWithLock {
   base::Lock& lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoResetWithLock);
+};
+
+class TracedValue : public base::debug::ConvertableToTraceFormat {
+ public:
+  explicit TracedValue(base::Value* value) : value_(value) {}
+  static scoped_refptr<base::debug::ConvertableToTraceFormat> FromValue(
+      base::Value* value) {
+    return scoped_refptr<base::debug::ConvertableToTraceFormat>(
+        new TracedValue(value));
+  }
+  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+    std::string tmp;
+    base::JSONWriter::Write(value_.get(), &tmp);
+    *out += tmp;
+  }
+
+ private:
+  virtual ~TracedValue() {}
+  scoped_ptr<base::Value> value_;
+
+  DISALLOW_COPY_AND_ASSIGN(TracedValue);
 };
 
 }  // namespace
@@ -485,6 +507,14 @@ void BrowserViewRenderer::ScrollTo(gfx::Vector2d scroll_offset) {
     scroll_offset_dip_ = scroll_offset_dip;
   }
 
+  TRACE_EVENT_INSTANT2("android_webview",
+               "BrowserViewRenderer::ScrollTo",
+               TRACE_EVENT_SCOPE_THREAD,
+               "x",
+               scroll_offset_dip.x(),
+               "y",
+               scroll_offset_dip.y());
+
   if (has_compositor_)
     shared_renderer_state_->GetCompositor()->
         DidChangeRootLayerScrollOffset();
@@ -505,35 +535,8 @@ void BrowserViewRenderer::DidUpdateContent() {
     client_->OnNewPicture();
 }
 
-void BrowserViewRenderer::SetMaxRootLayerScrollOffset(
-    gfx::Vector2dF new_value_dip) {
-  if (!ui_task_runner_->BelongsToCurrentThread()) {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&BrowserViewRenderer::SetMaxRootLayerScrollOffset,
-                   ui_thread_weak_ptr_,
-                   new_value_dip));
-    return;
-  }
-  DCHECK_GT(dip_scale_, 0);
-
-  max_scroll_offset_dip_ = new_value_dip;
-  DCHECK_LE(0, max_scroll_offset_dip_.x());
-  DCHECK_LE(0, max_scroll_offset_dip_.y());
-
-  client_->SetMaxContainerViewScrollOffset(max_scroll_offset());
-}
-
 void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
     gfx::Vector2dF scroll_offset_dip) {
-  if (!ui_task_runner_->BelongsToCurrentThread()) {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&BrowserViewRenderer::SetTotalRootLayerScrollOffset,
-                   ui_thread_weak_ptr_,
-                   scroll_offset_dip));
-    return;
-  }
 
   {
     base::AutoLock lock(render_thread_lock_);
@@ -561,10 +564,8 @@ void BrowserViewRenderer::SetTotalRootLayerScrollOffset(
 
   DCHECK(0 <= scroll_offset.x());
   DCHECK(0 <= scroll_offset.y());
-  // Disabled because the conditions are being violated while running
-  // AwZoomTest.testMagnification, see http://crbug.com/340648
-  // DCHECK(scroll_offset.x() <= max_offset.x());
-  // DCHECK(scroll_offset.y() <= max_offset.y());
+  DCHECK(scroll_offset.x() <= max_offset.x());
+  DCHECK(scroll_offset.y() <= max_offset.y());
 
   client_->ScrollContainerViewTo(scroll_offset);
 }
@@ -583,38 +584,68 @@ bool BrowserViewRenderer::IsExternalFlingActive() const {
   return client_->IsFlingActive();
 }
 
-void BrowserViewRenderer::SetRootLayerPageScaleFactorAndLimits(
+void BrowserViewRenderer::UpdateRootLayerState(
+    const gfx::Vector2dF& total_scroll_offset_dip,
+    const gfx::Vector2dF& max_scroll_offset_dip,
+    const gfx::SizeF& scrollable_size_dip,
     float page_scale_factor,
     float min_page_scale_factor,
     float max_page_scale_factor) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&BrowserViewRenderer::SetRootLayerPageScaleFactorAndLimits,
+        base::Bind(&BrowserViewRenderer::UpdateRootLayerState,
                    ui_thread_weak_ptr_,
+                   total_scroll_offset_dip,
+                   max_scroll_offset_dip,
+                   scrollable_size_dip,
                    page_scale_factor,
                    min_page_scale_factor,
                    max_page_scale_factor));
     return;
   }
+  TRACE_EVENT_INSTANT1(
+      "android_webview",
+      "BrowserViewRenderer::UpdateRootLayerState",
+      TRACE_EVENT_SCOPE_THREAD,
+      "state",
+      TracedValue::FromValue(
+          RootLayerStateAsValue(total_scroll_offset_dip, scrollable_size_dip)
+              .release()));
+
+  DCHECK_GT(dip_scale_, 0);
+
+  max_scroll_offset_dip_ = max_scroll_offset_dip;
+  DCHECK_LE(0, max_scroll_offset_dip_.x());
+  DCHECK_LE(0, max_scroll_offset_dip_.y());
+
   page_scale_factor_ = page_scale_factor;
   DCHECK_GT(page_scale_factor_, 0);
-  client_->SetPageScaleFactorAndLimits(
-      page_scale_factor, min_page_scale_factor, max_page_scale_factor);
-  client_->SetMaxContainerViewScrollOffset(max_scroll_offset());
+
+  client_->UpdateScrollState(max_scroll_offset(),
+                             scrollable_size_dip,
+                             page_scale_factor,
+                             min_page_scale_factor,
+                             max_page_scale_factor);
+  SetTotalRootLayerScrollOffset(total_scroll_offset_dip);
 }
 
-void BrowserViewRenderer::SetRootLayerScrollableSize(
-    gfx::SizeF scrollable_size) {
-  if (!ui_task_runner_->BelongsToCurrentThread()) {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&BrowserViewRenderer::SetRootLayerScrollableSize,
-                   ui_thread_weak_ptr_,
-                   scrollable_size));
-    return;
-  }
-  client_->SetContentsSize(scrollable_size);
+scoped_ptr<base::Value> BrowserViewRenderer::RootLayerStateAsValue(
+    const gfx::Vector2dF& total_scroll_offset_dip,
+    const gfx::SizeF& scrollable_size_dip) {
+  scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue);
+
+  state->SetDouble("total_scroll_offset_dip.x", total_scroll_offset_dip.x());
+  state->SetDouble("total_scroll_offset_dip.y", total_scroll_offset_dip.y());
+
+  state->SetDouble("max_scroll_offset_dip.x", max_scroll_offset_dip_.x());
+  state->SetDouble("max_scroll_offset_dip.y", max_scroll_offset_dip_.y());
+
+  state->SetDouble("scrollable_size_dip.width", scrollable_size_dip.width());
+  state->SetDouble("scrollable_size_dip.height", scrollable_size_dip.height());
+
+  state->SetDouble("page_scale_factor", page_scale_factor_);
+  return state.PassAs<base::Value>();
 }
 
 void BrowserViewRenderer::DidOverscroll(gfx::Vector2dF accumulated_overscroll,

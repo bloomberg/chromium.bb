@@ -11,6 +11,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
+#include "base/values.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/rect.h"
@@ -120,17 +121,16 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   virtual void DidDestroyCompositor(content::SynchronousCompositor* compositor)
       OVERRIDE;
   virtual void SetContinuousInvalidate(bool invalidate) OVERRIDE;
-  virtual void SetMaxRootLayerScrollOffset(gfx::Vector2dF new_value) OVERRIDE;
-  virtual void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_css)
-      OVERRIDE;
   virtual void DidUpdateContent() OVERRIDE;
   virtual gfx::Vector2dF GetTotalRootLayerScrollOffset() OVERRIDE;
+  virtual void UpdateRootLayerState(
+      const gfx::Vector2dF& total_scroll_offset_dip,
+      const gfx::Vector2dF& max_scroll_offset_dip,
+      const gfx::SizeF& scrollable_size_dip,
+      float page_scale_factor,
+      float min_page_scale_factor,
+      float max_page_scale_factor) OVERRIDE;
   virtual bool IsExternalFlingActive() const OVERRIDE;
-  virtual void SetRootLayerPageScaleFactorAndLimits(float page_scale_factor,
-                                                    float min_page_scale_factor,
-                                                    float max_page_scale_factor)
-      OVERRIDE;
-  virtual void SetRootLayerScrollableSize(gfx::SizeF scrollable_size) OVERRIDE;
   virtual void DidOverscroll(gfx::Vector2dF accumulated_overscroll,
                              gfx::Vector2dF latest_overscroll_delta,
                              gfx::Vector2dF current_fling_velocity) OVERRIDE;
@@ -141,6 +141,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                            bool effective_immediately) OVERRIDE;
 
  private:
+  void SetTotalRootLayerScrollOffset(gfx::Vector2dF new_value_dip);
   // Checks the continuous invalidate and block invalidate state, and schedule
   // invalidates appropriately. If |force_invalidate| is true, then send a view
   // invalidate regardless of compositor expectation.
@@ -148,6 +149,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool DrawSWInternal(jobject java_canvas, const gfx::Rect& clip_bounds);
   bool CompositeSW(SkCanvas* canvas);
   void DidComposite(bool force_invalidate);
+  scoped_ptr<base::Value> RootLayerStateAsValue(
+      const gfx::Vector2dF& total_scroll_offset_dip,
+      const gfx::SizeF& scrollable_size_dip);
 
   // If we call up view invalidate and OnDraw is not called before a deadline,
   // then we keep ticking the SynchronousCompositor so it can make progress.

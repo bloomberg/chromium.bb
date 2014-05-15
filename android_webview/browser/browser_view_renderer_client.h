@@ -34,20 +34,19 @@ class BrowserViewRendererClient {
   // Try to set the view's scroll offset to |new_value|.
   virtual void ScrollContainerViewTo(gfx::Vector2d new_value) = 0;
 
-  // Set the view's scroll offset cap to |new_value|.
-  virtual void SetMaxContainerViewScrollOffset(gfx::Vector2d new_value) = 0;
-
   // Is a Android view system managed fling in progress?
   virtual bool IsFlingActive() const = 0;
 
-  // Set the current page scale to |page_scale_factor| and page scale limits
+  // Sets the following:
+  // view's scroll offset cap to |max_scroll_offset|,
+  // current contents_size to |contents_size_dip|,
+  // the current page scale to |page_scale_factor| and page scale limits
   // to |min_page_scale_factor|..|max_page_scale_factor|.
-  virtual void SetPageScaleFactorAndLimits(float page_scale_factor,
-                                           float min_page_scale_factor,
-                                           float max_page_scale_factor) = 0;
-
-  // Set the current contents_size to |contents_size_dip|.
-  virtual void SetContentsSize(gfx::SizeF contents_size_dip) = 0;
+  virtual void UpdateScrollState(gfx::Vector2d max_scroll_offset,
+                                 gfx::SizeF contents_size_dip,
+                                 float page_scale_factor,
+                                 float min_page_scale_factor,
+                                 float max_page_scale_factor) = 0;
 
   // Handle overscroll.
   virtual void DidOverscroll(gfx::Vector2d overscroll_delta) = 0;

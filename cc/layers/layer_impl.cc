@@ -1072,7 +1072,7 @@ void LayerImpl::CalculateContentsScale(float ideal_contents_scale,
 }
 
 void LayerImpl::SetScrollOffsetDelegate(
-    LayerScrollOffsetDelegate* scroll_offset_delegate) {
+    ScrollOffsetDelegate* scroll_offset_delegate) {
   // Having both a scroll parent and a scroll offset delegate is unsupported.
   DCHECK(!scroll_parent_);
   if (!scroll_offset_delegate && scroll_offset_delegate_) {

@@ -17,14 +17,6 @@ namespace cc {
 // The LayerScrollOffsetDelegate is only used on the impl thread.
 class LayerScrollOffsetDelegate {
  public:
-  // This is called by the compositor to notify the delegate what is the upper
-  // total scroll offset bound.
-  virtual void SetMaxScrollOffset(const gfx::Vector2dF& max_scroll_offset) = 0;
-
-  // This is called by the compositor when the scroll offset of the layer would
-  // have otherwise changed.
-  virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) = 0;
-
   // This is called by the compositor to query the current scroll offset of the
   // layer.
   // There is no requirement that the return values of this method are
@@ -34,20 +26,24 @@ class LayerScrollOffsetDelegate {
   // more than the value passed to the most recent SetMaxScrollOffset call.
   virtual gfx::Vector2dF GetTotalScrollOffset() = 0;
 
+  // This is called by the compositor to notify the delegate of any change to
+  // the following parameters:
+  // |total_scroll_offset| current scroll offset of the root layer,
+  // |max_scroll_offset| total scroll offset upper bound for the root layer,
+  // |scrollable_size| root layer scrollable size,
+  // |page_scale_factor| current page scale,
+  // |min_page_scale_factor| page scale lower limit,
+  // |max_page_scale_factor| page scale upper limit.
+  virtual void UpdateRootLayerState(const gfx::Vector2dF& total_scroll_offset,
+                                    const gfx::Vector2dF& max_scroll_offset,
+                                    const gfx::SizeF& scrollable_size,
+                                    float page_scale_factor,
+                                    float min_page_scale_factor,
+                                    float max_page_scale_factor) = 0;
+
   // This is called by the compositor to check whether a delegate-managed fling
   // is active or not.
   virtual bool IsExternalFlingActive() const = 0;
-
-  // This is called by the compositor to notify the delegate what is the current
-  // page scale factor and limits are.
-  virtual void SetTotalPageScaleFactorAndLimits(
-      float page_scale_factor,
-      float min_page_scale_factor,
-      float max_page_scale_factor) = 0;
-
-  // This is called by the compositor to notify the delegate what is the layer's
-  // scrollable size is.
-  virtual void SetScrollableSize(const gfx::SizeF& scrollable_size) = 0;
 
  protected:
   LayerScrollOffsetDelegate() {}

@@ -2664,6 +2664,11 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::PinchGestureUpdate");
 
+  // For a moment the scroll offset ends up being outside of the max range. This
+  // confuses the delegate so we switch it off till after we're done processing
+  // the pinch update.
+  active_tree_->SetRootLayerScrollOffsetDelegate(NULL);
+
   // Keep the center-of-pinch anchor specified by (x, y) in a stable
   // position over the course of the magnify.
   float page_scale_delta = active_tree_->page_scale_delta();
@@ -2696,6 +2701,9 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
     InnerViewportScrollLayer()->ScrollBy(unused);
     InnerViewportScrollLayer()->ClampScrollToMaxScrollOffset();
   }
+
+  active_tree_->SetRootLayerScrollOffsetDelegate(
+      root_layer_scroll_offset_delegate_);
 
   client_->SetNeedsCommitOnImplThread();
   SetNeedsRedraw();

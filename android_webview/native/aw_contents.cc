@@ -939,16 +939,6 @@ gfx::Point AwContents::GetLocationOnScreen() {
   return gfx::Point(location[0], location[1]);
 }
 
-void AwContents::SetMaxContainerViewScrollOffset(gfx::Vector2d new_value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_AwContents_setMaxContainerViewScrollOffset(
-      env, obj.obj(), new_value.x(), new_value.y());
-}
-
 void AwContents::ScrollContainerViewTo(gfx::Vector2d new_value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
@@ -968,30 +958,25 @@ bool AwContents::IsFlingActive() const {
   return Java_AwContents_isFlingActive(env, obj.obj());
 }
 
-void AwContents::SetPageScaleFactorAndLimits(
-    float page_scale_factor,
-    float min_page_scale_factor,
-    float max_page_scale_factor) {
+void AwContents::UpdateScrollState(gfx::Vector2d max_scroll_offset,
+                                   gfx::SizeF contents_size_dip,
+                                   float page_scale_factor,
+                                   float min_page_scale_factor,
+                                   float max_page_scale_factor) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
-  Java_AwContents_setPageScaleFactorAndLimits(env,
-                                              obj.obj(),
-                                              page_scale_factor,
-                                              min_page_scale_factor,
-                                              max_page_scale_factor);
-}
-
-void AwContents::SetContentsSize(gfx::SizeF contents_size_dip) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_AwContents_setContentsSize(
-      env, obj.obj(), contents_size_dip.width(), contents_size_dip.height());
+  Java_AwContents_updateScrollState(env,
+                                    obj.obj(),
+                                    max_scroll_offset.x(),
+                                    max_scroll_offset.y(),
+                                    contents_size_dip.width(),
+                                    contents_size_dip.height(),
+                                    page_scale_factor,
+                                    min_page_scale_factor,
+                                    max_page_scale_factor);
 }
 
 void AwContents::DidOverscroll(gfx::Vector2d overscroll_delta) {

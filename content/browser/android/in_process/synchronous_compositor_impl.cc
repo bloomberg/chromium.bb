@@ -220,20 +220,6 @@ void SynchronousCompositorImpl::DidActivatePendingTree() {
     compositor_client_->DidUpdateContent();
 }
 
-void SynchronousCompositorImpl::SetMaxScrollOffset(
-    const gfx::Vector2dF& max_scroll_offset) {
-  DCHECK(CalledOnValidThread());
-  if (compositor_client_)
-    compositor_client_->SetMaxRootLayerScrollOffset(max_scroll_offset);
-}
-
-void SynchronousCompositorImpl::SetTotalScrollOffset(
-    const gfx::Vector2dF& new_value) {
-  DCHECK(CalledOnValidThread());
-  if (compositor_client_)
-    compositor_client_->SetTotalRootLayerScrollOffset(new_value);
-}
-
 gfx::Vector2dF SynchronousCompositorImpl::GetTotalScrollOffset() {
   DCHECK(CalledOnValidThread());
   if (compositor_client_)
@@ -248,21 +234,23 @@ bool SynchronousCompositorImpl::IsExternalFlingActive() const {
   return false;
 }
 
-void SynchronousCompositorImpl::SetTotalPageScaleFactorAndLimits(
+void SynchronousCompositorImpl::UpdateRootLayerState(
+    const gfx::Vector2dF& total_scroll_offset,
+    const gfx::Vector2dF& max_scroll_offset,
+    const gfx::SizeF& scrollable_size,
     float page_scale_factor,
     float min_page_scale_factor,
     float max_page_scale_factor) {
   DCHECK(CalledOnValidThread());
-  if (compositor_client_)
-    compositor_client_->SetRootLayerPageScaleFactorAndLimits(
-        page_scale_factor, min_page_scale_factor, max_page_scale_factor);
-}
+  if (!compositor_client_)
+    return;
 
-void SynchronousCompositorImpl::SetScrollableSize(
-    const gfx::SizeF& scrollable_size) {
-  DCHECK(CalledOnValidThread());
-  if (compositor_client_)
-    compositor_client_->SetRootLayerScrollableSize(scrollable_size);
+  compositor_client_->UpdateRootLayerState(total_scroll_offset,
+                                           max_scroll_offset,
+                                           scrollable_size,
+                                           page_scale_factor,
+                                           min_page_scale_factor,
+                                           max_page_scale_factor);
 }
 
 // Not using base::NonThreadSafe as we want to enforce a more exacting threading

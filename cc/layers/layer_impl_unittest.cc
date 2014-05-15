@@ -488,10 +488,8 @@ TEST_F(LayerImplScrollTest, ScrollByWithNonZeroOffset) {
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
 }
 
-class ScrollDelegateIgnore : public LayerScrollOffsetDelegate {
+class ScrollDelegateIgnore : public LayerImpl::ScrollOffsetDelegate {
  public:
-  virtual void SetMaxScrollOffset(
-      const gfx::Vector2dF& max_scroll_offset) OVERRIDE {}
   virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) OVERRIDE {}
   virtual gfx::Vector2dF GetTotalScrollOffset() OVERRIDE {
     return fixed_offset_;
@@ -501,12 +499,6 @@ class ScrollDelegateIgnore : public LayerScrollOffsetDelegate {
   void set_fixed_offset(const gfx::Vector2dF& fixed_offset) {
     fixed_offset_ = fixed_offset;
   }
-
-  virtual void SetTotalPageScaleFactorAndLimits(
-      float page_scale_factor,
-      float min_page_scale_factor,
-      float max_page_scale_factor) OVERRIDE {}
-  virtual void SetScrollableSize(const gfx::SizeF& scrollable_size) OVERRIDE {}
 
  private:
   gfx::Vector2dF fixed_offset_;
@@ -545,10 +537,8 @@ TEST_F(LayerImplScrollTest, ScrollByWithIgnoringDelegate) {
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
 }
 
-class ScrollDelegateAccept : public LayerScrollOffsetDelegate {
+class ScrollDelegateAccept : public LayerImpl::ScrollOffsetDelegate {
  public:
-  virtual void SetMaxScrollOffset(
-      const gfx::Vector2dF& max_scroll_offset) OVERRIDE {}
   virtual void SetTotalScrollOffset(const gfx::Vector2dF& new_value) OVERRIDE {
     current_offset_ = new_value;
   }
@@ -556,11 +546,6 @@ class ScrollDelegateAccept : public LayerScrollOffsetDelegate {
     return current_offset_;
   }
   virtual bool IsExternalFlingActive() const OVERRIDE { return false; }
-  virtual void SetTotalPageScaleFactorAndLimits(
-      float page_scale_factor,
-      float min_page_scale_factor,
-      float max_page_scale_factor) OVERRIDE {}
-  virtual void SetScrollableSize(const gfx::SizeF& scrollable_size) OVERRIDE {}
 
  private:
   gfx::Vector2dF current_offset_;
