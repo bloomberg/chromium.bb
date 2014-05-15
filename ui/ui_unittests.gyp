@@ -40,7 +40,11 @@
         'base/resource/data_pack_unittest.cc',
         'base/resource/resource_bundle_unittest.cc',
         'base/test/run_all_unittests.cc',
+        'gfx/font_unittest.cc',
+        'gfx/image/image_skia_unittest.cc',
         'gfx/screen_unittest.cc',
+        'gfx/text_elider_unittest.cc',
+        'gfx/text_utils_unittest.cc',
       ],
       'all_sources': [
         '<@(_common_sources)',
@@ -138,7 +142,11 @@
         }],
         ['use_pango == 1', {
           'dependencies': [
+            '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:pangocairo',
+          ],
+          'sources': [
+            'gfx/platform_font_pango_unittest.cc',
           ],
           'conditions': [
             ['use_allocator!="none"', {
@@ -198,9 +206,11 @@
         }],
         ['use_ozone==1 and use_pango==0', {
           'sources!': [
-            'gfx/canvas_unittest.cc',
+            'gfx/text_elider_unittest.cc',
+            'gfx/font_unittest.cc',
             'gfx/font_list_unittest.cc',
             'gfx/render_text_unittest.cc',
+            'gfx/canvas_unittest.cc',
           ],
         }],
         ['chromeos==1', {
