@@ -69,6 +69,7 @@ TAGS
 /doc/liblouis.opcodes
 /doc/liblouis.aux
 /doc/liblouis.cp
+/doc/liblouis.t2p/
 
 # /gnulib/
 /gnulib/getopt.h
@@ -142,4 +143,3 @@ TAGS
 /tools/lou_trace
 /tools/lou_translate
 /tools/*.exe
-
