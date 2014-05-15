@@ -1763,6 +1763,15 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableSettingsWindow)
   },
+#if defined(OS_ANDROID)
+  {
+    "enable-instant-search-clicks",
+    IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_NAME,
+    IDS_FLAGS_ENABLE_INSTANT_SEARCH_CLICKS_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableInstantSearchClicks)
+  },
+#endif
   {
     "enable-save-password-bubble",
     IDS_FLAGS_ENABLE_SAVE_PASSWORD_BUBBLE_NAME,
