@@ -531,24 +531,32 @@ TEST_F(InputMethodChromeOSTest, Focus_Scenario) {
 
   input_mode_ = TEXT_INPUT_MODE_KANA;
   ime_->OnTextInputTypeChanged(this);
-  // Confirm that both FocusIn and FocusOut are NOT called.
-  EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
-  EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
+  // Confirm that both FocusIn and FocusOut are called for mode change.
+  EXPECT_EQ(2, mock_ime_engine_handler_->focus_in_call_count());
+  EXPECT_EQ(1, mock_ime_engine_handler_->focus_out_call_count());
   EXPECT_EQ(TEXT_INPUT_TYPE_TEXT,
             mock_ime_engine_handler_->last_text_input_context().type);
-  EXPECT_EQ(TEXT_INPUT_MODE_LATIN,
+  EXPECT_EQ(TEXT_INPUT_MODE_KANA,
             mock_ime_engine_handler_->last_text_input_context().mode);
 
   input_type_ = TEXT_INPUT_TYPE_URL;
   ime_->OnTextInputTypeChanged(this);
   // Confirm that both FocusIn and FocusOut are called and the TextInputType is
-  // URL.
-  EXPECT_EQ(2, mock_ime_engine_handler_->focus_in_call_count());
-  EXPECT_EQ(1, mock_ime_engine_handler_->focus_out_call_count());
+  // changed to URL.
+  EXPECT_EQ(3, mock_ime_engine_handler_->focus_in_call_count());
+  EXPECT_EQ(2, mock_ime_engine_handler_->focus_out_call_count());
   EXPECT_EQ(TEXT_INPUT_TYPE_URL,
             mock_ime_engine_handler_->last_text_input_context().type);
   EXPECT_EQ(TEXT_INPUT_MODE_KANA,
             mock_ime_engine_handler_->last_text_input_context().mode);
+  // Confirm that FocusOut is called when set focus to NULL client.
+  ime_->SetFocusedTextInputClient(NULL);
+  EXPECT_EQ(3, mock_ime_engine_handler_->focus_in_call_count());
+  EXPECT_EQ(3, mock_ime_engine_handler_->focus_out_call_count());
+  // Confirm that FocusIn is called when set focus to this client.
+  ime_->SetFocusedTextInputClient(this);
+  EXPECT_EQ(4, mock_ime_engine_handler_->focus_in_call_count());
+  EXPECT_EQ(3, mock_ime_engine_handler_->focus_out_call_count());
 }
 
 // Test if the new |caret_bounds_| is correctly sent to ibus-daemon.

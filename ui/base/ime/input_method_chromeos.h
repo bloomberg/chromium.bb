@@ -144,8 +144,6 @@ class UI_BASE_EXPORT InputMethodChromeOS
   // including dead key etc.
   CharacterComposer character_composer_;
 
-  TextInputType previous_textinput_type_;
-
   // Used for making callbacks.
   base::WeakPtrFactory<InputMethodChromeOS> weak_ptr_factory_;
 

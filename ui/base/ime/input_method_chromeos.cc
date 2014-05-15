@@ -40,13 +40,11 @@ InputMethodChromeOS::InputMethodChromeOS(
     : composing_text_(false),
       composition_changed_(false),
       current_keyevent_id_(0),
-      previous_textinput_type_(TEXT_INPUT_TYPE_NONE),
       weak_ptr_factory_(this) {
   SetDelegate(delegate);
   chromeos::IMEBridge::Get()->SetInputContextHandler(this);
 
   UpdateContextFocusState();
-  OnInputMethodChanged();
 }
 
 InputMethodChromeOS::~InputMethodChromeOS() {
@@ -142,13 +140,22 @@ bool InputMethodChromeOS::DispatchKeyEvent(const ui::KeyEvent& event) {
 
 void InputMethodChromeOS::OnTextInputTypeChanged(
     const TextInputClient* client) {
-  if (IsTextInputClientFocused(client)) {
-    ResetContext();
-    UpdateContextFocusState();
-    if (previous_textinput_type_ != client->GetTextInputType())
-      OnInputMethodChanged();
-    previous_textinput_type_ = client->GetTextInputType();
+  if (!IsTextInputClientFocused(client))
+    return;
+
+  UpdateContextFocusState();
+
+  chromeos::IMEEngineHandlerInterface* engine = GetEngine();
+  if (engine) {
+    // When focused input client is not changed, a text input type change should
+    // cause blur/focus events to engine.
+    // The focus in to or out from password field should also notify engine.
+    engine->FocusOut();
+    chromeos::IMEEngineHandlerInterface::InputContext context(
+        GetTextInputType(), GetTextInputMode());
+    engine->FocusIn(context);
   }
+
   InputMethodBase::OnTextInputTypeChanged(client);
 }
 
@@ -234,6 +241,9 @@ void InputMethodChromeOS::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
   ConfirmCompositionText();
+
+  if (GetEngine())
+    GetEngine()->FocusOut();
 }
 
 void InputMethodChromeOS::OnDidChangeFocusedClient(
@@ -242,12 +252,13 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
   // Force to update the input type since client's TextInputStateChanged()
   // function might not be called if text input types before the client loses
   // focus and after it acquires focus again are the same.
-  OnTextInputTypeChanged(focused);
-
   UpdateContextFocusState();
-  // Force to update caret bounds, in case the client thinks that the caret
-  // bounds has not changed.
-  OnCaretBoundsChanged(focused);
+
+  if (GetEngine()) {
+    chromeos::IMEEngineHandlerInterface::InputContext context(
+        GetTextInputType(), GetTextInputMode());
+    GetEngine()->FocusIn(context);
+  }
 }
 
 void InputMethodChromeOS::ConfirmCompositionText() {
@@ -285,6 +296,9 @@ void InputMethodChromeOS::ResetContext() {
 }
 
 void InputMethodChromeOS::UpdateContextFocusState() {
+  ResetContext();
+  OnInputMethodChanged();
+
   // Propagate the focus event to the candidate window handler which also
   // manages the input method mode indicator.
   chromeos::IMECandidateWindowHandlerInterface* candidate_window =
@@ -292,25 +306,10 @@ void InputMethodChromeOS::UpdateContextFocusState() {
   if (candidate_window)
     candidate_window->FocusStateChanged(IsInputFieldFocused());
 
-  const TextInputType current_text_input_type = GetTextInputType();
-  chromeos::IMEBridge::Get()->SetCurrentTextInputType(current_text_input_type);
+  chromeos::IMEBridge::Get()->SetCurrentTextInputType(GetTextInputType());
 
-  if (!GetEngine())
-    return;
-
-  // When focus is not changed, a text input type change causes a focus
-  // blink. The focus in to or out from password field should also notify
-  // engine.
-  if (previous_textinput_type_ != TEXT_INPUT_TYPE_NONE &&
-      previous_textinput_type_ != current_text_input_type)
-    GetEngine()->FocusOut();
-  if (current_text_input_type != TEXT_INPUT_TYPE_NONE &&
-      current_text_input_type != previous_textinput_type_) {
-    chromeos::IMEEngineHandlerInterface::InputContext context(
-        current_text_input_type, GetTextInputMode());
-    GetEngine()->FocusIn(context);
+  if (!IsTextInputTypeNone())
     OnCaretBoundsChanged(GetTextInputClient());
-  }
 }
 
 void InputMethodChromeOS::ProcessKeyEventPostIME(

@@ -488,7 +488,8 @@ void InputMethodEngine::EnableInputView(bool enabled) {
 void InputMethodEngine::FocusIn(
     const IMEEngineHandlerInterface::InputContext& input_context) {
   current_input_type_ = input_context.type;
-  if (!active_)
+
+  if (!active_ || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
     return;
 
   // Prevent sending events on password field to 3rd-party IME extensions.
@@ -534,14 +535,15 @@ void InputMethodEngine::FocusIn(
 }
 
 void InputMethodEngine::FocusOut() {
-  ui::TextInputType input_type = current_input_type_;
-  current_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
-  if (!active_)
+  if (!active_ || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
     return;
+
+  ui::TextInputType previous_input_type = current_input_type_;
+  current_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
 
   // Prevent sending events on password field to 3rd-party IME extensions.
   // And also make sure the VK restore to IME input view.
-  if (input_type == ui::TEXT_INPUT_TYPE_PASSWORD &&
+  if (previous_input_type == ui::TEXT_INPUT_TYPE_PASSWORD &&
       !extension_ime_util::IsComponentExtensionIME(GetDescriptor().id())) {
     EnableInputView(true);
     return;

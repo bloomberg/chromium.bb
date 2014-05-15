@@ -22,12 +22,15 @@ MockIMEEngineHandler::~MockIMEEngineHandler() {
 }
 
 void MockIMEEngineHandler::FocusIn(const InputContext& input_context) {
-  ++focus_in_call_count_;
   last_text_input_context_ = input_context;
+  if (last_text_input_context_.type != ui::TEXT_INPUT_TYPE_NONE)
+    ++focus_in_call_count_;
 }
 
 void MockIMEEngineHandler::FocusOut() {
-  ++focus_out_call_count_;
+  if (last_text_input_context_.type != ui::TEXT_INPUT_TYPE_NONE)
+    ++focus_out_call_count_;
+  last_text_input_context_.type = ui::TEXT_INPUT_TYPE_NONE;
 }
 
 void MockIMEEngineHandler::Enable() {
