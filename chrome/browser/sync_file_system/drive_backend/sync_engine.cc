@@ -60,14 +60,12 @@ class RemoteChangeProcessor;
 
 namespace drive_backend {
 
-class SyncEngine::WorkerObserver
-    : public SyncWorker::Observer {
+class SyncEngine::WorkerObserver : public SyncWorker::Observer {
  public:
   WorkerObserver(base::SequencedTaskRunner* ui_task_runner,
                  base::WeakPtr<SyncEngine> sync_engine)
       : ui_task_runner_(ui_task_runner),
-        sync_engine_(sync_engine){
-  }
+        sync_engine_(sync_engine) {}
 
   virtual ~WorkerObserver() {}
 
@@ -89,7 +87,6 @@ class SyncEngine::WorkerObserver
                    sync_engine_,
                    url, file_status, sync_action, direction));
   }
-
 
   virtual void UpdateServiceState(RemoteServiceState state,
                                   const std::string& description) OVERRIDE {
@@ -371,13 +368,6 @@ void SyncEngine::SetSyncEnabled(bool enabled) {
                  enabled));
 }
 
-void SyncEngine::UpdateSyncEnabled(bool enabled) {
-  const char* status_message = enabled ? "Sync is enabled" : "Sync is disabled";
-  FOR_EACH_OBSERVER(
-      Observer, service_observers_,
-      OnRemoteServiceStateUpdated(GetCurrentState(), status_message));
-}
-
 SyncStatusCode SyncEngine::SetDefaultConflictResolutionPolicy(
     ConflictResolutionPolicy policy) {
   // TODO(peria): Make this route asynchronous.
@@ -448,7 +438,6 @@ void SyncEngine::ApplyLocalChange(
 }
 
 SyncTaskManager* SyncEngine::GetSyncTaskManagerForTesting() {
-  // TODO(peria): Post task
   return sync_worker_->GetSyncTaskManager();
 }
 

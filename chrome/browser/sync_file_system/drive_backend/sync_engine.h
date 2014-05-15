@@ -142,9 +142,6 @@ class SyncEngine : public RemoteFileSyncService,
   MetadataDatabase* GetMetadataDatabase();
   SyncTaskManager* GetSyncTaskManagerForTesting();
 
-  // Notifies update of sync status to each observer.
-  void UpdateSyncEnabled(bool enabled);
-
   void OnPendingFileListUpdated(int item_count);
   void OnFileStatusChanged(const fileapi::FileSystemURL& url,
                            SyncFileStatus file_status,
