@@ -36,6 +36,7 @@
             '../base/base.gyp:base',
             '../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
+            '../third_party/dom_distiller_js/dom_distiller_js.gyp:dom_distiller_js_proto',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             'components_resources.gyp:components_resources',
