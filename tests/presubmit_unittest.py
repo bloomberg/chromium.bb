@@ -1773,7 +1773,7 @@ class AffectedFileUnittest(PresubmitTestsBase):
 class ChangeUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     members = [
-        'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
+        'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles', 'AllFiles',
         'DescriptionText', 'FullDescriptionText', 'LocalPaths', 'Name',
         'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
         'SetDescriptionText', 'TAG_LINE_RE',
@@ -1885,7 +1885,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'RunPythonUnitTests', 'RunPylint',
       'RunUnitTests', 'RunUnitTestsInDirectory',
       'GetPythonUnitTests', 'GetPylint',
-      'GetUnitTests', 'GetUnitTestsInDirectory',
+      'GetUnitTests', 'GetUnitTestsInDirectory', 'GetUnitTestsRecursively',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)

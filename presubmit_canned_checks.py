@@ -562,6 +562,36 @@ def GetUnitTests(input_api, output_api, unit_tests, env=None):
   return results
 
 
+def GetUnitTestsRecursively(input_api, output_api, directory,
+                            whitelist, blacklist):
+  """Gets all files in the directory tree (git repo) that match the whitelist.
+
+  Restricts itself to only find files within the Change's source repo, not
+  dependencies.
+  """
+  def check(filename):
+    return (any(input_api.re.match(f, filename) for f in whitelist) and
+            not any(input_api.re.match(f, filename) for f in blacklist))
+
+  tests = []
+
+  to_run = found = 0
+  for filepath in input_api.change.AllFiles(directory):
+    found += 1
+    if check(filepath):
+      to_run += 1
+      tests.append(filepath)
+  input_api.logging.debug('Found %d files, running %d' % (found, to_run))
+  if not to_run:
+    return [
+        output_api.PresubmitPromptWarning(
+          'Out of %d files, found none that matched w=%r, b=%r in directory %s'
+          % (found, whitelist, blacklist, directory))
+    ]
+
+  return GetUnitTests(input_api, output_api, tests)
+
+
 def GetPythonUnitTests(input_api, output_api, unit_tests):
   """Run the unit tests out of process, capture the output and use the result
   code to determine success.
@@ -744,7 +774,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   if True:
     return [GetPylintCmd(files)]
   else:
-    return map(GetPylintCmd, files)
+    return map(lambda x: GetPylintCmd([x]), files)
 
 
 def RunPylint(input_api, *args, **kwargs):

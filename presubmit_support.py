@@ -869,6 +869,10 @@ class Change(object):
       raise AttributeError(self, attr)
     return self.tags.get(attr)
 
+  def AllFiles(self, root=None):
+    """List all files under source control in the repo."""
+    raise NotImplementedError()
+
   def AffectedFiles(self, include_dirs=False, include_deletes=True,
                     file_filter=None):
     """Returns a list of AffectedFile instances for all files in the change.
@@ -965,10 +969,22 @@ class SvnChange(Change):
     return [os.path.join(self.RepositoryRoot(), f[1])
             for f in changelists[self.Name()]]
 
+  def AllFiles(self, root=None):
+    """List all files under source control in the repo."""
+    root = root or self.RepositoryRoot()
+    return subprocess.check_output(
+        ['svn', 'ls', '-R', '.'], cwd=root).splitlines()
+
 
 class GitChange(Change):
   _AFFECTED_FILES = GitAffectedFile
   scm = 'git'
+
+  def AllFiles(self, root=None):
+    """List all files under source control in the repo."""
+    root = root or self.RepositoryRoot()
+    return subprocess.check_output(
+        ['git', 'ls-files', '--', '.'], cwd=root).splitlines()
 
 
 def ListRelevantPresubmitFiles(files, root):
