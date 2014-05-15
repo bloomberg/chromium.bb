@@ -97,6 +97,11 @@
         'platform/dri/dri.gypi',
       ],
     }],
+    ['<(ozone_platform_egltest) == 1', {
+      'includes': [
+        'platform/egltest/egltest.gypi',
+      ],
+    }],
     ['<(ozone_platform_test) == 1', {
       'includes': [
         'platform/test/test.gypi',
