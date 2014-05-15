@@ -64,7 +64,12 @@ deps_os = {
     "third_party/ragel":
       (Var("native_client_trunk") + "/deps/third_party/ragel@" +
        Var("tools_rev")),
-  }
+  },
+  "android": {
+    "src/third_party/android_tools":
+      Var("chromium_git") + "/android_tools.git" +
+      "@aabf2a28449fe47dedeee51d3570ff8687ff015f",
+  },
 }
 
 hooks = [
