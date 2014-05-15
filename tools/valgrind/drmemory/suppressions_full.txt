@@ -2129,11 +2129,6 @@ cc.dll!cc::VideoResourceUpdater::CreateExternalResourcesFromVideoFrame
 cc.dll!cc::VideoLayerImpl::WillDraw
 
 UNINITIALIZED READ
-name=drm-i#1534
-system call NtUserSetKeyboardState parameter #0
-*!content::MockKeyboardDriverWin::~MockKeyboardDriverWin
-
-UNINITIALIZED READ
 name=bug_371959
 content.dll!webrtc::PeerConnection::DoInitialize
 content.dll!webrtc::PeerConnection::Initialize
