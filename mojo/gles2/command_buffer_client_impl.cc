@@ -57,7 +57,8 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       shared_state_(NULL),
       last_put_offset_(-1),
       next_transfer_buffer_id_(0),
-      initialize_result_(false) {
+      initialize_result_(false),
+      async_waiter_(async_waiter) {
   command_buffer_.set_error_handler(this);
   command_buffer_->SetClient(this);
 }
@@ -82,7 +83,8 @@ bool CommandBufferClientImpl::Initialize() {
   sync_dispatcher_.reset(new SyncDispatcher<CommandBufferSyncClient>(
       sync_pipe.handle0.Pass(), this));
   CommandBufferSyncClientPtr sync_client =
-      MakeProxy<CommandBufferSyncClient>(sync_pipe.handle1.Pass());
+      MakeProxy<CommandBufferSyncClient>(sync_pipe.handle1.Pass(),
+                                         async_waiter_);
   AllocationScope scope;
   command_buffer_->Initialize(sync_client.Pass(), duped.Pass());
   // Wait for DidInitialize to come on the sync client pipe.

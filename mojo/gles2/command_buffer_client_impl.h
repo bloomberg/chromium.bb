@@ -107,6 +107,7 @@ class CommandBufferClientImpl : public CommandBufferClient,
   int32 next_transfer_buffer_id_;
 
   bool initialize_result_;
+  MojoAsyncWaiter* async_waiter_;
 };
 
 }  // gles2

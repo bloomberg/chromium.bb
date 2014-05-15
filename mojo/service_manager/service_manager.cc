@@ -31,12 +31,10 @@ class ServiceManager::ServiceFactory : public InterfaceImpl<Shell> {
   }
 
   void ConnectToClient(ScopedMessagePipeHandle handle) {
-    if (!handle.is_valid()) {
-      assert(false);
-      return;
+    if (handle.is_valid()) {
+      AllocationScope scope;
+      client()->AcceptConnection(url_.spec(), handle.Pass());
     }
-    AllocationScope scope;
-    client()->AcceptConnection(url_.spec(), handle.Pass());
   }
 
   // Shell implementation:
