@@ -161,10 +161,11 @@ bool BluetoothDevice::IsPairable() const {
   std::string vendor = GetAddress().substr(0, 8);
 
   // Verbatim "Bluetooth Mouse", model 96674
-  if ((type == DEVICE_MOUSE && vendor == "00:12:A1") ||
+  if (type == DEVICE_MOUSE && vendor == "00:12:A1")
+    return false;
   // Microsoft "Microsoft Bluetooth Notebook Mouse 5000", model X807028-001
-      (type == DEVICE_MOUSE && vendor == "7C:ED:8D"))
-      return false;
+  if (type == DEVICE_MOUSE && vendor == "7C:ED:8D")
+    return false;
   // TODO: Move this database into a config file.
 
   return true;
