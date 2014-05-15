@@ -1186,16 +1186,8 @@ void ShelfLayoutManager::OnDockBoundsChanging(
 
 void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {
   if (event == EVENT_LOCK_ANIMATION_STARTED) {
-    // Enter the screen locked state as the animation starts to prevent
-    // layout changes as the screen locks.
+    // Enter the screen locked state.
     state_.is_screen_locked = true;
-    // Hide the status area widget (using auto hide animation).
-    base::AutoReset<ShelfVisibilityState> state(&state_.visibility_state,
-                                                SHELF_HIDDEN);
-    TargetBounds target_bounds;
-    CalculateTargetBounds(state_, &target_bounds);
-    UpdateBoundsAndOpacity(target_bounds, true, NULL);
-    UpdateVisibilityState();
   }
 }
 
