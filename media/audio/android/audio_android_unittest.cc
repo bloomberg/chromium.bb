@@ -523,7 +523,7 @@ class AudioAndroidOutputTest : public testing::Test {
     EXPECT_GE(average_time_between_callbacks_ms,
               0.70 * expected_time_between_callbacks_ms);
     EXPECT_LE(average_time_between_callbacks_ms,
-              1.30 * expected_time_between_callbacks_ms);
+              1.35 * expected_time_between_callbacks_ms);
   }
 
   void GetDefaultOutputStreamParameters() {
