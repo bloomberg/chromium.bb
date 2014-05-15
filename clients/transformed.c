@@ -290,6 +290,9 @@ int main(int argc, char *argv[])
 			       transformed.width, transformed.height);
 
 	display_run(d);
+	widget_destroy(transformed.widget);
+	window_destroy(transformed.window);
+	display_destroy(d);
 
 	return 0;
 }

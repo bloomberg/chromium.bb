@@ -879,6 +879,14 @@ benchmark(void)
 	return 0;
 }
 
+static void
+cliptest_destroy(struct cliptest *cliptest)
+{
+	widget_destroy(cliptest->widget);
+	window_destroy(cliptest->window);
+	free(cliptest);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -897,9 +905,8 @@ main(int argc, char *argv[])
 	cliptest = cliptest_create(d);
 	display_run(d);
 
-	widget_destroy(cliptest->widget);
-	window_destroy(cliptest->window);
-	free(cliptest);
+	cliptest_destroy(cliptest);
+	display_destroy(d);
 
 	return 0;
 }

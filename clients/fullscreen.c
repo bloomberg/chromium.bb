@@ -562,5 +562,9 @@ int main(int argc, char *argv[])
 
 	display_run(d);
 
+	widget_destroy(fullscreen.widget);
+	window_destroy(fullscreen.window);
+	display_destroy(d);
+
 	return 0;
 }

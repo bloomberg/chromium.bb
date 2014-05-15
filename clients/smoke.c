@@ -329,5 +329,9 @@ int main(int argc, char *argv[])
 
 	display_run(d);
 
+	widget_destroy(smoke.widget);
+	window_destroy(smoke.window);
+	display_destroy(d);
+
 	return 0;
 }

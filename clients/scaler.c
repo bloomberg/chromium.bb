@@ -321,6 +321,9 @@ main(int argc, char *argv[])
 
 	display_run(d);
 
+	widget_destroy(box.widget);
 	window_destroy(box.window);
+	display_destroy(d);
+
 	return 0;
 }

@@ -304,5 +304,8 @@ main(int argc, char *argv[])
 
 	display_run(stacking.display);
 
+	window_destroy(stacking.root_window);
+	display_destroy(stacking.display);
+
 	return 0;
 }

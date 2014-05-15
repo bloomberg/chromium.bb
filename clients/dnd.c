@@ -639,6 +639,14 @@ dnd_create(struct display *display)
 	return dnd;
 }
 
+static void
+dnd_destroy(struct dnd *dnd)
+{
+	widget_destroy(dnd->widget);
+	window_destroy(dnd->window);
+	free(dnd);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -659,6 +667,9 @@ main(int argc, char *argv[])
 			dnd->self_only = 1;
 
 	display_run(d);
+
+	dnd_destroy(dnd);
+	display_destroy(d);
 
 	return 0;
 }

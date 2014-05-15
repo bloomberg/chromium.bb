@@ -1382,6 +1382,9 @@ main(int argc, char *argv[])
 
 	text_entry_destroy(editor.entry);
 	text_entry_destroy(editor.editor);
+	widget_destroy(editor.widget);
+	window_destroy(editor.window);
+	display_destroy(editor.display);
 
 	return 0;
 }

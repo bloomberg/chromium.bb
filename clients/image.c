@@ -424,5 +424,7 @@ main(int argc, char *argv[])
 	if (image_counter > 0)
 		display_run(d);
 
+	display_destroy(d);
+
 	return 0;
 }

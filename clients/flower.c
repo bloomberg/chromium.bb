@@ -195,5 +195,9 @@ int main(int argc, char *argv[])
 
 	display_run(d);
 
+	widget_destroy(flower.widget);
+	window_destroy(flower.window);
+	display_destroy(d);
+
 	return 0;
 }

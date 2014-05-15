@@ -469,17 +469,29 @@ gears_create(struct display *display)
 	return gears;
 }
 
+static void
+gears_destroy(struct gears *gears)
+{
+	widget_destroy(gears->widget);
+	window_destroy(gears->window);
+	free(gears);
+}
+
 int main(int argc, char *argv[])
 {
 	struct display *d;
+	struct gears *gears;
 
 	d = display_create(&argc, argv);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-	gears_create(d);
+	gears = gears_create(d);
 	display_run(d);
+
+	gears_destroy(gears);
+	display_destroy(d);
 
 	return 0;
 }
