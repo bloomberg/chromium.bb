@@ -71,10 +71,16 @@ class BootTimesLoader : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Records "LoginDone" event.
+  void LoginDone(bool is_user_new);
+
   // Writes the logout times to a /tmp/logout-times-sent. Unlike login
   // times, we manually call this function for logout times, as we cannot
   // rely on notification service to tell when the logout is done.
   void WriteLogoutTimes();
+
+  // Mark that WriteLogoutTimes should handle restart.
+  void set_restart_requested() { restart_requested_ = true; }
 
  private:
   // BootTimesLoader calls into the Backend on the file thread to load
@@ -128,8 +134,6 @@ class BootTimesLoader : public content::NotificationObserver {
                          std::vector<TimeMarker> login_times);
   static void AddMarker(std::vector<TimeMarker>* vector, TimeMarker marker);
 
-  void LoginDone();
-
   // Used to hold the stats at main().
   Stats chrome_main_stats_;
   scoped_refptr<Backend> backend_;
@@ -142,6 +146,10 @@ class BootTimesLoader : public content::NotificationObserver {
   std::vector<TimeMarker> login_time_markers_;
   std::vector<TimeMarker> logout_time_markers_;
   std::set<content::RenderWidgetHost*> render_widget_hosts_loading_;
+
+  bool login_done_;
+
+  bool restart_requested_;
 
   DISALLOW_COPY_AND_ASSIGN(BootTimesLoader);
 };

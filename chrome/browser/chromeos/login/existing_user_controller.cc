@@ -387,8 +387,6 @@ void ExistingUserController::Login(const UserContext& user_context) {
   // Disable clicking on other windows.
   login_display_->SetUIEnabled(false);
 
-  BootTimesLoader::Get()->RecordLoginAttempted();
-
   if (last_login_attempt_username_ != user_context.username) {
     last_login_attempt_username_ = user_context.username;
     num_login_attempts_ = 0;
@@ -405,6 +403,8 @@ void ExistingUserController::PerformLogin(
     LoginPerformer::AuthorizationMode auth_mode) {
   UserManager::Get()->GetUserFlow(last_login_attempt_username_)->
       set_host(host_);
+
+  BootTimesLoader::Get()->RecordLoginAttempted();
 
   // Disable UI while loading user profile.
   login_display_->SetUIEnabled(false);

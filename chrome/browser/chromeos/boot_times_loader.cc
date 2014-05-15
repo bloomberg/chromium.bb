@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -96,9 +97,11 @@ static const base::FilePath::CharType kChromeFirstRender[] =
 
 // Names of login UMA values.
 static const char kUmaLogin[] = "BootTime.Login";
+static const char kUmaLoginNewUser[] = "BootTime.LoginNewUser";
 static const char kUmaLoginPrefix[] = "BootTime.";
 static const char kUmaLogout[] = "ShutdownTime.Logout";
 static const char kUmaLogoutPrefix[] = "ShutdownTime.";
+static const char kUmaRestart[] = "ShutdownTime.Restart";
 
 // Name of file collecting login times.
 static const base::FilePath::CharType kLoginTimes[] = FPL("login-times");
@@ -111,7 +114,9 @@ static base::LazyInstance<BootTimesLoader> g_boot_times_loader =
 
 BootTimesLoader::BootTimesLoader()
     : backend_(new Backend()),
-      have_registered_(false) {
+      have_registered_(false),
+      login_done_(false),
+      restart_requested_(false) {
   login_time_markers_.reserve(30);
   logout_time_markers_.reserve(30);
 }
@@ -212,24 +217,37 @@ void BootTimesLoader::WriteTimes(
   base::WriteFile(log_path.Append(base_name), output.data(), output.size());
 }
 
-void BootTimesLoader::LoginDone() {
+void BootTimesLoader::LoginDone(bool is_user_new) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (login_done_)
+    return;
+
+  login_done_ = true;
   AddLoginTimeMarker("LoginDone", false);
   RecordCurrentStats(kChromeFirstRender);
-  registrar_.Remove(this, content::NOTIFICATION_LOAD_START,
-                    content::NotificationService::AllSources());
-  registrar_.Remove(this, content::NOTIFICATION_LOAD_STOP,
-                    content::NotificationService::AllSources());
-  registrar_.Remove(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                    content::NotificationService::AllSources());
-  registrar_.Remove(
-      this,
-      content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
-      content::NotificationService::AllSources());
+  if (have_registered_) {
+    registrar_.Remove(this,
+                      content::NOTIFICATION_LOAD_START,
+                      content::NotificationService::AllSources());
+    registrar_.Remove(this,
+                      content::NOTIFICATION_LOAD_STOP,
+                      content::NotificationService::AllSources());
+    registrar_.Remove(this,
+                      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                      content::NotificationService::AllSources());
+    registrar_.Remove(
+        this,
+        content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
+        content::NotificationService::AllSources());
+  }
   // Don't swamp the FILE thread right away.
   BrowserThread::PostDelayedTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&WriteTimes, kLoginTimes, kUmaLogin, kUmaLoginPrefix,
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&WriteTimes,
+                 kLoginTimes,
+                 (is_user_new ? kUmaLoginNewUser : kUmaLogin),
+                 kUmaLoginPrefix,
                  login_time_markers_),
       base::TimeDelta::FromMilliseconds(kLoginTimeWriteDelayMs));
 }
@@ -242,7 +260,7 @@ void BootTimesLoader::WriteLogoutTimes() {
          !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
 
   WriteTimes(kLogoutTimes,
-             kUmaLogout,
+             (restart_requested_ ? kUmaRestart : kUmaLogout),
              kUmaLogoutPrefix,
              logout_time_markers_);
 }
@@ -277,6 +295,9 @@ void BootTimesLoader::RecordChromeMainStats() {
 
 void BootTimesLoader::RecordLoginAttempted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (login_done_)
+    return;
+
   login_time_markers_.clear();
   AddLoginTimeMarker("LoginStarted", false);
   if (!have_registered_) {
@@ -367,7 +388,7 @@ void BootTimesLoader::Observe(
       if (render_widget_hosts_loading_.find(rwh) !=
           render_widget_hosts_loading_.end()) {
         AddLoginTimeMarker("TabPaint: " + GetTabUrl(rwh), false);
-        LoginDone();
+        LoginDone(UserManager::Get()->IsCurrentUserNew());
       }
       break;
     }

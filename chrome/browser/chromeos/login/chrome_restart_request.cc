@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_constants.h"
@@ -365,6 +366,7 @@ std::string GetOffTheRecordCommandLine(
 
 void RestartChrome(const std::string& command_line) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  BootTimesLoader::Get()->set_restart_requested();
 
   static bool restart_requested = false;
   if (restart_requested) {

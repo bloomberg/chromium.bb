@@ -196,6 +196,8 @@ void AttemptRestart() {
   pref_service->SetBoolean(prefs::kWasRestarted, true);
 
 #if defined(OS_CHROMEOS)
+  chromeos::BootTimesLoader::Get()->set_restart_requested();
+
   DCHECK(!g_send_stop_request_to_session_manager);
   // Make sure we don't send stop request to the session manager.
   g_send_stop_request_to_session_manager = false;

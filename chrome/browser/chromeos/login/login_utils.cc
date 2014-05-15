@@ -357,6 +357,8 @@ void LoginUtilsImpl::DoBrowserLaunchOnLocaleLoadedImpl(
   if (login_host)
     login_host->Finalize();
   UserManager::Get()->SessionStarted();
+  chromeos::BootTimesLoader::Get()->LoginDone(
+      chromeos::UserManager::Get()->IsCurrentUserNew());
 }
 
 void LoginUtilsImpl::DoBrowserLaunch(Profile* profile,
