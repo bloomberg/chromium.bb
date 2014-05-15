@@ -6,9 +6,13 @@
 #include <corewindow.h>
 
 #include "base/logging.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/win/msg_util.h"
 
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 int g_window_count = 0;
+
+extern float GetModernUIScale();
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
                          WPARAM wparam, LPARAM lparam) {
@@ -22,10 +26,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
       hdc = ::BeginPaint(hwnd, &ps);
       ::EndPaint(hwnd, &ps);
       break;
-    case WM_LBUTTONUP:
-      //  TODO(cpu): Remove this test code.
-      ::InvalidateRect(hwnd, NULL, TRUE);
-      break;
     case WM_CLOSE:
       ::DestroyWindow(hwnd);
       break;
@@ -34,6 +34,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message,
       if (!g_window_count)
         ::PostQuitMessage(0);
       break;
+    // Always allow Chrome to set the cursor.
+    case WM_SETCURSOR:
+      return 1;
     default:
       return ::DefWindowProc(hwnd, message, wparam, lparam);
   }
@@ -114,6 +117,321 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreDispatcher*,
     winui::Core::AcceleratorKeyEventArgs*> AcceleratorKeyEventHandler;
 
+// This interface is implemented by classes which handle mouse and keyboard
+// input.
+class InputHandler {
+ public:
+  InputHandler() {}
+  virtual ~InputHandler() {}
+
+  virtual bool HandleKeyboardMessage(const MSG& msg) = 0;
+  virtual bool HandleMouseMessage(const MSG& msg) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputHandler);
+};
+
+// This class implements the winrt interfaces corresponding to mouse input.
+class MouseEvent : public mswr::RuntimeClass<
+    winui::Core::IPointerEventArgs,
+    winui::Input::IPointerPoint,
+    winui::Input::IPointerPointProperties,
+    windevs::Input::IPointerDevice> {
+ public:
+  MouseEvent(const MSG& msg)
+      : msg_(msg) {
+  }
+
+  // IPointerEventArgs implementation.
+  virtual HRESULT STDMETHODCALLTYPE get_CurrentPoint(
+      winui::Input::IPointerPoint** point) {
+    return QueryInterface(winui::Input::IID_IPointerPoint,
+                          reinterpret_cast<void**>(point));
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_KeyModifiers(
+      winsys::VirtualKeyModifiers* modifiers) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE GetIntermediatePoints(
+      winfoundtn::Collections::IVector<winui::Input::PointerPoint*>** points) {
+    return E_NOTIMPL;
+  }
+
+  // IPointerPoint implementation.
+  virtual HRESULT STDMETHODCALLTYPE get_PointerDevice(
+      windevs::Input::IPointerDevice** pointer_device) {
+    return QueryInterface(windevs::Input::IID_IPointerDevice,
+                          reinterpret_cast<void**>(pointer_device));
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_Position(winfoundtn::Point* position) {
+    static float scale = GetModernUIScale();
+    // Scale down the points here as they are scaled up on the other side.
+    position->X = gfx::ToRoundedInt(CR_GET_X_LPARAM(msg_.lParam) / scale);
+    position->Y = gfx::ToRoundedInt(CR_GET_Y_LPARAM(msg_.lParam) / scale);
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_PointerId(uint32* pointer_id) {
+    // TODO(ananta)
+    // Implement this properly.
+    *pointer_id = 1;
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_Timestamp(uint64* timestamp) {
+    *timestamp = msg_.time;
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_Properties(
+      winui::Input::IPointerPointProperties** properties) {
+    return QueryInterface(winui::Input::IID_IPointerPointProperties,
+                          reinterpret_cast<void**>(properties));
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_RawPosition(
+      winfoundtn::Point* position) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_FrameId(uint32* frame_id) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsInContact(boolean* in_contact) {
+    return E_NOTIMPL;
+  }
+
+  // IPointerPointProperties implementation.
+  virtual HRESULT STDMETHODCALLTYPE get_PointerUpdateKind(
+      winui::Input::PointerUpdateKind* update_kind) {
+    // TODO(ananta)
+    // There is no WM_POINTERUPDATE equivalent on Windows 7. Look into
+    // equivalents.
+    if (msg_.message == WM_LBUTTONDOWN) {
+      *update_kind = winui::Input::PointerUpdateKind_LeftButtonPressed;
+    } else if (msg_.message == WM_RBUTTONDOWN) {
+      *update_kind = winui::Input::PointerUpdateKind_RightButtonPressed;
+    } else if (msg_.message == WM_MBUTTONDOWN) {
+      *update_kind = winui::Input::PointerUpdateKind_MiddleButtonPressed;
+    } else if (msg_.message == WM_LBUTTONUP) {
+      *update_kind = winui::Input::PointerUpdateKind_LeftButtonReleased;
+    } else if (msg_.message == WM_RBUTTONUP) {
+      *update_kind = winui::Input::PointerUpdateKind_RightButtonReleased;
+    } else if (msg_.message == WM_MBUTTONUP) {
+      *update_kind = winui::Input::PointerUpdateKind_MiddleButtonReleased;
+    }
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsLeftButtonPressed(
+      boolean* left_button_pressed) {
+    *left_button_pressed = msg_.wParam & MK_LBUTTON ? true : false;
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsRightButtonPressed(
+      boolean* right_button_pressed) {
+    *right_button_pressed = msg_.wParam & MK_RBUTTON ? true : false;
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsMiddleButtonPressed(
+      boolean* middle_button_pressed) {
+    *middle_button_pressed = msg_.wParam & MK_MBUTTON ? true : false;
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsHorizontalMouseWheel(
+      boolean* is_horizontal_mouse_wheel) {
+    *is_horizontal_mouse_wheel =
+        (msg_.message == WM_MOUSEHWHEEL) ? true : false;
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_MouseWheelDelta(int* delta) {
+    if (msg_.message == WM_MOUSEWHEEL || msg_.message == WM_MOUSEHWHEEL) {
+      *delta = GET_WHEEL_DELTA_WPARAM(msg_.wParam);
+      return S_OK;
+    } else {
+      return S_FALSE;
+    }
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_Pressure(float* pressure) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsInverted(boolean* inverted) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsEraser(boolean* is_eraser) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_Orientation(float* orientation) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_XTilt(float* x_tilt) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_YTilt(float* y_tilt) {
+    return E_NOTIMPL;
+  }
+
+  virtual  HRESULT STDMETHODCALLTYPE get_Twist(float* twist) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_ContactRect(winfoundtn::Rect* rect) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_ContactRectRaw(winfoundtn::Rect* rect) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_TouchConfidence(boolean* confidence) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsPrimary(boolean* is_primary) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsInRange(boolean* is_in_range) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsCanceled(boolean* is_canceled) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsBarrelButtonPressed(
+      boolean* is_barrel_button_pressed) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsXButton1Pressed(
+      boolean* is_xbutton1_pressed) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsXButton2Pressed(
+      boolean* is_xbutton2_pressed) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE HasUsage(uint32 usage_page,
+                                             uint32 usage_id,
+                                             boolean* has_usage) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE GetUsageValue(uint32 usage_page,
+                                                  uint32 usage_id,
+                                                  int32* usage_value) {
+    return E_NOTIMPL;
+  }
+
+  // IPointerDevice implementation.
+  virtual HRESULT STDMETHODCALLTYPE get_PointerDeviceType(
+      windevs::Input::PointerDeviceType* device_type) {
+    if (msg_.message == WM_TOUCH) {
+      *device_type = windevs::Input::PointerDeviceType_Touch;
+    } else {
+      *device_type = windevs::Input::PointerDeviceType_Mouse;
+    }
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_IsIntegrated(boolean* is_integrated) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_MaxContacts(uint32* contacts) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_PhysicalDeviceRect(
+      winfoundtn::Rect* rect) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_ScreenRect(winfoundtn::Rect* rect) {
+    return E_NOTIMPL;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_SupportedUsages(
+      winfoundtn::Collections::IVectorView<
+          windevs::Input::PointerDeviceUsage>** usages) {
+    return E_NOTIMPL;
+  }
+
+ private:
+  MSG msg_;
+
+  DISALLOW_COPY_AND_ASSIGN(MouseEvent);
+};
+
+// This class implements the winrt interfaces needed to support keyboard
+// character and system character messages.
+class KeyEvent : public mswr::RuntimeClass<
+    winui::Core::IKeyEventArgs,
+    winui::Core::ICharacterReceivedEventArgs,
+    winui::Core::IAcceleratorKeyEventArgs> {
+ public:
+  KeyEvent(const MSG& msg)
+      : msg_(msg) {}
+
+  // IKeyEventArgs implementation.
+  virtual HRESULT STDMETHODCALLTYPE get_VirtualKey(
+      winsys::VirtualKey* virtual_key) {
+    *virtual_key = static_cast<winsys::VirtualKey>(msg_.wParam);
+    return S_OK;
+  }
+
+  virtual HRESULT STDMETHODCALLTYPE get_KeyStatus(
+      winui::Core::CorePhysicalKeyStatus* key_status) {
+    // As per msdn documentation for the keyboard messages.
+    key_status->RepeatCount = msg_.lParam & 0x0000FFFF;
+    key_status->ScanCode = (msg_.lParam >> 16) & 0x00FF;
+    key_status->IsExtendedKey = (msg_.lParam & (1 << 24));
+    key_status->IsMenuKeyDown = (msg_.lParam & (1 << 29));
+    key_status->WasKeyDown = (msg_.lParam & (1 << 30));
+    key_status->IsKeyReleased = (msg_.lParam & (1 << 31));
+    return S_OK;
+  }
+
+  // ICharacterReceivedEventArgs implementation.
+  virtual HRESULT STDMETHODCALLTYPE get_KeyCode(uint32* key_code) {
+    *key_code = msg_.wParam;
+    return S_OK;
+  }
+
+  // IAcceleratorKeyEventArgs implementation.
+  virtual HRESULT STDMETHODCALLTYPE get_EventType(
+      winui::Core::CoreAcceleratorKeyEventType* event_type) {
+    if (msg_.message == WM_SYSKEYDOWN) {
+      *event_type = winui::Core::CoreAcceleratorKeyEventType_SystemKeyDown;
+    } else if (msg_.message == WM_SYSKEYUP) {
+      *event_type = winui::Core::CoreAcceleratorKeyEventType_SystemKeyUp;
+    } else if (msg_.message == WM_SYSCHAR) {
+      *event_type = winui::Core::CoreAcceleratorKeyEventType_SystemCharacter;
+    }
+    return S_OK;
+  }
+
+ private:
+  MSG msg_;
+};
+
 // The following classes are the emulation of the WinRT system as exposed
 // to metro applications. There is one application (ICoreApplication) which
 // contains a series of Views (ICoreApplicationView) each one of them
@@ -137,11 +455,15 @@ typedef winfoundtn::ITypedEventHandler<
 //                                v                  V
 //                         ICoreDispatcher  <==>  real HWND
 //
-class CoreDispacherEmulation :
+class CoreDispatcherEmulation :
     public mswr::RuntimeClass<
         winui::Core::ICoreDispatcher,
         winui::Core::ICoreAcceleratorKeys> {
  public:
+  CoreDispatcherEmulation(InputHandler* input_handler)
+      : input_handler_(input_handler),
+        accelerator_key_event_handler_(NULL) {}
+
   // ICoreDispatcher implementation:
   virtual HRESULT STDMETHODCALLTYPE get_HasThreadAccess(boolean* value) {
     return S_OK;
@@ -156,6 +478,7 @@ class CoreDispacherEmulation :
 
     MSG msg = {0};
     while((::GetMessage(&msg, NULL, 0, 0) != 0) && g_window_count > 0) {
+      ProcessInputMessage(msg);
       ::TranslateMessage(&msg);
       ::DispatchMessage(&msg);
     }
@@ -181,24 +504,68 @@ class CoreDispacherEmulation :
   virtual HRESULT STDMETHODCALLTYPE add_AcceleratorKeyActivated(
       AcceleratorKeyEventHandler* handler,
       EventRegistrationToken *pCookie) {
-    // TODO(cpu): implement this.
+    accelerator_key_event_handler_ = handler;
+    accelerator_key_event_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_AcceleratorKeyActivated(
       EventRegistrationToken cookie) {
+    accelerator_key_event_handler_->Release();
+    accelerator_key_event_handler_ = NULL;
     return S_OK;
   }
 
+ private:
+  bool ProcessInputMessage(const MSG& msg) {
+    // Poor man's way of dispatching input events.
+    bool ret = false;
+    if (input_handler_) {
+      if ((msg.message >= WM_KEYFIRST) && (msg.message <= WM_KEYLAST)) {
+        if ((msg.message == WM_SYSKEYDOWN) || (msg.message == WM_SYSKEYUP) ||
+            msg.message == WM_SYSCHAR) {
+          ret = HandleSystemKeys(msg);
+        } else {
+          ret = input_handler_->HandleKeyboardMessage(msg);
+        }
+      } else if ((msg.message >= WM_MOUSEFIRST) &&
+                  (msg.message <= WM_MOUSELAST)) {
+        ret = input_handler_->HandleMouseMessage(msg);
+      }
+    }
+    return ret;
+  }
+
+  bool HandleSystemKeys(const MSG& msg) {
+    mswr::ComPtr<winui::Core::IAcceleratorKeyEventArgs> event_args;
+    event_args = mswr::Make<KeyEvent>(msg);
+    accelerator_key_event_handler_->Invoke(this, event_args.Get());
+    return true;
+  }
+
+  InputHandler* input_handler_;
+  AcceleratorKeyEventHandler* accelerator_key_event_handler_;
 };
 
 class CoreWindowEmulation
     : public mswr::RuntimeClass<
         mswr::RuntimeClassFlags<mswr::WinRtClassicComMix>,
-        winui::Core::ICoreWindow, ICoreWindowInterop> {
+        winui::Core::ICoreWindow, ICoreWindowInterop>,
+      public InputHandler {
  public:
-  CoreWindowEmulation() : core_hwnd_(NULL) {
-    dispatcher_ = mswr::Make<CoreDispacherEmulation>();
+  CoreWindowEmulation()
+      : core_hwnd_(NULL),
+        mouse_moved_handler_(NULL),
+        mouse_capture_lost_handler_(NULL),
+        mouse_pressed_handler_(NULL),
+        mouse_released_handler_(NULL),
+        mouse_entered_handler_(NULL),
+        mouse_exited_handler_(NULL),
+        mouse_wheel_changed_handler_(NULL),
+        key_down_handler_(NULL),
+        key_up_handler_(NULL),
+        character_received_handler_(NULL) {
+    dispatcher_ = mswr::Make<CoreDispatcherEmulation>(this);
     core_hwnd_ = CreateMetroTopLevelWindow();
   }
 
@@ -330,12 +697,15 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_CharacterReceived(
       CharEventHandler* handler,
       EventRegistrationToken* pCookie) {
-    // TODO(cpu) : implement this.
+    character_received_handler_ = handler;
+    character_received_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_CharacterReceived(
       EventRegistrationToken cookie) {
+    character_received_handler_->Release();
+    character_received_handler_ = NULL;
     return S_OK;
   }
 
@@ -364,93 +734,114 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_KeyDown(
       KeyEventHandler* handler,
       EventRegistrationToken* pCookie) {
-    // TODO(cpu): implement this.
+    key_down_handler_ = handler;
+    key_down_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_KeyDown(
       EventRegistrationToken cookie) {
+    key_down_handler_->Release();
+    key_down_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_KeyUp(
       KeyEventHandler* handler,
       EventRegistrationToken* pCookie) {
-    // TODO(cpu): implement this.
+    key_up_handler_ = handler;
+    key_up_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_KeyUp(
       EventRegistrationToken cookie) {
+    key_up_handler_->Release();
+    key_up_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerCaptureLost(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
+    mouse_capture_lost_handler_ = handler;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerCaptureLost(
       EventRegistrationToken cookie) {
+    mouse_capture_lost_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerEntered(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
+    mouse_entered_handler_ = handler;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerEntered(
       EventRegistrationToken cookie) {
+    mouse_entered_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerExited(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
+    mouse_exited_handler_ = handler;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerExited(
       EventRegistrationToken cookie) {
+    mouse_exited_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerMoved(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
-    // TODO(cpu) : implement this.
+    mouse_moved_handler_ = handler;
+    mouse_moved_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerMoved(
       EventRegistrationToken cookie) {
+    mouse_moved_handler_->Release();
+    mouse_moved_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerPressed(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
-    // TODO(cpu): implement this.
+    mouse_pressed_handler_ = handler;
+    mouse_pressed_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerPressed(
       EventRegistrationToken cookie) {
+    mouse_pressed_handler_->Release();
+    mouse_pressed_handler_ = NULL;
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE add_PointerReleased(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
-    // TODO(cpu): implement this.
+    mouse_released_handler_ = handler;
+    mouse_released_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerReleased(
       EventRegistrationToken cookie) {
+    mouse_released_handler_->Release();
+    mouse_released_handler_ = NULL;
     return S_OK;
   }
 
@@ -468,11 +859,15 @@ class CoreWindowEmulation
   virtual HRESULT STDMETHODCALLTYPE add_PointerWheelChanged(
       PointerEventHandler* handler,
       EventRegistrationToken* cookie) {
+    mouse_wheel_changed_handler_ = handler;
+    mouse_wheel_changed_handler_->AddRef();
     return S_OK;
   }
 
   virtual HRESULT STDMETHODCALLTYPE remove_PointerWheelChanged(
       EventRegistrationToken cookie) {
+    mouse_wheel_changed_handler_->Release();
+    mouse_wheel_changed_handler_ = NULL;
     return S_OK;
   }
 
@@ -512,7 +907,86 @@ class CoreWindowEmulation
     return S_OK;
   }
 
+  // InputHandler
+  virtual bool HandleKeyboardMessage(const MSG& msg) OVERRIDE {
+    switch (msg.message) {
+      case WM_KEYDOWN:
+      case WM_KEYUP: {
+        mswr::ComPtr<winui::Core::IKeyEventArgs> event_args;
+        event_args = mswr::Make<KeyEvent>(msg);
+        KeyEventHandler* handler = NULL;
+        if (msg.message == WM_KEYDOWN) {
+          handler = key_down_handler_;
+        } else {
+          handler = key_up_handler_;
+        }
+        handler->Invoke(this, event_args.Get());
+        break;
+      }
+
+      case WM_CHAR:
+      case WM_DEADCHAR:
+      case WM_UNICHAR: {
+        mswr::ComPtr<winui::Core::ICharacterReceivedEventArgs> event_args;
+        event_args = mswr::Make<KeyEvent>(msg);
+        character_received_handler_->Invoke(this, event_args.Get());
+        break;
+      }
+
+      default:
+        return false;
+    }
+    return true;
+  }
+
+  virtual bool HandleMouseMessage(const MSG& msg) OVERRIDE {
+    PointerEventHandler* handler = NULL;
+    mswr::ComPtr<winui::Core::IPointerEventArgs> event_args;
+    event_args = mswr::Make<MouseEvent>(msg);
+    switch (msg.message) {
+      case WM_MOUSEMOVE: {
+        handler = mouse_moved_handler_;
+        break;
+      }
+      case WM_LBUTTONDOWN: {
+      case WM_RBUTTONDOWN:
+      case WM_MBUTTONDOWN:
+        handler = mouse_pressed_handler_;
+        break;
+      }
+
+      case WM_LBUTTONUP: {
+      case WM_RBUTTONUP:
+      case WM_MBUTTONUP:
+        handler = mouse_released_handler_;
+        break;
+      }
+
+      case WM_MOUSEWHEEL: {
+      case WM_MOUSEHWHEEL:
+        handler = mouse_wheel_changed_handler_;
+        break;
+      }
+
+      default:
+        return false;
+    }
+    DCHECK(handler);
+    handler->Invoke(this, event_args.Get());
+    return true;
+  }
+
  private:
+   PointerEventHandler* mouse_moved_handler_;
+   PointerEventHandler* mouse_capture_lost_handler_;
+   PointerEventHandler* mouse_pressed_handler_;
+   PointerEventHandler* mouse_released_handler_;
+   PointerEventHandler* mouse_entered_handler_;
+   PointerEventHandler* mouse_exited_handler_;
+   PointerEventHandler* mouse_wheel_changed_handler_;
+   KeyEventHandler* key_down_handler_;
+   KeyEventHandler* key_up_handler_;
+   CharEventHandler* character_received_handler_;
    HWND core_hwnd_;
    mswr::ComPtr<winui::Core::ICoreDispatcher> dispatcher_;
 };
