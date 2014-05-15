@@ -171,6 +171,12 @@ def ExpressionToText(value, module):
   return "".join(generator.ExpressionMapper(value,
       lambda token: TranslateConstants(token, module)))
 
+def HasCallbacks(interface):
+  for method in interface.methods:
+    if method.response_parameters != None:
+      return True
+  return False
+
 _HEADER_SIZE = 8
 
 class Generator(generator.Generator):
@@ -184,6 +190,7 @@ class Generator(generator.Generator):
     "cpp_wrapper_type": GetCppWrapperType,
     "expression_to_text": ExpressionToText,
     "get_pad": pack.GetPad,
+    "has_callbacks": HasCallbacks,
     "is_enum_kind": generator.IsEnumKind,
     "is_handle_kind": generator.IsHandleKind,
     "is_interface_kind": generator.IsInterfaceKind,

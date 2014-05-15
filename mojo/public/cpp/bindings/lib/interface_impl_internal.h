@@ -7,6 +7,8 @@
 
 #include "mojo/public/cpp/bindings/error_handler.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/lib/filter_chain.h"
+#include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/system/macros.h"
 
 namespace mojo {
@@ -45,7 +47,12 @@ class InterfaceImplState : public ErrorHandler {
             MojoAsyncWaiter* waiter) {
     assert(!router_);
 
-    router_ = new Router(handle.Pass(), waiter);
+    FilterChain filters;
+    filters.Append(new MessageHeaderValidator)
+           .Append(new typename Interface::RequestValidator_)
+           .Append(new typename Interface::Client::ResponseValidator_);
+
+    router_ = new Router(handle.Pass(), filters.Pass(), waiter);
     router_->set_incoming_receiver(&stub_);
     router_->set_error_handler(this);
 
@@ -65,7 +72,7 @@ class InterfaceImplState : public ErrorHandler {
         OnConnectionError();
   }
 
-  internal::Router* router_;
+  Router* router_;
   Client* client_;
   typename Client::Proxy_* proxy_;
   typename Interface::Stub_ stub_;

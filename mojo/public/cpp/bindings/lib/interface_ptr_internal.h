@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 
+#include "mojo/public/cpp/bindings/lib/filter_chain.h"
+#include "mojo/public/cpp/bindings/lib/message_header_validator.h"
 #include "mojo/public/cpp/bindings/lib/router.h"
 
 namespace mojo {
@@ -15,7 +17,7 @@ namespace internal {
 template <typename Interface>
 class InterfacePtrState {
  public:
-  InterfacePtrState() : instance_(NULL), client_(NULL), router_(NULL) {}
+  InterfacePtrState() : instance_(NULL), router_(NULL) {}
 
   ~InterfacePtrState() {
     // Destruction order matters here. We delete |instance_| first, even though
@@ -23,22 +25,14 @@ class InterfacePtrState {
     // shot at generating new outbound messages (ie, invoking client methods).
     delete instance_;
     delete router_;
-    delete client_;
   }
 
   Interface* instance() const { return instance_; }
-  void set_instance(Interface* instance) { instance_ = instance; }
 
   Router* router() const { return router_; }
 
-  bool is_configured_as_proxy() const {
-    // This question only makes sense if we have a bound pipe.
-    return router_ && !client_;
-  }
-
   void Swap(InterfacePtrState* other) {
     std::swap(other->instance_, instance_);
-    std::swap(other->client_, client_);
     std::swap(other->router_, router_);
   }
 
@@ -47,28 +41,16 @@ class InterfacePtrState {
     assert(!instance_);
     assert(!router_);
 
-    router_ = new Router(handle.Pass(), waiter);
+    FilterChain filters;
+    filters.Append(new MessageHeaderValidator)
+           .Append(new typename Interface::Client::RequestValidator_)
+           .Append(new typename Interface::ResponseValidator_);
+
+    router_ = new Router(handle.Pass(), filters.Pass(), waiter);
     ProxyWithStub* proxy = new ProxyWithStub(router_);
     router_->set_incoming_receiver(&proxy->stub);
 
     instance_ = proxy;
-  }
-
-  void ConfigureStub(ScopedMessagePipeHandle handle,
-                     MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter()) {
-    assert(instance_);  // Should have already been set!
-    assert(!router_);
-
-    // Stub for binding to state_.instance
-    // Proxy for communicating to the client on the other end of the pipe.
-
-    router_ = new Router(handle.Pass(), waiter);
-    ClientProxyWithStub* proxy = new ClientProxyWithStub(router_);
-    proxy->stub.set_sink(instance_);
-    router_->set_incoming_receiver(&proxy->stub);
-
-    instance_->SetClient(proxy);
-    client_ = proxy;
   }
 
  private:
@@ -85,18 +67,7 @@ class InterfacePtrState {
     MOJO_DISALLOW_COPY_AND_ASSIGN(ProxyWithStub);
   };
 
-  class ClientProxyWithStub : public Interface::Client::Proxy_ {
-   public:
-    explicit ClientProxyWithStub(MessageReceiver* receiver)
-        : Interface::Client::Proxy_(receiver) {
-    }
-    typename Interface::Stub_ stub;
-   private:
-    MOJO_DISALLOW_COPY_AND_ASSIGN(ClientProxyWithStub);
-  };
-
   Interface* instance_;
-  typename Interface::Client* client_;
   Router* router_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(InterfacePtrState);

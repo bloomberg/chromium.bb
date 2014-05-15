@@ -5,6 +5,8 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_SHARED_DATA_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_SHARED_DATA_H_
 
+#include "mojo/public/cpp/system/macros.h"
+
 namespace mojo {
 namespace internal {
 

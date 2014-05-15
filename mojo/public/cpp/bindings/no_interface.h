@@ -8,6 +8,7 @@
 #include <assert.h>
 
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/message_filter.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
@@ -22,6 +23,8 @@ class NoInterface {
  public:
   typedef NoInterfaceProxy Proxy_;
   typedef NoInterfaceStub Stub_;
+  typedef PassThroughFilter RequestValidator_;
+  typedef PassThroughFilter ResponseValidator_;
   typedef NoInterface Client;
   virtual ~NoInterface() {}
   virtual void SetClient(NoInterface* client) {}

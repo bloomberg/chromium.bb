@@ -243,3 +243,26 @@ bool {{class_name}}Stub::AcceptWithResponder(
 {%- endif %}
   return false;
 }
+
+{#--- Request validator definitions #}
+
+{{class_name}}RequestValidator::{{class_name}}RequestValidator(
+    mojo::MessageReceiver* sink) : MessageFilter(sink) {
+}
+
+bool {{class_name}}RequestValidator::Accept(mojo::Message* message) {
+  // TODO(yzshen): implement validation logic.
+  return sink_->Accept(message);
+}
+
+{#--- Response validator definitions #}
+{% if interface|has_callbacks %}
+{{class_name}}ResponseValidator::{{class_name}}ResponseValidator(
+    mojo::MessageReceiver* sink) : MessageFilter(sink) {
+}
+
+bool {{class_name}}ResponseValidator::Accept(mojo::Message* message) {
+  // TODO(yzshen): implement validation logic.
+  return sink_->Accept(message);
+}
+{%- endif -%}

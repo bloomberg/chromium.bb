@@ -8,6 +8,7 @@
 #include <map>
 
 #include "mojo/public/cpp/bindings/lib/connector.h"
+#include "mojo/public/cpp/bindings/lib/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/shared_data.h"
 
 namespace mojo {
@@ -15,9 +16,9 @@ namespace internal {
 
 class Router : public MessageReceiver {
  public:
-  // The Router takes ownership of |message_pipe|.
-  explicit Router(ScopedMessagePipeHandle message_pipe,
-                  MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
+  Router(ScopedMessagePipeHandle message_pipe,
+         FilterChain filters,
+         MojoAsyncWaiter* waiter = GetDefaultAsyncWaiter());
   virtual ~Router();
 
   // Sets the receiver to handle messages read from the message pipe that do
@@ -74,10 +75,11 @@ class Router : public MessageReceiver {
 
   bool HandleIncomingMessage(Message* message);
 
+  HandleIncomingMessageThunk thunk_;
+  FilterChain filters_;
   Connector connector_;
   SharedData<Router*> weak_self_;
   MessageReceiver* incoming_receiver_;
-  HandleIncomingMessageThunk thunk_;
   ResponderMap responders_;
   uint64_t next_request_id_;
 };

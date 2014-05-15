@@ -17,6 +17,8 @@ template("mojom") {
     "$generator_root/generators/cpp_templates/interface_definition.tmpl",
     "$generator_root/generators/cpp_templates/interface_macros.tmpl",
     "$generator_root/generators/cpp_templates/interface_proxy_declaration.tmpl",
+    "$generator_root/generators/cpp_templates/interface_request_validator_declaration.tmpl",
+    "$generator_root/generators/cpp_templates/interface_response_validator_declaration.tmpl",
     "$generator_root/generators/cpp_templates/interface_stub_declaration.tmpl",
     "$generator_root/generators/cpp_templates/module.cc.tmpl",
     "$generator_root/generators/cpp_templates/module.h.tmpl",

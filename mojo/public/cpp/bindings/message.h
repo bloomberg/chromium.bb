@@ -103,6 +103,8 @@ class MessageReceiver {
 // Returns MOJO_RESULT_SHOULD_WAIT if the caller should wait on the handle to
 // become readable. Returns MOJO_RESULT_OK if a message was dispatched and
 // otherwise returns an error code if something went wrong.
+//
+// NOTE: The message hasn't been validated and may be malformed!
 MojoResult ReadAndDispatchMessage(MessagePipeHandle handle,
                                   MessageReceiver* receiver,
                                   bool* receiver_result);

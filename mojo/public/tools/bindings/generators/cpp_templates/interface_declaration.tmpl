@@ -1,6 +1,11 @@
 {%- import "interface_macros.tmpl" as interface_macros %}
 class {{interface.name}}Proxy;
 class {{interface.name}}Stub;
+
+class {{interface.name}}RequestValidator;
+{%- if interface|has_callbacks %}
+class {{interface.name}}ResponseValidator;
+{%- endif %}
 {% if interface.client %}
 class {{interface.client}};
 {% endif %}
@@ -9,6 +14,13 @@ class {{interface.name}} {
  public:
   typedef {{interface.name}}Proxy Proxy_;
   typedef {{interface.name}}Stub Stub_;
+
+  typedef {{interface.name}}RequestValidator RequestValidator_;
+{%- if interface|has_callbacks %}
+  typedef {{interface.name}}ResponseValidator ResponseValidator_;
+{%- else %}
+  typedef mojo::PassThroughFilter ResponseValidator_;
+{%- endif %}
 {% if interface.client %}
   typedef {{interface.client}} Client;
 {% else %}
@@ -28,6 +40,7 @@ class {{interface.name}} {
 
 {#--- Methods #}
   virtual ~{{interface.name}}() {}
+
 {%- if interface.client %}
   // Called once before any other method.
   virtual void SetClient({{interface.client}}* client) = 0;
