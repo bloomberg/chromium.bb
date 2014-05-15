@@ -635,17 +635,12 @@ or verify this branch is set up to track another (via the --track argument to
     return True
 
   def GetGitBaseUrlFromConfig(self):
-    """Return the configured base URL from branch.<branchname>.canonical-url.
+    """Return the configured base URL from branch.<branchname>.baseurl.
 
     Returns None if it is not set.
     """
-    branch = self.GetBranch()
-    url = RunGit(['config', 'branch.%s.canonical-url' % branch],
-                 error_ok=True).strip()
-    if not url:
-      url = RunGit(['config', 'branch.%s.base-url' % branch],
-                   error_ok=True).strip()
-    return url
+    return RunGit(['config', 'branch.%s.base-url' % self.GetBranch()],
+                  error_ok=True).strip()
 
   def GetRemoteUrl(self):
     """Return the configured remote URL, e.g. 'git://example.org/foo.git/'.
@@ -1078,13 +1073,6 @@ def LoadCodereviewSettingsFromFile(fileobj):
     #ORIGIN_URL_CONFIG: http://src.chromium.org/git
     RunGit(['config', keyvals['PUSH_URL_CONFIG'],
             keyvals['ORIGIN_URL_CONFIG']])
-
-  if 'CANONICAL_URL' in keyvals:
-    branchref = RunGit(['symbolic-ref', 'HEAD']).strip()
-    branch = ShortBranchName(branchref)
-    RunGit(['config', 'branch.%s.canonical-url' % branch,
-            keyvals['CANONICAL_URL']],
-          error_ok=False)
 
 
 def urlretrieve(source, destination):

@@ -204,7 +204,6 @@ class TestGitCl(TestCase):
     return [
         ((['git', 'config', 'core.editor'],), ''),
     ] + cc_call + private_call + [
-        ((['git', 'config', 'branch.master.canonical-url'],), ''),
         ((['git', 'config', 'branch.master.base-url'],), ''),
         ((['git',
            'config', '--local', '--get-regexp', '^svn-remote\\.'],),
