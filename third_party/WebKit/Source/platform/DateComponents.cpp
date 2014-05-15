@@ -81,6 +81,11 @@ static int dayOfWeek(int year, int month, int day)
     return result;
 }
 
+int DateComponents::weekDay() const
+{
+    return dayOfWeek(m_year, m_month, m_monthDay);
+}
+
 int DateComponents::maxWeekNumberInYear() const
 {
     int day = dayOfWeek(m_year, 0, 1); // January 1.

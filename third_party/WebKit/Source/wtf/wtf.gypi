@@ -55,8 +55,6 @@
             'Forward.h',
             'Functional.h',
             'GetPtr.h',
-            'GregorianDateTime.cpp',
-            'GregorianDateTime.h',
             'HashCountedSet.h',
             'HashFunctions.h',
             'HashIterators.h',

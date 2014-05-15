@@ -74,6 +74,7 @@ public:
     int minute() const { return m_minute; }
     int hour() const { return m_hour; }
     int monthDay() const { return m_monthDay; }
+    int weekDay() const;
     int month() const { return m_month; }
     int fullYear() const { return m_year; }
     int week() const { return m_week; }
