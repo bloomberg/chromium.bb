@@ -666,6 +666,35 @@ TEST_F(TextfieldTest, FocusTraversalTest) {
   EXPECT_EQ(1, GetFocusedView()->id());
 }
 
+// Verify that the text input client properly tracks changing focus between text
+// fields. See crbug/365741.
+TEST_F(TextfieldTest, TextInputClientFollowsFocusChange) {
+  InitTextfields(2);
+  textfield_->RequestFocus();
+
+  EXPECT_EQ(textfield_, input_method_->GetTextInputClient());
+
+  widget_->GetFocusManager()->AdvanceFocus(false);
+  Textfield* second = static_cast<Textfield*>(GetFocusedView());
+  EXPECT_EQ(2, second->id());
+  EXPECT_EQ(second, input_method_->GetTextInputClient());
+
+  ui::MouseEvent click(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  textfield_->OnMousePressed(click);
+  EXPECT_EQ(textfield_, input_method_->GetTextInputClient());
+
+  input_method_->Clear();
+
+  // Verify that blur does not reset text input client if field does not
+  // have focus.
+  second->OnBlur();
+  EXPECT_FALSE(input_method_->text_input_type_changed());
+  // Verify that blur on the focused text field resets the text input client.
+  textfield_->OnBlur();
+  EXPECT_TRUE(input_method_->text_input_type_changed());
+}
+
 TEST_F(TextfieldTest, ContextMenuDisplayTest) {
   InitTextfield();
   EXPECT_TRUE(textfield_->context_menu_controller());

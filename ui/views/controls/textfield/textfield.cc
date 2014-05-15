@@ -862,7 +862,7 @@ void Textfield::OnFocus() {
   GetRenderText()->set_focused(true);
   cursor_visible_ = true;
   SchedulePaint();
-  GetInputMethod()->OnFocus();
+  GetInputMethod()->OnTextInputTypeChanged(this);
   OnCaretBoundsChanged();
 
   const size_t caret_blink_ms = Textfield::GetCaretBlinkMs();
@@ -878,7 +878,7 @@ void Textfield::OnFocus() {
 
 void Textfield::OnBlur() {
   GetRenderText()->set_focused(false);
-  GetInputMethod()->OnBlur();
+  GetInputMethod()->OnTextInputTypeChanged(this);
   cursor_repaint_timer_.Stop();
   if (cursor_visible_) {
     cursor_visible_ = false;
