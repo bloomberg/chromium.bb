@@ -108,10 +108,6 @@ enum HistoryCommitType {
     HistoryInertCommit
 };
 
-enum UpdateBackForwardListPolicy {
-    UpdateBackForwardList,
-    DoNotUpdateBackForwardList
-};
 }
 
 #endif

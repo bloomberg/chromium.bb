@@ -525,7 +525,7 @@ bool FrameLoader::allowPlugins(ReasonForCallingAllowPlugins reason)
     return allowed;
 }
 
-void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, UpdateBackForwardListPolicy updateBackForwardList)
+void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocumentNavigationSource sameDocumentNavigationSource, PassRefPtr<SerializedScriptValue> data, FrameLoadType type)
 {
     // Update the data source's request with the new URL to fake the URL change
     m_frame->document()->setURL(newURL);
@@ -537,7 +537,10 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (m_frame->document()->loadEventFinished())
         m_client->didStartLoading(NavigationWithinSameDocument);
 
-    HistoryCommitType historyCommitType = updateBackForwardList == UpdateBackForwardList && m_currentItem ? StandardCommit : HistoryInertCommit;
+    HistoryCommitType historyCommitType = loadTypeToCommitType(type);
+    if (!m_currentItem)
+        historyCommitType = HistoryInertCommit;
+
     setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi, data);
     m_client->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType);
     m_client->dispatchDidReceiveTitle(m_frame->document()->title());
@@ -545,10 +548,10 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
         m_client->didStopLoading();
 }
 
-void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, UpdateBackForwardListPolicy updateBackForwardList, ClientRedirectPolicy clientRedirect)
+void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType type, ClientRedirectPolicy clientRedirect)
 {
     // If we have a state object, we cannot also be a new navigation.
-    ASSERT(!stateObject || updateBackForwardList == DoNotUpdateBackForwardList);
+    ASSERT(!stateObject || type == FrameLoadTypeBackForward);
 
     // If we have a provisional request for a different document, a fragment scroll should cancel it.
     if (m_provisionalDocumentLoader) {
@@ -567,9 +570,8 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         m_frame->domWindow()->enqueueHashchangeEvent(oldURL, url);
     }
     m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
-    bool replacesCurrentHistoryItem = updateBackForwardList == DoNotUpdateBackForwardList;
-    m_documentLoader->setReplacesCurrentHistoryItem(replacesCurrentHistoryItem);
-    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, updateBackForwardList);
+    m_documentLoader->setReplacesCurrentHistoryItem(m_loadType == FrameLoadTypeStandard);
+    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, type);
 
     m_frame->view()->setWasScrolledByUser(false);
 
@@ -722,7 +724,9 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     const KURL& url = request.resourceRequest().url();
     if (!action.shouldOpenInNewWindow() && shouldPerformFragmentNavigation(request.formState(), request.resourceRequest().httpMethod(), newLoadType, url)) {
         m_documentLoader->setTriggeringAction(action);
-        loadInSameDocument(url, nullptr, newLoadType == FrameLoadTypeStandard && !shouldTreatURLAsSameAsCurrent(url) ? UpdateBackForwardList : DoNotUpdateBackForwardList, request.clientRedirect());
+        if (shouldTreatURLAsSameAsCurrent(url))
+            newLoadType = FrameLoadTypeRedirectWithLockedBackForwardList;
+        loadInSameDocument(url, nullptr, newLoadType, request.clientRedirect());
         return;
     }
     bool sameURL = url == m_documentLoader->urlForHistory();
@@ -1394,7 +1398,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
     m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
         m_loadType = FrameLoadTypeBackForward;
-        loadInSameDocument(item->url(), item->stateObject(), DoNotUpdateBackForwardList, NotClientRedirect);
+        loadInSameDocument(item->url(), item->stateObject(), FrameLoadTypeBackForward, NotClientRedirect);
         restoreScrollPositionAndViewState();
         return;
     }

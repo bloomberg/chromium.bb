@@ -182,7 +182,7 @@ public:
 
     bool allowPlugins(ReasonForCallingAllowPlugins);
 
-    void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, UpdateBackForwardListPolicy);
+    void updateForSameDocumentNavigation(const KURL&, SameDocumentNavigationSource, PassRefPtr<SerializedScriptValue>, FrameLoadType);
 
     HistoryItem* currentItem() const { return m_currentItem.get(); }
     void saveScrollState();
@@ -220,7 +220,7 @@ private:
 
     void setHistoryItemStateForCommit(HistoryCommitType, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = nullptr);
 
-    void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, UpdateBackForwardListPolicy, ClientRedirectPolicy);
+    void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType, ClientRedirectPolicy);
 
     void scheduleCheckCompleted();
     void startCheckCompleteTimer();
