@@ -58,6 +58,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/session_storage_namespace.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -128,7 +129,8 @@ bool NeedMatchCompleteDummyForFinalStatus(FinalStatus final_status) {
       final_status != FINAL_STATUS_DEVTOOLS_ATTACHED &&
       final_status != FINAL_STATUS_CROSS_SITE_NAVIGATION_PENDING &&
       final_status != FINAL_STATUS_PAGE_BEING_CAPTURED &&
-      final_status != FINAL_STATUS_NAVIGATION_UNCOMMITTED;
+      final_status != FINAL_STATUS_NAVIGATION_UNCOMMITTED &&
+      final_status != FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE;
 }
 
 void CheckIfCookiesExistForDomainResultOnUIThread(
@@ -535,6 +537,16 @@ WebContents* PrerenderManager::SwapInternal(
       prerender_data->contents()->Destroy(FINAL_STATUS_NAVIGATION_UNCOMMITTED);
       return NULL;
     }
+  }
+
+  // Do not swap if the target WebContents is not the only WebContents in its
+  // current BrowsingInstance.
+  if (web_contents->GetSiteInstance()->GetRelatedActiveContentsCount() != 1u) {
+    DCHECK_GT(
+        web_contents->GetSiteInstance()->GetRelatedActiveContentsCount(), 1u);
+    prerender_data->contents()->Destroy(
+        FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE);
+    return NULL;
   }
 
   // Do not use the prerendered version if there is an opener object.

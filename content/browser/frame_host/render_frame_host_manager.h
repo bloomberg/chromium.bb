@@ -392,6 +392,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Helper method to terminate the pending RenderViewHost.
   void CancelPending();
 
+  // Helper method to set the active RenderFrameHost. Returns the old
+  // RenderFrameHost and updates counts.
+  scoped_ptr<RenderFrameHostImpl> SetRenderFrameHost(
+      scoped_ptr<RenderFrameHostImpl> render_frame_host);
+
   RenderFrameHostImpl* UpdateStateForNavigate(
       const NavigationEntryImpl& entry);
 

@@ -15,7 +15,8 @@
 namespace content {
 
 BrowsingInstance::BrowsingInstance(BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+    : browser_context_(browser_context),
+      active_contents_count_(0u) {
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
@@ -84,6 +85,7 @@ BrowsingInstance::~BrowsingInstance() {
   // We should only be deleted when all of the SiteInstances that refer to
   // us are gone.
   DCHECK(site_instance_map_.empty());
+  DCHECK_EQ(0u, active_contents_count_);
 }
 
 }  // namespace content

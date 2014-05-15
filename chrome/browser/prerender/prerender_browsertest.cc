@@ -166,6 +166,7 @@ bool ShouldAbortPrerenderBeforeSwap(FinalStatus status) {
     case FINAL_STATUS_PAGE_BEING_CAPTURED:
     case FINAL_STATUS_NAVIGATION_UNCOMMITTED:
     case FINAL_STATUS_WOULD_HAVE_BEEN_USED:
+    case FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE:
       return false;
     default:
       return true;
@@ -1206,7 +1207,11 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void OpenDestURLViaWindowOpen() const {
-    OpenURLWithJSImpl("WindowOpen", dest_url_, GURL(), true);
+    OpenURLViaWindowOpen(dest_url_);
+  }
+
+  void OpenURLViaWindowOpen(const GURL& url) const {
+    OpenURLWithJSImpl("WindowOpen", url, GURL(), true);
   }
 
   void RemoveLinkElement(int i) const {
@@ -2877,24 +2882,34 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
 
 // Checks that if a page is opened in a new window by javascript and both the
 // pages are in the same domain, the prerendered page is not used, due to
-// window.opener.
+// there being other tabs in the same browsing instance.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSameDomainWindowOpenerWindowOpen) {
   PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_WINDOW_OPENER,
+                   FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE,
                    1);
   OpenDestURLViaWindowOpen();
 }
 
 // Checks that if a page is opened due to click on a href with target="_blank"
 // and both pages are in the same domain the prerendered page is not used, due
-// to window.opener.
+// there being other tabs in the same browsing instance.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSameDomainWindowOpenerClickTarget) {
   PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_WINDOW_OPENER,
+                   FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE,
                    1);
   OpenDestURLViaClickTarget();
+}
+
+// Checks that prerenders do not get swapped into target pages that have opened
+// a popup, even if the target page itself does not have an opener.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderTargetHasPopup) {
+  PrerenderTestURL("files/prerender/prerender_page.html",
+                   FINAL_STATUS_NON_EMPTY_BROWSING_INSTANCE,
+                   1);
+  OpenURLViaWindowOpen(GURL(content::kAboutBlankURL));
+  NavigateToDestURLWithDisposition(CURRENT_TAB, false);
 }
 
 class TestClientCertStore : public net::ClientCertStore {

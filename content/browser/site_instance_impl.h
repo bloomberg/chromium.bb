@@ -12,6 +12,7 @@
 #include "url/gurl.h"
 
 namespace content {
+class BrowsingInstance;
 class RenderProcessHostFactory;
 
 class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
@@ -21,10 +22,11 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   virtual int32 GetId() OVERRIDE;
   virtual bool HasProcess() const OVERRIDE;
   virtual RenderProcessHost* GetProcess() OVERRIDE;
+  virtual BrowserContext* GetBrowserContext() const OVERRIDE;
   virtual const GURL& GetSiteURL() const OVERRIDE;
   virtual SiteInstance* GetRelatedSiteInstance(const GURL& url) OVERRIDE;
   virtual bool IsRelatedSiteInstance(const SiteInstance* instance) OVERRIDE;
-  virtual BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual size_t GetRelatedActiveContentsCount() OVERRIDE;
 
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -58,6 +60,14 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // SiteInstance, all view in this SiteInstance can be safely
   // discarded to save memory.
   size_t active_view_count() { return active_view_count_; }
+
+  // Increase the number of active WebContentses using this SiteInstance. Note
+  // that, unlike active_view_count, this does not count pending RVHs.
+  void IncrementRelatedActiveContentsCount();
+
+  // Decrease the number of active WebContentses using this SiteInstance. Note
+  // that, unlike active_view_count, this does not count pending RVHs.
+  void DecrementRelatedActiveContentsCount();
 
   // Sets the global factory used to create new RenderProcessHosts.  It may be
   // NULL, in which case the default BrowserRenderProcessHost will be created

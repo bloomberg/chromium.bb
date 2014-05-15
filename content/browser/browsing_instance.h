@@ -7,6 +7,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
@@ -79,6 +80,14 @@ class CONTENT_EXPORT BrowsingInstance
   // BrowsingInstance.
   void UnregisterSiteInstance(SiteInstance* site_instance);
 
+  // Tracks the number of WebContents currently in this BrowsingInstance.
+  size_t active_contents_count() const { return active_contents_count_; }
+  void increment_active_contents_count() { active_contents_count_++; }
+  void decrement_active_contents_count() {
+    DCHECK_LT(0u, active_contents_count_);
+    active_contents_count_--;
+  }
+
   friend class SiteInstanceImpl;
   friend class SiteInstance;
 
@@ -89,6 +98,7 @@ class CONTENT_EXPORT BrowsingInstance
 
  private:
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
+  // site.
   typedef base::hash_map<std::string, SiteInstance*> SiteInstanceMap;
 
   // Common browser context to which all SiteInstances in this BrowsingInstance
@@ -100,7 +110,12 @@ class CONTENT_EXPORT BrowsingInstance
   // obtained with SiteInstanceImpl::GetSiteForURL.  Note that this map may not
   // contain every active SiteInstance, because a race exists where two
   // SiteInstances can be assigned to the same site.  This is ok in rare cases.
+  // It also does not contain SiteInstances which have not yet been assigned a
+  // site, such as about:blank.  See NavigatorImpl::ShouldAssignSiteForURL.
   SiteInstanceMap site_instance_map_;
+
+  // Number of WebContentses currently using this BrowsingInstance.
+  size_t active_contents_count_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);
 };

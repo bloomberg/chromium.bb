@@ -91,7 +91,7 @@ RenderFrameHostManager::~RenderFrameHostManager() {
     delete cross_process_frame_connector_;
 
   // We should always have a current RenderFrameHost except in some tests.
-  render_frame_host_.reset();
+  SetRenderFrameHost(scoped_ptr<RenderFrameHostImpl>());
 
   // Delete any swapped out RenderFrameHosts.
   STLDeleteValues(&proxy_hosts_);
@@ -107,11 +107,11 @@ void RenderFrameHostManager::Init(BrowserContext* browser_context,
   if (!site_instance)
     site_instance = SiteInstance::Create(browser_context);
 
-  render_frame_host_ = CreateRenderFrameHost(site_instance,
-                                             view_routing_id,
-                                             frame_routing_id,
-                                             false,
-                                             delegate_->IsHidden());
+  SetRenderFrameHost(CreateRenderFrameHost(site_instance,
+                                           view_routing_id,
+                                           frame_routing_id,
+                                           false,
+                                           delegate_->IsHidden()));
 
   // Keep track of renderer processes as they start to shut down or are
   // crashed/killed.
@@ -1024,8 +1024,7 @@ void RenderFrameHostManager::CommitPending() {
   // Swap in the pending frame and make it active. Also ensure the FrameTree
   // stays in sync.
   scoped_ptr<RenderFrameHostImpl> old_render_frame_host =
-      render_frame_host_.Pass();
-  render_frame_host_ = pending_render_frame_host_.Pass();
+      SetRenderFrameHost(pending_render_frame_host_.Pass());
   if (is_main_frame)
     render_frame_host_->render_view_host()->AttachToFrameTree();
 
@@ -1354,6 +1353,31 @@ void RenderFrameHostManager::CancelPending() {
 
   pending_web_ui_.reset();
   pending_and_current_web_ui_.reset();
+}
+
+scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
+    scoped_ptr<RenderFrameHostImpl> render_frame_host) {
+  // Swap the two.
+  scoped_ptr<RenderFrameHostImpl> old_render_frame_host =
+      render_frame_host_.Pass();
+  render_frame_host_ = render_frame_host.Pass();
+
+  if (frame_tree_node_->IsMainFrame()) {
+    // Update the count of top-level frames using this SiteInstance.  All
+    // subframes are in the same BrowsingInstance as the main frame, so we only
+    // count top-level ones.  This makes the value easier for consumers to
+    // interpret.
+    if (render_frame_host_) {
+      static_cast<SiteInstanceImpl*>(render_frame_host_->GetSiteInstance())->
+          IncrementRelatedActiveContentsCount();
+    }
+    if (old_render_frame_host) {
+      static_cast<SiteInstanceImpl*>(old_render_frame_host->GetSiteInstance())->
+          DecrementRelatedActiveContentsCount();
+    }
+  }
+
+  return old_render_frame_host.Pass();
 }
 
 bool RenderFrameHostManager::IsRVHOnSwappedOutList(

@@ -12,7 +12,6 @@
 
 namespace content {
 class BrowserContext;
-class BrowsingInstance;
 class RenderProcessHost;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,6 +105,10 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance> {
   // this one.  If so, JavaScript interactions that are permitted across
   // origins (e.g., postMessage) should be supported.
   virtual bool IsRelatedSiteInstance(const SiteInstance* instance) = 0;
+
+  // Returns the total active WebContents count for this SiteInstance and all
+  // related SiteInstances in the same BrowsingInstance.
+  virtual size_t GetRelatedActiveContentsCount() = 0;
 
   // Factory method to create a new SiteInstance.  This will create a new
   // new BrowsingInstance, so it should only be used when creating a new tab

@@ -2535,4 +2535,110 @@ TEST_F(WebContentsImplTest, HandleGestureEvent) {
   contents()->SetDelegate(NULL);
 }
 
+// Tests that GetRelatedActiveContentsCount is shared between related
+// SiteInstances and includes WebContents that have not navigated yet.
+TEST_F(WebContentsImplTest, ActiveContentsCountBasic) {
+  scoped_refptr<SiteInstance> instance1(
+      SiteInstance::CreateForURL(browser_context(), GURL("http://a.com")));
+  scoped_refptr<SiteInstance> instance2(
+      instance1->GetRelatedSiteInstance(GURL("http://b.com")));
+
+  EXPECT_EQ(0u, instance1->GetRelatedActiveContentsCount());
+  EXPECT_EQ(0u, instance2->GetRelatedActiveContentsCount());
+
+  scoped_ptr<TestWebContents> contents1(
+      TestWebContents::Create(browser_context(), instance1));
+  EXPECT_EQ(1u, instance1->GetRelatedActiveContentsCount());
+  EXPECT_EQ(1u, instance2->GetRelatedActiveContentsCount());
+
+  scoped_ptr<TestWebContents> contents2(
+      TestWebContents::Create(browser_context(), instance1));
+  EXPECT_EQ(2u, instance1->GetRelatedActiveContentsCount());
+  EXPECT_EQ(2u, instance2->GetRelatedActiveContentsCount());
+
+  contents1.reset();
+  EXPECT_EQ(1u, instance1->GetRelatedActiveContentsCount());
+  EXPECT_EQ(1u, instance2->GetRelatedActiveContentsCount());
+
+  contents2.reset();
+  EXPECT_EQ(0u, instance1->GetRelatedActiveContentsCount());
+  EXPECT_EQ(0u, instance2->GetRelatedActiveContentsCount());
+}
+
+// Tests that GetRelatedActiveContentsCount is preserved correctly across
+// same-site and cross-site navigations.
+TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
+  scoped_refptr<SiteInstance> instance(
+      SiteInstance::Create(browser_context()));
+
+  EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
+
+  scoped_ptr<TestWebContents> contents(
+      TestWebContents::Create(browser_context(), instance));
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+
+  // Navigate to a URL.
+  contents->GetController().LoadURL(
+      GURL("http://a.com/1"), Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+  contents->CommitPendingNavigation();
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+
+  // Navigate to a URL in the same site.
+  contents->GetController().LoadURL(
+      GURL("http://a.com/2"), Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+  contents->CommitPendingNavigation();
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+
+  // Navigate to a URL in a different site.
+  contents->GetController().LoadURL(
+      GURL("http://b.com"), Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_TRUE(contents->cross_navigation_pending());
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+  contents->CommitPendingNavigation();
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+
+  contents.reset();
+  EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
+}
+
+// Tests that GetRelatedActiveContentsCount tracks BrowsingInstance changes
+// from WebUI.
+TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
+  scoped_refptr<SiteInstance> instance(
+      SiteInstance::Create(browser_context()));
+
+  EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
+
+  scoped_ptr<TestWebContents> contents(
+      TestWebContents::Create(browser_context(), instance));
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+
+  // Navigate to a URL.
+  contents->NavigateAndCommit(GURL("http://a.com"));
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+
+  // Navigate to a URL with WebUI. This will change BrowsingInstances.
+  contents->GetController().LoadURL(
+      GURL(kTestWebUIUrl), Referrer(), PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_TRUE(contents->cross_navigation_pending());
+  scoped_refptr<SiteInstance> instance_webui(
+      contents->GetPendingRenderViewHost()->GetSiteInstance());
+  EXPECT_FALSE(instance->IsRelatedSiteInstance(instance_webui.get()));
+
+  // At this point, contents still counts for the old BrowsingInstance.
+  EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
+  EXPECT_EQ(0u, instance_webui->GetRelatedActiveContentsCount());
+
+  // Commit and contents counts for the new one.
+  contents->CommitPendingNavigation();
+  EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
+  EXPECT_EQ(1u, instance_webui->GetRelatedActiveContentsCount());
+
+  contents.reset();
+  EXPECT_EQ(0u, instance->GetRelatedActiveContentsCount());
+  EXPECT_EQ(0u, instance_webui->GetRelatedActiveContentsCount());
+}
+
 }  // namespace content

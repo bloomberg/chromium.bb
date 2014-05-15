@@ -717,14 +717,8 @@ TEST_F(RenderFrameHostManagerTest, Init) {
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
 
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
-
+  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
   RenderViewHostImpl* rvh = manager->current_host();
   RenderFrameHostImpl* rfh = manager->current_frame_host();
   ASSERT_TRUE(rvh);
@@ -749,15 +743,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   notifications.ListenFor(NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                           Source<WebContents>(web_contents.get()));
 
-  // Create.
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
-
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
-
+  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
   RenderFrameHostImpl* host;
 
   // 1) The first navigation. --------------------------
@@ -844,14 +830,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   notifications.ListenFor(NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                           Source<WebContents>(web_contents.get()));
 
-  // Create.
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
-
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
+  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
@@ -1032,13 +1011,8 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
+  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
   EXPECT_FALSE(manager->current_host()->IsRenderViewLive());
 
   const GURL kUrl("chrome://foo");
@@ -1083,12 +1057,8 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // Create a blank tab.
   scoped_ptr<TestWebContents> web_contents1(
       TestWebContents::Create(browser_context(), blank_instance));
-  FrameTree tree1(web_contents1->GetFrameTree()->root()->navigator(),
-                 web_contents1.get(), web_contents1.get(),
-                 web_contents1.get(), web_contents1.get());
-  RenderFrameHostManager* manager1 = tree1.root()->render_manager();
-  manager1->Init(
-      browser_context(), blank_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
+  RenderFrameHostManager* manager1 =
+      web_contents1->GetRenderManagerForTesting();
   // Test the case that new RVH is considered live.
   manager1->current_host()->CreateRenderView(base::string16(), -1, -1, false);
 
@@ -1117,12 +1087,8 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   // Now simulate clicking a link that opens in a new tab.
   scoped_ptr<TestWebContents> web_contents2(
       TestWebContents::Create(browser_context(), webui_instance));
-  FrameTree tree2(web_contents2->GetFrameTree()->root()->navigator(),
-                  web_contents2.get(), web_contents2.get(),
-                  web_contents2.get(), web_contents2.get());
-  RenderFrameHostManager* manager2 = tree2.root()->render_manager();
-  manager2->Init(
-      browser_context(), webui_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
+  RenderFrameHostManager* manager2 =
+      web_contents2->GetRenderManagerForTesting();
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
   manager2->current_host()->CreateRenderView(base::string16(), -1, -1, false);
@@ -1411,14 +1377,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   scoped_ptr<TestWebContents> web_contents(
       TestWebContents::Create(browser_context(), instance));
 
-  // Create.
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
-
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
+  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 
   RenderFrameHostImpl* host;
 
@@ -1479,14 +1438,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   notifications.ListenFor(NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
                           Source<WebContents>(web_contents.get()));
 
-  // Create.
-  FrameTree tree(web_contents->GetFrameTree()->root()->navigator(),
-                 web_contents.get(), web_contents.get(),
-                 web_contents.get(), web_contents.get());
-  RenderFrameHostManager* manager = tree.root()->render_manager();
-
-  manager->Init(browser_context(), instance, MSG_ROUTING_NONE,
-                MSG_ROUTING_NONE);
+  RenderFrameHostManager* manager = web_contents->GetRenderManagerForTesting();
 
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
