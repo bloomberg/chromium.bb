@@ -254,9 +254,6 @@ race:WTF::Latin1Encoding()::globalLatin1Encoding
 # https://code.google.com/p/v8/issues/detail?id=3143
 race:v8::internal::FLAG_track_double_fields
 
-# http://crbug.com/370244
-race:cc::RenderingStatsInstrumentation::AccumulateAndClearImplThreadStats
-
 # https://crbug.com/369257
 # TODO(mtklein): annotate properly and remove suppressions.
 race:SandboxIPCHandler::HandleFontMatchRequest
