@@ -475,9 +475,9 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 
   switch (result) {
     case ERR_PROXY_AUTH_REQUESTED: {
-      DCHECK(connection_.get());
-      DCHECK(connection_->socket());
-      DCHECK(establishing_tunnel_);
+      CHECK(connection_.get());
+      CHECK(connection_->socket());
+      CHECK(establishing_tunnel_);
 
       next_state_ = STATE_WAITING_USER_ACTION;
       ProxyClientSocket* proxy_socket =
