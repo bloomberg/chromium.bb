@@ -312,11 +312,15 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(
       resource_context);
 
-  if (!is_prerendering && resource_type == ResourceType::MAIN_FRAME) {
 #if defined(OS_ANDROID)
+  // TODO(davidben): This is insufficient to integrate with prerender properly.
+  // https://crbug.com/370595
+  if (resource_type == ResourceType::MAIN_FRAME && !is_prerendering) {
     throttles->push_back(
         InterceptNavigationDelegate::CreateThrottleFor(request));
+  }
 #else
+  if (resource_type == ResourceType::MAIN_FRAME) {
     // Redirect some navigations to apps that have registered matching URL
     // handlers ('url_handlers' in the manifest).
     content::ResourceThrottle* url_to_app_throttle =
@@ -324,14 +328,16 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     if (url_to_app_throttle)
       throttles->push_back(url_to_app_throttle);
 
-    // Experimental: Launch ephemeral apps from search results.
-    content::ResourceThrottle* ephemeral_app_throttle =
-        EphemeralAppThrottle::MaybeCreateThrottleForLaunch(
-            request, io_data);
-    if (ephemeral_app_throttle)
-      throttles->push_back(ephemeral_app_throttle);
-#endif
+    if (!is_prerendering) {
+      // Experimental: Launch ephemeral apps from search results.
+      content::ResourceThrottle* ephemeral_app_throttle =
+          EphemeralAppThrottle::MaybeCreateThrottleForLaunch(
+              request, io_data);
+      if (ephemeral_app_throttle)
+        throttles->push_back(ephemeral_app_throttle);
+    }
   }
+#endif
 
 #if defined(OS_CHROMEOS)
   // Check if we need to add offline throttle. This should be done only

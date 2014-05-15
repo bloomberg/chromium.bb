@@ -40036,6 +40036,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="48" label="COOKIE_STORE_NOT_LOADED"/>
   <int value="49" label="COOKIE_CONFLICT"/>
   <int value="50" label="NON_EMPTY_BROWSING_INSTANCE"/>
+  <int value="51" label="NAVIGATION_INTERCEPTED"/>
 </enum>
 
 <enum name="PrerenderHoverEvent" type="int">

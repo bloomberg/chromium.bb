@@ -6,9 +6,10 @@
   var target_dir = '/extensions/platform_apps/url_handlers/common/';
   var link = document.getElementById('link');
   var mismatching_link = document.getElementById('mismatching_link');
+  var prerender_link = document.getElementById('prerender_link');
   var form  = document.getElementById('form');
 
-  if (link || mismatching_link || form) {
+  if (link || mismatching_link || prerender_link || form) {
     var clickEvent = document.createEvent('MouseEvents');
     clickEvent.initMouseEvent('click', true, true, window,
                               0, 0, 0, 0, 0, false, false,
@@ -28,6 +29,19 @@
       // match the url_handlers of the app. It should open the link in a new
       // tab instead.
       mismatching_link.dispatchEvent(clickEvent);
+    }
+
+    if (prerender_link) {
+      console.log("Prerendering a link");
+      prerender_link.href = target_dir + "target.html";
+      var prerender = document.createElement("link");
+      prerender.rel = "prerender";
+      prerender.href = prerender_link.href;
+      prerender.addEventListener("webkitprerenderstop", function() {
+        console.log("Prerender aborted. Clicking link");
+        prerender_link.dispatchEvent(clickEvent);
+      });
+      document.body.appendChild(prerender);
     }
 
     if (form) {

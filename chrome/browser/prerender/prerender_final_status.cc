@@ -62,6 +62,7 @@ const char* kFinalStatusNames[] = {
   "Cookie Store Not Loaded",
   "Cookie Conflict",
   "Non-Empty Browsing Instance",
+  "Navigation Intercepted",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

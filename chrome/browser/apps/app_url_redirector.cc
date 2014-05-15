@@ -7,6 +7,7 @@
 #include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -44,6 +45,14 @@ bool LaunchAppWithUrl(
   if (source->IsSubframe()) {
     DVLOG(1) << "Cancel redirection: source is a subframe";
     return false;
+  }
+
+  // If prerendering, don't launch the app but abort the navigation.
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(source);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_NAVIGATION_INTERCEPTED);
+    return true;
   }
 
   // These are guaranteed by CreateThrottleFor below.

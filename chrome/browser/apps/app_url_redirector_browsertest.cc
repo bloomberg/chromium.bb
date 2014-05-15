@@ -117,6 +117,8 @@ void PlatformAppUrlRedirectorBrowserTest::SetUpCommandLine(
     CommandLine* command_line) {
   PlatformAppBrowserTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(::switches::kDisablePopupBlocking);
+  command_line->AppendSwitchASCII(::switches::kPrerenderMode,
+                                  ::switches::kPrerenderModeSwitchValueEnabled);
 }
 
 // TODO(sergeygs): Factor out common functionality from TestXyz,
@@ -505,6 +507,18 @@ IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
       "XHR succeeded",
       "XHR failed",
       "url_handlers/handlers/steal_xhr_target");
+}
+
+// Test that a click on a prerendered link still launches.
+IN_PROC_BROWSER_TEST_F(PlatformAppUrlRedirectorBrowserTest,
+                       PrerenderedClickInTabIntercepted) {
+#if defined (OS_WIN)
+  if (base::win::GetVersion() < base::win::VERSION_VISTA) return;  // Bug 301638
+#endif
+  TestNavigationInTab(
+      "url_handlers/launching_pages/prerender_link.html",
+      "url_handlers/handlers/simple",
+      "Handler launched");
 }
 
 }  // namespace extensions
