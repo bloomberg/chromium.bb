@@ -86,28 +86,6 @@ void BrowserPluginEmbedder::DidSendScreenRects() {
               base::Unretained(this)));
 }
 
-bool BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback(
-    const NativeWebKeyboardEvent& event,
-    WebContents* guest_web_contents) {
-  return static_cast<WebContentsImpl*>(guest_web_contents)->
-      GetBrowserPluginGuest()->UnlockMouseIfNecessary(event);
-}
-
-bool BrowserPluginEmbedder::HandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event) {
-  if ((event.type != blink::WebInputEvent::RawKeyDown) ||
-      (event.windowsKeyCode != ui::VKEY_ESCAPE) ||
-      (event.modifiers & blink::WebInputEvent::InputModifiers)) {
-    return false;
-  }
-
-  return GetBrowserPluginGuestManager()->ForEachGuest(
-      GetWebContents(),
-      base::Bind(&BrowserPluginEmbedder::UnlockMouseIfNecessaryCallback,
-                 base::Unretained(this),
-                 event));
-}
-
 bool BrowserPluginEmbedder::SetZoomLevelCallback(
     double level, WebContents* guest_web_contents) {
   double zoom_factor = content::ZoomLevelToZoomFactor(level);

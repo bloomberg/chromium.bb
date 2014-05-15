@@ -1187,11 +1187,6 @@ bool WebContentsImpl::PreHandleKeyboardEvent(
 }
 
 void WebContentsImpl::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  if (browser_plugin_embedder_ &&
-      browser_plugin_embedder_->HandleKeyboardEvent(event)) {
-    return;
-  }
-
   if (delegate_)
     delegate_->HandleKeyboardEvent(this, event);
 }
@@ -2229,6 +2224,9 @@ gfx::Size WebContentsImpl::GetPreferredSize() const {
 }
 
 bool WebContentsImpl::GotResponseToLockMouseRequest(bool allowed) {
+  if (GetBrowserPluginGuest())
+    return GetBrowserPluginGuest()->LockMouse(allowed);
+
   return GetRenderViewHost() ?
       GetRenderViewHostImpl()->GotResponseToLockMouseRequest(allowed) : false;
 }

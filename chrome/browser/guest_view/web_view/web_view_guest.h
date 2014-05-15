@@ -85,7 +85,7 @@ class WebViewGuest : public GuestView<WebViewGuest>,
                          int active_match_ordinal,
                          bool final_update) OVERRIDE;
   virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
-  virtual bool HandleKeyboardEvent(
+  virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsDragAndDropEnabled() OVERRIDE;
   virtual bool IsOverridingUserAgent() const OVERRIDE;
@@ -304,6 +304,8 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       const base::DictionaryValue& request_info,
       const PermissionResponseCallback& callback,
       bool allowed_by_default);
+
+  bool HandleKeyboardShortcuts(const content::NativeWebKeyboardEvent& event);
 
   ObserverList<extensions::TabHelper::ScriptExecutionObserver>
       script_observers_;

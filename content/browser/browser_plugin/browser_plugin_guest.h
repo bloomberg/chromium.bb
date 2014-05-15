@@ -105,6 +105,10 @@ class CONTENT_EXPORT BrowserPluginGuest
   // Returns a WeakPtr to this BrowserPluginGuest.
   base::WeakPtr<BrowserPluginGuest> AsWeakPtr();
 
+  // Sets the lock state of the pointer. Returns true if |allowed| is true and
+  // the mouse has been successfully locked.
+  bool LockMouse(bool allowed);
+
   // Called when the embedder WebContents is destroyed to give the
   // BrowserPluginGuest an opportunity to clean up after itself.
   void EmbedderDestroyed();
@@ -139,9 +143,6 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   // Returns the BrowserPluginGuest that created this guest, if any.
   BrowserPluginGuest* GetOpener() const;
-
-  // Returns whether the mouse pointer was unlocked.
-  bool UnlockMouseIfNecessary(const NativeWebKeyboardEvent& event);
 
   void UpdateVisibility();
 

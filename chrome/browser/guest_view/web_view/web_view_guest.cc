@@ -402,36 +402,22 @@ void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {
   DispatchEvent(new GuestViewBase::Event(webview::kEventExit, args.Pass()));
 }
 
-bool WebViewGuest::HandleKeyboardEvent(
+void WebViewGuest::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  if (event.type != blink::WebInputEvent::RawKeyDown)
-    return false;
+  if (!attached())
+    return;
 
-#if defined(OS_MACOSX)
-  if (event.modifiers != blink::WebInputEvent::MetaKey)
-    return false;
+  if (HandleKeyboardShortcuts(event))
+    return;
 
-  if (event.windowsKeyCode == ui::VKEY_OEM_4) {
-    Go(-1);
-    return true;
-  }
-
-  if (event.windowsKeyCode == ui::VKEY_OEM_6) {
-    Go(1);
-    return true;
-  }
-#else
-  if (event.windowsKeyCode == ui::VKEY_BROWSER_BACK) {
-    Go(-1);
-    return true;
-  }
-
-  if (event.windowsKeyCode == ui::VKEY_BROWSER_FORWARD) {
-    Go(1);
-    return true;
-  }
-#endif
-  return false;
+  // Send the unhandled keyboard events back to the embedder to reprocess them.
+  // TODO(fsamuel): This introduces the possibility of out-of-order keyboard
+  // events because the guest may be arbitrarily delayed when responding to
+  // keyboard events. In that time, the embedder may have received and processed
+  // additional key events. This needs to be fixed as soon as possible.
+  // See http://crbug.com/229882.
+  embedder_web_contents()->GetDelegate()->HandleKeyboardEvent(
+      web_contents(), event);
 }
 
 bool WebViewGuest::IsDragAndDropEnabled() {
@@ -1080,6 +1066,46 @@ int WebViewGuest::RequestPermissionInternal(
     }
   }
   return request_id;
+}
+
+bool WebViewGuest::HandleKeyboardShortcuts(
+    const content::NativeWebKeyboardEvent& event) {
+  if (event.type != blink::WebInputEvent::RawKeyDown)
+    return false;
+
+  // If the user hits the escape key without any modifiers then unlock the
+  // mouse if necessary.
+  if ((event.windowsKeyCode == ui::VKEY_ESCAPE) &&
+      !(event.modifiers & blink::WebInputEvent::InputModifiers)) {
+    return guest_web_contents()->GotResponseToLockMouseRequest(false);
+  }
+
+#if defined(OS_MACOSX)
+  if (event.modifiers != blink::WebInputEvent::MetaKey)
+    return false;
+
+  if (event.windowsKeyCode == ui::VKEY_OEM_4) {
+    Go(-1);
+    return true;
+  }
+
+  if (event.windowsKeyCode == ui::VKEY_OEM_6) {
+    Go(1);
+    return true;
+  }
+#else
+  if (event.windowsKeyCode == ui::VKEY_BROWSER_BACK) {
+    Go(-1);
+    return true;
+  }
+
+  if (event.windowsKeyCode == ui::VKEY_BROWSER_FORWARD) {
+    Go(1);
+    return true;
+  }
+#endif
+
+  return false;
 }
 
 WebViewGuest::PermissionResponseInfo::PermissionResponseInfo()

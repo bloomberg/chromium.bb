@@ -341,6 +341,13 @@ base::WeakPtr<BrowserPluginGuest> BrowserPluginGuest::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
+bool BrowserPluginGuest::LockMouse(bool allowed) {
+  if (!attached() || (mouse_locked_ == allowed))
+    return false;
+
+  return embedder_web_contents()->GotResponseToLockMouseRequest(allowed);
+}
+
 void BrowserPluginGuest::EmbedderDestroyed() {
   embedder_web_contents_ = NULL;
   if (delegate_)
@@ -655,26 +662,10 @@ bool BrowserPluginGuest::HandleContextMenu(const ContextMenuParams& params) {
 void BrowserPluginGuest::HandleKeyboardEvent(
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
-  if (!attached())
+  if (!delegate_)
     return;
 
-  if (UnlockMouseIfNecessary(event))
-    return;
-
-  if (delegate_ && delegate_->HandleKeyboardEvent(event))
-    return;
-
-  if (!embedder_web_contents_->GetDelegate())
-    return;
-
-  // Send the unhandled keyboard events back to the embedder to reprocess them.
-  // TODO(fsamuel): This introduces the possibility of out-of-order keyboard
-  // events because the guest may be arbitrarily delayed when responding to
-  // keyboard events. In that time, the embedder may have received and processed
-  // additional key events. This needs to be fixed as soon as possible.
-  // See http://crbug.com/229882.
-  embedder_web_contents_->GetDelegate()->HandleKeyboardEvent(
-      web_contents(), event);
+  delegate_->HandleKeyboardEvent(event);
 }
 
 void BrowserPluginGuest::SetZoom(double zoom_factor) {
@@ -821,15 +812,6 @@ void BrowserPluginGuest::RequestNewWindowPermission(
                     new NewWindowRequest(weak_ptr_factory_.GetWeakPtr(),
                                          guest->instance_id()),
                     request_info);
-}
-
-bool BrowserPluginGuest::UnlockMouseIfNecessary(
-    const NativeWebKeyboardEvent& event) {
-  if (!mouse_locked_)
-    return false;
-
-  embedder_web_contents()->GotResponseToLockMouseRequest(false);
-  return true;
 }
 
 void BrowserPluginGuest::SendMessageToEmbedder(IPC::Message* msg) {

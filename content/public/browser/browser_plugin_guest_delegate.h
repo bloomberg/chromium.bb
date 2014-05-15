@@ -67,7 +67,7 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
                          int active_match_ordinal,
                          bool final_update) {}
 
-  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   // Requests setting the zoom level to the provided |zoom_level|.
   virtual void SetZoom(double zoom_factor) {}
