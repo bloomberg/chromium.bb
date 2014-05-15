@@ -302,26 +302,45 @@ void InstalledLoader::LoadAllExtensions() {
   int not_file_access = 0;
 
   const ExtensionSet& extensions = extension_registry_->enabled_extensions();
+  ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(profile);
+  for (ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end();
+       ++iter) {
+    const Extension* extension = *iter;
+    Manifest::Location location = extension->location();
+    Manifest::Type type = extension->GetType();
 
-  for (ExtensionSet::const_iterator ex = extensions.begin();
-       ex != extensions.end();
-       ++ex) {
-    Manifest::Location location = (*ex)->location();
-    Manifest::Type type = (*ex)->GetType();
-    if ((*ex)->is_app()) {
-      UMA_HISTOGRAM_ENUMERATION("Extensions.AppLocation",
-                                location, 100);
-    } else if (type == Manifest::TYPE_EXTENSION) {
-      UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionLocation",
-                                location, 100);
+    // For the first few metrics, include all extensions and apps (component,
+    // unpacked, etc). It's good to know these locations, and it doesn't
+    // muck up any of the stats. Later, though, we want to omit component and
+    // unpacked, as they are less interesting.
+    if (extension->is_app())
+      UMA_HISTOGRAM_ENUMERATION("Extensions.AppLocation", location, 100);
+    else if (extension->is_extension())
+      UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionLocation", location, 100);
+
+    if (!ManifestURL::UpdatesFromGallery(extension)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.NonWebstoreLocation", location, 100);
+
+      // Check for inconsistencies if the extension was supposedly installed
+      // from the webstore.
+      enum {
+        BAD_UPDATE_URL = 0,
+        // This value was a mistake. Turns out sideloaded extensions can
+        // have the from_webstore bit if they update from the webstore.
+        DEPRECATED_IS_EXTERNAL = 1,
+      };
+      if (extension->from_webstore()) {
+        UMA_HISTOGRAM_ENUMERATION(
+            "Extensions.FromWebstoreInconsistency", BAD_UPDATE_URL, 2);
+      }
     }
-    if (!ManifestURL::UpdatesFromGallery(*ex)) {
-      UMA_HISTOGRAM_ENUMERATION("Extensions.NonWebstoreLocation",
-                                location, 100);
-    }
+
     if (Manifest::IsExternalLocation(location)) {
       // See loop below for DISABLED.
-      if (ManifestURL::UpdatesFromGallery(*ex)) {
+      if (ManifestURL::UpdatesFromGallery(extension)) {
         UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
                                   EXTERNAL_ITEM_WEBSTORE_ENABLED,
                                   EXTERNAL_ITEM_MAX_ITEMS);
@@ -331,48 +350,35 @@ void InstalledLoader::LoadAllExtensions() {
                                   EXTERNAL_ITEM_MAX_ITEMS);
       }
     }
-    if ((*ex)->from_webstore()) {
-      // Check for inconsistencies if the extension was supposedly installed
-      // from the webstore.
-      enum {
-        BAD_UPDATE_URL = 0,
-        // This value was a mistake. Turns out sideloaded extensions can
-        // have the from_webstore bit if they update from the webstore.
-        DEPRECATED_IS_EXTERNAL = 1,
-      };
-      if (!ManifestURL::UpdatesFromGallery(*ex)) {
-        UMA_HISTOGRAM_ENUMERATION("Extensions.FromWebstoreInconsistency",
-                                  BAD_UPDATE_URL, 2);
-      }
-    }
 
-    // Don't count component extensions, since they are only extensions as an
-    // implementation detail.
+    // From now on, don't count component extensions, since they are only
+    // extensions as an implementation detail. Continue to count unpacked
+    // extensions for a few metrics.
     if (location == Manifest::COMPONENT)
       continue;
+
     // Histogram for non-webstore extensions overriding new tab page should
     // include unpacked extensions.
-    if (!(*ex)->from_webstore()) {
-      const extensions::URLOverrides::URLOverrideMap& override_map =
-          extensions::URLOverrides::GetChromeURLOverrides(ex->get());
-      if (override_map.find("newtab") != override_map.end()) {
-        ++non_webstore_ntp_override_count;
-      }
+    if (!extension->from_webstore() &&
+        URLOverrides::GetChromeURLOverrides(extension).count("newtab")) {
+      ++non_webstore_ntp_override_count;
     }
 
-    // Don't count unpacked extensions, since they're a developer-specific
-    // feature.
+    // Don't count unpacked extensions anymore, either.
     if (Manifest::IsUnpackedLocation(location))
       continue;
 
     UMA_HISTOGRAM_ENUMERATION("Extensions.ManifestVersion",
-                              (*ex)->manifest_version(), 10);
+                              extension->manifest_version(),
+                              10);
 
+    // We might have wanted to count legacy packaged apps here, too, since they
+    // are effectively extensions. Unfortunately, it's too late, as we don't
+    // want to mess up the existing stats.
     if (type == Manifest::TYPE_EXTENSION) {
-      BackgroundPageType background_page_type =
-          GetBackgroundPageType(ex->get());
-      UMA_HISTOGRAM_ENUMERATION(
-          "Extensions.BackgroundPageType", background_page_type, 10);
+      UMA_HISTOGRAM_ENUMERATION("Extensions.BackgroundPageType",
+                                GetBackgroundPageType(extension),
+                                10);
     }
 
     // Using an enumeration shows us the total installed ratio across all users.
@@ -419,36 +425,34 @@ void InstalledLoader::LoadAllExtensions() {
         }
         break;
     }
-    if (!Manifest::IsExternalLocation((*ex)->location()))
+    if (!Manifest::IsExternalLocation(location))
       ++item_user_count;
-    ExtensionActionManager* extension_action_manager =
-        ExtensionActionManager::Get(extension_service_->profile());
-    if (extension_action_manager->GetPageAction(*ex->get()))
+
+    if (extension_action_manager->GetPageAction(*extension))
       ++page_action_count;
-    if (extension_action_manager->GetBrowserAction(*ex->get()))
+
+    if (extension_action_manager->GetBrowserAction(*extension))
       ++browser_action_count;
 
-    if (extensions::ManagedModeInfo::IsContentPack(ex->get()))
+    if (ManagedModeInfo::IsContentPack(extension))
       ++content_pack_count;
 
-    RecordCreationFlags(*ex);
+    RecordCreationFlags(extension);
 
-    extension_service_->RecordPermissionMessagesHistogram(
-        ex->get(), "Extensions.Permissions_Load");
+    ExtensionService::RecordPermissionMessagesHistogram(
+        extension, "Extensions.Permissions_Load");
 
-    // For incognito and file access, skip unpacked extensions because they get
-    // file access up-front, and the data isn't useful. Skip anything that
-    // doesn't appear in settings.
-    if ((*ex)->location() != Manifest::UNPACKED &&
-        (*ex)->ShouldDisplayInExtensionSettings()) {
-      if ((*ex)->can_be_incognito_enabled()) {
-        if (util::IsIncognitoEnabled((*ex)->id(), profile))
+    // For incognito and file access, skip anything that doesn't appear in
+    // settings.
+    if (extension->ShouldDisplayInExtensionSettings()) {
+      if (extension->can_be_incognito_enabled()) {
+        if (util::IsIncognitoEnabled(extension->id(), profile))
           ++incognito;
         else
           ++not_incognito;
       }
-      if ((*ex)->wants_file_access()) {
-        if (util::AllowFileAccess((*ex)->id(), profile))
+      if (extension->wants_file_access()) {
+        if (util::AllowFileAccess(extension->id(), profile))
           ++file_access;
         else
           ++not_file_access;
