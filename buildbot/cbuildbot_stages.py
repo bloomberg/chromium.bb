@@ -63,6 +63,10 @@ class PaygenSigningRequirementsError(Exception):
   """Paygen stage can't run if signing failed."""
 
 
+class PaygenCrostoolsNotAvailableError(Exception):
+  """Paygen stage can't run if signing failed."""
+
+
 class PaygenStage(artifact_stages.ArchivingStage):
   """Stage that generates release payloads.
 
@@ -101,16 +105,6 @@ class PaygenStage(artifact_stages.ArchivingStage):
                                       **kwargs)
     self.signing_results = {}
     self.channels = channels
-
-  def _HandleStageException(self, exc_info):
-    """Override and don't set status to FAIL but FORGIVEN instead."""
-    exc_type = exc_info[0]
-
-    # TODO(dgarrett): Constrain this to only expected exceptions.
-    if issubclass(exc_type, Exception):
-      return self._HandleExceptionAsWarning(exc_info)
-
-    return super(PaygenStage, self)._HandleStageException(exc_info)
 
   def _JsonFromUrl(self, gs_ctx, url):
     """Fetch a GS Url, and parse it as Json.
@@ -319,8 +313,12 @@ class PaygenStage(artifact_stages.ArchivingStage):
     # These modules are imported here because they aren't always available at
     # cbuildbot startup.
     # pylint: disable=F0401
-    from crostools.lib import gspaths
-    from crostools.lib import paygen_build_lib
+    try:
+      from crostools.lib import gspaths
+      from crostools.lib import paygen_build_lib
+    except  ImportError:
+      # We can't generate payloads without crostools.
+      raise PaygenCrostoolsNotAvailableError()
 
     # Convert to release tools naming for channels.
     if not channel.endswith('-channel'):
