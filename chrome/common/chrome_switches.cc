@@ -459,10 +459,6 @@ const char kEnableAsyncDns[]                = "enable-async-dns";
 // HttpAuthHandlerNegotiate::CreateSPN for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
-// Enables the Automation extension API.
-// TODO(dtseng): Remove once API enabled for stable channel.
-const char kEnableAutomationAPI[]           = "enable-automation-api";
-
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

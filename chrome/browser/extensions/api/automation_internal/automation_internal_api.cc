@@ -6,12 +6,11 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/automation_internal.h"
+#include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -63,36 +62,28 @@ class AutomationWebContentsObserver
 // if this doesn't turn accessibility on for the first time (e.g. if a
 // RendererAccessibility object existed already because a screenreader has been
 // run at some point).
-bool AutomationInternalEnableCurrentTabFunction::RunAsync() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAutomationAPI)) {
-    return false;
-  }
-
+ExtensionFunction::ResponseAction
+AutomationInternalEnableCurrentTabFunction::Run() {
   Browser* current_browser = GetCurrentBrowser();
   TabStripModel* tab_strip = current_browser->tab_strip_model();
   content::WebContents* contents =
       tab_strip->GetWebContentsAt(tab_strip->active_index());
   if (!contents)
-    return false;
+    return RespondNow(Error("No active tab"));
   content::RenderWidgetHost* rwh =
       contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
   if (!rwh)
-    return false;
-
-  results_ = api::automation_internal::EnableCurrentTab::Results::Create(
-      rwh->GetProcess()->GetID(), rwh->GetRoutingID());
-
-  SendResponse(true);
-
+    return RespondNow(Error("Could not enable accessibility for active tab"));
   AutomationWebContentsObserver::CreateForWebContents(contents);
-
   rwh->EnableTreeOnlyAccessibilityMode();
-
-  return true;
+  scoped_ptr<base::ListValue> results =
+      api::automation_internal::EnableCurrentTab::Results::Create(
+          rwh->GetProcess()->GetID(), rwh->GetRoutingID());
+  return RespondNow(MultipleArguments(results.release()));
 }
 
-bool AutomationInternalPerformActionFunction::RunAsync() {
+ExtensionFunction::ResponseAction
+AutomationInternalPerformActionFunction::Run() {
   using api::automation_internal::PerformAction::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -125,22 +116,21 @@ bool AutomationInternalPerformActionFunction::RunAsync() {
     default:
       NOTREACHED();
   }
-  return true;
+  return RespondNow(NoArguments());
 }
 
-bool AutomationInternalEnableDesktopFunction::RunAsync() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAutomationAPI)) {
-    return false;
-  }
-
+ExtensionFunction::ResponseAction
+AutomationInternalEnableDesktopFunction::Run() {
 #if defined(OS_CHROMEOS)
-  AutomationManagerViews::GetInstance()->Enable(browser_context());
-#else
-  error_ = "getDesktop is unsupported by this platform";
-#endif
+  const AutomationInfo* automation_info = AutomationInfo::Get(GetExtension());
+  if (!automation_info || !automation_info->desktop)
+    return RespondNow(Error("desktop permission must be requested"));
 
-  return true;
+  AutomationManagerViews::GetInstance()->Enable(browser_context());
+  return RespondNow(NoArguments());
+#else
+  return RespondNow(Error("getDesktop is unsupported by this platform"));
+#endif
 }
 
 }  // namespace extensions

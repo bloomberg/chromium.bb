@@ -5,11 +5,31 @@
 var allTests = [
   function testGetDesktop() {
     chrome.automation.getDesktop(function(tree) {
-      tree.addEventListener('loadComplete', function(e) {
-        assertEq('desktop', tree.root.role);
-        assertEq('window', tree.root.firstChild().role);
+      assertEq('desktop', tree.root.role);
+      assertEq('window', tree.root.firstChild().role);
+      chrome.test.succeed();
+    });
+  },
+
+  function testGetDesktopTwice() {
+    var desktop = null;
+    chrome.automation.getDesktop(function(tree) {
+      desktop = tree;
+    });
+    chrome.automation.getDesktop(function(tree) {
+      assertEq(tree, desktop);
+      chrome.test.succeed();
+    });
+  },
+
+  function testGetDesktopNested() {
+    var desktop = null;
+    chrome.automation.getDesktop(function(tree) {
+      desktop = tree;
+      chrome.automation.getDesktop(function(tree2) {
+        assertEq(tree2, desktop);
         chrome.test.succeed();
-      }, true);
+      });
     });
   }
 ];

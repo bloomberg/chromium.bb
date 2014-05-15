@@ -58,6 +58,23 @@ function hasAccessed(targetChrome) {
 }
 
 /**
+ * Check whether there is an error set on |targetChrome| without setting
+ * |accessedLastError|.
+ * @param {Object} targetChrome the Chrome object to check.
+ * @return boolean Whether lastError has been set.
+ */
+function hasError(targetChrome) {
+  if (!targetChrome)
+    throw new Error('No target chrome to check');
+
+  assertRuntimeIsAvailable();
+  if ('lastError' in targetChrome.runtime)
+    return true;
+
+  return false;
+};
+
+/**
  * Clears the last error on |targetChrome|.
  */
 function clear(targetChrome) {
@@ -102,5 +119,6 @@ function run(name, message, stack, callback, args) {
 
 exports.clear = clear;
 exports.hasAccessed = hasAccessed;
+exports.hasError = hasError;
 exports.set = set;
 exports.run = run;

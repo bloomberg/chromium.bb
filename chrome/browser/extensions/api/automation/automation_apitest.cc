@@ -55,11 +55,6 @@ class AutomationApiTest : public ExtensionApiTest {
   }
 
  public:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(::switches::kEnableAutomationAPI);
-  }
-
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
@@ -125,6 +120,16 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Location) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop", "desktop.html"))
       << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotRequested) {
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs",
+                                  "desktop_not_requested.html")) << message_;
+}
+#else
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotSupported) {
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/desktop",
+                                  "desktop_not_supported.html")) << message_;
 }
 #endif
 
