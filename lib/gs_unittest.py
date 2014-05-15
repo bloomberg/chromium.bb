@@ -622,7 +622,7 @@ class GSContextTest(AbstractGSContextTest):
     self.assertFalse(any('-m' in cmd for cmd in self.gs_mock.raw_gs_cmds))
 
 
-class NetworkGSContextTest(cros_test_lib.TempDirTestCase):
+class UnmockedGSContextTest(cros_test_lib.TempDirTestCase):
   """Tests for GSContext that go over the network."""
 
   @cros_test_lib.NetworkTest()
@@ -634,6 +634,30 @@ class NetworkGSContextTest(cros_test_lib.TempDirTestCase):
       for i in xrange(1, 4):
         self.assertEqual(i, counter.Increment())
         self.assertEqual(i, counter.Get())
+
+  def testCatGoodFile(self):
+    """Tests catting a local file."""
+    ctx = gs.GSContext()
+    filename = os.path.join(self.tempdir, 'myfile')
+    content = 'foo'
+    osutils.WriteFile(filename, content)
+    self.assertEqual(content, ctx.Cat(filename).output)
+
+  def testCatMissingFile(self):
+    """Tests catting a missing file."""
+    ctx = gs.GSContext()
+    with self.assertRaises(gs.GSNoSuchKey):
+      ctx.Cat(os.path.join(self.tempdir, 'does/not/exist'))
+
+  def testCatForbiddenFile(self):
+    """Tests catting a local file that we don't have access to."""
+    ctx = gs.GSContext()
+    filename = os.path.join(self.tempdir, 'myfile')
+    content = 'foo'
+    osutils.WriteFile(filename, content)
+    os.chmod(filename, 000)
+    with self.assertRaises(gs.GSCommandError):
+      ctx.Cat(filename)
 
 
 class InitBotoTest(AbstractGSContextTest):

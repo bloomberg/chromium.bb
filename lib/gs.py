@@ -369,7 +369,12 @@ class GSContext(object):
       # case.
       kwargs.pop('retries', None)
       kwargs.pop('headers', None)
-      return cros_build_lib.RunCommand(['cat', path], **kwargs)
+      if not os.path.exists(path):
+        raise GSNoSuchKey('%s: file does not exist' % path)
+      try:
+        return cros_build_lib.RunCommand(['cat', path], **kwargs)
+      except cros_build_lib.RunCommandError as e:
+        raise GSCommandError(e.msg, e.result, e.exception)
     return self.DoCommand(['cat', path], **kwargs)
 
   def CopyInto(self, local_path, remote_dir, filename=None, **kwargs):
