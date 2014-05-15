@@ -59,6 +59,7 @@ import org.chromium.content.browser.ScreenOrientationListener.ScreenOrientationO
 import org.chromium.content.browser.accessibility.AccessibilityInjector;
 import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
 import org.chromium.content.browser.input.AdapterInputConnection;
+import org.chromium.content.browser.input.GamepadList;
 import org.chromium.content.browser.input.HandleView;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.ImeAdapter.AdapterInputConnectionFactory;
@@ -1385,6 +1386,7 @@ public class ContentViewCore
         setAccessibilityState(mAccessibilityManager.isEnabled());
 
         ScreenOrientationListener.getInstance().addObserver(this, mContext);
+        GamepadList.onAttachedToWindow(mContext);
     }
 
     /**
@@ -1399,6 +1401,7 @@ public class ContentViewCore
         unregisterAccessibilityContentObserver();
 
         ScreenOrientationListener.getInstance().removeObserver(this);
+        GamepadList.onDetachedFromWindow();
     }
 
     /**
@@ -1591,6 +1594,7 @@ public class ContentViewCore
      * @see View#dispatchKeyEvent(KeyEvent)
      */
     public boolean dispatchKeyEvent(KeyEvent event) {
+        if (GamepadList.dispatchKeyEvent(event)) return true;
         if (getContentViewClient().shouldOverrideKeyEvent(event)) {
             return mContainerViewInternals.super_dispatchKeyEvent(event);
         }
@@ -1636,6 +1640,7 @@ public class ContentViewCore
      * @see View#onGenericMotionEvent(MotionEvent)
      */
     public boolean onGenericMotionEvent(MotionEvent event) {
+        if (GamepadList.onGenericMotionEvent(event)) return true;
         if ((event.getSource() & InputDevice.SOURCE_CLASS_POINTER) != 0) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_SCROLL:

@@ -422,6 +422,7 @@
             'common_aidl',
             'content_common',
             'content_strings_grd',
+            'content_gamepad_mapping',
             'gesture_event_type_java',
             'page_transition_types_java',
             'popup_item_type_java',
@@ -583,6 +584,22 @@
               ],
             }],
           ],
+        },
+        {
+          'target_name': 'content_gamepad_mapping',
+          'type': 'none',
+          'sources': [
+            'public/android/java/src/org/chromium/content/browser/input/CanonicalButtonIndex.template',
+            'public/android/java/src/org/chromium/content/browser/input/CanonicalAxisIndex.template',
+          ],
+          'variables': {
+            'package_name': 'org/chromium/content/browser/input',
+            'template_deps': [
+              'browser/gamepad/canonical_axis_index_list.h',
+              'browser/gamepad/canonical_button_index_list.h',
+            ],
+          },
+          'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
       ],
     }],  # OS == "android"
