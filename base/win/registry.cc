@@ -69,11 +69,15 @@ LONG RegKey::Create(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
 LONG RegKey::CreateWithDisposition(HKEY rootkey, const wchar_t* subkey,
                                    DWORD* disposition, REGSAM access) {
   DCHECK(rootkey && subkey && access && disposition);
-  Close();
-
+  HKEY subhkey = NULL;
   LONG result = RegCreateKeyEx(rootkey, subkey, 0, NULL,
-                               REG_OPTION_NON_VOLATILE, access, NULL, &key_,
+                               REG_OPTION_NON_VOLATILE, access, NULL, &subhkey,
                                disposition);
+  if (result == ERROR_SUCCESS) {
+    Close();
+    key_ = subhkey;
+  }
+
   return result;
 }
 
@@ -82,17 +86,25 @@ LONG RegKey::CreateKey(const wchar_t* name, REGSAM access) {
   HKEY subkey = NULL;
   LONG result = RegCreateKeyEx(key_, name, 0, NULL, REG_OPTION_NON_VOLATILE,
                                access, NULL, &subkey, NULL);
-  Close();
+ if (result == ERROR_SUCCESS) {
+   Close();
 
-  key_ = subkey;
+   key_ = subkey;
+  }
+
   return result;
 }
 
 LONG RegKey::Open(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
   DCHECK(rootkey && subkey && access);
-  Close();
+  HKEY subhkey = NULL;
 
-  LONG result = RegOpenKeyEx(rootkey, subkey, 0, access, &key_);
+  LONG result = RegOpenKeyEx(rootkey, subkey, 0, access, &subhkey);
+  if (result == ERROR_SUCCESS) {
+    Close();
+    key_ = subhkey;
+  }
+
   return result;
 }
 
@@ -103,9 +115,10 @@ LONG RegKey::OpenKey(const wchar_t* relative_key_name, REGSAM access) {
 
   // We have to close the current opened key before replacing it with the new
   // one.
-  Close();
-
-  key_ = subkey;
+  if (result == ERROR_SUCCESS) {
+    Close();
+    key_ = subkey;
+  }
   return result;
 }
 
