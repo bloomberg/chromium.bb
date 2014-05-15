@@ -396,7 +396,7 @@ PluginModule::PluginModule(const std::string& name,
       library_(NULL),
       name_(name),
       path_(path),
-      permissions_(perms),
+      permissions_(ppapi::PpapiPermissions::GetForCommandLine(perms.GetBits())),
       reserve_instance_id_(NULL) {
   // Ensure the globals object is created.
   if (!host_globals)
@@ -684,9 +684,6 @@ scoped_refptr<PluginModule> PluginModule::Create(
     return scoped_refptr<PluginModule>();
   }
 
-  ppapi::PpapiPermissions permissions =
-      ppapi::PpapiPermissions::GetForCommandLine(info->permissions);
-
   // Out of process: have the browser start the plugin process for us.
   IPC::ChannelHandle channel_handle;
   base::ProcessId peer_pid;
@@ -697,6 +694,8 @@ scoped_refptr<PluginModule> PluginModule::Create(
     // Couldn't be initialized.
     return scoped_refptr<PluginModule>();
   }
+
+  ppapi::PpapiPermissions permissions(info->permissions);
 
   // AddLiveModule must be called before any early returns since the
   // module's destructor will remove itself.
