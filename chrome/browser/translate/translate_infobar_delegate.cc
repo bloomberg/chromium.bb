@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,14 @@
 #include "base/i18n/string_compare.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -144,13 +142,13 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
 }
 
 bool TranslateInfoBarDelegate::IsTranslatableLanguageByPrefs() {
-  Profile* profile =
-      Profile::FromBrowserContext(GetWebContents()->GetBrowserContext());
-  Profile* original_profile = profile->GetOriginalProfile();
+  TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(GetWebContents());
   scoped_ptr<TranslatePrefs> translate_prefs(
-      TranslateTabHelper::CreateTranslatePrefs(original_profile->GetPrefs()));
+      TranslateTabHelper::CreateTranslatePrefs(
+          translate_tab_helper->GetPrefs()));
   TranslateAcceptLanguages* accept_languages =
-      TranslateTabHelper::GetTranslateAcceptLanguages(original_profile);
+      translate_tab_helper->GetTranslateAcceptLanguages();
   return translate_prefs->CanTranslateLanguage(accept_languages,
                                                original_language_code());
 }
@@ -281,13 +279,6 @@ bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
 
 content::WebContents* TranslateInfoBarDelegate::GetWebContents() {
   return InfoBarService::WebContentsFromInfoBar(infobar());
-}
-
-// static
-base::string16 TranslateInfoBarDelegate::GetLanguageDisplayableName(
-    const std::string& language_code) {
-  return l10n_util::GetDisplayNameForLocale(
-      language_code, g_browser_process->GetApplicationLocale(), true);
 }
 
 // static

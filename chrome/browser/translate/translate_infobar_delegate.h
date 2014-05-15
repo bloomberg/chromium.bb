@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,14 +11,18 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/translate/translate_tab_helper.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/browser/translate_ui_delegate.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_errors.h"
 
 class PrefService;
+
+namespace content {
+class WebContents;
+}
 
 class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
  public:
@@ -146,11 +150,6 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
 
   // Returns the WebContents associated with the TranslateInfoBarDelegate.
   content::WebContents* GetWebContents();
-
-  // Convenience method that returns the displayable language name for
-  // |language_code| in the current application locale.
-  static base::string16 GetLanguageDisplayableName(
-      const std::string& language_code);
 
   // Adds the strings that should be displayed in the after translate infobar to
   // |strings|. If |autodetermined_source_language| is false, the text in that
