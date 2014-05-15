@@ -6394,17 +6394,6 @@
    fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
 }
 {
-   bug_370327
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN2v88internal6Parser12ParseProgramEv
-   fun:_ZN2v88internal6Parser5ParseEv
-   fun:_ZN2v88internal6Parser5ParseEPNS0_15CompilationInfoEb
-   fun:_ZN2v88internalL15CompileToplevelEPNS0_15CompilationInfoE*
-   fun:_ZN2v88internal8Compiler13CompileScriptENS0_6HandleINS0_6StringEEENS2_INS0_6ObjectEEEiibNS2_INS0_7Context*
-   fun:_ZN2v814ScriptCompiler14CompileUnboundEPNS_7IsolateEPNS0_6SourceENS0_14CompileOptionsE
-}
-{
   bug_371844
   Memcheck:Uninitialized
   fun:bcmp
