@@ -52,7 +52,7 @@ class ExtensionType:    # RFC 6066 / 4366
     signed_cert_timestamps = 18  # RFC 6962
     tack = 0xF300
     supports_npn = 13172
-    channel_id = 30031
+    channel_id = 30032
     
 class NameType:
     host_name = 0

@@ -14,7 +14,7 @@ index d52e596..79ad145 100755
      cert_type = 9       # RFC 6091
      tack = 0xF300
      supports_npn = 13172
-+    channel_id = 30031
++    channel_id = 30032
      
  class NameType:
      host_name = 0

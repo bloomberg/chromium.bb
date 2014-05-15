@@ -22,6 +22,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/ssl/default_server_bound_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/test/cert_test_util.h"
@@ -557,6 +558,35 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
   DISALLOW_COPY_AND_ASSIGN(DeleteSocketCallback);
 };
 
+// A ServerBoundCertStore that always returns an error when asked for a
+// certificate.
+class FailingServerBoundCertStore : public ServerBoundCertStore {
+  virtual int GetServerBoundCert(const std::string& server_identifier,
+                                 base::Time* expiration_time,
+                                 std::string* private_key_result,
+                                 std::string* cert_result,
+                                 const GetCertCallback& callback) OVERRIDE {
+    return ERR_UNEXPECTED;
+  }
+  virtual void SetServerBoundCert(const std::string& server_identifier,
+                                  base::Time creation_time,
+                                  base::Time expiration_time,
+                                  const std::string& private_key,
+                                  const std::string& cert) OVERRIDE {}
+  virtual void DeleteServerBoundCert(const std::string& server_identifier,
+                                     const base::Closure& completion_callback)
+      OVERRIDE {}
+  virtual void DeleteAllCreatedBetween(base::Time delete_begin,
+                                       base::Time delete_end,
+                                       const base::Closure& completion_callback)
+      OVERRIDE {}
+  virtual void DeleteAll(const base::Closure& completion_callback) OVERRIDE {}
+  virtual void GetAllServerBoundCerts(const GetCertListCallback& callback)
+      OVERRIDE {}
+  virtual int GetCertCount() OVERRIDE { return 0; }
+  virtual void SetForceKeepSessionState() OVERRIDE {}
+};
+
 class SSLClientSocketTest : public PlatformTest {
  public:
   SSLClientSocketTest()
@@ -569,6 +599,30 @@ class SSLClientSocketTest : public PlatformTest {
   }
 
  protected:
+  // Sets up a TCP connection to a HTTPS server. To actually do the SSL
+  // handshake, follow up with call to CreateAndConnectSSLClientSocket() below.
+  bool ConnectToTestServer(SpawnedTestServer::SSLOptions& ssl_options) {
+    test_server_.reset(new SpawnedTestServer(
+        SpawnedTestServer::TYPE_HTTPS, ssl_options, base::FilePath()));
+    if (!test_server_->Start()) {
+      LOG(ERROR) << "Could not start SpawnedTestServer";
+      return false;
+    }
+
+    if (!test_server_->GetAddressList(&addr_)) {
+      LOG(ERROR) << "Could not get SpawnedTestServer address list";
+      return false;
+    }
+
+    transport_.reset(new TCPClientSocket(addr_, &log_, NetLog::Source()));
+    int rv = callback_.GetResult(transport_->Connect(callback_.callback()));
+    if (rv != OK) {
+      LOG(ERROR) << "Could not connect to SpawnedTestServer";
+      return false;
+    }
+    return true;
+  }
+
   scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
       scoped_ptr<StreamSocket> transport_socket,
       const HostPortPair& host_and_port,
@@ -579,10 +633,39 @@ class SSLClientSocketTest : public PlatformTest {
         connection.Pass(), host_and_port, ssl_config, context_);
   }
 
+  // Create an SSLClientSocket object and use it to connect to a test
+  // server, then wait for connection results. This must be called after
+  // a successful ConnectToTestServer() call.
+  // |ssl_config| the SSL configuration to use.
+  // |result| will retrieve the ::Connect() result value.
+  // Returns true on success, false otherwise. Success means that the socket
+  // could be created and its Connect() was called, not that the connection
+  // itself was a success.
+  bool CreateAndConnectSSLClientSocket(SSLConfig& ssl_config, int* result) {
+    sock_ = CreateSSLClientSocket(
+        transport_.Pass(), test_server_->host_port_pair(), ssl_config);
+
+    if (sock_->IsConnected()) {
+      LOG(ERROR) << "SSL Socket prematurely connected";
+      return false;
+    }
+
+    *result = callback_.GetResult(sock_->Connect(callback_.callback()));
+    return true;
+  }
+
   ClientSocketFactory* socket_factory_;
   scoped_ptr<MockCertVerifier> cert_verifier_;
   scoped_ptr<TransportSecurityState> transport_security_state_;
   SSLClientSocketContext context_;
+  scoped_ptr<SSLClientSocket> sock_;
+  CapturingNetLog log_;
+
+ private:
+  scoped_ptr<StreamSocket> transport_;
+  scoped_ptr<SpawnedTestServer> test_server_;
+  TestCompletionCallback callback_;
+  AddressList addr_;
 };
 
 // Verifies the correctness of GetSSLCertRequestInfo.
@@ -711,6 +794,25 @@ class SSLClientSocketFalseStartTest : public SSLClientSocketTest {
       EXPECT_FALSE(callback.have_result());
     }
   }
+};
+
+class SSLClientSocketChannelIDTest : public SSLClientSocketTest {
+ protected:
+  void EnableChannelID() {
+    cert_service_.reset(
+        new ServerBoundCertService(new DefaultServerBoundCertStore(NULL),
+                                   base::MessageLoopProxy::current()));
+    context_.server_bound_cert_service = cert_service_.get();
+  }
+
+  void EnableFailingChannelID() {
+    cert_service_.reset(new ServerBoundCertService(
+        new FailingServerBoundCertStore(), base::MessageLoopProxy::current()));
+    context_.server_bound_cert_service = cert_service_.get();
+  }
+
+ private:
+  scoped_ptr<ServerBoundCertService> cert_service_;
 };
 
 //-----------------------------------------------------------------------------
@@ -2361,6 +2463,49 @@ TEST_F(SSLClientSocketFalseStartTest, NoForwardSecrecy) {
   SSLConfig client_config;
   client_config.next_protos.push_back("http/1.1");
   TestFalseStart(server_options, client_config, false);
+}
+
+// Connect to a server using channel id. It should allow the connection.
+TEST_F(SSLClientSocketChannelIDTest, SendChannelID) {
+  SpawnedTestServer::SSLOptions ssl_options;
+
+  ASSERT_TRUE(ConnectToTestServer(ssl_options));
+
+  EnableChannelID();
+  SSLConfig ssl_config = kDefaultSSLConfig;
+  ssl_config.channel_id_enabled = true;
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock_->IsConnected());
+  EXPECT_TRUE(sock_->WasChannelIDSent());
+
+  sock_->Disconnect();
+  EXPECT_FALSE(sock_->IsConnected());
+}
+
+// Connect to a server using channel id but without sending a key. It should
+// fail.
+TEST_F(SSLClientSocketChannelIDTest, FailingChannelID) {
+  SpawnedTestServer::SSLOptions ssl_options;
+
+  ASSERT_TRUE(ConnectToTestServer(ssl_options));
+
+  EnableFailingChannelID();
+  SSLConfig ssl_config = kDefaultSSLConfig;
+  ssl_config.channel_id_enabled = true;
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+
+  // TODO(haavardm@opera.com): Due to differences in threading, Linux returns
+  // ERR_UNEXPECTED while Mac and Windows return ERR_PROTOCOL_ERROR. Accept all
+  // error codes for now.
+  // http://crbug.com/373670
+  EXPECT_NE(OK, rv);
+  EXPECT_FALSE(sock_->IsConnected());
 }
 
 }  // namespace net
