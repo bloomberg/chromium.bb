@@ -253,29 +253,55 @@ WatcherThreadManager::WatcherThreadManager()
 
 }  // namespace
 
-// HandleWatcher::StartState ---------------------------------------------------
+// HandleWatcher::State --------------------------------------------------------
 
-// Contains the information passed to Start().
-struct HandleWatcher::StartState {
-  explicit StartState(HandleWatcher* watcher) : weak_factory(watcher) {
+// Represents the state of the HandleWatcher. Owns the user's callback and
+// monitors the current thread's MessageLoop to know when to force the callback
+// to run (with an error) even though the pipe hasn't been signaled yet.
+class HandleWatcher::State : public base::MessageLoop::DestructionObserver {
+ public:
+  State(HandleWatcher* watcher,
+        const Handle& handle,
+        MojoWaitFlags wait_flags,
+        MojoDeadline deadline,
+        const base::Callback<void(MojoResult)>& callback)
+      : watcher_(watcher),
+        callback_(callback),
+        weak_factory_(this) {
+    base::MessageLoop::current()->AddDestructionObserver(this);
+
+    watcher_id_ = WatcherThreadManager::GetInstance()->StartWatching(
+        handle,
+        wait_flags,
+        MojoDeadlineToTimeTicks(deadline),
+        base::Bind(&State::OnHandleReady, weak_factory_.GetWeakPtr()));
   }
 
-  ~StartState() {
+  virtual ~State() {
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
+
+    WatcherThreadManager::GetInstance()->StopWatching(watcher_id_);
   }
 
-  // ID assigned by WatcherThreadManager.
-  WatcherID watcher_id;
+ private:
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE {
+    // The current thread is exiting. Simulate a watch error.
+    OnHandleReady(MOJO_RESULT_ABORTED);
+  }
 
-  // Callback to notify when done.
-  base::Callback<void(MojoResult)> callback;
+  void OnHandleReady(MojoResult result) {
+    base::Callback<void(MojoResult)> callback = callback_;
+    watcher_->Stop();  // Destroys |this|.
 
-  // When Start() is invoked a callback is passed to WatcherThreadManager
-  // using a WeakRef from |weak_refactory_|. The callback invokes
-  // OnHandleReady() (on the thread Start() is invoked from) which in turn
-  // notifies |callback_|. Doing this allows us to reset state when the handle
-  // is ready, and then notify the callback. Doing this also means Stop()
-  // cancels any pending callbacks that may be inflight.
-  base::WeakPtrFactory<HandleWatcher> weak_factory;
+    callback.Run(result);
+  }
+
+  HandleWatcher* watcher_;
+  WatcherID watcher_id_;
+  base::Callback<void(MojoResult)> callback_;
+
+  // Used to weakly bind |this| to the WatcherThreadManager.
+  base::WeakPtrFactory<State> weak_factory_;
 };
 
 // HandleWatcher ---------------------------------------------------------------
@@ -284,7 +310,6 @@ HandleWatcher::HandleWatcher() {
 }
 
 HandleWatcher::~HandleWatcher() {
-  Stop();
 }
 
 void HandleWatcher::Start(const Handle& handle,
@@ -294,33 +319,11 @@ void HandleWatcher::Start(const Handle& handle,
   DCHECK(handle.is_valid());
   DCHECK_NE(MOJO_WAIT_FLAG_NONE, wait_flags);
 
-  Stop();
-
-  start_state_.reset(new StartState(this));
-  start_state_->callback = callback;
-  start_state_->watcher_id =
-      WatcherThreadManager::GetInstance()->StartWatching(
-          handle,
-          wait_flags,
-          MojoDeadlineToTimeTicks(deadline),
-          base::Bind(&HandleWatcher::OnHandleReady,
-                     start_state_->weak_factory.GetWeakPtr()));
+  state_.reset(new State(this, handle, wait_flags, deadline, callback));
 }
 
 void HandleWatcher::Stop() {
-  if (!start_state_.get())
-    return;
-
-  scoped_ptr<StartState> old_state(start_state_.Pass());
-  WatcherThreadManager::GetInstance()->StopWatching(old_state->watcher_id);
-}
-
-void HandleWatcher::OnHandleReady(MojoResult result) {
-  DCHECK(start_state_.get());
-  scoped_ptr<StartState> old_state(start_state_.Pass());
-  old_state->callback.Run(result);
-
-  // NOTE: We may have been deleted during callback execution.
+  state_.reset();
 }
 
 }  // namespace common

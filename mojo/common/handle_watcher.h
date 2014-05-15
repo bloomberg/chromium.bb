@@ -33,7 +33,9 @@ class MOJO_COMMON_EXPORT HandleWatcher {
   // words, Start() performs one asynchronous watch at a time. It is ok to call
   // Start() multiple times, but it cancels any existing watches. |callback| is
   // notified when the handle is ready, invalid or deadline has passed and is
-  // notified on the thread Start() was invoked on.
+  // notified on the thread Start() was invoked on. If the current thread exits
+  // before the handle is ready, then |callback| is invoked with a result of
+  // MOJO_RESULT_ABORTED.
   void Start(const Handle& handle,
              MojoWaitFlags wait_flags,
              MojoDeadline deadline,
@@ -43,13 +45,10 @@ class MOJO_COMMON_EXPORT HandleWatcher {
   void Stop();
 
  private:
-  struct StartState;
-
-  // See description of |StartState::weak_factory| for details.
-  void OnHandleReady(MojoResult result);
+  class State;
 
   // If non-NULL Start() has been invoked.
-  scoped_ptr<StartState> start_state_;
+  scoped_ptr<State> state_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleWatcher);
 };

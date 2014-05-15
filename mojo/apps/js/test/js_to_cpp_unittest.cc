@@ -179,7 +179,6 @@ class CppSideConnection : public js_to_cpp::CppSide {
   js_to_cpp::JsSide* js_side_;
 
  private:
-  Environment environment;
   DISALLOW_COPY_AND_ASSIGN(CppSideConnection);
 };
 
@@ -314,6 +313,7 @@ class JsToCppTest : public testing::Test {
   }
 
  private:
+  Environment environment;
   base::MessageLoop loop;
   base::RunLoop run_loop_;
 
