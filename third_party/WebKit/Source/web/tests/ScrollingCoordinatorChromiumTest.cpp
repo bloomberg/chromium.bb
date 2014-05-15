@@ -250,6 +250,17 @@ TEST_F(ScrollingCoordinatorChromiumTest, scrollEventHandler)
     ASSERT_TRUE(rootScrollLayer->haveScrollEventHandlers());
 }
 
+TEST_F(ScrollingCoordinatorChromiumTest, updateEventHandlersDuringTeardown)
+{
+    registerMockedHttpURLLoad("scroll-event-handler-window.html");
+    navigateTo(m_baseURL + "scroll-event-handler-window.html");
+    forceFullCompositingUpdate();
+
+    // Simulate detaching the document from its DOM window. This should not
+    // cause a crash when the WebViewImpl is closed by the test runner.
+    frame()->document()->clearDOMWindow();
+}
+
 TEST_F(ScrollingCoordinatorChromiumTest, clippedBodyTest)
 {
     registerMockedHttpURLLoad("clipped-body.html");

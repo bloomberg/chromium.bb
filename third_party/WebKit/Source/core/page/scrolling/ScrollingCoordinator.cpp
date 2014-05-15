@@ -620,7 +620,7 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange()
         return;
 
     // Wait until after layout to update.
-    if (m_page->mainFrame()->view()->needsLayout())
+    if (!m_page->mainFrame()->view() || m_page->mainFrame()->view()->needsLayout())
         return;
 
     // FIXME: scheduleAnimation() is just a method of forcing the compositor to realize that it
@@ -659,6 +659,8 @@ void ScrollingCoordinator::updateHaveWheelEventHandlers()
 {
     ASSERT(isMainThread());
     ASSERT(m_page);
+    if (!m_page->mainFrame()->view())
+        return;
 
     if (WebLayer* scrollLayer = toWebLayer(m_page->mainFrame()->view()->layerForScrolling())) {
         unsigned wheelEventHandlerCount = 0;
@@ -675,6 +677,8 @@ void ScrollingCoordinator::updateHaveScrollEventHandlers()
 {
     ASSERT(isMainThread());
     ASSERT(m_page);
+    if (!m_page->mainFrame()->view())
+        return;
 
     // Currently the compositor only cares whether there are scroll handlers anywhere on the page
     // instead on a per-layer basis. We therefore only update this information for the root
