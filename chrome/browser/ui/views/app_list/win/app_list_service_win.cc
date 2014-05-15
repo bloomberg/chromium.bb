@@ -276,7 +276,9 @@ void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
 }
 
 void AppListServiceWin::SetAppListNextPaintCallback(void (*callback)()) {
-  app_list::AppListView::SetNextPaintCallback(callback);
+  // This should only be called during startup.
+  DCHECK(!shower().app_list());
+  next_paint_callback_ = base::Bind(callback);
 }
 
 void AppListServiceWin::HandleFirstRun() {
@@ -364,6 +366,10 @@ void AppListServiceWin::OnViewBeingDestroyed() {
 }
 
 void AppListServiceWin::OnViewCreated() {
+  if (!next_paint_callback_.is_null()) {
+    shower().app_list()->SetNextPaintCallback(next_paint_callback_);
+    next_paint_callback_.Reset();
+  }
   SetWindowAttributes(shower().app_list()->GetHWND());
   activation_tracker_.reset(new ActivationTrackerWin(this));
 }
