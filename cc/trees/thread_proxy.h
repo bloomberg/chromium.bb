@@ -43,8 +43,6 @@ class ThreadProxy : public Proxy,
   virtual ~ThreadProxy();
 
   // Proxy implementation
-  virtual bool CompositeAndReadback(void* pixels,
-                                    const gfx::Rect& rect) OVERRIDE;
   virtual void FinishAllRendering() OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
   virtual void SetLayerTreeHostClientReady() OVERRIDE;
@@ -155,17 +153,12 @@ class ThreadProxy : public Proxy,
   void SendCommitRequestToImplThreadIfNeeded();
 
   // Called on impl thread.
-  struct ReadbackRequest;
   struct CommitPendingRequest;
   struct SchedulerStateRequest;
 
-  void ForceCommitForReadbackOnImplThread(
-      CompletionEvent* begin_main_frame_sent_completion,
-      ReadbackRequest* request);
   void StartCommitOnImplThread(CompletionEvent* completion,
                                ResourceUpdateQueue* queue);
   void BeginMainFrameAbortedOnImplThread(bool did_handle);
-  void RequestReadbackOnImplThread(ReadbackRequest* request);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion);
   void SetLayerTreeHostClientReadyOnImplThread();
@@ -181,9 +174,7 @@ class ThreadProxy : public Proxy,
       RendererCapabilities* capabilities);
   void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
-  DrawResult DrawSwapReadbackInternal(bool forced_draw,
-                                      bool swap_requested,
-                                      bool readback_requested);
+  DrawResult DrawSwapInternal(bool forced_draw);
   void ForceSerializeOnSwapBuffersOnImplThread(CompletionEvent* completion);
   void CheckOutputSurfaceStatusOnImplThread();
   void CommitPendingOnImplThreadForTesting(CommitPendingRequest* request);
@@ -213,7 +204,6 @@ class ThreadProxy : public Proxy,
     bool commit_request_sent_to_impl_thread;
 
     bool started;
-    bool in_composite_and_readback;
     bool manage_tiles_pending;
     bool can_cancel_commit;
     bool defer_commits;
@@ -262,9 +252,6 @@ class ThreadProxy : public Proxy,
     // Set when the main thread is waiting on a
     // ScheduledActionSendBeginMainFrame to be issued.
     CompletionEvent* begin_main_frame_sent_completion_event;
-
-    // Set when the main thread is waiting on a readback.
-    ReadbackRequest* readback_request;
 
     // Set when the main thread is waiting on a commit to complete.
     CompletionEvent* commit_completion_event;

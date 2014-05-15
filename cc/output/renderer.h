@@ -48,8 +48,6 @@ class CC_EXPORT Renderer {
 
   virtual const RendererCapabilitiesImpl& Capabilities() const = 0;
 
-  virtual bool CanReadPixels() const = 0;
-
   virtual void DecideRenderPassAllocationsForFrame(
       const RenderPassList& render_passes_in_draw_order) {}
   virtual bool HasAllocatedResourcesForTesting(RenderPass::Id id) const;
@@ -73,8 +71,6 @@ class CC_EXPORT Renderer {
   // Puts backbuffer onscreen.
   virtual void SwapBuffers(const CompositorFrameMetadata& metadata) = 0;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {}
-
-  virtual void GetFramebufferPixels(void* pixels, const gfx::Rect& rect) = 0;
 
   virtual bool IsContextLost();
 

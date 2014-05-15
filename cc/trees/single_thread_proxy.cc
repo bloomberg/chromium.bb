@@ -55,31 +55,6 @@ SingleThreadProxy::~SingleThreadProxy() {
   DCHECK(!layer_tree_host_impl_);
 }
 
-bool SingleThreadProxy::CompositeAndReadback(void* pixels,
-                                             const gfx::Rect& rect) {
-  TRACE_EVENT0("cc", "SingleThreadProxy::CompositeAndReadback");
-  DCHECK(Proxy::IsMainThread());
-
-  gfx::Rect device_viewport_damage_rect = rect;
-
-  LayerTreeHostImpl::FrameData frame;
-  if (!CommitAndComposite(gfx::FrameTime::Now(),
-                          device_viewport_damage_rect,
-                          true,  // for_readback
-                          &frame))
-    return false;
-
-  {
-    DebugScopedSetImplThread impl(this);
-    layer_tree_host_impl_->Readback(pixels, rect);
-
-    if (layer_tree_host_impl_->IsContextLost())
-      return false;
-  }
-
-  return true;
-}
-
 void SingleThreadProxy::FinishAllRendering() {
   TRACE_EVENT0("cc", "SingleThreadProxy::FinishAllRendering");
   DCHECK(Proxy::IsMainThread());
@@ -363,13 +338,9 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
 // scheduling)
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CompositeImmediately");
-  gfx::Rect device_viewport_damage_rect;
 
   LayerTreeHostImpl::FrameData frame;
-  if (CommitAndComposite(frame_begin_time,
-                         device_viewport_damage_rect,
-                         false,  // for_readback
-                         &frame)) {
+  if (CommitAndComposite(frame_begin_time, &frame)) {
     {
       DebugScopedSetMainThreadBlocked main_thread_blocked(this);
       DebugScopedSetImplThread impl(this);
@@ -415,8 +386,6 @@ void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
 
 bool SingleThreadProxy::CommitAndComposite(
     base::TimeTicks frame_begin_time,
-    const gfx::Rect& device_viewport_damage_rect,
-    bool for_readback,
     LayerTreeHostImpl::FrameData* frame) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CommitAndComposite");
   DCHECK(Proxy::IsMainThread());
@@ -442,8 +411,7 @@ bool SingleThreadProxy::CommitAndComposite(
   layer_tree_host_->WillCommit();
 
   DoCommit(queue.Pass());
-  bool result = DoComposite(
-      frame_begin_time, device_viewport_damage_rect, for_readback, frame);
+  bool result = DoComposite(frame_begin_time, frame);
   layer_tree_host_->DidBeginMainFrame();
   return result;
 }
@@ -462,8 +430,6 @@ void SingleThreadProxy::UpdateBackgroundAnimateTicking() {
 
 bool SingleThreadProxy::DoComposite(
     base::TimeTicks frame_begin_time,
-    const gfx::Rect& device_viewport_damage_rect,
-    bool for_readback,
     LayerTreeHostImpl::FrameData* frame) {
   TRACE_EVENT0("cc", "SingleThreadProxy::DoComposite");
   DCHECK(!layer_tree_host_->output_surface_lost());
@@ -473,13 +439,11 @@ bool SingleThreadProxy::DoComposite(
     DebugScopedSetImplThread impl(this);
     base::AutoReset<bool> mark_inside(&inside_draw_, true);
 
-    bool can_do_readback = layer_tree_host_impl_->renderer()->CanReadPixels();
-
     // We guard PrepareToDraw() with CanDraw() because it always returns a valid
     // frame, so can only be used when such a frame is possible. Since
     // DrawLayers() depends on the result of PrepareToDraw(), it is guarded on
     // CanDraw() as well.
-    if (!ShouldComposite() || (for_readback && !can_do_readback)) {
+    if (!ShouldComposite()) {
       UpdateBackgroundAnimateTicking();
       return false;
     }
@@ -489,7 +453,7 @@ bool SingleThreadProxy::DoComposite(
     UpdateBackgroundAnimateTicking();
 
     if (!layer_tree_host_impl_->IsContextLost()) {
-      layer_tree_host_impl_->PrepareToDraw(frame, device_viewport_damage_rect);
+      layer_tree_host_impl_->PrepareToDraw(frame);
       layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);
       layer_tree_host_impl_->DidDrawAllLayers(*frame);
     }

@@ -188,12 +188,11 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual void ManageTiles();
 
-  // Returns false if problems occured preparing the frame, and we should try
-  // to avoid displaying the frame. If PrepareToDraw is called, DidDrawAllLayers
-  // must also be called, regardless of whether DrawLayers is called between the
-  // two.
-  virtual DrawResult PrepareToDraw(FrameData* frame,
-                                   const gfx::Rect& damage_rect);
+  // Returns DRAW_SUCCESS unless problems occured preparing the frame, and we
+  // should try to avoid displaying the frame. If PrepareToDraw is called,
+  // DidDrawAllLayers must also be called, regardless of whether DrawLayers is
+  // called between the two.
+  virtual DrawResult PrepareToDraw(FrameData* frame);
   virtual void DrawLayers(FrameData* frame, base::TimeTicks frame_begin_time);
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);
@@ -280,8 +279,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetNeedsBeginFrame(bool enable);
   virtual void WillBeginImplFrame(const BeginFrameArgs& args);
   void DidModifyTilePriorities();
-
-  void Readback(void* pixels, const gfx::Rect& rect_in_device_viewport);
 
   LayerTreeImpl* active_tree() { return active_tree_.get(); }
   const LayerTreeImpl* active_tree() const { return active_tree_.get(); }

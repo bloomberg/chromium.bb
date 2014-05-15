@@ -118,7 +118,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostAddLongAnimationToMainThread(Layer* layer_to_receive_animation);
   void PostSetNeedsCommitToMainThread();
   void PostSetNeedsUpdateLayersToMainThread();
-  void PostReadbackToMainThread();
   void PostSetNeedsRedrawToMainThread();
   void PostSetNeedsRedrawRectToMainThread(const gfx::Rect& damage_rect);
   void PostSetVisibleToMainThread(bool visible);
@@ -140,7 +139,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
                                     double animation_duration);
   void DispatchSetNeedsCommit();
   void DispatchSetNeedsUpdateLayers();
-  void DispatchReadback();
   void DispatchSetNeedsRedraw();
   void DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect);
   void DispatchSetVisible(bool visible);

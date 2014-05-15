@@ -131,12 +131,6 @@ class CC_EXPORT LayerTreeHost {
 
   void Composite(base::TimeTicks frame_begin_time);
 
-  // Composites and attempts to read back the result into the provided
-  // buffer. If it wasn't possible, e.g. due to context lost, will return
-  // false.
-  bool CompositeAndReadback(void* pixels,
-                            const gfx::Rect& rect_in_device_viewport);
-
   void FinishAllRendering();
 
   void SetDeferCommits(bool defer_commits);

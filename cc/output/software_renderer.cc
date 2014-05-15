@@ -644,14 +644,6 @@ void SoftwareRenderer::EnsureBackbuffer() {
   is_backbuffer_discarded_ = false;
 }
 
-void SoftwareRenderer::GetFramebufferPixels(void* pixels,
-                                            const gfx::Rect& rect) {
-  TRACE_EVENT0("cc", "SoftwareRenderer::GetFramebufferPixels");
-  gfx::Rect frame_rect(rect);
-  frame_rect += current_viewport_rect_.OffsetFromOrigin();
-  output_device_->CopyToPixels(frame_rect, pixels);
-}
-
 void SoftwareRenderer::DidChangeVisibility() {
   if (visible())
     EnsureBackbuffer();

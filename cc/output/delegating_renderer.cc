@@ -75,8 +75,6 @@ const RendererCapabilitiesImpl& DelegatingRenderer::Capabilities() const {
   return capabilities_;
 }
 
-bool DelegatingRenderer::CanReadPixels() const { return false; }
-
 static ResourceProvider::ResourceId AppendToArray(
     ResourceProvider::ResourceIdArray* array,
     ResourceProvider::ResourceId id) {
@@ -116,11 +114,6 @@ void DelegatingRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   compositor_frame.metadata = metadata;
   compositor_frame.delegated_frame_data = delegated_frame_data_.Pass();
   output_surface_->SwapBuffers(&compositor_frame);
-}
-
-void DelegatingRenderer::GetFramebufferPixels(void* pixels,
-                                              const gfx::Rect& rect) {
-  NOTREACHED();
 }
 
 void DelegatingRenderer::ReceiveSwapBuffersAck(

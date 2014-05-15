@@ -139,8 +139,6 @@ DirectRenderer::DirectRenderer(RendererClient* client,
 
 DirectRenderer::~DirectRenderer() {}
 
-bool DirectRenderer::CanReadPixels() const { return true; }
-
 void DirectRenderer::SetEnlargePassTextureAmountForTesting(
     const gfx::Vector2d& amount) {
   enlarge_pass_texture_amount_ = amount;

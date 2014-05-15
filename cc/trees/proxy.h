@@ -47,8 +47,6 @@ class CC_EXPORT Proxy {
 
   virtual ~Proxy();
 
-  virtual bool CompositeAndReadback(void* pixels, const gfx::Rect& rect) = 0;
-
   virtual void FinishAllRendering() = 0;
 
   virtual bool IsStarted() const = 0;

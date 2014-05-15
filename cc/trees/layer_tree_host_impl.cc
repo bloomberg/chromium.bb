@@ -1082,8 +1082,7 @@ void LayerTreeHostImpl::RemoveRenderPasses(RenderPassCuller culler,
   }
 }
 
-DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
-                                            const gfx::Rect& damage_rect) {
+DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   TRACE_EVENT1("cc",
                "LayerTreeHostImpl::PrepareToDraw",
                "SourceFrameNumber",
@@ -1104,9 +1103,8 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
   frame->contains_incomplete_tile = false;
   frame->has_no_damage = false;
 
-  gfx::Rect device_viewport_damage_rect(damage_rect);
   if (active_tree_->root_layer()) {
-    device_viewport_damage_rect.Union(viewport_damage_rect_);
+    gfx::Rect device_viewport_damage_rect = viewport_damage_rect_;
     viewport_damage_rect_ = gfx::Rect();
 
     active_tree_->root_layer()->render_surface()->damage_tracker()->
@@ -1600,12 +1598,6 @@ void LayerTreeHostImpl::DidLoseOutputSurface() {
 #if DCHECK_IS_ON
   did_lose_called_ = true;
 #endif
-}
-
-void LayerTreeHostImpl::Readback(void* pixels,
-                                 const gfx::Rect& rect_in_device_viewport) {
-  DCHECK(renderer_);
-  renderer_->GetFramebufferPixels(pixels, rect_in_device_viewport);
 }
 
 bool LayerTreeHostImpl::HaveRootScrollLayer() const {

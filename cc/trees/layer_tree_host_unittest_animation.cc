@@ -722,56 +722,6 @@ class LayerTreeHostAnimationTestLayerAddedWithAnimation
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestLayerAddedWithAnimation);
 
-class LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount
-    : public LayerTreeHostAnimationTest {
- public:
-  LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount()
-      : animated_commit_(-1) {
-  }
-
-  virtual void Animate(base::TimeTicks) OVERRIDE {
-    // We shouldn't animate on the CompositeAndReadback-forced commit, but we
-    // should for the SetNeedsCommit-triggered commit.
-    animated_commit_ = layer_tree_host()->source_frame_number();
-    EXPECT_NE(2, animated_commit_);
-  }
-
-  virtual void BeginTest() OVERRIDE {
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DidCommit() OVERRIDE {
-    switch (layer_tree_host()->source_frame_number()) {
-      case 1:
-        layer_tree_host()->SetNeedsCommit();
-        break;
-      case 2: {
-        char pixels[4];
-        layer_tree_host()->CompositeAndReadback(&pixels, gfx::Rect(0, 0, 1, 1));
-        break;
-      }
-      case 3:
-        // This is finishing the readback's commit.
-        break;
-      case 4:
-        // This is finishing the followup commit.
-        EndTest();
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
-  virtual void AfterTest() OVERRIDE {
-    EXPECT_EQ(3, animated_commit_);
-  }
-
- private:
-  int animated_commit_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestCompositeAndReadbackAnimateCount);
-
 class LayerTreeHostAnimationTestContinuousAnimate
     : public LayerTreeHostAnimationTest {
  public:

@@ -333,31 +333,6 @@ TEST_F(GLRendererWithDefaultHarnessTest,
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
 }
 
-TEST_F(GLRendererWithDefaultHarnessTest,
-       FramebufferDiscardedAfterReadbackWhenNotVisible) {
-  gfx::Rect viewport_rect(1, 1);
-  renderer_->SetVisible(false);
-  EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
-  EXPECT_EQ(1, renderer_client_.set_full_root_layer_damage_count());
-
-  AddRenderPass(&render_passes_in_draw_order_,
-                RenderPass::Id(1, 0),
-                viewport_rect,
-                gfx::Transform());
-
-  char pixels[4];
-  renderer_->DrawFrame(&render_passes_in_draw_order_,
-                       1.f,
-                       viewport_rect,
-                       viewport_rect,
-                       false);
-  EXPECT_FALSE(renderer_->IsBackbufferDiscarded());
-
-  renderer_->GetFramebufferPixels(pixels, gfx::Rect(0, 0, 1, 1));
-  EXPECT_TRUE(renderer_->IsBackbufferDiscarded());
-  EXPECT_EQ(2, renderer_client_.set_full_root_layer_damage_count());
-}
-
 TEST_F(GLRendererWithDefaultHarnessTest, ExternalStencil) {
   gfx::Rect viewport_rect(1, 1);
   EXPECT_FALSE(renderer_->stencil_enabled());
