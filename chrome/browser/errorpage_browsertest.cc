@@ -497,14 +497,8 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
   cache->SetHttpNetworkTransactionFactoryForTesting(factory.Pass());
 }
 
-// See crbug.com/109669
-#if defined(USE_AURA)
-#define MAYBE_DNSError_Basic DISABLED_DNSError_Basic
-#else
-#define MAYBE_DNSError_Basic DNSError_Basic
-#endif
 // Test that a DNS error occuring in the main frame redirects to an error page.
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_Basic) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_Basic) {
   // The first navigation should fail, and the second one should be the error
   // page.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -513,16 +507,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_Basic) {
   EXPECT_EQ(1, link_doctor_handler()->num_requests());
 }
 
-// See crbug.com/109669
-#if defined(USE_AURA)
-#define MAYBE_DNSError_GoBack1 DISABLED_DNSError_GoBack1
-#else
-#define MAYBE_DNSError_GoBack1 DNSError_GoBack1
-#endif
-
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack1) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack1) {
   NavigateToFileURL(FILE_PATH_LITERAL("title2.html"));
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), GetDnsErrorURL(), 2);
@@ -531,12 +518,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_GoBack1) {
   EXPECT_EQ(1, link_doctor_handler()->num_requests());
 }
 
-// See crbug.com/109669
-#if defined(USE_AURA)
-#define MAYBE_DNSError_GoBack2 DISABLED_DNSError_GoBack2
-#else
-#define MAYBE_DNSError_GoBack2 DNSError_GoBack2
-#endif
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2) {
@@ -557,12 +538,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2) {
   EXPECT_EQ(2, link_doctor_handler()->num_requests());
 }
 
-// See crbug.com/109669
-#if defined(USE_AURA)
-#define MAYBE_DNSError_GoBack2AndForward DISABLED_DNSError_GoBack2AndForward
-#else
-#define MAYBE_DNSError_GoBack2AndForward DNSError_GoBack2AndForward
-#endif
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
@@ -586,12 +561,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2AndForward) {
   EXPECT_EQ(3, link_doctor_handler()->num_requests());
 }
 
-// See crbug.com/109669
-#if defined(USE_AURA)
-#define MAYBE_DNSError_GoBack2Forward2 DISABLED_DNSError_GoBack2Forward2
-#else
-#define MAYBE_DNSError_GoBack2Forward2 DNSError_GoBack2Forward2
-#endif
 // Test that a DNS error occuring in the main frame does not result in an
 // additional session history entry.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
@@ -618,14 +587,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_GoBack2Forward2) {
   EXPECT_EQ(3, link_doctor_handler()->num_requests());
 }
 
-// See crbug.com/109669
-#if defined(USE_AURA)
-#define MAYBE_DNSError_DoSearch DNSError_DoSearch
-#else
-#define MAYBE_DNSError_DoSearch DNSError_DoSearch
-#endif
 // Test that the search button on a DNS error page works.
-IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_DNSError_DoSearch) {
+IN_PROC_BROWSER_TEST_F(ErrorPageTest, DNSError_DoSearch) {
   // The first navigation should fail, and the second one should be the error
   // page.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
