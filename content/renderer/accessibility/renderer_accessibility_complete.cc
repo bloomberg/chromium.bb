@@ -201,13 +201,9 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     serializer_.SerializeChanges(obj, &event_msg.update);
     event_msgs.push_back(event_msg);
 
-#ifndef NDEBUG
-    VLOG(0) << "Accessibility update: \n"
-            << "routing id=" << routing_id()
-            << " event="
-            << AccessibilityEventToString(event.event_type)
+    VLOG(0) << "Accessibility event: " << ui::ToString(event.event_type)
+            << " on node id " << event_msg.id
             << "\n" << event_msg.update.ToString();
-#endif
   }
 
   Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs));

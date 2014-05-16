@@ -76,15 +76,8 @@ class CONTENT_EXPORT RendererAccessibility : public RenderViewObserver {
   // no view or frame.
   blink::WebDocument GetMainDocument();
 
-#ifndef NDEBUG
-  const std::string AccessibilityEventToString(ui::AXEvent event);
-#endif
-
   // The RenderViewImpl that owns us.
   RenderViewImpl* render_view_;
-
-  // True if verbose logging of accessibility events is on.
-  bool logging_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererAccessibility);
 };

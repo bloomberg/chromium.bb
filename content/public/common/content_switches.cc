@@ -346,9 +346,6 @@ const char kEnableLayerSquashing[] =
 // Enable experimental container node culling.
 const char kEnableContainerCulling[]        = "enable-container-culling";
 
-// Turns on extremely verbose logging of accessibility events.
-const char kEnableAccessibilityLogging[]    = "enable-accessibility-logging";
-
 // Use a BeginFrame signal from browser to renderer to schedule rendering.
 const char kEnableBeginFrameScheduling[]    = "enable-begin-frame-scheduling";
 
