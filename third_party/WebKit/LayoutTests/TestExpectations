@@ -499,8 +499,6 @@ crbug.com/307781 [ Android ] compositing/layer-creation/fixed-position-out-of-vi
 crbug.com/307781 [ Android ] compositing/repaint/invalidations-on-composited-layers.html [ Failure ]
 crbug.com/307781 [ Android ] svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml [ Failure ]
 
-Bug(vollick) virtual/gpu/compositedscrolling/overflow/content-loses-scrollbars.html [ NeedsRebaseline ]
-
 # Flaky timeouts on android
 crbug.com/307777 [ Android ] accessibility/aria-labelledby-on-input.html [ Timeout Pass ]
 crbug.com/307777 [ Android ] compositing/backing/no-backing-foreground-layer.html [ Timeout Pass ]
