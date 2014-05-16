@@ -26,8 +26,6 @@ EventFactoryOzone* EventFactoryOzone::GetInstance() {
   return impl_;
 }
 
-void EventFactoryOzone::StartProcessingEvents() {}
-
 void EventFactoryOzone::WarpCursorTo(gfx::AcceleratedWidget widget,
                                      const gfx::PointF& location) {
   NOTIMPLEMENTED();

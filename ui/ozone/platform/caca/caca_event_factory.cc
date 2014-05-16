@@ -146,13 +146,13 @@ CacaEventFactory::CacaEventFactory(CacaConnection* connection)
 CacaEventFactory::~CacaEventFactory() {
 }
 
-void CacaEventFactory::StartProcessingEvents() {
-  ScheduleEventProcessing();
-}
-
 void CacaEventFactory::WarpCursorTo(gfx::AcceleratedWidget widget,
                                     const gfx::PointF& location) {
   NOTIMPLEMENTED();
+}
+
+void CacaEventFactory::OnDispatcherListChanged() {
+  ScheduleEventProcessing();
 }
 
 void CacaEventFactory::ScheduleEventProcessing() {

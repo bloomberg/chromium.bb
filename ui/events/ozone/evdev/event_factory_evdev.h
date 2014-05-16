@@ -34,7 +34,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public EventFactoryOzone,
   void DispatchUiEvent(Event* event);
 
   // EventFactoryOzone:
-  virtual void StartProcessingEvents() OVERRIDE;
   virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) OVERRIDE;
 
@@ -59,14 +58,6 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public EventFactoryOzone,
 
   // Interface for scanning & monitoring input devices.
   DeviceManager* device_manager_;  // Not owned.
-
-  // True if this was registered with |device_manager_|. This is needed since
-  // StartProcessingEvents() is called multiple times (when a
-  // WindowTreeHostOzone is created) but we shouldn't register this multiple
-  // times.
-  // TODO(dnicoara) Remove once event processing is refactored and we no longer
-  // rely on WTH for starting event processing.
-  bool has_started_processing_events_;
 
   // Task runner for event dispatch.
   scoped_refptr<base::TaskRunner> ui_task_runner_;

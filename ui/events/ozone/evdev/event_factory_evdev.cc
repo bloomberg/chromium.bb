@@ -134,13 +134,13 @@ EventFactoryEvdev::EventFactoryEvdev(
     CursorDelegateEvdev* cursor,
     DeviceManager* device_manager)
     : device_manager_(device_manager),
-      has_started_processing_events_(false),
-      ui_task_runner_(base::MessageLoopProxy::current()),
       cursor_(cursor),
       dispatch_callback_(
           base::Bind(base::IgnoreResult(&EventFactoryEvdev::DispatchUiEvent),
                      base::Unretained(this))),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  CHECK(device_manager_);
+}
 
 EventFactoryEvdev::~EventFactoryEvdev() { STLDeleteValues(&converters_); }
 
@@ -197,10 +197,12 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
 }
 
 void EventFactoryEvdev::OnDispatcherListChanged() {
-  if (ui_task_runner_)
-    return;
-  ui_task_runner_ = base::MessageLoopProxy::current();
-  StartProcessingEvents();
+  if (!ui_task_runner_) {
+    ui_task_runner_ = base::MessageLoopProxy::current();
+    // Scan & monitor devices.
+    device_manager_->AddObserver(this);
+    device_manager_->ScanDevices(this);
+  }
 }
 
 void EventFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
@@ -221,19 +223,6 @@ void EventFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
         FROM_HERE,
         base::Bind(&CloseInputDevice, path, base::Passed(&converter)),
         true);
-  }
-}
-
-void EventFactoryEvdev::StartProcessingEvents() {
-  if (!ui_task_runner_)
-    return;
-  CHECK(ui_task_runner_->RunsTasksOnCurrentThread());
-
-  if (device_manager_ && !has_started_processing_events_) {
-    has_started_processing_events_ = true;
-    // Scan & monitor devices.
-    device_manager_->AddObserver(this);
-    device_manager_->ScanDevices(this);
   }
 }
 

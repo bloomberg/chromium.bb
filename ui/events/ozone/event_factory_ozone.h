@@ -30,14 +30,6 @@ class EVENTS_OZONE_EXPORT EventFactoryOzone {
   EventFactoryOzone();
   virtual ~EventFactoryOzone();
 
-  // Called from WindowTreeHostOzone to initialize and start processing events.
-  // This should create the initial set of converters, and potentially arrange
-  // for more converters to be created as new event sources become available.
-  // No events processing should happen until this is called. All processes have
-  // an EventFactoryOzone but not all of them should process events. In chrome,
-  // events are dispatched in the browser process on the UI thread.
-  virtual void StartProcessingEvents();
-
   // Request to warp the cursor to a location within an AccelerateWidget.
   // If the cursor actually moves, the implementation must dispatch a mouse
   // move event with the new location.

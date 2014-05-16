@@ -15,11 +15,6 @@ namespace aura {
 WindowTreeHostOzone::WindowTreeHostOzone(const gfx::Rect& bounds)
     : widget_(0),
       bounds_(bounds) {
-  // EventFactoryOzone creates converters that obtain input events from the
-  // underlying input system and dispatch them as |ui::Event| instances into
-  // Aura.
-  ui::EventFactoryOzone::GetInstance()->StartProcessingEvents();
-
   gfx::SurfaceFactoryOzone* surface_factory =
       gfx::SurfaceFactoryOzone::GetInstance();
   widget_ = surface_factory->GetAcceleratedWidget();

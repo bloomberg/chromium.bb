@@ -15,17 +15,20 @@ namespace ui {
 
 class CacaConnection;
 
-class CacaEventFactory : public EventFactoryOzone, PlatformEventSource {
+class CacaEventFactory : public EventFactoryOzone,
+                         public PlatformEventSource {
  public:
   CacaEventFactory(CacaConnection* connection);
   virtual ~CacaEventFactory();
 
-  // ui::EventFactoryOzone overrides:
-  virtual void StartProcessingEvents() OVERRIDE;
+  // ui::EventFactoryOzone:
   virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location) OVERRIDE;
 
  private:
+  // PlatformEventSource:
+  virtual void OnDispatcherListChanged() OVERRIDE;
+
   void ScheduleEventProcessing();
 
   void TryProcessingEvent();
