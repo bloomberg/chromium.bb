@@ -75,11 +75,6 @@ void TransportVideoSender::ResendPackets(
   rtp_sender_.ResendPackets(missing_frames_and_packets);
 }
 
-void TransportVideoSender::SubscribeVideoRtpStatsCallback(
-    const CastTransportRtpStatistics& callback) {
-  rtp_sender_.SubscribeRtpStatsCallback(callback);
-}
-
 }  // namespace transport
 }  // namespace cast
 }  // namespace media

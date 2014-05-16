@@ -17,6 +17,7 @@
 #include "media/cast/congestion_control/congestion_control.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/rtcp/rtcp.h"
+#include "media/cast/rtp_timestamp_helper.h"
 
 namespace media {
 class VideoFrame;
@@ -57,11 +58,6 @@ class VideoSender : public base::NonThreadSafe,
 
   // Only called from the main cast thread.
   void IncomingRtcpPacket(scoped_ptr<Packet> packet);
-
-  // Store rtp stats computed at the Cast transport sender.
-  void StoreStatistics(const transport::RtcpSenderInfo& sender_info,
-                       base::TimeTicks time_sent,
-                       uint32 rtp_timestamp);
 
  protected:
   // Protected for testability.
@@ -109,7 +105,7 @@ class VideoSender : public base::NonThreadSafe,
   scoped_refptr<CastEnvironment> cast_environment_;
   transport::CastTransportSender* const transport_sender_;
 
-  RtpSenderStatistics rtp_stats_;
+  RtpTimestampHelper rtp_timestamp_helper_;
   scoped_ptr<LocalRtcpVideoSenderFeedback> rtcp_feedback_;
   scoped_ptr<VideoEncoder> video_encoder_;
   scoped_ptr<Rtcp> rtcp_;

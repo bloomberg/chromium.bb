@@ -50,7 +50,7 @@ VideoSender::VideoSender(
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
       transport_sender_(transport_sender),
-      rtp_stats_(kVideoFrequency),
+      rtp_timestamp_helper_(kVideoFrequency),
       rtcp_feedback_(new LocalRtcpVideoSenderFeedback(this)),
       last_acked_frame_id_(-1),
       last_sent_frame_id_(-1),
@@ -112,9 +112,6 @@ VideoSender::VideoSender(
       base::Bind(cast_initialization_cb, STATUS_VIDEO_INITIALIZED));
 
   memset(frame_id_to_rtp_timestamp_, 0, sizeof(frame_id_to_rtp_timestamp_));
-
-  transport_sender_->SubscribeVideoRtpStatsCallback(
-      base::Bind(&VideoSender::StoreStatistics, weak_factory_.GetWeakPtr()));
 }
 
 VideoSender::~VideoSender() {
@@ -191,6 +188,8 @@ void VideoSender::SendEncodedVideoFrameMainThread(
   frame_id_to_rtp_timestamp_[frame_id & 0xff] = encoded_frame->rtp_timestamp;
 
   last_sent_frame_id_ = static_cast<int>(encoded_frame->frame_id);
+  rtp_timestamp_helper_.StoreLatestTime(capture_time,
+                                        encoded_frame->rtp_timestamp);
   transport_sender_->InsertCodedVideoFrame(encoded_frame.get(), capture_time);
   UpdateFramesInFlight();
   InitializeTimers();
@@ -216,18 +215,14 @@ void VideoSender::ScheduleNextRtcpReport() {
       time_to_next);
 }
 
-void VideoSender::StoreStatistics(
-    const transport::RtcpSenderInfo& sender_info,
-    base::TimeTicks time_sent,
-    uint32 rtp_timestamp) {
-  rtp_stats_.Store(sender_info, time_sent, rtp_timestamp);
-}
-
 void VideoSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-
-  rtp_stats_.UpdateInfo(cast_environment_->Clock()->NowTicks());
-  rtcp_->SendRtcpFromRtpSender(rtp_stats_.sender_info());
+  const base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  uint32 now_as_rtp_timestamp = 0;
+  if (rtp_timestamp_helper_.GetCurrentTimeAsRtpTimestamp(
+          now, &now_as_rtp_timestamp)) {
+    rtcp_->SendRtcpFromRtpSender(now, now_as_rtp_timestamp);
+  }
   ScheduleNextRtcpReport();
 }
 

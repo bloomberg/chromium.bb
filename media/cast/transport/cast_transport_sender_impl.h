@@ -63,7 +63,9 @@ class CastTransportSenderImpl : public CastTransportSender {
       OVERRIDE;
 
   virtual void SendRtcpFromRtpSender(uint32 packet_type_flags,
-                                     const RtcpSenderInfo& sender_info,
+                                     uint32 ntp_seconds,
+                                     uint32 ntp_fraction,
+                                     uint32 rtp_timestamp,
                                      const RtcpDlrrReportBlock& dlrr,
                                      uint32 sending_ssrc,
                                      const std::string& c_name) OVERRIDE;
@@ -71,12 +73,6 @@ class CastTransportSenderImpl : public CastTransportSender {
   virtual void ResendPackets(bool is_audio,
                              const MissingFramesAndPacketsMap& missing_packets)
       OVERRIDE;
-
-  virtual void SubscribeAudioRtpStatsCallback(
-      const CastTransportRtpStatistics& callback) OVERRIDE;
-
-  virtual void SubscribeVideoRtpStatsCallback(
-      const CastTransportRtpStatistics& callback) OVERRIDE;
 
  private:
   // If |raw_events_callback_| is non-null, calls it with events collected

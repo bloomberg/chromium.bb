@@ -27,12 +27,6 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void ReceivedPacket(
       int32 channel_id,
       scoped_ptr<media::cast::transport::Packet> result);
-  void ReceivedRtpStatistics(
-      int32 channel_id,
-      bool audio,
-      const media::cast::transport::RtcpSenderInfo& sender_info,
-      base::TimeTicks time_sent,
-      uint32 rtp_timestamp);
   void RawEvents(int32 channel_id,
                  const std::vector<media::cast::PacketEvent>& packet_events);
 
@@ -58,7 +52,6 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
   void OnSendRtcpFromRtpSender(
       int32 channel_id,
       const media::cast::transport::SendRtcpFromRtpSenderData& data,
-      const media::cast::transport::RtcpSenderInfo& sender_info,
       const media::cast::transport::RtcpDlrrReportBlock& dlrr);
   void OnResendPackets(
       int32 channel_id,

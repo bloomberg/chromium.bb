@@ -240,7 +240,7 @@ TEST_F(VideoSenderTest, RtcpTimer) {
 
   scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
 
-  base::TimeTicks capture_time;
+  base::TimeTicks capture_time = testing_clock_->NowTicks();
   video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
   // Make sure that we send at least one RTCP packet.

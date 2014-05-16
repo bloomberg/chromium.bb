@@ -78,7 +78,12 @@ class Rtcp {
   static uint32 GetSsrcOfSender(const uint8* rtcp_buffer, size_t length);
 
   base::TimeTicks TimeToSendNextRtcpReport();
-  void SendRtcpFromRtpSender(transport::RtcpSenderInfo sender_info);
+
+  // Send a RTCP sender report.
+  // |current_time| is the current time reported by a tick clock.
+  // |current_time_as_rtp_timestamp| is the corresponding RTP timestamp.
+  void SendRtcpFromRtpSender(base::TimeTicks current_time,
+                             uint32 current_time_as_rtp_timestamp);
 
   // |cast_message| and |rtcp_events| is optional; if |cast_message| is
   // provided the RTCP receiver report will append a Cast message containing

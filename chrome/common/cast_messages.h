@@ -44,14 +44,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::EncodedVideoFrame)
   IPC_STRUCT_TRAITS_MEMBER(data)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtcpSenderInfo)
-  IPC_STRUCT_TRAITS_MEMBER(ntp_seconds)
-  IPC_STRUCT_TRAITS_MEMBER(ntp_fraction)
-  IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
-  IPC_STRUCT_TRAITS_MEMBER(send_packet_count)
-  IPC_STRUCT_TRAITS_MEMBER(send_octet_count)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::RtcpDlrrReportBlock)
   IPC_STRUCT_TRAITS_MEMBER(last_rr)
   IPC_STRUCT_TRAITS_MEMBER(delay_since_last_rr)
@@ -86,6 +78,9 @@ IPC_STRUCT_TRAITS_BEGIN(media::cast::transport::SendRtcpFromRtpSenderData)
   IPC_STRUCT_TRAITS_MEMBER(packet_type_flags)
   IPC_STRUCT_TRAITS_MEMBER(sending_ssrc)
   IPC_STRUCT_TRAITS_MEMBER(c_name)
+  IPC_STRUCT_TRAITS_MEMBER(ntp_seconds)
+  IPC_STRUCT_TRAITS_MEMBER(ntp_fraction)
+  IPC_STRUCT_TRAITS_MEMBER(rtp_timestamp)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(media::cast::PacketEvent)
@@ -109,14 +104,6 @@ IPC_MESSAGE_CONTROL2(
     CastMsg_NotifyStatusChange,
     int32 /* channel_id */,
     media::cast::transport::CastTransportStatus /* status */);
-
-IPC_MESSAGE_CONTROL5(
-    CastMsg_RtpStatistics,
-    int32 /* channel_id */,
-    bool /* audio */,
-    media::cast::transport::RtcpSenderInfo /* sender_info */,
-    base::TimeTicks /* time_sent */,
-    uint32 /* rtp_timestamp */);
 
 IPC_MESSAGE_CONTROL2(CastMsg_RawEvents,
                      int32 /* channel_id */,
@@ -146,11 +133,10 @@ IPC_MESSAGE_CONTROL3(
     media::cast::transport::EncodedVideoFrame /* video_frame */,
     base::TimeTicks /* recorded_time */)
 
-IPC_MESSAGE_CONTROL4(
+IPC_MESSAGE_CONTROL3(
     CastHostMsg_SendRtcpFromRtpSender,
     int32 /* channel_id */,
-    media::cast::transport::SendRtcpFromRtpSenderData /* flags, ssrc, name */,
-    media::cast::transport::RtcpSenderInfo /* sender_info */,
+    media::cast::transport::SendRtcpFromRtpSenderData /* data */,
     media::cast::transport::RtcpDlrrReportBlock /* dlrr */)
 
 IPC_MESSAGE_CONTROL3(

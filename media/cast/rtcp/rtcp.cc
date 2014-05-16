@@ -206,13 +206,16 @@ void Rtcp::SendRtcpFromRtpReceiver(
                                         target_delay_ms_);
 }
 
-void Rtcp::SendRtcpFromRtpSender(
-    transport::RtcpSenderInfo sender_info) {
+void Rtcp::SendRtcpFromRtpSender(base::TimeTicks current_time,
+                                 uint32 current_time_as_rtp_timestamp) {
   DCHECK(transport_sender_);
   uint32 packet_type_flags = transport::kRtcpSr;
-  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-
-  SaveLastSentNtpTime(now, sender_info.ntp_seconds, sender_info.ntp_fraction);
+  uint32 current_ntp_seconds = 0;
+  uint32 current_ntp_fractions = 0;
+  ConvertTimeTicksToNtp(current_time, &current_ntp_seconds,
+                        &current_ntp_fractions);
+  SaveLastSentNtpTime(current_time, current_ntp_seconds,
+                      current_ntp_fractions);
 
   transport::RtcpDlrrReportBlock dlrr;
   if (!time_last_report_received_.is_null()) {
@@ -220,7 +223,7 @@ void Rtcp::SendRtcpFromRtpSender(
     dlrr.last_rr = last_report_received_;
     uint32 delay_seconds = 0;
     uint32 delay_fraction = 0;
-    base::TimeDelta delta = now - time_last_report_received_;
+    base::TimeDelta delta = current_time - time_last_report_received_;
     ConvertTimeToFractions(delta.InMicroseconds(), &delay_seconds,
                            &delay_fraction);
 
@@ -228,8 +231,8 @@ void Rtcp::SendRtcpFromRtpSender(
   }
 
   transport_sender_->SendRtcpFromRtpSender(
-      packet_type_flags, sender_info, dlrr, local_ssrc_,
-      c_name_);
+      packet_type_flags, current_ntp_seconds, current_ntp_fractions,
+      current_time_as_rtp_timestamp, dlrr, local_ssrc_, c_name_);
   UpdateNextTimeToSendRtcp();
 }
 

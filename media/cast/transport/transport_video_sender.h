@@ -44,11 +44,10 @@ class TransportVideoSender : public base::NonThreadSafe {
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
+  size_t send_packet_count() const { return rtp_sender_.send_packet_count(); }
+  size_t send_octet_count() const { return rtp_sender_.send_octet_count(); }
+  uint32 ssrc() const { return rtp_sender_.ssrc(); }
   bool initialized() const { return initialized_; }
-
-  // Subscribe callback to get RTP Audio stats.
-  void SubscribeVideoRtpStatsCallback(
-      const CastTransportRtpStatistics& callback);
 
  private:
   // Caller must allocate the destination |encrypted_video_frame| the data

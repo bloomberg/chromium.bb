@@ -55,16 +55,6 @@ void CastTransportHostFilter::ReceivedPacket(
   Send(new CastMsg_ReceivedPacket(channel_id, *packet));
 }
 
-void CastTransportHostFilter::ReceivedRtpStatistics(
-    int32 channel_id,
-    bool audio,
-    const media::cast::transport::RtcpSenderInfo& sender_info,
-    base::TimeTicks time_sent,
-    uint32 rtp_timestamp) {
-  Send(new CastMsg_RtpStatistics(
-      channel_id, audio, sender_info, time_sent, rtp_timestamp));
-}
-
 void CastTransportHostFilter::RawEvents(
     int32 channel_id,
     const std::vector<media::cast::PacketEvent>& packet_events) {
@@ -118,11 +108,6 @@ void CastTransportHostFilter::OnInitializeAudio(
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->InitializeAudio(config);
-    sender->SubscribeAudioRtpStatsCallback(
-        base::Bind(&CastTransportHostFilter::ReceivedRtpStatistics,
-                   base::Unretained(this),
-                   channel_id,
-                   true /* audio */));
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnInitializeAudio on non-existing channel";
@@ -136,11 +121,6 @@ void CastTransportHostFilter::OnInitializeVideo(
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->InitializeVideo(config);
-    sender->SubscribeVideoRtpStatsCallback(
-        base::Bind(&CastTransportHostFilter::ReceivedRtpStatistics,
-                   base::Unretained(this),
-                   channel_id,
-                   false /* not audio */));
   } else {
     DVLOG(1)
         << "CastTransportHostFilter::OnInitializeVideo on non-existing channel";
@@ -180,13 +160,14 @@ void CastTransportHostFilter::OnInsertCodedVideoFrame(
 void CastTransportHostFilter::OnSendRtcpFromRtpSender(
     int32 channel_id,
     const media::cast::transport::SendRtcpFromRtpSenderData& data,
-    const media::cast::transport::RtcpSenderInfo& sender_info,
     const media::cast::transport::RtcpDlrrReportBlock& dlrr) {
   media::cast::transport::CastTransportSender* sender =
       id_map_.Lookup(channel_id);
   if (sender) {
     sender->SendRtcpFromRtpSender(data.packet_type_flags,
-                                  sender_info,
+                                  data.ntp_seconds,
+                                  data.ntp_fraction,
+                                  data.rtp_timestamp,
                                   dlrr,
                                   data.sending_ssrc,
                                   data.c_name);

@@ -68,11 +68,6 @@ void TransportAudioSender::ResendPackets(
   rtp_sender_.ResendPackets(missing_frames_and_packets);
 }
 
-void TransportAudioSender::SubscribeAudioRtpStatsCallback(
-    const CastTransportRtpStatistics& callback) {
-  rtp_sender_.SubscribeRtpStatsCallback(callback);
-}
-
 }  // namespace transport
 }  // namespace cast
 }  // namespace media

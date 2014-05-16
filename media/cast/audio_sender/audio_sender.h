@@ -15,6 +15,7 @@
 #include "media/base/audio_bus.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/rtcp/rtcp.h"
+#include "media/cast/rtp_timestamp_helper.h"
 #include "media/cast/transport/rtp_sender/rtp_sender.h"
 
 namespace media {
@@ -55,10 +56,6 @@ class AudioSender : public base::NonThreadSafe,
   void ResendPackets(
       const MissingFramesAndPacketsMap& missing_frames_and_packets);
 
-  void StoreStatistics(const transport::RtcpSenderInfo& sender_info,
-                       base::TimeTicks time_sent,
-                       uint32 rtp_timestamp);
-
   void ScheduleNextRtcpReport();
   void SendRtcpReport();
 
@@ -67,7 +64,7 @@ class AudioSender : public base::NonThreadSafe,
   scoped_refptr<CastEnvironment> cast_environment_;
   transport::CastTransportSender* const transport_sender_;
   scoped_ptr<AudioEncoder> audio_encoder_;
-  RtpSenderStatistics rtp_stats_;
+  RtpTimestampHelper rtp_timestamp_helper_;
   scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;
   bool timers_initialized_;

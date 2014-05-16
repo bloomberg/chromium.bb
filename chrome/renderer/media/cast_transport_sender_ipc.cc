@@ -63,7 +63,9 @@ void CastTransportSenderIPC::InsertCodedVideoFrame(
 
 void CastTransportSenderIPC::SendRtcpFromRtpSender(
     uint32 packet_type_flags,
-    const media::cast::transport::RtcpSenderInfo& sender_info,
+    uint32 ntp_seconds,
+    uint32 ntp_fraction,
+    uint32 rtp_timestamp,
     const media::cast::transport::RtcpDlrrReportBlock& dlrr,
     uint32 sending_ssrc,
     const std::string& c_name) {
@@ -71,10 +73,12 @@ void CastTransportSenderIPC::SendRtcpFromRtpSender(
   data.packet_type_flags = packet_type_flags;
   data.sending_ssrc = sending_ssrc;
   data.c_name = c_name;
+  data.ntp_seconds = ntp_seconds;
+  data.ntp_fraction = ntp_fraction;
+  data.rtp_timestamp = rtp_timestamp;
   Send(new CastHostMsg_SendRtcpFromRtpSender(
       channel_id_,
       data,
-      sender_info,
       dlrr));
 }
 
@@ -85,17 +89,6 @@ void CastTransportSenderIPC::ResendPackets(
                                      is_audio,
                                      missing_packets));
 }
-
-void CastTransportSenderIPC::SubscribeAudioRtpStatsCallback(
-    const media::cast::transport::CastTransportRtpStatistics& callback) {
-  audio_rtp_callback_ = callback;
-}
-
-void CastTransportSenderIPC::SubscribeVideoRtpStatsCallback(
-    const media::cast::transport::CastTransportRtpStatistics& callback) {
-  video_rtp_callback_ = callback;
-}
-
 
 void CastTransportSenderIPC::OnReceivedPacket(
     const media::cast::Packet& packet) {
@@ -112,16 +105,6 @@ void CastTransportSenderIPC::OnReceivedPacket(
 void CastTransportSenderIPC::OnNotifyStatusChange(
     media::cast::transport::CastTransportStatus status) {
   status_callback_.Run(status);
-}
-
-void CastTransportSenderIPC::OnRtpStatistics(
-    bool audio,
-    const media::cast::transport::RtcpSenderInfo& sender_info,
-    base::TimeTicks time_sent,
-    uint32 rtp_timestamp) {
-  const media::cast::transport::CastTransportRtpStatistics& callback =
-      audio ? audio_rtp_callback_ : video_rtp_callback_;
-  callback.Run(sender_info, time_sent, rtp_timestamp);
 }
 
 void CastTransportSenderIPC::OnRawEvents(

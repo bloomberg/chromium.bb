@@ -13,18 +13,12 @@ namespace media {
 namespace cast {
 namespace transport {
 
-// Schedule the RTP statistics callback every 33mS. As this interval affects the
-// time offset of the render and playout times, we want it in the same ball park
-// as the frame rate.
-static const int kStatsCallbackIntervalMs = 33;
-
 RtpSender::RtpSender(
     base::TickClock* clock,
     const scoped_refptr<base::SingleThreadTaskRunner>& transport_task_runner,
     PacedSender* const transport)
     : clock_(clock),
       transport_(transport),
-      stats_callback_(),
       transport_task_runner_(transport_task_runner),
       weak_factory_(this) {
   // Randomly set sequence number start value.
@@ -140,30 +134,6 @@ void RtpSender::UpdateSequenceNumber(Packet* packet) {
   int index = 2;
   (*packet)[index] = (static_cast<uint8>(new_sequence_number));
   (*packet)[index + 1] = (static_cast<uint8>(new_sequence_number >> 8));
-}
-
-void RtpSender::SubscribeRtpStatsCallback(
-    const CastTransportRtpStatistics& callback) {
-  stats_callback_ = callback;
-  ScheduleNextStatsReport();
-}
-
-void RtpSender::ScheduleNextStatsReport() {
-  transport_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&RtpSender::RtpStatistics, weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kStatsCallbackIntervalMs));
-}
-
-void RtpSender::RtpStatistics() {
-  RtcpSenderInfo sender_info;
-  base::TimeTicks time_sent;
-  uint32 rtp_timestamp = 0;
-  packetizer_->LastSentTimestamp(&time_sent, &rtp_timestamp);
-  sender_info.send_packet_count = packetizer_->send_packets_count();
-  sender_info.send_octet_count = packetizer_->send_octet_count();
-  stats_callback_.Run(sender_info, time_sent, rtp_timestamp);
-  ScheduleNextStatsReport();
 }
 
 }  // namespace transport

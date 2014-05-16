@@ -38,7 +38,7 @@ RtpPacketizer::RtpPacketizer(PacedSender* const transport,
       sequence_number_(config_.sequence_number),
       rtp_timestamp_(0),
       packet_id_(0),
-      send_packets_count_(0),
+      send_packet_count_(0),
       send_octet_count_(0) {
   DCHECK(transport) << "Invalid argument";
 }
@@ -80,16 +80,6 @@ uint16 RtpPacketizer::NextSequenceNumber() {
   return sequence_number_ - 1;
 }
 
-bool RtpPacketizer::LastSentTimestamp(base::TimeTicks* time_sent,
-                                      uint32* rtp_timestamp) const {
-  if (time_last_sent_rtp_timestamp_.is_null())
-    return false;
-
-  *time_sent = time_last_sent_rtp_timestamp_;
-  *rtp_timestamp = rtp_timestamp_;
-  return true;
-}
-
 // TODO(mikhal): Switch to pass data with a const_ref.
 void RtpPacketizer::Cast(bool is_key,
                          uint32 frame_id,
@@ -97,7 +87,6 @@ void RtpPacketizer::Cast(bool is_key,
                          uint32 timestamp,
                          const std::string& data,
                          const base::TimeTicks& capture_time) {
-  time_last_sent_rtp_timestamp_ = capture_time;
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
   rtp_timestamp_ = timestamp;
@@ -147,7 +136,7 @@ void RtpPacketizer::Cast(bool is_key,
     data_iter += payload_length;
 
     // Update stats.
-    ++send_packets_count_;
+    ++send_packet_count_;
     send_octet_count_ += payload_length;
     packets.push_back(make_pair(key, packet));
   }

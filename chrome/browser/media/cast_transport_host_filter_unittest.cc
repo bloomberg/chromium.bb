@@ -120,17 +120,11 @@ TEST_F(CastTransportHostFilterTest, SimpleMessages) {
   rtcp_data.packet_type_flags = 0;
   rtcp_data.sending_ssrc = 0;
   rtcp_data.c_name = "FNRD";
-  media::cast::transport::RtcpSenderInfo sender_info;
-  sender_info.ntp_seconds = 1;
-  sender_info.ntp_fraction = 2;
-  sender_info.rtp_timestamp = 3;
-  sender_info.send_packet_count = 4;
-  sender_info.send_octet_count = 5;
   media::cast::transport::RtcpDlrrReportBlock dlrr;
   dlrr.last_rr = 7;
   dlrr.delay_since_last_rr = 8;
   CastHostMsg_SendRtcpFromRtpSender rtcp_msg(
-      kChannelId, rtcp_data, sender_info, dlrr);
+      kChannelId, rtcp_data, dlrr);
   FakeSend(rtcp_msg);
 
   media::cast::MissingFramesAndPacketsMap missing_packets;

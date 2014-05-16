@@ -150,6 +150,9 @@ struct SendRtcpFromRtpSenderData {
   uint32 packet_type_flags;
   uint32 sending_ssrc;
   std::string c_name;
+  uint32 ntp_seconds;
+  uint32 ntp_fraction;
+  uint32 rtp_timestamp;
 };
 
 inline bool operator==(RtcpSenderInfo lhs, RtcpSenderInfo rhs) {

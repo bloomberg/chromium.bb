@@ -41,7 +41,9 @@ class CastTransportSenderIPC
       const base::TimeTicks& capture_time) OVERRIDE;
   virtual void SendRtcpFromRtpSender(
       uint32 packet_type_flags,
-      const media::cast::transport::RtcpSenderInfo& sender_info,
+      uint32 ntp_seconds,
+      uint32 ntp_fraction,
+      uint32 rtp_timestamp,
       const media::cast::transport::RtcpDlrrReportBlock& dlrr,
       uint32 sending_ssrc,
       const std::string& c_name) OVERRIDE;
@@ -49,21 +51,10 @@ class CastTransportSenderIPC
       bool is_audio,
       const media::cast::transport::MissingFramesAndPacketsMap& missing_packets)
       OVERRIDE;
-  virtual void SubscribeAudioRtpStatsCallback(
-      const media::cast::transport::CastTransportRtpStatistics& callback)
-      OVERRIDE;
-  virtual void SubscribeVideoRtpStatsCallback(
-      const media::cast::transport::CastTransportRtpStatistics& callback)
-      OVERRIDE;
 
   void OnReceivedPacket(const media::cast::transport::Packet& packet);
   void OnNotifyStatusChange(
       media::cast::transport::CastTransportStatus status);
-  void OnRtpStatistics(
-      bool audio,
-      const media::cast::transport::RtcpSenderInfo& sender_info,
-      base::TimeTicks time_sent,
-      uint32 rtp_timestamp);
   void OnRawEvents(const std::vector<media::cast::PacketEvent>& packet_events);
 
  private:
@@ -72,8 +63,6 @@ class CastTransportSenderIPC
   int32 channel_id_;
   media::cast::transport::PacketReceiverCallback packet_callback_;
   media::cast::transport::CastTransportStatusCallback status_callback_;
-  media::cast::transport::CastTransportRtpStatistics audio_rtp_callback_;
-  media::cast::transport::CastTransportRtpStatistics video_rtp_callback_;
   media::cast::transport::BulkRawEventsCallback raw_events_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CastTransportSenderIPC);

@@ -50,7 +50,6 @@ bool CastIPCDispatcher::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CastIPCDispatcher, message)
     IPC_MESSAGE_HANDLER(CastMsg_ReceivedPacket, OnReceivedPacket)
     IPC_MESSAGE_HANDLER(CastMsg_NotifyStatusChange, OnNotifyStatusChange)
-    IPC_MESSAGE_HANDLER(CastMsg_RtpStatistics, OnRtpStatistics)
     IPC_MESSAGE_HANDLER(CastMsg_RawEvents, OnRawEvents)
     IPC_MESSAGE_UNHANDLED(handled = false);
   IPC_END_MESSAGE_MAP();
@@ -97,20 +96,6 @@ void CastIPCDispatcher::OnNotifyStatusChange(
   } else {
     DVLOG(1)
         << "CastIPCDispatcher::OnNotifystatusChange on non-existing channel.";
-  }
-}
-
-void CastIPCDispatcher::OnRtpStatistics(
-    int32 channel_id,
-    bool audio,
-    const media::cast::transport::RtcpSenderInfo& sender_info,
-    base::TimeTicks time_sent,
-    uint32 rtp_timestamp) {
-  CastTransportSenderIPC* sender = id_map_.Lookup(channel_id);
-  if (sender) {
-    sender->OnRtpStatistics(audio, sender_info, time_sent, rtp_timestamp);
-  } else {
-    DVLOG(1) << "CastIPCDispatcher::OnRtpStatistics on non-existing channel.";
   }
 }
 

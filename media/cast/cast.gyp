@@ -55,6 +55,8 @@
         'logging/simple_event_subscriber.h',
         'logging/stats_event_subscriber.cc',
         'logging/stats_event_subscriber.h',
+        'rtp_timestamp_helper.cc',
+        'rtp_timestamp_helper.h',
         'transport/cast_transport_config.cc',
         'transport/cast_transport_config.h',
         'transport/cast_transport_defines.h',

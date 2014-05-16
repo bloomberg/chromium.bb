@@ -56,23 +56,21 @@ class RtpPacketizer {
   ~RtpPacketizer();
 
   // The video_frame objects ownership is handled by the main cast thread.
+  // |capture_time| is only used for scheduling of outgoing packets.
   void IncomingEncodedVideoFrame(const EncodedVideoFrame* video_frame,
                                  const base::TimeTicks& capture_time);
 
   // The audio_frame objects ownership is handled by the main cast thread.
+  // |recorded_time| is only used for scheduling of outgoing packets.
   void IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
                                  const base::TimeTicks& recorded_time);
-
-  bool LastSentTimestamp(base::TimeTicks* time_sent,
-                         uint32* rtp_timestamp) const;
 
   // Return the next sequence number, and increment by one. Enables unique
   // incremental sequence numbers for every packet (including retransmissions).
   uint16 NextSequenceNumber();
 
-  int send_packets_count() { return send_packets_count_; }
-
-  size_t send_octet_count() { return send_octet_count_; }
+  size_t send_packet_count() const { return send_packet_count_; }
+  size_t send_octet_count() const { return send_octet_count_; }
 
  private:
   void Cast(bool is_key,
@@ -88,12 +86,11 @@ class RtpPacketizer {
   PacedSender* const transport_;  // Not owned by this class.
   PacketStorage* packet_storage_;
 
-  base::TimeTicks time_last_sent_rtp_timestamp_;
   uint16 sequence_number_;
   uint32 rtp_timestamp_;
   uint16 packet_id_;
 
-  int send_packets_count_;
+  size_t send_packet_count_;
   size_t send_octet_count_;
 };
 
