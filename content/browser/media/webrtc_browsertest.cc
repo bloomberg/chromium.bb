@@ -247,7 +247,7 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, CallWithSctpDataOnly) {
 // This test will make a PeerConnection-based call and test an unreliable text
 // dataChannel and audio and video tracks.
 // TODO(mallinath) - Remove this test after rtp based data channel is disabled.
-IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, MAYBE_CallWithDataAndMedia) {
+IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest, DISABLED_CallWithDataAndMedia) {
   MakeTypicalPeerConnectionCall("callWithDataAndMedia();");
 }
 
