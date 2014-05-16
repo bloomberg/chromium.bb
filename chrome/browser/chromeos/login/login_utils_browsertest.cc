@@ -527,7 +527,13 @@ class LoginUtilsBlockingLoginTest
     : public LoginUtilsTest,
       public testing::WithParamInterface<int> {};
 
-TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
+// Test leaks a profile with LSAN enabled. See http://crbug.com/374078.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_NormalLoginDoesntBlock DISABLED_NormalLoginDoesntBlock
+#else
+#define MAYBE_NormalLoginDoesntBlock NormalLoginDoesntBlock
+#endif
+TEST_F(LoginUtilsTest, MAYBE_NormalLoginDoesntBlock) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
@@ -543,7 +549,15 @@ TEST_F(LoginUtilsTest, NormalLoginDoesntBlock) {
   EXPECT_EQ(kUsername, user_manager->GetLoggedInUser()->email());
 }
 
-TEST_F(LoginUtilsTest, EnterpriseLoginDoesntBlockForNormalUser) {
+// Test leaks a profile with LSAN enabled. See http://crbug.com/374078.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_EnterpriseLoginDoesntBlockForNormalUser\
+        DISABLED_EnterpriseLoginDoesntBlockForNormalUser
+#else
+#define MAYBE_EnterpriseLoginDoesntBlockForNormalUser\
+        EnterpriseLoginDoesntBlockForNormalUser
+#endif
+TEST_F(LoginUtilsTest, MAYBE_EnterpriseLoginDoesntBlockForNormalUser) {
   UserManager* user_manager = UserManager::Get();
   EXPECT_FALSE(user_manager->IsUserLoggedIn());
   EXPECT_FALSE(connector_->IsEnterpriseManaged());
