@@ -116,13 +116,15 @@ bool CreateThread(size_t stack_size, bool joinable,
   params.priority = priority;
   params.handle = thread_handle;
 
-  pthread_t handle = 0;
+  pthread_t handle;
   int err = pthread_create(&handle,
                            &attributes,
                            ThreadFunc,
                            &params);
   success = !err;
   if (!success) {
+    // Value of |handle| is undefined if pthread_create fails.
+    handle = 0;
     errno = err;
     PLOG(ERROR) << "pthread_create";
   }
