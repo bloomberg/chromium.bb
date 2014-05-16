@@ -45,7 +45,11 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   TransportConnectionId id() const { return id_; }
 
   // Returns the Node with the specified id.
-  Node* GetNode(const NodeId& id);
+  Node* GetNode(const NodeId& id) {
+    return const_cast<Node*>(
+        const_cast<const ViewManagerConnection*>(this)->GetNode(id));
+  }
+  const Node* GetNode(const NodeId& id) const;
 
   // Returns the View with the specified id.
   View* GetView(const ViewId& id);
@@ -71,6 +75,12 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   typedef std::map<TransportConnectionSpecificNodeId, Node*> NodeMap;
   typedef std::map<TransportConnectionSpecificViewId, View*> ViewMap;
   typedef base::hash_set<TransportNodeId> NodeIdSet;
+
+  // Returns true if this connection is allowed to delete the specified node.
+  bool CanDeleteNode(const NodeId& node_id) const;
+
+  // Returns true if this connection is allowed to delete the specified view.
+  bool CanDeleteView(const ViewId& view_id) const;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.

@@ -29,8 +29,8 @@ interface IViewManager {
   CreateNode(uint32 node_id) => (bool success);
 
   // Deletes a node. This does not recurse. No hierarchy change notifications
-  // are sent as a result of this. Deletion is always allowed and implicitly
-  // advances |server_change_id|.
+  // are sent as a result of this. Only the connection that created the node can
+  // delete it.
   DeleteNode(uint32 node_id) => (bool success);
 
   // Reparents a node. See description above class for details of |change_id|.
@@ -61,7 +61,8 @@ interface IViewManager {
   // the connection.
   CreateView(uint32 view_id) => (bool success);
 
-  // Deletes the view with the specified id.
+  // Deletes the view with the specified id. Only the connection that created
+  // the view can delete it.
   DeleteView(uint32 view_id) => (bool success);
 
   // Sets the view a node is showing.

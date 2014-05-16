@@ -72,9 +72,9 @@ void ViewManagerConnection::OnConnectionEstablished() {
 
 void ViewManagerConnection::OnConnectionError() {}
 
-Node* ViewManagerConnection::GetNode(const NodeId& id) {
+const Node* ViewManagerConnection::GetNode(const NodeId& id) const {
   if (id_ == id.connection_id) {
-    NodeMap::iterator i = node_map_.find(id.node_id);
+    NodeMap::const_iterator i = node_map_.find(id.node_id);
     return i == node_map_.end() ? NULL : i->second;
   }
   return root_node_manager_->GetNode(id);
@@ -151,6 +151,14 @@ void ViewManagerConnection::ProcessViewDeleted(const ViewId& view,
   if (originated_change)
     return;
   client()->OnViewDeleted(ViewIdToTransportId(view));
+}
+
+bool ViewManagerConnection::CanDeleteNode(const NodeId& node_id) const {
+  return node_id.connection_id == id_;
+}
+
+bool ViewManagerConnection::CanDeleteView(const ViewId& view_id) const {
+  return view_id.connection_id == id_;
 }
 
 bool ViewManagerConnection::DeleteNodeImpl(ViewManagerConnection* source,
@@ -272,10 +280,13 @@ void ViewManagerConnection::DeleteNode(
     const Callback<void(bool)>& callback) {
   AllocationScope allocation_scope;
   const NodeId node_id(NodeIdFromTransportId(transport_node_id));
-  ViewManagerConnection* connection = root_node_manager_->GetConnection(
-      node_id.connection_id);
-  callback.Run(connection &&
-               connection->DeleteNodeImpl(this, node_id));
+  bool did_delete = CanDeleteNode(node_id);
+  if (did_delete) {
+    ViewManagerConnection* connection = root_node_manager_->GetConnection(
+        node_id.connection_id);
+    did_delete = connection && connection->DeleteNodeImpl(this, node_id);
+  }
+  callback.Run(did_delete);
 }
 
 void ViewManagerConnection::AddNode(
@@ -345,9 +356,13 @@ void ViewManagerConnection::DeleteView(
     TransportViewId transport_view_id,
     const Callback<void(bool)>& callback) {
   const ViewId view_id(ViewIdFromTransportId(transport_view_id));
-  ViewManagerConnection* connection = root_node_manager_->GetConnection(
-      view_id.connection_id);
-  callback.Run(connection && connection->DeleteViewImpl(this, view_id));
+  bool did_delete = CanDeleteView(view_id);
+  if (did_delete) {
+    ViewManagerConnection* connection = root_node_manager_->GetConnection(
+        view_id.connection_id);
+    did_delete = (connection && connection->DeleteViewImpl(this, view_id));
+  }
+  callback.Run(did_delete);
 }
 
 void ViewManagerConnection::SetView(

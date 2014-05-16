@@ -105,10 +105,18 @@ bool CreateNode(IViewManager* view_manager,
   return result;
 }
 
-// Deletes a node, blocking until done.
+// Deletes a view, blocking until done.
 bool DeleteNode(IViewManager* view_manager, TransportNodeId node_id) {
   bool result = false;
   view_manager->DeleteNode(node_id, base::Bind(&BooleanCallback, &result));
+  DoRunLoop();
+  return result;
+}
+
+// Deletes a node, blocking until done.
+bool DeleteView(IViewManager* view_manager, TransportViewId view_id) {
+  bool result = false;
+  view_manager->DeleteView(view_id, base::Bind(&BooleanCallback, &result));
   DoRunLoop();
   return result;
 }
@@ -801,6 +809,20 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("NodeDeleted change_id=3 node=1,1", changes[0]);
   }
+}
+
+// Verifies DeleteNode isn't allowed from a separate connection.
+TEST_F(ViewManagerConnectionTest, DeleteNodeFromAnotherConnectionDisallowed) {
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  EstablishSecondConnection();
+  EXPECT_FALSE(DeleteNode(view_manager2_.get(), CreateNodeId(client_.id(), 1)));
+}
+
+// Verifies DeleteView isn't allowed from a separate connection.
+TEST_F(ViewManagerConnectionTest, DeleteViewFromAnotherConnectionDisallowed) {
+  ASSERT_TRUE(CreateView(view_manager_.get(), 1, 1));
+  EstablishSecondConnection();
+  EXPECT_FALSE(DeleteView(view_manager2_.get(), CreateViewId(client_.id(), 1)));
 }
 
 // Verifies if a node was deleted and then reused that other clients are
