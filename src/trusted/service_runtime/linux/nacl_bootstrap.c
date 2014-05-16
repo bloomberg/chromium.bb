@@ -250,6 +250,7 @@ static void handle_bss(const char *file,
  */
 static ElfW(Addr) load_elf_file(const char *filename,
                                 size_t pagesize,
+                                ElfW(Addr) *out_base,
                                 ElfW(Addr) *out_phdr,
                                 ElfW(Addr) *out_phnum,
                                 const char **out_interp) {
@@ -395,6 +396,8 @@ static ElfW(Addr) load_elf_file(const char *filename,
 
   sys_close(fd);
 
+  if (out_base != NULL)
+    *out_base = load_bias;
   if (out_phdr != NULL)
     *out_phdr = (ehdr.e_phoff - first_load->p_offset +
                  first_load->p_vaddr + load_bias);
@@ -574,20 +577,25 @@ ElfW(Addr) do_load(stack_val_t *stack) {
    * Record the auxv entries that are specific to the file loaded.
    * The incoming entries point to our own static executable.
    */
+  ElfW(auxv_t) *av_base = NULL;
   ElfW(auxv_t) *av_entry = NULL;
   ElfW(auxv_t) *av_phdr = NULL;
   ElfW(auxv_t) *av_phnum = NULL;
   size_t pagesize = 0;
 
   for (av = auxv;
-       av_entry == NULL || av_phdr == NULL || av_phnum == NULL || pagesize == 0;
+       (av_base == NULL || av_entry == NULL || av_phdr == NULL ||
+        av_phnum == NULL || pagesize == 0);
        ++av) {
     switch (av->a_type) {
       case AT_NULL:
-        fail("startup",
-             "Failed to find AT_ENTRY, AT_PHDR, AT_PHNUM, or AT_PAGESZ!",
+        fail("startup", "\
+Failed to find AT_BASE, AT_ENTRY, AT_PHDR, AT_PHNUM, or AT_PAGESZ!",
              NULL, 0, NULL, 0);
         /*NOTREACHED*/
+        break;
+      case AT_BASE:
+        av_base = av;
         break;
       case AT_ENTRY:
         av_entry = av;
@@ -610,6 +618,7 @@ ElfW(Addr) do_load(stack_val_t *stack) {
   const char *interp = NULL;
   av_entry->a_un.a_val = load_elf_file(program,
                                        pagesize,
+                                       NULL,
                                        &av_phdr->a_un.a_val,
                                        &av_phnum->a_un.a_val,
                                        &interp);
@@ -620,7 +629,8 @@ ElfW(Addr) do_load(stack_val_t *stack) {
     /*
      * There was a PT_INTERP, so we have a dynamic linker to load.
      */
-    entry = load_elf_file(interp, pagesize, NULL, NULL, NULL);
+    entry = load_elf_file(interp, pagesize, &av_base->a_un.a_val,
+                          NULL, NULL, NULL);
   }
 
   return entry;
