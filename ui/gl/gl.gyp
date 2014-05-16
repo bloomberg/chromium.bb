@@ -348,7 +348,6 @@
           'variables': {
             'jni_gen_package': 'ui/gl',
             'input_java_class': 'android/view/Surface.class',
-            'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../../build/jar_file_jni_generator.gypi' ],
         },
@@ -364,7 +363,6 @@
           ],
           'variables': {
             'jni_gen_package': 'ui/gl',
-            'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../../build/jni_generator.gypi' ],
         },

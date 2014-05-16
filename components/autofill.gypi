@@ -461,7 +461,6 @@
           ],
           'variables': {
             'jni_gen_package': 'autofill',
-            'jni_generator_ptr_type': 'long',
           },
           'includes': [ '../build/jni_generator.gypi' ],
         },
