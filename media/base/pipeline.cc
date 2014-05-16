@@ -159,7 +159,7 @@ TimeDelta Pipeline::GetMediaTime() const {
   return clock_->Elapsed();
 }
 
-Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() {
+Ranges<TimeDelta> Pipeline::GetBufferedTimeRanges() const {
   base::AutoLock auto_lock(lock_);
   return buffered_time_ranges_;
 }

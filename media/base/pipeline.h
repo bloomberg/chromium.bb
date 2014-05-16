@@ -164,7 +164,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   base::TimeDelta GetMediaTime() const;
 
   // Get approximate time ranges of buffered media.
-  Ranges<base::TimeDelta> GetBufferedTimeRanges();
+  Ranges<base::TimeDelta> GetBufferedTimeRanges() const;
 
   // Get the duration of the media in microseconds.  If the duration has not
   // been determined yet, then returns 0.

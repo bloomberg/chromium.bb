@@ -25,9 +25,10 @@ class CONTENT_EXPORT BufferedDataSourceHostImpl
   virtual void AddBufferedByteRange(int64 start, int64 end) OVERRIDE;
 
   // Translate the byte ranges to time ranges and append them to the list.
+  // TODO(sandersd): This is a confusing name, find something better.
   void AddBufferedTimeRanges(
       media::Ranges<base::TimeDelta>* buffered_time_ranges,
-      base::TimeDelta media_duration);
+      base::TimeDelta media_duration) const;
 
   bool DidLoadingProgress();
 

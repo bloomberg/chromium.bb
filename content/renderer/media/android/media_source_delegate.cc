@@ -190,6 +190,10 @@ const blink::WebTimeRanges& MediaSourceDelegate::Buffered() {
   return buffered_web_time_ranges_;
 }
 
+blink::WebTimeRanges MediaSourceDelegate::Buffered() const {
+  return ConvertToWebTimeRanges(buffered_time_ranges_);
+}
+
 size_t MediaSourceDelegate::DecodedFrameCount() const {
   return statistics_.video_frames_decoded;
 }

@@ -76,6 +76,7 @@ class WebMediaPlayerMS
   virtual void setVolume(double volume);
   virtual void setPreload(blink::WebMediaPlayer::Preload preload);
   virtual const blink::WebTimeRanges& buffered();
+  virtual blink::WebTimeRanges buffered() const;
   virtual double maxTimeSeekable() const;
 
   // Methods for painting.

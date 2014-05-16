@@ -68,6 +68,7 @@ class MediaSourceDelegate : public media::DemuxerHost {
       const DurationChangeCB& duration_change_cb);
 
   const blink::WebTimeRanges& Buffered();
+  blink::WebTimeRanges Buffered() const;
   size_t DecodedFrameCount() const;
   size_t DroppedFrameCount() const;
   size_t AudioDecodedByteCount() const;

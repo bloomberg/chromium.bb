@@ -99,6 +99,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
   virtual const blink::WebTimeRanges& buffered();
+  virtual blink::WebTimeRanges buffered() const;
   virtual double maxTimeSeekable() const;
 
   // Poster image, as defined in the <video> element.

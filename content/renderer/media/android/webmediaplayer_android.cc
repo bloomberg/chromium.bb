@@ -440,6 +440,12 @@ const WebTimeRanges& WebMediaPlayerAndroid::buffered() {
   return buffered_;
 }
 
+WebTimeRanges WebMediaPlayerAndroid::buffered() const {
+  if (media_source_delegate_)
+    return media_source_delegate_->Buffered();
+  return buffered_;
+}
+
 double WebMediaPlayerAndroid::maxTimeSeekable() const {
   // If we haven't even gotten to ReadyStateHaveMetadata yet then just
   // return 0 so that the seekable range is empty.

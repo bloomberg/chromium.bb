@@ -523,6 +523,15 @@ const blink::WebTimeRanges& WebMediaPlayerImpl::buffered() {
   return buffered_web_time_ranges_;
 }
 
+blink::WebTimeRanges WebMediaPlayerImpl::buffered() const {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  media::Ranges<base::TimeDelta> buffered_time_ranges =
+      pipeline_.GetBufferedTimeRanges();
+  buffered_data_source_host_.AddBufferedTimeRanges(
+      &buffered_time_ranges, pipeline_.GetMediaDuration());
+  return ConvertToWebTimeRanges(buffered_time_ranges);
+}
+
 double WebMediaPlayerImpl::maxTimeSeekable() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
