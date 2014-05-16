@@ -283,7 +283,13 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, DisableDetection) {
+// Test flakes with LSAN enabled. See http://crbug.com/373155.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_DisableDetection DISABLED_DisableDetection
+#else
+#define MAYBE_DisableDetection DisableDetection
+#endif
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_DisableDetection) {
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 
