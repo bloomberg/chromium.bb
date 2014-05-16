@@ -420,6 +420,8 @@ public:
         VTTCueRenderAlignNotMiddle = 416,
         ElementRequestPointerLock = 417,
         VTTCueRenderRtl = 418,
+        PostMessageFromSecureToInsecure = 419,
+        PostMessageFromInsecureToSecure = 420,
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
         // Also, run update_use_counter_feature_enum.py in chromium/src/tools/metrics/histograms/

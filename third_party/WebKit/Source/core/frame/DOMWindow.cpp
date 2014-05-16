@@ -77,6 +77,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/MixedContentChecker.h"
 #include "core/loader/SinkDocument.h"
 #include "core/loader/appcache/ApplicationCache.h"
 #include "core/page/BackForwardClient.h"
@@ -833,6 +834,11 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
     if (!sourceDocument)
         return;
     String sourceOrigin = sourceDocument->securityOrigin()->toString();
+
+    if (MixedContentChecker::isMixedContent(sourceDocument->securityOrigin(), document()->url()))
+        UseCounter::count(document(), UseCounter::PostMessageFromSecureToInsecure);
+    else if (MixedContentChecker::isMixedContent(document()->securityOrigin(), sourceDocument->url()))
+        UseCounter::count(document(), UseCounter::PostMessageFromInsecureToSecure);
 
     // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
     RefPtr<ScriptCallStack> stackTrace;
