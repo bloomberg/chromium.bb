@@ -2185,8 +2185,12 @@ public class AwSettingsTest extends AwTestBase {
         }
     }
 
+    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    See crbug.com/374305
+    */
+    @DisabledTest
     public void testCacheModeWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         TestWebServer webServer = null;
