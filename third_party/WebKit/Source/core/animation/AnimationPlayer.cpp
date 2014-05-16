@@ -48,9 +48,9 @@ static unsigned nextSequenceNumber()
 
 }
 
-PassRefPtr<AnimationPlayer> AnimationPlayer::create(DocumentTimeline& timeline, TimedItem* content)
+PassRefPtrWillBeRawPtr<AnimationPlayer> AnimationPlayer::create(DocumentTimeline& timeline, TimedItem* content)
 {
-    return adoptRef(new AnimationPlayer(timeline, content));
+    return adoptRefWillBeRefCountedGarbageCollected(new AnimationPlayer(timeline, content));
 }
 
 AnimationPlayer::AnimationPlayer(DocumentTimeline& timeline, TimedItem* content)
@@ -76,10 +76,12 @@ AnimationPlayer::AnimationPlayer(DocumentTimeline& timeline, TimedItem* content)
 
 AnimationPlayer::~AnimationPlayer()
 {
+#if !ENABLE(OILPAN)
     if (m_content)
         m_content->detach();
     if (m_timeline)
         m_timeline->playerDestroyed(this);
+#endif
 }
 
 double AnimationPlayer::sourceEnd() const
@@ -404,11 +406,13 @@ bool AnimationPlayer::SortInfo::operator<(const SortInfo& other) const
     return m_sequenceNumber < other.m_sequenceNumber;
 }
 
+#if !ENABLE(OILPAN)
 bool AnimationPlayer::canFree() const
 {
     ASSERT(m_content);
     return hasOneRef() && m_content->isAnimation() && m_content->hasOneRef();
 }
+#endif
 
 bool AnimationPlayer::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
@@ -425,6 +429,12 @@ void AnimationPlayer::pauseForTesting(double pauseTime)
         toAnimation(m_content.get())->pauseAnimationForTestingOnCompositor(currentTimeInternal());
     m_isPausedForTesting = true;
     pause();
+}
+
+void AnimationPlayer::trace(Visitor* visitor)
+{
+    visitor->trace(m_content);
+    visitor->trace(m_timeline);
 }
 
 } // namespace

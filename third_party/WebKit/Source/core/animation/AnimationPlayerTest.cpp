@@ -68,7 +68,7 @@ protected:
         updateTimeline(0);
     }
 
-    PassRefPtr<Animation> makeAnimation(double duration = 30, double playbackRate = 1)
+    PassRefPtrWillBeRawPtr<Animation> makeAnimation(double duration = 30, double playbackRate = 1)
     {
         Timing timing;
         timing.iterationDuration = duration;
@@ -84,8 +84,8 @@ protected:
     }
 
     RefPtr<Document> document;
-    RefPtr<DocumentTimeline> timeline;
-    RefPtr<AnimationPlayer> player;
+    RefPtrWillBePersistent<DocumentTimeline> timeline;
+    RefPtrWillBePersistent<AnimationPlayer> player;
     TrackExceptionState exceptionState;
 };
 
@@ -562,8 +562,8 @@ TEST_F(AnimationAnimationPlayerTest, SetSource)
 {
     player = timeline->createAnimationPlayer(0);
     player->setStartTimeInternal(0);
-    RefPtr<TimedItem> source1 = makeAnimation();
-    RefPtr<TimedItem> source2 = makeAnimation();
+    RefPtrWillBeRawPtr<TimedItem> source1 = makeAnimation();
+    RefPtrWillBeRawPtr<TimedItem> source2 = makeAnimation();
     player->setSource(source1.get());
     EXPECT_EQ(source1, player->source());
     EXPECT_EQ(0, player->currentTimeInternal());
@@ -621,7 +621,7 @@ TEST_F(AnimationAnimationPlayerTest, AnimationPlayersReturnTimeToNextEffect)
     timing.startDelay = 1;
     timing.iterationDuration = 1;
     timing.endDelay = 1;
-    RefPtr<Animation> animation = Animation::create(0, nullptr, timing);
+    RefPtrWillBeRawPtr<Animation> animation = Animation::create(0, nullptr, timing);
     player = timeline->createAnimationPlayer(animation.get());
     player->setStartTimeInternal(0);
 
@@ -698,8 +698,8 @@ TEST_F(AnimationAnimationPlayerTest, AttachedAnimationPlayers)
     RefPtrWillBeRawPtr<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
 
     Timing timing;
-    RefPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
-    RefPtr<AnimationPlayer> player = timeline->createAnimationPlayer(animation.get());
+    RefPtrWillBeRawPtr<Animation> animation = Animation::create(element.get(), nullptr, timing);
+    RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->createAnimationPlayer(animation.get());
     player->setStartTime(0);
     timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     EXPECT_EQ(1, element->activeAnimations()->players().find(player.get())->value);
@@ -712,17 +712,17 @@ TEST_F(AnimationAnimationPlayerTest, HasLowerPriority)
 {
     // Sort time defaults to timeline current time
     updateTimeline(15);
-    RefPtr<AnimationPlayer> player1 = timeline->createAnimationPlayer(0);
-    RefPtr<AnimationPlayer> player2 = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player1 = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player2 = timeline->createAnimationPlayer(0);
     player2->setStartTimeInternal(10);
-    RefPtr<AnimationPlayer> player3 = timeline->createAnimationPlayer(0);
-    RefPtr<AnimationPlayer> player4 = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player3 = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player4 = timeline->createAnimationPlayer(0);
     player4->setStartTimeInternal(20);
-    RefPtr<AnimationPlayer> player5 = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player5 = timeline->createAnimationPlayer(0);
     player5->setStartTimeInternal(10);
-    RefPtr<AnimationPlayer> player6 = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player6 = timeline->createAnimationPlayer(0);
     player6->setStartTimeInternal(-10);
-    Vector<RefPtr<AnimationPlayer> > players;
+    Vector<RefPtrWillBeMember<AnimationPlayer> > players;
     players.append(player6);
     players.append(player2);
     players.append(player5);

@@ -36,6 +36,7 @@
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -46,9 +47,9 @@ class Document;
 class TimedItem;
 
 // DocumentTimeline is constructed and owned by Document, and tied to its lifecycle.
-class DocumentTimeline : public RefCounted<DocumentTimeline> {
+class DocumentTimeline : public RefCountedWillBeGarbageCollectedFinalized<DocumentTimeline> {
 public:
-    class PlatformTiming {
+    class PlatformTiming : public NoBaseWillBeGarbageCollectedFinalized<PlatformTiming> {
 
     public:
         // Calls DocumentTimeline's wake() method after duration seconds.
@@ -56,10 +57,10 @@ public:
         virtual void cancelWake() = 0;
         virtual void serviceOnNextFrame() = 0;
         virtual ~PlatformTiming() { }
-
+        virtual void trace(Visitor*) { }
     };
 
-    static PassRefPtr<DocumentTimeline> create(Document*, PassOwnPtr<PlatformTiming> = nullptr);
+    static PassRefPtrWillBeRawPtr<DocumentTimeline> create(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming> = nullptr);
     ~DocumentTimeline();
 
     void serviceAnimations(TimingUpdateReason);
@@ -68,11 +69,13 @@ public:
     AnimationPlayer* createAnimationPlayer(TimedItem*);
     AnimationPlayer* play(TimedItem*);
 
+#if !ENABLE(OILPAN)
     void playerDestroyed(AnimationPlayer* player)
     {
         ASSERT(m_players.contains(player));
         m_players.remove(player);
     }
+#endif
 
     // Called from setReadyState() in Document.cpp to set m_zeroTime to
     // performance.timing.domInteractive
@@ -91,25 +94,29 @@ public:
     void setOutdatedAnimationPlayer(AnimationPlayer*);
     bool hasOutdatedAnimationPlayer() const;
 
-    Document* document() { return m_document; }
+    Document* document() { return m_document.get(); }
+#if !ENABLE(OILPAN)
     void detachFromDocument();
+#endif
     void wake();
 
+    void trace(Visitor*);
+
 protected:
-    DocumentTimeline(Document*, PassOwnPtr<PlatformTiming>);
+    DocumentTimeline(Document*, PassOwnPtrWillBeRawPtr<PlatformTiming>);
 
 private:
     double m_zeroTime;
-    Document* m_document;
+    RawPtrWillBeMember<Document> m_document;
     // AnimationPlayers which will be updated on the next frame
     // i.e. current, in effect, or had timing changed
-    HashSet<RefPtr<AnimationPlayer> > m_playersNeedingUpdate;
-    HashSet<AnimationPlayer*> m_players;
+    WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer> > m_playersNeedingUpdate;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer> > m_players;
 
     friend class SMILTimeContainer;
     static const double s_minimumDelay;
 
-    OwnPtr<PlatformTiming> m_timing;
+    OwnPtrWillBeMember<PlatformTiming> m_timing;
 
     class DocumentTimelineTiming FINAL : public PlatformTiming {
     public:
@@ -126,10 +133,11 @@ private:
 
         void timerFired(Timer<DocumentTimelineTiming>*) { m_timeline->wake(); }
 
-    private:
-        DocumentTimeline* m_timeline;
-        Timer<DocumentTimelineTiming> m_timer;
+        virtual void trace(Visitor*) OVERRIDE;
 
+    private:
+        RawPtrWillBeMember<DocumentTimeline> m_timeline;
+        Timer<DocumentTimelineTiming> m_timer;
     };
 
     friend class AnimationDocumentTimelineTest;

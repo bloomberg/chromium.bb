@@ -11,9 +11,9 @@
 
 namespace WebCore {
 
-PassRefPtr<TimedItemTiming> TimedItemTiming::create(TimedItem* parent)
+PassRefPtrWillBeRawPtr<TimedItemTiming> TimedItemTiming::create(TimedItem* parent)
 {
-    return adoptRef(new TimedItemTiming(parent));
+    return adoptRefWillBeNoop(new TimedItemTiming(parent));
 }
 
 TimedItemTiming::TimedItemTiming(TimedItem* parent)
@@ -170,6 +170,11 @@ void TimedItemTiming::setEasing(String easing)
     Timing timing = m_parent->specifiedTiming();
     TimingInput::setTimingFunction(timing, easing);
     m_parent->updateSpecifiedTiming(timing);
+}
+
+void TimedItemTiming::trace(Visitor* visitor)
+{
+    visitor->trace(m_parent);
 }
 
 } // namespace WebCore

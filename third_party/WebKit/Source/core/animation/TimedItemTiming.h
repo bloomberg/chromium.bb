@@ -11,9 +11,9 @@
 
 namespace WebCore {
 
-class TimedItemTiming : public RefCounted<TimedItemTiming> {
+class TimedItemTiming : public RefCountedWillBeGarbageCollectedFinalized<TimedItemTiming> {
 public:
-    static PassRefPtr<TimedItemTiming> create(TimedItem* parent);
+    static PassRefPtrWillBeRawPtr<TimedItemTiming> create(TimedItem* parent);
     double delay();
     double endDelay();
     String fill();
@@ -33,9 +33,12 @@ public:
     void setPlaybackRate(double);
     void setDirection(String);
     void setEasing(String);
+
+    void trace(Visitor*);
+
 private:
-    RefPtr<TimedItem> m_parent;
-    TimedItemTiming(TimedItem* parent);
+    RefPtrWillBeMember<TimedItem> m_parent;
+    explicit TimedItemTiming(TimedItem*);
 };
 
 } // namespace WebCore

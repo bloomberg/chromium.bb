@@ -37,9 +37,11 @@ namespace WebCore {
 
 ActiveAnimations::~ActiveAnimations()
 {
+#if !ENABLE(OILPAN)
     for (size_t i = 0; i < m_animations.size(); ++i)
         m_animations[i]->notifyElementDestroyed();
     m_animations.clear();
+#endif
 }
 
 void ActiveAnimations::addPlayer(AnimationPlayer* player)
@@ -92,9 +94,8 @@ void ActiveAnimations::cancelAnimationOnCompositor()
 void ActiveAnimations::trace(Visitor* visitor)
 {
     visitor->trace(m_cssAnimations);
-#if ENABLE(OILPAN)
-    visitor->trace(m_target);
-#endif
+    visitor->trace(m_defaultStack);
+    visitor->trace(m_players);
 }
 
 } // namespace WebCore

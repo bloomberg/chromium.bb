@@ -36,12 +36,12 @@
 
 namespace WebCore {
 
-PassRefPtr<TransitionTimeline> TransitionTimeline::create(Document* document, PassOwnPtr<PlatformTiming> timing)
+PassRefPtrWillBeRawPtr<TransitionTimeline> TransitionTimeline::create(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
 {
-    return adoptRef(new TransitionTimeline(document, timing));
+    return adoptRefWillBeNoop(new TransitionTimeline(document, timing));
 }
 
-TransitionTimeline::TransitionTimeline(Document* document, PassOwnPtr<PlatformTiming> timing)
+TransitionTimeline::TransitionTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
     : DocumentTimeline(document, timing)
 {
     setZeroTime(document->animationClock().currentTime());

@@ -13,11 +13,11 @@
 
 namespace WebCore {
 
-class SampledEffect {
+class SampledEffect : public NoBaseWillBeGarbageCollected<SampledEffect> {
 public:
-    static PassOwnPtr<SampledEffect> create(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations)
+    static PassOwnPtrWillBeRawPtr<SampledEffect> create(Animation* animation, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > interpolations)
     {
-        return adoptPtr(new SampledEffect(animation, interpolations));
+        return adoptPtrWillBeNoop(new SampledEffect(animation, interpolations));
     }
 
     bool canChange() const;
@@ -32,14 +32,16 @@ public:
 
     void removeReplacedInterpolationsIfNeeded(const BitArray<numCSSProperties>&);
 
+    void trace(Visitor*);
+
 private:
     SampledEffect(Animation*, PassOwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > >);
 
-    // When Animation and AnimationPlayer are moved to Oilpan, we won't need a
-    // handle on the player and should only keep a weak pointer to the animation.
+    RawPtrWillBeWeakMember<Animation> m_animation;
+#if !ENABLE(OILPAN)
     RefPtr<AnimationPlayer> m_player;
-    Animation* m_animation;
-    OwnPtrWillBePersistent<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > m_interpolations;
+#endif
+    OwnPtrWillBeMember<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > m_interpolations;
     AnimationPlayer::SortInfo m_playerSortInfo;
     Animation::Priority m_priority;
 };

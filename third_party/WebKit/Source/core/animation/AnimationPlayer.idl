@@ -31,6 +31,7 @@
 [
     RuntimeEnabled=WebAnimationsElementAnimate,
     NoInterfaceObject,
+    WillBeGarbageCollected,
 ] interface AnimationPlayer : EventTarget {
     [RuntimeEnabled=WebAnimationsAPI]          attribute TimedItem? source;
     [RuntimeEnabled=WebAnimationsAPI]          attribute double     startTime;

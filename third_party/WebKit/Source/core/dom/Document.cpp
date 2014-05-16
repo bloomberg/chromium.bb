@@ -571,10 +571,10 @@ Document::~Document()
         m_importsController = 0;
     }
 
+#if !ENABLE(OILPAN)
     m_timeline->detachFromDocument();
     m_transitionTimeline->detachFromDocument();
 
-#if !ENABLE(OILPAN)
     // We need to destroy CSSFontSelector before destroying m_fetcher.
     if (m_styleEngine)
         m_styleEngine->detachFromDocument();
@@ -587,11 +587,9 @@ Document::~Document()
     if (m_fetcher->document() == this)
         m_fetcher->setDocument(nullptr);
     m_fetcher.clear();
-#endif
 
     // We must call clearRareData() here since a Document class inherits TreeScope
     // as well as Node. See a comment on TreeScope.h for the reason.
-#if !ENABLE(OILPAN)
     if (hasRareData())
         clearRareData();
 #endif
@@ -5729,6 +5727,9 @@ void Document::trace(Visitor* visitor)
     visitor->trace(m_visibilityObservers);
     visitor->trace(m_userActionElements);
     visitor->trace(m_svgExtensions);
+    visitor->trace(m_timeline);
+    visitor->trace(m_transitionTimeline);
+    visitor->trace(m_compositorPendingAnimations);
     visitor->registerWeakMembers<Document, &Document::clearWeakMembers>(this);
     DocumentSupplementable::trace(visitor);
     TreeScope::trace(visitor);

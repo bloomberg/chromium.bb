@@ -31,6 +31,7 @@
 #ifndef CompositorPendingAnimations_h
 #define CompositorPendingAnimations_h
 
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -43,6 +44,7 @@ class AnimationPlayer;
 // with compositor animations when both classes of CSS Animations are triggered
 // by the same recalc
 class CompositorPendingAnimations FINAL {
+    DISALLOW_ALLOCATION();
 public:
     void add(AnimationPlayer*);
     // Returns whether we are waiting for an animation to start and should
@@ -50,9 +52,11 @@ public:
     bool startPendingAnimations();
     void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
+    void trace(Visitor*);
+
 private:
-    Vector<RefPtr<AnimationPlayer> > m_pending;
-    Vector<RefPtr<AnimationPlayer> > m_waitingForCompositorAnimationStart;
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_pending;
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > m_waitingForCompositorAnimationStart;
 };
 
 } // namespace WebCore

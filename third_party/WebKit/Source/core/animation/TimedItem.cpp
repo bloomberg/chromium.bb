@@ -51,9 +51,9 @@ Timing::FillMode resolvedFillMode(Timing::FillMode fillMode, bool isAnimation)
 } // namespace
 
 TimedItem::TimedItem(const Timing& timing, PassOwnPtr<EventDelegate> eventDelegate)
-    : m_parent(0)
+    : m_parent(nullptr)
     , m_startTime(0)
-    , m_player(0)
+    , m_player(nullptr)
     , m_timing(timing)
     , m_eventDelegate(eventDelegate)
     , m_calculated()
@@ -181,9 +181,15 @@ const TimedItem::CalculatedTiming& TimedItem::ensureCalculated() const
     return m_calculated;
 }
 
-PassRefPtr<TimedItemTiming> TimedItem::timing()
+PassRefPtrWillBeRawPtr<TimedItemTiming> TimedItem::timing()
 {
     return TimedItemTiming::create(this);
+}
+
+void TimedItem::trace(Visitor* visitor)
+{
+    visitor->trace(m_parent);
+    visitor->trace(m_player);
 }
 
 } // namespace WebCore

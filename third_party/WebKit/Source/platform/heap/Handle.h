@@ -786,6 +786,7 @@ template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, 
 #define RefPtrWillBePersistent WebCore::Persistent
 #define RefPtrWillBeRawPtr WTF::RawPtr
 #define RefPtrWillBeMember WebCore::Member
+#define RefPtrWillBeWeakMember WebCore::WeakMember
 #define RefPtrWillBeCrossThreadPersistent WebCore::CrossThreadPersistent
 #define RawPtrWillBeMember WebCore::Member
 #define RawPtrWillBeWeakMember WebCore::WeakMember
@@ -879,6 +880,7 @@ public:
 #define RefPtrWillBePersistent WTF::RefPtr
 #define RefPtrWillBeRawPtr WTF::RefPtr
 #define RefPtrWillBeMember WTF::RefPtr
+#define RefPtrWillBeWeakMember WTF::RefPtr
 #define RefPtrWillBeCrossThreadPersistent WTF::RefPtr
 #define RawPtrWillBeMember WTF::RawPtr
 #define RawPtrWillBeWeakMember WTF::RawPtr

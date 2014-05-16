@@ -40,12 +40,12 @@ namespace WebCore {
 class DocumentTimeline;
 class ExceptionState;
 
-class AnimationPlayer FINAL : public RefCounted<AnimationPlayer>, public EventTargetWithInlineData {
-    REFCOUNTED_EVENT_TARGET(AnimationPlayer);
+class AnimationPlayer FINAL : public RefCountedWillBeRefCountedGarbageCollected<AnimationPlayer>, public EventTargetWithInlineData {
+    DEFINE_EVENT_TARGET_REFCOUNTING(RefCountedWillBeRefCountedGarbageCollected<AnimationPlayer>);
 public:
 
     ~AnimationPlayer();
-    static PassRefPtr<AnimationPlayer> create(DocumentTimeline&, TimedItem*);
+    static PassRefPtrWillBeRawPtr<AnimationPlayer> create(DocumentTimeline&, TimedItem*);
 
     // Returns whether the player is finished.
     bool update(TimingUpdateReason);
@@ -84,7 +84,9 @@ public:
     const DocumentTimeline* timeline() const { return m_timeline; }
     DocumentTimeline* timeline() { return m_timeline; }
 
-    void timelineDestroyed() { m_timeline = 0; }
+#if !ENABLE(OILPAN)
+    void timelineDestroyed() { m_timeline = nullptr; }
+#endif
 
     bool hasStartTime() const { return !isNull(m_startTime); }
     double startTime() const { return m_startTime * 1000; }
@@ -124,7 +126,8 @@ public:
         SortInfo(unsigned sequenceNumber, double startTime)
             : m_sequenceNumber(sequenceNumber)
             , m_startTime(startTime)
-        { }
+        {
+        }
         unsigned m_sequenceNumber;
         double m_startTime;
     };
@@ -136,11 +139,15 @@ public:
         return player1->sortInfo() < player2->sortInfo();
     }
 
+#if !ENABLE(OILPAN)
     // Checks if the AnimationStack is the last reference holder to the Player.
     // This won't be needed when AnimationPlayer is moved to Oilpan.
     bool canFree() const;
+#endif
 
     virtual bool addEventListener(const AtomicString& eventType, PassRefPtr<EventListener>, bool useCapture = false) OVERRIDE;
+
+    void trace(Visitor*);
 
 private:
     AnimationPlayer(DocumentTimeline&, TimedItem*);
@@ -158,10 +165,8 @@ private:
 
     SortInfo m_sortInfo;
 
-    RefPtr<TimedItem> m_content;
-    // FIXME: We should keep the timeline alive and have this as non-null
-    // but this is tricky to do without Oilpan
-    DocumentTimeline* m_timeline;
+    RefPtrWillBeMember<TimedItem> m_content;
+    RawPtrWillBeMember<DocumentTimeline> m_timeline;
     // Reflects all pausing, including via pauseForTesting().
     bool m_paused;
     bool m_held;

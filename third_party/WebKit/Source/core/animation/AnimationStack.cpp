@@ -49,13 +49,13 @@ void copyToActiveInterpolationMap(const WillBeHeapVector<RefPtrWillBeMember<WebC
     }
 }
 
-bool compareEffects(const OwnPtr<SampledEffect>& effect1, const OwnPtr<SampledEffect>& effect2)
+bool compareEffects(const OwnPtrWillBeMember<SampledEffect>& effect1, const OwnPtrWillBeMember<SampledEffect>& effect2)
 {
     ASSERT(effect1 && effect2);
     return effect1->sortInfo() < effect2->sortInfo();
 }
 
-void copyNewAnimationsToActiveInterpolationMap(const Vector<InertAnimation*>& newAnimations, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& result)
+void copyNewAnimationsToActiveInterpolationMap(const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >& newAnimations, WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> >& result)
 {
     for (size_t i = 0; i < newAnimations.size(); ++i) {
         OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample = newAnimations[i]->sample(0);
@@ -89,14 +89,14 @@ bool AnimationStack::hasActiveAnimationsOnCompositor(CSSPropertyID property) con
     return false;
 }
 
-WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationStack::activeInterpolations(AnimationStack* animationStack, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority priority, double timelineCurrentTime)
+WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > AnimationStack::activeInterpolations(AnimationStack* animationStack, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> >* cancelledAnimationPlayers, Animation::Priority priority, double timelineCurrentTime)
 {
     // We don't exactly know when new animations will start, but timelineCurrentTime is a good estimate.
 
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > result;
 
     if (animationStack) {
-        Vector<OwnPtr<SampledEffect> >& effects = animationStack->m_effects;
+        WillBeHeapVector<OwnPtrWillBeMember<SampledEffect> >& effects = animationStack->m_effects;
         // std::sort doesn't work with OwnPtrs
         nonCopyingSort(effects.begin(), effects.end(), compareEffects);
         animationStack->simplifyEffects();
@@ -135,13 +135,18 @@ void AnimationStack::simplifyEffects()
     size_t dest = 0;
     for (size_t i = 0; i < m_effects.size(); ++i) {
         if (!m_effects[i]->interpolations().isEmpty()) {
-            swap(m_effects[dest++], m_effects[i]);
+            m_effects[dest++].swap(m_effects[i]);
             continue;
         }
         if (m_effects[i]->animation())
             m_effects[i]->animation()->notifySampledEffectRemovedFromAnimationStack();
     }
     m_effects.shrink(dest);
+}
+
+void AnimationStack::trace(Visitor* visitor)
+{
+    visitor->trace(m_effects);
 }
 
 } // namespace WebCore

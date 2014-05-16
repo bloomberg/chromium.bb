@@ -77,6 +77,11 @@ public:
         EXPECT_CALL(*this, cancelWake()).InSequence(sequence);
         EXPECT_CALL(*this, wakeAfter(when)).InSequence(sequence);
     }
+
+    void trace(Visitor* visitor)
+    {
+        DocumentTimeline::PlatformTiming::trace(visitor);
+    }
 };
 
 class AnimationDocumentTimelineTest : public ::testing::Test {
@@ -87,7 +92,7 @@ protected:
         document->animationClock().resetTimeForTesting();
         element = Element::create(nullQName() , document.get());
         platformTiming = new MockPlatformTiming;
-        timeline = DocumentTimeline::create(document.get(), adoptPtr(platformTiming));
+        timeline = DocumentTimeline::create(document.get(), adoptPtrWillBeNoop(platformTiming));
         timeline->setZeroTime(0);
         ASSERT_EQ(0, timeline->currentTimeInternal());
     }
@@ -107,7 +112,7 @@ protected:
 
     RefPtr<Document> document;
     RefPtr<Element> element;
-    RefPtr<DocumentTimeline> timeline;
+    RefPtrWillBePersistent<DocumentTimeline> timeline;
     Timing timing;
     MockPlatformTiming* platformTiming;
 
@@ -133,7 +138,7 @@ TEST_F(AnimationDocumentTimelineTest, HasStarted)
 TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation)
 {
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
-    RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
+    RefPtrWillBeRawPtr<Animation> anim = Animation::create(element.get(), effect, timing);
 
     timeline->play(anim.get());
 
@@ -151,7 +156,7 @@ TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation)
 {
     RefPtrWillBeRawPtr<AnimatableValueKeyframeEffectModel> effect = AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector());
     timing.fillMode = Timing::FillModeForwards;
-    RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
+    RefPtrWillBeRawPtr<Animation> anim = Animation::create(element.get(), effect, timing);
 
     timeline->play(anim.get());
 
@@ -192,8 +197,8 @@ TEST_F(AnimationDocumentTimelineTest, PauseForTesting)
 {
     float seekTime = 1;
     timing.fillMode = Timing::FillModeForwards;
-    RefPtr<Animation> anim1 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
-    RefPtr<Animation> anim2  = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
+    RefPtrWillBeRawPtr<Animation> anim1 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
+    RefPtrWillBeRawPtr<Animation> anim2  = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timing);
     AnimationPlayer* player1 = timeline->play(anim1.get());
     AnimationPlayer* player2 = timeline->play(anim2.get());
     timeline->pauseAnimationsForTesting(seekTime);
@@ -225,11 +230,11 @@ TEST_F(AnimationDocumentTimelineTest, NumberOfActiveAnimations)
     Timing timingAutoFill;
     timingAutoFill.iterationDuration = 2;
 
-    RefPtr<Animation> anim1 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingForwardFill);
-    RefPtr<Animation> anim2 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingNoFill);
-    RefPtr<Animation> anim3 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingBackwardFillDelay);
-    RefPtr<Animation> anim4 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingNoFillDelay);
-    RefPtr<Animation> anim5 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingAutoFill);
+    RefPtrWillBeRawPtr<Animation> anim1 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingForwardFill);
+    RefPtrWillBeRawPtr<Animation> anim2 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingNoFill);
+    RefPtrWillBeRawPtr<Animation> anim3 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingBackwardFillDelay);
+    RefPtrWillBeRawPtr<Animation> anim4 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingNoFillDelay);
+    RefPtrWillBeRawPtr<Animation> anim5 = Animation::create(element.get(), AnimatableValueKeyframeEffectModel::create(AnimatableValueKeyframeVector()), timingAutoFill);
 
     timeline->play(anim1.get());
     timeline->play(anim2.get());
@@ -256,7 +261,7 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart)
     timing.iterationDuration = 2;
     timing.startDelay = 5;
 
-    RefPtr<Animation> anim = Animation::create(element.get(), nullptr, timing);
+    RefPtrWillBeRawPtr<Animation> anim = Animation::create(element.get(), nullptr, timing);
 
     timeline->play(anim.get());
 
@@ -283,14 +288,14 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref)
     element = nullptr;
     document = nullptr;
 
-    RefPtr<Animation> anim = Animation::create(0, nullptr, timing);
+    RefPtrWillBeRawPtr<Animation> anim = Animation::create(0, nullptr, timing);
     // Test passes if this does not crash.
     timeline->play(anim.get());
 }
 
 TEST_F(AnimationDocumentTimelineTest, UseAnimationPlayerAfterTimelineDeref)
 {
-    RefPtr<AnimationPlayer> player = timeline->createAnimationPlayer(0);
+    RefPtrWillBeRawPtr<AnimationPlayer> player = timeline->createAnimationPlayer(0);
     timeline.clear();
     // Test passes if this does not crash.
     player->setStartTime(0);

@@ -32,6 +32,7 @@
 #define TimedItem_h
 
 #include "core/animation/Timing.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
@@ -57,7 +58,7 @@ static inline double nullValue()
     return std::numeric_limits<double>::quiet_NaN();
 }
 
-class TimedItem : public RefCounted<TimedItem> {
+class TimedItem : public RefCountedWillBeGarbageCollectedFinalized<TimedItem> {
     friend class AnimationPlayer; // Calls attach/detach, updateInheritedTime.
 public:
     // Note that logic in CSSAnimations depends on the order of these values.
@@ -103,15 +104,17 @@ public:
     AnimationPlayer* player() { return m_player; }
     AnimationPlayer* player(bool& isNull) { isNull = !m_player; return m_player; }
     const Timing& specifiedTiming() const { return m_timing; }
-    PassRefPtr<TimedItemTiming> timing();
+    PassRefPtrWillBeRawPtr<TimedItemTiming> timing();
     void updateSpecifiedTiming(const Timing&);
 
     // This method returns time in ms as it is unused except via the API.
     double localTime(bool& isNull) const { isNull = !m_player; return ensureCalculated().localTime * 1000; }
     double currentIteration(bool& isNull) const { isNull = !ensureCalculated().isInEffect; return ensureCalculated().currentIteration; }
 
+    virtual void trace(Visitor*);
+
 protected:
-    TimedItem(const Timing&, PassOwnPtr<EventDelegate> = nullptr);
+    explicit TimedItem(const Timing&, PassOwnPtr<EventDelegate> = nullptr);
 
     // When TimedItem receives a new inherited time via updateInheritedTime
     // it will (if necessary) recalculate timings and (if necessary) call
@@ -121,34 +124,28 @@ protected:
     bool hasEvents() const { return m_eventDelegate; }
     void clearEventDelegate() { m_eventDelegate = nullptr; }
 
-private:
+    virtual void attach(AnimationPlayer* player)
+    {
+        m_player = player;
+    }
+
+    virtual void detach()
+    {
+        ASSERT(m_player);
+        m_player = nullptr;
+    }
 
     double repeatedDuration() const;
 
     virtual void updateChildrenAndEffects() const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
     virtual double calculateTimeToEffectChange(bool forwards, double localTime, double timeToNextIteration) const = 0;
-    virtual void didAttach() { };
-    virtual void willDetach() { };
-    virtual void specifiedTimingChanged() { };
-
-    void attach(AnimationPlayer* player)
-    {
-        m_player = player;
-        didAttach();
-    };
-
-    void detach()
-    {
-        ASSERT(m_player);
-        willDetach();
-        m_player = 0;
-    };
+    virtual void specifiedTimingChanged() { }
 
     // FIXME: m_parent and m_startTime are placeholders, they depend on timing groups.
-    TimedItem* const m_parent;
+    RawPtrWillBeMember<TimedItem> m_parent;
     const double m_startTime;
-    AnimationPlayer* m_player;
+    RawPtrWillBeMember<AnimationPlayer> m_player;
     Timing m_timing;
     OwnPtr<EventDelegate> m_eventDelegate;
 

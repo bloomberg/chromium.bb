@@ -1376,8 +1376,8 @@ private:
     LocaleIdentifierToLocaleMap m_localeCache;
 
     OwnPtr<AnimationClock> m_animationClock;
-    RefPtr<DocumentTimeline> m_timeline;
-    RefPtr<DocumentTimeline> m_transitionTimeline;
+    RefPtrWillBeMember<DocumentTimeline> m_timeline;
+    RefPtrWillBeMember<DocumentTimeline> m_transitionTimeline;
     CompositorPendingAnimations m_compositorPendingAnimations;
 
     RefPtrWillBeMember<Document> m_templateDocument;

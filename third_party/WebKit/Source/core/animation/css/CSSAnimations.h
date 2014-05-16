@@ -54,7 +54,7 @@ class StyleRuleKeyframes;
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
 class CSSAnimationUpdate FINAL : public NoBaseWillBeGarbageCollectedFinalized<CSSAnimationUpdate> {
 public:
-    void startAnimation(AtomicString& animationName, PassRefPtr<InertAnimation> animation)
+    void startAnimation(AtomicString& animationName, PassRefPtrWillBeRawPtr<InertAnimation> animation)
     {
         NewAnimation newAnimation;
         newAnimation.name = animationName;
@@ -73,7 +73,7 @@ public:
         m_animationsWithPauseToggled.append(name);
     }
 
-    void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtr<InertAnimation> animation)
+    void startTransition(CSSPropertyID id, CSSPropertyID eventId, const AnimatableValue* from, const AnimatableValue* to, PassRefPtrWillBeRawPtr<InertAnimation> animation)
     {
         NewTransition newTransition;
         newTransition.id = id;
@@ -87,12 +87,19 @@ public:
     void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.add(id); }
 
     struct NewAnimation {
+        ALLOW_ONLY_INLINE_ALLOCATION();
+    public:
+        void trace(Visitor* visitor)
+        {
+            visitor->trace(animation);
+        }
+
         AtomicString name;
-        RefPtr<InertAnimation> animation;
+        RefPtrWillBeMember<InertAnimation> animation;
     };
-    const Vector<NewAnimation>& newAnimations() const { return m_newAnimations; }
+    const WillBeHeapVector<NewAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<AtomicString>& cancelledAnimationNames() const { return m_cancelledAnimationNames; }
-    const HashSet<const AnimationPlayer*>& cancelledAnimationAnimationPlayers() const { return m_cancelledAnimationPlayers; }
+    const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> >& cancelledAnimationAnimationPlayers() const { return m_cancelledAnimationPlayers; }
     const Vector<AtomicString>& animationsWithPauseToggled() const { return m_animationsWithPauseToggled; }
 
     struct NewTransition {
@@ -102,13 +109,14 @@ public:
         {
             visitor->trace(from);
             visitor->trace(to);
+            visitor->trace(animation);
         }
 
         CSSPropertyID id;
         CSSPropertyID eventId;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
-        RefPtr<InertAnimation> animation;
+        RefPtrWillBeMember<InertAnimation> animation;
     };
     typedef WillBeHeapHashMap<CSSPropertyID, NewTransition> NewTransitionMap;
     const NewTransitionMap& newTransitions() const { return m_newTransitions; }
@@ -139,9 +147,9 @@ private:
     // will be started. Note that there may be multiple animations present
     // with the same name, due to the way in which we split up animations with
     // incomplete keyframes.
-    Vector<NewAnimation> m_newAnimations;
+    WillBeHeapVector<NewAnimation> m_newAnimations;
     Vector<AtomicString> m_cancelledAnimationNames;
-    HashSet<const AnimationPlayer*> m_cancelledAnimationPlayers;
+    WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> > m_cancelledAnimationPlayers;
     Vector<AtomicString> m_animationsWithPauseToggled;
 
     NewTransitionMap m_newTransitions;
@@ -183,14 +191,15 @@ private:
         {
             visitor->trace(from);
             visitor->trace(to);
+            visitor->trace(player);
         }
 
-        RefPtr<AnimationPlayer> player;
+        RefPtrWillBeMember<AnimationPlayer> player;
         RawPtrWillBeMember<const AnimatableValue> from;
         RawPtrWillBeMember<const AnimatableValue> to;
     };
 
-    typedef HashMap<AtomicString, RefPtr<AnimationPlayer> > AnimationMap;
+    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<AnimationPlayer> > AnimationMap;
     AnimationMap m_animations;
 
     typedef WillBeHeapHashMap<CSSPropertyID, RunningTransition> TransitionMap;
@@ -242,5 +251,11 @@ private:
 };
 
 } // namespace WebCore
+
+namespace WTF {
+template<> struct VectorTraits<WebCore::CSSAnimationUpdate::NewAnimation> : VectorTraitsBase<WebCore::CSSAnimationUpdate::NewAnimation> {
+    static const bool canInitializeWithMemset = true;
+};
+}
 
 #endif

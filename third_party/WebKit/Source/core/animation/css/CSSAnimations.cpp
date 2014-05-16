@@ -326,11 +326,11 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             player->update(TimingUpdateOnDemand);
     }
 
-    for (Vector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
+    for (WillBeHeapVector<CSSAnimationUpdate::NewAnimation>::const_iterator iter = update->newAnimations().begin(); iter != update->newAnimations().end(); ++iter) {
         const InertAnimation* inertAnimation = iter->animation.get();
         OwnPtr<AnimationEventDelegate> eventDelegate = adoptPtr(new AnimationEventDelegate(element, iter->name));
-        RefPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specifiedTiming(), Animation::DefaultPriority, eventDelegate.release());
-        RefPtr<AnimationPlayer> player = element->document().timeline().createAnimationPlayer(animation.get());
+        RefPtrWillBeRawPtr<Animation> animation = Animation::create(element, inertAnimation->effect(), inertAnimation->specifiedTiming(), Animation::DefaultPriority, eventDelegate.release());
+        RefPtrWillBeRawPtr<AnimationPlayer> player = element->document().timeline().createAnimationPlayer(animation.get());
         element->document().compositorPendingAnimations().add(player.get());
         if (inertAnimation->paused())
             player->pause();
@@ -343,15 +343,15 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     // be when transitions are retargeted. Instead of triggering complete style
     // recalculation, we find these cases by searching for new transitions that
     // have matching cancelled animation property IDs on the compositor.
-    HashMap<CSSPropertyID, std::pair<RefPtr<Animation>, double> > retargetedCompositorTransitions;
+    WillBeHeapHashMap<CSSPropertyID, std::pair<RefPtrWillBeMember<Animation>, double> > retargetedCompositorTransitions;
     for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
         CSSPropertyID id = *iter;
         ASSERT(m_transitions.contains(id));
 
-        RefPtr<AnimationPlayer> player = m_transitions.take(id).player;
+        RefPtrWillBeRawPtr<AnimationPlayer> player = m_transitions.take(id).player;
         Animation* animation = toAnimation(player->source());
         if (animation->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end())
-            retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(animation, player->startTimeInternal()));
+            retargetedCompositorTransitions.add(id, std::pair<RefPtrWillBeMember<Animation>, double>(animation, player->startTimeInternal()));
         player->cancel();
         player->update(TimingUpdateOnDemand);
     }
@@ -370,8 +370,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         RefPtrWillBeRawPtr<AnimationEffect> effect = inertAnimation->effect();
 
         if (retargetedCompositorTransitions.contains(id)) {
-            const std::pair<RefPtr<Animation>, double>& oldTransition = retargetedCompositorTransitions.get(id);
-            RefPtr<Animation> oldAnimation = oldTransition.first;
+            const std::pair<RefPtrWillBeMember<Animation>, double>& oldTransition = retargetedCompositorTransitions.get(id);
+            RefPtrWillBeRawPtr<Animation> oldAnimation = oldTransition.first;
             double oldStartTime = oldTransition.second;
             double inheritedTime = isNull(oldStartTime) ? 0 : element->document().transitionTimeline().currentTimeInternal() - oldStartTime;
 
@@ -383,7 +383,7 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             newFrames.append(toAnimatableValueKeyframe(frames[1]->clone().get()));
 
             newFrames[0]->clearPropertyValue(id);
-            RefPtr<InertAnimation> inertAnimationForSampling = InertAnimation::create(oldAnimation->effect(), oldAnimation->specifiedTiming(), false);
+            RefPtrWillBeRawPtr<InertAnimation> inertAnimationForSampling = InertAnimation::create(oldAnimation->effect(), oldAnimation->specifiedTiming(), false);
             OwnPtrWillBeRawPtr<WillBeHeapVector<RefPtrWillBeMember<Interpolation> > > sample = inertAnimationForSampling->sample(inheritedTime);
             ASSERT(sample->size() == 1);
             newFrames[0]->setPropertyValue(id, toLegacyStyleInterpolation(sample->at(0).get())->currentValue());
@@ -391,8 +391,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             effect = AnimatableValueKeyframeEffectModel::create(newFrames);
         }
 
-        RefPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
-        RefPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
+        RefPtrWillBeRawPtr<Animation> transition = Animation::create(element, effect, inertAnimation->specifiedTiming(), Animation::TransitionPriority, eventDelegate.release());
+        RefPtrWillBeRawPtr<AnimationPlayer> player = element->document().transitionTimeline().createAnimationPlayer(transition.get());
         element->document().compositorPendingAnimations().add(player.get());
         player->update(TimingUpdateOnDemand);
         runningTransition.player = player;
@@ -550,7 +550,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate* u
         return;
     }
 
-    Vector<InertAnimation*> newAnimations;
+    WillBeHeapVector<RawPtrWillBeMember<InertAnimation> > newAnimations;
     for (size_t i = 0; i < update->newAnimations().size(); ++i) {
         newAnimations.append(update->newAnimations()[i].animation.get());
     }
@@ -567,11 +567,11 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate* 
     if (update->newTransitions().isEmpty() && update->cancelledTransitions().isEmpty()) {
         activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, 0, 0, Animation::TransitionPriority, timelineCurrentTime);
     } else {
-        Vector<InertAnimation*> newTransitions;
+        WillBeHeapVector<RawPtrWillBeMember<InertAnimation> > newTransitions;
         for (CSSAnimationUpdate::NewTransitionMap::const_iterator iter = update->newTransitions().begin(); iter != update->newTransitions().end(); ++iter)
             newTransitions.append(iter->value.animation.get());
 
-        HashSet<const AnimationPlayer*> cancelledAnimationPlayers;
+        WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> > cancelledAnimationPlayers;
         if (!update->cancelledTransitions().isEmpty()) {
             ASSERT(activeAnimations);
             const TransitionMap& transitionMap = activeAnimations->cssAnimations().m_transitions;
@@ -829,6 +829,7 @@ void CSSAnimations::trace(Visitor* visitor)
 {
     visitor->trace(m_transitions);
     visitor->trace(m_pendingUpdate);
+    visitor->trace(m_animations);
     visitor->trace(m_previousActiveInterpolationsForAnimations);
 }
 
@@ -837,6 +838,8 @@ void CSSAnimationUpdate::trace(Visitor* visitor)
     visitor->trace(m_newTransitions);
     visitor->trace(m_activeInterpolationsForAnimations);
     visitor->trace(m_activeInterpolationsForTransitions);
+    visitor->trace(m_newAnimations);
+    visitor->trace(m_cancelledAnimationPlayers);
 }
 
 } // namespace WebCore

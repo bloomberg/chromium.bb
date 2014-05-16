@@ -39,7 +39,7 @@ protected:
         timeline->serviceAnimations(TimingUpdateForAnimationFrame);
     }
 
-    const Vector<OwnPtr<SampledEffect> >& effects()
+    const WillBeHeapVector<OwnPtrWillBeMember<SampledEffect> >& effects()
     {
         return element->ensureActiveAnimations().defaultStack().m_effects;
     }
@@ -56,14 +56,14 @@ protected:
         return AnimatableValueKeyframeEffectModel::create(keyframes);
     }
 
-    PassRefPtr<InertAnimation> makeInertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect)
+    PassRefPtrWillBeRawPtr<InertAnimation> makeInertAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect)
     {
         Timing timing;
         timing.fillMode = Timing::FillModeBoth;
         return InertAnimation::create(effect, timing, false);
     }
 
-    PassRefPtr<Animation> makeAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, double duration = 10)
+    PassRefPtrWillBeRawPtr<Animation> makeAnimation(PassRefPtrWillBeRawPtr<AnimationEffect> effect, double duration = 10)
     {
         Timing timing;
         timing.fillMode = Timing::FillModeBoth;
@@ -77,7 +77,7 @@ protected:
     }
 
     RefPtr<Document> document;
-    RefPtr<DocumentTimeline> timeline;
+    RefPtrWillBePersistent<DocumentTimeline> timeline;
     RefPtrWillBePersistent<Element> element;
 };
 
@@ -95,9 +95,9 @@ TEST_F(AnimationAnimationStackTest, NewAnimations)
 {
     play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 15);
     play(makeAnimation(makeAnimationEffect(CSSPropertyZIndex, AnimatableDouble::create(2))).get(), 10);
-    Vector<InertAnimation*> newAnimations;
-    RefPtr<InertAnimation> inert1 = makeInertAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(3)));
-    RefPtr<InertAnimation> inert2 = makeInertAnimation(makeAnimationEffect(CSSPropertyZIndex, AnimatableDouble::create(4)));
+    WillBeHeapVector<RawPtrWillBeMember<InertAnimation> > newAnimations;
+    RefPtrWillBeRawPtr<InertAnimation> inert1 = makeInertAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(3)));
+    RefPtrWillBeRawPtr<InertAnimation> inert2 = makeInertAnimation(makeAnimationEffect(CSSPropertyZIndex, AnimatableDouble::create(4)));
     newAnimations.append(inert1.get());
     newAnimations.append(inert2.get());
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > result = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), &newAnimations, 0, Animation::DefaultPriority, 10);
@@ -108,8 +108,8 @@ TEST_F(AnimationAnimationStackTest, NewAnimations)
 
 TEST_F(AnimationAnimationStackTest, CancelledAnimationPlayers)
 {
-    HashSet<const AnimationPlayer*> cancelledAnimationPlayers;
-    RefPtr<AnimationPlayer> player = play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 0);
+    WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> > cancelledAnimationPlayers;
+    RefPtrWillBeRawPtr<AnimationPlayer> player = play(makeAnimation(makeAnimationEffect(CSSPropertyFontSize, AnimatableDouble::create(1))).get(), 0);
     cancelledAnimationPlayers.add(player.get());
     play(makeAnimation(makeAnimationEffect(CSSPropertyZIndex, AnimatableDouble::create(2))).get(), 0);
     WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > result = AnimationStack::activeInterpolations(&element->activeAnimations()->defaultStack(), 0, &cancelledAnimationPlayers, Animation::DefaultPriority, 0);

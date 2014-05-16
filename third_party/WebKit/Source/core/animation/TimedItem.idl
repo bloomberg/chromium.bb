@@ -30,6 +30,7 @@
 
 [
     RuntimeEnabled=WebAnimationsAPI,
+    WillBeGarbageCollected,
 ] interface TimedItem {
     // Playback state
     readonly attribute double? localTime;

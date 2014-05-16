@@ -46,18 +46,17 @@ class ExceptionState;
 class SampledEffect;
 
 class Animation FINAL : public TimedItem {
-
 public:
     enum Priority { DefaultPriority, TransitionPriority };
 
-    static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
+    static PassRefPtrWillBeRawPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
     // Web Animations API Bindings constructors.
-    static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Dictionary& timingInputDictionary);
-    static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, double duration);
-    static PassRefPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>);
-    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary, ExceptionState&);
-    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState&);
-    static PassRefPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Dictionary& timingInputDictionary);
+    static PassRefPtrWillBeRawPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, double duration);
+    static PassRefPtrWillBeRawPtr<Animation> create(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>);
+    static PassRefPtrWillBeRawPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, const Dictionary& timingInputDictionary, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, double duration, ExceptionState&);
+    static PassRefPtrWillBeRawPtr<Animation> create(Element*, const Vector<Dictionary>& keyframeDictionaryVector, ExceptionState&);
 
     virtual ~Animation();
 
@@ -70,7 +69,9 @@ public:
     Element* target() { return m_target; }
 
     void notifySampledEffectRemovedFromAnimationStack();
+#if !ENABLE(OILPAN)
     void notifyElementDestroyed();
+#endif
 
     bool isCandidateForAnimationOnCompositor() const;
     // Must only be called once.
@@ -80,22 +81,23 @@ public:
     void cancelAnimationOnCompositor();
     void pauseAnimationForTestingOnCompositor(double pauseTime);
 
+    virtual void trace(Visitor*);
+
 protected:
     void applyEffects();
     void clearEffects();
     virtual void updateChildrenAndEffects() const OVERRIDE;
-    virtual void didAttach() OVERRIDE;
-    virtual void willDetach() OVERRIDE;
+    virtual void attach(AnimationPlayer*) OVERRIDE;
+    virtual void detach() OVERRIDE;
     virtual void specifiedTimingChanged() OVERRIDE;
     virtual double calculateTimeToEffectChange(bool forwards, double inheritedTime, double timeToNextIteration) const OVERRIDE;
 
 private:
     Animation(Element*, PassRefPtrWillBeRawPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);
 
-    Element* m_target;
-    RefPtrWillBePersistent<AnimationEffect> m_effect;
-
-    SampledEffect* m_sampledEffect;
+    RawPtrWillBeMember<Element> m_target;
+    RefPtrWillBeMember<AnimationEffect> m_effect;
+    RawPtrWillBeMember<SampledEffect> m_sampledEffect;
 
     Priority m_priority;
 

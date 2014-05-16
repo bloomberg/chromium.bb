@@ -43,20 +43,23 @@ namespace WebCore {
 class InertAnimation;
 
 class AnimationStack {
+    DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(AnimationStack);
 public:
     AnimationStack();
 
-    void add(PassOwnPtr<SampledEffect> effect) { m_effects.append(effect); }
+    void add(PassOwnPtrWillBeRawPtr<SampledEffect> effect) { m_effects.append(effect); }
     bool isEmpty() const { return m_effects.isEmpty(); }
     bool affects(CSSPropertyID) const;
     bool hasActiveAnimationsOnCompositor(CSSPropertyID) const;
-    static WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolations(AnimationStack*, const Vector<InertAnimation*>* newAnimations, const HashSet<const AnimationPlayer*>* cancelledAnimationPlayers, Animation::Priority, double timelineCurrentTime);
+    static WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<Interpolation> > activeInterpolations(AnimationStack*, const WillBeHeapVector<RawPtrWillBeMember<InertAnimation> >* newAnimations, const WillBeHeapHashSet<RawPtrWillBeMember<const AnimationPlayer> >* cancelledAnimationPlayers, Animation::Priority, double timelineCurrentTime);
+
+    void trace(Visitor*);
 
 private:
     void simplifyEffects();
     // Effects sorted by priority. Lower priority at the start of the list.
-    Vector<OwnPtr<SampledEffect> > m_effects;
+    WillBeHeapVector<OwnPtrWillBeMember<SampledEffect> > m_effects;
 
     friend class AnimationAnimationStackTest;
 };
