@@ -286,14 +286,14 @@
         }],
         ['enable_webrtc==1', {
           'sources': [
-            'renderer/media/mock_media_stream_dependency_factory.cc',
-            'renderer/media/mock_media_stream_dependency_factory.h',
             'renderer/media/mock_media_stream_dispatcher.cc',
             'renderer/media/mock_media_stream_dispatcher.h',
             'renderer/media/mock_peer_connection_impl.cc',
             'renderer/media/mock_peer_connection_impl.h',
             'renderer/media/mock_web_rtc_peer_connection_handler_client.cc',
             'renderer/media/mock_web_rtc_peer_connection_handler_client.h',
+            'renderer/media/webrtc/mock_peer_connection_dependency_factory.cc',
+            'renderer/media/webrtc/mock_peer_connection_dependency_factory.h',
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
@@ -748,7 +748,6 @@
             'browser/renderer_host/p2p/socket_host_unittest.cc',
             'renderer/media/media_stream_audio_processor_unittest.cc',
             'renderer/media/media_stream_constraints_util_unittest.cc',
-            'renderer/media/media_stream_dependency_factory_unittest.cc',
             'renderer/media/media_stream_dispatcher_unittest.cc',
             'renderer/media/media_stream_impl_unittest.cc',
             'renderer/media/media_stream_video_capture_source_unittest.cc',
@@ -766,6 +765,7 @@
             'renderer/media/video_source_handler_unittest.cc',
             'renderer/media/webrtc/media_stream_remote_video_source_unittest.cc',
             'renderer/media/webrtc/media_stream_track_metrics_unittest.cc',
+            'renderer/media/webrtc/peer_connection_dependency_factory_unittest.cc',
             'renderer/media/webrtc/webrtc_local_audio_track_adapter_unittest.cc',
             'renderer/media/webrtc/webrtc_media_stream_adapter_unittest.cc',
             'renderer/media/webrtc/webrtc_video_capturer_adapter_unittest.cc',

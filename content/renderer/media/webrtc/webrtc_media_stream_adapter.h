@@ -16,7 +16,7 @@
 
 namespace content {
 
-class MediaStreamDependencyFactory;
+class PeerConnectionDependencyFactory;
 
 // WebRtcMediaStreamAdapter is an adapter between a blink::WebMediaStream
 // object and a webrtc MediaStreams that is currently sent on a PeerConnection.
@@ -30,7 +30,7 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
     : NON_EXPORTED_BASE(public MediaStreamObserver) {
  public:
   WebRtcMediaStreamAdapter(const blink::WebMediaStream& web_stream,
-                           MediaStreamDependencyFactory* factory);
+                           PeerConnectionDependencyFactory* factory);
   virtual ~WebRtcMediaStreamAdapter();
 
   bool IsEqual(const blink::WebMediaStream& web_stream) {
@@ -52,9 +52,9 @@ class CONTENT_EXPORT WebRtcMediaStreamAdapter
 
   blink::WebMediaStream web_stream_;
 
-  // Pointer to a MediaStreamDependencyFactory, owned by the RenderThread.
+  // Pointer to a PeerConnectionDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.
-  MediaStreamDependencyFactory* factory_;
+  PeerConnectionDependencyFactory* factory_;
 
   scoped_refptr<webrtc::MediaStreamInterface> webrtc_media_stream_;
   ScopedVector<WebRtcVideoTrackAdapter> video_adapters_;

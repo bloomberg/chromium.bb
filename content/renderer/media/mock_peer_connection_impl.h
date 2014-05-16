@@ -9,18 +9,19 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 namespace content {
 
-class MockMediaStreamDependencyFactory;
+class MockPeerConnectionDependencyFactory;
 class MockStreamCollection;
 
 class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
  public:
-  explicit MockPeerConnectionImpl(MockMediaStreamDependencyFactory* factory);
+  explicit MockPeerConnectionImpl(MockPeerConnectionDependencyFactory* factory);
 
   // PeerConnectionInterface implementation.
   virtual talk_base::scoped_refptr<webrtc::StreamCollectionInterface>
@@ -120,7 +121,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
 
  private:
   // Used for creating MockSessionDescription.
-  MockMediaStreamDependencyFactory* dependency_factory_;
+  MockPeerConnectionDependencyFactory* dependency_factory_;
 
   std::string stream_label_;
   talk_base::scoped_refptr<MockStreamCollection> local_streams_;

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_track.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -16,7 +16,7 @@ namespace content {
 
 WebRtcMediaStreamAdapter::WebRtcMediaStreamAdapter(
     const blink::WebMediaStream& web_stream,
-    MediaStreamDependencyFactory* factory)
+    PeerConnectionDependencyFactory* factory)
     : web_stream_(web_stream),
       factory_(factory) {
   webrtc_media_stream_ =

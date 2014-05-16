@@ -9,9 +9,9 @@
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/media_stream_track.h"
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -26,7 +26,7 @@ class MockMediaStreamVideoCapturerSource : public MockMediaStreamVideoSource {
   MockMediaStreamVideoCapturerSource(
       const StreamDeviceInfo& device,
       const SourceStoppedCallback& stop_callback,
-      MediaStreamDependencyFactory* factory)
+      PeerConnectionDependencyFactory* factory)
   : MockMediaStreamVideoSource(false) {
     SetDeviceInfo(device);
     SetStopCallback(stop_callback);
@@ -43,7 +43,7 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   };
 
   MediaStreamImplUnderTest(MediaStreamDispatcher* media_stream_dispatcher,
-                           MediaStreamDependencyFactory* dependency_factory)
+                           PeerConnectionDependencyFactory* dependency_factory)
       : MediaStreamImpl(NULL, media_stream_dispatcher, dependency_factory),
         state_(REQUEST_NOT_STARTED),
         result_(NUM_MEDIA_REQUEST_RESULTS),
@@ -100,7 +100,7 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   blink::WebMediaStream last_generated_stream_;
   RequestState state_;
   content::MediaStreamRequestResult result_;
-  MediaStreamDependencyFactory* factory_;
+  PeerConnectionDependencyFactory* factory_;
   MockMediaStreamVideoCapturerSource* video_source_;
 };
 
@@ -110,7 +110,7 @@ class MediaStreamImplTest : public ::testing::Test {
     // Create our test object.
     child_process_.reset(new ChildProcess());
     ms_dispatcher_.reset(new MockMediaStreamDispatcher());
-    dependency_factory_.reset(new MockMediaStreamDependencyFactory());
+    dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     ms_impl_.reset(new MediaStreamImplUnderTest(ms_dispatcher_.get(),
                                                 dependency_factory_.get()));
   }
@@ -172,7 +172,7 @@ class MediaStreamImplTest : public ::testing::Test {
   scoped_ptr<ChildProcess> child_process_;
   scoped_ptr<MockMediaStreamDispatcher> ms_dispatcher_;
   scoped_ptr<MediaStreamImplUnderTest> ms_impl_;
-  scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;
+  scoped_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
 };
 
 TEST_F(MediaStreamImplTest, GenerateMediaStream) {

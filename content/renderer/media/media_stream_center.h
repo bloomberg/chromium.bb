@@ -23,14 +23,14 @@ class WebMediaStreamCenterClient;
 }
 
 namespace content {
-class MediaStreamDependencyFactory;
+class PeerConnectionDependencyFactory;
 
 class CONTENT_EXPORT MediaStreamCenter
     : NON_EXPORTED_BASE(public blink::WebMediaStreamCenter),
       public RenderProcessObserver {
  public:
   MediaStreamCenter(blink::WebMediaStreamCenterClient* client,
-                    MediaStreamDependencyFactory* factory);
+                    PeerConnectionDependencyFactory* factory);
   virtual ~MediaStreamCenter();
 
  private:
@@ -76,7 +76,7 @@ class CONTENT_EXPORT MediaStreamCenter
 
   // |rtc_factory_| is a weak pointer and is owned by the RenderThreadImpl.
   // It is valid as long as  RenderThreadImpl exist.
-  MediaStreamDependencyFactory* rtc_factory_;
+  PeerConnectionDependencyFactory* rtc_factory_;
 
   // A strictly increasing id that's used to label incoming GetSources()
   // requests.

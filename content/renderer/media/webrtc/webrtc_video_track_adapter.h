@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/media_stream_video_sink.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
@@ -30,7 +30,7 @@ class MediaStreamVideoTrack;
 class WebRtcVideoTrackAdapter : public MediaStreamVideoSink {
  public:
   WebRtcVideoTrackAdapter(const blink::WebMediaStreamTrack& track,
-                          MediaStreamDependencyFactory* factory);
+                          PeerConnectionDependencyFactory* factory);
   virtual ~WebRtcVideoTrackAdapter();
 
   webrtc::VideoTrackInterface* webrtc_video_track() {

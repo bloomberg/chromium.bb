@@ -10,7 +10,7 @@ MediaStreamAudioSource::MediaStreamAudioSource(
     int render_view_id,
     const StreamDeviceInfo& device_info,
     const SourceStoppedCallback& stop_callback,
-    MediaStreamDependencyFactory* factory)
+    PeerConnectionDependencyFactory* factory)
     : render_view_id_(render_view_id),
       factory_(factory) {
   SetDeviceInfo(device_info);

@@ -109,7 +109,7 @@ WebRtcVideoTrackAdapter::WebRtcVideoSourceAdapter::OnVideoFrameOnWorkerThread(
 
 WebRtcVideoTrackAdapter::WebRtcVideoTrackAdapter(
     const blink::WebMediaStreamTrack& track,
-    MediaStreamDependencyFactory* factory)
+    PeerConnectionDependencyFactory* factory)
     : web_track_(track) {
   const blink::WebMediaConstraints& constraints =
       MediaStreamVideoTrack::GetVideoTrack(track)->constraints();

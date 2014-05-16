@@ -29,7 +29,7 @@
 
 namespace content {
 class MediaStreamAudioRenderer;
-class MediaStreamDependencyFactory;
+class PeerConnectionDependencyFactory;
 class MediaStreamDispatcher;
 class MediaStreamVideoSource;
 class VideoCapturerDelegate;
@@ -53,7 +53,7 @@ class CONTENT_EXPORT MediaStreamImpl
   MediaStreamImpl(
       RenderView* render_view,
       MediaStreamDispatcher* media_stream_dispatcher,
-      MediaStreamDependencyFactory* dependency_factory);
+      PeerConnectionDependencyFactory* dependency_factory);
   virtual ~MediaStreamImpl();
 
   // blink::WebUserMediaClient implementation
@@ -149,8 +149,7 @@ class CONTENT_EXPORT MediaStreamImpl
 
     blink::WebMediaStreamTrack CreateAndStartVideoTrack(
         const blink::WebMediaStreamSource& source,
-        const blink::WebMediaConstraints& constraints,
-        MediaStreamDependencyFactory* factory);
+        const blink::WebMediaConstraints& constraints);
 
     // Triggers |callback| when all sources used in this request have either
     // successfully started, or a source has failed to start.
@@ -241,9 +240,11 @@ class CONTENT_EXPORT MediaStreamImpl
   bool GetAuthorizedDeviceInfoForAudioRenderer(
       int* session_id, int* output_sample_rate, int* output_buffer_size);
 
-  // Weak ref to a MediaStreamDependencyFactory, owned by the RenderThread.
+  // Weak ref to a PeerConnectionDependencyFactory, owned by the RenderThread.
   // It's valid for the lifetime of RenderThread.
-  MediaStreamDependencyFactory* dependency_factory_;
+  // TODO(xians): Remove this dependency once audio do not need it for local
+  // audio.
+  PeerConnectionDependencyFactory* dependency_factory_;
 
   // media_stream_dispatcher_ is a weak reference, owned by RenderView. It's
   // valid for the lifetime of RenderView.

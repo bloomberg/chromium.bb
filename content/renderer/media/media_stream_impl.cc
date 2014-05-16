@@ -13,12 +13,12 @@
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/media_stream_audio_source.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_video_renderer.h"
+#include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
@@ -71,7 +71,7 @@ void GetDefaultOutputDeviceParams(
 MediaStreamImpl::MediaStreamImpl(
     RenderView* render_view,
     MediaStreamDispatcher* media_stream_dispatcher,
-    MediaStreamDependencyFactory* dependency_factory)
+    PeerConnectionDependencyFactory* dependency_factory)
     : RenderViewObserver(render_view),
       dependency_factory_(dependency_factory),
       media_stream_dispatcher_(media_stream_dispatcher) {
@@ -464,8 +464,7 @@ void MediaStreamImpl::CreateVideoTracks(
                            request->frame,
                            &webkit_source);
     (*webkit_tracks)[i] =
-        request->CreateAndStartVideoTrack(webkit_source, constraints,
-                                          dependency_factory_);
+        request->CreateAndStartVideoTrack(webkit_source, constraints);
   }
 }
 
@@ -816,8 +815,7 @@ void MediaStreamImpl::UserMediaRequestInfo::StartAudioTrack(
 blink::WebMediaStreamTrack
 MediaStreamImpl::UserMediaRequestInfo::CreateAndStartVideoTrack(
     const blink::WebMediaStreamSource& source,
-    const blink::WebMediaConstraints& constraints,
-    MediaStreamDependencyFactory* factory) {
+    const blink::WebMediaConstraints& constraints) {
   DCHECK(source.type() == blink::WebMediaStreamSource::TypeVideo);
   MediaStreamVideoSource* native_source =
       MediaStreamVideoSource::GetVideoSource(source);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/webrtc/media_stream_track_metrics.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"

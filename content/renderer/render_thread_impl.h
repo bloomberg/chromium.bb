@@ -86,7 +86,7 @@ class IndexedDBDispatcher;
 class InputEventFilter;
 class InputHandlerManager;
 class MediaStreamCenter;
-class MediaStreamDependencyFactory;
+class PeerConnectionDependencyFactory;
 class MidiMessageFilter;
 class P2PSocketDispatcher;
 class PeerConnectionTracker;
@@ -261,7 +261,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
       blink::WebMediaStreamCenterClient* client);
 
   // Returns a factory used for creating RTC PeerConnection objects.
-  MediaStreamDependencyFactory* GetMediaStreamDependencyFactory();
+  PeerConnectionDependencyFactory* GetPeerConnectionDependencyFactory();
 
   PeerConnectionTracker* peer_connection_tracker() {
     return peer_connection_tracker_.get();
@@ -472,7 +472,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 #endif
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
 
-  scoped_ptr<MediaStreamDependencyFactory> media_stream_factory_;
+  scoped_ptr<PeerConnectionDependencyFactory> media_stream_factory_;
 
   // This is used to communicate to the browser process the status
   // of all the peer connections created in the renderer.

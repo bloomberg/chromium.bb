@@ -7,7 +7,7 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "media/audio/audio_output_device.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 
 #include <vector>
 
@@ -153,14 +153,14 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
  private:
   scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;
   // |network_manager_| and |socket_factory_| are a weak references, owned by
-  // MediaStreamDependencyFactory.
+  // PeerConnectionDependencyFactory.
   talk_base::NetworkManager* network_manager_;
   talk_base::PacketSocketFactory* socket_factory_;
   // Raw ptr to the WebFrame that created the P2PPortAllocatorFactory.
   blink::WebFrame* web_frame_;
 };
 
-MediaStreamDependencyFactory::MediaStreamDependencyFactory(
+PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
     P2PSocketDispatcher* p2p_socket_dispatcher)
     : network_manager_(NULL),
       p2p_socket_dispatcher_(p2p_socket_dispatcher),
@@ -169,12 +169,12 @@ MediaStreamDependencyFactory::MediaStreamDependencyFactory(
       chrome_worker_thread_("Chrome_libJingle_WorkerThread") {
 }
 
-MediaStreamDependencyFactory::~MediaStreamDependencyFactory() {
+PeerConnectionDependencyFactory::~PeerConnectionDependencyFactory() {
   CleanupPeerConnectionFactory();
 }
 
 blink::WebRTCPeerConnectionHandler*
-MediaStreamDependencyFactory::CreateRTCPeerConnectionHandler(
+PeerConnectionDependencyFactory::CreateRTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client) {
   // Save histogram data so we can see how much PeerConnetion is used.
   // The histogram counts the number of calls to the JS API
@@ -184,7 +184,7 @@ MediaStreamDependencyFactory::CreateRTCPeerConnectionHandler(
   return new RTCPeerConnectionHandler(client, this);
 }
 
-bool MediaStreamDependencyFactory::InitializeMediaStreamAudioSource(
+bool PeerConnectionDependencyFactory::InitializeMediaStreamAudioSource(
     int render_view_id,
     const blink::WebMediaConstraints& audio_constraints,
     MediaStreamAudioSource* source_data) {
@@ -230,7 +230,8 @@ bool MediaStreamDependencyFactory::InitializeMediaStreamAudioSource(
   return true;
 }
 
-WebRtcVideoCapturerAdapter* MediaStreamDependencyFactory::CreateVideoCapturer(
+WebRtcVideoCapturerAdapter*
+PeerConnectionDependencyFactory::CreateVideoCapturer(
     bool is_screeencast) {
   // We need to make sure the libjingle thread wrappers have been created
   // before we can use an instance of a WebRtcVideoCapturerAdapter. This is
@@ -242,7 +243,7 @@ WebRtcVideoCapturerAdapter* MediaStreamDependencyFactory::CreateVideoCapturer(
 }
 
 scoped_refptr<webrtc::VideoSourceInterface>
-MediaStreamDependencyFactory::CreateVideoSource(
+PeerConnectionDependencyFactory::CreateVideoSource(
     cricket::VideoCapturer* capturer,
     const blink::WebMediaConstraints& constraints) {
   RTCMediaConstraints webrtc_constraints(constraints);
@@ -252,14 +253,14 @@ MediaStreamDependencyFactory::CreateVideoSource(
 }
 
 const scoped_refptr<webrtc::PeerConnectionFactoryInterface>&
-MediaStreamDependencyFactory::GetPcFactory() {
+PeerConnectionDependencyFactory::GetPcFactory() {
   if (!pc_factory_)
     CreatePeerConnectionFactory();
   CHECK(pc_factory_);
   return pc_factory_;
 }
 
-void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
+void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   DCHECK(!pc_factory_.get());
   DCHECK(!signaling_thread_);
   DCHECK(!worker_thread_);
@@ -267,7 +268,7 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
   DCHECK(!socket_factory_);
   DCHECK(!chrome_worker_thread_.IsRunning());
 
-  DVLOG(1) << "MediaStreamDependencyFactory::CreatePeerConnectionFactory()";
+  DVLOG(1) << "PeerConnectionDependencyFactory::CreatePeerConnectionFactory()";
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
@@ -278,7 +279,7 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
 
   base::WaitableEvent start_worker_event(true, false);
   chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-      &MediaStreamDependencyFactory::InitializeWorkerThread,
+      &PeerConnectionDependencyFactory::InitializeWorkerThread,
       base::Unretained(this),
       &worker_thread_,
       &start_worker_event));
@@ -287,7 +288,7 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
 
   base::WaitableEvent create_network_manager_event(true, false);
   chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-      &MediaStreamDependencyFactory::CreateIpcNetworkManagerOnWorkerThread,
+      &PeerConnectionDependencyFactory::CreateIpcNetworkManagerOnWorkerThread,
       base::Unretained(this),
       &create_network_manager_event));
   create_network_manager_event.Wait();
@@ -350,12 +351,12 @@ void MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     StartAecDump(aec_dump_file_.Pass());
 }
 
-bool MediaStreamDependencyFactory::PeerConnectionFactoryCreated() {
+bool PeerConnectionDependencyFactory::PeerConnectionFactoryCreated() {
   return pc_factory_.get() != NULL;
 }
 
 scoped_refptr<webrtc::PeerConnectionInterface>
-MediaStreamDependencyFactory::CreatePeerConnection(
+PeerConnectionDependencyFactory::CreatePeerConnection(
     const webrtc::PeerConnectionInterface::IceServers& ice_servers,
     const webrtc::MediaConstraintsInterface* constraints,
     blink::WebFrame* web_frame,
@@ -384,20 +385,20 @@ MediaStreamDependencyFactory::CreatePeerConnection(
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>
-MediaStreamDependencyFactory::CreateLocalMediaStream(
+PeerConnectionDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
   return GetPcFactory()->CreateLocalMediaStream(label).get();
 }
 
 scoped_refptr<webrtc::AudioSourceInterface>
-MediaStreamDependencyFactory::CreateLocalAudioSource(
+PeerConnectionDependencyFactory::CreateLocalAudioSource(
     const webrtc::MediaConstraintsInterface* constraints) {
   scoped_refptr<webrtc::AudioSourceInterface> source =
       GetPcFactory()->CreateAudioSource(constraints).get();
   return source;
 }
 
-void MediaStreamDependencyFactory::CreateLocalAudioTrack(
+void PeerConnectionDependencyFactory::CreateLocalAudioTrack(
     const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
@@ -442,7 +443,7 @@ void MediaStreamDependencyFactory::CreateLocalAudioTrack(
   writable_track.setExtraData(audio_track.release());
 }
 
-void MediaStreamDependencyFactory::StartLocalAudioTrack(
+void PeerConnectionDependencyFactory::StartLocalAudioTrack(
     WebRtcLocalAudioTrack* audio_track) {
   // Add the WebRtcAudioDevice as the sink to the local audio track.
   // TODO(xians): Implement a PeerConnection sink adapter and remove this
@@ -455,9 +456,9 @@ void MediaStreamDependencyFactory::StartLocalAudioTrack(
 }
 
 scoped_refptr<WebAudioCapturerSource>
-MediaStreamDependencyFactory::CreateWebAudioSource(
+PeerConnectionDependencyFactory::CreateWebAudioSource(
     blink::WebMediaStreamSource* source) {
-  DVLOG(1) << "MediaStreamDependencyFactory::CreateWebAudioSource()";
+  DVLOG(1) << "PeerConnectionDependencyFactory::CreateWebAudioSource()";
 
   scoped_refptr<WebAudioCapturerSource>
       webaudio_capturer_source(new WebAudioCapturerSource());
@@ -484,14 +485,14 @@ MediaStreamDependencyFactory::CreateWebAudioSource(
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
-MediaStreamDependencyFactory::CreateLocalVideoTrack(
+PeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     webrtc::VideoSourceInterface* source) {
   return GetPcFactory()->CreateVideoTrack(id, source).get();
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
-MediaStreamDependencyFactory::CreateLocalVideoTrack(
+PeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id, cricket::VideoCapturer* capturer) {
   if (!capturer) {
     LOG(ERROR) << "CreateLocalVideoTrack called with null VideoCapturer.";
@@ -507,14 +508,15 @@ MediaStreamDependencyFactory::CreateLocalVideoTrack(
 }
 
 webrtc::SessionDescriptionInterface*
-MediaStreamDependencyFactory::CreateSessionDescription(
+PeerConnectionDependencyFactory::CreateSessionDescription(
     const std::string& type,
     const std::string& sdp,
     webrtc::SdpParseError* error) {
   return webrtc::CreateSessionDescription(type, sdp, error);
 }
 
-webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
+webrtc::IceCandidateInterface*
+PeerConnectionDependencyFactory::CreateIceCandidate(
     const std::string& sdp_mid,
     int sdp_mline_index,
     const std::string& sdp) {
@@ -522,11 +524,11 @@ webrtc::IceCandidateInterface* MediaStreamDependencyFactory::CreateIceCandidate(
 }
 
 WebRtcAudioDeviceImpl*
-MediaStreamDependencyFactory::GetWebRtcAudioDevice() {
+PeerConnectionDependencyFactory::GetWebRtcAudioDevice() {
   return audio_device_.get();
 }
 
-void MediaStreamDependencyFactory::InitializeWorkerThread(
+void PeerConnectionDependencyFactory::InitializeWorkerThread(
     talk_base::Thread** thread,
     base::WaitableEvent* event) {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -535,27 +537,27 @@ void MediaStreamDependencyFactory::InitializeWorkerThread(
   event->Signal();
 }
 
-void MediaStreamDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
+void PeerConnectionDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
     base::WaitableEvent* event) {
   DCHECK_EQ(base::MessageLoop::current(), chrome_worker_thread_.message_loop());
   network_manager_ = new IpcNetworkManager(p2p_socket_dispatcher_.get());
   event->Signal();
 }
 
-void MediaStreamDependencyFactory::DeleteIpcNetworkManager() {
+void PeerConnectionDependencyFactory::DeleteIpcNetworkManager() {
   DCHECK_EQ(base::MessageLoop::current(), chrome_worker_thread_.message_loop());
   delete network_manager_;
   network_manager_ = NULL;
 }
 
-void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
+void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
   pc_factory_ = NULL;
   if (network_manager_) {
     // The network manager needs to free its resources on the thread they were
     // created, which is the worked thread.
     if (chrome_worker_thread_.IsRunning()) {
       chrome_worker_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
-          &MediaStreamDependencyFactory::DeleteIpcNetworkManager,
+          &PeerConnectionDependencyFactory::DeleteIpcNetworkManager,
           base::Unretained(this)));
       // Stopping the thread will wait until all tasks have been
       // processed before returning. We wait for the above task to finish before
@@ -568,7 +570,7 @@ void MediaStreamDependencyFactory::CleanupPeerConnectionFactory() {
 }
 
 scoped_refptr<WebRtcAudioCapturer>
-MediaStreamDependencyFactory::CreateAudioCapturer(
+PeerConnectionDependencyFactory::CreateAudioCapturer(
     int render_view_id,
     const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints,
@@ -585,7 +587,7 @@ MediaStreamDependencyFactory::CreateAudioCapturer(
                                              audio_source);
 }
 
-void MediaStreamDependencyFactory::AddNativeAudioTrackToBlinkTrack(
+void PeerConnectionDependencyFactory::AddNativeAudioTrackToBlinkTrack(
     webrtc::MediaStreamTrackInterface* native_track,
     const blink::WebMediaStreamTrack& webkit_track,
     bool is_local_track) {
@@ -602,15 +604,15 @@ void MediaStreamDependencyFactory::AddNativeAudioTrackToBlinkTrack(
 }
 
 scoped_refptr<base::MessageLoopProxy>
-MediaStreamDependencyFactory::GetWebRtcWorkerThread() const {
+PeerConnectionDependencyFactory::GetWebRtcWorkerThread() const {
   DCHECK(CalledOnValidThread());
   return chrome_worker_thread_.message_loop_proxy();
 }
 
-bool MediaStreamDependencyFactory::OnControlMessageReceived(
+bool PeerConnectionDependencyFactory::OnControlMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MediaStreamDependencyFactory, message)
+  IPC_BEGIN_MESSAGE_MAP(PeerConnectionDependencyFactory, message)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_EnableAecDump, OnAecDumpFile)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DisableAecDump, OnDisableAecDump)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -618,7 +620,7 @@ bool MediaStreamDependencyFactory::OnControlMessageReceived(
   return handled;
 }
 
-void MediaStreamDependencyFactory::OnAecDumpFile(
+void PeerConnectionDependencyFactory::OnAecDumpFile(
     IPC::PlatformFileForTransit file_handle) {
   DCHECK(!aec_dump_file_.IsValid());
   base::File file = IPC::PlatformFileForTransitToFile(file_handle);
@@ -639,7 +641,7 @@ void MediaStreamDependencyFactory::OnAecDumpFile(
     aec_dump_file_ = file.Pass();
 }
 
-void MediaStreamDependencyFactory::OnDisableAecDump() {
+void PeerConnectionDependencyFactory::OnDisableAecDump() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAudioTrackProcessing)) {
     GetWebRtcAudioDevice()->DisableAecDump();
@@ -652,14 +654,14 @@ void MediaStreamDependencyFactory::OnDisableAecDump() {
     aec_dump_file_.Close();
 }
 
-void MediaStreamDependencyFactory::StartAecDump(base::File aec_dump_file) {
+void PeerConnectionDependencyFactory::StartAecDump(base::File aec_dump_file) {
   // |pc_factory_| always takes ownership of |aec_dump_file|. If StartAecDump()
   // fails, |aec_dump_file| will be closed.
   if (!GetPcFactory()->StartAecDump(aec_dump_file.TakePlatformFile()))
     VLOG(1) << "Could not start AEC dump.";
 }
 
-void MediaStreamDependencyFactory::EnsureWebRtcAudioDeviceImpl() {
+void PeerConnectionDependencyFactory::EnsureWebRtcAudioDeviceImpl() {
   if (audio_device_)
     return;
 

@@ -13,10 +13,10 @@
 #include "content/public/renderer/media_stream_audio_sink.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -37,7 +37,7 @@ namespace {
 
 void CreateNativeAudioMediaStreamTrack(
     const blink::WebMediaStreamTrack& track,
-    MediaStreamDependencyFactory* factory) {
+    PeerConnectionDependencyFactory* factory) {
   DCHECK(!track.extraData());
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.type(), blink::WebMediaStreamSource::TypeAudio);
@@ -68,7 +68,7 @@ void CreateNativeVideoMediaStreamTrack(
 }
 
 void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
-                                  MediaStreamDependencyFactory* factory) {
+                                  PeerConnectionDependencyFactory* factory) {
   DCHECK(!track.isNull() && !track.extraData());
   DCHECK(!track.source().isNull());
 
@@ -85,7 +85,7 @@ void CreateNativeMediaStreamTrack(const blink::WebMediaStreamTrack& track,
 }  // namespace
 
 MediaStreamCenter::MediaStreamCenter(blink::WebMediaStreamCenterClient* client,
-                                     MediaStreamDependencyFactory* factory)
+                                     PeerConnectionDependencyFactory* factory)
     : rtc_factory_(factory), next_request_id_(0) {}
 
 MediaStreamCenter::~MediaStreamCenter() {}
@@ -141,7 +141,7 @@ MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
       static_cast<MediaStreamTrack*>(track.extraData());
   // Only local audio track is supported now.
   // TODO(xians): Support remote audio track.
-  if (!media_stream_track || !media_stream_track->is_local_track ()) {
+  if (!media_stream_track || !media_stream_track->is_local_track()) {
     NOTIMPLEMENTED();
     return NULL;
   }
@@ -188,7 +188,6 @@ void MediaStreamCenter::didCreateMediaStream(blink::WebMediaStream& stream) {
     if (!MediaStreamTrack::GetTrack(video_tracks[i]))
       CreateNativeMediaStreamTrack(video_tracks[i], rtc_factory_);
   }
-
 }
 
 bool MediaStreamCenter::didAddMediaStreamTrack(

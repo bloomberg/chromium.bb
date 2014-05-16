@@ -1,15 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DEPENDENCY_FACTORY_H_
-#define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DEPENDENCY_FACTORY_H_
+#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/files/file.h"
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/render_process_observer.h"
@@ -53,17 +52,14 @@ class WebRtcLoggingMessageFilter;
 class WebRtcVideoCapturerAdapter;
 struct StreamDeviceInfo;
 
-// Object factory for RTC MediaStreams and RTC PeerConnections.
-class CONTENT_EXPORT MediaStreamDependencyFactory
+// Object factory for RTC PeerConnections.
+class CONTENT_EXPORT PeerConnectionDependencyFactory
     : NON_EXPORTED_BASE(public base::NonThreadSafe),
       public RenderProcessObserver {
  public:
-  // MediaSourcesCreatedCallback is used in CreateNativeMediaSources.
-  typedef base::Callback<void(blink::WebMediaStream* web_stream,
-                              bool live)> MediaSourcesCreatedCallback;
-  MediaStreamDependencyFactory(
+  PeerConnectionDependencyFactory(
       P2PSocketDispatcher* p2p_socket_dispatcher);
-  virtual ~MediaStreamDependencyFactory();
+  virtual ~PeerConnectionDependencyFactory();
 
   // Create a RTCPeerConnectionHandler object that implements the
   // WebKit WebRTCPeerConnectionHandler interface.
@@ -210,9 +206,9 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   base::File aec_dump_file_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaStreamDependencyFactory);
+  DISALLOW_COPY_AND_ASSIGN(PeerConnectionDependencyFactory);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MEDIA_STREAM_DEPENDENCY_FACTORY_H_
+#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_PEER_CONNECTION_DEPENDENCY_FACTORY_H_

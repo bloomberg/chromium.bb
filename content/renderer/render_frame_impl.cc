@@ -3402,7 +3402,7 @@ bool RenderFrameImpl::InitializeMediaStreamClient() {
   MediaStreamImpl* media_stream_impl = new MediaStreamImpl(
       render_view_.get(),
       render_view_->media_stream_dispatcher_,
-      RenderThreadImpl::current()->GetMediaStreamDependencyFactory());
+      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory());
   media_stream_client_ = media_stream_impl;
   web_user_media_client_ = media_stream_impl;
   return true;

@@ -44,10 +44,10 @@
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/crypto/key_systems.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/screen_orientation/mock_screen_orientation_controller.h"
@@ -921,8 +921,8 @@ RendererWebKitPlatformSupportImpl::createRTCPeerConnectionHandler(
   if (peer_connection_handler)
     return peer_connection_handler;
 
-  MediaStreamDependencyFactory* rtc_dependency_factory =
-      render_thread->GetMediaStreamDependencyFactory();
+  PeerConnectionDependencyFactory* rtc_dependency_factory =
+      render_thread->GetPeerConnectionDependencyFactory();
   return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client);
 #else
   return NULL;

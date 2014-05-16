@@ -7,9 +7,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_video_sink.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoframe.h"
@@ -34,7 +34,7 @@ class MediaStreamRemoteVideoSourceTest
  public:
   MediaStreamRemoteVideoSourceTest()
       : child_process_(new ChildProcess()),
-        mock_factory_(new MockMediaStreamDependencyFactory()),
+        mock_factory_(new MockPeerConnectionDependencyFactory()),
         webrtc_video_track_(
             mock_factory_->CreateLocalVideoTrack(
                 "test",
@@ -94,7 +94,7 @@ class MediaStreamRemoteVideoSourceTest
 
   scoped_ptr<ChildProcess> child_process_;
   base::MessageLoopForUI message_loop_;
-  scoped_ptr<MockMediaStreamDependencyFactory> mock_factory_;
+  scoped_ptr<MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;
   // |remote_source_| is owned by |webkit_source_|.
   MediaStreamRemoteVideoSourceUnderTest* remote_source_;

@@ -9,8 +9,8 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_video_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_local_audio_track_adapter.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
  public:
   virtual void SetUp() {
     child_process_.reset(new ChildProcess());
-    dependency_factory_.reset(new MockMediaStreamDependencyFactory());
+    dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
   }
 
   blink::WebMediaStream CreateBlinkMediaStream(bool audio, bool video) {
@@ -94,7 +94,7 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
  protected:
   base::MessageLoop message_loop_;
   scoped_ptr<ChildProcess> child_process_;
-  scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;
+  scoped_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_ptr<WebRtcMediaStreamAdapter> adapter_;
 };
 

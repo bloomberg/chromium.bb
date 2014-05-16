@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/mock_media_stream_dependency_factory.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -430,15 +430,15 @@ class MockIceCandidate : public IceCandidateInterface {
   std::string sdp_;
 };
 
-MockMediaStreamDependencyFactory::MockMediaStreamDependencyFactory()
-    : MediaStreamDependencyFactory(NULL),
+MockPeerConnectionDependencyFactory::MockPeerConnectionDependencyFactory()
+    : PeerConnectionDependencyFactory(NULL),
       fail_to_create_next_audio_capturer_(false) {
 }
 
-MockMediaStreamDependencyFactory::~MockMediaStreamDependencyFactory() {}
+MockPeerConnectionDependencyFactory::~MockPeerConnectionDependencyFactory() {}
 
 scoped_refptr<webrtc::PeerConnectionInterface>
-MockMediaStreamDependencyFactory::CreatePeerConnection(
+MockPeerConnectionDependencyFactory::CreatePeerConnection(
     const webrtc::PeerConnectionInterface::IceServers& ice_servers,
     const webrtc::MediaConstraintsInterface* constraints,
     blink::WebFrame* frame,
@@ -447,7 +447,7 @@ MockMediaStreamDependencyFactory::CreatePeerConnection(
 }
 
 scoped_refptr<webrtc::AudioSourceInterface>
-MockMediaStreamDependencyFactory::CreateLocalAudioSource(
+MockPeerConnectionDependencyFactory::CreateLocalAudioSource(
     const webrtc::MediaConstraintsInterface* constraints) {
   last_audio_source_ =
       new talk_base::RefCountedObject<MockAudioSource>(constraints);
@@ -455,13 +455,13 @@ MockMediaStreamDependencyFactory::CreateLocalAudioSource(
 }
 
 WebRtcVideoCapturerAdapter*
-MockMediaStreamDependencyFactory::CreateVideoCapturer(
+MockPeerConnectionDependencyFactory::CreateVideoCapturer(
     bool is_screen_capture) {
   return new MockRtcVideoCapturer(is_screen_capture);
 }
 
 scoped_refptr<webrtc::VideoSourceInterface>
-MockMediaStreamDependencyFactory::CreateVideoSource(
+MockPeerConnectionDependencyFactory::CreateVideoSource(
     cricket::VideoCapturer* capturer,
     const blink::WebMediaConstraints& constraints) {
   last_video_source_ = new talk_base::RefCountedObject<MockVideoSource>();
@@ -470,19 +470,19 @@ MockMediaStreamDependencyFactory::CreateVideoSource(
 }
 
 scoped_refptr<WebAudioCapturerSource>
-MockMediaStreamDependencyFactory::CreateWebAudioSource(
+MockPeerConnectionDependencyFactory::CreateWebAudioSource(
     blink::WebMediaStreamSource* source) {
   return NULL;
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>
-MockMediaStreamDependencyFactory::CreateLocalMediaStream(
+MockPeerConnectionDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
   return new talk_base::RefCountedObject<MockMediaStream>(label);
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
-MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
+MockPeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     webrtc::VideoSourceInterface* source) {
   scoped_refptr<webrtc::VideoTrackInterface> track(
@@ -492,7 +492,7 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
 }
 
 scoped_refptr<webrtc::VideoTrackInterface>
-MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
+MockPeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
     cricket::VideoCapturer* capturer) {
   scoped_refptr<MockVideoSource> source =
@@ -504,7 +504,7 @@ MockMediaStreamDependencyFactory::CreateLocalVideoTrack(
 }
 
 SessionDescriptionInterface*
-MockMediaStreamDependencyFactory::CreateSessionDescription(
+MockPeerConnectionDependencyFactory::CreateSessionDescription(
     const std::string& type,
     const std::string& sdp,
     webrtc::SdpParseError* error) {
@@ -512,7 +512,7 @@ MockMediaStreamDependencyFactory::CreateSessionDescription(
 }
 
 webrtc::IceCandidateInterface*
-MockMediaStreamDependencyFactory::CreateIceCandidate(
+MockPeerConnectionDependencyFactory::CreateIceCandidate(
     const std::string& sdp_mid,
     int sdp_mline_index,
     const std::string& sdp) {
@@ -520,7 +520,7 @@ MockMediaStreamDependencyFactory::CreateIceCandidate(
 }
 
 scoped_refptr<WebRtcAudioCapturer>
-MockMediaStreamDependencyFactory::CreateAudioCapturer(
+MockPeerConnectionDependencyFactory::CreateAudioCapturer(
     int render_view_id, const StreamDeviceInfo& device_info,
     const blink::WebMediaConstraints& constraints,
     MediaStreamAudioSource* audio_source) {
@@ -533,7 +533,7 @@ MockMediaStreamDependencyFactory::CreateAudioCapturer(
                                              constraints, NULL, audio_source);
 }
 
-void MockMediaStreamDependencyFactory::StartLocalAudioTrack(
+void MockPeerConnectionDependencyFactory::StartLocalAudioTrack(
       WebRtcLocalAudioTrack* audio_track) {
   audio_track->Start();
 }

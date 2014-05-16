@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_source.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 
@@ -20,7 +20,7 @@ class CONTENT_EXPORT MediaStreamAudioSource
   MediaStreamAudioSource(int render_view_id,
                          const StreamDeviceInfo& device_info,
                          const SourceStoppedCallback& stop_callback,
-                         MediaStreamDependencyFactory* factory);
+                         PeerConnectionDependencyFactory* factory);
   MediaStreamAudioSource();
   virtual ~MediaStreamAudioSource();
 
@@ -56,7 +56,7 @@ class CONTENT_EXPORT MediaStreamAudioSource
 
   scoped_refptr<WebRtcAudioCapturer> audio_capturer_;
 
-  MediaStreamDependencyFactory* factory_;
+  PeerConnectionDependencyFactory* factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamAudioSource);
 };

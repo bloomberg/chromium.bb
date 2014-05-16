@@ -13,10 +13,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/video_frame_deliverer.h"
-#include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 
 namespace content {
 

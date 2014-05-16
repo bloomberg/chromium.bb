@@ -1,15 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_DEPENDENCY_FACTORY_H_
-#define CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_DEPENDENCY_FACTORY_H_
+#ifndef CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#define CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/libjingle/source/talk/media/base/videorenderer.h"
 
@@ -166,11 +167,12 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
 };
 
 // A mock factory for creating different objects for
-// RTC MediaStreams and PeerConnections.
-class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
+// RTC PeerConnections.
+class MockPeerConnectionDependencyFactory
+     : public PeerConnectionDependencyFactory {
  public:
-  MockMediaStreamDependencyFactory();
-  virtual ~MockMediaStreamDependencyFactory();
+  MockPeerConnectionDependencyFactory();
+  virtual ~MockPeerConnectionDependencyFactory();
 
   virtual scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection(
       const webrtc::PeerConnectionInterface::IceServers& ice_servers,
@@ -224,9 +226,9 @@ class MockMediaStreamDependencyFactory : public MediaStreamDependencyFactory {
   scoped_refptr <MockAudioSource> last_audio_source_;
   scoped_refptr <MockVideoSource> last_video_source_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockMediaStreamDependencyFactory);
+  DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionDependencyFactory);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_MEDIA_MOCK_MEDIA_STREAM_DEPENDENCY_FACTORY_H_
+#endif  // CONTENT_RENDERER_MEDIA_WEBRTC_MOCK_PEER_CONNECTION_DEPENDENCY_FACTORY_H_

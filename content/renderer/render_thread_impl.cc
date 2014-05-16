@@ -76,12 +76,12 @@
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_center.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/midi_message_filter.h"
 #include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_identity_service.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_process_impl.h"
@@ -377,7 +377,7 @@ void RenderThreadImpl::Init() {
 
   webrtc_identity_service_.reset(new WebRTCIdentityService());
 
-  media_stream_factory_.reset(new MediaStreamDependencyFactory(
+  media_stream_factory_.reset(new PeerConnectionDependencyFactory(
       p2p_socket_dispatcher_.get()));
   AddObserver(media_stream_factory_.get());
 #endif  // defined(ENABLE_WEBRTC)
@@ -1314,7 +1314,7 @@ blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
         ->OverrideCreateWebMediaStreamCenter(client);
     if (!media_stream_center_) {
       scoped_ptr<MediaStreamCenter> media_stream_center(
-          new MediaStreamCenter(client, GetMediaStreamDependencyFactory()));
+          new MediaStreamCenter(client, GetPeerConnectionDependencyFactory()));
       AddObserver(media_stream_center.get());
       media_stream_center_ = media_stream_center.release();
     }
@@ -1323,8 +1323,8 @@ blink::WebMediaStreamCenter* RenderThreadImpl::CreateMediaStreamCenter(
   return media_stream_center_;
 }
 
-MediaStreamDependencyFactory*
-RenderThreadImpl::GetMediaStreamDependencyFactory() {
+PeerConnectionDependencyFactory*
+RenderThreadImpl::GetPeerConnectionDependencyFactory() {
   return media_stream_factory_.get();
 }
 

@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/media_stream.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace content {
@@ -42,7 +42,7 @@ void InitializeWebkitTrack(webrtc::MediaStreamTrackInterface* track,
                                   track->enabled()));
   } else {
     DCHECK(type == blink::WebMediaStreamSource::TypeAudio);
-    content::MediaStreamDependencyFactory::AddNativeAudioTrackToBlinkTrack(
+    content::PeerConnectionDependencyFactory::AddNativeAudioTrackToBlinkTrack(
         track, *webkit_track, false);
   }
 }
