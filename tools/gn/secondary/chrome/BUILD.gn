@@ -65,11 +65,6 @@ executable("chrome") {
 
 static_library("browser") {
   if (is_linux) {
-    if (toolkit_uses_gtk) {
-      libs = [ "gconf-2" ]
-    }
-  }
-  if (is_linux) {
     configs += [
       "//build/config/linux:x11",
     ]

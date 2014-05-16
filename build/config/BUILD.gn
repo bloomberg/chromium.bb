@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/allocator.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -119,6 +120,9 @@ config("feature_flags") {
     if (use_xi2_mt > 0) {
       defines += [ "USE_XI2_MT=$use_xi2_mt" ]
     }
+  }
+  if (use_allocator != "tcmalloc") {
+    defines += [ "NO_TCMALLOC" ]
   }
 }
 

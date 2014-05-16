@@ -44,9 +44,6 @@ if (is_linux) {
   use_pango = false
 }
 
-# Indicates if the UI toolkit depends on GTK.
-toolkit_uses_gtk = is_linux && !is_chromeos && !use_aura && !use_ozone
-
 # Use GPU accelerated cross process image transport by default on linux builds
 # with the Aura window manager.
 ui_compositor_image_transport = use_aura && is_linux
