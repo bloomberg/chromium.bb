@@ -157,7 +157,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        WebServiceWorkerError::DisabledError,
+        WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
@@ -169,7 +169,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        WebServiceWorkerError::SecurityError,
+        WebServiceWorkerError::ErrorTypeSecurity,
         base::ASCIIToUTF16(kDomainMismatchErrorMessage)));
     return;
   }
@@ -204,7 +204,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        blink::WebServiceWorkerError::DisabledError,
+        blink::WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
