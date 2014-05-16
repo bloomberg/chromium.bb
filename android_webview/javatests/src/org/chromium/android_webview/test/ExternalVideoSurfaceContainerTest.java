@@ -97,12 +97,8 @@ public class ExternalVideoSurfaceContainerTest extends AwTestBase {
         });
     }
 
-    /**
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * http://crbug.com/372748
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testEnableVideoOverlayForEmbeddedVideo() throws Throwable {
         setUpMockExternalVideoSurfaceContainer();
 
