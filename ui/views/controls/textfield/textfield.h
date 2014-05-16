@@ -30,6 +30,10 @@
 
 namespace views {
 
+namespace test {
+class WidgetTestInteractive;
+}
+
 class MenuRunner;
 class Painter;
 class TextfieldController;
@@ -295,6 +299,7 @@ class VIEWS_EXPORT Textfield : public View,
  private:
   friend class TextfieldTest;
   friend class TouchSelectionControllerImplTest;
+  friend class test::WidgetTestInteractive;
 
   // Handles a request to change the value of this text field from software
   // using an accessibility API (typically automation software, screen readers

@@ -14,6 +14,10 @@
 
 namespace views {
 
+namespace test {
+class WidgetTestInteractive;
+}
+
 // Touch specific implementation of TouchSelectionController. Responsible for
 // displaying selection handles and menu elements relevant in a touch interface.
 class VIEWS_EXPORT TouchSelectionControllerImpl
@@ -37,6 +41,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
  private:
   friend class TouchSelectionControllerImplTest;
+  friend class test::WidgetTestInteractive;
 
   void SetDraggingHandle(EditingHandleView* handle);
 

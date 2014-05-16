@@ -605,7 +605,7 @@ bool DesktopWindowTreeHostWin::IsModal() const {
 }
 
 int DesktopWindowTreeHostWin::GetInitialShowState() const {
-  return SW_SHOWNORMAL;
+  return CanActivate() ? SW_SHOWNORMAL : SW_SHOWNOACTIVATE;
 }
 
 bool DesktopWindowTreeHostWin::WillProcessWorkAreaChange() const {
