@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "apps/app_window_registry.h"
+#include "base/mac/mac_util.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -111,4 +112,121 @@ IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, HideShowWithApp) {
   native_window->ShowWithApp();
   EXPECT_TRUE([ns_window isVisible]);
   EXPECT_FALSE([other_ns_window isVisible]);
+}
+
+// Only test fullscreen for 10.7 and above.
+// Replicate specific 10.7 SDK declarations for building with prior SDKs.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface NSWindow (LionSDKDeclarations)
+- (void)toggleFullScreen:(id)sender;
+@end
+
+enum {
+  NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
+  NSFullScreenWindowMask = 1 << 14
+};
+
+NSString* const NSWindowDidEnterFullScreenNotification =
+    @"NSWindowDidEnterFullScreenNotification";
+NSString* const NSWindowDidExitFullScreenNotification =
+    @"NSWindowDidExitFullScreenNotification";
+
+#endif  // MAC_OS_X_VERSION_10_7
+
+@interface ScopedNotificationWatcher : NSObject {
+ @private
+  BOOL received_;
+}
+- (id)initWithNotification:(NSString*)notification
+                 andObject:(NSObject*)object;
+- (void)onNotification:(NSString*)notification;
+- (void)waitForNotification;
+@end
+
+@implementation ScopedNotificationWatcher
+
+- (id)initWithNotification:(NSString*)notification
+                 andObject:(NSObject*)object {
+  if ((self = [super init])) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(onNotification:)
+               name:notification
+             object:object];
+  }
+  return self;
+}
+
+- (void)onNotification:(NSString*)notification {
+  received_ = YES;
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)waitForNotification {
+  while (!received_)
+    content::RunAllPendingInMessageLoop();
+}
+
+@end
+
+// Test that NativeAppWindow and AppWindow fullscreen state is updated when
+// the window is fullscreened natively.
+IN_PROC_BROWSER_TEST_F(NativeAppWindowCocoaBrowserTest, Fullscreen) {
+  if (!base::mac::IsOSLionOrLater())
+    return;
+
+  SetUpAppWithWindows(1);
+  apps::AppWindow* app_window = GetFirstAppWindow();
+  apps::NativeAppWindow* window = app_window->GetBaseWindow();
+  NSWindow* ns_window = app_window->GetNativeWindow();
+  base::scoped_nsobject<ScopedNotificationWatcher> watcher;
+
+  EXPECT_EQ(apps::AppWindow::FULLSCREEN_TYPE_NONE,
+            app_window->fullscreen_types_for_test());
+  EXPECT_FALSE(window->IsFullscreen());
+  EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
+
+  watcher.reset([[ScopedNotificationWatcher alloc]
+      initWithNotification:NSWindowDidEnterFullScreenNotification
+                 andObject:ns_window]);
+  [ns_window toggleFullScreen:nil];
+  [watcher waitForNotification];
+  EXPECT_TRUE(app_window->fullscreen_types_for_test() &
+      apps::AppWindow::FULLSCREEN_TYPE_OS);
+  EXPECT_TRUE(window->IsFullscreen());
+  EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
+
+  watcher.reset([[ScopedNotificationWatcher alloc]
+      initWithNotification:NSWindowDidExitFullScreenNotification
+                 andObject:ns_window]);
+  app_window->Restore();
+  EXPECT_FALSE(window->IsFullscreenOrPending());
+  [watcher waitForNotification];
+  EXPECT_EQ(apps::AppWindow::FULLSCREEN_TYPE_NONE,
+            app_window->fullscreen_types_for_test());
+  EXPECT_FALSE(window->IsFullscreen());
+  EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
+
+  watcher.reset([[ScopedNotificationWatcher alloc]
+      initWithNotification:NSWindowDidEnterFullScreenNotification
+                 andObject:ns_window]);
+  app_window->Fullscreen();
+  EXPECT_TRUE(window->IsFullscreenOrPending());
+  [watcher waitForNotification];
+  EXPECT_TRUE(app_window->fullscreen_types_for_test() &
+      apps::AppWindow::FULLSCREEN_TYPE_WINDOW_API);
+  EXPECT_TRUE(window->IsFullscreen());
+  EXPECT_TRUE([ns_window styleMask] & NSFullScreenWindowMask);
+
+  watcher.reset([[ScopedNotificationWatcher alloc]
+      initWithNotification:NSWindowDidExitFullScreenNotification
+                 andObject:ns_window]);
+  [ns_window toggleFullScreen:nil];
+  [watcher waitForNotification];
+  EXPECT_EQ(apps::AppWindow::FULLSCREEN_TYPE_NONE,
+            app_window->fullscreen_types_for_test());
+  EXPECT_FALSE(window->IsFullscreen());
+  EXPECT_FALSE([ns_window styleMask] & NSFullScreenWindowMask);
 }

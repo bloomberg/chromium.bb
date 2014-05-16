@@ -160,12 +160,12 @@ std::vector<gfx::Rect> CalculateNonDraggableRegions(
 
 - (void)windowDidEnterFullScreen:(NSNotification*)notification {
   if (appWindow_)
-    appWindow_->WindowDidFinishResize();
+    appWindow_->WindowDidEnterFullscreen();
 }
 
 - (void)windowDidExitFullScreen:(NSNotification*)notification {
   if (appWindow_)
-    appWindow_->WindowDidFinishResize();
+    appWindow_->WindowDidExitFullscreen();
 }
 
 - (void)windowDidMove:(NSNotification*)notification {
@@ -820,13 +820,6 @@ void NativeAppWindowCocoa::WindowDidFinishResize() {
   else if (NSEqualPoints(frame.origin, screen.origin))
     is_maximized_ = true;
 
-  // Update |is_fullscreen_| if needed.
-  is_fullscreen_ = ([window() styleMask] & NSFullScreenWindowMask) != 0;
-  // If not fullscreen but the window is constrained, disable the fullscreen UI
-  // control.
-  if (!is_fullscreen_ && !shows_fullscreen_controls_)
-    SetFullScreenCollectionBehavior(window(), false);
-
   UpdateRestoredBounds();
 }
 
@@ -845,6 +838,21 @@ void NativeAppWindowCocoa::WindowDidMiniaturize() {
 }
 
 void NativeAppWindowCocoa::WindowDidDeminiaturize() {
+  app_window_->OnNativeWindowChanged();
+}
+
+void NativeAppWindowCocoa::WindowDidEnterFullscreen() {
+  is_fullscreen_ = true;
+  app_window_->OSFullscreen();
+  app_window_->OnNativeWindowChanged();
+}
+
+void NativeAppWindowCocoa::WindowDidExitFullscreen() {
+  is_fullscreen_ = false;
+  if (!shows_fullscreen_controls_)
+    SetFullScreenCollectionBehavior(window(), false);
+
+  app_window_->Restore();
   app_window_->OnNativeWindowChanged();
 }
 

@@ -101,6 +101,12 @@ class NativeAppWindowCocoa : public apps::NativeAppWindow,
   // Called when the window is zoomed (maximized or de-maximized).
   void WindowWillZoom();
 
+  // Called when the window enters fullscreen.
+  void WindowDidEnterFullscreen();
+
+  // Called when the window exits fullscreen.
+  void WindowDidExitFullscreen();
+
   // Called to handle a key event.
   bool HandledByExtensionCommand(NSEvent* event);
 

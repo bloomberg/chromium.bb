@@ -338,6 +338,10 @@ class AppWindow : public content::NotificationObserver,
     return app_window_contents_.get();
   }
 
+  int fullscreen_types_for_test() {
+    return fullscreen_types_;
+  }
+
   // Set whether the window should stay above other windows which are not
   // configured to be always-on-top.
   void SetAlwaysOnTop(bool always_on_top);
