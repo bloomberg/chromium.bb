@@ -6,10 +6,19 @@
   'targets': [
     {
       'target_name': 'favicon_core',
-      'type': 'none',
+      'type': 'static_library',
+      'dependencies': [
+        '../ui/gfx/gfx.gyp:gfx_geometry',
+        'favicon_base',
+      ],
       'sources': [
         'favicon/core/browser/favicon_client.h',
         'favicon/core/favicon_driver.h',
+        'favicon/core/favicon_url.cc',
+        'favicon/core/favicon_url.h',
+      ],
+      'include_dirs': [
+        '..',
       ],
     },
   ],
