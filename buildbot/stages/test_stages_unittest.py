@@ -279,6 +279,17 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
+  def testBranchedBuildExtendsTimeouts(self):
+    """Tests that we run with an extended timeout on a branched build."""
+    cmd_args = ['--branch', 'notTot', '-r', self.build_root,
+                '--remote-trybot', '--hwtest']
+    self._Prepare('x86-alex-release', cmd_args=cmd_args)
+    self._RunHWTestSuite()
+    self.assertEqual(self.suite_config.timeout,
+                     config.HWTestConfig.BRANCHED_HW_TEST_TIMEOUT)
+    self.assertEqual(self.suite_config.priority,
+                     constants.HWTEST_DEFAULT_PRIORITY)
+
 
 class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
                       cros_build_lib_unittest.RunCommandTestCase):

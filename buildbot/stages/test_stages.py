@@ -199,6 +199,9 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     super(HWTestStage, self).__init__(builder_run, board,
                                       suffix=' [%s]' % suite_config.suite,
                                       **kwargs)
+    if not self._run.IsToTBuild():
+      suite_config.SetBranchedValues()
+
     self.suite_config = suite_config
     self.wait_for_results = True
 
@@ -271,7 +274,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     lab_status.CheckLabStatus(self._current_board)
     with timeout_util.Timeout(
-        self.suite_config.timeout  + constants.HWTEST_TIMEOUT_EXTENSION):
+        self.suite_config.timeout + constants.HWTEST_TIMEOUT_EXTENSION):
       commands.RunHWTestSuite(build,
                               self.suite_config.suite,
                               self._current_board,

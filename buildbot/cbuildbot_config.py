@@ -647,6 +647,7 @@ class HWTestConfig(object):
   # This timeout is larger than it needs to be because of autotest overhead.
   # TODO(davidjames): Reduce this timeout once http://crbug.com/366141 is fixed.
   DEFAULT_HW_TEST_TIMEOUT = 60 * 220
+  BRANCHED_HW_TEST_TIMEOUT = 10 * 60 * 60
   # Number of tests running in parallel in the AU suite.
   AU_TESTS_NUM = 2
   # Number of tests running in parallel in the QAV suite
@@ -726,6 +727,16 @@ class HWTestConfig(object):
     self.fatal_timeouts = fatal_timeouts
     self.file_bugs = file_bugs
     self.priority = priority
+
+  def SetBranchedValues(self):
+    """Changes the HW Test timeout/priority values to branched values."""
+    self.timeout = max(HWTestConfig.BRANCHED_HW_TEST_TIMEOUT, self.timeout)
+
+    # Only reduce priority if it's lower.
+    new_priority = constants.HWTEST_DEFAULT_PRIORITY
+    if (constants.HWTEST_PRIORITIES_MAP[self.priority] >
+        constants.HWTEST_PRIORITIES_MAP[new_priority]):
+      self.priority = new_priority
 
   @property
   def timeout_mins(self):

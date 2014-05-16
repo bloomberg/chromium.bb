@@ -613,6 +613,10 @@ class _BuilderRunBase(object):
     """Look up the RunAttributes object for this BuilderRun object."""
     return self._ATTRS[self._attrs_id]
 
+  def IsToTBuild(self):
+    """Returns True if Builder is running on ToT."""
+    return self.manifest_branch == 'master'
+
   def GetArchive(self):
     """Create an Archive object for this BuilderRun object."""
     # The Archive class is very lightweight, and is read-only, so it

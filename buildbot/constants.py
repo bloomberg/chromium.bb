@@ -276,11 +276,17 @@ HWTEST_TRYBOT_POOL = 'try-bot'
 HWTEST_AU_SUITE = 'au'
 HWTEST_QAV_SUITE = 'qav'
 
+# Additional timeout to wait for autotest to abort a suite if the test takes
+# too long to run. This is meant to be overly conservative as a timeout may
+# indicate that autotest is at capacity.
 HWTEST_TIMEOUT_EXTENSION = 10 * 60
+
 HWTEST_DEFAULT_PRIORITY = 'DEFAULT'
 HWTEST_CQ_PRIORITY = 'CQ'
 HWTEST_BUILD_PRIORITY = 'Build'
 HWTEST_PFQ_PRIORITY = 'PFQ'
+
+# Ordered by priority (first item being lowest).
 HWTEST_VALID_PRIORITIES = ['Weekly',
                            'Daily',
                            'PostBuild',
@@ -288,6 +294,10 @@ HWTEST_VALID_PRIORITIES = ['Weekly',
                            HWTEST_BUILD_PRIORITY,
                            HWTEST_PFQ_PRIORITY,
                            HWTEST_CQ_PRIORITY]
+
+# Creates a mapping of priorities to make easy comparsions.
+HWTEST_PRIORITIES_MAP = dict(zip(HWTEST_VALID_PRIORITIES,
+                                 range(len(HWTEST_VALID_PRIORITIES))))
 
 # Defines VM Test types.
 FULL_AU_TEST_TYPE = 'full_suite'
