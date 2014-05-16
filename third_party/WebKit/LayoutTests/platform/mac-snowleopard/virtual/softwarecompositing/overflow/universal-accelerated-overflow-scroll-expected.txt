@@ -25,10 +25,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -79,10 +81,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -132,10 +136,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -186,10 +192,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -240,10 +248,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -293,10 +303,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -346,10 +358,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -392,10 +406,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -439,10 +455,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -495,10 +513,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -552,10 +572,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
@@ -608,10 +630,12 @@
             (GraphicsLayer
               (position 2.00 87.00)
               (bounds 85.00 15.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 2.00)
               (bounds 15.00 85.00)
+              (drawsContent 1)
             )
             (GraphicsLayer
               (position 87.00 87.00)
