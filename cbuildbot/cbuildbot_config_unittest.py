@@ -338,31 +338,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
             'Chrome lkgm currently only works with an internal manifest: %s' % (
                 build_name,))
 
-  def testChromePFQsNeedChromeOSPFQs(self):
-    """Make sure every Chrome PFQ has a matching ChromeOS PFQ for prebuilts.
-
-    See http://crosbug.com/31695 for details on why.
-
-    Note: This check isn't perfect (as we can't check to see if we have
-    any ChromeOS PFQs actually running), but it at least makes sure people
-    realize we need to have the configs in sync.
-    """
-
-    # Figure out all the boards our Chrome and ChromeOS PFQs are using.
-    cr_pfqs = set()
-    cros_pfqs = set()
-    for config in cbuildbot_config.config.itervalues():
-      if config['build_type'] == constants.CHROME_PFQ_TYPE:
-        cr_pfqs.update(config['boards'])
-      elif config['build_type'] == constants.PALADIN_TYPE:
-        cros_pfqs.update(config['boards'])
-
-    # Then make sure the ChromeOS PFQ set is a superset of the Chrome PFQ set.
-    missing_pfqs = cr_pfqs.difference(cros_pfqs)
-    if missing_pfqs:
-      self.fail('Chrome PFQs are using boards that are missing ChromeOS PFQs:'
-                '\n\t' + ' '.join(missing_pfqs))
-
   def testNonOverlappingConfigTypes(self):
     """Test that a config can only match one build suffix."""
     for config_type in cbuildbot_config.CONFIG_TYPE_DUMP_ORDER:
