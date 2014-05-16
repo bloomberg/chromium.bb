@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
@@ -150,11 +151,15 @@ TEST_F(ServiceWorkerContextTest, Register) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
-  EXPECT_EQ(3UL, helper_->ipc_sink()->message_count());
+  EXPECT_EQ(4UL, helper_->ipc_sink()->message_count());
+  EXPECT_TRUE(helper_->ipc_sink()->GetUniqueMessageMatching(
+      EmbeddedWorkerMsg_StartWorker::ID));
   EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_InstallEvent::ID));
   EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_ActivateEvent::ID));
+  EXPECT_TRUE(helper_->ipc_sink()->GetUniqueMessageMatching(
+      EmbeddedWorkerMsg_StopWorker::ID));
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, registration_id);
   EXPECT_NE(kInvalidServiceWorkerVersionId, version_id);
 
@@ -189,11 +194,15 @@ TEST_F(ServiceWorkerContextTest, Register_RejectInstall) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
-  EXPECT_EQ(2UL, helper_->ipc_sink()->message_count());
+  EXPECT_EQ(3UL, helper_->ipc_sink()->message_count());
+  EXPECT_TRUE(helper_->ipc_sink()->GetUniqueMessageMatching(
+      EmbeddedWorkerMsg_StartWorker::ID));
   EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_InstallEvent::ID));
   EXPECT_FALSE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_ActivateEvent::ID));
+  EXPECT_TRUE(helper_->ipc_sink()->GetUniqueMessageMatching(
+      EmbeddedWorkerMsg_StopWorker::ID));
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, registration_id);
   EXPECT_NE(kInvalidServiceWorkerVersionId, version_id);
 
@@ -228,11 +237,15 @@ TEST_F(ServiceWorkerContextTest, Register_RejectActivate) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
 
-  EXPECT_EQ(3UL, helper_->ipc_sink()->message_count());
+  EXPECT_EQ(4UL, helper_->ipc_sink()->message_count());
+  EXPECT_TRUE(helper_->ipc_sink()->GetUniqueMessageMatching(
+      EmbeddedWorkerMsg_StartWorker::ID));
   EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_InstallEvent::ID));
   EXPECT_TRUE(helper_->inner_ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_ActivateEvent::ID));
+  EXPECT_TRUE(helper_->ipc_sink()->GetUniqueMessageMatching(
+      EmbeddedWorkerMsg_StopWorker::ID));
   EXPECT_NE(kInvalidServiceWorkerRegistrationId, registration_id);
   EXPECT_NE(kInvalidServiceWorkerVersionId, version_id);
 
