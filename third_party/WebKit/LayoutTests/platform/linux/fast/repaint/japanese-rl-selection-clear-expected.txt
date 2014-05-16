@@ -7,6 +7,7 @@
       (drawsContent 1)
       (repaint rects
         (rect 442.00 123.00 335.00 399.00)
+        (rect 442.00 23.00 335.00 554.00)
       )
     )
   )

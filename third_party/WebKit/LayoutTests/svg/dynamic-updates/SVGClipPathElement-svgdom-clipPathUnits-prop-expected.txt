@@ -1,18 +1,13 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 18.00 8.00 90.00 100.00)
-        (rect 8.00 18.00 100.00 90.00)
-        (rect 8.00 8.00 100.00 100.00)
-        (rect 8.00 8.00 10.00 10.00)
-        (rect 8.00 8.00 10.00 10.00)
-      )
-    )
-  )
-)
+SVG 1.1 dynamic update tests
+
+Tests dynamic updates of the 'clipPathUnits' property of the SVGClipPathElement object
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS clipPathElement.clipPathUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_USERSPACEONUSE
+PASS clipPathElement.clipPathUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

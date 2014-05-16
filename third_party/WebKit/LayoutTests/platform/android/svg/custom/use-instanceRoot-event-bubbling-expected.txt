@@ -1,4 +1,4 @@
-Tests whether SVG event bubbling works across shadow trees.
+Tests wheter SVG event bubbling works accross shadow trees.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
