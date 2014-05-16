@@ -119,6 +119,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) OVERRIDE;
 
+  void LogToStderr(const std::string& output);
   void NotifyDone();
   void WaitUntilDone();
   void QueueBackNavigation(int how_far_back);
@@ -295,6 +296,7 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<TestRunnerBindings>::GetObjectTemplateBuilder(isolate)
       // Methods controlling test execution.
+      .SetMethod("logToStderr", &TestRunnerBindings::LogToStderr)
       .SetMethod("notifyDone", &TestRunnerBindings::NotifyDone)
       .SetMethod("waitUntilDone", &TestRunnerBindings::WaitUntilDone)
       .SetMethod("queueBackNavigation",
@@ -526,6 +528,10 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // Used at fast/dom/assign-to-window-status.html
       .SetMethod("dumpStatusCallbacks",
                  &TestRunnerBindings::DumpWindowStatusChanges);
+}
+
+void TestRunnerBindings::LogToStderr(const std::string& output) {
+  LOG(ERROR) << output;
 }
 
 void TestRunnerBindings::NotifyDone() {
