@@ -6,7 +6,7 @@
 #define UI_EVENTS_GESTURES_GESTURE_CONFIGURATION_H_
 
 #include "base/basictypes.h"
-#include "ui/events/events_export.h"
+#include "ui/events/events_base_export.h"
 
 namespace ui {
 
@@ -14,7 +14,7 @@ namespace ui {
 // approaches (windows, chrome, others).  This would turn into an
 // abstract base class.
 
-class EVENTS_EXPORT GestureConfiguration {
+class EVENTS_BASE_EXPORT GestureConfiguration {
  public:
   // Number of parameters in the array of parameters for the fling acceleration
   // curve.
@@ -143,6 +143,15 @@ class EVENTS_EXPORT GestureConfiguration {
   static void set_min_touch_down_duration_in_seconds_for_click(double val) {
     min_touch_down_duration_in_seconds_for_click_ = val;
   }
+
+  static int min_scaling_span_in_pixels() {
+    return min_scaling_span_in_pixels_;
+  };
+
+  static void set_min_scaling_span_in_pixels(int val) {
+    min_scaling_span_in_pixels_ = val;
+  }
+
   static int points_buffered_for_velocity() {
     return points_buffered_for_velocity_;
   }
@@ -235,6 +244,7 @@ class EVENTS_EXPORT GestureConfiguration {
   static float min_scroll_velocity_;
   static double min_swipe_speed_;
   static double min_touch_down_duration_in_seconds_for_click_;
+  static int min_scaling_span_in_pixels_;
   static int points_buffered_for_velocity_;
   static double rail_break_proportion_;
   static double rail_start_proportion_;

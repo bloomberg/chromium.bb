@@ -19,6 +19,8 @@ const char kTouchEventsAuto[] = "auto";
 const char kTouchEventsEnabled[] = "enabled";
 //   disabled: touch events are disabled.
 const char kTouchEventsDisabled[] = "disabled";
+// Use the unified gesture detector, instead of the aura gesture detector.
+const char kUseUnifiedGestureDetector[] = "use-unified-gesture-detector";
 
 #if defined(OS_LINUX)
 // Tells chrome to interpret events from these devices as touch events. Only

@@ -31,6 +31,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
 
   virtual int GetId() const = 0;
   virtual Action GetAction() const = 0;
+  // Only valid if |GetAction()| returns ACTION_POINTER_UP or
+  // ACTION_POINTER_DOWN.
   virtual int GetActionIndex() const = 0;
   virtual size_t GetPointerCount() const = 0;
   virtual int GetPointerId(size_t pointer_index) const = 0;

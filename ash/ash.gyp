@@ -894,6 +894,7 @@
         '../ui/compositor/compositor.gyp:compositor_test_support',
         '../ui/events/events.gyp:events',
         '../ui/events/events.gyp:events_test_support',
+        '../ui/events/events.gyp:gesture_detection',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/keyboard/keyboard.gyp:keyboard',

@@ -265,6 +265,7 @@
         '../compositor/compositor.gyp:compositor_test_support',
         '../events/events.gyp:events',
         '../events/events.gyp:events_base',
+        '../events/events.gyp:gesture_detection',
         '../gfx/gfx.gyp:gfx',
         '../gfx/gfx.gyp:gfx_geometry',
         '../gl/gl.gyp:gl',

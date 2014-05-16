@@ -24,6 +24,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_types.h"
+#include "ui/events/test/events_test_utils.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/view.h"
@@ -281,8 +282,12 @@ void DispatchGesture(ui::EventType gesture_type, gfx::Point location) {
       ui::EventTimeForNow(),
       ui::GestureEventDetails(gesture_type, 0, 0),
       1);
-  Shell::GetPrimaryRootWindow()->GetHost()->dispatcher()->DispatchGestureEvent(
-      &gesture_event);
+  ui::EventSource* event_source =
+      Shell::GetPrimaryRootWindow()->GetHost()->GetEventSource();
+  ui::EventSourceTestApi event_source_test(event_source);
+  ui::EventDispatchDetails details =
+      event_source_test.SendEventToProcessor(&gesture_event);
+  CHECK(!details.dispatcher_destroyed);
 }
 
 }  // namespace
