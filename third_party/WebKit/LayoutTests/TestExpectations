@@ -1802,3 +1802,14 @@ crbug.com/347422 virtual/softwarecompositing/reflections/load-video-in-reflectio
 crbug.com/347422 virtual/softwarecompositing/self-painting-layers.html [ NeedsRebaseline ]
 crbug.com/347422 virtual/softwarecompositing/video-frame-size-change.html [ NeedsRebaseline ]
 crbug.com/347422 virtual/softwarecompositing/visibility/visibility-simple-video-layer.html [ NeedsRebaseline ]
+
+# Need rebaseline for https://codereview.chromium.org/276883002/ patch which is related to Ignorable Unicodes
+crbug.com/256333 fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
+crbug.com/256333 fast/text/format-control.html [ NeedsRebaseline ]
+crbug.com/256333 [ Mac Win Win7 ] fast/text/bidi-ignorable-unicode.html  [ NeedsRebaseline ]
+crbug.com/256333 [ Mac ] virtual/mac-antialiasedtext/fast/text/format-control.html [ NeedsRebaseline ]
+crbug.com/256333 [ Mac ] virtual/mac-antialiasedtext/fast/text/bidi-ignorable-unicode.html [ NeedsRebaseline ]
+crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/bidi-ignorable-unicode.html [ NeedsRebaseline ]
+crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/format-control.html [ NeedsRebaseline ]
+crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
+crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/drawBidiText.html [ NeedsRebaseline ]
