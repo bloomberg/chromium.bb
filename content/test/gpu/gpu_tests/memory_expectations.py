@@ -25,3 +25,8 @@ class MemoryExpectations(test_expectations.TestExpectations):
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
     self.Fail('Memory.CSS3D', ['mac', ('nvidia', 0x0fd5)], bug=368037)
+
+    # TODO(vmpstr): Memory drops and increases again, and this
+    # particular bot happens to catch it when its low. Remove
+    # once the bug is fixed.
+    self.Fail('Memory.CSS3D', ['win'], bug=373098)
