@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 
-#include "chrome/browser/chromeos/login/login_display_host_impl.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

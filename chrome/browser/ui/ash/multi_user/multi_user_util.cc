@@ -13,7 +13,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #endif
 

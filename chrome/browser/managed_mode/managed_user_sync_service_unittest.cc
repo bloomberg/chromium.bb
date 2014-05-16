@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/default_user_images.h"
+#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #endif
 
 using sync_pb::ManagedUserSpecifics;

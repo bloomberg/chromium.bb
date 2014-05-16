@@ -38,7 +38,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 typedef GoogleServiceAuthError AuthError;

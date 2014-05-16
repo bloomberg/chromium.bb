@@ -4,7 +4,7 @@
 #include "chrome/browser/chromeos/login/managed/supervised_user_authentication.h"
 
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/supervised_user_manager.h"
+#include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

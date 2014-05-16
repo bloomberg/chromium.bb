@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/profiles/profile.h"

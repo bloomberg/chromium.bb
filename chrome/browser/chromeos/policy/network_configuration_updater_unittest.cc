@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"

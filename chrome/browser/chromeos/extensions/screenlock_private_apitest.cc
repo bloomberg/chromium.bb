@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/users/user.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/signin_manager.h"

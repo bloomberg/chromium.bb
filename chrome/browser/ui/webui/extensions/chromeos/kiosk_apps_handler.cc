@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sys_info.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/chromeos_switches.h"

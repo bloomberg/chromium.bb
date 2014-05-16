@@ -10,7 +10,7 @@
 #include "ash/wm/power_button_controller.h"
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/power/session_state_controller_delegate_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/notification_service.h"

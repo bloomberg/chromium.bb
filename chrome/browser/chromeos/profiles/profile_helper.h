@@ -12,8 +12,8 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/chromeos/login/oauth2_login_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 
 class Profile;
 

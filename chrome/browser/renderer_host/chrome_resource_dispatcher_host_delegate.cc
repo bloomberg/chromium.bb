@@ -82,7 +82,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/merge_session_throttle.h"
+#include "chrome/browser/chromeos/login/signin/merge_session_throttle.h"
 // TODO(oshima): Enable this for other platforms.
 #include "chrome/browser/renderer_host/offline_resource_throttle.h"
 #endif

@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/test/test_utils.h"

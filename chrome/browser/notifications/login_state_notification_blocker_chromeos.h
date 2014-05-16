@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_LOGIN_STATE_NOTIFICATION_BLOCKER_CHROMEOS_H_
 
 #include "ash/shell_observer.h"
-#include "chrome/browser/chromeos/login/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chromeos/login/login_state.h"
 #include "ui/message_center/notification_blocker.h"
 

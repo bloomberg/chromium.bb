@@ -1,0 +1,33 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_MOCK_USER_IMAGE_MANAGER_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_MOCK_USER_IMAGE_MANAGER_H_
+
+#include <string>
+
+#include "base/files/file_path.h"
+#include "chrome/browser/chromeos/login/users/avatar/user_image.h"
+#include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+namespace chromeos {
+
+class MockUserImageManager : public UserImageManager {
+ public:
+  explicit MockUserImageManager(const std::string& user_id);
+  virtual ~MockUserImageManager();
+
+  MOCK_METHOD1(SaveUserDefaultImageIndex, void(int));
+  MOCK_METHOD1(SaveUserImage, void(const UserImage&));
+  MOCK_METHOD1(SaveUserImageFromFile, void(const base::FilePath&));
+  MOCK_METHOD0(SaveUserImageFromProfileImage, void());
+  MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
+  MOCK_CONST_METHOD0(DownloadedProfileImage, const gfx::ImageSkia& (void));
+
+};
+
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_USERS_AVATAR_MOCK_USER_IMAGE_MANAGER_H_

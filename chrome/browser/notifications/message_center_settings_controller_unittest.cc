@@ -18,7 +18,7 @@
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #endif
 
 class MessageCenterSettingsControllerTest : public testing::Test {

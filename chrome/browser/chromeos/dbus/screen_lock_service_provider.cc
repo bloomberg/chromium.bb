@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
-#include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

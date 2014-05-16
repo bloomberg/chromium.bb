@@ -21,7 +21,7 @@
 #include "sync/protocol/sync.pb.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/default_user_images.h"
+#include "chrome/browser/chromeos/login/users/avatar/default_user_images.h"
 #endif
 
 using base::DictionaryValue;

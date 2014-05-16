@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/inline_login_handler_chromeos.h"
 
-#include "chrome/browser/chromeos/login/oauth2_token_fetcher.h"
+#include "chrome/browser/chromeos/login/signin/oauth2_token_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"

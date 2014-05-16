@@ -22,7 +22,7 @@
 #include "content/public/browser/user_metrics.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif
 
 using base::UserMetricsAction;

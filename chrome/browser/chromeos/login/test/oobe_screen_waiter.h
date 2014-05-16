@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_SCREEN_WAITER_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/login/oobe_display.h"
+#include "chrome/browser/chromeos/login/ui/oobe_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
 namespace content {

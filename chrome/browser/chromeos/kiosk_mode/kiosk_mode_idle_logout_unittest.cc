@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"

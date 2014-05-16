@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/login/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

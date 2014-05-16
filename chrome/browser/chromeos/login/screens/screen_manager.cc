@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/login/oobe_display.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/screen_factory.h"
 #include "chrome/browser/chromeos/login/screens/screen_flow.h"
+#include "chrome/browser/chromeos/login/ui/oobe_display.h"
 
 namespace chromeos {
 

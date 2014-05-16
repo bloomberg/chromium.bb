@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/screen_locker.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 

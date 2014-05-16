@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"

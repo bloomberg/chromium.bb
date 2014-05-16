@@ -1,0 +1,400 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/chromeos/login/ui/simple_web_view_dialog.h"
+
+#include "ash/shell.h"
+#include "ash/shell_window_ids.h"
+#include "base/message_loop/message_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
+#include "chrome/browser/command_updater.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/autofill/tab_autofill_manager_delegate.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
+#include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
+#include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "components/password_manager/core/browser/password_manager.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/web_contents.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "ipc/ipc_message.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/theme_provider.h"
+#include "ui/views/background.h"
+#include "ui/views/controls/webview/webview.h"
+#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
+
+using content::WebContents;
+using views::GridLayout;
+
+namespace {
+
+const int kLocationBarHeight = 35;
+
+// Margin between screen edge and SimpleWebViewDialog border.
+const int kExternalMargin = 60;
+
+// Margin between WebView and SimpleWebViewDialog border.
+const int kInnerMargin = 2;
+
+const SkColor kDialogColor = SK_ColorWHITE;
+
+class ToolbarRowView : public views::View {
+ public:
+  ToolbarRowView() {
+    set_background(views::Background::CreateSolidBackground(kDialogColor));
+  }
+
+  virtual ~ToolbarRowView() {}
+
+  void Init(views::View* back,
+            views::View* forward,
+            views::View* reload,
+            views::View* location_bar) {
+    GridLayout* layout = new GridLayout(this);
+    SetLayoutManager(layout);
+
+    // Back button.
+    views::ColumnSet* column_set = layout->AddColumnSet(0);
+    column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                          GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+    // Forward button.
+    column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                          GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+    // Reload button.
+    column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                          GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+    // Location bar.
+    column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                          GridLayout::FIXED, kLocationBarHeight, 0);
+    column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+
+    layout->StartRow(0, 0);
+    layout->AddView(back);
+    layout->AddView(forward);
+    layout->AddView(reload);
+    layout->AddView(location_bar);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ToolbarRowView);
+};
+
+}  // namespace
+
+namespace chromeos {
+
+// Stub implementation of ContentSettingBubbleModelDelegate.
+class StubBubbleModelDelegate : public ContentSettingBubbleModelDelegate {
+ public:
+  StubBubbleModelDelegate() {}
+  virtual ~StubBubbleModelDelegate() {}
+
+  // ContentSettingBubbleModelDelegate implementation:
+  virtual void ShowCollectedCookiesDialog(
+      content::WebContents* web_contents) OVERRIDE {
+  }
+
+  virtual void ShowContentSettingsPage(ContentSettingsType type) OVERRIDE {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StubBubbleModelDelegate);
+};
+
+// SimpleWebViewDialog class ---------------------------------------------------
+
+SimpleWebViewDialog::SimpleWebViewDialog(Profile* profile)
+    : profile_(profile),
+      back_(NULL),
+      forward_(NULL),
+      reload_(NULL),
+      location_bar_(NULL),
+      web_view_(NULL),
+      bubble_model_delegate_(new StubBubbleModelDelegate) {
+  command_updater_.reset(new CommandUpdater(this));
+  command_updater_->UpdateCommandEnabled(IDC_BACK, true);
+  command_updater_->UpdateCommandEnabled(IDC_FORWARD, true);
+  command_updater_->UpdateCommandEnabled(IDC_STOP, true);
+  command_updater_->UpdateCommandEnabled(IDC_RELOAD, true);
+  command_updater_->UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE, true);
+  command_updater_->UpdateCommandEnabled(IDC_RELOAD_CLEARING_CACHE, true);
+}
+
+SimpleWebViewDialog::~SimpleWebViewDialog() {
+  if (web_view_ && web_view_->web_contents())
+    web_view_->web_contents()->SetDelegate(NULL);
+}
+
+void SimpleWebViewDialog::StartLoad(const GURL& url) {
+  if (!web_view_container_.get())
+    web_view_container_.reset(new views::WebView(profile_));
+  web_view_ = web_view_container_.get();
+  web_view_->set_owned_by_client();
+  web_view_->GetWebContents()->SetDelegate(this);
+  web_view_->LoadInitialURL(url);
+
+  WebContents* web_contents = web_view_->GetWebContents();
+  DCHECK(web_contents);
+
+  // Create the password manager that is needed for the proxy.
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillManagerDelegate(
+      web_contents,
+      autofill::TabAutofillManagerDelegate::FromWebContents(web_contents));
+}
+
+void SimpleWebViewDialog::Init() {
+  toolbar_model_.reset(new ToolbarModelImpl(this));
+
+  set_background(views::Background::CreateSolidBackground(kDialogColor));
+
+  // Back/Forward buttons.
+  back_ = new views::ImageButton(this);
+  back_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                     ui::EF_MIDDLE_MOUSE_BUTTON);
+  back_->set_tag(IDC_BACK);
+  back_->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
+                           views::ImageButton::ALIGN_TOP);
+  back_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
+  back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
+  back_->set_id(VIEW_ID_BACK_BUTTON);
+
+  forward_ = new views::ImageButton(this);
+  forward_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                        ui::EF_MIDDLE_MOUSE_BUTTON);
+  forward_->set_tag(IDC_FORWARD);
+  forward_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
+  forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
+  forward_->set_id(VIEW_ID_FORWARD_BUTTON);
+
+  // Location bar.
+  location_bar_ = new LocationBarView(NULL, profile_, command_updater_.get(),
+                                      this, true);
+
+  // Reload button.
+  reload_ = new ReloadButton(command_updater_.get());
+  reload_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                       ui::EF_MIDDLE_MOUSE_BUTTON);
+  reload_->set_tag(IDC_RELOAD);
+  reload_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_RELOAD));
+  reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
+  reload_->set_id(VIEW_ID_RELOAD_BUTTON);
+
+  // Use separate view to setup custom background.
+  ToolbarRowView* toolbar_row = new ToolbarRowView;
+  toolbar_row->Init(back_, forward_, reload_, location_bar_);
+
+  // Layout.
+  GridLayout* layout = new GridLayout(this);
+  SetLayoutManager(layout);
+
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::FIXED, 0, 0);
+
+  column_set = layout->AddColumnSet(1);
+  column_set->AddPaddingColumn(0, kInnerMargin);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::FIXED, 0, 0);
+  column_set->AddPaddingColumn(0, kInnerMargin);
+
+  // Setup layout rows.
+  layout->StartRow(0, 0);
+  layout->AddView(toolbar_row);
+
+  layout->AddPaddingRow(0, kInnerMargin);
+
+  layout->StartRow(1, 1);
+  layout->AddView(web_view_container_.get());
+  layout->AddPaddingRow(0, kInnerMargin);
+
+  LoadImages();
+
+  location_bar_->Init();
+  UpdateReload(web_view_->web_contents()->IsLoading(), true);
+
+  gfx::Rect bounds(CalculateScreenBounds(gfx::Size()));
+  bounds.Inset(kExternalMargin, kExternalMargin);
+  layout->set_minimum_size(bounds.size());
+
+  Layout();
+}
+
+void SimpleWebViewDialog::Layout() {
+  views::WidgetDelegateView::Layout();
+}
+
+views::View* SimpleWebViewDialog::GetContentsView() {
+  return this;
+}
+
+views::View* SimpleWebViewDialog::GetInitiallyFocusedView() {
+  return web_view_;
+}
+
+void SimpleWebViewDialog::ButtonPressed(views::Button* sender,
+                                        const ui::Event& event) {
+  command_updater_->ExecuteCommand(sender->tag());
+}
+
+content::WebContents* SimpleWebViewDialog::OpenURL(
+    const content::OpenURLParams& params) {
+  // As there are no Browsers right now, this could not actually ever work.
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
+void SimpleWebViewDialog::NavigationStateChanged(
+    const WebContents* source, unsigned changed_flags) {
+  if (location_bar_) {
+    location_bar_->Update(NULL);
+    UpdateButtons();
+  }
+}
+
+void SimpleWebViewDialog::LoadingStateChanged(WebContents* source,
+    bool to_different_document) {
+  bool is_loading = source->IsLoading();
+  UpdateReload(is_loading && to_different_document, false);
+  command_updater_->UpdateCommandEnabled(IDC_STOP, is_loading);
+}
+
+WebContents* SimpleWebViewDialog::GetWebContents() {
+  return NULL;
+}
+
+ToolbarModel* SimpleWebViewDialog::GetToolbarModel() {
+  return toolbar_model_.get();
+}
+
+const ToolbarModel* SimpleWebViewDialog::GetToolbarModel() const {
+  return toolbar_model_.get();
+}
+
+InstantController* SimpleWebViewDialog::GetInstant() {
+  return NULL;
+}
+
+views::Widget* SimpleWebViewDialog::CreateViewsBubble(
+    views::BubbleDelegateView* bubble_delegate) {
+  return views::BubbleDelegateView::CreateBubble(bubble_delegate);
+}
+
+ContentSettingBubbleModelDelegate*
+SimpleWebViewDialog::GetContentSettingBubbleModelDelegate() {
+  return bubble_model_delegate_.get();
+}
+
+void SimpleWebViewDialog::ShowWebsiteSettings(
+    content::WebContents* web_contents,
+    const GURL& url,
+    const content::SSLStatus& ssl) {
+  NOTIMPLEMENTED();
+  // TODO (ygorshenin@,markusheintz@): implement this
+}
+
+PageActionImageView* SimpleWebViewDialog::CreatePageActionImageView(
+    LocationBarView* owner,
+    ExtensionAction* action) {
+  // Notreached because SimpleWebViewDialog uses a popup-mode LocationBarView,
+  // and it doesn't create PageActionImageViews.
+  NOTREACHED();
+  return NULL;
+}
+
+content::WebContents* SimpleWebViewDialog::GetActiveWebContents() const {
+  return web_view_->web_contents();
+}
+
+bool SimpleWebViewDialog::InTabbedBrowser() const {
+  return false;
+}
+
+void SimpleWebViewDialog::ExecuteCommandWithDisposition(
+    int id,
+    WindowOpenDisposition) {
+  WebContents* web_contents = web_view_->web_contents();
+  switch (id) {
+    case IDC_BACK:
+      if (web_contents->GetController().CanGoBack()) {
+        location_bar_->Revert();
+        web_contents->GetController().GoBack();
+      }
+      break;
+    case IDC_FORWARD:
+      if (web_contents->GetController().CanGoForward()) {
+        location_bar_->Revert();
+        web_contents->GetController().GoForward();
+      }
+      break;
+    case IDC_STOP:
+      web_contents->Stop();
+      break;
+    case IDC_RELOAD:
+      // Always reload ignoring cache.
+    case IDC_RELOAD_IGNORING_CACHE:
+    case IDC_RELOAD_CLEARING_CACHE:
+      location_bar_->Revert();
+      web_contents->GetController().ReloadIgnoringCache(true);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void SimpleWebViewDialog::LoadImages() {
+  ui::ThemeProvider* tp = GetThemeProvider();
+
+  back_->SetImage(views::CustomButton::STATE_NORMAL,
+                  tp->GetImageSkiaNamed(IDR_BACK));
+  back_->SetImage(views::CustomButton::STATE_HOVERED,
+                  tp->GetImageSkiaNamed(IDR_BACK_H));
+  back_->SetImage(views::CustomButton::STATE_PRESSED,
+                  tp->GetImageSkiaNamed(IDR_BACK_P));
+  back_->SetImage(views::CustomButton::STATE_DISABLED,
+                  tp->GetImageSkiaNamed(IDR_BACK_D));
+
+  forward_->SetImage(views::CustomButton::STATE_NORMAL,
+                     tp->GetImageSkiaNamed(IDR_FORWARD));
+  forward_->SetImage(views::CustomButton::STATE_HOVERED,
+                     tp->GetImageSkiaNamed(IDR_FORWARD_H));
+  forward_->SetImage(views::CustomButton::STATE_PRESSED,
+                     tp->GetImageSkiaNamed(IDR_FORWARD_P));
+  forward_->SetImage(views::CustomButton::STATE_DISABLED,
+                     tp->GetImageSkiaNamed(IDR_FORWARD_D));
+
+  reload_->LoadImages();
+}
+
+void SimpleWebViewDialog::UpdateButtons() {
+  const content::NavigationController& navigation_controller =
+      web_view_->web_contents()->GetController();
+  back_->SetEnabled(navigation_controller.CanGoBack());
+  forward_->SetEnabled(navigation_controller.CanGoForward());
+}
+
+void SimpleWebViewDialog::UpdateReload(bool is_loading, bool force) {
+  if (reload_) {
+    reload_->ChangeMode(
+        is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD,
+        force);
+  }
+}
+
+}  // namespace chromeos

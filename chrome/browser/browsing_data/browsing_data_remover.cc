@@ -17,8 +17,8 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/chrome_notification_types.h"
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/users/user.h"
+#include "chrome/browser/chromeos/login/users/user_manager.h"
 #endif
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/download/download_prefs.h"

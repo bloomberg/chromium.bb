@@ -7,8 +7,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/chromeos/login/auth/tpm_password_fetcher.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen_actor.h"
-#include "chrome/browser/chromeos/login/tpm_password_fetcher.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 
