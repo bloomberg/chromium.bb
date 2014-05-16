@@ -396,29 +396,6 @@ long WINAPI ServiceExceptionFilter(EXCEPTION_POINTERS* info) {
   return EXCEPTION_EXECUTE_HANDLER;
 }
 
-// Sets |key| to |value|, g_dynamic_entries_lock must be held.
-static void SetCrashKeyValueLocked(const std::wstring& safe_key,
-                                   const std::wstring& safe_value) {
-  DCHECK(g_dynamic_entries && g_dynamic_entries_lock);
-  DCHECK(safe_key.length() < google_breakpad::CustomInfoEntry::kNameMaxLength);
-  DCHECK(safe_value.length() <
-         google_breakpad::CustomInfoEntry::kValueMaxLength);
-  g_dynamic_entries_lock->AssertAcquired();
-
-  DynamicEntriesMap::iterator it = g_dynamic_entries->find(safe_key);
-  google_breakpad::CustomInfoEntry* entry = NULL;
-  if (it == g_dynamic_entries->end()) {
-    if (g_dynamic_entries->size() >= kMaxDynamicEntries)
-      return;
-    entry = &(*g_custom_entries)[g_dynamic_keys_offset++];
-    g_dynamic_entries->insert(std::make_pair(safe_key, entry));
-  } else {
-    entry = it->second;
-  }
-
-  entry->set(safe_key.data(), safe_value.data());
-}
-
 // NOTE: This function is used by SyzyASAN to annotate crash reports. If you
 // change the name or signature of this function you will break SyzyASAN
 // instrumented releases of Chrome. Please contact syzygy-team@chromium.org
@@ -442,28 +419,18 @@ extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
   DCHECK(g_dynamic_entries_lock);
   base::AutoLock lock(*g_dynamic_entries_lock);
 
-  SetCrashKeyValueLocked(safe_key, safe_value);
-
-  // TODO(siggi): remove this code, see http://crbug.com/371817.
-  static size_t guid_set_count = 0;
-  if (safe_key == L"guid") {
-    // Bracket the value to get something recorded if it's set to the empty
-    // string. Truncate to 61 char max, to allow for brackets and terminating
-    // zero in the allotted 64 chars.
-    std::wstring bracketed_guid = base::StringPrintf(L"{%.61ls}", value);
-    if (guid_set_count == 0) {
-      // Keep track of the first GUID set.
-      SetCrashKeyValueLocked(L"first-guid", bracketed_guid);
-    } else {
-      // Keep track of the last GUID set.
-      SetCrashKeyValueLocked(L"last-guid", bracketed_guid);
-    }
-
-    // Bump the set count and record the latest.
-    ++guid_set_count;
-    SetCrashKeyValueLocked(L"guid-set-count",
-                           base::StringPrintf(L"%d", guid_set_count));
+  DynamicEntriesMap::iterator it = g_dynamic_entries->find(safe_key);
+  google_breakpad::CustomInfoEntry* entry = NULL;
+  if (it == g_dynamic_entries->end()) {
+    if (g_dynamic_entries->size() >= kMaxDynamicEntries)
+      return;
+    entry = &(*g_custom_entries)[g_dynamic_keys_offset++];
+    g_dynamic_entries->insert(std::make_pair(safe_key, entry));
+  } else {
+    entry = it->second;
   }
+
+  entry->set(safe_key.data(), safe_value.data());
 }
 
 extern "C" void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(
@@ -480,15 +447,6 @@ extern "C" void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(
     return;
 
   it->second->set_value(NULL);
-
-  // TODO(siggi): remove this code, see http://crbug.com/371817.
-  static size_t guid_clear_count = 0;
-  if (key_string == L"guid") {
-    // Bump the clear count and record the latest.
-    ++guid_clear_count;
-    SetCrashKeyValueLocked(L"guid-clear-count",
-                           base::StringPrintf(L"%d", guid_clear_count));
-  }
 }
 
 }  // namespace
