@@ -18,6 +18,10 @@ class ShellBrowserMainDelegate {
   // Called to start an application after all initialization processes that are
   // necesary to run apps are completed.
   virtual void Start(content::BrowserContext* context) = 0;
+
+  // Called after the main message looop has stopped, but before
+  // other services such as BrowserContext / extension system are shut down.
+  virtual void Shutdown() = 0;
 };
 
 }  // namespace apps

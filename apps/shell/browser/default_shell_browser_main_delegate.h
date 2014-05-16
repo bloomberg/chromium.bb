@@ -20,6 +20,7 @@ class DefaultShellBrowserMainDelegate : public ShellBrowserMainDelegate {
 
   // ShellBrowserMainDelegate:
   virtual void Start(content::BrowserContext* context) OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultShellBrowserMainDelegate);

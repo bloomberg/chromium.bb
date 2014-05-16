@@ -34,4 +34,7 @@ void DefaultShellBrowserMainDelegate::Start(
   }
 }
 
+void DefaultShellBrowserMainDelegate::Shutdown() {
+}
+
 }  // namespace apps

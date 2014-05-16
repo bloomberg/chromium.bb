@@ -127,6 +127,8 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
+  browser_main_delegate_->Shutdown();
+
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
   extension_system_ = NULL;
