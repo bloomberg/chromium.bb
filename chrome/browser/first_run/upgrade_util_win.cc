@@ -5,6 +5,7 @@
 #include "chrome/browser/first_run/upgrade_util.h"
 
 #include <windows.h>
+#include <psapi.h>
 #include <shellapi.h>
 
 #include <algorithm>
@@ -123,26 +124,31 @@ bool RelaunchChromeHelper(const CommandLine& command_line,
   else
     version_str.clear();
 
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return base::LaunchProcess(command_line, base::LaunchOptions(), NULL);
-
-  // On Windows 8 we always use the delegate_execute for re-launching chrome.
-  //
-  // Pass this Chrome's Start Menu shortcut path to the relauncher so it can
-  // re-activate chrome via ShellExecute.
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();
     return false;
   }
 
-  // We need to use ShellExecute to launch the relauncher, which will wait until
-  // we exit. But ShellExecute does not support handle passing to the child
-  // process so we create a uniquely named mutex that we aquire and never
-  // release. So when we exit, Windows marks our mutex as abandoned and the
-  // wait is satisfied.
-  // The format of the named mutex is important. See DelegateExecuteOperation
-  // for more details.
+  // Explicitly make sure to relaunch chrome.exe rather than old_chrome.exe.
+  // This can happen when old_chrome.exe is launched by a user.
+  CommandLine chrome_exe_command_line = command_line;
+  chrome_exe_command_line.SetProgram(
+      chrome_exe.DirName().Append(installer::kChromeExe));
+
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return base::LaunchProcess(chrome_exe_command_line,
+                               base::LaunchOptions(), NULL);
+
+  // On Windows 8 we always use the delegate_execute for re-launching chrome.
+  //
+  // Pass this Chrome's Start Menu shortcut path to the relauncher so it can re-
+  // activate chrome via ShellExecute which will wait until we exit. Since
+  // ShellExecute does not support handle passing to the child process we create
+  // a uniquely named mutex that we aquire and never release. So when we exit,
+  // Windows marks our mutex as abandoned and the wait is satisfied. The format
+  // of the named mutex is important. See DelegateExecuteOperation for more
+  // details.
   base::string16 mutex_name =
       base::StringPrintf(L"chrome.relaunch.%d", ::GetCurrentProcessId());
   HANDLE mutex = ::CreateMutexW(NULL, TRUE, mutex_name.c_str());
@@ -246,13 +252,32 @@ bool SwapNewChromeExeIfPresent() {
   return InvokeGoogleUpdateForRename();
 }
 
+bool IsRunningOldChrome() {
+  // This figures out the actual file name that the section containing the
+  // mapped exe refers to. This is used instead of GetModuleFileName because the
+  // .exe may have been renamed out from under us while we've been running which
+  // GetModuleFileName won't notice.
+  wchar_t mapped_file_name[MAX_PATH * 2] = {};
+
+  if (!::GetMappedFileName(::GetCurrentProcess(),
+                           reinterpret_cast<void*>(::GetModuleHandle(NULL)),
+                           mapped_file_name,
+                           arraysize(mapped_file_name))) {
+    return false;
+  }
+
+  base::FilePath file_name(base::FilePath(mapped_file_name).BaseName());
+  return base::FilePath::CompareEqualIgnoreCase(file_name.value(),
+                                                installer::kChromeOldExe);
+}
+
 bool DoUpgradeTasks(const CommandLine& command_line) {
   // The DelegateExecute verb handler finalizes pending in-use updates for
   // metro mode launches, as Chrome cannot be gracefully relaunched when
   // running in this mode.
   if (base::win::IsMetroProcess())
     return false;
-  if (!SwapNewChromeExeIfPresent())
+  if (!SwapNewChromeExeIfPresent() && !IsRunningOldChrome())
     return false;
   // At this point the chrome.exe has been swapped with the new one.
   if (!RelaunchChromeBrowser(command_line)) {
