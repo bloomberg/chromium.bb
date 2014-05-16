@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/allocation_scope.h"
 #include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/shell/service.h"
+#include "mojo/public/cpp/shell/connect.h"
 #include "mojo/services/public/cpp/view_manager/util.h"
 #include "mojo/services/public/cpp/view_manager/view_manager_types.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"

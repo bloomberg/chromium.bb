@@ -368,9 +368,10 @@
       'type': 'static_library',
       'sources': [
         'public/cpp/shell/application.h',
-        'public/cpp/shell/service.h',
+        'public/cpp/shell/connect.h',
         'public/cpp/shell/lib/application.cc',
-        'public/cpp/shell/lib/service.cc',
+        'public/cpp/shell/lib/service_connector.cc',
+        'public/cpp/shell/lib/service_connector.h',
       ],
       'dependencies': [
         'mojo_shell_bindings',

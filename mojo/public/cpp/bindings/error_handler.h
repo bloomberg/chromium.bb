@@ -14,15 +14,6 @@ class ErrorHandler {
   virtual void OnConnectionError() = 0;
 };
 
-// Used when you'd like to extend a base class with the same method signature
-// as ErrorHandler.
-template <typename Base>
-class WithErrorHandler : public Base {
- public:
-  virtual ~WithErrorHandler() {}
-  virtual void OnConnectionError() = 0;
-};
-
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_ERROR_HANDLER_H_

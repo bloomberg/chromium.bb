@@ -32,7 +32,13 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
  public:
   virtual ~MathCalculatorImpl() {}
 
-  MathCalculatorImpl() : total_(0.0) {
+  MathCalculatorImpl()
+      : total_(0.0),
+        got_connection_(false) {
+  }
+
+  virtual void OnConnectionEstablished() MOJO_OVERRIDE {
+    got_connection_ = true;
   }
 
   virtual void OnConnectionError() MOJO_OVERRIDE {
@@ -53,8 +59,13 @@ class MathCalculatorImpl : public InterfaceImpl<math::Calculator> {
     client()->Output(total_);
   }
 
- private:
+  bool got_connection() const {
+    return got_connection_;
+  }
+
+private:
   double total_;
+  bool got_connection_;
 };
 
 class MathCalculatorUIImpl : public math::CalculatorUI {
@@ -116,7 +127,8 @@ class InterfacePtrTest : public testing::Test {
 
 TEST_F(InterfacePtrTest, EndToEnd) {
   math::CalculatorPtr calc;
-  BindToProxy(new MathCalculatorImpl(), &calc);
+  MathCalculatorImpl* impl = BindToProxy(new MathCalculatorImpl(), &calc);
+  EXPECT_TRUE(impl->got_connection());
 
   // Suppose this is instantiated in a process that has pipe1_.
   MathCalculatorUIImpl calculator_ui(calc.Pass());
