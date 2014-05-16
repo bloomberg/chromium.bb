@@ -336,6 +336,24 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    public void testConfigure_Net_Allowed_LocalHost_WithNoNetwork() {
+        String[] localHostUrls = {
+            "http://LocalHost",
+            "https://127.0.0.1/",
+            "http://[::1]:8888/",
+        };
+        mMockContext.allowPermission = true;
+        mFakeMRG.mNetworkType = null;
+        for (String localHostUrl : localHostUrls) {
+            assertTrue(mFakeMRG.configure(mMockContext, localHostUrl,
+                                          TEST_COOKIES, TEST_USER_AGENT));
+            assertEquals(localHostUrl, mFakeMRG.mUri);
+            assertEquals(sHeadersCookieAndUA, mFakeMRG.mHeaders);
+            assertNull(mFakeMRG.mPath);
+        }
+    }
+
+    @SmallTest
     public void testConfigure_File_Allowed_MntSdcard() {
         final String path = "/mnt/sdcard/test";
         final String url = "file://" + path;
