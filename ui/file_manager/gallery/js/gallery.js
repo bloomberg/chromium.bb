@@ -28,7 +28,6 @@ ContentProvider.WORKER_SCRIPT = '/js/metadata_worker.js';
 function Gallery(volumeManager) {
   this.context_ = {
     appWindow: chrome.app.window.current(),
-    onBack: function() {},
     onClose: function() { close(); },
     onMaximize: function() {
       var appWindow = chrome.app.window.current();
@@ -130,7 +129,7 @@ Gallery.prototype.onExternallyUnmounted_ = function(event) {
 
   if (this.volumeManager_.getVolumeInfo(this.selectedEntry_) ===
       event.volumeInfo) {
-    this.onBack_();
+    close();
   }
 };
 
@@ -160,11 +159,6 @@ Gallery.prototype.initDom_ = function() {
 
   this.header_ = util.createChild(this.container_, 'header tool dimmable');
   this.toolbar_ = util.createChild(this.container_, 'toolbar tool dimmable');
-
-  var backButton = util.createChild(this.container_,
-                                    'back-button tool dimmable');
-  util.createChild(backButton);
-  backButton.addEventListener('click', this.onBack_.bind(this));
 
   var preventDefault = function(event) { event.preventDefault(); };
 
@@ -333,26 +327,6 @@ Gallery.prototype.load = function(entries, selectedEntries) {
       }.bind(this),
       maybeLoadMosaic);
   }
-};
-
-/**
- * Closes the Gallery and go to Files.app.
- * @private
- */
-Gallery.prototype.back_ = function() {
-  if (util.isFullScreen(this.context_.appWindow)) {
-    util.toggleFullScreen(this.context_.appWindow,
-                          false);  // Leave the full screen mode.
-  }
-  this.context_.onBack(this.getSelectedEntries());
-};
-
-/**
- * Handles user's 'Back' action (Escape or a click on the X icon).
- * @private
- */
-Gallery.prototype.onBack_ = function() {
-  this.executeWhenReady(this.back_.bind(this));
 };
 
 /**
@@ -610,12 +584,6 @@ Gallery.prototype.onKeyDown_ = function(event) {
     case 'U+0008': // Backspace.
       // The default handler would call history.back and close the Gallery.
       event.preventDefault();
-      break;
-
-    case 'U+001B':  // Escape
-      // Swallow Esc if it closed the Share menu, otherwise close the Gallery.
-      if (!wasSharing)
-        this.onBack_();
       break;
 
     case 'U+004D':  // 'm' switches between Slide and Mosaic mode.
