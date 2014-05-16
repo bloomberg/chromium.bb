@@ -113,8 +113,8 @@ class Lexer(object):
   ## Regexes for use in tokens
   ##
 
-  # valid C identifiers (K&R2: A.2.3), plus '$' (supported by some compilers)
-  identifier = r'[a-zA-Z_$][0-9a-zA-Z_$]*'
+  # valid C identifiers (K&R2: A.2.3)
+  identifier = r'[a-zA-Z_][0-9a-zA-Z_]*'
 
   hex_prefix = '0[xX]'
   hex_digits = '[0-9a-fA-F]+'

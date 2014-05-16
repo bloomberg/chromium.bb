@@ -63,6 +63,25 @@ class LexerTest(unittest.TestCase):
     # Clone all lexer instances from this one, since making a lexer is slow.
     self._zygote_lexer = lex.lex(mojom.parse.lexer.Lexer("my_file.mojom"))
 
+  def testValidIdentifiers(self):
+    """Tests identifiers."""
+    self.assertEquals(self._SingleTokenForInput("abcd"),
+                      _MakeLexToken("NAME", "abcd"))
+    self.assertEquals(self._SingleTokenForInput("AbC_d012_"),
+                      _MakeLexToken("NAME", "AbC_d012_"))
+    self.assertEquals(self._SingleTokenForInput("_0123"),
+                      _MakeLexToken("NAME", "_0123"))
+
+  def testInvalidIdentifiers(self):
+    with self.assertRaisesRegexp(
+        mojom.parse.lexer.LexError,
+        r"^my_file\.mojom:1: Error: Illegal character '\$'$"):
+      self._TokensForInput("$abc")
+    with self.assertRaisesRegexp(
+        mojom.parse.lexer.LexError,
+        r"^my_file\.mojom:1: Error: Illegal character '\$'$"):
+      self._TokensForInput("a$bc")
+
   def testValidSingleKeywords(self):
     """Tests valid, single keywords."""
     self.assertEquals(self._SingleTokenForInput("handle"),
@@ -86,8 +105,7 @@ class LexerTest(unittest.TestCase):
 
   def testValidSingleTokens(self):
     """Tests valid, single (non-keyword) tokens."""
-    self.assertEquals(self._SingleTokenForInput("asdf"),
-                      _MakeLexToken("NAME", "asdf"))
+    # NAME tested in |testValidIdentifiers|.
     self.assertEquals(self._SingleTokenForInput("@123"),
                       _MakeLexToken("ORDINAL", "@123"))
     self.assertEquals(self._SingleTokenForInput("456"),
