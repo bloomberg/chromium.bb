@@ -228,7 +228,7 @@ void WebKitTestRunner::setDeviceOrientationData(
 
 void WebKitTestRunner::setScreenOrientation(
     const WebScreenOrientationType& orientation) {
-  SetMockScreenOrientation(orientation);
+  SetMockScreenOrientation(render_view(), orientation);
 }
 
 void WebKitTestRunner::resetScreenOrientation() {

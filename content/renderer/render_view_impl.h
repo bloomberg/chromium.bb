@@ -360,6 +360,10 @@ class CONTENT_EXPORT RenderViewImpl
   // Change the device scale factor and force the compositor to resize.
   void SetDeviceScaleFactorForTesting(float factor);
 
+  // Change screen orientation and force the compositor to resize.
+  void SetScreenOrientationForTesting(
+      const blink::WebScreenOrientationType& orientation);
+
   // Change the device ICC color profile while running a layout test.
   void SetDeviceColorProfileForTesting(const std::vector<char>& color_profile);
 

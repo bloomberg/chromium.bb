@@ -61,6 +61,7 @@ void SetMockDeviceOrientationData(const blink::WebDeviceOrientationData& data);
 
 // Sets WebScreenOrientationType that should be used as a mock orientation.
 void SetMockScreenOrientation(
+    RenderView* render_view,
     const blink::WebScreenOrientationType& orientation);
 
 // Resets the mock screen orientation data.

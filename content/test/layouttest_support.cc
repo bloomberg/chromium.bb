@@ -103,7 +103,11 @@ void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
 }
 
 void SetMockScreenOrientation(
+    RenderView* render_view,
     const blink::WebScreenOrientationType& orientation) {
+  static_cast<RenderViewImpl*>(render_view)
+      ->SetScreenOrientationForTesting(orientation);
+  // FIXME(ostap): Remove this when blink side gets updated.
   RendererWebKitPlatformSupportImpl::
       SetMockScreenOrientationForTesting(orientation);
 }

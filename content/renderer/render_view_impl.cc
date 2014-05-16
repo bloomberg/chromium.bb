@@ -4005,6 +4005,36 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   OnResize(params);
 }
 
+void RenderViewImpl::SetScreenOrientationForTesting(
+    const blink::WebScreenOrientationType& orientation) {
+  ViewMsg_Resize_Params params;
+  params.screen_info = screen_info_;
+  params.screen_info.orientationType = orientation;
+  // FIXME(ostap): This relationship between orientationType and
+  // orientationAngle is temporary. The test should be able to specify
+  // the angle in addition to the orientation type.
+  switch (orientation) {
+    case blink::WebScreenOrientationLandscapePrimary:
+      params.screen_info.orientationAngle = 90;
+      break;
+    case blink::WebScreenOrientationLandscapeSecondary:
+      params.screen_info.orientationAngle = -90;
+      break;
+    case blink::WebScreenOrientationPortraitSecondary:
+      params.screen_info.orientationAngle = 180;
+      break;
+    default:
+      params.screen_info.orientationAngle = 0;
+  }
+  params.new_size = size();
+  params.physical_backing_size = gfx::ToCeiledSize(
+      gfx::ScaleSize(size(), params.screen_info.deviceScaleFactor));
+  params.overdraw_bottom_height = 0.f;
+  params.resizer_rect = WebRect();
+  params.is_fullscreen = is_fullscreen();
+  OnResize(params);
+}
+
 void RenderViewImpl::SetDeviceColorProfileForTesting(
     const std::vector<char>& color_profile) {
   // TODO(noel): Add RenderViewImpl::SetDeviceColorProfile(color_profile).
