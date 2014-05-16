@@ -218,9 +218,9 @@ static size_t BytesNeededForLineRange(size_t start_ix, size_t count) {
  * Test utilities used by several tests.  In particular, see struct
  * PReadWriteInterface below.
  */
-static void CheckedSeek(struct NaClHostDesc *d,
-                        nacl_off64_t offset,
-                        int whence) {
+static nacl_off64_t CheckedSeek(struct NaClHostDesc *d,
+                                nacl_off64_t offset,
+                                int whence) {
   nacl_off64_t result;
 
   printf("CheckedSeek offset %"NACL_PRIx64"\n", offset);
@@ -231,14 +231,23 @@ static void CheckedSeek(struct NaClHostDesc *d,
             offset, whence, -(int) result);
     exit(1);
   }
+
+  return result;
 }
 
 static ssize_t SimulatedPRead(struct NaClHostDesc *d,
                               void *buffer,
                               size_t num_bytes,
                               nacl_off64_t offset) {
+  ssize_t rv;
+  nacl_off64_t orig_offset;
+
+  orig_offset = CheckedSeek(d, 0, SEEK_CUR);
   CheckedSeek(d, offset, 0);
-  return NaClHostDescRead(d, buffer, num_bytes);
+  rv = NaClHostDescRead(d, buffer, num_bytes);
+  CheckedSeek(d, orig_offset, 0);
+
+  return rv;
 }
 
 static ssize_t SimulatedPWrite(struct NaClHostDesc *d,
@@ -246,28 +255,39 @@ static ssize_t SimulatedPWrite(struct NaClHostDesc *d,
                                size_t num_bytes,
                                nacl_off64_t offset) {
   ssize_t rv;
-#if NACL_LINUX
+  nacl_off64_t orig_offset;
+
+#if NACL_LINUX || NACL_OSX
   int is_append = d->flags & NACL_ABI_O_APPEND;
   int orig_flags;
 
   if (is_append) {
     orig_flags = fcntl(d->d, F_GETFL, 0);
+    if (-1 == orig_flags) {
+      fprintf(stderr, "pwrite POSIX O_APPEND hack (get) failed\n");
+      exit(1);
+    }
     if (-1 == fcntl(d->d, F_SETFL, orig_flags & ~O_APPEND)) {
-      fprintf(stderr, "Linux pwrite POSIX O_APPEND hack failed\n");
+      fprintf(stderr, "pwrite POSIX O_APPEND hack failed\n");
       exit(1);
     }
   }
 #endif
+
+  orig_offset = CheckedSeek(d, 0, SEEK_CUR);
   CheckedSeek(d, offset, 0);
   rv = NaClHostDescWrite(d, buffer, num_bytes);
-#if NACL_LINUX
+  CheckedSeek(d, orig_offset, 0);
+
+#if NACL_LINUX || NACL_OSX
   if (is_append) {
     if (-1 == fcntl(d->d, F_SETFL, orig_flags)) {
-      fprintf(stderr, "Linux pwrite POSIX O_APPEND hack (restore) failed\n");
+      fprintf(stderr, "pwrite POSIX O_APPEND hack (restore) failed\n");
       exit(1);
     }
   }
 #endif
+
   return rv;
 }
 
