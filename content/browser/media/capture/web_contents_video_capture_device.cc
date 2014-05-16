@@ -422,8 +422,7 @@ void ContentCaptureSubscription::Observe(
   // signals of a new frame on Mac.
   // http://crbug.com/333986
 #if !defined(OS_MACOSX)
-  if (rwh->is_accelerated_compositing_active() &&
-      rwh->GetView()->IsSurfaceAvailableForCopy())
+  if (rwh->GetView()->IsSurfaceAvailableForCopy())
     return;
 #endif
 

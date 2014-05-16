@@ -242,11 +242,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Noifies the RenderWidget of the current mouse cursor visibility state.
   void SendCursorVisibilityState(bool is_visible);
 
-  // Tells us whether the page is rendered directly via the GPU process.
-  bool is_accelerated_compositing_active() {
-    return is_accelerated_compositing_active_;
-  }
-
   // Notifies the RenderWidgetHost that the View was destroyed.
   void ViewDestroyed();
 
@@ -651,7 +646,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       const std::vector<gfx::Rect>& character_bounds);
 #endif
   void OnImeCancelComposition();
-  void OnDidActivateAcceleratedCompositing(bool activated);
   void OnLockMouse(bool user_gesture,
                    bool last_unlocked_by_target,
                    bool privileged);
@@ -737,9 +731,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Indicates whether a page is fullscreen or not.
   bool is_fullscreen_;
-
-  // True when a page is rendered directly via the GPU process.
-  bool is_accelerated_compositing_active_;
 
   // Set if we are waiting for a repaint ack for the view.
   bool repaint_ack_pending_;

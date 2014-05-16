@@ -494,18 +494,6 @@ TEST_F(RenderFrameHostManagerTest, WhiteListSwapCompositorFrame) {
   EXPECT_TRUE(swapped_out_rwhv->did_swap_compositor_frame());
 }
 
-TEST_F(RenderFrameHostManagerTest, WhiteListDidActivateAcceleratedCompositing) {
-  TestRenderViewHost* swapped_out_rvh = CreateSwappedOutRenderViewHost();
-
-  MockRenderProcessHost* process_host =
-      static_cast<MockRenderProcessHost*>(swapped_out_rvh->GetProcess());
-  process_host->sink().ClearMessages();
-  ViewHostMsg_DidActivateAcceleratedCompositing msg(
-      rvh()->GetRoutingID(), true);
-  EXPECT_TRUE(swapped_out_rvh->OnMessageReceived(msg));
-  EXPECT_TRUE(swapped_out_rvh->is_accelerated_compositing_active());
-}
-
 // Test if RenderViewHost::GetRenderWidgetHosts() only returns active
 // widgets.
 TEST_F(RenderFrameHostManagerTest, GetRenderWidgetHostsReturnsActiveViews) {

@@ -957,9 +957,6 @@ void RenderWidgetHostViewAura::EndFrameSubscription() {
   delegated_frame_host_->EndFrameSubscription();
 }
 
-void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
-}
-
 void RenderWidgetHostViewAura::AcceleratedSurfaceInitialized(int host_id,
                                                              int route_id) {
 }

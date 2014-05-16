@@ -246,13 +246,7 @@ class CompositingRenderWidgetHostViewBrowserTest
       }
     }
 
-#if !defined(USE_AURA)
-    if (!GetRenderWidgetHost()->is_accelerated_compositing_active())
-      return false;  // Renderer did not turn on accelerated compositing.
-#endif
-
-    // Using accelerated compositing, but a compositing surface might not be
-    // available yet.  So, wait for it.
+    // A frame might not be available yet. So, wait for it.
     WaitForCopySourceReady();
     return true;
   }

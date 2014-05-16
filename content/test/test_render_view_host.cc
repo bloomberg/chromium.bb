@@ -122,9 +122,6 @@ bool TestRenderWidgetHostView::CanCopyToVideoFrame() const {
   return false;
 }
 
-void TestRenderWidgetHostView::OnAcceleratedCompositingStateChange() {
-}
-
 void TestRenderWidgetHostView::AcceleratedSurfaceInitialized(int host_id,
                                                              int route_id) {
 }

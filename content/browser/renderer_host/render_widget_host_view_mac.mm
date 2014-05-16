@@ -1295,6 +1295,8 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurface(
 
     ignore_result(scoped_callback_runner.Release());
     callback.Run(true, target_bitmap);
+  } else {
+    callback.Run(false, SkBitmap());
   }
 }
 
@@ -1309,9 +1311,7 @@ void RenderWidgetHostViewMac::CopyFromCompositingSurfaceToVideoFrame(
   }
 
   base::ScopedClosureRunner scoped_callback_runner(base::Bind(callback, false));
-  if (!render_widget_host_->is_accelerated_compositing_active() ||
-      !compositing_iosurface_ ||
-      !compositing_iosurface_->HasIOSurface())
+  if (!compositing_iosurface_ || !compositing_iosurface_->HasIOSurface())
     return;
 
   if (!target.get()) {
@@ -1340,7 +1340,6 @@ bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
     return delegated_frame_host_->CanCopyToVideoFrame();
 
   return (!software_frame_manager_->HasCurrentFrame() &&
-          render_widget_host_->is_accelerated_compositing_active() &&
           compositing_iosurface_ &&
           compositing_iosurface_->HasIOSurface());
 }
@@ -1958,9 +1957,6 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
         base::UserMetricsAction("BadMessageTerminate_UnexpectedFrameType"));
     render_widget_host_->GetProcess()->ReceivedBadMessage();
   }
-}
-
-void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceInitialized(int host_id,

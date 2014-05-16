@@ -276,8 +276,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // IsSurfaceAvailableForCopy() and HasAcceleratedSurface().
   virtual bool CanCopyToVideoFrame() const = 0;
 
-  // Called when accelerated compositing state changes.
-  virtual void OnAcceleratedCompositingStateChange() = 0;
   // Called when an accelerated compositing surface is initialized.
   virtual void AcceleratedSurfaceInitialized(int host_id, int route_id) = 0;
   // |params.window| and |params.surface_id| indicate which accelerated

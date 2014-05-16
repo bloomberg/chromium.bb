@@ -73,11 +73,6 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     contents()->NavigateAndCommit(second);
     EXPECT_TRUE(controller().CanGoBack());
 
-    // Turn on compositing.
-    ViewHostMsg_DidActivateAcceleratedCompositing msg(
-        test_rvh()->GetRoutingID(), true);
-    RenderViewHostTester::TestOnMessageReceived(test_rvh(), msg);
-
     // Receive a paint update. This is necessary to make sure the size is set
     // correctly in RenderWidgetHostImpl.
     ViewHostMsg_UpdateRect_Params params;

@@ -758,9 +758,6 @@ RenderWidgetHostViewAndroid::CreateSyntheticGestureTarget() {
       host_, content_view_core_->CreateTouchEventSynthesizer()));
 }
 
-void RenderWidgetHostViewAndroid::OnAcceleratedCompositingStateChange() {
-}
-
 void RenderWidgetHostViewAndroid::SendDelegatedFrameAck(
     uint32 output_surface_id) {
   DCHECK(host_);

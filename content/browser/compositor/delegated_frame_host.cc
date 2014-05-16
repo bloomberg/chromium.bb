@@ -47,11 +47,9 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
 }
 
 void DelegatedFrameHost::WasShown() {
-  RenderWidgetHostImpl* host = client_->GetHost();
   delegated_frame_evictor_->SetVisible(true);
 
-  if (host->is_accelerated_compositing_active() &&
-      !released_front_lock_.get()) {
+  if (!released_front_lock_.get()) {
     ui::Compositor* compositor = client_->GetCompositor();
     if (compositor)
       released_front_lock_ = compositor->GetCompositorLock();
@@ -99,8 +97,6 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
     return false;
 
   if (host->should_auto_resize())
-    return false;
-  if (!host->is_accelerated_compositing_active())
     return false;
 
   gfx::Size desired_size = client_->DesiredFrameSize();
@@ -201,10 +197,8 @@ bool DelegatedFrameHost::CanCopyToBitmap() const {
 }
 
 bool DelegatedFrameHost::CanCopyToVideoFrame() const {
-  RenderWidgetHostImpl* host = client_->GetHost();
   return client_->GetCompositor() &&
-         client_->GetLayer()->has_external_content() &&
-         host->is_accelerated_compositing_active();
+         client_->GetLayer()->has_external_content();
 }
 
 bool DelegatedFrameHost::CanSubscribeFrame() const {

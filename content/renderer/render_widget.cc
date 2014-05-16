@@ -1176,8 +1176,6 @@ void RenderWidget::didActivateCompositor() {
   TRACE_EVENT0("gpu", "RenderWidget::didActivateCompositor");
 
   is_accelerated_compositing_active_ = true;
-  Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
-      routing_id_, is_accelerated_compositing_active_));
   webwidget_->enterForceCompositingMode(true);
 }
 
@@ -1185,8 +1183,6 @@ void RenderWidget::didDeactivateCompositor() {
   TRACE_EVENT0("gpu", "RenderWidget::didDeactivateCompositor");
 
   is_accelerated_compositing_active_ = false;
-  Send(new ViewHostMsg_DidActivateAcceleratedCompositing(
-      routing_id_, is_accelerated_compositing_active_));
 }
 
 void RenderWidget::initializeLayerTreeView() {

@@ -312,7 +312,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   virtual void EndFrameSubscription() OVERRIDE;
   virtual void OnSwapCompositorFrame(
       uint32 output_surface_id, scoped_ptr<cc::CompositorFrame> frame) OVERRIDE;
-  virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceInitialized(int host_id,
                                              int route_id) OVERRIDE;
   virtual void CreateBrowserAccessibilityManagerIfNeeded() OVERRIDE;

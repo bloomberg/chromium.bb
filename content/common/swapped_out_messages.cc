@@ -27,7 +27,6 @@ bool SwappedOutMessages::CanSendWhileSwappedOut(const IPC::Message* msg) {
     case ViewHostMsg_RenderProcessGone::ID:
     case ViewHostMsg_ClosePage_ACK::ID:
     case ViewHostMsg_SwapCompositorFrame::ID:
-    case ViewHostMsg_DidActivateAcceleratedCompositing::ID:
     // Handled by WorkerMessageFilter (or by SharedWorkerMessageFilter when
     // embedded-shared-worker is enabled).
     case ViewHostMsg_DocumentDetached::ID:

@@ -1163,11 +1163,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DidRunInsecureContent,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
                     ViewHostMsg_UpdateRect_Params)
 
-// Sent by the renderer when accelerated compositing is enabled or disabled to
-// notify the browser whether or not is should do painting.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidActivateAcceleratedCompositing,
-                    bool /* true if the accelerated compositor is actve */)
-
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Blur)
 

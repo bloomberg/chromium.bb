@@ -171,7 +171,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_loading_(false),
       is_hidden_(hidden),
       is_fullscreen_(false),
-      is_accelerated_compositing_active_(false),
       repaint_ack_pending_(false),
       resize_ack_pending_(false),
       screen_info_out_of_date_(false),
@@ -475,8 +474,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnTextInputTypeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ImeCancelComposition,
                         OnImeCancelComposition)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidActivateAcceleratedCompositing,
-                        OnDidActivateAcceleratedCompositing)
     IPC_MESSAGE_HANDLER(ViewHostMsg_LockMouse, OnLockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UnlockMouse, OnUnlockMouse)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDisambiguationPopup,
@@ -703,7 +700,7 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
     const gfx::Size& accelerated_dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback,
     const SkBitmap::Config& bitmap_config) {
-  if (view_ && is_accelerated_compositing_active_) {
+  if (view_) {
     TRACE_EVENT0("browser",
         "RenderWidgetHostImpl::CopyFromBackingStore::FromCompositingSurface");
     gfx::Rect accelerated_copy_rect = src_subrect.IsEmpty() ?
@@ -842,8 +839,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
 }
 
 bool RenderWidgetHostImpl::ScheduleComposite() {
-  if (is_hidden_ || !is_accelerated_compositing_active_ ||
-      current_size_.IsEmpty() || repaint_ack_pending_ ||
+  if (is_hidden_ || current_size_.IsEmpty() || repaint_ack_pending_ ||
       resize_ack_pending_ || view_being_painted_) {
     return false;
   }
@@ -1229,7 +1225,6 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   ResetSizeAndRepaintPendingFlags();
   current_size_.SetSize(0, 0);
   is_hidden_ = false;
-  is_accelerated_compositing_active_ = false;
 
   // Reset this to ensure the hung renderer mechanism is working properly.
   in_flight_event_count_ = 0;
@@ -1671,15 +1666,6 @@ void RenderWidgetHostImpl::OnImeCompositionRangeChanged(
 void RenderWidgetHostImpl::OnImeCancelComposition() {
   if (view_)
     view_->ImeCancelComposition();
-}
-
-void RenderWidgetHostImpl::OnDidActivateAcceleratedCompositing(bool activated) {
-  TRACE_EVENT1("renderer_host",
-               "RenderWidgetHostImpl::OnDidActivateAcceleratedCompositing",
-               "activated", activated);
-  is_accelerated_compositing_active_ = activated;
-  if (view_)
-    view_->OnAcceleratedCompositingStateChange();
 }
 
 void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
