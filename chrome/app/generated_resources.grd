@@ -4053,6 +4053,15 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_IS_BLACKLISTED" desc="Text displayed in an infobar when an extension is blacklisted and prevented from being installed.">
         Google has flagged "<ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>" as malicious and installation has been prevented.
       </message>
+      <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_LABEL" desc="Text displayed when an extension was disabled due to it being installed server side, requiring an explicit permission check from the user.">
+        The extension "<ph name="EXTENSION_NAME">$1<ex>Flashblock</ex></ph>" was installed remotely.
+      </message>
+      <message name="IDS_APP_DISABLED_REMOTE_INSTALL_ERROR_LABEL" desc="Text displayed when an extension was disabled due to it being installed server side, requiring an explicit permission check from the user.">
+        The app "<ph name="EXTENSION_NAME">$1<ex>Flashblock</ex></ph>" was installed remotely.
+      </message>
+      <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to it being installed server side, requiring an explicit permission check from the user.">
+        <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> was installed remotely
+      </message>
 
       <!-- Extension install prompt -->
       <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app installation prompt window">
@@ -4081,6 +4090,12 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_TITLE" desc="Titlebar of the app launch prompt window">
         Confirm Launch App
+      </message>
+      <message name="IDS_EXTENSION_REMOTE_INSTALL_APP_PROMPT_TITLE" desc="Titlebar of the app installation prompt window when an app was installed remotely">
+        Confirm New App
+      </message>
+      <message name="IDS_EXTENSION_REMOTE_INSTALL_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window when an app was installed remotely">
+        Confirm New Extension
       </message>
       <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to install a particular extension or app.">
         Add "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
@@ -4111,6 +4126,9 @@ Make sure you do not expose any sensitive information.
       </message>
       <message name="IDS_EXTENSION_LAUNCH_APP_PROMPT_HEADING" desc="First bold line in the content area of the app launch prompt. Asks the user if they want to launch a particular app.">
         Launch "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
+      </message>
+      <message name="IDS_EXTENSION_REMOTE_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension or app installation prompt. Asks the user if they want to enable a particular extension or app that was installed remotely.">
+        Enable "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
 
       <!-- Extension alerts. -->
@@ -4913,6 +4931,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXTENSION_PROMPT_PERMISSIONS_CLEAR_RETAINED_FILES_BUTTON" desc="Text for the Revoke File Access button on the extension permissions prompt">
         Revoke File Access
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt for a remotely installed extension">
+        Enable
       </message>
       <message name="IDS_EXTENSION_WEB_STORE_TITLE" desc="Text for the Chrome Web Store">
         Chrome Web Store

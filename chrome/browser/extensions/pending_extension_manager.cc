@@ -89,7 +89,8 @@ bool PendingExtensionManager::AddFromSync(
     const std::string& id,
     const GURL& update_url,
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
-    bool install_silently) {
+    bool install_silently,
+    bool remote_install) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (service_.GetInstalledExtension(id)) {
@@ -119,7 +120,8 @@ bool PendingExtensionManager::AddFromSync(
                           install_silently,
                           kSyncLocation,
                           Extension::NO_FLAGS,
-                          kMarkAcknowledged);
+                          kMarkAcknowledged,
+                          remote_install);
 }
 
 bool PendingExtensionManager::AddFromExtensionImport(
@@ -138,6 +140,7 @@ bool PendingExtensionManager::AddFromExtensionImport(
   const bool kInstallSilently = true;
   const Manifest::Location kManifestLocation = Manifest::INTERNAL;
   const bool kMarkAcknowledged = false;
+  const bool kRemoteInstall = false;
 
   return AddExtensionImpl(id,
                           std::string(),
@@ -148,7 +151,8 @@ bool PendingExtensionManager::AddFromExtensionImport(
                           kInstallSilently,
                           kManifestLocation,
                           Extension::NO_FLAGS,
-                          kMarkAcknowledged);
+                          kMarkAcknowledged,
+                          kRemoteInstall);
 }
 
 bool PendingExtensionManager::AddFromExternalUpdateUrl(
@@ -162,6 +166,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
 
   const bool kIsFromSync = false;
   const bool kInstallSilently = true;
+  const bool kRemoteInstall = false;
 
   const Extension* extension = service_.GetInstalledExtension(id);
   if (extension && location == Manifest::GetHigherPriorityLocation(
@@ -188,7 +193,8 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
                           kInstallSilently,
                           location,
                           creation_flags,
-                          mark_acknowledged);
+                          mark_acknowledged,
+                          kRemoteInstall);
 }
 
 
@@ -203,8 +209,9 @@ bool PendingExtensionManager::AddFromExternalFile(
   // made sure it is not installed.  Make all AddFrom*() methods
   // consistent.
   GURL kUpdateUrl = GURL();
-  bool kIsFromSync = false;
-  bool kInstallSilently = true;
+  const bool kIsFromSync = false;
+  const bool kInstallSilently = true;
+  const bool kRemoteInstall = false;
 
   return AddExtensionImpl(id,
                           std::string(),
@@ -215,7 +222,8 @@ bool PendingExtensionManager::AddFromExternalFile(
                           kInstallSilently,
                           install_source,
                           creation_flags,
-                          mark_acknowledged);
+                          mark_acknowledged,
+                          kRemoteInstall);
 }
 
 void PendingExtensionManager::GetPendingIdsForUpdateCheck(
@@ -247,7 +255,8 @@ bool PendingExtensionManager::AddExtensionImpl(
     bool install_silently,
     Manifest::Location install_source,
     int creation_flags,
-    bool mark_acknowledged) {
+    bool mark_acknowledged,
+    bool remote_install) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PendingExtensionInfo info(id,
@@ -259,7 +268,8 @@ bool PendingExtensionManager::AddExtensionImpl(
                             install_silently,
                             install_source,
                             creation_flags,
-                            mark_acknowledged);
+                            mark_acknowledged,
+                            remote_install);
 
   if (const PendingExtensionInfo* pending = GetById(id)) {
     // Bugs in this code will manifest as sporadic incorrect extension

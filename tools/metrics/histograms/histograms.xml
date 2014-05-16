@@ -6151,6 +6151,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DisabledUIUserResponseRemoteInstall"
+    enum="ExtensionDisabledUIUserResponse">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    User response to the dialog shown when an extension is disabled due to it
+    having been installed remotely.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.ErrorCodeFromCrxOpen">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -34657,6 +34666,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="5" label="External install prompt"/>
   <int value="6" label="Post install permissions prompt"/>
   <int value="7" label="Launch prompt"/>
+  <int value="8" label="Remote install prompt"/>
 </enum>
 
 <enum name="ExtensionInstallVerifierGetSignatureResult" type="int">

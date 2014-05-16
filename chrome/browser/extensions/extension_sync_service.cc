@@ -254,7 +254,9 @@ extensions::ExtensionSyncData ExtensionSyncService::GetExtensionSyncData(
   return extensions::ExtensionSyncData(
       extension,
       extension_service_->IsExtensionEnabled(extension.id()),
-      extensions::util::IsIncognitoEnabled(extension.id(), profile_));
+      extensions::util::IsIncognitoEnabled(extension.id(), profile_),
+      extension_prefs_->HasDisableReason(extension.id(),
+                                         Extension::DISABLE_REMOTE_INSTALL));
 }
 
 extensions::AppSyncData ExtensionSyncService::GetAppSyncData(
@@ -263,6 +265,8 @@ extensions::AppSyncData ExtensionSyncService::GetAppSyncData(
       extension,
       extension_service_->IsExtensionEnabled(extension.id()),
       extensions::util::IsIncognitoEnabled(extension.id(), profile_),
+      extension_prefs_->HasDisableReason(extension.id(),
+                                         Extension::DISABLE_REMOTE_INSTALL),
       extension_prefs_->app_sorting()->GetAppLaunchOrdinal(extension.id()),
       extension_prefs_->app_sorting()->GetPageOrdinal(extension.id()),
       extensions::GetLaunchTypePrefValue(extension_prefs_, extension.id()));
@@ -465,11 +469,21 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
   // been installed yet, so we don't know if the disable reason was a
   // permissions increase.  That will be updated once CheckPermissionsIncrease
   // is called for it.
+  // However if the extension is marked as a remote install in sync, we know
+  // what the disable reason is, so set it to that directly. Note that when
+  // CheckPermissionsIncrease runs, it might still add permissions increase
+  // as a disable reason for the extension.
   if (extension_sync_data.enabled())
     extension_service_->EnableExtension(id);
-  else if (!IsPendingEnable(id))
-    extension_service_->DisableExtension(
-        id, Extension::DISABLE_UNKNOWN_FROM_SYNC);
+  else if (!IsPendingEnable(id)) {
+    if (extension_sync_data.remote_install()) {
+      extension_service_->DisableExtension(id,
+                                           Extension::DISABLE_REMOTE_INSTALL);
+    } else {
+      extension_service_->DisableExtension(
+          id, Extension::DISABLE_UNKNOWN_FROM_SYNC);
+    }
+  }
 
   // We need to cache some version information here because setting the
   // incognito flag invalidates the |extension| pointer (it reloads the
@@ -501,7 +515,8 @@ bool ExtensionSyncService::ProcessExtensionSyncDataHelper(
             id,
             extension_sync_data.update_url(),
             filter,
-            kInstallSilently)) {
+            kInstallSilently,
+            extension_sync_data.remote_install())) {
       LOG(WARNING) << "Could not add pending extension for " << id;
       // This means that the extension is already pending installation, with a
       // non-INTERNAL location.  Add to pending_sync_data, even though it will

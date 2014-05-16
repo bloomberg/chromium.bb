@@ -101,6 +101,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
                                     // the install.
     DISABLE_GREYLIST = 1 << 9,
     DISABLE_CORRUPTED = 1 << 10,
+    DISABLE_REMOTE_INSTALL = 1 << 11
   };
 
   enum InstallType {

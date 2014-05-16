@@ -36,7 +36,8 @@ class PendingExtensionInfo {
                        bool install_silently,
                        Manifest::Location install_source,
                        int creation_flags,
-                       bool mark_acknowledged);
+                       bool mark_acknowledged,
+                       bool remote_install);
 
   // Required for STL container membership.  Should not be used directly.
   PendingExtensionInfo();
@@ -65,6 +66,7 @@ class PendingExtensionInfo {
   Manifest::Location install_source() const { return install_source_; }
   int creation_flags() const { return creation_flags_; }
   bool mark_acknowledged() const { return mark_acknowledged_; }
+  bool remote_install() const { return remote_install_; }
 
   // Returns -1, 0 or 1 if |this| has lower, equal or higher precedence than
   // |other|, respectively. "Equal" precedence means that the version and the
@@ -90,6 +92,7 @@ class PendingExtensionInfo {
   Manifest::Location install_source_;
   int creation_flags_;
   bool mark_acknowledged_;
+  bool remote_install_;
 
   FRIEND_TEST_ALL_PREFIXES(::ExtensionServiceTest, AddPendingExtensionFromSync);
 };

@@ -795,6 +795,12 @@ int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) const {
   return Extension::DISABLE_NONE;
 }
 
+bool ExtensionPrefs::HasDisableReason(
+    const std::string& extension_id,
+    Extension::DisableReason disable_reason) const {
+  return (GetDisableReasons(extension_id) & disable_reason) != 0;
+}
+
 void ExtensionPrefs::AddDisableReason(const std::string& extension_id,
                                       Extension::DisableReason disable_reason) {
   ModifyDisableReason(extension_id, disable_reason, DISABLE_REASON_ADD);

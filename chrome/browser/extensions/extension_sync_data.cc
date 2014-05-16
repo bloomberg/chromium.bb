@@ -31,8 +31,8 @@ ExtensionSyncData::ExtensionSyncData(const syncer::SyncData& sync_data)
 }
 
 ExtensionSyncData::ExtensionSyncData(const syncer::SyncChange& sync_change)
-    : uninstalled_(
-        sync_change.change_type() == syncer::SyncChange::ACTION_DELETE),
+    : uninstalled_(sync_change.change_type() ==
+                   syncer::SyncChange::ACTION_DELETE),
       enabled_(false),
       incognito_enabled_(false),
       remote_install_(false) {
@@ -41,12 +41,13 @@ ExtensionSyncData::ExtensionSyncData(const syncer::SyncChange& sync_change)
 
 ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      bool enabled,
-                                     bool incognito_enabled)
-   :  id_(extension.id()),
+                                     bool incognito_enabled,
+                                     bool remote_install)
+    : id_(extension.id()),
       uninstalled_(false),
       enabled_(enabled),
       incognito_enabled_(incognito_enabled),
-      remote_install_(false),
+      remote_install_(remote_install),
       version_(extension.from_bookmark() ? base::Version("0")
                                          : *extension.version()),
       update_url_(ManifestURL::GetUpdateURL(&extension)),

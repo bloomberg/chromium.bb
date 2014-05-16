@@ -105,10 +105,9 @@ scoped_refptr<CrxInstaller> CrxInstaller::Create(
   return new CrxInstaller(service->AsWeakPtr(), client.Pass(), approval);
 }
 
-CrxInstaller::CrxInstaller(
-    base::WeakPtr<ExtensionService> service_weak,
-    scoped_ptr<ExtensionInstallPrompt> client,
-    const WebstoreInstaller::Approval* approval)
+CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
+                           scoped_ptr<ExtensionInstallPrompt> client,
+                           const WebstoreInstaller::Approval* approval)
     : install_directory_(service_weak->install_directory()),
       install_source_(Manifest::INTERNAL),
       approved_(false),
@@ -123,6 +122,7 @@ CrxInstaller::CrxInstaller(
       client_(client.release()),
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false),
+      grant_permissions_(true),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),
       creation_flags_(Extension::NO_FLAGS),
       off_store_install_allow_reason_(OffStoreInstallDisallowed),
@@ -802,7 +802,7 @@ void CrxInstaller::ReportSuccessFromUIThread() {
     // We update the extension's granted permissions if the user already
     // approved the install (client_ is non NULL), or we are allowed to install
     // this silently.
-    if (client_ || allow_silent_install_) {
+    if ((client_ || allow_silent_install_) && grant_permissions_) {
       PermissionsUpdater perms_updater(profile());
       perms_updater.GrantActivePermissions(extension());
     }

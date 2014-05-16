@@ -133,6 +133,9 @@ class CrxInstaller
   bool allow_silent_install() const { return allow_silent_install_; }
   void set_allow_silent_install(bool val) { allow_silent_install_ = val; }
 
+  bool grant_permissions() const { return grant_permissions_; }
+  void set_grant_permissions(bool val) { grant_permissions_ = val; }
+
   bool is_gallery_install() const {
     return (creation_flags_ & Extension::FROM_WEBSTORE) > 0;
   }
@@ -344,9 +347,13 @@ class CrxInstaller
   bool apps_require_extension_mime_type_;
 
   // Allows for the possibility of a normal install (one in which a |client|
-  // is provided in the ctor) to procede without showing the permissions prompt
+  // is provided in the ctor) to proceed without showing the permissions prompt
   // dialog.
   bool allow_silent_install_;
+
+  // Allows for the possibility of an installation without granting any
+  // permissions to the extension.
+  bool grant_permissions_;
 
   // The value of the content type header sent with the CRX.
   // Ignorred unless |require_extension_mime_type_| is true.

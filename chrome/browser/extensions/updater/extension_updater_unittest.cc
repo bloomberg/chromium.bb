@@ -352,6 +352,7 @@ void SetupPendingExtensionManagerForTest(
     const bool kIsFromSync = true;
     const bool kInstallSilently = true;
     const bool kMarkAcknowledged = false;
+    const bool kRemoteInstall = false;
     std::string id = id_util::GenerateId(base::StringPrintf("extension%i", i));
 
     pending_extension_manager->AddForTesting(
@@ -364,7 +365,8 @@ void SetupPendingExtensionManagerForTest(
                              kInstallSilently,
                              Manifest::INTERNAL,
                              Extension::NO_FLAGS,
-                             kMarkAcknowledged));
+                             kMarkAcknowledged,
+                             kRemoteInstall));
   }
 }
 
@@ -1056,6 +1058,7 @@ class ExtensionUpdaterTest : public testing::Test {
       const bool kIsFromSync = true;
       const bool kInstallSilently = true;
       const bool kMarkAcknowledged = false;
+      const bool kRemoteInstall = false;
       PendingExtensionManager* pending_extension_manager =
           service->pending_extension_manager();
       pending_extension_manager->AddForTesting(
@@ -1068,7 +1071,8 @@ class ExtensionUpdaterTest : public testing::Test {
                                kInstallSilently,
                                Manifest::INTERNAL,
                                Extension::NO_FLAGS,
-                               kMarkAcknowledged));
+                               kMarkAcknowledged,
+                               kRemoteInstall));
     }
 
     // Call back the ExtensionUpdater with a 200 response and some test data

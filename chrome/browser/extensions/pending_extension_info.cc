@@ -18,7 +18,8 @@ PendingExtensionInfo::PendingExtensionInfo(
     bool install_silently,
     Manifest::Location install_source,
     int creation_flags,
-    bool mark_acknowledged)
+    bool mark_acknowledged,
+    bool remote_install)
     : id_(id),
       update_url_(update_url),
       version_(version),
@@ -28,14 +29,20 @@ PendingExtensionInfo::PendingExtensionInfo(
       install_silently_(install_silently),
       install_source_(install_source),
       creation_flags_(creation_flags),
-      mark_acknowledged_(mark_acknowledged) {}
+      mark_acknowledged_(mark_acknowledged),
+      remote_install_(remote_install) {
+}
 
 PendingExtensionInfo::PendingExtensionInfo()
     : update_url_(),
       should_allow_install_(NULL),
       is_from_sync_(true),
       install_silently_(false),
-      install_source_(Manifest::INVALID_LOCATION) {}
+      install_source_(Manifest::INVALID_LOCATION),
+      creation_flags_(0),
+      mark_acknowledged_(false),
+      remote_install_(false) {
+}
 
 PendingExtensionInfo::~PendingExtensionInfo() {}
 

@@ -24,6 +24,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "net/url_request/url_fetcher.h"
+#include "sync/protocol/extension_specifics.pb.h"
+#include "sync/protocol/sync.pb.h"
 
 using extensions::Extension;
 using extensions::ExtensionRegistry;
@@ -230,6 +232,57 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   EXPECT_EQ("2", extension->VersionString());
   EXPECT_EQ(1u, registry_->disabled_extensions().size());
   EXPECT_EQ(Extension::DISABLE_PERMISSIONS_INCREASE,
+            ExtensionPrefs::Get(service_->profile())
+                ->GetDisableReasons(extension_id));
+  EXPECT_TRUE(GetExtensionDisabledGlobalError());
+}
+
+// Test that an error appears if an extension gets installed server side.
+IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
+  static const char* extension_id = "pgdpcfcocojkjfbgpiianjngphoopgmo";
+  ExtensionSyncService* sync_service =
+      ExtensionSyncService::Get(browser()->profile());
+
+  // Note: This interceptor gets requests on the IO thread.
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
+  net::URLFetcher::SetEnableInterceptionForTests(true);
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/updates.xml"),
+      test_data_dir_.AppendASCII("permissions_increase")
+          .AppendASCII("updates.xml"));
+  interceptor.SetResponseIgnoreQuery(
+      GURL("http://localhost/autoupdate/v2.crx"),
+      scoped_temp_dir_.path().AppendASCII("permissions2.crx"));
+
+  extensions::ExtensionUpdater::CheckParams params;
+  service_->updater()->set_default_check_params(params);
+
+  sync_pb::EntitySpecifics specifics;
+  specifics.mutable_extension()->set_id(extension_id);
+  specifics.mutable_extension()->set_enabled(false);
+  specifics.mutable_extension()->set_remote_install(true);
+  specifics.mutable_extension()->set_update_url(
+      "http://localhost/autoupdate/updates.xml");
+  specifics.mutable_extension()->set_version("2");
+  syncer::SyncData sync_data =
+      syncer::SyncData::CreateRemoteData(1234567,
+                                         specifics,
+                                         base::Time::Now(),
+                                         syncer::AttachmentIdList(),
+                                         syncer::AttachmentServiceProxy());
+  // Sync is installing a new extension, so it pends.
+  EXPECT_FALSE(sync_service->ProcessExtensionSyncData(
+      extensions::ExtensionSyncData(sync_data)));
+
+  WaitForExtensionInstall();
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  const Extension* extension = service_->GetExtensionById(extension_id, true);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ("2", extension->VersionString());
+  EXPECT_EQ(1u, registry_->disabled_extensions().size());
+  EXPECT_EQ(Extension::DISABLE_REMOTE_INSTALL,
             ExtensionPrefs::Get(service_->profile())
                 ->GetDisableReasons(extension_id));
   EXPECT_TRUE(GetExtensionDisabledGlobalError());

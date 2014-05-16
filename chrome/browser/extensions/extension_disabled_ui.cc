@@ -142,6 +142,7 @@ class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
  public:
   ExtensionDisabledGlobalError(ExtensionService* service,
                                const Extension* extension,
+                               bool is_remote_install,
                                const gfx::Image& icon);
   virtual ~ExtensionDisabledGlobalError();
 
@@ -172,6 +173,7 @@ class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
  private:
   ExtensionService* service_;
   const Extension* extension_;
+  bool is_remote_install_;
   gfx::Image icon_;
 
   // How the user responded to the error; used for metrics.
@@ -195,9 +197,11 @@ class ExtensionDisabledGlobalError : public GlobalErrorWithStandardBubble,
 ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
     ExtensionService* service,
     const Extension* extension,
+    bool is_remote_install,
     const gfx::Image& icon)
     : service_(service),
       extension_(extension),
+      is_remote_install_(is_remote_install),
       icon_(icon),
       user_response_(IGNORED),
       menu_command_id_(GetMenuCommandID()) {
@@ -219,9 +223,15 @@ ExtensionDisabledGlobalError::ExtensionDisabledGlobalError(
 
 ExtensionDisabledGlobalError::~ExtensionDisabledGlobalError() {
   ReleaseMenuCommandID(menu_command_id_);
-  UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponse",
-                            user_response_,
-                            EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
+  if (is_remote_install_) {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponseRemoteInstall",
+                              user_response_,
+                              EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Extensions.DisabledUIUserResponse",
+                              user_response_,
+                              EXTENSION_DISABLED_UI_BUCKET_BOUNDARY);
+  }
 }
 
 GlobalError::Severity ExtensionDisabledGlobalError::GetSeverity() {
@@ -237,8 +247,14 @@ int ExtensionDisabledGlobalError::MenuItemCommandID() {
 }
 
 base::string16 ExtensionDisabledGlobalError::MenuItemLabel() {
-  return l10n_util::GetStringFUTF16(IDS_EXTENSION_DISABLED_ERROR_TITLE,
-                                    base::UTF8ToUTF16(extension_->name()));
+  if (is_remote_install_) {
+    return l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE,
+        base::UTF8ToUTF16(extension_->name()));
+  } else {
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_DISABLED_ERROR_TITLE,
+                                      base::UTF8ToUTF16(extension_->name()));
+  }
 }
 
 void ExtensionDisabledGlobalError::ExecuteMenuItem(Browser* browser) {
@@ -250,22 +266,39 @@ gfx::Image ExtensionDisabledGlobalError::GetBubbleViewIcon() {
 }
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewTitle() {
-  return l10n_util::GetStringFUTF16(IDS_EXTENSION_DISABLED_ERROR_TITLE,
-                                    base::UTF8ToUTF16(extension_->name()));
+  if (is_remote_install_) {
+    return l10n_util::GetStringFUTF16(
+        IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE,
+        base::UTF8ToUTF16(extension_->name()));
+  } else {
+    return l10n_util::GetStringFUTF16(IDS_EXTENSION_DISABLED_ERROR_TITLE,
+                                      base::UTF8ToUTF16(extension_->name()));
+  }
 }
 
 std::vector<base::string16>
 ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   std::vector<base::string16> messages;
-  messages.push_back(l10n_util::GetStringFUTF16(
-      extension_->is_app() ?
-      IDS_APP_DISABLED_ERROR_LABEL : IDS_EXTENSION_DISABLED_ERROR_LABEL,
-      base::UTF8ToUTF16(extension_->name())));
-  messages.push_back(l10n_util::GetStringUTF16(
-      IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO));
   std::vector<base::string16> permission_warnings =
       extensions::PermissionMessageProvider::Get()->GetWarningMessages(
           extension_->GetActivePermissions(), extension_->GetType());
+  if (is_remote_install_) {
+    messages.push_back(l10n_util::GetStringFUTF16(
+        extension_->is_app()
+            ? IDS_APP_DISABLED_REMOTE_INSTALL_ERROR_LABEL
+            : IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_LABEL,
+        base::UTF8ToUTF16(extension_->name())));
+    if (!permission_warnings.empty())
+      messages.push_back(
+          l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO));
+  } else {
+    messages.push_back(l10n_util::GetStringFUTF16(
+        extension_->is_app() ? IDS_APP_DISABLED_ERROR_LABEL
+                             : IDS_EXTENSION_DISABLED_ERROR_LABEL,
+        base::UTF8ToUTF16(extension_->name())));
+    messages.push_back(l10n_util::GetStringUTF16(
+        IDS_EXTENSION_PROMPT_WILL_NOW_HAVE_ACCESS_TO));
+  }
   for (size_t i = 0; i < permission_warnings.size(); ++i) {
     messages.push_back(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_PERMISSION_LINE, permission_warnings[i]));
@@ -274,7 +307,12 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
 }
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewAcceptButtonLabel() {
-  return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON);
+  if (is_remote_install_) {
+    return l10n_util::GetStringUTF16(
+        IDS_EXTENSION_PROMPT_REMOTE_INSTALL_BUTTON);
+  } else {
+    return l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_RE_ENABLE_BUTTON);
+  }
 }
 
 base::string16 ExtensionDisabledGlobalError::GetBubbleViewCancelButtonLabel() {
@@ -339,19 +377,21 @@ namespace extensions {
 
 void AddExtensionDisabledErrorWithIcon(base::WeakPtr<ExtensionService> service,
                                        const std::string& extension_id,
+                                       bool is_remote_install,
                                        const gfx::Image& icon) {
   if (!service.get())
     return;
   const Extension* extension = service->GetInstalledExtension(extension_id);
   if (extension) {
     GlobalErrorServiceFactory::GetForProfile(service->profile())
-        ->AddGlobalError(
-              new ExtensionDisabledGlobalError(service.get(), extension, icon));
+        ->AddGlobalError(new ExtensionDisabledGlobalError(
+            service.get(), extension, is_remote_install, icon));
   }
 }
 
 void AddExtensionDisabledError(ExtensionService* service,
-                               const Extension* extension) {
+                               const Extension* extension,
+                               bool is_remote_install) {
   // Do not display notifications for ephemeral apps that have been disabled.
   // Instead, a prompt will be shown the next time the app is launched.
   if (extension->is_ephemeral())
@@ -360,10 +400,14 @@ void AddExtensionDisabledError(ExtensionService* service,
   extensions::ExtensionResource image = extensions::IconsInfo::GetIconResource(
       extension, kIconSize, ExtensionIconSet::MATCH_BIGGER);
   gfx::Size size(kIconSize, kIconSize);
-  ImageLoader::Get(service->profile())->LoadImageAsync(
-      extension, image, size,
-      base::Bind(&AddExtensionDisabledErrorWithIcon,
-                 service->AsWeakPtr(), extension->id()));
+  ImageLoader::Get(service->profile())
+      ->LoadImageAsync(extension,
+                       image,
+                       size,
+                       base::Bind(&AddExtensionDisabledErrorWithIcon,
+                                  service->AsWeakPtr(),
+                                  extension->id(),
+                                  is_remote_install));
 }
 
 void ShowExtensionDisabledDialog(ExtensionService* service,

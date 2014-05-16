@@ -31,7 +31,8 @@ class ExtensionSyncData {
   explicit ExtensionSyncData(const syncer::SyncChange& sync_change);
   ExtensionSyncData(const Extension& extension,
                     bool enabled,
-                    bool incognito_enabled);
+                    bool incognito_enabled,
+                    bool remote_install);
   ~ExtensionSyncData();
 
   // Retrieve sync data from this class.
@@ -56,6 +57,7 @@ class ExtensionSyncData {
   bool uninstalled() const { return uninstalled_; }
   bool enabled() const { return enabled_; }
   bool incognito_enabled() const { return incognito_enabled_; }
+  bool remote_install() const { return remote_install_; }
 
   // Version-dependent properties (i.e., should be used only when the
   // version of the currenty-installed extension matches |version|).

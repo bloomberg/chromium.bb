@@ -84,7 +84,8 @@ class PendingExtensionManager {
       const std::string& id,
       const GURL& update_url,
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
-      bool install_silently);
+      bool install_silently,
+      bool remote_install);
 
   // Adds an extension that was depended on by another extension.
   bool AddFromExtensionImport(
@@ -132,7 +133,8 @@ class PendingExtensionManager {
       bool install_silently,
       Manifest::Location install_source,
       int creation_flags,
-      bool mark_acknowledged);
+      bool mark_acknowledged,
+      bool remote_install);
 
   // Add a pending extension record directly.  Used for unit tests that need
   // to set an inital state. Use friendship to allow the tests to call this

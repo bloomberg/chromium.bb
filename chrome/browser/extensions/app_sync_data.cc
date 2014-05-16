@@ -27,10 +27,14 @@ AppSyncData::AppSyncData(const syncer::SyncChange& sync_change) {
 AppSyncData::AppSyncData(const Extension& extension,
                          bool enabled,
                          bool incognito_enabled,
+                         bool remote_install,
                          const syncer::StringOrdinal& app_launch_ordinal,
                          const syncer::StringOrdinal& page_ordinal,
                          extensions::LaunchType launch_type)
-    : extension_sync_data_(extension, enabled, incognito_enabled),
+    : extension_sync_data_(extension,
+                           enabled,
+                           incognito_enabled,
+                           remote_install),
       app_launch_ordinal_(app_launch_ordinal),
       page_ordinal_(page_ordinal),
       launch_type_(launch_type) {
