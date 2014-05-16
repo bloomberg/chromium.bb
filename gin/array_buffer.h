@@ -26,7 +26,6 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 class GIN_EXPORT ArrayBuffer {
  public:
   ArrayBuffer();
-  explicit ArrayBuffer(v8::Isolate* isolate);
   ArrayBuffer(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> buffer);
   ~ArrayBuffer();
   ArrayBuffer& operator=(const ArrayBuffer& other);
@@ -55,6 +54,7 @@ class GIN_EXPORT ArrayBufferView {
   ArrayBufferView();
   ArrayBufferView(v8::Isolate* isolate, v8::Handle<v8::ArrayBufferView> view);
   ~ArrayBufferView();
+  ArrayBufferView& operator=(const ArrayBufferView& other);
 
   void* bytes() const {
     return static_cast<uint8_t*>(array_buffer_.bytes()) + offset_;

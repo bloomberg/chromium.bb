@@ -175,6 +175,14 @@ ArrayBufferView::ArrayBufferView(v8::Isolate* isolate,
 ArrayBufferView::~ArrayBufferView() {
 }
 
+ArrayBufferView& ArrayBufferView::operator=(const ArrayBufferView& other) {
+  array_buffer_ = other.array_buffer_;
+  offset_ = other.offset_;
+  num_bytes_ = other.num_bytes_;
+  return *this;
+}
+
+
 // Converter<ArrayBufferView> -------------------------------------------------
 
 bool Converter<ArrayBufferView>::FromV8(v8::Isolate* isolate,
