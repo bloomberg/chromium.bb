@@ -177,11 +177,6 @@ base::ProcessHandle BrowserChildProcessHostImpl::GetHandle() const {
   return child_process_->GetHandle();
 }
 
-void BrowserChildProcessHostImpl::SetNaClDebugStubPort(int port) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  data_.nacl_debug_stub_port = port;
-}
-
 void BrowserChildProcessHostImpl::SetName(const base::string16& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   data_.name = name;

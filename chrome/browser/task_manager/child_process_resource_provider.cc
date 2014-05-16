@@ -31,12 +31,10 @@ class ChildProcessResource : public Resource {
   ChildProcessResource(int process_type,
                        const base::string16& name,
                        base::ProcessHandle handle,
-                       int unique_process_id,
-                       int nacl_debug_stub_port);
+                       int unique_process_id);
   virtual ~ChildProcessResource();
 
   // Resource methods:
-  virtual int GetNaClDebugStubPort() const OVERRIDE;
   virtual base::string16 GetTitle() const OVERRIDE;
   virtual base::string16 GetProfileName() const OVERRIDE;
   virtual gfx::ImageSkia GetIcon() const OVERRIDE;
@@ -59,7 +57,6 @@ class ChildProcessResource : public Resource {
   base::ProcessHandle handle_;
   int pid_;
   int unique_process_id_;
-  int nacl_debug_stub_port_;
   mutable base::string16 title_;
   bool network_usage_support_;
 
@@ -77,13 +74,11 @@ ChildProcessResource::ChildProcessResource(
     int process_type,
     const base::string16& name,
     base::ProcessHandle handle,
-    int unique_process_id,
-    int nacl_debug_stub_port)
+    int unique_process_id)
     : process_type_(process_type),
       name_(name),
       handle_(handle),
       unique_process_id_(unique_process_id),
-      nacl_debug_stub_port_(nacl_debug_stub_port),
       network_usage_support_(false) {
   // We cache the process id because it's not cheap to calculate, and it won't
   // be available when we get the plugin disconnected notification.
@@ -99,10 +94,6 @@ ChildProcessResource::~ChildProcessResource() {
 }
 
 // Resource methods:
-int ChildProcessResource::GetNaClDebugStubPort() const {
-  return nacl_debug_stub_port_;
-}
-
 base::string16 ChildProcessResource::GetTitle() const {
   if (title_.empty())
     title_ = GetLocalizedTitle();
@@ -318,8 +309,7 @@ void ChildProcessResourceProvider::AddToTaskManager(
           child_process_data.process_type,
           child_process_data.name,
           child_process_data.handle,
-          child_process_data.id,
-          child_process_data.nacl_debug_stub_port);
+          child_process_data.id);
   resources_[child_process_data.handle] = resource;
   pid_to_resources_[resource->process_id()] = resource;
   task_manager_->AddResource(resource);
