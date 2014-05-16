@@ -219,6 +219,7 @@ void SingleThreadProxy::Stop() {
     DebugScopedSetMainThreadBlocked main_thread_blocked(this);
     DebugScopedSetImplThread impl(this);
 
+    BlockingTaskRunner::CapturePostTasks blocked;
     layer_tree_host_->DeleteContentsTexturesOnImplThread(
         layer_tree_host_impl_->resource_provider());
     layer_tree_host_impl_.reset();
