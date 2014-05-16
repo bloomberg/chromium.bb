@@ -1259,9 +1259,12 @@ DevToolsAndroidBridge::~DevToolsAndroidBridge() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(device_list_listeners_.empty());
   DCHECK(device_count_listeners_.empty());
-  if (device_manager_)
-    device_message_loop()->PostTask(FROM_HERE,
-        base::Bind(&AndroidDeviceManager::Stop, device_manager_));
+  if (device_manager_) {
+    AndroidDeviceManager* raw_ptr = device_manager_.get();
+    device_manager_->AddRef();
+    device_manager_ = NULL;
+    device_message_loop()->ReleaseSoon(FROM_HERE, raw_ptr);
+  }
 }
 
 void DevToolsAndroidBridge::RequestDeviceList() {

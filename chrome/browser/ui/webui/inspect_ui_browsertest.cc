@@ -45,7 +45,7 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, InspectUIPage) {
       new base::StringValue(chrome::kChromeUIInspectURL)));
 }
 
-IN_PROC_BROWSER_TEST_F(InspectUITest, DISABLED_SharedWorker) {
+IN_PROC_BROWSER_TEST_F(InspectUITest, SharedWorker) {
   ASSERT_TRUE(test_server()->Start());
   GURL url = test_server()->GetURL(kSharedWorkerTestPage);
   ui_test_utils::NavigateToURL(browser(), url);
