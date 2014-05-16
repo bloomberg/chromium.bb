@@ -1513,6 +1513,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                  arraysize(kIpcFuzzerSwitches));
 #endif
 
+#if defined(OS_CHROMEOS)
+  // On Chrome OS need to pass primary user homedir (in multi-profiles session).
+  base::FilePath homedir;
+  PathService::Get(base::DIR_HOME, &homedir);
+  command_line->AppendSwitchASCII(chromeos::switches::kHomedir,
+                                  homedir.value().c_str());
+#endif
+
   if (process_type == switches::kRendererProcess) {
 #if defined(OS_CHROMEOS)
     const std::string& login_profile =

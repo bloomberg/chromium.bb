@@ -6,8 +6,10 @@
 
 #include <cups/ppd.h>
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -99,8 +101,9 @@ void MarkLpOptions(const std::string& printer_name, ppd_file_t** ppd) {
 
   std::vector<base::FilePath> file_locations;
   file_locations.push_back(base::FilePath(kSystemLpOptionPath));
-  file_locations.push_back(base::FilePath(
-      base::GetHomeDir().Append(kUserLpOptionPath)));
+  base::FilePath homedir;
+  PathService::Get(base::DIR_HOME, &homedir);
+  file_locations.push_back(base::FilePath(homedir.Append(kUserLpOptionPath)));
 
   for (std::vector<base::FilePath>::const_iterator it = file_locations.begin();
        it != file_locations.end(); ++it) {

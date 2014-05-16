@@ -4,11 +4,13 @@
 
 #include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -42,15 +44,19 @@ base::FilePath g_testing_rlz_store_path_;
 
 // Returns file path of the RLZ storage.
 base::FilePath GetRlzStorePath() {
+  base::FilePath homedir;
+  PathService::Get(base::DIR_HOME, &homedir);
   return g_testing_rlz_store_path_.empty() ?
-      base::GetHomeDir().Append(kRLZDataFileName) :
+      homedir.Append(kRLZDataFileName) :
       g_testing_rlz_store_path_.Append(kRLZDataFileName);
 }
 
 // Returns file path of the RLZ storage lock file.
 base::FilePath GetRlzStoreLockPath() {
+  base::FilePath homedir;
+  PathService::Get(base::DIR_HOME, &homedir);
   return g_testing_rlz_store_path_.empty() ?
-      base::GetHomeDir().Append(kRLZLockFileName) :
+      homedir.Append(kRLZLockFileName) :
       g_testing_rlz_store_path_.Append(kRLZLockFileName);
 }
 

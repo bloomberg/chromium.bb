@@ -4,7 +4,7 @@
 
 #include "remoting/host/branding.h"
 
-#include "base/file_util.h"
+#include "base/base_paths.h"
 #include "base/path_service.h"
 
 namespace {
@@ -46,7 +46,7 @@ base::FilePath GetConfigDir() {
 #elif defined(OS_MACOSX)
   PathService::Get(base::DIR_APP_DATA, &app_data_dir);
 #else
-  app_data_dir = base::GetHomeDir();
+  PathService::Get(base::DIR_HOME, &app_data_dir);
 #endif
 
   return app_data_dir.Append(kConfigDir);

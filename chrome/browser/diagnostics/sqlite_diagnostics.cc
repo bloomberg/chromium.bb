@@ -4,6 +4,7 @@
 
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -240,14 +241,16 @@ DiagnosticsTest* MakeSqliteHistoryDbTest() {
 
 #if defined(OS_CHROMEOS)
 DiagnosticsTest* MakeSqliteNssCertDbTest() {
-  base::FilePath home_dir = base::GetHomeDir();
+  base::FilePath home_dir;
+  PathService::Get(base::DIR_HOME, &home_dir);
   return new SqliteIntegrityTest(SqliteIntegrityTest::REMOVE_IF_CORRUPT,
                                  DIAGNOSTICS_SQLITE_INTEGRITY_NSS_CERT_TEST,
                                  home_dir.Append(chromeos::kNssCertDbPath));
 }
 
 DiagnosticsTest* MakeSqliteNssKeyDbTest() {
-  base::FilePath home_dir = base::GetHomeDir();
+  base::FilePath home_dir;
+  PathService::Get(base::DIR_HOME, &home_dir);
   return new SqliteIntegrityTest(SqliteIntegrityTest::REMOVE_IF_CORRUPT,
                                  DIAGNOSTICS_SQLITE_INTEGRITY_NSS_KEY_TEST,
                                  home_dir.Append(chromeos::kNssKeyDbPath));
