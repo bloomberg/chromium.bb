@@ -250,8 +250,9 @@ class PackageBuilder(object):
         subdir=output_subdir)
 
     if not is_source_target and self._options.install:
-      logging.debug('Installing output to %s' % self._options.install)
-      pynacl.file_tools.CopyTree(output, self._options.install)
+      install = pynacl.platform.CygPath(self._options.install)
+      logging.debug('Installing output to %s' % install)
+      pynacl.file_tools.CopyTree(output, install)
 
   def BuildOrder(self, targets):
     """Find what needs to be built in what order to build all targets.
@@ -325,8 +326,9 @@ class PackageBuilder(object):
           built_packages.append(package_file)
 
     if self._options.packages_file:
-      pynacl.file_tools.MakeParentDirectoryIfAbsent(self._options.packages_file)
-      with open(self._options.packages_file, 'wt') as f:
+      packages_file = pynacl.platform.CygPath(self._options.packages_file)
+      pynacl.file_tools.MakeParentDirectoryIfAbsent(packages_file)
+      with open(packages_file, 'wt') as f:
         f.write('\n'.join(built_packages))
 
   def DecodeArgs(self, packages, args):

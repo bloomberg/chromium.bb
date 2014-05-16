@@ -55,18 +55,22 @@ toolchain_install_dir = os.path.join(
     '%s_%s' % (host_os, pynacl.platform.GetArch()),
     'pnacl_newlib')
 
-toolchain_build_cmd = [
-    sys.executable,
-    os.path.join(
-        NACL_DIR, 'toolchain_build', 'toolchain_build_pnacl.py'),
-    '--verbose', '--sync', '--clobber', '--build-64bit-host',
+def ToolchainBuildCmd(python_executable=None, sync=False, extra_flags=[]):
+  executable = [python_executable] if python_executable else [sys.executable]
+  sync_flag = ['--sync'] if sync else []
+  return executable + [
+    # The path to the script is a relative path with forward slashes so it is
+    # interpreted properly when it uses __file__ inside cygwin
+    'toolchain_build/toolchain_build_pnacl.py',
+    '--verbose', '--clobber', '--build-64bit-host',
     '--install', toolchain_install_dir,
-]
+    ] + sync_flag + extra_flags
 
 
 # Sync the git repos used by build.sh
 with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
-  buildbot_lib.Command(context, toolchain_build_cmd + ['--legacy-repo-sync'])
+  buildbot_lib.Command(
+    context, ToolchainBuildCmd(extra_flags=['--legacy-repo-sync']))
 
 # Clean out any installed toolchain parts that were built by previous bot runs.
 with buildbot_lib.Step('Sync TC install dir', status):
@@ -95,6 +99,42 @@ if host_os == 'win' or host_os == 'mac' or not pynacl.platform.IsArch64Bit():
                                       'nonpexe_tests'], parallel=True)
 
 
+if host_os == 'win':
+  # On windows, sync with Windows git/svn rather than cygwin git/svn
+  with buildbot_lib.Step('Sync toolchain_build sources', status):
+    buildbot_lib.Command(
+      context, ToolchainBuildCmd(sync=True, extra_flags=['--sync-only']))
+
+with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
+  # Update cygwin if necessary.
+  if host_os == 'win':
+    if sys.platform == 'cygwin':
+      print 'This script does not support running from inside cygwin!'
+      sys.exit(1)
+      subprocess.check_call(os.path.join(SCRIPT_DIR, 'cygwin_env.bat'))
+    saved_path = os.environ['PATH']
+    print saved_path
+    paths = saved_path.split(os.pathsep)
+    # Put path to cygwin tools at the beginning, so cygwin tools like python
+    # and cmake will supercede others (which do not understand cygwin paths)
+    paths = [os.path.join(NACL_DIR, 'cygwin', 'bin')] + paths
+    print paths
+    os.environ['PATH'] = os.pathsep.join(paths)
+    print os.environ['PATH']
+    bash = os.path.join(NACL_DIR, 'cygwin', 'bin', 'bash')
+    cygwin_python = os.path.join(NACL_DIR, 'cygwin', 'bin', 'python')
+  else:
+    # Assume bash is in the path
+    bash = 'bash'
+
+  try:
+    print 'Bash version:'
+    sys.stdout.flush()
+    subprocess.check_call([bash , '--version'])
+  except subprocess.CalledProcessError:
+    print 'Bash not found in path!'
+    raise buildbot_lib.StepFailed()
+
 # toolchain_build outputs its own buildbot annotations, so don't use
 # buildbot_lib.Step to run it here.
 try:
@@ -104,7 +144,9 @@ try:
   elif args.trybot:
     gsd_arg = ['--trybot']
 
-  cmd = toolchain_build_cmd + gsd_arg + ['--packages-file', TEMP_PACKAGES_FILE]
+  cmd = ToolchainBuildCmd(cygwin_python if host_os == 'win' else None,
+                          host_os != 'win', # On Windows, we synced already
+                          gsd_arg + ['--packages-file', TEMP_PACKAGES_FILE])
   logging.info('Running: ' + ' '.join(cmd))
   subprocess.check_call(cmd)
 
@@ -141,33 +183,6 @@ if host_os != 'win':
                  '--verbose']
     buildbot_lib.Command(context, llvm_test)
 
-with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
-  # Update cygwin if necessary.
-  if host_os == 'win':
-    if sys.platform == 'cygwin':
-      print 'This script does not support running from inside cygwin!'
-      sys.exit(1)
-    subprocess.check_call(os.path.join(SCRIPT_DIR, 'cygwin_env.bat'))
-    print os.environ['PATH']
-    paths = os.environ['PATH'].split(os.pathsep)
-    # Put path to cygwin tools at the beginning, so cygwin tools like python
-    # and cmake will supercede others (which do not understand cygwin paths)
-    paths = [os.path.join(NACL_DIR, 'cygwin', 'bin')] + paths
-    print paths
-    os.environ['PATH'] = os.pathsep.join(paths)
-    print os.environ['PATH']
-    bash = os.path.join(NACL_DIR, 'cygwin', 'bin', 'bash')
-  else:
-    # Assume bash is in the path
-    bash = 'bash'
-
-  try:
-    print 'Bash version:'
-    sys.stdout.flush()
-    subprocess.check_call([bash , '--version'])
-  except subprocess.CalledProcessError:
-    print 'Bash not found in path!'
-    raise buildbot_lib.StepFailed()
 
 # Now we run the PNaCl buildbot script. It in turn runs the PNaCl build.sh
 # script and runs scons tests.

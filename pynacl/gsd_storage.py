@@ -22,6 +22,7 @@ import tempfile
 
 import file_tools
 import http_download
+import platform
 
 
 GS_PATTERN = 'gs://%s'
@@ -71,13 +72,14 @@ class GSDStorage(object):
       download: Testing hook to intercept download.
     """
     if gsutil is None:
+      gsutil_script = platform.CygPath(os.environ.get('GSUTIL', 'gsutil'))
       try:
         # Require that gsutil be Python if it is specified in the environment.
         gsutil = [sys.executable,
-                  file_tools.Which(os.environ.get('GSUTIL', 'gsutil'),
+                  file_tools.Which(gsutil_script,
                                    require_executable=False)]
       except file_tools.ExecutableNotFound:
-        gsutil = ['gsutil']
+        gsutil = [gsutil_script]
     assert isinstance(gsutil, list)
     assert isinstance(read_buckets, list)
     self._gsutil = gsutil

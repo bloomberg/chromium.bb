@@ -339,7 +339,8 @@ def Main():
   if 'AWS_CREDENTIAL_FILE' in env:
     del env['AWS_CREDENTIAL_FILE']
   env['BOTO_CONFIG'] = os.path.expanduser('~/.boto')
-  env['GSUTIL'] = '/b/build/third_party/gsutil/gsutil'
+  cwd_drive = os.path.splitdrive(os.getcwd())[0]
+  env['GSUTIL'] = cwd_drive + '/b/build/third_party/gsutil/gsutil'
 
   # When running from cygwin, we sometimes want to use a native python.
   # The native python will use the depot_tools version by invoking python.bat.

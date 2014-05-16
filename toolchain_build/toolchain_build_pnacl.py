@@ -80,6 +80,9 @@ MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 def TripleIsWindows(t):
   return fnmatch.fnmatch(t, '*-mingw32*')
 
+def TripleIsCygWin(t):
+  return fnmatch.fnmatch(t, '*-cygwin*')
+
 
 def CompilersForHost(host):
   compiler = {
@@ -91,6 +94,7 @@ def CompilersForHost(host):
       # Windows build should work for native and cross
       'i686-w64-mingw32': ('i686-w64-mingw32-gcc', 'i686-w64-mingw32-g++'),
       # TODO: add arm-hosted support
+      'i686-pc-cygwin': ('gcc', 'g++'),
   }
   return compiler[host]
 
@@ -162,7 +166,7 @@ def CmakeHostArchFlags(host, options):
 
 def MakeCommand(host):
   make_command = ['make']
-  if not pynacl.platform.IsWindows():
+  if not pynacl.platform.IsWindows() or pynacl.platform.IsCygWin():
     # The make that ships with msys sometimes hangs when run with -j.
     # The ming32-make that comes with the compiler itself reportedly doesn't
     # have this problem, but it has issues with pathnames with LLVM's build.
@@ -178,10 +182,15 @@ def MakeCommand(host):
 
 
 def CopyWindowsHostLibs(host):
-  if not TripleIsWindows(host):
+
+  if not TripleIsWindows(host) and not TripleIsCygWin(host):
     return []
 
-  if pynacl.platform.IsWindows():
+  if TripleIsCygWin(host):
+    lib_path = '/bin'
+    libs = ('cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygwin1.dll',
+            'cygintl-8.dll', 'cygstdc++-6.dll', 'cygz.dll')
+  elif pynacl.platform.IsWindows():
     lib_path = os.path.join(MINGW_PATH, 'bin')
     # The native minGW compiler uses winpthread, but the Ubuntu cross compiler
     # does not.
@@ -207,6 +216,7 @@ def GetGitSyncCmdsCallback(revisions):
                                 revisions[component]),
             command.Runnable(None, pnacl_commands.CmdCheckoutGitBundleForTrybot,
                              component, '%(output)s')]
+
   return GetGitSyncCmds
 
 def HostToolsSources(GetGitSyncCmds):
@@ -324,10 +334,12 @@ def HostTools(host, options):
         'output_subdir': BinSubdir(host),
         'inputs': { 'src': os.path.join(NACL_DIR, 'pnacl', 'driver')},
         'commands': [
-            command.Runnable(None, pnacl_commands.InstallDriverScripts,
-                             '%(src)s', '%(output)s',
-                             host_windows=TripleIsWindows(host),
-                             host_64bit=IsHost64(host))
+            command.Runnable(
+                None,
+                pnacl_commands.InstallDriverScripts,
+                '%(src)s', '%(output)s',
+                host_windows=TripleIsWindows(host) or TripleIsCygWin(host),
+                host_64bit=IsHost64(host))
         ],
       },
   }

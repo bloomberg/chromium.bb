@@ -141,6 +141,13 @@ def IsLinux(platform=None):
 def IsLinux64(platform=None, machine=None):
   return IsLinux(platform) and IsArch64Bit(machine)
 
+# If we are on cygwin convert a (possibly) Windows path to one we can use
+# with Python APIs
+def CygPath(path):
+  if IsCygWin():
+    return subprocess.check_output(['cygpath', path]).strip()
+  return path
+
 # Some of our tools utilize a unique platform string which is used to
 # distinguish between platform and architectures.
 def PlatformTriple(platform=None, machine=None):
