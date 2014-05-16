@@ -17,7 +17,7 @@ import sys
 from subprocess2 import CalledProcessError
 
 from git_common import remove_merge_base, manual_merge_base, current_branch
-from git_common import get_or_create_merge_base, hash_one
+from git_common import get_or_create_merge_base, hash_one, upstream
 
 
 def main(argv):
@@ -51,7 +51,7 @@ def main(argv):
       )
       return 1
 
-    manual_merge_base(cur, opts.merge_base)
+    manual_merge_base(cur, opts.merge_base, upstream(cur))
 
   ret = 0
   actual = get_or_create_merge_base(cur)

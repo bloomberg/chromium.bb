@@ -352,8 +352,15 @@ def get_or_create_merge_base(branch, parent=None):
   If parent is supplied, it's used instead of calling upstream(branch).
   """
   base = branch_config(branch, 'base')
+  base_upstream = branch_config(branch, 'base-upstream')
   parent = parent or upstream(branch)
+  if not parent:
+    return None
   actual_merge_base = run('merge-base', parent, branch)
+
+  if base_upstream != parent:
+    base = None
+    base_upstream = None
 
   def is_ancestor(a, b):
     return run_with_retcode('merge-base', '--is-ancestor', a, b) == 0
@@ -370,7 +377,7 @@ def get_or_create_merge_base(branch, parent=None):
 
   if not base:
     base = actual_merge_base
-    manual_merge_base(branch, base)
+    manual_merge_base(branch, base, parent)
 
   return base
 
@@ -409,8 +416,9 @@ def is_dormant(branch):
   return branch_config(branch, 'dormant', 'false') != 'false'
 
 
-def manual_merge_base(branch, base):
+def manual_merge_base(branch, base, parent):
   set_branch_config(branch, 'base', base)
+  set_branch_config(branch, 'base-upstream', parent)
 
 
 def mktree(treedict):
@@ -475,6 +483,7 @@ def rebase(parent, start, branch, abort=False):
 
 def remove_merge_base(branch):
   del_branch_config(branch, 'base')
+  del_branch_config(branch, 'base-upstream')
 
 
 def root():

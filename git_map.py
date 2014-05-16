@@ -50,6 +50,7 @@ def main():
   current = current_branch()
   all_branches = set(branches())
   merge_base_map = {b: get_or_create_merge_base(b) for b in all_branches}
+  merge_base_map = {b: v for b, v in merge_base_map.iteritems() if v}
   if current in all_branches:
     all_branches.remove(current)
   all_tags = set(tags())

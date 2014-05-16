@@ -375,6 +375,8 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
           J L
 
   X Y Z
+
+  CAT DOG
   """
 
   COMMIT_B = {'file': {'data': 'B'}}
@@ -396,18 +398,18 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     for i in xrange(30):
       self.repo.git('branch', 'a'*i)
 
-    with self.assertRaises(SystemExit):
-      self.repo.run(list, self.gc.branches())
+    _, rslt = self.repo.capture_stdio(list, self.gc.branches())
+    self.assertIn('too many branches (39/20)', rslt)
 
     self.repo.git('config', 'depot-tools.branch-limit', 'cat')
 
-    with self.assertRaises(SystemExit):
-      self.repo.run(list, self.gc.branches())
+    _, rslt = self.repo.capture_stdio(list, self.gc.branches())
+    self.assertIn('too many branches (39/20)', rslt)
 
     self.repo.git('config', 'depot-tools.branch-limit', '100')
 
     # should not raise
-    self.assertEqual(36, len(self.repo.run(list, self.gc.branches())))
+    self.assertEqual(38, len(self.repo.run(list, self.gc.branches())))
 
   def testMergeBase(self):
     self.repo.git('checkout', 'branch_K')
@@ -425,9 +427,12 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.assertEqual(
       self.repo['B'], self.repo.run(self.gc.config, 'branch.branch_K.base')
     )
+    self.assertEqual(
+      'branch_G', self.repo.run(self.gc.config, 'branch.branch_K.base-upstream')
+    )
 
     # deadbeef is a bad hash, so this will result in repo['B']
-    self.repo.run(self.gc.manual_merge_base, 'branch_K', 'deadbeef')
+    self.repo.run(self.gc.manual_merge_base, 'branch_K', 'deadbeef', 'branch_G')
 
     self.assertEqual(
       self.repo['B'],
@@ -435,7 +440,8 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     )
 
     # but if we pick a real ancestor, then it'll work
-    self.repo.run(self.gc.manual_merge_base, 'branch_K', self.repo['I'])
+    self.repo.run(self.gc.manual_merge_base, 'branch_K', self.repo['I'],
+                  'branch_G')
 
     self.assertEqual(
       self.repo['I'],
@@ -454,16 +460,28 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     self.assertEqual({}, self.repo.run(self.gc.branch_config_map, 'base'))
 
     # if it's too old, then it caps at merge-base
-    self.repo.run(self.gc.manual_merge_base, 'branch_K', self.repo['A'])
+    self.repo.run(self.gc.manual_merge_base, 'branch_K', self.repo['A'],
+                  'branch_G')
 
     self.assertEqual(
       self.repo['B'],
       self.repo.run(self.gc.get_or_create_merge_base, 'branch_K', 'branch_G')
     )
 
+    # If the user does --set-upstream-to something else, then we discard the
+    # base and recompute it.
+    self.repo.run(self.gc.run, 'branch', '-u', 'root_A')
+    self.assertEqual(
+      self.repo['A'],
+      self.repo.run(self.gc.get_or_create_merge_base, 'branch_K')
+    )
+
+    self.assertIsNone(
+      self.repo.run(self.gc.get_or_create_merge_base, 'branch_DOG'))
+
   def testGetBranchTree(self):
     skipped, tree = self.repo.run(self.gc.get_branch_tree)
-    self.assertEqual(skipped, {'master', 'root_X'})
+    self.assertEqual(skipped, {'master', 'root_X', 'branch_DOG', 'root_CAT'})
     self.assertEqual(tree, {
       'branch_G': 'root_A',
       'root_A': 'root_X',
@@ -517,6 +535,8 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
             J L
 
     X Y Z
+
+    CAT DOG
     """)
 
     rslt = self.repo.run(
@@ -528,6 +548,8 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
       B H I J L
 
     X Y Z
+
+    CAT DOG
     """)
 
     rslt = self.repo.run(
@@ -551,6 +573,8 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
     A B C D E F G H I J K L
 
     X Y Z
+
+    CAT DOG
     """)
 
 

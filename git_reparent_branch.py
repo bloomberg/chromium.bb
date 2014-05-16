@@ -11,7 +11,7 @@ import sys
 import subprocess2
 
 from git_common import upstream, current_branch, run, tags, set_branch_config
-from git_common import get_or_create_merge_base, root
+from git_common import get_or_create_merge_base, root, manual_merge_base
 
 import git_rebase_update
 
@@ -44,7 +44,7 @@ def main(args):
   if new_parent == cur_parent:
     parser.error('Cannot reparent a branch to its existing parent')
 
-  get_or_create_merge_base(branch, cur_parent)
+  mbase = get_or_create_merge_base(branch, cur_parent)
 
   all_tags = tags()
   if cur_parent in all_tags:
@@ -65,6 +65,8 @@ def main(args):
     print ("Reparenting %s to track %s (was %s)"
            % (branch, new_parent, cur_parent))
     run('branch', '--set-upstream-to', new_parent, branch)
+
+  manual_merge_base(branch, mbase, new_parent)
 
   # TODO(iannucci): ONLY rebase-update the branch which moved (and dependants)
   return git_rebase_update.main(['--no_fetch'])
