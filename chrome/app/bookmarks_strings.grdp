@@ -12,17 +12,16 @@
     </message>
 
     <!-- The special folders created when importing from other other browsers. -->
-    <message name="IDS_BOOKMARK_GROUP_FROM_IE" desc="The group name of bookmarks from Internet Explorer">
-      Imported From IE
-    </message>
+    <if expr="is_win">
+      <message name="IDS_BOOKMARK_GROUP_FROM_IE" desc="The group name of bookmarks from Internet Explorer">
+        Imported From IE
+      </message>
+    </if>
     <message name="IDS_BOOKMARK_GROUP_FROM_FIREFOX" desc="The group name of bookmarks from Firefox">
       Imported From Firefox
     </message>
     <message name="IDS_BOOKMARK_GROUP_FROM_SAFARI" desc="The group name of bookmarks from Safari">
       Imported From Safari
-    </message>
-    <message name="IDS_BOOKMARK_GROUP_FROM_GOOGLE_TOOLBAR" desc="The group name of bookmarks from Google Toolbar">
-      Imported From Google Toolbar
     </message>
     <message name="IDS_BOOKMARK_GROUP" desc="The group name of bookmarks imported from a file">
       Imported
@@ -268,9 +267,11 @@
   <message name="IDS_BOOKMARK_AX_EDITOR_NAME_LABEL" desc="Spoken text for bookmark name text field in edit folder dialog">
     Bookmark name
   </message>
-  <message name="IDS_BOOKMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
-    Name:
-  </message>
+  <if expr="is_macosx">
+    <message name="IDS_BOOKMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
+      Name:
+    </message>
+  </if>
   <message name="IDS_BOOKMARK_AX_EDITOR_URL_LABEL" desc="Spoken text for bookmark URL text field in edit folder dialog.">
     Bookmark URL
   </message>
