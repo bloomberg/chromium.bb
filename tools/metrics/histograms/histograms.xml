@@ -36033,6 +36033,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Represents a card type ID. See cardTypeId in
     chrome/browser/resources/google_now/background.js.
   </summary>
+  <int value="1" label="Frequent Place"/>
+  <int value="7" label="Weather"/>
+  <int value="12" label="Flight Status"/>
+  <int value="13" label="Sport Score"/>
+  <int value="14" label="Calendar"/>
+  <int value="19" label="Public Alert"/>
+  <int value="21" label="Stock Quote List"/>
+  <int value="23" label="Package Tracking"/>
+  <int value="27" label="Birthday"/>
+  <int value="43" label="Reminder"/>
 </enum>
 
 <enum name="GoogleNowEvent" type="int">
