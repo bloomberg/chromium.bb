@@ -164,9 +164,10 @@ class LocalExtensionCache {
                              bool was_error,
                              const PutExtensionCallback& callback);
 
-  // Remove crx file at |file_path| in the cache. This method is invoked via
-  // the |backend_task_runner_|.
-  static void BackendRemoveCacheEntry(const base::FilePath& file_path);
+  // Remove cached crx files(all versions) under |cached_dir| for extension with
+  // |id|. This method is invoked via the |backend_task_runner_|.
+  static void BackendRemoveCacheEntry(const base::FilePath& cache_dir,
+                                      const std::string& id);
 
   // Compare two cache items returns true if first item is older.
   static bool CompareCacheItemsAge(const CacheMap::iterator& lhs,

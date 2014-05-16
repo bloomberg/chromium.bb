@@ -29,6 +29,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+using content::BrowserThread;
+
 namespace chromeos {
 
 namespace {
@@ -549,6 +551,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, RemoveApp) {
 
   // Remove the app now.
   manager()->RemoveApp(kTestLocalFsKioskApp);
+  content::RunAllPendingInMessageLoop(BrowserThread::FILE);
   manager()->GetApps(&apps);
   ASSERT_EQ(0u, apps.size());
   EXPECT_FALSE(base::PathExists(crx_path));
@@ -593,6 +596,50 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
       "bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx"));
   EXPECT_TRUE(base::PathExists(v2_file_path));
   EXPECT_TRUE(base::ContentsEqual(v2_file_path, new_crx_path));
+}
+
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAndRemoveApp) {
+  // Add a version 1 app first.
+  RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName);
+  KioskAppManager::Apps apps;
+  manager()->GetApps(&apps);
+  ASSERT_EQ(1u, apps.size());
+  base::FilePath v1_crx_path;
+  std::string version;
+  EXPECT_TRUE(GetCachedCrx(kTestLocalFsKioskApp, &v1_crx_path, &version));
+  EXPECT_TRUE(base::PathExists(v1_crx_path));
+  EXPECT_EQ("1.0.0", version);
+
+  // Update to version 2.
+  fake_cws()->SetUpdateCrx(
+      kTestLocalFsKioskApp,
+      "bmbpicmpniaclbbpdkfglgipkkebnbjf_v2_read_and_verify_data.crx",
+      "2.0.0");
+  AppDataLoadWaiter waiter(manager(), 1);
+  UpdateAppData();
+  waiter.Wait();
+  EXPECT_TRUE(waiter.loaded());
+
+  // Verify the app has been updated to v2.
+  manager()->GetApps(&apps);
+  ASSERT_EQ(1u, apps.size());
+  base::FilePath v2_crx_path;
+  std::string new_version;
+  EXPECT_TRUE(GetCachedCrx(kTestLocalFsKioskApp, &v2_crx_path, &new_version));
+  EXPECT_EQ("2.0.0", new_version);
+  // Verify both v1 and v2 crx files exist.
+  EXPECT_TRUE(base::PathExists(v1_crx_path));
+  EXPECT_TRUE(base::PathExists(v2_crx_path));
+
+  // Remove the app now.
+  manager()->RemoveApp(kTestLocalFsKioskApp);
+  content::RunAllPendingInMessageLoop(BrowserThread::FILE);
+  manager()->GetApps(&apps);
+  ASSERT_EQ(0u, apps.size());
+  // Verify both v1 and v2 crx files are removed.
+  EXPECT_FALSE(base::PathExists(v1_crx_path));
+  EXPECT_FALSE(base::PathExists(v2_crx_path));
+  EXPECT_FALSE(GetCachedCrx(kTestLocalFsKioskApp, &v2_crx_path, &version));
 }
 
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, EnableConsumerKiosk) {

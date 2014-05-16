@@ -145,8 +145,8 @@ bool LocalExtensionCache::RemoveExtension(const std::string& id) {
 
   backend_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&LocalExtensionCache::BackendRemoveCacheEntry,
-                 it->second.file_path));
+      base::Bind(
+          &LocalExtensionCache::BackendRemoveCacheEntry, cache_dir_, id));
 
   cached_extensions_.erase(it);
   return true;
@@ -438,9 +438,18 @@ void LocalExtensionCache::OnCacheEntryInstalled(
 
 // static
 void LocalExtensionCache::BackendRemoveCacheEntry(
-    const base::FilePath& file_path) {
-  base::DeleteFile(file_path, true /* recursive */);
-  VLOG(1) << "Removed cached file " << file_path.value();
+    const base::FilePath& cache_dir,
+    const std::string& id) {
+  std::string file_pattern = id + "-*" + kCRXFileExtension;
+  base::FileEnumerator enumerator(cache_dir,
+                                  false /* not recursive */,
+                                  base::FileEnumerator::FILES,
+                                  file_pattern);
+  for (base::FilePath path = enumerator.Next(); !path.empty();
+       path = enumerator.Next()) {
+    base::DeleteFile(path, false);
+    VLOG(1) << "Removed cached file " << path.value();
+  }
 }
 
 // static
