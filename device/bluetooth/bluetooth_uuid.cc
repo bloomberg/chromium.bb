@@ -42,7 +42,7 @@ void GetCanonicalUuid(std::string uuid,
     } else {
       if (!IsHexDigit(uuid[i]))
         return;
-      uuid[i] = tolower(uuid[i]);
+      uuid[i] = base::ToLowerASCII(uuid[i]);
     }
   }
 
