@@ -235,61 +235,60 @@ void RenderSVGShape::strokeShape(RenderStyle* style, GraphicsContext* context)
 void RenderSVGShape::paint(PaintInfo& paintInfo, const LayoutPoint&)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-
-    if (paintInfo.context->paintingDisabled() || style()->visibility() == HIDDEN || isShapeEmpty())
+    if (paintInfo.context->paintingDisabled()
+        || paintInfo.phase != PaintPhaseForeground
+        || style()->visibility() == HIDDEN
+        || isShapeEmpty())
         return;
+
     FloatRect boundingBox = repaintRectInLocalCoordinates();
     if (!SVGRenderSupport::paintInfoIntersectsRepaintRect(boundingBox, m_localTransform, paintInfo))
         return;
 
     PaintInfo childPaintInfo(paintInfo);
-    bool drawsOutline = style()->outlineWidth() && (childPaintInfo.phase == PaintPhaseOutline || childPaintInfo.phase == PaintPhaseSelfOutline);
-    if (drawsOutline || childPaintInfo.phase == PaintPhaseForeground) {
-        GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
-        childPaintInfo.applyTransform(m_localTransform);
 
-        if (childPaintInfo.phase == PaintPhaseForeground) {
-            SVGRenderingContext renderingContext(this, childPaintInfo);
+    GraphicsContextStateSaver stateSaver(*childPaintInfo.context);
+    childPaintInfo.applyTransform(m_localTransform);
 
-            if (renderingContext.isRenderingPrepared()) {
-                const SVGRenderStyle* svgStyle = style()->svgStyle();
-                if (svgStyle->shapeRendering() == SR_CRISPEDGES)
-                    childPaintInfo.context->setShouldAntialias(false);
+    SVGRenderingContext renderingContext(this, childPaintInfo);
 
-                for (int i = 0; i < 3; i++) {
-                    switch (svgStyle->paintOrderType(i)) {
-                    case PT_FILL:
-                        fillShape(this->style(), childPaintInfo.context);
-                        break;
-                    case PT_STROKE:
-                        if (svgStyle->hasVisibleStroke()) {
-                            GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
-                            AffineTransform nonScalingTransform;
+    if (renderingContext.isRenderingPrepared()) {
+        const SVGRenderStyle* svgStyle = style()->svgStyle();
+        if (svgStyle->shapeRendering() == SR_CRISPEDGES)
+            childPaintInfo.context->setShouldAntialias(false);
 
-                            if (hasNonScalingStroke()) {
-                                AffineTransform nonScalingTransform = nonScalingStrokeTransform();
-                                if (!setupNonScalingStrokeContext(nonScalingTransform, stateSaver))
-                                    return;
-                            }
+        for (int i = 0; i < 3; i++) {
+            switch (svgStyle->paintOrderType(i)) {
+            case PT_FILL:
+                fillShape(this->style(), childPaintInfo.context);
+                break;
+            case PT_STROKE:
+                if (svgStyle->hasVisibleStroke()) {
+                    GraphicsContextStateSaver stateSaver(*childPaintInfo.context, false);
+                    AffineTransform nonScalingTransform;
 
-                            strokeShape(this->style(), childPaintInfo.context);
-                        }
-                        break;
-                    case PT_MARKERS:
-                        if (!m_markerPositions.isEmpty())
-                            drawMarkers(childPaintInfo);
-                        break;
-                    default:
-                        ASSERT_NOT_REACHED();
-                        break;
+                    if (hasNonScalingStroke()) {
+                        AffineTransform nonScalingTransform = nonScalingStrokeTransform();
+                        if (!setupNonScalingStrokeContext(nonScalingTransform, stateSaver))
+                            return;
                     }
+
+                    strokeShape(this->style(), childPaintInfo.context);
                 }
+                break;
+            case PT_MARKERS:
+                if (!m_markerPositions.isEmpty())
+                    drawMarkers(childPaintInfo);
+                break;
+            default:
+                ASSERT_NOT_REACHED();
+                break;
             }
         }
-
-        if (drawsOutline)
-            paintOutline(childPaintInfo, IntRect(boundingBox));
     }
+
+    if (style()->outlineWidth())
+        paintOutline(childPaintInfo, IntRect(boundingBox));
 }
 
 // This method is called from inside paintOutline() since we call paintOutline()

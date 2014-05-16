@@ -1005,3 +1005,6 @@ crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/bidi-ignorab
 crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/format-control.html [ NeedsRebaseline ]
 crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
 crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/drawBidiText.html [ NeedsRebaseline ]
+
+# We overpainted outlines in RenderSVGImage
+crbug.com/369473 svg/custom/focus-ring.svg [ NeedsRebaseline ]
