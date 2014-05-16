@@ -138,7 +138,8 @@ partword szendvicszab 156-15-1345-145-1236-24-146-126-1-12	For example szendvics
 begword hecc =	For example heccsajtójának word
 partword tanonc =	For example tanonccsaj word related need this exception
 partword kulcszen 13-136-123-146-126-15-1345	For example kulcszenekara word
- 
+partword zománc 126-135-134-4-1345-14	For example zománcsérülés, tűzzománcsorozat words
+
 #gy, ggy related exceptions
 #This exception section containing word parts and full words with need marking ggy letter pairs with single g and gy braille dot combination
 partword zálog 126-4-123-135-1245	For example záloggyűrűmet word
@@ -698,7 +699,7 @@ partword sszarv 234-156-1-1235-1236	For example kosszarv word
 partword sszőlő 234-156-12456-123-12456	For example Vértesszőlős village name
 partword levesszed 123-15-1236-15-234-156-15-145	For example levesszedő word
 always levesszag 123-15-1236-15-234-156-1-1245	For example levesszag, levesszagot, húslevesszagot words
-partword farkassz 124-1-1235-13-1-234-156	For example Farkassziget, farkasszáj words
+partword farkas =	For example Farkassziget, farkasszáj, farkaszsaru words
 partword hússzalon 125-346-234-156-1-123-135-1345	For example hússzalonna word
 always versszerű 1236-15-1235-234-156-15-1235-23456	For example versszerű word
 always kosszem 13-135-234-156-15-134	For example kosszem word
