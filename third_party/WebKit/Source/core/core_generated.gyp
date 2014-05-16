@@ -498,6 +498,43 @@
             '<(SHARED_INTERMEDIATE_DIR)/blink',
           ],
         },
+        # TODO: Move the following two blocks to modules. http://crbug.com/371581.
+        {
+          'action_name': 'EventTargetModulesFactory',
+          'inputs': [
+            '<@(make_event_factory_files)',
+            'events/EventTargetModulesFactory.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesHeaders.h',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesInterfaces.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_event_factory.py',
+            'events/EventTargetModulesFactory.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
+        {
+          'action_name': 'EventTargetModulesNames',
+          'inputs': [
+            '<@(make_names_files)',
+            'events/EventTargetModulesFactory.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_names.py',
+            'events/EventTargetModulesFactory.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
         {
           'action_name': 'MathMLNames',
           'inputs': [

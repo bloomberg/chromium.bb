@@ -53,6 +53,7 @@ class EventFactoryWriter(name_macros.Writer):
     }
     default_parameters = {
         'namespace': '',
+        'suffix': '',
     }
     filters = {
         'cpp_name': name_utilities.cpp_name,
@@ -64,12 +65,13 @@ class EventFactoryWriter(name_macros.Writer):
 
     def __init__(self, in_file_path):
         super(EventFactoryWriter, self).__init__(in_file_path)
-        self._outputs[(self.namespace + ".cpp")] = self.generate_implementation
+        self._outputs[(self.namespace + self.suffix + ".cpp")] = self.generate_implementation
 
     @template_expander.use_jinja('EventFactory.cpp.tmpl', filters=filters)
     def generate_implementation(self):
         return {
             'namespace': self.namespace,
+            'suffix': self.suffix,
             'events': self.in_file.name_dictionaries,
         }
 

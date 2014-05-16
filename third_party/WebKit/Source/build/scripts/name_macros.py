@@ -37,20 +37,20 @@ import name_utilities
 
 HEADER_TEMPLATE = """%(license)s
 
-#ifndef %(namespace)sHeaders_h
-#define %(namespace)sHeaders_h
-
+#ifndef %(namespace)s%(suffix)sHeaders_h
+#define %(namespace)s%(suffix)sHeaders_h
+%(base_header_for_suffix)s
 %(includes)s
 
-#endif // %(namespace)sHeaders_h
+#endif // %(namespace)s%(suffix)sHeaders_h
 """
 
 
 INTERFACES_HEADER_TEMPLATE = """%(license)s
 
-#ifndef %(namespace)sInterfaces_h
-#define %(namespace)sInterfaces_h
-
+#ifndef %(namespace)s%(suffix)sInterfaces_h
+#define %(namespace)s%(suffix)sInterfaces_h
+%(base_header_for_suffix)s
 %(declare_conditional_macros)s
 
 #define %(macro_style_name)s_INTERFACES_FOR_EACH(macro) \\
@@ -59,7 +59,7 @@ INTERFACES_HEADER_TEMPLATE = """%(license)s
     \\
 %(conditional_macros)s
 
-#endif // %(namespace)sInterfaces_h
+#endif // %(namespace)s%(suffix)sInterfaces_h
 """
 
 
@@ -67,12 +67,13 @@ class Writer(in_generator.Writer):
     def __init__(self, in_file_path):
         super(Writer, self).__init__(in_file_path)
         self.namespace = self.in_file.parameters['namespace'].strip('"')
+        self.suffix = self.in_file.parameters['suffix'].strip('"')
         self._entries_by_conditional = {}
         self._unconditional_entries = []
         self._validate_entries()
         self._sort_entries_by_conditional()
-        self._outputs = {(self.namespace + "Headers.h"): self.generate_headers_header,
-                         (self.namespace + "Interfaces.h"): self.generate_interfaces_header,
+        self._outputs = {(self.namespace + self.suffix + "Headers.h"): self.generate_headers_header,
+                         (self.namespace + self.suffix + "Interfaces.h"): self.generate_interfaces_header,
                         }
 
     def _validate_entries(self):
@@ -138,15 +139,20 @@ class Writer(in_generator.Writer):
         return includes.values()
 
     def generate_headers_header(self):
+        base_header_for_suffix = ''
+        if self.suffix:
+            base_header_for_suffix = '\n#include "%(namespace)sHeaders.h"\n' % {'namespace': self.namespace}
         return HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'namespace': self.namespace,
+            'suffix': self.suffix,
+            'base_header_for_suffix': base_header_for_suffix,
             'includes': '\n'.join(self._headers_header_includes(self.in_file.name_dictionaries)),
         }
 
     def _declare_one_conditional_macro(self, conditional, entries):
         macro_name = '%(macro_style_name)s_INTERFACES_FOR_EACH_%(conditional)s' % {
-            'macro_style_name': name_utilities.to_macro_style(self.namespace),
+            'macro_style_name': name_utilities.to_macro_style(self.namespace + self.suffix),
             'conditional': conditional,
         }
         return self.wrap_with_condition("""#define %(macro_name)s(macro) \\
@@ -170,15 +176,20 @@ class Writer(in_generator.Writer):
 
     def _conditional_macros(self, conditional):
         return '    %(macro_style_name)s_INTERFACES_FOR_EACH_%(conditional)s(macro) \\' % {
-            'macro_style_name': name_utilities.to_macro_style(self.namespace),
+            'macro_style_name': name_utilities.to_macro_style(self.namespace + self.suffix),
             'conditional': conditional,
         }
 
     def generate_interfaces_header(self):
+        base_header_for_suffix = ''
+        if self.suffix:
+            base_header_for_suffix = '\n#include "%(namespace)sInterfaces.h"\n' % {'namespace': self.namespace}
         return INTERFACES_HEADER_TEMPLATE % {
             'license': license.license_for_generated_cpp(),
             'namespace': self.namespace,
-            'macro_style_name': name_utilities.to_macro_style(self.namespace),
+            'suffix': self.suffix,
+            'base_header_for_suffix': base_header_for_suffix,
+            'macro_style_name': name_utilities.to_macro_style(self.namespace + self.suffix),
             'declare_conditional_macros': self._declare_conditional_macros(),
             'unconditional_macros': '\n'.join(sorted(set(map(self._unconditional_macro, self._unconditional_entries)))),
             'conditional_macros': '\n'.join(map(self._conditional_macros, self._entries_by_conditional.keys())),

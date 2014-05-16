@@ -32,6 +32,7 @@
 #include "Init.h"
 
 #include "EventNames.h"
+#include "EventTargetModulesNames.h"
 #include "EventTargetNames.h"
 #include "EventTypeNames.h"
 #include "FetchInitiatorTypeNames.h"
@@ -74,6 +75,7 @@ void init()
 
     EventNames::init();
     EventTargetNames::init();
+    EventTargetNames::initModules(); // TODO: remove this later http://crbug.com/371581.
     EventTypeNames::init();
     FetchInitiatorTypeNames::init();
     FontFamilyNames::init();

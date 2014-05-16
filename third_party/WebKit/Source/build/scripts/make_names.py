@@ -52,6 +52,7 @@ class MakeNamesWriter(in_generator.Writer):
     }
     default_parameters = {
         'namespace': '',
+        'suffix': '',
         'export': '',
     }
     filters = {
@@ -66,16 +67,18 @@ class MakeNamesWriter(in_generator.Writer):
         super(MakeNamesWriter, self).__init__(in_file_path)
 
         namespace = self.in_file.parameters['namespace'].strip('"')
+        suffix = self.in_file.parameters['suffix'].strip('"')
         export = self.in_file.parameters['export'].strip('"')
 
         assert namespace, 'A namespace is required.'
 
         self._outputs = {
-            (namespace + 'Names.h'): self.generate_header,
-            (namespace + 'Names.cpp'): self.generate_implementation,
+            (namespace + suffix + 'Names.h'): self.generate_header,
+            (namespace + suffix + 'Names.cpp'): self.generate_implementation,
         }
         self._template_context = {
             'namespace': namespace,
+            'suffix': suffix,
             'export': export,
             'entries': self.in_file.name_dictionaries,
         }

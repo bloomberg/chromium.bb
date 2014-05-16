@@ -1,13 +1,17 @@
 {% from "macros.tmpl" import license %}
 {{ license() }}
 
-#ifndef {{namespace}}Names_h
-#define {{namespace}}Names_h
+#ifndef {{namespace}}{{suffix}}Names_h
+#define {{namespace}}{{suffix}}Names_h
 
+{% if suffix %}
+#include "{{namespace}}Names.h"
+{% else %}
 {% if export %}
 #include "platform/PlatformExport.h"
 {% endif %}
 #include "wtf/text/AtomicString.h"
+{% endif %}
 
 namespace WebCore {
 namespace {{namespace}}Names {
@@ -24,7 +28,7 @@ extern const WTF::AtomicString {{entry|symbol}};
 
 #endif // {{namespace|to_macro_style}}_NAMES_HIDE_GLOBALS
 
-{{export}} void init();
+{{export}} void init{{suffix}}();
 
 } // {{namespace}}Names
 } // WebCore

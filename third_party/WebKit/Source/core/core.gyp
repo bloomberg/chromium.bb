@@ -262,6 +262,10 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventNames.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetHeaders.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetInterfaces.h',
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesHeaders.h', # TODO: remove this later http://crbug.com/358074.
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesInterfaces.h', # TODO: remove this later http://crbug.com/358074.
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.cpp', # TODO: remove this later http://crbug.com/358074.
+        '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetModulesNames.h', # TODO: remove this later http://crbug.com/358074.
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTargetNames.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventTypeNames.cpp',
