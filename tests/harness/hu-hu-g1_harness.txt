@@ -875,6 +875,10 @@
           "output": "Farkassziget"
         }, 
         {
+          "input": "⠋⠁⠗⠅⠁⠎⠜⠁⠗⠥", 
+          "output": "farkaszsaru"
+        }, 
+        {
           "input": "⠋⠈⠎⠱⠈⠗⠬", 
           "output": "fásszárú"
         }, 
@@ -3954,6 +3958,10 @@
           "output": "tüzesszemű"
         }, 
         {
+          "input": "⠞⠾⠣⠣⠕⠍⠈⠝⠉⠎⠕⠗⠕⠣⠁⠞", 
+          "output": "tűzzománcsorozat"
+        }, 
+        {
           "input": "⠞⠾⠣⠜⠕⠝⠛⠇⠻⠗ ", 
           "output": "tűzzsonglőr "
         }, 
@@ -4420,6 +4428,10 @@
         {
           "input": "⠣⠟⠗⠛⠡⠎⠱⠑⠗⠾", 
           "output": "zörgésszerű"
+        }, 
+        {
+          "input": "⠣⠕⠍⠈⠝⠉⠎⠡⠗⠷⠇⠡⠎", 
+          "output": "zománcsérülés"
         }, 
         {
           "input": "⠣⠥⠓⠁⠝⠈⠎⠱⠑⠗⠾", 
@@ -5368,6 +5380,10 @@
         {
           "input": "Farkassziget", 
           "output": "⠨⠋⠁⠗⠅⠁⠎⠱⠊⠛⠑⠞"
+        }, 
+        {
+          "input": "farkaszsaru", 
+          "output": "⠋⠁⠗⠅⠁⠎⠜⠁⠗⠥"
         }, 
         {
           "input": "fásszárú", 
@@ -8457,6 +8473,10 @@
           "output": "⠞⠷⠣⠑⠎⠱⠑⠍⠾"
         }, 
         {
+          "input": "tűzzománcsorozat", 
+          "output": "⠞⠾⠣⠣⠕⠍⠈⠝⠉⠎⠕⠗⠕⠣⠁⠞"
+        }, 
+        {
           "input": "tűzzsonglőr ", 
           "output": "⠞⠾⠣⠜⠕⠝⠛⠇⠻⠗ "
         }, 
@@ -8931,6 +8951,10 @@
         {
           "input": "zörgésszerű", 
           "output": "⠣⠟⠗⠛⠡⠎⠱⠑⠗⠾"
+        }, 
+        {
+          "input": "zománcsérülés", 
+          "output": "⠣⠕⠍⠈⠝⠉⠎⠡⠗⠷⠇⠡⠎"
         }, 
         {
           "input": "zuhanásszerű", 

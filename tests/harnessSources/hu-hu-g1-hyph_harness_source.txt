@@ -676,6 +676,9 @@ testmode: hyphenate
 fáklyászene
 
 testmode: hyphenate
+farkassal
+
+testmode: hyphenate
 farkasszáj
 
 testmode: hyphenate
@@ -686,6 +689,9 @@ farkasszemet
 
 testmode: hyphenate
 Farkassziget
+
+testmode: hyphenate
+farkaszsaru
 
 testmode: hyphenate
 fásszárú
@@ -3004,6 +3010,9 @@ testmode: hyphenate
 tűzzsonglőr
 
 testmode: hyphenate
+tűzzománcsorozat
+
+testmode: hyphenate
 tűzsebesség
 
 testmode: hyphenate
@@ -3354,6 +3363,12 @@ zökkenésszerű
 
 testmode: hyphenate
 zörgésszerű
+
+testmode: hyphenate
+zománcsérülés
+
+testmode: hyphenate
+zománcszerű
 
 testmode: hyphenate
 zuhanásszerű

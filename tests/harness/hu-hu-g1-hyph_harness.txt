@@ -908,6 +908,10 @@
           "output": "fák-lyás-ze-ne"
         }, 
         {
+          "input": "farkassal", 
+          "output": "far-kas-sal"
+        }, 
+        {
           "input": "farkasszáj", 
           "output": "far-kas-száj"
         }, 
@@ -922,6 +926,10 @@
         {
           "input": "Farkassziget", 
           "output": "Fark-as-szi-get"
+        }, 
+        {
+          "input": "farkaszsaru", 
+          "output": "far-kas-zsa-ru"
         }, 
         {
           "input": "fásszárú", 
@@ -4012,6 +4020,10 @@
           "output": "tűz-zsong-lőr"
         }, 
         {
+          "input": "tűzzománcsorozat", 
+          "output": "tűz-zo-mánc-so-ro-zat"
+        }, 
+        {
           "input": "tűzsebesség", 
           "output": "tűz-se-bes-ség"
         }, 
@@ -4478,6 +4490,14 @@
         {
           "input": "zörgésszerű", 
           "output": "zör-gés-sze-rű"
+        }, 
+        {
+          "input": "zománcsérülés", 
+          "output": "zo-mánc-sé-rü-lés"
+        }, 
+        {
+          "input": "zománcszerű", 
+          "output": "zo-mánc-sze-rű"
         }, 
         {
           "input": "zuhanásszerű", 

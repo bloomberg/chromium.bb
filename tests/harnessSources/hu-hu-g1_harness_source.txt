@@ -1085,6 +1085,11 @@ Farkassziget
 testmode: backtranslate
 Farkassziget
 
+farkaszsaru
+
+testmode: backtranslate
+farkaszsaru
+
 fásszárú
 
 testmode: backtranslate
@@ -4937,6 +4942,11 @@ tüzesszemű
 testmode: backtranslate
 tüzesszemű
 
+tűzzománcsorozat
+
+testmode: backtranslate
+tűzzománcsorozat
+
 tűzzsonglőr 
 
 testmode: backtranslate
@@ -5526,6 +5536,11 @@ zörgésszerű
 
 testmode: backtranslate
 zörgésszerű
+
+zománcsérülés
+
+testmode: backtranslate
+zománcsérülés
 
 zuhanásszerű
 
