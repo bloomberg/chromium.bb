@@ -969,16 +969,5 @@ crbug.com/361729 [ MountainLion ] printing/return-from-printing-mode.html [ Imag
 
 crbug.com/373430 [ Win7 ] fast/dom/Geolocation/error-clear-watch.html [ Pass Timeout ]
 
-# Need rebaseline for https://codereview.chromium.org/276883002/ patch which is related to Ignorable Unicodes
-crbug.com/256333 fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
-crbug.com/256333 fast/text/format-control.html [ NeedsRebaseline ]
-crbug.com/256333 [ Mac Win Win7 ] fast/text/bidi-ignorable-unicode.html  [ NeedsRebaseline ]
-crbug.com/256333 [ Mac ] virtual/mac-antialiasedtext/fast/text/format-control.html [ NeedsRebaseline ]
-crbug.com/256333 [ Mac ] virtual/mac-antialiasedtext/fast/text/bidi-ignorable-unicode.html [ NeedsRebaseline ]
-crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/bidi-ignorable-unicode.html [ NeedsRebaseline ]
-crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/format-control.html [ NeedsRebaseline ]
-crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/international/bidi-LDB-2-formatting-characters.html [ NeedsRebaseline ]
-crbug.com/256333 [ Win Win7 ] virtual/windows-directwrite/fast/text/drawBidiText.html [ NeedsRebaseline ]
-
 # We overpainted outlines in RenderSVGImage
 crbug.com/369473 svg/custom/focus-ring.svg [ NeedsRebaseline ]
