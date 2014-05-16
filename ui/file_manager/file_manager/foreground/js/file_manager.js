@@ -533,6 +533,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.commandHandler.updateAvailability();
     this.document_.getElementById('drive-separator').hidden =
         !this.shouldShowDriveSettings();
+
+    // Force to update the gear menu position.
+    // TODO(hirono): Remove the workaround for the crbug.com/374093 after fixing
+    // it.
+    var gearMenu = this.document_.querySelector('#gear-menu');
+    gearMenu.style.left = '';
+    gearMenu.style.right = '';
+    gearMenu.style.top = '';
+    gearMenu.style.bottom = '';
   };
 
   /**
