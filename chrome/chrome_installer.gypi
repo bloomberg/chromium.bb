@@ -295,9 +295,6 @@
             'installer/setup/uninstall.h',
           ],
           'msvs_settings': {
-            'VCCLCompilerTool': {
-              'EnableEnhancedInstructionSet': '4',  # NoExtensions
-            },
             'VCLinkerTool': {
               'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
             },
@@ -355,6 +352,13 @@
               'variables': {
                  'branding_dir': 'app/theme/chromium',
                  'branding_dir_100': 'app/theme/default_100_percent/chromium',
+              },
+            }],
+            ['target_arch=="ia32"', {
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'EnableEnhancedInstructionSet': '4',  # NoExtensions
+                },
               },
             }],
           ],
