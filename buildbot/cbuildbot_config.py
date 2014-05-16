@@ -643,6 +643,7 @@ class HWTestConfig(object):
   """
 
   DEFAULT_HW_TEST = 'bvt'
+  CQ_HW_TEST = 'bvt_cq'
 
   # This timeout is larger than it needs to be because of autotest overhead.
   # TODO(davidjames): Reduce this timeout once http://crbug.com/366141 is fixed.
@@ -700,7 +701,7 @@ class HWTestConfig(object):
                         file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
     # Allows kwargs overrides to default_dict for cq.
     default_dict.update(kwargs)
-    return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
+    return [cls(cls.CQ_HW_TEST, **default_dict)]
 
   @classmethod
   def DefaultListPFQ(cls, **kwargs):
