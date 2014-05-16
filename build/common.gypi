@@ -4459,6 +4459,7 @@
                 '-fsanitize=address',
                 '-mllvm -asan-globals=0',  # http://crbug.com/352073
                 '-w',  # http://crbug.com/162783
+                '-gline-tables-only',
               ],
             },
           }],
