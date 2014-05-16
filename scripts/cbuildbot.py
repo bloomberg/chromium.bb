@@ -1636,13 +1636,16 @@ def main(argv):
   bot_id = args[-1]
   build_config = _GetConfig(bot_id)
 
-  if options.reference_repo is None:
-    repo_path = os.path.join(options.sourceroot, '.repo')
-    # If we're being run from a repo checkout, reuse the repo's git pool to
-    # cut down on sync time.
-    if os.path.exists(repo_path):
-      options.reference_repo = options.sourceroot
-  elif options.reference_repo:
+  # TODO: Re-enable this block when reference_repo support handles this
+  #       properly. (see chromium:330775)
+  # if options.reference_repo is None:
+  #   repo_path = os.path.join(options.sourceroot, '.repo')
+  #   # If we're being run from a repo checkout, reuse the repo's git pool to
+  #   # cut down on sync time.
+  #   if os.path.exists(repo_path):
+  #     options.reference_repo = options.sourceroot
+
+  if options.reference_repo:
     if not os.path.exists(options.reference_repo):
       parser.error('Reference path %s does not exist'
                    % (options.reference_repo,))
