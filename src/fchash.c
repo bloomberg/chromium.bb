@@ -160,47 +160,6 @@ FcHashSHA256ToString (FcChar32 *hash)
 }
 
 FcChar8 *
-FcHashGetSHA256Digest (const FcChar8 *input_strings,
-		       size_t         len)
-{
-    size_t i, round_len = len / 64;
-    char block[64];
-    FcChar32 *ret = FcHashInitSHA256Digest ();
-
-    if (!ret)
-	return NULL;
-
-    for (i = 0; i < round_len; i++)
-    {
-	FcHashComputeSHA256Digest (ret, (const char *)&input_strings[i * 64]);
-    }
-    /* padding */
-    if ((len % 64) != 0)
-	memcpy (block, &input_strings[len / 64], len % 64);
-    memset (&block[len % 64], 0, 64 - (len % 64));
-    block[len % 64] = 0x80;
-    if ((64 - (len % 64)) < 9)
-    {
-	/* process a block once */
-	FcHashComputeSHA256Digest (ret, block);
-	memset (block, 0, 64);
-    }
-    /* set input size at the end */
-    len *= 8;
-    block[63 - 0] =  (uint64_t)len        & 0xff;
-    block[63 - 1] = ((uint64_t)len >>  8) & 0xff;
-    block[63 - 2] = ((uint64_t)len >> 16) & 0xff;
-    block[63 - 3] = ((uint64_t)len >> 24) & 0xff;
-    block[63 - 4] = ((uint64_t)len >> 32) & 0xff;
-    block[63 - 5] = ((uint64_t)len >> 40) & 0xff;
-    block[63 - 6] = ((uint64_t)len >> 48) & 0xff;
-    block[63 - 7] = ((uint64_t)len >> 56) & 0xff;
-    FcHashComputeSHA256Digest (ret, block);
-
-    return FcHashSHA256ToString (ret);
-}
-
-FcChar8 *
 FcHashGetSHA256DigestFromFile (const FcChar8 *filename)
 {
     FILE *fp = fopen ((const char *)filename, "rb");
