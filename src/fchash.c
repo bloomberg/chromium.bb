@@ -43,9 +43,8 @@
 #define ss1(x)		(ROTR32(x, 17) ^ ROTR32(x, 19) ^ SHR(x, 10))
 
 
-typedef FcChar32 FcHashDigest[8];
 
-static void
+void
 FcHashInitDigest (FcHashDigest digest)
 {
     static const FcHashDigest init = {
@@ -56,7 +55,7 @@ FcHashInitDigest (FcHashDigest digest)
     memcpy (digest, init, sizeof (FcHashDigest));
 }
 
-static void
+void
 FcHashDigestAddBlock (FcHashDigest digest,
 		      const char   block[64])
 {
@@ -129,7 +128,7 @@ FcHashDigestAddBlock (FcHashDigest digest,
 #undef H
 }
 
-static void
+void
 FcHashDigestFinish (FcHashDigest  digest,
 		    const char   *residual, /* < 64 bytes */
 		    size_t        total_len)
@@ -164,7 +163,7 @@ FcHashDigestFinish (FcHashDigest  digest,
     FcHashDigestAddBlock (digest, ibuf);
 }
 
-static FcChar8 *
+FcChar8 *
 FcHashToString (const FcHashDigest digest)
 {
     FcChar8 *ret = NULL;
@@ -187,70 +186,4 @@ FcHashToString (const FcHashDigest digest)
 #undef H
 
     return ret;
-}
-
-FcChar8 *
-FcHashGetDigestFromFile (const FcChar8 *filename)
-{
-    FcHashDigest digest;
-    FILE *fp;
-    char ibuf[64];
-    size_t len;
-    struct stat st;
-
-    fp = fopen ((const char *)filename, "rb");
-    if (!fp)
-	return NULL;
-
-    FcHashInitDigest (digest);
-
-    if (FcStat (filename, &st))
-	goto bail0;
-
-    while (!feof (fp))
-    {
-	if ((len = fread (ibuf, sizeof (char), 64, fp)) < 64)
-	{
-	    FcHashDigestFinish (digest, ibuf, st.st_size);
-	    break;
-	}
-	else
-	{
-	    FcHashDigestAddBlock (digest, ibuf);
-	}
-    }
-    fclose (fp);
-
-    return FcHashToString (digest);
-
-bail0:
-    fclose (fp);
-
-    return NULL;
-}
-
-FcChar8 *
-FcHashGetDigestFromMemory (const char *fontdata,
-			   size_t      length)
-{
-    FcHashDigest digest;
-    size_t i = 0;
-
-    FcHashInitDigest (digest);
-
-    while (i <= length)
-    {
-	if ((length - i) < 64)
-	{
-	    FcHashDigestFinish (digest, fontdata+i, length);
-	    break;
-	}
-	else
-	{
-	    FcHashDigestAddBlock (digest, &fontdata[i]);
-	}
-	i += 64;
-    }
-
-    return FcHashToString (digest);
 }

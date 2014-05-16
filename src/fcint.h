@@ -867,12 +867,23 @@ FcPrivate FcFontSet *
 FcFontSetDeserialize (const FcFontSet *set);
 
 /* fchash.c */
-FcPrivate FcChar8 *
-FcHashGetDigestFromFile (const FcChar8 *filename);
+
+typedef FcChar32 FcHashDigest[8];
+
+FcPrivate void
+FcHashInitDigest (FcHashDigest digest);
+
+FcPrivate void
+FcHashDigestAddBlock (FcHashDigest digest,
+		      const char   block[64]);
+
+FcPrivate void
+FcHashDigestFinish (FcHashDigest  digest,
+		    const char   *residual, /* < 64 bytes */
+		    size_t        total_len);
 
 FcPrivate FcChar8 *
-FcHashGetDigestFromMemory (const char *fontdata,
-			   size_t      length);
+FcHashToString (const FcHashDigest digest);
 
 /* fcinit.c */
 FcPrivate FcConfig *
