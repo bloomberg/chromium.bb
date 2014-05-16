@@ -820,8 +820,8 @@ template<typename T, typename U> inline bool operator!=(const PassRefPtr<T>& a, 
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 {
-    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
-    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<T, RefCounted>::value;
+    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
+    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
     COMPILE_ASSERT(notRefCountedGarbageCollected, useAdoptRefCountedWillBeRefCountedGarbageCollected);
     COMPILE_ASSERT(notRefCounted, youMustAdopt);
     return PassRefPtrWillBeRawPtr<T>(ptr);
@@ -829,22 +829,22 @@ template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeNoop(T* ptr)
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeRefCountedGarbageCollected(T* ptr)
 {
-    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
+    static const bool isRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
     COMPILE_ASSERT(isRefCountedGarbageCollected, useAdoptRefWillBeNoop);
     return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
 }
 
 template<typename T> PassRefPtrWillBeRawPtr<T> adoptRefWillBeThreadSafeRefCountedGarbageCollected(T* ptr)
 {
-    static const bool isThreadSafeRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<T, ThreadSafeRefCountedGarbageCollected>::value;
+    static const bool isThreadSafeRefCountedGarbageCollected = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, ThreadSafeRefCountedGarbageCollected>::value;
     COMPILE_ASSERT(isThreadSafeRefCountedGarbageCollected, useAdoptRefWillBeNoop);
     return PassRefPtrWillBeRawPtr<T>(adoptRefCountedGarbageCollected(ptr));
 }
 
 template<typename T> PassOwnPtrWillBeRawPtr<T> adoptPtrWillBeNoop(T* ptr)
 {
-    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<T, RefCountedGarbageCollected>::value;
-    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<T, RefCounted>::value;
+    static const bool notRefCountedGarbageCollected = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCountedGarbageCollected>::value;
+    static const bool notRefCounted = !WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, RefCounted>::value;
     COMPILE_ASSERT(notRefCountedGarbageCollected, useAdoptRefCountedWillBeRefCountedGarbageCollected);
     COMPILE_ASSERT(notRefCounted, youMustAdopt);
     return PassOwnPtrWillBeRawPtr<T>(ptr);

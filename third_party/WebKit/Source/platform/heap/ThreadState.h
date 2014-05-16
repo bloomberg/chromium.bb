@@ -81,7 +81,7 @@ enum ThreadAffinity {
 class Node;
 class CSSValue;
 
-template<typename T, bool derivesNode = WTF::IsSubclass<T, Node>::value> struct DefaultThreadingTrait;
+template<typename T, bool derivesNode = WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, Node>::value> struct DefaultThreadingTrait;
 
 template<typename T>
 struct DefaultThreadingTrait<T, false> {

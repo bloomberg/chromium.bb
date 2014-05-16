@@ -130,7 +130,7 @@ struct FinalizerTraitImpl<T, false> {
 // behavior is not desired.
 template<typename T>
 struct FinalizerTrait {
-    static const bool nonTrivialFinalizer = WTF::IsSubclassOfTemplate<T, GarbageCollectedFinalized>::value;
+    static const bool nonTrivialFinalizer = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollectedFinalized>::value;
     static void finalize(void* obj) { FinalizerTraitImpl<T, nonTrivialFinalizer>::finalize(obj); }
 };
 
@@ -146,7 +146,7 @@ template<typename T> struct GCInfoTrait;
 
 template<typename T> class GarbageCollected;
 class GarbageCollectedMixin;
-template<typename T, bool = WTF::IsSubclassOfTemplate<T, GarbageCollected>::value> class NeedsAdjustAndMark;
+template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> class NeedsAdjustAndMark;
 
 template<typename T>
 class NeedsAdjustAndMark<T, true> {
@@ -157,7 +157,7 @@ public:
 template<typename T>
 class NeedsAdjustAndMark<T, false> {
 public:
-    static const bool value = WTF::IsSubclass<T, GarbageCollectedMixin>::value;
+    static const bool value = WTF::IsSubclass<typename WTF::RemoveConst<T>::Type, GarbageCollectedMixin>::value;
 };
 
 template<typename T, bool = NeedsAdjustAndMark<T>::value> class DefaultTraceTrait;
@@ -669,7 +669,7 @@ public:
 public: \
     virtual void adjustAndMark(WebCore::Visitor* visitor) const OVERRIDE    \
     { \
-        typedef WTF::IsSubclassOfTemplate<TYPE, WebCore::GarbageCollected> IsSubclassOfGarbageCollected; \
+        typedef WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<TYPE>::Type, WebCore::GarbageCollected> IsSubclassOfGarbageCollected; \
         COMPILE_ASSERT(IsSubclassOfGarbageCollected::value, OnlyGarbageCollectedObjectsCanHaveGarbageCollectedMixins); \
         visitor->mark(this, &WebCore::TraceTrait<TYPE>::trace); \
     } \
@@ -713,7 +713,7 @@ struct GCInfoAtBase {
 };
 
 template<typename T> class GarbageCollected;
-template<typename T, bool = WTF::IsSubclassOfTemplate<T, GarbageCollected>::value> struct GetGarbageCollectedBase;
+template<typename T, bool = WTF::IsSubclassOfTemplate<typename WTF::RemoveConst<T>::Type, GarbageCollected>::value> struct GetGarbageCollectedBase;
 
 template<typename T>
 struct GetGarbageCollectedBase<T, true> {
