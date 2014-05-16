@@ -679,6 +679,7 @@
         'widget/desktop_aura/desktop_native_widget_aura_unittest.cc',
         'widget/desktop_aura/desktop_screen_x11_unittest.cc',
         'widget/desktop_aura/desktop_screen_position_client_unittest.cc',
+        'widget/desktop_aura/desktop_window_tree_host_x11_unittest.cc',
         'widget/native_widget_aura_unittest.cc',
         'widget/native_widget_unittest.cc',
         'widget/root_view_unittest.cc',
@@ -729,6 +730,12 @@
            # See http://crbug.com/162998#c4 for why this is needed.
           'dependencies': [
             '../../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+        ['use_x11==1', {
+          'dependencies': [
+            '../../build/linux/system.gyp:x11',
+            '../../build/linux/system.gyp:xext',
           ],
         }],
         ['use_ozone==1', {

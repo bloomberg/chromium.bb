@@ -224,14 +224,6 @@ class XCustomCursorCache {
   DISALLOW_COPY_AND_ASSIGN(XCustomCursorCache);
 };
 
-bool IsShapeAvailable() {
-  int dummy;
-  static bool is_shape_available =
-    XShapeQueryExtension(gfx::GetXDisplay(), &dummy, &dummy);
-  return is_shape_available;
-
-}
-
 }  // namespace
 
 bool IsXInput2Available() {
@@ -471,6 +463,13 @@ void HideHostCursor() {
   return invisible_cursor;
 }
 
+bool IsShapeExtensionAvailable() {
+  int dummy;
+  static bool is_shape_available =
+      XShapeQueryExtension(gfx::GetXDisplay(), &dummy, &dummy);
+  return is_shape_available;
+}
+
 XID GetX11RootWindow() {
   return DefaultRootWindow(gfx::GetXDisplay());
 }
@@ -579,7 +578,7 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
   if (!window_rect.Contains(screen_loc))
     return false;
 
-  if (!IsShapeAvailable())
+  if (!IsShapeExtensionAvailable())
     return true;
 
   // According to http://www.x.org/releases/X11R7.6/doc/libXext/shapelib.html,

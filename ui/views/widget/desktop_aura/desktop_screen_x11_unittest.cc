@@ -328,7 +328,7 @@ TEST_F(DesktopScreenX11Test, GetWindowAtScreenPoint) {
   ASSERT_EQ(3u, DesktopWindowTreeHostX11::GetAllOpenWindows().size());
 
   EXPECT_EQ(window_one->GetNativeWindow(),
-            screen()->GetWindowAtScreenPoint(gfx::Point(115, 115)));
+            screen()->GetWindowAtScreenPoint(gfx::Point(117, 117)));
   EXPECT_EQ(window_two->GetNativeWindow(),
             screen()->GetWindowAtScreenPoint(gfx::Point(155, 155)));
   EXPECT_EQ(NULL,
@@ -341,7 +341,7 @@ TEST_F(DesktopScreenX11Test, GetWindowAtScreenPoint) {
   activation_waiter.Wait();
 
   EXPECT_EQ(window_three->GetNativeWindow(),
-            screen()->GetWindowAtScreenPoint(gfx::Point(115, 115)));
+            screen()->GetWindowAtScreenPoint(gfx::Point(117, 117)));
 
   window_one->CloseNow();
   window_two->CloseNow();

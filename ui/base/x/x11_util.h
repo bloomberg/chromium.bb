@@ -95,6 +95,9 @@ UI_BASE_EXPORT ::Cursor CreateInvisibleCursor();
 
 // These functions do not cache their results --------------------------
 
+// Returns true if the shape extension is supported.
+UI_BASE_EXPORT bool IsShapeExtensionAvailable();
+
 // Get the X window id for the default root window
 UI_BASE_EXPORT XID GetX11RootWindow();
 
