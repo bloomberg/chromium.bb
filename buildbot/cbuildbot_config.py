@@ -852,8 +852,6 @@ arm = _config(
   vm_tests=[],
 )
 
-amd64 = _config()
-
 
 # Builder-specific mixins
 
@@ -1039,14 +1037,12 @@ incremental.add_config('daisy-incremental',
 )
 
 incremental.add_config('amd64-generic-incremental',
-  amd64,
   boards=['amd64-generic'],
   # This builder runs on a VM, so it can't run VM tests.
   vm_tests=[],
 )
 
 incremental.add_config('x32-generic-incremental',
-  amd64,
   boards=['x32-generic'],
   # This builder runs on a VM, so it can't run VM tests.
   vm_tests=[],
@@ -1058,13 +1054,11 @@ paladin.add_config('x86-generic-paladin',
 )
 
 paladin.add_config('amd64-generic-paladin',
-  amd64,
   boards=['amd64-generic'],
   paladin_builder_name='amd64-generic paladin',
 )
 
 paladin.add_config('x32-generic-paladin',
-  amd64,
   boards=['x32-generic'],
   paladin_builder_name='x32-generic paladin',
   important=False,
@@ -1079,7 +1073,6 @@ paladin.add_config('x86-generic-asan-paladin',
 )
 
 incremental.add_config('amd64-generic-asan-paladin',
-  amd64,
   asan,
   boards=['amd64-generic'],
   paladin_builder_name='amd64-generic asan-paladin',
@@ -1096,7 +1089,6 @@ telemetry = _config(
 )
 
 telemetry.add_config('amd64-generic-telemetry',
-  amd64,
   boards=['amd64-generic'],
 )
 
@@ -1143,7 +1135,6 @@ internal_chromium_pfq.add_config('daisy-chromium-pfq',
 )
 
 internal_chromium_pfq.add_config('amd64-generic-chromium-pfq',
-  amd64,
   disk_layout='2gb-rootfs',
   boards=['amd64-generic'],
 )
@@ -1252,12 +1243,10 @@ chromium_info.add_config('daisy-tot-chrome-pfq-informational',
 
 chromium_info_amd64 = \
 chromium_info.add_config('amd64-generic-tot-chrome-pfq-informational',
-  amd64,
   boards=['amd64-generic'],
 )
 
 chromium_info.add_config('x32-generic-tot-chrome-pfq-informational',
-  amd64,
   boards=['x32-generic'],
 )
 
@@ -1405,7 +1394,6 @@ chromium_info.add_config('x86-generic-tot-asan-informational',
 )
 
 incremental.add_config('amd64-generic-asan',
-  amd64,
   asan,
   boards=['amd64-generic'],
   description='Build with Address Sanitizer (Clang)',
@@ -1413,7 +1401,6 @@ incremental.add_config('amd64-generic-asan',
 )
 
 chromium_info.add_config('amd64-generic-tot-asan-informational',
-  amd64,
   asan,
   boards=['amd64-generic'],
   description='Build with Address Sanitizer (Clang) on TOT',
