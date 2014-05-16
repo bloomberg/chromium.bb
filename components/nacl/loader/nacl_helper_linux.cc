@@ -91,6 +91,11 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
     nacl::nonsfi::InitializeSignalHandler();
   }
 
+  // Always ignore SIGPIPE, for consistency with other Chrome processes and
+  // because some IPC code, such as sync_socket_posix.cc, requires this.
+  // We do this before seccomp-bpf is initialized.
+  PCHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
+
   // Finish layer-1 sandbox initialization and initialize the layer-2 sandbox.
   CHECK(!nacl_sandbox->HasOpenDirectory());
   nacl_sandbox->InitializeLayerTwoSandbox(uses_nonsfi_mode);
