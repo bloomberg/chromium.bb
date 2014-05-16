@@ -39,6 +39,7 @@ class LoginStateNotificationBlockerChromeOSBrowserTest
 
   virtual void SetUpOnMainThread() OVERRIDE {
     chromeos::LoginState::Get()->set_always_logged_in(false);
+    chromeos::LoginManagerTest::SetUpOnMainThread();
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
