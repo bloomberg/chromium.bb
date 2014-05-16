@@ -19,13 +19,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/core/browser/bookmark_model_observer.h"
 #include "components/bookmarks/core/browser/bookmark_utils.h"
 #include "components/bookmarks/core/test/bookmark_test_helpers.h"
 #include "components/bookmarks/core/test/test_bookmark_client.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_iterator.h"
 #include "ui/base/models/tree_node_model.h"
@@ -899,13 +896,7 @@ void PopulateBookmarkNode(TestNode* parent,
 // Test class that creates a BookmarkModel with a real history backend.
 class BookmarkModelTestWithProfile : public testing::Test {
  public:
-  BookmarkModelTestWithProfile()
-      : bb_model_(NULL) {}
-
-  // testing::Test:
-  virtual void TearDown() OVERRIDE {
-    profile_.reset(NULL);
-  }
+  BookmarkModelTestWithProfile() {}
 
  protected:
   // Verifies the contents of the bookmark bar node match the contents of the
@@ -936,17 +927,8 @@ class BookmarkModelTestWithProfile : public testing::Test {
       ASSERT_TRUE(ids.insert(it.Next()->id()).second);
   }
 
-  void BlockTillBookmarkModelLoaded() {
-    bb_model_ = BookmarkModelFactory::GetForProfile(profile_.get());
-    test::WaitForBookmarkModelToLoad(bb_model_);
-  }
-
-  // The profile.
-  scoped_ptr<TestingProfile> profile_;
-  BookmarkModel* bb_model_;
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  test::TestBookmarkClient client_;
+  scoped_ptr<BookmarkModel> model_;
 };
 
 // Creates a set of nodes in the bookmark bar model, then recreates the
@@ -970,34 +952,24 @@ TEST_F(BookmarkModelTestWithProfile, CreateAndRestore) {
     { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
-    // Recreate the profile. We need to reset with NULL first so that the last
-    // HistoryService releases the locks on the files it creates and we can
-    // delete them.
-    profile_.reset(NULL);
-    profile_.reset(new TestingProfile());
-    profile_->CreateBookmarkModel(true);
-    ASSERT_TRUE(profile_->CreateHistoryService(true, false));
-    BlockTillBookmarkModelLoaded();
+    model_ = client_.CreateModel(false);
 
     TestNode bbn;
     PopulateNodeFromString(data[i].bbn_contents, &bbn);
-    PopulateBookmarkNode(&bbn, bb_model_, bb_model_->bookmark_bar_node());
+    PopulateBookmarkNode(&bbn, model_.get(), model_->bookmark_bar_node());
 
     TestNode other;
     PopulateNodeFromString(data[i].other_contents, &other);
-    PopulateBookmarkNode(&other, bb_model_, bb_model_->other_node());
+    PopulateBookmarkNode(&other, model_.get(), model_->other_node());
 
     TestNode mobile;
     PopulateNodeFromString(data[i].mobile_contents, &mobile);
-    PopulateBookmarkNode(&mobile, bb_model_, bb_model_->mobile_node());
+    PopulateBookmarkNode(&mobile, model_.get(), model_->mobile_node());
 
-    profile_->CreateBookmarkModel(false);
-    BlockTillBookmarkModelLoaded();
-
-    VerifyModelMatchesNode(&bbn, bb_model_->bookmark_bar_node());
-    VerifyModelMatchesNode(&other, bb_model_->other_node());
-    VerifyModelMatchesNode(&mobile, bb_model_->mobile_node());
-    VerifyNoDuplicateIDs(bb_model_);
+    VerifyModelMatchesNode(&bbn, model_->bookmark_bar_node());
+    VerifyModelMatchesNode(&other, model_->other_node());
+    VerifyModelMatchesNode(&mobile, model_->mobile_node());
+    VerifyNoDuplicateIDs(model_.get());
   }
 }
 

@@ -66,6 +66,7 @@
             'bookmarks/core/browser/bookmark_codec_unittest.cc',
             'bookmarks/core/browser/bookmark_expanded_state_tracker_unittest.cc',
             'bookmarks/core/browser/bookmark_index_unittest.cc',
+            'bookmarks/core/browser/bookmark_model_unittest.cc',
             'bookmarks/core/browser/bookmark_utils_unittest.cc',
             'captive_portal/captive_portal_detector_unittest.cc',
             'cloud_devices/common/cloud_devices_urls_unittest.cc',
