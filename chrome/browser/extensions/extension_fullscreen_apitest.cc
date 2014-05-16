@@ -6,27 +6,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/ui_test_utils.h"
 
-// Window resizes are not completed by the time the callback happens,
-// so these tests fail on linux/gtk. http://crbug.com/72369
-#if defined(OS_LINUX) && !defined(USE_AURA)
-#define MAYBE_FocusWindowDoesNotExitFullscreen \
-  DISABLED_FocusWindowDoesNotExitFullscreen
-#define MAYBE_UpdateWindowSizeExitsFullscreen \
-  DISABLED_UpdateWindowSizeExitsFullscreen
-#else
-
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-#define MAYBE_FocusWindowDoesNotExitFullscreen \
-  DISABLED_FocusWindowDoesNotExitFullscreen
-#else
-#define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
-#endif
-
-// Fails flakily: http://crbug.com/308041
-#define MAYBE_UpdateWindowSizeExitsFullscreen DISABLED_UpdateWindowSizeExitsFullscreen
-#endif  // defined(OS_LINUX) && !defined(USE_AURA)
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        ExtensionFullscreenAccessFail) {
   // Test that fullscreen can be accessed from an extension without permission.
@@ -41,7 +20,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       MAYBE_FocusWindowDoesNotExitFullscreen) {
+                       FocusWindowDoesNotExitFullscreen) {
   browser()->window()->EnterFullscreen(
       GURL(), FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   bool is_fullscreen = browser()->window()->IsFullscreen();
@@ -49,8 +28,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
   ASSERT_EQ(is_fullscreen, browser()->window()->IsFullscreen());
 }
 
+// Fails flakily: http://crbug.com/308041
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
-                       MAYBE_UpdateWindowSizeExitsFullscreen) {
+                       DISABLED_UpdateWindowSizeExitsFullscreen) {
   browser()->window()->EnterFullscreen(
       GURL(), FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION);
   ASSERT_TRUE(RunExtensionTest("window_update/sizing")) << message_;

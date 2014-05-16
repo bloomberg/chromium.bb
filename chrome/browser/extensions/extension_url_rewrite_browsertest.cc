@@ -93,13 +93,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {
       extensions::kExtensionScheme));
 }
 
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
-#define MAYBE_BookmarksURL DISABLED_BookmarksURL
-#else
-#define MAYBE_BookmarksURL BookmarksURL
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, MAYBE_BookmarksURL) {
+IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, BookmarksURL) {
   // Navigate to chrome://bookmarks and check that the location bar URL is
   // what was entered and the internal URL uses the chrome-extension:// scheme.
   const GURL bookmarks_url(chrome::kChromeUIBookmarksURL);

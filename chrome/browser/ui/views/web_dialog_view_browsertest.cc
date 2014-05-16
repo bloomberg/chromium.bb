@@ -84,19 +84,12 @@ class WebDialogBrowserTest : public InProcessBrowserTest {
   WebDialogBrowserTest() {}
 };
 
-// TODO(linux_aura) http://crbug.com/163931
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_AURA)
-#define MAYBE_SizeWindow SizeWindow
-#else
 // http://code.google.com/p/chromium/issues/detail?id=52602
 // Windows has some issues resizing windows- an off by one problem,
 // and a minimum size that seems too big.  This file isn't included in
 // Mac builds yet. On Chrome OS, this test doesn't apply since ChromeOS
 // doesn't allow resizing of windows.
-#define MAYBE_SizeWindow DISABLED_SizeWindow
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, MAYBE_SizeWindow) {
+IN_PROC_BROWSER_TEST_F(WebDialogBrowserTest, DISABLED_SizeWindow) {
   ui::test::TestWebDialogDelegate* delegate =
       new ui::test::TestWebDialogDelegate(
           GURL(chrome::kChromeUIChromeURLsURL));
