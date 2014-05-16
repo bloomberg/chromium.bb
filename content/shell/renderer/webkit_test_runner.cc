@@ -98,32 +98,6 @@ void InvokeTaskHelper(void* context) {
   delete task;
 }
 
-#if !defined(OS_MACOSX)
-void MakeBitmapOpaque(SkBitmap* bitmap) {
-  SkAutoLockPixels lock(*bitmap);
-  DCHECK_EQ(bitmap->config(), SkBitmap::kARGB_8888_Config);
-  for (int y = 0; y < bitmap->height(); ++y) {
-    uint32_t* row = bitmap->getAddr32(0, y);
-    for (int x = 0; x < bitmap->width(); ++x)
-      row[x] |= 0xFF000000;  // Set alpha bits to 1.
-  }
-}
-#endif
-
-void CopyCanvasToBitmap(SkCanvas* canvas,  SkBitmap* snapshot) {
-  SkBaseDevice* device = skia::GetTopDevice(*canvas);
-  const SkBitmap& bitmap = device->accessBitmap(false);
-  const bool success = bitmap.copyTo(snapshot, kPMColor_SkColorType);
-  DCHECK(success);
-
-#if !defined(OS_MACOSX)
-  // Only the expected PNGs for Mac have a valid alpha channel.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableOverlayFullscreenVideo))
-    MakeBitmapOpaque(snapshot);
-#endif
-}
-
 class SyncNavigationStateVisitor : public RenderViewVisitor {
  public:
   SyncNavigationStateVisitor() {}
@@ -653,15 +627,9 @@ void WebKitTestRunner::CaptureDump() {
 
     if (test_config_.enable_pixel_dumping &&
         interfaces->testRunner()->shouldGeneratePixelResults()) {
-      // TODO(danakj): Remove when kForceCompositingMode is everywhere.
-      if (!render_view()->GetWebView()->isAcceleratedCompositingActive()) {
-        SkBitmap snapshot;
-        CopyCanvasToBitmap(proxy()->CapturePixels(), &snapshot);
-        CaptureDumpPixels(snapshot);
-      } else {
-        proxy()->CapturePixelsAsync(base::Bind(
-            &WebKitTestRunner::CaptureDumpPixels, base::Unretained(this)));
-      }
+      CHECK(render_view()->GetWebView()->isAcceleratedCompositingActive());
+      proxy()->CapturePixelsAsync(base::Bind(
+          &WebKitTestRunner::CaptureDumpPixels, base::Unretained(this)));
       return;
     }
   }

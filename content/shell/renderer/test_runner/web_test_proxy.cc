@@ -397,19 +397,6 @@ string WebTestProxyBase::CaptureTree(bool debugRenderTree) {
   return dataUtf8;
 }
 
-SkCanvas* WebTestProxyBase::CapturePixels() {
-  TRACE_EVENT0("shell", "WebTestProxyBase::CapturePixels");
-  web_widget_->layout();
-  if (test_interfaces_->testRunner()->isPrinting())
-    PaintPagesWithBoundaries();
-  else
-    PaintInvalidatedRegion();
-
-  DrawSelectionRect(GetCanvas());
-
-  return GetCanvas();
-}
-
 void WebTestProxyBase::DrawSelectionRect(SkCanvas* canvas) {
   // See if we need to draw the selection bounds rect. Selection bounds
   // rect is the rect enclosing the (possibly transformed) selection.
@@ -472,55 +459,6 @@ void WebTestProxyBase::SetLogConsoleOutput(bool enabled) {
   log_console_output_ = enabled;
 }
 
-void WebTestProxyBase::PaintRect(const WebRect& rect) {
-  DCHECK(!is_painting_);
-  DCHECK(GetCanvas());
-  is_painting_ = true;
-  float deviceScaleFactor = GetWebView()->deviceScaleFactor();
-  int scaledX =
-      static_cast<int>(static_cast<float>(rect.x) * deviceScaleFactor);
-  int scaledY =
-      static_cast<int>(static_cast<float>(rect.y) * deviceScaleFactor);
-  int scaledWidth = static_cast<int>(
-      ceil(static_cast<float>(rect.width) * deviceScaleFactor));
-  int scaledHeight = static_cast<int>(
-      ceil(static_cast<float>(rect.height) * deviceScaleFactor));
-  WebRect deviceRect(scaledX, scaledY, scaledWidth, scaledHeight);
-  web_widget_->paint(GetCanvas(), deviceRect);
-  is_painting_ = false;
-}
-
-void WebTestProxyBase::PaintInvalidatedRegion() {
-  web_widget_->animate(0.0);
-  web_widget_->layout();
-  WebSize widgetSize = web_widget_->size();
-  WebRect clientRect(0, 0, widgetSize.width, widgetSize.height);
-
-  // Paint the canvas if necessary. Allow painting to generate extra rects
-  // for the first two calls. This is necessary because some WebCore rendering
-  // objects update their layout only when painted.
-  // Store the total area painted in total_paint. Then tell the gdk window
-  // to update that area after we're done painting it.
-  for (int i = 0; i < 3; ++i) {
-    // rect = intersect(paint_rect_ , clientRect)
-    WebRect damageRect = paint_rect_;
-    int left = max(damageRect.x, clientRect.x);
-    int top = max(damageRect.y, clientRect.y);
-    int right =
-        min(damageRect.x + damageRect.width, clientRect.x + clientRect.width);
-    int bottom =
-        min(damageRect.y + damageRect.height, clientRect.y + clientRect.height);
-    WebRect rect;
-    if (left < right && top < bottom)
-      rect = WebRect(left, top, right - left, bottom - top);
-
-    paint_rect_ = WebRect();
-    if (rect.isEmpty()) continue;
-    PaintRect(rect);
-  }
-  DCHECK(paint_rect_.isEmpty());
-}
-
 void WebTestProxyBase::PaintPagesWithBoundaries() {
   DCHECK(!is_painting_);
   DCHECK(GetCanvas());
@@ -563,15 +501,6 @@ SkCanvas* WebTestProxyBase::GetCanvas() {
   return canvas_.get();
 }
 
-void WebTestProxyBase::DisplayForSoftwareMode(const base::Closure& callback) {
-  const blink::WebSize& size = web_widget_->size();
-  WebRect rect(0, 0, size.width, size.height);
-  paint_rect_ = rect;
-  PaintInvalidatedRegion();
-
-  if (!callback.is_null()) callback.Run();
-}
-
 void WebTestProxyBase::DidDisplayAsync(const base::Closure& callback,
                                        const SkBitmap& bitmap) {
   // Verify we actually composited.
@@ -583,17 +512,7 @@ void WebTestProxyBase::DidDisplayAsync(const base::Closure& callback,
 void WebTestProxyBase::DisplayAsyncThen(const base::Closure& callback) {
   TRACE_EVENT0("shell", "WebTestProxyBase::DisplayAsyncThen");
 
-  // TODO(danakj): Remove when we have kForceCompositingMode everywhere.
-  if (!web_widget_->isAcceleratedCompositingActive()) {
-    TRACE_EVENT0("shell",
-                 "WebTestProxyBase::DisplayAsyncThen "
-                 "isAcceleratedCompositingActive false");
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(&WebTestProxyBase::DisplayForSoftwareMode,
-                              base::Unretained(this), callback));
-    return;
-  }
-
+  CHECK(web_widget_->isAcceleratedCompositingActive());
   CapturePixelsAsync(base::Bind(&WebTestProxyBase::DidDisplayAsync,
                                 base::Unretained(this), callback));
 }

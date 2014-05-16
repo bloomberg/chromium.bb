@@ -104,7 +104,6 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   void MoveValidationMessage(const blink::WebRect& anchorInRootView);
 
   std::string CaptureTree(bool debugRenderTree);
-  SkCanvas* CapturePixels();
   void CapturePixelsForPrinting(
       const base::Callback<void(const SkBitmap&)>& callback);
   void CapturePixelsAsync(
@@ -225,14 +224,11 @@ class WebTestProxyBase : public blink::WebCompositeAndReadbackAsyncCallback {
   template <class, typename, typename>
   friend class WebFrameTestProxy;
   void LocationChangeDone(blink::WebFrame*);
-  void PaintRect(const blink::WebRect&);
-  void PaintInvalidatedRegion();
   void PaintPagesWithBoundaries();
   SkCanvas* GetCanvas();
   void InvalidateAll();
   void AnimateNow();
   void DrawSelectionRect(SkCanvas* canvas);
-  void DisplayForSoftwareMode(const base::Closure& callback);
   void DidDisplayAsync(const base::Closure& callback, const SkBitmap& bitmap);
 
   blink::WebWidget* web_widget() const { return web_widget_; }
