@@ -3511,8 +3511,16 @@
                       }],
                       ['profiling==1', {
                         'cflags': [
-                          '-marm', # Probably reduntant, but recommend by "perf" docs.
-                          '-mapcs-frame', # Seems required by -fno-omit-frame-pointer.
+                          # Thumb code with frame pointer makes chrome crash
+                          # early.
+                          '-marm',
+                          '-mapcs-frame', # Required by -fno-omit-frame-pointer.
+                          # The perf report sometimes incorrectly attributes
+                          # code from tail calls.
+                          '-fno-optimize-sibling-calls',
+                        ],
+                        'cflags!': [
+                          '-fomit-frame-pointer',
                         ],
                       }],
                       ['clang==1', {
