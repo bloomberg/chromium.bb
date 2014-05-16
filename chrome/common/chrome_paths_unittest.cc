@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 
-#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
@@ -30,8 +29,7 @@ TEST(ChromePaths, UserCacheDir) {
   base::FilePath expected_cache_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_CACHE, &expected_cache_dir));
 #elif(OS_POSIX)
-  base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
+  base::FilePath homedir = base::GetHomeDir();
   // Note: we assume XDG_CACHE_HOME/XDG_CONFIG_HOME are at their
   // default settings.
   test_profile_dir = homedir.Append(".config/foobar");

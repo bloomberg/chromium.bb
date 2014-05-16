@@ -4,17 +4,13 @@
 
 #include "chrome/common/importer/firefox_importer_utils.h"
 
-#include "base/base_paths.h"
 #include "base/file_util.h"
-#include "base/files/file_path.h"
-#include "base/path_service.h"
 
 base::FilePath GetProfilesINI() {
   base::FilePath ini_file;
   // The default location of the profile folder containing user data is
   // under user HOME directory in .mozilla/firefox folder on Linux.
-  base::FilePath home;
-  PathService::Get(base::DIR_HOME, &home);
+  base::FilePath home = base::GetHomeDir();
   if (!home.empty()) {
     ini_file = home.Append(".mozilla/firefox/profiles.ini");
   }

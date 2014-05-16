@@ -6,11 +6,9 @@
 
 #include <string>
 
-#include "base/base_paths.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "base/third_party/xdg_user_dirs/xdg_user_dir_lookup.h"
 
 namespace {
@@ -30,12 +28,10 @@ FilePath GetXDGDirectory(Environment* env, const char* env_name,
                          const char* fallback_dir) {
   FilePath path;
   std::string env_value;
-  if (env->GetVar(env_name, &env_value) && !env_value.empty()) {
+  if (env->GetVar(env_name, &env_value) && !env_value.empty())
     path = FilePath(env_value);
-  } else {
-    PathService::Get(base::DIR_HOME, &path);
-    path = path.Append(fallback_dir);
-  }
+  else
+    path = GetHomeDir().Append(fallback_dir);
   return path.StripTrailingSeparators();
 }
 
@@ -46,8 +42,7 @@ FilePath GetXDGUserDirectory(const char* dir_name, const char* fallback_dir) {
     path = FilePath(xdg_dir);
     free(xdg_dir);
   } else {
-    PathService::Get(base::DIR_HOME, &path);
-    path = path.Append(fallback_dir);
+    path = GetHomeDir().Append(fallback_dir);
   }
   return path.StripTrailingSeparators();
 }

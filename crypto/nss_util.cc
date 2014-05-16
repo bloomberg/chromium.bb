@@ -21,7 +21,6 @@
 #include <map>
 #include <vector>
 
-#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/cpu.h"
 #include "base/debug/alias.h"
@@ -35,7 +34,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/native_library.h"
-#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
@@ -82,8 +80,7 @@ std::string GetNSSErrorMessage() {
 
 #if defined(USE_NSS)
 base::FilePath GetDefaultConfigDirectory() {
-  base::FilePath dir;
-  PathService::Get(base::DIR_HOME, &dir);
+  base::FilePath dir = base::GetHomeDir();
   if (dir.empty()) {
     LOG(ERROR) << "Failed to get home directory.";
     return dir;

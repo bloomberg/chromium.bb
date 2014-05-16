@@ -4,13 +4,11 @@
 
 #include "chrome/common/chrome_paths_internal.h"
 
-#include "base/base_paths.h"
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/nix/xdg_util.h"
 #include "base/path_service.h"
-#include "chrome/common/chrome_paths.h"
 
 namespace chrome {
 
@@ -36,8 +34,7 @@ bool GetUserMediaDirectory(const std::string& xdg_name,
 #else
   *result = GetXDGUserDirectory(xdg_name.c_str(), fallback_name.c_str());
 
-  base::FilePath home;
-  PathService::Get(base::DIR_HOME, &home);
+  base::FilePath home = base::GetHomeDir();
   if (*result != home) {
     base::FilePath desktop;
     if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop))
@@ -106,8 +103,7 @@ bool GetUserDocumentsDirectory(base::FilePath* result) {
 }
 
 bool GetUserDownloadsDirectorySafe(base::FilePath* result) {
-  base::FilePath home;
-  PathService::Get(base::DIR_HOME, &home);
+  base::FilePath home = base::GetHomeDir();
   *result = home.Append(kDownloadsDir);
   return true;
 }

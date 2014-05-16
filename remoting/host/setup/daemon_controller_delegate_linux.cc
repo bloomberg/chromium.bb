@@ -6,7 +6,6 @@
 
 #include <unistd.h>
 
-#include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -17,7 +16,6 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/md5.h"
-#include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
@@ -57,9 +55,8 @@ std::string GetMd5(const std::string& value) {
 
 base::FilePath GetConfigPath() {
   std::string filename = "host#" + GetMd5(net::GetHostName()) + ".json";
-  base::FilePath homedir;
-  PathService::Get(base::DIR_HOME, &homedir);
-  return homedir.Append(".config/chrome-remote-desktop").Append(filename);
+  return base::GetHomeDir().
+      Append(".config/chrome-remote-desktop").Append(filename);
 }
 
 bool GetScriptPath(base::FilePath* result) {

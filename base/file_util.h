@@ -218,7 +218,6 @@ BASE_EXPORT bool GetTempDir(FilePath* path);
 //
 // You should not generally call this directly. Instead use DIR_HOME with the
 // path service which will use this function but cache the value.
-// Path service may also override DIR_HOME.
 BASE_EXPORT FilePath GetHomeDir();
 
 // Creates a temporary file. The full path is placed in |path|, and the

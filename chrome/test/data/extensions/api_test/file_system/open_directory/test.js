@@ -21,17 +21,9 @@ chrome.test.runTests([
         chrome.test.callbackPass(function(directoryEntry) {
       var reader = directoryEntry.createReader();
       reader.readEntries(chrome.test.callback(function(entries) {
-        // On POSIX systems DIR_HOME is overridden for this test and
-        // [.config] directory may be created there, ignore it
-        // See https://codereview.chromium.org/200473002/
-        var testEntry;
-        entries.forEach(function(entry) {
-          if (entry.name != '.config') {
-            chrome.test.assertEq(entry.name, 'open_existing.txt');
-            testEntry = entry;
-          }
-        });
-        checkEntry(testEntry, 'open_existing.txt', false, false);
+        chrome.test.assertEq(entries.length, 1);
+        var entry = entries[0];
+        checkEntry(entry, 'open_existing.txt', false, false);
       }));
     }));
   },
