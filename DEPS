@@ -42,12 +42,6 @@ vars = {
   "libphonenumber_revision": "621",
   "libvpx_revision": "269083",
   "lss_revision": "26",
-
-  # These two FFmpeg variables must be updated together.  One is used for SVN
-  # checkouts and the other for Git checkouts.
-  "ffmpeg_revision": "270146",
-  "ffmpeg_hash": "d3a060bd1d6a4f43e9bc7d07f193b0513df4f244",
-
   "sfntly_revision": "228",
   "lighttpd_revision": "33737",
   "skia_revision": "14757",
@@ -218,8 +212,8 @@ deps = {
     Var("libvpx_revision"),
 
   "src/third_party/ffmpeg":
-    "/trunk/deps/third_party/ffmpeg@" +
-    Var("ffmpeg_revision"),
+    Var("chromium_git") +
+    "/chromium/third_party/ffmpeg.git@d3a060bd1d6a4f43e9bc7d07f193b0513df4f244",
 
   "src/third_party/libjingle/source/talk":
     (Var("googlecode_url") % "webrtc") + "/trunk/talk@" +
@@ -289,7 +283,7 @@ deps = {
         Var("libphonenumber_revision"),
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@262731",
+    "/trunk/tools/deps2git@270777",
 
   "src/third_party/clang_format/script":
     Var("llvm_url") + "/cfe/trunk/tools/clang-format@206068",
