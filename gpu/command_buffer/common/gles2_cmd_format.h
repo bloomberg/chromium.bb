@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "base/atomicops.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/common/bitfield_helpers.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"

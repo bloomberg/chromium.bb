@@ -519,6 +519,7 @@ source_set("ui_base_test_support") {
     "//base",
     "//skia",
     "//testing/gtest",
+    "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]

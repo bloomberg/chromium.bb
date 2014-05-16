@@ -32,7 +32,7 @@ group("root") {
     "//crypto",
     "//device/usb",
     #"//extensions/common/api:extensions_api",
-    "//gpu:gles2_c_lib",
+    "//gpu/command_buffer/client",
     "//ipc",
     "//mojo",
     "//net",
@@ -75,7 +75,7 @@ group("root") {
     deps -= [
       "//components/os_crypt",
       "//crypto",
-      "//gpu:gles2_c_lib",  # Needs Skia.
+      "//gpu/command_buffer/client",  # Needs Skia.
       "//net",
       "//skia",  # Needs some ARM stuff
       "//third_party/libusb",

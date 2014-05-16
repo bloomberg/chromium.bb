@@ -4,6 +4,7 @@
 
 component("geometry") {
   sources = [
+    "../gfx_export.h",
     "box_f.cc",
     "box_f.h",
     "cubic_bezier.h",

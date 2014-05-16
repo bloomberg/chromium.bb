@@ -113,7 +113,7 @@ component("gl") {
     ":generate_gl_bindings",
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//gpu/command_buffer:gles2_utils",
+    "//gpu/command_buffer/common",
     "//skia",
     # TODO(GYP) hook up once this is converted.
     # Also uncomment forward statement below.

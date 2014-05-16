@@ -137,27 +137,6 @@ component("gfx") {
     "native_widget_types.h",
     "nine_image_painter.cc",
     "nine_image_painter.h",
-    "ozone/dri/dri_skbitmap.cc",
-    "ozone/dri/dri_skbitmap.h",
-    "ozone/dri/dri_surface.cc",
-    "ozone/dri/dri_surface.h",
-    "ozone/dri/dri_surface_factory.cc",
-    "ozone/dri/dri_surface_factory.h",
-    "ozone/dri/dri_vsync_provider.cc",
-    "ozone/dri/dri_vsync_provider.h",
-    "ozone/dri/dri_wrapper.cc",
-    "ozone/dri/dri_wrapper.h",
-    "ozone/dri/hardware_display_controller.cc",
-    "ozone/dri/hardware_display_controller.h",
-    "ozone/impl/file_surface_factory.cc",
-    "ozone/impl/file_surface_factory.h",
-    "ozone/surface_factory_ozone.cc",
-    "ozone/surface_factory_ozone.h",
-    "ozone/surface_ozone.h",
-    "ozone/overlay_candidates_ozone.cc",
-    "ozone/overlay_candidates_ozone.h",
-    "pango_util.cc",
-    "pango_util.h",
     "path.cc",
     "path.h",
     "path_aura.cc",
@@ -171,9 +150,6 @@ component("gfx") {
     "platform_font_ios.mm",
     "platform_font_mac.h",
     "platform_font_mac.mm",
-    "platform_font_ozone.cc",
-    "platform_font_pango.cc",
-    "platform_font_pango.h",
     "platform_font_win.cc",
     "platform_font_win.h",
     "range/range.cc",
@@ -184,9 +160,6 @@ component("gfx") {
     "render_text.h",
     "render_text_mac.cc",
     "render_text_mac.h",
-    "render_text_ozone.cc",
-    "render_text_pango.cc",
-    "render_text_pango.h",
     "render_text_win.cc",
     "render_text_win.h",
     "scoped_canvas.h",
@@ -328,8 +301,10 @@ component("gfx") {
   }
 
   # Ozone stuff.
-  if (!use_ozone) {
-    sources -= [
+  if (use_ozone) {
+    sources += [
+      "platform_font_ozone.cc",
+      "render_text_ozone.cc",
       "ozone/impl/file_surface_factory.cc",
       "ozone/impl/file_surface_factory.h",
       "ozone/surface_factory_ozone.cc",
@@ -340,9 +315,7 @@ component("gfx") {
     ]
   }
   if (use_ozone && ozone_platform_dri) {
-    configs += [ "//build/config/linux:dridrm" ]
-  } else {
-    sources -= [
+    sources += [
       "ozone/dri/dri_skbitmap.cc",
       "ozone/dri/dri_skbitmap.h",
       "ozone/dri/dri_surface.cc",
@@ -356,6 +329,7 @@ component("gfx") {
       "ozone/dri/hardware_display_controller.cc",
       "ozone/dri/hardware_display_controller.h",
     ]
+    configs += [ "//build/config/linux:dridrm" ]
   }
 
   if (!use_aura) {
@@ -377,13 +351,7 @@ component("gfx") {
   }
 
   if (use_pango) {
-    sources -= [
-      "platform_font_ozone.cc",
-      "render_text_ozone.cc",
-    ]
-    configs += [ "//build/config/linux:pangocairo" ]
-  } else {
-    sources -= [
+    sources += [
       "pango_util.cc",
       "pango_util.h",
       "platform_font_pango.cc",
@@ -391,63 +359,11 @@ component("gfx") {
       "render_text_pango.cc",
       "render_text_pango.h",
     ]
+    configs += [ "//build/config/linux:pangocairo" ]
   }
 }
 
-component("gfx_geometry") {
-  sources = [
-    "geometry/box_f.cc",
-    "geometry/box_f.h",
-    "geometry/cubic_bezier.h",
-    "geometry/cubic_bezier.cc",
-    "geometry/insets.cc",
-    "geometry/insets.h",
-    "geometry/insets_base.h",
-    "geometry/insets_f.cc",
-    "geometry/insets_f.h",
-    "geometry/matrix3_f.cc",
-    "geometry/matrix3_f.h",
-    "geometry/point.cc",
-    "geometry/point.h",
-    "geometry/point3_f.cc",
-    "geometry/point3_f.h",
-    "geometry/point_base.h",
-    "geometry/point_conversions.cc",
-    "geometry/point_conversions.h",
-    "geometry/point_f.cc",
-    "geometry/point_f.h",
-    "geometry/quad_f.cc",
-    "geometry/quad_f.h",
-    "geometry/rect.cc",
-    "geometry/rect.h",
-    "geometry/rect_base.h",
-    "geometry/rect_base_impl.h",
-    "geometry/rect_conversions.cc",
-    "geometry/rect_conversions.h",
-    "geometry/rect_f.cc",
-    "geometry/rect_f.h",
-    "geometry/r_tree.cc",
-    "geometry/r_tree.h",
-    "geometry/safe_integer_conversions.h",
-    "geometry/size.cc",
-    "geometry/size.h",
-    "geometry/size_base.h",
-    "geometry/size_conversions.cc",
-    "geometry/size_conversions.h",
-    "geometry/size_f.cc",
-    "geometry/size_f.h",
-    "geometry/vector2d.cc",
-    "geometry/vector2d.h",
-    "geometry/vector2d_conversions.cc",
-    "geometry/vector2d_conversions.h",
-    "geometry/vector2d_f.cc",
-    "geometry/vector2d_f.h",
-    "geometry/vector3d_f.cc",
-    "geometry/vector3d_f.h",
-  ]
-  defines = [ "GFX_IMPLEMENTATION" ]
-  deps = [ "//base" ]
-}
+# Looking for gfx_geometry? It's //ui/gfx/geometry:geometry
 
 source_set("gfx_test_support") {
   sources = [
