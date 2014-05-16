@@ -5,26 +5,18 @@
 #include "content/zygote/zygote_main.h"
 
 #include <dlfcn.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
+#include <string.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/linux_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
@@ -48,11 +40,7 @@
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 
 #if defined(OS_LINUX)
-#include <sys/epoll.h>
 #include <sys/prctl.h>
-#include <sys/signal.h>
-#else
-#include <signal.h>
 #endif
 
 #if defined(ENABLE_WEBRTC)
