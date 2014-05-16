@@ -21,7 +21,7 @@
     document.onpointerlockchange = function ()
         {
             testPassed("document.onpointerlockchange event received.");
-            shouldBe("document.webkitPointerLockElement", expectedTargetToBeLockedString);
+            shouldBe("document.pointerLockElement", expectedTargetToBeLockedString);
             doNextStep();
         };
     document.onpointerlockerror =

@@ -32,13 +32,13 @@
             // doNextStep called by event handler.
         },
         function () {
-            shouldBe("targetIframe1.contentDocument.webkitPointerLockElement", "targetDiv1");
+            shouldBe("targetIframe1.contentDocument.pointerLockElement", "targetDiv1");
             shouldBe("targetDiv1.parentElement.parentElement", "targetIframe1.contentDocument.body");
             expectOnlyChangeEvent("Remove iframe & immediately lock target2. (main document handler)");
             expectNoEvents("Remove iframe & immediately lock target2. (iframe handler)", targetIframe1.contentDocument);
             targetIframe1.parentElement.removeChild(targetIframe1);
             targetDiv2.requestPointerLock();
-            shouldBe("document.webkitPointerLockElement", "null");
+            shouldBe("document.pointerLockElement", "null");
             // doNextStep called by event handler.
         },
     ];

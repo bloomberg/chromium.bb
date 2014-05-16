@@ -944,8 +944,8 @@ public:
     bool hasFullscreenElementStack() const { return m_hasFullscreenElementStack; }
     void setHasFullscreenElementStack() { m_hasFullscreenElementStack = true; }
 
-    void webkitExitPointerLock();
-    Element* webkitPointerLockElement() const;
+    void exitPointerLock();
+    Element* pointerLockElement() const;
 
     // Used to allow element that loads data without going through a FrameLoader to delay the 'load' event.
     void incrementLoadEventDelayCount() { ++m_loadEventDelayCount; }

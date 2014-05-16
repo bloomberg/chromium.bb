@@ -31,7 +31,7 @@
     todo = [
         function () {
             expectNoEvents("Unlock.");
-            document.webkitExitPointerLock();
+            document.exitPointerLock();
             doNextStepWithUserGesture();
         },
         function () {
@@ -40,7 +40,7 @@
         },
         function () {
             expectOnlyChangeEvent("Unlock again.");
-            document.webkitExitPointerLock();
+            document.exitPointerLock();
         },
         function () {
             expectOnlyChangeEvent("Lock targetDiv1 again.");
@@ -56,7 +56,7 @@
         },
         function () {
             expectOnlyChangeEvent("Unlock targetDiv2.");
-            document.webkitExitPointerLock();
+            document.exitPointerLock();
         },
         function () {
             targetIframe1.src = "about:blank";
@@ -81,7 +81,7 @@
             expectNoEvents("Unlock targetIframe2.");
             expectOnlyChangeEvent("Unlock targetIframe2 (handler for iframe1).", targetIframe1.contentDocument);
             expectNoEvents("Unlock targetIframe2 (handler for iframe2).", targetIframe2.contentDocument);
-            targetIframe1.contentDocument.webkitExitPointerLock();
+            targetIframe1.contentDocument.exitPointerLock();
         },
         function () {
             shouldBeDefined("testRunner.setPointerLockWillFailSynchronously");

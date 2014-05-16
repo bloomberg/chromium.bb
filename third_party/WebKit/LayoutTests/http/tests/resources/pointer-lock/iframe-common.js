@@ -19,7 +19,7 @@ window.onmessage = function (messageEvent) {
 }
 
 document.onpointerlockchange = function () {
-    parent.postMessage(thisFileName() + " onpointerlockchange, document.webkitPointerLockElement = " + document.webkitPointerLockElement, "*");
+    parent.postMessage(thisFileName() + " onpointerlockchange, document.pointerLockElement = " + document.pointerLockElement, "*");
 }
 
 document.onpointerlockerror = function () {

@@ -21,7 +21,7 @@
     document.onpointerlockchange = function ()
         {
             testPassed("document.onpointerlockchange event received.");
-            shouldBe("document.webkitPointerLockElement", expectedTargetToBeLockedString);
+            shouldBe("document.pointerLockElement", expectedTargetToBeLockedString);
             doNextStepWithUserGesture();
         };
     document.onpointerlockerror =
@@ -37,7 +37,7 @@
 
     todo = [
         function () {
-            shouldBe("document.webkitPointerLockElement", "null");
+            shouldBe("document.pointerLockElement", "null");
             debug("     Locking targetdiv1.")
             targetdiv1.requestPointerLock();
             expectedTargetToBeLockedString = "targetdiv1";

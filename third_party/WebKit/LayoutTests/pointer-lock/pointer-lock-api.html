@@ -9,8 +9,8 @@
 
     shouldBeDefined("document.onpointerlockchange");
     shouldBeDefined("document.onpointerlockerror");
-    shouldBeDefined("document.webkitExitPointerLock");
-    shouldEvaluateTo("document.webkitPointerLockElement", null);
+    shouldBeDefined("document.exitPointerLock");
+    shouldEvaluateTo("document.pointerLockElement", null);
     element = document.createElement('x');
     shouldBeDefined("element.requestPointerLock");
 </script>
