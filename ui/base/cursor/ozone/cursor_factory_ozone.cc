@@ -11,16 +11,20 @@ namespace ui {
 // static
 CursorFactoryOzone* CursorFactoryOzone::impl_ = NULL;
 
-CursorFactoryOzone::CursorFactoryOzone() {}
+CursorFactoryOzone::CursorFactoryOzone() {
+  CHECK(!impl_) << "There should only be a single CursorFactoryOzone.";
+  impl_ = this;
+}
 
-CursorFactoryOzone::~CursorFactoryOzone() {}
+CursorFactoryOzone::~CursorFactoryOzone() {
+  CHECK_EQ(impl_, this);
+  impl_ = NULL;
+}
 
 CursorFactoryOzone* CursorFactoryOzone::GetInstance() {
   CHECK(impl_) << "No CursorFactoryOzone implementation set.";
   return impl_;
 }
-
-void CursorFactoryOzone::SetInstance(CursorFactoryOzone* impl) { impl_ = impl; }
 
 PlatformCursor CursorFactoryOzone::GetDefaultCursor(int type) {
   NOTIMPLEMENTED();

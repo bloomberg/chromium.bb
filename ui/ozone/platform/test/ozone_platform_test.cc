@@ -27,41 +27,51 @@ namespace {
 // This platform dumps images to a file for testing purposes.
 class OzonePlatformTest : public OzonePlatform {
  public:
-  OzonePlatformTest(const base::FilePath& dump_file)
-      : device_manager_(CreateDeviceManager()),
-        surface_factory_ozone_(dump_file),
-        event_factory_ozone_(NULL, device_manager_.get()) {}
+  OzonePlatformTest(const base::FilePath& dump_file) : file_path_(dump_file) {}
   virtual ~OzonePlatformTest() {}
 
   // OzonePlatform:
   virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
-    return &surface_factory_ozone_;
+    return surface_factory_ozone_.get();
   }
-  virtual ui::EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
-    return &event_factory_ozone_;
+  virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
+    return event_factory_ozone_.get();
   }
-  virtual ui::InputMethodContextFactoryOzone*
-  GetInputMethodContextFactoryOzone() OVERRIDE {
-    return &input_method_context_factory_ozone_;
+  virtual InputMethodContextFactoryOzone* GetInputMethodContextFactoryOzone()
+      OVERRIDE {
+    return input_method_context_factory_ozone_.get();
   }
-  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
-    return &cursor_factory_ozone_;
+  virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
+    return cursor_factory_ozone_.get();
   }
 
 #if defined(OS_CHROMEOS)
-  virtual scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate()
+  virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
-    return scoped_ptr<ui::NativeDisplayDelegate>(
-        new NativeDisplayDelegateOzone());
+    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateOzone());
   }
 #endif
 
+  virtual void InitializeUI() OVERRIDE {
+    device_manager_ = CreateDeviceManager();
+    surface_factory_ozone_.reset(new gfx::FileSurfaceFactory(file_path_));
+    event_factory_ozone_.reset(
+        new EventFactoryEvdev(NULL, device_manager_.get()));
+    input_method_context_factory_ozone_.reset(
+        new InputMethodContextFactoryOzone());
+    cursor_factory_ozone_.reset(new CursorFactoryOzone());
+  }
+
+  virtual void InitializeGPU() OVERRIDE {}
+
  private:
   scoped_ptr<DeviceManager> device_manager_;
-  gfx::FileSurfaceFactory surface_factory_ozone_;
-  ui::EventFactoryEvdev event_factory_ozone_;
-  ui::InputMethodContextFactoryOzone input_method_context_factory_ozone_;
-  ui::CursorFactoryOzone cursor_factory_ozone_;
+  scoped_ptr<gfx::FileSurfaceFactory> surface_factory_ozone_;
+  scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
+  scoped_ptr<InputMethodContextFactoryOzone>
+      input_method_context_factory_ozone_;
+  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  base::FilePath file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformTest);
 };

@@ -9,15 +9,12 @@
 #include "ui/events/ozone/event_factory_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/ozone/ozone_platform.h"
 
 namespace aura {
 
 WindowTreeHostOzone::WindowTreeHostOzone(const gfx::Rect& bounds)
     : widget_(0),
       bounds_(bounds) {
-  ui::OzonePlatform::Initialize();
-
   // EventFactoryOzone creates converters that obtain input events from the
   // underlying input system and dispatch them as |ui::Event| instances into
   // Aura.

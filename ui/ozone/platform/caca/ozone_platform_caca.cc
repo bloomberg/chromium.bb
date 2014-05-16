@@ -21,24 +21,22 @@ namespace {
 
 class OzonePlatformCaca : public OzonePlatform {
  public:
-  OzonePlatformCaca()
-      : surface_factory_ozone_(&connection_),
-        event_factory_ozone_(&connection_) {}
+  OzonePlatformCaca() {}
   virtual ~OzonePlatformCaca() {}
 
   // OzonePlatform:
   virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
-    return &surface_factory_ozone_;
+    return surface_factory_ozone_.get();
   }
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
-    return &event_factory_ozone_;
+    return event_factory_ozone_.get();
   }
   virtual InputMethodContextFactoryOzone* GetInputMethodContextFactoryOzone()
       OVERRIDE {
-    return &input_method_context_factory_ozone_;
+    return input_method_context_factory_ozone_.get();
   }
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
-    return &cursor_factory_ozone_;
+    return cursor_factory_ozone_.get();
   }
 
 #if defined(OS_CHROMEOS)
@@ -48,13 +46,24 @@ class OzonePlatformCaca : public OzonePlatform {
   }
 #endif
 
+  virtual void InitializeUI() OVERRIDE {
+    surface_factory_ozone_.reset(new CacaSurfaceFactory(&connection_));
+    event_factory_ozone_.reset(new CacaEventFactory(&connection_));
+    input_method_context_factory_ozone_.reset(
+        new InputMethodContextFactoryOzone());
+    cursor_factory_ozone_.reset(new CursorFactoryOzone());
+  }
+
+  virtual void InitializeGPU() OVERRIDE {}
+
  private:
   CacaConnection connection_;
-  CacaSurfaceFactory surface_factory_ozone_;
-  CacaEventFactory event_factory_ozone_;
+  scoped_ptr<CacaSurfaceFactory> surface_factory_ozone_;
+  scoped_ptr<CacaEventFactory> event_factory_ozone_;
   // This creates a minimal input context.
-  InputMethodContextFactoryOzone input_method_context_factory_ozone_;
-  CursorFactoryOzone cursor_factory_ozone_;
+  scoped_ptr<InputMethodContextFactoryOzone>
+      input_method_context_factory_ozone_;
+  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformCaca);
 };

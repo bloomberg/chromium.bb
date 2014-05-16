@@ -196,6 +196,13 @@ void EventFactoryEvdev::OnDeviceEvent(const DeviceEvent& event) {
   }
 }
 
+void EventFactoryEvdev::OnDispatcherListChanged() {
+  if (ui_task_runner_)
+    return;
+  ui_task_runner_ = base::MessageLoopProxy::current();
+  StartProcessingEvents();
+}
+
 void EventFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
   TRACE_EVENT1("ozone", "DetachInputDevice", "path", path.value());
   CHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -218,6 +225,8 @@ void EventFactoryEvdev::DetachInputDevice(const base::FilePath& path) {
 }
 
 void EventFactoryEvdev::StartProcessingEvents() {
+  if (!ui_task_runner_)
+    return;
   CHECK(ui_task_runner_->RunsTasksOnCurrentThread());
 
   if (device_manager_ && !has_started_processing_events_) {

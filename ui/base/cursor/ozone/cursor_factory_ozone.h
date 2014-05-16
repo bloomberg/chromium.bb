@@ -16,11 +16,8 @@ class UI_BASE_EXPORT CursorFactoryOzone {
   CursorFactoryOzone();
   virtual ~CursorFactoryOzone();
 
-  // Returns the static instance.
+  // Returns the singleton instance.
   static CursorFactoryOzone* GetInstance();
-
-  // Sets the static instance. Ownership is retained by the caller.
-  static void SetInstance(CursorFactoryOzone* impl);
 
   // Return the default cursor of the specified type. The types are listed in
   // ui/base/cursor/cursor.h. Default cursors are managed by the implementation

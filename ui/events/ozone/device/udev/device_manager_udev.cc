@@ -78,10 +78,16 @@ scoped_udev_monitor UdevCreateMonitor(struct udev* udev) {
 
 }  // namespace
 
-DeviceManagerUdev::DeviceManagerUdev()
-  : udev_(UdevCreate()),
-    monitor_(UdevCreateMonitor(udev_.get())) {
+DeviceManagerUdev::DeviceManagerUdev() : udev_(UdevCreate()) {
+}
 
+DeviceManagerUdev::~DeviceManagerUdev() {
+}
+
+void DeviceManagerUdev::CreateMonitor() {
+  if (monitor_)
+    return;
+  monitor_ = UdevCreateMonitor(udev_.get());
   if (monitor_) {
     int fd = udev_monitor_get_fd(monitor_.get());
     CHECK_GT(fd, 0);
@@ -90,9 +96,9 @@ DeviceManagerUdev::DeviceManagerUdev()
   }
 }
 
-DeviceManagerUdev::~DeviceManagerUdev() {}
-
 void DeviceManagerUdev::ScanDevices(DeviceEventObserver* observer) {
+  CreateMonitor();
+
   scoped_udev_enumerate enumerate(udev_enumerate_new(udev_.get()));
   if (!enumerate)
     return;

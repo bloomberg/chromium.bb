@@ -11,16 +11,20 @@ namespace ui {
 // static
 EventFactoryOzone* EventFactoryOzone::impl_ = NULL;
 
-EventFactoryOzone::EventFactoryOzone() {}
+EventFactoryOzone::EventFactoryOzone() {
+  CHECK(!impl_) << "There should only be a single EventFactoryOzone";
+  impl_ = this;
+}
 
-EventFactoryOzone::~EventFactoryOzone() {}
+EventFactoryOzone::~EventFactoryOzone() {
+  CHECK_EQ(impl_, this);
+  impl_ = NULL;
+}
 
 EventFactoryOzone* EventFactoryOzone::GetInstance() {
   CHECK(impl_) << "No EventFactoryOzone implementation set.";
   return impl_;
 }
-
-void EventFactoryOzone::SetInstance(EventFactoryOzone* impl) { impl_ = impl; }
 
 void EventFactoryOzone::StartProcessingEvents() {}
 

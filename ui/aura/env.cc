@@ -11,6 +11,10 @@
 #include "ui/events/event_target_iterator.h"
 #include "ui/events/platform/platform_event_source.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/ozone_platform.h"
+#endif
+
 namespace aura {
 
 namespace {
@@ -74,6 +78,11 @@ Env::~Env() {
 }
 
 void Env::Init(bool create_event_source) {
+#if defined(USE_OZONE)
+  // The ozone platform can provide its own event source. So initialize the
+  // platform before creating the default event source.
+  ui::OzonePlatform::InitializeForUI();
+#endif
   if (create_event_source && !ui::PlatformEventSource::GetInstance())
     event_source_ = ui::PlatformEventSource::CreateDefault();
 }

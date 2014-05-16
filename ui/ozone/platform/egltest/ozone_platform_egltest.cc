@@ -205,11 +205,7 @@ const int32* SurfaceFactoryEgltest::GetEGLSurfaceProperties(
 // hardware platforms.
 class OzonePlatformEgltest : public OzonePlatform {
  public:
-  OzonePlatformEgltest()
-      : device_manager_(CreateDeviceManager()),
-        surface_factory_ozone_(&eglplatform_shim_),
-        event_factory_ozone_(NULL, device_manager_.get()),
-        shim_initialized_(false) {}
+  OzonePlatformEgltest() : shim_initialized_(false) {}
   virtual ~OzonePlatformEgltest() {
     if (shim_initialized_)
       eglplatform_shim_.ShimTerminate();
@@ -239,17 +235,17 @@ class OzonePlatformEgltest : public OzonePlatform {
 
   // OzonePlatform:
   virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
-    return &surface_factory_ozone_;
+    return surface_factory_ozone_.get();
   }
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
-    return &event_factory_ozone_;
+    return event_factory_ozone_.get();
   }
   virtual InputMethodContextFactoryOzone* GetInputMethodContextFactoryOzone()
       OVERRIDE {
-    return &input_method_context_factory_ozone_;
+    return input_method_context_factory_ozone_.get();
   }
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
-    return &cursor_factory_ozone_;
+    return cursor_factory_ozone_.get();
   }
 
 #if defined(OS_CHROMEOS)
@@ -259,13 +255,26 @@ class OzonePlatformEgltest : public OzonePlatform {
   }
 #endif
 
+  virtual void InitializeUI() OVERRIDE {
+    device_manager_ = CreateDeviceManager();
+    surface_factory_ozone_.reset(new SurfaceFactoryEgltest(&eglplatform_shim_));
+    event_factory_ozone_.reset(
+        new EventFactoryEvdev(NULL, device_manager_.get()));
+    input_method_context_factory_ozone_.reset(
+        new InputMethodContextFactoryOzone());
+    cursor_factory_ozone_.reset(new CursorFactoryOzone());
+  }
+
+  virtual void InitializeGPU() OVERRIDE {}
+
  private:
   LibeglplatformShimLoader eglplatform_shim_;
   scoped_ptr<DeviceManager> device_manager_;
-  SurfaceFactoryEgltest surface_factory_ozone_;
-  EventFactoryEvdev event_factory_ozone_;
-  InputMethodContextFactoryOzone input_method_context_factory_ozone_;
-  CursorFactoryOzone cursor_factory_ozone_;
+  scoped_ptr<SurfaceFactoryEgltest> surface_factory_ozone_;
+  scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
+  scoped_ptr<InputMethodContextFactoryOzone>
+      input_method_context_factory_ozone_;
+  scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
 
   bool shim_initialized_;
 

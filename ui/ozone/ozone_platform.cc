@@ -40,37 +40,43 @@ std::string GetPlatformName() {
 
 }  // namespace
 
-OzonePlatform::OzonePlatform() {}
+OzonePlatform::OzonePlatform() {
+  CHECK(!instance_) << "There should only be a single OzonePlatform.";
+  instance_ = this;
+}
 
 OzonePlatform::~OzonePlatform() {
-  gfx::SurfaceFactoryOzone::SetInstance(NULL);
-  ui::EventFactoryOzone::SetInstance(NULL);
-  ui::CursorFactoryOzone::SetInstance(NULL);
+  CHECK_EQ(instance_, this);
+  instance_ = NULL;
 }
 
 // static
-void OzonePlatform::Initialize() {
-  if (instance_)
-    return;
-
-  std::string platform = GetPlatformName();
-
-  TRACE_EVENT1("ozone", "OzonePlatform::Initialize", "platform", platform);
-
-  instance_ = CreatePlatform(platform);
-
-  // Inject ozone interfaces.
-  gfx::SurfaceFactoryOzone::SetInstance(instance_->GetSurfaceFactoryOzone());
-  ui::EventFactoryOzone::SetInstance(instance_->GetEventFactoryOzone());
+void OzonePlatform::InitializeForUI() {
+  CreateInstance();
+  instance_->InitializeUI();
   ui::InputMethodContextFactoryOzone::SetInstance(
       instance_->GetInputMethodContextFactoryOzone());
-  ui::CursorFactoryOzone::SetInstance(instance_->GetCursorFactoryOzone());
+}
+
+// static
+void OzonePlatform::InitializeForGPU() {
+  CreateInstance();
+  instance_->InitializeGPU();
 }
 
 // static
 OzonePlatform* OzonePlatform::GetInstance() {
   CHECK(instance_) << "OzonePlatform is not initialized";
   return instance_;
+}
+
+// static
+void OzonePlatform::CreateInstance() {
+  if (!instance_) {
+    std::string platform = GetPlatformName();
+    TRACE_EVENT1("ozone", "OzonePlatform::Initialize", "platform", platform);
+    CreatePlatform(platform);
+  }
 }
 
 // static

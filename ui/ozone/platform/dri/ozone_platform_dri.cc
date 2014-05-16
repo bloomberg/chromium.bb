@@ -33,33 +33,42 @@ class OzonePlatformDri : public OzonePlatform {
   OzonePlatformDri()
       : dri_(new DriWrapper(kDefaultGraphicsCardPath)),
         screen_manager_(new ScreenManager(dri_.get())),
-        device_manager_(CreateDeviceManager()),
-        surface_factory_ozone_(dri_.get(), screen_manager_.get()),
-        cursor_factory_ozone_(&surface_factory_ozone_),
-        event_factory_ozone_(&cursor_factory_ozone_, device_manager_.get()) {}
+        device_manager_(CreateDeviceManager()) {}
   virtual ~OzonePlatformDri() {}
 
   // OzonePlatform:
   virtual gfx::SurfaceFactoryOzone* GetSurfaceFactoryOzone() OVERRIDE {
-    return &surface_factory_ozone_;
+    return surface_factory_ozone_.get();
   }
-  virtual ui::EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
-    return &event_factory_ozone_;
+  virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
+    return event_factory_ozone_.get();
   }
-  virtual ui::InputMethodContextFactoryOzone*
-  GetInputMethodContextFactoryOzone() OVERRIDE {
-    return &input_method_context_factory_ozone_;
+  virtual InputMethodContextFactoryOzone* GetInputMethodContextFactoryOzone()
+      OVERRIDE {
+    return input_method_context_factory_ozone_.get();
   }
-  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
-    return &cursor_factory_ozone_;
+  virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
+    return cursor_factory_ozone_.get();
   }
 #if defined(OS_CHROMEOS)
-  virtual scoped_ptr<ui::NativeDisplayDelegate> CreateNativeDisplayDelegate()
+  virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       OVERRIDE {
-    return scoped_ptr<ui::NativeDisplayDelegate>(new NativeDisplayDelegateDri(
+    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateDri(
         dri_.get(), screen_manager_.get(), device_manager_.get()));
   }
 #endif
+  virtual void InitializeUI() OVERRIDE {
+    surface_factory_ozone_.reset(
+        new DriSurfaceFactory(dri_.get(), screen_manager_.get()));
+    cursor_factory_ozone_.reset(
+        new CursorFactoryEvdevDri(surface_factory_ozone_.get()));
+    event_factory_ozone_.reset(new EventFactoryEvdev(
+        cursor_factory_ozone_.get(), device_manager_.get()));
+    input_method_context_factory_ozone_.reset(
+        new InputMethodContextFactoryOzone());
+  }
+
+  virtual void InitializeGPU() OVERRIDE {}
 
  private:
   scoped_ptr<DriWrapper> dri_;
@@ -67,11 +76,12 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<ScreenManager> screen_manager_;
   scoped_ptr<DeviceManager> device_manager_;
 
-  ui::DriSurfaceFactory surface_factory_ozone_;
-  ui::CursorFactoryEvdevDri cursor_factory_ozone_;
-  ui::EventFactoryEvdev event_factory_ozone_;
+  scoped_ptr<DriSurfaceFactory> surface_factory_ozone_;
+  scoped_ptr<CursorFactoryEvdevDri> cursor_factory_ozone_;
+  scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
   // This creates a minimal input context.
-  ui::InputMethodContextFactoryOzone input_method_context_factory_ozone_;
+  scoped_ptr<InputMethodContextFactoryOzone>
+      input_method_context_factory_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformDri);
 };

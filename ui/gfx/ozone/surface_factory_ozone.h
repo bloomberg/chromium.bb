@@ -82,11 +82,8 @@ class GFX_EXPORT SurfaceFactoryOzone {
   SurfaceFactoryOzone();
   virtual ~SurfaceFactoryOzone();
 
-  // Returns the instance
+  // Returns the singleton instance.
   static SurfaceFactoryOzone* GetInstance();
-
-  // Sets the implementation delegate. Ownership is retained by the caller.
-  static void SetInstance(SurfaceFactoryOzone* impl);
 
   // Configures the display hardware. Must be called from within the GPU
   // process before the sandbox has been activated.

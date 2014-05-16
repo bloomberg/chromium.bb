@@ -44,11 +44,8 @@ class EVENTS_OZONE_EXPORT EventFactoryOzone {
   virtual void WarpCursorTo(gfx::AcceleratedWidget widget,
                             const gfx::PointF& location);
 
-  // Returns the static instance last set using SetInstance().
+  // Returns the singleton instance.
   static EventFactoryOzone* GetInstance();
-
-  // Sets the implementation delegate. Ownership is retained by the caller.
-  static void SetInstance(EventFactoryOzone*);
 
  private:
   static EventFactoryOzone* impl_;  // not owned

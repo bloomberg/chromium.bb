@@ -102,7 +102,6 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   ui::InitializeContextFactoryForTests(enable_pixel_output_);
 
   surface_factory_.reset(new MockSurfaceFactoryOzone());
-  gfx::SurfaceFactoryOzone::SetInstance(surface_factory_.get());
 
   const gfx::Size size(500, 400);
   compositor_.reset(new ui::Compositor(
