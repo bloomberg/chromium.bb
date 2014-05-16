@@ -4524,6 +4524,13 @@
     }],  # OS=="mac" or OS=="ios"
     ['OS=="mac"', {
       'target_defaults': {
+        'defines': [
+          # Prevent Mac OS X AssertMacros.h from defining macros that collide
+          # with common names, like 'check', 'require', and 'verify'.
+          # (Included by system header. Also exists on iOS but not included.)
+          # http://opensource.apple.com/source/CarbonHeaders/CarbonHeaders-18.1/AssertMacros.h
+          '__ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORE=0',
+        ],
         'variables': {
           # These should end with %, but there seems to be a bug with % in
           # variables that are intended to be set to different values in
