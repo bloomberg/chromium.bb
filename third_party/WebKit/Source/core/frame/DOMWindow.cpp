@@ -1262,10 +1262,6 @@ DOMWindow* DOMWindow::top() const
     if (!m_frame)
         return 0;
 
-    Page* page = m_frame->page();
-    if (!page)
-        return 0;
-
     return m_frame->tree().top()->domWindow();
 }
 
