@@ -78,13 +78,6 @@ static size_t my_strlen(const char *s) {
 /*
  * TODO(robertm): make the helper below globally accessible.
  */
-static void __libnacl_abort(void) {
-  while (1) *(volatile int *) 0;   /* null pointer dereference. */
-}
-
-/*
- * TODO(robertm): make the helper below globally accessible.
- */
 static void __libnacl_message(const char *message) {
    /*
     * Skip write if fdio is not available.
@@ -102,8 +95,7 @@ static void __libnacl_message(const char *message) {
  */
 static void __libnacl_fatal(const char* message) {
   __libnacl_message(message);
-  __libnacl_abort();
-
+  __builtin_trap();
 }
 
 

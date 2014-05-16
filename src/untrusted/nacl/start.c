@@ -68,5 +68,5 @@ void _start(uint32_t *info) {
   exit(main_ptr(argc, argv, envp));
 
   /*NOTREACHED*/
-  while (1) *(volatile int *) 0;  /* Crash.  */
+  __builtin_trap();
 }

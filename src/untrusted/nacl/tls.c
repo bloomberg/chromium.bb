@@ -184,10 +184,6 @@ static const struct tls_info *get_tls_info(void) {
   return &cached_tls_info;
 }
 
-static inline void simple_abort(void) {
-  *(volatile int *) 0 = 0;  /* Crash. */
-}
-
 /*
  * We support x86 and ARM TLS layouts.
  *
@@ -270,7 +266,7 @@ void *__nacl_tls_initialize_memory(void *combined_area, size_t tdb_size) {
 
   /* Sanity check.  (But avoid pulling in assert() here.) */
   if (start + info->tdata_size + info->tbss_size > combined_area_end)
-    simple_abort();
+    __builtin_trap();
   memcpy(start, info->tdata_start, info->tdata_size);
   memset(start + info->tdata_size, 0, info->tbss_size);
 

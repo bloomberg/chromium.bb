@@ -95,10 +95,6 @@ int __nc_memory_block_counter[2];
 
 /* Internal functions */
 
-static inline void nc_abort(void) {
-  while (1) *(volatile int *) 0 = 0;  /* Crash.  */
-}
-
 static inline nc_thread_descriptor_t *nc_get_tdb(void) {
   /*
    * Fetch the thread-specific data pointer.  This is usually just
@@ -258,7 +254,7 @@ static void nc_tdb_init(nc_thread_descriptor_t *tdb,
   basic_data->retval = NULL;
   basic_data->status = THREAD_RUNNING;
   if (pthread_cond_init(&basic_data->join_condvar, NULL) != 0)
-    nc_abort();
+    __builtin_trap();
   basic_data->tdb = tdb;
 }
 
@@ -270,7 +266,7 @@ void __nc_initialize_globals(void) {
   __nc_initialize_interfaces(&irt_thread);
 
   if (pthread_mutex_init(&__nc_thread_management_lock, NULL) != 0)
-    nc_abort();
+    __builtin_trap();
 
   /*
    * Tell ThreadSanitizer to not generate happens-before arcs between uses of
@@ -281,7 +277,7 @@ void __nc_initialize_globals(void) {
   ANNOTATE_NOT_HAPPENS_BEFORE_MUTEX(&__nc_thread_management_lock);
 
   if (pthread_cond_init(&__nc_last_thread_cond, NULL) != 0)
-    nc_abort();
+    __builtin_trap();
   STAILQ_INIT(&__nc_thread_memory_blocks[0]);
   STAILQ_INIT(&__nc_thread_memory_blocks[1]);
 
@@ -552,7 +548,7 @@ void pthread_exit(void *retval) {
 
   pthread_mutex_unlock(&__nc_thread_management_lock);
   irt_thread.thread_exit(is_used);
-  nc_abort();
+  __builtin_trap();
 }
 
 int pthread_join(pthread_t thread_id, void **thread_return) {
