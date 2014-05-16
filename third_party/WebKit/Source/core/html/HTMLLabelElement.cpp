@@ -27,7 +27,9 @@
 
 #include "HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/editing/FrameSelection.h"
 #include "core/events/Event.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/FormAssociatedElement.h"
 
 namespace WebCore {
@@ -136,7 +138,12 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
     static bool processingClick = false;
 
     if (evt->type() == EventTypeNames::click && !processingClick) {
-        RefPtr<HTMLElement> element = control();
+        // If text of label element is selected, do not pass
+        // the event to control element.
+        if (document().frame()->selection().selection().isRange())
+            return;
+
+        RefPtrWillBeRawPtr<HTMLElement> element = control();
 
         // If we can't find a control or if the control received the click
         // event, then there's no need for us to do anything.
