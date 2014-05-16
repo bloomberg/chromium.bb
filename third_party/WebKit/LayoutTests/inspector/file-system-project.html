@@ -108,10 +108,10 @@ function test()
                     InspectorTest.addResult("New modificationTime=" + modificationTime.getTime() + ", size=" + size);
                     var uiSourceCodesCount = InspectorTest.testWorkspace.uiSourceCodes().length;
                     InspectorTest.addResult("Removing second file system.");
-                    manager.removeMockFileSystem("/var/www");
+                    manager.removeFileSystem("/var/www");
                     InspectorTest.addResult("    number of uiSourceCodes in workspace after removing second file system: " + InspectorTest.testWorkspace.uiSourceCodes().length);
                     InspectorTest.addResult("Removing first file system.");
-                    manager.removeMockFileSystem("/foo/bar");
+                    manager.removeFileSystem("/foo/bar");
                     InspectorTest.addResult("    number of uiSourceCodes in workspace after removing first file system: " + InspectorTest.testWorkspace.uiSourceCodes().length);
                     next();
                 }

@@ -110,7 +110,7 @@ MockIsolatedFileSystemManager.prototype = {
         fileSystem._addFiles(files);
     },
 
-    removeMockFileSystem: function(path)
+    removeFileSystem: function(path)
     {
         var fileSystem = this._fileSystems[path];
         delete this._fileSystems[path];

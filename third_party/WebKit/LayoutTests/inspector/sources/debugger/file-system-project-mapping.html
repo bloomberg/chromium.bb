@@ -304,6 +304,40 @@ function test()
             dumpWorkspaceUISourceCodes();
             next();
         },
+
+        function testRemoveProject(next)
+        {
+            function uiSourceCodeAdded(uiSourceCode) {}
+            function uiSourceCodeRemoved(uiSourceCode) {}
+
+            function dumpWorkspaceUISourceCodes()
+            {
+                InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
+                var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
+                for (var i = 0; i < uiSourceCodes.length; ++i)
+                    InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
+            }
+
+            var fileSystemPath = "/var/www";
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var files = {"/foo.js": ""};
+            createObjects();
+            InspectorTest.addResult("Adding file system.");
+            manager.addMockFileSystem(fileSystemPath);
+            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 2);
+            manager.addFiles(fileSystemPath, files);
+            dumpWorkspaceUISourceCodes();
+            InspectorTest.addResult("Removing project:");
+            var project = InspectorTest.testWorkspace.uiSourceCodes()[0].project();
+            InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, projectWillReset);
+            project.remove();
+
+            function projectWillReset()
+            {
+                InspectorTest.addResult("Received project will reset event.");
+                next();
+            }
+        },
     ]);
 };
 </script>

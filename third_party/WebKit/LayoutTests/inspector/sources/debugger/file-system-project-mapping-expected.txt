@@ -89,3 +89,10 @@ Excluding html2 folder:
 Dumping uiSourceCodes origin URLs:
   - file:///var/www/bar.js
 
+Running: testRemoveProject
+Adding file system.
+Dumping uiSourceCodes origin URLs:
+  - file:///var/www/foo.js
+Removing project:
+Received project will reset event.
+
