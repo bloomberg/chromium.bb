@@ -10159,6 +10159,56 @@ TEST_P(HttpNetworkTransactionTest, SimpleCancel) {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
+// Test that if a transaction is cancelled after receiving the headers, the
+// stream is drained properly and added back to the socket pool.  The main
+// purpose of this test is to make sure that an HttpStreamParser can be read
+// from after the HttpNetworkTransaction and the objects it owns have been
+// deleted.
+// See http://crbug.com/368418
+TEST_P(HttpNetworkTransactionTest, CancelAfterHeaders) {
+  MockRead data_reads[] = {
+    MockRead(ASYNC, "HTTP/1.1 200 OK\r\n"),
+    MockRead(ASYNC, "Content-Length: 2\r\n"),
+    MockRead(ASYNC, "Connection: Keep-Alive\r\n\r\n"),
+    MockRead(ASYNC, "1"),
+    // 2 async reads are necessary to trigger a ReadResponseBody call after the
+    // HttpNetworkTransaction has been deleted.
+    MockRead(ASYNC, "2"),
+    MockRead(SYNCHRONOUS, ERR_IO_PENDING),  // Should never read this.
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  {
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("http://www.google.com/");
+    request.load_flags = 0;
+
+    HttpNetworkTransaction trans(DEFAULT_PRIORITY, session);
+    TestCompletionCallback callback;
+
+    int rv = trans.Start(&request, callback.callback(), BoundNetLog());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+    callback.WaitForResult();
+
+    const HttpResponseInfo* response = trans.GetResponseInfo();
+    ASSERT_TRUE(response != NULL);
+    EXPECT_TRUE(response->headers.get() != NULL);
+    EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+    // The transaction and HttpRequestInfo are deleted.
+  }
+
+  // Let the HttpResponseBodyDrainer drain the socket.
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Socket should now be idle, waiting to be reused.
+  EXPECT_EQ(1, GetIdleSocketCountInTransportSocketPool(session));
+}
+
 // Test a basic GET request through a proxy.
 TEST_P(HttpNetworkTransactionTest, ProxyGet) {
   session_deps_.proxy_service.reset(

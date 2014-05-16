@@ -804,6 +804,63 @@ TEST(HttpStreamParser, ReceivedBytesIncludesContinueHeader) {
   EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
 }
 
+// Test that an HttpStreamParser can be read from after it's received headers
+// and data structures owned by its owner have been deleted.  This happens
+// when a ResponseBodyDrainer is used.
+TEST(HttpStreamParser, ReadAfterUnownedObjectsDestroyed) {
+  MockWrite writes[] = {
+    MockWrite(SYNCHRONOUS, 0,
+              "GET /foo.html HTTP/1.1\r\n\r\n"),
+    MockWrite(SYNCHRONOUS, 1, "1"),
+  };
+
+  const int kBodySize = 1;
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, 5, "HTTP/1.1 200 OK\r\n"),
+    MockRead(SYNCHRONOUS, 6, "Content-Length: 1\r\n\r\n"),
+    MockRead(SYNCHRONOUS, 6, "Connection: Keep-Alive\r\n\r\n"),
+    MockRead(SYNCHRONOUS, 7, "1"),
+    MockRead(SYNCHRONOUS, 0, 8),  // EOF
+  };
+
+  StaticSocketDataProvider data(reads, arraysize(reads), writes,
+                                arraysize(writes));
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+
+  scoped_ptr<MockTCPClientSocket> transport(
+      new MockTCPClientSocket(AddressList(), NULL, &data));
+
+  TestCompletionCallback callback;
+  ASSERT_EQ(OK, transport->Connect(callback.callback()));
+
+  scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
+  socket_handle->SetSocket(transport.PassAs<StreamSocket>());
+
+  scoped_ptr<HttpRequestInfo> request_info(new HttpRequestInfo());
+  request_info->method = "GET";
+  request_info->url = GURL("http://somewhere/foo.html");
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(socket_handle.get(), request_info.get(),
+                          read_buffer.get(), BoundNetLog());
+
+  scoped_ptr<HttpRequestHeaders> request_headers(new HttpRequestHeaders());
+  scoped_ptr<HttpResponseInfo> response_info(new HttpResponseInfo());
+  ASSERT_EQ(OK, parser.SendRequest("GET /foo.html HTTP/1.1\r\n",
+            *request_headers, response_info.get(), callback.callback()));
+  ASSERT_EQ(OK, parser.ReadResponseHeaders(callback.callback()));
+
+  // If the object that owns the HttpStreamParser is deleted, it takes the
+  // objects passed to the HttpStreamParser with it.
+  request_info.reset();
+  request_headers.reset();
+  response_info.reset();
+
+  scoped_refptr<IOBuffer> body_buffer(new IOBuffer(kBodySize));
+  ASSERT_EQ(kBodySize, parser.ReadResponseBody(
+      body_buffer.get(), kBodySize, callback.callback()));
+}
+
 }  // namespace
 
 }  // namespace net

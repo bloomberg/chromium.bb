@@ -345,9 +345,6 @@ int HttpStreamParser::ReadResponseBody(IOBuffer* buf, int buf_len,
   if (io_state_ == STATE_DONE)
     return OK;
 
-  // Must have response headers with a non-1xx error code.
-  DCHECK_NE(1, response_->headers->response_code() / 100);
-
   user_read_buf_ = buf;
   user_read_buf_len_ = buf_len;
   io_state_ = STATE_READ_BODY;
