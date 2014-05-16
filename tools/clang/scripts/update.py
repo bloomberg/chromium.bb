@@ -160,6 +160,20 @@ def UpdateClang():
   CopyFile(os.path.join(asan_rt_lib_src_dir, '..', '..', 'asan_blacklist.txt'),
            os.path.join(asan_rt_lib_dst_dir, '..', '..'))
 
+  # Make an extra copy of the sanitizer headers, to be put on the include path
+  # of the fallback compiler.
+  sanitizer_include_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '3.5.0',
+                                       'include', 'sanitizer')
+  aux_sanitizer_include_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang',
+                                           '3.5.0', 'include_sanitizer',
+                                           'sanitizer')
+  if not os.path.exists(aux_sanitizer_include_dir):
+    os.makedirs(aux_sanitizer_include_dir)
+  for _, _, files in os.walk(sanitizer_include_dir):
+    for f in files:
+      CopyFile(os.path.join(sanitizer_include_dir, f),
+               aux_sanitizer_include_dir)
+
   WriteStampFile(LLVM_WIN_REVISION)
   print 'Clang update was successful.'
   return 0

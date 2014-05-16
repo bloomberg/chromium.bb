@@ -5076,6 +5076,13 @@
                 'AdditionalOptions': [
                   '-fsanitize=address',
                 ],
+                'AdditionalIncludeDirectories': [
+                  # MSVC needs to be able to find the sanitizer headers when
+                  # invoked via /fallback. This is critical for using macros
+                  # like ASAN_UNPOISON_MEMORY_REGION in files where we fall
+                  # back.
+                  '<(DEPTH)/<(make_clang_dir)/lib/clang/3.5.0/include_sanitizer',
+                ],
               },
               'VCLinkerTool': {
                 'AdditionalLibraryDirectories': [
