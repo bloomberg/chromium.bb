@@ -129,6 +129,41 @@ FcHashDigestAddBlock (FcHashDigest digest,
 #undef H
 }
 
+static void
+FcHashDigestFinish (FcHashDigest  digest,
+		    const char   *residual, /* < 64 bytes */
+		    size_t        total_len)
+{
+    char ibuf[64];
+    unsigned int len = total_len % 64;
+    uint64_t v;
+
+    if (!len)
+	return;
+
+    memcpy (ibuf, residual, len);
+    memset (ibuf + len, 0, 64 - len);
+    ibuf[len] = 0x80;
+
+    if ((64 - len) < 9)
+    {
+	FcHashDigestAddBlock (digest, ibuf);
+	memset (ibuf, 0, 64);
+    }
+
+    /* set input size at the end */
+    v = (uint64_t) total_len * 8;
+    ibuf[63 - 0] =  v        & 0xff;
+    ibuf[63 - 1] = (v >>  8) & 0xff;
+    ibuf[63 - 2] = (v >> 16) & 0xff;
+    ibuf[63 - 3] = (v >> 24) & 0xff;
+    ibuf[63 - 4] = (v >> 32) & 0xff;
+    ibuf[63 - 5] = (v >> 40) & 0xff;
+    ibuf[63 - 6] = (v >> 48) & 0xff;
+    ibuf[63 - 7] = (v >> 56) & 0xff;
+    FcHashDigestAddBlock (digest, ibuf);
+}
+
 static FcChar8 *
 FcHashToString (const FcHashDigest digest)
 {
@@ -176,28 +211,7 @@ FcHashGetDigestFromFile (const FcChar8 *filename)
     {
 	if ((len = fread (ibuf, sizeof (char), 64, fp)) < 64)
 	{
-	    uint64_t v;
-
-	    /* add a padding */
-	    memset (&ibuf[len], 0, 64 - len);
-	    ibuf[len] = 0x80;
-	    if ((64 - len) < 9)
-	    {
-		/* process a block once */
-		FcHashDigestAddBlock (digest, ibuf);
-		memset (ibuf, 0, 64);
-	    }
-	    /* set input size at the end */
-	    v = (long)st.st_size * 8;
-	    ibuf[63 - 0] =  v        & 0xff;
-	    ibuf[63 - 1] = (v >>  8) & 0xff;
-	    ibuf[63 - 2] = (v >> 16) & 0xff;
-	    ibuf[63 - 3] = (v >> 24) & 0xff;
-	    ibuf[63 - 4] = (v >> 32) & 0xff;
-	    ibuf[63 - 5] = (v >> 40) & 0xff;
-	    ibuf[63 - 6] = (v >> 48) & 0xff;
-	    ibuf[63 - 7] = (v >> 56) & 0xff;
-	    FcHashDigestAddBlock (digest, ibuf);
+	    FcHashDigestFinish (digest, ibuf, st.st_size);
 	    break;
 	}
 	else
@@ -217,10 +231,9 @@ bail0:
 
 FcChar8 *
 FcHashGetDigestFromMemory (const char *fontdata,
-				 size_t      length)
+			   size_t      length)
 {
     FcHashDigest digest;
-    char ibuf[64];
     size_t i = 0;
 
     FcHashInitDigest (digest);
@@ -229,32 +242,7 @@ FcHashGetDigestFromMemory (const char *fontdata,
     {
 	if ((length - i) < 64)
 	{
-	    uint64_t v;
-	    size_t n;
-
-	    /* add a padding */
-	    n = length - i;
-	    if (n > 0)
-		memcpy (ibuf, &fontdata[i], n);
-	    memset (&ibuf[n], 0, 64 - n);
-	    ibuf[n] = 0x80;
-	    if ((64 - n) < 9)
-	    {
-		/* process a block once */
-		FcHashDigestAddBlock (digest, ibuf);
-		memset (ibuf, 0, 64);
-	    }
-	    /* set input size at the end */
-	    v = length * 8;
-	    ibuf[63 - 0] =  v        & 0xff;
-	    ibuf[63 - 1] = (v >>  8) & 0xff;
-	    ibuf[63 - 2] = (v >> 16) & 0xff;
-	    ibuf[63 - 3] = (v >> 24) & 0xff;
-	    ibuf[63 - 4] = (v >> 32) & 0xff;
-	    ibuf[63 - 5] = (v >> 40) & 0xff;
-	    ibuf[63 - 6] = (v >> 48) & 0xff;
-	    ibuf[63 - 7] = (v >> 56) & 0xff;
-	    FcHashDigestAddBlock (digest, ibuf);
+	    FcHashDigestFinish (digest, fontdata+i, length);
 	    break;
 	}
 	else
