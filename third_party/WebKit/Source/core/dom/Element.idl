@@ -52,7 +52,7 @@
     [PerWorldBindings] readonly attribute CSSStyleDeclaration style;
 
     // DOM4
-    [Reflect] attribute DOMString id;
+    [Reflect, ExposeJSAccessors] attribute DOMString id;
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString namespaceURI;
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter] attribute DOMString prefix;
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString localName;
@@ -92,7 +92,7 @@
 
     // HTML 5
     HTMLCollection getElementsByClassName(DOMString classNames);
-    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, LogActivity=SetterOnly, RaisesException=Setter] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, LogActivity=SetterOnly, RaisesException=Setter, ExposeJSAccessors] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
 
     [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement(DOMString where, Element element);
