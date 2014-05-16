@@ -28,8 +28,11 @@ struct ChildProcessData {
   // The handle to the process.
   base::ProcessHandle handle;
 
+  int nacl_debug_stub_port;
+
   explicit ChildProcessData(int process_type)
-      : process_type(process_type), id(0), handle(base::kNullProcessHandle) {
+      : process_type(process_type), id(0), handle(base::kNullProcessHandle),
+        nacl_debug_stub_port(0) {
   }
 };
 

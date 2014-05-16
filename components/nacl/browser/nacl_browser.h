@@ -25,9 +25,6 @@ class FileProxy;
 
 namespace nacl {
 
-static const int kGdbDebugStubPortUnknown = -1;
-static const int kGdbDebugStubPortUnused = 0;
-
 // Open an immutable executable file that can be mmapped.
 // This function should only be called on a thread that can perform file IO.
 base::File OpenNaClExecutableImpl(const base::FilePath& file_path);
@@ -68,11 +65,10 @@ class NaClBrowser {
   // debug stub server instead of a fixed one.
 
   // Notify listener that new debug stub TCP port is allocated.
-  void SetProcessGdbDebugStubPort(int process_id, int port);
+  void FireGdbDebugStubPortOpened(int port);
+  bool HasGdbDebugStubPortListener();
   void SetGdbDebugStubPortListener(base::Callback<void(int)> listener);
   void ClearGdbDebugStubPortListener();
-
-  int GetProcessGdbDebugStubPort(int process_id);
 
   bool ValidationCacheIsEnabled() const {
     return validation_cache_is_enabled_;
@@ -121,8 +117,6 @@ class NaClBrowser {
   static void SetDelegate(NaClBrowserDelegate* delegate);
   static NaClBrowserDelegate* GetDelegate();
 
-  // Each time a NaCl process ends, the browser is notified.
-  void OnProcessEnd(int process_id);
   // Support for NaCl crash throttling.
   // Each time a NaCl module crashes, the browser is notified.
   void OnProcessCrashed();
@@ -176,10 +170,6 @@ class NaClBrowser {
   bool validation_cache_is_modified_;
   NaClResourceState validation_cache_state_;
   base::Callback<void(int)> debug_stub_port_listener_;
-
-  // Map from process id to debug stub port if any.
-  typedef std::map<int, int> GdbDebugStubPortMap;
-  GdbDebugStubPortMap gdb_debug_stub_port_map_;
 
   typedef base::HashingMRUCache<std::string, base::FilePath> PathCacheType;
   PathCacheType path_cache_;

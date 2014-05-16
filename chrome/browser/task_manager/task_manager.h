@@ -351,6 +351,9 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
     PerResourceValues();
     ~PerResourceValues();
 
+    bool is_nacl_debug_stub_port_valid;
+    int nacl_debug_stub_port;
+
     bool is_title_valid;
     base::string16 title;
 
@@ -410,9 +413,6 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
     bool is_user_handles_valid;
     size_t user_handles;
     size_t user_handles_peak;
-
-    bool is_nacl_debug_stub_port_valid;
-    int nacl_debug_stub_port;
   };
 
   typedef std::vector<task_manager::Resource*> ResourceList;
