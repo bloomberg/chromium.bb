@@ -11,7 +11,6 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/browser/service_worker/service_worker_utils.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
@@ -22,12 +21,6 @@ typedef ServiceWorkerVersion::StatusCallback StatusCallback;
 typedef ServiceWorkerVersion::MessageCallback MessageCallback;
 
 namespace {
-
-// Default delay to stop the worker context after all documents that
-// are associated to the worker are closed.
-// (Note that if all references to the version is dropped the worker
-// is also stopped without delay)
-const int64 kStopWorkerDelay = 30;  // 30 secs.
 
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
@@ -110,10 +103,12 @@ ServiceWorkerVersion::ServiceWorkerVersion(
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() {
-  embedded_worker_->RemoveListener(this);
+  if (embedded_worker_) {
+    embedded_worker_->RemoveListener(this);
+    embedded_worker_.reset();
+  }
   if (context_)
     context_->RemoveLiveVersion(version_id_);
-  // EmbeddedWorker's dtor sends StopWorker if it's still running.
 }
 
 void ServiceWorkerVersion::SetStatus(Status status) {
@@ -153,6 +148,7 @@ void ServiceWorkerVersion::StartWorker(const StatusCallback& callback) {
 void ServiceWorkerVersion::StartWorkerWithCandidateProcesses(
     const std::vector<int>& possible_process_ids,
     const StatusCallback& callback) {
+  DCHECK(embedded_worker_);
   switch (running_status()) {
     case RUNNING:
       RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
@@ -177,6 +173,7 @@ void ServiceWorkerVersion::StartWorkerWithCandidateProcesses(
 }
 
 void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
+  DCHECK(embedded_worker_);
   if (running_status() == STOPPED) {
     RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
     return;
@@ -193,6 +190,7 @@ void ServiceWorkerVersion::StopWorker(const StatusCallback& callback) {
 
 void ServiceWorkerVersion::SendMessage(
     const IPC::Message& message, const StatusCallback& callback) {
+  DCHECK(embedded_worker_);
   if (running_status() != RUNNING) {
     // Schedule calling this method after starting the worker.
     StartWorker(base::Bind(&RunTaskAfterStartWorker,
@@ -320,8 +318,6 @@ void ServiceWorkerVersion::AddControllee(
   int controllee_id = controllee_by_id_.Add(provider_host);
   controllee_map_[provider_host] = controllee_id;
   AddProcessToWorker(provider_host->process_id());
-  if (stop_worker_timer_.IsRunning())
-    stop_worker_timer_.Stop();
 }
 
 void ServiceWorkerVersion::RemoveControllee(
@@ -331,8 +327,6 @@ void ServiceWorkerVersion::RemoveControllee(
   controllee_by_id_.Remove(found->second);
   controllee_map_.erase(found);
   RemoveProcessFromWorker(provider_host->process_id());
-  if (!HasControllee())
-    ScheduleStopWorker();
   // TODO(kinuko): Fire NoControllees notification when the # of controllees
   // reaches 0, so that a new pending version can be activated (which will
   // deactivate this version).
@@ -569,20 +563,6 @@ void ServiceWorkerVersion::OnPostMessageToDocument(
     return;
   }
   provider_host->PostMessage(message, sent_message_port_ids);
-}
-
-void ServiceWorkerVersion::ScheduleStopWorker() {
-  if (running_status() != RUNNING)
-    return;
-  if (stop_worker_timer_.IsRunning()) {
-    stop_worker_timer_.Reset();
-    return;
-  }
-  stop_worker_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kStopWorkerDelay),
-      base::Bind(&ServiceWorkerVersion::StopWorker,
-                 weak_factory_.GetWeakPtr(),
-                 base::Bind(&ServiceWorkerUtils::NoOpStatusCallback)));
 }
 
 }  // namespace content

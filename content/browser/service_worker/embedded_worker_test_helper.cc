@@ -154,8 +154,8 @@ void EmbeddedWorkerTestHelper::SimulateWorkerStarted(
 void EmbeddedWorkerTestHelper::SimulateWorkerStopped(
     int embedded_worker_id) {
   EmbeddedWorkerInstance* worker = registry()->GetWorker(embedded_worker_id);
-  if (worker != NULL)
-    registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
+  ASSERT_TRUE(worker != NULL);
+  registry()->OnWorkerStopped(worker->process_id(), embedded_worker_id);
 }
 
 void EmbeddedWorkerTestHelper::SimulateSend(

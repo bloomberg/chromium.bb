@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
@@ -189,7 +188,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void AddPendingControllee(ServiceWorkerProviderHost* provider_host);
   void RemovePendingControllee(ServiceWorkerProviderHost* provider_host);
 
-  // Returns if it has controllee.
+  // Returns if it has (non-pending) controllee.
   bool HasControllee() const { return !controllee_map_.empty(); }
 
   // Adds and removes Listeners.
@@ -241,8 +240,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                const base::string16& message,
                                const std::vector<int>& sent_message_port_ids);
 
-  void ScheduleStopWorker();
-
   const int64 version_id_;
   int64 registration_id_;
   GURL script_url_;
@@ -264,7 +261,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::WeakPtr<ServiceWorkerContextCore> context_;
   ObserverList<Listener> listeners_;
   ServiceWorkerScriptCacheMap script_cache_map_;
-  base::OneShotTimer<ServiceWorkerVersion> stop_worker_timer_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 
