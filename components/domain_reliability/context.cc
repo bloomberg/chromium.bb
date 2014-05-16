@@ -39,7 +39,13 @@ class DomainReliabilityContext::ResourceState {
         failed_requests(0) {}
   ~ResourceState() {}
 
+  // Serializes the resource state into a Value to be included in an upload.
+  // If there is nothing to report (no beacons and all request counters are 0),
+  // returns a scoped_ptr to NULL instead so the resource can be omitted.
   scoped_ptr<base::Value> ToValue(base::TimeTicks upload_time) const {
+    if (beacons.empty() && successful_requests == 0 && failed_requests == 0)
+      return scoped_ptr<base::Value>();
+
     ListValue* beacons_value = new ListValue();
     for (BeaconConstIterator it = beacons.begin(); it != beacons.end(); ++it)
       beacons_value->Append(it->ToValue(upload_time));
@@ -259,8 +265,11 @@ void DomainReliabilityContext::OnUploadComplete(bool success) {
 scoped_ptr<const Value> DomainReliabilityContext::CreateReport(
     base::TimeTicks upload_time) const {
   ListValue* resources_value = new ListValue();
-  for (ResourceStateIterator it = states_.begin(); it != states_.end(); ++it)
-    resources_value->Append((*it)->ToValue(upload_time).release());
+  for (ResourceStateIterator it = states_.begin(); it != states_.end(); ++it) {
+    scoped_ptr<Value> resource_report = (*it)->ToValue(upload_time);
+    if (resource_report)
+      resources_value->Append(resource_report.release());
+  }
 
   DictionaryValue* report_value = new DictionaryValue();
   report_value->SetString("reporter", upload_reporter_string_);

@@ -162,9 +162,7 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
       "\"resource_reports\":[{\"beacons\":[{\"http_response_code\":200,"
       "\"request_age_ms\":300250,\"request_elapsed_ms\":250,\"server_ip\":"
       "\"127.0.0.1\",\"status\":\"ok\"}],\"failed_requests\":0,"
-      "\"resource_name\":\"always_report\",\"successful_requests\":1},"
-      "{\"beacons\":[],\"failed_requests\":0,\"resource_name\":"
-      "\"never_report\",\"successful_requests\":0}]}";
+      "\"resource_name\":\"always_report\",\"successful_requests\":1}]}";
 
   time_.Advance(max_delay());
   EXPECT_TRUE(upload_pending());
