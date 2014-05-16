@@ -268,16 +268,6 @@ TEST_F(MappedMemoryManagerTest, FreePendingToken) {
   }
 }
 
-// Check if we don't free we don't crash.
-TEST_F(MappedMemoryManagerTest, DontFree) {
-  const unsigned int kSize = 1024;
-  // Check we can alloc.
-  int32 id1 = -1;
-  unsigned int offset1 = 0xFFFFFFFFU;
-  void* mem1 = manager_->Alloc(kSize, &id1, &offset1);
-  ASSERT_TRUE(mem1);
-}
-
 TEST_F(MappedMemoryManagerTest, FreeUnused) {
   int32 id = -1;
   unsigned int offset = 0xFFFFFFFFU;
@@ -321,6 +311,10 @@ TEST_F(MappedMemoryManagerTest, ChunkSizeMultiple) {
   EXPECT_EQ(0u, offset1);
   EXPECT_EQ(kSize, offset2);
   EXPECT_EQ(0u, offset3);
+
+  manager_->Free(mem1);
+  manager_->Free(mem2);
+  manager_->Free(mem3);
 }
 
 TEST_F(MappedMemoryManagerTest, UnusedMemoryLimit) {
@@ -350,6 +344,9 @@ TEST_F(MappedMemoryManagerTest, UnusedMemoryLimit) {
   // Expect two chunks to be allocated, exceeding the limit,
   // since all memory is in use.
   EXPECT_EQ(2 * kChunkSize, manager_->allocated_memory());
+
+  manager_->Free(mem1);
+  manager_->Free(mem2);
 }
 
 TEST_F(MappedMemoryManagerTest, MemoryLimitWithReuse) {
@@ -400,6 +397,9 @@ TEST_F(MappedMemoryManagerTest, MemoryLimitWithReuse) {
 
   // Expect one chunk to be allocated
   EXPECT_EQ(1 * kChunkSize, manager_->allocated_memory());
+
+  manager_->Free(mem1);
+  manager_->Free(mem3);
 }
 
 namespace {

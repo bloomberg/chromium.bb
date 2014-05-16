@@ -50,9 +50,9 @@ FencedAllocator::~FencedAllocator() {
       i = WaitForTokenAndFreeBlock(i);
     }
   }
-  // These checks are not valid if the service has crashed or lost the context.
-  // DCHECK_EQ(blocks_.size(), 1u);
-  // DCHECK_EQ(blocks_[0].state, FREE);
+
+  DCHECK_EQ(blocks_.size(), 1u);
+  DCHECK_EQ(blocks_[0].state, FREE);
 }
 
 // Looks for a non-allocated block that is big enough. Search in the FREE

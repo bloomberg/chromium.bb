@@ -3275,9 +3275,11 @@ TEST_F(GLES2ImplementationTest, LimitSizeAndOffsetTo32Bit) {
   EXPECT_STREQ(kSizeOverflowMessage, GetLastError().c_str());
 
   // Call MapBufferSubDataCHROMIUM() should succeed with legal paramaters.
-  EXPECT_TRUE(NULL != gl_->MapBufferSubDataCHROMIUM(
-      GL_ARRAY_BUFFER, 0, 1, GL_WRITE_ONLY));
+  void* mem =
+      gl_->MapBufferSubDataCHROMIUM(GL_ARRAY_BUFFER, 0, 1, GL_WRITE_ONLY);
+  EXPECT_TRUE(NULL != mem);
   EXPECT_EQ(GL_NO_ERROR, CheckError());
+  gl_->UnmapBufferSubDataCHROMIUM(mem);
 
   // MapBufferSubDataCHROMIUM: offset
   EXPECT_TRUE(NULL == gl_->MapBufferSubDataCHROMIUM(
