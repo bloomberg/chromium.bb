@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/metrics/field_trial.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "talk/base/basictypes.h"
@@ -41,6 +42,17 @@ bool InitializeWebRtcModule() {
   webrtc::SetupEventTracer(&GetCategoryGroupEnabled, &AddTraceEvent);
   return true;
 }
+
+// Define webrtc:field_trial::FindFullName to provide webrtc with a field trial
+// implementation. When compiled as a static library this can be done directly
+// and without pointers to functions.
+namespace webrtc {
+namespace field_trial {
+std::string FindFullName(const std::string& trial_name) {
+  return base::FieldTrialList::FindFullName(trial_name);
+}
+}  // namespace field_trial
+}  // namespace webrtc
 
 #else  // !LIBPEERCONNECTION_LIB
 
@@ -117,6 +129,7 @@ bool InitializeWebRtcModule() {
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
       &Allocate, &Dellocate,
 #endif
+      &base::FieldTrialList::FindFullName,
       logging::GetLogMessageHandler(),
       &GetCategoryGroupEnabled, &AddTraceEvent,
       &g_create_webrtc_media_engine, &g_destroy_webrtc_media_engine,

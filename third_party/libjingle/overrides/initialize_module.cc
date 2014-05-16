@@ -38,6 +38,21 @@ cricket::MediaEngineInterface* CreateWebRtcMediaEngine(
 
 void DestroyWebRtcMediaEngine(cricket::MediaEngineInterface* media_engine);
 
+// Define webrtc:field_trial::FindFullName to provide webrtc with a field trial
+// implementation. The implementation is provided by the loader via the
+// InitializeModule.
+namespace {
+FieldTrialFindFullName g_field_trial_find_ = NULL;
+}
+
+namespace webrtc {
+namespace field_trial {
+std::string FindFullName(const std::string& trial_name) {
+  return g_field_trial_find_(trial_name);
+}
+}  // namespace field_trial
+}  // namespace webrtc
+
 extern "C" {
 
 // Initialize logging, set the forward allocator functions (not on mac), and
@@ -49,6 +64,7 @@ bool InitializeModule(const CommandLine& command_line,
                       AllocateFunction alloc,
                       DellocateFunction dealloc,
 #endif
+                      FieldTrialFindFullName field_trial_find,
                       logging::LogMessageHandlerFunction log_handler,
                       webrtc::GetCategoryEnabledPtr trace_get_category_enabled,
                       webrtc::AddTraceEventPtr trace_add_trace_event,
@@ -60,6 +76,8 @@ bool InitializeModule(const CommandLine& command_line,
   g_alloc = alloc;
   g_dealloc = dealloc;
 #endif
+
+  g_field_trial_find_ = field_trial_find;
 
   *create_media_engine = &CreateWebRtcMediaEngine;
   *destroy_media_engine = &DestroyWebRtcMediaEngine;

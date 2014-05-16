@@ -23,6 +23,8 @@ namespace webrtc {
 class AudioDeviceModule;
 }  // namespace webrtc
 
+typedef std::string (*FieldTrialFindFullName)(const std::string& trial_name);
+
 typedef cricket::MediaEngineInterface* (*CreateWebRtcMediaEngineFunction)(
     webrtc::AudioDeviceModule* adm,
     webrtc::AudioDeviceModule* adm_sc,
@@ -46,6 +48,7 @@ typedef bool (*InitializeModuleFunction)(
     AllocateFunction alloc,
     DellocateFunction dealloc,
 #endif
+    FieldTrialFindFullName field_trial_find,
     logging::LogMessageHandlerFunction log_handler,
     webrtc::GetCategoryEnabledPtr trace_get_category_enabled,
     webrtc::AddTraceEventPtr trace_add_trace_event,
