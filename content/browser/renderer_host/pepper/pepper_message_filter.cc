@@ -16,14 +16,13 @@ PepperMessageFilter::PepperMessageFilter()
 
 PepperMessageFilter::~PepperMessageFilter() {}
 
-bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg,
-                                            bool* message_was_ok) {
+bool PepperMessageFilter::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(PepperMessageFilter, msg, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(PepperMessageFilter, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBX509Certificate_ParseDER,
                         OnX509CertificateParseDER)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

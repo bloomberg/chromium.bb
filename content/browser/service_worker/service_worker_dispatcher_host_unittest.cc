@@ -83,11 +83,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, DisabledCausesError) {
       new TestingServiceWorkerDispatcherHost(
           kRenderProcessId, context_wrapper(), helper_.get());
 
-  bool handled;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()),
-      &handled);
-  EXPECT_TRUE(handled);
+      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()));
 
   // TODO(alecflett): Pump the message loop when this becomes async.
   ASSERT_EQ(1UL, dispatcher_host->ipc_sink()->message_count());
@@ -110,11 +107,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, DISABLED_Enabled) {
       new TestingServiceWorkerDispatcherHost(
           kRenderProcessId, context_wrapper(), helper_.get());
 
-  bool handled;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()),
-      &handled);
-  EXPECT_TRUE(handled);
+      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()));
   base::RunLoop().RunUntilIdle();
 
   // TODO(alecflett): Pump the message loop when this becomes async.
@@ -137,11 +131,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, EarlyContextDeletion) {
 
   helper_->ShutdownContext();
 
-  bool handled;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()),
-      &handled);
-  EXPECT_TRUE(handled);
+      ServiceWorkerHostMsg_RegisterServiceWorker(-1, -1, -1, GURL(), GURL()));
 
   // TODO(alecflett): Pump the message loop when this becomes async.
   ASSERT_EQ(1UL, dispatcher_host->ipc_sink()->message_count());
@@ -156,42 +147,28 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
 
   const int kProviderId = 1001;  // Test with a value != kRenderProcessId.
 
-  bool handled = false;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderCreated(kProviderId),
-      &handled);
-  EXPECT_TRUE(handled);
+      ServiceWorkerHostMsg_ProviderCreated(kProviderId));
   EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
 
   // Two with the same ID should be seen as a bad message.
-  handled = false;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderCreated(kProviderId),
-      &handled);
-  EXPECT_TRUE(handled);
+      ServiceWorkerHostMsg_ProviderCreated(kProviderId));
   EXPECT_EQ(1, dispatcher_host->bad_messages_received_count_);
 
-  handled = false;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderDestroyed(kProviderId),
-      &handled);
-  EXPECT_TRUE(handled);
+      ServiceWorkerHostMsg_ProviderDestroyed(kProviderId));
   EXPECT_FALSE(context()->GetProviderHost(kRenderProcessId, kProviderId));
 
   // Destroying an ID that does not exist warrants a bad message.
-  handled = false;
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderDestroyed(kProviderId),
-      &handled);
-  EXPECT_TRUE(handled);
+      ServiceWorkerHostMsg_ProviderDestroyed(kProviderId));
   EXPECT_EQ(2, dispatcher_host->bad_messages_received_count_);
 
   // Deletion of the dispatcher_host should cause providers for that
   // process to get deleted as well.
   dispatcher_host->OnMessageReceived(
-      ServiceWorkerHostMsg_ProviderCreated(kProviderId),
-      &handled);
-  EXPECT_TRUE(handled);
+      ServiceWorkerHostMsg_ProviderCreated(kProviderId));
   EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
   EXPECT_TRUE(dispatcher_host->HasOneRef());
   dispatcher_host = NULL;

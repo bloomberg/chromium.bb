@@ -194,10 +194,9 @@ void VideoCaptureHost::DoEndedOnIOThread(
 
 ///////////////////////////////////////////////////////////////////////////////
 // IPC Messages handler.
-bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message,
-                                         bool* message_was_ok) {
+bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(VideoCaptureHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(VideoCaptureHost, message)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Start, OnStartCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Pause, OnPauseCapture)
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Stop, OnStopCapture)
@@ -207,7 +206,7 @@ bool VideoCaptureHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_GetDeviceFormatsInUse,
                         OnGetDeviceFormatsInUse)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

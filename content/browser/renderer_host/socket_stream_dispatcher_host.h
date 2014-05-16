@@ -40,8 +40,7 @@ class SocketStreamDispatcherHost
       ResourceContext* resource_context);
 
   // BrowserMessageFilter:
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Make this object inactive.
   // Remove all active SocketStreamHost objects.

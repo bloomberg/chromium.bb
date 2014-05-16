@@ -108,8 +108,7 @@ class InputEventMessageFilter : public BrowserMessageFilter {
   }
 
   // BrowserMessageFilter:
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
       InputHostMsg_HandleInputEvent_ACK::Param params;
       InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);

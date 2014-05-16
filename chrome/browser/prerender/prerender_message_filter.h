@@ -34,8 +34,7 @@ class PrerenderMessageFilter : public content::BrowserMessageFilter {
   virtual ~PrerenderMessageFilter();
 
   // Overridden from content::BrowserMessageFilter.
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;

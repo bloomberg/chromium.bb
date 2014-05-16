@@ -53,8 +53,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 
   // Some messages we do special handling.
   bool handled = true;
-  bool msg_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ChromeMockRenderThread, msg, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(ChromeMockRenderThread, msg)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)
 #if defined(ENABLE_PRINTING)
@@ -80,7 +79,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 #endif  // defined(OS_CHROMEOS)
 #endif  // defined(ENABLE_PRINTING)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

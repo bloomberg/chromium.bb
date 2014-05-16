@@ -109,10 +109,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void CancelRequestsForContext(ResourceContext* context);
 
   // Returns true if the message was a resource message that was processed.
-  // If it was, message_was_ok will be false iff the message was corrupt.
   bool OnMessageReceived(const IPC::Message& message,
-                         ResourceMessageFilter* filter,
-                         bool* message_was_ok);
+                         ResourceMessageFilter* filter);
 
   // Initiates a save file from the browser process (as opposed to a resource
   // request from the renderer or another child process).

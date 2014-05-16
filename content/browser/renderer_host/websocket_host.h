@@ -42,8 +42,7 @@ class CONTENT_EXPORT WebSocketHost {
 
   // General message dispatch. WebSocketDispatcherHost::OnMessageReceived
   // delegates to this method after looking up the |routing_id|.
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+  virtual bool OnMessageReceived(const IPC::Message& message);
 
  private:
   // Handlers for each message type, dispatched by OnMessageReceived(), as

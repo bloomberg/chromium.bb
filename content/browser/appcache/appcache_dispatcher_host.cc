@@ -37,10 +37,9 @@ void AppCacheDispatcherHost::OnChannelConnected(int32 peer_pid) {
   }
 }
 
-bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                               bool* message_was_ok) {
+bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(AppCacheDispatcherHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(AppCacheDispatcherHost, message)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_RegisterHost, OnRegisterHost)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_UnregisterHost, OnUnregisterHost)
     IPC_MESSAGE_HANDLER(AppCacheHostMsg_SetSpawningHostId, OnSetSpawningHostId)
@@ -56,7 +55,7 @@ bool AppCacheDispatcherHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheHostMsg_StartUpdate, OnStartUpdate)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AppCacheHostMsg_SwapCache, OnSwapCache)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

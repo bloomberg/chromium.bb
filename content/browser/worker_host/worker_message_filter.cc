@@ -34,10 +34,9 @@ void WorkerMessageFilter::OnChannelClosing() {
   WorkerServiceImpl::GetInstance()->OnWorkerMessageFilterClosing(this);
 }
 
-bool WorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                            bool* message_was_ok) {
+bool WorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(WorkerMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(WorkerMessageFilter, message)
     // Worker messages.
     // Only sent from renderer for now, until we have nested workers.
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
@@ -45,7 +44,7 @@ bool WorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
     // Only sent from renderer.
     IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentDetached, OnDocumentDetached)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

@@ -21,8 +21,7 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Adjusts remote_results by examining local_results. Any result that's both
   // local and remote stays type SPELLING, all others are flagged GRAMMAR.

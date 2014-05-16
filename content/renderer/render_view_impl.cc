@@ -1055,8 +1055,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
       return true;
 
   bool handled = true;
-  bool msg_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(RenderViewImpl, message, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(RenderViewImpl, message)
     IPC_MESSAGE_HANDLER(InputMsg_ExecuteEditCommand, OnExecuteEditCommand)
     IPC_MESSAGE_HANDLER(InputMsg_MoveCaret, OnMoveCaret)
     IPC_MESSAGE_HANDLER(InputMsg_ScrollFocusedEditableNodeIntoRect,
@@ -1148,12 +1147,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(handled = RenderWidget::OnMessageReceived(message))
   IPC_END_MESSAGE_MAP()
-
-  if (!msg_is_ok) {
-    // The message had a handler, but its deserialization failed.
-    // Kill the renderer to avoid potential spoofing attacks.
-    CHECK(false) << "Unable to deserialize message in RenderViewImpl.";
-  }
 
   return handled;
 }

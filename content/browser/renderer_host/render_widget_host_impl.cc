@@ -449,8 +449,7 @@ bool RenderWidgetHostImpl::IsRenderView() const {
 
 bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   bool handled = true;
-  bool msg_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(RenderWidgetHostImpl, msg, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
     IPC_MESSAGE_HANDLER(InputHostMsg_QueueSyntheticGesture,
                         OnQueueSyntheticGesture)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderViewReady, OnRenderViewReady)
@@ -461,7 +460,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
-                                msg_is_ok = OnSwapCompositorFrame(msg))
+                                OnSwapCompositorFrame(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStopFlinging, OnFlingingStopped)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
@@ -495,7 +494,7 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnImeCompositionRangeChanged)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   if (!handled && input_router_ && input_router_->OnMessageReceived(msg))
     return true;
@@ -503,11 +502,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
   if (!handled && view_ && view_->OnMessageReceived(msg))
     return true;
 
-  if (!msg_is_ok) {
-    // The message de-serialization failed. Kill the renderer process.
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RWH"));
-    GetProcess()->ReceivedBadMessage();
-  }
   return handled;
 }
 

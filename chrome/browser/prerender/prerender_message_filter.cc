@@ -41,10 +41,9 @@ PrerenderMessageFilter::PrerenderMessageFilter(int render_process_id,
 PrerenderMessageFilter::~PrerenderMessageFilter() {
 }
 
-bool PrerenderMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                               bool* message_was_ok) {
+bool PrerenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(PrerenderMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(PrerenderMessageFilter, message)
     IPC_MESSAGE_HANDLER(PrerenderHostMsg_AddLinkRelPrerender, OnAddPrerender)
     IPC_MESSAGE_HANDLER(
         PrerenderHostMsg_CancelLinkRelPrerender, OnCancelPrerender)

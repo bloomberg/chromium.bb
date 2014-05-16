@@ -52,8 +52,7 @@ public:
       const IPC::Message& message,
       BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(
-      const IPC::Message& message,
-      bool* message_was_ok) OVERRIDE;
+      const IPC::Message& message) OVERRIDE;
 
   void OnShouldOverrideUrlLoading(int routing_id,
                                   const base::string16& url,
@@ -83,14 +82,13 @@ void AwContentsMessageFilter::OverrideThreadForMessage(
   }
 }
 
-bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(AwContentsMessageFilter, message, *message_was_ok)
-      IPC_MESSAGE_HANDLER(AwViewHostMsg_ShouldOverrideUrlLoading,
-                          OnShouldOverrideUrlLoading)
-      IPC_MESSAGE_HANDLER(AwViewHostMsg_SubFrameCreated, OnSubFrameCreated)
-      IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_BEGIN_MESSAGE_MAP(AwContentsMessageFilter, message)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_ShouldOverrideUrlLoading,
+                        OnShouldOverrideUrlLoading)
+    IPC_MESSAGE_HANDLER(AwViewHostMsg_SubFrameCreated, OnSubFrameCreated)
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
 }

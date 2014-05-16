@@ -34,8 +34,7 @@ class NaClHostMessageFilter : public content::BrowserMessageFilter {
                         net::URLRequestContextGetter* request_context);
 
   // content::BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelClosing() OVERRIDE;
 
   int render_process_id() { return render_process_id_; }

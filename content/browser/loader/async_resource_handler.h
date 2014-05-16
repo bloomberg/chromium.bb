@@ -32,8 +32,7 @@ class AsyncResourceHandler : public ResourceHandler,
                        ResourceDispatcherHostImpl* rdh);
   virtual ~AsyncResourceHandler();
 
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // ResourceHandler implementation:
   virtual bool OnUploadProgress(int request_id,

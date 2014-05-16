@@ -180,11 +180,7 @@ class DeviceRequestMessageFilterTest : public testing::Test {
   }
 
   void SendGetSourcesMessage(int request_id, const GURL& origin) {
-    // Since we're not actually sending IPC messages, this is a throw-away
-    // value.
-    bool message_was_ok;
-    host_->OnMessageReceived(MediaStreamHostMsg_GetSources(request_id, origin),
-                             &message_was_ok);
+    host_->OnMessageReceived(MediaStreamHostMsg_GetSources(request_id, origin));
   }
 
   void FireAudioDeviceCallback() {

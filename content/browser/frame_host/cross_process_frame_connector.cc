@@ -29,9 +29,8 @@ CrossProcessFrameConnector::~CrossProcessFrameConnector() {
 
 bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
-  bool msg_is_ok = true;
 
-  IPC_BEGIN_MESSAGE_MAP_EX(CrossProcessFrameConnector, msg, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(CrossProcessFrameConnector, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_BuffersSwappedACK, OnBuffersSwappedACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CompositorFrameSwappedACK,
                         OnCompositorFrameSwappedACK)
@@ -41,7 +40,7 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_InitializeChildFrame,
                         OnInitializeChildFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

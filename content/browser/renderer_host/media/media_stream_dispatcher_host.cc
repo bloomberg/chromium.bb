@@ -91,10 +91,9 @@ void MediaStreamDispatcherHost::DeviceOpened(
       render_view_id, page_request_id, label, video_device));
 }
 
-bool MediaStreamDispatcherHost::OnMessageReceived(
-    const IPC::Message& message, bool* message_was_ok) {
+bool MediaStreamDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(MediaStreamDispatcherHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(MediaStreamDispatcherHost, message)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_GenerateStream, OnGenerateStream)
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CancelGenerateStream,
                         OnCancelGenerateStream)
@@ -109,7 +108,7 @@ bool MediaStreamDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MediaStreamHostMsg_CloseDevice,
                         OnCloseDevice)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

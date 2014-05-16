@@ -78,9 +78,8 @@ void GetResponseHead(const std::vector<IPC::Message>& messages,
 void GenerateIPCMessage(
     scoped_refptr<ResourceMessageFilter> filter,
     scoped_ptr<IPC::Message> message) {
-  bool msg_is_ok;
   ResourceDispatcherHostImpl::Get()->OnMessageReceived(
-      *message, filter.get(), &msg_is_ok);
+      *message, filter.get());
 }
 
 // On Windows, ResourceMsg_SetDataBuffer supplies a HANDLE which is not
@@ -927,8 +926,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
   ResourceHostMsg_Request request =
       CreateResourceRequest("GET", type, url);
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
-  bool msg_was_ok;
-  host_.OnMessageReceived(msg, filter, &msg_was_ok);
+  host_.OnMessageReceived(msg, filter);
   KickOffRequest();
 }
 
@@ -1068,8 +1066,7 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
 
   // Finish the redirection
   ResourceHostMsg_FollowRedirect redirect_msg(5);
-  bool msg_was_ok;
-  host_.OnMessageReceived(redirect_msg, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(redirect_msg, filter_.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   // flush all the pending requests
@@ -1195,11 +1192,10 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetached) {
   ResourceHostMsg_Request request_ping = CreateResourceRequest(
       "GET", ResourceType::PING, net::URLRequestTestJob::test_url_3());
 
-  bool msg_was_ok;
   ResourceHostMsg_RequestResource msg_prefetch(0, 1, request_prefetch);
-  host_.OnMessageReceived(msg_prefetch, filter_, &msg_was_ok);
+  host_.OnMessageReceived(msg_prefetch, filter_);
   ResourceHostMsg_RequestResource msg_ping(0, 2, request_ping);
-  host_.OnMessageReceived(msg_ping, filter_, &msg_was_ok);
+  host_.OnMessageReceived(msg_ping, filter_);
 
   // Remove the filter before processing the requests by simulating channel
   // closure.
@@ -1247,8 +1243,7 @@ TEST_F(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
       net::URLRequestTestJob::test_url_redirect_to_url_2());
 
   ResourceHostMsg_RequestResource msg(0, 1, request);
-  bool msg_was_ok;
-  host_.OnMessageReceived(msg, filter_, &msg_was_ok);
+  host_.OnMessageReceived(msg, filter_);
 
   // Remove the filter before processing the request by simulating channel
   // closure.
@@ -2123,8 +2118,7 @@ TEST_F(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
-  bool msg_was_ok;
-  host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(msg, filter_.get());
 
   // Since the request had already started processing as a download,
   // the cancellation above should have been ignored and the request
@@ -2159,8 +2153,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
-  bool msg_was_ok;
-  host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(msg, filter_.get());
 
   // Since the request had already started processing as a download,
   // the cancellation above should have been ignored and the request
@@ -2228,8 +2221,7 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
-  bool msg_was_ok;
-  host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(msg, filter_.get());
 
   // Since the request is marked as being transferred,
   // the cancellation above should have been ignored and the request
@@ -2279,8 +2271,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
               "Content-Type: text/html\n\n",
               kResponseBody);
   ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-  bool msg_was_ok;
-  host_.OnMessageReceived(redirect_msg, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(redirect_msg, filter_.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
@@ -2304,8 +2295,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationHtml) {
 
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  host_.OnMessageReceived(
-      transfer_request_msg, second_filter.get(), &msg_was_ok);
+  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   // Check generated messages.
@@ -2354,8 +2344,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
               "Content-Type: text/plain\n\n",
               kResponseBody);
   ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-  bool msg_was_ok;
-  host_.OnMessageReceived(redirect_msg, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(redirect_msg, filter_.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
@@ -2379,8 +2368,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationText) {
 
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  host_.OnMessageReceived(
-      transfer_request_msg, second_filter.get(), &msg_was_ok);
+  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   // Check generated messages.
@@ -2426,9 +2414,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
 
     ResourceHostMsg_RequestResource first_request_msg(
         render_view_id, request_id, first_request);
-    bool msg_was_ok;
-    host_.OnMessageReceived(
-        first_request_msg, first_filter.get(), &msg_was_ok);
+    host_.OnMessageReceived(first_request_msg, first_filter.get());
     base::MessageLoop::current()->RunUntilIdle();
 
     // Now that we're blocked on the redirect, update the response and unblock
@@ -2437,7 +2423,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
                 "Content-Type: text/html\n\n",
                 kResponseBody);
     ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-    host_.OnMessageReceived(redirect_msg, first_filter.get(), &msg_was_ok);
+    host_.OnMessageReceived(redirect_msg, first_filter.get());
     base::MessageLoop::current()->RunUntilIdle();
 
     // Flush all the pending requests to get the response through the
@@ -2468,9 +2454,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
   child_ids_.insert(second_filter->child_id());
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  bool msg_was_ok;
-  host_.OnMessageReceived(
-      transfer_request_msg, second_filter.get(), &msg_was_ok);
+  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   // Check generated messages.
@@ -2511,8 +2495,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   SetResponse("HTTP/1.1 302 Found\n"
               "Location: http://other.com/blerg\n\n");
   ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-  bool msg_was_ok;
-  host_.OnMessageReceived(redirect_msg, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(redirect_msg, filter_.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   // Now that we're blocked on the second redirect, update the response and
@@ -2524,7 +2507,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
               "Content-Type: text/plain\n\n",
               kResponseBody);
   ResourceHostMsg_FollowRedirect redirect_msg2(request_id);
-  host_.OnMessageReceived(redirect_msg2, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(redirect_msg2, filter_.get());
   base::MessageLoop::current()->RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
@@ -2550,8 +2533,7 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   child_ids_.insert(second_filter->child_id());
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  host_.OnMessageReceived(
-      transfer_request_msg, second_filter.get(), &msg_was_ok);
+  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
 
   // Verify that we update the ResourceRequestInfo.
   GlobalRequestID global_request_id(second_filter->child_id(), new_request_id);
@@ -2649,8 +2631,7 @@ TEST_F(ResourceDispatcherHostTest, DataSentBeforeDetach) {
 
   // Simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
-  bool msg_was_ok;
-  host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+  host_.OnMessageReceived(msg, filter_.get());
 
   EXPECT_EQ(1, host_.pending_requests());
 
@@ -2713,8 +2694,7 @@ TEST_F(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
       EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
 
       ResourceHostMsg_DataReceived_ACK msg(1);
-      bool msg_was_ok;
-      host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+      host_.OnMessageReceived(msg, filter_.get());
     }
 
     base::MessageLoop::current()->RunUntilIdle();
@@ -2748,8 +2728,7 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
   // Send some unexpected ACKs.
   for (size_t i = 0; i < 128; ++i) {
     ResourceHostMsg_DataReceived_ACK msg(1);
-    bool msg_was_ok;
-    host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+    host_.OnMessageReceived(msg, filter_.get());
   }
 
   msgs[0].erase(msgs[0].begin());
@@ -2767,8 +2746,7 @@ TEST_F(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
       EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
 
       ResourceHostMsg_DataReceived_ACK msg(1);
-      bool msg_was_ok;
-      host_.OnMessageReceived(msg, filter_.get(), &msg_was_ok);
+      host_.OnMessageReceived(msg, filter_.get());
     }
 
     base::MessageLoop::current()->RunUntilIdle();
@@ -2804,10 +2782,8 @@ TEST_F(ResourceDispatcherHostTest, RegisterDownloadedTempFile) {
       filter_->child_id(), file_path));
 
   // The child releases from the request.
-  bool msg_was_ok = true;
   ResourceHostMsg_ReleaseDownloadedFile release_msg(kRequestID);
-  host_.OnMessageReceived(release_msg, filter_, &msg_was_ok);
-  ASSERT_TRUE(msg_was_ok);
+  host_.OnMessageReceived(release_msg, filter_);
 
   // Still readable because there is another reference to the file. (The child
   // may take additional blob references.)
@@ -2865,9 +2841,7 @@ TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
       "GET", ResourceType::SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
   request.download_to_file = true;
   ResourceHostMsg_RequestResource request_msg(0, 1, request);
-  bool msg_was_ok;
-  host_.OnMessageReceived(request_msg, filter_, &msg_was_ok);
-  ASSERT_TRUE(msg_was_ok);
+  host_.OnMessageReceived(request_msg, filter_);
 
   // Running the message loop until idle does not work because
   // RedirectToFileResourceHandler posts things to base::WorkerPool. Instead,
@@ -2922,8 +2896,7 @@ TEST_F(ResourceDispatcherHostTest, DownloadToFile) {
   // RunUntilIdle doesn't work because base::WorkerPool is involved.
   ShareableFileReleaseWaiter waiter(response_head.download_file_path);
   ResourceHostMsg_ReleaseDownloadedFile release_msg(1);
-  host_.OnMessageReceived(release_msg, filter_, &msg_was_ok);
-  ASSERT_TRUE(msg_was_ok);
+  host_.OnMessageReceived(release_msg, filter_);
   waiter.Wait();
   // The release callback runs before the delete is scheduled, so pump the
   // message loop for the delete itself. (This relies on the delete happening on

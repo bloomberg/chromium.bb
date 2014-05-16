@@ -87,8 +87,7 @@ class InterceptingMessageFilter : public content::BrowserMessageFilter {
   }
 
   const ClientPhishingRequest* verdict() const { return verdict_.get(); }
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(InterceptingMessageFilter, message)
         IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_PhishingDetectionDone,

@@ -97,14 +97,13 @@ AsyncResourceHandler::~AsyncResourceHandler() {
     rdh_->FinishedWithResourcesForRequest(request());
 }
 
-bool AsyncResourceHandler::OnMessageReceived(const IPC::Message& message,
-                                             bool* message_was_ok) {
+bool AsyncResourceHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(AsyncResourceHandler, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(AsyncResourceHandler, message)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_FollowRedirect, OnFollowRedirect)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_DataReceived_ACK, OnDataReceivedACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

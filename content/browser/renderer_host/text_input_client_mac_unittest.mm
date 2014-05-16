@@ -104,9 +104,8 @@ class ScopedTestingThread {
 // Adapter for OnMessageReceived to ignore return type so it can be posted
 // to a MessageLoop.
 void CallOnMessageReceived(scoped_refptr<TextInputClientMessageFilter> filter,
-                           const IPC::Message& message,
-                           bool* message_was_ok) {
-  filter->OnMessageReceived(message, message_was_ok);
+                           const IPC::Message& message) {
+  filter->OnMessageReceived(message);
 }
 
 }  // namespace
@@ -153,11 +152,10 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
   scoped_ptr<IPC::Message> message(
       new TextInputClientReplyMsg_GotCharacterIndexForPoint(
           widget()->GetRoutingID(), kNotFoundValue));
-  bool message_ok = true;
   // Set |WTF::notFound| to the index |kTaskDelayMs| after the previous
   // setting.
   PostTask(FROM_HERE,
-           base::Bind(&CallOnMessageReceived, filter, *message, &message_ok),
+           base::Bind(&CallOnMessageReceived, filter, *message),
            base::TimeDelta::FromMilliseconds(kTaskDelayMs) * 2);
 
   NSUInteger index = service()->GetCharacterIndexAtPoint(

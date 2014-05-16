@@ -51,10 +51,9 @@ void ExtensionMessageFilter::OverrideThreadForMessage(
   }
 }
 
-bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                               bool* message_was_ok) {
+bool ExtensionMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ExtensionMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ExtensionMessageFilter, message)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_AddListener,
                         OnExtensionAddListener)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_RemoveListener,

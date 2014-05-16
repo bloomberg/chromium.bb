@@ -85,11 +85,9 @@ void ServiceWorkerDispatcherHost::OnDestruct() const {
 }
 
 bool ServiceWorkerDispatcherHost::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(
-    ServiceWorkerDispatcherHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcherHost, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_RegisterServiceWorker,
                         OnRegisterServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_UnregisterServiceWorker,

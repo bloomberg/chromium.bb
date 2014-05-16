@@ -205,16 +205,15 @@ void AudioInputRendererHost::DoHandleError(
   DeleteEntryOnError(entry, AUDIO_INPUT_CONTROLLER_ERROR);
 }
 
-bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message,
-                                               bool* message_was_ok) {
+bool AudioInputRendererHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(AudioInputRendererHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(AudioInputRendererHost, message)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_CreateStream, OnCreateStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_RecordStream, OnRecordStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_CloseStream, OnCloseStream)
     IPC_MESSAGE_HANDLER(AudioInputHostMsg_SetVolume, OnSetVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

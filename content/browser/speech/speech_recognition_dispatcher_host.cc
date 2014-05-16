@@ -45,10 +45,9 @@ SpeechRecognitionDispatcherHost::AsWeakPtr() {
 }
 
 bool SpeechRecognitionDispatcherHost::OnMessageReceived(
-    const IPC::Message& message, bool* message_was_ok) {
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(SpeechRecognitionDispatcherHost, message,
-                           *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(SpeechRecognitionDispatcherHost, message)
     IPC_MESSAGE_HANDLER(SpeechRecognitionHostMsg_StartRequest,
                         OnStartRequest)
     IPC_MESSAGE_HANDLER(SpeechRecognitionHostMsg_AbortRequest,

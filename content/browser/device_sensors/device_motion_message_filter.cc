@@ -21,19 +21,15 @@ DeviceMotionMessageFilter::~DeviceMotionMessageFilter() {
         CONSUMER_TYPE_MOTION);
 }
 
-bool DeviceMotionMessageFilter::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+bool DeviceMotionMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(DeviceMotionMessageFilter,
-                           message,
-                           *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(DeviceMotionMessageFilter, message)
     IPC_MESSAGE_HANDLER(DeviceMotionHostMsg_StartPolling,
                         OnDeviceMotionStartPolling)
     IPC_MESSAGE_HANDLER(DeviceMotionHostMsg_StopPolling,
                         OnDeviceMotionStopPolling)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

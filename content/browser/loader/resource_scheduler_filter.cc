@@ -27,8 +27,7 @@ ResourceSchedulerFilter::ResourceSchedulerFilter(int child_id)
 ResourceSchedulerFilter::~ResourceSchedulerFilter() {
 }
 
-bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+bool ResourceSchedulerFilter::OnMessageReceived(const IPC::Message& message) {
   ResourceScheduler* scheduler =
       ResourceDispatcherHostImpl::Get()->scheduler();
   // scheduler can be NULL during shutdown, in which case it's ok to ignore the

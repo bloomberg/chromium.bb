@@ -12,11 +12,10 @@ PeerConnectionTrackerHost::PeerConnectionTrackerHost(int render_process_id)
     : BrowserMessageFilter(PeerConnectionTrackerMsgStart),
       render_process_id_(render_process_id) {}
 
-bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message,
-                                                  bool* message_was_ok) {
+bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
-  IPC_BEGIN_MESSAGE_MAP_EX(PeerConnectionTrackerHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(PeerConnectionTrackerHost, message)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddPeerConnection,
                         OnAddPeerConnection)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_RemovePeerConnection,
@@ -26,7 +25,7 @@ bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddStats, OnAddStats)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_GetUserMedia, OnGetUserMedia)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

@@ -34,11 +34,10 @@ void TraceMessageFilter::OnChannelClosing() {
   }
 }
 
-bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                           bool* message_was_ok) {
+bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
   // Always on IO thread (BrowserMessageFilter guarantee).
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(TraceMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(TraceMessageFilter, message)
     IPC_MESSAGE_HANDLER(TracingHostMsg_ChildSupportsTracing,
                         OnChildSupportsTracing)
     IPC_MESSAGE_HANDLER(TracingHostMsg_EndTracingAck, OnEndTracingAck)
@@ -53,7 +52,7 @@ bool TraceMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(TracingHostMsg_TraceBufferPercentFullReply,
                         OnTraceBufferPercentFullReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

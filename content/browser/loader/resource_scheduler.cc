@@ -167,13 +167,12 @@ class ResourceScheduler::ScheduledResourceRequest
 
  private:
   // ResourceMessageDelegate interface:
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE {
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
     bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP_EX(ScheduledResourceRequest, message, *message_was_ok)
+    IPC_BEGIN_MESSAGE_MAP(ScheduledResourceRequest, message)
       IPC_MESSAGE_HANDLER(ResourceHostMsg_DidChangePriority, DidChangePriority)
       IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP_EX()
+    IPC_END_MESSAGE_MAP()
     return handled;
   }
 

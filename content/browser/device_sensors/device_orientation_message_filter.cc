@@ -22,18 +22,15 @@ DeviceOrientationMessageFilter::~DeviceOrientationMessageFilter() {
 }
 
 bool DeviceOrientationMessageFilter::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(DeviceOrientationMessageFilter,
-                           message,
-                           *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(DeviceOrientationMessageFilter, message)
     IPC_MESSAGE_HANDLER(DeviceOrientationHostMsg_StartPolling,
                         OnDeviceOrientationStartPolling)
     IPC_MESSAGE_HANDLER(DeviceOrientationHostMsg_StopPolling,
                         OnDeviceOrientationStopPolling)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

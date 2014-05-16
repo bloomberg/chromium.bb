@@ -73,8 +73,7 @@ class CONTENT_EXPORT VideoCaptureHost
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // VideoCaptureControllerEventHandler implementation.
   virtual void OnError(const VideoCaptureControllerID& id) OVERRIDE;

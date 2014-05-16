@@ -25,10 +25,10 @@ void FileUtilitiesMessageFilter::OverrideThreadForMessage(
     *thread = BrowserThread::FILE;
 }
 
-bool FileUtilitiesMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                   bool* message_was_ok) {
+bool FileUtilitiesMessageFilter::OnMessageReceived(
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(FileUtilitiesMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(FileUtilitiesMessageFilter, message)
     IPC_MESSAGE_HANDLER(FileUtilitiesMsg_GetFileInfo, OnGetFileInfo)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

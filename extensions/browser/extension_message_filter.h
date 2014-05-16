@@ -43,8 +43,7 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Message handlers on the UI thread.
   void OnExtensionAddListener(const std::string& extension_id,

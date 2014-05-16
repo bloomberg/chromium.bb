@@ -395,10 +395,9 @@ void RenderMessageFilter::OnChannelConnected(int32 peer_id) {
   cpu_usage_sample_time_ = base::TimeTicks::Now();
 }
 
-bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                            bool* message_was_ok) {
+bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(RenderMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PreCacheFontCharacters,
                         OnPreCacheFontCharacters)
@@ -470,7 +469,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ViewHostMsg_RunWebAudioMediaCodec, OnWebAudioMediaCodec)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

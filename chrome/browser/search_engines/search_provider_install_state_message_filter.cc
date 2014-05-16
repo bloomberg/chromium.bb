@@ -31,12 +31,10 @@ SearchProviderInstallStateMessageFilter(
 }
 
 bool SearchProviderInstallStateMessageFilter::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+    const IPC::Message& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(SearchProviderInstallStateMessageFilter, message,
-                           *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(SearchProviderInstallStateMessageFilter, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         ChromeViewHostMsg_GetSearchProviderInstallState,
         OnGetSearchProviderInstallState)

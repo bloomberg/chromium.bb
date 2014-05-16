@@ -96,10 +96,9 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
 ChromeRenderMessageFilter::~ChromeRenderMessageFilter() {
 }
 
-bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                  bool* message_was_ok) {
+bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ChromeRenderMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ChromeRenderMessageFilter, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_Preconnect, OnPreconnect)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,

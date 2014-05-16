@@ -29,8 +29,7 @@ class CONTENT_EXPORT ResourceMessageDelegate {
 
   // Called when the ResourceDispatcherHostImpl receives a message specifically
   // for this delegate.
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) = 0;
+  virtual bool OnMessageReceived(const IPC::Message& message) = 0;
 
   void set_request_id(const GlobalRequestID& new_request_id) {
     id_ = new_request_id;

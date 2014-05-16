@@ -56,8 +56,7 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
                           const WebSocketHostFactory& websocket_host_factory);
 
   // BrowserMessageFilter:
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // The following methods are used by WebSocketHost::EventInterface to send
   // IPCs from the browser to the renderer or child process. Any of them may

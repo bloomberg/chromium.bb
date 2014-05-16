@@ -39,13 +39,12 @@ RenderFrameMessageFilter::RenderFrameMessageFilter(
 RenderFrameMessageFilter::~RenderFrameMessageFilter() {
 }
 
-bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                 bool* message_was_ok) {
+bool RenderFrameMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(RenderFrameMessageFilter, message)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CreateChildFrame, OnCreateChildFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

@@ -268,8 +268,7 @@ void InputRouterImpl::OnViewUpdated(int view_flags) {
 
 bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  bool message_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(InputRouterImpl, message, message_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(InputRouterImpl, message)
     IPC_MESSAGE_HANDLER(InputHostMsg_HandleInputEvent_ACK, OnInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MoveCaret_ACK, OnMsgMoveCaretAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
@@ -279,9 +278,6 @@ bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
                         OnSetTouchAction)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-
-  if (!message_is_ok)
-    ack_handler_->OnUnexpectedEventAck(InputAckHandler::BAD_ACK_MESSAGE);
 
   return handled;
 }

@@ -645,8 +645,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   }
 
   bool handled = true;
-  bool msg_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameImpl, msg, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(RenderFrameImpl, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_Navigate, OnNavigate)
     IPC_MESSAGE_HANDLER(FrameMsg_BeforeUnload, OnBeforeUnload)
     IPC_MESSAGE_HANDLER(FrameMsg_SwapOut, OnSwapOut)
@@ -682,14 +681,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
 #endif
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
-  IPC_END_MESSAGE_MAP_EX()
-
-  if (!msg_is_ok) {
-    // The message had a handler, but its deserialization failed.
-    // Kill the renderer to avoid potential spoofing attacks.
-    int id = msg.type();
-    CHECK(false) << "Unable to deserialize " << id << " in RenderFrameImpl.";
-  }
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

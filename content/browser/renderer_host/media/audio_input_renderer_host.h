@@ -109,8 +109,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // AudioInputController::EventHandler implementation.
   virtual void OnCreated(media::AudioInputController* controller) OVERRIDE;

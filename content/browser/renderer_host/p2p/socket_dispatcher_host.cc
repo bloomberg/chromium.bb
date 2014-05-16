@@ -120,10 +120,9 @@ void P2PSocketDispatcherHost::OnDestruct() const {
   BrowserThread::DeleteOnIOThread::Destruct(this);
 }
 
-bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(P2PSocketDispatcherHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(P2PSocketDispatcherHost, message)
     IPC_MESSAGE_HANDLER(P2PHostMsg_StartNetworkNotifications,
                         OnStartNetworkNotifications)
     IPC_MESSAGE_HANDLER(P2PHostMsg_StopNetworkNotifications,
@@ -136,7 +135,7 @@ bool P2PSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(P2PHostMsg_SetOption, OnSetOption)
     IPC_MESSAGE_HANDLER(P2PHostMsg_DestroySocket, OnDestroySocket)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

@@ -17,16 +17,15 @@ namespace content {
 HistogramMessageFilter::HistogramMessageFilter()
     : BrowserMessageFilter(ChildProcessMsgStart) {}
 
-bool HistogramMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                              bool* message_was_ok) {
+bool HistogramMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(HistogramMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(HistogramMessageFilter, message)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ChildHistogramData,
                         OnChildHistogramData)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_GetBrowserHistogram,
                         OnGetBrowserHistogram)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

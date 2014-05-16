@@ -102,9 +102,8 @@ GpuChannel* GpuChannelManager::LookupChannel(int32 client_id) {
 }
 
 bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
-  bool msg_is_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(GpuChannelManager, msg, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(GpuChannelManager, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
@@ -113,7 +112,7 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_DeleteImage, OnDeleteImage)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

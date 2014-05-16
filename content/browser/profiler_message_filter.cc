@@ -22,17 +22,16 @@ void ProfilerMessageFilter::OnChannelConnected(int32 peer_pid) {
   Send(new ChildProcessMsg_SetProfilerStatus(status));
 }
 
-bool ProfilerMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                              bool* message_was_ok) {
+bool ProfilerMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ProfilerMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ProfilerMessageFilter, message)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ChildProfilerData,
                         OnChildProfilerData)
 #if defined(USE_TCMALLOC)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_TcmallocStats, OnTcmallocStats)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

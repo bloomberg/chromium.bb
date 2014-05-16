@@ -17,12 +17,9 @@ MemoryBenchmarkMessageFilter::MemoryBenchmarkMessageFilter()
 }
 
 bool MemoryBenchmarkMessageFilter::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(MemoryBenchmarkMessageFilter,
-                           message,
-                           *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(MemoryBenchmarkMessageFilter, message)
     IPC_MESSAGE_HANDLER(MemoryBenchmarkHostMsg_HeapProfilerDump,
                         OnHeapProfilerDump)
     IPC_MESSAGE_UNHANDLED(handled = false)

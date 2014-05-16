@@ -31,8 +31,7 @@ BrowserPluginMessageFilter::~BrowserPluginMessageFilter() {
 }
 
 bool BrowserPluginMessageFilter::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+    const IPC::Message& message) {
   // Any message requested by a BrowserPluginGuest should be routed through
   // a BrowserPluginGuestManager.
   if (BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(message)) {

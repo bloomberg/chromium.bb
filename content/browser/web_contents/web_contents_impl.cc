@@ -493,8 +493,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
   }
 
   bool handled = true;
-  bool message_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(WebContentsImpl, message, message_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(WebContentsImpl, message)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperPluginHung, OnPepperPluginHung)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
@@ -547,14 +546,9 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnOpenDateTimeDialog)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   render_view_message_source_ = NULL;
   render_frame_message_source_ = NULL;
-
-  if (!message_is_ok) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD"));
-    GetRenderProcessHost()->ReceivedBadMessage();
-  }
 
   return handled;
 }

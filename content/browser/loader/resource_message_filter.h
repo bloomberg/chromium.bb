@@ -53,8 +53,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void GetContexts(const ResourceHostMsg_Request& request,
                    ResourceContext** resource_context,

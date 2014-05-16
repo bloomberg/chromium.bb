@@ -21,18 +21,16 @@ WorkerDevToolsMessageFilter::~WorkerDevToolsMessageFilter() {
 }
 
 bool WorkerDevToolsMessageFilter::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+    const IPC::Message& message) {
   bool handled = true;
   current_routing_id_ = message.routing_id();
-  IPC_BEGIN_MESSAGE_MAP_EX(WorkerDevToolsMessageFilter, message,
-                           *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(WorkerDevToolsMessageFilter, message)
     IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
                         OnDispatchOnInspectorFrontend)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
                         OnSaveAgentRumtimeState)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

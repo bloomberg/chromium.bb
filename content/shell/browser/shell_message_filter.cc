@@ -42,10 +42,9 @@ void ShellMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
     *thread = BrowserThread::FILE;
 }
 
-bool ShellMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                           bool* message_was_ok) {
+bool ShellMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ShellMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ShellMessageFilter, message)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ReadFileToString, OnReadFileToString)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_RegisterIsolatedFileSystem,
                         OnRegisterIsolatedFileSystem)

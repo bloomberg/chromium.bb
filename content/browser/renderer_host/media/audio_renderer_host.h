@@ -82,8 +82,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   friend class AudioRendererHostTest;

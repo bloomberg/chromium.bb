@@ -200,10 +200,10 @@ void SpellCheckMessageFilterMac::OverrideThreadForMessage(
     *thread = BrowserThread::UI;
 }
 
-bool SpellCheckMessageFilterMac::OnMessageReceived(const IPC::Message& message,
-                                                   bool* message_was_ok) {
+bool SpellCheckMessageFilterMac::OnMessageReceived(
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(SpellCheckMessageFilterMac, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(SpellCheckMessageFilterMac, message)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_CheckSpelling,
                         OnCheckSpelling)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_FillSuggestionList,

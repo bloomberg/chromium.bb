@@ -876,40 +876,25 @@
 #define IPC_MESSAGE_ID_CLASS(id) ((id) >> 16)
 #define IPC_MESSAGE_ID_LINE(id) ((id) & 0xffff)
 
-// Message crackers and handlers.
-// Prefer to use the IPC_BEGIN_MESSAGE_MAP_EX to the older macros since they
-// allow you to detect when a message could not be de-serialized. Usage:
+// Message crackers and handlers. Usage:
 //
 //   bool MyClass::OnMessageReceived(const IPC::Message& msg) {
 //     bool handled = true;
-//     bool msg_is_good = false;
-//     IPC_BEGIN_MESSAGE_MAP_EX(MyClass, msg, msg_is_good)
+//     IPC_BEGIN_MESSAGE_MAP(MyClass, msg)
 //       IPC_MESSAGE_HANDLER(MsgClassOne, OnMsgClassOne)
 //       ...more handlers here ...
 //       IPC_MESSAGE_HANDLER(MsgClassTen, OnMsgClassTen)
 //       IPC_MESSAGE_UNHANDLED(handled = false)
-//     IPC_END_MESSAGE_MAP_EX()
-//     if (!msg_is_good) {
-//       // Signal error here or terminate offending process.
-//     }
+//     IPC_END_MESSAGE_MAP()
 //     return handled;
 //   }
 
-
-#define IPC_BEGIN_MESSAGE_MAP_EX(class_name, msg, msg_is_ok) \
-  { \
-    typedef class_name _IpcMessageHandlerClass; \
-    void* param__ = NULL; \
-    const IPC::Message& ipc_message__ = msg; \
-    bool& msg_is_ok__ = msg_is_ok; \
-    switch (ipc_message__.type()) {
 
 #define IPC_BEGIN_MESSAGE_MAP(class_name, msg) \
   { \
     typedef class_name _IpcMessageHandlerClass; \
     void* param__ = NULL; \
     const IPC::Message& ipc_message__ = msg; \
-    bool msg_is_ok__ = true; \
     switch (ipc_message__.type()) {
 
 // gcc gives the following error now when using decltype so type typeof there:
@@ -920,20 +905,18 @@
 #define IPC_DECLTYPE typeof
 #endif
 
-#define IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, msg_is_ok, param)    \
+#define IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(class_name, msg, param)               \
   {                                                                            \
     typedef class_name _IpcMessageHandlerClass;                                \
     IPC_DECLTYPE(param) param__ = param;                                       \
     const IPC::Message& ipc_message__ = msg;                                   \
-    bool& msg_is_ok__ = msg_is_ok;                                             \
     switch (ipc_message__.type()) {
 
 #define IPC_MESSAGE_FORWARD(msg_class, obj, member_func)                       \
     case msg_class::ID: {                                                      \
         TRACK_RUN_IN_IPC_HANDLER(member_func);                                 \
-        msg_is_ok__ = msg_class::Dispatch(&ipc_message__, obj, this,           \
-                                          param__, &member_func);              \
-        if (!msg_is_ok__)                                                      \
+        if (!msg_class::Dispatch(&ipc_message__, obj, this, param__,           \
+                                 &member_func))                                \
           ipc_message__.set_dispatch_error();                                  \
       }                                                                        \
       break;
@@ -944,9 +927,8 @@
 #define IPC_MESSAGE_FORWARD_DELAY_REPLY(msg_class, obj, member_func)           \
     case msg_class::ID: {                                                      \
         TRACK_RUN_IN_IPC_HANDLER(member_func);                                 \
-        msg_is_ok__ = msg_class::DispatchDelayReply(&ipc_message__, obj,       \
-                                                  param__, &member_func);      \
-        if (!msg_is_ok__)                                                      \
+        if (!msg_class::DispatchDelayReply(&ipc_message__, obj, param__,       \
+                                           &member_func))                      \
           ipc_message__.set_dispatch_error();                                  \
       }                                                                        \
       break;
@@ -983,11 +965,6 @@
                               ipc_message__.type())
 
 #define IPC_END_MESSAGE_MAP() \
-  } \
-  DCHECK(msg_is_ok__); \
-}
-
-#define IPC_END_MESSAGE_MAP_EX() \
   } \
 }
 

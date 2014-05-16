@@ -70,10 +70,9 @@ void BrowserDemuxerAndroid::OverrideThreadForMessage(
   }
 }
 
-bool BrowserDemuxerAndroid::OnMessageReceived(const IPC::Message& message,
-                                              bool* message_was_ok) {
+bool BrowserDemuxerAndroid::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(BrowserDemuxerAndroid, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(BrowserDemuxerAndroid, message)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_DemuxerReady, OnDemuxerReady)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_ReadFromDemuxerAck,
                         OnReadFromDemuxerAck)

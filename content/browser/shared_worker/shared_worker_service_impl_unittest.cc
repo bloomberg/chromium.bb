@@ -187,10 +187,8 @@ class MockRendererProcessHost {
 
   bool OnMessageReceived(IPC::Message* message) {
     scoped_ptr<IPC::Message> msg(message);
-    bool message_was_ok = false;
-    const bool ret =
-        message_filter_->OnMessageReceived(*message, &message_was_ok) ||
-        worker_filter_->OnMessageReceived(*message, &message_was_ok);
+    const bool ret = message_filter_->OnMessageReceived(*message) ||
+                     worker_filter_->OnMessageReceived(*message);
     if (message->is_sync()) {
       CHECK(!queued_messages_.empty());
       const IPC::Message* response_msg = queued_messages_.back();

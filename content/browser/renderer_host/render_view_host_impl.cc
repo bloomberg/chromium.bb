@@ -969,8 +969,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     return true;
 
   bool handled = true;
-  bool msg_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(RenderViewHostImpl, msg, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(RenderViewHostImpl, msg)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnShowView)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowFullscreenWidget,
@@ -1023,14 +1022,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(
         handled = RenderWidgetHostImpl::OnMessageReceived(msg))
-  IPC_END_MESSAGE_MAP_EX()
-
-  if (!msg_is_ok) {
-    // The message had a handler, but its de-serialization failed.
-    // Kill the renderer.
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVH"));
-    GetProcess()->ReceivedBadMessage();
-  }
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

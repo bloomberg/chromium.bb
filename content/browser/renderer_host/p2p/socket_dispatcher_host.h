@@ -40,8 +40,7 @@ class P2PSocketDispatcherHost
   // content::BrowserMessageFilter overrides.
   virtual void OnChannelClosing() OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // net::NetworkChangeNotifier::IPAddressObserver interface.
   virtual void OnIPAddressChanged() OVERRIDE;

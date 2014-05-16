@@ -43,10 +43,9 @@ void SpellCheckMessageFilter::OverrideThreadForMessage(
 #endif
 }
 
-bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+bool SpellCheckMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(SpellCheckMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(SpellCheckMessageFilter, message)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestDictionary,
                         OnSpellCheckerRequestDictionary)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_NotifyChecked,

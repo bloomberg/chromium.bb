@@ -31,8 +31,7 @@ class CastTransportHostFilter : public content::BrowserMessageFilter {
                  const std::vector<media::cast::PacketEvent>& packet_events);
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Forwarding functions.
   void OnInitializeAudio(

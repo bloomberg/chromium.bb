@@ -30,9 +30,7 @@ class CastTransportHostFilterTest : public testing::Test {
 
  protected:
   void FakeSend(const IPC::Message& message) {
-    bool message_was_ok;
-    EXPECT_TRUE(filter_->OnMessageReceived(message, &message_was_ok));
-    EXPECT_TRUE(message_was_ok);
+    EXPECT_TRUE(filter_->OnMessageReceived(message));
   }
 
   content::TestBrowserThreadBundle browser_thread_bundle_;

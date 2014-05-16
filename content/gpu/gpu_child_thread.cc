@@ -97,9 +97,8 @@ bool GpuChildThread::Send(IPC::Message* msg) {
 }
 
 bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
-  bool msg_is_ok = true;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(GpuChildThread, msg, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(GpuChildThread, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_Initialize, OnInitialize)
     IPC_MESSAGE_HANDLER(GpuMsg_CollectGraphicsInfo, OnCollectGraphicsInfo)
     IPC_MESSAGE_HANDLER(GpuMsg_GetVideoMemoryUsageStats,
@@ -109,7 +108,7 @@ bool GpuChildThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_Hang, OnHang)
     IPC_MESSAGE_HANDLER(GpuMsg_DisableWatchdog, OnDisableWatchdog)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   if (handled)
     return true;

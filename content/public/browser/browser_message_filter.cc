@@ -11,6 +11,7 @@
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
+#include "content/browser/browser_child_process_host_impl.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -87,16 +88,9 @@ class BrowserMessageFilter::Internal : public IPC::MessageFilter {
 
   // Dispatches a message to the derived class.
   bool DispatchMessage(const IPC::Message& message) {
-    bool message_was_ok = true;
-    bool rv = filter_->OnMessageReceived(message, &message_was_ok);
+    bool rv = filter_->OnMessageReceived(message);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) || rv) <<
         "Must handle messages that were dispatched to another thread!";
-    if (!message_was_ok) {
-      content::RecordAction(
-          base::UserMetricsAction("BadMessageTerminate_BMF"));
-      filter_->BadMessageReceived();
-    }
-
     return rv;
   }
 
@@ -206,11 +200,13 @@ bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
 
 void BrowserMessageFilter::BadMessageReceived() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableKillAfterBadIPC))
+    return;
 
-  if (!command_line->HasSwitch(switches::kDisableKillAfterBadIPC)) {
-    base::KillProcess(PeerHandle(), content::RESULT_CODE_KILLED_BAD_MESSAGE,
-                      false);
-  }
+  BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
+      PROCESS_TYPE_RENDERER);
+  base::KillProcess(PeerHandle(), content::RESULT_CODE_KILLED_BAD_MESSAGE,
+                    false);
 }
 
 BrowserMessageFilter::~BrowserMessageFilter() {

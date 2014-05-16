@@ -22,10 +22,9 @@ void MessagePortMessageFilter::OnChannelClosing() {
   MessagePortService::GetInstance()->OnMessagePortMessageFilterClosing(this);
 }
 
-bool MessagePortMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                 bool* message_was_ok) {
+bool MessagePortMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(MessagePortMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(MessagePortMessageFilter, message)
     IPC_MESSAGE_HANDLER(MessagePortHostMsg_CreateMessagePort,
                         OnCreateMessagePort)
     IPC_MESSAGE_FORWARD(MessagePortHostMsg_DestroyMessagePort,
@@ -44,7 +43,7 @@ bool MessagePortMessageFilter::OnMessageReceived(const IPC::Message& message,
                         MessagePortService::GetInstance(),
                         MessagePortService::SendQueuedMessages)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

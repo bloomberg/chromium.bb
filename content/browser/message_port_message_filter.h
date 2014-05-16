@@ -23,8 +23,7 @@ class CONTENT_EXPORT MessagePortMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
 
   int GetNextRoutingID();

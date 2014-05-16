@@ -379,17 +379,11 @@ bool InterstitialPageImpl::OnMessageReceived(RenderViewHost* render_view_host,
 bool InterstitialPageImpl::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
-  bool message_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(InterstitialPageImpl, message, message_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(InterstitialPageImpl, message)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
-
-  if (!message_is_ok) {
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RVD"));
-    web_contents()->GetRenderProcessHost()->ReceivedBadMessage();
-  }
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

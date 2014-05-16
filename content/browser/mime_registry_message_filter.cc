@@ -23,10 +23,9 @@ void MimeRegistryMessageFilter::OverrideThreadForMessage(
     *thread = BrowserThread::FILE;
 }
 
-bool MimeRegistryMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                  bool* message_was_ok) {
+bool MimeRegistryMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(MimeRegistryMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(MimeRegistryMessageFilter, message)
     IPC_MESSAGE_HANDLER(MimeRegistryMsg_GetMimeTypeFromExtension,
                         OnGetMimeTypeFromExtension)
     IPC_MESSAGE_HANDLER(MimeRegistryMsg_GetMimeTypeFromFile,

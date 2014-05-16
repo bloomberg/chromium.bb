@@ -25,8 +25,7 @@ class CONTENT_EXPORT TextInputClientMessageFilter
   explicit TextInputClientMessageFilter(int child_id);
 
   // BrowserMessageFilter override:
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  protected:
   virtual ~TextInputClientMessageFilter();

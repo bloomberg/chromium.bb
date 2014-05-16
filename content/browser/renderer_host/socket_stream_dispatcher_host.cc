@@ -41,18 +41,18 @@ SocketStreamDispatcherHost::SocketStreamDispatcherHost(
   net::WebSocketJob::EnsureInit();
 }
 
-bool SocketStreamDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                                   bool* message_was_ok) {
+bool SocketStreamDispatcherHost::OnMessageReceived(
+    const IPC::Message& message) {
   if (on_shutdown_)
     return false;
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(SocketStreamDispatcherHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(SocketStreamDispatcherHost, message)
     IPC_MESSAGE_HANDLER(SocketStreamHostMsg_Connect, OnConnect)
     IPC_MESSAGE_HANDLER(SocketStreamHostMsg_SendData, OnSendData)
     IPC_MESSAGE_HANDLER(SocketStreamHostMsg_Close, OnCloseReq)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

@@ -22,10 +22,9 @@ void PrincipalsMessageFilter::OverrideThreadForMessage(
     *thread = content::BrowserThread::UI;
 }
 
-bool PrincipalsMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+bool PrincipalsMessageFilter::OnMessageReceived(const IPC::Message& message) {
  bool handled = true;
- IPC_BEGIN_MESSAGE_MAP_EX(PrincipalsMessageFilter, message, *message_was_ok)
+ IPC_BEGIN_MESSAGE_MAP(PrincipalsMessageFilter, message)
      IPC_MESSAGE_HANDLER(
          ChromeViewHostMsg_GetManagedAccounts, OnMsgGetManagedAccounts)
      IPC_MESSAGE_HANDLER(

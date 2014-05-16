@@ -36,8 +36,7 @@ class PepperRendererConnection : public BrowserMessageFilter {
   explicit PepperRendererConnection(int render_process_id);
 
   // BrowserMessageFilter overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
   virtual ~PepperRendererConnection();

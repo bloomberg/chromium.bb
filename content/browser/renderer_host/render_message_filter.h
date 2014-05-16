@@ -101,8 +101,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   // BrowserMessageFilter methods:
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnDestruct() const OVERRIDE;
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) OVERRIDE;

@@ -819,11 +819,10 @@ void ResourceDispatcherHostImpl::OnShutdown() {
 
 bool ResourceDispatcherHostImpl::OnMessageReceived(
     const IPC::Message& message,
-    ResourceMessageFilter* filter,
-    bool* message_was_ok) {
+    ResourceMessageFilter* filter) {
   filter_ = filter;
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ResourceDispatcherHostImpl, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ResourceDispatcherHostImpl, message)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_RequestResource, OnRequestResource)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ResourceHostMsg_SyncLoad, OnSyncLoad)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_ReleaseDownloadedFile,
@@ -832,7 +831,7 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ResourceHostMsg_UploadProgress_ACK, OnUploadProgressACK)
     IPC_MESSAGE_HANDLER(ResourceHostMsg_CancelRequest, OnCancelRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   if (!handled && IPC_MESSAGE_ID_CLASS(message.type()) == ResourceMsgStart) {
     PickleIterator iter(message);
@@ -845,7 +844,7 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
       ObserverList<ResourceMessageDelegate>::Iterator del_it(*it->second);
       ResourceMessageDelegate* delegate;
       while (!handled && (delegate = del_it.GetNext()) != NULL) {
-        handled = delegate->OnMessageReceived(message, message_was_ok);
+        handled = delegate->OnMessageReceived(message);
       }
     }
 

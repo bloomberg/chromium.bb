@@ -24,16 +24,15 @@ MidiDispatcherHost::MidiDispatcherHost(int render_process_id,
 MidiDispatcherHost::~MidiDispatcherHost() {
 }
 
-bool MidiDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                           bool* message_was_ok) {
+bool MidiDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(MidiDispatcherHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(MidiDispatcherHost, message)
     IPC_MESSAGE_HANDLER(MidiHostMsg_RequestSysExPermission,
                         OnRequestSysExPermission)
     IPC_MESSAGE_HANDLER(MidiHostMsg_CancelSysExPermissionRequest,
                         OnCancelSysExPermissionRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

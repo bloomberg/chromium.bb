@@ -21,11 +21,9 @@ TextInputClientMessageFilter::TextInputClientMessageFilter(int child_id)
 }
 
 bool TextInputClientMessageFilter::OnMessageReceived(
-    const IPC::Message& message,
-    bool* message_was_ok) {
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(TextInputClientMessageFilter, message,
-      *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(TextInputClientMessageFilter, message)
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotStringAtPoint,
                         OnGotStringAtPoint)
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotCharacterIndexForPoint,
@@ -35,7 +33,7 @@ bool TextInputClientMessageFilter::OnMessageReceived(
     IPC_MESSAGE_HANDLER(TextInputClientReplyMsg_GotStringForRange,
                         OnGotStringFromRange)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

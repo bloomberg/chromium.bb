@@ -198,9 +198,7 @@ class ResourceSchedulerTest : public testing::Test {
     const GlobalRequestID& id = info->GetGlobalRequestID();
     ResourceHostMsg_DidChangePriority msg(id.request_id, new_priority,
                                           intra_priority);
-    bool ok = false;
-    rdh_.OnMessageReceived(msg, filter.get(), &ok);
-    EXPECT_TRUE(ok);
+    rdh_.OnMessageReceived(msg, filter.get());
   }
 
   int next_request_id_;

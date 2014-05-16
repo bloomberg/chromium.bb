@@ -68,15 +68,14 @@ base::TaskRunner* DOMStorageMessageFilter::OverrideTaskRunnerForMessage(
   return NULL;
 }
 
-bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+bool DOMStorageMessageFilter::OnMessageReceived(const IPC::Message& message) {
   if (IPC_MESSAGE_CLASS(message) != DOMStorageMsgStart)
     return false;
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(host_.get());
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(DOMStorageMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(DOMStorageMessageFilter, message)
     IPC_MESSAGE_HANDLER(DOMStorageHostMsg_OpenStorageArea, OnOpenStorageArea)
     IPC_MESSAGE_HANDLER(DOMStorageHostMsg_CloseStorageArea, OnCloseStorageArea)
     IPC_MESSAGE_HANDLER(DOMStorageHostMsg_LoadStorageArea, OnLoadStorageArea)

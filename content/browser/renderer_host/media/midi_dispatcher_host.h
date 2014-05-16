@@ -21,8 +21,7 @@ class MidiDispatcherHost : public BrowserMessageFilter {
   MidiDispatcherHost(int render_process_id, BrowserContext* browser_context);
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message, BrowserThread::ID* thread) OVERRIDE;
 

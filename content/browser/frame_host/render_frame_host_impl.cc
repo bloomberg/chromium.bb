@@ -276,8 +276,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     return true;
 
   bool handled = true;
-  bool msg_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameHostImpl, msg, msg_is_ok)
+  IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
@@ -316,14 +315,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnShowDesktopNotification)
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_Cancel,
                         OnCancelDesktopNotification)
-  IPC_END_MESSAGE_MAP_EX()
-
-  if (!msg_is_ok) {
-    // The message had a handler, but its de-serialization failed.
-    // Kill the renderer.
-    RecordAction(base::UserMetricsAction("BadMessageTerminate_RFH"));
-    GetProcess()->ReceivedBadMessage();
-  }
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

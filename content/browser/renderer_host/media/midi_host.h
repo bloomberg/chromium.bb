@@ -32,8 +32,7 @@ class CONTENT_EXPORT MidiHost
 
   // BrowserMessageFilter implementation.
   virtual void OnDestruct() const OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // MidiManagerClient implementation.
   virtual void CompleteStartSession(int client_id,

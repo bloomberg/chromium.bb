@@ -73,10 +73,8 @@ class WebRTCIdentityServiceHostForTest : public WebRTCIdentityServiceHost {
     return true;
   }
 
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE {
-    return WebRTCIdentityServiceHost::OnMessageReceived(message,
-                                                        message_was_ok);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
+    return WebRTCIdentityServiceHost::OnMessageReceived(message);
   }
 
   IPC::Message GetLastMessage() { return messages_.back(); }
@@ -103,20 +101,15 @@ class WebRTCIdentityServiceHostTest : public ::testing::Test {
         host_(new WebRTCIdentityServiceHostForTest(store_.get())) {}
 
   void SendRequestToHost() {
-    bool ok;
     host_->OnMessageReceived(
         WebRTCIdentityMsg_RequestIdentity(FAKE_SEQUENCE_NUMBER,
                                           GURL(FAKE_ORIGIN),
                                           FAKE_IDENTITY_NAME,
-                                          FAKE_COMMON_NAME),
-        &ok);
-    ASSERT_TRUE(ok);
+                                          FAKE_COMMON_NAME));
   }
 
   void SendCancelRequestToHost() {
-    bool ok;
-    host_->OnMessageReceived(WebRTCIdentityMsg_CancelRequest(), &ok);
-    ASSERT_TRUE(ok);
+    host_->OnMessageReceived(WebRTCIdentityMsg_CancelRequest());
   }
 
   void VerifyRequestFailedMessage(int error) {

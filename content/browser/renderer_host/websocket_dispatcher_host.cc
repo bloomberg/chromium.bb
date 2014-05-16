@@ -47,8 +47,7 @@ WebSocketHost* WebSocketDispatcherHost::CreateWebSocketHost(int routing_id) {
   return new WebSocketHost(routing_id, this, get_context_callback_.Run());
 }
 
-bool WebSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+bool WebSocketDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   switch (message.type()) {
     case WebSocketHostMsg_AddChannelRequest::ID:
     case WebSocketMsg_SendFrame::ID:
@@ -81,7 +80,7 @@ bool WebSocketDispatcherHost::OnMessageReceived(const IPC::Message& message,
              << " from renderer.";
     return true;  // We handled the message (by ignoring it).
   }
-  return host->OnMessageReceived(message, message_was_ok);
+  return host->OnMessageReceived(message);
 }
 
 bool WebSocketDispatcherHost::CanReadRawCookies() const {

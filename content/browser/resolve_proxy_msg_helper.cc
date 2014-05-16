@@ -26,10 +26,9 @@ ResolveProxyMsgHelper::ResolveProxyMsgHelper(net::ProxyService* proxy_service)
       proxy_service_(proxy_service) {
 }
 
-bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message,
-                                              bool* message_was_ok) {
+bool ResolveProxyMsgHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ResolveProxyMsgHelper, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ResolveProxyMsgHelper, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

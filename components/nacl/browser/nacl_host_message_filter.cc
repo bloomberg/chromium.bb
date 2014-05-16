@@ -37,10 +37,9 @@ void NaClHostMessageFilter::OnChannelClosing() {
   pnacl::PnaclHost::GetInstance()->RendererClosing(render_process_id_);
 }
 
-bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                              bool* message_was_ok) {
+bool NaClHostMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(NaClHostMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(NaClHostMessageFilter, message)
 #if !defined(DISABLE_NACL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_LaunchNaCl, OnLaunchNaCl)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NaClHostMsg_GetReadonlyPnaclFD,

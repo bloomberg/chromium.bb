@@ -22,7 +22,7 @@ class CONTENT_EXPORT ScreenOrientationDispatcherHost
   ScreenOrientationDispatcherHost();
 
   // BrowserMessageFilter
-  virtual bool OnMessageReceived(const IPC::Message&, bool*) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message&) OVERRIDE;
 
   void OnOrientationChange(blink::WebScreenOrientationType orientation);
 

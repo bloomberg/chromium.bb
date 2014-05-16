@@ -25,8 +25,7 @@ class DatabaseMessageFilter
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       BrowserThread::ID* thread) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   webkit_database::DatabaseTracker* database_tracker() const {
     return db_tracker_.get();

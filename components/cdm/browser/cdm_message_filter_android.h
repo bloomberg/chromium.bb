@@ -24,8 +24,7 @@ class CdmMessageFilterAndroid
   virtual ~CdmMessageFilterAndroid();
 
   // BrowserMessageFilter implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OverrideThreadForMessage(
       const IPC::Message& message,
       content::BrowserThread::ID* thread) OVERRIDE;

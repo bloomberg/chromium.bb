@@ -41,10 +41,9 @@ void SharedWorkerMessageFilter::OnChannelClosing() {
       this);
 }
 
-bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                  bool* message_was_ok) {
+bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(SharedWorkerMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(SharedWorkerMessageFilter, message)
     // Only sent from renderer for now, until we have nested workers.
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker, OnForwardToWorker)
@@ -65,7 +64,7 @@ bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowFileSystem, OnAllowFileSystem)
     IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowIndexedDB, OnAllowIndexedDB)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

@@ -79,8 +79,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
   virtual void OnChannelClosing() OVERRIDE;
   virtual base::TaskRunner* OverrideTaskRunnerForMessage(
       const IPC::Message& message) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  protected:
   virtual ~FileAPIMessageFilter();

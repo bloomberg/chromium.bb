@@ -222,8 +222,7 @@ class ChannelDestructionWatcher {
                      base::Unretained(watcher_)));
     }
 
-    virtual bool OnMessageReceived(const IPC::Message& message,
-                                   bool* message_was_ok) OVERRIDE {
+    virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
       return false;
     }
 

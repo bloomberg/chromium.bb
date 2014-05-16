@@ -16,10 +16,10 @@ PushMessagingMessageFilter::PushMessagingMessageFilter()
 
 PushMessagingMessageFilter::~PushMessagingMessageFilter() {}
 
-bool PushMessagingMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                   bool* message_was_ok) {
+bool PushMessagingMessageFilter::OnMessageReceived(
+    const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(PushMessagingMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(PushMessagingMessageFilter, message)
     IPC_MESSAGE_HANDLER(PushMessagingHostMsg_Register, OnRegister)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

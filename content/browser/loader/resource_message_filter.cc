@@ -42,10 +42,8 @@ void ResourceMessageFilter::OnChannelClosing() {
   ResourceDispatcherHostImpl::Get()->CancelRequestsForProcess(child_id_);
 }
 
-bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                              bool* message_was_ok) {
-  return ResourceDispatcherHostImpl::Get()->OnMessageReceived(
-      message, this, message_was_ok);
+bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  return ResourceDispatcherHostImpl::Get()->OnMessageReceived(message, this);
 }
 
 void ResourceMessageFilter::GetContexts(

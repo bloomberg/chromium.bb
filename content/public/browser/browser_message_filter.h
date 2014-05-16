@@ -75,8 +75,7 @@ class CONTENT_EXPORT BrowserMessageFilter
   // Your function will normally be called on the IO thread.  However, if your
   // OverrideXForMessage modifies the thread used to dispatch the message,
   // your function will be called on the requested thread.
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) = 0;
+  virtual bool OnMessageReceived(const IPC::Message& message) = 0;
 
   // Can be called on any thread, after OnChannelConnected is called.
   base::ProcessHandle PeerHandle();

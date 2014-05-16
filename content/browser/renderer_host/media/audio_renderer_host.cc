@@ -300,17 +300,16 @@ AudioRendererHost::DoGetOutputControllers(int render_view_id) const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // IPC Messages handler
-bool AudioRendererHost::OnMessageReceived(const IPC::Message& message,
-                                          bool* message_was_ok) {
+bool AudioRendererHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(AudioRendererHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(AudioRendererHost, message)
     IPC_MESSAGE_HANDLER(AudioHostMsg_CreateStream, OnCreateStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_PlayStream, OnPlayStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_PauseStream, OnPauseStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_CloseStream, OnCloseStream)
     IPC_MESSAGE_HANDLER(AudioHostMsg_SetVolume, OnSetVolume)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
 
   return handled;
 }

@@ -63,12 +63,9 @@ class ScreenOrientationDispatcherHostTest : public testing::Test {
 TEST_F(ScreenOrientationDispatcherHostTest, NullProvider) {
   dispatcher_->SetProviderForTests(NULL);
 
-  bool message_was_ok = false;
   bool message_was_handled = dispatcher_->OnMessageReceived(
       ScreenOrientationHostMsg_Lock(
-          blink::WebScreenOrientationLockPortraitPrimary), &message_was_ok);
-
-  EXPECT_TRUE(message_was_ok);
+          blink::WebScreenOrientationLockPortraitPrimary));
   EXPECT_TRUE(message_was_handled);
 }
 
@@ -92,14 +89,12 @@ TEST_F(ScreenOrientationDispatcherHostTest, ProviderLock) {
   int orientationsToTestCount = 7;
 
   for (int i = 0; i < orientationsToTestCount; ++i) {
-    bool message_was_ok = false;
     bool message_was_handled = false;
     blink::WebScreenOrientationLockType orientation = orientationsToTest[i];
 
     message_was_handled = dispatcher_->OnMessageReceived(
-        ScreenOrientationHostMsg_Lock(orientation), &message_was_ok);
+        ScreenOrientationHostMsg_Lock(orientation));
 
-    EXPECT_TRUE(message_was_ok);
     EXPECT_TRUE(message_was_handled);
     EXPECT_EQ(orientation, provider_->orientation());
   }
@@ -108,11 +103,9 @@ TEST_F(ScreenOrientationDispatcherHostTest, ProviderLock) {
 // Test that when receiving an unlock message, it is correctly dispatched to the
 // ScreenOrientationProvider.
 TEST_F(ScreenOrientationDispatcherHostTest, ProviderUnlock) {
-    bool message_was_ok = false;
     bool message_was_handled = dispatcher_->OnMessageReceived(
-        ScreenOrientationHostMsg_Unlock(), &message_was_ok);
+        ScreenOrientationHostMsg_Unlock());
 
-    EXPECT_TRUE(message_was_ok);
     EXPECT_TRUE(message_was_handled);
     EXPECT_TRUE(provider_->unlock_called());
 }

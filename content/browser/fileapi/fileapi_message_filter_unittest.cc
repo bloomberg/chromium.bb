@@ -75,13 +75,6 @@ class FileAPIMessageFilterTest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  // Tests via OnMessageReceived(const IPC::Message&). The channel proxy calls
-  // this method.
-  bool InvokeOnMessageReceived(const IPC::Message& message) {
-    bool message_was_ok;
-    return filter_->OnMessageReceived(message, &message_was_ok);
-  }
-
   base::MessageLoop message_loop_;
   TestBrowserThread io_browser_thread_;
 
@@ -109,8 +102,7 @@ TEST_F(FileAPIMessageFilterTest, CloseChannelWithInflightRequest) {
   int request_id = 0;
   const GURL kUrl("filesystem:http://example.com/temporary/foo");
   FileSystemHostMsg_ReadMetadata read_metadata(request_id++, kUrl);
-  bool message_was_ok;
-  EXPECT_TRUE(filter->OnMessageReceived(read_metadata, &message_was_ok));
+  EXPECT_TRUE(filter->OnMessageReceived(read_metadata));
 
   // Close the filter while it has inflight request.
   filter->OnChannelClosing();
@@ -143,8 +135,7 @@ TEST_F(FileAPIMessageFilterTest, MultipleFilters) {
   int request_id = 0;
   const GURL kUrl("filesystem:http://example.com/temporary/foo");
   FileSystemHostMsg_ReadMetadata read_metadata(request_id++, kUrl);
-  bool message_was_ok;
-  EXPECT_TRUE(filter1->OnMessageReceived(read_metadata, &message_was_ok));
+  EXPECT_TRUE(filter1->OnMessageReceived(read_metadata));
 
   // Close the other filter before the request for filter1 is processed.
   filter2->OnChannelClosing();
@@ -162,7 +153,7 @@ TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
   EXPECT_EQ(NULL, stream_registry->GetStream(kUrl).get());
 
   StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
-  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(start_message));
 
   const int kBufferSize = 10;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
@@ -177,7 +168,7 @@ TEST_F(FileAPIMessageFilterTest, BuildEmptyStream) {
   stream = NULL;
 
   StreamHostMsg_FinishBuilding finish_message(kUrl);
-  EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(finish_message));
 
   stream = stream_registry->GetStream(kUrl);
   ASSERT_FALSE(stream.get() == NULL);
@@ -204,16 +195,16 @@ TEST_F(FileAPIMessageFilterTest, BuildNonEmptyStream) {
   EXPECT_EQ(NULL, stream_registry->GetStream(kUrl).get());
 
   StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
-  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(start_message));
 
   webkit_blob::BlobData::Item item;
   const std::string kFakeData = "foobarbaz";
   item.SetToBytes(kFakeData.data(), kFakeData.size());
   StreamHostMsg_AppendBlobDataItem append_message(kUrl, item);
-  EXPECT_TRUE(InvokeOnMessageReceived(append_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(append_message));
 
   StreamHostMsg_FinishBuilding finish_message(kUrl);
-  EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(finish_message));
 
   // Run loop to finish transfer and commit finalize command.
   message_loop_.RunUntilIdle();
@@ -248,7 +239,7 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
   filter_->set_peer_pid_for_testing(base::Process::Current().pid());
 
   StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
-  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(start_message));
 
   const std::string kFakeData = "foobarbaz";
 
@@ -257,10 +248,10 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamWithSharedMemory) {
   memcpy(shared_memory->memory(), kFakeData.data(), kFakeData.size());
   StreamHostMsg_SyncAppendSharedMemory append_message(
       kUrl, shared_memory->handle(), kFakeData.size());
-  EXPECT_TRUE(InvokeOnMessageReceived(append_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(append_message));
 
   StreamHostMsg_FinishBuilding finish_message(kUrl);
-  EXPECT_TRUE(InvokeOnMessageReceived(finish_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(finish_message));
 
   // Run loop to finish transfer and commit finalize command.
   message_loop_.RunUntilIdle();
@@ -287,7 +278,7 @@ TEST_F(FileAPIMessageFilterTest, BuildStreamAndCallOnChannelClosing) {
   const GURL kUrl(kFakeBlobInternalUrlSpec);
 
   StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
-  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(start_message));
 
   ASSERT_FALSE(stream_registry->GetStream(kUrl).get() == NULL);
 
@@ -303,10 +294,10 @@ TEST_F(FileAPIMessageFilterTest, CloneStream) {
   const GURL kDestUrl(kFakeBlobInternalUrlSpec2);
 
   StreamHostMsg_StartBuilding start_message(kUrl, kFakeContentType);
-  EXPECT_TRUE(InvokeOnMessageReceived(start_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(start_message));
 
   StreamHostMsg_Clone clone_message(kDestUrl, kUrl);
-  EXPECT_TRUE(InvokeOnMessageReceived(clone_message));
+  EXPECT_TRUE(filter_->OnMessageReceived(clone_message));
 
   ASSERT_FALSE(stream_registry->GetStream(kUrl).get() == NULL);
   ASSERT_FALSE(stream_registry->GetStream(kDestUrl).get() == NULL);

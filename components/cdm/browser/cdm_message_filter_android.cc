@@ -70,15 +70,13 @@ CdmMessageFilterAndroid::CdmMessageFilterAndroid()
 
 CdmMessageFilterAndroid::~CdmMessageFilterAndroid() {}
 
-bool CdmMessageFilterAndroid::OnMessageReceived(
-    const IPC::Message& message, bool* message_was_ok) {
+bool CdmMessageFilterAndroid::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(
-      CdmMessageFilterAndroid, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(CdmMessageFilterAndroid, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_GetSupportedKeySystems,
                         OnGetSupportedKeySystems)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 

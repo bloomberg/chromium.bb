@@ -77,10 +77,9 @@ void ClipboardMessageFilter::OverrideThreadForMessage(
 #endif
 }
 
-bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                               bool* message_was_ok) {
+bool ClipboardMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ClipboardMessageFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(ClipboardMessageFilter, message)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsAsync, OnWriteObjectsAsync)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_WriteObjectsSync, OnWriteObjectsSync)
     IPC_MESSAGE_HANDLER(ClipboardHostMsg_GetSequenceNumber, OnGetSequenceNumber)

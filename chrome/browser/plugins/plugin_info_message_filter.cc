@@ -96,9 +96,8 @@ PluginInfoMessageFilter::PluginInfoMessageFilter(
       weak_ptr_factory_(this) {
 }
 
-bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
-  IPC_BEGIN_MESSAGE_MAP_EX(PluginInfoMessageFilter, message, *message_was_ok)
+bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(PluginInfoMessageFilter, message)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_GetPluginInfo,
                                     OnGetPluginInfo)
     IPC_MESSAGE_HANDLER(

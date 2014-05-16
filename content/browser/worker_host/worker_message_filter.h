@@ -25,8 +25,7 @@ class WorkerMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   int GetNextRoutingID();
   int render_process_id() const { return render_process_id_; }

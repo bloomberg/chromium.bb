@@ -22,10 +22,9 @@ CastTransportHostFilter::CastTransportHostFilter()
 
 CastTransportHostFilter::~CastTransportHostFilter() {}
 
-bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message,
-                                                bool* message_was_ok) {
+bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(CastTransportHostFilter, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(CastTransportHostFilter, message)
     IPC_MESSAGE_HANDLER(CastHostMsg_New, OnNew)
     IPC_MESSAGE_HANDLER(CastHostMsg_Delete, OnDelete)
     IPC_MESSAGE_HANDLER(CastHostMsg_InitializeAudio, OnInitializeAudio)
@@ -39,7 +38,7 @@ bool CastTransportHostFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(CastHostMsg_ResendPackets,
                         OnResendPackets)
     IPC_MESSAGE_UNHANDLED(handled = false);
-  IPC_END_MESSAGE_MAP_EX();
+  IPC_END_MESSAGE_MAP();
   return handled;
 }
 

@@ -261,6 +261,10 @@ void BrowserChildProcessHostImpl::OnChannelError() {
 void BrowserChildProcessHostImpl::OnBadMessageReceived(
     const IPC::Message& message) {
   HistogramBadMessageTerminated(data_.process_type);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableKillAfterBadIPC)) {
+    return;
+  }
   base::KillProcess(GetHandle(), RESULT_CODE_KILLED_BAD_MESSAGE, false);
 }
 

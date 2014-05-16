@@ -220,17 +220,15 @@ QuotaDispatcherHost::QuotaDispatcherHost(
       weak_factory_(this) {
 }
 
-bool QuotaDispatcherHost::OnMessageReceived(
-    const IPC::Message& message, bool* message_was_ok) {
-  *message_was_ok = true;
+bool QuotaDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(QuotaDispatcherHost, message, *message_was_ok)
+  IPC_BEGIN_MESSAGE_MAP(QuotaDispatcherHost, message)
     IPC_MESSAGE_HANDLER(QuotaHostMsg_QueryStorageUsageAndQuota,
                         OnQueryStorageUsageAndQuota)
     IPC_MESSAGE_HANDLER(QuotaHostMsg_RequestStorageQuota,
                         OnRequestStorageQuota)
     IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP_EX()
+  IPC_END_MESSAGE_MAP()
   return handled;
 }
 
