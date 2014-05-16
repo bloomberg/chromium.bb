@@ -9,9 +9,6 @@ namespace switches {
 // Also emit full event trace logs for successful tests.
 const char kAlsoEmitSuccessLogs[] = "also-emit-success-logs";
 
-// Extra flags that the test should pass to launched browser process.
-const char kExtraChromeFlags[] = "extra-chrome-flags";
-
 // Enable Chromium branding of the executable.
 const char kEnableChromiumBranding[] = "enable-chromium-branding";
 
