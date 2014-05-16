@@ -338,7 +338,7 @@ def main(argv):
     else:
       configs = ['Debug', 'Release']
     for config in configs:
-      BuildProjects(pepperdir, project_tree, config=config)
+      BuildProjects(pepperdir, project_tree, config=config, deps=False)
 
   return 0
 

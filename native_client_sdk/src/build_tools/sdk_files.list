@@ -23,8 +23,10 @@ examples/button_close.png
 examples/button_close_hover.png
 examples/demo/drive/*
 examples/demo/earth/*
+examples/demo/earth_simd/*
 examples/demo/flock/*
 examples/demo/life/*
+examples/demo/life_simd/*
 [win]examples/demo/make.bat
 examples/demo/Makefile
 examples/demo/nacl_io/*

@@ -37,7 +37,7 @@ function attachListeners() {
     document.getElementById('radio' + i).addEventListener('click',
         postThreadFunc(threads[i]));
   }
-  document.getElementById('pointRange').addEventListener('change',
+  document.getElementById('pointRange').addEventListener('input',
     function() {
       var value = parseFloat(document.getElementById('pointRange').value);
       common.naclModule.postMessage({'message' : 'set_points',

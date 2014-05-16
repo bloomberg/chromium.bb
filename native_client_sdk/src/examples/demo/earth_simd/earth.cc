@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,13 +30,20 @@
 
 using namespace sdk_util;  // For sdk_util::ThreadPool
 
+#define INLINE inline __attribute__((always_inline))
+
+// 128 bit SIMD vector types
+typedef uint8_t u8x16_t __attribute__ ((vector_size (16)));
+typedef int32_t i32x4_t __attribute__ ((vector_size (16)));
+typedef uint32_t u32x4_t __attribute__ ((vector_size (16)));
+typedef float f32x4_t __attribute__ ((vector_size (16)));
+
 // Global properties used to setup Earth demo.
 namespace {
 const float kPI = M_PI;
 const float kTwoPI = kPI * 2.0f;
 const float kOneOverPI = 1.0f / kPI;
 const float kOneOver2PI = 1.0f / kTwoPI;
-const float kOneOver255 = 1.0f / 255.0f;
 const int kArcCosineTableSize = 4096;
 const int kFramesToBenchmark = 100;
 const float kZoomMin = 1.0f;
@@ -58,21 +65,71 @@ inline double getseconds() {
   return 0.0;
 }
 
-// RGBA helper functions, used for extracting color from RGBA source image.
-inline float ExtractR(uint32_t c) {
-  return static_cast<float>(c & 0xFF) * kOneOver255;
+// SIMD Vector helper functions.
+//
+// Note that a compare between two vectors will return a signed integer vector
+// with the same number of elements, where each element will be all bits set
+// for true (-1), and all bits clear for false (0) This integer vector can be
+// useful as a mask.
+//
+// Also note that c-style casts do not mutate the bits of a vector - only the
+// type.  Boolean operators can't operate on float vectors, but it is possible
+// to cast them temporarily to integer vector, perform the mask, and cast
+// them back to float.
+//
+// To convert a float vector to an integer vector using trunction, or to
+// convert an integer vector to a float vector, use __builtin_convertvector().
+
+INLINE f32x4_t min(f32x4_t a, f32x4_t b) {
+  i32x4_t m = a < b;
+  return (f32x4_t)(((i32x4_t)a & m) | ((i32x4_t)b & ~m));
 }
 
-inline float ExtractG(uint32_t c) {
-  return static_cast<float>((c & 0xFF00) >> 8) * kOneOver255;
+INLINE f32x4_t max(f32x4_t a, f32x4_t b) {
+  i32x4_t m = a > b;
+  return (f32x4_t)(((i32x4_t)a & m) | ((i32x4_t)b & ~m));
 }
 
-inline float ExtractB(uint32_t c) {
-  return static_cast<float>((c & 0xFF0000) >> 16) * kOneOver255;
+INLINE float dot3(f32x4_t a, f32x4_t b) {
+  f32x4_t c = a * b;
+  return c[0] + c[1] + c[2];
+}
+
+INLINE f32x4_t broadcast(float x) {
+  f32x4_t r = {x, x, x, x};
+  return r;
+}
+
+// SIMD RGBA helper functions, used for extracting color from RGBA source image.
+INLINE f32x4_t ExtractRGBA(uint32_t c) {
+  const f32x4_t kOneOver255 = broadcast(1.0f / 255.0f);
+  const i32x4_t kZero = {0, 0, 0, 0};
+  i32x4_t v = {c, c, c, c};
+  // zero extend packed color into 32x4 integer vector
+  v = (i32x4_t)__builtin_shufflevector((u8x16_t)v, (u8x16_t)kZero,
+      0, 16, 16, 16, 1, 16, 16, 16, 2, 16, 16, 16, 3, 16, 16, 16);
+  // convert color values to float, range 0..1
+  f32x4_t f = __builtin_convertvector(v, f32x4_t) * kOneOver255;
+  return f;
+}
+
+// SIMD BGRA helper function, for constructing a pixel for a BGRA buffer.
+INLINE uint32_t PackBGRA(f32x4_t f) {
+  const f32x4_t kZero = broadcast(0.0f);
+  const f32x4_t kHalf = broadcast(0.5f);
+  const f32x4_t k255 = broadcast(255.0f);
+  f = max(f, kZero);
+  // Add 0.5 to perform rounding instead of truncation.
+  f = f * k255 + kHalf;
+  f = min(f, k255);
+  i32x4_t i = __builtin_convertvector(f, i32x4_t);
+  u32x4_t p = (u32x4_t)__builtin_shufflevector((u8x16_t)i, (u8x16_t)i,
+      8, 4, 0, 12, 8, 4, 0, 12, 8, 4, 0, 12, 8, 4, 0, 12);
+  return p[0];
 }
 
 // BGRA helper function, for constructing a pixel for a BGRA buffer.
-inline uint32_t MakeBGRA(uint32_t b, uint32_t g, uint32_t r, uint32_t a) {
+INLINE uint32_t MakeBGRA(uint32_t b, uint32_t g, uint32_t r, uint32_t a) {
   return (((a) << 24) | ((r) << 16) | ((g) << 8) | (b));
 }
 
@@ -113,7 +170,7 @@ ArcCosine::ArcCosine() {
 
 // looks up acos(f) using a table and lerping between entries
 // (it is expected that input f is between -1 and 1)
-float ArcCosine::TableLerp(float f) {
+INLINE float ArcCosine::TableLerp(float f) {
   float x = (f + 1.0f) * 0.5f;
   x = x * kArcCosineTableSize;
   int ix = static_cast<int>(x);
@@ -134,25 +191,25 @@ union Convert {
   float AsFloat() { return f; }
 };
 
-inline const int AsInteger(const float f) {
+INLINE const int AsInteger(const float f) {
   Convert u(f);
   return u.AsInt();
 }
 
-inline const float AsFloat(const int i) {
+INLINE const float AsFloat(const int i) {
   Convert u(i);
   return u.AsFloat();
 }
 
 const long int kOneAsInteger = AsInteger(1.0f);
 
-inline float inline_quick_sqrt(float x) {
+INLINE float inline_quick_sqrt(float x) {
   int i;
   i = (AsInteger(x) >> 1) + (kOneAsInteger >> 1);
   return AsFloat(i);
 }
 
-inline float inline_sqrt(float x) {
+INLINE float inline_sqrt(float x) {
   float y;
   y = inline_quick_sqrt(x);
   y = (y * y + x) / (2.0f * y);
@@ -160,15 +217,6 @@ inline float inline_sqrt(float x) {
   return y;
 }
 
-// takes a -0..1+ color, clamps it to 0..1 and maps it to 0..255 integer
-inline uint32_t Clamp255(float x) {
-  if (x < 0.0f) {
-    x = 0.0f;
-  } else if (x > 1.0f) {
-    x = 1.0f;
-  }
-  return static_cast<uint32_t>(x * 255.0f);
-}
 }  // namespace
 
 
@@ -376,13 +424,30 @@ inline uint32_t* Planet::wGetAddr(int x, int y) {
   return ps_context_->data + x + y * ps_context_->stride / sizeof(uint32_t);
 }
 
-// This is the meat of the ray tracer.  Given a pixel span (x0, x1) on
+// This is the inner loop of the ray tracer.  Given a pixel span (x0, x1) on
 // scanline y, shoot rays into the scene and render what they hit.  Use
-// scanline coherence to do a few optimizations
+// scanline coherence to do a few optimizations.
+// This version uses portable SIMD 4 element single precision floating point
+// vectors to perform many of the calculations, and builds only on PNaCl.
 void Planet::wRenderPixelSpan(int x0, int x1, int y) {
   if (!base_tex_ || !night_tex_)
     return;
-  const int kColorBlack = MakeBGRA(0, 0, 0, 0xFF);
+  const uint32_t kColorBlack = MakeBGRA(0, 0, 0, 0xFF);
+  const uint32_t kSolidAlpha = MakeBGRA(0, 0, 0, 0xFF);
+  const f32x4_t kOne = {1.0f, 1.0f, 1.0f, 1.0f};
+  const f32x4_t diffuse = {diffuse_r_, diffuse_g_, diffuse_b_, 0.0f};
+  const f32x4_t ambient = {ambient_r_, ambient_g_, ambient_b_, 0.0f};
+  const f32x4_t light_pos = {light_x_, light_y_, light_z_, 1.0f};
+  const f32x4_t planet_pos = {planet_x_, planet_y_, planet_z_, 1.0f};
+  const f32x4_t planet_one_over_radius = broadcast(planet_one_over_radius_);
+  const f32x4_t planet_equator = {
+      planet_equator_x_, planet_equator_y_, planet_equator_z_, 0.0f};
+  const f32x4_t planet_pole = {
+      planet_pole_x_, planet_pole_y_, planet_pole_z_, 1.0f};
+  const f32x4_t planet_pole_x_equator = {
+      planet_pole_x_equator_x_, planet_pole_x_equator_y_,
+      planet_pole_x_equator_z_, 0.0f};
+
   float width = ps_context_->width;
   float height = ps_context_->height;
   float min_dim = width < height ? width : height;
@@ -423,42 +488,30 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
       continue;
     }
 
-    // calc parametric t value
+    f32x4_t delta = {dx, dy, dz, 1.0f};
+    f32x4_t base = {x0, y0, z0, 1.0f};
+
+    // Calc parametric t value.
     float t = (-b - inline_sqrt(disc)) / (2.0f * a);
-    float px = x0 + t * dx;
-    float py = y0 + t * dy;
-    float pz = z0 + t * dz;
-    float nx = (px - planet_x_) * planet_one_over_radius_;
-    float ny = (py - planet_y_) * planet_one_over_radius_;
-    float nz = (pz - planet_z_) * planet_one_over_radius_;
+
+    f32x4_t pos = base + broadcast(t) * delta;
+    f32x4_t normal = (pos - planet_pos) * planet_one_over_radius;
 
     // Misc raytrace calculations.
-    float Lx = (light_x_ - px);
-    float Ly = (light_y_ - py);
-    float Lz = (light_z_ - pz);
-    float Lq = 1.0f / inline_quick_sqrt(Lx * Lx + Ly * Ly + Lz * Lz);
-    Lx *= Lq;
-    Ly *= Lq;
-    Lz *= Lq;
-    float d = (Lx * nx + Ly * ny + Lz * nz);
-    float pr = (diffuse_r_ * d) + ambient_r_;
-    float pg = (diffuse_g_ * d) + ambient_g_;
-    float pb = (diffuse_b_ * d) + ambient_b_;
-    float ds = -(nx * planet_pole_x_ +
-                 ny * planet_pole_y_ +
-                 nz * planet_pole_z_);
+    f32x4_t L = light_pos - pos;
+    float Lq = 1.0f / inline_quick_sqrt(dot3(L, L));
+    L = L * broadcast(Lq);
+    float d = dot3(L, normal);
+    f32x4_t p = diffuse * broadcast(d) + ambient;
+    float ds = -dot3(normal, planet_pole);
     float ang = acos_.TableLerp(ds);
     float v = ang * kOneOverPI;
-    float dp = planet_equator_x_ * nx +
-               planet_equator_y_ * ny +
-               planet_equator_z_ * nz;
+    float dp = dot3(planet_equator, normal);
     float w = dp / sinf(ang);
     if (w > 1.0f) w = 1.0f;
     if (w < -1.0f) w = -1.0f;
     float th = acos_.TableLerp(w) * kOneOver2PI;
-    float dps = planet_pole_x_equator_x_ * nx +
-                planet_pole_x_equator_y_ * ny +
-                planet_pole_x_equator_z_ * nz;
+    float dps = dot3(planet_pole_x_equator, normal);
     float u;
     if (dps < 0.0f)
       u = th;
@@ -470,34 +523,21 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
     int ty = static_cast<int>(v * base_tex_->height);
     int offset = tx + ty * base_tex_->width;
     uint32_t base_texel = base_tex_->pixels[offset];
-    float tr = ExtractR(base_texel);
-    float tg = ExtractG(base_texel);
-    float tb = ExtractB(base_texel);
-
-    float ipr = 1.0f - pr;
-    if (ipr < 0.0f) ipr = 0.0f;
-    float ipg = 1.0f - pg;
-    if (ipg < 0.0f) ipg = 0.0f;
-    float ipb = 1.0f - pb;
-    if (ipb < 0.0f) ipb = 0.0f;
+    f32x4_t dc = ExtractRGBA(base_texel);
 
     // Look up night texel.
     int nix = static_cast<int>(u * night_tex_->width);
     int niy = static_cast<int>(v * night_tex_->height);
     int noffset = nix + niy * night_tex_->width;
     uint32_t night_texel = night_tex_->pixels[noffset];
-    float nr = ExtractR(night_texel);
-    float ng = ExtractG(night_texel);
-    float nb = ExtractB(night_texel);
+    f32x4_t nc = ExtractRGBA(night_texel);
 
-    // Final color value is lerp between day and night texels.
-    unsigned int ir = Clamp255(pr * tr + nr * ipr);
-    unsigned int ig = Clamp255(pg * tg + ng * ipg);
-    unsigned int ib = Clamp255(pb * tb + nb * ipb);
+    // Blend between daylight (dc) and nighttime (nc) color.
+    f32x4_t pc = min(p, kOne);
+    f32x4_t fc = dc * p + nc * (kOne - pc);
+    uint32_t color = PackBGRA(fc);
 
-    unsigned int color = MakeBGRA(ib, ig, ir, 0xFF);
-
-    *pixels = color;
+    *pixels = color | kSolidAlpha;
     ++pixels;
   }
 }
