@@ -344,8 +344,16 @@ IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
       "callAndEnsureAudioTrackMutingWorks(%s);", kUseLenientAudioChecking));
 }
 
+// Flaky on TSAN v2: http://crbug.com/373637
+#if defined(THREAD_SANITIZER)
+#define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks\
+        DISABLED_EstablishAudioVideoCallAndVerifyUnmutingWorks
+#else
+#define MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks\
+        EstablishAudioVideoCallAndVerifyUnmutingWorks
+#endif
 IN_PROC_BROWSER_TEST_P(WebRtcBrowserTest,
-                       EstablishAudioVideoCallAndVerifyUnmutingWorks) {
+                       MAYBE_EstablishAudioVideoCallAndVerifyUnmutingWorks) {
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
     // See comment on EstablishAudioVideoCallAndMeasureOutputLevel.
     LOG(INFO) << "Missing output devices: skipping test...";
