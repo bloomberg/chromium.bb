@@ -37,6 +37,14 @@ scoped_ptr<RequestValue> RequestValue::CreateForReadDirectorySuccess(
   return result.Pass();
 }
 
+scoped_ptr<RequestValue> RequestValue::CreateForReadFileSuccess(
+    scoped_ptr<extensions::api::file_system_provider_internal::
+                   ReadFileRequestedSuccess::Params> params) {
+  scoped_ptr<RequestValue> result(new RequestValue);
+  result->read_file_success_params_ = params.Pass();
+  return result.Pass();
+}
+
 scoped_ptr<RequestValue> RequestValue::CreateForTesting(
     const std::string& params) {
   scoped_ptr<RequestValue> result(new RequestValue);

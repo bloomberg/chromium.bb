@@ -74,6 +74,21 @@ namespace fileSystemProviderInternal {
         long fileSystemId,
         long requestId,
         fileSystemProvider.ProviderError error);
+
+    // Internal. Success callback of the <code>onReadFileRequested</code>
+    // event. Can be called multiple times per request.
+    static void readFileRequestedSuccess(
+        long fileSystemId,
+        long requestId,
+        DOMString data,
+        boolean hasNext);
+
+    // Internal. Error callback of the <code>onReadFileRequested</code>
+    // event. Must be called when reading a file fails.
+    static void readFileRequestedError(
+        long fileSystemId,
+        long requestId,
+        fileSystemProvider.ProviderError error);
   };
 };
 

@@ -177,7 +177,45 @@ eventBindings.registerArgumentMassager(
         fileSystemProviderInternal.openFileRequestedError(
           fileSystemId, requestId, error);
       }
-      dispatch([fileSystemId, filePath, mode, create, onSuccessCallback,
+      dispatch([fileSystemId, requestId, filePath, mode, create,
+                onSuccessCallback, onErrorCallback]);
+    });
+
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onCloseFileRequested',
+    function(args, dispatch) {
+      var fileSystemId = args[0];
+      var requestId = args[1];
+      var openRequestId = args[2];
+      var onSuccessCallback = function() {
+        fileSystemProviderInternal.closeFileRequestedSuccess(
+            fileSystemId, requestId);
+      };
+      var onErrorCallback = function(error) {
+        fileSystemProviderInternal.closeFileRequestedError(
+          fileSystemId, requestId, error);
+      }
+      dispatch([fileSystemId, openRequestId, openRequestId, onSuccessCallback,
+                onErrorCallback]);
+    });
+
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onReadFileRequested',
+    function(args, dispatch) {
+      var fileSystemId = args[0];
+      var requestId = args[1];
+      var openRequestId = args[2];
+      var offset = args[3];
+      var length = args[4];
+      var onSuccessCallback = function(data, hasNext) {
+        fileSystemProviderInternal.readFileRequestedSuccess(
+            fileSystemId, requestId, data, hasNext);
+      };
+      var onErrorCallback = function(error) {
+        fileSystemProviderInternal.readFileRequestedError(
+          fileSystemId, requestId, error);
+      }
+      dispatch([fileSystemId, openRequestId, offset, length, onSuccessCallback,
                 onErrorCallback]);
     });
 

@@ -10,6 +10,10 @@
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
+namespace net {
+class IOBuffer;
+}  // namespace net
+
 namespace base {
 class FilePath;
 }  // namespace base
@@ -45,6 +49,11 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual void CloseFile(
       int file_handle,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+  virtual void ReadFile(int file_handle,
+                        net::IOBuffer* buffer,
+                        int64 offset,
+                        int length,
+                        const ReadChunkReceivedCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
 

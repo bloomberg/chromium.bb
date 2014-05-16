@@ -150,6 +150,30 @@ class FileSystemProviderInternalCloseFileRequestedErrorFunction
   virtual bool RunWhenValid() OVERRIDE;
 };
 
+class FileSystemProviderInternalReadFileRequestedSuccessFunction
+    : public FileSystemProviderInternalFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.readFileRequestedSuccess",
+      FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDSUCCESS)
+
+ protected:
+  virtual ~FileSystemProviderInternalReadFileRequestedSuccessFunction() {}
+  virtual bool RunWhenValid() OVERRIDE;
+};
+
+class FileSystemProviderInternalReadFileRequestedErrorFunction
+    : public FileSystemProviderInternalFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "fileSystemProviderInternal.readFileRequestedError",
+      FILESYSTEMPROVIDERINTERNAL_READFILEREQUESTEDERROR)
+
+ protected:
+  virtual ~FileSystemProviderInternalReadFileRequestedErrorFunction() {}
+  virtual bool RunWhenValid() OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_SYSTEM_PROVIDER_FILE_SYSTEM_PROVIDER_API_H_

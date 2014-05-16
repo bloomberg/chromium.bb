@@ -31,9 +31,14 @@ class RequestValue {
   static scoped_ptr<RequestValue> CreateForGetMetadataSuccess(
       scoped_ptr<extensions::api::file_system_provider_internal::
                      GetMetadataRequestedSuccess::Params> params);
+
   static scoped_ptr<RequestValue> CreateForReadDirectorySuccess(
       scoped_ptr<extensions::api::file_system_provider_internal::
                      ReadDirectoryRequestedSuccess::Params> params);
+
+  static scoped_ptr<RequestValue> CreateForReadFileSuccess(
+      scoped_ptr<extensions::api::file_system_provider_internal::
+                     ReadFileRequestedSuccess::Params> params);
 
   static scoped_ptr<RequestValue> CreateForTesting(const std::string& params);
 
@@ -55,6 +60,12 @@ class RequestValue {
     return read_directory_success_params_.get();
   }
 
+  const extensions::api::file_system_provider_internal::
+      ReadFileRequestedSuccess::Params*
+      read_file_success_params() const {
+    return read_file_success_params_.get();
+  }
+
   const std::string* testing_params() const { return testing_params_.get(); }
 
  private:
@@ -66,6 +77,8 @@ class RequestValue {
   scoped_ptr<extensions::api::file_system_provider_internal::
                  ReadDirectoryRequestedSuccess::Params>
       read_directory_success_params_;
+  scoped_ptr<extensions::api::file_system_provider_internal::
+                 ReadFileRequestedSuccess::Params> read_file_success_params_;
   scoped_ptr<std::string> testing_params_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestValue);

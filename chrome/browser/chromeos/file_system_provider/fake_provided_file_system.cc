@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "extensions/browser/event_router.h"
+#include "net/base/io_buffer.h"
 
 namespace chromeos {
 namespace file_system_provider {
@@ -129,6 +130,7 @@ void FakeProvidedFileSystem::OpenFile(const base::FilePath& file_path,
   }
 
   const int file_handle = ++last_file_handle_;
+  opened_files_.insert(file_handle);
   callback.Run(file_handle, base::File::FILE_OK);
 }
 
@@ -138,12 +140,29 @@ void FakeProvidedFileSystem::CloseFile(
   const std::set<int>::iterator opened_file_it =
       opened_files_.find(file_handle);
   if (opened_file_it == opened_files_.end()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, base::File::FILE_ERROR_NOT_FOUND));
     return;
   }
 
   opened_files_.erase(opened_file_it);
-  callback.Run(base::File::FILE_OK);
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(callback, base::File::FILE_OK));
+}
+
+void FakeProvidedFileSystem::ReadFile(
+    int file_handle,
+    net::IOBuffer* buffer,
+    int64 offset,
+    int length,
+    const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
+  // TODO(mtomasz): Implement together with the FileStreamReader.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 0 /* chunk_length */,
+                 false /* has_next */,
+                 base::File::FILE_ERROR_SECURITY));
 }
 
 const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()

@@ -715,6 +715,7 @@
         'browser/chromeos/file_system_provider/operations/get_metadata_unittest.cc',
         'browser/chromeos/file_system_provider/operations/open_file_unittest.cc',
         'browser/chromeos/file_system_provider/operations/read_directory_unittest.cc',
+        'browser/chromeos/file_system_provider/operations/read_file_unittest.cc',
         'browser/chromeos/file_system_provider/provided_file_system_unittest.cc',
         'browser/chromeos/file_system_provider/request_manager_unittest.cc',
         'browser/chromeos/file_system_provider/service_unittest.cc',

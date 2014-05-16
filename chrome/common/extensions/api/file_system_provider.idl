@@ -75,11 +75,17 @@ namespace fileSystemProvider {
   // Success callback for the <code>onGetMetadataRequested</code> event.
   callback MetadataCallback = void(EntryMetadata metadata);
 
-  // Success callback for the <code>onDirectoryRequested</code> event. If more
-  // entries will be returned, then <code>hasNext</code> must be true, and it
-  // has to be called again with additional entries. If no more entries are
+  // Success callback for the <code>onReadDirectoryRequested</code> event. If
+  // more entries will be returned, then <code>hasNext</code> must be true, and
+  // it has to be called again with additional entries. If no more entries are
   // available, then <code>hasNext</code> must be set to false.
   callback EntriesCallback = void(ResourceEntry[] entries, bool hasNext);
+
+  // Success callback for the <code>onReadFileRequested</code> event. If more
+  // data will be returned, then <code>hasNext</code> must be true, and it
+  // has to be called again with additional entries. If no more data is
+  // available, then <code>hasNext</code> must be set to false.
+  callback FileDataCallback = void(DOMString data, bool hasNext);
 
   interface Functions {
     // Mounts a file system with the given <code>displayName</code>.
@@ -151,6 +157,18 @@ namespace fileSystemProvider {
         long fileSystemId,
         long openRequestId,
         ProviderSuccessCallback successCallback,
+        ProviderErrorCallback errorCallback);
+
+    // Raised when contents of a file opened previously with <code>openRequestId
+    // </code>. The results should be returned in chunks by calling <code>
+    // successCallback</code> several times. In case of an error, <code>
+    // errorCallback</code> must be called.
+    [maxListeners=1] static void onReadFileRequested(
+        long fileSystemId,
+        long openRequestId,
+        double offset,
+        double length,
+        FileDataCallback successCallback,
         ProviderErrorCallback errorCallback);
   };
 };

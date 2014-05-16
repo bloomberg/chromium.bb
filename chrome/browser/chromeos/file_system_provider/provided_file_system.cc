@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/get_metadata.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/open_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/read_directory.h"
+#include "chrome/browser/chromeos/file_system_provider/operations/read_file.h"
 #include "chrome/browser/chromeos/file_system_provider/operations/unmount.h"
 #include "chrome/browser/chromeos/file_system_provider/request_manager.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
@@ -16,9 +17,6 @@
 
 namespace chromeos {
 namespace file_system_provider {
-namespace {
-
-}  // namespace
 
 ProvidedFileSystem::ProvidedFileSystem(
     extensions::EventRouter* event_router,
@@ -57,6 +55,26 @@ void ProvidedFileSystem::ReadDirectory(
     callback.Run(base::File::FILE_ERROR_SECURITY,
                  fileapi::AsyncFileUtil::EntryList(),
                  false /* has_more */);
+  }
+}
+
+void ProvidedFileSystem::ReadFile(int file_handle,
+                                  net::IOBuffer* buffer,
+                                  int64 offset,
+                                  int length,
+                                  const ReadChunkReceivedCallback& callback) {
+  if (!request_manager_.CreateRequest(
+          make_scoped_ptr<RequestManager::HandlerInterface>(
+              new operations::ReadFile(event_router_,
+                                       file_system_info_,
+                                       file_handle,
+                                       buffer,
+                                       offset,
+                                       length,
+                                       callback)))) {
+    callback.Run(0 /* chunk_length */,
+                 false /* has_more */,
+                 base::File::FILE_ERROR_SECURITY);
   }
 }
 

@@ -10,6 +10,10 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 
+namespace net {
+class IOBuffer;
+}  // namespace net
+
 namespace extensions {
 class EventRouter;
 }  // namespace extensions
@@ -43,6 +47,11 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual void CloseFile(
       int file_handle,
       const fileapi::AsyncFileUtil::StatusCallback& callback) OVERRIDE;
+  virtual void ReadFile(int file_handle,
+                        net::IOBuffer* buffer,
+                        int64 offset,
+                        int length,
+                        const ReadChunkReceivedCallback& callback) OVERRIDE;
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const OVERRIDE;
   virtual RequestManager* GetRequestManager() OVERRIDE;
 

@@ -5,13 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_PROVIDED_FILE_SYSTEM_INTERFACE_H_
 
+#include "base/callback.h"
+#include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "webkit/browser/fileapi/async_file_util.h"
 
 class EventRouter;
 
-namespace base {
-class FilePath;
-}  // namespace base
+namespace net {
+class IOBuffer;
+}  // namespace net
 
 namespace chromeos {
 namespace file_system_provider {
@@ -26,6 +29,10 @@ class ProvidedFileSystemInterface {
  public:
   typedef base::Callback<void(int file_handle, base::File::Error result)>
       OpenFileCallback;
+
+  typedef base::Callback<
+      void(int chunk_length, bool has_next, base::File::Error result)>
+      ReadChunkReceivedCallback;
 
   // Mode of opening a file. Used by OpenFile().
   enum OpenFileMode { OPEN_FILE_MODE_READ, OPEN_FILE_MODE_WRITE };
@@ -44,8 +51,7 @@ class ProvidedFileSystemInterface {
       const fileapi::AsyncFileUtil::GetFileInfoCallback& callback) = 0;
 
   // Requests enumerating entries from the passed |directory_path|. The callback
-  // can be called multiple times until either an error is returned or the
-  // has_more field is set to false.
+  // can be called multiple times until |has_more| is set to false.
   virtual void ReadDirectory(
       const base::FilePath& directory_path,
       const fileapi::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
@@ -62,6 +68,16 @@ class ProvidedFileSystemInterface {
   virtual void CloseFile(
       int file_handle,
       const fileapi::AsyncFileUtil::StatusCallback& callback) = 0;
+
+  // Requests reading a file previously opened with |file_handle|. The callback
+  // can be called multiple times until |has_more| is set to false. On success
+  // it should return |length| bytes starting from |offset| in total. It can
+  // return less only in case EOF is encountered.
+  virtual void ReadFile(int file_handle,
+                        net::IOBuffer* buffer,
+                        int64 offset,
+                        int length,
+                        const ReadChunkReceivedCallback& callback) = 0;
 
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;
