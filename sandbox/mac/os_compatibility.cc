@@ -43,6 +43,20 @@ struct look_up2_request_10_7 {
 
 // look_up2_reply_10_7 is the same as the 10_6 version.
 
+// Verified from:
+//   launchd-329.3.3 (10.6.8)
+//   launchd-392.39 (10.7.5)
+//   launchd-442.26.2 (10.8.5)
+//   launchd-842.1.4 (10.9.0)
+typedef int vproc_gsk_t;  // Defined as an enum in liblaunch/vproc_priv.h.
+struct swap_integer_request_10_6 {
+  mach_msg_header_t Head;
+  NDR_record_t NDR;
+  vproc_gsk_t inkey;
+  vproc_gsk_t outkey;
+  int64_t inval;
+};
+
 // TODO(rsesek): Libc provides strnlen() starting in 10.7.
 size_t strnlen(const char* str, size_t maxlen) {
   size_t len = 0;
@@ -77,13 +91,21 @@ void LaunchdLookUp2FillReply(mach_msg_header_t* header, mach_port_t port) {
   reply->service_port.type = MACH_MSG_PORT_DESCRIPTOR;
 }
 
+template <typename R>
+bool LaunchdSwapIntegerIsGetOnly(const mach_msg_header_t* header) {
+  const R* request = reinterpret_cast<const R*>(header);
+  return request->inkey == 0 && request->inval == 0 && request->outkey != 0;
+}
+
 }  // namespace
 
 const LaunchdCompatibilityShim GetLaunchdCompatibilityShim() {
   LaunchdCompatibilityShim shim = {
     .msg_id_look_up2 = 404,
     .msg_id_swap_integer = 416,
-    .look_up2_fill_reply = &LaunchdLookUp2FillReply<look_up2_reply_10_6>
+    .look_up2_fill_reply = &LaunchdLookUp2FillReply<look_up2_reply_10_6>,
+    .swap_integer_is_get_only =
+        &LaunchdSwapIntegerIsGetOnly<swap_integer_request_10_6>,
   };
 
   if (base::mac::IsOSSnowLeopard()) {

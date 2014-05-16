@@ -21,6 +21,8 @@ namespace sandbox {
 typedef std::string (*LookUp2GetRequestName)(const mach_msg_header_t*);
 typedef void (*LookUp2FillReply)(mach_msg_header_t*, mach_port_t service_port);
 
+typedef bool (*SwapIntegerIsGetOnly)(const mach_msg_header_t*);
+
 struct LaunchdCompatibilityShim {
   // The msgh_id for look_up2.
   mach_msg_id_t msg_id_look_up2;
@@ -35,6 +37,11 @@ struct LaunchdCompatibilityShim {
   // A function to formulate a reply to a look_up2 message, given the reply
   // message and the port to return as the service.
   LookUp2FillReply look_up2_fill_reply;
+
+  // A function to take a swap_integer message and return true if the message
+  // is only getting the value of a key, neither setting it directly, nor
+  // swapping two keys.
+  SwapIntegerIsGetOnly swap_integer_is_get_only;
 };
 
 // Gets the compatibility shim for the launchd job subsystem.

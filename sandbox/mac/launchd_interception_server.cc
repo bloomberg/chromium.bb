@@ -231,10 +231,16 @@ void LaunchdInterceptionServer::HandleLookUp(mach_msg_header_t* request,
 void LaunchdInterceptionServer::HandleSwapInteger(mach_msg_header_t* request,
                                                   mach_msg_header_t* reply,
                                                   pid_t sender_pid) {
-  // TODO(rsesek): Crack the message and ensure that the swap is only being
-  // used to get the value of a VPROC key, and do not allow setting it.
-  VLOG(2) << "Forwarding vproc swap message #" << request->msgh_id;
-  ForwardMessage(request, reply);
+  // Only allow getting information out of launchd. Do not allow setting
+  // values. Two commonly observed values that are retrieved are
+  // VPROC_GSK_MGR_PID and VPROC_GSK_TRANSACTIONS_ENABLED.
+  if (compat_shim_.swap_integer_is_get_only(request)) {
+    VLOG(2) << "Forwarding vproc swap_integer message.";
+    ForwardMessage(request, reply);
+  } else {
+    VLOG(2) << "Rejecting non-read-only swap_integer message.";
+    RejectMessage(request, reply, BOOTSTRAP_NOT_PRIVILEGED);
+  }
 }
 
 void LaunchdInterceptionServer::SendReply(mach_msg_header_t* reply) {
