@@ -81,6 +81,10 @@ def RunCommand(command, tries=1):
     print 'Failed.'
   sys.exit(1)
 
+def CopyFile(src, dst):
+  """Copy a file from src to dst."""
+  shutil.copy(src, dst)
+  print "Copying %s to %s" % (src, dst)
 
 def Checkout(name, url, dir):
   """Checkout the SVN module at url into dir. Use name for the log message."""
@@ -151,8 +155,10 @@ def UpdateClang():
   for root, _, files in os.walk(asan_rt_lib_src_dir):
     for f in files:
       if re.match(r'^.*-i386\.lib$', f):
-        shutil.copy(os.path.join(root, f), asan_rt_lib_dst_dir)
-        print "Copying %s to %s" % (f, asan_rt_lib_dst_dir)
+        CopyFile(os.path.join(root, f), asan_rt_lib_dst_dir)
+
+  CopyFile(os.path.join(asan_rt_lib_src_dir, '..', '..', 'asan_blacklist.txt'),
+           os.path.join(asan_rt_lib_dst_dir, '..', '..'))
 
   WriteStampFile(LLVM_WIN_REVISION)
   print 'Clang update was successful.'
