@@ -1,26 +1,21 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-        (rect 8.00 8.00 200.00 200.00)
-      )
-    )
-  )
-)
+SVG 1.1 dynamic update tests
+
+Check that SVGUseElement is initially displayed
+PASS useElement.getBBox().width is 200
+PASS useElement.getBBox().height is 200
+Check that setting requiredFeatures to something invalid makes it not render
+PASS useElement.getBBox().width is 0
+PASS useElement.getBBox().height is 0
+Check that setting requiredFeatures to something valid makes it render again
+PASS useElement.getBBox().width is 200
+PASS useElement.getBBox().height is 200
+Check that adding something valid to requiredFeatures keeps rendering the element
+PASS useElement.getBBox().width is 200
+PASS useElement.getBBox().height is 200
+Check that adding something invalid to requiredFeatures makes it not render
+PASS useElement.getBBox().width is 0
+PASS useElement.getBBox().height is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
