@@ -199,6 +199,8 @@
     "common/js/error_util.js",
     "common/js/path_util.js",
     "common/js/util.js",
+    "common/js/volume_manager_common.js",
+    "foreground/js/file_type.js",
     "foreground/js/metadata/byte_reader.js",
     "foreground/js/metadata/exif_parser.js",
     "foreground/js/metadata/function_parallel.js",

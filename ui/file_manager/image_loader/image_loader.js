@@ -75,8 +75,10 @@ function ImageLoader() {
  * @const
  * @type {Array.<string>}
  */
-ImageLoader.ALLOWED_CLIENTS =
-    ['hhaomjibdihmijegdhdafkllkbggdgoj'];  // File Manager's extension id.
+ImageLoader.ALLOWED_CLIENTS = [
+  'hhaomjibdihmijegdhdafkllkbggdgoj',  // File Manager's extension id.
+  'nlkncpkkdoccmpiclbokaimcnedabhhm'  // Gallery extension id.
+];
 
 /**
  * Handles a request. Depending on type of the request, starts or stops

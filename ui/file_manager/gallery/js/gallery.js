@@ -887,15 +887,16 @@ Gallery.prototype.updateButtons_ = function() {
 };
 
 window.addEventListener('load', function() {
-  var entries = window.launchData.items.map(
-      function(item) { return item.entry; });
-  window.backgroundComponent.
-      then(function(inBackgroundComponent) {
-        window.loadTimeData.data = inBackgroundComponent.stringData;
-        var gallery = new Gallery(inBackgroundComponent.volumeManager);
-        gallery.load(entries, entries);
-      }).
-      catch(function(error) {
-        console.error(error.stack || error);
-      });
+  Promise.all([
+    window.backgroundComponentsPromise,
+    window.launchData.entriesPromise
+  ]).then(function(args) {
+    var backgroundComponents = args[0];
+    var entries = args[1];
+    window.loadTimeData.data = backgroundComponents.stringData;
+    var gallery = new Gallery(backgroundComponents.volumeManager);
+    gallery.load(entries.allEntries, entries.selectedEntries);
+  }).catch(function(error) {
+    console.error(error.stack || error);
+  });
 });
