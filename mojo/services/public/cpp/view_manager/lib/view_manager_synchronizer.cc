@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/shell/connect.h"
+#include "mojo/public/cpp/shell/service.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_manager_private.h"
 #include "mojo/services/public/cpp/view_manager/lib/view_private.h"

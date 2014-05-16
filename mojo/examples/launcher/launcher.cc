@@ -188,18 +188,20 @@ class LauncherController : public views::TextfieldController {
   DISALLOW_COPY_AND_ASSIGN(LauncherController);
 };
 
-class LauncherImpl : public InterfaceImpl<Launcher>,
+class LauncherImpl : public ServiceConnection<Launcher, LauncherImpl>,
                      public URLReceiver {
  public:
-  explicit LauncherImpl(Application* app)
-      : app_(app),
-        launcher_controller_(this),
+  LauncherImpl()
+      : launcher_controller_(this),
         pending_show_(false) {
+  }
+
+  void Initialize() {
     screen_.reset(ScreenMojo::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 
     NativeViewportPtr viewport;
-    app_->ConnectTo("mojo:mojo_native_viewport_service", &viewport);
+    ConnectTo(shell(), "mojo:mojo_native_viewport_service", &viewport);
 
     window_tree_host_.reset(new WindowTreeHostMojo(
         viewport.Pass(), gfx::Rect(50, 50, 450, 60),
@@ -248,7 +250,6 @@ class LauncherImpl : public InterfaceImpl<Launcher>,
     }
   }
 
-  Application* app_;
   scoped_ptr<ScreenMojo> screen_;
   scoped_ptr<LauncherWindowTreeClient> window_tree_client_;
   scoped_ptr<aura::client::FocusClient> focus_client_;
@@ -286,7 +287,8 @@ extern "C" LAUNCHER_EXPORT MojoResult CDECL MojoMain(
   aura::Env::CreateInstance(true);
 
   mojo::Application app(shell_handle);
-  app.AddService<mojo::examples::LauncherImpl>(&app);
+  app.AddServiceConnector(
+      new mojo::ServiceConnector<mojo::examples::LauncherImpl>());
 
   loop.Run();
   return MOJO_RESULT_OK;

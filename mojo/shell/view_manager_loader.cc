@@ -25,8 +25,10 @@ void ViewManagerLoader::LoadService(ServiceManager* manager,
     root_node_manager_.reset(
         new view_manager::service::RootNodeManager(app->shell()));
   }
-  app->AddService<view_manager::service::ViewManagerConnection>(
-      root_node_manager_.get());
+  app->AddServiceConnector(
+      new ServiceConnector<view_manager::service::ViewManagerConnection,
+                           view_manager::service::RootNodeManager>(
+                               root_node_manager_.get()));
   apps_.push_back(app.release());
 }
 

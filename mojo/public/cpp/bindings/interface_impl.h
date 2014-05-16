@@ -13,16 +13,17 @@ namespace mojo {
 // InterfaceImpl<..> is designed to be the base class of an interface
 // implementation. It may be bound to a pipe or a proxy, see BindToPipe and
 // BindToProxy.
+//
+// NOTE: A base class of WithErrorHandler<Interface> is used to avoid multiple
+// inheritance. This base class inserts the signature of ErrorHandler into the
+// inheritance chain.
 template <typename Interface>
-class InterfaceImpl : public internal::InterfaceImplBase<Interface> {
+class InterfaceImpl : public WithErrorHandler<Interface> {
  public:
   typedef typename Interface::Client Client;
 
   InterfaceImpl() : internal_state_(this) {}
   virtual ~InterfaceImpl() {}
-
-  // Subclasses can override this to handle post connection initialization.
-  virtual void OnConnectionEstablished() {}
 
   // Subclasses must handle connection errors.
   virtual void OnConnectionError() = 0;

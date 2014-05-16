@@ -7,7 +7,7 @@
 #include "base/auto_reset.h"
 #include "mojo/aura/screen_mojo.h"
 #include "mojo/aura/window_tree_host_mojo.h"
-#include "mojo/public/cpp/shell/connect.h"
+#include "mojo/public/cpp/shell/service.h"
 #include "mojo/public/interfaces/shell/shell.mojom.h"
 #include "mojo/services/view_manager/root_node_manager.h"
 #include "ui/aura/client/default_capture_client.h"

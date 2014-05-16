@@ -15,19 +15,11 @@ namespace mojo {
 namespace internal {
 
 template <typename Interface>
-class InterfaceImplBase : public Interface {
- public:
-  virtual ~InterfaceImplBase() {}
-  virtual void OnConnectionEstablished() = 0;
-  virtual void OnConnectionError() = 0;
-};
-
-template <typename Interface>
 class InterfaceImplState : public ErrorHandler {
  public:
   typedef typename Interface::Client Client;
 
-  explicit InterfaceImplState(InterfaceImplBase<Interface>* instance)
+  explicit InterfaceImplState(WithErrorHandler<Interface>* instance)
       : router_(NULL),
         client_(NULL),
         proxy_(NULL) {
@@ -66,8 +58,7 @@ class InterfaceImplState : public ErrorHandler {
 
     proxy_ = new typename Client::Proxy_(router_);
 
-    instance()->SetClient(proxy_);
-    instance()->OnConnectionEstablished();
+    stub_.sink()->SetClient(proxy_);
   }
 
   Router* router() { return router_; }
@@ -76,12 +67,9 @@ class InterfaceImplState : public ErrorHandler {
   Client* client() { return client_; }
 
  private:
-  InterfaceImplBase<Interface>* instance() {
-    return static_cast<InterfaceImplBase<Interface>*>(stub_.sink());
-  }
-
   virtual void OnConnectionError() MOJO_OVERRIDE {
-    instance()->OnConnectionError();
+    static_cast<WithErrorHandler<Interface>*>(stub_.sink())->
+        OnConnectionError();
   }
 
   Router* router_;

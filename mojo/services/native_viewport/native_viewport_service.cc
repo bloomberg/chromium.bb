@@ -28,12 +28,13 @@ bool IsRateLimitedEventType(ui::Event* event) {
 }
 
 class NativeViewportImpl
-    : public InterfaceImpl<mojo::NativeViewport>,
+    : public ServiceConnection<mojo::NativeViewport,
+                               NativeViewportImpl,
+                               shell::Context>,
       public NativeViewportDelegate {
  public:
-  NativeViewportImpl(shell::Context* context)
-      : context_(context),
-        widget_(gfx::kNullAcceleratedWidget),
+  NativeViewportImpl()
+      : widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false) {}
   virtual ~NativeViewportImpl() {
     // Destroy the NativeViewport early on as it may call us back during
@@ -41,11 +42,9 @@ class NativeViewportImpl
     native_viewport_.reset();
   }
 
-  virtual void OnConnectionError() OVERRIDE {}
-
   virtual void Create(const Rect& bounds) OVERRIDE {
     native_viewport_ =
-        services::NativeViewport::Create(context_, this);
+        services::NativeViewport::Create(context(), this);
     native_viewport_->Init(bounds);
     client()->OnCreated();
     OnBoundsChanged(bounds);
@@ -175,7 +174,6 @@ class NativeViewportImpl
   }
 
  private:
-  shell::Context* context_;
   gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
   ScopedMessagePipeHandle command_buffer_handle_;
@@ -191,7 +189,9 @@ MOJO_NATIVE_VIEWPORT_EXPORT mojo::Application*
     CreateNativeViewportService(mojo::shell::Context* context,
                                 mojo::ScopedMessagePipeHandle shell_handle) {
   mojo::Application* app = new mojo::Application(shell_handle.Pass());
-  app->AddService<mojo::services::NativeViewportImpl>(context);
+  app->AddServiceConnector(
+      new mojo::ServiceConnector<mojo::services::NativeViewportImpl,
+                                 mojo::shell::Context>(context));
   return app;
 }
 
