@@ -180,7 +180,7 @@ void LocalFrame::setPrinting(bool printing, const FloatSize& pageSize, const Flo
     document()->setPrinting(printing);
     view()->adjustMediaTypeForPrinting(printing);
 
-    document()->styleResolverChanged(RecalcStyleImmediately);
+    document()->styleResolverChanged(RecalcStyleDeferred);
     if (shouldUsePrintingLayout()) {
         view()->forceLayoutForPagination(pageSize, originalPageSize, maximumShrinkRatio);
     } else {
