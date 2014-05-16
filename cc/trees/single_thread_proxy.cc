@@ -339,9 +339,31 @@ void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
 // scheduling)
 void SingleThreadProxy::CompositeImmediately(base::TimeTicks frame_begin_time) {
   TRACE_EVENT0("cc", "SingleThreadProxy::CompositeImmediately");
+  DCHECK(Proxy::IsMainThread());
+
+  if (!layer_tree_host_->InitializeOutputSurfaceIfNeeded())
+    return;
+
+  layer_tree_host_->AnimateLayers(frame_begin_time);
+
+  if (PrioritizedResourceManager* contents_texture_manager =
+          layer_tree_host_->contents_texture_manager()) {
+    contents_texture_manager->UnlinkAndClearEvictedBackings();
+    contents_texture_manager->SetMaxMemoryLimitBytes(
+        layer_tree_host_impl_->memory_allocation_limit_bytes());
+    contents_texture_manager->SetExternalPriorityCutoff(
+        layer_tree_host_impl_->memory_allocation_priority_cutoff());
+  }
+
+  scoped_ptr<ResourceUpdateQueue> queue =
+      make_scoped_ptr(new ResourceUpdateQueue);
+  layer_tree_host_->UpdateLayers(queue.get());
+  layer_tree_host_->WillCommit();
+  DoCommit(queue.Pass());
+  layer_tree_host_->DidBeginMainFrame();
 
   LayerTreeHostImpl::FrameData frame;
-  if (CommitAndComposite(frame_begin_time, &frame)) {
+  if (DoComposite(frame_begin_time, &frame)) {
     {
       DebugScopedSetMainThreadBlocked main_thread_blocked(this);
       DebugScopedSetImplThread impl(this);
@@ -383,38 +405,6 @@ void SingleThreadProxy::ForceSerializeOnSwapBuffers() {
       layer_tree_host_impl_->renderer()->DoNoOp();
     }
   }
-}
-
-bool SingleThreadProxy::CommitAndComposite(
-    base::TimeTicks frame_begin_time,
-    LayerTreeHostImpl::FrameData* frame) {
-  TRACE_EVENT0("cc", "SingleThreadProxy::CommitAndComposite");
-  DCHECK(Proxy::IsMainThread());
-
-  if (!layer_tree_host_->InitializeOutputSurfaceIfNeeded())
-    return false;
-
-  layer_tree_host_->AnimateLayers(frame_begin_time);
-
-  if (PrioritizedResourceManager* contents_texture_manager =
-      layer_tree_host_->contents_texture_manager()) {
-    contents_texture_manager->UnlinkAndClearEvictedBackings();
-    contents_texture_manager->SetMaxMemoryLimitBytes(
-        layer_tree_host_impl_->memory_allocation_limit_bytes());
-    contents_texture_manager->SetExternalPriorityCutoff(
-        layer_tree_host_impl_->memory_allocation_priority_cutoff());
-  }
-
-  scoped_ptr<ResourceUpdateQueue> queue =
-      make_scoped_ptr(new ResourceUpdateQueue);
-  layer_tree_host_->UpdateLayers(queue.get());
-
-  layer_tree_host_->WillCommit();
-
-  DoCommit(queue.Pass());
-  bool result = DoComposite(frame_begin_time, frame);
-  layer_tree_host_->DidBeginMainFrame();
-  return result;
 }
 
 bool SingleThreadProxy::ShouldComposite() const {

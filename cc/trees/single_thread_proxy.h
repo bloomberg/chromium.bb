@@ -91,8 +91,6 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   SingleThreadProxy(LayerTreeHost* layer_tree_host,
                     LayerTreeHostSingleThreadClient* client);
 
-  bool CommitAndComposite(base::TimeTicks frame_begin_time,
-                          LayerTreeHostImpl::FrameData* frame);
   void DoCommit(scoped_ptr<ResourceUpdateQueue> queue);
   bool DoComposite(base::TimeTicks frame_begin_time,
                    LayerTreeHostImpl::FrameData* frame);
