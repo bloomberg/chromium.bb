@@ -469,10 +469,12 @@ String InspectorDebuggerAgent::scriptURL(JavaScriptCallFrame* frame)
     return it->value.url;
 }
 
-ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptionPause(RefPtr<JavaScriptCallFrame>& topFrame)
+ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptionPause()
 {
     if (m_skipAllPauses)
         return ScriptDebugListener::Continue;
+
+    RefPtr<JavaScriptCallFrame> topFrame = scriptDebugServer().topCallFrameNoScopes();
     if (!topFrame)
         return ScriptDebugListener::NoSkip;
 
@@ -520,31 +522,28 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptio
     return ScriptDebugListener::NoSkip;
 }
 
-ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipBreakpointPause(RefPtr<JavaScriptCallFrame>& topFrame)
+ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipBreakpointPause()
 {
     if (m_skipAllPauses)
         return ScriptDebugListener::Continue;
-    if (!topFrame)
-        return ScriptDebugListener::NoSkip;
     return ScriptDebugListener::NoSkip;
 }
 
-ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPause(RefPtr<JavaScriptCallFrame>& topFrame)
+ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPause()
 {
     if (m_skipAllPauses)
         return ScriptDebugListener::Continue;
-    if (!topFrame)
+    if (!m_cachedSkipStackRegExp)
         return ScriptDebugListener::NoSkip;
 
-    if (m_cachedSkipStackRegExp) {
-        String scriptUrl = scriptURL(topFrame.get());
-        if (!scriptUrl.isEmpty() && m_cachedSkipStackRegExp->match(scriptUrl) != -1) {
-            if (m_skipStepInCount > 0) {
-                --m_skipStepInCount;
-                return ScriptDebugListener::StepInto;
-            }
-            return ScriptDebugListener::StepOut;
+    RefPtr<JavaScriptCallFrame> topFrame = scriptDebugServer().topCallFrameNoScopes();
+    String scriptUrl = scriptURL(topFrame.get());
+    if (!scriptUrl.isEmpty() && m_cachedSkipStackRegExp->match(scriptUrl) != -1) {
+        if (m_skipStepInCount > 0) {
+            --m_skipStepInCount;
+            return ScriptDebugListener::StepInto;
         }
+        return ScriptDebugListener::StepOut;
     }
     return ScriptDebugListener::NoSkip;
 }
@@ -1162,8 +1161,19 @@ void InspectorDebuggerAgent::failedToParseSource(const String& url, const String
     m_frontend->scriptFailedToParse(url, data, firstLine, errorLine, errorMessage);
 }
 
-void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)
+ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints)
 {
+    ScriptDebugListener::SkipPauseRequest result = ScriptDebugListener::NoSkip;
+    if (!exception.isEmpty())
+        result = shouldSkipExceptionPause();
+    else if (!hitBreakpoints.isEmpty())
+        result = shouldSkipBreakpointPause();
+    else
+        result = shouldSkipStepPause();
+
+    if (result != ScriptDebugListener::NoSkip)
+        return result;
+
     ASSERT(scriptState && !m_pausedScriptState);
     m_pausedScriptState = scriptState;
     m_currentCallStack = callFrames;
@@ -1202,6 +1212,7 @@ void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValu
     }
     if (m_listener)
         m_listener->didPause();
+    return result;
 }
 
 void InspectorDebuggerAgent::didContinue()

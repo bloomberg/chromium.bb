@@ -38,7 +38,6 @@
 
 namespace WebCore {
 class ScriptValue;
-class JavaScriptCallFrame;
 
 class ScriptDebugListener {
 public:
@@ -63,13 +62,6 @@ public:
         bool isContentScript;
     };
 
-    virtual ~ScriptDebugListener() { }
-
-    virtual void didParseSource(const String& scriptId, const Script&) = 0;
-    virtual void failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage) = 0;
-    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
-    virtual void didContinue() = 0;
-
     enum SkipPauseRequest {
         NoSkip,
         Continue,
@@ -77,9 +69,12 @@ public:
         StepOut
     };
 
-    virtual SkipPauseRequest shouldSkipExceptionPause(RefPtr<JavaScriptCallFrame>& topFrame) = 0;
-    virtual SkipPauseRequest shouldSkipBreakpointPause(RefPtr<JavaScriptCallFrame>& topFrame) = 0;
-    virtual SkipPauseRequest shouldSkipStepPause(RefPtr<JavaScriptCallFrame>& topFrame) = 0;
+    virtual ~ScriptDebugListener() { }
+
+    virtual void didParseSource(const String& scriptId, const Script&) = 0;
+    virtual void failedToParseSource(const String& url, const String& data, int firstLine, int errorLine, const String& errorMessage) = 0;
+    virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) = 0;
+    virtual void didContinue() = 0;
 };
 
 } // namespace WebCore

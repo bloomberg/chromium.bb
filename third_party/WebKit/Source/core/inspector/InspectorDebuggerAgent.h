@@ -57,6 +57,7 @@ class HTTPHeaderMap;
 class InjectedScriptManager;
 class InspectorFrontend;
 class InstrumentingAgents;
+class JavaScriptCallFrame;
 class JSONObject;
 class KURL;
 class MutationObserver;
@@ -185,10 +186,6 @@ public:
     void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
 
-    virtual SkipPauseRequest shouldSkipExceptionPause(RefPtr<JavaScriptCallFrame>& topFrame) OVERRIDE FINAL;
-    virtual SkipPauseRequest shouldSkipBreakpointPause(RefPtr<JavaScriptCallFrame>& topFrame) OVERRIDE FINAL;
-    virtual SkipPauseRequest shouldSkipStepPause(RefPtr<JavaScriptCallFrame>& topFrame) OVERRIDE FINAL;
-
 protected:
     explicit InspectorDebuggerAgent(InjectedScriptManager*);
 
@@ -201,12 +198,16 @@ protected:
 
     virtual void enable();
     virtual void disable();
-    virtual void didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) OVERRIDE FINAL;
+    virtual SkipPauseRequest didPause(ScriptState*, const ScriptValue& callFrames, const ScriptValue& exception, const Vector<String>& hitBreakpoints) OVERRIDE FINAL;
     virtual void didContinue() OVERRIDE FINAL;
     void reset();
     void pageDidCommitLoad();
 
 private:
+    SkipPauseRequest shouldSkipExceptionPause();
+    SkipPauseRequest shouldSkipBreakpointPause();
+    SkipPauseRequest shouldSkipStepPause();
+
     void cancelPauseOnNextStatement();
     void addMessageToConsole(MessageSource, MessageType);
 

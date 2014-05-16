@@ -80,6 +80,7 @@ public:
     bool setScriptSource(const String& sourceID, const String& newContent, bool preview, String* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>&, ScriptValue* newCallFrames, RefPtr<JSONObject>* result);
     ScriptValue currentCallFrames();
     ScriptValue currentCallFramesForAsyncStack();
+    PassRefPtr<JavaScriptCallFrame> topCallFrameNoScopes();
 
     class Task {
     public:
@@ -117,8 +118,7 @@ protected:
     virtual void quitMessageLoopOnPause() = 0;
 
     static void breakProgramCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    void handleProgramBreak(v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpoints);
-    void handleProgramBreak(const v8::Debug::EventDetails&, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpointNumbers);
+    void handleProgramBreak(v8::Handle<v8::Context> pausedContext, v8::Handle<v8::Object> executionState, v8::Handle<v8::Value> exception, v8::Handle<v8::Array> hitBreakpoints);
 
     static void v8DebugEventCallback(const v8::Debug::EventDetails& eventDetails);
     void handleV8DebugEvent(const v8::Debug::EventDetails& eventDetails);
@@ -129,8 +129,8 @@ protected:
 
     PauseOnExceptionsState m_pauseOnExceptionsState;
     ScopedPersistent<v8::Object> m_debuggerScript;
-    ScopedPersistent<v8::Object> m_executionState;
-    v8::Handle<v8::Context> m_pausedContext;
+    v8::Local<v8::Object> m_executionState;
+    v8::Local<v8::Context> m_pausedContext;
     bool m_breakpointsActivated;
     ScopedPersistent<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     HashMap<String, OwnPtr<ScopedPersistent<v8::Script> > > m_compiledScripts;
@@ -146,8 +146,7 @@ private:
     ScriptValue currentCallFramesInner(ScopeInfoDetails);
 
     void stepCommandWithFrame(const char* functionName, const ScriptValue& frame);
-    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(v8::Handle<v8::Object> executionState, int maximumLimit, ScopeInfoDetails);
-    bool executeSkipPauseRequest(ScriptDebugListener::SkipPauseRequest, v8::Handle<v8::Object> executionState);
+    PassRefPtr<JavaScriptCallFrame> wrapCallFrames(int maximumLimit, ScopeInfoDetails);
 
     bool m_runningNestedMessageLoop;
 };
