@@ -75,7 +75,7 @@ void MenuHost::ShowMenuHost(bool do_capture) {
   if (do_capture) {
     // Cancel existing touches, so we don't miss some touch release/cancel
     // events due to the menu taking capture.
-    ui::GestureRecognizer::Get()->TransferEventsTo(GetNativeWindow(), NULL);
+    ui::GestureRecognizer::Get()->TransferEventsTo(NULL, NULL);
     native_widget_private()->SetCapture();
   }
 }

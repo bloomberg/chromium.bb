@@ -37,6 +37,7 @@ namespace views {
 class MenuButton;
 class MenuHostRootView;
 class MenuItemView;
+class MenuMessageLoop;
 class MouseEvent;
 class SubmenuView;
 class View;
@@ -598,7 +599,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // Set to true if the menu item was selected by touch.
   bool item_selected_by_touch_;
 
-  scoped_ptr<ui::ScopedEventDispatcher> nested_dispatcher_;
+  scoped_ptr<MenuMessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuController);
 };
