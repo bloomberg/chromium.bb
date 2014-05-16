@@ -17,6 +17,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chromeos/chromeos_switches.h"
@@ -176,10 +177,10 @@ class ExtensionNetworkingPrivateApiTest
 
     // TODO(pneubeck): Remove the following hack, once the NetworkingPrivateAPI
     // uses the ProfileHelper to obtain the userhash crbug/238623.
-    std::string login_user =
-        command_line->GetSwitchValueNative(chromeos::switches::kLoginUser);
-    std::string sanitized_user = CryptohomeClient::GetStubSanitizedUsername(
-        login_user);
+    const std::string login_user = chromeos::login::CanonicalizeUserID(
+        command_line->GetSwitchValueNative(chromeos::switches::kLoginUser));
+    const std::string sanitized_user =
+        CryptohomeClient::GetStubSanitizedUsername(login_user);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile,
                                     sanitized_user);
     if (GetParam())

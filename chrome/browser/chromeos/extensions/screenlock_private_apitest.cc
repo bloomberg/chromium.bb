@@ -29,7 +29,7 @@ class ScreenlockPrivateApiTest : public ExtensionApiTest,
   // ExtensionApiTest
   virtual void SetUpOnMainThread() OVERRIDE {
     SigninManagerFactory::GetForProfile(profile())
-        ->SetAuthenticatedUsername("TestUser@gmail.com");
+        ->SetAuthenticatedUsername("testuser@gmail.com");
     ExtensionApiTest::SetUpOnMainThread();
   }
 

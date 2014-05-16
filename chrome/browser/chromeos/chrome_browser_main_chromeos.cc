@@ -44,6 +44,7 @@
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/auth/authenticator.h"
+#include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -168,9 +169,9 @@ class StubLogin : public LoginStatusConsumer,
 
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
-    const std::string login_user =
+    const std::string login_user = login::CanonicalizeUserID(
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            chromeos::switches::kLoginUser);
+            switches::kLoginUser));
     if (!policy::IsDeviceLocalAccountUser(login_user, NULL)) {
       profile->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
                                      login_user);
@@ -356,7 +357,7 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
     browser_defaults::bookmarks_enabled = false;
   }
 
-  // If we're not running on real ChromeOS hardware (or under VM), and are not
+  // If we're not running on real Chrome OS hardware (or under VM), and are not
   // showing the login manager or attempting a command line login, login with a
   // stub user.
   if (!base::SysInfo::IsRunningOnChromeOS() &&
@@ -523,8 +524,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   ChromeBrowserMainPartsLinux::PreProfileInit();
 
   if (immediate_login) {
-    const std::string user_id =
-        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser);
+    const std::string user_id = login::CanonicalizeUserID(
+        parsed_command_line().GetSwitchValueASCII(switches::kLoginUser));
     UserManager* user_manager = UserManager::Get();
 
     if (policy::IsDeviceLocalAccountUser(user_id, NULL) &&
@@ -616,8 +617,9 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   //    i.e. not on Chrome OS device w/o login flow.
   if (parsed_command_line().HasSwitch(switches::kLoginUser) &&
       !parsed_command_line().HasSwitch(switches::kLoginPassword)) {
-    std::string login_user = parsed_command_line().GetSwitchValueASCII(
-        chromeos::switches::kLoginUser);
+    std::string login_user = login::CanonicalizeUserID(
+        parsed_command_line().GetSwitchValueASCII(
+            chromeos::switches::kLoginUser));
     if (!base::SysInfo::IsRunningOnChromeOS() &&
         login_user == UserManager::kStubUser) {
       // For dev machines and stub user emulate as if sync has been initialized.

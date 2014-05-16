@@ -7,6 +7,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_HELPER_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -36,6 +38,11 @@ namespace login {
 // Maximum size of user image, in which it should be saved to be properly
 // displayed under all possible DPI values.
 const int kMaxUserImageSize = 512;
+
+// Canonicalizes a GAIA user ID, accounting for the legacy guest mode user ID
+// which does trips up gaia::CanonicalizeEmail() because it does not contain an
+// @ symbol.
+std::string CanonicalizeUserID(const std::string& user_id);
 
 // A helper class for easily mocking out Network*Handler calls for tests.
 class NetworkStateHelper {
