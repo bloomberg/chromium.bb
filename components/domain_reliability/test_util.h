@@ -6,7 +6,10 @@
 #define COMPONENTS_DOMAIN_RELIABILITY_TEST_UTIL_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
+#include "components/domain_reliability/config.h"
 #include "components/domain_reliability/monitor.h"
+#include "components/domain_reliability/scheduler.h"
 #include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
 #include "net/base/host_port_pair.h"
@@ -111,6 +114,9 @@ class MockTime : public MockableTime {
   int task_sequence_number_;
   TaskMap tasks_;
 };
+
+scoped_ptr<const DomainReliabilityConfig> MakeTestConfig();
+DomainReliabilityScheduler::Params MakeTestSchedulerParams();
 
 }  // namespace domain_reliability
 

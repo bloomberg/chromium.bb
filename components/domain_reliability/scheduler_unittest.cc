@@ -21,7 +21,7 @@ class DomainReliabilitySchedulerTest : public testing::Test {
  public:
   DomainReliabilitySchedulerTest()
       : num_collectors_(0),
-        params_(CreateDefaultParams()),
+        params_(MakeTestSchedulerParams()),
         callback_called_(false) {}
 
   void CreateScheduler(int num_collectors) {
@@ -35,14 +35,6 @@ class DomainReliabilitySchedulerTest : public testing::Test {
         params_,
         base::Bind(&DomainReliabilitySchedulerTest::ScheduleUploadCallback,
                    base::Unretained(this))));
-  }
-
-  static DomainReliabilityScheduler::Params CreateDefaultParams() {
-    DomainReliabilityScheduler::Params params;
-    params.minimum_upload_delay = base::TimeDelta::FromSeconds(60);
-    params.maximum_upload_delay = base::TimeDelta::FromSeconds(300);
-    params.upload_retry_interval = base::TimeDelta::FromSeconds(15);
-    return params;
   }
 
   ::testing::AssertionResult CheckNoPendingUpload() {

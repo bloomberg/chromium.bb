@@ -41,43 +41,6 @@ scoped_refptr<net::HttpResponseHeaders> MakeHttpResponseHeaders(
           headers.c_str(), headers.length())));
 }
 
-static scoped_ptr<const DomainReliabilityConfig> MakeConfig() {
-  DomainReliabilityConfig* config = new DomainReliabilityConfig();
-
-  DomainReliabilityConfig::Resource* resource;
-
-  resource = new DomainReliabilityConfig::Resource();
-  resource->name = "always_report";
-  resource->url_patterns.push_back(
-      new std::string("http://example/always_report"));
-  resource->success_sample_rate = 1.0;
-  resource->failure_sample_rate = 1.0;
-  EXPECT_TRUE(resource->IsValid());
-  config->resources.push_back(resource);
-
-  resource = new DomainReliabilityConfig::Resource();
-  resource->name = "never_report";
-  resource->url_patterns.push_back(
-      new std::string("http://example/never_report"));
-  resource->success_sample_rate = 0.0;
-  resource->failure_sample_rate = 0.0;
-  EXPECT_TRUE(resource->IsValid());
-  config->resources.push_back(resource);
-
-  DomainReliabilityConfig::Collector* collector;
-  collector = new DomainReliabilityConfig::Collector();
-  collector->upload_url = GURL("https://example/upload");
-  EXPECT_TRUE(collector->IsValid());
-  config->collectors.push_back(collector);
-
-  config->version = "1";
-  config->valid_until = 1234567890.0;
-  config->domain = "example";
-  EXPECT_TRUE(config->IsValid());
-
-  return scoped_ptr<const DomainReliabilityConfig>(config);
-}
-
 }  // namespace
 
 class DomainReliabilityMonitorTest : public testing::Test {
@@ -92,7 +55,7 @@ class DomainReliabilityMonitorTest : public testing::Test {
         monitor_(url_request_context_getter_->GetURLRequestContext(),
                  "test-reporter",
                  scoped_ptr<MockableTime>(time_)),
-        context_(monitor_.AddContextForTesting(MakeConfig())) {}
+        context_(monitor_.AddContextForTesting(MakeTestConfig())) {}
 
   static RequestInfo MakeRequestInfo() {
     RequestInfo request;

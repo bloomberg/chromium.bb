@@ -37,7 +37,7 @@ class DomainReliabilityContextTest : public testing::Test {
  protected:
   DomainReliabilityContextTest()
       : dispatcher_(&time_),
-        params_(CreateParams()),
+        params_(MakeTestSchedulerParams()),
         uploader_(base::Bind(&DomainReliabilityContextTest::OnUploadRequest,
                              base::Unretained(this))),
         upload_reporter_string_("test-reporter"),
@@ -46,7 +46,7 @@ class DomainReliabilityContextTest : public testing::Test {
                  upload_reporter_string_,
                  &dispatcher_,
                  &uploader_,
-                 CreateConfig().Pass()),
+                 MakeTestConfig().Pass()),
         upload_pending_(false) {}
 
   TimeDelta min_delay() const { return params_.minimum_upload_delay; }
@@ -103,42 +103,6 @@ class DomainReliabilityContextTest : public testing::Test {
     upload_url_ = upload_url;
     upload_callback_ = callback;
     upload_pending_ = true;
-  }
-
-  static DomainReliabilityScheduler::Params CreateParams() {
-    DomainReliabilityScheduler::Params params;
-    params.minimum_upload_delay = base::TimeDelta::FromSeconds(60);
-    params.maximum_upload_delay = base::TimeDelta::FromSeconds(300);
-    params.upload_retry_interval = base::TimeDelta::FromSeconds(15);
-    return params;
-  }
-
-  static scoped_ptr<const DomainReliabilityConfig> CreateConfig() {
-    DomainReliabilityConfig* config = new DomainReliabilityConfig();
-    DomainReliabilityConfig::Resource* resource;
-
-    resource = new DomainReliabilityConfig::Resource();
-    resource->name = "always_report";
-    resource->url_patterns.push_back(
-        new std::string("http://example/always_report"));
-    resource->success_sample_rate = 1.0;
-    resource->failure_sample_rate = 1.0;
-    config->resources.push_back(resource);
-
-    resource = new DomainReliabilityConfig::Resource();
-    resource->name = "never_report";
-    resource->url_patterns.push_back(
-        new std::string("http://example/never_report"));
-    resource->success_sample_rate = 0.0;
-    resource->failure_sample_rate = 0.0;
-    config->resources.push_back(resource);
-
-    DomainReliabilityConfig::Collector* collector;
-    collector = new DomainReliabilityConfig::Collector();
-    collector->upload_url = GURL("https://example/upload");
-    config->collectors.push_back(collector);
-
-    return scoped_ptr<const DomainReliabilityConfig>(config);
   }
 
   bool upload_pending_;

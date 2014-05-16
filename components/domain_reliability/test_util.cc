@@ -5,6 +5,7 @@
 #include "components/domain_reliability/test_util.h"
 
 #include "base/bind.h"
+#include "components/domain_reliability/scheduler.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -141,6 +142,48 @@ void MockTime::AdvanceToInternal(base::TimeTicks target_ticks) {
   base::TimeDelta delta = target_ticks - now_ticks_;
   now_ += delta;
   now_ticks_ += delta;
+}
+
+DomainReliabilityScheduler::Params MakeTestSchedulerParams() {
+  DomainReliabilityScheduler::Params params;
+  params.minimum_upload_delay = base::TimeDelta::FromMinutes(1);
+  params.maximum_upload_delay = base::TimeDelta::FromMinutes(5);
+  params.upload_retry_interval = base::TimeDelta::FromSeconds(15);
+  return params;
+}
+
+scoped_ptr<const DomainReliabilityConfig> MakeTestConfig() {
+  DomainReliabilityConfig* config = new DomainReliabilityConfig();
+  DomainReliabilityConfig::Resource* resource;
+
+  resource = new DomainReliabilityConfig::Resource();
+  resource->name = "always_report";
+  resource->url_patterns.push_back(
+      new std::string("http://example/always_report"));
+  resource->success_sample_rate = 1.0;
+  resource->failure_sample_rate = 1.0;
+  config->resources.push_back(resource);
+
+  resource = new DomainReliabilityConfig::Resource();
+  resource->name = "never_report";
+  resource->url_patterns.push_back(
+      new std::string("http://example/never_report"));
+  resource->success_sample_rate = 0.0;
+  resource->failure_sample_rate = 0.0;
+  config->resources.push_back(resource);
+
+  DomainReliabilityConfig::Collector* collector;
+  collector = new DomainReliabilityConfig::Collector();
+  collector->upload_url = GURL("https://example/upload");
+  config->collectors.push_back(collector);
+
+  config->version = "1";
+  config->valid_until = 1234567890.0;
+  config->domain = "example";
+
+  DCHECK(config->IsValid());
+
+  return scoped_ptr<const DomainReliabilityConfig>(config);
 }
 
 }  // namespace domain_reliability
