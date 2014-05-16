@@ -1321,7 +1321,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	++nstyle;
     }
 
-    if (!nfamily)
+    if (!nfamily && file && *file)
     {
 	FcChar8	*start, *end;
 	FcChar8	*family;
@@ -1395,7 +1395,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
     if (!FcPatternAddString (pat, FC_POSTSCRIPT_NAME, (const FcChar8 *)psname))
 	goto bail1;
 
-    if (!FcPatternAddString (pat, FC_FILE, file))
+    if (file && *file && !FcPatternAddString (pat, FC_FILE, file))
 	goto bail1;
 
     if (!FcPatternAddInteger (pat, FC_INDEX, id))
