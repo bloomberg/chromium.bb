@@ -23,6 +23,7 @@
 #include "ui/gfx/size.h"
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::DeleteArg;
 using ::testing::DoAll;
 // TODO(scherkus): Remove InSequence after refactoring Pipeline.
@@ -236,7 +237,8 @@ class PipelineTest : public ::testing::Test {
   }
 
   void CreateTextStream() {
-    scoped_ptr<FakeTextTrackStream> text_stream(new FakeTextTrackStream);
+    scoped_ptr<FakeTextTrackStream> text_stream(new FakeTextTrackStream());
+    EXPECT_CALL(*text_stream, OnRead()).Times(AnyNumber());
     text_stream_ = text_stream.Pass();
   }
 
