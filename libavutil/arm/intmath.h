@@ -62,6 +62,11 @@ static av_always_inline av_const int av_clip_int16_arm(int a)
     return x;
 }
 
+/*
+TODO(dalecurtis): This causes compilation to fail if the function can't be
+inlined because the 2nd operand in usat must be an immediate.  So disable since
+av_always_inline doesn't seem to really mean always...
+
 #define av_clip_uintp2 av_clip_uintp2_arm
 static av_always_inline av_const unsigned av_clip_uintp2_arm(int a, int p)
 {
@@ -69,6 +74,7 @@ static av_always_inline av_const unsigned av_clip_uintp2_arm(int a, int p)
     __asm__ ("usat %0, %2, %1" : "=r"(x) : "r"(a), "i"(p));
     return x;
 }
+*/
 
 #define av_sat_add32 av_sat_add32_arm
 static av_always_inline int av_sat_add32_arm(int a, int b)
