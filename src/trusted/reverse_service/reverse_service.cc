@@ -28,7 +28,6 @@
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
 
 namespace {
 

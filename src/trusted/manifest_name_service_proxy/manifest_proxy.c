@@ -11,6 +11,7 @@
 #include "native_client/src/trusted/manifest_name_service_proxy/manifest_proxy.h"
 
 #include "native_client/src/public/name_service.h"
+#include "native_client/src/public/nacl_file_info.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -22,7 +23,6 @@
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "native_client/src/trusted/validator/rich_file_info.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 

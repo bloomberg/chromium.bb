@@ -13,11 +13,12 @@
 
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
+#include "native_client/src/public/nacl_file_info.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
-#include "native_client/src/trusted/desc_cacheability/desc_cacheability.h"
+#include "native_client/src/trusted/desc/nacl_desc_file_info.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
@@ -25,7 +26,6 @@
 #include "native_client/src/trusted/service_runtime/nacl_valgrind_hooks.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
 #include "native_client/src/trusted/validator/validation_cache.h"
 
 
@@ -124,22 +124,18 @@ static int TestResolveFileToken(void *handle, struct NaClFileToken *file_token,
 
 struct ThreadArgs {
   NaClHandle channel;
-  int nexe_fd;
-  NaClFileToken nexe_token;
+  NaClFileInfo file_info;
 };
 
 void WINAPI DummyRendererThread(void *thread_arg) {
   struct ThreadArgs *args = (struct ThreadArgs *) thread_arg;
 
   nacl::DescWrapperFactory desc_wrapper_factory;
-  nacl::DescWrapper *nexe_desc =
-      desc_wrapper_factory.MakeFileDesc(args->nexe_fd, NACL_ABI_O_RDONLY);
+  struct NaClDesc *desc = NaClDescIoFromFileInfo(args->file_info,
+                                                 NACL_ABI_O_RDONLY);
+  CHECK(desc != NULL);
+  nacl::DescWrapper *nexe_desc = desc_wrapper_factory.MakeGenericCleanup(desc);
   CHECK(nexe_desc != NULL);
-  if (args->nexe_token.lo != 0 && args->nexe_token.hi != 0) {
-    int token_res = NaClDescSetFileToken(nexe_desc->desc(), &args->nexe_token);
-    CHECK(token_res != 0);
-  }
-
   DummyLauncher launcher(args->channel);
   NaClSrpcChannel trusted_channel;
   NaClSrpcChannel untrusted_channel;
@@ -200,8 +196,9 @@ int main(int argc, char **argv) {
   args->irt_fd = OpenFileReadOnly(argv[1]);
   CHECK(args->irt_fd >= 0);
 
-  thread_args.nexe_fd = OpenFileReadOnly(argv[2]);
-  CHECK(thread_args.nexe_fd >= 0);
+  memset(&thread_args.file_info, 0, sizeof thread_args.file_info);
+  thread_args.file_info.desc = OpenFileReadOnly(argv[2]);
+  CHECK(thread_args.file_info.desc >= 0);
   NaClFileNameForValgrind(argv[2]);
 
   NaClHandle socketpair[2];
@@ -230,11 +227,8 @@ int main(int argc, char **argv) {
     test_cache.CachingIsInexpensive = &TestCachingIsInexpensive;
     test_cache.ResolveFileToken = &TestResolveFileToken;
     args->validation_cache = &test_cache;
-    thread_args.nexe_token.lo = test_handle.expected_token_lo;
-    thread_args.nexe_token.hi = test_handle.expected_token_hi;
-  } else {
-    thread_args.nexe_token.lo = 0;
-    thread_args.nexe_token.hi = 0;
+    thread_args.file_info.file_token.lo = test_handle.expected_token_lo;
+    thread_args.file_info.file_token.hi = test_handle.expected_token_hi;
   }
 
   NaClThread thread;

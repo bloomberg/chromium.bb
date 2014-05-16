@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "native_client/src/include/portability_io.h"
+#include "native_client/src/public/nacl_file_info.h"
 #include "native_client/src/public/secure_service.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -28,7 +29,6 @@
 #include "native_client/src/trusted/reverse_service/reverse_service.h"
 #include "native_client/src/trusted/sel_universal/rpc_universal.h"
 #include "native_client/src/trusted/sel_universal/srpc_helper.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
 
 
 // Mock of ReverseInterface for use by nexes.

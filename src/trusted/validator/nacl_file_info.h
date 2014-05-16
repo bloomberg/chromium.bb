@@ -4,30 +4,16 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_REVERSE_SERVICE_NACL_FILE_INFO_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_REVERSE_SERVICE_NACL_FILE_INFO_H_
-
-#include "native_client/src/include/nacl_base.h"
-#include "native_client/src/include/portability.h"
-
-EXTERN_C_BEGIN
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_NACL_FILE_INFO_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_NACL_FILE_INFO_H_
 
 /*
- * NaClFileToken is a single-use nonce that the NaCl process can use to query
- * the browser process for trusted information about a file.  lo == 0 && hi == 0
- * indicates the token is invalid and no additional information is available.
+ * TODO(jvoung): Moving this to src/public/nacl_file_info.h.
+ * This copy is left here to avoid a complicated NaCl -> Chrome
+ * DEPS roll. Remove this copy once DEPS'ed in a Chrome users
+ * refer to the src/public copy instead of this copy.
  */
-struct NaClFileToken {
-  uint64_t lo;
-  uint64_t hi;
-};
 
-struct NaClFileInfo {
-  /* desc is either a Unix file descriptor or a Windows file handle. */
-  int32_t desc;
-  struct NaClFileToken file_token;
-};
+#include "native_client/src/public/nacl_file_info.h"
 
-EXTERN_C_END
-
-#endif /* NATIVE_CLIENT_SRC_TRUSTED_REVERSE_SERVICE_NACL_FILE_INFO_H_ */
+#endif /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_NACL_FILE_INFO_H_ */

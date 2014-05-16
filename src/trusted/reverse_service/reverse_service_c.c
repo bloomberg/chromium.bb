@@ -13,6 +13,8 @@
 #include "native_client/src/include/nacl_compiler_annotations.h"
 #include "native_client/src/include/portability_io.h"
 
+#include "native_client/src/public/nacl_file_info.h"
+
 #include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
@@ -30,7 +32,6 @@
 
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
-#include "native_client/src/trusted/validator/nacl_file_info.h"
 
 struct NaClSrpcHandlerDesc const kNaClReverseServiceHandlers[]; /* fwd */
 
