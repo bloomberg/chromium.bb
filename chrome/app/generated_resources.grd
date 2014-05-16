@@ -11481,8 +11481,8 @@ The following application will be launched if you accept this request:
       <message name="IDS_SAVE_PAGE_DESC_HTML_ONLY" desc="In the Save Page dialog, the description of saving only the HTML of a webpage.">
         Webpage, HTML Only
       </message>
-      <message name="IDS_SAVE_PAGE_DESC_SINGLE_FILE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources into an archive.">
-        Web Archive, Single File
+      <message name="IDS_SAVE_PAGE_DESC_SINGLE_FILE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources into a single file.">
+        Webpage, Single File
       </message>
       <message name="IDS_SAVE_PAGE_DESC_COMPLETE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources.">
         Webpage, Complete
