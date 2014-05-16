@@ -26,7 +26,7 @@
 
 namespace media {
 class DemuxerAndroid;
-class MediaDrmBridge;
+class MediaKeys;
 }
 
 namespace content {
@@ -35,11 +35,11 @@ class ContentViewCoreImpl;
 class ExternalVideoSurfaceContainer;
 class WebContents;
 
-// This class manages all the MediaPlayerAndroid objects. It receives
-// control operations from the the render process, and forwards
-// them to corresponding MediaPlayerAndroid object. Callbacks from
-// MediaPlayerAndroid objects are converted to IPCs and then sent to the
-// render process.
+// This class manages all the MediaPlayerAndroid and CDM objects.
+// It receives control operations from the the render process, and forwards
+// them to corresponding MediaPlayerAndroid or CDM object. Callbacks from
+// MediaPlayerAndroid and CDM objects are converted to IPCs and then sent to
+// the render process.
 class CONTENT_EXPORT BrowserMediaPlayerManager
     : public WebContentsObserver,
       public media::MediaPlayerManager {
@@ -90,7 +90,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual media::MediaResourceGetter* GetMediaResourceGetter() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetFullscreenPlayer() OVERRIDE;
   virtual media::MediaPlayerAndroid* GetPlayer(int player_id) OVERRIDE;
-  virtual media::MediaDrmBridge* GetDrmBridge(int cdm_id) OVERRIDE;
+  virtual media::MediaKeys* GetCdm(int cdm_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
   virtual void RequestFullScreen(int player_id) OVERRIDE;
   virtual void OnSessionCreated(int cdm_id,
@@ -99,7 +99,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnSessionMessage(int cdm_id,
                                 uint32 session_id,
                                 const std::vector<uint8>& message,
-                                const GURL& destination_url) OVERRIDE;
+                                const std::string& destination_url) OVERRIDE;
   virtual void OnSessionReady(int cdm_id, uint32 session_id) OVERRIDE;
   virtual void OnSessionClosed(int cdm_id, uint32 session_id) OVERRIDE;
   virtual void OnSessionError(int cdm_id,
@@ -164,14 +164,14 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       int player_id,
       media::MediaPlayerAndroid* player);
 
-  // Adds a new MediaDrmBridge for the given |key_system|, |cdm_id|, and
-  // |frame_url|.
-  void AddDrmBridge(int cdm_id,
-                    const std::string& key_system,
-                    const GURL& frame_url);
+  // Adds a new CDM identified by |cdm_id| for the given |key_system| and
+  // |security_origin|.
+  void AddCdm(int cdm_id,
+              const std::string& key_system,
+              const GURL& security_origin);
 
-  // Removes the DRM bridge with the specified id.
-  void RemoveDrmBridge(int cdm_id);
+  // Removes the CDM with the specified id.
+  void RemoveCdm(int cdm_id);
 
  private:
   // If |permitted| is false, it does nothing but send
@@ -216,13 +216,19 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // An array of managed players.
   ScopedVector<media::MediaPlayerAndroid> players_;
 
-  // An array of managed media DRM bridges.
-  ScopedVector<media::MediaDrmBridge> drm_bridges_;
+  // A map from CDM IDs to managed CDMs.
+  typedef std::map<int, media::MediaKeys*> CdmMap;
+  CdmMap cdm_map_;
 
-  // Map from DrmBridge cdm_id to MediaPlayerAndroid player_id to indicate that
-  // the DrmBridge is set on the MediaPlayerAndroid object.
-  typedef std::map<int, int> DrmBridgePlayerMap;
-  DrmBridgePlayerMap drm_bridge_player_map_;
+  // Map from CDM ID to MediaPlayerAndroid player ID to indicate that
+  // the CDM is set on the MediaPlayerAndroid object.
+  // TODO(xhwang): Register a callback in the CDM to resume playback so that we
+  // can remove this map. See http://crbug.com/373327
+  typedef std::map<int, int> CdmToPlayerMap;
+  CdmToPlayerMap cdm_to_player_map_;
+
+  // Map from CDM ID to CDM's security origin.
+  std::map<int, GURL> cdm_security_origin_map_;
 
   // The fullscreen video view object or NULL if video is not played in
   // fullscreen.

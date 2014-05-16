@@ -16,7 +16,7 @@
 
 namespace media {
 
-class MediaDrmBridge;
+class MediaKeys;
 class MediaPlayerAndroid;
 class MediaResourceGetter;
 
@@ -71,8 +71,8 @@ class MEDIA_EXPORT MediaPlayerManager {
   // Release all the players managed by this object.
   virtual void DestroyAllMediaPlayers() = 0;
 
-  // Get the MediaDrmBridge object for the given media key Id.
-  virtual media::MediaDrmBridge* GetDrmBridge(int cdm_id) = 0;
+  // Get the CDM for the given CDM ID.
+  virtual MediaKeys* GetCdm(int cdm_id) = 0;
 
   // Called by the player to get a hardware protected surface.
   virtual void RequestFullScreen(int player_id) = 0;
@@ -82,24 +82,24 @@ class MEDIA_EXPORT MediaPlayerManager {
   // to support the W3C Working Draft version of the EME spec.
   // http://crbug.com/315312
 
-  // Called when MediaDrmBridge determines a SessionId.
+  // Called when CDM creates a session.
   virtual void OnSessionCreated(int cdm_id,
                                 uint32 session_id,
                                 const std::string& web_session_id) = 0;
 
-  // Called when MediaDrmBridge wants to send a Message event.
+  // Called when CDM wants to send a Message event.
   virtual void OnSessionMessage(int cdm_id,
                                 uint32 session_id,
                                 const std::vector<uint8>& message,
-                                const GURL& destination_url) = 0;
+                                const std::string& destination_url) = 0;
 
-  // Called when MediaDrmBridge wants to send a Ready event.
+  // Called when CDM wants to send a Ready event.
   virtual void OnSessionReady(int cdm_id, uint32 session_id) = 0;
 
-  // Called when MediaDrmBridge wants to send a Closed event.
+  // Called when CDM wants to send a Closed event.
   virtual void OnSessionClosed(int cdm_id, uint32 session_id) = 0;
 
-  // Called when MediaDrmBridge wants to send an Error event.
+  // Called when CDM wants to send an Error event.
   virtual void OnSessionError(int cdm_id,
                               uint32 session_id,
                               media::MediaKeys::KeyError error_code,

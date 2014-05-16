@@ -355,7 +355,7 @@ void MediaSourcePlayer::OnMediaCryptoReady() {
     StartInternal();
 }
 
-void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
+void MediaSourcePlayer::SetCdm(MediaKeys* cdm) {
   // Currently we don't support DRM change during the middle of playback, even
   // if the player is paused.
   // TODO(qinmin): support DRM change after playback has started.
@@ -365,7 +365,8 @@ void MediaSourcePlayer::SetDrmBridge(MediaDrmBridge* drm_bridge) {
             << "This is not well supported!";
   }
 
-  drm_bridge_ = drm_bridge;
+  // Only MediaDrmBridge will be set on MediaSourcePlayer.
+  drm_bridge_ = static_cast<MediaDrmBridge*>(cdm);
 
   if (drm_bridge_->GetMediaCrypto().is_null()) {
     drm_bridge_->SetMediaCryptoReadyCB(base::Bind(

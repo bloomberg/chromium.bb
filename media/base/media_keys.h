@@ -82,6 +82,7 @@ typedef base::Callback<
     void(uint32 session_id, const std::string& web_session_id)>
     SessionCreatedCB;
 
+// TODO(xhwang): Use GURL for |destination_url|. See http://crbug.com/372877
 typedef base::Callback<void(uint32 session_id,
                             const std::vector<uint8>& message,
                             const std::string& destination_url)>

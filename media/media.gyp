@@ -1615,6 +1615,7 @@
           'sources': [
             'base/android/audio_decoder_job.cc',
             'base/android/audio_decoder_job.h',
+            'base/android/cdm_factory_android.cc',
             'base/android/media_codec_bridge.cc',
             'base/android/media_codec_bridge.h',
             'base/android/media_decoder_job.cc',
@@ -1636,6 +1637,7 @@
             'base/android/webaudio_media_codec_bridge.cc',
             'base/android/webaudio_media_codec_bridge.h',
             'base/android/webaudio_media_codec_info.h',
+            'base/cdm_factory.h',
           ],
           'dependencies': [
             '../base/base.gyp:base',

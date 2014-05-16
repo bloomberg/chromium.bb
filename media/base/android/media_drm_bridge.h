@@ -59,10 +59,19 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
 
   // Returns a MediaDrmBridge instance if |key_system| is supported, or a NULL
   // pointer otherwise.
-  static scoped_ptr<MediaDrmBridge> Create(int cdm_id,
-                                           const std::string& key_system,
-                                           const GURL& security_origin,
-                                           MediaPlayerManager* manager);
+  static scoped_ptr<MediaDrmBridge> Create(
+      const std::string& key_system,
+      const SessionCreatedCB& session_created_cb,
+      const SessionMessageCB& session_message_cb,
+      const SessionReadyCB& session_ready_cb,
+      const SessionClosedCB& session_closed_cb,
+      const SessionErrorCB& session_error_cb);
+
+  // Returns a MediaDrmBridge instance if |key_system| is supported, or a NULL
+  // otherwise. No session callbacks are provided. This is used when we need to
+  // use MediaDrmBridge without creating any sessions.
+  static scoped_ptr<MediaDrmBridge> CreateSessionless(
+      const std::string& key_system);
 
   // Returns true if |security_level| is successfully set, or false otherwise.
   // Call this function right after Create() and before any other calls.
@@ -120,33 +129,29 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   // video playback.
   bool IsProtectedSurfaceRequired();
 
-  int cdm_id() const { return cdm_id_; }
-
-  const GURL& security_origin() const { return security_origin_; }
-
  private:
-  MediaDrmBridge(int cdm_id,
-                 const std::vector<uint8>& scheme_uuid,
-                 const GURL& security_origin,
-                 MediaPlayerManager* manager);
+  MediaDrmBridge(const std::vector<uint8>& scheme_uuid,
+                 const SessionCreatedCB& session_created_cb,
+                 const SessionMessageCB& session_message_cb,
+                 const SessionReadyCB& session_ready_cb,
+                 const SessionClosedCB& session_closed_cb,
+                 const SessionErrorCB& session_error_cb);
 
   // Get the security level of the media.
   SecurityLevel GetSecurityLevel();
 
-  // ID of the CDM object.
-  int cdm_id_;
-
   // UUID of the key system.
   std::vector<uint8> scheme_uuid_;
-
-  // media stream's security origin.
-  const GURL security_origin_;
 
   // Java MediaDrm instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_drm_;
 
-  // Non-owned pointer.
-  MediaPlayerManager* manager_;
+  // Callbacks for firing session events.
+  SessionCreatedCB session_created_cb_;
+  SessionMessageCB session_message_cb_;
+  SessionReadyCB session_ready_cb_;
+  SessionClosedCB session_closed_cb_;
+  SessionErrorCB session_error_cb_;
 
   base::Closure media_crypto_ready_cb_;
 

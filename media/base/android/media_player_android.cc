@@ -5,8 +5,8 @@
 #include "media/base/android/media_player_android.h"
 
 #include "base/logging.h"
-#include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
+#include "media/base/media_keys.h"
 
 namespace media {
 
@@ -31,8 +31,8 @@ GURL MediaPlayerAndroid::GetFirstPartyForCookies() {
   return GURL();
 }
 
-void MediaPlayerAndroid::SetDrmBridge(MediaDrmBridge* drm_bridge) {
-  // Not all players support DrmBridge. Do nothing by default.
+void MediaPlayerAndroid::SetCdm(MediaKeys* cdm) {
+  // Not all players support CDMs. Do nothing by default.
   return;
 }
 

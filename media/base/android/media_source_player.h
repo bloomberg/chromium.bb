@@ -61,7 +61,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   virtual bool CanSeekForward() OVERRIDE;
   virtual bool CanSeekBackward() OVERRIDE;
   virtual bool IsPlayerReady() OVERRIDE;
-  virtual void SetDrmBridge(MediaDrmBridge* drm_bridge) OVERRIDE;
+  virtual void SetCdm(MediaKeys* cdm) OVERRIDE;
   virtual void OnKeyAdded() OVERRIDE;
   virtual bool IsSurfaceInUse() const OVERRIDE;
 

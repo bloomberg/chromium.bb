@@ -90,7 +90,7 @@ void MediaDrmCredentialManager::OnResetCredentialsCompleted(
 bool MediaDrmCredentialManager::ResetCredentialsInternal(
     SecurityLevel security_level) {
   media_drm_bridge_ =
-      media::MediaDrmBridge::Create(0, kWidevineKeySystem, GURL(), NULL);
+      media::MediaDrmBridge::CreateSessionless(kWidevineKeySystem);
   if (!media_drm_bridge_)
     return false;
 
