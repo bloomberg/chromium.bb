@@ -543,8 +543,6 @@ crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed
 crbug.com/100798 [ Debug ] virtual/android/fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
 crbug.com/243782 virtual/android/fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 
-crbug.com/298045 [ Mac ] virtual/implsidepainting [ Skip ]
-
 crbug.com/267888 [ Android ] crypto [ Skip ]
 
 crbug.com/327698 [ Win Release ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Timeout ]
