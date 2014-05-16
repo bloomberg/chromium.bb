@@ -27,15 +27,37 @@ USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options]
 Valid combinations are linux       [ia32|x64|mipsel|arm|arm-neon]
                        linux-noasm [ia32|x64]
                        mac         [ia32|x64]
+                       win         [ia32|x64]
 
- linux ia32/x64 - script can be run on a normal Ubuntu box.
- linux mipsel - script can be run on a normal Ubuntu box with MIPS
- cross-toolchain in $PATH.
- linux arm/arm-neon should be run inside of CrOS chroot.
- mac has to be run on Mac
+Platform specific build notes:
+  linux ia32/x64:
+    Script can run on a normal Ubuntu box.
 
- mac - ensure the Chromium (not Apple) version of clang is in the path,
- usually found under src/third_party/llvm-build/Release+Asserts/bin
+  linux mipsel:
+    Script can run on a normal Ubuntu box with MIPS cross-toolchain in $PATH.
+
+  linux arm/arm-neon:
+    Script must be run inside of ChromeOS chroot with BOARD=arm-generic.
+
+  mac:
+    Script must be run on OSX.  Additionally, ensure the Chromium (not Apple)
+    version of clang is in the path; usually found under
+    src/third_party/llvm-build/Release+Asserts/bin
+
+  win:
+    Script must be run on Windows with VS2013 or higher under Cygwin (or MinGW,
+    but as of 1.0.11, it has serious performance issues with make which makes
+    building take hours).
+
+    Additionall, ensure you have the correct toolchain environment for building.
+    The x86 toolchain environment is required for ia32 builds and the x64 one
+    for x64 builds.  This can be verified by running "cl.exe" and checking if
+    the version string ends with "for x64" or "for x86."
+
+    Building on Windows also requires some additional Cygwin packages plus a
+    wrapper script for converting Cygwin paths to DOS paths.
+      - Add these packages at install time: diffutils, yasm, make, python.
+      - Copy chromium/scripts/cygwin-wrapper to /usr/local/bin
 
 Resulting binaries will be placed in:
   build.TARGET_ARCH.TARGET_OS/Chromium/out/
@@ -54,12 +76,14 @@ def DetermineHostOsAndArch():
     host_os = 'linux'
   elif platform.system() == 'Darwin':
     host_os = 'mac'
+  elif platform.system() == 'Windows' or platform.system() == 'CYGWIN_NT-6.1':
+    host_os = 'win'
   else:
     return None
 
   if re.match(r'i.86', platform.machine()):
     host_arch = 'ia32'
-  elif platform.machine() == 'x86_64':
+  elif platform.machine() == 'x86_64' or platform.machine() == 'AMD64':
     host_arch = 'x64'
   elif platform.machine().startswith('arm'):
     host_arch = 'arm'
@@ -74,6 +98,8 @@ def GetDsoName(target_os, dso_name, dso_version):
     return 'lib%s.so.%s' % (dso_name, dso_version)
   elif target_os == 'mac':
     return 'lib%s.%s.dylib' % (dso_name, dso_version)
+  elif target_os == 'win':
+    return '%s-%s.dll' % (dso_name, dso_version)
   else:
     raise ValueError('Unexpected target_os %s' % target_os)
 
@@ -341,6 +367,26 @@ def main(argv):
     else:
       print('Error: Unknown target arch %r for target OS %r!' % (
           target_arch, target_os), file=sys.stderr)
+
+  # Should be run on Windows.
+  if target_os == 'win':
+    if host_os != 'win':
+      print('Script should be run on a Windows host.\n', file=sys.stderr)
+      return 1
+
+    configure_flags['Common'].extend([
+        '--toolchain=msvc',
+        '--enable-yasm',
+        '--extra-cflags=-I' + os.path.join(FFMPEG_DIR, 'chromium/include/win'),
+    ])
+
+    if platform.system() == 'CYGWIN_NT-6.1':
+      configure_flags['Common'].extend([
+          '--cc=cygwin-wrapper cl',
+          '--ld=cygwin-wrapper link',
+          '--nm=cygwin-wrapper dumpbin -symbols',
+          '--ar=cygwin-wrapper lib',
+      ])
 
   # Google Chrome & ChromeOS specific configuration.
   configure_flags['Chrome'].extend([
