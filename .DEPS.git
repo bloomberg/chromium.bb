@@ -56,7 +56,7 @@ deps = {
     'src/third_party/clang_format/script':
         Var('git_url') + '/chromium/llvm-project/cfe/tools/clang-format.git@385fc3379dc95b67d601b4384b16b1ec0bf12361',
     'src/third_party/cld_2/src':
-        Var('git_url') + '/external/cld2.git@3fced387543ba9bed402923b3c6feb459fb61f58',
+        Var('git_url') + '/external/cld2.git@d076f5eda223ac568639d6288f2e2d70d908f282',
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/third_party/ffmpeg.git@d3a060bd1d6a4f43e9bc7d07f193b0513df4f244',
     'src/third_party/flac':
