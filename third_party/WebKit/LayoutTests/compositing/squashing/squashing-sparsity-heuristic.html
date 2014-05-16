@@ -29,6 +29,18 @@ div {
   left: 220px;
   background-color: lime;
 }
+
+.overlap3 {
+  top: 300px;
+  left: 220px;
+  background-color: green;
+}
+
+.overlap4 {
+  top: 300px;
+  left: 235px;
+  background-color: yellow;
+}
 </style>
 <script>
     if (window.testRunner)
@@ -51,11 +63,14 @@ div {
 
 <body>
   <!-- 
-  If this test is working correctly, then the following two layers should not
-  squash together (as they would create a layer that's too sparse).
+  If this test is working correctly, then the first two layers should not
+  squash together (as they would create a layer that's too sparse), but the
+  third and fourth layers should squash together.
   -->
   <div class="composited"></div>
   <div id="A" class="overlap1"></div>
   <div id="B" class="overlap2"></div>
+  <div id="C" class="overlap3"></div>
+  <div id="D" class="overlap4"></div>
 </body>
 </html>

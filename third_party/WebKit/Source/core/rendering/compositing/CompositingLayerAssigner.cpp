@@ -60,6 +60,7 @@ void CompositingLayerAssigner::SquashingState::updateSquashingStateForNewMapping
         mostRecentMapping->finishAccumulatingSquashingLayers(nextSquashedLayerIndex);
 
     nextSquashedLayerIndex = 0;
+    boundingRect = IntRect();
     mostRecentMapping = newCompositedLayerMapping;
     hasMostRecentMapping = hasNewCompositedLayerMapping;
     offsetFromTransformedAncestorForSquashingCLM = newOffsetFromTransformedAncestorForSquashingCLM;
