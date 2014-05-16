@@ -715,14 +715,14 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
 
   base::TimeDelta elapsed_time_since_last_change_to_default_match(
       now - autocomplete_controller()->last_time_default_match_changed());
+  DCHECK(match.provider);
   // These elapsed times don't really make sense for ZeroSuggest matches
   // (because the user does not modify the omnibox for ZeroSuggest), so for
   // those we set the elapsed times to something that will be ignored by
   // metrics_log.cc.  They also don't necessarily make sense if the omnibox
   // dropdown is closed or the user used a paste-and-go action.  (In most
   // cases when this happens, the user never modified the omnibox.)
-  if ((match.provider &&
-       (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)) ||
+  if ((match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) ||
       !popup_model()->IsOpen() || !pasted_text.empty()) {
     const base::TimeDelta default_time_delta =
         base::TimeDelta::FromMilliseconds(-1);
@@ -1318,6 +1318,7 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
     // SearchProvider::CreateSearchSuggestion(), since the user may be in a
     // non-default search mode such as image search.
     match->type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+    match->provider = autocomplete_controller()->search_provider();
     match->destination_url =
         delegate_->GetNavigationController().GetVisibleEntry()->GetURL();
     match->transition = content::PAGE_TRANSITION_RELOAD;
