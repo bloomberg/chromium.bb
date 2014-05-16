@@ -4,6 +4,8 @@
 
 #include "chrome/browser/translate/translate_tab_helper.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
@@ -41,7 +43,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #endif
 
 #if defined(CLD2_IS_COMPONENT)
@@ -162,7 +163,7 @@ void TranslateTabHelper::ShowTranslateUI(translate::TranslateStep step,
   if (TranslateService::IsTranslateBubbleEnabled()) {
     // Bubble UI.
     if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE) {
-      // TODO: Move this logic out of UI code.
+      // TODO(droger): Move this logic out of UI code.
       GetLanguageState().SetTranslateEnabled(true);
       if (!GetLanguageState().HasLanguageChanged())
         return;
@@ -387,24 +388,26 @@ void TranslateTabHelper::HandleCLDDataRequest() {
   {
     base::AutoLock lock(s_file_lock_.Get());
     if (s_cached_file_)
-      return; // Already done, duplicate request
+      return;  // Already done, duplicate request
   }
 
-  base::FilePath path;
 #if defined(CLD2_IS_COMPONENT)
-  if (!component_updater::GetLatestCldDataFile(&path))
+  base::FilePath path = component_updater::GetLatestCldDataFile();
+  if (path.empty())
     return;
-#else
+#else  // CLD2 data is at a well-known file path
+  base::FilePath path;
   if (!PathService::Get(chrome::DIR_USER_DATA, &path)) {
     LOG(WARNING) << "Unable to locate user data directory";
-    return; // Chrome isn't properly installed.
+    return;  // Chrome isn't properly installed.
   }
-  // If the file exists, we can send an IPC-safe construct back to the
-  // renderer process immediately.
   path = path.Append(chrome::kCLDDataFilename);
+#endif
+
+  // If the file exists, we can send an IPC-safe construct back to the
+  // renderer process immediately; otherwise, nothing to do here.
   if (!base::PathExists(path))
     return;
-#endif
 
   // Attempt to open the file for reading.
   scoped_ptr<base::File> file(
@@ -438,7 +441,7 @@ void TranslateTabHelper::HandleCLDDataRequest() {
     }
   }
 }
-#endif // defined(CLD2_DYNAMIC_MODE)
+#endif  // defined(CLD2_DYNAMIC_MODE)
 
 void TranslateTabHelper::InitiateTranslation(const std::string& page_lang,
                                              int attempt) {

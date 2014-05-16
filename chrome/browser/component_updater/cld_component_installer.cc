@@ -13,7 +13,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "chrome/browser/component_updater/default_component_installer.h"
+#include "base/platform_file.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -46,31 +46,6 @@ const uint8 kPublicKeySHA256[32] = {
 };
 
 const char kCldManifestName[] = "CLD2 Data";
-
-class CldComponentInstallerTraits : public ComponentInstallerTraits {
- public:
-  CldComponentInstallerTraits();
-  virtual ~CldComponentInstallerTraits() {}
-
- private:
-  // The following methods override ComponentInstallerTraits.
-  virtual bool CanAutoUpdate() const OVERRIDE;
-  virtual bool OnCustomInstall(const base::DictionaryValue& manifest,
-                               const base::FilePath& install_dir) OVERRIDE;
-  virtual bool VerifyInstallation(
-      const base::FilePath& install_dir) const OVERRIDE;
-  virtual void ComponentReady(
-      const base::Version& version,
-      const base::FilePath& path,
-      scoped_ptr<base::DictionaryValue> manifest) OVERRIDE;
-  virtual base::FilePath GetBaseDirectory() const OVERRIDE;
-  virtual void GetHash(std::vector<uint8>* hash) const OVERRIDE;
-  virtual std::string GetName() const OVERRIDE;
-
-  base::FilePath GetInstalledPath(const base::FilePath& base) const;
-  void SetLatestCldDataFile(const base::FilePath& path);
-  DISALLOW_COPY_AND_ASSIGN(CldComponentInstallerTraits);
-};
 
 CldComponentInstallerTraits::CldComponentInstallerTraits() {
 }
@@ -140,7 +115,6 @@ void RegisterCldComponent(ComponentUpdateService* cus) {
   installer->Register(cus);
 }
 
-// This method is completely threadsafe.
 void CldComponentInstallerTraits::SetLatestCldDataFile(
     const base::FilePath& path) {
   VLOG(1) << "Setting CLD data file location: " << path.value();
@@ -148,13 +122,10 @@ void CldComponentInstallerTraits::SetLatestCldDataFile(
   cld_file.Get() = path;
 }
 
-bool GetLatestCldDataFile(base::FilePath* path) {
+base::FilePath GetLatestCldDataFile() {
   base::AutoLock lock(cld_file_lock.Get());
-  const base::FilePath cached = cld_file.Get();
-  if (cached.empty())
-    return false;
-  *path = cached;
-  return true;
+  // cld_file is an empty path by default, meaning "file not available yet".
+  return cld_file.Get();
 }
 
 }  // namespace component_updater
