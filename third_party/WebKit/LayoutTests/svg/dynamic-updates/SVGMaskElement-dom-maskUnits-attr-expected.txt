@@ -1,15 +1,13 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 58.00 58.00 100.00 100.00)
-        (rect 58.00 58.00 100.00 100.00)
-      )
-    )
-  )
-)
+SVG 1.1 dynamic update tests
+
+Tests dynamic updates of the 'maskUnits' attribute of the SVGMaskElement object
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS maskElement.getAttribute('maskUnits') is "objectBoundingBox"
+PASS maskElement.getAttribute('maskUnits') is "userSpaceOnUse"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
