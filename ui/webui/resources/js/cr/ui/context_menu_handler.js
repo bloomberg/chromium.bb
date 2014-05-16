@@ -50,6 +50,7 @@ cr.define('cr.ui', function() {
       var win = doc.defaultView;
       this.showingEvents_.add(doc, 'keydown', this, true);
       this.showingEvents_.add(doc, 'mousedown', this, true);
+      this.showingEvents_.add(doc, 'touchstart', this, true);
       this.showingEvents_.add(doc, 'focus', this);
       this.showingEvents_.add(win, 'popstate', this);
       this.showingEvents_.add(win, 'resize', this);
@@ -150,6 +151,7 @@ cr.define('cr.ui', function() {
 
       switch (e.type) {
         case 'mousedown':
+        case 'touchstart':
           if (!this.menu.contains(e.target))
             this.hideMenu();
           else
