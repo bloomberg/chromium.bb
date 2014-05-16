@@ -28,11 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://dev.w3.org/fxtf/web-animations/#idl-def-Animation
+
 [
-    RuntimeEnabled=WebAnimationsAPI,
-    RaisesException=Constructor,
-    Constructor(Element? target, sequence<Dictionary> keyframes, Dictionary timingInput),
-    Constructor(Element? target, sequence<Dictionary> keyframes, double timingInput),
+    // FIXME: should be optional union type http://crbug.com/240176
     Constructor(Element? target, sequence<Dictionary> keyframes),
+    Constructor(Element? target, sequence<Dictionary> keyframes, double timingInput),
+    Constructor(Element? target, sequence<Dictionary> keyframes, Dictionary timingInput),
+    RaisesException=Constructor,
+    RuntimeEnabled=WebAnimationsAPI,
 ] interface Animation : TimedItem {
 };

@@ -7,7 +7,8 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if method.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{method.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
-    {% if method.number_of_required_arguments %}
+    {# Overloaded methods have length checked during overload resolution #}
+    {% if method.number_of_required_arguments and not method.overload_index %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
         {{throw_arity_type_error(method, method.number_of_required_arguments)}};
         return;
@@ -281,6 +282,7 @@ throwArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_o
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% if overloads.measure_all_as %}
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{overloads.measure_all_as}});
     {% endif %}
@@ -313,13 +315,13 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     }
     {# No match, throw error #}
     {% if overloads.minimum_number_of_required_arguments %}
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < {{overloads.minimum_number_of_required_arguments}})) {
-        {{throw_arity_type_error(overloads, overloads.minimum_number_of_required_arguments)}};
+        throwArityTypeError(exceptionState, {{overloads.minimum_number_of_required_arguments}}, info.Length());
         return;
     }
     {% endif %}
-    {{throw_type_error(overloads, '"No function was found that matched the signature provided."') | indent}}
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 {% endmacro %}
 
@@ -413,6 +415,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {% if constructor.has_exception_state %}
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
     {% endif %}
+    {# Overloaded constructors have length checked during overload resolution #}
     {% if interface_length and not constructor.overload_index %}
     {# FIXME: remove UNLIKELY: constructors are expensive, so no difference. #}
     if (UNLIKELY(info.Length() < {{interface_length}})) {

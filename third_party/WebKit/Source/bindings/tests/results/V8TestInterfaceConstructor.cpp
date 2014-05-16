@@ -96,15 +96,35 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 0))) {
-        TestInterfaceConstructorV8Internal::constructor1(info);
-        return;
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), info.GetIsolate());
+    switch (info.Length()) {
+    case 0:
+        if (true) {
+            TestInterfaceConstructorV8Internal::constructor1(info);
+            return;
+        }
+        break;
+    case 6:
+        if (true) {
+            TestInterfaceConstructorV8Internal::constructor2(info);
+            return;
+        }
+        break;
+    case 7:
+        if (true) {
+            TestInterfaceConstructorV8Internal::constructor2(info);
+            return;
+        }
+        break;
+    case 8:
+        if (true) {
+            TestInterfaceConstructorV8Internal::constructor2(info);
+            return;
+        }
+        break;
     }
-    if (((info.Length() == 6) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsArray())) || ((info.Length() == 7) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsArray()) && (info[6]->IsUndefined() || info[6]->IsObject())) || ((info.Length() == 8) && (V8TestInterfaceEmpty::hasInstance(info[2], info.GetIsolate())) && (info[3]->IsObject()) && (info[4]->IsArray()) && (info[5]->IsArray()) && (info[6]->IsUndefined() || info[6]->IsObject()) && (V8TestInterfaceEmpty::hasInstance(info[7], info.GetIsolate())))) {
-        TestInterfaceConstructorV8Internal::constructor2(info);
-        return;
-    }
-    throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor", "No matching constructor signature."), info.GetIsolate());
+    exceptionState.throwTypeError("No matching constructor signature.");
+    exceptionState.throwIfNeeded();
 }
 
 } // namespace TestInterfaceConstructorV8Internal

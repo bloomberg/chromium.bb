@@ -181,7 +181,8 @@ def generate_interface(interface):
                     # (currently needed for Perl compatibility)
                     # Handle named constructors separately
                     if constructor.name == 'Constructor']
-    generate_constructor_overloads(constructors)
+    if len(constructors) > 1:
+        template_contents['constructor_overloads'] = generate_overloads(constructors)
 
     # [CustomConstructor]
     custom_constructors = [{  # Only needed for computing interface length
@@ -323,7 +324,10 @@ def generate_overloads_by_type(methods):
     # Add overload information only to overloaded methods, so template code can
     # easily verify if a function is overloaded
     for name, overloads in method_overloads_by_name(methods):
-        generate_overloads_by_name(name, overloads)
+        # Resolution function is generated after last overloaded function;
+        # package necessary information into |method.overloads| for that method.
+        overloads[-1]['overloads'] = generate_overloads(overloads)
+        overloads[-1]['overloads']['name'] = name
 
 
 def method_overloads_by_name(methods):
@@ -340,33 +344,27 @@ def method_overloads_by_name(methods):
     return sort_and_groupby(overloaded_methods, itemgetter('name'))
 
 
-def generate_overloads_by_name(name, overloads):
-    """Generates |method.overload*| template values for a single name.
+def generate_overloads(overloads):
+    """Returns |overloads| template values for a single name.
 
-    Modifies |method| in place for |method| in |overloads|.
+    Sets |method.overload_index| in place for |method| in |overloads|
+    and returns dict of overall overload template values.
     """
-    effective_overloads_by_length = effective_overload_set_by_length(overloads)
-    minimum_number_of_required_arguments = min(
-        method['number_of_required_arguments'] for method in overloads)
-
+    assert len(overloads) > 1  # only apply to overloaded names
     for index, method in enumerate(overloads, 1):
         method['overload_index'] = index
-        # Overloaded methods have length checked during overload, and
-        # a single check for required arguments afterwards.
-        del method['number_of_required_arguments']
 
-    # Resolution function is generated after last overloaded function;
-    # package necessary information into |method.overloads| for that method.
-    overloads[-1]['overloads'] = {
+    effective_overloads_by_length = effective_overload_set_by_length(overloads)
+
+    return {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
-        'has_exception_state': bool(minimum_number_of_required_arguments),
         'length_tests_methods': length_tests_methods(effective_overloads_by_length),
         # 1. Let maxarg be the length of the longest type list of the
         # entries in S.
         'maxarg': max(i for i, _ in effective_overloads_by_length),
         'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
-        'minimum_number_of_required_arguments': minimum_number_of_required_arguments,
-        'name': name,
+        'minimum_number_of_required_arguments':
+            min(method['number_of_required_arguments'] for method in overloads),
     }
 
 
@@ -491,7 +489,7 @@ def distinguishing_argument_index(entries):
     type_list_length = len(type_lists[0])
     # Only applicable for entries that “[have] a given type list length”
     assert all(len(type_list) == type_list_length for type_list in type_lists)
-    name = entries[0][0]['name']
+    name = entries[0][0].get('name', 'Constructor')  # for error reporting
 
     # The spec defines the distinguishing argument index by conditions it must
     # satisfy, but does not give an algorithm.
@@ -642,13 +640,25 @@ def resolution_tests_methods(effective_overloads):
     # following types at position i of its type list,
     # • an array type
     # • a sequence type
+    # ...
+    # • a dictionary
     try:
-        method = next(method for idl_type, method in idl_types_methods
-                      if idl_type.array_or_sequence_type)
-        # (We test for Array instead of generic Object to type-check.)
-        # FIXME: test for Object during resolution, then have type check for
-        # Array in overloaded method: http://crbug.com/262383
-        test = '%s->IsArray()' % cpp_value
+        # FIXME: IDL dictionary not implemented, so use Blink Dictionary
+        # http://crbug.com/321462
+        idl_type, method = next((idl_type, method)
+                                for idl_type, method in idl_types_methods
+                                if (idl_type.array_or_sequence_type or
+                                    idl_type.name == 'Dictionary'))
+        if idl_type.array_or_sequence_type:
+            # (We test for Array instead of generic Object to type-check.)
+            # FIXME: test for Object during resolution, then have type check for
+            # Array in overloaded method: http://crbug.com/262383
+            test = '%s->IsArray()' % cpp_value
+        else:
+            # FIXME: should be '{1}->IsObject() && !{1}->IsDate() && !{1}->IsRegExp()'.format(cpp_value)
+            # FIXME: the IsDate and IsRegExp checks can be skipped if we've
+            # already generated tests for them.
+            test = '%s->IsObject()' % cpp_value
         yield test, method
     except StopIteration:
         pass
@@ -698,89 +708,6 @@ def resolution_tests_methods(effective_overloads):
         pass
 
 
-def overload_resolution_expression(method):
-    # Expression is an OR of ANDs: each term in the OR corresponds to a
-    # possible argument count for a given method, with type checks.
-    # FIXME: Blink's overload resolution algorithm is incorrect, per:
-    # Implement WebIDL overload resolution algorithm.  http://crbug.com/293561
-    #
-    # Currently if distinguishing non-primitive type from primitive type,
-    # (e.g., sequence<DOMString> from DOMString or Dictionary from double)
-    # the method with a non-primitive type argument must appear *first* in the
-    # IDL file, since we're not adding a check to primitive types.
-    # FIXME: Once fixed, check IDLs, as usually want methods with primitive
-    # types to appear first (style-wise).
-    #
-    # Properly:
-    # 1. Compute effective overload set.
-    # 2. First check type list length.
-    # 3. If multiple entries for given length, compute distinguishing argument
-    #    index and have check for that type.
-    arguments = method['arguments']
-    overload_checks = [overload_check_expression(method, index)
-                       # check *omitting* optional arguments at |index| and up:
-                       # index 0 => argument_count 0 (no arguments)
-                       # index 1 => argument_count 1 (index 0 argument only)
-                       for index, argument in enumerate(arguments)
-                       if argument['is_optional']]
-    # FIXME: this is wrong if a method has optional arguments and a variadic
-    # one, though there are not yet any examples of this
-    if not method['is_variadic']:
-        # Includes all optional arguments (len = last index + 1)
-        overload_checks.append(overload_check_expression(method, len(arguments)))
-    return ' || '.join('(%s)' % check for check in overload_checks)
-
-
-def overload_check_expression(method, argument_count):
-    overload_checks = ['info.Length() == %s' % argument_count]
-    arguments = method['arguments'][:argument_count]
-    overload_checks.extend(overload_check_argument(index, argument)
-                           for index, argument in
-                           enumerate(arguments))
-    return ' && '.join('(%s)' % check for check in overload_checks if check)
-
-
-def overload_check_argument(index, argument):
-    def null_or_optional_check():
-        # If undefined is passed for an optional argument, the argument should
-        # be treated as missing; otherwise undefined is not allowed.
-        if idl_type.is_nullable:
-            if argument['is_optional']:
-                return 'isUndefinedOrNull(%s)'
-            return '%s->IsNull()'
-        if argument['is_optional']:
-            return '%s->IsUndefined()'
-        return None
-
-    cpp_value = 'info[%s]' % index
-    idl_type = argument['idl_type_object']
-    if idl_type.array_or_sequence_type:
-        return '%s->IsArray()' % cpp_value
-    if idl_type.is_callback_interface:
-        return ' || '.join(['%s->IsNull()' % cpp_value,
-                            '%s->IsFunction()' % cpp_value])
-    if idl_type.is_wrapper_type:
-        type_check = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
-        if idl_type.is_nullable:
-            if argument['has_default']:
-                type_check = ' || '.join(['isUndefinedOrNull(%s)' % cpp_value, type_check])
-            else:
-                type_check = ' || '.join(['%s->IsNull()' % cpp_value, type_check])
-        return type_check
-    if idl_type.is_interface_type:
-        # Non-wrapper types are just objects: we don't distinguish type
-        # We only allow undefined for non-wrapper types (notably Dictionary),
-        # as we need it for optional Dictionary arguments, but we don't want to
-        # change behavior of existing bindings for other types.
-        type_check = '%s->IsObject()' % cpp_value
-        added_check_template = null_or_optional_check()
-        if added_check_template:
-            type_check = ' || '.join([added_check_template % cpp_value,
-                                      type_check])
-        return type_check
-    return None
-
-
 ################################################################################
 # Utility functions
 ################################################################################
@@ -799,7 +726,7 @@ def common_value(dicts, key):
     Auxiliary function for overloads, so can consolidate an extended attribute
     that appears with the same value on all items in an overload set.
     """
-    values = (d[key] for d in dicts)
+    values = (d.get(key) for d in dicts)
     first_value = next(values)
     if all(value == first_value for value in values):
         return first_value
@@ -833,7 +760,6 @@ def generate_constructor(interface, constructor):
                    argument.idl_type.is_integer_type),
         'is_constructor': True,
         'is_named_constructor': False,
-        'is_variadic': False,  # Required for overload resolution
         'number_of_required_arguments':
             number_of_required_arguments(constructor),
     }
@@ -855,17 +781,6 @@ def constructor_argument_list(interface, constructor):
         arguments.append('exceptionState')
 
     return arguments
-
-
-def generate_constructor_overloads(constructors):
-    if len(constructors) <= 1:
-        return
-    for overload_index, constructor in enumerate(constructors, 1):
-        constructor.update({
-            'overload_index': overload_index,
-            'overload_resolution_expression':
-                overload_resolution_expression(constructor),
-        })
 
 
 # [NamedConstructor]

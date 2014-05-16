@@ -6388,6 +6388,7 @@ static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (true) {
@@ -6402,7 +6403,6 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -6441,6 +6441,7 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (info[0]->IsNumber()) {
@@ -6459,7 +6460,6 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -6492,6 +6492,7 @@ static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
@@ -6504,7 +6505,6 @@ static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -6537,6 +6537,7 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (info[0]->IsArray()) {
@@ -6549,7 +6550,6 @@ static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -6582,6 +6582,7 @@ static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (isUndefinedOrNull(info[0])) {
@@ -6598,7 +6599,6 @@ static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -6634,6 +6634,7 @@ static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 0:
         if (true) {
@@ -6656,7 +6657,8 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodF", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6683,6 +6685,7 @@ static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodG", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (isUndefinedOrNull(info[0])) {
@@ -6699,7 +6702,6 @@ static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodG", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -6731,6 +6733,7 @@ static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodH", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
@@ -6743,7 +6746,6 @@ static void overloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodH", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -6775,6 +6777,7 @@ static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodI", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (info[0]->IsNumber()) {
@@ -6787,7 +6790,6 @@ static void overloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodI", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -6825,6 +6827,7 @@ static void overloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackIn
 
 static void overloadedPerWorldBindingsMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 0:
         if (true) {
@@ -6839,7 +6842,8 @@ static void overloadedPerWorldBindingsMethodMethod(const v8::FunctionCallbackInf
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldBindingsMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedPerWorldBindingsMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6859,6 +6863,7 @@ static void overloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::Functi
 
 static void overloadedPerWorldBindingsMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 0:
         if (true) {
@@ -6873,7 +6878,8 @@ static void overloadedPerWorldBindingsMethodMethodForMainWorld(const v8::Functio
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldBindingsMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedPerWorldBindingsMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6900,6 +6906,7 @@ static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Val
 
 static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 1:
         if (true) {
@@ -6914,7 +6921,6 @@ static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
         throwArityTypeError(exceptionState, 1, info.Length());
         return;
@@ -7393,6 +7399,7 @@ static void DeprecateAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8
 
 static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 0:
         if (true) {
@@ -7409,7 +7416,8 @@ static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8:
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("DeprecateAsOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void DeprecateAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7435,6 +7443,7 @@ static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallba
 
 static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     switch (info.Length()) {
     case 0:
@@ -7450,7 +7459,8 @@ static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbac
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("DeprecateAsSameValueOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void DeprecateAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7476,6 +7486,7 @@ static void measureAsOverloadedMethod2Method(const v8::FunctionCallbackInfo<v8::
 
 static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     switch (info.Length()) {
     case 0:
         if (true) {
@@ -7492,7 +7503,8 @@ static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::V
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("measureAsOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void measureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7518,6 +7530,7 @@ static void measureAsSameValueOverloadedMethod2Method(const v8::FunctionCallback
 
 static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     switch (info.Length()) {
     case 0:
@@ -7533,7 +7546,8 @@ static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("measureAsSameValueOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void measureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7559,6 +7573,7 @@ static void deprecateAsMeasureAsSameValueOverloadedMethod2Method(const v8::Funct
 
 static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     switch (info.Length()) {
     case 0:
@@ -7576,7 +7591,8 @@ static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7602,6 +7618,7 @@ static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::Funct
 
 static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     switch (info.Length()) {
     case 0:
@@ -7619,7 +7636,8 @@ static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::Functi
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -7645,6 +7663,7 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), info.GetIsolate());
     UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
     switch (info.Length()) {
@@ -7661,7 +7680,8 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

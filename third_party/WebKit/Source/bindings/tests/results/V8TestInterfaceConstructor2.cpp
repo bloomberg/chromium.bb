@@ -59,6 +59,21 @@ static void constructor1(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
+    TONATIVE_VOID(Dictionary, dictionaryArg, Dictionary(info[0], info.GetIsolate()));
+    if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
+        throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor2", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
+        return;
+    }
+    RefPtr<TestInterfaceConstructor2> impl = TestInterfaceConstructor2::create(dictionaryArg);
+
+    v8::Handle<v8::Object> wrapper = info.Holder();
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceConstructor2>(impl.release(), &V8TestInterfaceConstructor2::wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    v8SetReturnValue(info, wrapper);
+}
+
+static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), isolate);
     TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[1], exceptionState), exceptionState);
@@ -87,15 +102,49 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1))) {
-        TestInterfaceConstructor2V8Internal::constructor1(info);
-        return;
-    }
-    if (((info.Length() == 2) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 3) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 4) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate()))) || ((info.Length() == 5) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) && (info[4]->IsUndefined() || info[4]->IsObject())) || ((info.Length() == 6) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) && (info[4]->IsUndefined() || info[4]->IsObject()))) {
-        TestInterfaceConstructor2V8Internal::constructor2(info);
-        return;
-    }
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor2", info.Holder(), info.GetIsolate());
+    switch (info.Length()) {
+    case 1:
+        if (info[0]->IsObject()) {
+            TestInterfaceConstructor2V8Internal::constructor2(info);
+            return;
+        }
+        if (true) {
+            TestInterfaceConstructor2V8Internal::constructor1(info);
+            return;
+        }
+        break;
+    case 2:
+        if (true) {
+            TestInterfaceConstructor2V8Internal::constructor3(info);
+            return;
+        }
+        break;
+    case 3:
+        if (true) {
+            TestInterfaceConstructor2V8Internal::constructor3(info);
+            return;
+        }
+        break;
+    case 4:
+        if (true) {
+            TestInterfaceConstructor2V8Internal::constructor3(info);
+            return;
+        }
+        break;
+    case 5:
+        if (true) {
+            TestInterfaceConstructor2V8Internal::constructor3(info);
+            return;
+        }
+        break;
+    case 6:
+        if (true) {
+            TestInterfaceConstructor2V8Internal::constructor3(info);
+            return;
+        }
+        break;
+    }
     if (UNLIKELY(info.Length() < 1)) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();

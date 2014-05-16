@@ -28,8 +28,8 @@
 
 [
     Constructor(DOMString url),
-    Constructor(DOMString url, URL base),
     Constructor(DOMString url, DOMString base),
+    Constructor(DOMString url, URL base),
     Exposed=Window&Worker,
     ImplementedAs=DOMURL,
     RaisesException=Constructor,

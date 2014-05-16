@@ -588,27 +588,37 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolat
 
 {##############################################################################}
 {% block overloaded_constructor %}
-{% if constructors | length > 1 %}
+{% if constructor_overloads %}
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    {% for constructor in constructors %}
-    if ({{constructor.overload_resolution_expression}}) {
-        {{cpp_class}}V8Internal::constructor{{constructor.overload_index}}(info);
-        return;
-    }
-    {% endfor %}
-    {% if interface_length %}
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), info.GetIsolate());
+    {# FIXME: 2. Initialize argcount to be min(maxarg, n). #}
+    {# switch (std::min({{constructor_overloads.maxarg}}, info.Length())) { #}
+    switch (info.Length()) {
+    {# 3. Remove from S all entries whose type list is not of length argcount. #}
+    {% for length, tests_constructors in constructor_overloads.length_tests_methods %}
+    case {{length}}:
+        {# Then resolve by testing argument #}
+        {% for test, constructor in tests_constructors %}
+        {# 10. If i = d, then: #}
+        if ({{test}}) {
+            {{cpp_class}}V8Internal::constructor{{constructor.overload_index}}(info);
+            return;
+        }
+        {% endfor %}
+        break;
+    {% endfor %}
+    }
+    {# No match, throw error #}
+    {% if interface_length %}
     if (UNLIKELY(info.Length() < {{interface_length}})) {
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{interface_length}}, info.Length()));
         exceptionState.throwIfNeeded();
         return;
     }
+    {% endif %}
     exceptionState.throwTypeError("No matching constructor signature.");
     exceptionState.throwIfNeeded();
-    {% else %}
-    throwTypeError(ExceptionMessages::failedToConstruct("{{interface_name}}", "No matching constructor signature."), info.GetIsolate());
-    {% endif %}
 }
 
 {% endif %}

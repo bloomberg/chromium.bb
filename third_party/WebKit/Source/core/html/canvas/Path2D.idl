@@ -26,11 +26,13 @@
  * SUCH DAMAGE.
  */
 
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#path2d
+
 [
-    RuntimeEnabled=Path2D,
     Constructor,
     Constructor(Path2D path),
-    Constructor(DOMString text)
+    Constructor(DOMString text),
+    RuntimeEnabled=Path2D,
 ] interface Path2D {
 
     [RuntimeEnabled=ExperimentalCanvasFeatures, TypeChecking=Interface|Nullable] void addPath(Path2D path, optional SVGMatrix? transform);
