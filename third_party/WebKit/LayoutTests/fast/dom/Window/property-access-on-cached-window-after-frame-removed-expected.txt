@@ -22,6 +22,7 @@ PASS childWindow.history.length is 0
 PASS childWindow.history.state is null
 PASS childWindow.innerHeight is 0
 PASS childWindow.innerWidth is 0
+FAIL childWindow.isJsTest should be false (of type boolean). Was undefined (of type undefined).
 PASS childWindow.length is 0
 PASS childWindow.location.ancestorOrigins.length is 0
 PASS childWindow.location.hash is ''

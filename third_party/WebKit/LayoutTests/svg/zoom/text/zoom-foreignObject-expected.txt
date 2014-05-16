@@ -1,11 +1,7 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
+This is a text
+and a link.
+[HTML]
+This is a text
+and a link.
+[SVG]
 
