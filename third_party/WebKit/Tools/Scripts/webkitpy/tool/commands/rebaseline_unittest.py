@@ -708,6 +708,18 @@ class TestAutoRebaseline(_BaseTestCase):
         self.command.latest_revision_processed_on_all_bots = lambda log_server: 9000
         self.command.bot_revision_data = lambda log_server: [{"builder": "Mock builder", "revision": "9000"}]
 
+    def test_release_builders(self):
+        old_exact_matches = builders._exact_matches
+        try:
+            builders._exact_matches = {
+                "MOCK Leopard": {"port_name": "test-mac-leopard", "specifiers": set(["mock-specifier"])},
+                "MOCK Leopard Debug": {"port_name": "test-mac-snowleopard", "specifiers": set(["mock-specifier"])},
+                "MOCK Leopard ASAN": {"port_name": "test-mac-snowleopard", "specifiers": set(["mock-specifier"])},
+            }
+            self.assertEqual(self.command._release_builders(), ['MOCK Leopard'])
+        finally:
+            builders._exact_matches = old_exact_matches
+
     def test_tests_to_rebaseline(self):
         def blame(path):
             return """

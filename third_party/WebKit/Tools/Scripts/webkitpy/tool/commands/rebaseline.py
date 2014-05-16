@@ -23,7 +23,7 @@
 # LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 # DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# (INCLUDING NEGLIGENCE OR/ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import json
@@ -312,6 +312,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def _release_builders(self):
         release_builders = []
         for builder_name in builders.all_builder_names():
+            if builder_name.find('ASAN') != -1:
+                continue
             port = self._tool.port_factory.get_from_builder_name(builder_name)
             if port.test_configuration().build_type == 'release':
                 release_builders.append(builder_name)
