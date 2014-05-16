@@ -58,6 +58,8 @@ class ServiceWorkerContextObserver {
                                       int process_id,
                                       int thread_id,
                                       const ConsoleMessage& message) {}
+  virtual void OnRegistrationStored(const GURL& pattern) {}
+  virtual void OnRegistrationDeleted(const GURL& pattern) {}
 
  protected:
   virtual ~ServiceWorkerContextObserver() {}

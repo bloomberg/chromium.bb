@@ -157,6 +157,7 @@ void ServiceWorkerContextCore::RegisterServiceWorker(
       source_process_id,
       base::Bind(&ServiceWorkerContextCore::RegistrationComplete,
                  AsWeakPtr(),
+                 pattern,
                  callback));
 }
 
@@ -165,10 +166,16 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
     const UnregistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  job_coordinator_->Unregister(pattern, callback);
+  job_coordinator_->Unregister(
+      pattern,
+      base::Bind(&ServiceWorkerContextCore::UnregistrationComplete,
+                 AsWeakPtr(),
+                 pattern,
+                 callback));
 }
 
 void ServiceWorkerContextCore::RegistrationComplete(
+    const GURL& pattern,
     const ServiceWorkerContextCore::RegistrationCallback& callback,
     ServiceWorkerStatusCode status,
     ServiceWorkerRegistration* registration,
@@ -186,6 +193,21 @@ void ServiceWorkerContextCore::RegistrationComplete(
   callback.Run(status,
                registration->id(),
                version->version_id());
+  if (observer_list_) {
+    observer_list_->Notify(&ServiceWorkerContextObserver::OnRegistrationStored,
+                           pattern);
+  }
+}
+
+void ServiceWorkerContextCore::UnregistrationComplete(
+    const GURL& pattern,
+    const ServiceWorkerContextCore::UnregistrationCallback& callback,
+    ServiceWorkerStatusCode status) {
+  callback.Run(status);
+  if (observer_list_) {
+    observer_list_->Notify(&ServiceWorkerContextObserver::OnRegistrationDeleted,
+                           pattern);
+  }
 }
 
 ServiceWorkerRegistration* ServiceWorkerContextCore::GetLiveRegistration(

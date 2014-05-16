@@ -173,11 +173,15 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     return providers_.Lookup(process_id);
   }
 
-  void RegistrationComplete(
-      const RegistrationCallback& callback,
-      ServiceWorkerStatusCode status,
-      ServiceWorkerRegistration* registration,
-      ServiceWorkerVersion* version);
+  void RegistrationComplete(const GURL& pattern,
+                            const RegistrationCallback& callback,
+                            ServiceWorkerStatusCode status,
+                            ServiceWorkerRegistration* registration,
+                            ServiceWorkerVersion* version);
+
+  void UnregistrationComplete(const GURL& pattern,
+                              const UnregistrationCallback& callback,
+                              ServiceWorkerStatusCode status);
 
   base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
   ProcessToProviderMap providers_;

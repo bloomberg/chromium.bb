@@ -157,6 +157,15 @@ class ServiceWorkerInternalsUI::PartitionObserver
     web_ui_->CallJavascriptFunction("serviceworker.onConsoleMessageReported",
                                     args.get());
   }
+  virtual void OnRegistrationStored(const GURL& pattern) OVERRIDE {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    web_ui_->CallJavascriptFunction("serviceworker.onRegistrationStored",
+                                    StringValue(pattern.spec()));
+  }
+  virtual void OnRegistrationDeleted(const GURL& pattern) OVERRIDE {
+    web_ui_->CallJavascriptFunction("serviceworker.onRegistrationDeleted",
+                                    StringValue(pattern.spec()));
+  }
   int partition_id() const { return partition_id_; }
 
  private:
@@ -531,7 +540,7 @@ void ServiceWorkerInternalsUI::OperationProxy::OnHaveRegistrations(
     result.Append(registration_info);
   }
 
-  if (internals_ && !result.empty())
+  if (internals_)
     internals_->web_ui()->CallJavascriptFunction(
         "serviceworker.onPartitionData",
         result,
