@@ -26,6 +26,9 @@ SyncPointManager::~SyncPointManager() {
 uint32 SyncPointManager::GenerateSyncPoint() {
   base::AutoLock lock(lock_);
   uint32 sync_point = next_sync_point_++;
+  // When an integer overflow occurs, don't return 0.
+  if (!sync_point)
+    sync_point = next_sync_point_++;
 
   // Note: wrapping would take days for a buggy/compromized renderer that would
   // insert sync points in a loop, but if that were to happen, better explicitly

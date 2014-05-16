@@ -22,7 +22,7 @@ class SyncPointManager : public base::RefCountedThreadSafe<SyncPointManager> {
   SyncPointManager();
 
   // Generates a sync point, returning its ID. This can me called on any thread.
-  // IDs start at 1.
+  // IDs start at a random number. Never return 0.
   uint32 GenerateSyncPoint();
 
   // Retires a sync point. This will call all the registered callbacks for this
