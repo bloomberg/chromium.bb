@@ -546,8 +546,8 @@ crbug.com/327698 [ Debug Mac Win ] virtual/gpu/fast/canvas/canvas-lost-gpu-conte
 
 crbug.com/369615 virtual/gpu/fast/canvas/canvas-overflow-hidden-animation.html [ Crash Pass Timeout ]
 
-crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure ]
-crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
+crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ NeedsRebaseline ]
+crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ NeedsRebaseline ]
 
 # Test results depends on image caching behavior in Blink/Skia. This is being
 # worked on actively. Rebaseline after impl-side painting becomes stable.
