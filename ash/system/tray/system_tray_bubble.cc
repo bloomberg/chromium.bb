@@ -53,7 +53,7 @@ class TrayPopupItemContainer : public views::View {
     }
     views::BoxLayout* layout = new views::BoxLayout(
         views::BoxLayout::kVertical, 0, 0, 0);
-    layout->set_spread_blank_space(true);
+    layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_FILL);
     SetLayoutManager(layout);
     SetPaintToLayer(view->layer() != NULL);
     if (view->layer())

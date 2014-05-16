@@ -11,6 +11,7 @@
 #include "ui/views/layout/layout_manager.h"
 
 namespace gfx {
+class Rect;
 class Size;
 }
 
@@ -30,6 +31,25 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
     kVertical,
   };
 
+  // This specifies where along the main axis the children should be laid out.
+  // e.g. a horizontal layout of MAIN_AXIS_ALIGNMENT_END will result in the
+  // child views being right-aligned.
+  enum MainAxisAlignment {
+    MAIN_AXIS_ALIGNMENT_START,
+    MAIN_AXIS_ALIGNMENT_CENTER,
+    MAIN_AXIS_ALIGNMENT_END,
+
+    // This distributes extra space among the child views. This increases the
+    // size of child views along the main axis rather than the space between
+    // them.
+    MAIN_AXIS_ALIGNMENT_FILL,
+    // TODO(calamity): Add MAIN_AXIS_ALIGNMENT_JUSTIFY which spreads blank space
+    // in-between the child views.
+  };
+
+  // TODO(calamity): Add CrossAxisAlignment property to allow cross axis
+  // alignment.
+
   // Use |inside_border_horizontal_spacing| and
   // |inside_border_vertical_spacing| to add additional space between the child
   // view area and the host view border. |between_child_spacing| controls the
@@ -40,8 +60,8 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
             int between_child_spacing);
   virtual ~BoxLayout();
 
-  void set_spread_blank_space(bool spread) {
-    spread_blank_space_ = spread;
+  void set_main_axis_alignment(MainAxisAlignment main_axis_alignment) {
+    main_axis_alignment_ = main_axis_alignment;
   }
 
   // Overridden from views::LayoutManager:
@@ -50,6 +70,14 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   virtual int GetPreferredHeightForWidth(View* host, int width) OVERRIDE;
 
  private:
+  // Returns the size and position along the main axis of |child_area|.
+  int MainAxisSize(const gfx::Rect& child_area) const;
+  int MainAxisPosition(const gfx::Rect& child_area) const;
+
+  // Sets the size and position along the main axis of |child_area|.
+  void SetMainAxisSize(int size, gfx::Rect* child_area) const;
+  void SetMainAxisPosition(int position, gfx::Rect* child_area) const;
+
   // The preferred size for the dialog given the width of the child area.
   gfx::Size GetPreferredSizeForChildWidth(View* host, int child_area_width);
 
@@ -65,9 +93,9 @@ class VIEWS_EXPORT BoxLayout : public LayoutManager {
   // Spacing to put in between child views.
   const int between_child_spacing_;
 
-  // Whether the available extra space should be distributed among the child
-  // views.
-  bool spread_blank_space_;
+  // The alignment of children in the main axis. This is
+  // MAIN_AXIS_ALIGNMENT_START by default.
+  MainAxisAlignment main_axis_alignment_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BoxLayout);
 };

@@ -34,7 +34,8 @@ class PasswordRow : public views::View {
         PasswordGenerationPopupView::kPasswordVerticalInset, 0));
     views::BoxLayout* box_layout = new views::BoxLayout(
         views::BoxLayout::kHorizontal, horizontal_border, 0, 0);
-    box_layout->set_spread_blank_space(true);
+    box_layout->set_main_axis_alignment(
+        views::BoxLayout::MAIN_AXIS_ALIGNMENT_FILL);
     SetLayoutManager(box_layout);
 
     password_label_ = new views::Label(password, font_list);
