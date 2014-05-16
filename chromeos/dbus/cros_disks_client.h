@@ -19,6 +19,7 @@ class FilePath;
 }
 
 namespace dbus {
+class MessageReader;
 class Response;
 }
 
@@ -121,7 +122,7 @@ class CHROMEOS_EXPORT DiskInfo {
   // Does the disk have media content.
   bool has_media() const { return has_media_; }
 
-  // Is the disk on deveice we booted the machine from.
+  // Is the disk on device we booted the machine from.
   bool on_boot_device() const { return on_boot_device_; }
 
   // Disk file path (e.g. /dev/sdb).
@@ -184,6 +185,35 @@ class CHROMEOS_EXPORT DiskInfo {
   std::string uuid_;
 };
 
+// A struct to represent information about a mount point sent from cros-disks.
+struct CHROMEOS_EXPORT MountEntry {
+ public:
+  MountEntry()
+      : error_code_(MOUNT_ERROR_UNKNOWN), mount_type_(MOUNT_TYPE_INVALID) {
+  }
+
+  MountEntry(MountError error_code,
+             const std::string& source_path,
+             MountType mount_type,
+             const std::string& mount_path)
+      : error_code_(error_code),
+        source_path_(source_path),
+        mount_type_(mount_type),
+        mount_path_(mount_path) {
+  }
+
+  MountError error_code() const { return error_code_; }
+  const std::string& source_path() const { return source_path_; }
+  MountType mount_type() const { return mount_type_; }
+  const std::string& mount_path() const { return mount_path_; }
+
+ private:
+  MountError error_code_;
+  std::string source_path_;
+  MountType mount_type_;
+  std::string mount_path_;
+};
+
 // A class to make the actual DBus calls for cros-disks service.
 // This class only makes calls, result/error handling should be done
 // by callbacks.
@@ -194,21 +224,18 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   typedef base::Callback<void(const std::vector<std::string>& device_paths)>
       EnumerateAutoMountableDevicesCallback;
 
+  // A callback to handle the result of EnumerateMountEntries.
+  // The argument is the enumerated mount entries.
+  typedef base::Callback<void(const std::vector<MountEntry>& entries)>
+      EnumerateMountEntriesCallback;
+
   // A callback to handle the result of GetDeviceProperties.
   // The argument is the information about the specified device.
   typedef base::Callback<void(const DiskInfo& disk_info)>
       GetDevicePropertiesCallback;
 
   // A callback to handle MountCompleted signal.
-  // The first argument is the error code.
-  // The second argument is the source path.
-  // The third argument is the mount type.
-  // The fourth argument is the mount path.
-  typedef base::Callback<void(MountError error_code,
-                              const std::string& source_path,
-                              MountType mount_type,
-                              const std::string& mount_path)>
-      MountCompletedHandler;
+  typedef base::Callback<void(const MountEntry& entry)> MountCompletedHandler;
 
   // A callback to handle FormatCompleted signal.
   // The first argument is the error code.
@@ -252,6 +279,12 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   // method call succeeds, otherwise, |error_callback| is called.
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
+      const base::Closure& error_callback) = 0;
+
+  // Calls EnumerateMountEntries.  |callback| is called after the
+  // method call succeeds, otherwise, |error_callback| is called.
+  virtual void EnumerateMountEntries(
+      const EnumerateMountEntriesCallback& callback,
       const base::Closure& error_callback) = 0;
 
   // Calls Format method.  |callback| is called after the method call succeeds,

@@ -51,6 +51,11 @@ void FakeCrosDisksClient::EnumerateAutoMountableDevices(
     const base::Closure& error_callback) {
 }
 
+void FakeCrosDisksClient::EnumerateMountEntries(
+    const EnumerateMountEntriesCallback& callback,
+    const base::Closure& error_callback) {
+}
+
 void FakeCrosDisksClient::Format(const std::string& device_path,
                                  const std::string& filesystem,
                                  const base::Closure& callback,
@@ -104,7 +109,8 @@ bool FakeCrosDisksClient::SendMountCompletedEvent(
     const std::string& mount_path) {
   if (mount_completed_handler_.is_null())
     return false;
-  mount_completed_handler_.Run(error_code, source_path, mount_type, mount_path);
+  mount_completed_handler_.Run(
+      MountEntry(error_code, source_path, mount_type, mount_path));
   return true;
 }
 

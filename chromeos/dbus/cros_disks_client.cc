@@ -76,6 +76,22 @@ DeviceType DeviceMediaTypeToDeviceType(uint32 media_type_uint32) {
   }
 }
 
+bool ReadMountEntryFromDbus(dbus::MessageReader* reader, MountEntry* entry) {
+  uint32 error_code = 0;
+  std::string source_path;
+  uint32 mount_type = 0;
+  std::string mount_path;
+  if (!reader->PopUint32(&error_code) ||
+      !reader->PopString(&source_path) ||
+      !reader->PopUint32(&mount_type) ||
+      !reader->PopString(&mount_path)) {
+    return false;
+  }
+  *entry = MountEntry(static_cast<MountError>(error_code), source_path,
+                      static_cast<MountType>(mount_type), mount_path);
+  return true;
+}
+
 // The CrosDisksClient implementation.
 class CrosDisksClientImpl : public CrosDisksClient {
  public:
@@ -142,6 +158,20 @@ class CrosDisksClientImpl : public CrosDisksClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&CrosDisksClientImpl::OnEnumerateAutoMountableDevices,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   error_callback));
+  }
+
+  // CrosDisksClient override.
+  virtual void EnumerateMountEntries(
+      const EnumerateMountEntriesCallback& callback,
+      const base::Closure& error_callback) OVERRIDE {
+    dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
+                                 cros_disks::kEnumerateMountEntries);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&CrosDisksClientImpl::OnEnumerateMountEntries,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
                    error_callback));
@@ -264,7 +294,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
     callback.Run();
   }
 
-  // Handles the result of Unount and calls |callback| or |error_callback|.
+  // Handles the result of Unmount and calls |callback| or |error_callback|.
   void OnUnmount(const base::Closure& callback,
                  const base::Closure& error_callback,
                  dbus::Response* response) {
@@ -312,6 +342,40 @@ class CrosDisksClientImpl : public CrosDisksClient {
     callback.Run(device_paths);
   }
 
+  // Handles the result of EnumerateMountEntries and calls |callback| or
+  // |error_callback|.
+  void OnEnumerateMountEntries(
+      const EnumerateMountEntriesCallback& callback,
+      const base::Closure& error_callback,
+      dbus::Response* response) {
+    if (!response) {
+      error_callback.Run();
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    dbus::MessageReader array_reader(NULL);
+    if (!reader.PopArray(&array_reader)) {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      error_callback.Run();
+      return;
+    }
+
+    std::vector<MountEntry> entries;
+    while (array_reader.HasMoreData()) {
+      MountEntry entry;
+      dbus::MessageReader sub_reader(NULL);
+      if (!array_reader.PopStruct(&sub_reader) ||
+          !ReadMountEntryFromDbus(&sub_reader, &entry)) {
+        LOG(ERROR) << "Invalid response: " << response->ToString();
+        error_callback.Run();
+        return;
+      }
+      entries.push_back(entry);
+    }
+    callback.Run(entries);
+  }
+
   // Handles the result of Format and calls |callback| or |error_callback|.
   void OnFormat(const base::Closure& callback,
                 const base::Closure& error_callback,
@@ -353,19 +417,12 @@ class CrosDisksClientImpl : public CrosDisksClient {
   // Handles MountCompleted signal and calls |handler|.
   void OnMountCompleted(MountCompletedHandler handler, dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
-    uint32 error_code = 0;
-    std::string source_path;
-    uint32 mount_type = 0;
-    std::string mount_path;
-    if (!reader.PopUint32(&error_code) ||
-        !reader.PopString(&source_path) ||
-        !reader.PopUint32(&mount_type) ||
-        !reader.PopString(&mount_path)) {
+    MountEntry entry;
+    if (!ReadMountEntryFromDbus(&reader, &entry)) {
       LOG(ERROR) << "Invalid signal: " << signal->ToString();
       return;
     }
-    handler.Run(static_cast<MountError>(error_code), source_path,
-                static_cast<MountType>(mount_type), mount_path);
+    handler.Run(entry);
   }
 
   // Handles FormatCompleted signal and calls |handler|.
@@ -468,6 +525,14 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
         FROM_HERE, base::Bind(callback, device_paths));
   }
 
+  virtual void EnumerateMountEntries(
+      const EnumerateMountEntriesCallback& callback,
+      const base::Closure& error_callback) OVERRIDE {
+    std::vector<MountEntry> entries;
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, entries));
+  }
+
   virtual void Format(const std::string& device_path,
                       const std::string& filesystem,
                       const base::Closure& callback,
@@ -555,7 +620,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
       base::MessageLoopProxy::current()->PostTask(
           FROM_HERE,
           base::Bind(mount_completed_handler_,
-                     error, source_path, type, mounted_path));
+                     MountEntry(error, source_path, type, mounted_path)));
     }
   }
 

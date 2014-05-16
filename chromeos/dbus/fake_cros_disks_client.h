@@ -33,6 +33,9 @@ class FakeCrosDisksClient : public CrosDisksClient {
   virtual void EnumerateAutoMountableDevices(
       const EnumerateAutoMountableDevicesCallback& callback,
       const base::Closure& error_callback) OVERRIDE;
+  virtual void EnumerateMountEntries(
+      const EnumerateMountEntriesCallback& callback,
+      const base::Closure& error_callback) OVERRIDE;
   virtual void Format(const std::string& device_path,
                       const std::string& filesystem,
                       const base::Closure& callback,

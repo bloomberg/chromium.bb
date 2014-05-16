@@ -65,7 +65,8 @@ class DiskMountManagerImpl : public DiskMountManager {
     if (type == MOUNT_TYPE_DEVICE) {
       DiskMap::const_iterator it = disks_.find(source_path);
       if (it == disks_.end() || it->second->is_hidden()) {
-        OnMountCompleted(MOUNT_ERROR_INTERNAL, source_path, type, "");
+        OnMountCompleted(MountEntry(MOUNT_ERROR_INTERNAL, source_path, type,
+                                    ""));
         return;
       }
     }
@@ -78,10 +79,7 @@ class DiskMountManagerImpl : public DiskMountManager {
         base::Bind(&base::DoNothing),
         base::Bind(&DiskMountManagerImpl::OnMountCompleted,
                    weak_ptr_factory_.GetWeakPtr(),
-                   MOUNT_ERROR_INTERNAL,
-                   source_path,
-                   type,
-                   ""));
+                   MountEntry(MOUNT_ERROR_INTERNAL, source_path, type, "")));
   }
 
   // DiskMountManager override.
@@ -300,32 +298,33 @@ class DiskMountManagerImpl : public DiskMountManager {
   }
 
   // Callback to handle MountCompleted signal and Mount method call failure.
-  void OnMountCompleted(MountError error_code,
-                        const std::string& source_path,
-                        MountType mount_type,
-                        const std::string& mount_path) {
+  void OnMountCompleted(const MountEntry& entry) {
     MountCondition mount_condition = MOUNT_CONDITION_NONE;
-    if (mount_type == MOUNT_TYPE_DEVICE) {
-      if (error_code == MOUNT_ERROR_UNKNOWN_FILESYSTEM) {
+    if (entry.mount_type() == MOUNT_TYPE_DEVICE) {
+      if (entry.error_code() == MOUNT_ERROR_UNKNOWN_FILESYSTEM) {
         mount_condition = MOUNT_CONDITION_UNKNOWN_FILESYSTEM;
       }
-      if (error_code == MOUNT_ERROR_UNSUPPORTED_FILESYSTEM) {
+      if (entry.error_code() == MOUNT_ERROR_UNSUPPORTED_FILESYSTEM) {
         mount_condition = MOUNT_CONDITION_UNSUPPORTED_FILESYSTEM;
       }
     }
-    const MountPointInfo mount_info(source_path, mount_path, mount_type,
+    const MountPointInfo mount_info(entry.source_path(),
+                                    entry.mount_path(),
+                                    entry.mount_type(),
                                     mount_condition);
 
-    NotifyMountStatusUpdate(MOUNTING, error_code, mount_info);
+    NotifyMountStatusUpdate(MOUNTING, entry.error_code(), mount_info);
 
     // If the device is corrupted but it's still possible to format it, it will
     // be fake mounted.
-    if ((error_code == MOUNT_ERROR_NONE || mount_info.mount_condition) &&
+    if ((entry.error_code() == MOUNT_ERROR_NONE ||
+         mount_info.mount_condition) &&
         mount_points_.find(mount_info.mount_path) == mount_points_.end()) {
       mount_points_.insert(MountPointMap::value_type(mount_info.mount_path,
                                                      mount_info));
     }
-    if ((error_code == MOUNT_ERROR_NONE || mount_info.mount_condition) &&
+    if ((entry.error_code() == MOUNT_ERROR_NONE ||
+         mount_info.mount_condition) &&
         mount_info.mount_type == MOUNT_TYPE_DEVICE &&
         !mount_info.source_path.empty() &&
         !mount_info.mount_path.empty()) {
