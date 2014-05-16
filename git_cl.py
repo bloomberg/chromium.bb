@@ -1498,11 +1498,11 @@ def GerritUpload(options, args, cl):
   if CHANGE_ID not in change_desc.description:
     AddChangeIdToCommitMessage(options, args)
 
-  commits = RunGit(['rev-list', '%s/%s...' % (remote, branch)]).splitlines()
+  commits = RunGit(['rev-list', '%s/%s..' % (remote, branch)]).splitlines()
   if len(commits) > 1:
     print('WARNING: This will upload %d commits. Run the following command '
           'to see which commits will be uploaded: ' % len(commits))
-    print('git log %s/%s...' % (remote, branch))
+    print('git log %s/%s..' % (remote, branch))
     print('You can also use `git squash-branch` to squash these into a single'
           'commit.')
     ask_for_data('About to upload; enter to confirm.')

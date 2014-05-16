@@ -588,7 +588,7 @@ class TestGitCl(TestCase):
            description)
           ]
     calls += [
-        ((['git', 'rev-list', 'origin/master...'],), ''),
+        ((['git', 'rev-list', 'origin/master..'],), ''),
         ((['git', 'config', 'rietveld.cc'],), '')
         ]
     receive_pack = '--receive-pack=git receive-pack '
