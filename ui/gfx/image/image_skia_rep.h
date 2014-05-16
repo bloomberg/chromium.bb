@@ -20,8 +20,10 @@ class GFX_EXPORT ImageSkiaRep {
   ImageSkiaRep();
   ~ImageSkiaRep();
 
+  // Note: This is for testing purpose only.
   // Creates a bitmap with kARGB_8888_Config config with given |size| in DIP.
-  // This allocates pixels in the bitmap and fill the bitmap with a color.
+  // This allocates pixels in the bitmap. It is guaranteed that the data in the
+  // bitmap are initialized but the actual values are undefined.
   // Specifying 0 scale means the image is for unscaled image. (unscaled()
   // returns truen, and scale() returns 1.0f;)
   ImageSkiaRep(const gfx::Size& size, float scale);
