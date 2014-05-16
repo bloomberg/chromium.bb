@@ -80,6 +80,7 @@ private:
     virtual bool handleInputEvent(const WebInputEvent&) OVERRIDE;
     virtual void setFocus(bool) OVERRIDE;
     virtual bool isPagePopup() const OVERRIDE { return true; }
+    virtual bool isAcceleratedCompositingActive() const OVERRIDE { return m_isAcceleratedCompositingActive; }
 
     // PageWidgetEventHandler functions
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;

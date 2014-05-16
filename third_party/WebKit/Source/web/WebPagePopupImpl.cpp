@@ -109,6 +109,11 @@ private:
 
     virtual void scheduleAnimation() OVERRIDE
     {
+        if (m_popup->isAcceleratedCompositingActive()) {
+            ASSERT(m_popup->m_layerTreeView);
+            m_popup->m_layerTreeView->setNeedsAnimate();
+            return;
+        }
         m_popup->widgetClient()->scheduleAnimation();
     }
 
