@@ -4,6 +4,9 @@
 
 #include "ui/views/widget/desktop_aura/x11_topmost_window_finder.h"
 
+#include <X11/Xutil.h>
+
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
@@ -34,7 +37,7 @@ aura::Window* X11TopmostWindowFinder::FindLocalProcessWindowAt(
     return NULL;
 
   ui::EnumerateTopLevelWindows(this);
-  return views::DesktopWindowTreeHostX11::GetContentWindowForXID(toplevel_);
+  return DesktopWindowTreeHostX11::GetContentWindowForXID(toplevel_);
 }
 
 XID X11TopmostWindowFinder::FindWindowAt(const gfx::Point& screen_loc) {
@@ -71,8 +74,24 @@ bool X11TopmostWindowFinder::ShouldStopIteratingAtLocalProcessWindow(
 
   // Currently |window|->IsVisible() always returns true.
   // TODO(pkotwicz): Fix this. crbug.com/353038
-  return window->IsVisible() &&
-      window->GetBoundsInScreen().Contains(screen_loc_);
+  if (!window->IsVisible())
+    return false;
+
+  DesktopWindowTreeHostX11* host =
+      DesktopWindowTreeHostX11::GetHostForXID(
+          window->GetHost()->GetAcceleratedWidget());
+  if (!host->GetX11RootWindowOuterBounds().Contains(screen_loc_))
+    return false;
+
+  ::Region shape = host->GetWindowShape();
+  if (!shape)
+    return true;
+
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(window->GetRootWindow());
+  gfx::Point window_loc(screen_loc_);
+  screen_position_client->ConvertPointFromScreen(window, &window_loc);
+  return XPointInRegion(shape, window_loc.x(), window_loc.y()) == True;
 }
 
 }  // namespace views
