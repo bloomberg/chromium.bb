@@ -1,18 +1,19 @@
-(GraphicsLayer
-  (bounds 808.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 808.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 8.00 266.00 800.00 34.00)
-        (rect 8.00 206.00 800.00 34.00)
-        (rect 8.00 146.00 800.00 34.00)
-        (rect 8.00 86.00 800.00 34.00)
-        (rect 8.00 8.00 800.00 337.00)
-      )
-    )
-  )
-)
+SVG 1.1 dynamic update tests
+
+Tests dynamic updates of the 'in' attribute of the SVGFEColorMatrixElement object
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS matrixElement.getAttribute('in') is "SourceAlpha"
+PASS saturateElement.getAttribute('in') is "SourceAlpha"
+PASS hueRotateElement.getAttribute('in') is "SourceAlpha"
+PASS luminanceToAlphaElement.getAttribute('in') is "SourceAlpha"
+PASS matrixElement.getAttribute('in') is "SourceGraphic"
+PASS saturateElement.getAttribute('in') is "SourceGraphic"
+PASS hueRotateElement.getAttribute('in') is "SourceGraphic"
+PASS luminanceToAlphaElement.getAttribute('in') is "SourceGraphic"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

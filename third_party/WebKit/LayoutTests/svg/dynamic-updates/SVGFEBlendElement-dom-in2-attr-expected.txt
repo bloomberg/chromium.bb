@@ -1,20 +1,21 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-      (repaint rects
-        (rect 33.00 156.00 240.00 20.00)
-        (rect 33.00 110.00 240.00 20.00)
-        (rect 33.00 87.00 240.00 20.00)
-        (rect 33.00 64.00 240.00 43.00)
-        (rect 33.00 64.00 240.00 20.00)
-        (rect 33.00 41.00 240.00 20.00)
-        (rect 33.00 18.00 240.00 20.00)
-      )
-    )
-  )
-)
+SVG 1.1 dynamic update tests
+
+Tests dynamic updates of the 'in' attribute of the SVGFEBlendElement object
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS normalBlend.getAttribute('in2') is "lightenImg"
+PASS multiplyBlend.getAttribute('in2') is "normalImg"
+PASS screenBlend.getAttribute('in2') is "multiplyImg"
+PASS darkenBlend.getAttribute('in2') is "screenImg"
+PASS lightenBlend.getAttribute('in2') is "darkenImg"
+PASS normalBlend.getAttribute('in2') is "normalImg"
+PASS multiplyBlend.getAttribute('in2') is "multiplyImg"
+PASS screenBlend.getAttribute('in2') is "screenImg"
+PASS darkenBlend.getAttribute('in2') is "darkenImg"
+PASS lightenBlend.getAttribute('in2') is "lightenImg"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
