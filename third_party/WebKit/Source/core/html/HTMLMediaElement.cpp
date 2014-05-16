@@ -3297,7 +3297,7 @@ bool HTMLMediaElement::createMediaControls()
     if (hasMediaControls())
         return true;
 
-    RefPtrWillBeRawPtr<MediaControls> mediaControls = MediaControls::create(*this);
+    RefPtr<MediaControls> mediaControls = MediaControls::create(*this);
     if (!mediaControls)
         return false;
 
