@@ -457,6 +457,14 @@ int main(int argc, char* argv[]) {
       const long long trackNum = block->GetTrackNumber();
       const mkvparser::Track* const parser_track =
           parser_tracks->GetTrackByNumber(static_cast<unsigned long>(trackNum));
+
+      // When |parser_track| is NULL, it means that the track number in the
+      // Block is invalid (i.e.) the was no TrackEntry corresponding to the
+      // track number. So we reject the file.
+      if (!parser_track) {
+        return EXIT_FAILURE;
+      }
+
       const long long track_type = parser_track->GetType();
       const long long time_ns = block->GetTime(cluster);
 
