@@ -551,7 +551,6 @@ bool GestureProvider::OnTouchEvent(const MotionEvent& event) {
                "action", GetMotionEventActionName(event.GetAction()));
 
   DCHECK_NE(0u, event.GetPointerCount());
-  DCHECK(!event.GetEventTime().is_null());
 
   if (!CanHandle(event))
     return false;

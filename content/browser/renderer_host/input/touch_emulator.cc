@@ -131,8 +131,7 @@ bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event) {
   if (mouse_event.button != WebMouseEvent::ButtonLeft)
     return true;
 
-  if (mouse_event.type == WebInputEvent::MouseMove &&
-      mouse_event.timeStampSeconds) {
+  if (mouse_event.type == WebInputEvent::MouseMove) {
     if (last_mouse_event_was_move_ &&
         mouse_event.timeStampSeconds < last_mouse_move_timestamp_ +
             kMouseMoveDropIntervalSeconds)
@@ -317,7 +316,7 @@ void TouchEmulator::PinchEnd(const WebGestureEvent& event) {
   client_->ForwardGestureEvent(pinch_event_);
 }
 
-void TouchEmulator::FillPinchEvent(const WebGestureEvent& event) {
+void TouchEmulator::FillPinchEvent(const WebInputEvent& event) {
   pinch_event_.timeStampSeconds = event.timeStampSeconds;
   pinch_event_.modifiers = event.modifiers;
   pinch_event_.sourceDevice = blink::WebGestureEvent::Touchscreen;
@@ -362,12 +361,6 @@ bool TouchEmulator::FillTouchEventAndPoint(const WebMouseEvent& mouse_event) {
   touch_event_.modifiers = mouse_event.modifiers;
   WebTouchEventTraits::ResetTypeAndTouchStates(
       eventType, mouse_event.timeStampSeconds, &touch_event_);
-
-  if (!touch_event_.timeStampSeconds) {
-    // Gesture detector does not tolerate null timestamps generated in tests.
-    touch_event_.timeStampSeconds =
-        (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
-  }
 
   WebTouchPoint& point = touch_event_.touches[0];
   point.id = 0;

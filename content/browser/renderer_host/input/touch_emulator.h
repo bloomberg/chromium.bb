@@ -48,7 +48,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   bool InPinchGestureMode() const;
 
   bool FillTouchEventAndPoint(const blink::WebMouseEvent& mouse_event);
-  void FillPinchEvent(const blink::WebGestureEvent& event);
+  void FillPinchEvent(const blink::WebInputEvent& event);
 
   // The following methods generate and pass gesture events to the renderer.
   void PinchBegin(const blink::WebGestureEvent& event);
