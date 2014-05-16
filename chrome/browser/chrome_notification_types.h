@@ -287,6 +287,12 @@ enum NotificationType {
   // The details are none and the source is the new profile.
   NOTIFICATION_PROFILE_ADDED,
 
+  // Sent early in the process of destroying a Profile, at the time a user
+  // initiates the deletion of a profile versus the much later time when the
+  // profile object is actually destroyed (use NOTIFICATION_PROFILE_DESTROYED).
+  // The details are none and the source is a Profile*.
+  NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
+
   // Sent before a Profile is destroyed. This notification is sent both for
   // normal and OTR profiles.
   // The details are none and the source is a Profile*.

@@ -445,6 +445,11 @@ Browser::Browser(const CreateParams& params)
 }
 
 Browser::~Browser() {
+  // Stop observing notifications before continuing with destruction. Profile
+  // destruction will unload extensions and reentrant calls to Browser:: should
+  // be avoided while it is being torn down.
+  registrar_.RemoveAll();
+
   // The tab strip should not have any tabs at this point.
   DCHECK(tab_strip_model_->empty());
   tab_strip_model_->RemoveObserver(this);
