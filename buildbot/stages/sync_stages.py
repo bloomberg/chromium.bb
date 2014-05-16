@@ -157,8 +157,7 @@ class BootstrapStage(PatchChangesStage):
     # TODO(davidjames): This code actually takes external manifest patches and
     # tries to apply them to the internal manifest. We shouldn't do this.
     patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
-        checkout_dir, deps_filter_fn=trybot_patch_pool.ManifestFilter,
-        tracking_branch=self._run.manifest_branch)
+        checkout_dir, tracking_branch=self._run.manifest_branch)
 
     self._ApplyPatchSeries(patch_series, patch_pool)
     # Create the branch that 'repo init -b <target_branch> -u <patched_repo>'
