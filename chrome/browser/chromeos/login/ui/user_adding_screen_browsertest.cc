@@ -5,10 +5,14 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
+#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/user_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -53,6 +57,24 @@ class UserAddingScreenTest : public LoginManagerTest,
 
   void SetUserCanLock(User* user, bool can_lock) {
     user->set_can_lock(can_lock);
+  }
+
+  void CheckScreenIsVisible() {
+    views::View* web_view =
+        LoginDisplayHostImpl::default_host()->GetWebUILoginView()->child_at(0);
+    for (views::View* current_view = web_view;
+         current_view;
+         current_view = current_view->parent()) {
+      EXPECT_TRUE(current_view->visible());
+      if (current_view->layer())
+        EXPECT_EQ(current_view->layer()->GetCombinedOpacity(), 1.f);
+    }
+    for (aura::Window* window = web_view->GetWidget()->GetNativeWindow();
+         window;
+         window = window->parent()) {
+      EXPECT_TRUE(window->IsVisible());
+      EXPECT_EQ(window->layer()->GetCombinedOpacity(), 1.f);
+    }
   }
 
   int user_adding_started() { return user_adding_started_; }
@@ -211,6 +233,39 @@ IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, AddingSeveralUsers) {
   ASSERT_EQ(2UL, unlock_users.size());
   for (int i = 0; i < 2; ++i)
     EXPECT_EQ(kTestUsers[i], unlock_users[i]->email());
+}
+
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, PRE_ScreenVisibility) {
+  RegisterUser(kTestUsers[0]);
+  RegisterUser(kTestUsers[1]);
+  StartupUtils::MarkOobeCompleted();
+}
+
+// Trying to catch http://crbug.com/362153.
+IN_PROC_BROWSER_TEST_F(UserAddingScreenTest, ScreenVisibility) {
+  LoginUser(kTestUsers[0]);
+
+  UserAddingScreen::Get()->Start();
+  content::RunAllPendingInMessageLoop();
+  CheckScreenIsVisible();
+  UserAddingScreen::Get()->Cancel();
+  content::RunAllPendingInMessageLoop();
+
+  ScreenLocker::Show();
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+      content::NotificationService::AllSources()).Wait();
+
+  ScreenLocker::Hide();
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+      content::NotificationService::AllSources()).Wait();
+
+  UserAddingScreen::Get()->Start();
+  content::RunAllPendingInMessageLoop();
+  CheckScreenIsVisible();
+  UserAddingScreen::Get()->Cancel();
+  content::RunAllPendingInMessageLoop();
 }
 
 }  // namespace chromeos
