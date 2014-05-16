@@ -134,6 +134,28 @@ TEST(UnixDomainSocketTest, RecvPidWithMaxDescriptors) {
   ASSERT_EQ(getpid(), sender_pid);
 }
 
+// Check that RecvMsgWithPid doesn't DCHECK fail when reading EOF from a
+// disconnected socket.
+TEST(UnixDomianSocketTest, RecvPidDisconnectedSocket) {
+  int fds[2];
+  ASSERT_EQ(0, socketpair(AF_UNIX, SOCK_SEQPACKET, 0, fds));
+  base::ScopedFD recv_sock(fds[0]);
+  base::ScopedFD send_sock(fds[1]);
+
+  ASSERT_TRUE(UnixDomainSocket::EnableReceiveProcessId(recv_sock.get()));
+
+  send_sock.reset();
+
+  char ch;
+  base::ProcessId sender_pid;
+  ScopedVector<base::ScopedFD> recv_fds;
+  const ssize_t nread = UnixDomainSocket::RecvMsgWithPid(
+      recv_sock.get(), &ch, sizeof(ch), &recv_fds, &sender_pid);
+  ASSERT_EQ(0, nread);
+  ASSERT_EQ(-1, sender_pid);
+  ASSERT_EQ(0U, recv_fds.size());
+}
+
 }  // namespace
 
 }  // namespace base

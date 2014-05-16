@@ -152,7 +152,13 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
   }
 
   if (out_pid) {
-    DCHECK(pid != -1);
+    // |pid| will legitimately be -1 if we read EOF, so only DCHECK if we
+    // actually received a message.  Unfortunately, Linux allows sending zero
+    // length messages, which are indistinguishable from EOF, so this check
+    // has false negatives.
+    if (r > 0 || msg.msg_controllen > 0)
+      DCHECK_GE(pid, 0);
+
     *out_pid = pid;
   }
 
