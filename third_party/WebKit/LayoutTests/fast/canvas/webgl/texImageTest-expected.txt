@@ -4,7 +4,8 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS context.texImage2D(context.TEXTURE_2D) threw exception TypeError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': 6 arguments required, but only 1 present..
 PASS context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, 64, 64, 0, context.RGBA, context.UNSIGNED_BYTE, null) is undefined.
-PASS context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, 0, context.RGBA, context.UNSIGNED_BYTE, 0) threw exception TypeError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': No function was found that matched the signature provided..
+PASS context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, 0, context.RGBA, context.UNSIGNED_BYTE, 0) threw exception TypeError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': Valid arities are: [6, 9], but 7 arguments provided..
+PASS context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, 0, context.RGBA, context.UNSIGNED_BYTE, 0, 0) threw exception TypeError: Failed to execute 'texImage2D' on 'WebGLRenderingContext': Valid arities are: [6, 9], but 8 arguments provided..
 PASS context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, 2, 2, 0, context.RGBA, context.UNSIGNED_BYTE, array) is undefined.
 PASS context.pixelStorei(context.UNPACK_FLIP_Y_WEBGL, true) is undefined.
 PASS context.texImage2D(context.TEXTURE_2D, 0, context.RGBA, context.RGBA, context.UNSIGNED_BYTE, imageData) is undefined.

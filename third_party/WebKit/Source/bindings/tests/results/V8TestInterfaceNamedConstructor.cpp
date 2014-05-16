@@ -94,7 +94,7 @@ static void V8TestInterfaceNamedConstructorConstructorCallback(const v8::Functio
 
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceNamedConstructor", info.Holder(), isolate);
     if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
+        throwMinimumArityTypeError(exceptionState, 1, info.Length());
         return;
     }
     TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);

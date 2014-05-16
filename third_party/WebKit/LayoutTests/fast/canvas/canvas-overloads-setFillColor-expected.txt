@@ -7,10 +7,10 @@ PASS ctx.setFillColor() threw exception TypeError: Failed to execute 'setFillCol
 PASS ctx.setFillColor('red') is undefined
 PASS ctx.setFillColor(0) is undefined
 PASS ctx.setFillColor(0, 0) is undefined
-FAIL ctx.setFillColor(0, 0, 0) should throw "TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': No function was found that matched the signature provided.". Threw exception TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.setFillColor(0, 0, 0) threw exception TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': Valid arities are: [1, 2, 4, 5], but 3 arguments provided..
 PASS ctx.setFillColor(0, 0, 0, 0) is undefined
 PASS ctx.setFillColor(0, 0, 0, 0, 0) is undefined
-FAIL ctx.setFillColor(0, 0, 0, 0, 0, 0) should throw "TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': No function was found that matched the signature provided.". Threw exception TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.setFillColor(0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': Valid arities are: [1, 2, 4, 5], but 6 arguments provided..
 PASS successfullyParsed is true
 
 TEST COMPLETE

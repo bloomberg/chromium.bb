@@ -355,16 +355,21 @@ def generate_overloads(overloads):
         method['overload_index'] = index
 
     effective_overloads_by_length = effective_overload_set_by_length(overloads)
+    lengths = [length for length, _ in effective_overloads_by_length]
 
     return {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         'length_tests_methods': length_tests_methods(effective_overloads_by_length),
+        'minarg': lengths[0],
         # 1. Let maxarg be the length of the longest type list of the
         # entries in S.
-        'maxarg': max(i for i, _ in effective_overloads_by_length),
+        'maxarg': lengths[-1],
         'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
-        'minimum_number_of_required_arguments':
-            min(method['number_of_required_arguments'] for method in overloads),
+        'valid_arities': lengths
+            # Only need to report valid arities if there is a gap in the
+            # sequence of possible lengths, otherwise invalid length means
+            # "not enough arguments".
+            if lengths[-1] - lengths[0] != len(lengths) - 1 else None,
     }
 
 

@@ -123,6 +123,14 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
         }
         break;
+    default:
+        if (info.Length() >= 0) {
+            throwArityTypeError(exceptionState, "[0, 6, 7, 8]", info.Length());
+            return;
+        }
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(0, info.Length()));
+        exceptionState.throwIfNeeded();
+        return;
     }
     exceptionState.throwTypeError("No matching constructor signature.");
     exceptionState.throwIfNeeded();

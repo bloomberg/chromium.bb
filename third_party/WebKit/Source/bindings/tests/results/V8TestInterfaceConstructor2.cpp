@@ -145,8 +145,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
             return;
         }
         break;
-    }
-    if (UNLIKELY(info.Length() < 1)) {
+    default:
         exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
         exceptionState.throwIfNeeded();
         return;

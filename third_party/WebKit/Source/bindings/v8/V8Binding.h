@@ -73,9 +73,12 @@ v8::Handle<v8::Value> throwError(v8::Handle<v8::Value>, v8::Isolate*);
 v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
 
 // Helpers for throwing JavaScript TypeErrors for arity mismatches.
-void throwArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
-void throwArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
-void throwArityTypeError(ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
+void throwArityTypeErrorForMethod(const char* method, const char* type, const char* valid, unsigned provided, v8::Isolate*);
+void throwArityTypeErrorForConstructor(const char* type, const char* valid, unsigned provided, v8::Isolate*);
+void throwArityTypeError(ExceptionState&, const char* valid, unsigned provided);
+void throwMinimumArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
+void throwMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate*);
+void throwMinimumArityTypeError(ExceptionState&, unsigned expected, unsigned providedLeastNumMandatoryParams);
 
 v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 

@@ -80,6 +80,7 @@ void verify4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 void V8SubtleCrypto::verifyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "verify", "SubtleCrypto", info.Holder(), isolate);
     // typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
     //
     // Promise verify(Dictionary algorithm, Key key,
@@ -112,11 +113,10 @@ void V8SubtleCrypto::verifyMethodCustom(const v8::FunctionCallbackInfo<v8::Value
             return;
         }
         break;
-    }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "verify", "SubtleCrypto", info.Holder(), isolate);
-    if (UNLIKELY(info.Length() < 4)) {
-        throwArityTypeError(exceptionState, 4, info.Length());
+    default:
+        throwArityTypeError(exceptionState, "[4]", info.Length());
         return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();

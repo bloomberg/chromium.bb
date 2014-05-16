@@ -85,17 +85,33 @@ v8::Handle<v8::Value> throwTypeError(const String& message, v8::Isolate* isolate
     return V8ThrowException::throwTypeError(message, isolate);
 }
 
-void throwArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate* isolate)
+void throwArityTypeErrorForMethod(const char* method, const char* type, const char* valid, unsigned provided, v8::Isolate* isolate)
+{
+    throwTypeError(ExceptionMessages::failedToExecute(method, type, ExceptionMessages::invalidArity(valid, provided)), isolate);
+}
+
+void throwArityTypeErrorForConstructor(const char* type, const char* valid, unsigned provided, v8::Isolate* isolate)
+{
+    throwTypeError(ExceptionMessages::failedToConstruct(type, ExceptionMessages::invalidArity(valid, provided)), isolate);
+}
+
+void throwArityTypeError(ExceptionState& exceptionState, const char* valid, unsigned provided)
+{
+    exceptionState.throwTypeError(ExceptionMessages::invalidArity(valid, provided));
+    exceptionState.throwIfNeeded();
+}
+
+void throwMinimumArityTypeErrorForMethod(const char* method, const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate* isolate)
 {
     throwTypeError(ExceptionMessages::failedToExecute(method, type, ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams)), isolate);
 }
 
-void throwArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate* isolate)
+void throwMinimumArityTypeErrorForConstructor(const char* type, unsigned expected, unsigned providedLeastNumMandatoryParams, v8::Isolate* isolate)
 {
     throwTypeError(ExceptionMessages::failedToConstruct(type, ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams)), isolate);
 }
 
-void throwArityTypeError(ExceptionState& exceptionState, unsigned expected, unsigned providedLeastNumMandatoryParams)
+void throwMinimumArityTypeError(ExceptionState& exceptionState, unsigned expected, unsigned providedLeastNumMandatoryParams)
 {
     exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(expected, providedLeastNumMandatoryParams));
     exceptionState.throwIfNeeded();

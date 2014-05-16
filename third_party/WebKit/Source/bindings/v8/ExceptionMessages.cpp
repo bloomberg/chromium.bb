@@ -91,6 +91,11 @@ String ExceptionMessages::incorrectPropertyType(const String& property, const St
     return "The '" + property + "' property " + detail;
 }
 
+String ExceptionMessages::invalidArity(const char* expected, unsigned provided)
+{
+    return "Valid arities are: " + String(expected) + ", but " + String::number(provided) + " arguments provided.";
+}
+
 String ExceptionMessages::argumentNullOrIncorrectType(int argumentIndex, const String& expectedType)
 {
     return "The " + ordinalNumber(argumentIndex) + " argument provided is either null, or an invalid " + expectedType + " object.";

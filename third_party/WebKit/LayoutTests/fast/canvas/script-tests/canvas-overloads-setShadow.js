@@ -2,23 +2,17 @@ description("Test the behavior of CanvasRenderingContext2D.setShadow() when call
 
 var ctx = document.createElement('canvas').getContext('2d');
 
-function ExpectedNotEnoughArgumentsMessage(num) {
-    return "\"TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': 3 arguments required, but only " + num + " present.\"";
-}
-
-var TypeError = '"TypeError: Failed to execute \'setShadow\' on \'CanvasRenderingContext2D\': No function was found that matched the signature provided."';
-
-shouldThrow("ctx.setShadow()", ExpectedNotEnoughArgumentsMessage(0));
-shouldThrow("ctx.setShadow(0)", ExpectedNotEnoughArgumentsMessage(1));
-shouldThrow("ctx.setShadow(0, 0)", ExpectedNotEnoughArgumentsMessage(2));
+shouldThrow("ctx.setShadow()");
+shouldThrow("ctx.setShadow(0)");
+shouldThrow("ctx.setShadow(0, 0)");
 shouldBe("ctx.setShadow(0, 0, 0)", "undefined");
 shouldBe("ctx.setShadow(0, 0, 0, 0)", "undefined");
 shouldBe("ctx.setShadow(0, 0, 0, 0, 0)", "undefined");
-shouldThrow("ctx.setShadow(0, 0, 0, 0, 0, 0)", "TypeError");
+shouldThrow("ctx.setShadow(0, 0, 0, 0, 0, 0)");
 shouldBe("ctx.setShadow(0, 0, 0, 0, 'red')", "undefined");
-shouldThrow("ctx.setShadow(0, 0, 0, 0, 'red', 0)", "TypeError");
+shouldThrow("ctx.setShadow(0, 0, 0, 0, 'red', 0)");
 shouldBe("ctx.setShadow(0, 0, 0, 0, 'red', 0, 0)", "undefined");
-shouldThrow("ctx.setShadow(0, 0, 0, 0, 0, 0)", "TypeError");
+shouldThrow("ctx.setShadow(0, 0, 0, 0, 0, 0)");
 shouldBe("ctx.setShadow(0, 0, 0, 0, 0, 0, 0)", "undefined");
 shouldBe("ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0)", "undefined");
-shouldThrow("ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0, 0)", "TypeError");
+shouldThrow("ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0, 0)");

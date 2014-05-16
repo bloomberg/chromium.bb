@@ -7,10 +7,10 @@ PASS ctx.setStrokeColor() threw exception TypeError: Failed to execute 'setStrok
 PASS ctx.setStrokeColor('red') is undefined
 PASS ctx.setStrokeColor(0) is undefined
 PASS ctx.setStrokeColor(0, 0) is undefined
-FAIL ctx.setStrokeColor(0, 0, 0) should throw "TypeError: Failed to execute 'setStrokeColor' on 'CanvasRenderingContext2D': No function was found that matched the signature provided.". Threw exception TypeError: Failed to execute 'setStrokeColor' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.setStrokeColor(0, 0, 0) threw exception TypeError: Failed to execute 'setStrokeColor' on 'CanvasRenderingContext2D': Valid arities are: [1, 2, 4, 5], but 3 arguments provided..
 PASS ctx.setStrokeColor(0, 0, 0, 0) is undefined
 PASS ctx.setStrokeColor(0, 0, 0, 0, 0) is undefined
-FAIL ctx.setStrokeColor(0, 0, 0, 0, 0, 0) should throw "TypeError: Failed to execute 'setStrokeColor' on 'CanvasRenderingContext2D': No function was found that matched the signature provided.". Threw exception TypeError: Failed to execute 'setStrokeColor' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.setStrokeColor(0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'setStrokeColor' on 'CanvasRenderingContext2D': Valid arities are: [1, 2, 4, 5], but 6 arguments provided..
 PASS successfullyParsed is true
 
 TEST COMPLETE

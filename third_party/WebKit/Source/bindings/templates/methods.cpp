@@ -10,7 +10,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {# Overloaded methods have length checked during overload resolution #}
     {% if method.number_of_required_arguments and not method.overload_index %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
-        {{throw_arity_type_error(method, method.number_of_required_arguments)}};
+        {{throw_minimum_arity_type_error(method, method.number_of_required_arguments)}};
         return;
     }
     {% endif %}
@@ -267,13 +267,25 @@ throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interfac
 
 
 {######################################}
-{% macro throw_arity_type_error(method, number_of_required_arguments) %}
+{% macro throw_arity_type_error(method, valid_arities) %}
 {% if method.has_exception_state %}
-throwArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length())
+throwArityTypeError(exceptionState, {{valid_arities}}, info.Length())
 {%- elif method.is_constructor %}
-throwArityTypeErrorForConstructor("{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
+throwArityTypeErrorForConstructor("{{interface_name}}", {{valid_arities}}, info.Length(), info.GetIsolate())
 {%- else %}
-throwArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
+throwArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{valid_arities}}, info.Length(), info.GetIsolate())
+{%- endif %}
+{% endmacro %}
+
+
+{######################################}
+{% macro throw_minimum_arity_type_error(method, number_of_required_arguments) %}
+{% if method.has_exception_state %}
+throwMinimumArityTypeError(exceptionState, {{number_of_required_arguments}}, info.Length())
+{%- elif method.is_constructor %}
+throwMinimumArityTypeErrorForConstructor("{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
+{%- else %}
+throwMinimumArityTypeErrorForMethod("{{method.name}}", "{{interface_name}}", {{number_of_required_arguments}}, info.Length(), info.GetIsolate())
 {%- endif %}
 {% endmacro %}
 
@@ -313,14 +325,21 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         {% endfor %}
         break;
     {% endfor %}
-    }
-    {# No match, throw error #}
-    {% if overloads.minimum_number_of_required_arguments %}
-    if (UNLIKELY(info.Length() < {{overloads.minimum_number_of_required_arguments}})) {
-        throwArityTypeError(exceptionState, {{overloads.minimum_number_of_required_arguments}}, info.Length());
+    default:
+        {# Invalid arity, throw error #}
+        {# Report full list of valid arities if gaps and above minimum #}
+        {% if overloads.valid_arities %}
+        if (info.Length() >= {{overloads.minarg}}) {
+            throwArityTypeError(exceptionState, "{{overloads.valid_arities}}", info.Length());
+            return;
+        }
+        {% endif %}
+        {# Otherwise just report "not enough arguments" #}
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{overloads.minarg}}, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    {% endif %}
+    {# No match, throw error #}
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();
 }
@@ -420,7 +439,7 @@ static void constructor{{constructor.overload_index}}(const v8::FunctionCallback
     {% if interface_length and not constructor.overload_index %}
     {# FIXME: remove UNLIKELY: constructors are expensive, so no difference. #}
     if (UNLIKELY(info.Length() < {{interface_length}})) {
-        {{throw_arity_type_error(constructor, interface_length)}};
+        {{throw_minimum_arity_type_error(constructor, interface_length)}};
         return;
     }
     {% endif %}
@@ -486,7 +505,7 @@ static void {{v8_class}}ConstructorCallback(const v8::FunctionCallbackInfo<v8::V
     {% endif %}
     {% if constructor.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{constructor.number_of_required_arguments}})) {
-        {{throw_arity_type_error(constructor, constructor.number_of_required_arguments)}};
+        {{throw_minimum_arity_type_error(constructor, constructor.number_of_required_arguments)}};
         return;
     }
     {% endif %}

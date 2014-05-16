@@ -609,15 +609,21 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         {% endfor %}
         break;
     {% endfor %}
-    }
-    {# No match, throw error #}
-    {% if interface_length %}
-    if (UNLIKELY(info.Length() < {{interface_length}})) {
-        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{interface_length}}, info.Length()));
+    default:
+        {# Invalid arity, throw error #}
+        {# Report full list of valid arities if gaps and above minimum #}
+        {% if constructor_overloads.valid_arities %}
+        if (info.Length() >= {{constructor_overloads.minarg}}) {
+            throwArityTypeError(exceptionState, "{{constructor_overloads.valid_arities}}", info.Length());
+            return;
+        }
+        {% endif %}
+        {# Otherwise just report "not enough arguments" #}
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments({{constructor_overloads.minarg}}, info.Length()));
         exceptionState.throwIfNeeded();
         return;
     }
-    {% endif %}
+    {# No match, throw error #}
     exceptionState.throwTypeError("No matching constructor signature.");
     exceptionState.throwIfNeeded();
 }

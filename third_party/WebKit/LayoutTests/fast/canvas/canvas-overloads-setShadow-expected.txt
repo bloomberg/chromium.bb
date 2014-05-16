@@ -9,14 +9,14 @@ PASS ctx.setShadow(0, 0) threw exception TypeError: Failed to execute 'setShadow
 PASS ctx.setShadow(0, 0, 0) is undefined
 PASS ctx.setShadow(0, 0, 0, 0) is undefined
 PASS ctx.setShadow(0, 0, 0, 0, 0) is undefined
-FAIL ctx.setShadow(0, 0, 0, 0, 0, 0) should throw "TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': No function was found that matched the signature provided.". Threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.setShadow(0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': Valid arities are: [3, 4, 5, 7, 8], but 6 arguments provided..
 PASS ctx.setShadow(0, 0, 0, 0, 'red') is undefined
-FAIL ctx.setShadow(0, 0, 0, 0, 'red', 0) should throw "TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': No function was found that matched the signature provided.". Threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.setShadow(0, 0, 0, 0, 'red', 0) threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': Valid arities are: [3, 4, 5, 7, 8], but 6 arguments provided..
 PASS ctx.setShadow(0, 0, 0, 0, 'red', 0, 0) is undefined
-FAIL ctx.setShadow(0, 0, 0, 0, 0, 0) should throw "TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': No function was found that matched the signature provided.". Threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.setShadow(0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': Valid arities are: [3, 4, 5, 7, 8], but 6 arguments provided..
 PASS ctx.setShadow(0, 0, 0, 0, 0, 0, 0) is undefined
 PASS ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0) is undefined
-FAIL ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0, 0) should throw "TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': No function was found that matched the signature provided.". Threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': No function was found that matched the signature provided..
+PASS ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': Valid arities are: [3, 4, 5, 7, 8], but 9 arguments provided..
 PASS successfullyParsed is true
 
 TEST COMPLETE

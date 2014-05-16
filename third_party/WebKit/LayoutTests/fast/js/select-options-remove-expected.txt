@@ -54,7 +54,7 @@ PASS select1.options.length is 0
 PASS select1.selectedIndex is -1
 
 1.11 Remove too many args from empty Options
-PASS select1.options.remove(0, 'foo') threw exception TypeError: Failed to execute 'remove' on 'HTMLOptionsCollection': No function was found that matched the signature provided..
+PASS select1.options.remove(0, 'foo') threw exception TypeError: Failed to execute 'remove' on 'HTMLOptionsCollection': 1 argument required, but only 2 present..
 PASS select1.options.length is 0
 PASS select1.selectedIndex is -1
 
@@ -150,7 +150,7 @@ PASS select2.selectedIndex is 4
 PASS select2.options[0].value is 'K'
 
 2.12 Remove too many args from non-empty Options
-PASS select2.options.remove(0, 'foo') threw exception TypeError: Failed to execute 'remove' on 'HTMLOptionsCollection': No function was found that matched the signature provided..
+PASS select2.options.remove(0, 'foo') threw exception TypeError: Failed to execute 'remove' on 'HTMLOptionsCollection': 1 argument required, but only 2 present..
 PASS select2.options.length is 6
 PASS select2.selectedIndex is 4
 PASS select2.options[0].value is 'K'

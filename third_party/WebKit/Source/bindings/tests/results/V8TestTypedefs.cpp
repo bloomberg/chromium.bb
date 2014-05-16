@@ -120,7 +120,7 @@ static void voidMethodArrayOfLongsArgMethodCallback(const v8::FunctionCallbackIn
 static void voidMethodFloatArgStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
-        throwArityTypeErrorForMethod("voidMethodFloatArgStringArg", "TestTypedefs", 2, info.Length(), info.GetIsolate());
+        throwMinimumArityTypeErrorForMethod("voidMethodFloatArgStringArg", "TestTypedefs", 2, info.Length(), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
@@ -139,7 +139,7 @@ static void voidMethodFloatArgStringArgMethodCallback(const v8::FunctionCallback
 static void voidMethodTestCallbackInterfaceTypeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", 1, info.Length(), info.GetIsolate());
+        throwMinimumArityTypeErrorForMethod("voidMethodTestCallbackInterfaceTypeArg", "TestTypedefs", 1, info.Length(), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
@@ -161,7 +161,7 @@ static void voidMethodTestCallbackInterfaceTypeArgMethodCallback(const v8::Funct
 static void uLongLongMethodTestInterfaceEmptyTypeSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("uLongLongMethodTestInterfaceEmptyTypeSequenceArg", "TestTypedefs", 1, info.Length(), info.GetIsolate());
+        throwMinimumArityTypeErrorForMethod("uLongLongMethodTestInterfaceEmptyTypeSequenceArg", "TestTypedefs", 1, info.Length(), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
@@ -205,7 +205,7 @@ static void fooOrBarMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Valu
 static void arrayOfStringsMethodArrayOfStringsArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("arrayOfStringsMethodArrayOfStringsArg", "TestTypedefs", 1, info.Length(), info.GetIsolate());
+        throwMinimumArityTypeErrorForMethod("arrayOfStringsMethodArrayOfStringsArg", "TestTypedefs", 1, info.Length(), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
@@ -223,7 +223,7 @@ static void arrayOfStringsMethodArrayOfStringsArgMethodCallback(const v8::Functi
 static void stringArrayMethodStringArrayArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForMethod("stringArrayMethodStringArrayArg", "TestTypedefs", 1, info.Length(), info.GetIsolate());
+        throwMinimumArityTypeErrorForMethod("stringArrayMethodStringArrayArg", "TestTypedefs", 1, info.Length(), info.GetIsolate());
         return;
     }
     TestTypedefs* impl = V8TestTypedefs::toNative(info.Holder());
@@ -242,7 +242,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeErrorForConstructor("TestTypedefs", 1, info.Length(), info.GetIsolate());
+        throwMinimumArityTypeErrorForConstructor("TestTypedefs", 1, info.Length(), info.GetIsolate());
         return;
     }
     TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);

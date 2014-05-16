@@ -164,6 +164,7 @@ void animate6Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 void V8Element::animateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), isolate);
     // AnimationPlayer animate(
     //     (AnimationEffect or sequence<Dictionary>)? effect,
     //     optional (double or Dictionary) timing);
@@ -229,11 +230,10 @@ void V8Element::animateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
             return;
         }
         break;
-    }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "animate", "Element", info.Holder(), isolate);
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
+    default:
+        throwArityTypeError(exceptionState, "[1]", info.Length());
         return;
+        break;
     }
     exceptionState.throwTypeError("No function was found that matched the signature provided.");
     exceptionState.throwIfNeeded();

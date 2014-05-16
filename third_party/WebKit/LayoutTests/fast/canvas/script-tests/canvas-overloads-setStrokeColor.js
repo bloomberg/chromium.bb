@@ -2,17 +2,11 @@ description("Test the behavior of CanvasRenderingContext2D.setStrokeColor() when
 
 var ctx = document.createElement('canvas').getContext('2d');
 
-function ExpectedNotEnoughArgumentsMessage(num) {
-    return "\"TypeError: Failed to execute 'setStrokeColor' on 'CanvasRenderingContext2D': 1 argument required, but only " + num + " present.\"";
-}
-
-var TypeError = '"TypeError: Failed to execute \'setStrokeColor\' on \'CanvasRenderingContext2D\': No function was found that matched the signature provided."';
-
-shouldThrow("ctx.setStrokeColor()", ExpectedNotEnoughArgumentsMessage(0));
+shouldThrow("ctx.setStrokeColor()");
 shouldBe("ctx.setStrokeColor('red')", "undefined");
 shouldBe("ctx.setStrokeColor(0)", "undefined");
 shouldBe("ctx.setStrokeColor(0, 0)", "undefined");
-shouldThrow("ctx.setStrokeColor(0, 0, 0)", "TypeError");
+shouldThrow("ctx.setStrokeColor(0, 0, 0)");
 shouldBe("ctx.setStrokeColor(0, 0, 0, 0)", "undefined");
 shouldBe("ctx.setStrokeColor(0, 0, 0, 0, 0)", "undefined");
-shouldThrow("ctx.setStrokeColor(0, 0, 0, 0, 0, 0)", "TypeError");
+shouldThrow("ctx.setStrokeColor(0, 0, 0, 0, 0, 0)");
