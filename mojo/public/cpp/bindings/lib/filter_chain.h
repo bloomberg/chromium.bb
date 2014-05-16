@@ -5,8 +5,6 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_FILTER_CHAIN_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_FILTER_CHAIN_H_
 
-#include <assert.h>
-
 #include <vector>
 
 #include "mojo/public/cpp/bindings/message.h"
@@ -30,20 +28,17 @@ class FilterChain {
 
   ~FilterChain();
 
-  // Takes ownership of |filter|.
-  FilterChain& Append(MessageFilter* filter);
-  FilterChain& Append(PassThroughFilter* filter);
+  template <typename FilterType>
+  inline void Append();
 
   // Doesn't take ownership of |sink|. Therefore |sink| has to stay alive while
   // this object is alive.
-  void set_sink(MessageReceiver* sink) {
-    assert(!sink_);
-    sink_ = sink;
-  }
+  void SetSink(MessageReceiver* sink);
 
   // Returns a receiver to accept messages. Messages flow through all filters in
   // the same order as they were appended to the chain. If all filters allow a
   // message to pass, it will be forwarded to |sink_|.
+  // The returned value is invalidated when this object goes away.
   MessageReceiver* GetHead();
 
  private:
@@ -52,6 +47,18 @@ class FilterChain {
 
   MessageReceiver* sink_;
 };
+
+template <typename FilterType>
+inline void FilterChain::Append() {
+  FilterType* filter = new FilterType(sink_);
+  if (!filters_.empty())
+    filters_.back()->set_sink(filter);
+  filters_.push_back(filter);
+}
+
+template <>
+inline void FilterChain::Append<PassThroughFilter>() {
+}
 
 }  // namespace internal
 }  // namespace mojo

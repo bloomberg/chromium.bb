@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/lib/filter_chain.h"
 
+#include <assert.h>
+
 #include <algorithm>
 
 namespace mojo {
@@ -31,27 +33,16 @@ FilterChain::~FilterChain() {
   }
 }
 
-FilterChain& FilterChain::Append(MessageFilter* filter) {
+void FilterChain::SetSink(MessageReceiver* sink) {
+  assert(!sink_);
+  sink_ = sink;
   if (!filters_.empty())
-    filters_.back()->set_sink(filter);
-  filters_.push_back(filter);
-
-  return *this;
-}
-
-FilterChain& FilterChain::Append(PassThroughFilter* filter) {
-  delete filter;
-  return *this;
+    filters_.back()->set_sink(sink);
 }
 
 MessageReceiver* FilterChain::GetHead() {
   assert(sink_);
-
-  if (filters_.empty())
-    return sink_;
-
-  filters_.back()->set_sink(sink_);
-  return filters_.front();
+  return filters_.empty() ? sink_ : filters_.front();
 }
 
 }  // namespace internal

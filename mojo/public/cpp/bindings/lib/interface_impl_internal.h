@@ -56,9 +56,9 @@ class InterfaceImplState : public ErrorHandler {
     assert(!router_);
 
     FilterChain filters;
-    filters.Append(new MessageHeaderValidator)
-           .Append(new typename Interface::RequestValidator_)
-           .Append(new typename Interface::Client::ResponseValidator_);
+    filters.Append<MessageHeaderValidator>();
+    filters.Append<typename Interface::RequestValidator_>();
+    filters.Append<typename Interface::Client::ResponseValidator_>();
 
     router_ = new Router(handle.Pass(), filters.Pass(), waiter);
     router_->set_incoming_receiver(&stub_);

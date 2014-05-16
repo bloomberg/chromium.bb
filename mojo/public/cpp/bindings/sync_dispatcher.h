@@ -26,9 +26,9 @@ template<typename Interface> class SyncDispatcher {
       : message_pipe_(message_pipe.Pass()) {
     stub_.set_sink(sink);
 
-    filters_.Append(new internal::MessageHeaderValidator)
-            .Append(new typename Interface::RequestValidator_);
-    filters_.set_sink(&stub_);
+    filters_.Append<internal::MessageHeaderValidator>();
+    filters_.Append<typename Interface::RequestValidator_>();
+    filters_.SetSink(&stub_);
   }
 
   bool WaitAndDispatchOneMessage() {

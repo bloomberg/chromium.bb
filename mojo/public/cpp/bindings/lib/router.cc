@@ -71,7 +71,7 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
       weak_self_(this),
       incoming_receiver_(NULL),
       next_request_id_(0) {
-  filters_.set_sink(&thunk_);
+  filters_.SetSink(&thunk_);
   connector_.set_incoming_receiver(filters_.GetHead());
 }
 

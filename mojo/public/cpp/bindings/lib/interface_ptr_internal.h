@@ -42,9 +42,9 @@ class InterfacePtrState {
     assert(!router_);
 
     FilterChain filters;
-    filters.Append(new MessageHeaderValidator)
-           .Append(new typename Interface::Client::RequestValidator_)
-           .Append(new typename Interface::ResponseValidator_);
+    filters.Append<MessageHeaderValidator>();
+    filters.Append<typename Interface::Client::RequestValidator_>();
+    filters.Append<typename Interface::ResponseValidator_>();
 
     router_ = new Router(handle.Pass(), filters.Pass(), waiter);
     ProxyWithStub* proxy = new ProxyWithStub(router_);
