@@ -73,7 +73,7 @@ static void reverseSkipUntilComponentStart(MediaQueryTokenIterator& token, Media
 
 bool SizesAttributeParser::mediaConditionMatches(PassRefPtrWillBeRawPtr<MediaQuerySet> mediaCondition)
 {
-    // FIXME: How do I handle non-screen media types here?
+    // A Media Condition cannot have a media type other then screen.
     MediaQueryEvaluator mediaQueryEvaluator(MediaTypeNames::screen, *m_mediaValues);
     return mediaQueryEvaluator.eval(mediaCondition.get());
 }
