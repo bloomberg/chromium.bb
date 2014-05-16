@@ -11,8 +11,6 @@
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 
-using content::BrowserThread;
-
 namespace {
 
 const int kBufferSize = 16 * 1024;
@@ -176,6 +174,16 @@ class HttpRequest {
 
 } // namespace
 
+AndroidDeviceManager::BrowserInfo::BrowserInfo()
+    : type(kTypeOther) {
+}
+
+AndroidDeviceManager::DeviceInfo::DeviceInfo() {
+}
+
+AndroidDeviceManager::DeviceInfo::~DeviceInfo() {
+}
+
 AndroidDeviceManager::Device::Device(const std::string& serial,
                                      bool is_connected)
     : serial_(serial),
@@ -217,16 +225,14 @@ bool AndroidDeviceManager::IsConnected(const std::string& serial) {
   return device && device->is_connected();
 }
 
-void AndroidDeviceManager::RunCommand(
-    const std::string& serial,
-    const std::string& command,
-    const CommandCallback& callback) {
+void AndroidDeviceManager::QueryDeviceInfo(const std::string& serial,
+                                           const DeviceInfoCallback& callback) {
   DCHECK(CalledOnValidThread());
   Device* device = FindDevice(serial);
   if (device)
-    device->RunCommand(command, callback);
+    device->QueryDeviceInfo(callback);
   else
-    callback.Run(net::ERR_CONNECTION_FAILED, std::string());
+    callback.Run(DeviceInfo());
 }
 
 void AndroidDeviceManager::OpenSocket(

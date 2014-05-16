@@ -11,6 +11,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/gfx/size.h"
 
 namespace net {
 class StreamSocket;
@@ -23,6 +24,31 @@ class AndroidDeviceManager
   typedef base::Callback<void(int, const std::string&)> CommandCallback;
   typedef base::Callback<void(int result, net::StreamSocket*)> SocketCallback;
 
+  struct BrowserInfo {
+    BrowserInfo();
+
+    enum Type {
+      kTypeChrome,
+      kTypeWebView,
+      kTypeOther
+    };
+
+    std::string socket_name;
+    std::string display_name;
+    Type type;
+  };
+
+  struct DeviceInfo {
+    DeviceInfo();
+    ~DeviceInfo();
+
+    std::string model;
+    gfx::Size screen_size;
+    std::vector<BrowserInfo> browser_info;
+  };
+
+  typedef base::Callback<void(const DeviceInfo&)> DeviceInfoCallback;
+
   class Device : public base::RefCounted<Device>,
                  public base::NonThreadSafe {
    protected:
@@ -30,11 +56,12 @@ class AndroidDeviceManager
 
     typedef AndroidDeviceManager::CommandCallback CommandCallback;
     typedef AndroidDeviceManager::SocketCallback SocketCallback;
+    typedef AndroidDeviceManager::DeviceInfoCallback DeviceInfoCallback;
 
     Device(const std::string& serial, bool is_connected);
 
-    virtual void RunCommand(const std::string& command,
-                            const CommandCallback& callback) = 0;
+    virtual void QueryDeviceInfo(const DeviceInfoCallback& callback) = 0;
+
     virtual void OpenSocket(const std::string& socket_name,
                             const SocketCallback& callback) = 0;
 
@@ -87,9 +114,8 @@ class AndroidDeviceManager
 
   bool IsConnected(const std::string& serial);
 
-  void RunCommand(const std::string& serial,
-                  const std::string& command,
-                  const CommandCallback& callback);
+  void QueryDeviceInfo(const std::string& serial,
+                       const DeviceInfoCallback& callback);
 
   void OpenSocket(const std::string& serial,
                   const std::string& socket_name,

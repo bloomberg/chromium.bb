@@ -7,6 +7,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/devtools/device/adb/adb_client_socket.h"
+#include "chrome/browser/devtools/device/adb/adb_device_info_query.h"
 
 namespace {
 
@@ -19,26 +20,24 @@ const int kAdbPort = 5037;
 class AdbDeviceImpl : public AndroidDeviceManager::Device {
  public:
   AdbDeviceImpl(const std::string& serial, bool is_connected);
-
-  virtual void RunCommand(const std::string& command,
-                          const CommandCallback& callback) OVERRIDE;
+  virtual void QueryDeviceInfo(const DeviceInfoCallback& callback) OVERRIDE;
 
   virtual void OpenSocket(const std::string& name,
                           const SocketCallback& callback) OVERRIDE;
  private:
   virtual ~AdbDeviceImpl() {}
+
+  void RunCommand(const std::string& command,
+                  const CommandCallback& callback);
 };
 
 AdbDeviceImpl::AdbDeviceImpl(const std::string& serial, bool is_connected)
     : Device(serial, is_connected) {
 }
 
-void AdbDeviceImpl::RunCommand(const std::string& command,
-                               const CommandCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  std::string query = base::StringPrintf(kHostTransportCommand,
-                                         serial().c_str(), command.c_str());
-  AdbClientSocket::AdbQuery(kAdbPort, query, callback);
+void AdbDeviceImpl::QueryDeviceInfo(const DeviceInfoCallback& callback) {
+  AdbDeviceInfoQuery::Start(
+      base::Bind(&AdbDeviceImpl::RunCommand, this), callback);
 }
 
 void AdbDeviceImpl::OpenSocket(const std::string& name,
@@ -47,6 +46,14 @@ void AdbDeviceImpl::OpenSocket(const std::string& name,
   std::string socket_name =
       base::StringPrintf(kLocalAbstractCommand, name.c_str());
   AdbClientSocket::TransportQuery(kAdbPort, serial(), socket_name, callback);
+}
+
+void AdbDeviceImpl::RunCommand(const std::string& command,
+                               const CommandCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  std::string query = base::StringPrintf(kHostTransportCommand,
+                                         serial().c_str(), command.c_str());
+  AdbClientSocket::AdbQuery(kAdbPort, query, callback);
 }
 
 // static

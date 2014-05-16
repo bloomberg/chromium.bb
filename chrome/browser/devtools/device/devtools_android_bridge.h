@@ -113,7 +113,7 @@ class DevToolsAndroidBridge
     RemoteBrowser(
         scoped_refptr<DevToolsAndroidBridge> android_bridge,
         const std::string& serial,
-        const std::string& socket);
+        const AndroidDeviceManager::BrowserInfo& browser_info);
 
     std::string serial() { return serial_; }
     std::string socket() { return socket_; }
@@ -125,6 +125,7 @@ class DevToolsAndroidBridge
     void set_version(const std::string& version) { version_ = version; }
 
     bool IsChrome() const;
+    bool IsWebView() const;
 
     typedef std::vector<int> ParsedVersion;
     ParsedVersion GetParsedVersion() const;
@@ -174,6 +175,7 @@ class DevToolsAndroidBridge
     const std::string serial_;
     const std::string socket_;
     std::string display_name_;
+    const AndroidDeviceManager::BrowserInfo::Type type_;
     std::string version_;
     scoped_ptr<base::ListValue> page_descriptors_;
 
@@ -186,17 +188,14 @@ class DevToolsAndroidBridge
    public:
     RemoteDevice(scoped_refptr<DevToolsAndroidBridge> android_bridge,
                  const std::string& serial,
-                 const std::string& model,
+                 const AndroidDeviceManager::DeviceInfo& device_info,
                  bool connected);
 
     std::string serial() { return serial_; }
     std::string model() { return model_; }
     bool is_connected() { return connected_; }
-    void AddBrowser(scoped_refptr<RemoteBrowser> browser);
-
     RemoteBrowsers& browsers() { return browsers_; }
     gfx::Size screen_size() { return screen_size_; }
-    void set_screen_size(const gfx::Size& size) { screen_size_ = size; }
 
     void OpenSocket(const std::string& socket_name,
                     const AndroidDeviceManager::SocketCallback& callback);

@@ -21,6 +21,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/browser/devtools/browser_list_tabcontents_provider.h"
+#include "chrome/browser/devtools/device/adb/adb_device_info_query.h"
 #include "chrome/browser/devtools/device/adb/adb_device_provider.h"
 #include "chrome/browser/devtools/device/self_device_provider.h"
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
@@ -40,14 +41,7 @@ using content::BrowserThread;
 
 namespace {
 
-const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
-const char kInstalledChromePackagesCommand[] = "shell:pm list packages";
-const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
-const char kListProcessesCommand[] = "shell:ps";
-const char kDumpsysCommand[] = "shell:dumpsys window policy";
-const char kDumpsysScreenSizePrefix[] = "mStable=";
-
-const char kUnknownModel[] = "Offline";
+const char kModelOffline[] = "Offline";
 
 const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
 const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
@@ -63,167 +57,8 @@ const char kUrlParam[] = "url";
 const char kPageReloadCommand[] = "Page.reload";
 const char kPageNavigateCommand[] = "Page.navigate";
 
-// The format used for constructing DevTools server socket names.
-const char kDevToolsChannelNameFormat[] = "%s_devtools_remote";
-
-const char kChromeDefaultName[] = "Chrome";
-const char kChromeDefaultSocket[] = "chrome_devtools_remote";
 const int kMinVersionNewWithURL = 32;
 const int kNewPageNavigateDelayMs = 500;
-
-const char kWebViewSocketPrefix[] = "webview_devtools_remote";
-const char kWebViewNameTemplate[] = "WebView in %s";
-
-struct BrowserDescriptor {
-  const char* package;
-  const char* socket;
-  const char* display_name;
-};
-
-const BrowserDescriptor kBrowserDescriptors[] = {
-  {
-    "com.android.chrome",
-    kChromeDefaultSocket,
-    kChromeDefaultName
-  },
-  {
-    "com.chrome.beta",
-    kChromeDefaultSocket,
-    "Chrome Beta"
-  },
-  {
-    "com.google.android.apps.chrome_dev",
-    kChromeDefaultSocket,
-    "Chrome Dev"
-  },
-  {
-    "com.chrome.canary",
-    kChromeDefaultSocket,
-    "Chrome Canary"
-  },
-  {
-    "com.google.android.apps.chrome",
-    kChromeDefaultSocket,
-    "Chromium"
-  },
-  {
-    "org.chromium.content_shell_apk",
-    "content_shell_devtools_remote",
-    "Content Shell"
-  },
-  {
-    "org.chromium.chrome.shell",
-    "chrome_shell_devtools_remote",
-    "Chrome Shell"
-  },
-  {
-    "org.chromium.android_webview.shell",
-    "webview_devtools_remote",
-    "WebView Test Shell"
-  }
-};
-
-const BrowserDescriptor* FindBrowserDescriptor(const std::string& package) {
-  int count = sizeof(kBrowserDescriptors) / sizeof(kBrowserDescriptors[0]);
-  for (int i = 0; i < count; i++)
-    if (kBrowserDescriptors[i].package == package)
-      return &kBrowserDescriptors[i];
-  return NULL;
-}
-
-typedef std::map<std::string, const BrowserDescriptor*> DescriptorMap;
-
-static DescriptorMap FindInstalledBrowserPackages(
-    const std::string& response) {
-  // Parse 'pm list packages' output which on Android looks like this:
-  //
-  // package:com.android.chrome
-  // package:com.chrome.beta
-  // package:com.example.app
-  //
-  DescriptorMap package_to_descriptor;
-  const std::string package_prefix = "package:";
-  std::vector<std::string> entries;
-  Tokenize(response, "'\r\n", &entries);
-  for (size_t i = 0; i < entries.size(); ++i) {
-    if (entries[i].find(package_prefix) != 0)
-      continue;
-    std::string package = entries[i].substr(package_prefix.size());
-    const BrowserDescriptor* descriptor = FindBrowserDescriptor(package);
-    if (!descriptor)
-      continue;
-    package_to_descriptor[descriptor->package] = descriptor;
-  }
-  return package_to_descriptor;
-}
-
-typedef std::map<std::string, std::string> StringMap;
-
-static void MapProcessesToPackages(const std::string& response,
-                                   StringMap& pid_to_package,
-                                   StringMap& package_to_pid) {
-  // Parse 'ps' output which on Android looks like this:
-  //
-  // USER PID PPID VSIZE RSS WCHAN PC ? NAME
-  //
-  std::vector<std::string> entries;
-  Tokenize(response, "\n", &entries);
-  for (size_t i = 1; i < entries.size(); ++i) {
-    std::vector<std::string> fields;
-    Tokenize(entries[i], " \r", &fields);
-    if (fields.size() < 9)
-      continue;
-    std::string pid = fields[1];
-    std::string package = fields[8];
-    pid_to_package[pid] = package;
-    package_to_pid[package] = pid;
-  }
-}
-
-typedef std::map<std::string,
-                 scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> >
-    BrowserMap;
-
-static StringMap MapSocketsToProcesses(const std::string& response,
-                                       const std::string& channel_pattern) {
-  // Parse 'cat /proc/net/unix' output which on Android looks like this:
-  //
-  // Num       RefCount Protocol Flags    Type St Inode Path
-  // 00000000: 00000002 00000000 00010000 0001 01 331813 /dev/socket/zygote
-  // 00000000: 00000002 00000000 00010000 0001 01 358606 @xxx_devtools_remote
-  // 00000000: 00000002 00000000 00010000 0001 01 347300 @yyy_devtools_remote
-  //
-  // We need to find records with paths starting from '@' (abstract socket)
-  // and containing the channel pattern ("_devtools_remote").
-  StringMap socket_to_pid;
-  std::vector<std::string> entries;
-  Tokenize(response, "\n", &entries);
-  for (size_t i = 1; i < entries.size(); ++i) {
-    std::vector<std::string> fields;
-    Tokenize(entries[i], " \r", &fields);
-    if (fields.size() < 8)
-      continue;
-    if (fields[3] != "00010000" || fields[5] != "01")
-      continue;
-    std::string path_field = fields[7];
-    if (path_field.size() < 1 || path_field[0] != '@')
-      continue;
-    size_t socket_name_pos = path_field.find(channel_pattern);
-    if (socket_name_pos == std::string::npos)
-      continue;
-
-    std::string socket = path_field.substr(1);
-
-    std::string pid;
-    size_t socket_name_end = socket_name_pos + channel_pattern.size();
-    if (socket_name_end < path_field.size() &&
-        path_field[socket_name_end] == '_') {
-      pid = path_field.substr(socket_name_end + 1);
-    }
-    socket_to_pid[socket] = pid;
-  }
-  return socket_to_pid;
-}
 
 // DiscoveryRequest -----------------------------------------------------
 
@@ -248,18 +83,7 @@ class DiscoveryRequest : public base::RefCountedThreadSafe<
 
   void ReceivedSerials(const std::vector<std::string>& serials);
   void ProcessSerials();
-  void ReceivedModel(int result, const std::string& response);
-  void ReceivedDumpsys(int result, const std::string& response);
-  void ReceivedPackages(int result, const std::string& response);
-  void ReceivedProcesses(
-      const std::string& packages_response,
-      int result,
-      const std::string& processes_response);
-  void ReceivedSockets(
-      const std::string& packages_response,
-      const std::string& processes_response,
-      int result,
-      const std::string& sockets_response);
+  void ReceivedDeviceInfo(const AndroidDeviceManager::DeviceInfo& device_info);
   void ProcessSockets();
   void ReceivedVersion(int result, const std::string& response);
   void ReceivedPages(int result, const std::string& response);
@@ -274,13 +98,6 @@ class DiscoveryRequest : public base::RefCountedThreadSafe<
   void NextDevice();
 
   void Respond();
-
-  void CreateBrowsers(const std::string& packages_response,
-                      const std::string& processes_response,
-                      const std::string& sockets_response);
-
-  void ParseDumpsysResponse(const std::string& response);
-  void ParseScreenSize(const std::string& str);
 
   scoped_refptr<DevToolsAndroidBridge> android_bridge_;
   AndroidDeviceManager* device_manager_;
@@ -332,79 +149,22 @@ void DiscoveryRequest::ProcessSerials() {
   }
 
   if (device_manager_->IsConnected(current_serial())) {
-    device_manager_->RunCommand(current_serial(), kDeviceModelCommand,
-        base::Bind(&DiscoveryRequest::ReceivedModel, this));
+    device_manager_->QueryDeviceInfo(current_serial(),
+        base::Bind(&DiscoveryRequest::ReceivedDeviceInfo, this));
   } else {
+    AndroidDeviceManager::DeviceInfo offline_info;
+    offline_info.model = kModelOffline;
     remote_devices_->push_back(new DevToolsAndroidBridge::RemoteDevice(
-        android_bridge_, current_serial(), kUnknownModel, false));
+        android_bridge_, current_serial(), offline_info, false));
     NextDevice();
   }
 }
 
-void DiscoveryRequest::ReceivedModel(int result, const std::string& response) {
-  DCHECK_EQ(device_message_loop_, base::MessageLoop::current());
-  if (result < 0) {
-    NextDevice();
-    return;
-  }
+void DiscoveryRequest::ReceivedDeviceInfo(
+    const AndroidDeviceManager::DeviceInfo& device_info) {
   remote_devices_->push_back(new DevToolsAndroidBridge::RemoteDevice(
-      android_bridge_, current_serial(), response, true));
-  device_manager_->RunCommand(current_serial(), kDumpsysCommand,
-      base::Bind(&DiscoveryRequest::ReceivedDumpsys, this));
-}
-
-void DiscoveryRequest::ReceivedDumpsys(int result,
-                                      const std::string& response) {
-  DCHECK_EQ(device_message_loop_, base::MessageLoop::current());
-  if (result >= 0)
-    ParseDumpsysResponse(response);
-
-  device_manager_->RunCommand(
-      current_serial(),
-      kInstalledChromePackagesCommand,
-      base::Bind(&DiscoveryRequest::ReceivedPackages, this));
-}
-
-void DiscoveryRequest::ReceivedPackages(int result,
-                                       const std::string& packages_response) {
-  DCHECK_EQ(device_message_loop_, base::MessageLoop::current());
-  if (result < 0) {
-    NextDevice();
-    return;
-  }
-  device_manager_->RunCommand(
-      current_serial(),
-      kListProcessesCommand,
-      base::Bind(
-          &DiscoveryRequest::ReceivedProcesses, this, packages_response));
-}
-
-void DiscoveryRequest::ReceivedProcesses(
-    const std::string& packages_response,
-    int result,
-    const std::string& processes_response) {
-  DCHECK_EQ(device_message_loop_, base::MessageLoop::current());
-  if (result < 0) {
-    NextDevice();
-    return;
-  }
-  device_manager_->RunCommand(
-      current_serial(),
-      kOpenedUnixSocketsCommand,
-      base::Bind(&DiscoveryRequest::ReceivedSockets,
-                 this,
-                 packages_response,
-                 processes_response));
-}
-
-void DiscoveryRequest::ReceivedSockets(
-    const std::string& packages_response,
-    const std::string& processes_response,
-    int result,
-    const std::string& sockets_response) {
-  DCHECK_EQ(device_message_loop_, base::MessageLoop::current());
-  if (result >= 0)
-    CreateBrowsers(packages_response, processes_response, sockets_response);
+          android_bridge_, current_serial(), device_info, true));
+  browsers_ = remote_devices_->back()->browsers();
   ProcessSockets();
 }
 
@@ -445,9 +205,9 @@ void DiscoveryRequest::ReceivedVersion(int result,
     }
     std::string package;
     if (dict->GetString("Android-Package", &package)) {
-      const BrowserDescriptor* descriptor = FindBrowserDescriptor(package);
-      if (descriptor)
-        current_browser()->set_display_name(descriptor->display_name);
+      current_browser()->set_display_name(
+          AdbDeviceInfoQuery::GetDisplayName(current_browser()->socket(),
+                                             package));
     }
   }
 
@@ -483,133 +243,6 @@ void DiscoveryRequest::NextDevice() {
 void DiscoveryRequest::Respond() {
   callback_.Run(remote_devices_.release());
 }
-
-void DiscoveryRequest::CreateBrowsers(
-    const std::string& packages_response,
-    const std::string& processes_response,
-    const std::string& sockets_response) {
-  DescriptorMap package_to_descriptor =
-      FindInstalledBrowserPackages(packages_response);
-
-  StringMap pid_to_package;
-  StringMap package_to_pid;
-  MapProcessesToPackages(processes_response, pid_to_package, package_to_pid);
-
-  const std::string channel_pattern =
-      base::StringPrintf(kDevToolsChannelNameFormat, "");
-
-  StringMap socket_to_pid = MapSocketsToProcesses(sockets_response,
-                                                  channel_pattern);
-
-  scoped_refptr<DevToolsAndroidBridge::RemoteDevice> remote_device =
-      remote_devices_->back();
-
-  // Create RemoteBrowser instances.
-  BrowserMap package_to_running_browser;
-  BrowserMap socket_to_unnamed_browser;
-  for (StringMap::iterator it = socket_to_pid.begin();
-      it != socket_to_pid.end(); ++it) {
-    std::string socket = it->first;
-    std::string pid = it->second;
-
-    scoped_refptr<DevToolsAndroidBridge::RemoteBrowser> browser =
-        new DevToolsAndroidBridge::RemoteBrowser(
-            android_bridge_, current_serial(), socket);
-
-    StringMap::iterator pit = pid_to_package.find(pid);
-    if (pit != pid_to_package.end()) {
-      std::string package = pit->second;
-      package_to_running_browser[package] = browser;
-      const BrowserDescriptor* descriptor = FindBrowserDescriptor(package);
-      if (descriptor) {
-        browser->set_display_name(descriptor->display_name);
-      } else if (socket.find(kWebViewSocketPrefix) == 0) {
-        browser->set_display_name(
-            base::StringPrintf(kWebViewNameTemplate, package.c_str()));
-      } else {
-        browser->set_display_name(package);
-      }
-    } else {
-      // Set fallback display name.
-      std::string name = socket.substr(0, socket.find(channel_pattern));
-      name[0] = base::ToUpperASCII(name[0]);
-      browser->set_display_name(name);
-
-      socket_to_unnamed_browser[socket] = browser;
-    }
-    remote_device->AddBrowser(browser);
-  }
-
-  browsers_ = remote_device->browsers();
-
-  // Find installed packages not mapped to browsers.
-  typedef std::multimap<std::string, const BrowserDescriptor*>
-      DescriptorMultimap;
-  DescriptorMultimap socket_to_descriptor;
-  for (DescriptorMap::iterator it = package_to_descriptor.begin();
-      it != package_to_descriptor.end(); ++it) {
-    std::string package = it->first;
-    const BrowserDescriptor* descriptor = it->second;
-
-    if (package_to_running_browser.find(package) !=
-        package_to_running_browser.end())
-      continue;  // This package is already mapped to a browser.
-
-    if (package_to_pid.find(package) != package_to_pid.end()) {
-      // This package is running but not mapped to a browser.
-      socket_to_descriptor.insert(
-          DescriptorMultimap::value_type(descriptor->socket, descriptor));
-      continue;
-    }
-  }
-
-  // Try naming remaining unnamed browsers.
-  for (DescriptorMultimap::iterator it = socket_to_descriptor.begin();
-      it != socket_to_descriptor.end(); ++it) {
-    std::string socket = it->first;
-    const BrowserDescriptor* descriptor = it->second;
-
-    if (socket_to_descriptor.count(socket) != 1)
-      continue;  // No definitive match.
-
-    BrowserMap::iterator bit = socket_to_unnamed_browser.find(socket);
-    if (bit != socket_to_unnamed_browser.end())
-      bit->second->set_display_name(descriptor->display_name);
-  }
-}
-
-void DiscoveryRequest::ParseDumpsysResponse(const std::string& response) {
-  std::vector<std::string> lines;
-  Tokenize(response, "\r", &lines);
-  for (size_t i = 0; i < lines.size(); ++i) {
-    std::string line = lines[i];
-    size_t pos = line.find(kDumpsysScreenSizePrefix);
-    if (pos != std::string::npos) {
-      ParseScreenSize(
-          line.substr(pos + std::string(kDumpsysScreenSizePrefix).size()));
-      break;
-    }
-  }
-}
-
-void DiscoveryRequest::ParseScreenSize(const std::string& str) {
-  std::vector<std::string> pairs;
-  Tokenize(str, "-", &pairs);
-  if (pairs.size() != 2)
-    return;
-
-  int width;
-  int height;
-  std::vector<std::string> numbers;
-  Tokenize(pairs[1].substr(1, pairs[1].size() - 2), ",", &numbers);
-  if (numbers.size() != 2 ||
-      !base::StringToInt(numbers[0], &width) ||
-      !base::StringToInt(numbers[1], &height))
-    return;
-
-  remote_devices_->back()->set_screen_size(gfx::Size(width, height));
-}
-
 
 // ProtocolCommand ------------------------------------------------------------
 
@@ -763,7 +396,7 @@ AgentHostDelegate::AgentHostDelegate(
     : id_(id),
       socket_opened_(false),
       detached_(false),
-      is_web_view_(browser->socket().find(kWebViewSocketPrefix) == 0),
+      is_web_view_(browser->IsWebView()),
       web_socket_(browser->CreateWebSocket(debug_url, this)),
       proxy_(content::DevToolsExternalAgentProxy::Create(this)) {
   g_host_delegates.Get()[id] = this;
@@ -952,15 +585,21 @@ void RemotePageTarget::Navigate(const std::string& url,
 DevToolsAndroidBridge::RemoteBrowser::RemoteBrowser(
     scoped_refptr<DevToolsAndroidBridge> android_bridge,
     const std::string& serial,
-    const std::string& socket)
+    const AndroidDeviceManager::BrowserInfo& browser_info)
     : android_bridge_(android_bridge),
       serial_(serial),
-      socket_(socket),
+      socket_(browser_info.socket_name),
+      display_name_(browser_info.display_name),
+      type_(browser_info.type),
       page_descriptors_(new base::ListValue()) {
 }
 
 bool DevToolsAndroidBridge::RemoteBrowser::IsChrome() const {
-  return socket_.find(kChromeDefaultSocket) == 0;
+  return type_ == AndroidDeviceManager::BrowserInfo::kTypeChrome;
+}
+
+bool DevToolsAndroidBridge::RemoteBrowser::IsWebView() const {
+  return type_ == AndroidDeviceManager::BrowserInfo::kTypeWebView;
 }
 
 DevToolsAndroidBridge::RemoteBrowser::ParsedVersion
@@ -1126,17 +765,20 @@ DevToolsAndroidBridge::RemoteBrowser::~RemoteBrowser() {
 DevToolsAndroidBridge::RemoteDevice::RemoteDevice(
     scoped_refptr<DevToolsAndroidBridge> android_bridge,
     const std::string& serial,
-    const std::string& model,
+    const AndroidDeviceManager::DeviceInfo& device_info,
     bool connected)
     : android_bridge_(android_bridge),
       serial_(serial),
-      model_(model),
-      connected_(connected) {
-}
-
-void DevToolsAndroidBridge::RemoteDevice::AddBrowser(
-    scoped_refptr<RemoteBrowser> browser) {
-  browsers_.push_back(browser);
+      model_(device_info.model),
+      connected_(connected),
+      screen_size_(device_info.screen_size) {
+  for (std::vector<AndroidDeviceManager::BrowserInfo>::const_iterator it =
+      device_info.browser_info.begin();
+      it != device_info.browser_info.end();
+      ++it) {
+    browsers_.push_back(new DevToolsAndroidBridge::RemoteBrowser(
+        android_bridge_, serial_, *it));
+  }
 }
 
 void DevToolsAndroidBridge::RemoteDevice::OpenSocket(

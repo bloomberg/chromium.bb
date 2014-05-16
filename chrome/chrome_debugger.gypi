@@ -30,6 +30,8 @@
       'sources': [
         'browser/devtools/device/adb/adb_client_socket.cc',
         'browser/devtools/device/adb/adb_client_socket.h',
+        'browser/devtools/device/adb/adb_device_info_query.cc',
+        'browser/devtools/device/adb/adb_device_info_query.h',
         'browser/devtools/device/adb/adb_device_provider.cc',
         'browser/devtools/device/adb/adb_device_provider.h',
         'browser/devtools/device/android_device_manager.cc',

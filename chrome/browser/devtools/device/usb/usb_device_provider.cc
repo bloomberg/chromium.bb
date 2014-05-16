@@ -5,6 +5,7 @@
 #include "chrome/browser/devtools/device/usb/usb_device_provider.h"
 
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/devtools/device/adb/adb_device_info_query.h"
 #include "chrome/browser/devtools/device/usb/android_rsa.h"
 #include "chrome/browser/devtools/device/usb/android_usb_device.h"
 #include "crypto/rsa_private_key.h"
@@ -21,8 +22,7 @@ class UsbDeviceImpl : public AndroidDeviceManager::Device {
  public:
   explicit UsbDeviceImpl(AndroidUsbDevice* device);
 
-  virtual void RunCommand(const std::string& command,
-                          const CommandCallback& callback) OVERRIDE;
+  virtual void QueryDeviceInfo(const DeviceInfoCallback& callback) OVERRIDE;
 
   virtual void OpenSocket(const std::string& name,
                           const SocketCallback& callback) OVERRIDE;
@@ -30,6 +30,8 @@ class UsbDeviceImpl : public AndroidDeviceManager::Device {
   void OnOpenSocket(const SocketCallback& callback,
                     net::StreamSocket* socket,
                     int result);
+  void RunCommand(const std::string& command,
+                  const CommandCallback& callback);
   void OpenedForCommand(const CommandCallback& callback,
                         net::StreamSocket* socket,
                         int result);
@@ -50,18 +52,9 @@ UsbDeviceImpl::UsbDeviceImpl(AndroidUsbDevice* device)
   device_->InitOnCallerThread();
 }
 
-void UsbDeviceImpl::RunCommand(const std::string& command,
-                               const CommandCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  net::StreamSocket* socket = device_->CreateSocket(command);
-  if (!socket) {
-    callback.Run(net::ERR_CONNECTION_FAILED, std::string());
-    return;
-  }
-  int result = socket->Connect(base::Bind(&UsbDeviceImpl::OpenedForCommand,
-                                          this, callback, socket));
-  if (result != net::ERR_IO_PENDING)
-    callback.Run(result, std::string());
+void UsbDeviceImpl::QueryDeviceInfo(const DeviceInfoCallback& callback) {
+  AdbDeviceInfoQuery::Start(
+      base::Bind(&UsbDeviceImpl::RunCommand, this), callback);
 }
 
 void UsbDeviceImpl::OpenSocket(const std::string& name,
@@ -84,6 +77,20 @@ void UsbDeviceImpl::OnOpenSocket(const SocketCallback& callback,
                   net::StreamSocket* socket,
                   int result) {
   callback.Run(result, result == net::OK ? socket : NULL);
+}
+
+void UsbDeviceImpl::RunCommand(const std::string& command,
+                               const CommandCallback& callback) {
+  DCHECK(CalledOnValidThread());
+  net::StreamSocket* socket = device_->CreateSocket(command);
+  if (!socket) {
+    callback.Run(net::ERR_CONNECTION_FAILED, std::string());
+    return;
+  }
+  int result = socket->Connect(base::Bind(&UsbDeviceImpl::OpenedForCommand,
+                                          this, callback, socket));
+  if (result != net::ERR_IO_PENDING)
+    callback.Run(result, std::string());
 }
 
 void UsbDeviceImpl::OpenedForCommand(const CommandCallback& callback,
