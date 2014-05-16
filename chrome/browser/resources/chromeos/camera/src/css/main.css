@@ -176,6 +176,12 @@ body:not(.controls-visible) .dynamic {
   -webkit-box-pack: start;
 }
 
+.buttons.prev-to-middle {
+  /* Start just before the take-picture button. */
+  -webkit-margin-end: calc(50% + 73px/2);
+  -webkit-box-pack: end;
+}
+
 .buttons.next-to-middle {
   /* Start just after the take-picture button. */
   -webkit-margin-start: calc(50% + 73px/2);
@@ -316,7 +322,7 @@ body.has-error #error {
   display: -webkit-box;
 }
 
-canvas {
+body.mirror canvas {
   -webkit-transform: scaleX(-1);
 }
 
@@ -395,10 +401,13 @@ canvas {
   height: 257px;  /* Forces hardware accelerated 2d canvas. */
   opacity: 1;
   position: absolute;
-  right: 0;
   top: 0;
   transition: opacity 200ms;
   width: 257px;
+}
+
+body.mirror #effects li canvas {
+  right: 0;
 }
 
 #effects li span {
@@ -489,9 +498,19 @@ canvas {
   width: 32px;
 }
 
+.buttons #toggle-mirror {
+  -webkit-appearance: none;
+  background-image: -webkit-image-set(
+      url(../images/camera_button_mirror.png) 1x,
+      url(../images/2x/camera_button_mirror.png) 2x);
+  height: 32px;
+  width: 32px;
+}
+
 .buttons #toggle-timer.animate,
 .buttons #toggle-timer:not(:checked),
-.buttons #toggle-multi:not(:checked) {
+.buttons #toggle-multi:not(:checked),
+.buttons #toggle-mirror:not(:checked) {
   background-position: 0 -32px;
 }
 
