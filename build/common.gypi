@@ -561,6 +561,10 @@
       # Enable hole punching for the protected video.
       'video_hole%': 0,
 
+      # Automatically select platforms under ozone. Turn this off to
+      # build only explicitly selected platforms.
+      'ozone_auto_platforms%': 1,
+
       'conditions': [
         # A flag for POSIX platforms
         ['OS=="win"', {
@@ -1381,6 +1385,16 @@
     # Support ChromeOS touchpad gestures with ozone.
     'use_evdev_gestures%': 0,
 
+    # Default ozone platform (if no --ozone-platform flag).
+    'ozone_platform%': "",
+
+    # Ozone platforms to include in the build.
+    'ozone_platform_caca%': 0,
+    'ozone_platform_dri%': 0,
+    'ozone_platform_egltest%': 0,
+    'ozone_platform_ozonex%': 0,
+    'ozone_platform_test%': 0,
+
     'conditions': [
       # Enable the Syzygy optimization step for the official builds.
       ['OS=="win" and buildtype=="Official" and syzyasan!=1', {
@@ -2109,22 +2123,20 @@
         'use_brlapi%': 1,
       }],
 
-      ['use_ozone==1', {
-        # This is the default platform
-        'ozone_platform%': "test",
+      ['use_ozone==1 and ozone_auto_platforms==1', {
+        # Use test as the default platform.
+        'ozone_platform%': 'test',
 
-        # Enable built-in ozone platforms if ozone is enabled.
-        'ozone_platform_caca%': 0,
+        # Build all platforms whose deps are in install-build-deps.sh.
+        # Only these platforms will be compile tested by buildbots.
         'ozone_platform_dri%': 1,
-        'ozone_platform_egltest%': 1,
-        'ozone_platform_ozonex%': 0,
         'ozone_platform_test%': 1,
-      }, {  # use_ozone==0
-        'ozone_platform_caca%': 0,
-        'ozone_platform_dri%': 0,
-        'ozone_platform_egltest%': 0,
-        'ozone_platform_ozonex%': 0,
-        'ozone_platform_test%': 0,
+        'ozone_platform_egltest%': 1,
+      }],
+
+      ['use_ozone==1 and ozone_auto_platforms==1 and chromeos==1', {
+        # Use dri as the default platform.
+        'ozone_platform%': 'dri',
       }],
 
       ['desktop_linux==1 and use_aura==1 and use_x11==1', {
