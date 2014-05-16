@@ -51,6 +51,17 @@ void GLEnableDisable(GLenum cap, bool enable) {
     glDisable(cap);
 }
 
+bool ClearGLErrors(bool warn, const char* msg) {
+  bool no_error = true;
+  GLenum error;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    DLOG_IF(WARNING, warn) << error << " " << msg;
+    no_error = false;
+  }
+
+  return no_error;
+}
+
 bool g_globals_initialized = false;
 GLint g_gl_max_texture_units = 0;
 bool g_supports_oes_vertex_array_object = false;
@@ -147,6 +158,8 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
     : mode_(mode) {
   TRACE_EVENT0("android_webview", "AppGLStateSave");
   MakeAppContextCurrent();
+
+  ClearGLErrors(true, "Incoming GLError");
 
   if (!g_globals_initialized) {
     g_globals_initialized = true;
@@ -251,11 +264,14 @@ ScopedAppGLStateRestoreImpl::ScopedAppGLStateRestoreImpl(
     glGetVertexAttribfv(
         i, GL_CURRENT_VERTEX_ATTRIB, vertex_attrib_[i].current_vertex_attrib);
   }
+  DCHECK(ClearGLErrors(false, NULL));
 }
 
 ScopedAppGLStateRestoreImpl::~ScopedAppGLStateRestoreImpl() {
   TRACE_EVENT0("android_webview", "AppGLStateRestore");
   MakeAppContextCurrent();
+
+  DCHECK(ClearGLErrors(false, NULL));
 
   glBindFramebufferEXT(GL_FRAMEBUFFER, framebuffer_binding_ext_);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_buffer_binding_);
@@ -347,6 +363,9 @@ ScopedAppGLStateRestoreImpl::~ScopedAppGLStateRestoreImpl() {
 
   GLEnableDisable(GL_STENCIL_TEST, stencil_test_);
   glStencilFunc(stencil_func_, stencil_mask_, stencil_ref_);
+
+  // Do not leak GLError out of chromium.
+  ClearGLErrors(true, "Chromium GLError");
 }
 
 }  // namespace internal
