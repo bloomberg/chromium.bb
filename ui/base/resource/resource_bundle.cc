@@ -105,15 +105,14 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
     ScaleFactor scale_factor = GetSupportedScaleFactor(scale);
     bool found = rb_->LoadBitmap(resource_id_, &scale_factor,
                                  &image, &fell_back_to_1x);
+    if (!found)
+      return gfx::ImageSkiaRep();
+
     // If the resource is in the package with SCALE_FACTOR_NONE, it
     // can be used in any scale factor. The image is maked as "unscaled"
     // so that the ImageSkia do not automatically scale.
-    bool unscaled = scale_factor == ui::SCALE_FACTOR_NONE;
-    if (unscaled)
-      scale_factor = ui::SCALE_FACTOR_100P;
-
-    if (!found)
-      return gfx::ImageSkiaRep();
+    if (scale_factor == ui::SCALE_FACTOR_NONE)
+      return gfx::ImageSkiaRep(image, 0.0f);
 
     if (fell_back_to_1x) {
       // GRIT fell back to the 100% image, so rescale it to the correct size.
@@ -122,19 +121,10 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
           skia::ImageOperations::RESIZE_LANCZOS3,
           gfx::ToCeiledInt(image.width() * scale),
           gfx::ToCeiledInt(image.height() * scale));
-    } else if (!unscaled) {
-      SkBitmap scaled_image =
-          PlatformScaleImage(image,
-                             ui::GetScaleForScaleFactor(scale_factor),
-                             scale);
-      if (scaled_image.isNull())
-        scale = GetScaleForScaleFactor(scale_factor);
-      else
-        image = scaled_image;
     } else {
       scale = GetScaleForScaleFactor(scale_factor);
     }
-    return gfx::ImageSkiaRep(image, unscaled ? 0.0f : scale);
+    return gfx::ImageSkiaRep(image, scale);
   }
 
  private:
@@ -359,15 +349,13 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   ui::ScaleFactor scale_factor_to_load = ui::SCALE_FACTOR_100P;
 #endif
 
-    float scale = GetImageScale(scale_factor_to_load);
-
     // TODO(oshima): Consider reading the image size from png IHDR chunk and
     // skip decoding here and remove #ifdef below.
     // ResourceBundle::GetSharedInstance() is destroyed after the
     // BrowserMainLoop has finished running. |image_skia| is guaranteed to be
     // destroyed before the resource bundle is destroyed.
     gfx::ImageSkia image_skia(new ResourceBundleImageSource(this, resource_id),
-                              scale);
+                              GetScaleForScaleFactor(scale_factor_to_load));
     if (image_skia.isNull()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;
       NOTREACHED();  // Want to assert in debug mode.
@@ -812,14 +800,5 @@ bool ResourceBundle::DecodePNG(const unsigned char* buf,
   *fell_back_to_1x = PNGContainsFallbackMarker(buf, size);
   return gfx::PNGCodec::Decode(buf, size, bitmap);
 }
-
-#if !defined(OS_WIN)
-// static
-SkBitmap ResourceBundle::PlatformScaleImage(const SkBitmap& image,
-                                            float loaded_image_scale,
-                                            float desired_scale) {
-  return SkBitmap();
-}
-#endif
 
 }  // namespace ui

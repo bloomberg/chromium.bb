@@ -227,10 +227,10 @@ class NewTabButton : public views::ImageButton {
  private:
   bool ShouldWindowContentsBeTransparent() const;
   gfx::ImageSkia GetBackgroundImage(views::CustomButton::ButtonState state,
-                                    ui::ScaleFactor scale_factor) const;
+                                    float scale) const;
   gfx::ImageSkia GetImageForState(views::CustomButton::ButtonState state,
-                                  ui::ScaleFactor scale_factor) const;
-  gfx::ImageSkia GetImageForScale(ui::ScaleFactor scale_factor) const;
+                                  float scale) const;
+  gfx::ImageSkia GetImageForScale(float scale) const;
 
   // Tab strip that contains this button.
   TabStrip* tab_strip_;
@@ -307,8 +307,7 @@ void NewTabButton::OnMouseReleased(const ui::MouseEvent& event) {
 #endif
 
 void NewTabButton::OnPaint(gfx::Canvas* canvas) {
-  gfx::ImageSkia image =
-      GetImageForScale(ui::GetSupportedScaleFactor(canvas->image_scale()));
+  gfx::ImageSkia image = GetImageForScale(canvas->image_scale());
   canvas->DrawImageInt(image, 0, height() - image.height());
 }
 
@@ -326,7 +325,7 @@ bool NewTabButton::ShouldWindowContentsBeTransparent() const {
 
 gfx::ImageSkia NewTabButton::GetBackgroundImage(
     views::CustomButton::ButtonState state,
-    ui::ScaleFactor scale_factor) const {
+    float scale) const {
   int background_id = 0;
   if (ShouldWindowContentsBeTransparent()) {
     background_id = IDR_THEME_TAB_BACKGROUND_V;
@@ -355,10 +354,9 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
       GetThemeProvider()->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
   int height = mask->height();
   int width = mask->width();
-  float scale = ui::GetImageScale(scale_factor);
   // The canvas and mask has to use the same scale factor.
   if (!mask->HasRepresentation(scale))
-    scale_factor = ui::SCALE_FACTOR_100P;
+    scale = ui::GetScaleForScaleFactor(ui::SCALE_FACTOR_100P);
 
   gfx::Canvas canvas(gfx::Size(width, height), scale, false);
 
@@ -400,16 +398,16 @@ gfx::ImageSkia NewTabButton::GetBackgroundImage(
 
 gfx::ImageSkia NewTabButton::GetImageForState(
     views::CustomButton::ButtonState state,
-    ui::ScaleFactor scale_factor) const {
+    float scale) const {
   const int overlay_id = state == views::CustomButton::STATE_PRESSED ?
         IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
   gfx::ImageSkia* overlay = GetThemeProvider()->GetImageSkiaNamed(overlay_id);
 
   gfx::Canvas canvas(
       gfx::Size(overlay->width(), overlay->height()),
-      ui::GetImageScale(scale_factor),
+      scale,
       false);
-  canvas.DrawImageInt(GetBackgroundImage(state, scale_factor), 0, 0);
+  canvas.DrawImageInt(GetBackgroundImage(state, scale), 0, 0);
 
   // Draw the button border with a slight alpha.
   const int kGlassFrameOverlayAlpha = 178;
@@ -421,13 +419,12 @@ gfx::ImageSkia NewTabButton::GetImageForState(
   return gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
-gfx::ImageSkia NewTabButton::GetImageForScale(
-    ui::ScaleFactor scale_factor) const {
+gfx::ImageSkia NewTabButton::GetImageForScale(float scale) const {
   if (!hover_animation_->is_animating())
-    return GetImageForState(state(), scale_factor);
+    return GetImageForState(state(), scale);
   return gfx::ImageSkiaOperations::CreateBlendedImage(
-      GetImageForState(views::CustomButton::STATE_NORMAL, scale_factor),
-      GetImageForState(views::CustomButton::STATE_HOVERED, scale_factor),
+      GetImageForState(views::CustomButton::STATE_NORMAL, scale),
+      GetImageForState(views::CustomButton::STATE_HOVERED, scale),
       hover_animation_->GetCurrentValue());
 }
 

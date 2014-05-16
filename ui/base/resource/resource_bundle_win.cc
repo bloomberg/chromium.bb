@@ -65,34 +65,6 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
   return GetImageNamed(resource_id);
 }
 
-// static
-SkBitmap ResourceBundle::PlatformScaleImage(const SkBitmap& image,
-                                            float loaded_image_scale,
-                                            float desired_bitmap_scale) {
-  if (!gfx::IsHighDPIEnabled())
-    return SkBitmap();
-
-  // On Windows we can have multiple device scales like 1/1.25/1.5/2, etc.
-  // We only have 1x and 2x data packs. We need to scale the bitmaps
-  // accordingly.
-  if (loaded_image_scale == desired_bitmap_scale)
-    return image;
-
-  SkBitmap scaled_image;
-  gfx::Size unscaled_size(image.width(), image.height());
-  gfx::Size scaled_size = ToCeiledSize(
-      gfx::ScaleSize(unscaled_size,
-                     desired_bitmap_scale / loaded_image_scale));
-  scaled_image = skia::ImageOperations::Resize(
-      image,
-      skia::ImageOperations::RESIZE_LANCZOS3,
-      scaled_size.width(),
-      scaled_size.height());
-  DCHECK_EQ(scaled_image.width(), scaled_size.width());
-  DCHECK_EQ(scaled_image.height(), scaled_size.height());
-  return scaled_image;
-}
-
 void SetResourcesDataDLL(HINSTANCE handle) {
   resources_data_dll = handle;
 }
