@@ -132,8 +132,6 @@ public:
     virtual void scroll(const IntSize&, const IntRect&, const IntRect&) OVERRIDE { }
     virtual void scheduleAnimation() OVERRIDE { }
 
-    virtual bool isCompositorFramePending() const OVERRIDE { return false; }
-
     virtual IntRect rootViewToScreen(const IntRect& r) const OVERRIDE { return r; }
     virtual blink::WebScreenInfo screenInfo() const OVERRIDE { return blink::WebScreenInfo(); }
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const OVERRIDE { }

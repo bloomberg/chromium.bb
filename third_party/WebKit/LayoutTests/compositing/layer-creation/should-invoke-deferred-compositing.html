@@ -11,7 +11,7 @@
 
 <html>
 <head>
-<script src="../../resources/run-after-display.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
 <style>
 
 .composited {
@@ -37,52 +37,20 @@ canvas {
 </style>
 
 <script>
-
-  if (window.testRunner)
-    testRunner.dumpAsText();
-
-
-  var canvasElement;
-
-  function addCanvasToTree() {
-    document.getElementById("container").appendChild(canvasElement);
-  }
-
-  function runTest() {
-    canvasElement = document.createElement("canvas");
+  function repaintTest() {
+    var canvasElement = document.createElement("canvas");
     canvasElement.width = 200;
     canvasElement.height = 200;
     var context = canvasElement.getContext("2d");
     context.fillStyle = "green";
     context.fillRect(80, 80, 50, 50);
-
-    if (!window.testRunner) {
-      // If the test is being run interactively, then
-      // the canvas should correctly appear after 1 second.
-      setTimeout(addCanvasToTree, 1000);
-      return;
-    }
-
-    testRunner.waitUntilDone();
-
-    runAfterDisplay(function() {
-      // This should initiate a compositor frame via scheduleAnimation().
-      addCanvasToTree();
-
-      if (window.internals.isCompositorFramePending(document))
-        document.getElementById("result").innerHTML = "PASS - did schedule animation";
-      else
-        document.getElementById("result").innerHTML = "FAIL - did not schedule animation";
-      testRunner.notifyDone();
-    });
+    document.getElementById("container").appendChild(canvasElement);
   }
-
 </script>
 </head>
 
-<body onload="runTest()">
+<body onload="runRepaintAndPixelTest()">
   <div id="container" class="composited box"></div>
-  <div id="result">The green box should appear after 1 second when running this test interactively.</div>
 </body>
 
 </html>

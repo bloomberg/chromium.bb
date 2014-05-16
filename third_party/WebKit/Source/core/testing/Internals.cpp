@@ -2246,16 +2246,6 @@ void Internals::forceCompositingUpdate(Document* document, ExceptionState& excep
     document->frame()->view()->updateLayoutAndStyleForPainting();
 }
 
-bool Internals::isCompositorFramePending(Document* document, ExceptionState& exceptionState)
-{
-    if (!document || !document->renderView()) {
-        exceptionState.throwDOMException(InvalidAccessError, document ? "The document's render view cannot be retrieved." : "The document provided is invalid.");
-        return false;
-    }
-
-    return document->page()->chrome().client().isCompositorFramePending();
-}
-
 void Internals::setZoomFactor(float factor)
 {
     frame()->setPageZoomFactor(factor);

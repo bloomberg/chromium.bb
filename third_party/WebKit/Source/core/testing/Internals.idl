@@ -260,7 +260,6 @@
     boolean loseSharedGraphicsContext3D();
 
     [RaisesException] void forceCompositingUpdate(Document document);
-    [RaisesException] boolean isCompositorFramePending(Document document);
 
     void setZoomFactor(float factor);
 

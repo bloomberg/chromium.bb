@@ -51,6 +51,9 @@ crbug.com/331566 fast/preloader/document-write-noscript.html [ Failure Pass ]
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
+Bug(enne) compositing/layer-creation/should-invoke-deferred-compositing.html [ NeedsRebaseline ]
+Bug(enne) virtual/softwarecompositing/layer-creation/should-invoke-deferred-compositing.html [ NeedsRebaseline ]
+
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 virtual/softwarecompositing/overlap-blending/reflection-opacity-huge.html [ ImageOnlyFailure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ ImageOnlyFailure ]

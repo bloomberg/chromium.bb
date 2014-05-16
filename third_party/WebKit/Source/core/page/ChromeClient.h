@@ -151,8 +151,6 @@ public:
     virtual void scheduleAnimation() = 0;
     // End methods used by HostWindow.
 
-    virtual bool isCompositorFramePending() const = 0;
-
     virtual void dispatchViewportPropertiesDidChange(const ViewportDescription&) const { }
 
     virtual void contentsSizeChanged(LocalFrame*, const IntSize&) const = 0;
