@@ -1263,7 +1263,10 @@ PassRefPtr<TypeBuilder::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceR
 
     ensureFlatRules();
     size_t index = m_flatRules.find(rule);
-    if (index == kNotFound)
+    // FIXME(lusnikov): m_flatRules are not always aligned with the m_parsedStyleSheet rule source
+    // datas due to the CSSOM operations that add/remove rules without changing source.
+    // This is a design issue. See crbug.com/178410
+    if (index == kNotFound || index >= m_parsedStyleSheet->ruleCount())
         return nullptr;
     RefPtrWillBeRawPtr<CSSRuleSourceData> sourceData = m_parsedStyleSheet->ruleSourceDataAt(static_cast<unsigned>(index));
     return buildSourceRangeObject(sourceData->ruleHeaderRange, lineEndings().get());
