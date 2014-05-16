@@ -7,11 +7,60 @@ import shutil
 import sys
 import unittest
 
-sys.path.append(os.path.join(os.pardir, os.path.dirname(__file__)))
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
 from pylib import android_commands
 
 # pylint: disable=W0212,W0702
+
+class TestDeviceTempFile(unittest.TestCase):
+  def setUp(self):
+    if not os.getenv('BUILDTYPE'):
+      os.environ['BUILDTYPE'] = 'Debug'
+
+    devices = android_commands.GetAttachedDevices()
+    self.assertGreater(len(devices), 0, 'No device attached!')
+    self.ac = android_commands.AndroidCommands(device=devices[0])
+
+  def testTempFileDeleted(self):
+    """Tests that DeviceTempFile deletes files when closed."""
+    temp_file = android_commands.DeviceTempFile(self.ac)
+    self.assertFalse(self.ac.FileExistsOnDevice(temp_file.name))
+    self.ac.SetFileContents(temp_file.name, "contents")
+    self.assertTrue(self.ac.FileExistsOnDevice(temp_file.name))
+    temp_file.close()
+    self.assertFalse(self.ac.FileExistsOnDevice(temp_file.name))
+
+    with android_commands.DeviceTempFile(self.ac) as with_temp_file:
+      self.assertFalse(self.ac.FileExistsOnDevice(with_temp_file.name))
+      self.ac.SetFileContents(with_temp_file.name, "contents")
+      self.assertTrue(self.ac.FileExistsOnDevice(with_temp_file.name))
+
+    self.assertFalse(self.ac.FileExistsOnDevice(with_temp_file.name))
+
+  def testTempFileNotWritten(self):
+    """Tests that device temp files work successfully even if not written to."""
+    temp_file = android_commands.DeviceTempFile(self.ac)
+    temp_file.close()
+    self.assertFalse(self.ac.FileExistsOnDevice(temp_file.name))
+
+    with android_commands.DeviceTempFile(self.ac) as with_temp_file:
+      pass
+    self.assertFalse(self.ac.FileExistsOnDevice(with_temp_file.name))
+
+  def testNaming(self):
+    """Tests that returned filenames are as requested."""
+    temp_file = android_commands.DeviceTempFile(self.ac, prefix="cat")
+    self.assertTrue(os.path.basename(temp_file.name).startswith("cat"))
+
+    temp_file = android_commands.DeviceTempFile(self.ac, suffix="dog")
+    self.assertTrue(temp_file.name.endswith("dog"))
+
+    temp_file = android_commands.DeviceTempFile(
+        self.ac, prefix="cat", suffix="dog")
+    self.assertTrue(os.path.basename(temp_file.name).startswith("cat"))
+    self.assertTrue(temp_file.name.endswith("dog"))
+
 
 class TestGetFilesChanged(unittest.TestCase):
 

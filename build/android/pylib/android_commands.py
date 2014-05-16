@@ -13,6 +13,7 @@ import datetime
 import inspect
 import logging
 import os
+import random
 import re
 import shlex
 import signal
@@ -77,6 +78,34 @@ CONTROL_USB_CHARGING_COMMANDS = [
         'echo 1 > /sys/module/pm8921_charger/parameters/disabled',
   },
 ]
+
+class DeviceTempFile(object):
+  def __init__(self, android_commands, prefix='temp_file', suffix=''):
+    """Find an unused temporary file path in the devices external directory.
+
+    When this object is closed, the file will be deleted on the device.
+    """
+    self.android_commands = android_commands
+    while True:
+      # TODO(cjhopman): This could actually return the same file in multiple
+      # calls if the caller doesn't write to the files immediately. This is
+      # expected to never happen.
+      i = random.randint(0, 1000000)
+      self.name = '%s/%s-%d-%010d%s' % (
+          android_commands.GetExternalStorage(),
+          prefix, int(time.time()), i, suffix)
+      if not android_commands.FileExistsOnDevice(self.name):
+        break
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, type, value, traceback):
+    self.close()
+
+  def close(self):
+    self.android_commands.RunShellCommand('rm ' + self.name)
+
 
 def GetAVDs():
   """Returns a list of AVDs."""
@@ -1125,16 +1154,6 @@ class AndroidCommands(object):
       f.flush()
       self._adb.Push(f.name, filename)
 
-  _TEMP_FILE_BASE_FMT = 'temp_file_%d'
-  _TEMP_SCRIPT_FILE_BASE_FMT = 'temp_script_file_%d.sh'
-
-  def _GetDeviceTempFileName(self, base_name):
-    i = 0
-    while self.FileExistsOnDevice(
-        self.GetExternalStorage() + '/' + base_name % i):
-      i += 1
-    return self.GetExternalStorage() + '/' + base_name % i
-
   def RunShellCommandWithSU(self, command, timeout_time=20, log_result=False):
     return self.RunShellCommand('su -c %s' % command, timeout_time, log_result)
 
@@ -1192,27 +1211,22 @@ class AndroidCommands(object):
 
     This is less efficient than SetFileContents.
     """
-    temp_file = self._GetDeviceTempFileName(AndroidCommands._TEMP_FILE_BASE_FMT)
-    temp_script = self._GetDeviceTempFileName(
-        AndroidCommands._TEMP_SCRIPT_FILE_BASE_FMT)
+    with DeviceTempFile(self) as temp_file:
+      with DeviceTempFile(self, suffix=".sh") as temp_script:
+        # Put the contents in a temporary file
+        self.SetFileContents(temp_file.name, contents)
+        # Create a script to copy the file contents to its final destination
+        self.SetFileContents(temp_script.name,
+                             'cat %s > %s' % (temp_file.name, filename))
 
-    try:
-      # Put the contents in a temporary file
-      self.SetFileContents(temp_file, contents)
-      # Create a script to copy the file contents to its final destination
-      self.SetFileContents(temp_script, 'cat %s > %s' % (temp_file, filename))
+        command = 'sh %s' % temp_script.name
+        command_runner = self._GetProtectedFileCommandRunner()
+        if command_runner:
+          return command_runner(command)
+        else:
+          logging.warning(
+              'Could not set contents of protected file: %s' % filename)
 
-      command = 'sh %s' % temp_script
-      command_runner = self._GetProtectedFileCommandRunner()
-      if command_runner:
-        return command_runner(command)
-      else:
-        logging.warning(
-            'Could not set contents of protected file: %s' % filename)
-    finally:
-      # And remove the temporary files
-      self.RunShellCommand('rm ' + temp_file)
-      self.RunShellCommand('rm ' + temp_script)
 
   def RemovePushedFiles(self):
     """Removes all files pushed with PushIfNeeded() from the device."""
@@ -1877,28 +1891,23 @@ class AndroidCommands(object):
       dest: absolute path of destination directory
     """
     logging.info('In EfficientDeviceDirectoryCopy %s %s', source, dest)
-    temp_script_file = self._GetDeviceTempFileName(
-        AndroidCommands._TEMP_SCRIPT_FILE_BASE_FMT)
-    host_script_path = os.path.join(constants.DIR_SOURCE_ROOT,
-                                    'build',
-                                    'android',
-                                    'pylib',
-                                    'efficient_android_directory_copy.sh')
-    try:
-      self._adb.Push(host_script_path, temp_script_file)
-      self.EnableAdbRoot()
-      out = self.RunShellCommand('sh %s %s %s' % (temp_script_file,
-                                                  source,
-                                                  dest),
-                                 timeout_time=120)
+    with DeviceTempFile(self, suffix=".sh") as temp_script_file:
+      host_script_path = os.path.join(constants.DIR_SOURCE_ROOT,
+                                      'build',
+                                      'android',
+                                      'pylib',
+                                      'efficient_android_directory_copy.sh')
+      self._adb.Push(host_script_path, temp_script_file.name)
+      self.EnableAdbRoot
+      out = self.RunShellCommand(
+          'sh %s %s %s' % (temp_script_file.name, source, dest),
+          timeout_time=120)
       if self._device:
         device_repr = self._device[-4:]
       else:
         device_repr = '????'
       for line in out:
         logging.info('[%s]> %s', device_repr, line)
-    finally:
-      self.RunShellCommand('rm %s' % temp_script_file)
 
   def _GetControlUsbChargingCommand(self):
     if self._control_usb_charging_command['cached']:
