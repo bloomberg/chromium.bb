@@ -3,7 +3,9 @@
  *
  * Copyright © 2003 Keith Packard
  * Copyright © 2013 Red Hat, Inc.
+ * Copyright © 2014 Google, Inc.
  * Red Hat Author(s): Akira TAGOH
+ * Google Author(s): Behdad Esfahbod
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -27,6 +29,9 @@
 #include <stdio.h>
 #include <string.h>
 
+/* SHA256 */
+
+
 #define ROTRN(w, v, n)	((((FcChar32)v) >> n) | (((FcChar32)v) << (w - n)))
 #define ROTR32(v, n)	ROTRN(32, v, n)
 #define SHR(v, n)	(v >> n)
@@ -38,28 +43,22 @@
 #define ss1(x)		(ROTR32(x, 17) ^ ROTR32(x, 19) ^ SHR(x, 10))
 
 
-static FcChar32 *
-FcHashInitSHA256Digest (void)
+typedef FcChar32 FcHashDigest[8];
+
+static void
+FcHashInitDigest (FcHashDigest digest)
 {
-    int i;
-    static const FcChar32 h[] = {
+    static const FcHashDigest init = {
 	0x6a09e667UL, 0xbb67ae85UL, 0x3c6ef372UL, 0xa54ff53aUL,
 	0x510e527fUL, 0x9b05688cUL, 0x1f83d9abUL, 0x5be0cd19UL
     };
-    FcChar32 *ret = malloc (sizeof (FcChar32) * 8);
 
-    if (!ret)
-	return NULL;
-
-    for (i = 0; i < 8; i++)
-	ret[i] = h[i];
-
-    return ret;
+    memcpy (digest, init, sizeof (FcHashDigest));
 }
 
 static void
-FcHashComputeSHA256Digest (FcChar32   *hash,
-			   const char *block)
+FcHashDigestAddBlock (FcHashDigest digest,
+		      const char   block[64])
 {
     static const FcChar32 k[] = {
 	0x428a2f98UL, 0x71374491UL, 0xb5c0fbcfUL, 0xe9b5dba5UL,
@@ -82,7 +81,7 @@ FcHashComputeSHA256Digest (FcChar32   *hash,
     FcChar32 w[64], i, j, t1, t2;
     FcChar32 a, b, c, d, e, f, g, h;
 
-#define H(n)	(hash[n])
+#define H(n)	(digest[n])
 
     a = H(0);
     b = H(1);
@@ -131,51 +130,46 @@ FcHashComputeSHA256Digest (FcChar32   *hash,
 }
 
 static FcChar8 *
-FcHashSHA256ToString (FcChar32 *hash)
+FcHashToString (const FcHashDigest digest)
 {
     FcChar8 *ret = NULL;
     static const char hex[] = "0123456789abcdef";
     int i, j;
 
-    if (hash)
+    ret = malloc (sizeof (FcChar8) * (8 * 8 + 7 + 1));
+    if (!ret)
+	return NULL;
+    memcpy (ret, "sha256:", 7);
+#define H(n)	digest[n]
+    for (i = 0; i < 8; i++)
     {
-	ret = malloc (sizeof (FcChar8) * (8 * 8 + 7 + 1));
-	if (!ret)
-	    return NULL;
-	memcpy (ret, "sha256:", 7);
-#define H(n)	hash[n]
-	for (i = 0; i < 8; i++)
-	{
-	    FcChar32 v = H(i);
+	FcChar32 v = H(i);
 
-	    for (j = 0; j < 8; j++)
-		ret[7 + (i * 8) + j] = hex[(v >> (28 - j * 4)) & 0xf];
-	}
-	ret[7 + i * 8] = 0;
-#undef H
-	free (hash);
+	for (j = 0; j < 8; j++)
+	    ret[7 + (i * 8) + j] = hex[(v >> (28 - j * 4)) & 0xf];
     }
+    ret[7 + i * 8] = 0;
+#undef H
 
     return ret;
 }
 
 FcChar8 *
-FcHashGetSHA256DigestFromFile (const FcChar8 *filename)
+FcHashGetDigestFromFile (const FcChar8 *filename)
 {
-    FILE *fp = fopen ((const char *)filename, "rb");
+    FcHashDigest digest;
+    FILE *fp;
     char ibuf[64];
-    FcChar32 *ret;
     size_t len;
     struct stat st;
 
+    fp = fopen ((const char *)filename, "rb");
     if (!fp)
 	return NULL;
 
-    if (FcStat (filename, &st))
-	goto bail0;
+    FcHashInitDigest (digest);
 
-    ret = FcHashInitSHA256Digest ();
-    if (!ret)
+    if (FcStat (filename, &st))
 	goto bail0;
 
     while (!feof (fp))
@@ -190,7 +184,7 @@ FcHashGetSHA256DigestFromFile (const FcChar8 *filename)
 	    if ((64 - len) < 9)
 	    {
 		/* process a block once */
-		FcHashComputeSHA256Digest (ret, ibuf);
+		FcHashDigestAddBlock (digest, ibuf);
 		memset (ibuf, 0, 64);
 	    }
 	    /* set input size at the end */
@@ -203,17 +197,17 @@ FcHashGetSHA256DigestFromFile (const FcChar8 *filename)
 	    ibuf[63 - 5] = (v >> 40) & 0xff;
 	    ibuf[63 - 6] = (v >> 48) & 0xff;
 	    ibuf[63 - 7] = (v >> 56) & 0xff;
-	    FcHashComputeSHA256Digest (ret, ibuf);
+	    FcHashDigestAddBlock (digest, ibuf);
 	    break;
 	}
 	else
 	{
-	    FcHashComputeSHA256Digest (ret, ibuf);
+	    FcHashDigestAddBlock (digest, ibuf);
 	}
     }
     fclose (fp);
 
-    return FcHashSHA256ToString (ret);
+    return FcHashToString (digest);
 
 bail0:
     fclose (fp);
@@ -222,16 +216,14 @@ bail0:
 }
 
 FcChar8 *
-FcHashGetSHA256DigestFromMemory (const char *fontdata,
+FcHashGetDigestFromMemory (const char *fontdata,
 				 size_t      length)
 {
+    FcHashDigest digest;
     char ibuf[64];
-    FcChar32 *ret;
     size_t i = 0;
 
-    ret = FcHashInitSHA256Digest ();
-    if (!ret)
-	return NULL;
+    FcHashInitDigest (digest);
 
     while (i <= length)
     {
@@ -249,7 +241,7 @@ FcHashGetSHA256DigestFromMemory (const char *fontdata,
 	    if ((64 - n) < 9)
 	    {
 		/* process a block once */
-		FcHashComputeSHA256Digest (ret, ibuf);
+		FcHashDigestAddBlock (digest, ibuf);
 		memset (ibuf, 0, 64);
 	    }
 	    /* set input size at the end */
@@ -262,15 +254,15 @@ FcHashGetSHA256DigestFromMemory (const char *fontdata,
 	    ibuf[63 - 5] = (v >> 40) & 0xff;
 	    ibuf[63 - 6] = (v >> 48) & 0xff;
 	    ibuf[63 - 7] = (v >> 56) & 0xff;
-	    FcHashComputeSHA256Digest (ret, ibuf);
+	    FcHashDigestAddBlock (digest, ibuf);
 	    break;
 	}
 	else
 	{
-	    FcHashComputeSHA256Digest (ret, &fontdata[i]);
+	    FcHashDigestAddBlock (digest, &fontdata[i]);
 	}
 	i += 64;
     }
 
-    return FcHashSHA256ToString (ret);
+    return FcHashToString (digest);
 }

@@ -868,11 +868,11 @@ FcFontSetDeserialize (const FcFontSet *set);
 
 /* fchash.c */
 FcPrivate FcChar8 *
-FcHashGetSHA256DigestFromFile (const FcChar8 *filename);
+FcHashGetDigestFromFile (const FcChar8 *filename);
 
 FcPrivate FcChar8 *
-FcHashGetSHA256DigestFromMemory (const char *fontdata,
-				 size_t      length);
+FcHashGetDigestFromMemory (const char *fontdata,
+			   size_t      length);
 
 /* fcinit.c */
 FcPrivate FcConfig *

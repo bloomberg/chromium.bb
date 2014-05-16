@@ -1715,7 +1715,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	    goto bail3;
 	}
 	memset (&fontdata[len], 0, alen - len);
-	hashstr = FcHashGetSHA256DigestFromMemory (fontdata, len);
+	hashstr = FcHashGetDigestFromMemory (fontdata, len);
 	free (fontdata);
     }
     else if (err == FT_Err_Invalid_Face_Handle)
@@ -1723,7 +1723,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	/* font may not support SFNT. falling back to
 	 * read the font data from file directly
 	 */
-	hashstr = FcHashGetSHA256DigestFromFile (file);
+	hashstr = FcHashGetDigestFromFile (file);
     }
     else
     {
