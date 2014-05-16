@@ -32,12 +32,15 @@
 #include "core/html/imports/HTMLImportStateResolver.h"
 
 #include "core/html/imports/HTMLImport.h"
+#include "core/html/imports/HTMLImportChild.h"
 
 namespace WebCore {
 
 inline bool HTMLImportStateResolver::isBlockingFollowers(HTMLImport* import)
 {
     if (!import->isSync())
+        return false;
+    if (!toHTMLImportChild(import)->isFirst())
         return false;
     if (!import->loader())
         return true;
@@ -46,9 +49,12 @@ inline bool HTMLImportStateResolver::isBlockingFollowers(HTMLImport* import)
 
 inline bool HTMLImportStateResolver::shouldBlockScriptExecution() const
 {
-    for (const HTMLImport* ancestor = m_import; ancestor; ancestor = ancestor->parent()) {
-        if (ancestor->previous() && isBlockingFollowers(ancestor->previous()))
-            return true;
+    // FIXME: Memoize to make this faster.
+    for (HTMLImport* ancestor = m_import; ancestor; ancestor = ancestor->parent()) {
+        for (HTMLImport* predecessor = ancestor->previous(); predecessor; predecessor = predecessor->previous()) {
+            if (isBlockingFollowers(predecessor))
+                return true;
+        }
     }
 
     for (HTMLImport* child = m_import->firstChild(); child; child = child->next()) {

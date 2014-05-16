@@ -88,6 +88,7 @@ public:
     void didFinishLoading();
     void didFinishUpgradingCustomElements();
     bool isLoaded() const;
+    bool isFirst() const;
     void normalize();
 
 private:
@@ -101,6 +102,7 @@ private:
     void createLoader();
     void shareLoader(HTMLImportChild*);
     void ensureLoader();
+    void createCustomElementMicrotaskStepIfNeeded();
 
 #if ENABLE(OILPAN)
     Persistent<Document> m_master;

@@ -55,6 +55,12 @@ CustomElementMicrotaskImportStep::~CustomElementMicrotaskImportStep()
 {
 }
 
+void CustomElementMicrotaskImportStep::parentWasChanged()
+{
+    m_queue = CustomElementMicrotaskQueue::create();
+    m_import.clear();
+}
+
 bool CustomElementMicrotaskImportStep::shouldWaitForImport() const
 {
     return m_import && !m_import->isLoaded();

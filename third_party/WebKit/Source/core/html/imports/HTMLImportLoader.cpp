@@ -208,12 +208,7 @@ void HTMLImportLoader::removeImport(HTMLImportChild* client)
 
 bool HTMLImportLoader::shouldBlockScriptExecution() const
 {
-    for (size_t i = 0; i < m_imports.size(); ++i) {
-        if (!m_imports[i]->state().shouldBlockScriptExecution())
-            return false;
-    }
-
-    return true;
+    return firstImport()->state().shouldBlockScriptExecution();
 }
 
 PassRefPtr<CustomElementMicrotaskQueue> HTMLImportLoader::microtaskQueue() const

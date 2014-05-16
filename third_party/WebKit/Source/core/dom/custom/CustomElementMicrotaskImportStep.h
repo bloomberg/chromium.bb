@@ -56,6 +56,7 @@ public:
     virtual ~CustomElementMicrotaskImportStep();
 
     // API for HTML Imports
+    void parentWasChanged();
     void importDidFinishLoading();
     WeakPtr<CustomElementMicrotaskImportStep> weakPtr() { return m_weakFactory.createWeakPtr(); }
 

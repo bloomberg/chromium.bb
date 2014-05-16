@@ -114,6 +114,11 @@ bool HTMLImportChild::isLoaded() const
     return m_loader && m_loader->isDone();
 }
 
+bool HTMLImportChild::isFirst() const
+{
+    return m_loader && m_loader->isFirstImport(this);
+}
+
 Document* HTMLImportChild::importedDocument() const
 {
     if (!m_loader)
@@ -150,6 +155,28 @@ void HTMLImportChild::stateDidChange()
         didFinish();
 }
 
+void HTMLImportChild::createCustomElementMicrotaskStepIfNeeded()
+{
+    // HTMLImportChild::normalize(), which is called from HTMLImportLoader::addImport(),
+    // can move import children to new parents. So their microtask steps should be updated as well,
+    // to let the steps be in the new parent queues.This method handles such migration.
+    // For implementation simplicity, outdated step objects that are owned by moved children
+    // aren't removed from the (now wrong) queues. Instead, each step invalidates its content so that
+    // it is removed from the wrong queue during the next traversal. See parentWasChanged() for the detail.
+
+    if (m_customElementMicrotaskStep) {
+        m_customElementMicrotaskStep->parentWasChanged();
+        m_customElementMicrotaskStep.clear();
+    }
+
+    if (!isDone() && !formsCycle()) {
+        m_customElementMicrotaskStep = CustomElement::didCreateImport(this)->weakPtr();
+    }
+
+    for (HTMLImport* child = firstChild(); child; child = child->next())
+        toHTMLImportChild(child)->createCustomElementMicrotaskStepIfNeeded();
+}
+
 void HTMLImportChild::ensureLoader()
 {
     if (m_loader)
@@ -160,10 +187,7 @@ void HTMLImportChild::ensureLoader()
     else
         createLoader();
 
-    if (!isDone() && !formsCycle()) {
-        ASSERT(!m_customElementMicrotaskStep);
-        m_customElementMicrotaskStep = CustomElement::didCreateImport(this)->weakPtr();
-    }
+    createCustomElementMicrotaskStepIfNeeded();
 }
 
 void HTMLImportChild::createLoader()

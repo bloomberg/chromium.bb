@@ -75,7 +75,7 @@ public:
     void removeImport(HTMLImportChild*);
     void moveToFirst(HTMLImportChild*);
     HTMLImportChild* firstImport() const { return m_imports[0]; }
-    bool isFirstImport(HTMLImportChild* child) const { return m_imports.size() ? firstImport() == child : false; }
+    bool isFirstImport(const HTMLImportChild* child) const { return m_imports.size() ? firstImport() == child : false; }
 
     bool isDone() const { return m_state == StateLoaded || m_state == StateError; }
     bool hasError() const { return m_state == StateError; }
