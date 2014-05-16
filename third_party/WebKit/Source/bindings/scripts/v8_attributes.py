@@ -201,6 +201,7 @@ def generate_getter(interface, attribute, contents):
 
     contents.update({
         'cpp_value': cpp_value,
+        'cpp_value_to_v8_value': idl_type.cpp_value_to_v8_value(cpp_value=cpp_value, creation_context='info.Holder()'),
         'v8_set_return_value_for_main_world': v8_set_return_value_statement(for_main_world=True),
         'v8_set_return_value': v8_set_return_value_statement(),
     })

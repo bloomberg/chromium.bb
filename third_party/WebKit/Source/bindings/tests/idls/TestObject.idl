@@ -159,6 +159,7 @@ interface TestObject {
     [LogActivity=GetterOnly, LogAllWorlds] attribute long activityLoggingGetterForAllWorldsLongAttribute;
     [LogActivity=SetterOnly, LogAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
+    [CachedAttribute=isArrayDirty] attribute DOMString[] cachedArrayAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
     [CallWith=ScriptState] attribute any callWithScriptStateAnyAttribute;
     [CallWith=ExecutionContext|ScriptState] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
