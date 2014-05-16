@@ -306,8 +306,8 @@ class ProjectCheckout(dict):
     # - For an unversioned manifest, if the 'revision' is a raw SHA1 hash
     #   and not a named branch, assume it is a pinned project path and can not
     #   be patched.
-    # - For a versioned manifest (generated via repo -r), repo will sets
-    #   revision to the actual git sha1 ref, and adds an 'upstream'
+    # - For a versioned manifest (generated via repo -r), repo will set
+    #   revision to the actual git sha1 ref, and add an 'upstream'
     #   field corresponding to branch name in the original manifest. For
     #   a project with a SHA1 'revision' but no named branch in the
     #   'upstream' field, assume it can not be patched.
