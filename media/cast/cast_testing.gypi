@@ -30,6 +30,8 @@
         'test/utility/in_process_receiver.h',
         'test/utility/input_builder.cc',
         'test/utility/input_builder.h',
+        'test/utility/net_utility.cc',
+        'test/utility/net_utility.h',
         'test/utility/standalone_cast_environment.cc',
         'test/utility/standalone_cast_environment.h',
         'test/utility/video_utility.cc',
