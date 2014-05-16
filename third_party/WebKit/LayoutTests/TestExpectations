@@ -198,6 +198,7 @@ crbug.com/318978 [ Linux ] virtual/softwarecompositing/plugins/invalidate_rect.h
 # Flaky:
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location.html [ Failure Pass ]
 crbug.com/374270 http/tests/security/frameNavigation/context-for-location-assign.html [ Failure Pass ]
+crbug.com/374284 html5lib/generated/run-tests19-data.html [ Timeout Pass ]
 
 # Flaky tests under Linux Aura
 crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring.html [ ImageOnlyFailure Pass ]
@@ -782,6 +783,7 @@ crbug.com/349523 [ Win ] webaudio/realtimeanalyser-fft-scaling.html [ Failure ]
 crbug.com/352464 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe-location-change.html [ Pass Failure ]
 crbug.com/372425 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-subframe.html [ Pass Failure ]
 crbug.com/372428 http/tests/security/dataURL/xss-DENIED-to-data-url-in-foreign-domain-window-open.html [ Pass Failure ]
+crbug.com/374282 http/tests/security/dataURL/xss-DENIED-to-data-url-sub-frame-uppercase.html [ Failure Pass ]
 
 crbug.com/361940 [ Lion MountainLion Retina Mavericks ] compositing/update-paint-phases.html [ Failure ]
 
