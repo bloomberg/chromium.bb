@@ -1372,7 +1372,8 @@ def _FinishParsing(options, args):
     if options.local:
       cros_build_lib.Die('Cannot specify both --remote and --local')
 
-    if not options.buildbot and not patches:
+    # options.channels is a convenient way to detect payloads builds.
+    if not options.buildbot and not options.channels and not patches:
       prompt = ('No patches were provided; are you sure you want to just '
                 'run a remote build of %s?' % (
                     options.branch if options.branch else 'ToT'))
@@ -1529,9 +1530,15 @@ def _PostParseCheck(parser, options, args):
       cros_build_lib.Error('No such configuraton target: "%s".', arg)
       continue
 
-    if options.channels and build_config.build_type != constants.PAYLOADS_TYPE:
+    is_payloads_build = build_config.build_type == constants.PAYLOADS_TYPE
+
+    if options.channels and not is_payloads_build:
       cros_build_lib.Die('--channel must only be used with a payload config,'
                          ' not target (%s).' % arg)
+
+    if not options.channels and is_payloads_build:
+      cros_build_lib.Die('payload configs (%s) require --channel to do anything'
+                         ' useful.' % arg)
 
     # The --version option is not compatible with an external target unless the
     # --buildbot option is specified.  More correctly, only "paladin versions"
