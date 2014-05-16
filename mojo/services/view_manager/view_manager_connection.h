@@ -53,15 +53,14 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
   // necessary.
-  // TODO(sky): convert these to take Node*s.
-  void ProcessNodeHierarchyChanged(const NodeId& node_id,
-                                   const NodeId& new_parent_id,
-                                   const NodeId& old_parent_id,
+  void ProcessNodeHierarchyChanged(const Node* node,
+                                   const Node* new_parent,
+                                   const Node* old_parent,
                                    TransportChangeId server_change_id,
                                    bool originated_change);
-  void ProcessNodeViewReplaced(const NodeId& node,
-                               const ViewId& new_view_id,
-                               const ViewId& old_view_id,
+  void ProcessNodeViewReplaced(const Node* node,
+                               const View* new_view,
+                               const View* old_view,
                                bool originated_change);
   void ProcessNodeDeleted(const NodeId& node,
                           TransportChangeId server_change_id,
@@ -86,15 +85,15 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
   // If |node| is known (in |known_nodes_|) does nothing. Otherwise adds |node|
   // to |nodes|, marks |node| as known and recurses.
-  void GetUnknownNodesFrom(Node* node, std::vector<Node*>* nodes);
+  void GetUnknownNodesFrom(const Node* node, std::vector<const Node*>* nodes);
 
   // Returns true if notification should be sent of a hierarchy change. If true
   // is returned, any nodes that need to be sent to the client are added to
   // |to_send|.
-  bool ShouldNotifyOnHierarchyChange(const NodeId& node_id,
-                                     const NodeId& new_parent_id,
-                                     const NodeId& old_parent_id,
-                                     std::vector<Node*>* to_send);
+  bool ShouldNotifyOnHierarchyChange(const Node* node_id,
+                                     const Node* new_parent_id,
+                                     const Node* old_parent_id,
+                                     std::vector<const Node*>* to_send);
 
   // Overridden from IViewManager:
   virtual void CreateNode(TransportNodeId transport_node_id,
@@ -124,12 +123,12 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
                                uint32_t buffer_size) OVERRIDE;
 
   // Overridden from NodeDelegate:
-  virtual void OnNodeHierarchyChanged(const NodeId& node,
-                                      const NodeId& new_parent,
-                                      const NodeId& old_parent) OVERRIDE;
-  virtual void OnNodeViewReplaced(const NodeId& node,
-                                  const ViewId& new_view_id,
-                                  const ViewId& old_view_id) OVERRIDE;
+  virtual void OnNodeHierarchyChanged(const Node* node,
+                                      const Node* new_parent,
+                                      const Node* old_parent) OVERRIDE;
+  virtual void OnNodeViewReplaced(const Node* node,
+                                  const View* new_view,
+                                  const View* old_view) OVERRIDE;
 
   RootNodeManager* root_node_manager_;
 

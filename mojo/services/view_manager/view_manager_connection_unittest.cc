@@ -105,8 +105,6 @@ bool CreateNode(IViewManager* view_manager,
   return result;
 }
 
-// TODO(sky): make a macro for these functions, they are all the same.
-
 // Deletes a node, blocking until done.
 bool DeleteNode(IViewManager* view_manager, TransportNodeId node_id) {
   bool result = false;

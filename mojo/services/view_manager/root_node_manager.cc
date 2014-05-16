@@ -90,10 +90,9 @@ View* RootNodeManager::GetView(const ViewId& id) {
   return i == connection_map_.end() ? NULL : i->second->GetView(id);
 }
 
-void RootNodeManager::ProcessNodeHierarchyChanged(const NodeId& node,
-                                                  const NodeId& new_parent,
-                                                  const NodeId& old_parent) {
-  // TODO(sky): make a macro for this.
+void RootNodeManager::ProcessNodeHierarchyChanged(const Node* node,
+                                                  const Node* new_parent,
+                                                  const Node* old_parent) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     i->second->ProcessNodeHierarchyChanged(
@@ -102,19 +101,17 @@ void RootNodeManager::ProcessNodeHierarchyChanged(const NodeId& node,
   }
 }
 
-void RootNodeManager::ProcessNodeViewReplaced(const NodeId& node,
-                                              const ViewId& new_view_id,
-                                              const ViewId& old_view_id) {
-  // TODO(sky): make a macro for this.
+void RootNodeManager::ProcessNodeViewReplaced(const Node* node,
+                                              const View* new_view,
+                                              const View* old_view) {
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->ProcessNodeViewReplaced(node, new_view_id, old_view_id,
+    i->second->ProcessNodeViewReplaced(node, new_view, old_view,
                                        IsChangeSource(i->first));
   }
 }
 
 void RootNodeManager::ProcessNodeDeleted(const NodeId& node) {
-  // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     i->second->ProcessNodeDeleted(node, next_server_change_id_,
@@ -123,7 +120,6 @@ void RootNodeManager::ProcessNodeDeleted(const NodeId& node) {
 }
 
 void RootNodeManager::ProcessViewDeleted(const ViewId& view) {
-  // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
     i->second->ProcessViewDeleted(view, IsChangeSource(i->first));
@@ -147,17 +143,17 @@ void RootNodeManager::FinishChange(ChangeType change_type) {
     next_server_change_id_++;
 }
 
-void RootNodeManager::OnNodeHierarchyChanged(const NodeId& node,
-                                             const NodeId& new_parent,
-                                             const NodeId& old_parent) {
+void RootNodeManager::OnNodeHierarchyChanged(const Node* node,
+                                             const Node* new_parent,
+                                             const Node* old_parent) {
   if (!root_view_manager_.in_setup())
     ProcessNodeHierarchyChanged(node, new_parent, old_parent);
 }
 
-void RootNodeManager::OnNodeViewReplaced(const NodeId& node,
-                                         const ViewId& new_view_id,
-                                         const ViewId& old_view_id) {
-  ProcessNodeViewReplaced(node, new_view_id, old_view_id);
+void RootNodeManager::OnNodeViewReplaced(const Node* node,
+                                         const View* new_view,
+                                         const View* old_view) {
+  ProcessNodeViewReplaced(node, new_view, old_view);
 }
 
 }  // namespace service

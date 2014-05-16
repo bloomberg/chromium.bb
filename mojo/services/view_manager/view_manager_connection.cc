@@ -20,13 +20,13 @@ namespace service {
 namespace {
 
 // Places |node| in |nodes| and recurses through the children.
-void GetDescendants(Node* node, std::vector<Node*>* nodes) {
+void GetDescendants(const Node* node, std::vector<const Node*>* nodes) {
   if (!node)
     return;
 
   nodes->push_back(node);
 
-  std::vector<Node*> children(node->GetChildren());
+  std::vector<const Node*> children(node->GetChildren());
   for (size_t i = 0 ; i < children.size(); ++i)
     GetDescendants(children[i], nodes);
 }
@@ -61,7 +61,7 @@ void ViewManagerConnection::OnConnectionEstablished() {
   DCHECK_EQ(0, id_);  // Should only get OnConnectionEstablished() once.
   id_ = root_node_manager_->GetAndAdvanceNextConnectionId();
   root_node_manager_->AddConnection(this);
-  std::vector<Node*> to_send;
+  std::vector<const Node*> to_send;
   GetUnknownNodesFrom(root_node_manager_->root(), &to_send);
   AllocationScope allocation_scope;
   client()->OnConnectionEstablished(
@@ -89,16 +89,15 @@ View* ViewManagerConnection::GetView(const ViewId& id) {
 }
 
 void ViewManagerConnection::ProcessNodeHierarchyChanged(
-    const NodeId& node_id,
-    const NodeId& new_parent_id,
-    const NodeId& old_parent_id,
+    const Node* node,
+    const Node* new_parent,
+    const Node* old_parent,
     TransportChangeId server_change_id,
     bool originated_change) {
   if (originated_change || root_node_manager_->is_processing_delete_node())
     return;
-  std::vector<Node*> to_send;
-  if (!ShouldNotifyOnHierarchyChange(node_id, new_parent_id, old_parent_id,
-                                     &to_send)) {
+  std::vector<const Node*> to_send;
+  if (!ShouldNotifyOnHierarchyChange(node, new_parent, old_parent, &to_send)) {
     if (root_node_manager_->IsProcessingChange()) {
       client()->OnServerChangeIdAdvanced(
           root_node_manager_->next_server_change_id() + 1);
@@ -106,7 +105,9 @@ void ViewManagerConnection::ProcessNodeHierarchyChanged(
     return;
   }
   AllocationScope allocation_scope;
-  client()->OnNodeHierarchyChanged(NodeIdToTransportId(node_id),
+  const NodeId new_parent_id(new_parent ? new_parent->id() : NodeId());
+  const NodeId old_parent_id(old_parent ? old_parent->id() : NodeId());
+  client()->OnNodeHierarchyChanged(NodeIdToTransportId(node->id()),
                                    NodeIdToTransportId(new_parent_id),
                                    NodeIdToTransportId(old_parent_id),
                                    server_change_id,
@@ -114,15 +115,18 @@ void ViewManagerConnection::ProcessNodeHierarchyChanged(
 }
 
 void ViewManagerConnection::ProcessNodeViewReplaced(
-    const NodeId& node,
-    const ViewId& new_view_id,
-    const ViewId& old_view_id,
+    const Node* node,
+    const View* new_view,
+    const View* old_view,
     bool originated_change) {
   if (originated_change)
     return;
-  client()->OnNodeViewReplaced(NodeIdToTransportId(node),
-                               ViewIdToTransportId(new_view_id),
-                               ViewIdToTransportId(old_view_id));
+  const TransportViewId new_view_id = new_view ?
+      ViewIdToTransportId(new_view->id()) : 0;
+  const TransportViewId old_view_id = old_view ?
+      ViewIdToTransportId(old_view->id()) : 0;
+  client()->OnNodeViewReplaced(NodeIdToTransportId(node->id()),
+                               new_view_id, old_view_id);
 }
 
 void ViewManagerConnection::ProcessNodeDeleted(
@@ -207,24 +211,23 @@ bool ViewManagerConnection::SetViewImpl(const NodeId& node_id,
 }
 
 void ViewManagerConnection::GetUnknownNodesFrom(
-    Node* node,
-    std::vector<Node*>* nodes) {
+    const Node* node,
+    std::vector<const Node*>* nodes) {
   const TransportNodeId transport_id = NodeIdToTransportId(node->id());
   if (known_nodes_.count(transport_id) == 1)
     return;
   nodes->push_back(node);
   known_nodes_.insert(transport_id);
-  std::vector<Node*> children(node->GetChildren());
+  std::vector<const Node*> children(node->GetChildren());
   for (size_t i = 0 ; i < children.size(); ++i)
     GetUnknownNodesFrom(children[i], nodes);
 }
 
 bool ViewManagerConnection::ShouldNotifyOnHierarchyChange(
-    const NodeId& node_id,
-    const NodeId& new_parent_id,
-    const NodeId& old_parent_id,
-    std::vector<Node*>* to_send) {
-  Node* new_parent = GetNode(new_parent_id);
+    const Node* node,
+    const Node* new_parent,
+    const Node* old_parent,
+    std::vector<const Node*>* to_send) {
   if (new_parent) {
     // On getting a new parent we may need to communicate new nodes to the
     // client. We do that in the following cases:
@@ -236,19 +239,19 @@ bool ViewManagerConnection::ShouldNotifyOnHierarchyChange(
     //   doesn't know about we have to communicate from the root down (the
     //   client is learning about a new root).
     if (root_node_manager_->root()->Contains(new_parent) ||
-        known_nodes_.count(NodeIdToTransportId(new_parent_id))) {
-      GetUnknownNodesFrom(GetNode(node_id), to_send);
+        known_nodes_.count(NodeIdToTransportId(new_parent->id()))) {
+      GetUnknownNodesFrom(node, to_send);
       return true;
     }
     // If parent wasn't known we have to communicate from the root down.
-    if (known_nodes_.count(NodeIdToTransportId(node_id))) {
+    if (known_nodes_.count(NodeIdToTransportId(node->id()))) {
       GetUnknownNodesFrom(new_parent->GetRoot(), to_send);
       return true;
     }
   }
   // Otherwise only communicate the change if the node was known. We shouldn't
   // need to communicate any nodes on a remove.
-  return known_nodes_.count(NodeIdToTransportId(node_id)) > 0;
+  return known_nodes_.count(NodeIdToTransportId(node->id())) > 0;
 }
 
 void ViewManagerConnection::CreateNode(
@@ -319,7 +322,7 @@ void ViewManagerConnection::GetNodeTree(
     const Callback<void(Array<INode>)>& callback) {
   AllocationScope allocation_scope;
   Node* node = GetNode(NodeIdFromTransportId(node_id));
-  std::vector<Node*> nodes;
+  std::vector<const Node*> nodes;
   GetDescendants(node, &nodes);
   for (size_t i = 0; i < nodes.size(); ++i)
     known_nodes_.insert(NodeIdToTransportId(nodes[i]->id()));
@@ -374,16 +377,16 @@ void ViewManagerConnection::SetViewContents(
   UnmapBuffer(handle_data);
 }
 
-void ViewManagerConnection::OnNodeHierarchyChanged(const NodeId& node,
-                                                   const NodeId& new_parent,
-                                                   const NodeId& old_parent) {
+void ViewManagerConnection::OnNodeHierarchyChanged(const Node* node,
+                                                   const Node* new_parent,
+                                                   const Node* old_parent) {
   root_node_manager_->ProcessNodeHierarchyChanged(node, new_parent, old_parent);
 }
 
-void ViewManagerConnection::OnNodeViewReplaced(const NodeId& node,
-                                               const ViewId& new_view_id,
-                                               const ViewId& old_view_id) {
-  root_node_manager_->ProcessNodeViewReplaced(node, new_view_id, old_view_id);
+void ViewManagerConnection::OnNodeViewReplaced(const Node* node,
+                                               const View* new_view,
+                                               const View* old_view) {
+  root_node_manager_->ProcessNodeViewReplaced(node, new_view, old_view);
 }
 
 }  // namespace service

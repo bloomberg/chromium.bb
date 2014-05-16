@@ -18,8 +18,8 @@ using mojo::view_manager::service::ViewId;
 namespace mojo {
 
 // static
-INode TypeConverter<INode, Node*>::ConvertFrom(const Node* node,
-                                               Buffer* buf) {
+INode TypeConverter<INode, const Node*>::ConvertFrom(const Node* node,
+                                                     Buffer* buf) {
   DCHECK(node);
 
   INode::Builder builder(buf);

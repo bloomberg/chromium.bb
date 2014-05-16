@@ -82,12 +82,12 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // These functions trivially delegate to all ViewManagerConnections, which in
   // term notify their clients.
-  void ProcessNodeHierarchyChanged(const NodeId& node,
-                                   const NodeId& new_parent,
-                                   const NodeId& old_parent);
-  void ProcessNodeViewReplaced(const NodeId& node,
-                               const ViewId& new_view_id,
-                               const ViewId& old_view_id);
+  void ProcessNodeHierarchyChanged(const Node* node,
+                                   const Node* new_parent,
+                                   const Node* old_parent);
+  void ProcessNodeViewReplaced(const Node* node,
+                               const View* new_view_id,
+                               const View* old_view_id);
   void ProcessNodeDeleted(const NodeId& node);
   void ProcessViewDeleted(const ViewId& view);
 
@@ -117,12 +117,12 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   }
 
   // Overriden from NodeDelegate:
-  virtual void OnNodeHierarchyChanged(const NodeId& node,
-                                      const NodeId& new_parent,
-                                      const NodeId& old_parent) OVERRIDE;
-  virtual void OnNodeViewReplaced(const NodeId& node,
-                                  const ViewId& new_view_id,
-                                  const ViewId& old_view_id) OVERRIDE;
+  virtual void OnNodeHierarchyChanged(const Node* node,
+                                      const Node* new_parent,
+                                      const Node* old_parent) OVERRIDE;
+  virtual void OnNodeViewReplaced(const Node* node,
+                                  const View* new_view,
+                                  const View* old_view) OVERRIDE;
 
   Context context_;
 

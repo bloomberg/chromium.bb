@@ -22,7 +22,7 @@ class Node;
 
 template <>
 class TypeConverter<view_manager::INode,
-                    view_manager::service::Node*> {
+                    const view_manager::service::Node*> {
  public:
   static view_manager::INode ConvertFrom(
       const view_manager::service::Node* node,

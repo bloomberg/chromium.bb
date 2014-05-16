@@ -49,6 +49,7 @@ class MOJO_VIEW_MANAGER_EXPORT Node
     return const_cast<Node*>(const_cast<const Node*>(this)->GetRoot());
   }
 
+  std::vector<const Node*> GetChildren() const;
   std::vector<Node*> GetChildren();
 
   bool Contains(const Node* node) const;

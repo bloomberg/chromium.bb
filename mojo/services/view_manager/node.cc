@@ -61,6 +61,14 @@ const Node* Node::GetRoot() const {
   return window->GetProperty(kNodeKey);
 }
 
+std::vector<const Node*> Node::GetChildren() const {
+  std::vector<const Node*> children;
+  children.reserve(window_.children().size());
+  for (size_t i = 0; i < window_.children().size(); ++i)
+    children.push_back(window_.children()[i]->GetProperty(kNodeKey));
+  return children;
+}
+
 std::vector<Node*> Node::GetChildren() {
   std::vector<Node*> children;
   children.reserve(window_.children().size());
@@ -81,31 +89,24 @@ void Node::SetView(View* view) {
   if (view && view->node())
     view->node()->SetView(NULL);
 
-  ViewId old_view_id;
-  if (view_) {
+  View* old_view = view_;
+  if (view_)
     view_->set_node(NULL);
-    old_view_id = view_->id();
-  }
   view_ = view;
-  ViewId view_id;
-  if (view) {
-    view_id = view->id();
+  if (view)
     view->set_node(this);
-  }
-  delegate_->OnNodeViewReplaced(id_, view_id, old_view_id);
+  delegate_->OnNodeViewReplaced(this, view, old_view);
 }
 
 void Node::OnWindowHierarchyChanged(
     const aura::WindowObserver::HierarchyChangeParams& params) {
   if (params.target != &window_ || params.receiver != &window_)
     return;
-  NodeId new_parent_id;
-  if (params.new_parent && params.new_parent->GetProperty(kNodeKey))
-    new_parent_id = params.new_parent->GetProperty(kNodeKey)->id();
-  NodeId old_parent_id;
-  if (params.old_parent && params.old_parent->GetProperty(kNodeKey))
-    old_parent_id = params.old_parent->GetProperty(kNodeKey)->id();
-  delegate_->OnNodeHierarchyChanged(id_, new_parent_id, old_parent_id);
+  const Node* new_parent = params.new_parent ?
+      params.new_parent->GetProperty(kNodeKey) : NULL;
+  const Node* old_parent = params.old_parent ?
+      params.old_parent->GetProperty(kNodeKey) : NULL;
+  delegate_->OnNodeHierarchyChanged(this, new_parent, old_parent);
 }
 
 gfx::Size Node::GetMinimumSize() const {
