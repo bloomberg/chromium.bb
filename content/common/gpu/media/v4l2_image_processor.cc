@@ -119,9 +119,9 @@ bool V4L2ImageProcessor::Initialize(media::VideoFrame::Format input_format,
   output_allocated_size_ = output_allocated_size;
 
   input_planes_count_ = media::VideoFrame::NumPlanes(input_format);
-  DCHECK_LE(input_planes_count_, VIDEO_MAX_PLANES);
+  DCHECK_LE(input_planes_count_, static_cast<size_t>(VIDEO_MAX_PLANES));
   output_planes_count_ = media::VideoFrame::NumPlanes(output_format);
-  DCHECK_LE(output_planes_count_, VIDEO_MAX_PLANES);
+  DCHECK_LE(output_planes_count_, static_cast<size_t>(VIDEO_MAX_PLANES));
 
   // Capabilities check.
   struct v4l2_capability caps;

@@ -159,7 +159,7 @@ EGLImageKHR ExynosV4L2Device::CreateEGLImage(EGLDisplay egl_display,
     }
     dmabuf_fds[i].reset(expbuf.fd);
   }
-  DCHECK_EQ(planes_count, 2);
+  DCHECK_EQ(planes_count, 2u);
   EGLint attrs[] = {
       EGL_WIDTH,                     0, EGL_HEIGHT,                    0,
       EGL_LINUX_DRM_FOURCC_EXT,      0, EGL_DMA_BUF_PLANE0_FD_EXT,     0,

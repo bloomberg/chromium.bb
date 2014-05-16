@@ -594,7 +594,7 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   // performance testing. So just assert that the frame size is a multiple of
   // 64 bytes. This ensures all frames start at 64-byte boundary, because
   // MemoryMappedFile should be mmapp()ed at virtual page start as well.
-  ASSERT_EQ(input_buffer_size_ & 63, 0)
+  ASSERT_EQ(input_buffer_size_ & 63, 0u)
       << "Frame size has to be a multiple of 64 bytes";
   ASSERT_EQ(reinterpret_cast<off_t>(test_stream_.input_file.data()) & 63, 0)
       << "Mapped file should be mapped at a 64 byte boundary";

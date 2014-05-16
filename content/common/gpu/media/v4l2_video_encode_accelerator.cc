@@ -873,7 +873,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   }
 
   size_t input_planes_count = media::VideoFrame::NumPlanes(input_format);
-  DCHECK_LE(input_planes_count, VIDEO_MAX_PLANES);
+  DCHECK_LE(input_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
 
   // First see if we the device can use the provided input_format directly.
   struct v4l2_format format;
@@ -892,7 +892,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
       return false;
 
     input_planes_count = media::VideoFrame::NumPlanes(input_format);
-    DCHECK_LE(input_planes_count, VIDEO_MAX_PLANES);
+    DCHECK_LE(input_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
 
     // Device might have adjusted parameters, reset them along with the format.
     memset(&format, 0, sizeof(format));
