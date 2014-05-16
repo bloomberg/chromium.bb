@@ -7,6 +7,7 @@
 #include <string>
 
 #include "apps/shell/browser/api/shell/shell_api.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/browser_context.h"
@@ -37,9 +38,14 @@ ShellExtensionSystem::~ShellExtensionSystem() {
 }
 
 bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
+  // app_shell only supports unpacked extensions.
+  // NOTE: If you add packed extension support consider removing the flag
+  // FOLLOW_SYMLINKS_ANYWHERE below. Packed extensions should not have symlinks.
+  CHECK(base::DirectoryExists(app_dir)) << app_dir.AsUTF8Unsafe();
+  int load_flags = Extension::FOLLOW_SYMLINKS_ANYWHERE;
   std::string load_error;
   scoped_refptr<Extension> extension = file_util::LoadExtension(
-      app_dir, Manifest::COMMAND_LINE, Extension::NO_FLAGS, &load_error);
+      app_dir, Manifest::COMMAND_LINE, load_flags, &load_error);
   if (!extension) {
     LOG(ERROR) << "Loading extension at " << app_dir.value()
         << " failed with: " << load_error;
