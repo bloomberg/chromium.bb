@@ -252,6 +252,10 @@ std::string NetworkState::GetNetmask() const {
   return network_util::PrefixLengthToNetmask(prefix_length_);
 }
 
+void NetworkState::SetGuid(const std::string& guid) {
+  guid_ = guid;
+}
+
 bool NetworkState::UpdateName(const base::DictionaryValue& properties) {
   std::string updated_name =
       shill_property_util::GetNameFromProperties(path(), properties);

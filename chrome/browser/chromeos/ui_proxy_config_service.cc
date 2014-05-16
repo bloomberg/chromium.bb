@@ -81,8 +81,10 @@ void UIProxyConfigService::SetCurrentNetwork(
 void UIProxyConfigService::UpdateFromPrefs() {
   const FavoriteState* network = NULL;
   if (!current_ui_network_.empty()) {
-    network = NetworkHandler::Get()->network_state_handler()->GetFavoriteState(
-        current_ui_network_);
+    network = NetworkHandler::Get()
+                  ->network_state_handler()
+                  ->GetFavoriteStateFromServicePath(current_ui_network_,
+                                                    true /* configured_only */);
     LOG_IF(ERROR, !network) << "Couldn't find FavoriteState for network "
                             << current_ui_network_;
   }
@@ -109,8 +111,10 @@ void UIProxyConfigService::SetProxyConfig(const UIProxyConfig& config) {
     return;
 
   const FavoriteState* network =
-      NetworkHandler::Get()->network_state_handler()->GetFavoriteState(
-          current_ui_network_);
+      NetworkHandler::Get()
+          ->network_state_handler()
+          ->GetFavoriteStateFromServicePath(current_ui_network_,
+                                            true /* configured_only */);
   if (!network) {
     LOG(ERROR) << "Couldn't find FavoriteState for network "
                << current_ui_network_;

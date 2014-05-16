@@ -99,6 +99,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Converts the prefix length to a netmask string.
   std::string GetNetmask() const;
 
+  // Set the GUID. Called exclusively by NetworkStateHandler.
+  void SetGuid(const std::string& guid);
+
   // Helpers (used e.g. when a state or error is cached)
   static bool StateIsConnected(const std::string& connection_state);
   static bool StateIsConnecting(const std::string& connection_state);

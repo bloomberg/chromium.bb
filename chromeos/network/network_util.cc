@@ -6,6 +6,11 @@
 
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/stringprintf.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/onc/onc_signature.h"
+#include "chromeos/network/onc/onc_translator.h"
+#include "chromeos/network/shill_property_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -120,6 +125,28 @@ bool ParseCellularScanResults(const base::ListValue& list,
     scan_results->push_back(scan_result);
   }
   return true;
+}
+
+scoped_ptr<base::ListValue> TranslateNetworkListToONC(
+    NetworkTypePattern pattern) {
+  NetworkStateHandler::NetworkStateList network_states;
+  NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+      pattern, &network_states);
+
+  scoped_ptr<base::ListValue> network_properties_list(new base::ListValue);
+  for (NetworkStateHandler::NetworkStateList::iterator it =
+           network_states.begin();
+       it != network_states.end();
+       ++it) {
+    base::DictionaryValue shill_dictionary;
+    (*it)->GetStateProperties(&shill_dictionary);
+
+    scoped_ptr<base::DictionaryValue> onc_network_part =
+        TranslateShillServiceToONCPart(
+            shill_dictionary, &onc::kNetworkWithStateSignature);
+    network_properties_list->Append(onc_network_part.release());
+  }
+  return network_properties_list.Pass();
 }
 
 }  // namespace network_util

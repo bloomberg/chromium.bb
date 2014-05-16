@@ -173,7 +173,7 @@
             "type": "function",
             "parameters": [
               {
-                "name": "guid",
+                "name": "networkGuid",
                 "type": "string"
               }
             ]
@@ -315,7 +315,7 @@
             "description": "Properties of the destination to use in verifying that it is a trusted device."
           },
           {
-            "name": "guid",
+            "name": "networkGuid",
             "type": "string",
             "description": "A string containing the unique identifier of the network to get credentials for."
           },
@@ -410,12 +410,12 @@
       },
       {
         "name": "getCaptivePortalStatus",
-        "description": "Returns captive portal status for the network with networkGuid.",
+        "description": "Returns captive portal status for the network matching 'guid'.",
         "parameters": [
           {
-            "name": "networkPath",
+            "name": "networkGuid",
             "type": "string",
-            "description": "The path of the network to get captive portal status."
+            "description": "The guid of the network to get captive portal status."
           },
           {
             "name": "callback",
@@ -459,10 +459,10 @@
       {
         "name": "onPortalDetectionCompleted",
         "type": "function",
-        "description": "Fired when a portal detection for a network completes. Sends a name of the network and corresponding captive portal status.",
+        "description": "Fired when a portal detection for a network completes. Sends the guid of the network and the corresponding captive portal status.",
         "parameters": [
           {
-            "name": "networkPath",
+            "name": "networkGuid",
             "type": "string"
           },
           {

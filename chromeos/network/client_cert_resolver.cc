@@ -344,7 +344,8 @@ void ClientCertResolver::PolicyApplied(const std::string& service_path) {
     return;
   // Compare this network with all certificates.
   const FavoriteState* network =
-      network_state_handler_->GetFavoriteState(service_path);
+      network_state_handler_->GetFavoriteStateFromServicePath(
+          service_path, true /* configured_only */);
   if (!network) {
     LOG(ERROR) << "service path '" << service_path << "' unknown.";
     return;

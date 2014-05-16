@@ -61,7 +61,6 @@ class CryptoVerifyImpl : public NetworkingPrivateServiceClient::CryptoVerify {
     using api::networking_private::VerifyAndEncryptCredentials::Params;
     scoped_ptr<Params> params = Params::Create(*args);
     std::string public_key;
-    std::string network_guid;
 
     if (!VerifyDestination(params->properties)) {
       callback.Run("", "VerifyError");
@@ -76,11 +75,10 @@ class CryptoVerifyImpl : public NetworkingPrivateServiceClient::CryptoVerify {
     scoped_ptr<NetworkingPrivateCredentialsGetter> credentials_getter(
         NetworkingPrivateCredentialsGetter::Create());
 
-    network_guid = params->guid;
     // Start getting credentials. On Windows |callback| will be called
     // asynchronously on a different thread after |credentials_getter|
     // is deleted.
-    credentials_getter->Start(network_guid, public_key, callback);
+    credentials_getter->Start(params->network_guid, public_key, callback);
   }
 
   virtual void VerifyAndEncryptData(scoped_ptr<base::ListValue> args,

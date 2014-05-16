@@ -79,6 +79,7 @@ class CHROMEOS_EXPORT ManagedState {
     update_requested_ = update_requested;
   }
 
+  // Returns true if |type_| matches |pattern|.
   bool Matches(const NetworkTypePattern& pattern) const;
 
   static std::string TypeToString(ManagedType type);

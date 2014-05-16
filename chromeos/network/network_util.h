@@ -15,11 +15,18 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace chromeos {
+
+class NetworkTypePattern;
 
 // Struct for passing wifi access point data.
 struct CHROMEOS_EXPORT WifiAccessPoint {
@@ -78,6 +85,12 @@ CHROMEOS_EXPORT int32 NetmaskToPrefixLength(const std::string& netmask);
 // in which case the contents of |scan_results| will be undefined.
 CHROMEOS_EXPORT bool ParseCellularScanResults(
     const base::ListValue& list, std::vector<CellularScanResult>* scan_results);
+
+// Retrieves the list of visible network services by passing |pattern| to
+// NetworkStateHandler::GetNetworkListByType() and translates each into a list
+// of ONC dictionaries using TranslateShillServiceToONCPart.
+CHROMEOS_EXPORT scoped_ptr<base::ListValue> TranslateNetworkListToONC(
+    NetworkTypePattern pattern);
 
 }  // namespace network_util
 }  // namespace chromeos

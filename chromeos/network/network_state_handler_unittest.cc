@@ -17,6 +17,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/network/shill_property_util.h"
@@ -357,14 +358,38 @@ TEST_F(NetworkStateHandlerTest, ServicePropertyChanged) {
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(eth1));
 }
 
-TEST_F(NetworkStateHandlerTest, FavoriteState) {
-  // Set the profile entry of a service
+TEST_F(NetworkStateHandlerTest, GetState) {
   const std::string profile = "/profile/profile1";
-  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
+  const std::string wifi_path = kShillManagerClientStubDefaultWifi;
+
+  // Add a wifi service to a Profile.
   profile_test_->AddProfile(profile, "" /* userhash */);
-  EXPECT_TRUE(profile_test_->AddService(profile, wifi1));
+  EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
   UpdateManagerProperties();
+
+  // Ensure that a NetworkState and corresponding FavoriteState exist.
+  const NetworkState* wifi_network =
+      network_state_handler_->GetNetworkState(wifi_path);
+  ASSERT_TRUE(wifi_network);
+  const FavoriteState* wifi_favorite =
+      network_state_handler_->GetFavoriteStateFromServicePath(
+          wifi_path, true /* configured_only */);
+  ASSERT_TRUE(wifi_favorite);
+  EXPECT_EQ(wifi_network->path(), wifi_favorite->path());
+
+  // Ensure that we are notified that a Favorite was added.
   EXPECT_EQ(1u, test_observer_->favorite_count());
+
+  // Test looking up by GUID.
+  ASSERT_FALSE(wifi_favorite->guid().empty());
+  const FavoriteState* wifi_favorite_guid =
+      network_state_handler_->GetFavoriteStateFromGuid(wifi_favorite->guid());
+  EXPECT_EQ(wifi_favorite, wifi_favorite_guid);
+
+  // Remove the service, verify that there is no longer a NetworkState for it.
+  service_test_->RemoveService(wifi_path);
+  UpdateManagerProperties();
+  EXPECT_FALSE(network_state_handler_->GetNetworkState(wifi_path));
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {
@@ -489,4 +514,100 @@ TEST_F(NetworkStateHandlerTest, RequestUpdate) {
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(
       kShillManagerClientStubDefaultWifi));
 }
+
+TEST_F(NetworkStateHandlerTest, NetworkGuidInProfile) {
+  const std::string profile = "/profile/profile1";
+  const std::string wifi_path = "wifi_with_guid";
+  const std::string wifi_guid = "WIFI_GUID";
+  const bool is_service_configured = true;
+
+  // Add a network to the default Profile with a specified GUID.
+  service_test_->AddServiceWithIPConfig(
+      wifi_path,
+      wifi_guid,
+      wifi_path  /* name */,
+      shill::kTypeWifi,
+      shill::kStateOnline,
+      "" /* ipconfig_path */,
+      true /* add_to_visible */,
+      true /* add_to_watchlist */);
+  profile_test_->AddProfile(profile, "" /* userhash */);
+  EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
+  UpdateManagerProperties();
+
+  // Verify that a FavoriteState exists with a matching GUID.
+  const FavoriteState* favorite =
+      network_state_handler_->GetFavoriteStateFromServicePath(
+          wifi_path, is_service_configured);
+  ASSERT_TRUE(favorite);
+  EXPECT_EQ(wifi_guid, favorite->guid());
+
+  // Verify that a NetworkState exists with the same GUID.
+  const NetworkState* network =
+      network_state_handler_->GetNetworkState(wifi_path);
+  ASSERT_TRUE(network);
+  EXPECT_EQ(wifi_guid, network->guid());
+
+  // Remove the service (simulating a network going out of range).
+  service_test_->RemoveService(wifi_path);
+  UpdateManagerProperties();
+  EXPECT_FALSE(network_state_handler_->GetNetworkState(wifi_path));
+
+  // Add the service (simulating a network coming back in range) and verify that
+  // the NetworkState was created with the same GUID.
+  AddService(wifi_path, wifi_path, shill::kTypeWifi, shill::kStateOnline);
+  UpdateManagerProperties();
+  network = network_state_handler_->GetNetworkState(wifi_path);
+  ASSERT_TRUE(network);
+  EXPECT_EQ(wifi_guid, network->guid());
+
+  // Also verify FavoriteState (mostly to test the stub behavior).
+  favorite = network_state_handler_->GetFavoriteStateFromServicePath(
+      wifi_path, is_service_configured);
+  ASSERT_TRUE(favorite);
+  EXPECT_EQ(wifi_guid, favorite->guid());
+}
+
+TEST_F(NetworkStateHandlerTest, NetworkGuidNotInProfile) {
+  const std::string wifi_path = "wifi_with_guid";
+  const bool is_service_configured = false;
+
+  // Add a network without adding it to a profile.
+  AddService(wifi_path, wifi_path, shill::kTypeWifi, shill::kStateOnline);
+  UpdateManagerProperties();
+
+  // Verify that a FavoriteState exists with an assigned GUID.
+  const FavoriteState* favorite =
+      network_state_handler_->GetFavoriteStateFromServicePath(
+          wifi_path, is_service_configured);
+  ASSERT_TRUE(favorite);
+  std::string wifi_guid = favorite->guid();
+  EXPECT_FALSE(wifi_guid.empty());
+
+  // Verify that a NetworkState exists with the same GUID.
+  const NetworkState* network =
+      network_state_handler_->GetNetworkState(wifi_path);
+  ASSERT_TRUE(network);
+  EXPECT_EQ(wifi_guid, network->guid());
+
+  // Remove the service (simulating a network going out of range).
+  service_test_->RemoveService(wifi_path);
+  UpdateManagerProperties();
+  EXPECT_FALSE(network_state_handler_->GetNetworkState(wifi_path));
+
+  // Add the service (simulating a network coming back in range) and verify that
+  // the NetworkState was created with the same GUID.
+  AddService(wifi_path, wifi_path, shill::kTypeWifi, shill::kStateOnline);
+  UpdateManagerProperties();
+  network = network_state_handler_->GetNetworkState(wifi_path);
+  ASSERT_TRUE(network);
+  EXPECT_EQ(wifi_guid, network->guid());
+
+  // Also verify FavoriteState (mostly to test the stub behavior).
+  favorite = network_state_handler_->GetFavoriteStateFromServicePath(
+      wifi_path, is_service_configured);
+  ASSERT_TRUE(favorite);
+  EXPECT_EQ(wifi_guid, favorite->guid());
+}
+
 }  // namespace chromeos

@@ -303,8 +303,10 @@ bool HasPolicyForFavorite(const FavoriteState* favorite,
 bool HasPolicyForNetwork(const NetworkState* network,
                          const PrefService* profile_prefs) {
   const FavoriteState* favorite =
-      NetworkHandler::Get()->network_state_handler()->GetFavoriteState(
-          network->path());
+      NetworkHandler::Get()
+          ->network_state_handler()
+          ->GetFavoriteStateFromServicePath(network->path(),
+                                            true /* configured_only */);
   if (!favorite)
     return false;
   return HasPolicyForFavorite(favorite, profile_prefs);

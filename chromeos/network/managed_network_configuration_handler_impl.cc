@@ -19,6 +19,7 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/device_state.h"
+#include "chromeos/network/favorite_state.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_policy_observer.h"
@@ -50,7 +51,7 @@ const char kPoliciesNotInitialized[] = "PoliciesNotInitialized";
 const char kProfileNotInitialized[] = "ProflieNotInitialized";
 const char kSetOnUnconfiguredNetwork[] = "SetCalledOnUnconfiguredNetwork";
 const char kUnknownProfilePath[] = "UnknownProfilePath";
-const char kUnknownServicePath[] = "UnknownServicePath";
+const char kUnknownNetwork[] = "UnknownNetwork";
 
 std::string ToDebugString(::onc::ONCSource source,
                           const std::string& userhash) {
@@ -237,11 +238,11 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
     const base::DictionaryValue& user_settings,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) const {
-  const NetworkState* state =
-      network_state_handler_->GetNetworkState(service_path);
-
+  const FavoriteState* state =
+      network_state_handler_->GetFavoriteStateFromServicePath(
+          service_path, true /* configured_only */);
   if (!state) {
-    InvokeErrorCallback(service_path, error_callback, kUnknownServicePath);
+    InvokeErrorCallback(service_path, error_callback, kUnknownNetwork);
     return;
   }
 

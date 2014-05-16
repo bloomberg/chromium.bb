@@ -87,10 +87,7 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunAsync() {
 void NetworkingPrivateGetManagedPropertiesFunction::Success(
     const std::string& network_guid,
     const base::DictionaryValue& dictionary) {
-  scoped_ptr<base::DictionaryValue> network_properties(dictionary.DeepCopy());
-  network_properties->SetStringWithoutPathExpansion(onc::network_config::kGUID,
-                                                    network_guid);
-  SetResult(network_properties.release());
+  SetResult(dictionary.DeepCopy());
   SendResponse(true);
 }
 

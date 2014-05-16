@@ -353,9 +353,15 @@ void ShillPropertyHandler::UpdateProperties(ManagedState::ManagedType type,
     (*iter)->GetAsString(&path);
     if (path.empty())
       continue;
+    // Only request properties once. Favorites that are visible will be updated
+    // when the Network entry is updated. Since 'Services' is always processed
+    // before ServiceCompleteList, only Favorites that are not visible will be
+    // requested here, and GetPropertiesCallback() will only get called with
+    // type == FAVORITE for non-visible Favorites.
     if (type == ManagedState::MANAGED_TYPE_FAVORITE &&
-        requested_service_updates.count(path) > 0)
-      continue;  // Update already requested
+        requested_service_updates.count(path) > 0) {
+      continue;
+    }
 
     // We add a special case for devices here to work around an issue in shill
     // that prevents it from sending property changed signals for cellular
@@ -477,16 +483,13 @@ void ShillPropertyHandler::GetPropertiesCallback(
                   base::StringPrintf("%s: %d", path.c_str(), call_status));
     return;
   }
-  // Update Favorite properties for networks in the Services list.
+  // Update Favorite properties for networks in the Services list. Call this
+  // for all networks, regardless of whether or not Profile is set, because
+  // we track all networks in the Favorites list (even if they aren't saved
+  // in a Profile). See notes in UpdateProperties() and favorite_state.h.
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
-    // Only networks with a ProfilePath set are Favorites.
-    std::string profile_path;
-    properties.GetStringWithoutPathExpansion(
-        shill::kProfileProperty, &profile_path);
-    if (!profile_path.empty()) {
-      listener_->UpdateManagedStateProperties(
-          ManagedState::MANAGED_TYPE_FAVORITE, path, properties);
-    }
+    listener_->UpdateManagedStateProperties(
+        ManagedState::MANAGED_TYPE_FAVORITE, path, properties);
   }
   listener_->UpdateManagedStateProperties(type, path, properties);
 

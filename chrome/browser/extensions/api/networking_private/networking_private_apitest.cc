@@ -199,6 +199,19 @@ class ExtensionNetworkingPrivateApiTest
     CHECK(!userhash_.empty());
   }
 
+  void AddService(const std::string& service_path,
+                  const std::string& name,
+                  const std::string& type,
+                  const std::string& state) {
+    const bool add_to_watchlist = true;
+    const bool add_to_visible = true;
+    // Tests need a known GUID, so use 'service_path'.
+    service_test_->AddServiceWithIPConfig(
+        service_path, service_path /* guid */, name,
+        type, state, "" /* ipconfig_path */,
+        add_to_visible, add_to_watchlist);
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     detector_ = new NetworkPortalDetectorTestImpl();
     NetworkPortalDetector::InitializeForTesting(detector_);
@@ -246,11 +259,8 @@ class ExtensionNetworkingPrivateApiTest
         kCellularDevicePath, shill::kTypeCellular, "stub_cellular_device1");
 
     // Add Services
-    const bool add_to_watchlist = true;
-    const bool add_to_visible = true;
-    service_test_->AddService("stub_ethernet", "eth0",
-                              shill::kTypeEthernet, shill::kStateOnline,
-                              add_to_visible, add_to_watchlist);
+    AddService("stub_ethernet", "eth0",
+               shill::kTypeEthernet, shill::kStateOnline);
     service_test_->SetServiceProperty(
         "stub_ethernet",
         shill::kProfileProperty,
@@ -258,9 +268,7 @@ class ExtensionNetworkingPrivateApiTest
     profile_test->AddService(ShillProfileClient::GetSharedProfilePath(),
                              "stub_ethernet");
 
-    service_test_->AddService("stub_wifi1", "wifi1",
-                              shill::kTypeWifi, shill::kStateOnline,
-                              add_to_visible, add_to_watchlist);
+    AddService("stub_wifi1", "wifi1", shill::kTypeWifi, shill::kStateOnline);
     service_test_->SetServiceProperty("stub_wifi1",
                                       shill::kSecurityProperty,
                                       base::StringValue(shill::kSecurityWep));
@@ -286,9 +294,7 @@ class ExtensionNetworkingPrivateApiTest
                                       shill::kWifiFrequency,
                                       base::FundamentalValue(2400));
 
-    service_test_->AddService("stub_wifi2", "wifi2_PSK",
-                              shill::kTypeWifi, shill::kStateIdle,
-                              add_to_visible, add_to_watchlist);
+    AddService("stub_wifi2", "wifi2_PSK", shill::kTypeWifi, shill::kStateIdle);
     service_test_->SetServiceProperty("stub_wifi2",
                                       shill::kGuidProperty,
                                       base::StringValue("stub_wifi2"));
@@ -316,10 +322,7 @@ class ExtensionNetworkingPrivateApiTest
                                       base::StringValue(kUser1ProfilePath));
     profile_test->AddService(kUser1ProfilePath, "stub_wifi2");
 
-    service_test_->AddService("stub_vpn1", "vpn1",
-                              shill::kTypeVPN,
-                              shill::kStateOnline,
-                              add_to_visible, add_to_watchlist);
+    AddService("stub_vpn1", "vpn1", shill::kTypeVPN, shill::kStateOnline);
 
     manager_test->SortManagerServices();
 
@@ -537,10 +540,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
                        GetCaptivePortalStatus) {
-  service_test_->AddService("stub_cellular1", "cellular1",
-                            shill::kTypeCellular, shill::kStateIdle,
-                            true /* add_to_visible */,
-                            true /* add_to_watchlist */);
+  AddService("stub_cellular1", "cellular1",
+             shill::kTypeCellular, shill::kStateIdle);
   service_test_->SetServiceProperty(
       "stub_cellular1",
       shill::kNetworkTechnologyProperty,

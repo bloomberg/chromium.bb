@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -194,10 +195,10 @@ const FavoriteState* NetworkStateHandler::DefaultFavoriteNetwork() const {
   const NetworkState* default_network = DefaultNetwork();
   if (!default_network)
     return NULL;
-  const FavoriteState* default_favorite =
-      GetFavoriteState(default_network->path());
-  DCHECK(default_network->type() != shill::kTypeWifi ||
-         default_favorite) << "No favorite for: " << default_network->path();
+  const FavoriteState* default_favorite = GetFavoriteStateFromServicePath(
+      default_network->path(), true /* configured_only */);
+  DCHECK(default_network->type() != shill::kTypeWifi || default_favorite)
+      << "No favorite for: " << default_network->path();
   DCHECK(!default_favorite || default_favorite->update_received())
       << "No update received for: " << default_network->path();
   return default_favorite;
@@ -309,24 +310,39 @@ void NetworkStateHandler::GetFavoriteListByType(const NetworkTypePattern& type,
        iter != favorite_list_.end(); ++iter) {
     const FavoriteState* favorite = (*iter)->AsFavoriteState();
     DCHECK(favorite);
-    if (favorite->update_received() && favorite->IsFavorite() &&
+    if (favorite->update_received() && favorite->IsInProfile() &&
         favorite->Matches(type)) {
       list->push_back(favorite);
     }
   }
 }
 
-const FavoriteState* NetworkStateHandler::GetFavoriteState(
-    const std::string& service_path) const {
+const FavoriteState* NetworkStateHandler::GetFavoriteStateFromServicePath(
+    const std::string& service_path,
+    bool configured_only) const {
   ManagedState* managed =
       GetModifiableManagedState(&favorite_list_, service_path);
   if (!managed)
     return NULL;
   const FavoriteState* favorite = managed->AsFavoriteState();
   DCHECK(favorite);
-  if (!favorite->update_received() || !favorite->IsFavorite())
+  if (!favorite->update_received() ||
+      (configured_only && !favorite->IsInProfile())) {
     return NULL;
+  }
   return favorite;
+}
+
+const FavoriteState* NetworkStateHandler::GetFavoriteStateFromGuid(
+    const std::string& guid) const {
+  DCHECK(!guid.empty());
+  for (ManagedStateList::const_iterator iter = favorite_list_.begin();
+       iter != favorite_list_.end(); ++iter) {
+    const FavoriteState* favorite = (*iter)->AsFavoriteState();
+    if (favorite->guid() == guid)
+      return favorite;
+  }
+  return NULL;
 }
 
 void NetworkStateHandler::RequestScan() const {
@@ -489,7 +505,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
     // A Favorite may not have been created yet if it was added later (e.g.
     // through ConfigureService) since ServiceCompleteList updates are not
     // emitted. Add and update the state here.
-    managed = new FavoriteState(path);
+    managed = ManagedState::Create(type, path);
     managed_list->push_back(managed);
   }
   managed->set_update_received();
@@ -507,6 +523,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
     }
     managed->InitialPropertiesReceived(properties);
   }
+  UpdateGuid(managed);
   managed->set_update_requested(false);
 }
 
@@ -681,7 +698,7 @@ void NetworkStateHandler::ManagedStateListChanged(
     for (ManagedStateList::iterator iter = favorite_list_.begin();
          iter != favorite_list_.end(); ++iter) {
       FavoriteState* favorite = (*iter)->AsFavoriteState();
-      if (!favorite->IsFavorite())
+      if (!favorite->IsInProfile())
         continue;
       if (favorite->IsPrivate())
         ++unshared;
@@ -728,6 +745,49 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
 //------------------------------------------------------------------------------
 // Private methods
 
+void NetworkStateHandler::UpdateGuid(ManagedState* managed) {
+  if (managed->managed_type() == ManagedState::MANAGED_TYPE_FAVORITE) {
+    FavoriteState* favorite = managed->AsFavoriteState();
+    std::string specifier = favorite->GetSpecifier();
+    if (!favorite->guid().empty()) {
+      // If the favorite is saved in a profile, remove the entry from the map.
+      // Otherwise ensure that the entry matches the specified GUID.
+      if (favorite->IsInProfile())
+        specifier_guid_map_.erase(specifier);
+      else
+        specifier_guid_map_[specifier] = favorite->guid();
+      return;
+    }
+    // Ensure that the FavoriteState has a valid GUID.
+    std::string guid;
+    SpecifierGuidMap::iterator iter = specifier_guid_map_.find(specifier);
+    if (iter != specifier_guid_map_.end()) {
+      guid = iter->second;
+    } else {
+      guid = base::GenerateGUID();
+      specifier_guid_map_[specifier] = guid;
+    }
+    favorite->SetGuid(guid);
+    NetworkState* network = GetModifiableNetworkState(favorite->path());
+    if (network)
+      network->SetGuid(guid);
+  } else if (managed->managed_type() == ManagedState::MANAGED_TYPE_NETWORK) {
+    // If the GUID is not set and a corresponding FavoriteState exists, get the
+    // GUID from the FavoriteState. Otherwise it will get set when the Favorite
+    // is created.
+    NetworkState* network = managed->AsNetworkState();
+    if (!network->guid().empty())
+      return;
+    // ShillPropertyHandler will always call UpdateManagedStateProperties with
+    // type FAVORITE before type NETWORK, so there should always be a
+    // corresponding FavoriteState here.
+    FavoriteState* favorite = GetModifiableFavoriteState(network->path());
+    DCHECK(favorite);
+    if (favorite && !favorite->guid().empty())
+      network->SetGuid(favorite->guid());
+  }
+}
+
 void NetworkStateHandler::NotifyDeviceListChanged() {
   NET_LOG_DEBUG("NotifyDeviceListChanged",
                 base::StringPrintf("Size:%" PRIuS, device_list_.size()));
@@ -750,6 +810,15 @@ NetworkState* NetworkStateHandler::GetModifiableNetworkState(
   if (!managed)
     return NULL;
   return managed->AsNetworkState();
+}
+
+FavoriteState* NetworkStateHandler::GetModifiableFavoriteState(
+    const std::string& service_path) const {
+  ManagedState* managed =
+      GetModifiableManagedState(&favorite_list_, service_path);
+  if (!managed)
+    return NULL;
+  return managed->AsFavoriteState();
 }
 
 ManagedState* NetworkStateHandler::GetModifiableManagedState(
