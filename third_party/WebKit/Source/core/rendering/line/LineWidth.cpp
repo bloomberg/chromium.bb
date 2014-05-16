@@ -187,7 +187,7 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
     float newLineLeft = m_left;
     float newLineRight = m_right;
 
-    FloatingObject* lastFloatFromPreviousLine = (m_block.containsFloats() ? m_block.m_floatingObjects->set().last() : 0);
+    FloatingObject* lastFloatFromPreviousLine = (m_block.containsFloats() ? m_block.m_floatingObjects->set().last().get() : 0);
         if (lastFloatFromPreviousLine && lastFloatFromPreviousLine->renderer()->shapeOutsideInfo())
             return wrapNextToShapeOutside(isFirstLine);
 

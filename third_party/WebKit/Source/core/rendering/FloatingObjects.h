@@ -113,14 +113,20 @@ private:
 
 struct FloatingObjectHashFunctions {
     static unsigned hash(FloatingObject* key) { return DefaultHash<RenderBox*>::Hash::hash(key->renderer()); }
-    static bool equal(FloatingObject* a, FloatingObject* b) { return a->renderer() == b->renderer(); }
+    static unsigned hash(const OwnPtr<FloatingObject>& key) { return hash(key.get()); }
+    static unsigned hash(const PassOwnPtr<FloatingObject>& key) { return hash(key.get()); }
+    static bool equal(OwnPtr<FloatingObject>& a, FloatingObject* b) { return a->renderer() == b->renderer(); }
+    static bool equal(OwnPtr<FloatingObject>& a, const OwnPtr<FloatingObject>& b) { return equal(a, b.get()); }
+    static bool equal(OwnPtr<FloatingObject>& a, const PassOwnPtr<FloatingObject>& b) { return equal(a, b.get()); }
+
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
 struct FloatingObjectHashTranslator {
     static unsigned hash(RenderBox* key) { return DefaultHash<RenderBox*>::Hash::hash(key); }
     static bool equal(FloatingObject* a, RenderBox* b) { return a->renderer() == b; }
+    static bool equal(const OwnPtr<WebCore::FloatingObject>& a, RenderBox* b) { return a->renderer() == b; }
 };
-typedef ListHashSet<FloatingObject*, 4, FloatingObjectHashFunctions> FloatingObjectSet;
+typedef ListHashSet<OwnPtr<FloatingObject>, 4, FloatingObjectHashFunctions> FloatingObjectSet;
 typedef FloatingObjectSet::const_iterator FloatingObjectSetIterator;
 typedef PODInterval<int, FloatingObject*> FloatingObjectInterval;
 typedef PODIntervalTree<int, FloatingObject*> FloatingObjectTree;

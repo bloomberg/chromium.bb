@@ -572,4 +572,88 @@ TEST(LinkedHashSetTest, ComplexityTranslator)
     translatorTest<LinkedHashSet<Complicated, ComplicatedHashFunctions> >();
 }
 
+struct Dummy {
+    Dummy(bool& deleted) : deleted(deleted) { }
+
+    ~Dummy()
+    {
+        deleted = true;
+    }
+
+    bool& deleted;
+};
+
+TEST(ListHashSetTest, WithOwnPtr)
+{
+    bool deleted1 = false, deleted2 = false;
+
+    typedef ListHashSet<OwnPtr<Dummy> > OwnPtrSet;
+    OwnPtrSet set;
+
+    Dummy* ptr1 = new Dummy(deleted1);
+    {
+        // AddResult in a separate scope to avoid assertion hit,
+        // since we modify the container further.
+        OwnPtrSet::AddResult res1 = set.add(adoptPtr(ptr1));
+        EXPECT_EQ(res1.storedValue->m_value.get(), ptr1);
+    }
+
+    EXPECT_FALSE(deleted1);
+    EXPECT_EQ(1UL, set.size());
+    OwnPtrSet::iterator it1 = set.find(ptr1);
+    EXPECT_NE(set.end(), it1);
+    EXPECT_EQ(ptr1, (*it1));
+
+    Dummy* ptr2 = new Dummy(deleted2);
+    {
+        OwnPtrSet::AddResult res2 = set.add(adoptPtr(ptr2));
+        EXPECT_EQ(res2.storedValue->m_value.get(), ptr2);
+    }
+
+    EXPECT_FALSE(deleted2);
+    EXPECT_EQ(2UL, set.size());
+    OwnPtrSet::iterator it2 = set.find(ptr2);
+    EXPECT_NE(set.end(), it2);
+    EXPECT_EQ(ptr2, (*it2));
+
+    set.remove(ptr1);
+    EXPECT_TRUE(deleted1);
+
+    set.clear();
+    EXPECT_TRUE(deleted2);
+    EXPECT_TRUE(set.isEmpty());
+
+    deleted1 = false;
+    deleted2 = false;
+    {
+        OwnPtrSet set;
+        set.add(adoptPtr(new Dummy(deleted1)));
+        set.add(adoptPtr(new Dummy(deleted2)));
+    }
+    EXPECT_TRUE(deleted1);
+    EXPECT_TRUE(deleted2);
+
+
+    deleted1 = false;
+    deleted2 = false;
+    OwnPtr<Dummy> ownPtr1;
+    OwnPtr<Dummy> ownPtr2;
+    ptr1 = new Dummy(deleted1);
+    ptr2 = new Dummy(deleted2);
+    {
+        OwnPtrSet set;
+        set.add(adoptPtr(ptr1));
+        set.add(adoptPtr(ptr2));
+        ownPtr1 = set.takeFirst();
+        EXPECT_EQ(1UL, set.size());
+        ownPtr2 = set.take(ptr2);
+        EXPECT_TRUE(set.isEmpty());
+    }
+    EXPECT_FALSE(deleted1);
+    EXPECT_FALSE(deleted2);
+
+    EXPECT_EQ(ptr1, ownPtr1);
+    EXPECT_EQ(ptr2, ownPtr2);
+}
+
 } // namespace

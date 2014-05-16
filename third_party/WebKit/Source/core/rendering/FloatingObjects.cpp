@@ -163,8 +163,6 @@ protected:
 
 FloatingObjects::~FloatingObjects()
 {
-    // FIXME: m_set should use OwnPtr instead.
-    deleteAllValues(m_set);
 }
 void FloatingObjects::clearLineBoxTreePointers()
 {
@@ -188,7 +186,6 @@ FloatingObjects::FloatingObjects(const RenderBlockFlow* renderer, bool horizonta
 
 void FloatingObjects::clear()
 {
-    deleteAllValues(m_set);
     m_set.clear();
     m_placedFloatsTree.clear();
     m_leftObjectsCount = 0;
@@ -216,7 +213,7 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         LayoutUnit lowestFloatBottomLeft = 0;
         LayoutUnit lowestFloatBottomRight = 0;
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-            FloatingObject* floatingObject = *it;
+            FloatingObject* floatingObject = (*it).get();
             if (floatingObject->isPlaced()) {
                 FloatingObject::Type curType = floatingObject->type();
                 LayoutUnit curFloatLogicalBottom = m_renderer->logicalBottomForFloat(floatingObject);
@@ -231,7 +228,7 @@ LayoutUnit FloatingObjects::lowestFloatLogicalBottom(FloatingObject::Type floatT
         setCachedLowestFloatLogicalBottom(isInHorizontalWritingMode, FloatingObject::FloatRight, lowestFloatBottomRight);
     } else {
         for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-            FloatingObject* floatingObject = *it;
+            FloatingObject* floatingObject = (*it).get();
             if (floatingObject->isPlaced() && floatingObject->type() == floatType)
                 lowestFloatBottom = max(lowestFloatBottom, m_renderer->logicalBottomForFloat(floatingObject));
         }
@@ -275,13 +272,10 @@ void FloatingObjects::markLowestFloatLogicalBottomCacheAsDirty()
 
 void FloatingObjects::moveAllToFloatInfoMap(RendererToFloatInfoMap& map)
 {
-    FloatingObjectSetIterator end = m_set.end();
-    for (FloatingObjectSetIterator it = m_set.begin(); it != end; ++it)
-        map.add((*it)->renderer(), *it);
-
-    // clear set before clearing this because we don't want to delete all of
-    // the objects we have just transferred.
-    m_set.clear();
+    while (!m_set.isEmpty()) {
+        FloatingObject* floatingObject = m_set.takeFirst().leakPtr();
+        map.add(floatingObject->renderer(), floatingObject);
+    }
     clear();
 }
 
@@ -342,23 +336,22 @@ FloatingObject* FloatingObjects::add(PassOwnPtr<FloatingObject> floatingObject)
 {
     FloatingObject* newObject = floatingObject.leakPtr();
     increaseObjectsCount(newObject->type());
-    m_set.add(newObject);
+    m_set.add(adoptPtr(newObject));
     if (newObject->isPlaced())
         addPlacedObject(newObject);
     markLowestFloatLogicalBottomCacheAsDirty();
     return newObject;
 }
 
-void FloatingObjects::remove(FloatingObject* floatingObject)
+void FloatingObjects::remove(FloatingObject* toBeRemoved)
 {
-    decreaseObjectsCount(floatingObject->type());
-    m_set.remove(floatingObject);
+    decreaseObjectsCount(toBeRemoved->type());
+    OwnPtr<FloatingObject> floatingObject = m_set.take(toBeRemoved);
     ASSERT(floatingObject->isPlaced() || !floatingObject->isInPlacedTree());
     if (floatingObject->isPlaced())
-        removePlacedObject(floatingObject);
+        removePlacedObject(floatingObject.get());
     markLowestFloatLogicalBottomCacheAsDirty();
     ASSERT(!floatingObject->originatingLine());
-    delete floatingObject;
 }
 
 void FloatingObjects::computePlacedFloatsTree()
@@ -370,7 +363,7 @@ void FloatingObjects::computePlacedFloatsTree()
     FloatingObjectSetIterator it = m_set.begin();
     FloatingObjectSetIterator end = m_set.end();
     for (; it != end; ++it) {
-        FloatingObject* floatingObject = *it;
+        FloatingObject* floatingObject = (*it).get();
         if (floatingObject->isPlaced())
             m_placedFloatsTree.add(intervalForFloatingObject(floatingObject));
     }

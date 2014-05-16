@@ -41,9 +41,6 @@ namespace WTF {
 
     template<typename Value, size_t inlineCapacity, typename HashFunctions, typename Allocator> class ListHashSet;
 
-    template<typename Value, size_t inlineCapacity, typename HashFunctions, typename Allocator>
-    void deleteAllValues(const ListHashSet<Value, inlineCapacity, HashFunctions, Allocator>&);
-
     template<typename Set> class ListHashSetIterator;
     template<typename Set> class ListHashSetConstIterator;
     template<typename Set> class ListHashSetReverseIterator;
@@ -95,7 +92,10 @@ namespace WTF {
 
     public:
         typedef ValueArg ValueType;
-        typedef typename HashTraits<ValueType>::PeekInType ValuePeekInType;
+        typedef HashTraits<ValueType> ValueTraits;
+        typedef typename ValueTraits::PeekInType ValuePeekInType;
+        typedef typename ValueTraits::PassInType ValuePassInType;
+        typedef typename ValueTraits::PassOutType ValuePassOutType;
 
         typedef ListHashSetIterator<ListHashSet> iterator;
         typedef ListHashSetConstIterator<ListHashSet> const_iterator;
@@ -156,30 +156,34 @@ namespace WTF {
 
         // The return value of add is a pair of a pointer to the stored value,
         // and a bool that is true if an new entry was added.
-        AddResult add(ValuePeekInType);
+        AddResult add(ValuePassInType);
 
         // Same as add() except that the return value is an
         // iterator. Useful in cases where it's needed to have the
         // same return value as find() and where it's not possible to
         // use a pointer to the storedValue.
-        iterator addReturnIterator(ValuePeekInType);
+        iterator addReturnIterator(ValuePassInType);
 
         // Add the value to the end of the collection. If the value was already in
         // the list, it is moved to the end.
-        AddResult appendOrMoveToLast(ValuePeekInType);
+        AddResult appendOrMoveToLast(ValuePassInType);
 
         // Add the value to the beginning of the collection. If the value was already in
         // the list, it is moved to the beginning.
-        AddResult prependOrMoveToFirst(ValuePeekInType);
+        AddResult prependOrMoveToFirst(ValuePassInType);
 
-        AddResult insertBefore(ValuePeekInType beforeValue, ValuePeekInType newValue);
-        AddResult insertBefore(iterator, ValuePeekInType);
+        AddResult insertBefore(ValuePeekInType beforeValue, ValuePassInType newValue);
+        AddResult insertBefore(iterator, ValuePassInType);
 
         void remove(ValuePeekInType value) { return remove(find(value)); }
         void remove(iterator);
         void clear();
         template<typename Collection>
         void removeAll(const Collection& other) { WTF::removeAll(*this, other); }
+
+        ValuePassOutType take(iterator);
+        ValuePassOutType take(ValuePeekInType);
+        ValuePassOutType takeFirst();
 
         void trace(typename Allocator::Visitor*);
 
@@ -198,8 +202,6 @@ namespace WTF {
         const_iterator makeConstIterator(Node* position) const { return const_iterator(this, position); }
         reverse_iterator makeReverseIterator(Node* position) { return reverse_iterator(this, position); }
         const_reverse_iterator makeConstReverseIterator(Node* position) const { return const_reverse_iterator(this, position); }
-
-        friend void deleteAllValues<>(const ListHashSet&);
 
         ImplType m_impl;
         Node* m_head;
@@ -799,7 +801,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
-    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::add(ValuePeekInType value)
+    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::add(ValuePassInType value)
     {
         createAllocatorIfNeeded();
         // The second argument is a const ref. This is useful for the HashTable
@@ -813,13 +815,13 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
-    typename ListHashSet<T, inlineCapacity, U, V>::iterator ListHashSet<T, inlineCapacity, U, V>::addReturnIterator(ValuePeekInType value)
+    typename ListHashSet<T, inlineCapacity, U, V>::iterator ListHashSet<T, inlineCapacity, U, V>::addReturnIterator(ValuePassInType value)
     {
         return makeIterator(add(value).storedValue);
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
-    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::appendOrMoveToLast(ValuePeekInType value)
+    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::appendOrMoveToLast(ValuePassInType value)
     {
         createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(value, *this->allocator());
@@ -831,7 +833,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
-    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::prependOrMoveToFirst(ValuePeekInType value)
+    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::prependOrMoveToFirst(ValuePassInType value)
     {
         createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(value, *this->allocator());
@@ -843,7 +845,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
-    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(iterator it, ValuePeekInType newValue)
+    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(iterator it, ValuePassInType newValue)
     {
         createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(newValue, *this->allocator());
@@ -853,7 +855,7 @@ namespace WTF {
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename V>
-    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(ValuePeekInType beforeValue, ValuePeekInType newValue)
+    typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(ValuePeekInType beforeValue, ValuePassInType newValue)
     {
         createAllocatorIfNeeded();
         return insertBefore(find(beforeValue), newValue);
@@ -875,6 +877,36 @@ namespace WTF {
         m_impl.clear();
         m_head = 0;
         m_tail = 0;
+    }
+
+    template<typename T, size_t inlineCapacity, typename U, typename V>
+    typename ListHashSet<T, inlineCapacity, U, V>::ValuePassOutType ListHashSet<T, inlineCapacity, U, V>::take(iterator it)
+    {
+        if (it == end())
+            return ValueTraits::emptyValue();
+
+        m_impl.remove(it.node());
+        ValuePassOutType result = ValueTraits::passOut(it.node()->m_value);
+        unlinkAndDelete(it.node());
+
+        return result;
+    }
+
+    template<typename T, size_t inlineCapacity, typename U, typename V>
+    typename ListHashSet<T, inlineCapacity, U, V>::ValuePassOutType ListHashSet<T, inlineCapacity, U, V>::take(ValuePeekInType value)
+    {
+        return take(find(value));
+    }
+
+    template<typename T, size_t inlineCapacity, typename U, typename V>
+    typename ListHashSet<T, inlineCapacity, U, V>::ValuePassOutType ListHashSet<T, inlineCapacity, U, V>::takeFirst()
+    {
+        ASSERT(!isEmpty());
+        m_impl.remove(m_head);
+        ValuePassOutType result = ValueTraits::passOut(m_head->m_value);
+        unlinkAndDelete(m_head);
+
+        return result;
     }
 
     template<typename T, size_t inlineCapacity, typename U, typename Allocator>
@@ -972,24 +1004,6 @@ namespace WTF {
         // nodes live.
         ASSERT(!m_head || Allocator::isAlive(visitor, m_head));
         ASSERT(!m_tail || Allocator::isAlive(visitor, m_tail));
-    }
-
-    template<bool, typename ValueType, typename HashTableType>
-    void deleteAllValues(HashTableType& collection)
-    {
-        typedef typename HashTableType::const_iterator iterator;
-        iterator end = collection.end();
-        for (iterator it = collection.begin(); it != end; ++it)
-            delete (*it)->m_value;
-    }
-
-    // Warning: After and while calling this you have a collection with deleted
-    // pointers. Consider using a smart pointer like OwnPtr and calling clear()
-    // instead.
-    template<typename T, size_t inlineCapacity, typename U, typename V>
-    inline void deleteAllValues(const ListHashSet<T, inlineCapacity, U, V>& collection)
-    {
-        deleteAllValues<true, typename ListHashSet<T, inlineCapacity, U, V>::ValueType>(collection.m_impl);
     }
 
 } // namespace WTF
