@@ -27,6 +27,11 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 
+#if NACL_WINDOWS
+#define PRIHANDLE "p"
+#else
+#define PRIHANDLE "d"
+#endif
 
 namespace {
 
@@ -172,7 +177,8 @@ int TestState::Init() {
   msg_buffer[sizeof msg_buffer - 1] = '\0';
   msg_len = nacl::assert_cast<int>(strlen(msg_buffer));
 
-  printf("cli_sock %d, srv_sock %d, pair[0] %d, pair[1] %d\n",
+  printf("cli_sock %" PRIHANDLE ", srv_sock %" PRIHANDLE ","
+         "pair[0] %" PRIHANDLE ", pair[1] %" PRIHANDLE "\n",
          cli_sock, srv_sock, pair[0], pair[1]);
 
   return 0;
@@ -181,16 +187,16 @@ int TestState::Init() {
 
 TestState::~TestState() {
   if (NACL_INVALID_HANDLE != cli_sock) {
-    printf("NaClClose(%d)\n", cli_sock);
+    printf("NaClClose(%" PRIHANDLE ")\n", cli_sock);
     (void) NaClClose(cli_sock);
   }
   if (NACL_INVALID_HANDLE != srv_sock) {
-    printf("NaClClose(%d)\n", srv_sock);
+    printf("NaClClose(%" PRIHANDLE ")\n", srv_sock);
     (void) NaClClose(srv_sock);
   }
   for (int i = 0; i < 2; ++i) {
     if (NACL_INVALID_HANDLE != pair[i]) {
-      printf("NaClClose(%d)\n", pair[i]);
+      printf("NaClClose(%" PRIHANDLE ")\n", pair[i]);
       (void) NaClClose(pair[i]);
     }
   }
@@ -329,7 +335,7 @@ int ReceiveDescriptor(TestState *tsp, int mode) {
         ++errors;
         continue;
       }
-      printf("close(%d)\n", hdr.handles[i]);
+      printf("close(%" PRIHANDLE ")\n", hdr.handles[i]);
       if (-1 == NaClClose(hdr.handles[i])) {
         MyPerror("ReceiverThread, Close");
         printf("ERROR: Close on received handle failed\n");
@@ -470,7 +476,7 @@ int ReceiveData(TestState *tsp, int mode) {
         ++errors;
         continue;
       }
-      printf("close(%d)\n", hdr.handles[i]);
+      printf("close(%" PRIHANDLE ")\n", hdr.handles[i]);
       if (-1 == NaClClose(hdr.handles[i])) {
         MyPerror("ReceiverThread, Close");
         printf("ERROR: Close on received handle failed\n");
@@ -792,10 +798,10 @@ int TestNaClSocket(int rep_count) {
   errors += tstate.errors;
 
   // now close server side and attempt to send again.
-  printf("NaClClose(%d)\n", tstate.srv_sock);
+  printf("NaClClose(%" PRIHANDLE ")\n", tstate.srv_sock);
   (void) NaClClose(tstate.srv_sock);
   tstate.srv_sock = NACL_INVALID_HANDLE;
-  printf("NaClClose(%d)\n", tstate.pair[0]);
+  printf("NaClClose(%" PRIHANDLE ")\n", tstate.pair[0]);
   (void) NaClClose(tstate.pair[0]);
   tstate.pair[0] = NACL_INVALID_HANDLE;
 
