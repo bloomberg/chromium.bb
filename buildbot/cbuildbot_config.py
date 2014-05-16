@@ -94,7 +94,6 @@ def OverrideConfigForTrybot(build_config, options):
       my_config['paygen'] = False
 
     if options.hwtest:
-      my_config['upload_hw_test_artifacts'] = True
       if not my_config['hw_tests']:
         my_config['hw_tests'] = HWTestConfig.DefaultList(
             num=constants.HWTEST_TRYBOT_NUM, pool=constants.HWTEST_TRYBOT_POOL,
@@ -445,7 +444,7 @@ _settings = dict(
 #                             Upload payloads for test image if the image is
 #                             built. If not, dev image is used and then base
 #                             image.
-  upload_hw_test_artifacts=False,
+  upload_hw_test_artifacts=True,
 
 # hw_tests_warn -- If true, failures in the hw_tests stage only warn.
   hw_tests_warn=False,
@@ -1109,7 +1108,6 @@ chromium_pfq = _config(
   overlays=constants.PUBLIC_OVERLAYS,
   manifest_version=True,
   chrome_rev=constants.CHROME_REV_LATEST,
-  upload_hw_test_artifacts=True,
   chrome_sdk=True,
   chroot_replace=True,
   description='Preflight Chromium Uprev & Build (public)',
@@ -1145,7 +1143,6 @@ chrome_pfq = internal_chromium_pfq.derive(
   important=True,
   overlays=constants.BOTH_OVERLAYS,
   description='Preflight Chrome Uprev & Build (internal)',
-  upload_hw_test_artifacts=True,
   prebuilts=constants.PRIVATE,
 )
 
@@ -1155,20 +1152,17 @@ chrome_pfq.add_config('alex-chrome-pfq',
 
 chrome_pfq.add_config('lumpy-chrome-pfq',
   boards=['lumpy'],
-  upload_hw_test_artifacts=True,
 )
 
 chrome_pfq.add_config('daisy_spring-chrome-pfq',
   arm,
   boards=['daisy_spring'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
-  upload_hw_test_artifacts=True,
 )
 
 chrome_pfq.add_config('falco-chrome-pfq',
   boards=['falco'],
   hw_tests=HWTestConfig.DefaultListPFQ(),
-  upload_hw_test_artifacts=True,
   important=True,
 )
 
@@ -1207,7 +1201,6 @@ chrome_perf = chrome_info.derive(
   description='Chrome Performance test bot',
   vm_tests=[],
   unittests=False,
-  upload_hw_test_artifacts=True,
   hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
                          timeout=90 * 60, critical=True, num=1)],
   use_chrome_lkgm=True,
@@ -1353,14 +1346,12 @@ def _AddFullConfigs():
   for board in _x86_full_boards:
     full_prebuilts.add_config('%s-%s' % (board, CONFIG_TYPE_FULL),
       boards=[board],
-      upload_hw_test_artifacts=True,
     )
 
   for board in _arm_full_boards:
     full_prebuilts.add_config('%s-%s' % (board, CONFIG_TYPE_FULL),
       arm,
       boards=[board],
-      upload_hw_test_artifacts=True,
     )
 
 _AddFullConfigs()
@@ -1580,7 +1571,6 @@ internal_paladin.add_config('link-tot-paladin',
   do_not_apply_cq_patches=True,
   prebuilts=False,
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('x86-mario-paladin',
@@ -1593,7 +1583,6 @@ internal_paladin.add_config('x86-alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='x86-alex paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('beltino-paladin',
@@ -1667,14 +1656,12 @@ internal_paladin.add_config('link-paladin',
   boards=['link'],
   paladin_builder_name='link paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('lumpy-paladin',
   boards=['lumpy'],
   paladin_builder_name='lumpy paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('lumpy-incremental-paladin',
@@ -1691,7 +1678,6 @@ internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('rambi-paladin',
@@ -1760,7 +1746,6 @@ internal_paladin.add_config('stumpy-paladin',
   boards=['stumpy'],
   paladin_builder_name='stumpy paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('winky-paladin',
@@ -1774,7 +1759,6 @@ internal_paladin.add_config('wolf-paladin',
   paladin_builder_name='wolf paladin',
   # TODO(davidjames): Re-enable hwtests on wolf -- http://crbug.com/365887
   #hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_paladin.add_config('x86-zgb-paladin',
@@ -1799,7 +1783,6 @@ internal_arm_paladin.add_config('daisy-paladin',
   boards=['daisy'],
   paladin_builder_name='daisy paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_arm_paladin.add_config('daisy_spring-paladin',
@@ -1807,14 +1790,12 @@ internal_arm_paladin.add_config('daisy_spring-paladin',
   boards=['daisy_spring'],
   paladin_builder_name='daisy_spring paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_arm_paladin.add_config('peach_pit-paladin',
   boards=['peach_pit'],
   paladin_builder_name='peach_pit paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
-  upload_hw_test_artifacts=True,
 )
 
 internal_arm_paladin.add_config('nyan-paladin',
@@ -1889,7 +1870,6 @@ _release = full.derive(official, internal,
             constants.CROS_VM_TEST_TYPE],
   disk_vm_layout='usb',
   hw_tests=HWTestConfig.DefaultList(file_bugs=True),
-  upload_hw_test_artifacts=True,
   paygen=True,
   signer_results=True,
   signer_tests=True,
@@ -2120,7 +2100,6 @@ _config.add_group('beaglebone-release-group',
 _release.add_config('stumpy_moblab-release',
   brillo_non_testable,
   boards=['stumpy_moblab'],
-  upload_hw_test_artifacts=False,
 )
 
 ### Per-chipset release groups
@@ -2396,6 +2375,8 @@ _payloads = internal.derive(
 
   # This is the actual work we want to do.
   paygen=True,
+
+  upload_hw_test_artifacts=False,
 )
 
 def _AddPayloadConfigs():
