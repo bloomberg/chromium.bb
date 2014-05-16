@@ -9,31 +9,38 @@
 # it takes too long to run all browser_tests with Dr.Memory,
 # and we only select subset to run
 # A*: ~70  tests
-A*
 # DrM-i#1052-c#52
 # AutofillTest.*
 # AcceleratedCompositingBlockedTest.*
 # AppApiTest.*
 # BrowserAccessibilityStateImplTest.*
-B*
+# B*
 # C*: ~190 tests
+C*
 # D*: ~210 tests
+D*
 # E*: ~535 tests
-F*
-G*
+E*
+# F*
+# G*
 # H*: ~52  tests
+H*
 # DrM-i#1052-c#53
-HistoryWebUITest.*
+# HistoryWebUITest.*
 # I*: ~10  tests
+I*
 # DrM-i#1052-c#53
-InfoBarsTest.*
+# InfoBarsTest.*
 # DrM-i#1052-c#56
-InspectUITest.*
+# InspectUITest.*
 # J*: 0    tests
+J*
 # K*: 1    tests
+K*
 # L*: 62   tests
-M*
-N*
+L*
+# M*
+# N*
 O*
 P*
 Q*
@@ -41,14 +48,19 @@ R*
 S*
 T*
 # U*: ~20  tests
+U*
 # DrM-i#1052-c#53
-UnloadTest.*
+# UnloadTest.*
 # V*: 5    tests
+V*
 # W*: ~150 tests
 W*
 # X*: 0    tests
+X*
 # Y*: 0    tests
+Y*
 # Z*: 0    tests
+Z*
 
 # http://crbug.com/302993
 InstantNTPURLRewriteTest.UberURLHandler_InstantExtendedNewTabPage
