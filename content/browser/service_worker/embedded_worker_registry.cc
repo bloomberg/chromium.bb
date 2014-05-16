@@ -249,13 +249,14 @@ void EmbeddedWorkerRegistry::StartWorkerWithProcessId(
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(
-    int process_id, IPC::Message* message) {
+    int process_id, IPC::Message* message_ptr) {
+  scoped_ptr<IPC::Message> message(message_ptr);
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
   ProcessToSenderMap::iterator found = process_sender_map_.find(process_id);
   if (found == process_sender_map_.end())
     return SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND;
-  if (!found->second->Send(message))
+  if (!found->second->Send(message.release()))
     return SERVICE_WORKER_ERROR_IPC_FAILED;
   return SERVICE_WORKER_OK;
 }

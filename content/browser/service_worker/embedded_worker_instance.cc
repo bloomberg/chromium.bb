@@ -22,6 +22,8 @@ struct SecondGreater {
 }  // namespace
 
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
+  if (status_ == STARTING || status_ == RUNNING)
+    Stop();
   registry_->RemoveWorker(process_id_, embedded_worker_id_);
 }
 
