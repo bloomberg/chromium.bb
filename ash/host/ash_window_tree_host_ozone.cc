@@ -91,7 +91,7 @@ void AshWindowTreeHostOzone::UpdateRootWindowSize(const gfx::Size& host_size) {
 
 AshWindowTreeHost* AshWindowTreeHost::Create(
     const AshWindowTreeHostInitParams& init_params) {
-  return new AshWindowTreeHostOzone(intial_params.initial_bounds);
+  return new AshWindowTreeHostOzone(init_params.initial_bounds);
 }
 
 }  // namespace ash
