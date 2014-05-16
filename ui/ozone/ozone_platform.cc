@@ -17,6 +17,9 @@ namespace ui {
 
 namespace {
 
+bool g_platform_initialized_ui = false;
+bool g_platform_initialized_gpu = false;
+
 // Helper to construct an OzonePlatform by name using the platform list.
 OzonePlatform* CreatePlatform(const std::string& platform_name) {
   // Search for a matching platform in the list.
@@ -43,6 +46,8 @@ std::string GetPlatformName() {
 OzonePlatform::OzonePlatform() {
   CHECK(!instance_) << "There should only be a single OzonePlatform.";
   instance_ = this;
+  g_platform_initialized_ui = false;
+  g_platform_initialized_gpu = false;
 }
 
 OzonePlatform::~OzonePlatform() {
@@ -53,6 +58,9 @@ OzonePlatform::~OzonePlatform() {
 // static
 void OzonePlatform::InitializeForUI() {
   CreateInstance();
+  if (g_platform_initialized_ui)
+    return;
+  g_platform_initialized_ui = true;
   instance_->InitializeUI();
   ui::InputMethodContextFactoryOzone::SetInstance(
       instance_->GetInputMethodContextFactoryOzone());
@@ -61,6 +69,9 @@ void OzonePlatform::InitializeForUI() {
 // static
 void OzonePlatform::InitializeForGPU() {
   CreateInstance();
+  if (g_platform_initialized_gpu)
+    return;
+  g_platform_initialized_gpu = true;
   instance_->InitializeGPU();
 }
 
