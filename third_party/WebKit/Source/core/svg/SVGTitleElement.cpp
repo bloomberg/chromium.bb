@@ -37,8 +37,7 @@ Node::InsertionNotificationRequest SVGTitleElement::insertedInto(ContainerNode* 
     SVGElement::insertedInto(rootParent);
     if (!rootParent->inDocument())
         return InsertionDone;
-    // FIXME: It's possible to register SVGTitleElement to an HTMLDocument.
-    if (firstChild())
+    if (firstChild() && document().isSVGDocument())
         document().setTitleElement(textContent(), this);
     return InsertionDone;
 }
@@ -46,14 +45,14 @@ Node::InsertionNotificationRequest SVGTitleElement::insertedInto(ContainerNode* 
 void SVGTitleElement::removedFrom(ContainerNode* rootParent)
 {
     SVGElement::removedFrom(rootParent);
-    if (rootParent->inDocument())
+    if (rootParent->inDocument() && document().isSVGDocument())
         document().removeTitle(this);
 }
 
 void SVGTitleElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
 {
     SVGElement::childrenChanged(changedByParser, beforeChange, afterChange, childCountDelta);
-    if (inDocument())
+    if (inDocument() && document().isSVGDocument())
         document().setTitleElement(textContent(), this);
 }
 
