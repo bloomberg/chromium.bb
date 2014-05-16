@@ -14,7 +14,6 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/surface.h"
-#include "cc/test/mock_quad_culler.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,9 +52,8 @@ void AddTestSurfaceQuad(TestRenderPass* pass,
 }
 void AddTestRenderPassQuad(TestRenderPass* pass,
                            RenderPass::Id render_pass_id) {
-  MockQuadCuller quad_sink(pass);
   gfx::Rect output_rect = gfx::Rect(0, 0, 5, 5);
-  SharedQuadState* shared_state = quad_sink.CreateSharedQuadState();
+  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(),
                        output_rect.size(),
                        output_rect,
@@ -74,7 +72,7 @@ void AddTestRenderPassQuad(TestRenderPass* pass,
                gfx::RectF(),
                FilterOperations(),
                FilterOperations());
-  quad_sink.Append(quad.PassAs<DrawQuad>());
+  pass->AppendDrawQuad(quad.PassAs<DrawQuad>());
 }
 
 void AddQuadInPass(TestRenderPass* pass, Quad desc) {

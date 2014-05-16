@@ -174,4 +174,8 @@ SharedQuadState* RenderPass::CreateAndAppendSharedQuadState() {
   return shared_quad_state_list.back();
 }
 
+void RenderPass::AppendDrawQuad(scoped_ptr<DrawQuad> draw_quad) {
+  quad_list.push_back(draw_quad.Pass());
+}
+
 }  // namespace cc

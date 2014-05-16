@@ -89,6 +89,7 @@ class CC_EXPORT RenderPass {
   scoped_ptr<base::Value> AsValue() const;
 
   SharedQuadState* CreateAndAppendSharedQuadState();
+  void AppendDrawQuad(scoped_ptr<DrawQuad> draw_quad);
 
   // Uniquely identifies the render pass in the compositor's current frame.
   Id id;
