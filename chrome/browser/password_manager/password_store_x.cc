@@ -26,6 +26,18 @@ using password_manager::PasswordStoreChangeList;
 using password_manager::PasswordStoreDefault;
 using std::vector;
 
+namespace {
+
+bool AddLoginToBackend(const scoped_ptr<PasswordStoreX::NativeBackend>& backend,
+                       const PasswordForm& form,
+                       PasswordStoreChangeList* changes) {
+  *changes = backend->AddLogin(form);
+  return (!changes->empty() &&
+          changes->back().type() == PasswordStoreChange::ADD);
+}
+
+}  // namespace
+
 PasswordStoreX::PasswordStoreX(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner,
@@ -41,8 +53,7 @@ PasswordStoreX::~PasswordStoreX() {}
 PasswordStoreChangeList PasswordStoreX::AddLoginImpl(const PasswordForm& form) {
   CheckMigration();
   PasswordStoreChangeList changes;
-  if (use_native_backend() && backend_->AddLogin(form)) {
-    changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+  if (use_native_backend() && AddLoginToBackend(backend_, form, &changes)) {
     allow_fallback_ = false;
   } else if (allow_default_store()) {
     changes = PasswordStoreDefault::AddLoginImpl(form);
@@ -237,7 +248,8 @@ ssize_t PasswordStoreX::MigrateLogins() {
     // don't somehow end up with some of the passwords in one store and some in
     // another. We'll always have at least one intact store this way.
     for (size_t i = 0; i < forms.size(); ++i) {
-      if (!backend_->AddLogin(*forms[i])) {
+      PasswordStoreChangeList changes;
+      if (!AddLoginToBackend(backend_, *forms[i], &changes)) {
         ok = false;
         break;
       }

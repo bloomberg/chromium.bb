@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -24,6 +25,25 @@ namespace password_manager {
 
 static const int kCurrentVersionNumber = 5;
 static const int kCompatibleVersionNumber = 1;
+
+Pickle SerializeVector(const std::vector<base::string16>& vec) {
+  Pickle p;
+  for (size_t i = 0; i < vec.size(); ++i) {
+    p.WriteString16(vec[i]);
+  }
+  return p;
+}
+
+std::vector<base::string16> DeserializeVector(const Pickle& p) {
+  std::vector<base::string16> ret;
+  base::string16 str;
+
+  PickleIterator iterator(p);
+  while (iterator.ReadString16(&str)) {
+    ret.push_back(str);
+  }
+  return ret;
+}
 
 namespace {
 
@@ -48,6 +68,42 @@ enum LoginTableColumns {
   COLUMN_FORM_DATA,
   COLUMN_USE_ADDITIONAL_AUTH
 };
+
+void BindAddStatement(const PasswordForm& form,
+                      const std::string& encrypted_password,
+                      sql::Statement* s) {
+  s->BindString(COLUMN_ORIGIN_URL, form.origin.spec());
+  s->BindString(COLUMN_ACTION_URL, form.action.spec());
+  s->BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
+  s->BindString16(COLUMN_USERNAME_VALUE, form.username_value);
+  s->BindString16(COLUMN_PASSWORD_ELEMENT, form.password_element);
+  s->BindBlob(COLUMN_PASSWORD_VALUE, encrypted_password.data(),
+              static_cast<int>(encrypted_password.length()));
+  s->BindString16(COLUMN_SUBMIT_ELEMENT, form.submit_element);
+  s->BindString(COLUMN_SIGNON_REALM, form.signon_realm);
+  s->BindInt(COLUMN_SSL_VALID, form.ssl_valid);
+  s->BindInt(COLUMN_PREFERRED, form.preferred);
+  s->BindInt64(COLUMN_DATE_CREATED, form.date_created.ToTimeT());
+  s->BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
+  s->BindInt(COLUMN_SCHEME, form.scheme);
+  s->BindInt(COLUMN_PASSWORD_TYPE, form.type);
+  Pickle usernames_pickle = SerializeVector(form.other_possible_usernames);
+  s->BindBlob(COLUMN_POSSIBLE_USERNAMES,
+              usernames_pickle.data(),
+              usernames_pickle.size());
+  s->BindInt(COLUMN_TIMES_USED, form.times_used);
+  Pickle form_data_pickle;
+  autofill::SerializeFormData(form.form_data, &form_data_pickle);
+  s->BindBlob(COLUMN_FORM_DATA,
+              form_data_pickle.data(),
+              form_data_pickle.size());
+  s->BindInt(COLUMN_USE_ADDITIONAL_AUTH, form.use_additional_authentication);
+}
+
+void AddCallback(int err, sql::Statement* /*stmt*/) {
+  if (err == 19 /*SQLITE_CONSTRAINT*/)
+    DLOG(WARNING) << "LoginDatabase::AddLogin updated an existing form";
+}
 
 }  // namespace
 
@@ -238,14 +294,32 @@ void LoginDatabase::ReportMetrics() {
   }
 }
 
-bool LoginDatabase::AddLogin(const PasswordForm& form) {
+PasswordStoreChangeList LoginDatabase::AddLogin(const PasswordForm& form) {
+  PasswordStoreChangeList list;
   std::string encrypted_password;
   if (EncryptedString(form.password_value, &encrypted_password) !=
           ENCRYPTION_RESULT_SUCCESS)
-    return false;
+    return list;
 
   // You *must* change LoginTableColumns if this query changes.
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
+      "INSERT INTO logins "
+      "(origin_url, action_url, username_element, username_value, "
+      " password_element, password_value, submit_element, "
+      " signon_realm, ssl_valid, preferred, date_created, blacklisted_by_user, "
+      " scheme, password_type, possible_usernames, times_used, form_data, "
+      " use_additional_auth) VALUES "
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+  BindAddStatement(form, encrypted_password, &s);
+  db_.set_error_callback(base::Bind(&AddCallback));
+  const bool success = s.Run();
+  db_.reset_error_callback();
+  if (success) {
+    list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+    return list;
+  }
+  // Repeat the same statement but with REPLACE semantic.
+  s.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
       "INSERT OR REPLACE INTO logins "
       "(origin_url, action_url, username_element, username_value, "
       " password_element, password_value, submit_element, "
@@ -253,34 +327,12 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
       " scheme, password_type, possible_usernames, times_used, form_data, "
       " use_additional_auth) VALUES "
       "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
-  s.BindString(COLUMN_ORIGIN_URL, form.origin.spec());
-  s.BindString(COLUMN_ACTION_URL, form.action.spec());
-  s.BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
-  s.BindString16(COLUMN_USERNAME_VALUE, form.username_value);
-  s.BindString16(COLUMN_PASSWORD_ELEMENT, form.password_element);
-  s.BindBlob(COLUMN_PASSWORD_VALUE, encrypted_password.data(),
-              static_cast<int>(encrypted_password.length()));
-  s.BindString16(COLUMN_SUBMIT_ELEMENT, form.submit_element);
-  s.BindString(COLUMN_SIGNON_REALM, form.signon_realm);
-  s.BindInt(COLUMN_SSL_VALID, form.ssl_valid);
-  s.BindInt(COLUMN_PREFERRED, form.preferred);
-  s.BindInt64(COLUMN_DATE_CREATED, form.date_created.ToTimeT());
-  s.BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
-  s.BindInt(COLUMN_SCHEME, form.scheme);
-  s.BindInt(COLUMN_PASSWORD_TYPE, form.type);
-  Pickle usernames_pickle = SerializeVector(form.other_possible_usernames);
-  s.BindBlob(COLUMN_POSSIBLE_USERNAMES,
-             usernames_pickle.data(),
-             usernames_pickle.size());
-  s.BindInt(COLUMN_TIMES_USED, form.times_used);
-  Pickle form_data_pickle;
-  autofill::SerializeFormData(form.form_data, &form_data_pickle);
-  s.BindBlob(COLUMN_FORM_DATA,
-             form_data_pickle.data(),
-             form_data_pickle.size());
-  s.BindInt(COLUMN_USE_ADDITIONAL_AUTH, form.use_additional_authentication);
-
-  return s.Run();
+  BindAddStatement(form, encrypted_password, &s);
+  if (s.Run()) {
+    list.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE, form));
+    list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
+  }
+  return list;
 }
 
 bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
@@ -583,27 +635,6 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   db_.Close();
   sql::Connection::Delete(db_path_);
   return Init(db_path_);
-}
-
-Pickle LoginDatabase::SerializeVector(
-    const std::vector<base::string16>& vec) const {
-  Pickle p;
-  for (size_t i = 0; i < vec.size(); ++i) {
-    p.WriteString16(vec[i]);
-  }
-  return p;
-}
-
-std::vector<base::string16> LoginDatabase::DeserializeVector(
-    const Pickle& p) const {
-  std::vector<base::string16> ret;
-  base::string16 str;
-
-  PickleIterator iterator(p);
-  while (iterator.ReadString16(&str)) {
-    ret.push_back(str);
-  }
-  return ret;
 }
 
 }  // namespace password_manager

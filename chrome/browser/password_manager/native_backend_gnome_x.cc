@@ -534,7 +534,8 @@ bool NativeBackendGnome::RawAddLogin(const PasswordForm& form) {
   return true;
 }
 
-bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
+password_manager::PasswordStoreChangeList NativeBackendGnome::AddLogin(
+    const PasswordForm& form) {
   // Based on LoginDatabase::AddLogin(), we search for an existing match based
   // on origin_url, username_element, username_value, password_element, submit
   // element, and signon_realm first, remove that, and then add the new entry.
@@ -546,25 +547,31 @@ bool NativeBackendGnome::AddLogin(const PasswordForm& form) {
                           base::Bind(&GKRMethod::AddLoginSearch,
                                      base::Unretained(&method),
                                      form, app_string_.c_str()));
-  PasswordFormList forms;
-  GnomeKeyringResult result = method.WaitResult(&forms);
+  ScopedVector<autofill::PasswordForm> forms;
+  GnomeKeyringResult result = method.WaitResult(&forms.get());
   if (result != GNOME_KEYRING_RESULT_OK &&
       result != GNOME_KEYRING_RESULT_NO_MATCH) {
     LOG(ERROR) << "Keyring find failed: "
                << gnome_keyring_result_to_message(result);
-    return false;
+    return password_manager::PasswordStoreChangeList();
   }
+  password_manager::PasswordStoreChangeList changes;
   if (forms.size() > 0) {
     if (forms.size() > 1) {
       LOG(WARNING) << "Adding login when there are " << forms.size()
                    << " matching logins already! Will replace only the first.";
     }
 
-    RemoveLogin(*forms[0]);
-    for (size_t i = 0; i < forms.size(); ++i)
-      delete forms[i];
+    if (RemoveLogin(*forms[0])) {
+      changes.push_back(password_manager::PasswordStoreChange(
+          password_manager::PasswordStoreChange::REMOVE, *forms[0]));
+    }
   }
-  return RawAddLogin(form);
+  if (RawAddLogin(form)) {
+    changes.push_back(password_manager::PasswordStoreChange(
+        password_manager::PasswordStoreChange::ADD, form));
+  }
+  return changes;
 }
 
 bool NativeBackendGnome::UpdateLogin(const PasswordForm& form) {

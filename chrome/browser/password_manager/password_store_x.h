@@ -40,7 +40,8 @@ class PasswordStoreX : public password_manager::PasswordStoreDefault {
 
     virtual bool Init() = 0;
 
-    virtual bool AddLogin(const autofill::PasswordForm& form) = 0;
+    virtual password_manager::PasswordStoreChangeList AddLogin(
+        const autofill::PasswordForm& form) = 0;
     virtual bool UpdateLogin(const autofill::PasswordForm& form) = 0;
     virtual bool RemoveLogin(const autofill::PasswordForm& form) = 0;
     virtual bool RemoveLoginsCreatedBetween(const base::Time& delete_begin,

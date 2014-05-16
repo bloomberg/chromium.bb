@@ -275,10 +275,12 @@ void PasswordSyncableService::ActOnPasswordStoreChanges(
   for (PasswordStoreChangeList::const_iterator it = local_changes.begin();
        it != local_changes.end();
        ++it) {
+    syncer::SyncData data = (it->type() == PasswordStoreChange::REMOVE ?
+        syncer::SyncData::CreateLocalDelete(MakePasswordSyncTag(it->form()),
+                                            syncer::PASSWORDS) :
+        SyncDataFromPassword(it->form()));
     sync_changes.push_back(
-        syncer::SyncChange(FROM_HERE,
-                           GetSyncChangeType(it->type()),
-                           SyncDataFromPassword(it->form())));
+        syncer::SyncChange(FROM_HERE, GetSyncChangeType(it->type()), data));
   }
   sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
 }

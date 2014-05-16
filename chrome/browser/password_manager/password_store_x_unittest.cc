@@ -29,6 +29,7 @@ using autofill::PasswordForm;
 using content::BrowserThread;
 using password_manager::ContainsAllPasswordForms;
 using password_manager::PasswordStoreChange;
+using password_manager::PasswordStoreChangeList;
 using testing::_;
 using testing::DoAll;
 using testing::ElementsAreArray;
@@ -58,7 +59,9 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
  public:
   virtual bool Init() OVERRIDE { return true; }
 
-  virtual bool AddLogin(const PasswordForm& form) OVERRIDE { return false; }
+  virtual PasswordStoreChangeList AddLogin(const PasswordForm& form) OVERRIDE {
+    return PasswordStoreChangeList();
+  }
   virtual bool UpdateLogin(const PasswordForm& form) OVERRIDE { return false; }
   virtual bool RemoveLogin(const PasswordForm& form) OVERRIDE { return false; }
 
@@ -91,9 +94,10 @@ class MockBackend : public PasswordStoreX::NativeBackend {
  public:
   virtual bool Init() OVERRIDE { return true; }
 
-  virtual bool AddLogin(const PasswordForm& form) OVERRIDE {
+  virtual PasswordStoreChangeList AddLogin(const PasswordForm& form) OVERRIDE {
     all_forms_.push_back(form);
-    return true;
+    PasswordStoreChange change(PasswordStoreChange::ADD, form);
+    return PasswordStoreChangeList(1, change);
   }
 
   virtual bool UpdateLogin(const PasswordForm& form) OVERRIDE {

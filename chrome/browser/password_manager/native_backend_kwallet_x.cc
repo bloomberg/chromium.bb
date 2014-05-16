@@ -265,33 +265,40 @@ NativeBackendKWallet::InitResult NativeBackendKWallet::InitWallet() {
   return INIT_SUCCESS;
 }
 
-bool NativeBackendKWallet::AddLogin(const PasswordForm& form) {
+password_manager::PasswordStoreChangeList NativeBackendKWallet::AddLogin(
+    const PasswordForm& form) {
   int wallet_handle = WalletHandle();
   if (wallet_handle == kInvalidKWalletHandle)
-    return false;
+    return password_manager::PasswordStoreChangeList();
 
-  PasswordFormList forms;
-  GetLoginsList(&forms, form.signon_realm, wallet_handle);
+  ScopedVector<autofill::PasswordForm> forms;
+  GetLoginsList(&forms.get(), form.signon_realm, wallet_handle);
 
   // We search for a login to update, rather than unconditionally appending the
   // login, because in some cases (especially involving sync) we can be asked to
   // add a login that already exists. In these cases we want to just update.
   bool updated = false;
+  password_manager::PasswordStoreChangeList changes;
   for (size_t i = 0; i < forms.size(); ++i) {
     // Use the more restrictive removal comparison, so that we never have
     // duplicate logins that would all be removed together by RemoveLogin().
     if (CompareForms(form, *forms[i], false)) {
+      changes.push_back(password_manager::PasswordStoreChange(
+          password_manager::PasswordStoreChange::REMOVE, *forms[i]));
       *forms[i] = form;
       updated = true;
     }
   }
   if (!updated)
     forms.push_back(new PasswordForm(form));
+  changes.push_back(password_manager::PasswordStoreChange(
+      password_manager::PasswordStoreChange::ADD, form));
 
-  bool ok = SetLoginsList(forms, form.signon_realm, wallet_handle);
+  bool ok = SetLoginsList(forms.get(), form.signon_realm, wallet_handle);
+  if (!ok)
+    changes.clear();
 
-  STLDeleteElements(&forms);
-  return ok;
+  return changes;
 }
 
 bool NativeBackendKWallet::UpdateLogin(const PasswordForm& form) {

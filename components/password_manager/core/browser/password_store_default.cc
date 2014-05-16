@@ -34,10 +34,7 @@ void PasswordStoreDefault::ReportMetricsImpl() {
 PasswordStoreChangeList PasswordStoreDefault::AddLoginImpl(
     const PasswordForm& form) {
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  PasswordStoreChangeList changes;
-  if (login_db_->AddLogin(form))
-    changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
-  return changes;
+  return login_db_->AddLogin(form);
 }
 
 PasswordStoreChangeList PasswordStoreDefault::UpdateLoginImpl(

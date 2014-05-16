@@ -29,6 +29,8 @@
 using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using content::BrowserThread;
+using password_manager::PasswordStoreChange;
+using password_manager::PasswordStoreChangeList;
 using testing::_;
 using testing::Invoke;
 using testing::Return;
@@ -163,8 +165,10 @@ class NativeBackendKWalletTestBase : public testing::Test {
     form_isc_.signon_realm = "ISC";
   }
 
-  void CheckPasswordForm(const PasswordForm& expected,
-                         const PasswordForm& actual);
+  static void CheckPasswordForm(const PasswordForm& expected,
+                                const PasswordForm& actual);
+  static void CheckPasswordChanges(const PasswordStoreChangeList& expected,
+                                   const PasswordStoreChangeList& actual);
 
   PasswordForm old_form_google_;
   PasswordForm form_google_;
@@ -188,6 +192,16 @@ void NativeBackendKWalletTestBase::CheckPasswordForm(
   EXPECT_EQ(expected.type, actual.type);
   EXPECT_EQ(expected.times_used, actual.times_used);
   EXPECT_EQ(expected.scheme, actual.scheme);
+}
+
+void NativeBackendKWalletTestBase::CheckPasswordChanges(
+    const PasswordStoreChangeList& expected,
+    const PasswordStoreChangeList& actual) {
+  ASSERT_EQ(expected.size(), actual.size());
+  for (size_t i = 0; i < expected.size(); ++i) {
+    EXPECT_EQ(expected[i].type(), actual[i].type());
+    CheckPasswordForm(expected[i].form(), actual[i].form());
+  }
 }
 
 class NativeBackendKWalletTest : public NativeBackendKWalletTestBase {
@@ -634,14 +648,29 @@ TEST_F(NativeBackendKWalletTest, AddDuplicateLogin) {
   NativeBackendKWalletStub backend(42);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
-  BrowserThread::PostTask(
+  PasswordStoreChangeList changes;
+  changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
+                                        form_google_));
+  BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
-  BrowserThread::PostTask(
+      base::Bind(&NativeBackendKWalletStub::AddLogin,
+                 base::Unretained(&backend), form_google_),
+      base::Bind(&NativeBackendKWalletTest::CheckPasswordChanges,
+                 changes));
+
+  changes.clear();
+  changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
+                                        form_google_));
+  form_google_.times_used++;
+  changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
+                                        form_google_));
+
+  BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendKWalletStub::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::Bind(&NativeBackendKWalletStub::AddLogin,
+                 base::Unretained(&backend), form_google_),
+      base::Bind(&NativeBackendKWalletTest::CheckPasswordChanges,
+                 changes));
 
   RunDBThread();
 

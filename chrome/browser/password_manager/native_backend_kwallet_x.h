@@ -40,7 +40,8 @@ class NativeBackendKWallet : public PasswordStoreX::NativeBackend {
   virtual bool Init() OVERRIDE;
 
   // Implements NativeBackend interface.
-  virtual bool AddLogin(const autofill::PasswordForm& form) OVERRIDE;
+  virtual password_manager::PasswordStoreChangeList AddLogin(
+      const autofill::PasswordForm& form) OVERRIDE;
   virtual bool UpdateLogin(const autofill::PasswordForm& form) OVERRIDE;
   virtual bool RemoveLogin(const autofill::PasswordForm& form) OVERRIDE;
   virtual bool RemoveLoginsCreatedBetween(

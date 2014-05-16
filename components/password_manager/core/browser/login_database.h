@@ -11,13 +11,10 @@
 #include "base/files/file_path.h"
 #include "base/pickle.h"
 #include "base/strings/string16.h"
+#include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "sql/connection.h"
 #include "sql/meta_table.h"
-
-namespace autofill {
-struct PasswordForm;
-}  // namespace autofill
 
 namespace password_manager {
 
@@ -36,8 +33,11 @@ class LoginDatabase {
   // Reports usage metrics to UMA.
   void ReportMetrics();
 
-  // Adds |form| to the list of remembered password forms.
-  bool AddLogin(const autofill::PasswordForm& form);
+  // Adds |form| to the list of remembered password forms. Returns the list of
+  // changes applied ({}, {ADD}, {REMOVE, ADD}). If it returns {REMOVE, ADD}
+  // then the REMOVE is associated with the form that was added. Thus only the
+  // primary key columns contain the values associated with the removed form.
+  PasswordStoreChangeList AddLogin(const autofill::PasswordForm& form);
 
   // Updates remembered password form. Returns true on success and sets
   // items_changed (if non-NULL) to the number of logins updated.
@@ -83,8 +83,6 @@ class LoginDatabase {
   bool DeleteAndRecreateDatabaseFile();
 
  private:
-  friend class LoginDatabaseTest;
-
   // Result values for encryption/decryption actions.
   enum EncryptionResult {
     // Success.
@@ -127,10 +125,6 @@ class LoginDatabase {
   // |forms|.
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted, std::vector<autofill::PasswordForm*>* forms) const;
-
-  // Serialization routines for vectors.
-  Pickle SerializeVector(const std::vector<base::string16>& vec) const;
-  std::vector<base::string16> DeserializeVector(const Pickle& pickle) const;
 
   base::FilePath db_path_;
   mutable sql::Connection db_;

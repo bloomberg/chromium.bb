@@ -23,6 +23,8 @@ using autofill::PasswordForm;
 using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using content::BrowserThread;
+using password_manager::PasswordStoreChange;
+using password_manager::PasswordStoreChangeList;
 
 namespace {
 
@@ -278,6 +280,33 @@ class MockGnomeKeyringLoader : public GnomeKeyringLoader {
   }
 };
 
+void CheckPasswordChanges(const PasswordStoreChangeList& expected_list,
+                          const PasswordStoreChangeList& actual_list) {
+  ASSERT_EQ(expected_list.size(), actual_list.size());
+  for (size_t i = 0; i < expected_list.size(); ++i) {
+    EXPECT_EQ(expected_list[i].type(), actual_list[i].type());
+    const PasswordForm& expected = expected_list[i].form();
+    const PasswordForm& actual = actual_list[i].form();
+
+    EXPECT_EQ(expected.origin, actual.origin);
+    EXPECT_EQ(expected.password_value, actual.password_value);
+    EXPECT_EQ(expected.action, actual.action);
+    EXPECT_EQ(expected.username_element, actual.username_element);
+    EXPECT_EQ(expected.username_value, actual.username_value);
+    EXPECT_EQ(expected.password_element, actual.password_element);
+    EXPECT_EQ(expected.submit_element, actual.submit_element);
+    EXPECT_EQ(expected.signon_realm, actual.signon_realm);
+    EXPECT_EQ(expected.ssl_valid, actual.ssl_valid);
+    EXPECT_EQ(expected.preferred, actual.preferred);
+    // We don't check the date created. It varies due to bug in the
+    // serialization. Integer seconds are saved instead of microseconds.
+    EXPECT_EQ(expected.blacklisted_by_user, actual.blacklisted_by_user);
+    EXPECT_EQ(expected.type, actual.type);
+    EXPECT_EQ(expected.times_used, actual.times_used);
+    EXPECT_EQ(expected.scheme, actual.scheme);
+  }
+}
+
 }  // anonymous namespace
 
 class NativeBackendGnomeTest : public testing::Test {
@@ -306,6 +335,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.submit_element = UTF8ToUTF16("submit");
     form_google_.signon_realm = "http://www.google.com/";
     form_google_.type = PasswordForm::TYPE_GENERATED;
+    form_google_.date_created = base::Time::Now();
 
     form_facebook_.origin = GURL("http://www.facebook.com/");
     form_facebook_.action = GURL("http://www.facebook.com/login");
@@ -315,6 +345,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_facebook_.password_value = UTF8ToUTF16("b");
     form_facebook_.submit_element = UTF8ToUTF16("submit");
     form_facebook_.signon_realm = "http://www.facebook.com/";
+    form_facebook_.date_created = base::Time::Now();
 
     form_isc_.origin = GURL("http://www.isc.org/");
     form_isc_.action = GURL("http://www.isc.org/auth");
@@ -324,11 +355,13 @@ class NativeBackendGnomeTest : public testing::Test {
     form_isc_.password_value = UTF8ToUTF16("ihazabukkit");
     form_isc_.submit_element = UTF8ToUTF16("login");
     form_isc_.signon_realm = "http://www.isc.org/";
+    form_isc_.date_created = base::Time::Now();
 
     other_auth_.origin = GURL("http://www.example.com/");
     other_auth_.username_value = UTF8ToUTF16("username");
     other_auth_.password_value = UTF8ToUTF16("pass");
     other_auth_.signon_realm = "http://www.example.com/Realm";
+    other_auth_.date_created = base::Time::Now();
   }
 
   virtual void TearDown() {
@@ -802,14 +835,27 @@ TEST_F(NativeBackendGnomeTest, AddDuplicateLogin) {
   NativeBackendGnome backend(42);
   backend.Init();
 
-  BrowserThread::PostTask(
+  PasswordStoreChangeList changes;
+  changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
+                                        form_google_));
+  BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
-  BrowserThread::PostTask(
+      base::Bind(&NativeBackendGnome::AddLogin,
+                 base::Unretained(&backend), form_google_),
+      base::Bind(&CheckPasswordChanges, changes));
+
+  changes.clear();
+  changes.push_back(PasswordStoreChange(PasswordStoreChange::REMOVE,
+                                        form_google_));
+  form_google_.times_used++;
+  changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
+                                        form_google_));
+
+  BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(base::IgnoreResult(&NativeBackendGnome::AddLogin),
-                 base::Unretained(&backend), form_google_));
+      base::Bind(&NativeBackendGnome::AddLogin,
+                 base::Unretained(&backend), form_google_),
+      base::Bind(&CheckPasswordChanges, changes));
 
   RunBothThreads();
 

@@ -877,9 +877,7 @@ PasswordStoreChangeList PasswordStoreMac::AddLoginImpl(
   DCHECK(thread_->message_loop() == base::MessageLoop::current());
   PasswordStoreChangeList changes;
   if (AddToKeychainIfNecessary(form)) {
-    if (login_metadata_db_->AddLogin(form)) {
-      changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
-    }
+    changes = login_metadata_db_->AddLogin(form);
   }
   return changes;
 }
@@ -903,15 +901,10 @@ PasswordStoreChangeList PasswordStoreMac::UpdateLoginImpl(
   // The keychain add will update if there is a collision and add if there
   // isn't, which is the behavior we want, so there's no separate update call.
   if (AddToKeychainIfNecessary(form)) {
-    if (update_count == 0) {
-      if (login_metadata_db_->AddLogin(form)) {
-        changes.push_back(PasswordStoreChange(PasswordStoreChange::ADD,
-                                              form));
-      }
-    } else {
-      changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE,
-                                            form));
-    }
+    if (update_count == 0)
+      changes = login_metadata_db_->AddLogin(form);
+    else
+      changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
   }
   return changes;
 }
