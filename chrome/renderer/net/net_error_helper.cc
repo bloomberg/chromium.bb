@@ -116,7 +116,7 @@ void NetErrorHelper::DidStartProvisionalLoad() {
 
 void NetErrorHelper::DidCommitProvisionalLoad(bool is_new_navigation) {
   blink::WebFrame* frame = render_frame()->GetWebFrame();
-  core_.OnCommitLoad(GetFrameType(frame));
+  core_.OnCommitLoad(GetFrameType(frame), frame->document().url());
 }
 
 void NetErrorHelper::DidFinishLoad() {

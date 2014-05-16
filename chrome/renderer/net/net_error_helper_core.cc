@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/common/localized_error.h"
+#include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -340,6 +341,29 @@ scoped_ptr<LocalizedError::ErrorPageParams> CreateErrorPageParams(
   return params.Pass();
 }
 
+void ReportAutoReloadSuccess(const blink::WebURLError& error, size_t count) {
+  if (error.domain.utf8() != net::kErrorDomain)
+    return;
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtSuccess",
+                                   -error.reason,
+                                   net::GetAllErrorCodesForUma());
+  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess", count);
+  if (count == 1) {
+    UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtFirstSuccess",
+                                     -error.reason,
+                                     net::GetAllErrorCodesForUma());
+  }
+}
+
+void ReportAutoReloadFailure(const blink::WebURLError& error, size_t count) {
+  if (error.domain.utf8() != net::kErrorDomain)
+    return;
+  UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtStop",
+                                   -error.reason,
+                                   net::GetAllErrorCodesForUma());
+  UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop", count);
+}
+
 }  // namespace
 
 struct NetErrorHelperCore::ErrorPageInfo {
@@ -350,7 +374,8 @@ struct NetErrorHelperCore::ErrorPageInfo {
         needs_load_navigation_corrections(false),
         reload_button_in_page(false),
         load_stale_button_in_page(false),
-        is_finished_loading(false) {
+        is_finished_loading(false),
+        auto_reload_triggered(false) {
   }
 
   // Information about the failed page load.
@@ -386,6 +411,10 @@ struct NetErrorHelperCore::ErrorPageInfo {
   // True if a page has completed loading, at which point it can receive
   // updates.
   bool is_finished_loading;
+
+  // True if the auto-reload timer has fired and a reload is or has been in
+  // flight.
+  bool auto_reload_triggered;
 };
 
 NetErrorHelperCore::NavigationCorrectionParams::NavigationCorrectionParams() {
@@ -406,19 +435,19 @@ NetErrorHelperCore::NetErrorHelperCore(Delegate* delegate)
       last_probe_status_(chrome_common_net::DNS_PROBE_POSSIBLE),
       auto_reload_enabled_(false),
       auto_reload_timer_(new base::Timer(false, false)),
+      auto_reload_paused_(false),
+      uncommitted_load_started_(false),
       // TODO(ellyjones): Make online_ accurate at object creation.
       online_(true),
       auto_reload_count_(0),
-      can_auto_reload_page_(false),
       navigation_from_button_(NO_BUTTON) {
 }
 
 NetErrorHelperCore::~NetErrorHelperCore() {
-  if (committed_error_page_info_ && can_auto_reload_page_) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtStop",
-                                     -committed_error_page_info_->error.reason,
-                                     net::GetAllErrorCodesForUma());
-    UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop", auto_reload_count_);
+  if (committed_error_page_info_ &&
+      committed_error_page_info_->auto_reload_triggered) {
+    ReportAutoReloadFailure(committed_error_page_info_->error,
+                            auto_reload_count_);
   }
 }
 
@@ -426,23 +455,23 @@ void NetErrorHelperCore::CancelPendingFetches() {
   // Cancel loading the alternate error page, and prevent any pending error page
   // load from starting a new error page load.  Swapping in the error page when
   // it's finished loading could abort the navigation, otherwise.
-  if (committed_error_page_info_ && can_auto_reload_page_) {
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtStop",
-                                     -committed_error_page_info_->error.reason,
-                                     net::GetAllErrorCodesForUma());
-    UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtStop", auto_reload_count_);
-  }
   if (committed_error_page_info_)
     committed_error_page_info_->needs_load_navigation_corrections = false;
   if (pending_error_page_info_)
     pending_error_page_info_->needs_load_navigation_corrections = false;
   delegate_->CancelFetchNavigationCorrections();
   auto_reload_timer_->Stop();
-  can_auto_reload_page_ = false;
+  auto_reload_paused_ = false;
 }
 
 void NetErrorHelperCore::OnStop() {
+  if (committed_error_page_info_ &&
+      committed_error_page_info_->auto_reload_triggered) {
+    ReportAutoReloadFailure(committed_error_page_info_->error,
+                            auto_reload_count_);
+  }
   CancelPendingFetches();
+  uncommitted_load_started_ = false;
   auto_reload_count_ = 0;
 }
 
@@ -450,19 +479,22 @@ void NetErrorHelperCore::OnStartLoad(FrameType frame_type, PageType page_type) {
   if (frame_type != MAIN_FRAME)
     return;
 
+  uncommitted_load_started_ = true;
+
   // If there's no pending error page information associated with the page load,
   // or the new page is not an error page, then reset pending error page state.
-  if (!pending_error_page_info_ || page_type != ERROR_PAGE) {
+  if (!pending_error_page_info_ || page_type != ERROR_PAGE)
     CancelPendingFetches();
-  } else if (auto_reload_enabled_) {
-    // If an error load is starting, the resulting error page is autoreloadable.
-    can_auto_reload_page_ = IsReloadableError(*pending_error_page_info_);
-  }
 }
 
-void NetErrorHelperCore::OnCommitLoad(FrameType frame_type) {
+void NetErrorHelperCore::OnCommitLoad(FrameType frame_type, const GURL& url) {
   if (frame_type != MAIN_FRAME)
     return;
+
+  // uncommitted_load_started_ could already be false, since RenderFrameImpl
+  // calls OnCommitLoad once for each in-page navigation (like a fragment
+  // change) with no corresponding OnStartLoad.
+  uncommitted_load_started_ = false;
 
   // Track if an error occurred due to a page button press.
   // This isn't perfect; if (for instance), the server is slow responding
@@ -483,17 +515,13 @@ void NetErrorHelperCore::OnCommitLoad(FrameType frame_type) {
   navigation_from_button_ = NO_BUTTON;
 
   if (committed_error_page_info_ && !pending_error_page_info_ &&
-      can_auto_reload_page_) {
-    int reason = committed_error_page_info_->error.reason;
-    UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtSuccess",
-                                     -reason,
-                                     net::GetAllErrorCodesForUma());
-    UMA_HISTOGRAM_COUNTS("Net.AutoReload.CountAtSuccess", auto_reload_count_);
-    if (auto_reload_count_ == 1) {
-      UMA_HISTOGRAM_CUSTOM_ENUMERATION("Net.AutoReload.ErrorAtFirstSuccess",
-                                       -reason,
-                                       net::GetAllErrorCodesForUma());
-    }
+      committed_error_page_info_->auto_reload_triggered) {
+    const blink::WebURLError& error = committed_error_page_info_->error;
+    const GURL& error_url = error.unreachableURL;
+    if (url == error_url)
+      ReportAutoReloadSuccess(error, auto_reload_count_);
+    else if (url != GURL(content::kUnreachableWebDataURL))
+      ReportAutoReloadFailure(error, auto_reload_count_);
   }
 
   committed_error_page_info_.reset(pending_error_page_info_.release());
@@ -734,15 +762,10 @@ void NetErrorHelperCore::Reload() {
 bool NetErrorHelperCore::MaybeStartAutoReloadTimer() {
   if (!committed_error_page_info_ ||
       !committed_error_page_info_->is_finished_loading ||
-      !can_auto_reload_page_ ||
-      pending_error_page_info_) {
+      pending_error_page_info_ ||
+      uncommitted_load_started_) {
     return false;
   }
-
-  DCHECK(IsReloadableError(*committed_error_page_info_));
-
-  if (!online_)
-    return false;
 
   StartAutoReloadTimer();
   return true;
@@ -750,7 +773,16 @@ bool NetErrorHelperCore::MaybeStartAutoReloadTimer() {
 
 void NetErrorHelperCore::StartAutoReloadTimer() {
   DCHECK(committed_error_page_info_);
-  DCHECK(can_auto_reload_page_);
+  DCHECK(IsReloadableError(*committed_error_page_info_));
+
+  committed_error_page_info_->auto_reload_triggered = true;
+
+  if (!online_) {
+    auto_reload_paused_ = true;
+    return;
+  }
+
+  auto_reload_paused_ = false;
   base::TimeDelta delay = GetAutoReloadTime(auto_reload_count_);
   auto_reload_timer_->Stop();
   auto_reload_timer_->Start(FROM_HERE, delay,
@@ -764,17 +796,23 @@ void NetErrorHelperCore::AutoReloadTimerFired() {
 }
 
 void NetErrorHelperCore::NetworkStateChanged(bool online) {
+  bool was_online = online_;
   online_ = online;
-  if (auto_reload_timer_->IsRunning()) {
-    DCHECK(committed_error_page_info_);
-    // If there's an existing timer running, stop it and reset the retry count.
-    auto_reload_timer_->Stop();
-    auto_reload_count_ = 0;
+  if (!was_online && online) {
+    // Transitioning offline -> online
+    if (auto_reload_paused_)
+      MaybeStartAutoReloadTimer();
+  } else if (was_online && !online) {
+    // Transitioning online -> offline
+    if (auto_reload_timer_->IsRunning()) {
+      DCHECK(committed_error_page_info_);
+      DCHECK(!auto_reload_paused_);
+      DCHECK(committed_error_page_info_->auto_reload_triggered);
+      auto_reload_timer_->Stop();
+      auto_reload_count_ = 0;
+      auto_reload_paused_ = true;
+    }
   }
-
-  // If the network state changed to online, maybe start auto-reloading again.
-  if (online)
-    MaybeStartAutoReloadTimer();
 }
 
 bool NetErrorHelperCore::ShouldSuppressErrorPage(FrameType frame_type,
@@ -783,20 +821,35 @@ bool NetErrorHelperCore::ShouldSuppressErrorPage(FrameType frame_type,
   if (frame_type != MAIN_FRAME)
     return false;
 
-  // If |auto_reload_timer_| is still running, this error page isn't from an
-  // auto reload.
-  if (auto_reload_timer_->IsRunning())
+  if (!auto_reload_enabled_)
     return false;
 
   // If there's no committed error page, this error page wasn't from an auto
   // reload.
-  if (!committed_error_page_info_ || !can_auto_reload_page_)
+  if (!committed_error_page_info_)
     return false;
+
+  // If the error page wasn't reloadable, display it.
+  if (!IsReloadableError(*committed_error_page_info_))
+    return false;
+
+  // If |auto_reload_timer_| is still running or is paused, this error page
+  // isn't from an auto reload.
+  if (auto_reload_timer_->IsRunning() || auto_reload_paused_)
+    return false;
+
+  // If the error page was reloadable, and the timer isn't running or paused, an
+  // auto-reload has already been triggered.
+  DCHECK(committed_error_page_info_->auto_reload_triggered);
 
   GURL error_url = committed_error_page_info_->error.unreachableURL;
   // TODO(ellyjones): also plumb the error code down to CCRC and check that
   if (error_url != url)
     return false;
+
+  // Suppressed an error-page load; the previous uncommitted load was the error
+  // page load starting, so forget about it.
+  uncommitted_load_started_ = false;
 
   // The first iteration of the timer is started by OnFinishLoad calling
   // MaybeStartAutoReloadTimer, but since error pages for subsequent loads are

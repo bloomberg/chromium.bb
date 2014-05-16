@@ -130,7 +130,7 @@ class NetErrorHelperCore {
 
   // These methods handle tracking the actual state of the page.
   void OnStartLoad(FrameType frame_type, PageType page_type);
-  void OnCommitLoad(FrameType frame_type);
+  void OnCommitLoad(FrameType frame_type, const GURL& url);
   void OnFinishLoad(FrameType frame_type);
   void OnStop();
 
@@ -225,14 +225,29 @@ class NetErrorHelperCore {
 
   NavigationCorrectionParams navigation_correction_params_;
 
+  // True if auto-reload is enabled at all.
   bool auto_reload_enabled_;
+
+  // Timer used to wait for auto-reload attempts.
   scoped_ptr<base::Timer> auto_reload_timer_;
+
+  // True if the auto-reload timer would be running but is waiting for an
+  // offline->online network transition.
+  bool auto_reload_paused_;
+
+  // True if there is an uncommitted-but-started load, error page or not. This
+  // is used to inhibit starting auto-reload when an error page finishes, in
+  // case this happens:
+  //   Error page starts
+  //   Error page commits
+  //   Non-error page starts
+  //   Error page finishes
+  bool uncommitted_load_started_;
 
   // Is the browser online?
   bool online_;
 
   int auto_reload_count_;
-  bool can_auto_reload_page_;
 
   // This value is set only when a navigation has been initiated from
   // the error page.  It is used to detect when such navigations result
