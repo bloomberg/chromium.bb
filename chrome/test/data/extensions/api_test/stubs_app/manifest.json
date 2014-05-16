@@ -1,0 +1,45 @@
+{
+  "name": "App Extension API Stubs Test",
+  "version": "1.0",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+    "adview",
+    "alarms",
+    "audio",
+    "audioCapture",
+    "clipboardRead",
+    "clipboardWrite",
+    "contextMenus",
+    "desktopCapture",
+    "fileBrowserHandler",
+    "fileSystem",
+    "gcm",
+    "geolocation",
+    "hid",
+    "identity",
+    "idle",
+    "location",
+    {"mediaGalleries": ["read", "allAutoDetected"]},
+    "nativeMessaging",
+    "notifications",
+    "pointerLock",
+    "power",
+    "pushMessaging",
+    "serial",
+    "signedInDevices",
+    {"socket": ["tcp-connect", "tcp-listen", "udp-send-to", "udp-bind"]},
+    "storage",
+    "tts",
+    "unlimitedStorage",
+    "usb",
+    "videoCapture"
+  ],
+  "bluetooth": {},
+  "commands": {},
+  "sockets": {}
+}

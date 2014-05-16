@@ -29,3 +29,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Stubs) {
   ResultCatcher catcher;
   ASSERT_TRUE(catcher.GetNextResult());
 }
+
+// Tests that all API features that are available to a platform app actually
+// can be used in an app. For example, this test will fail if a developer adds
+// an API feature without providing a schema. http://crbug.com/369318
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, StubsApp) {
+  ASSERT_TRUE(RunPlatformAppTest("stubs_app")) << message_;
+}
