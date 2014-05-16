@@ -22,6 +22,7 @@ class SmoothnessToughCanvasCases(test.Test):
   page_set = 'page_sets/tough_canvas_cases.py'
 
 
+@test.Disabled('linux', 'mac', 'win')  # crbug.com/373812
 class SmoothnessToughWebGLCases(test.Test):
   test = smoothness.Smoothness
   page_set = 'page_sets/tough_webgl_cases.py'
