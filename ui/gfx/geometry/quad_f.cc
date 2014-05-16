@@ -62,28 +62,24 @@ static inline bool PointIsInTriangle(const PointF& point,
                                      const PointF& r1,
                                      const PointF& r2,
                                      const PointF& r3) {
-  // Compute the barycentric coordinates of |point| relative to the triangle
-  // (r1, r2, r3). This algorithm comes from Christer Ericson's Real-Time
-  // Collision Detection.
-  Vector2dF v0 = r2 - r1;
-  Vector2dF v1 = r3 - r1;
-  Vector2dF v2 = point - r1;
+  // Compute the barycentric coordinates (u, v, w) of |point| relative to the
+  // triangle (r1, r2, r3) by the solving the system of equations:
+  //   1) point = u * r1 + v * r2 + w * r3
+  //   2) u + v + w = 1
+  // This algorithm comes from Christer Ericson's Real-Time Collision Detection.
 
-  double dot00 = DotProduct(v0, v0);
-  double dot01 = DotProduct(v0, v1);
-  double dot11 = DotProduct(v1, v1);
-  double dot20 = DotProduct(v2, v0);
-  double dot21 = DotProduct(v2, v1);
+  Vector2dF r31 = r1 - r3;
+  Vector2dF r32 = r2 - r3;
+  Vector2dF r3p = point - r3;
 
-  double denom = dot00 * dot11 - dot01 * dot01;
-
-  double v = (dot11 * dot20 - dot01 * dot21) / denom;
-  double w = (dot00 * dot21 - dot01 * dot20) / denom;
-  double u = 1 - v - w;
+  float denom = r32.y() * r31.x() - r32.x() * r31.y();
+  float u = (r32.y() * r3p.x() - r32.x() * r3p.y()) / denom;
+  float v = (r31.x() * r3p.y() - r31.y() * r3p.x()) / denom;
+  float w = 1.f - u - v;
 
   // Use the barycentric coordinates to test if |point| is inside the
   // triangle (r1, r2, r2).
-  return (v >= 0) && (w >= 0) && (u >= 0);
+  return (u >= 0) && (v >= 0) && (w >= 0);
 }
 
 bool QuadF::Contains(const PointF& point) const {

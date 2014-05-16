@@ -52,7 +52,7 @@ class GFX_EXPORT QuadF {
   bool IsCounterClockwise() const;
 
   // Returns true if the |point| is contained within the quad, or lies on on
-  // edge of the quad.
+  // edge of the quad. This assumes that the quad is convex.
   bool Contains(const gfx::PointF& point) const;
 
   // Returns a rectangle that bounds the four points of the quad. The points of
