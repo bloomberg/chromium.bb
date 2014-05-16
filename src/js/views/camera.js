@@ -458,6 +458,10 @@ camera.views.Camera = function(context, router) {
       'keypress', this.onToggleMultiKeyPress_.bind(this));
   document.querySelector('#toggle-multi').addEventListener(
       'click', this.onToggleMultiClicked_.bind(this));
+  document.querySelector('#toggle-mirror').addEventListener(
+      'keypress', this.onToggleMirrorKeyPress_.bind(this));
+  document.querySelector('#toggle-mirror').addEventListener(
+      'click', this.onToggleMirrorClicked_.bind(this));
 
   // Load the shutter and the tick sound.
   this.shutterSound_.src = '../sounds/shutter.ogg';
@@ -588,7 +592,8 @@ camera.views.Camera.prototype.initialize = function(callback) {
         {
           effectIndex: 0,
           toggleTimer: true,
-          toggleMulti: false
+          toggleMulti: false,
+          toggleMirror: true,
         },
         function(values) {
           if (values.effectIndex < this.previewProcessors_.length)
@@ -597,6 +602,8 @@ camera.views.Camera.prototype.initialize = function(callback) {
             this.setCurrentEffect_(0);
           document.querySelector('#toggle-timer').checked = values.toggleTimer;
           document.querySelector('#toggle-multi').checked = values.toggleMulti;
+          document.querySelector('#toggle-mirror').checked = values.toggleMirror;
+          document.body.classList.toggle('mirror', values.toggleMirror);
         }.bind(this));
   }
 
@@ -776,6 +783,18 @@ camera.views.Camera.prototype.onToggleMultiKeyPress_ = function(event) {
 };
 
 /**
+ * Handles pressing a key on the mirror switch.
+ * @param {Event} event Key press event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleMirrorKeyPress_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
+  if (camera.util.getShortcutIdentifier(event) == 'Enter')
+    document.querySelector('#toggle-mirror').click();
+};
+
+/**
  * Handles clicking on the timer switch.
  * @param {Event} event Click event.
  * @private
@@ -803,6 +822,22 @@ camera.views.Camera.prototype.onToggleMultiClicked_ = function(event) {
       chrome.i18n.getMessage(enabled ? 'toggleMultiActiveMessage' :
                                        'toggleMultiInactiveMessage'));
   chrome.storage.local.set({toggleMulti: enabled});
+};
+
+/**
+ * Handles clicking on the mirror switch.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Camera.prototype.onToggleMirrorClicked_ = function(event) {
+  if (this.performanceTestTimer_)
+    return;
+  var enabled = document.querySelector('#toggle-mirror').checked;
+  document.body.classList.toggle('mirror', enabled);
+  this.showToastMessage_(
+      chrome.i18n.getMessage(enabled ? 'toggleMirrorActiveMessage' :
+                                       'toggleMirrorInactiveMessage'));
+  chrome.storage.local.set({toggleMirror: enabled});
 };
 
 /**

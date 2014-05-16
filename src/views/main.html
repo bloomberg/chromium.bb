@@ -42,7 +42,7 @@
     <script src="../js/router.js"></script>
     <script src="../js/main.js"></script>
   </head>
-  <body class="controls-visible initializing">
+  <body class="controls-visible initializing mirror">
     <div id="camera">
       <div id="main-canvas-wrapper"></div>
       <div id="main-fast-canvas-wrapper"></div>
@@ -53,6 +53,10 @@
               <div class="buttons opposite-side">
                 <button id="filters-toggle" tabindex="0"
                         i18n-label="filtersButton"></button>
+              </div>
+              <div class="buttons prev-to-middle">
+                <input type="checkbox" id="toggle-mirror" tabindex="0"
+                       i18n-label="toggleMirrorButton" checked>
               </div>
               <div id="buttons">
                 <button id="take-picture" tabindex="0"
