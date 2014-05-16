@@ -696,11 +696,9 @@ void LayerTreeHost::NotifyInputThrottledUntilCommit() {
 }
 
 void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
-  if (!proxy_->HasImplThread())
-    static_cast<SingleThreadProxy*>(proxy_.get())->CompositeImmediately(
-        frame_begin_time);
-  else
-    SetNeedsCommit();
+  DCHECK(!proxy_->HasImplThread());
+  SingleThreadProxy* proxy = static_cast<SingleThreadProxy*>(proxy_.get());
+  proxy->CompositeImmediately(frame_begin_time);
 }
 
 bool LayerTreeHost::InitializeOutputSurfaceIfNeeded() {

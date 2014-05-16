@@ -46,7 +46,6 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   void SetSuppressScheduleComposite(bool suppress);
   bool BeginMainFrameRequested() const;
   void UpdateAnimations(base::TimeTicks time);
-  void Composite(base::TimeTicks frame_begin_time);
   void SetNeedsDisplayOnAllLayers();
   void SetRasterizeOnlyVisibleContent();
   void UpdateTopControlsState(cc::TopControlsState constraints,

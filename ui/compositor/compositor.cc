@@ -180,7 +180,7 @@ Compositor::~Compositor() {
 
 void Compositor::ScheduleDraw() {
   if (compositor_thread_loop_) {
-    host_->Composite(gfx::FrameTime::Now());
+    host_->SetNeedsCommit();
   } else if (!defer_draw_scheduling_) {
     defer_draw_scheduling_ = true;
     base::MessageLoop::current()->PostTask(

@@ -355,10 +355,6 @@ void RenderWidgetCompositor::UpdateAnimations(base::TimeTicks time) {
   layer_tree_host_->UpdateClientAnimations(time);
 }
 
-void RenderWidgetCompositor::Composite(base::TimeTicks frame_begin_time) {
-  layer_tree_host_->Composite(frame_begin_time);
-}
-
 void RenderWidgetCompositor::SetNeedsDisplayOnAllLayers() {
   layer_tree_host_->SetNeedsDisplayOnAllLayers();
 }
