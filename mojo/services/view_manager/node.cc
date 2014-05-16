@@ -40,7 +40,7 @@ Node::~Node() {
   SetView(NULL);
 }
 
-Node* Node::GetParent() {
+const Node* Node::GetParent() const {
   if (!window_.parent())
     return NULL;
   return window_.parent()->GetProperty(kNodeKey);
@@ -54,12 +54,23 @@ void Node::Remove(Node* child) {
   window_.RemoveChild(&child->window_);
 }
 
+const Node* Node::GetRoot() const {
+  const aura::Window* window = &window_;
+  while (window && window->parent())
+    window = window->parent();
+  return window->GetProperty(kNodeKey);
+}
+
 std::vector<Node*> Node::GetChildren() {
   std::vector<Node*> children;
   children.reserve(window_.children().size());
   for (size_t i = 0; i < window_.children().size(); ++i)
     children.push_back(window_.children()[i]->GetProperty(kNodeKey));
   return children;
+}
+
+bool Node::Contains(const Node* node) const {
+  return node && window_.Contains(&(node->window_));
 }
 
 void Node::SetView(View* view) {

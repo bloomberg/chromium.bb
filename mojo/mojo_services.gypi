@@ -239,6 +239,8 @@
             'services/view_manager/root_node_manager.h',
             'services/view_manager/root_view_manager.cc',
             'services/view_manager/root_view_manager.h',
+            'services/view_manager/type_converters.cc',
+            'services/view_manager/type_converters.h',
             'services/view_manager/view.cc',
             'services/view_manager/view.h',
             'services/view_manager/view_manager_connection.cc',

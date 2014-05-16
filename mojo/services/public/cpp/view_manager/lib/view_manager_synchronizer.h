@@ -55,12 +55,16 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   // Overridden from IViewManagerClient:
   virtual void OnConnectionEstablished(
       TransportConnectionId connection_id,
-      TransportChangeId next_server_change_id) OVERRIDE;
+      TransportChangeId next_server_change_id,
+      const mojo::Array<INode>& nodes) OVERRIDE;
+  virtual void OnServerChangeIdAdvanced(
+      uint32_t next_server_change_id) OVERRIDE;
   virtual void OnNodeHierarchyChanged(
       uint32 node_id,
       uint32 new_parent_id,
       uint32 old_parent_id,
-      TransportChangeId server_change_id) OVERRIDE;
+      TransportChangeId server_change_id,
+      const mojo::Array<INode>& nodes) OVERRIDE;
   virtual void OnNodeDeleted(TransportNodeId node_id,
                              TransportChangeId server_change_id) OVERRIDE;
   virtual void OnNodeViewReplaced(uint32_t node,
@@ -75,8 +79,6 @@ class ViewManagerSynchronizer : public IViewManagerClient {
   // Removes |transaction| from the pending queue. |transaction| must be at the
   // front of the queue.
   void RemoveFromPendingQueue(ViewManagerTransaction* transaction);
-
-  void OnRootTreeReceived(const Array<INode>& data);
 
   ViewManager* view_manager_;
   bool connected_;
