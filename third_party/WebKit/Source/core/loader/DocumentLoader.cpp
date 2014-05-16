@@ -363,11 +363,6 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
         timing()->addRedirect(redirectResponse.url(), newRequest.url());
     }
 
-    // Update cookie policy base URL as URL changes, except for subframes, which use the
-    // URL of the main frame which doesn't change when we redirect.
-    if (frameLoader()->isLoadingMainFrame())
-        newRequest.setFirstPartyForCookies(newRequest.url());
-
     // If we're fielding a redirect in response to a POST, force a load from origin, since
     // this is a common site technique to return to a page viewing some data that the POST
     // just modified.
