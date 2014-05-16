@@ -14,6 +14,11 @@ class ImplSidePaintingSettings : public LayerTreeSettings {
   ImplSidePaintingSettings() {
     impl_side_painting = true;
   }
+
+  explicit ImplSidePaintingSettings(int interest_rect_tiles) {
+    impl_side_painting = true;
+    max_tiles_for_interest_area = interest_rect_tiles;
+  }
 };
 
 }  // namespace cc

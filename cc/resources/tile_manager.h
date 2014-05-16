@@ -22,6 +22,7 @@
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/prioritized_tile_set.h"
 #include "cc/resources/rasterizer.h"
+#include "cc/resources/rasterizer_delegate.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/tile.h"
 
@@ -223,6 +224,11 @@ class CC_EXPORT TileManager : public RasterizerClient,
       prioritized_tiles_dirty_ = true;
     }
   }
+
+  void SetRasterizersForTesting(Rasterizer* rasterizer,
+                                Rasterizer* gpu_rasterizer);
+
+  void CleanUpReleasedTilesForTesting() { CleanUpReleasedTiles(); }
 
  protected:
   TileManager(TileManagerClient* client,

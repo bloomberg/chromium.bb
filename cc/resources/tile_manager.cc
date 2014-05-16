@@ -17,7 +17,6 @@
 #include "cc/debug/traced_value.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/resources/raster_worker_pool.h"
-#include "cc/resources/rasterizer_delegate.h"
 #include "cc/resources/tile.h"
 #include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -1614,6 +1613,13 @@ bool TileManager::EvictionTileIterator::EvictionOrderComparator::operator()(
            (a_priority.resolution == NON_IDEAL_RESOLUTION);
   }
   return a_priority.IsHigherPriorityThan(b_priority);
+}
+
+void TileManager::SetRasterizersForTesting(Rasterizer* rasterizer,
+                                           Rasterizer* gpu_rasterizer) {
+  Rasterizer* rasterizers[2] = {rasterizer, gpu_rasterizer};
+  rasterizer_delegate_ =
+      RasterizerDelegate::Create(this, rasterizers, arraysize(rasterizers));
 }
 
 }  // namespace cc

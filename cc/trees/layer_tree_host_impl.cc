@@ -1138,6 +1138,18 @@ void LayerTreeHostImpl::DidInitializeVisibleTileForTesting() {
   DidInitializeVisibleTile();
 }
 
+void LayerTreeHostImpl::ResetTreesForTesting() {
+  if (active_tree_)
+    active_tree_->DetachLayerTree();
+  active_tree_ = LayerTreeImpl::create(this);
+  if (pending_tree_)
+    pending_tree_->DetachLayerTree();
+  pending_tree_.reset();
+  if (recycle_tree_)
+    recycle_tree_->DetachLayerTree();
+  recycle_tree_.reset();
+}
+
 void LayerTreeHostImpl::EnforceManagedMemoryPolicy(
     const ManagedMemoryPolicy& policy) {
 

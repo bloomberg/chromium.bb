@@ -210,6 +210,9 @@ class CC_EXPORT LayerTreeHostImpl
   // This allows us to inject DidInitializeVisibleTile events for testing.
   void DidInitializeVisibleTileForTesting();
 
+  // Resets all of the trees to an empty state.
+  void ResetTreesForTesting();
+
   bool device_viewport_valid_for_tile_management() const {
     return device_viewport_valid_for_tile_management_;
   }
