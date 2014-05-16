@@ -1,11 +1,13 @@
-(GraphicsLayer
-  (bounds 800.00 600.00)
-  (children 1
-    (GraphicsLayer
-      (bounds 800.00 600.00)
-      (contentsOpaque 1)
-      (drawsContent 1)
-    )
-  )
-)
+SVG 1.1 dynamic update tests
+
+Tests dynamic updates of the 'specularConstant' attribute of the SVGFESpecularLightingElement object
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS specularElement.getAttribute('specularConstant') is "4"
+PASS specularElement.getAttribute('specularConstant') is "1"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
