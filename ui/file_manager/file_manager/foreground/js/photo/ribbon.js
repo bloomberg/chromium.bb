@@ -344,7 +344,7 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, entry, metadata) {
  */
 Ribbon.prototype.onContentChange_ = function(event) {
   var url = event.item.getEntry().toURL();
-  this.remapCache_(event.oldUrl, url);
+  this.remapCache_(event.oldEntry.toURL(), url);
 
   var thumbnail = this.renderCache_[url];
   if (thumbnail && event.metadata)
