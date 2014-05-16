@@ -2394,7 +2394,6 @@ _factory_release.add_config('daisy-factory',
 _payloads = internal.derive(
   build_type=constants.PAYLOADS_TYPE,
   description='Regenerate release payloads.',
-  trybot_list=True,
   vm_tests=[],
 
   # Sync to the code used to do the build the first time.
