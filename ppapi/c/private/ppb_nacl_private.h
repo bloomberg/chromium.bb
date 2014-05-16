@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Wed May 14 11:49:42 2014. */
+/* From private/ppb_nacl_private.idl modified Fri May 16 11:43:13 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -326,18 +326,6 @@ struct PPB_NaCl_Private_1_0 {
                         PP_Bool length_is_computable,
                         uint64_t loaded_bytes,
                         uint64_t total_bytes);
-  /* Report that the attempt to open the nexe has finished. Opening the file
-   * may have failed, as indicated by a pp_error value that is not PP_OK or an
-   * fd of -1. Failure to stat the file to determine its length results in
-   * nexe_bytes_read being -1.
-   */
-  void (*NexeFileDidOpen)(PP_Instance instance,
-                          int32_t pp_error,
-                          int32_t fd,
-                          int32_t http_status,
-                          int64_t nexe_bytes_read,
-                          const char* url,
-                          int64_t time_since_open);
   /* Report that the nexe loaded successfully. */
   void (*ReportLoadSuccess)(PP_Instance instance,
                             const char* url,
@@ -430,6 +418,12 @@ struct PPB_NaCl_Private_1_0 {
    * This method may be called on any thread.
    */
   void (*PostMessageToJavaScript)(PP_Instance instance, const char* message);
+  /* Downloads the .nexe file at the given URL to a file, and sets |handle|
+   * to a handle to a file containing its contents. */
+  void (*DownloadNexe)(PP_Instance instance,
+                       const char* url,
+                       PP_FileHandle* handle,
+                       struct PP_CompletionCallback callback);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

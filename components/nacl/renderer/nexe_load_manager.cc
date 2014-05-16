@@ -107,23 +107,20 @@ NexeLoadManager::~NexeLoadManager() {
 }
 
 void NexeLoadManager::NexeFileDidOpen(int32_t pp_error,
-                                      int32_t fd,
+                                      base::PlatformFile file,
                                       int32_t http_status,
                                       int64_t nexe_bytes_read,
                                       const std::string& url,
-                                      int64_t time_since_open) {
+                                      base::TimeDelta time_since_open) {
   // Check that we are on the main renderer thread.
   DCHECK(content::RenderThread::Get());
   VLOG(1) << "Plugin::NexeFileDidOpen (pp_error=" << pp_error << ")";
-  VLOG(1) << "Plugin::NexeFileDidOpen (file_desc=" << fd << ")";
   HistogramHTTPStatusCode(
       is_installed_ ? "NaCl.HttpStatusCodeClass.Nexe.InstalledApp" :
                       "NaCl.HttpStatusCodeClass.Nexe.NotInstalledApp",
       http_status);
-  // TODO(dmichael): fd is only used for error reporting here currently, and
-  // the trusted Plugin is responsible for using it and closing it.
-  // Note -1 is NACL_NO_FILE_DESC from nacl_macros.h.
-  if (pp_error != PP_OK || fd == -1) {
+
+  if (pp_error != PP_OK || file == base::kInvalidPlatformFileValue) {
     if (pp_error == PP_ERROR_ABORTED) {
       ReportLoadAbort();
     } else if (pp_error == PP_ERROR_NOACCESS) {
@@ -141,9 +138,7 @@ void NexeLoadManager::NexeFileDidOpen(int32_t pp_error,
     HistogramSizeKB("NaCl.Perf.Size.Nexe",
                     static_cast<int32_t>(nexe_size_ / 1024));
     HistogramStartupTimeMedium(
-        "NaCl.Perf.StartupTime.NexeDownload",
-        base::TimeDelta::FromMilliseconds(time_since_open),
-        nexe_size_);
+        "NaCl.Perf.StartupTime.NexeDownload", time_since_open, nexe_size_);
 
     // Inform JavaScript that we successfully downloaded the nacl module.
     ProgressEvent progress_event(PP_NACL_EVENT_PROGRESS, url, true, nexe_size_,

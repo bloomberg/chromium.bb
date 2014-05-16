@@ -281,13 +281,9 @@ class Plugin : public pp::Instance {
 
   nacl::DescWrapperFactory* wrapper_factory_;
 
-  // File download support.  |nexe_downloader_| can be opened with a specific
-  // callback to run when the file has been downloaded and is opened for
-  // reading.  We use one downloader for all URL downloads to prevent issuing
-  // multiple GETs that might arrive out of order.  For example, this will
-  // prevent a GET of a NaCl manifest while a .nexe GET is pending.  Note that
-  // this will also prevent simultaneous handling of multiple .nexes on a page.
-  FileDownloader nexe_downloader_;
+  // Original, unresolved URL for the .nexe program to load.
+  std::string program_url_;
+
   pp::CompletionCallbackFactory<Plugin> callback_factory_;
 
   nacl::scoped_ptr<PnaclCoordinator> pnacl_coordinator_;
@@ -315,11 +311,10 @@ class Plugin : public pp::Instance {
   int64_t time_of_last_progress_event_;
   int exit_status_;
 
-  // Open times are in microseconds.
-  int64_t nexe_open_time_;
-
   PP_Var manifest_data_var_;
   int32_t manifest_id_;
+
+  PP_FileHandle nexe_handle_;
 
   const PPB_NaCl_Private* nacl_interface_;
   pp::UMAPrivate uma_interface_;

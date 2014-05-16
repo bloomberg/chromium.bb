@@ -21,6 +21,7 @@
 #include "components/nacl/common/nacl_nonsfi_util.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/common/nacl_types.h"
+#include "components/nacl/renderer/file_downloader.h"
 #include "components/nacl/renderer/histogram.h"
 #include "components/nacl/renderer/json_manifest.h"
 #include "components/nacl/renderer/manifest_downloader.h"
@@ -254,6 +255,32 @@ class ManifestServiceProxy : public ManifestServiceChannel::Delegate {
   void* user_data_;
   DISALLOW_COPY_AND_ASSIGN(ManifestServiceProxy);
 };
+
+blink::WebURLLoader* CreateWebURLLoader(const blink::WebDocument& document,
+                                        const GURL& gurl) {
+  blink::WebURLLoaderOptions options;
+  options.untrustedHTTP = true;
+
+  // Options settings here follow the original behavior in the trusted
+  // plugin and PepperURLLoaderHost.
+  if (document.securityOrigin().canRequest(gurl)) {
+    options.allowCredentials = true;
+  } else {
+    // Allow CORS.
+    options.crossOriginRequestPolicy =
+        blink::WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
+  }
+  return document.frame()->createAssociatedURLLoader(options);
+}
+
+blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
+                                         const GURL& gurl) {
+  blink::WebURLRequest request;
+  request.initialize();
+  request.setURL(gurl);
+  request.setFirstPartyForCookies(document.firstPartyForCookies());
+  return request;
+}
 
 // Launch NaCl's sel_ldr process.
 void LaunchSelLdr(PP_Instance instance,
@@ -668,24 +695,6 @@ void DispatchEvent(PP_Instance instance,
   DispatchProgressEvent(instance, event);
 }
 
-void NexeFileDidOpen(PP_Instance instance,
-                     int32_t pp_error,
-                     int32_t fd,
-                     int32_t http_status,
-                     int64_t nexe_bytes_read,
-                     const char* url,
-                     int64_t time_since_open) {
-  NexeLoadManager* load_manager = GetNexeLoadManager(instance);
-  if (load_manager) {
-    load_manager->NexeFileDidOpen(pp_error,
-                                  fd,
-                                  http_status,
-                                  nexe_bytes_read,
-                                  url,
-                                  time_since_open);
-  }
-}
-
 void ReportLoadSuccess(PP_Instance instance,
                        const char* url,
                        uint64_t loaded_bytes,
@@ -919,46 +928,29 @@ void DownloadManifestToBuffer(PP_Instance instance,
                               struct PP_CompletionCallback callback) {
   nacl::NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
-  if (!load_manager) {
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  if (!load_manager || !plugin_instance) {
     ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
         FROM_HERE,
         base::Bind(callback.func, callback.user_data,
                    static_cast<int32_t>(PP_ERROR_FAILED)));
   }
+  const blink::WebDocument& document =
+      plugin_instance->GetContainer()->element().document();
 
   const GURL& gurl = load_manager->manifest_base_url();
-
-  content::PepperPluginInstance* plugin_instance =
-      content::PepperPluginInstance::Get(instance);
-  blink::WebURLLoaderOptions options;
-  options.untrustedHTTP = true;
-
-  blink::WebSecurityOrigin security_origin =
-      plugin_instance->GetContainer()->element().document().securityOrigin();
-  // Options settings here follow the original behavior in the trusted
-  // plugin and PepperURLLoaderHost.
-  if (security_origin.canRequest(gurl)) {
-    options.allowCredentials = true;
-  } else {
-    // Allow CORS.
-    options.crossOriginRequestPolicy =
-        blink::WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
-  }
-
-  blink::WebFrame* frame =
-      plugin_instance->GetContainer()->element().document().frame();
-  blink::WebURLLoader* url_loader = frame->createAssociatedURLLoader(options);
-  blink::WebURLRequest request;
-  request.initialize();
-  request.setURL(gurl);
-  request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
+  scoped_ptr<blink::WebURLLoader> url_loader(
+      CreateWebURLLoader(document, gurl));
+  blink::WebURLRequest request = CreateWebURLRequest(document, gurl);
 
   // ManifestDownloader deletes itself after invoking the callback.
-  ManifestDownloader* client = new ManifestDownloader(
+  ManifestDownloader* manifest_downloader = new ManifestDownloader(
+      url_loader.Pass(),
       load_manager->is_installed(),
       base::Bind(DownloadManifestToBufferCompletion,
                  instance, callback, out_data, base::Time::Now()));
-  url_loader->loadAsynchronously(request, client);
+  manifest_downloader->Load(request);
 }
 
 void DownloadManifestToBufferCompletion(PP_Instance instance,
@@ -1282,6 +1274,156 @@ void PostMessageToJavaScript(PP_Instance instance, const char* message) {
                  std::string(message)));
 }
 
+// Encapsulates some of the state for a call to DownloadNexe to prevent
+// argument lists from getting too long.
+struct DownloadNexeRequest {
+  PP_Instance instance;
+  std::string url;
+  PP_CompletionCallback callback;
+  base::Time start_time;
+};
+
+// A utility class to ensure that we don't send progress events more often than
+// every 10ms for a given file.
+class ProgressEventRateLimiter {
+ public:
+  explicit ProgressEventRateLimiter(PP_Instance instance)
+      : instance_(instance) { }
+
+  void ReportProgress(const std::string& url,
+                      int64_t total_bytes_received,
+                      int64_t total_bytes_to_be_received) {
+    base::Time now = base::Time::Now();
+    if (now - last_event_ > base::TimeDelta::FromMilliseconds(10)) {
+      DispatchProgressEvent(instance_,
+                            ProgressEvent(PP_NACL_EVENT_PROGRESS,
+                                          url,
+                                          total_bytes_to_be_received >= 0,
+                                          total_bytes_received,
+                                          total_bytes_to_be_received));
+      last_event_ = now;
+    }
+  }
+
+ private:
+  PP_Instance instance_;
+  base::Time last_event_;
+};
+
+void DownloadNexeCompletion(const DownloadNexeRequest& request,
+                            base::PlatformFile target_file,
+                            PP_FileHandle* out_handle,
+                            FileDownloader::Status status,
+                            int http_status);
+
+void DownloadNexe(PP_Instance instance,
+                  const char* url,
+                  PP_FileHandle* out_handle,
+                  PP_CompletionCallback callback) {
+  CHECK(url);
+  CHECK(out_handle);
+  DownloadNexeRequest request;
+  request.instance = instance;
+  request.url = url;
+  request.callback = callback;
+  request.start_time = base::Time::Now();
+
+  // Try the fast path for retrieving the file first.
+  uint64_t file_token_lo = 0;
+  uint64_t file_token_hi = 0;
+  PP_FileHandle file_handle = OpenNaClExecutable(instance,
+                                                 url,
+                                                 &file_token_lo,
+                                                 &file_token_hi);
+  if (file_handle != PP_kInvalidFileHandle) {
+    DownloadNexeCompletion(request,
+                           file_handle,
+                           out_handle,
+                           FileDownloader::SUCCESS,
+                           200);
+    return;
+  }
+
+  // The fast path didn't work, we'll fetch the file using URLLoader and write
+  // it to local storage.
+  base::PlatformFile target_file = CreateTemporaryFile(instance);
+  GURL gurl(url);
+
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  if (!plugin_instance) {
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+  }
+  const blink::WebDocument& document =
+      plugin_instance->GetContainer()->element().document();
+  scoped_ptr<blink::WebURLLoader> url_loader(
+      CreateWebURLLoader(document, gurl));
+  blink::WebURLRequest url_request = CreateWebURLRequest(document, gurl);
+
+  ProgressEventRateLimiter* tracker = new ProgressEventRateLimiter(instance);
+
+  // FileDownloader deletes itself after invoking DownloadNexeCompletion.
+  FileDownloader* file_downloader = new FileDownloader(
+      url_loader.Pass(),
+      target_file,
+      base::Bind(&DownloadNexeCompletion, request, target_file, out_handle),
+      base::Bind(&ProgressEventRateLimiter::ReportProgress,
+                 base::Owned(tracker), url));
+  file_downloader->Load(url_request);
+}
+
+void DownloadNexeCompletion(const DownloadNexeRequest& request,
+                            base::PlatformFile target_file,
+                            PP_FileHandle* out_handle,
+                            FileDownloader::Status status,
+                            int http_status) {
+  int32_t pp_error;
+  switch (status) {
+    case FileDownloader::SUCCESS:
+      *out_handle = target_file;
+      pp_error = PP_OK;
+      break;
+    case FileDownloader::ACCESS_DENIED:
+      pp_error = PP_ERROR_NOACCESS;
+      break;
+    case FileDownloader::FAILED:
+      pp_error = PP_ERROR_FAILED;
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  int64_t bytes_read = -1;
+  if (pp_error == PP_OK && target_file != base::kInvalidPlatformFileValue) {
+    base::PlatformFileInfo info;
+    if (GetPlatformFileInfo(target_file, &info))
+      bytes_read = info.size;
+  }
+
+  if (bytes_read == -1) {
+    base::ClosePlatformFile(target_file);
+    pp_error = PP_ERROR_FAILED;
+  }
+
+  base::TimeDelta download_time = base::Time::Now() - request.start_time;
+
+  NexeLoadManager* load_manager = GetNexeLoadManager(request.instance);
+  if (load_manager) {
+    load_manager->NexeFileDidOpen(pp_error,
+                                  target_file,
+                                  http_status,
+                                  bytes_read,
+                                  request.url,
+                                  download_time);
+  }
+
+  request.callback.func(request.callback.user_data, pp_error);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -1296,7 +1438,6 @@ const PPB_NaCl_Private nacl_interface = {
   &ReportTranslationFinished,
   &OpenNaClExecutable,
   &DispatchEvent,
-  &NexeFileDidOpen,
   &ReportLoadSuccess,
   &ReportLoadError,
   &ReportLoadAbort,
@@ -1326,7 +1467,8 @@ const PPB_NaCl_Private nacl_interface = {
   &ManifestResolveKey,
   &GetPNaClResourceInfo,
   &GetCpuFeatureAttrs,
-  &PostMessageToJavaScript
+  &PostMessageToJavaScript,
+  &DownloadNexe
 };
 
 }  // namespace

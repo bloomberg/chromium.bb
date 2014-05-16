@@ -15,16 +15,21 @@
 namespace nacl {
 
 ManifestDownloader::ManifestDownloader(
+    scoped_ptr<blink::WebURLLoader> url_loader,
     bool is_installed,
-    ManifestDownloaderCallback cb)
-    : is_installed_(is_installed),
+    Callback cb)
+    : url_loader_(url_loader.Pass()),
+      is_installed_(is_installed),
       cb_(cb),
       status_code_(-1),
       pp_nacl_error_(PP_NACL_ERROR_LOAD_SUCCESS) {
   CHECK(!cb.is_null());
 }
 
-ManifestDownloader::~ManifestDownloader() {
+ManifestDownloader::~ManifestDownloader() { }
+
+void ManifestDownloader::Load(const blink::WebURLRequest& request) {
+  url_loader_->loadAsynchronously(request, this);
 }
 
 void ManifestDownloader::didReceiveResponse(

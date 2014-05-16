@@ -53,6 +53,27 @@ const int64_t kSizeKBMin = 1;
 const int64_t kSizeKBMax = 512*1024;     // very large .nexe
 const uint32_t kSizeKBBuckets = 100;
 
+// Converts a PP_FileHandle to a POSIX file descriptor.
+int32_t ConvertFileDescriptor(PP_FileHandle handle) {
+  PLUGIN_PRINTF(("ConvertFileDescriptor, handle=%d\n", handle));
+#if NACL_WINDOWS
+  int32_t file_desc = NACL_NO_FILE_DESC;
+  // On Windows, valid handles are 32 bit unsigned integers so this is safe.
+  file_desc = reinterpret_cast<intptr_t>(handle);
+  // Convert the Windows HANDLE from Pepper to a POSIX file descriptor.
+  int32_t posix_desc = _open_osfhandle(file_desc, _O_RDWR | _O_BINARY);
+  if (posix_desc == -1) {
+    // Close the Windows HANDLE if it can't be converted.
+    CloseHandle(reinterpret_cast<HANDLE>(file_desc));
+    return -1;
+  }
+  return posix_desc;
+#else
+  return handle;
+#endif
+}
+
+
 }  // namespace
 
 void Plugin::ShutDownSubprocesses() {
@@ -338,14 +359,13 @@ Plugin::Plugin(PP_Instance pp_instance)
       uses_nonsfi_mode_(false),
       wrapper_factory_(NULL),
       time_of_last_progress_event_(0),
-      nexe_open_time_(-1),
       manifest_id_(-1),
+      nexe_handle_(PP_kInvalidFileHandle),
       nacl_interface_(NULL),
       uma_interface_(this) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32 ")\n", static_cast<void*>(this), pp_instance));
   callback_factory_.Initialize(this);
-  nexe_downloader_.Initialize(this);
   nacl_interface_ = GetNaClInterface();
   CHECK(nacl_interface_ != NULL);
 
@@ -423,37 +443,14 @@ bool Plugin::HandleDocumentLoad(const pp::URLLoader& url_loader) {
 }
 
 void Plugin::NexeFileDidOpen(int32_t pp_error) {
-  NaClFileInfo tmp_info(nexe_downloader_.GetFileInfo());
-  NaClFileInfoAutoCloser info(&tmp_info);
-
-  int64_t nexe_bytes_read = -1;
-  if (pp_error == PP_OK && info.get_desc() != NACL_NO_FILE_DESC) {
-    struct stat stat_buf;
-    if (0 == fstat(info.get_desc(), &stat_buf))
-      nexe_bytes_read = stat_buf.st_size;
-  }
-
-  int64_t now = NaClGetTimeOfDayMicroseconds();
-  int64_t download_time;
-  if (now < nexe_open_time_)
-    download_time = 0;
-  else
-    download_time = now - nexe_open_time_;
-
-  nacl_interface_->NexeFileDidOpen(
-      pp_instance(),
-      pp_error,
-      info.get_desc(),
-      nexe_downloader_.status_code(),
-      nexe_bytes_read,
-      nexe_downloader_.url().c_str(),
-      download_time / 1000);
-
-  if (nexe_bytes_read == -1)
+  if (pp_error != PP_OK)
     return;
 
+  int32_t desc = ConvertFileDescriptor(nexe_handle_);
+  nexe_handle_ = PP_kInvalidFileHandle;  // Clear out nexe handle.
+
   nacl::scoped_ptr<nacl::DescWrapper>
-      wrapper(wrapper_factory()->MakeFileDesc(info.Release().desc, O_RDONLY));
+      wrapper(wrapper_factory()->MakeFileDesc(desc, O_RDONLY));
   NaClLog(4, "NexeFileDidOpen: invoking LoadNaClModule\n");
   LoadNaClModule(
       wrapper.release(),
@@ -556,36 +553,28 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
   PP_Bool uses_nonsfi_mode;
   if (nacl_interface_->GetManifestProgramURL(pp_instance(),
           manifest_id_, &pp_program_url, &pnacl_options, &uses_nonsfi_mode)) {
-    std::string program_url = pp::Var(pp::PASS_REF, pp_program_url).AsString();
+    program_url_ = pp::Var(pp::PASS_REF, pp_program_url).AsString();
     // TODO(teravest): Make ProcessNaClManifest take responsibility for more of
     // this function.
-    nacl_interface_->ProcessNaClManifest(pp_instance(), program_url.c_str());
+    nacl_interface_->ProcessNaClManifest(pp_instance(), program_url_.c_str());
     uses_nonsfi_mode_ = PP_ToBool(uses_nonsfi_mode);
     if (pnacl_options.translate) {
       pp::CompletionCallback translate_callback =
           callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
       pnacl_coordinator_.reset(
           PnaclCoordinator::BitcodeToNative(this,
-                                            program_url,
+                                            program_url_,
                                             pnacl_options,
                                             translate_callback));
       return;
     } else {
-      nexe_open_time_ = NaClGetTimeOfDayMicroseconds();
-      // Try the fast path first. This will only block if the file is installed.
-      if (OpenURLFast(program_url, &nexe_downloader_)) {
-        NexeFileDidOpen(PP_OK);
-      } else {
-        pp::CompletionCallback open_callback =
-            callback_factory_.NewCallback(&Plugin::NexeFileDidOpen);
-        // Will always call the callback on success or failure.
-        CHECK(
-            nexe_downloader_.Open(program_url,
-                                  DOWNLOAD_TO_FILE,
-                                  open_callback,
-                                  true,
-                                  &UpdateDownloadProgress));
-      }
+      pp::CompletionCallback open_callback =
+          callback_factory_.NewCallback(&Plugin::NexeFileDidOpen);
+      // Will always call the callback on success or failure.
+      nacl_interface_->DownloadNexe(pp_instance(),
+                                    program_url_.c_str(),
+                                    &nexe_handle_,
+                                    open_callback.pp_completion_callback());
       return;
     }
   }
@@ -693,9 +682,8 @@ bool Plugin::StreamAsFile(const nacl::string& url,
 
 
 void Plugin::ReportLoadSuccess(uint64_t loaded_bytes, uint64_t total_bytes) {
-  const nacl::string& url = nexe_downloader_.url();
   nacl_interface_->ReportLoadSuccess(
-      pp_instance(), url.c_str(), loaded_bytes, total_bytes);
+      pp_instance(), program_url_.c_str(), loaded_bytes, total_bytes);
 }
 
 
@@ -731,10 +719,9 @@ void Plugin::UpdateDownloadProgress(
       // Find the URL loader that sent this notification.
       const FileDownloader* file_downloader =
           plugin->FindFileDownloader(pp_resource);
-      // If not a streamed file, it must be the .nexe loader.
-      if (file_downloader == NULL)
-        file_downloader = &plugin->nexe_downloader_;
-      nacl::string url = file_downloader->url();
+      nacl::string url;
+      if (file_downloader)
+        url = file_downloader->url();
       LengthComputable length_computable = (total_bytes_to_be_received >= 0) ?
           LENGTH_IS_COMPUTABLE : LENGTH_IS_NOT_COMPUTABLE;
 
@@ -750,17 +737,13 @@ void Plugin::UpdateDownloadProgress(
 const FileDownloader* Plugin::FindFileDownloader(
     PP_Resource url_loader) const {
   const FileDownloader* file_downloader = NULL;
-  if (url_loader == nexe_downloader_.url_loader()) {
-    file_downloader = &nexe_downloader_;
-  } else {
-    std::set<FileDownloader*>::const_iterator it = url_downloaders_.begin();
-    while (it != url_downloaders_.end()) {
-      if (url_loader == (*it)->url_loader()) {
-        file_downloader = (*it);
-        break;
-      }
-      ++it;
+  std::set<FileDownloader*>::const_iterator it = url_downloaders_.begin();
+  while (it != url_downloaders_.end()) {
+    if (url_loader == (*it)->url_loader()) {
+      file_downloader = (*it);
+      break;
     }
+    ++it;
   }
   return file_downloader;
 }

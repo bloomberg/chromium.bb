@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/files/file.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 
@@ -17,22 +17,29 @@ class WebURLResponse;
 
 namespace nacl {
 
-// Downloads a NaCl manifest (.nmf) and returns the contents of the file to
-// caller through a callback.
-class ManifestDownloader : public blink::WebURLLoaderClient {
+// Downloads a file and writes the contents to a specified file open for
+// writing.
+class FileDownloader : public blink::WebURLLoaderClient {
  public:
-  typedef base::Callback<void(PP_NaClError, const std::string&)> Callback;
+  enum Status {
+    SUCCESS,
+    ACCESS_DENIED,
+    FAILED
+  };
 
-  // This is a pretty arbitrary limit on the byte size of the NaCl manifest
-  // file.
-  // Note that the resulting string object has to have at least one byte extra
-  // for the null termination character.
-  static const size_t kNaClManifestMaxFileBytes = 1024 * 1024;
+  // Provides the FileDownloader status and the HTTP status code.
+  typedef base::Callback<void(Status, int)> StatusCallback;
 
-  ManifestDownloader(scoped_ptr<blink::WebURLLoader> url_loader,
-                     bool is_installed,
-                     Callback cb);
-  virtual ~ManifestDownloader();
+  // Provides the bytes received so far, and the total bytes expected to be
+  // received.
+  typedef base::Callback<void(int64_t, int64_t)> ProgressCallback;
+
+  FileDownloader(scoped_ptr<blink::WebURLLoader> url_loader,
+                 base::PlatformFile file,
+                 StatusCallback status_cb,
+                 ProgressCallback progress_cb);
+
+  virtual ~FileDownloader();
 
   void Load(const blink::WebURLRequest& request);
 
@@ -51,11 +58,13 @@ class ManifestDownloader : public blink::WebURLLoaderClient {
                        const blink::WebURLError& error);
 
   scoped_ptr<blink::WebURLLoader> url_loader_;
-  bool is_installed_;
-  Callback cb_;
-  std::string buffer_;
-  int status_code_;
-  PP_NaClError pp_nacl_error_;
+  base::PlatformFile file_;
+  StatusCallback status_cb_;
+  ProgressCallback progress_cb_;
+  int http_status_code_;
+  int64_t total_bytes_received_;
+  int64_t total_bytes_to_be_received_;
+  Status status_;
 };
 
 }  // namespace nacl

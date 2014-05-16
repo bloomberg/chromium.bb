@@ -153,6 +153,8 @@
           'target_name': 'nacl_renderer',
           'type': 'static_library',
           'sources': [
+            'nacl/renderer/file_downloader.cc',
+            'nacl/renderer/file_downloader.h',
             'nacl/renderer/histogram.cc',
             'nacl/renderer/histogram.h',
             'nacl/renderer/manifest_downloader.cc',
