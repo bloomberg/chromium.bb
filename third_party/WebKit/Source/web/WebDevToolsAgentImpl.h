@@ -134,6 +134,7 @@ private:
 
     void enableViewportEmulation();
     void disableViewportEmulation();
+    void updatePageScaleFactorLimits();
 
     WebCore::InspectorController* inspectorController();
     WebCore::LocalFrame* mainFrame();
@@ -149,6 +150,10 @@ private:
     bool m_emulateViewportEnabled;
     bool m_originalViewportEnabled;
     bool m_isOverlayScrollbarsEnabled;
+
+    float m_originalMinimumPageScaleFactor;
+    float m_originalMaximumPageScaleFactor;
+    bool m_pageScaleLimitsOverriden;
 
     bool m_touchEventEmulationEnabled;
     OwnPtr<WebCore::IntPoint> m_lastPinchAnchorCss;
