@@ -235,18 +235,9 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
             server_entry->file_size());
 
   // Make sure that the cache is no longer dirty.
-  FileCacheEntry cache_entry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&FileCache::GetCacheEntry,
-                 base::Unretained(cache()),
-                 local_id,
-                 &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  ASSERT_EQ(FILE_ERROR_OK, error);
-  EXPECT_FALSE(cache_entry.is_dirty());
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 }
 
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
@@ -288,18 +279,9 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
             server_entry->file_size());
 
   // Make sure that the cache is no longer dirty.
-  FileCacheEntry cache_entry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&FileCache::GetCacheEntry,
-                 base::Unretained(cache()),
-                 local_id,
-                 &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  ASSERT_EQ(FILE_ERROR_OK, error);
-  EXPECT_FALSE(cache_entry.is_dirty());
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 
   // Again mark the cache file dirty.
   scoped_ptr<base::ScopedClosureRunner> file_closer;
@@ -332,17 +314,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
             fake_service()->about_resource().largest_change_id());
 
   // Make sure that the cache is no longer dirty.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&FileCache::GetCacheEntry,
-                 base::Unretained(cache()),
-                 local_id,
-                 &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  ASSERT_EQ(FILE_ERROR_OK, error);
-  EXPECT_FALSE(cache_entry.is_dirty());
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 }
 
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_OpenedForWrite) {
@@ -379,18 +352,9 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_OpenedForWrite) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Make sure that the cache is still dirty.
-  FileCacheEntry cache_entry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&FileCache::GetCacheEntry,
-                 base::Unretained(cache()),
-                 local_id,
-                 &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_TRUE(cache_entry.is_dirty());
+  ResourceEntry entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
 
   // Close the file.
   file_closer.reset();
@@ -405,17 +369,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_OpenedForWrite) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Make sure that the cache is no longer dirty.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&FileCache::GetCacheEntry,
-                 base::Unretained(cache()),
-                 local_id,
-                 &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_FALSE(cache_entry.is_dirty());
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 }
 
 TEST_F(EntryUpdatePerformerTest, UpdateEntry_UploadNewFile) {
@@ -459,18 +414,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_UploadNewFile) {
   EXPECT_EQ(ResourceEntry::CLEAN, entry.metadata_edit_state());
 
   // Make sure that the cache is no longer dirty.
-  FileCacheEntry cache_entry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&FileCache::GetCacheEntry,
-                 base::Unretained(cache()),
-                 local_id,
-                 &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_FALSE(cache_entry.is_dirty());
+  EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 
   // Make sure that we really created a file.
   google_apis::GDataErrorCode status = google_apis::GDATA_OTHER_ERROR;

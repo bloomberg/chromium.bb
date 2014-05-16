@@ -21,8 +21,6 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class FileCacheEntry;
-
 namespace internal {
 
 // Interface class used for getting the free disk space. Tests can inject an
@@ -65,10 +63,6 @@ class FileCache {
   //
   // Can be called on any thread.
   bool IsUnderFileCacheDirectory(const base::FilePath& path) const;
-
-  // Gets the cache entry for file corresponding to |id| and returns true if
-  // entry exists in cache map.
-  FileError GetCacheEntry(const std::string& id, FileCacheEntry* entry);
 
   // Frees up disk space to store a file with |num_bytes| size content, while
   // keeping cryptohome::kMinFreeSpaceInBytes bytes on the disk, if needed.

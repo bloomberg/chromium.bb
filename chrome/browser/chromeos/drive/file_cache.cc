@@ -71,13 +71,6 @@ bool FileCache::IsUnderFileCacheDirectory(const base::FilePath& path) const {
   return cache_file_directory_.IsParent(path);
 }
 
-FileError FileCache::GetCacheEntry(const std::string& id,
-                                   FileCacheEntry* entry) {
-  DCHECK(entry);
-  AssertOnSequencedWorkerPool();
-  return storage_->GetCacheEntry(id, entry);
-}
-
 bool FileCache::FreeDiskSpaceIfNeededFor(int64 num_bytes) {
   AssertOnSequencedWorkerPool();
 

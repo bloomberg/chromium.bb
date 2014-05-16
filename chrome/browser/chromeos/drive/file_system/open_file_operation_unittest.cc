@@ -163,19 +163,10 @@ TEST_F(OpenFileOperationTest, OpenOrCreateExistingFile) {
   close_callback.Run();
   EXPECT_EQ(1U, observer()->updated_local_ids().count(src_entry.local_id()));
 
-  FileCacheEntry cache_entry;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner(),
-      FROM_HERE,
-      base::Bind(&internal::FileCache::GetCacheEntry,
-                 base::Unretained(cache()),
-                 src_entry.local_id(),
-                 &cache_entry),
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_TRUE(cache_entry.is_present());
-  EXPECT_TRUE(cache_entry.is_dirty());
+  ResourceEntry result_entry;
+  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(file_in_root, &result_entry));
+  EXPECT_TRUE(result_entry.file_specific_info().cache_state().is_present());
+  EXPECT_TRUE(result_entry.file_specific_info().cache_state().is_dirty());
 }
 
 TEST_F(OpenFileOperationTest, OpenOrCreateNonExistingFile) {

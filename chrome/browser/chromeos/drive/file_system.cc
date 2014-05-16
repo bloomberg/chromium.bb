@@ -62,16 +62,13 @@ FileError GetLocallyStoredResourceEntry(
     return FILE_ERROR_OK;
 
   // When cache is not found, use the original resource entry as is.
-  FileCacheEntry cache_entry;
-  error = cache->GetCacheEntry(local_id, &cache_entry);
-  if (error == FILE_ERROR_NOT_FOUND)
+  if (!entry->file_specific_info().has_cache_state())
     return FILE_ERROR_OK;
-  if (error != FILE_ERROR_OK)
-    return error;
 
   // When cache is non-dirty and obsolete (old hash), use the original entry.
-  if (!cache_entry.is_dirty() &&
-      entry->file_specific_info().md5() != cache_entry.md5())
+  if (!entry->file_specific_info().cache_state().is_dirty() &&
+      entry->file_specific_info().md5() !=
+      entry->file_specific_info().cache_state().md5())
     return FILE_ERROR_OK;
 
   // If there's a valid cache, obtain the file info from the cache file itself.

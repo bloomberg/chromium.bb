@@ -117,11 +117,8 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
 
   // If the cache file is not present and the entry exists on the server,
   // server side copy should be used.
-  FileCacheEntry cache_entry;
-  error = cache->GetCacheEntry(params->src_entry.local_id(), &cache_entry);
-  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND)
-    return error;
-  if (!cache_entry.is_present() && !params->src_entry.resource_id().empty()) {
+  if (!params->src_entry.file_specific_info().cache_state().is_present() &&
+      !params->src_entry.resource_id().empty()) {
     *should_copy_on_server = true;
     return FILE_ERROR_OK;
   }
@@ -147,7 +144,7 @@ FileError TryToCopyLocally(internal::ResourceMetadata* metadata,
   updated_local_ids->push_back(local_id);
   *directory_changed = true;
 
-  if (!cache_entry.is_present()) {
+  if (!params->src_entry.file_specific_info().cache_state().is_present()) {
     DCHECK(params->src_entry.resource_id().empty());
     // Locally created empty file may have no cache file.
     return FILE_ERROR_OK;
