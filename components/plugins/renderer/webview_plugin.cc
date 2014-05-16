@@ -232,7 +232,7 @@ void WebViewPlugin::didChangeCursor(const WebCursorInfo& cursor) {
   current_cursor_ = cursor;
 }
 
-void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame, int world_id) {
+void WebViewPlugin::didClearWindowObject(WebLocalFrame* frame) {
   if (delegate_)
     delegate_->BindWebFrame(frame);
 }
