@@ -553,15 +553,8 @@ views::NonClientFrameView* ChromeNativeAppWindowViews::CreateNonClientFrameView(
     return custom_frame_view;
   }
 #endif
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Linux always uses the non standard frame view because the OS draws the
-  // frame (if a frame is needed).
-  return CreateNonStandardAppFrame();
-#else
-  if (IsFrameless() || has_frame_color_)
-    return CreateNonStandardAppFrame();
-#endif
-  return CreateStandardDesktopAppFrame();
+  return (IsFrameless() || has_frame_color_) ?
+      CreateNonStandardAppFrame() : CreateStandardDesktopAppFrame();
 }
 
 bool ChromeNativeAppWindowViews::WidgetHasHitTestMask() const {

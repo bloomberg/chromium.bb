@@ -34,10 +34,6 @@ Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
     params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
     params.remove_standard_frame = true;
   }
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Dialogs on Linux always have custom frames.
-  params.remove_standard_frame = true;
-#endif
   params.context = context;
   params.parent = parent;
   params.top_level = true;

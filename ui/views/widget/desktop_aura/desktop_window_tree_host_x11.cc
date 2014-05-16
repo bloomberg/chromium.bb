@@ -635,10 +635,6 @@ void DesktopWindowTreeHostX11::FrameTypeChanged() {
   native_widget_delegate_->AsWidget()->non_client_view()->UpdateFrame();
 }
 
-NonClientFrameView* DesktopWindowTreeHostX11::CreateNonClientFrameView() {
-  return NULL;
-}
-
 void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   if (is_fullscreen_ == fullscreen)
     return;

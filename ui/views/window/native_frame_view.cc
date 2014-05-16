@@ -16,6 +16,9 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeFrameView, public:
 
+// static
+const char NativeFrameView::kViewClassName[] = "NativeFrameView";
+
 NativeFrameView::NativeFrameView(Widget* frame)
     : NonClientFrameView(),
       frame_(frame) {
@@ -37,8 +40,12 @@ gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
   return views::GetWindowBoundsForClientBounds(
       static_cast<View*>(const_cast<NativeFrameView*>(this)), client_bounds);
 #else
-  // TODO(sad):
-  return client_bounds;
+  // Enforce minimum size (1, 1) in case that |client_bounds| is passed with
+  // empty size.
+  gfx::Rect window_bounds = client_bounds;
+  if (window_bounds.IsEmpty())
+    window_bounds.set_size(gfx::Size(1,1));
+  return window_bounds;
 #endif
 }
 
@@ -63,12 +70,18 @@ void NativeFrameView::UpdateWindowTitle() {
   // Nothing to do.
 }
 
-// Returns the client size. On Windows, this is the expected behavior for
-// native frames (see |NativeWidgetWin::WidgetSizeIsClientSize()|), while other
-// platforms currently always return client bounds from
-// |GetWindowBoundsForClientBounds()|.
 gfx::Size NativeFrameView::GetPreferredSize() {
-  return frame_->client_view()->GetPreferredSize();
+  gfx::Size client_preferred_size = frame_->client_view()->GetPreferredSize();
+#if defined(OS_WIN)
+  // Returns the client size. On Windows, this is the expected behavior for
+  // native frames (see |NativeWidgetWin::WidgetSizeIsClientSize()|), while
+  // other platforms currently always return client bounds from
+  // |GetWindowBoundsForClientBounds()|.
+  return client_preferred_size;
+#else
+  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
+      gfx::Rect(client_preferred_size)).size();
+#endif
 }
 
 gfx::Size NativeFrameView::GetMinimumSize() {
@@ -77,6 +90,10 @@ gfx::Size NativeFrameView::GetMinimumSize() {
 
 gfx::Size NativeFrameView::GetMaximumSize() {
   return frame_->client_view()->GetMaximumSize();
+}
+
+const char* NativeFrameView::GetClassName() const {
+  return kViewClassName;
 }
 
 }  // namespace views

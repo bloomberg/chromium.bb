@@ -130,7 +130,6 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // (for example, so that they can overhang onto the window title bar).
   virtual bool ShouldWindowContentsBeTransparent() const = 0;
   virtual void FrameTypeChanged() = 0;
-  virtual NonClientFrameView* CreateNonClientFrameView() = 0;
 
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreen() const = 0;

@@ -35,7 +35,6 @@
 #include "ui/views/widget/widget_hwnd_utils.h"
 #include "ui/views/win/fullscreen_handler.h"
 #include "ui/views/win/hwnd_message_handler.h"
-#include "ui/views/window/native_frame_view.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/input_method_event_filter.h"
 #include "ui/wm/core/window_animations.h"
@@ -380,11 +379,6 @@ bool DesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent() const {
 void DesktopWindowTreeHostWin::FrameTypeChanged() {
   message_handler_->FrameTypeChanged();
   SetWindowTransparency();
-}
-
-NonClientFrameView* DesktopWindowTreeHostWin::CreateNonClientFrameView() {
-  return GetWidget()->ShouldUseNativeFrame() ?
-      new NativeFrameView(GetWidget()) : NULL;
 }
 
 void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {

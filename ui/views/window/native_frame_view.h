@@ -13,6 +13,8 @@ class Widget;
 
 class VIEWS_EXPORT NativeFrameView : public NonClientFrameView {
  public:
+  static const char kViewClassName[];
+
   explicit NativeFrameView(Widget* frame);
   virtual ~NativeFrameView();
 
@@ -31,6 +33,7 @@ class VIEWS_EXPORT NativeFrameView : public NonClientFrameView {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
   virtual gfx::Size GetMaximumSize() OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
  private:
   // Our containing frame.
