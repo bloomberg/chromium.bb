@@ -64,13 +64,15 @@ TEST_F(DomainReliabilityUploaderTest, SuccessfulUpload) {
   net::TestURLFetcher* fetcher;
 
   std::string report_json = "{}";
-  GURL upload_url = GURL("https://test.example/upload");
+  GURL upload_url = GURL("https://example/upload");
   uploader_->UploadReport(report_json, upload_url, MakeUploadCallback(0));
 
   fetcher = url_fetcher_factory_.GetFetcherByID(0);
   EXPECT_TRUE(fetcher);
   EXPECT_EQ(report_json, fetcher->upload_data());
   EXPECT_EQ(upload_url, fetcher->GetOriginalURL());
+  EXPECT_TRUE(fetcher->GetLoadFlags() & net::LOAD_DO_NOT_SAVE_COOKIES);
+  EXPECT_TRUE(fetcher->GetLoadFlags() & net::LOAD_DO_NOT_SEND_COOKIES);
 
   fetcher->set_url(upload_url);
   fetcher->set_status(net::URLRequestStatus());
@@ -87,7 +89,7 @@ TEST_F(DomainReliabilityUploaderTest, FailedUpload) {
   net::TestURLFetcher* fetcher;
 
   std::string report_json = "{}";
-  GURL upload_url = GURL("https://test.example/upload");
+  GURL upload_url = GURL("https://example/upload");
   uploader_->UploadReport(report_json, upload_url, MakeUploadCallback(0));
 
   fetcher = url_fetcher_factory_.GetFetcherByID(0);
