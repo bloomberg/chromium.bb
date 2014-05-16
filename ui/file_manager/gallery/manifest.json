@@ -19,8 +19,9 @@
     "mediaPlayerPrivate",
     "metricsPrivate",
     "storage",
-    "chrome://theme/",
+    "chrome://extension-icon/",
     "chrome://resources/",
+    "chrome://theme/",
     "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj"
   ],
   "file_handlers": {
@@ -60,6 +61,6 @@
         "js/background.js"
       ]
     },
-    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self' 'unsafe-inline'; img-src 'self' chrome://resources chrome://theme data:; media-src 'self'; object-src 'self';"
+    "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj; style-src 'self' 'unsafe-inline'; img-src 'self' chrome://resources chrome://theme data: https://*.googleusercontent.com chrome://extension-icon; media-src 'self'; object-src 'self';"
   }
 }

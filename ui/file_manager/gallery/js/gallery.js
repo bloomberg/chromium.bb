@@ -788,7 +788,13 @@ Gallery.prototype.updateShareMenu_ = function() {
 
     for (var t = 0; t !== tasks.length; t++) {
       var task = tasks[t];
-      if (!isShareAction(task)) continue;
+      if (!isShareAction(task))
+        continue;
+      // Filter out Files.app tasks.
+      // TODO(hirono): Remove the hack after the files.app's handlers are
+      // removed.
+      if (task.taskId.indexOf('hhaomjibdihmijegdhdafkllkbggdgoj|') === 0)
+        continue;
 
       var item = util.createChild(this.shareMenu_, 'item');
       item.textContent = task.title;
