@@ -143,7 +143,6 @@ if (window.testRunner) {
 
 if (window.internals) {
     window.internals.settings.setMockScrollbarsEnabled(true);
-    window.internals.settings.setForceCompositingMode(true);
 }
 
 window.onload = function() {

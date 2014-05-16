@@ -5,9 +5,6 @@
     testRunner.dumpAsText();
     window.addEventListener('load', doTest, false);
   }
-  if (window.internals) {
-    window.internals.settings.setForceCompositingMode(true);
-  }
 
   function doTest() {
     var layers = window.internals.layerTreeAsText(document);

@@ -19,9 +19,6 @@
 <script>
     description("Make sure we don't crash when a layer with a touch event handler becomes non-composited");
 
-    if (window.internals)
-        window.internals.settings.setForceCompositingMode(true);
-
     var layer = document.getElementById('layer');
     layer.addEventListener('touchstart', function() {});
 

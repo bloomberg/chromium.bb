@@ -3,9 +3,6 @@
 window.testIsAsync = false;
 window.outputRepaintRects = true;
 
-if (window.internals)
-    window.internals.settings.setForceCompositingMode(true)
-
 function runRepaintTest()
 {
     if (!window.testRunner || !window.internals) {

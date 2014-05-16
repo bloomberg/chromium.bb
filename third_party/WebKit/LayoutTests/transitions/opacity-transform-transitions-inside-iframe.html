@@ -19,9 +19,6 @@
         if (window.testRunner)
             testRunner.notifyDone();
     }
-    if (window.internals) {
-        internals.settings.setForceCompositingMode(true);
-    }
     window.onmessage = function (messageEvent) {
         testFinished();
     }

@@ -30,7 +30,6 @@ there is a risk of accidentally skipping updating touch rects unless we ping the
     testRunner.dumpAsText();
 
   if (window.internals) {
-    window.internals.settings.setForceCompositingMode(true);
     window.internals.forceCompositingUpdate(document);
     document.getElementById("touchElement").addEventListener("touchmove", dummyListener, false);
     window.internals.forceCompositingUpdate(document);

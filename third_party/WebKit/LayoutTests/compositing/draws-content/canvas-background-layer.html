@@ -18,9 +18,6 @@
     <script>
         if (window.testRunner)
             testRunner.dumpAsText();
-        if (window.internals) {
-            window.internals.settings.setForceCompositingMode(true);
-        }
 
         function drawCanvas(canvasID) {
             var canvas = document.getElementById(canvasID);

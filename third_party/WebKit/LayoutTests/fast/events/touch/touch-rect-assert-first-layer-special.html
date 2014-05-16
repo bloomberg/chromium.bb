@@ -18,9 +18,6 @@ html {
 <script>
     description("Make sure we don't ASSERT when the first layer is special and can't use the RenderGeometryMap fast path - crbug.com/339141.");
 
-    if (window.internals)
-        window.internals.settings.setForceCompositingMode(true);
-
     var rects;
     // Verify we actually have a hit rect in the document.
     if (window.internals) {

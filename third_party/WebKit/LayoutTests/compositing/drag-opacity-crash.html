@@ -10,8 +10,6 @@
 Test for crbug.com/354373: This test passes if it does not crash.<br/>
 <div id="crasher" draggable="true"></div>
 <script>
-    internals.settings.setForceCompositingMode(true);
-
     onload = function() {
         document.getElementById('crasher').addEventListener('dragstart', function() {
             this.style.opacity = '0.5';

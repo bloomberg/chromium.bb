@@ -24,7 +24,6 @@ function test()
     if (window.testRunner) {
         testRunner.waitUntilDone();
         testRunner.dumpAsTextWithPixelResults();
-        window.internals.settings.setForceCompositingMode(true);
     }
     runAfterDisplay(function() {
         document.body.scrollTop = 2000;

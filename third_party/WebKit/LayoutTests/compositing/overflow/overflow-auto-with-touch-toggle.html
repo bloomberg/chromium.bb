@@ -19,8 +19,6 @@
   <script>
     if (window.testRunner)
       testRunner.dumpAsText();
-    if (window.internals)
-      window.internals.settings.setForceCompositingMode(true);
 
     window.addEventListener('load', function() {
       // Introducing overflow should enable composited scrolling.
