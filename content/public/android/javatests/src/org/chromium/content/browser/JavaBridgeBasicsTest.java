@@ -333,12 +333,13 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-    public void testClientPropertiesPersistAcrossPageLoads() throws Throwable {
+    public void testCustomPropertiesCleanedUpOnPageReloads() throws Throwable {
         assertEquals("object", executeJavaScriptAndGetStringResult("typeof testController"));
         executeJavaScript("testController.myProperty = 42;");
         assertEquals("42", executeJavaScriptAndGetStringResult("testController.myProperty"));
         synchronousPageReload();
-        assertEquals("42", executeJavaScriptAndGetStringResult("testController.myProperty"));
+        assertEquals("object", executeJavaScriptAndGetStringResult("typeof testController"));
+        assertEquals("undefined", executeJavaScriptAndGetStringResult("testController.myProperty"));
     }
 
     @SmallTest
