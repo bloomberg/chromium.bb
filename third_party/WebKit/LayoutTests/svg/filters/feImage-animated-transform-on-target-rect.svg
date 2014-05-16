@@ -14,12 +14,15 @@
     <rect fill="red" x="50" y="50" width="50" height="50" filter="url(#filter)"/>
 
 <script><![CDATA[
+    // These svg files are animated automatically, so have flaky repaint rect
+    // output depending on when repaint rect capturing starts.
+    window.outputRepaintRects = false;
     window.testIsAsync = true;
     function repaintTest() {
         document.getElementById("animation").beginElement();
         setTimeout(finishTest, 50);
 
-        function finishTest() {    
+        function finishTest() {
           // Wait for the animation to finish
           if (document.getElementById("rect").transform.animVal.getItem(0).matrix.a != 1) {
             setTimeout(finishTest, 50);
