@@ -218,15 +218,17 @@ void HttpStreamFactoryImpl::Job::Orphan(const Request* request) {
     blocking_job_->waiting_job_ = NULL;
     blocking_job_ = NULL;
     if (stream_factory_->for_websockets_ &&
-        connection_ && connection_->socket())
+        connection_ && connection_->socket()) {
       connection_->socket()->Disconnect();
+    }
     stream_factory_->OnOrphanedJobComplete(this);
   } else if (stream_factory_->for_websockets_) {
     // We cancel this job because a WebSocketHandshakeStream can't be created
     // without a WebSocketHandshakeStreamBase::CreateHelper which is stored in
     // the Request class and isn't accessible from this job.
-    if (connection_ && connection_->socket())
+    if (connection_ && connection_->socket()) {
       connection_->socket()->Disconnect();
+    }
     stream_factory_->OnOrphanedJobComplete(this);
   }
 }
