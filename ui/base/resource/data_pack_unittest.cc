@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/data_pack.h"
+#include "ui/base/ui_base_paths.h"
 
 namespace ui {
 
@@ -98,9 +99,10 @@ INSTANTIATE_TEST_CASE_P(WriteUTF16, DataPackTest, ::testing::Values(
 
 TEST(DataPackTest, LoadFileWithTruncatedHeader) {
   base::FilePath data_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
-  data_path = data_path.Append(FILE_PATH_LITERAL(
-      "ui/base/test/data/data_pack_unittest/truncated-header.pak"));
+  // TODO(tfarina): This fails on ios_dbg_simulator. Investigate and add
+  // ASSERT_TRUE to PathService::Get() call again.
+  PathService::Get(UI_DIR_TEST_DATA, &data_path);
+  data_path = data_path.AppendASCII("data_pack_unittest/truncated-header.pak");
 
   DataPack pack(SCALE_FACTOR_100P);
   ASSERT_FALSE(pack.LoadFromPath(data_path));

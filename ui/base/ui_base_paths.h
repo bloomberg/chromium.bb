@@ -19,7 +19,7 @@ enum {
   DIR_LOCALES,              // Directory where locale resources are stored.
 
   // Valid only in development environment; TODO(darin): move this
-  DIR_TEST_DATA,            // Directory where unit test data resides.
+  UI_DIR_TEST_DATA,            // Directory where unit test data resides.
 
 #if defined(OS_ANDROID)
   DIR_RESOURCE_PAKS_ANDROID,

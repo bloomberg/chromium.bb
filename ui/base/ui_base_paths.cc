@@ -23,7 +23,7 @@ bool PathProvider(int key, base::FilePath* result) {
 
   base::FilePath cur;
   switch (key) {
-    case ui::DIR_LOCALES:
+    case DIR_LOCALES:
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
 #if defined(OS_MACOSX)
@@ -32,7 +32,7 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.DirName();
       cur = cur.Append(FILE_PATH_LITERAL("Resources"));
 #elif defined(OS_ANDROID)
-      if (!PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &cur))
+      if (!PathService::Get(DIR_RESOURCE_PAKS_ANDROID, &cur))
         return false;
 #else
       cur = cur.Append(FILE_PATH_LITERAL("locales"));
@@ -42,17 +42,18 @@ bool PathProvider(int key, base::FilePath* result) {
     // The following are only valid in the development environment, and
     // will fail if executed from an installed executable (because the
     // generated path won't exist).
-    case ui::DIR_TEST_DATA:
+    case UI_DIR_TEST_DATA:
       if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
         return false;
-      cur = cur.Append(FILE_PATH_LITERAL("app"));
+      cur = cur.Append(FILE_PATH_LITERAL("ui"));
+      cur = cur.Append(FILE_PATH_LITERAL("base"));
       cur = cur.Append(FILE_PATH_LITERAL("test"));
       cur = cur.Append(FILE_PATH_LITERAL("data"));
       if (!base::PathExists(cur))  // we don't want to create this
         return false;
       break;
 #if defined(OS_ANDROID)
-    case ui::DIR_RESOURCE_PAKS_ANDROID:
+    case DIR_RESOURCE_PAKS_ANDROID:
       if (!PathService::Get(base::DIR_ANDROID_APP_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("paks"));
