@@ -7,9 +7,9 @@
 <script>
 description('Tests that bad input throws exceptions in the Vibration API.');
 
-shouldThrow("navigator.vibrate();");
-shouldThrow("navigator.vibrate(1, 2);");
-shouldThrow("navigator.vibrate([1], [2]);");
+shouldThrow("navigator.vibrate()");
+shouldBe("navigator.vibrate(1, 2)", "true");
+shouldBe("navigator.vibrate([1], [2])", "true");
 
 </script>
 </body>

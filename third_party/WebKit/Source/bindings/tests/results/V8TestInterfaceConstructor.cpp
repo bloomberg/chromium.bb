@@ -98,7 +98,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "TestInterfaceConstructor", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(8, info.Length())) {
     case 0:
         if (true) {
             TestInterfaceConstructorV8Internal::constructor1(info);

@@ -593,9 +593,8 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "{{interface_name}}", info.Holder(), isolate);
-    {# FIXME: 2. Initialize argcount to be min(maxarg, n). #}
-    {# switch (std::min({{constructor_overloads.maxarg}}, info.Length())) { #}
-    switch (info.Length()) {
+    {# 2. Initialize argcount to be min(maxarg, n). #}
+    switch (std::min({{constructor_overloads.maxarg}}, info.Length())) {
     {# 3. Remove from S all entries whose type list is not of length argcount. #}
     {% for length, tests_constructors in constructor_overloads.length_tests_methods %}
     case {{length}}:

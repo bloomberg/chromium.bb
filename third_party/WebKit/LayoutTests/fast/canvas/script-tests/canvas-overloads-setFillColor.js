@@ -9,4 +9,4 @@ shouldBe("ctx.setFillColor(0, 0)", "undefined");
 shouldThrow("ctx.setFillColor(0, 0, 0)");
 shouldBe("ctx.setFillColor(0, 0, 0, 0)", "undefined");
 shouldBe("ctx.setFillColor(0, 0, 0, 0, 0)", "undefined");
-shouldThrow("ctx.setFillColor(0, 0, 0, 0, 0, 0)");
+shouldBe("ctx.setFillColor(0, 0, 0, 0, 0, 0)", "undefined");

@@ -10,7 +10,7 @@ PASS ctx.setFillColor(0, 0) is undefined
 PASS ctx.setFillColor(0, 0, 0) threw exception TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': Valid arities are: [1, 2, 4, 5], but 3 arguments provided..
 PASS ctx.setFillColor(0, 0, 0, 0) is undefined
 PASS ctx.setFillColor(0, 0, 0, 0, 0) is undefined
-PASS ctx.setFillColor(0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'setFillColor' on 'CanvasRenderingContext2D': Valid arities are: [1, 2, 4, 5], but 6 arguments provided..
+PASS ctx.setFillColor(0, 0, 0, 0, 0, 0) is undefined
 PASS successfullyParsed is true
 
 TEST COMPLETE

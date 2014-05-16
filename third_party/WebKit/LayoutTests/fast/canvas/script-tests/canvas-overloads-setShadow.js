@@ -15,4 +15,4 @@ shouldBe("ctx.setShadow(0, 0, 0, 0, 'red', 0, 0)", "undefined");
 shouldThrow("ctx.setShadow(0, 0, 0, 0, 0, 0)");
 shouldBe("ctx.setShadow(0, 0, 0, 0, 0, 0, 0)", "undefined");
 shouldBe("ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0)", "undefined");
-shouldThrow("ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0, 0)");
+shouldBe("ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0, 0)", "undefined");

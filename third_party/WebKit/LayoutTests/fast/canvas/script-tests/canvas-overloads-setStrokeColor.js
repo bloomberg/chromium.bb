@@ -9,4 +9,4 @@ shouldBe("ctx.setStrokeColor(0, 0)", "undefined");
 shouldThrow("ctx.setStrokeColor(0, 0, 0)");
 shouldBe("ctx.setStrokeColor(0, 0, 0, 0)", "undefined");
 shouldBe("ctx.setStrokeColor(0, 0, 0, 0, 0)", "undefined");
-shouldThrow("ctx.setStrokeColor(0, 0, 0, 0, 0, 0)");
+shouldBe("ctx.setStrokeColor(0, 0, 0, 0, 0, 0)", "undefined");

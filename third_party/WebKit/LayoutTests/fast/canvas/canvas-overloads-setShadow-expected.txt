@@ -16,7 +16,7 @@ PASS ctx.setShadow(0, 0, 0, 0, 'red', 0, 0) is undefined
 PASS ctx.setShadow(0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': Valid arities are: [3, 4, 5, 7, 8], but 6 arguments provided..
 PASS ctx.setShadow(0, 0, 0, 0, 0, 0, 0) is undefined
 PASS ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0) is undefined
-PASS ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'setShadow' on 'CanvasRenderingContext2D': Valid arities are: [3, 4, 5, 7, 8], but 9 arguments provided..
+PASS ctx.setShadow(0, 0, 0, 0, 0, 0, 0, 0, 0) is undefined
 PASS successfullyParsed is true
 
 TEST COMPLETE

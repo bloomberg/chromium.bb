@@ -303,9 +303,8 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     UseCounter::countDeprecation(callingExecutionContext(isolate), UseCounter::{{overloads.deprecate_all_as}});
     {% endif %}
     {# First resolve by length #}
-    {# FIXME: 2. Initialize argcount to be min(maxarg, n). #}
-    {# switch (std::min({{overloads.maxarg}}, info.Length())) { #}
-    switch (info.Length()) {
+    {# 2. Initialize argcount to be min(maxarg, n). #}
+    switch (std::min({{overloads.maxarg}}, info.Length())) {
     {# 3. Remove from S all entries whose type list is not of length argcount. #}
     {% for length, tests_methods in overloads.length_tests_methods %}
     case {{length}}:

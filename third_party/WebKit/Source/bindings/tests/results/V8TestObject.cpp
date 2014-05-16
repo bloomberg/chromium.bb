@@ -6430,7 +6430,7 @@ static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(2, info.Length())) {
     case 1:
         if (true) {
             overloadedMethodA1Method(info);
@@ -6484,7 +6484,7 @@ static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(2, info.Length())) {
     case 1:
         if (info[0]->IsNumber()) {
             overloadedMethodB1Method(info);
@@ -6536,7 +6536,7 @@ static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 1:
         if (V8TestInterfaceEmpty::hasInstance(info[0], isolate)) {
             overloadedMethodC2Method(info);
@@ -6582,7 +6582,7 @@ static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 1:
         if (info[0]->IsArray()) {
             overloadedMethodD2Method(info);
@@ -6628,7 +6628,7 @@ static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 1:
         if (isUndefinedOrNull(info[0])) {
             overloadedMethodE2Method(info);
@@ -6681,7 +6681,7 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             overloadedMethodF1Method(info);
@@ -6737,7 +6737,7 @@ static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodG", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 1:
         if (isUndefinedOrNull(info[0])) {
             overloadedMethodG2Method(info);
@@ -6786,7 +6786,7 @@ static void overloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodH", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 1:
         if (V8TestInterface::hasInstance(info[0], isolate)) {
             overloadedMethodH1Method(info);
@@ -6831,7 +6831,7 @@ static void overloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& i
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodI", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 1:
         if (info[0]->IsNumber()) {
             overloadedMethodI2Method(info);
@@ -6882,7 +6882,7 @@ static void overloadedPerWorldBindingsMethodMethod(const v8::FunctionCallbackInf
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             overloadedPerWorldBindingsMethod1Method(info);
@@ -6923,7 +6923,7 @@ static void overloadedPerWorldBindingsMethodMethodForMainWorld(const v8::Functio
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             overloadedPerWorldBindingsMethod1MethodForMainWorld(info);
@@ -6971,7 +6971,7 @@ static void overloadedStaticMethodMethod(const v8::FunctionCallbackInfo<v8::Valu
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(2, info.Length())) {
     case 1:
         if (true) {
             overloadedStaticMethod1Method(info);
@@ -7465,7 +7465,7 @@ static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8:
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsOverloadedMethod", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             UseCounter::countDeprecation(callingExecutionContext(isolate), UseCounter::TestFeatureA);
@@ -7515,7 +7515,7 @@ static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbac
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "DeprecateAsSameValueOverloadedMethod", "TestObject", info.Holder(), isolate);
     UseCounter::countDeprecation(callingExecutionContext(isolate), UseCounter::TestFeature);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             DeprecateAsSameValueOverloadedMethod1Method(info);
@@ -7562,7 +7562,7 @@ static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::V
 {
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsOverloadedMethod", "TestObject", info.Holder(), isolate);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             UseCounter::count(callingExecutionContext(isolate), UseCounter::TestFeatureA);
@@ -7612,7 +7612,7 @@ static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "measureAsSameValueOverloadedMethod", "TestObject", info.Holder(), isolate);
     UseCounter::count(callingExecutionContext(isolate), UseCounter::TestFeature);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             measureAsSameValueOverloadedMethod1Method(info);
@@ -7660,7 +7660,7 @@ static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), isolate);
     UseCounter::count(callingExecutionContext(isolate), UseCounter::TestFeature);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             UseCounter::countDeprecation(callingExecutionContext(isolate), UseCounter::TestFeatureA);
@@ -7710,7 +7710,7 @@ static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::Functi
     v8::Isolate* isolate = info.GetIsolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsOverloadedMethod", "TestObject", info.Holder(), isolate);
     UseCounter::countDeprecation(callingExecutionContext(isolate), UseCounter::TestFeature);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             UseCounter::count(callingExecutionContext(isolate), UseCounter::TestFeatureA);
@@ -7761,7 +7761,7 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "deprecateAsSameValueMeasureAsSameValueOverloadedMethod", "TestObject", info.Holder(), isolate);
     UseCounter::count(callingExecutionContext(isolate), UseCounter::TestFeatureB);
     UseCounter::countDeprecation(callingExecutionContext(isolate), UseCounter::TestFeatureA);
-    switch (info.Length()) {
+    switch (std::min(1, info.Length())) {
     case 0:
         if (true) {
             deprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(info);
