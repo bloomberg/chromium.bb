@@ -632,11 +632,6 @@ crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Tim
 
 crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 
-crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer-sync.html [ NeedsRebaseline ]
-crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer.html [ NeedsRebaseline ]
-crbug.com/315514 [ Linux ] storage/websql/sql-error-codes.html [ NeedsRebaseline ]
-crbug.com/315514 [ Linux ] storage/websql/test-authorizer.html [ NeedsRebaseline ]
-
 # Macs do not support keyboard events to show a context menu.
 crbug.com/345913 [ Mac ] editing/spelling/spelling-on-context-menu-key.html [ Failure ]
 
