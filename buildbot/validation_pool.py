@@ -387,7 +387,7 @@ class PatchSeries(object):
     self._helper_pool = helper_pool
     self._path = path
     if deps_filter_fn is None:
-      deps_filter_fn = lambda x:x
+      deps_filter_fn = lambda x: True
     self.deps_filter_fn = deps_filter_fn
     self._is_submitting = is_submitting
 
