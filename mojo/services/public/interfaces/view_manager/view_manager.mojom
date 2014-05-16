@@ -28,9 +28,9 @@ interface IViewManager {
   // the connection.
   CreateNode(uint32 node_id) => (bool success);
 
-  // Deletes a node. This does not recurse. No hierarchy change notifications
-  // are sent as a result of this. Deletion is always allowed and implicitly
-  // advances |server_change_id|.
+  // Deletes a node. This does not recurse. Children are removed from the node
+  // before it is destroyed. Deletion is always allowed and implicitly advances
+  // |server_change_id|.
   DeleteNode(uint32 node_id) => (bool success);
 
   // Reparents a node. See description above class for details of |change_id|.
@@ -79,34 +79,20 @@ interface IViewManager {
 interface IViewManagerClient {
   // Invoked once the connection has been established. |connection_id| is the id
   // that uniquely identifies this connection. |next_server_change_id| is the
-  // id of the next change the server is expecting. |nodes| are the nodes
-  // parented to the root.
-  OnConnectionEstablished(uint16 connection_id,
-                          uint32 next_server_change_id,
-                          INode[] nodes);
-
-  // This is sent to clients when a change is made to the server that results
-  // in the |server_change_id| changing but the client isn't notified. This is
-  // not sent if the client receives a callback giving a new
-  // |server_change_id|. For example, if a client 1 changes the hierarchy in
-  // some way but client 2 isn't notified of the change, then client 2 gets
-  // OnServerChangeIdAdvanced().
-  OnServerChangeIdAdvanced(uint32 next_server_change_id);
+  // id of the next change the server is expecting.
+  OnConnectionEstablished(uint16 connection_id, uint32 next_server_change_id);
 
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
   // identify a null node. For example, if the old_parent is NULL, 0 is
   // supplied. See description above ViewManager for details on the change ids.
-  // |nodes| contains any nodes that are that the client has not been told
-  // about. This is not sent for hierarchy changes of nodes not known to this
-  // client or not attached to the tree.
   OnNodeHierarchyChanged(uint32 node,
                          uint32 new_parent,
                          uint32 old_parent,
-                         uint32 server_change_id,
-                         INode[] nodes);
+                         uint32 server_change_id);
 
   // Invoked when a node is deleted.
   OnNodeDeleted(uint32 node, uint32 server_change_id);
+                
 
   // Invoked when the view associated with a node is replaced by another view.
   // 0 is used to identify a null view.

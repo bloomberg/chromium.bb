@@ -24,11 +24,10 @@ const TransportConnectionId kNoConnection = 0;
 RootNodeManager::ScopedChange::ScopedChange(
     ViewManagerConnection* connection,
     RootNodeManager* root,
-    RootNodeManager::ChangeType change_type,
-    bool is_delete_node)
+    RootNodeManager::ChangeType change_type)
     : root_(root),
       change_type_(change_type) {
-  root_->PrepareForChange(connection, is_delete_node);
+  root_->PrepareForChange(connection);
 }
 
 RootNodeManager::ScopedChange::~ScopedChange() {
@@ -47,7 +46,6 @@ RootNodeManager::RootNodeManager(Shell* shell)
     : next_connection_id_(1),
       next_server_change_id_(1),
       change_source_(kNoConnection),
-      is_processing_delete_node_(false),
       root_view_manager_(shell, this),
       root_(this, NodeId(0, kRootId)) {
 }
@@ -90,74 +88,79 @@ View* RootNodeManager::GetView(const ViewId& id) {
   return i == connection_map_.end() ? NULL : i->second->GetView(id);
 }
 
-void RootNodeManager::ProcessNodeHierarchyChanged(const NodeId& node,
-                                                  const NodeId& new_parent,
-                                                  const NodeId& old_parent) {
+void RootNodeManager::NotifyNodeHierarchyChanged(const NodeId& node,
+                                                 const NodeId& new_parent,
+                                                 const NodeId& old_parent) {
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->ProcessNodeHierarchyChanged(
-        node, new_parent, old_parent, next_server_change_id_,
-        IsChangeSource(i->first));
+    if (ShouldNotifyConnection(i->first)) {
+      i->second->NotifyNodeHierarchyChanged(
+          node, new_parent, old_parent, next_server_change_id_);
+    }
   }
 }
 
-void RootNodeManager::ProcessNodeViewReplaced(const NodeId& node,
-                                              const ViewId& new_view_id,
-                                              const ViewId& old_view_id) {
+void RootNodeManager::NotifyNodeViewReplaced(const NodeId& node,
+                                             const ViewId& new_view_id,
+                                             const ViewId& old_view_id) {
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->ProcessNodeViewReplaced(node, new_view_id, old_view_id,
-                                       IsChangeSource(i->first));
+    if (ShouldNotifyConnection(i->first))
+      i->second->NotifyNodeViewReplaced(node, new_view_id, old_view_id);
   }
 }
 
-void RootNodeManager::ProcessNodeDeleted(const NodeId& node) {
+void RootNodeManager::NotifyNodeDeleted(const NodeId& node) {
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->ProcessNodeDeleted(node, next_server_change_id_,
-                                 IsChangeSource(i->first));
+    if (ShouldNotifyConnection(i->first))
+      i->second->NotifyNodeDeleted(node, next_server_change_id_);
   }
 }
 
-void RootNodeManager::ProcessViewDeleted(const ViewId& view) {
+void RootNodeManager::NotifyViewDeleted(const ViewId& view) {
   // TODO(sky): make a macro for this.
   for (ConnectionMap::iterator i = connection_map_.begin();
        i != connection_map_.end(); ++i) {
-    i->second->ProcessViewDeleted(view, IsChangeSource(i->first));
+    if (ShouldNotifyConnection(i->first))
+      i->second->NotifyViewDeleted(view);
   }
 }
 
-void RootNodeManager::PrepareForChange(ViewManagerConnection* connection,
-                                       bool is_delete_node) {
+void RootNodeManager::PrepareForChange(ViewManagerConnection* connection) {
   // Should only ever have one change in flight.
   DCHECK_EQ(kNoConnection, change_source_);
   change_source_ = connection->id();
-  is_processing_delete_node_ = is_delete_node;
 }
 
 void RootNodeManager::FinishChange(ChangeType change_type) {
   // PrepareForChange/FinishChange should be balanced.
   DCHECK_NE(kNoConnection, change_source_);
   change_source_ = 0;
-  is_processing_delete_node_ = false;
   if (change_type == CHANGE_TYPE_ADVANCE_SERVER_CHANGE_ID)
     next_server_change_id_++;
+}
+
+bool RootNodeManager::ShouldNotifyConnection(
+    TransportConnectionId connection_id) const {
+  // Don't notify the source that originated the change.
+  return connection_id != change_source_;
 }
 
 void RootNodeManager::OnNodeHierarchyChanged(const NodeId& node,
                                              const NodeId& new_parent,
                                              const NodeId& old_parent) {
   if (!root_view_manager_.in_setup())
-    ProcessNodeHierarchyChanged(node, new_parent, old_parent);
+    NotifyNodeHierarchyChanged(node, new_parent, old_parent);
 }
 
 void RootNodeManager::OnNodeViewReplaced(const NodeId& node,
                                          const ViewId& new_view_id,
                                          const ViewId& old_view_id) {
-  ProcessNodeViewReplaced(node, new_view_id, old_view_id);
+  NotifyNodeViewReplaced(node, new_view_id, old_view_id);
 }
 
 }  // namespace service

@@ -41,8 +41,7 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
    public:
     ScopedChange(ViewManagerConnection* connection,
                  RootNodeManager* root,
-                 RootNodeManager::ChangeType change_type,
-                 bool is_delete_node);
+                 RootNodeManager::ChangeType change_type);
     ~ScopedChange();
 
    private:
@@ -76,20 +75,16 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   Node* root() { return &root_; }
 
-  bool IsProcessingChange() const { return change_source_ != 0; }
-
-  bool is_processing_delete_node() const { return is_processing_delete_node_; }
-
   // These functions trivially delegate to all ViewManagerConnections, which in
   // term notify their clients.
-  void ProcessNodeHierarchyChanged(const NodeId& node,
-                                   const NodeId& new_parent,
-                                   const NodeId& old_parent);
-  void ProcessNodeViewReplaced(const NodeId& node,
-                               const ViewId& new_view_id,
-                               const ViewId& old_view_id);
-  void ProcessNodeDeleted(const NodeId& node);
-  void ProcessViewDeleted(const ViewId& view);
+  void NotifyNodeHierarchyChanged(const NodeId& node,
+                                  const NodeId& new_parent,
+                                  const NodeId& old_parent);
+  void NotifyNodeViewReplaced(const NodeId& node,
+                              const ViewId& new_view_id,
+                              const ViewId& old_view_id);
+  void NotifyNodeDeleted(const NodeId& node);
+  void NotifyViewDeleted(const ViewId& view);
 
  private:
   // Used to setup any static state needed by RootNodeManager.
@@ -106,15 +101,14 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
   // Changes should never nest, meaning each PrepareForChange() must be
   // balanced with a call to FinishChange() with no PrepareForChange()
   // in between.
-  void PrepareForChange(ViewManagerConnection* connection, bool is_delete_node);
+  void PrepareForChange(ViewManagerConnection* connection);
 
   // Balances a call to PrepareForChange().
   void FinishChange(ChangeType change_type);
 
-  // Returns true if the specified connection originated the current change.
-  bool IsChangeSource(TransportConnectionId connection_id) const {
-    return connection_id == change_source_;
-  }
+  // Returns true if the specified connection should be notified of the current
+  // change.
+  bool ShouldNotifyConnection(TransportConnectionId connection_id) const;
 
   // Overriden from NodeDelegate:
   virtual void OnNodeHierarchyChanged(const NodeId& node,
@@ -136,9 +130,6 @@ class MOJO_VIEW_MANAGER_EXPORT RootNodeManager : public NodeDelegate {
 
   // If non-zero we're processing a change from this client.
   TransportConnectionId change_source_;
-
-  // True if we're processing a DeleteNode request.
-  bool is_processing_delete_node_;
 
   RootViewManager root_view_manager_;
 

@@ -6,11 +6,9 @@
 #define MOJO_SERVICES_VIEW_MANAGER_VIEW_MANAGER_CONNECTION_H_
 
 #include <set>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "mojo/public/cpp/shell/service.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/ids.h"
@@ -52,28 +50,21 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   // Returns the View with the specified id.
   View* GetView(const ViewId& id);
 
-  // The following methods are invoked after the corresponding change has been
-  // processed. They do the appropriate bookkeeping and update the client as
-  // necessary.
-  // TODO(sky): convert these to take Node*s.
-  void ProcessNodeHierarchyChanged(const NodeId& node_id,
-                                   const NodeId& new_parent_id,
-                                   const NodeId& old_parent_id,
-                                   TransportChangeId server_change_id,
-                                   bool originated_change);
-  void ProcessNodeViewReplaced(const NodeId& node,
-                               const ViewId& new_view_id,
-                               const ViewId& old_view_id,
-                               bool originated_change);
-  void ProcessNodeDeleted(const NodeId& node,
-                          TransportChangeId server_change_id,
-                          bool originated_change);
-  void ProcessViewDeleted(const ViewId& view, bool originated_change);
+  // Notifies the client of a hierarchy change.
+  void NotifyNodeHierarchyChanged(const NodeId& node,
+                                  const NodeId& new_parent,
+                                  const NodeId& old_parent,
+                                  TransportChangeId server_change_id);
+  void NotifyNodeViewReplaced(const NodeId& node,
+                              const ViewId& new_view_id,
+                              const ViewId& old_view_id);
+  void NotifyNodeDeleted(const NodeId& node,
+                         TransportChangeId server_change_id);
+  void NotifyViewDeleted(const ViewId& view);
 
  private:
   typedef std::map<TransportConnectionSpecificNodeId, Node*> NodeMap;
   typedef std::map<TransportConnectionSpecificViewId, View*> ViewMap;
-  typedef base::hash_set<TransportNodeId> NodeIdSet;
 
   // Deletes a node owned by this connection. Returns true on success. |source|
   // is the connection that originated the change.
@@ -85,18 +76,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
 
   // Sets the view associated with a node.
   bool SetViewImpl(const NodeId& node_id, const ViewId& view_id);
-
-  // If |node| is known (in |known_nodes_|) does nothing. Otherwise adds |node|
-  // to |nodes|, marks |node| as known and recurses.
-  void GetUnknownNodesFrom(Node* node, std::vector<Node*>* nodes);
-
-  // Returns true if notification should be sent of a hierarchy change. If true
-  // is returned, any nodes that need to be sent to the client are added to
-  // |to_send|.
-  bool ShouldNotifyOnHierarchyChange(const NodeId& node_id,
-                                     const NodeId& new_parent_id,
-                                     const NodeId& old_parent_id,
-                                     std::vector<Node*>* to_send);
 
   // Overridden from IViewManager:
   virtual void CreateNode(TransportNodeId transport_node_id,
@@ -140,9 +119,6 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   NodeMap node_map_;
 
   ViewMap view_map_;
-
-  // The set of nodes that has been communicated to the client.
-  NodeIdSet known_nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerConnection);
 };

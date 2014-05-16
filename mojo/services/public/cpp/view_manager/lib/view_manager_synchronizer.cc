@@ -306,8 +306,12 @@ ViewManagerSynchronizer::ViewManagerSynchronizer(ViewManager* view_manager)
             &service_);
   service_->SetClient(this);
 
-  // Start a runloop. This loop is quit when the server tells us about the
-  // connection (OnConnectionEstablished()).
+  AllocationScope scope;
+  service_->GetNodeTree(
+      1,
+      base::Bind(&ViewManagerSynchronizer::OnRootTreeReceived,
+                 base::Unretained(this)));
+
   base::RunLoop loop;
   init_loop_ = &loop;
   init_loop_->Run();
@@ -393,51 +397,18 @@ void ViewManagerSynchronizer::SetActiveView(TransportNodeId node_id,
 
 void ViewManagerSynchronizer::OnConnectionEstablished(
     TransportConnectionId connection_id,
-    TransportChangeId next_server_change_id,
-    const mojo::Array<INode>& nodes) {
+    TransportChangeId next_server_change_id) {
   connected_ = true;
   connection_id_ = connection_id;
   next_server_change_id_ = next_server_change_id;
-
-  ViewManagerPrivate private_manager(view_manager_);
-  std::vector<ViewTreeNode*> parents;
-  ViewTreeNode* root = NULL;
-  ViewTreeNode* last_node = NULL;
-  for (size_t i = 0; i < nodes.size(); ++i) {
-    if (last_node && nodes[i].parent_id() == last_node->id()) {
-      parents.push_back(last_node);
-    } else if (!parents.empty()) {
-      while (parents.back()->id() != nodes[i].parent_id())
-        parents.pop_back();
-    }
-    ViewTreeNode* node =
-        AddNodeToViewManager(view_manager_,
-                             !parents.empty() ? parents.back() : NULL,
-                             nodes[i].node_id(),
-                             nodes[i].view_id());
-    if (!last_node)
-      root = node;
-    last_node = node;
-  }
-  private_manager.set_root(root);
-  if (init_loop_)
-    init_loop_->Quit();
-
   Sync();
-}
-
-void ViewManagerSynchronizer::OnServerChangeIdAdvanced(
-    uint32_t next_server_change_id) {
-  next_server_change_id_ = next_server_change_id;
 }
 
 void ViewManagerSynchronizer::OnNodeHierarchyChanged(
     uint32_t node_id,
     uint32_t new_parent_id,
     uint32_t old_parent_id,
-    TransportChangeId server_change_id,
-    const mojo::Array<INode>& nodes) {
-  // TODO: deal with |nodes|.
+    TransportChangeId server_change_id) {
   next_server_change_id_ = server_change_id + 1;
 
   ViewTreeNode* new_parent =
@@ -520,6 +491,33 @@ void ViewManagerSynchronizer::RemoveFromPendingQueue(
     ViewManagerTransaction* transaction) {
   DCHECK_EQ(transaction, pending_transactions_.front());
   pending_transactions_.erase(pending_transactions_.begin());
+}
+
+void ViewManagerSynchronizer::OnRootTreeReceived(
+    const Array<INode>& nodes) {
+  ViewManagerPrivate private_manager(view_manager_);
+  std::vector<ViewTreeNode*> parents;
+  ViewTreeNode* root = NULL;
+  ViewTreeNode* last_node = NULL;
+  for (size_t i = 0; i < nodes.size(); ++i) {
+    if (last_node && nodes[i].parent_id() == last_node->id()) {
+      parents.push_back(last_node);
+    } else if (!parents.empty()) {
+      while (parents.back()->id() != nodes[i].parent_id())
+        parents.pop_back();
+    }
+    ViewTreeNode* node =
+        AddNodeToViewManager(view_manager_,
+                             !parents.empty() ? parents.back() : NULL,
+                             nodes[i].node_id(),
+                             nodes[i].view_id());
+    if (!last_node)
+      root = node;
+    last_node = node;
+  }
+  private_manager.set_root(root);
+  if (init_loop_)
+    init_loop_->Quit();
 }
 
 }  // namespace view_manager

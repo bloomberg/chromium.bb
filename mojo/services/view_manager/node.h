@@ -39,24 +39,13 @@ class MOJO_VIEW_MANAGER_EXPORT Node
 
   aura::Window* window() { return &window_; }
 
-  const Node* GetParent() const;
-  Node* GetParent() {
-    return const_cast<Node*>(const_cast<const Node*>(this)->GetParent());
-  }
-
-  const Node* GetRoot() const;
-  Node* GetRoot() {
-    return const_cast<Node*>(const_cast<const Node*>(this)->GetRoot());
-  }
+  Node* GetParent();
 
   std::vector<Node*> GetChildren();
-
-  bool Contains(const Node* node) const;
 
   // Sets the view associated with this node. Node does not own its View.
   void SetView(View* view);
   View* view() { return view_; }
-  const View* view() const { return view_; }
 
  private:
   // WindowObserver overrides:
