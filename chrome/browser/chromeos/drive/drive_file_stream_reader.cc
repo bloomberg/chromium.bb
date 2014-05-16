@@ -152,9 +152,11 @@ void LocalReaderProxy::OnReadCompleted(const net::CompletionCallback& callback,
 NetworkReaderProxy::NetworkReaderProxy(
     int64 offset,
     int64 content_length,
+    int64 full_content_length,
     const base::Closure& job_canceller)
     : remaining_offset_(offset),
       remaining_content_length_(content_length),
+      is_full_download_(offset + content_length == full_content_length),
       error_code_(net::OK),
       buffer_length_(0),
       job_canceller_(job_canceller) {
@@ -205,6 +207,13 @@ int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
   int result = ReadInternal(&pending_data_, buffer, buffer_length);
   remaining_content_length_ -= result;
   DCHECK_GE(remaining_content_length_, 0);
+
+  // Although OnCompleted() should reset |job_canceller_| when download is done,
+  // due to timing issues the ReaderProxy instance may be destructed before the
+  // notification. To fix the case we reset here earlier.
+  if (is_full_download_ && remaining_content_length_ == 0)
+    job_canceller_.Reset();
+
   return result;
 }
 
@@ -233,6 +242,9 @@ void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
   int result = ReadInternal(&pending_data_, buffer_.get(), buffer_length_);
   remaining_content_length_ -= result;
   DCHECK_GE(remaining_content_length_, 0);
+
+  if (is_full_download_ && remaining_content_length_ == 0)
+    job_canceller_.Reset();
 
   buffer_ = NULL;
   buffer_length_ = 0;
@@ -405,7 +417,8 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     // The file is not cached, and being downloaded.
     reader_proxy_.reset(
         new internal::NetworkReaderProxy(
-            range_start, range_length, cancel_download_closure_));
+            range_start, range_length,
+            entry->file_info().size(), cancel_download_closure_));
     callback.Run(net::OK, entry.Pass());
     return;
   }

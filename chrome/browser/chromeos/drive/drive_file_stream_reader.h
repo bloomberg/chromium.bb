@@ -88,9 +88,11 @@ class NetworkReaderProxy : public ReaderProxy {
  public:
   // If the instance is deleted during the download process, it is necessary
   // to cancel the job. |job_canceller| should be the callback to run the
-  // cancelling.
+  // cancelling. |full_content_length| is necessary for determining whether the
+  // deletion is done in the middle of download process.
   NetworkReaderProxy(
-      int64 offset, int64 content_length, const base::Closure& job_canceller);
+      int64 offset, int64 content_length, int64 full_content_length,
+      const base::Closure& job_canceller);
   virtual ~NetworkReaderProxy();
 
   // ReaderProxy overrides.
@@ -109,6 +111,10 @@ class NetworkReaderProxy : public ReaderProxy {
   // The number of bytes of remaining data (including the data not yet
   // received from the server).
   int64 remaining_content_length_;
+
+  // Flag to remember whether this read request is for reading till the end of
+  // the file.
+  const bool is_full_download_;
 
   int error_code_;
 
