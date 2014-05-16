@@ -19,6 +19,7 @@ ImageSkiaRep::ImageSkiaRep(const gfx::Size& size, float scale) : scale_(scale) {
                     static_cast<int>(size.width() * this->scale()),
                     static_cast<int>(size.height() * this->scale()));
   bitmap_.allocPixels();
+  bitmap_.eraseColor(SK_ColorRED);
 }
 
 ImageSkiaRep::ImageSkiaRep(const SkBitmap& src, float scale)
