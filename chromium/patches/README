@@ -1,22 +1,10 @@
-Current Status as of Aug 22, 2013
-
+Current Status as of May 16, 2014
 
 Upstream cherry-picks:
 
 Current patches:
 
 to_upstream/
-unblock_windows_build.patch
-  wolenetz: MSVC fails to detect that abort() in av_assert0(0) occurs in
-  all code paths in lavc/utils.c avcodec_default_reget_buffer().  This patch
-  includes an explicit return AVERROR_BUG after the assert to unblock
-  the build when MSVC is configured to treat all warnings as errors.
-
-w32pthreads_xp_fixes_and_vp8_workaround.patch
-  dalecurtis: pthreads emulation incorrectly assumed Vista+.  Additionally due
-  to use of static variables in header file, duplicate initialization is needed.
-  reported upstream which is working on a proper fix.
-
 
 ugly/
 01_enable_checked_bitstream.patch
@@ -39,11 +27,6 @@ compile_with_no_iconv.patch
   This patch enables compiling by returning an appropriate error code and also
   removes the assert and abort.
 
-undeprecate_destruct_packet_api.patch
-  wolenetz: Until upstream fully deprecates usage of FF_API_DESTRUCT_PACKET and
-  we switch to using refcounted AVBuffer API, this patch is necessary.
-  See http://crbug.com/236611
-
 preserve_m27_avcodecids.patch
   wolenetz: Insert a deprecated placeholder into AVCodecID enum such that
   the resulting IDs are either new IDs since M27 or have same enumeration as
@@ -51,6 +34,7 @@ preserve_m27_avcodecids.patch
   See https://ffmpeg.org/trac/ffmpeg/ticket/2575
   See also http://crbug.com/241212
 
-disable_pix_fmt_desc_api.patch
-  dalecurtis: Disable unused API to avoid deprecatation warnings.  Remove once
-  libavutil version > 52.
+w32pthreads_xp_fixes_and_vp8_workaround.patch
+  dalecurtis: pthreads emulation incorrectly assumed Vista+.  Additionally due
+  to use of static variables in header file, duplicate initialization is needed.
+  reported upstream which is working on a proper fix.
