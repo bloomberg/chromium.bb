@@ -298,6 +298,10 @@ struct AutocompleteMatch {
   base::string16 description;
   ACMatchClassifications description_class;
 
+  // A rich-format version of the display for the dropdown.
+  base::string16 answer_contents;
+  base::string16 answer_type;
+
   // The transition type to use when the user opens this match.  By default
   // this is TYPED.  Providers whose matches do not look like URLs should set
   // it to GENERATED.

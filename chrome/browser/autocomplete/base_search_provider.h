@@ -177,6 +177,8 @@ class BaseSearchProvider : public AutocompleteProvider,
                   const base::string16& match_contents,
                   const base::string16& match_contents_prefix,
                   const base::string16& annotation,
+                  const base::string16& answer_contents,
+                  const base::string16& answer_type,
                   const std::string& suggest_query_params,
                   const std::string& deletion_url,
                   bool from_keyword_provider,
@@ -194,6 +196,10 @@ class BaseSearchProvider : public AutocompleteProvider,
     const std::string& suggest_query_params() const {
       return suggest_query_params_;
     }
+
+    const base::string16& answer_contents() const { return answer_contents_; }
+    const base::string16& answer_type() const { return answer_type_; }
+
     bool should_prefetch() const { return should_prefetch_; }
 
     // Fills in |match_contents_class_| to reflect how |match_contents_| should
@@ -226,6 +232,12 @@ class BaseSearchProvider : public AutocompleteProvider,
 
     // Optional additional parameters to be added to the search URL.
     std::string suggest_query_params_;
+
+    // Optional formatted Answers result.
+    base::string16 answer_contents_;
+
+    // Type of optional formatted Answers result.
+    base::string16 answer_type_;
 
     // Should this result be prefetched?
     bool should_prefetch_;

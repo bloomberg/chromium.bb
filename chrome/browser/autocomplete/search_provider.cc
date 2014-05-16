@@ -699,8 +699,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         base::CollapseWhitespace(input_.text(), false);
     SuggestResult verbatim(
         trimmed_verbatim, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-        trimmed_verbatim, base::string16(), base::string16(), std::string(),
-        std::string(), false, verbatim_relevance, relevance_from_server, false,
+        trimmed_verbatim, base::string16(), base::string16(), base::string16(),
+        base::string16(), std::string(), std::string(), false,
+        verbatim_relevance, relevance_from_server, false,
         trimmed_verbatim);
     AddMatchToMap(verbatim, std::string(), did_not_accept_default_suggestion,
                   false, &map);
@@ -724,8 +725,9 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
         SuggestResult verbatim(
             trimmed_verbatim, AutocompleteMatchType::SEARCH_OTHER_ENGINE,
             trimmed_verbatim, base::string16(), base::string16(),
-            std::string(), std::string(), true, keyword_verbatim_relevance,
-            keyword_relevance_from_server, false, trimmed_verbatim);
+            base::string16(), base::string16(), std::string(), std::string(),
+            true, keyword_verbatim_relevance, keyword_relevance_from_server,
+            false, trimmed_verbatim);
         AddMatchToMap(verbatim, std::string(),
                       did_not_accept_keyword_suggestion, false, &map);
       }
@@ -927,8 +929,9 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
         prevent_search_history_inlining);
     scored_results.push_back(SuggestResult(
         trimmed_suggestion, AutocompleteMatchType::SEARCH_HISTORY,
-        trimmed_suggestion, base::string16(), base::string16(), std::string(),
-        std::string(), is_keyword, relevance, false, false, trimmed_input));
+        trimmed_suggestion, base::string16(), base::string16(),
+        base::string16(), base::string16(), std::string(), std::string(),
+        is_keyword, relevance, false, false, trimmed_input));
   }
 
   // History returns results sorted for us.  However, we may have docked some

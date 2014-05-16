@@ -7,6 +7,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/json/json_writer.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
@@ -142,8 +143,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   return CreateSearchSuggestion(
       NULL, AutocompleteInput(), BaseSearchProvider::SuggestResult(
           suggestion, type, suggestion, base::string16(), base::string16(),
-          std::string(), std::string(), from_keyword_provider, 0, false, false,
-          base::string16()),
+          base::string16(), base::string16(), std::string(), std::string(),
+          from_keyword_provider, 0, false, false, base::string16()),
       template_url, 0, 0, false, false);
 }
 
@@ -232,6 +233,8 @@ BaseSearchProvider::SuggestResult::SuggestResult(
     const base::string16& match_contents,
     const base::string16& match_contents_prefix,
     const base::string16& annotation,
+    const base::string16& answer_contents,
+    const base::string16& answer_type,
     const std::string& suggest_query_params,
     const std::string& deletion_url,
     bool from_keyword_provider,
@@ -248,6 +251,8 @@ BaseSearchProvider::SuggestResult::SuggestResult(
       match_contents_prefix_(match_contents_prefix),
       annotation_(annotation),
       suggest_query_params_(suggest_query_params),
+      answer_contents_(answer_contents),
+      answer_type_(answer_type),
       should_prefetch_(should_prefetch) {
   match_contents_ = match_contents;
   DCHECK(!match_contents_.empty());
@@ -488,6 +493,8 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.keyword = template_url->keyword();
   match.contents = suggestion.match_contents();
   match.contents_class = suggestion.match_contents_class();
+  match.answer_contents = suggestion.answer_contents();
+  match.answer_type = suggestion.answer_type();
   if (suggestion.type() == AutocompleteMatchType::SEARCH_SUGGEST_INFINITE) {
     match.RecordAdditionalInfo(
         kACMatchPropertyInputText, base::UTF16ToUTF8(input.text()));
@@ -888,6 +895,8 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
       base::string16 match_contents = suggestion;
       base::string16 match_contents_prefix;
       base::string16 annotation;
+      base::string16 answer_contents;
+      base::string16 answer_type;
       std::string suggest_query_params;
 
       if (suggestion_details) {
@@ -900,6 +909,15 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
             match_contents = suggestion;
           suggestion_detail->GetString("a", &annotation);
           suggestion_detail->GetString("q", &suggest_query_params);
+
+          // Extract Answers, if provided.
+          const base::DictionaryValue* answer_json = NULL;
+          if (suggestion_detail->GetDictionary("ansa", &answer_json)) {
+            std::string contents;
+            base::JSONWriter::Write(answer_json, &contents);
+            answer_contents = base::UTF8ToUTF16(contents);
+            suggestion_detail->GetString("ansb", &answer_type);
+          }
         }
       }
 
@@ -908,9 +926,9 @@ bool BaseSearchProvider::ParseSuggestResults(const base::Value& root_val,
       results->suggest_results.push_back(SuggestResult(
           base::CollapseWhitespace(suggestion, false), match_type,
           base::CollapseWhitespace(match_contents, false),
-          match_contents_prefix, annotation, suggest_query_params,
-          deletion_url, is_keyword_result, relevance, relevances != NULL,
-          should_prefetch, trimmed_input));
+          match_contents_prefix, annotation, answer_contents, answer_type,
+          suggest_query_params, deletion_url, is_keyword_result, relevance,
+          relevances != NULL, should_prefetch, trimmed_input));
     }
   }
   SortResults(is_keyword_result, relevances, results);
