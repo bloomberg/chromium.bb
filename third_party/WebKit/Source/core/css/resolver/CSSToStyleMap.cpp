@@ -393,8 +393,11 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::mapAnimationProperty(CSSVal
 
 PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(CSSValue* value, bool allowStepMiddle)
 {
-    if (value->isInitialValue())
-        return CSSTimingData::initialTimingFunction();
+    // FIXME: We should probably only call into this function with a valid
+    // single timing function value which isn't initial or inherit. We can
+    // currently get into here with initial since the parser expands unset
+    // properties in shorthands to initial and we can get into here with a
+    // value list via the EffectInput/TimingInput code paths.
 
     if (value->isPrimitiveValue()) {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
@@ -428,7 +431,9 @@ PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(CSSValue* v
         return CubicBezierTimingFunction::create(cubicTimingFunction->x1(), cubicTimingFunction->y1(), cubicTimingFunction->x2(), cubicTimingFunction->y2());
     }
 
-    ASSERT(value->isStepsTimingFunctionValue());
+    if (!value->isStepsTimingFunctionValue())
+        return CSSTimingData::initialTimingFunction();
+
     CSSStepsTimingFunctionValue* stepsTimingFunction = toCSSStepsTimingFunctionValue(value);
     if (stepsTimingFunction->stepAtPosition() == StepsTimingFunction::StepAtMiddle && !allowStepMiddle)
         return CSSTimingData::initialTimingFunction();

@@ -110,7 +110,17 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const El
             specifiedPropertiesForUseCounter.add(properties.propertyAt(j).id());
             CSSPropertyID property = propertyForAnimation(properties.propertyAt(j).id());
             if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction) {
-                keyframe->setEasing(CSSToStyleMap::mapAnimationTimingFunction(properties.propertyAt(j).value()));
+                CSSValue* value = properties.propertyAt(j).value();
+                RefPtr<TimingFunction> timingFunction;
+                if (value->isInheritedValue() && parentStyle->animations())
+                    timingFunction = parentStyle->animations()->timingFunctionList()[0];
+                else if (value->isInheritedValue() || value->isInitialValue())
+                    timingFunction = CSSTimingData::initialTimingFunction();
+                else if (value->isValueList())
+                    timingFunction = CSSToStyleMap::mapAnimationTimingFunction(toCSSValueList(value)->item(0));
+                else
+                    timingFunction = CSSToStyleMap::mapAnimationTimingFunction(value);
+                keyframe->setEasing(timingFunction.release());
             } else if (CSSAnimations::isAnimatableProperty(property)) {
                 keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, *keyframeStyle).get());
             }
