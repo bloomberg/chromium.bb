@@ -9,10 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/process/process.h"
-#include "base/synchronization/waitable_event.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
 
 namespace content {
@@ -65,48 +62,10 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   static bool CanUseForTesting();
 
  private:
-  struct CreateRequest {
-    CreateRequest();
-    ~CreateRequest();
-    base::WaitableEvent event;
-    int gpu_host_id;
-    int32 route_id;
-    bool succeeded;
-  };
+  struct CreateRequest;
+  class EstablishRequest;
 
-  class EstablishRequest : public base::RefCountedThreadSafe<EstablishRequest> {
-   public:
-    explicit EstablishRequest(CauseForGpuLaunch cause,
-                              int gpu_client_id,
-                              int gpu_host_id);
-    void Wait();
-    void Cancel();
-
-    int gpu_host_id() { return gpu_host_id_; }
-    IPC::ChannelHandle& channel_handle() { return channel_handle_; }
-    gpu::GPUInfo gpu_info() { return gpu_info_; }
-
-   private:
-    friend class base::RefCountedThreadSafe<EstablishRequest>;
-    ~EstablishRequest();
-    void EstablishOnIO();
-    void OnEstablishedOnIO(const IPC::ChannelHandle& channel_handle,
-                           const gpu::GPUInfo& gpu_info);
-    void FinishOnIO();
-    void FinishOnMain();
-
-    base::WaitableEvent event_;
-    CauseForGpuLaunch cause_for_gpu_launch_;
-    const int gpu_client_id_;
-    int gpu_host_id_;
-    bool reused_gpu_process_;
-    IPC::ChannelHandle channel_handle_;
-    gpu::GPUInfo gpu_info_;
-    bool finished_;
-    scoped_refptr<base::MessageLoopProxy> main_loop_;
-  };
-
-  explicit BrowserGpuChannelHostFactory(bool establish_gpu_channel);
+  BrowserGpuChannelHostFactory();
   virtual ~BrowserGpuChannelHostFactory();
 
   void GpuChannelEstablished();
