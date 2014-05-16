@@ -95,12 +95,13 @@ def _GetXbuddyPath(path):
     raise ValueError('Do not support scheme %s.', parsed.scheme)
 
 
-def TranslateImagePath(path, board):
+def TranslateImagePath(path, board, debug=False):
   """Start devserver to translate the xbuddy |path|.
 
   Args:
     path: The xbuddy path.
     board: The default board to use if board is not specified in |path|.
+    debug: If True, prints the devserver log on response error.
 
   Returns:
     A translated path that uniquely identifies one build:
@@ -114,11 +115,13 @@ def TranslateImagePath(path, board):
     ds.Start()
     return ds.OpenURL(ds.GetDevServerURL(sub_dir=req), timeout=60 * 15)
 
-  except ds_wrapper.DevServerResponseError:
+  except ds_wrapper.DevServerResponseError as e:
     logging.error('Unable to translate the image path: %s. Are you sure the '
                   'image path is correct? The board %s is used when no board '
                   'name is included in the image path.', path, board)
-    raise ValueError('Cannot locate image: %s' % path)
+    if debug:
+      logging.warning(ds.TailLog() or 'No devserver log is available.')
+    raise ValueError('Cannot locate image %s: %s' % (path, e))
   except ds_wrapper.DevServerException:
     logging.warning(ds.TailLog() or 'No devserver log is available.')
     raise
@@ -318,7 +321,8 @@ class USBImager(object):
       image_path = self.ChooseImageFromDirectory(self.image)
     else:
       # Translate the xbuddy path to get the exact image to use.
-      translated_path = TranslateImagePath(self.image, self.board)
+      translated_path = TranslateImagePath(self.image, self.board,
+                                           debug=self.debug)
       # Convert the translated path to be used in a request.
       xbuddy_path = ConvertTranslatedPath(self.image, translated_path)
       image_path = self.GetImagePathFromDevserver(xbuddy_path)
@@ -742,7 +746,8 @@ class RemoteDeviceUpdater(object):
             # crbug.com/340722 and use it to compare boards.
 
             # Translate the xbuddy path to get the exact image to use.
-            translated_path = TranslateImagePath(self.image, board)
+            translated_path = TranslateImagePath(self.image, board,
+                                                 debug=self.debug)
             logging.info('Using image %s', translated_path)
             # Convert the translated path to be used in the update request.
             image_path = ConvertTranslatedPath(self.image, translated_path)
