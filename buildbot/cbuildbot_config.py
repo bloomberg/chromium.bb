@@ -644,7 +644,10 @@ class HWTestConfig(object):
   """
 
   DEFAULT_HW_TEST = 'bvt'
-  DEFAULT_HW_TEST_TIMEOUT = 60 * 130
+
+  # This timeout is larger than it needs to be because of autotest overhead.
+  # TODO(davidjames): Reduce this timeout once http://crbug.com/366141 is fixed.
+  DEFAULT_HW_TEST_TIMEOUT = 60 * 220
   # Number of tests running in parallel in the AU suite.
   AU_TESTS_NUM = 2
   # Number of tests running in parallel in the QAV suite
@@ -704,8 +707,8 @@ class HWTestConfig(object):
     """Returns a default list of HWTestConfig's for a PFQ build,
     with overrides for optional args.
     """
-    default_dict = dict(pool=constants.HWTEST_PFQ_POOL, timeout=190 * 60,
-                        file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
+    default_dict = dict(pool=constants.HWTEST_PFQ_POOL, file_bugs=True,
+                        priority=constants.HWTEST_PFQ_PRIORITY)
     # Allows kwargs overrides to default_dict for pfq.
     default_dict.update(kwargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
@@ -1897,8 +1900,7 @@ _release = full.derive(official, internal,
   vm_tests=[constants.SMOKE_SUITE_TEST_TYPE, constants.DEV_MODE_TEST_TYPE,
             constants.CROS_VM_TEST_TYPE],
   disk_vm_layout='usb',
-  # Canary hwtest timeout chosen based on the frequency of canary runs.
-  hw_tests=HWTestConfig.DefaultList(file_bugs=True, timeout=190 * 60),
+  hw_tests=HWTestConfig.DefaultList(file_bugs=True),
   upload_hw_test_artifacts=True,
   paygen=True,
   signer_results=True,

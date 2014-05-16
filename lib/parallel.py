@@ -76,7 +76,7 @@ class _BackgroundTask(multiprocessing.Process):
 
   # TODO: crbug.com/360063
   # The time we allow processes to be silent.
-  SILENT_TIMEOUT = 60 * 205
+  SILENT_TIMEOUT = 60 * 230
 
   # The amount by which we reduce the SILENT_TIMEOUT every time we launch
   # a subprocess. This helps ensure that children get a chance to enforce the
