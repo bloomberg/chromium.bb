@@ -49,8 +49,16 @@ def main(argv):
   if len(args) == 0:
     parser.error('Expecting list of sources.')
 
+  trusted = scons_to_gn.TrustedConditions()
+  untrusted = scons_to_gn.UntrustedConditions()
+
   for name in args:
-    tracker = scons_to_gn.ObjectTracker(name)
+    if name.endswith('nacl.scons'):
+      tracker = scons_to_gn.ObjectTracker(name, untrusted)
+    elif name.endswith('build.scons'):
+      tracker = scons_to_gn.ObjectTracker(name, trusted)
+    else:
+      parser.error('Expecting build.scons and nacl.scons sources.')
     tracker.Dump(sys.stdout)
   return 0
 
