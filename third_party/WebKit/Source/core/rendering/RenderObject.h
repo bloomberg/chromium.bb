@@ -814,6 +814,9 @@ public:
     // if painting is root-relative. This is the container that should be passed to the 'forRepaint'
     // methods.
     const RenderLayerModelObject* containerForRepaint() const;
+    const RenderLayerModelObject* enclosingCompositedContainer() const;
+    const RenderLayerModelObject* adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* repaintContainer) const;
+    bool isRepaintContainer() const;
 
     // Actually do the repaint of rect r for this object which has been computed in the coordinate space
     // of repaintContainer. If repaintContainer is 0, repaint via the view.
@@ -831,7 +834,7 @@ public:
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromRepaintContainer, const LayoutRect* newBoundsPtr = 0, const LayoutPoint* newPositionFromRepaintContainer = 0);
 
     // Walk the tree after layout repainting renderers that have changed or moved, updating bounds that have changed, and clearing repaint state.
-    virtual void repaintTreeAfterLayout();
+    virtual void repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer);
 
     virtual void repaintOverflow();
     void repaintOverflowIfNeeded();

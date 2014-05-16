@@ -1108,6 +1108,11 @@ const RenderLayer* RenderLayer::compositingContainer() const
     return 0;
 }
 
+bool RenderLayer::isRepaintContainer() const
+{
+    return compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking;
+}
+
 // FIXME: having two different functions named enclosingCompositingLayer and enclosingCompositingLayerForRepaint
 // is error-prone and misleading for reading code that uses these functions - especially compounded with
 // the includeSelf option. It is very likely that we don't even want either of these functions; A layer
@@ -1132,11 +1137,11 @@ RenderLayer* RenderLayer::enclosingCompositingLayerForRepaint(IncludeSelfOrNot i
 {
     ASSERT(isAllowedToQueryCompositingState());
 
-    if ((includeSelf == IncludeSelf) && (compositingState() == PaintsIntoOwnBacking || compositingState() == PaintsIntoGroupedBacking))
+    if ((includeSelf == IncludeSelf) && isRepaintContainer())
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
-        if (curr->compositingState() == PaintsIntoOwnBacking || curr->compositingState() == PaintsIntoGroupedBacking)
+        if (curr->isRepaintContainer())
             return const_cast<RenderLayer*>(curr);
     }
 

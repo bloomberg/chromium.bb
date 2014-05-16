@@ -360,37 +360,40 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
         ResourceLoadPriorityOptimizer::resourceLoadPriorityOptimizer()->addRenderObject(this);
 }
 
-void RenderBlock::repaintTreeAfterLayout()
+void RenderBlock::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
 {
     if (!shouldCheckForInvalidationAfterLayout())
         return;
 
-    RenderBox::repaintTreeAfterLayout();
+    RenderBox::repaintTreeAfterLayout(repaintContainer);
 
     // Take care of positioned objects. This is required as LayoutState keeps a single clip rect.
     if (TrackedRendererListHashSet* positionedObjects = this->positionedObjects()) {
         TrackedRendererListHashSet::iterator end = positionedObjects->end();
         LayoutStateMaintainer statePusher(*this, isTableRow() ? LayoutSize() : locationOffset());
-
         for (TrackedRendererListHashSet::iterator it = positionedObjects->begin(); it != end; ++it) {
-            RenderBox* obj = *it;
+            RenderBox* box = *it;
+
+            // One of the renderers we're skipping over here may be the child's repaint container,
+            // so we can't pass our own repaint container along.
+            const RenderLayerModelObject& repaintContainerForChild = *box->containerForRepaint();
 
             // If the positioned renderer is absolutely positioned and it is inside
             // a relatively positioend inline element, we need to account for
             // the inline elements position in LayoutState.
-            if (obj->style()->position() == AbsolutePosition) {
-                RenderObject* o = obj->container(obj->containerForRepaint(), 0);
-                if (o->isInFlowPositioned() && o->isRenderInline()) {
+            if (box->style()->position() == AbsolutePosition) {
+                RenderObject* container = box->container(&repaintContainerForChild, 0);
+                if (container->isInFlowPositioned() && container->isRenderInline()) {
                     // FIXME: We should be able to use layout-state for this.
                     // Currently, we will place absolutly positioned elements inside
                     // relatively positioned inline blocks in the wrong location. crbug.com/371485
                     LayoutStateDisabler disable(*this);
-                    obj->repaintTreeAfterLayout();
+                    box->repaintTreeAfterLayout(repaintContainerForChild);
                     continue;
                 }
             }
 
-            obj->repaintTreeAfterLayout();
+            box->repaintTreeAfterLayout(repaintContainerForChild);
         }
     }
 }

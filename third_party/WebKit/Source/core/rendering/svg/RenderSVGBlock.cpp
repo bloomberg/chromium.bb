@@ -112,13 +112,13 @@ bool RenderSVGBlock::nodeAtPoint(const HitTestRequest&, HitTestResult&, const Hi
     return false;
 }
 
-void RenderSVGBlock::repaintTreeAfterLayout()
+void RenderSVGBlock::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
 {
     if (!shouldCheckForInvalidationAfterLayout())
         return;
 
     LayoutStateDisabler layoutStateDisabler(*this);
-    RenderBlockFlow::repaintTreeAfterLayout();
+    RenderBlockFlow::repaintTreeAfterLayout(repaintContainer);
 }
 
 }

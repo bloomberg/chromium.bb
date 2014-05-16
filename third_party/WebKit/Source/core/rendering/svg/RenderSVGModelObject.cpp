@@ -124,7 +124,7 @@ void RenderSVGModelObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
     quads.append(localToAbsoluteQuad(FloatQuad(repaintRectInLocalCoordinates())));
 }
 
-void RenderSVGModelObject::repaintTreeAfterLayout()
+void RenderSVGModelObject::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
 {
     // Note: This is a reduced version of RenderBox::repaintTreeAfterLayout().
     // FIXME: Should share code with RenderBox::repaintTreeAfterLayout().
@@ -138,15 +138,15 @@ void RenderSVGModelObject::repaintTreeAfterLayout()
 
     const LayoutRect oldRepaintRect = previousRepaintRect();
     const LayoutPoint oldPositionFromRepaintContainer = previousPositionFromRepaintContainer();
-    const RenderLayerModelObject* repaintContainer = containerForRepaint();
-    setPreviousRepaintRect(clippedOverflowRectForRepaint(repaintContainer));
-    setPreviousPositionFromRepaintContainer(positionFromRepaintContainer(repaintContainer));
+    const RenderLayerModelObject& newRepaintContainer = *containerForRepaint();
+    setPreviousRepaintRect(clippedOverflowRectForRepaint(&newRepaintContainer));
+    setPreviousPositionFromRepaintContainer(positionFromRepaintContainer(&newRepaintContainer));
 
     // If we are set to do a full repaint that means the RenderView will be
     // invalidated. We can then skip issuing of invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullRepaint()) {
-        RenderObject::repaintTreeAfterLayout();
+        RenderObject::repaintTreeAfterLayout(newRepaintContainer);
         return;
     }
 
@@ -155,7 +155,7 @@ void RenderSVGModelObject::repaintTreeAfterLayout()
     repaintAfterLayoutIfNeeded(containerForRepaint(),
         shouldDoFullRepaintAfterLayout(), oldRepaintRect, oldPositionFromRepaintContainer, &newRepaintRect, &newPositionFromRepaintContainer);
 
-    RenderObject::repaintTreeAfterLayout();
+    RenderObject::repaintTreeAfterLayout(newRepaintContainer);
 }
 
 } // namespace WebCore

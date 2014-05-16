@@ -346,7 +346,7 @@ protected:
 
     virtual bool isInlineBlockOrInlineTable() const OVERRIDE FINAL { return isInline() && isReplaced(); }
 
-    virtual void repaintTreeAfterLayout() OVERRIDE;
+    virtual void repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer) OVERRIDE;
 
 private:
     virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }

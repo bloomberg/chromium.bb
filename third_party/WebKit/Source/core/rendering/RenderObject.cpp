@@ -1252,7 +1252,8 @@ void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRec
 // FIXME: In repaint-after-layout, we should be able to change the logic to remove the need for this function. See crbug.com/368416.
 LayoutPoint RenderObject::positionFromRepaintContainer(const RenderLayerModelObject* repaintContainer) const
 {
-    ASSERT(containerForRepaint() == repaintContainer);
+    // FIXME: This assert should be re-enabled when we move repaint to after compositing update. crbug.com/360286
+    // ASSERT(containerForRepaint() == repaintContainer);
 
     LayoutPoint offset = isBox() ? toRenderBox(this)->location() : LayoutPoint();
     if (repaintContainer == this)
@@ -1352,16 +1353,24 @@ const RenderLayerModelObject* RenderObject::containerForRepaint() const
     if (!isRooted())
         return 0;
 
-    const RenderLayerModelObject* repaintContainer = 0;
+    return adjustCompositedContainerForSpecialAncestors(enclosingCompositedContainer());
+}
 
-    RenderView* renderView = view();
-    if (renderView->usesCompositing()) {
+const RenderLayerModelObject* RenderObject::enclosingCompositedContainer() const
+{
+    RenderLayerModelObject* container = 0;
+    if (view()->usesCompositing()) {
         // FIXME: CompositingState is not necessarily up to date for many callers of this function.
         DisableCompositingQueryAsserts disabler;
 
         if (RenderLayer* compositingLayer = enclosingLayer()->enclosingCompositingLayerForRepaint())
-            repaintContainer = compositingLayer->renderer();
+            container = compositingLayer->renderer();
     }
+    return container;
+}
+
+const RenderLayerModelObject* RenderObject::adjustCompositedContainerForSpecialAncestors(const RenderLayerModelObject* repaintContainer) const
+{
 
     if (document().view()->hasSoftwareFilters()) {
         if (RenderLayer* enclosingFilterLayer = enclosingLayer()->enclosingFilterLayer())
@@ -1377,7 +1386,12 @@ const RenderLayerModelObject* RenderObject::containerForRepaint() const
         if (!repaintContainer || repaintContainer->flowThreadContainingBlock() != parentRenderFlowThread)
             repaintContainer = parentRenderFlowThread;
     }
-    return repaintContainer ? repaintContainer : renderView;
+    return repaintContainer ? repaintContainer : view();
+}
+
+bool RenderObject::isRepaintContainer() const
+{
+    return hasLayer() && toRenderLayerModelObject(this)->layer()->isRepaintContainer();
 }
 
 template<typename T> PassRefPtr<JSONValue> jsonObjectForRect(const T& rect)
@@ -1523,7 +1537,7 @@ const char* RenderObject::invalidationReasonToString(InvalidationReason reason) 
     return "";
 }
 
-void RenderObject::repaintTreeAfterLayout()
+void RenderObject::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
 {
     // If we didn't need invalidation then our children don't need as well.
     // Skip walking down the tree as everything should be fine below us.
@@ -1534,7 +1548,7 @@ void RenderObject::repaintTreeAfterLayout()
 
     for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
         if (!child->isOutOfFlowPositioned())
-            child->repaintTreeAfterLayout();
+            child->repaintTreeAfterLayout(repaintContainer);
     }
 }
 

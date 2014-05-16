@@ -207,10 +207,10 @@ void RenderListBox::layout()
     }
 }
 
-void RenderListBox::repaintTreeAfterLayout()
+void RenderListBox::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
 {
     repaintScrollbarIfNeeded();
-    RenderBox::repaintTreeAfterLayout();
+    RenderBox::repaintTreeAfterLayout(repaintContainer);
 }
 
 void RenderListBox::scrollToRevealSelection()

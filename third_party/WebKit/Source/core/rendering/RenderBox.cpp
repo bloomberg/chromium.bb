@@ -1546,7 +1546,7 @@ bool RenderBox::repaintLayerRectsForImage(WrappedImagePtr image, const FillLayer
     return false;
 }
 
-void RenderBox::repaintTreeAfterLayout()
+void RenderBox::repaintTreeAfterLayout(const RenderLayerModelObject& repaintContainer)
 {
     // FIXME: Currently only using this logic for RenderBox and its ilk. Ideally, RenderBlockFlows with
     // inline children should track a dirty rect in local coordinates for dirty lines instead of repainting
@@ -1561,18 +1561,22 @@ void RenderBox::repaintTreeAfterLayout()
     if (!shouldCheckForInvalidationAfterLayout())
         return;
 
+    bool establishesNewRepaintContainer = isRepaintContainer();
+    const RenderLayerModelObject& newRepaintContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewRepaintContainer ? this : &repaintContainer);
+    // FIXME: This assert should be re-enabled when we move repaint to after compositing update. crbug.com/360286
+    // ASSERT(&newRepaintContainer == containerForRepaint());
+
     const LayoutRect oldRepaintRect = previousRepaintRect();
     const LayoutPoint oldPositionFromRepaintContainer = previousPositionFromRepaintContainer();
-    const RenderLayerModelObject* repaintContainer = containerForRepaint();
-    setPreviousRepaintRect(clippedOverflowRectForRepaint(repaintContainer));
-    setPreviousPositionFromRepaintContainer(positionFromRepaintContainer(repaintContainer));
+    setPreviousRepaintRect(clippedOverflowRectForRepaint(&newRepaintContainer));
+    setPreviousPositionFromRepaintContainer(positionFromRepaintContainer(&newRepaintContainer));
 
     // If we are set to do a full repaint that means the RenderView will be
     // invalidated. We can then skip issuing of invalidations for the child
     // renderers as they'll be covered by the RenderView.
     if (view()->doingFullRepaint() && this != view()) {
         LayoutStateMaintainer statePusher(*this, isTableRow() ? LayoutSize() : locationOffset());
-        RenderObject::repaintTreeAfterLayout();
+        RenderObject::repaintTreeAfterLayout(newRepaintContainer);
         return;
     }
 
@@ -1585,7 +1589,7 @@ void RenderBox::repaintTreeAfterLayout()
 
     const LayoutRect& newRepaintRect = previousRepaintRect();
     const LayoutPoint& newPositionFromRepaintContainer = previousPositionFromRepaintContainer();
-    bool didFullRepaint = repaintAfterLayoutIfNeeded(containerForRepaint(),
+    bool didFullRepaint = repaintAfterLayoutIfNeeded(&newRepaintContainer,
         shouldDoFullRepaintAfterLayout(), oldRepaintRect, oldPositionFromRepaintContainer, &newRepaintRect, &newPositionFromRepaintContainer);
 
     if (!didFullRepaint)
@@ -1602,11 +1606,17 @@ void RenderBox::repaintTreeAfterLayout()
         }
     }
 
-    // FIXME: This concept of a tree walking state for fast lookups should be generalized away from
-    // just layout.
-    // FIXME: Table rows shouldn't be special-cased.
-    LayoutStateMaintainer statePusher(*this, isTableRow() ? LayoutSize() : locationOffset());
-    RenderObject::repaintTreeAfterLayout();
+    // FIXME: LayoutState should be enabled for other repaint containers than the RenderView. crbug.com/363834
+    if (establishesNewRepaintContainer) {
+        LayoutStateDisabler disabler(*this);
+        RenderObject::repaintTreeAfterLayout(newRepaintContainer);
+    } else {
+        // FIXME: This concept of a tree walking state for fast lookups should be generalized away from
+        // just layout.
+        // FIXME: Table rows shouldn't be special-cased.
+        LayoutStateMaintainer statePusher(*this, isTableRow() ? LayoutSize() : locationOffset());
+        RenderObject::repaintTreeAfterLayout(newRepaintContainer);
+    }
 }
 
 bool RenderBox::pushContentsClip(PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)

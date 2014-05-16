@@ -1053,7 +1053,7 @@ void FrameView::repaintTree(RenderObject* root)
 
     RootLayoutStateScope rootLayoutStateScope(*root);
 
-    root->repaintTreeAfterLayout();
+    root->repaintTreeAfterLayout(*root->containerForRepaint());
 
     // Repaint the frameviews scrollbars if needed
     if (hasVerticalBarDamage())
