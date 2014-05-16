@@ -12,7 +12,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
+#include "grit/component_strings.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 

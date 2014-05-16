@@ -18,7 +18,7 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/generated_resources.h"
+#include "grit/component_strings.h"
 #include "grit/theme_resources.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
