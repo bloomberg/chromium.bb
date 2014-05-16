@@ -221,6 +221,10 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
   ContextMap::iterator context_it;
   std::string beacon_status;
 
+  int error_code = net::OK;
+  if (request.status.status() == net::URLRequestStatus::FAILED)
+    error_code = request.status.error();
+
   // Ignore requests where:
   // 1. There is no context for the request host.
   // 2. The request did not access the network.
@@ -234,13 +238,13 @@ void DomainReliabilityMonitor::OnRequestLegComplete(
       (request.load_flags & net::LOAD_DO_NOT_SEND_COOKIES) ||
       request.is_upload ||
       !GetDomainReliabilityBeaconStatus(
-          request.status.error(), response_code, &beacon_status)) {
+          error_code, response_code, &beacon_status)) {
     return;
   }
 
   DomainReliabilityBeacon beacon;
   beacon.status = beacon_status;
-  beacon.chrome_error = request.status.error();
+  beacon.chrome_error = error_code;
   if (!request.response_info.was_fetched_via_proxy)
     beacon.server_ip = request.response_info.socket_address.host();
   else

@@ -315,7 +315,6 @@ TEST_F(DomainReliabilityMonitorTest, ClearBeacons) {
   EXPECT_TRUE(CheckRequestCounts(kNeverReportIndex, 0u, 0u));
 }
 
-
 TEST_F(DomainReliabilityMonitorTest, ClearContexts) {
   // Initially the monitor should have just the test context.
   EXPECT_EQ(1u, monitor_.contexts_size_for_testing());
@@ -324,6 +323,20 @@ TEST_F(DomainReliabilityMonitorTest, ClearContexts) {
 
   // Clearing contexts should leave the monitor with none.
   EXPECT_EQ(0u, monitor_.contexts_size_for_testing());
+}
+
+TEST_F(DomainReliabilityMonitorTest, IgnoreSuccessError) {
+  RequestInfo request = MakeRequestInfo();
+  request.url = GURL("http://example/always_report");
+  request.status.set_error(net::ERR_QUIC_PROTOCOL_ERROR);
+  OnRequestLegComplete(request);
+
+  EXPECT_EQ(1u, CountPendingBeacons(kAlwaysReportIndex));
+  EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 1u, 0u));
+
+  BeaconVector beacons;
+  context_->GetQueuedDataForTesting(kAlwaysReportIndex, &beacons, NULL, NULL);
+  EXPECT_EQ(net::OK, beacons[0].chrome_error);
 }
 
 }  // namespace
