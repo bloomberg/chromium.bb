@@ -9,7 +9,7 @@ from telemetry import test
 
 # RasterizeAndRecord disabled on mac because of crbug.com/350684.
 # RasterizeAndRecord disabled on windows because of crbug.com/338057.
-@test.Disabled('mac', 'win')
+@test.Disabled('android', 'mac', 'win')  # android tracked by crbug.com/371148
 class RasterizeAndRecordMicroTop25(test.Test):
   """Measures rasterize and record performance on the top 25 web pages.
 
@@ -18,7 +18,7 @@ class RasterizeAndRecordMicroTop25(test.Test):
   page_set = 'page_sets/top_25.py'
 
 
-@test.Disabled('mac', 'win')
+@test.Disabled('android', 'mac', 'win')  # android tracked by crbug.com/371148
 class RasterizeAndRecordMicroKeyMobileSites(test.Test):
   """Measures rasterize and record performance on the key mobile sites.
 
@@ -27,7 +27,7 @@ class RasterizeAndRecordMicroKeyMobileSites(test.Test):
   page_set = 'page_sets/key_mobile_sites.py'
 
 
-@test.Disabled('mac', 'win')
+@test.Disabled('android', 'mac', 'win')
 class RasterizeAndRecordMicroKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
@@ -36,7 +36,7 @@ class RasterizeAndRecordMicroKeySilkCases(test.Test):
   page_set = 'page_sets/key_silk_cases.py'
 
 
-@test.Disabled('mac', 'win')
+@test.Disabled('android', 'mac', 'win')
 class RasterizeAndRecordMicroFastPathKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
@@ -50,7 +50,7 @@ class RasterizeAndRecordMicroFastPathKeySilkCases(test.Test):
     silk_flags.CustomizeBrowserOptionsForFastPath(options)
 
 
-@test.Disabled('mac', 'win')
+@test.Disabled('android', 'mac', 'win')
 class RasterizeAndRecordMicroFastPathGpuRasterizationKeySilkCases(test.Test):
   """Measures rasterize and record performance on the silk sites.
 
