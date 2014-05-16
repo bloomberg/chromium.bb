@@ -62,10 +62,8 @@ struct TestNode {
   TransportNodeId view_id;
 };
 
-// Callback that results in a vector of INodes. The INodes are converted to
-// TestNodes.
-void INodesCallback(std::vector<TestNode>* test_nodes,
-                    const mojo::Array<INode>& data) {
+void INodesToTestNodes(const mojo::Array<INode>& data,
+                       std::vector<TestNode>* test_nodes) {
   for (size_t i = 0; i < data.size(); ++i) {
     TestNode node;
     node.parent_id = data[i].parent_id();
@@ -73,6 +71,13 @@ void INodesCallback(std::vector<TestNode>* test_nodes,
     node.view_id = data[i].view_id();
     test_nodes->push_back(node);
   }
+}
+
+// Callback that results in a vector of INodes. The INodes are converted to
+// TestNodes.
+void INodesCallback(std::vector<TestNode>* test_nodes,
+                    const mojo::Array<INode>& data) {
+  INodesToTestNodes(data, test_nodes);
   current_run_loop->Quit();
 }
 
@@ -180,6 +185,12 @@ class ViewManagerClientImpl : public IViewManagerClient {
   TransportChangeId next_server_change_id() const {
     return next_server_change_id_;
   }
+  const std::vector<TestNode>& initial_nodes() const {
+    return initial_nodes_;
+  }
+  const std::vector<TestNode>& hierarchy_changed_nodes() const {
+    return hierarchy_changed_nodes_;
+  }
 
   Changes GetAndClearChanges() {
     Changes changes;
@@ -203,17 +214,28 @@ class ViewManagerClientImpl : public IViewManagerClient {
   // IViewManagerClient overrides:
   virtual void OnConnectionEstablished(
       TransportConnectionId connection_id,
-      TransportChangeId next_server_change_id) OVERRIDE {
+      TransportChangeId next_server_change_id,
+      const mojo::Array<INode>& nodes) OVERRIDE {
     id_ = connection_id;
     next_server_change_id_ = next_server_change_id;
+    INodesToTestNodes(nodes, &initial_nodes_);
     if (current_run_loop)
       current_run_loop->Quit();
+  }
+  virtual void OnServerChangeIdAdvanced(
+      uint32_t next_server_change_id) OVERRIDE {
+    changes_.push_back(
+        base::StringPrintf(
+            "ServerChangeIdAdvanced %d",
+            static_cast<int>(next_server_change_id)));
+    QuitIfNecessary();
   }
   virtual void OnNodeHierarchyChanged(
       TransportNodeId node,
       TransportNodeId new_parent,
       TransportNodeId old_parent,
-      TransportChangeId server_change_id) OVERRIDE {
+      TransportChangeId server_change_id,
+      const mojo::Array<INode>& nodes) OVERRIDE {
     changes_.push_back(
         base::StringPrintf(
             "HierarchyChanged change_id=%d node=%s new_parent=%s old_parent=%s",
@@ -221,6 +243,8 @@ class ViewManagerClientImpl : public IViewManagerClient {
             NodeIdToString(node).c_str(),
             NodeIdToString(new_parent).c_str(),
             NodeIdToString(old_parent).c_str()));
+    hierarchy_changed_nodes_.clear();
+    INodesToTestNodes(nodes, &hierarchy_changed_nodes_);
     QuitIfNecessary();
   }
   virtual void OnNodeDeleted(TransportNodeId node,
@@ -263,6 +287,12 @@ class ViewManagerClientImpl : public IViewManagerClient {
   size_t quit_count_;
 
   Changes changes_;
+
+  // Set of nodes sent when connection created.
+  std::vector<TestNode> initial_nodes_;
+
+  // Nodes sent from last OnNodeHierarchyChanged.
+  std::vector<TestNode> hierarchy_changed_nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewManagerClientImpl);
 };
@@ -361,9 +391,7 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
     client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=1 node=1,2 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("ServerChangeIdAdvanced 2", changes[0]);
   }
 
   // Remove 2 from its parent.
@@ -378,9 +406,7 @@ TEST_F(ViewManagerConnectionTest, AddRemoveNotify) {
     client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=2 node=1,2 new_parent=null old_parent=1,1",
-        changes[0]);
+    EXPECT_EQ("ServerChangeIdAdvanced 3", changes[0]);
   }
 }
 
@@ -407,9 +433,7 @@ TEST_F(ViewManagerConnectionTest, AddNodeWithNoChange) {
     client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=1 node=1,2 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("ServerChangeIdAdvanced 2", changes[0]);
   }
 
   // Try again, this should fail.
@@ -447,9 +471,7 @@ TEST_F(ViewManagerConnectionTest, AddAncestorFails) {
     client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=1 node=1,2 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("ServerChangeIdAdvanced 2", changes[0]);
   }
 
   // Try to make 1 a child of 2, this should fail since 1 is an ancestor of 2.
@@ -504,9 +526,7 @@ TEST_F(ViewManagerConnectionTest, AddToRoot) {
     client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=1 node=1,3 new_parent=1,21 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("ServerChangeIdAdvanced 2", changes[0]);
   }
 
   // Make 21 a child of the root.
@@ -526,6 +546,206 @@ TEST_F(ViewManagerConnectionTest, AddToRoot) {
         "HierarchyChanged change_id=2 node=1,21 new_parent=0,1 old_parent=null",
         changes[0]);
   }
+}
+
+// Verifies adding to root sends right notifications.
+TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedNodes) {
+  // Create nodes 1 and 11 with 1 parented to the root and 11 a child of 1.
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 11));
+
+  // Make 11 a child of 1.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(client_.id(), 1),
+                        CreateNodeId(client_.id(), 11),
+                        1));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+  }
+
+  EstablishSecondConnection();
+
+  // Make 1 a child of the root.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(0, 1),
+                        CreateNodeId(client_.id(), 1),
+                        2));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+
+    // Client 2 should get a hierarchy change that includes the new nodes as it
+    // has not yet seen them.
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ(
+        "HierarchyChanged change_id=2 node=1,1 new_parent=0,1 old_parent=null",
+        changes[0]);
+    const std::vector<TestNode>& nodes(client2_.hierarchy_changed_nodes());
+    ASSERT_EQ(2u, nodes.size());
+    EXPECT_EQ("node=1,1 parent=0,1 view=null", nodes[0].ToString());
+    EXPECT_EQ("node=1,11 parent=1,1 view=null", nodes[1].ToString());
+  }
+
+  // Remove 1 from the root.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(RemoveNodeFromParent(view_manager_.get(),
+                                     CreateNodeId(client_.id(), 1),
+                                     3));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ(
+        "HierarchyChanged change_id=3 node=1,1 new_parent=null old_parent=0,1",
+        changes[0]);
+  }
+
+  // Create another node, 111, parent it to 11.
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 111));
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(client_.id(), 11),
+                        CreateNodeId(client_.id(), 111),
+                        4));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    // Even though 11 isn't attached to the root client 2 is still notified of
+    // the change because it was told about 11.
+    EXPECT_EQ(
+        "HierarchyChanged change_id=4 node=1,111 new_parent=1,11 "
+        "old_parent=null", changes[0]);
+    const std::vector<TestNode>& nodes(client2_.hierarchy_changed_nodes());
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=1,111 parent=1,11 view=null", nodes[0].ToString());
+  }
+
+  // Reattach 1 to the root.
+  {
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(0, 1),
+                        CreateNodeId(client_.id(), 1),
+                        5));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes = client2_.GetAndClearChanges();
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ(
+        "HierarchyChanged change_id=5 node=1,1 new_parent=0,1 old_parent=null",
+        changes[0]);
+    ASSERT_TRUE(client2_.hierarchy_changed_nodes().empty());
+  }
+}
+
+TEST_F(ViewManagerConnectionTest, NodeHierarchyChangedAddingKnownToUnknown) {
+  // Create the following structure: root -> 1 -> 11 and 2->21 (2 has no
+  // parent).
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 11));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 2));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 21));
+
+  // Set up the hierarchy.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(0, 1),
+                        CreateNodeId(client_.id(), 1),
+                        1));
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(client_.id(), 1),
+                        CreateNodeId(client_.id(), 11),
+                        2));
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(client_.id(), 2),
+                        CreateNodeId(client_.id(), 21),
+                        3));
+  }
+
+  EstablishSecondConnection();
+
+  // Remove 11.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(RemoveNodeFromParent(view_manager_.get(),
+                                     CreateNodeId(client_.id(), 11),
+                                     4));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ(
+        "HierarchyChanged change_id=4 node=1,11 new_parent=null old_parent=1,1",
+        changes[0]);
+    EXPECT_TRUE(client2_.hierarchy_changed_nodes().empty());
+  }
+
+  // Add 11 to 21. As client2 knows about 11 it should receive the new
+  // hierarchy.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(client_.id(), 21),
+                        CreateNodeId(client_.id(), 11),
+                        5));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes(client2_.GetAndClearChanges());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ(
+        "HierarchyChanged change_id=5 node=1,11 new_parent=1,21 "
+        "old_parent=null", changes[0]);
+    const std::vector<TestNode>& nodes(client2_.hierarchy_changed_nodes());
+    ASSERT_EQ(2u, nodes.size());
+    EXPECT_EQ("node=1,2 parent=null view=null", nodes[0].ToString());
+    EXPECT_EQ("node=1,21 parent=1,2 view=null", nodes[1].ToString());
+  }
+}
+
+// Verifies connection on told descendants of the root when connecting.
+TEST_F(ViewManagerConnectionTest, GetInitialNodesOnInit) {
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 21));
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 3));
+  EXPECT_TRUE(client_.GetAndClearChanges().empty());
+
+  // Make 3 a child of 21.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(client_.id(), 21),
+                        CreateNodeId(client_.id(), 3),
+                        1));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+  }
+
+  // Make 21 a child of the root.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(0, 1),
+                        CreateNodeId(client_.id(), 21),
+                        2));
+    ASSERT_TRUE(client_.GetAndClearChanges().empty());
+  }
+
+  EstablishSecondConnection();
+  // Should get notification of children of the root.
+  const std::vector<TestNode>& nodes(client2_.initial_nodes());
+  ASSERT_EQ(3u, nodes.size());
+  EXPECT_EQ("node=0,1 parent=null view=null", nodes[0].ToString());
+  EXPECT_EQ("node=1,21 parent=0,1 view=null", nodes[1].ToString());
+  EXPECT_EQ("node=1,3 parent=1,21 view=null", nodes[2].ToString());
 }
 
 // Verifies DeleteNode works.
@@ -550,9 +770,7 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
     client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
-    EXPECT_EQ(
-        "HierarchyChanged change_id=1 node=1,2 new_parent=1,1 old_parent=null",
-        changes[0]);
+    EXPECT_EQ("ServerChangeIdAdvanced 2", changes[0]);
   }
 
   // Add 1 to the root
@@ -573,24 +791,78 @@ TEST_F(ViewManagerConnectionTest, DeleteNode) {
         changes[0]);
   }
 
-  // Delete 1. Deleting 1 sends out notification of a removal for both nodes (1
-  // and 2).
+  // Delete 1.
   {
     AllocationScope scope;
     ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 1)));
     Changes changes(client_.GetAndClearChanges());
     ASSERT_TRUE(changes.empty());
 
-    client2_.DoRunLoopUntilChangesCount(3);
+    client2_.DoRunLoopUntilChangesCount(1);
     changes = client2_.GetAndClearChanges();
-    ASSERT_EQ(3u, changes.size());
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("NodeDeleted change_id=3 node=1,1", changes[0]);
+  }
+}
+
+// Verifies if a node was deleted and then reused that other clients are
+// properly notified.
+TEST_F(ViewManagerConnectionTest, ReusedDeletedId) {
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  EXPECT_TRUE(client_.GetAndClearChanges().empty());
+
+  EstablishSecondConnection();
+
+  // Make 1 a child of the root.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(0, 1),
+                        CreateNodeId(client_.id(), 1),
+                        1));
+    EXPECT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes = client2_.GetAndClearChanges();
     EXPECT_EQ(
-        "HierarchyChanged change_id=3 node=1,1 new_parent=null old_parent=0,1",
+        "HierarchyChanged change_id=1 node=1,1 new_parent=0,1 old_parent=null",
         changes[0]);
+    const std::vector<TestNode>& nodes(client2_.hierarchy_changed_nodes());
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=1,1 parent=0,1 view=null", nodes[0].ToString());
+  }
+
+  // Delete 1.
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 1)));
+    EXPECT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes = client2_.GetAndClearChanges();
+    ASSERT_EQ(1u, changes.size());
+    EXPECT_EQ("NodeDeleted change_id=2 node=1,1", changes[0]);
+  }
+
+  // Create 1 again, and add it back to the root. Should get the same
+  // notification.
+  ASSERT_TRUE(CreateNode(view_manager_.get(), 1, 1));
+  {
+    AllocationScope scope;
+    ASSERT_TRUE(AddNode(view_manager_.get(),
+                        CreateNodeId(0, 1),
+                        CreateNodeId(client_.id(), 1),
+                        3));
+    EXPECT_TRUE(client_.GetAndClearChanges().empty());
+
+    client2_.DoRunLoopUntilChangesCount(1);
+    Changes changes = client2_.GetAndClearChanges();
     EXPECT_EQ(
-        "HierarchyChanged change_id=3 node=1,2 new_parent=null old_parent=1,1",
-        changes[1]);
-    EXPECT_EQ("NodeDeleted change_id=3 node=1,1", changes[2]);
+        "HierarchyChanged change_id=3 node=1,1 new_parent=0,1 old_parent=null",
+        changes[0]);
+    const std::vector<TestNode>& nodes(client2_.hierarchy_changed_nodes());
+    ASSERT_EQ(1u, nodes.size());
+    EXPECT_EQ("node=1,1 parent=0,1 view=null", nodes[0].ToString());
   }
 }
 
@@ -664,8 +936,16 @@ TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(2u, changes.size());
     EXPECT_EQ("ViewReplaced node=1,1 new_view=null old_view=1,11", changes[0]);
-    EXPECT_EQ("NodeDeleted change_id=1 node=1,1", changes[1]);
+    EXPECT_EQ("ServerChangeIdAdvanced 2", changes[1]);
   }
+
+  // Parent 2 to the root.
+  ASSERT_TRUE(AddNode(view_manager_.get(),
+                      CreateNodeId(0, 1),
+                      CreateNodeId(client_.id(), 2),
+                      2));
+  client2_.DoRunLoopUntilChangesCount(1);
+  client2_.GetAndClearChanges();
 
   // Set view 11 on node 2.
   {
@@ -679,6 +959,19 @@ TEST_F(ViewManagerConnectionTest, DeleteNodeWithView) {
     changes = client2_.GetAndClearChanges();
     ASSERT_EQ(1u, changes.size());
     EXPECT_EQ("ViewReplaced node=1,2 new_view=1,11 old_view=null", changes[0]);
+  }
+
+  // Delete node.
+  {
+    ASSERT_TRUE(DeleteNode(view_manager_.get(), CreateNodeId(client_.id(), 2)));
+    Changes changes(client_.GetAndClearChanges());
+    ASSERT_TRUE(changes.empty());
+
+    client2_.DoRunLoopUntilChangesCount(2);
+    changes = client2_.GetAndClearChanges();
+    ASSERT_EQ(2u, changes.size());
+    EXPECT_EQ("ViewReplaced node=1,2 new_view=null old_view=1,11", changes[0]);
+    EXPECT_EQ("NodeDeleted change_id=3 node=1,2", changes[1]);
   }
 }
 
