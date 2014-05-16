@@ -77,13 +77,6 @@ class TransformationMatrix;
 enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
 enum IncludeSelfOrNot { IncludeSelf, ExcludeSelf };
 
-enum CompositedScrollingHistogramBuckets {
-    IsScrollableAreaBucket = 0,
-    NeedsToBeStackingContainerBucket = 1,
-    WillUseCompositedScrollingBucket = 2,
-    CompositedScrollingHistogramMax = 3
-};
-
 enum CompositingQueryMode {
     CompositingQueriesAreAllowed,
     CompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases

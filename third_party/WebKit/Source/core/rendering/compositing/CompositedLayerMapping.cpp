@@ -615,7 +615,7 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& delta)
 void CompositedLayerMapping::updateGraphicsLayerGeometry(GraphicsLayerUpdater::UpdateType updateType, const RenderLayer* compositingContainer)
 {
     // If we haven't built z-order lists yet, wait until later.
-    if (m_owningLayer.stackingNode()->isStackingContainer() && m_owningLayer.stackingNode()->zOrderListsDirty())
+    if (m_owningLayer.stackingNode()->isStackingContext() && m_owningLayer.stackingNode()->zOrderListsDirty())
         return;
 
     if (!shouldUpdateGraphicsLayer(updateType))
@@ -1481,7 +1481,7 @@ float CompositedLayerMapping::compositingOpacity(float rendererOpacity) const
     for (RenderLayer* curr = m_owningLayer.parent(); curr; curr = curr->parent()) {
         // We only care about parents that are stacking contexts.
         // Recall that opacity creates stacking context.
-        if (!curr->stackingNode()->isStackingContainer())
+        if (!curr->stackingNode()->isStackingContext())
             continue;
 
         // If we found a composited layer, regardless of whether it actually

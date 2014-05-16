@@ -3174,25 +3174,19 @@ void FrameView::removeResizerArea(RenderBox& resizerBox)
         m_resizerAreas->remove(it);
 }
 
-bool FrameView::addScrollableArea(ScrollableArea* scrollableArea)
+void FrameView::addScrollableArea(ScrollableArea* scrollableArea)
 {
     ASSERT(scrollableArea);
     if (!m_scrollableAreas)
         m_scrollableAreas = adoptPtr(new ScrollableAreaSet);
-    return m_scrollableAreas->add(scrollableArea).isNewEntry;
+    m_scrollableAreas->add(scrollableArea);
 }
 
-bool FrameView::removeScrollableArea(ScrollableArea* scrollableArea)
+void FrameView::removeScrollableArea(ScrollableArea* scrollableArea)
 {
     if (!m_scrollableAreas)
-        return false;
-
-    ScrollableAreaSet::iterator it = m_scrollableAreas->find(scrollableArea);
-    if (it == m_scrollableAreas->end())
-        return false;
-
-    m_scrollableAreas->remove(it);
-    return true;
+        return;
+    m_scrollableAreas->remove(scrollableArea);
 }
 
 void FrameView::removeChild(Widget* widget)

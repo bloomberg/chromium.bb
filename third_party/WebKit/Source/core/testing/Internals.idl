@@ -179,12 +179,6 @@
     [RaisesException] boolean scrollsWithRespectTo(Element element1, Element element2);
     [RaisesException] boolean isUnclippedDescendant(Element element);
 
-    // The values of these constants must be kept in sync with those in RenderLayer.
-    const unsigned short DO_NOT_FORCE_COMPOSITED_SCROLLING = 0;
-    const unsigned short COMPOSITED_SCROLLING_ALWAYS_ON = 1;
-    const unsigned short COMPOSITED_SCROLLING_ALWAYS_OFF = 2;
-    [RaisesException] void setNeedsCompositedScrolling(Element element, unsigned short value);
-
     [RaisesException] DOMString scrollingStateTreeAsText(Document document);
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
     [RaisesException] ClientRectList nonFastScrollableRects(Document document);

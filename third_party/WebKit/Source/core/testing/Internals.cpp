@@ -1751,19 +1751,6 @@ static RenderLayer* getRenderLayerForElement(Element* element, ExceptionState& e
     return layer;
 }
 
-void Internals::setNeedsCompositedScrolling(Element* element, unsigned needsCompositedScrolling, ExceptionState& exceptionState)
-{
-    if (!element) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::argumentNullOrIncorrectType(1, "Element"));
-        return;
-    }
-
-    element->document().updateLayout();
-
-    if (RenderLayer* layer = getRenderLayerForElement(element, exceptionState))
-        layer->scrollableArea()->setForceNeedsCompositedScrolling(static_cast<ForceNeedsCompositedScrollingMode>(needsCompositedScrolling));
-}
-
 String Internals::repaintRectsAsText(Document* document, ExceptionState& exceptionState) const
 {
     if (!document || !document->frame()) {

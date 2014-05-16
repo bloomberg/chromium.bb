@@ -67,19 +67,6 @@ public:
     // A stacking context is a layer that has a non-auto z-index.
     bool isStackingContext() const { return !renderer()->style()->hasAutoZIndex(); }
 
-    // A stacking container can have z-order lists. All stacking contexts are
-    // stacking containers, but the converse is not true. Layers that use
-    // composited scrolling are stacking containers, but they may not
-    // necessarily be stacking contexts.
-    bool isStackingContainer() const { return isStackingContext() || needsToBeStackingContainer(); }
-
-    bool setNeedsToBeStackingContainer(bool);
-
-    // Returns true if z ordering would not change if this layer were a stacking container.
-    bool descendantsAreContiguousInStackingOrder() const;
-    void setDescendantsAreContiguousInStackingOrderDirty(bool flag) { m_descendantsAreContiguousInStackingOrderDirty = flag; }
-    void updateDescendantsAreContiguousInStackingOrder();
-
     // Update our normal and z-index lists.
     void updateLayerListsIfNeeded();
 
@@ -87,11 +74,12 @@ public:
     void dirtyZOrderLists();
     void updateZOrderLists();
     void clearZOrderLists();
-    void dirtyStackingContainerZOrderLists();
+    void dirtyStackingContextZOrderLists();
 
     bool hasPositiveZOrderList() const { return posZOrderList() && posZOrderList()->size(); }
     bool hasNegativeZOrderList() const { return negZOrderList() && negZOrderList()->size(); }
 
+    // FIXME: should check for dirtiness here?
     bool isNormalFlowOnly() const { return m_isNormalFlowOnly; }
     void updateIsNormalFlowOnly();
     bool normalFlowListDirty() const { return m_normalFlowListDirty; }
@@ -102,12 +90,12 @@ public:
 
     void updateStackingNodesAfterStyleChange(const RenderStyle* oldStyle);
 
-    RenderLayerStackingNode* ancestorStackingContainerNode() const;
+    RenderLayerStackingNode* ancestorStackingContextNode() const;
     RenderLayerStackingNode* ancestorStackingNode() const;
 
-    // Gets the enclosing stacking container for this node, possibly the node
-    // itself, if it is a stacking container.
-    RenderLayerStackingNode* enclosingStackingContainerNode() { return isStackingContainer() ? this : ancestorStackingContainerNode(); }
+    // Gets the enclosing stacking context for this node, possibly the node
+    // itself, if it is a stacking context.
+    RenderLayerStackingNode* enclosingStackingContextNode() { return isStackingContext() ? this : ancestorStackingContextNode(); }
 
     RenderLayer* layer() const { return m_layer; }
 
@@ -124,7 +112,7 @@ private:
     Vector<RenderLayerStackingNode*>* posZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
-        ASSERT(isStackingContainer() || !m_posZOrderList);
+        ASSERT(isStackingContext() || !m_posZOrderList);
         return m_posZOrderList.get();
     }
 
@@ -137,29 +125,12 @@ private:
     Vector<RenderLayerStackingNode*>* negZOrderList() const
     {
         ASSERT(!m_zOrderListsDirty);
-        ASSERT(isStackingContainer() || !m_negZOrderList);
+        ASSERT(isStackingContext() || !m_negZOrderList);
         return m_negZOrderList.get();
     }
 
-    enum CollectLayersBehavior {
-        ForceLayerToStackingContainer,
-        OverflowScrollCanBeStackingContainers,
-        OnlyStackingContextsCanBeStackingContainers
-    };
-
     void rebuildZOrderLists();
-
-    // layerToForceAsStackingContainer allows us to build pre-promotion and
-    // post-promotion layer lists, by allowing us to treat a layer as if it is a
-    // stacking context, without adding a new member to RenderLayer or modifying
-    // the style (which could cause extra allocations).
-    void rebuildZOrderLists(OwnPtr<Vector<RenderLayerStackingNode*> >&, OwnPtr<Vector<RenderLayerStackingNode*> >&,
-        const RenderLayerStackingNode* nodeToForceAsStackingContainer = 0,
-        CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
-
-    void collectLayers(OwnPtr<Vector<RenderLayerStackingNode*> >&,
-        OwnPtr<Vector<RenderLayerStackingNode*> >&, const RenderLayerStackingNode* nodeToForceAsStackingContainer = 0,
-        CollectLayersBehavior = OverflowScrollCanBeStackingContainers);
+    void collectLayers(OwnPtr<Vector<RenderLayerStackingNode*> >& posZOrderList, OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList);
 
 #if !ASSERT_DISABLED
     bool isInStackingParentZOrderLists() const;
@@ -172,18 +143,8 @@ private:
     bool shouldBeNormalFlowOnly() const;
 
     void updateNormalFlowList();
-    void dirtyNormalFlowListCanBePromotedToStackingContainer();
 
-    void dirtySiblingStackingNodeCanBePromotedToStackingContainer();
-
-    void collectBeforePromotionZOrderList(RenderLayerStackingNode*,
-        OwnPtr<Vector<RenderLayerStackingNode*> >& posZOrderList, OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList);
-    void collectAfterPromotionZOrderList(RenderLayerStackingNode*,
-        OwnPtr<Vector<RenderLayerStackingNode*> >& posZOrderList, OwnPtr<Vector<RenderLayerStackingNode*> >& negZOrderList);
-
-    bool isDirtyStackingContainer() const { return m_zOrderListsDirty && isStackingContainer(); }
-
-    bool needsToBeStackingContainer() const;
+    bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
     RenderLayerCompositor* compositor() const;
     // FIXME: Investigate changing this to Renderbox.
@@ -212,8 +173,6 @@ private:
     unsigned m_normalFlowListDirty: 1;
     unsigned m_isNormalFlowOnly : 1;
 
-    unsigned m_needsToBeStackingContainer : 1;
-
 #if !ASSERT_DISABLED
     unsigned m_layerListMutationAllowed : 1;
     RenderLayerStackingNode* m_stackingParent;
@@ -222,7 +181,7 @@ private:
 
 inline void RenderLayerStackingNode::clearZOrderLists()
 {
-    ASSERT(!isStackingContainer());
+    ASSERT(!isStackingContext());
 
 #if !ASSERT_DISABLED
     updateStackingParentForZOrderLists(0);
@@ -237,7 +196,7 @@ inline void RenderLayerStackingNode::updateZOrderLists()
     if (!m_zOrderListsDirty)
         return;
 
-    if (!isStackingContainer()) {
+    if (!isStackingContext()) {
         clearZOrderLists();
         m_zOrderListsDirty = false;
         return;

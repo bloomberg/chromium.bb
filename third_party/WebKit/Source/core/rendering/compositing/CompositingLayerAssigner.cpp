@@ -263,7 +263,7 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
         }
     }
 
-    if (layer->stackingNode()->isStackingContainer()) {
+    if (layer->stackingNode()->isStackingContext()) {
         RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NegativeZOrderChildren);
         while (RenderLayerStackingNode* curNode = iterator.next())
             assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged);

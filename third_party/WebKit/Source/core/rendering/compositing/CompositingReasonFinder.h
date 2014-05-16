@@ -26,7 +26,6 @@ public:
     void updateTriggers();
 
     bool hasOverflowScrollTrigger() const;
-    bool hasLegacyOverflowScrollTrigger() const;
 
     bool requiresCompositingForScrollableFrame() const;
     bool requiresCompositingForPosition(RenderObject*, const RenderLayer*, RenderLayer::ViewportConstrainedNotCompositedReason*, bool* needToRecomputeCompositingRequirements) const;

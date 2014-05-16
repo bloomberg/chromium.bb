@@ -369,7 +369,7 @@ void CompositingRequirementsUpdater::updateRecursive(RenderLayer* ancestorLayer,
     bool anyDescendantHas3DTransform = false;
     bool willHaveForegroundLayer = false;
 
-    if (layer->stackingNode()->isStackingContainer()) {
+    if (layer->stackingNode()->isStackingContext()) {
         RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NegativeZOrderChildren);
         while (RenderLayerStackingNode* curNode = iterator.next()) {
             IntRect absoluteChildDecendantBoundingBox;

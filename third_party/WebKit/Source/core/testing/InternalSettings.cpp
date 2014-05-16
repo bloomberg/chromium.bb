@@ -72,7 +72,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     , m_imagesEnabled(settings->imagesEnabled())
     , m_defaultVideoPosterURL(settings->defaultVideoPosterURL())
-    , m_originalCompositorDrivenAcceleratedScrollEnabled(settings->compositorDrivenAcceleratedScrollingEnabled())
     , m_originalLayerSquashingEnabled(settings->layerSquashingEnabled())
     , m_originalPasswordGenerationDecorationEnabled(settings->passwordGenerationDecorationEnabled())
 {
@@ -94,7 +93,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);
     settings->setDefaultVideoPosterURL(m_defaultVideoPosterURL);
-    settings->setCompositorDrivenAcceleratedScrollingEnabled(m_originalCompositorDrivenAcceleratedScrollEnabled);
     settings->setLayerSquashingEnabled(m_originalLayerSquashingEnabled);
     settings->setPasswordGenerationDecorationEnabled(m_originalPasswordGenerationDecorationEnabled);
     settings->genericFontFamilySettings().reset();
@@ -197,14 +195,6 @@ void InternalSettings::setViewportEnabled(bool enabled, ExceptionState& exceptio
 {
     InternalSettingsGuardForSettings();
     settings()->setViewportEnabled(enabled);
-}
-
-// FIXME: This is a temporary flag and should be removed once accelerated
-// overflow scroll is ready (crbug.com/254111).
-void InternalSettings::setCompositorDrivenAcceleratedScrollingEnabled(bool enabled, ExceptionState& exceptionState)
-{
-    InternalSettingsGuardForSettings();
-    settings()->setCompositorDrivenAcceleratedScrollingEnabled(enabled);
 }
 
 // FIXME: This is a temporary flag and should be removed once squashing is

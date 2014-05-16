@@ -23,10 +23,8 @@
     if (window.testRunner)
         testRunner.dumpAsTextWithPixelResults();
 
-    if (window.internals) {
+    if (window.internals)
         window.internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
-        window.internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(true);
-    }
 </script>
 <div class="fixed"></div>
 <div class="scroller">

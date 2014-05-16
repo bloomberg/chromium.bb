@@ -49,20 +49,20 @@ static bool shouldAppendLayer(const RenderLayer& layer)
 }
 
 GraphicsLayerUpdater::UpdateContext::UpdateContext(const UpdateContext& other, const RenderLayer& layer)
-    : m_compositingStackingContainer(other.m_compositingStackingContainer)
+    : m_compositingStackingContext(other.m_compositingStackingContext)
     , m_compositingAncestor(other.compositingContainer(layer))
 {
     CompositingState compositingState = layer.compositingState();
     if (compositingState != NotComposited && compositingState != PaintsIntoGroupedBacking) {
         m_compositingAncestor = &layer;
-        if (layer.stackingNode()->isStackingContainer())
-            m_compositingStackingContainer = &layer;
+        if (layer.stackingNode()->isStackingContext())
+            m_compositingStackingContext = &layer;
     }
 }
 
 const RenderLayer* GraphicsLayerUpdater::UpdateContext::compositingContainer(const RenderLayer& layer) const
 {
-    return layer.stackingNode()->isNormalFlowOnly() ? m_compositingAncestor : m_compositingStackingContainer;
+    return layer.stackingNode()->isNormalFlowOnly() ? m_compositingAncestor : m_compositingStackingContext;
 }
 
 GraphicsLayerUpdater::GraphicsLayerUpdater()
@@ -94,7 +94,7 @@ void GraphicsLayerUpdater::rebuildTree(RenderLayer& layer, GraphicsLayerVector& 
     LayerListMutationDetector mutationChecker(layer.stackingNode());
 #endif
 
-    if (layer.stackingNode()->isStackingContainer()) {
+    if (layer.stackingNode()->isStackingContext()) {
         RenderLayerStackingNodeIterator iterator(*layer.stackingNode(), NegativeZOrderChildren);
         while (RenderLayerStackingNode* curNode = iterator.next())
             rebuildTree(*curNode->layer(), childList);

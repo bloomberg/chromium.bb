@@ -224,8 +224,6 @@ public:
     bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
     bool isUnclippedDescendant(Element*, ExceptionState&);
 
-    void setNeedsCompositedScrolling(Element*, unsigned value, ExceptionState&);
-
     String repaintRectsAsText(Document*, ExceptionState&) const;
     PassRefPtrWillBeRawPtr<ClientRectList> repaintRects(Element*, ExceptionState&) const;
 

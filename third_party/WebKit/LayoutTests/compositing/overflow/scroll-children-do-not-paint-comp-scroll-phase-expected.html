@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <script>
-    if (window.internals) {
-        internals.settings.setCompositorDrivenAcceleratedScrollingEnabled(true);
-        internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(false);
-    }
+    if (window.internals)
+        internals.settings.setAcceleratedCompositingForOverflowScrollEnabled(true);
 </script>
 <div style="overflow: auto; height: 100px;">
     <div style="height: 1000px">

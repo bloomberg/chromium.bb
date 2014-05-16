@@ -53,12 +53,6 @@ enum ResizerHitTestType {
     ResizerForTouch
 };
 
-enum ForceNeedsCompositedScrollingMode {
-    DoNotForceCompositedScrolling = 0,
-    CompositedScrollingAlwaysOn = 1,
-    CompositedScrollingAlwaysOff = 2
-};
-
 class PlatformEvent;
 class RenderBox;
 class RenderLayer;
@@ -227,10 +221,6 @@ private:
     void updateScrollableAreaSet(bool hasOverflow);
 
     void updateCompositingLayersAfterScroll();
-    virtual void updateNeedsCompositedScrolling() OVERRIDE;
-    void setNeedsCompositedScrolling(bool needsCompositedScrolling) { m_needsCompositedScrolling = needsCompositedScrolling; }
-
-    void setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode);
 
     RenderLayer& m_layer;
 
@@ -240,10 +230,6 @@ private:
 
     unsigned m_scrollDimensionsDirty : 1;
     unsigned m_inOverflowRelayout : 1;
-
-    unsigned m_needsCompositedScrolling : 1;
-
-    ForceNeedsCompositedScrollingMode m_forceNeedsCompositedScrolling;
 
     // The width/height of our scrolled area.
     LayoutRect m_overflowRect;

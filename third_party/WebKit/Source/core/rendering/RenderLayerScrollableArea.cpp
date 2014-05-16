@@ -86,8 +86,6 @@ RenderLayerScrollableArea::RenderLayerScrollableArea(RenderLayer& layer)
     , m_scrollsOverflow(false)
     , m_scrollDimensionsDirty(true)
     , m_inOverflowRelayout(false)
-    , m_needsCompositedScrolling(false)
-    , m_forceNeedsCompositedScrolling(DoNotForceCompositedScrolling)
     , m_scrollCorner(0)
     , m_resizer(0)
 {
@@ -1465,53 +1463,24 @@ void RenderLayerScrollableArea::updateScrollableAreaSet(bool hasOverflow)
     if (HTMLFrameOwnerElement* owner = frame->ownerElement())
         isVisibleToHitTest &= owner->renderer() && owner->renderer()->visibleToHitTesting();
 
+    bool didNeedCompositedScrolling = needsCompositedScrolling();
+
+    bool didScrollOverflow = m_scrollsOverflow;
+
     m_scrollsOverflow = hasOverflow && isVisibleToHitTest;
+    if (didScrollOverflow == scrollsOverflow())
+        return;
 
-    bool updatedScrollableAreaSet = false;
-    if (m_scrollsOverflow) {
-        if (frameView->addScrollableArea(this))
-            updatedScrollableAreaSet = true;
-    } else {
-        if (frameView->removeScrollableArea(this))
-            updatedScrollableAreaSet = true;
-    }
+    if (m_scrollsOverflow)
+        frameView->addScrollableArea(this);
+    else
+        frameView->removeScrollableArea(this);
 
-    if (updatedScrollableAreaSet) {
-        // We always want composited scrolling if compositor driven accelerated
-        // scrolling is enabled. Since we will not update needs composited scrolling
-        // in this case, we must force our state to update.
-        RenderLayerCompositor* compositor = box().view()->compositor();
-        if (compositor->acceleratedCompositingForOverflowScrollEnabled())
-            layer()->didUpdateNeedsCompositedScrolling();
-        else if (m_scrollsOverflow)
-            compositor->setNeedsUpdateCompositingRequirementsState();
-        else
-            setNeedsCompositedScrolling(false);
-    }
-}
-
-void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
-{
-    TRACE_EVENT0("comp-scroll", "RenderLayer::updateNeedsCompositedScrolling");
-    RenderLayerCompositor* compositor = box().view()->compositor();
-    bool needsToBeStackingContainerDidChange = false;
-    bool needsCompositedScrolling = compositor->acceleratedCompositingForOverflowScrollEnabled();
-    ASSERT(scrollsOverflow());
-    if (compositor->legacyAcceleratedCompositingForOverflowScrollEnabled()) {
-        layer()->stackingNode()->updateDescendantsAreContiguousInStackingOrder();
-        layer()->updateDescendantDependentFlags();
-        const bool needsToBeStackingContainer = layer()->stackingNode()->descendantsAreContiguousInStackingOrder() && !layer()->hasUnclippedDescendant();
-        needsToBeStackingContainerDidChange = layer()->stackingNode()->setNeedsToBeStackingContainer(needsToBeStackingContainer);
-        needsCompositedScrolling |= needsToBeStackingContainer;
-    }
-
-    if (needsToBeStackingContainerDidChange || this->needsCompositedScrolling() != needsCompositedScrolling) {
-        setNeedsCompositedScrolling(needsCompositedScrolling);
-        // Note, the z-order lists may need to be rebuilt, but our code guarantees
-        // that we have not affected stacking, so we will not dirty
-        // m_descendantsAreContiguousInStackingOrder for either us or our stacking
-        // context or container.
+    if (didNeedCompositedScrolling != needsCompositedScrolling()) {
         layer()->didUpdateNeedsCompositedScrolling();
+        RenderLayerCompositor* compositor = box().view()->compositor();
+        compositor->setCompositingLayersNeedRebuild();
+        compositor->setNeedsToRecomputeCompositingRequirements();
     }
 }
 
@@ -1541,33 +1510,9 @@ bool RenderLayerScrollableArea::usesCompositedScrolling() const
     return box().hasCompositedLayerMapping() && box().compositedLayerMapping()->scrollingLayer();
 }
 
-bool RenderLayerScrollableArea::adjustForForceCompositedScrollingMode(bool value) const
-{
-    switch (m_forceNeedsCompositedScrolling) {
-    case DoNotForceCompositedScrolling:
-        return value;
-    case CompositedScrollingAlwaysOn:
-        return true;
-    case CompositedScrollingAlwaysOff:
-        return false;
-    }
-
-    ASSERT_NOT_REACHED();
-    return value;
-}
-
 bool RenderLayerScrollableArea::needsCompositedScrolling() const
 {
-    return adjustForForceCompositedScrollingMode(m_needsCompositedScrolling);
-}
-
-void RenderLayerScrollableArea::setForceNeedsCompositedScrolling(ForceNeedsCompositedScrollingMode mode)
-{
-    if (m_forceNeedsCompositedScrolling == mode)
-        return;
-
-    m_forceNeedsCompositedScrolling = mode;
-    layer()->didUpdateNeedsCompositedScrolling();
+    return scrollsOverflow() && box().view()->compositor()->acceleratedCompositingForOverflowScrollEnabled();
 }
 
 } // Namespace WebCore

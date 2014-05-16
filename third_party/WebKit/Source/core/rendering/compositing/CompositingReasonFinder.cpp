@@ -68,14 +68,6 @@ bool CompositingReasonFinder::hasOverflowScrollTrigger() const
     return m_compositingTriggers & OverflowScrollTrigger;
 }
 
-// FIXME: This is a temporary trigger for enabling the old, opt-in path for
-// accelerated overflow scroll. It should be removed once the "universal"
-// path is ready (crbug.com/254111).
-bool CompositingReasonFinder::hasLegacyOverflowScrollTrigger() const
-{
-    return m_compositingTriggers & LegacyOverflowScrollTrigger;
-}
-
 bool CompositingReasonFinder::isMainFrame() const
 {
     // FIXME: LocalFrame::isMainFrame() is probably better.

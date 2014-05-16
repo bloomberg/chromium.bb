@@ -214,16 +214,6 @@ bool RenderLayerCompositor::layerSquashingEnabled() const
     return true;
 }
 
-bool RenderLayerCompositor::legacyOrCurrentAcceleratedCompositingForOverflowScrollEnabled() const
-{
-    return legacyAcceleratedCompositingForOverflowScrollEnabled() || acceleratedCompositingForOverflowScrollEnabled();
-}
-
-bool RenderLayerCompositor::legacyAcceleratedCompositingForOverflowScrollEnabled() const
-{
-    return m_compositingReasonFinder.hasLegacyOverflowScrollTrigger();
-}
-
 bool RenderLayerCompositor::acceleratedCompositingForOverflowScrollEnabled() const
 {
     return m_compositingReasonFinder.hasOverflowScrollTrigger();
@@ -248,22 +238,11 @@ void RenderLayerCompositor::updateCompositingRequirementsState()
     TRACE_EVENT0("blink_rendering,comp-scroll", "RenderLayerCompositor::updateCompositingRequirementsState");
 
     m_needsUpdateCompositingRequirementsState = false;
-
-    if (!rootRenderLayer())
-        return;
-
-    if (!legacyOrCurrentAcceleratedCompositingForOverflowScrollEnabled())
+    if (!rootRenderLayer() || !acceleratedCompositingForOverflowScrollEnabled())
         return;
 
     for (HashSet<RenderLayer*>::iterator it = m_outOfFlowPositionedLayers.begin(); it != m_outOfFlowPositionedLayers.end(); ++it)
         (*it)->updateHasUnclippedDescendant();
-
-    const FrameView::ScrollableAreaSet* scrollableAreas = m_renderView.frameView()->scrollableAreas();
-    if (!scrollableAreas)
-        return;
-
-    for (FrameView::ScrollableAreaSet::iterator it = scrollableAreas->begin(); it != scrollableAreas->end(); ++it)
-        (*it)->updateNeedsCompositedScrolling();
 }
 
 static RenderVideo* findFullscreenVideoRenderer(Document& document)

@@ -40,7 +40,7 @@ class GraphicsLayerUpdater {
     class UpdateContext {
     public:
         UpdateContext()
-            : m_compositingStackingContainer(0)
+            : m_compositingStackingContext(0)
             , m_compositingAncestor(0)
         {
         }
@@ -49,7 +49,7 @@ class GraphicsLayerUpdater {
 
         const RenderLayer* compositingContainer(const RenderLayer&) const;
     private:
-        const RenderLayer* m_compositingStackingContainer;
+        const RenderLayer* m_compositingStackingContext;
         const RenderLayer* m_compositingAncestor;
     };
 

@@ -69,7 +69,6 @@ public:
         bool m_langAttributeAwareFormControlUIEnabled;
         bool m_imagesEnabled;
         String m_defaultVideoPosterURL;
-        bool m_originalCompositorDrivenAcceleratedScrollEnabled;
         bool m_originalLayerSquashingEnabled;
         bool m_originalPasswordGenerationDecorationEnabled;
     };
@@ -105,10 +104,6 @@ public:
     void setAccessibilityFontScaleFactor(float fontScaleFactor, ExceptionState&);
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);
     void setViewportEnabled(bool, ExceptionState&);
-
-    // FIXME: This is a temporary flag and should be removed once accelerated
-    // overflow scroll is ready (crbug.com/254111).
-    void setCompositorDrivenAcceleratedScrollingEnabled(bool, ExceptionState&);
 
     // FIXME: This is a temporary flag and should be removed once squashing is
     // ready (crbug.com/261605).

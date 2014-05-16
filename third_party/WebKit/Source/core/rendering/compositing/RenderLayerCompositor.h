@@ -90,9 +90,6 @@ public:
     bool hasAcceleratedCompositing() const { return m_hasAcceleratedCompositing; }
     bool layerSquashingEnabled() const;
 
-    bool legacyOrCurrentAcceleratedCompositingForOverflowScrollEnabled() const;
-    bool legacyAcceleratedCompositingForOverflowScrollEnabled() const;
-
     bool acceleratedCompositingForOverflowScrollEnabled() const;
 
     bool rootShouldAlwaysComposite() const;
@@ -117,7 +114,6 @@ public:
     };
 
     // Update the compositing dirty bits, based on the compositing-impacting properties of the layer.
-    // (At the moment, it also has some legacy compatibility hacks.)
     void updateLayerCompositingState(RenderLayer*, UpdateLayerCompositingStateOptions = Normal);
 
     // Returns whether this layer is clipped by another layer that is not an ancestor of the given layer in the stacking context hierarchy.
