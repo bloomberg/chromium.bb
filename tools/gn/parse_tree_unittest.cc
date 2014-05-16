@@ -48,3 +48,32 @@ TEST(ParseTree, Accessor) {
   ASSERT_EQ(Value::INTEGER, result.type());
   EXPECT_EQ(kBValue, result.int_value());
 }
+
+TEST(ParseTree, BlockUnusedVars) {
+  TestWithScope setup;
+
+  // Printing both values should be OK.
+  TestParseInput input_all_used(
+      "{\n"
+      "  a = 12\n"
+      "  b = 13\n"
+      "  print(\"$a $b\")\n"
+      "}");
+  EXPECT_FALSE(input_all_used.has_error());
+
+  Err err;
+  input_all_used.parsed()->Execute(setup.scope(), &err);
+  EXPECT_FALSE(err.has_error());
+
+  // Skipping one should throw an unused var error.
+  TestParseInput input_unused(
+      "{\n"
+      "  a = 12\n"
+      "  b = 13\n"
+      "  print(\"$a\")\n"
+      "}");
+  EXPECT_FALSE(input_unused.has_error());
+
+  input_unused.parsed()->Execute(setup.scope(), &err);
+  EXPECT_TRUE(err.has_error());
+}

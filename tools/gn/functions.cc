@@ -61,8 +61,10 @@ bool FillTargetBlockScope(const Scope* scope,
   // the block in.
   const Scope* default_scope = scope->GetTargetDefaults(target_type);
   if (default_scope) {
-    if (!default_scope->NonRecursiveMergeTo(block_scope, false, function,
-                                            "target defaults", err))
+    Scope::MergeOptions merge_options;
+    merge_options.skip_private_vars = true;
+    if (!default_scope->NonRecursiveMergeTo(block_scope, merge_options,
+                                            function, "target defaults", err))
       return false;
   }
 
@@ -445,6 +447,10 @@ const char kImport_Help[] =
     "  the imported file define some variable or rule with the same name but\n"
     "  different value), a runtime error will be thrown. Therefore, it's good\n"
     "  practice to minimize the stuff that an imported file defines.\n"
+    "\n"
+    "  Variables and templates beginning with an underscore '_' are\n"
+    "  considered private and will not be imported. Imported files can use\n"
+    "  such variables for internal computation without affecting other files.\n"
     "\n"
     "Examples:\n"
     "\n"

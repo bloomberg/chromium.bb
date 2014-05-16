@@ -65,6 +65,37 @@ class Scope {
     Scope* scope_;
   };
 
+  // Options for configuring scope merges.
+  struct MergeOptions {
+    // Defaults to all false, which are the things least likely to cause errors.
+    MergeOptions()
+        : clobber_existing(false),
+          skip_private_vars(false),
+          mark_used(false) {
+    }
+
+    // When set, all existing avlues in the destination scope will be
+    // overwritten.
+    //
+    // When false, it will be an error to merge a variable into another scope
+    // where a variable with the same name is already set. The exception is
+    // if both of the variables have the same value (which happens if you
+    // somehow multiply import the same file, for example). This case will be
+    // ignored since there is nothing getting lost.
+    bool clobber_existing;
+
+    // When true, private variables (names beginning with an underscore) will
+    // be copied to the destination scope. When false, private values will be
+    // skipped.
+    bool skip_private_vars;
+
+    // When set, values copied to the destination scope will be marked as used
+    // so won't trigger an unused variable warning. You want this when doing an
+    // import, for example, or files that don't need a variable from the .gni
+    // file will throw an error.
+    bool mark_used;
+  };
+
   // Creates an empty toplevel scope.
   Scope(const Settings* settings);
 
@@ -138,6 +169,10 @@ class Scope {
   // scope. This does not search recursive scopes. Does nothing if not found.
   void RemoveIdentifier(const base::StringPiece& ident);
 
+  // Removes from this scope all identifiers and templates that are considered
+  // private.
+  void RemovePrivateIdentifiers();
+
   // Templates associated with this scope. A template can only be set once, so
   // AddTemplate will fail and return false if a rule with that name already
   // exists. GetTemplate returns NULL if the rule doesn't exist, and it will
@@ -169,30 +204,22 @@ class Scope {
   // copied, neither will the reference to the containing scope (this is why
   // it's "non-recursive").
   //
-  // If clobber_existing is true, any existing values will be overwritten. In
-  // this mode, this function will never fail.
-  //
-  // If clobber_existing is false, it will be an error to merge a variable into
-  // a scope that already has something with that name in scope (meaning in
-  // that scope or in any of its containing scopes). If this happens, the error
-  // will be set and the function will return false.
-  //
   // This is used in different contexts. When generating the error, the given
   // parse node will be blamed, and the given desc will be used to describe
   // the operation that doesn't support doing this. For example, desc_for_err
   // would be "import" when doing an import, and the error string would say
   // something like "The import contains...".
   bool NonRecursiveMergeTo(Scope* dest,
-                           bool clobber_existing,
+                           const MergeOptions& options,
                            const ParseNode* node_for_err,
                            const char* desc_for_err,
                            Err* err) const;
 
   // Constructs a scope that is a copy of the current one. Nested scopes will
-  // be collapsed until we reach a const containing scope. The resulting
-  // closure will reference the const containing scope as its containing scope
-  // (since we assume the const scope won't change, we don't have to copy its
-  // values).
+  // be collapsed until we reach a const containing scope. Private values will
+  // be included. The resulting closure will reference the const containing
+  // scope as its containing scope (since we assume the const scope won't
+  // change, we don't have to copy its values).
   scoped_ptr<Scope> MakeClosure() const;
 
   // Makes an empty scope with the given name. Returns NULL if the name is

@@ -16,6 +16,13 @@ namespace {
 const unsigned kProcessingBuildConfigFlag = 1;
 const unsigned kProcessingImportFlag = 2;
 
+// Returns true if this variable name should be considered private. Private
+// values start with an underscore, and are not imported from "gni" files
+// when processing an import.
+bool IsPrivateVar(const base::StringPiece& name) {
+  return name.empty() || name[0] == '_';
+}
+
 }  // namespace
 
 Scope::Scope(const Settings* settings)
@@ -129,6 +136,21 @@ void Scope::RemoveIdentifier(const base::StringPiece& ident) {
     values_.erase(found);
 }
 
+void Scope::RemovePrivateIdentifiers() {
+  // Do it in two phases to avoid mutating while iterating. Our hash map is
+  // currently backed by several different vendor-specific implementations and
+  // I'm not sure if all of them support mutating while iterating. Since this
+  // is not perf-critical, do the safe thing.
+  std::vector<base::StringPiece> to_remove;
+  for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i) {
+    if (IsPrivateVar(i->first))
+      to_remove.push_back(i->first);
+  }
+
+  for (size_t i = 0; i < to_remove.size(); i++)
+    values_.erase(to_remove[i]);
+}
+
 bool Scope::AddTemplate(const std::string& name, const Template* templ) {
   if (GetTemplate(name))
     return false;
@@ -201,14 +223,17 @@ void Scope::GetCurrentScopeValues(KeyValueMap* output) const {
 }
 
 bool Scope::NonRecursiveMergeTo(Scope* dest,
-                                bool clobber_existing,
+                                const MergeOptions& options,
                                 const ParseNode* node_for_err,
                                 const char* desc_for_err,
                                 Err* err) const {
   // Values.
   for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i) {
+    if (options.skip_private_vars && IsPrivateVar(i->first))
+      continue;  // Skip this private var.
+
     const Value& new_value = i->second.value;
-    if (!clobber_existing) {
+    if (!options.clobber_existing) {
       const Value* existing_value = dest->GetValue(i->first);
       if (existing_value && new_value != *existing_value) {
         // Value present in both the source and the dest.
@@ -225,12 +250,15 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
       }
     }
     dest->values_[i->first] = i->second;
+
+    if (options.mark_used)
+      dest->MarkUsed(i->first);
   }
 
   // Target defaults are owning pointers.
   for (NamedScopeMap::const_iterator i = target_defaults_.begin();
        i != target_defaults_.end(); ++i) {
-    if (!clobber_existing) {
+    if (!options.clobber_existing) {
       if (dest->GetTargetDefaults(i->first)) {
         // TODO(brettw) it would be nice to know the origin of a
         // set_target_defaults so we can give locations for the colliding target
@@ -251,13 +279,13 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
     if (*dest_scope)
       delete *dest_scope;
     *dest_scope = new Scope(settings_);
-    i->second->NonRecursiveMergeTo(*dest_scope, clobber_existing, node_for_err,
+    i->second->NonRecursiveMergeTo(*dest_scope, options, node_for_err,
                                    "<SHOULDN'T HAPPEN>", err);
   }
 
   // Sources assignment filter.
   if (sources_assignment_filter_) {
-    if (!clobber_existing) {
+    if (!options.clobber_existing) {
       if (dest->GetSourcesAssignmentFilter()) {
         // Sources assignment filter present in both the source and the dest.
         std::string desc_string(desc_for_err);
@@ -274,7 +302,10 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
   // Templates.
   for (TemplateMap::const_iterator i = templates_.begin();
        i != templates_.end(); ++i) {
-    if (!clobber_existing) {
+    if (options.skip_private_vars && IsPrivateVar(i->first))
+      continue;  // Skip this private template.
+
+    if (!options.clobber_existing) {
       const Template* existing_template = dest->GetTemplate(i->first);
       if (existing_template) {
         // Rule present in both the source and the dest.
@@ -314,9 +345,14 @@ scoped_ptr<Scope> Scope::MakeClosure() const {
     result.reset(new Scope(settings_));
   }
 
+  // Want to clobber since we've flattened some nested scopes, and our parent
+  // scope may have a duplicate value set.
+  MergeOptions options;
+  options.clobber_existing = true;
+
   // Add in our variables and we're done.
   Err err;
-  NonRecursiveMergeTo(result.get(), true, NULL, "<SHOULDN'T HAPPEN>", &err);
+  NonRecursiveMergeTo(result.get(), options, NULL, "<SHOULDN'T HAPPEN>", &err);
   DCHECK(!err.has_error());
   return result.Pass();
 }

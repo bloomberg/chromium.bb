@@ -217,7 +217,7 @@ Value BlockNode::Execute(Scope* containing_scope, Err* err) const {
       return Value();
 
     // Check for unused vars in the scope.
-    //our_scope.CheckForUnusedVars(err);
+    our_scope.CheckForUnusedVars(err);
     return ret;
   }
   return ExecuteBlockInScope(containing_scope, err);

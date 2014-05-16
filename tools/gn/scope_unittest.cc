@@ -36,6 +36,8 @@ TEST(Scope, NonRecursiveMergeTo) {
 
   Value old_value(&assignment, "hello");
   setup.scope()->SetValue("v", old_value, &assignment);
+  base::StringPiece private_var_name("_private");
+  setup.scope()->SetValue(private_var_name, old_value, &assignment);
 
   // Detect collisions of values' values.
   {
@@ -45,7 +47,8 @@ TEST(Scope, NonRecursiveMergeTo) {
 
     Err err;
     EXPECT_FALSE(setup.scope()->NonRecursiveMergeTo(
-        &new_scope, false, &assignment, "error", &err));
+        &new_scope, Scope::MergeOptions(),
+        &assignment, "error", &err));
     EXPECT_TRUE(err.has_error());
   }
 
@@ -56,8 +59,10 @@ TEST(Scope, NonRecursiveMergeTo) {
     new_scope.SetValue("v", new_value, &assignment);
 
     Err err;
+    Scope::MergeOptions options;
+    options.clobber_existing = true;
     EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
-        &new_scope, true, &assignment, "error", &err));
+        &new_scope, options, &assignment, "error", &err));
     EXPECT_FALSE(err.has_error());
 
     const Value* found_value = new_scope.GetValue("v");
@@ -72,8 +77,61 @@ TEST(Scope, NonRecursiveMergeTo) {
     new_scope.SetValue("v", new_value, &assignment);
 
     Err err;
+    Scope::MergeOptions options;
+    options.clobber_existing = true;
     EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
-        &new_scope, false, &assignment, "error", &err));
+        &new_scope, options, &assignment, "error", &err));
+    EXPECT_FALSE(err.has_error());
+  }
+
+  // Copy private values.
+  {
+    Scope new_scope(setup.settings());
+
+    Err err;
+    EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, Scope::MergeOptions(), &assignment, "error", &err));
+    EXPECT_FALSE(err.has_error());
+    EXPECT_TRUE(new_scope.GetValue(private_var_name));
+  }
+
+  // Skip private values.
+  {
+    Scope new_scope(setup.settings());
+
+    Err err;
+    Scope::MergeOptions options;
+    options.skip_private_vars = true;
+    EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, options, &assignment, "error", &err));
+    EXPECT_FALSE(err.has_error());
+    EXPECT_FALSE(new_scope.GetValue(private_var_name));
+  }
+
+  // Don't mark used.
+  {
+    Scope new_scope(setup.settings());
+
+    Err err;
+    Scope::MergeOptions options;
+    EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, options, &assignment, "error", &err));
+    EXPECT_FALSE(err.has_error());
+    EXPECT_FALSE(new_scope.CheckForUnusedVars(&err));
+    EXPECT_TRUE(err.has_error());
+  }
+
+  // Mark used.
+  {
+    Scope new_scope(setup.settings());
+
+    Err err;
+    Scope::MergeOptions options;
+    options.mark_used = true;
+    EXPECT_TRUE(setup.scope()->NonRecursiveMergeTo(
+        &new_scope, options, &assignment, "error", &err));
+    EXPECT_FALSE(err.has_error());
+    EXPECT_TRUE(new_scope.CheckForUnusedVars(&err));
     EXPECT_FALSE(err.has_error());
   }
 }
@@ -166,4 +224,14 @@ TEST(Scope, GetMutableValue) {
   Value* mutable2_result = mutable_scope2.GetMutableValue(kOnMutable2, true);
   ASSERT_TRUE(mutable2_result);
   EXPECT_TRUE(*mutable2_result == value);
+}
+
+TEST(Scope, RemovePrivateIdentifiers) {
+  TestWithScope setup;
+  setup.scope()->SetValue("a", Value(NULL, true), NULL);
+  setup.scope()->SetValue("_b", Value(NULL, true), NULL);
+
+  setup.scope()->RemovePrivateIdentifiers();
+  EXPECT_TRUE(setup.scope()->GetValue("a"));
+  EXPECT_FALSE(setup.scope()->GetValue("_b"));
 }

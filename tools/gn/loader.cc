@@ -245,6 +245,9 @@ void LoaderImpl::BackgroundLoadFile(const Settings* settings,
   if (err.has_error())
     g_scheduler->FailWithError(err);
 
+  if (!our_scope.CheckForUnusedVars(&err))
+    g_scheduler->FailWithError(err);
+
   // Pass all of the items that were defined off to the builder.
   for (size_t i = 0; i < collected_items.size(); i++)
     settings->build_settings()->ItemDefined(collected_items[i]->Pass());
@@ -284,6 +287,11 @@ void LoaderImpl::BackgroundLoadBuildConfig(
   const BlockNode* root_block = root->AsBlock();
   Err err;
   root_block->ExecuteBlockInScope(base_config, &err);
+
+  // Clear all private variables left in the scope. We want the root build
+  // config to be like a .gni file in that variables beginning with an
+  // underscore aren't exported.
+  base_config->RemovePrivateIdentifiers();
 
   trace.Done();
 
