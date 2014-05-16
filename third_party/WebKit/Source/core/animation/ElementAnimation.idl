@@ -28,12 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-partial interface Element {
-    AnimationPlayer animate(AnimationEffect? effect, Dictionary timingInput);
-    AnimationPlayer animate(AnimationEffect? effect, double duration);
-    AnimationPlayer animate(AnimationEffect? effect);
-    [MeasureAs=ElementAnimateKeyframeListEffectObjectTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes, Dictionary timingInput);
-    [MeasureAs=ElementAnimateKeyframeListEffectDoubleTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes, double duration);
-    [MeasureAs=ElementAnimateKeyframeListEffectNoTiming, RaisesException] AnimationPlayer animate(sequence<Dictionary> keyframes);
-};
+// http://www.w3.org/TR/web-animations/#idl-def-Element
+// FIXME: move to Animatable
+// http://dev.w3.org/fxtf/web-animations/#idl-def-Animatable
 
+partial interface Element {
+    // FIXME: needs support for union types http://crbug.com/240176
+    // AnimationPlayer animate((AnimationEffect or sequence<Dictionary>)? effect, optional (double or Dictionary) timing);
+    [Custom, RaisesException] AnimationPlayer animate(object effect, optional object timing);
+};

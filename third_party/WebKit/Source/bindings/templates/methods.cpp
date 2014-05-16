@@ -287,13 +287,14 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {% if overloads.deprecate_all_as %}
     UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{overloads.deprecate_all_as}});
     {% endif %}
-    {% if overloads.is_use_spec_algorithm %}
+    {# First resolve by length #}
     {# FIXME: 2. Initialize argcount to be min(maxarg, n). #}
     {# switch (std::min({{overloads.maxarg}}, info.Length())) { #}
     switch (info.Length()) {
     {# 3. Remove from S all entries whose type list is not of length argcount. #}
     {% for length, tests_methods in overloads.length_tests_methods %}
     case {{length}}:
+        {# Then resolve by testing argument #}
         {% for test, method in tests_methods %}
         {# 10. If i = d, then: #}
         if ({{test}}) {
@@ -310,20 +311,6 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
         break;
     {% endfor %}
     }
-    {% else %}{# overloads.is_use_spec_algorithm #}
-    {% for method in overloads.methods %}
-    if ({{method.overload_resolution_expression}}) {
-        {% if method.measure_as and not overloads.measure_all_as %}
-        UseCounter::count(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as}});
-        {% endif %}
-        {% if method.deprecate_as and not overloads.deprecate_all_as %}
-        UseCounter::countDeprecation(callingExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
-        {% endif %}
-        {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
-        return;
-    }
-    {% endfor %}
-    {% endif %}{# overloads.is_use_spec_algorithm #}
     {# No match, throw error #}
     {% if overloads.minimum_number_of_required_arguments %}
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "{{overloads.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());

@@ -6430,24 +6430,34 @@ static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(bool, booleanArg, info[0]->BooleanValue());
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
     if (UNLIKELY(info.Length() <= 1)) {
-        impl->overloadedMethodB(booleanArg);
+        impl->overloadedMethodB(stringArg);
         return;
     }
     TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[1], exceptionState), exceptionState);
-    impl->overloadedMethodB(booleanArg, longArg);
+    impl->overloadedMethodB(stringArg, longArg);
 }
 
 static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1))) {
-        overloadedMethodB1Method(info);
-        return;
-    }
-    if (((info.Length() == 1)) || ((info.Length() == 2))) {
-        overloadedMethodB2Method(info);
-        return;
+    switch (info.Length()) {
+    case 1:
+        if (info[0]->IsNumber()) {
+            overloadedMethodB1Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodB2Method(info);
+            return;
+        }
+        break;
+    case 2:
+        if (true) {
+            overloadedMethodB2Method(info);
+            return;
+        }
+        break;
     }
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
@@ -6475,22 +6485,24 @@ static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(bool, booleanArg, info[0]->BooleanValue());
-    TONATIVE_VOID(Vector<int>, longArgs, toNativeArguments<int>(info, 1));
-    impl->overloadedMethodC(booleanArg, longArgs);
+    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    impl->overloadedMethodC(testInterfaceEmptyArg);
 }
 
 static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1))) {
-        overloadedMethodC1Method(info);
-        return;
-    }
-    if () {
-        overloadedMethodC2Method(info);
-        return;
+    switch (info.Length()) {
+    case 1:
+        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+            overloadedMethodC2Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodC1Method(info);
+            return;
+        }
+        break;
     }
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
@@ -6519,15 +6531,15 @@ static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    impl->overloadedMethodD(testInterfaceEmptyArg);
+    TONATIVE_VOID(Vector<int>, longArrayArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
+    impl->overloadedMethodD(longArrayArg);
 }
 
 static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     switch (info.Length()) {
     case 1:
-        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+        if (info[0]->IsArray()) {
             overloadedMethodD2Method(info);
             return;
         }
@@ -6564,15 +6576,19 @@ static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& 
 static void overloadedMethodE2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Vector<int>, longArrayArg, toNativeArray<int>(info[0], 1, info.GetIsolate()));
-    impl->overloadedMethodE(longArrayArg);
+    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    impl->overloadedMethodE(testInterfaceEmptyOrNullArg);
 }
 
 static void overloadedMethodEMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     switch (info.Length()) {
     case 1:
-        if (info[0]->IsArray()) {
+        if (isUndefinedOrNull(info[0])) {
+            overloadedMethodE2Method(info);
+            return;
+        }
+        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
             overloadedMethodE2Method(info);
             return;
         }
@@ -6600,28 +6616,37 @@ static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    impl->overloadedMethodF(longArg);
+    if (UNLIKELY(info.Length() <= 0)) {
+        impl->overloadedMethodF();
+        return;
+    }
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
+    impl->overloadedMethodF(stringArg);
 }
 
 static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    impl->overloadedMethodF(testInterfaceEmptyOrNullArg);
+    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
+    impl->overloadedMethodF(doubleArg);
 }
 
 static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     switch (info.Length()) {
-    case 1:
-        if (isUndefinedOrNull(info[0])) {
-            overloadedMethodF2Method(info);
+    case 0:
+        if (true) {
+            overloadedMethodF1Method(info);
             return;
         }
-        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
+        break;
+    case 1:
+        if (info[0]->IsUndefined()) {
+            overloadedMethodF1Method(info);
+            return;
+        }
+        if (info[0]->IsNumber()) {
             overloadedMethodF2Method(info);
             return;
         }
@@ -6631,13 +6656,7 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
+    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodF", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
 }
 
 static void overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6649,37 +6668,28 @@ static void overloadedMethodFMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodG", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (UNLIKELY(info.Length() <= 0)) {
-        impl->overloadedMethodG();
-        return;
-    }
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
-    impl->overloadedMethodG(stringArg);
+    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
+    impl->overloadedMethodG(longArg);
 }
 
 static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
-    impl->overloadedMethodG(doubleArg);
+    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    impl->overloadedMethodG(testInterfaceEmptyOrNullArg);
 }
 
 static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     switch (info.Length()) {
-    case 0:
-        if (true) {
-            overloadedMethodG1Method(info);
-            return;
-        }
-        break;
     case 1:
-        if (info[0]->IsUndefined()) {
-            overloadedMethodG1Method(info);
+        if (isUndefinedOrNull(info[0])) {
+            overloadedMethodG2Method(info);
             return;
         }
-        if (info[0]->IsNumber()) {
+        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
             overloadedMethodG2Method(info);
             return;
         }
@@ -6689,7 +6699,13 @@ static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodG", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodG", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6702,37 +6718,38 @@ static void overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodH1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    impl->overloadedMethodH();
+    TONATIVE_VOID(TestInterfaceImplementation*, testInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    impl->overloadedMethodH(testInterfaceArg);
 }
 
 static void overloadedMethodH2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    if (info.Length() <= 0 || !info[0]->IsFunction()) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
-        return;
-    }
-    OwnPtr<TestCallbackInterface> testCallbackInterfaceArg = V8TestCallbackInterface::create(v8::Handle<v8::Function>::Cast(info[0]), currentExecutionContext(info.GetIsolate()));
-    impl->overloadedMethodH(testCallbackInterfaceArg.release());
+    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
+    impl->overloadedMethodH(testInterfaceEmptyArg);
 }
 
 static void overloadedMethodHMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     switch (info.Length()) {
-    case 0:
-        if (true) {
+    case 1:
+        if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
             overloadedMethodH1Method(info);
             return;
         }
-        break;
-    case 1:
-        if (true) {
+        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
             overloadedMethodH2Method(info);
             return;
         }
         break;
     }
-    throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodH", "TestObject", "No function was found that matched the signature provided."), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodH", "TestObject", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        throwArityTypeError(exceptionState, 1, info.Length());
+        return;
+    }
+    exceptionState.throwTypeError("No function was found that matched the signature provided.");
+    exceptionState.throwIfNeeded();
 }
 
 static void overloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6745,12 +6762,8 @@ static void overloadedMethodHMethodCallback(const v8::FunctionCallbackInfo<v8::V
 static void overloadedMethodI1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(Dictionary, dictionaryArg, Dictionary(info[0], info.GetIsolate()));
-    if (!dictionaryArg.isUndefinedOrNull() && !dictionaryArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodI", "TestObject", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
-        return;
-    }
-    impl->overloadedMethodI(dictionaryArg);
+    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
+    impl->overloadedMethodI(stringArg);
 }
 
 static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -6762,13 +6775,17 @@ static void overloadedMethodI2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodIMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1) && (info[0]->IsObject()))) {
-        overloadedMethodI1Method(info);
-        return;
-    }
-    if (((info.Length() == 1))) {
-        overloadedMethodI2Method(info);
-        return;
+    switch (info.Length()) {
+    case 1:
+        if (info[0]->IsNumber()) {
+            overloadedMethodI2Method(info);
+            return;
+        }
+        if (true) {
+            overloadedMethodI1Method(info);
+            return;
+        }
+        break;
     }
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodI", "TestObject", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
@@ -6783,143 +6800,6 @@ static void overloadedMethodIMethodCallback(const v8::FunctionCallbackInfo<v8::V
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectV8Internal::overloadedMethodIMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void overloadedMethodJ1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodJ", "TestObject", info.Holder(), info.GetIsolate());
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID_EXCEPTIONSTATE(int, longArg, toInt32(info[0], exceptionState), exceptionState);
-    impl->overloadedMethodJ(longArg);
-}
-
-static void overloadedMethodJ2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyOrNullArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    impl->overloadedMethodJ(testInterfaceEmptyOrNullArg);
-}
-
-static void overloadedMethodJMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    switch (info.Length()) {
-    case 1:
-        if (isUndefinedOrNull(info[0])) {
-            overloadedMethodJ2Method(info);
-            return;
-        }
-        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
-            overloadedMethodJ2Method(info);
-            return;
-        }
-        if (true) {
-            overloadedMethodJ1Method(info);
-            return;
-        }
-        break;
-    }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodJ", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
-}
-
-static void overloadedMethodJMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::overloadedMethodJMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void overloadedMethodK1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceImplementation*, testInterfaceArg, V8TestInterface::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    impl->overloadedMethodK(testInterfaceArg);
-}
-
-static void overloadedMethodK2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::toNativeWithTypeCheck(info.GetIsolate(), info[0]));
-    impl->overloadedMethodK(testInterfaceEmptyArg);
-}
-
-static void overloadedMethodKMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    switch (info.Length()) {
-    case 1:
-        if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
-            overloadedMethodK1Method(info);
-            return;
-        }
-        if (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate())) {
-            overloadedMethodK2Method(info);
-            return;
-        }
-        break;
-    }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodK", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
-}
-
-static void overloadedMethodKMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::overloadedMethodKMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
-}
-
-static void overloadedMethodL1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TOSTRING_VOID(V8StringResource<>, stringArg, info[0]);
-    impl->overloadedMethodL(stringArg);
-}
-
-static void overloadedMethodL2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toNative(info.Holder());
-    TONATIVE_VOID(double, doubleArg, static_cast<double>(info[0]->NumberValue()));
-    impl->overloadedMethodL(doubleArg);
-}
-
-static void overloadedMethodLMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    switch (info.Length()) {
-    case 1:
-        if (info[0]->IsNumber()) {
-            overloadedMethodL2Method(info);
-            return;
-        }
-        if (true) {
-            overloadedMethodL1Method(info);
-            return;
-        }
-        break;
-    }
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodL", "TestObject", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 1)) {
-        throwArityTypeError(exceptionState, 1, info.Length());
-        return;
-    }
-    exceptionState.throwTypeError("No function was found that matched the signature provided.");
-    exceptionState.throwIfNeeded();
-}
-
-static void overloadedMethodLMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectV8Internal::overloadedMethodLMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "V8Execution");
 }
 
@@ -8625,13 +8505,10 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"overloadedMethodC", TestObjectV8Internal::overloadedMethodCMethodCallback, 0, 1},
     {"overloadedMethodD", TestObjectV8Internal::overloadedMethodDMethodCallback, 0, 1},
     {"overloadedMethodE", TestObjectV8Internal::overloadedMethodEMethodCallback, 0, 1},
-    {"overloadedMethodF", TestObjectV8Internal::overloadedMethodFMethodCallback, 0, 1},
-    {"overloadedMethodG", TestObjectV8Internal::overloadedMethodGMethodCallback, 0, 0},
-    {"overloadedMethodH", TestObjectV8Internal::overloadedMethodHMethodCallback, 0, 0},
+    {"overloadedMethodF", TestObjectV8Internal::overloadedMethodFMethodCallback, 0, 0},
+    {"overloadedMethodG", TestObjectV8Internal::overloadedMethodGMethodCallback, 0, 1},
+    {"overloadedMethodH", TestObjectV8Internal::overloadedMethodHMethodCallback, 0, 1},
     {"overloadedMethodI", TestObjectV8Internal::overloadedMethodIMethodCallback, 0, 1},
-    {"overloadedMethodJ", TestObjectV8Internal::overloadedMethodJMethodCallback, 0, 1},
-    {"overloadedMethodK", TestObjectV8Internal::overloadedMethodKMethodCallback, 0, 1},
-    {"overloadedMethodL", TestObjectV8Internal::overloadedMethodLMethodCallback, 0, 1},
     {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0},
     {"voidMethodClampUnsignedShortArg", TestObjectV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1},
     {"voidMethodClampUnsignedLongArg", TestObjectV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1},

@@ -387,29 +387,21 @@ interface TestObject {
     void overloadedMethodA(long longArg);
     void overloadedMethodA(long longArg1, long longArg2);
     void overloadedMethodB(long longArg);
-    void overloadedMethodB(boolean booleanArg, optional long longArg);
+    void overloadedMethodB(DOMString stringArg, optional long longArg);
     void overloadedMethodC(long longArg);
-    void overloadedMethodC(boolean booleanArg, long... longArgs);
+    void overloadedMethodC(TestInterfaceEmpty testInterfaceEmptyArg);
     void overloadedMethodD(long longArg);
-    void overloadedMethodD(TestInterfaceEmpty testInterfaceEmptyArg);
+    void overloadedMethodD(long[] longArrayArg);
     void overloadedMethodE(long longArg);
-    void overloadedMethodE(long[] longArrayArg);
-    void overloadedMethodF(long longArg);
-    void overloadedMethodF(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
-    void overloadedMethodG(optional DOMString stringArg);
-    void overloadedMethodG(double doubleArg);
-    void overloadedMethodH();
-    void overloadedMethodH(TestCallbackInterface testCallbackInterfaceArg);
-    // FIXME: Should be in order double, Dictionary, but Blink implementation of
-    // overload resolution can't handle this. http://crbug.com/293561
-    void overloadedMethodI(Dictionary dictionaryArg); // Non-wrapper type
+    void overloadedMethodE(TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
+    void overloadedMethodF(optional DOMString stringArg);
+    void overloadedMethodF(double doubleArg);
+    void overloadedMethodG(long longArg);
+    void overloadedMethodG([Default=Null] TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
+    void overloadedMethodH(TestInterface testInterfaceArg);
+    void overloadedMethodH(TestInterfaceEmpty testInterfaceEmptyArg);
+    void overloadedMethodI(DOMString stringArg);
     void overloadedMethodI(double doubleArg);
-    void overloadedMethodJ(long longArg);
-    void overloadedMethodJ([Default=Null] TestInterfaceEmpty? testInterfaceEmptyOrNullArg);
-    void overloadedMethodK(TestInterface testInterfaceArg);
-    void overloadedMethodK(TestInterfaceEmpty testInterfaceEmptyArg);
-    void overloadedMethodL(DOMString stringArg);
-    void overloadedMethodL(double doubleArg);
 
 
     [PerWorldBindings] void overloadedPerWorldBindingsMethod();

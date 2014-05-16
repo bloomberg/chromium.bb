@@ -28,37 +28,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// http://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface
+
+typedef DOMString KeyFormat;
+typedef DOMString KeyUsage; // from Key interface
+
+// FIXME: use below; needs support for union types http://crbug.com/240176
+typedef (ArrayBuffer or ArrayBufferView) CryptoOperationData;
+
 [
     GarbageCollected,
-    NoInterfaceObject
+    NoInterfaceObject,
 ] interface SubtleCrypto {
-    Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
     Promise encrypt(Dictionary algorithm, Key key, ArrayBuffer data);
+    Promise encrypt(Dictionary algorithm, Key key, ArrayBufferView data);
 
-    Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
     Promise decrypt(Dictionary algorithm, Key key, ArrayBuffer data);
+    Promise decrypt(Dictionary algorithm, Key key, ArrayBufferView data);
 
-    Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
     Promise sign(Dictionary algorithm, Key key, ArrayBuffer data);
+    Promise sign(Dictionary algorithm, Key key, ArrayBufferView data);
 
-    [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBufferView data);
-    [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBufferView signature, ArrayBuffer data);
-    [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBuffer signature, ArrayBuffer data);
-    [ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, ArrayBuffer signature, ArrayBufferView data);
+    // FIXME: should be: Promise verify(Dictionary algorithm, Key key, CryptoOperationData signature, CryptoOperationData data);
+    [Custom, ImplementedAs=verifySignature] Promise verify(Dictionary algorithm, Key key, object signature, object data);
 
-    Promise digest(Dictionary algorithm, ArrayBufferView data);
     Promise digest(Dictionary algorithm, ArrayBuffer data);
+    Promise digest(Dictionary algorithm, ArrayBufferView data);
 
     Promise generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
 
-    Promise importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
-    Promise importKey(DOMString format, ArrayBuffer keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    Promise importKey(KeyFormat format, ArrayBuffer keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
+    Promise importKey(KeyFormat format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, KeyUsage[] keyUsages);
 
-    Promise exportKey(DOMString format, Key key);
+    Promise exportKey(KeyFormat format, Key key);
 
-    Promise wrapKey(DOMString format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
+    Promise wrapKey(KeyFormat format, Key key, Key wrappingKey, Dictionary wrapAlgorithm);
 
-    Promise unwrapKey(DOMString format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, DOMString[] keyUsages);
-    Promise unwrapKey(DOMString format, ArrayBuffer wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, DOMString[] keyUsages);
+    Promise unwrapKey(KeyFormat format, ArrayBuffer wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
+    Promise unwrapKey(KeyFormat format, ArrayBufferView wrappedKey, Key unwrappingKey, Dictionary unwrapAlgorithm, Dictionary unwrappedKeyAlgorithm, boolean extractable, KeyUsage[] keyUsages);
 };
-

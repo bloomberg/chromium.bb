@@ -327,7 +327,7 @@ def generate_overloads_by_type(methods):
 
 
 def method_overloads_by_name(methods):
-    """Returns list of overloaded methods, grouped by name: [name, [method]]"""
+    """Returns generator of overloaded methods by name: [name, [method]]"""
     # Filter to only methods that are actually overloaded
     method_counts = Counter(method['name'] for method in methods)
     overloaded_method_names = set(name
@@ -351,9 +351,6 @@ def generate_overloads_by_name(name, overloads):
 
     for index, method in enumerate(overloads, 1):
         method['overload_index'] = index
-        # FIXME: remove this per-method expression, as does not work in
-        # general (may need to test several times for one method)
-        method['overload_resolution_expression'] = overload_resolution_expression(method)
         # Overloaded methods have length checked during overload, and
         # a single check for required arguments afterwards.
         del method['number_of_required_arguments']
@@ -363,56 +360,14 @@ def generate_overloads_by_name(name, overloads):
     overloads[-1]['overloads'] = {
         'deprecate_all_as': common_value(overloads, 'deprecate_as'),  # [DeprecateAs]
         'has_exception_state': bool(minimum_number_of_required_arguments),
-        'is_use_spec_algorithm': is_use_spec_algorithm(effective_overloads_by_length),  # FIXME: temporary flag so can switch incrementally
         'length_tests_methods': length_tests_methods(effective_overloads_by_length),
         # 1. Let maxarg be the length of the longest type list of the
         # entries in S.
         'maxarg': max(i for i, _ in effective_overloads_by_length),
         'measure_all_as': common_value(overloads, 'measure_as'),  # [MeasureAs]
-        'methods': overloads,  # FIXME: remove; need to use |length_tests_methods| instead
         'minimum_number_of_required_arguments': minimum_number_of_required_arguments,
         'name': name,
     }
-
-
-def is_use_spec_algorithm(effective_overloads_by_length):
-    # FIXME: temporary function so can switch incrementally
-    # Use spec algorithm if:
-    # * method is not variadic,
-    # * no distinguishing type is unsupported:
-    #   non-wrapper, callback interface, boolean,
-    # * all distinguishing types are distinct.
-    def is_unsupported_type(idl_type):
-        return ((idl_type.is_interface_type and not idl_type.is_wrapper_type) or
-                idl_type.is_callback_interface or
-                idl_type.name == 'Boolean')
-
-    for _, effective_overloads in effective_overloads_by_length:
-        methods = [effective_overload[0]
-                   for effective_overload in effective_overloads]
-        if any(method['is_variadic'] for method in methods):
-            return False
-
-        if len(effective_overloads) == 1:
-            # No distinguishing type, since resolved by length
-            continue
-
-        index = distinguishing_argument_index(effective_overloads)
-        type_lists = [effective_overload[1]
-                      for effective_overload in effective_overloads]
-        distinguishing_argument_types = [type_list[index]
-                                         for type_list in type_lists]
-        # Use names to check for distinct types, since objects are distinct
-        distinguishing_argument_type_names = [
-            idl_type.name for idl_type in distinguishing_argument_types]
-        distinguishing_arguments = [method['arguments'][index]
-                                    for method in methods]
-
-        if (any(is_unsupported_type(distinguishing_argument_type)
-                for distinguishing_argument_type in distinguishing_argument_types) or
-            len(set(distinguishing_argument_type_names)) != len(distinguishing_argument_type_names)):
-            return False
-    return True
 
 
 def effective_overload_set(F):
@@ -571,7 +526,16 @@ def distinguishing_argument_index(entries):
             '%s'
             % (name, type_list_length, index, set(initial_optionality_lists)))
 
-    # FIXME: check distinguishability
+    # Check distinguishability
+    # http://heycam.github.io/webidl/#dfn-distinguishable
+    # Use names to check for distinct types, since objects are distinct
+    # FIXME: check distinguishability more precisely, for validation
+    distinguishing_argument_type_names = [type_list[index]
+                                          for type_list in type_lists]
+    if (len(set(distinguishing_argument_type_names)) !=
+        len(distinguishing_argument_type_names)):
+        raise ValueError('Types in distinguishing argument are not distinct:\n'
+                         '%s' % distinguishing_argument_type_names)
 
     return index
 
@@ -608,7 +572,7 @@ def resolution_tests_methods(effective_overloads):
                for effective_overload in effective_overloads]
     if len(methods) == 1:
         # If only one method with a given length, no test needed
-        yield ('true', methods[0])
+        yield 'true', methods[0]
         return
 
     # 6. If there is more than one entry in S, then set d to be the
@@ -678,12 +642,12 @@ def resolution_tests_methods(effective_overloads):
     # following types at position i of its type list,
     # • an array type
     # • a sequence type
-    # (We test directly for Array instead of generic Object.)
-    # FIXME: test for Object during resolution, then have type check for Array
-    # in overloaded method: http://crbug.com/262383
     try:
         method = next(method for idl_type, method in idl_types_methods
                       if idl_type.array_or_sequence_type)
+        # (We test for Array instead of generic Object to type-check.)
+        # FIXME: test for Object during resolution, then have type check for
+        # Array in overloaded method: http://crbug.com/262383
         test = '%s->IsArray()' % cpp_value
         yield test, method
     except StopIteration:
