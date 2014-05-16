@@ -738,8 +738,9 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive")));
 
+// Disabled due to frequent failure; http://crbug.com/374097.
 INSTANTIATE_TEST_CASE_P(
-    OpenAudioFiles,
+    DISABLED_OpenAudioFiles,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(IN_GUEST_MODE, "audioOpenDownloads"),
