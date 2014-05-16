@@ -809,18 +809,57 @@ int64_t GetNexeSize(PP_Instance instance) {
   return 0;
 }
 
-PP_Bool RequestNaClManifest(PP_Instance instance,
-                            const char* url,
-                            PP_Bool* pp_is_data_uri) {
+void DownloadManifestToBuffer(PP_Instance instance,
+                              struct PP_Var* out_data,
+                              struct PP_CompletionCallback callback);
+
+void RequestNaClManifest(PP_Instance instance,
+                         const char* url,
+                         PP_Var* out_data,
+                         PP_CompletionCallback callback) {
   NexeLoadManager* load_manager = GetNexeLoadManager(instance);
   DCHECK(load_manager);
-  if (load_manager) {
-    bool is_data_uri;
-    bool result = load_manager->RequestNaClManifest(url, &is_data_uri);
-    *pp_is_data_uri = PP_FromBool(is_data_uri);
-    return PP_FromBool(result);
+  if (!load_manager) {
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
   }
-  return PP_FALSE;
+
+  if (!load_manager->RequestNaClManifest(url)) {
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data,
+                   static_cast<int32_t>(PP_ERROR_FAILED)));
+    return;
+  }
+
+  const GURL& base_url = load_manager->manifest_base_url();
+  if (base_url.SchemeIs("data")) {
+    GURL gurl(base_url);
+    std::string mime_type;
+    std::string charset;
+    std::string data;
+    int32_t error = PP_ERROR_FAILED;
+    if (net::DataURL::Parse(gurl, &mime_type, &charset, &data)) {
+      if (data.size() <= ManifestDownloader::kNaClManifestMaxFileBytes) {
+        error = PP_OK;
+        *out_data = ppapi::StringVar::StringToPPVar(data);
+      } else {
+        load_manager->ReportLoadError(PP_NACL_ERROR_MANIFEST_TOO_LARGE,
+                                      "manifest file too large.");
+      }
+    } else {
+      load_manager->ReportLoadError(PP_NACL_ERROR_MANIFEST_LOAD_URL,
+                                    "could not load manifest url.");
+    }
+    ppapi::PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostTask(
+        FROM_HERE,
+        base::Bind(callback.func, callback.user_data, error));
+  } else {
+    DownloadManifestToBuffer(instance, out_data, callback);
+  }
 }
 
 PP_Var GetManifestBaseURL(PP_Instance instance) {
@@ -844,16 +883,6 @@ PP_Bool ResolvesRelativeToPluginBaseURL(PP_Instance instance,
   if (!gurl.is_valid())
     return PP_FALSE;
   return PP_TRUE;
-}
-
-PP_Var ParseDataURL(const char* data_url) {
-  GURL gurl(data_url);
-  std::string mime_type;
-  std::string charset;
-  std::string data;
-  if (!net::DataURL::Parse(gurl, &mime_type, &charset, &data))
-    return PP_MakeUndefined();
-  return ppapi::StringVar::StringToPPVar(data);
 }
 
 void ProcessNaClManifest(PP_Instance instance, const char* program_url) {
@@ -1287,11 +1316,9 @@ const PPB_NaCl_Private nacl_interface = {
   &RequestNaClManifest,
   &GetManifestBaseURL,
   &ResolvesRelativeToPluginBaseURL,
-  &ParseDataURL,
   &ProcessNaClManifest,
   &GetManifestURLArgument,
   &DevInterfacesEnabled,
-  &DownloadManifestToBuffer,
   &CreatePNaClManifest,
   &CreateJsonManifest,
   &DestroyManifest,

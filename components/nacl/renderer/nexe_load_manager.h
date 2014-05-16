@@ -80,7 +80,7 @@ class NexeLoadManager {
 
   int64_t nexe_size() const { return nexe_size_; }
 
-  bool RequestNaClManifest(const std::string& url, bool* is_data_uri);
+  bool RequestNaClManifest(const std::string& url);
   void ProcessNaClManifest(const std::string& program_url);
 
   // URL resolution support.

@@ -337,16 +337,14 @@ void NexeLoadManager::ReportStartupOverhead() const {
       "NaCl.Perf.StartupTime.NaClOverhead", overhead, nexe_size_);
 }
 
-bool NexeLoadManager::RequestNaClManifest(const std::string& url,
-                                          bool* is_data_uri) {
+bool NexeLoadManager::RequestNaClManifest(const std::string& url) {
   if (plugin_base_url_.is_valid()) {
     const GURL& resolved_url = plugin_base_url_.Resolve(url);
     if (resolved_url.is_valid()) {
       manifest_base_url_ = resolved_url;
       is_installed_ = manifest_base_url_.SchemeIs("chrome-extension");
-      *is_data_uri = manifest_base_url_.SchemeIs("data");
-      HistogramEnumerateManifestIsDataURI(*is_data_uri);
-
+      HistogramEnumerateManifestIsDataURI(
+          manifest_base_url_.SchemeIs("data"));
       set_nacl_ready_state(PP_NACL_READY_STATE_OPENED);
       DispatchProgressEvent(pp_instance_,
                             ProgressEvent(PP_NACL_EVENT_LOADSTART));

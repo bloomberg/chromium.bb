@@ -44,11 +44,6 @@ namespace plugin {
 
 namespace {
 
-// This is a pretty arbitrary limit on the byte size of the NaCl manfest file.
-// Note that the resulting string object has to have at least one byte extra
-// for the null termination character.
-const size_t kNaClManifestMaxFileBytes = 1024 * 1024;
-
 // Up to 20 seconds
 const int64_t kTimeSmallMin = 1;         // in ms
 const int64_t kTimeSmallMax = 20000;     // in ms
@@ -598,38 +593,12 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
 
 void Plugin::RequestNaClManifest(const nacl::string& url) {
   PLUGIN_PRINTF(("Plugin::RequestNaClManifest (url='%s')\n", url.c_str()));
-  PP_Bool is_data_uri;
-  ErrorInfo error_info;
-  if (!nacl_interface_->RequestNaClManifest(pp_instance(), url.c_str(),
-                                            &is_data_uri))
-    return;
-  pp::Var nmf_resolved_url =
-      pp::Var(pp::PASS_REF, nacl_interface_->GetManifestBaseURL(pp_instance()));
-  if (is_data_uri) {
-    std::string string_nmf_resolved_url = nmf_resolved_url.AsString();
-    pp::Var nmf_data = pp::Var(
-        pp::PASS_REF,
-        nacl_interface_->ParseDataURL(string_nmf_resolved_url.c_str()));
-    if (!nmf_data.is_string()) {
-      error_info.SetReport(PP_NACL_ERROR_MANIFEST_LOAD_URL,
-                           "could not load manifest url.");
-      ReportLoadError(error_info);
-    } else if (nmf_data.AsString().size() > kNaClManifestMaxFileBytes) {
-      error_info.SetReport(PP_NACL_ERROR_MANIFEST_TOO_LARGE,
-                           "manifest file too large.");
-      ReportLoadError(error_info);
-    } else {
-      ProcessNaClManifest(nmf_data.AsString());
-    }
-  } else {
-    pp::CompletionCallback open_callback =
-        callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
-    std::string nmf_resolved_url_str = nmf_resolved_url.AsString();
-    nacl_interface_->DownloadManifestToBuffer(
-        pp_instance(),
-        &manifest_data_var_,
-        open_callback.pp_completion_callback());
-  }
+  pp::CompletionCallback open_callback =
+      callback_factory_.NewCallback(&Plugin::NaClManifestFileDidOpen);
+  nacl_interface_->RequestNaClManifest(pp_instance(),
+                                       url.c_str(),
+                                       &manifest_data_var_,
+                                       open_callback.pp_completion_callback());
 }
 
 

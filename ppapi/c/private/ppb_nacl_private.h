@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue May 13 11:00:06 2014. */
+/* From private/ppb_nacl_private.idl modified Wed May 14 11:49:42 2014. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -384,14 +384,13 @@ struct PPB_NaCl_Private_1_0 {
   /* Returns the size of the nexe. */
   int64_t (*GetNexeSize)(PP_Instance instance);
   /* Performs accounting for requesting the NaCl manifest at the given URL. */
-  PP_Bool (*RequestNaClManifest)(PP_Instance instance,
-                                 const char* manifest_url,
-                                 PP_Bool* is_data_uri);
+  void (*RequestNaClManifest)(PP_Instance instance,
+                              const char* manifest_url,
+                              struct PP_Var* manifest_data,
+                              struct PP_CompletionCallback callback);
   struct PP_Var (*GetManifestBaseURL)(PP_Instance instance);
   PP_Bool (*ResolvesRelativeToPluginBaseUrl)(PP_Instance instance,
                                              const char* url);
-  /* Returns the parsed contents of a data URL. */
-  struct PP_Var (*ParseDataURL)(const char* data_url);
   /* Processes the NaCl manifest once it's been retrieved.
    * TODO(teravest): Move the rest of the supporting logic out of the trusted
    * plugin.
@@ -400,12 +399,6 @@ struct PPB_NaCl_Private_1_0 {
   /* Returns the manifest url as passed as a plugin argument. */
   struct PP_Var (*GetManifestURLArgument)(PP_Instance instance);
   PP_Bool (*DevInterfacesEnabled)(PP_Instance instance);
-  /* Downloads the manifest into the buffer |data|, invoking
-   * |callback| when finished.
-   * TODO(teravest): Merge data URL parsing into this. */
-  void (*DownloadManifestToBuffer)(PP_Instance instance,
-                                   struct PP_Var* data,
-                                   struct PP_CompletionCallback callback);
   int32_t (*CreatePnaclManifest)(PP_Instance instance);
   int32_t (*CreateJsonManifest)(PP_Instance instance,
                                 const char* manifest_base_url,

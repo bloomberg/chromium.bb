@@ -26,6 +26,12 @@ class ManifestDownloader : public blink::WebURLLoaderClient {
   ManifestDownloader(bool is_installed, ManifestDownloaderCallback cb);
   virtual ~ManifestDownloader();
 
+  // This is a pretty arbitrary limit on the byte size of the NaCl manifest
+  // file.
+  // Note that the resulting string object has to have at least one byte extra
+  // for the null termination character.
+  static const size_t kNaClManifestMaxFileBytes = 1024 * 1024;
+
  private:
   // WebURLLoaderClient implementation.
   virtual void didReceiveResponse(blink::WebURLLoader* loader,
