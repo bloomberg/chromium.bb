@@ -121,7 +121,7 @@ void ContentVerifyJob::FinishBlock() {
 }
 
 void ContentVerifyJob::OnHashesReady(bool success) {
-  if (!success)
+  if (!success && !g_test_delegate)
     return DispatchFailureCallback(NO_HASHES);
 
   hashes_ready_ = true;

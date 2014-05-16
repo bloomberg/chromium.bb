@@ -26,12 +26,14 @@
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/manifest_fetch_data.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,6 +55,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "net/base/escape.h"
 
 #if defined(ENABLE_NOTIFICATIONS)
 #include "chrome/browser/notifications/desktop_notification_service.h"
@@ -151,9 +154,21 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
   virtual ~ContentVerifierDelegateImpl() {}
 
   virtual bool ShouldBeVerified(const Extension& extension) OVERRIDE {
-    return ((extension.is_extension() || extension.is_legacy_packaged_app()) &&
-            ManifestURL::UpdatesFromGallery(&extension) &&
-            Manifest::IsAutoUpdateableLocation(extension.location()));
+    if (!extension.is_extension() && !extension.is_legacy_packaged_app())
+      return false;
+    if (!Manifest::IsAutoUpdateableLocation(extension.location()))
+      return false;
+
+    if (!ManifestURL::UpdatesFromGallery(&extension)) {
+      // It's possible that the webstore update url was overridden for testing
+      // so also consider extensions with the default (production) update url
+      // to be from the store as well.
+      GURL default_webstore_url = extension_urls::GetDefaultWebstoreUpdateUrl();
+      if (ManifestURL::GetUpdateURL(&extension) != default_webstore_url)
+        return false;
+    }
+
+    return true;
   }
 
   virtual const ContentVerifierKey& PublicKey() OVERRIDE {
@@ -165,7 +180,26 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
 
   virtual GURL GetSignatureFetchUrl(const std::string& extension_id,
                                     const base::Version& version) OVERRIDE {
-    return GURL();
+    // TODO(asargent) Factor out common code from the extension updater's
+    // ManifestFetchData class that can be shared for use here.
+    std::vector<std::string> parts;
+    parts.push_back("uc");
+    parts.push_back("installsource=signature");
+    parts.push_back("id=" + extension_id);
+    parts.push_back("v=" + version.GetString());
+    std::string x_value =
+        net::EscapeQueryParamValue(JoinString(parts, "&"), true);
+    std::string query = "response=redirect&x=" + x_value;
+
+    GURL base_url = extension_urls::GetWebstoreUpdateUrl();
+    GURL::Replacements replacements;
+    replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
+    return base_url.ReplaceComponents(replacements);
+  }
+
+  virtual std::set<base::FilePath> GetBrowserImagePaths(
+      const extensions::Extension* extension) OVERRIDE {
+    return extension_file_util::GetBrowserImagePaths(extension);
   }
 
   virtual void VerifyFailed(const std::string& extension_id) OVERRIDE {
