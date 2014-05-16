@@ -24,24 +24,28 @@ struct TestContext {
   int num_loader_deletes;
 };
 
-class TestServiceImpl :
-    public ServiceConnection<TestService, TestServiceImpl, TestContext> {
+class TestServiceImpl : public InterfaceImpl<TestService> {
  public:
-  virtual ~TestServiceImpl() {
-    if (context())
-      --context()->num_impls;
+  explicit TestServiceImpl(TestContext* context) : context_(context) {
+    ++context_->num_impls;
   }
 
-  void Initialize() {
-    if (context())
-      ++context()->num_impls;
+  virtual ~TestServiceImpl() {
+    --context_->num_impls;
+  }
+
+  // InterfaceImpl<TestService> implementation.
+  virtual void OnConnectionError() OVERRIDE {
   }
 
   // TestService implementation:
   virtual void Test(const mojo::String& test_string) OVERRIDE {
-    context()->last_test_string = test_string.To<std::string>();
+    context_->last_test_string = test_string.To<std::string>();
     client()->AckTest();
   }
+
+ private:
+  TestContext* context_;
 };
 
 class TestClientImpl : public TestClient {
@@ -98,8 +102,7 @@ class TestServiceLoader : public ServiceLoader {
                            ScopedMessagePipeHandle shell_handle) OVERRIDE {
     ++num_loads_;
     test_app_.reset(new Application(shell_handle.Pass()));
-    test_app_->AddServiceConnector(
-        new ServiceConnector<TestServiceImpl, TestContext>(context_));
+    test_app_->AddService<TestServiceImpl>(context_);
   }
 
   virtual void OnServiceError(ServiceManager* manager,

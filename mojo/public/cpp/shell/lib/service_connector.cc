@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/shell/service.h"
+#include "mojo/public/cpp/shell/lib/service_connector.h"
 
 namespace mojo {
 namespace internal {

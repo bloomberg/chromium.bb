@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "mojo/public/cpp/shell/service.h"
 #include "mojo/services/public/interfaces/view_manager/view_manager.mojom.h"
 #include "mojo/services/view_manager/ids.h"
 #include "mojo/services/view_manager/node_delegate.h"
@@ -32,17 +31,16 @@ class View;
 
 // Manages a connection from the client.
 class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
-    : public ServiceConnection<IViewManager, ViewManagerConnection,
-                               RootNodeManager>,
+    : public InterfaceImpl<IViewManager>,
       public NodeDelegate {
  public:
-  ViewManagerConnection();
+  ViewManagerConnection(RootNodeManager* root_node_manager);
   virtual ~ViewManagerConnection();
 
-  TransportConnectionId id() const { return id_; }
+  virtual void OnConnectionEstablished() MOJO_OVERRIDE;
+  virtual void OnConnectionError() MOJO_OVERRIDE;
 
-  // Invoked when connection is established.
-  void Initialize();
+  TransportConnectionId id() const { return id_; }
 
   // Returns the Node with the specified id.
   Node* GetNode(const NodeId& id);
@@ -111,9 +109,10 @@ class MOJO_VIEW_MANAGER_EXPORT ViewManagerConnection
   virtual void OnNodeViewReplaced(const NodeId& node,
                                   const ViewId& new_view_id,
                                   const ViewId& old_view_id) OVERRIDE;
+  RootNodeManager* root_node_manager_;
 
   // Id of this connection as assigned by RootNodeManager. Assigned in
-  // Initialize().
+  // OnConnectionEstablished().
   TransportConnectionId id_;
 
   NodeMap node_map_;

@@ -16,11 +16,12 @@
 #include "mojo/services/dbus_echo/echo.mojom.h"
 
 namespace {
-class EchoServiceImpl
-    : public mojo::ServiceConnection<mojo::EchoService, EchoServiceImpl> {
+class EchoServiceImpl : public mojo::InterfaceImpl<mojo::EchoService> {
  public:
   EchoServiceImpl() {}
   virtual ~EchoServiceImpl() {}
+
+  virtual void OnConnectionError() OVERRIDE {}
 
  protected:
   virtual void Echo(

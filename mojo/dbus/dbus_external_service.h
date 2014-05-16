@@ -74,7 +74,7 @@ class DBusExternalService : public DBusExternalServiceBase {
     }
     virtual void Activate(ScopedMessagePipeHandle shell_handle) OVERRIDE {
       app_.reset(new Application(shell_handle.Pass()));
-      app_->AddServiceConnector(new ServiceConnector<ServiceImpl>());
+      app_->AddService<ServiceImpl>();
     }
    private:
     DBusExternalService* service_;
