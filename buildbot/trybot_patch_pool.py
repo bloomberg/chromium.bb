@@ -13,10 +13,19 @@ def ChromiteFilter(patch):
   return patch.project == constants.CHROMITE_PROJECT
 
 
+def ExtManifestFilter(patch):
+  """Used with FilterFn to isolate patches to the external manifest."""
+  return patch.project == constants.MANIFEST_PROJECT
+
+
+def IntManifestFilter(patch):
+  """Used with FilterFn to isolate patches to the internal manifest."""
+  return patch.project == constants.MANIFEST_INT_PROJECT
+
+
 def ManifestFilter(patch):
   """Used with FilterFn to isolate patches to the manifest."""
-  return patch.project in (constants.MANIFEST_PROJECT,
-                           constants.MANIFEST_INT_PROJECT)
+  return ExtManifestFilter(patch.project) or IntManifestFilter(patch.project)
 
 
 def BranchFilter(branch, patch):
@@ -71,6 +80,14 @@ class TrybotPatchPool(object):
   def FilterManifest(self, negate=False):
     """Return a patch pool with only patches to the manifest."""
     return self.FilterFn(ManifestFilter, negate=negate)
+
+  def FilterIntManifest(self, negate=False):
+    """Return a patch pool with only patches to the internal manifest."""
+    return self.FilterFn(IntManifestFilter, negate=negate)
+
+  def FilterExtManifest(self, negate=False):
+    """Return a patch pool with only patches to the external manifest."""
+    return self.FilterFn(ExtManifestFilter, negate=negate)
 
   def FilterBranch(self, branch, negate=False):
     """Return a patch pool with only patches based on a particular branch."""

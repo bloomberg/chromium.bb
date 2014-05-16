@@ -154,8 +154,6 @@ class BootstrapStage(PatchChangesStage):
     repository.CloneGitRepo(checkout_dir,
                             self._run.config.manifest_repo_url)
 
-    # TODO(davidjames): This code actually takes external manifest patches and
-    # tries to apply them to the internal manifest. We shouldn't do this.
     patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
         checkout_dir, tracking_branch=self._run.manifest_branch)
 

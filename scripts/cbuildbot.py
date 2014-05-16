@@ -331,7 +331,10 @@ class Builder(object):
     """
     stage = None
     chromite_pool = self.patch_pool.Filter(project=constants.CHROMITE_PROJECT)
-    manifest_pool = self.patch_pool.FilterManifest()
+    if self._run.config.internal:
+      manifest_pool = self.patch_pool.FilterIntManifest()
+    else:
+      manifest_pool = self.patch_pool.FilterExtManifest()
     chromite_branch = git.GetChromiteTrackingBranch()
     if (chromite_pool or manifest_pool or
         self._run.options.test_bootstrap or
