@@ -810,9 +810,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Flag to detect recursive calls to GetBackingStore().
   bool in_get_backing_store_;
 
-  // Set when we call DidPaintRect/DidScrollRect on the view.
-  bool view_being_painted_;
-
   // Used for UMA histogram logging to measure the time for a repaint view
   // operation to finish.
   base::TimeTicks repaint_start_time_;

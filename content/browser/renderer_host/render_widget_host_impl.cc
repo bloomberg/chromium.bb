@@ -182,7 +182,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       is_unresponsive_(false),
       in_flight_event_count_(0),
       in_get_backing_store_(false),
-      view_being_painted_(false),
       ignore_input_events_(false),
       input_method_active_(false),
       text_direction_updated_(false),
@@ -747,7 +746,7 @@ bool RenderWidgetHostImpl::CanPauseForPendingResizeOrRepaints() {
     return false;
 
   // Do not pause if there is not a paint or resize already coming.
-  if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_)
+  if (!repaint_ack_pending_ && !resize_ack_pending_)
     return false;
 
   return true;
@@ -796,7 +795,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
 
   // We do not have a suitable backing store in the cache, so send out a
   // request to the renderer to paint the view if required.
-  if (!repaint_ack_pending_ && !resize_ack_pending_ && !view_being_painted_) {
+  if (!repaint_ack_pending_ && !resize_ack_pending_) {
     repaint_start_time_ = TimeTicks::Now();
     repaint_ack_pending_ = true;
     TRACE_EVENT_ASYNC_BEGIN0(
@@ -840,7 +839,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
 
 bool RenderWidgetHostImpl::ScheduleComposite() {
   if (is_hidden_ || current_size_.IsEmpty() || repaint_ack_pending_ ||
-      resize_ack_pending_ || view_being_painted_) {
+      resize_ack_pending_) {
     return false;
   }
 
