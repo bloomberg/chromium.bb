@@ -217,6 +217,10 @@ img {
   text-decoration: underline;
 }
 
+.browser-header .action {
+  margin-left: 10px;
+}
+
 .list:not(.pages) .subrow {
   min-height: 19px;
 }

@@ -171,7 +171,7 @@ DevToolsTracingHandler::OnStart(
   TracingController::GetInstance()->EnableRecording(
       categories, options, TracingController::EnableRecordingDoneCallback());
 
-  return NULL;
+  return command->SuccessResponse(NULL);
 }
 
 void DevToolsTracingHandler::OnBufferUsage(float usage) {

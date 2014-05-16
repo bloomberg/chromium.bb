@@ -77,7 +77,7 @@ class CancelableTimer {
         FROM_HERE,
         base::Bind(&CancelableTimer::Fire, weak_factory_.GetWeakPtr()),
         delay);
-  };
+  }
 
  private:
   void Fire() { callback_.Run(); }
@@ -344,6 +344,9 @@ class AdbTargetsUIHandler
                     const std::string& url,
                     const DevToolsTargetsUIHandler::TargetCallback&) OVERRIDE;
 
+  virtual scoped_refptr<content::DevToolsAgentHost> GetBrowserAgentHost(
+      const std::string& browser_id) OVERRIDE;
+
  private:
   // DevToolsAndroidBridge::Listener overrides.
   virtual void DeviceListChanged(
@@ -386,6 +389,13 @@ void AdbTargetsUIHandler::Open(
   RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
   if (it !=  remote_browsers_.end())
     it->second->Open(url, base::Bind(&CallOnTarget, callback));
+}
+
+scoped_refptr<content::DevToolsAgentHost>
+AdbTargetsUIHandler::GetBrowserAgentHost(
+    const std::string& browser_id) {
+  RemoteBrowsers::iterator it = remote_browsers_.find(browser_id);
+  return it != remote_browsers_.end() ? it->second->GetAgentHost() : NULL;
 }
 
 void AdbTargetsUIHandler::DeviceListChanged(
@@ -529,6 +539,11 @@ void DevToolsTargetsUIHandler::Open(const std::string& browser_id,
                                     const std::string& url,
                                     const TargetCallback& callback) {
   callback.Run(NULL);
+}
+
+scoped_refptr<content::DevToolsAgentHost>
+DevToolsTargetsUIHandler::GetBrowserAgentHost(const std::string& browser_id) {
+  return NULL;
 }
 
 base::DictionaryValue* DevToolsTargetsUIHandler::Serialize(

@@ -8,17 +8,21 @@
 #include "base/stl_util.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
+#include "chrome/browser/devtools/devtools_ui_bindings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -35,6 +39,7 @@ const char kActivateCommand[]  = "activate";
 const char kCloseCommand[]  = "close";
 const char kReloadCommand[]  = "reload";
 const char kOpenCommand[]  = "open";
+const char kInspectBrowser[] = "inspect-browser";
 
 const char kDiscoverUsbDevicesEnabledCommand[] =
     "set-discover-usb-devices-enabled";
@@ -61,6 +66,7 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void HandleCloseCommand(const base::ListValue* args);
   void HandleReloadCommand(const base::ListValue* args);
   void HandleOpenCommand(const base::ListValue* args);
+  void HandleInspectBrowserCommand(const base::ListValue* args);
   void HandleBooleanPrefChanged(const char* pref_name,
                                 const base::ListValue* args);
   void HandlePortForwardingConfigCommand(const base::ListValue* args);
@@ -99,6 +105,9 @@ void InspectMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kOpenCommand,
       base::Bind(&InspectMessageHandler::HandleOpenCommand,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(kInspectBrowser,
+      base::Bind(&InspectMessageHandler::HandleInspectBrowserCommand,
                  base::Unretained(this)));
 }
 
@@ -150,6 +159,17 @@ void InspectMessageHandler::HandleOpenCommand(const base::ListValue* args) {
   std::string url;
   if (ParseStringArgs(args, &source_id, &browser_id, &url))
     inspect_ui_->Open(source_id, browser_id, url);
+}
+
+void InspectMessageHandler::HandleInspectBrowserCommand(
+    const base::ListValue* args) {
+  std::string source_id;
+  std::string browser_id;
+  std::string front_end;
+  if (ParseStringArgs(args, &source_id, &browser_id, &front_end)) {
+    inspect_ui_->InspectBrowserWithCustomFrontend(
+        source_id, browser_id, GURL(front_end));
+  }
 }
 
 void InspectMessageHandler::HandleBooleanPrefChanged(
@@ -236,6 +256,44 @@ void InspectUI::Open(const std::string& source_id,
   DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
   if (handler)
     handler->Open(browser_id, url, base::Bind(&NoOp));
+}
+
+void InspectUI::InspectBrowserWithCustomFrontend(
+    const std::string& source_id,
+    const std::string& browser_id,
+    const GURL& frontend_url) {
+  DevToolsTargetsUIHandler* handler = FindTargetHandler(source_id);
+  if (!handler)
+    return;
+
+  // Fetch agent host from remote browser.
+  scoped_refptr<content::DevToolsAgentHost> agent_host =
+      handler->GetBrowserAgentHost(browser_id);
+  if (agent_host->IsAttached())
+    return;
+
+  // Create web contents for the front-end.
+  WebContents* inspect_ui = web_ui()->GetWebContents();
+  WebContents* front_end = inspect_ui->GetDelegate()->OpenURLFromTab(
+      inspect_ui,
+      content::OpenURLParams(GURL(content::kAboutBlankURL),
+                    content::Referrer(),
+                    NEW_FOREGROUND_TAB,
+                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                    false));
+
+  // Install devtools bindings.
+  DevToolsUIBindings* bindings = DevToolsUIBindings::GetOrCreateFor(front_end);
+
+  // Navigate to a page.
+  front_end->GetController().LoadURL(
+      frontend_url, content::Referrer(),
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+
+
+  // Engage remote debugging between front-end and agent host.
+  content::DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+      agent_host, bindings->frontend_host());
 }
 
 void InspectUI::InspectDevices(Browser* browser) {

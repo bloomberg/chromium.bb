@@ -39,6 +39,10 @@ class InspectUI : public content::WebUIController,
   void Open(const std::string& source_id,
             const std::string& browser_id,
             const std::string& url);
+  void InspectBrowserWithCustomFrontend(
+      const std::string& source_id,
+      const std::string& browser_id,
+      const GURL& frontend_url);
 
   static void InspectDevices(Browser* browser);
 

@@ -56,6 +56,7 @@ const char kNewPageRequest[] = "GET /json/new HTTP/1.1\r\n\r\n";
 const char kNewPageRequestWithURL[] = "GET /json/new?%s HTTP/1.1\r\n\r\n";
 const char kActivatePageRequest[] =
     "GET /json/activate/%s HTTP/1.1\r\n\r\n";
+const char kBrowserTargetSocket[] = "/devtools/browser";
 const int kAdbPollingIntervalMs = 1000;
 
 const char kUrlParam[] = "url";
@@ -1034,6 +1035,12 @@ void DevToolsAndroidBridge::RemoteBrowser::Open(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   InnerOpen(url, base::Bind(&RemoteBrowser::RespondToOpenOnUIThread,
                             this, callback));
+}
+
+scoped_refptr<content::DevToolsAgentHost>
+DevToolsAndroidBridge::RemoteBrowser::GetAgentHost() {
+  return AgentHostDelegate::GetOrCreateAgentHost(
+      "adb:" + serial_ + ":" + socket_, this, kBrowserTargetSocket);
 }
 
 void DevToolsAndroidBridge::RemoteBrowser::RespondToOpenOnUIThread(

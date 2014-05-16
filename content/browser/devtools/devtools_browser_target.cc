@@ -44,7 +44,6 @@ void DevToolsBrowserTarget::RegisterDomainHandler(
 
 void DevToolsBrowserTarget::HandleMessage(const std::string& data) {
   DCHECK_EQ(message_loop_proxy_, base::MessageLoopProxy::current());
-
   std::string error_response;
   scoped_refptr<DevToolsProtocol::Command> command =
       DevToolsProtocol::ParseCommand(data, &error_response);

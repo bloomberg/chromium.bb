@@ -7,6 +7,20 @@ var MIN_VERSION_TARGET_ID = 26;
 var MIN_VERSION_NEW_TAB = 29;
 var MIN_VERSION_TAB_ACTIVATE = 30;
 
+var queryParamsObject = {};
+
+(function() {
+var queryParams = window.location.search;
+if (!queryParams)
+    return;
+var params = queryParams.substring(1).split('&');
+for (var i = 0; i < params.length; ++i) {
+    var pair = params[i].split('=');
+    queryParamsObject[pair[0]] = pair[1];
+}
+
+})();
+
 function sendCommand(command, args) {
   chrome.send(command, Array.prototype.slice.call(arguments, 1));
 }
@@ -265,6 +279,18 @@ function populateRemoteTargets(devices) {
           newPageButton.addEventListener('click', openHandler, true);
 
           browserHeader.appendChild(newPage);
+        }
+
+        if (queryParamsObject['browser-inspector']) {
+          var link = document.createElement('span');
+          link.classList.add('action');
+          link.setAttribute('tabindex', 1);
+          link.textContent = 'inspect';
+          browserHeader.appendChild(link);
+          link.addEventListener(
+              'click',
+              sendCommand.bind(null, 'inspect-browser', browser.source,
+                  browser.id, queryParamsObject['browser-inspector']), false);
         }
 
         pageList = document.createElement('div');
