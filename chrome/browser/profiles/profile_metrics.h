@@ -91,8 +91,10 @@ class ProfileMetrics {
     PROFILE_ENROLLMENT_ACCEPT_NEW_PROFILE_MGMT,
     // User closed the Upgrade card.
     PROFILE_ENROLLMENT_CLOSE_WELCOME_CARD,
-    // Used disabled New Profile Management.
+    // User disabled New Profile Management.
     PROFILE_ENROLLMENT_DISABLE_NEW_PROFILE_MGMT,
+    // User elected to send feedback.
+    PROFILE_ENROLLMENT_SEND_FEEDBACK,
     NUM_PROFILE_ENROLLMENT_METRICS,
   };
 

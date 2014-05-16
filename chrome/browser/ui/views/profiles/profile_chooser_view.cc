@@ -600,6 +600,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     tutorial_mode_ = TUTORIAL_MODE_SEND_FEEDBACK;
     ShowView(BUBBLE_VIEW_MODE_PROFILE_CHOOSER, avatar_menu_.get());
   } else if (sender == tutorial_send_feedback_button_) {
+    ProfileMetrics::LogProfileUpgradeEnrollment(
+        ProfileMetrics::PROFILE_ENROLLMENT_SEND_FEEDBACK);
     chrome::OpenFeedbackDialog(browser_);
   } else if (sender == end_preview_and_relaunch_button_) {
     ProfileMetrics::LogProfileUpgradeEnrollment(
