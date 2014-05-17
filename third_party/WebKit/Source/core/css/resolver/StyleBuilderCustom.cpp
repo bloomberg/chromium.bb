@@ -82,6 +82,58 @@
 
 namespace WebCore {
 
+namespace {
+
+static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
+{
+    switch (id) {
+    case CSSPropertyBackgroundColor:
+    case CSSPropertyBorderLeftColor:
+    case CSSPropertyBorderRightColor:
+    case CSSPropertyBorderTopColor:
+    case CSSPropertyBorderBottomColor:
+    case CSSPropertyColor:
+    case CSSPropertyFill:
+    case CSSPropertyOutlineColor:
+    case CSSPropertyStroke:
+    case CSSPropertyTextDecorationColor:
+    case CSSPropertyWebkitColumnRuleColor:
+    case CSSPropertyWebkitTextEmphasisColor:
+    case CSSPropertyWebkitTextFillColor:
+    case CSSPropertyWebkitTextStrokeColor:
+        return true;
+    default:
+        return false;
+    }
+}
+
+} // namespace
+
+void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CSSValue* value)
+{
+    ASSERT_WITH_MESSAGE(!isExpandedShorthand(id), "Shorthand property id = %d wasn't expanded at parsing time", id);
+
+    bool isInherit = state.parentNode() && value->isInheritedValue();
+    bool isInitial = value->isInitialValue() || (!state.parentNode() && value->isInheritedValue());
+
+    ASSERT(!isInherit || !isInitial); // isInherit -> !isInitial && isInitial -> !isInherit
+    ASSERT(!isInherit || (state.parentNode() && state.parentStyle())); // isInherit -> (state.parentNode() && state.parentStyle())
+
+    if (!state.applyPropertyToRegularStyle() && (!state.applyPropertyToVisitedLinkStyle() || !isValidVisitedLinkProperty(id))) {
+        // Limit the properties that can be applied to only the ones honored by :visited.
+        return;
+    }
+
+    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
+    if (primitiveValue && primitiveValue->getValueID() == CSSValueCurrentcolor)
+        state.style()->setHasCurrentColor();
+
+    if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSProperty::isInheritedProperty(id))
+        state.parentStyle()->setHasExplicitlyInheritedProperties();
+
+    StyleBuilder::applyProperty(id, state, value, isInitial, isInherit);
+}
+
 static Length clipConvertToLength(StyleResolverState& state, CSSPrimitiveValue* value)
 {
     return value->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
@@ -1084,748 +1136,270 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& 
     state.style()->setWillChangeProperties(willChangeProperties);
 }
 
-// Everything below this line is from the old StyleResolver::applyProperty
-// and eventually needs to move into new StyleBuilderFunctions calls intead.
-
-#define HANDLE_INHERIT(prop, Prop) \
-if (isInherit) { \
-    state.style()->set##Prop(state.parentStyle()->prop()); \
-    return; \
-}
-
-#define HANDLE_INHERIT_AND_INITIAL(prop, Prop) \
-HANDLE_INHERIT(prop, Prop) \
-if (isInitial) { \
-    state.style()->set##Prop(RenderStyle::initial##Prop()); \
-    return; \
-}
-
-#define HANDLE_SVG_INHERIT(prop, Prop) \
-if (isInherit) { \
-    state.style()->accessSVGStyle()->set##Prop(state.parentStyle()->svgStyle()->prop()); \
-    return; \
-}
-
-#define HANDLE_SVG_INHERIT_AND_INITIAL(prop, Prop) \
-HANDLE_SVG_INHERIT(prop, Prop) \
-if (isInitial) { \
-    state.style()->accessSVGStyle()->set##Prop(SVGRenderStyle::initial##Prop()); \
-    return; \
-}
-
-static inline bool isValidVisitedLinkProperty(CSSPropertyID id)
+void StyleBuilderFunctions::applyInitialCSSPropertyContent(StyleResolverState& state)
 {
-    switch (id) {
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderTopColor:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyColor:
-    case CSSPropertyFill:
-    case CSSPropertyOutlineColor:
-    case CSSPropertyStroke:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyWebkitColumnRuleColor:
-    case CSSPropertyWebkitTextEmphasisColor:
-    case CSSPropertyWebkitTextFillColor:
-    case CSSPropertyWebkitTextStrokeColor:
-        return true;
-    default:
-        break;
-    }
-
-    return false;
+    state.style()->clearContent();
 }
 
-
-void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CSSValue* value)
+void StyleBuilderFunctions::applyInheritCSSPropertyContent(StyleResolverState&)
 {
-    ASSERT_WITH_MESSAGE(!isExpandedShorthand(id), "Shorthand property id = %d wasn't expanded at parsing time", id);
-
-    bool isInherit = state.parentNode() && value->isInheritedValue();
-    bool isInitial = value->isInitialValue() || (!state.parentNode() && value->isInheritedValue());
-
-    ASSERT(!isInherit || !isInitial); // isInherit -> !isInitial && isInitial -> !isInherit
-    ASSERT(!isInherit || (state.parentNode() && state.parentStyle())); // isInherit -> (state.parentNode() && state.parentStyle())
-
-    if (!state.applyPropertyToRegularStyle() && (!state.applyPropertyToVisitedLinkStyle() || !isValidVisitedLinkProperty(id))) {
-        // Limit the properties that can be applied to only the ones honored by :visited.
-        return;
-    }
-
-    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
-    if (primitiveValue && primitiveValue->getValueID() == CSSValueCurrentcolor)
-        state.style()->setHasCurrentColor();
-
-    if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSProperty::isInheritedProperty(id))
-        state.parentStyle()->setHasExplicitlyInheritedProperties();
-
-    if (StyleBuilder::applyProperty(id, state, value, isInitial, isInherit))
-        return;
-
-    // Fall back to the old switch statement, which is now in StyleBuilderCustom.cpp
-    StyleBuilder::oldApplyProperty(id, state, value, isInitial, isInherit);
+    // FIXME: In CSS3, it will be possible to inherit content. In CSS2 it is not. This
+    // note is a reminder that eventually "inherit" needs to be supported.
 }
 
-
-void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit)
+void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& state, CSSValue* value)
 {
-    CSSPrimitiveValue* primitiveValue = value->isPrimitiveValue() ? toCSSPrimitiveValue(value) : 0;
+    // list of string, uri, counter, attr, i
 
-    // What follows is a list that maps the CSS properties into their corresponding front-end
-    // RenderStyle values.
-    switch (id) {
-    case CSSPropertyContent:
-        // list of string, uri, counter, attr, i
-        {
-            // FIXME: In CSS3, it will be possible to inherit content. In CSS2 it is not. This
-            // note is a reminder that eventually "inherit" needs to be supported.
-
-            if (isInitial) {
-                state.style()->clearContent();
-                return;
-            }
-
-            if (!value->isValueList())
-                return;
-
-            bool didSet = false;
-            for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
-                CSSValue* item = i.value();
-                if (item->isImageGeneratorValue()) {
-                    if (item->isGradientValue())
-                        state.style()->setContent(StyleGeneratedImage::create(toCSSGradientValue(item)->gradientWithStylesResolved(state.document().textLinkColors(), state.style()->color()).get()), didSet);
-                    else
-                        state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(item)), didSet);
-                    didSet = true;
-                } else if (item->isImageSetValue()) {
-                    state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(item)), didSet);
-                    didSet = true;
-                }
-
-                if (item->isImageValue()) {
-                    state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(state.document(), CSSPropertyContent, toCSSImageValue(item)), didSet);
-                    didSet = true;
-                    continue;
-                }
-
-                if (!item->isPrimitiveValue())
-                    continue;
-
-                CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item);
-
-                if (contentValue->isString()) {
-                    state.style()->setContent(contentValue->getStringValue().impl(), didSet);
-                    didSet = true;
-                } else if (contentValue->isAttr()) {
-                    // FIXME: Can a namespace be specified for an attr(foo)?
-                    if (state.style()->styleType() == NOPSEUDO)
-                        state.style()->setUnique();
-                    else
-                        state.parentStyle()->setUnique();
-                    QualifiedName attr(nullAtom, AtomicString(contentValue->getStringValue()), nullAtom);
-                    const AtomicString& value = state.element()->getAttribute(attr);
-                    state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
-                    didSet = true;
-                    // register the fact that the attribute value affects the style
-                    state.contentAttrValues().append(attr.localName());
-                } else if (contentValue->isCounter()) {
-                    Counter* counterValue = contentValue->getCounterValue();
-                    EListStyleType listStyleType = NoneListStyle;
-                    CSSValueID listStyleIdent = counterValue->listStyleIdent();
-                    if (listStyleIdent != CSSValueNone)
-                        listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
-                    OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
-                    state.style()->setContent(counter.release(), didSet);
-                    didSet = true;
-                } else {
-                    switch (contentValue->getValueID()) {
-                    case CSSValueOpenQuote:
-                        state.style()->setContent(OPEN_QUOTE, didSet);
-                        didSet = true;
-                        break;
-                    case CSSValueCloseQuote:
-                        state.style()->setContent(CLOSE_QUOTE, didSet);
-                        didSet = true;
-                        break;
-                    case CSSValueNoOpenQuote:
-                        state.style()->setContent(NO_OPEN_QUOTE, didSet);
-                        didSet = true;
-                        break;
-                    case CSSValueNoCloseQuote:
-                        state.style()->setContent(NO_CLOSE_QUOTE, didSet);
-                        didSet = true;
-                        break;
-                    default:
-                        // normal and none do not have any effect.
-                        { }
-                    }
-                }
-            }
-            if (!didSet)
-                state.style()->clearContent();
-            return;
-        }
-    // Shorthand properties.
-    case CSSPropertyFont:
-        // Only System Font identifiers should come through this method
-        // all other values should have been handled when the shorthand
-        // was expanded by the parser.
-        // FIXME: System Font identifiers should not hijack this
-        // short-hand CSSProperty like this.
-        ASSERT(!isInitial);
-        ASSERT(!isInherit);
-        ASSERT(primitiveValue);
-        state.style()->setLineHeight(RenderStyle::initialLineHeight());
-        state.setLineHeightValue(0);
-        state.fontBuilder().fromSystemFont(primitiveValue->getValueID(), state.style()->effectiveZoom());
+    if (!value->isValueList())
         return;
-    case CSSPropertyAnimation:
-    case CSSPropertyBackground:
-    case CSSPropertyBackgroundPosition:
-    case CSSPropertyBackgroundRepeat:
-    case CSSPropertyBorder:
-    case CSSPropertyBorderBottom:
-    case CSSPropertyBorderColor:
-    case CSSPropertyBorderImage:
-    case CSSPropertyBorderLeft:
-    case CSSPropertyBorderRadius:
-    case CSSPropertyBorderRight:
-    case CSSPropertyBorderSpacing:
-    case CSSPropertyBorderStyle:
-    case CSSPropertyBorderTop:
-    case CSSPropertyBorderWidth:
-    case CSSPropertyListStyle:
-    case CSSPropertyMargin:
-    case CSSPropertyObjectPosition:
-    case CSSPropertyOutline:
-    case CSSPropertyOverflow:
-    case CSSPropertyPadding:
-    case CSSPropertyTransition:
-    case CSSPropertyWebkitAnimation:
-    case CSSPropertyWebkitBorderAfter:
-    case CSSPropertyWebkitBorderBefore:
-    case CSSPropertyWebkitBorderEnd:
-    case CSSPropertyWebkitBorderStart:
-    case CSSPropertyWebkitBorderRadius:
-    case CSSPropertyWebkitColumns:
-    case CSSPropertyWebkitColumnRule:
-    case CSSPropertyFlex:
-    case CSSPropertyFlexFlow:
-    case CSSPropertyGrid:
-    case CSSPropertyGridTemplate:
-    case CSSPropertyGridColumn:
-    case CSSPropertyGridRow:
-    case CSSPropertyGridArea:
-    case CSSPropertyWebkitMarginCollapse:
-    case CSSPropertyWebkitMask:
-    case CSSPropertyWebkitMaskPosition:
-    case CSSPropertyWebkitMaskRepeat:
-    case CSSPropertyWebkitTextEmphasis:
-    case CSSPropertyWebkitTextStroke:
-    case CSSPropertyWebkitTransition:
-    case CSSPropertyWebkitTransformOrigin:
-        ASSERT(isExpandedShorthand(id));
-        ASSERT_NOT_REACHED();
-        break;
 
-    // CSS3 Properties
-    case CSSPropertySrc: // Only used in @font-face rules.
-        return;
-    case CSSPropertyUnicodeRange: // Only used in @font-face rules.
-        return;
-    case CSSPropertyWebkitLocale: {
-        HANDLE_INHERIT_AND_INITIAL(locale, Locale);
-        if (!primitiveValue)
-            return;
-        if (primitiveValue->getValueID() == CSSValueAuto)
-            state.style()->setLocale(nullAtom);
-        else
-            state.style()->setLocale(AtomicString(primitiveValue->getStringValue()));
-        state.fontBuilder().setScript(state.style()->locale());
-        return;
-    }
-    case CSSPropertyWebkitAppRegion: {
-        if (!primitiveValue || !primitiveValue->getValueID())
-            return;
-        state.style()->setDraggableRegionMode(primitiveValue->getValueID() == CSSValueDrag ? DraggableRegionDrag : DraggableRegionNoDrag);
-        state.document().setHasAnnotatedRegions(true);
-        return;
-    }
-    case CSSPropertyPerspective:
-    case CSSPropertyWebkitPerspective: {
-        HANDLE_INHERIT_AND_INITIAL(perspective, Perspective)
-
-        if (!primitiveValue)
-            return;
-
-        if (primitiveValue->getValueID() == CSSValueNone) {
-            state.style()->setPerspective(0);
-            return;
+    bool didSet = false;
+    for (CSSValueListIterator i = value; i.hasMore(); i.advance()) {
+        CSSValue* item = i.value();
+        if (item->isImageGeneratorValue()) {
+            if (item->isGradientValue())
+                state.style()->setContent(StyleGeneratedImage::create(toCSSGradientValue(item)->gradientWithStylesResolved(state.document().textLinkColors(), state.style()->color()).get()), didSet);
+            else
+                state.style()->setContent(StyleGeneratedImage::create(toCSSImageGeneratorValue(item)), didSet);
+            didSet = true;
+        } else if (item->isImageSetValue()) {
+            state.style()->setContent(state.elementStyleResources().setOrPendingFromValue(CSSPropertyContent, toCSSImageSetValue(item)), didSet);
+            didSet = true;
         }
 
-        float perspectiveValue;
-        if (primitiveValue->isLength()) {
-            perspectiveValue = primitiveValue->computeLength<float>(state.cssToLengthConversionData());
-        } else if (id == CSSPropertyWebkitPerspective && primitiveValue->isNumber()) {
-            // Prefixed version treats unitless numbers as px.
-            perspectiveValue = CSSPrimitiveValue::create(primitiveValue->getDoubleValue(), CSSPrimitiveValue::CSS_PX)->computeLength<float>(state.cssToLengthConversionData());
+        if (item->isImageValue()) {
+            state.style()->setContent(state.elementStyleResources().cachedOrPendingFromValue(state.document(), CSSPropertyContent, toCSSImageValue(item)), didSet);
+            didSet = true;
+            continue;
+        }
+
+        if (!item->isPrimitiveValue())
+            continue;
+
+        CSSPrimitiveValue* contentValue = toCSSPrimitiveValue(item);
+
+        if (contentValue->isString()) {
+            state.style()->setContent(contentValue->getStringValue().impl(), didSet);
+            didSet = true;
+        } else if (contentValue->isAttr()) {
+            // FIXME: Can a namespace be specified for an attr(foo)?
+            if (state.style()->styleType() == NOPSEUDO)
+                state.style()->setUnique();
+            else
+                state.parentStyle()->setUnique();
+            QualifiedName attr(nullAtom, AtomicString(contentValue->getStringValue()), nullAtom);
+            const AtomicString& value = state.element()->getAttribute(attr);
+            state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
+            didSet = true;
+            // register the fact that the attribute value affects the style
+            state.contentAttrValues().append(attr.localName());
+        } else if (contentValue->isCounter()) {
+            Counter* counterValue = contentValue->getCounterValue();
+            EListStyleType listStyleType = NoneListStyle;
+            CSSValueID listStyleIdent = counterValue->listStyleIdent();
+            if (listStyleIdent != CSSValueNone)
+                listStyleType = static_cast<EListStyleType>(listStyleIdent - CSSValueDisc);
+            OwnPtr<CounterContent> counter = adoptPtr(new CounterContent(AtomicString(counterValue->identifier()), listStyleType, AtomicString(counterValue->separator())));
+            state.style()->setContent(counter.release(), didSet);
+            didSet = true;
         } else {
-            return;
-        }
-
-        if (perspectiveValue >= 0.0f)
-            state.style()->setPerspective(perspectiveValue);
-        return;
-    }
-    case CSSPropertyInternalCallback: {
-        if (isInherit || isInitial)
-            return;
-        if (primitiveValue && primitiveValue->getValueID() == CSSValueInternalPresence) {
-            state.style()->addCallbackSelector(state.currentRule()->selectorList().selectorsText());
-            return;
-        }
-        break;
-    }
-    case CSSPropertyInvalid:
-        return;
-    case CSSPropertyWebkitBorderEndColor:
-    case CSSPropertyWebkitBorderEndStyle:
-    case CSSPropertyWebkitBorderEndWidth:
-    case CSSPropertyWebkitBorderStartColor:
-    case CSSPropertyWebkitBorderStartStyle:
-    case CSSPropertyWebkitBorderStartWidth:
-    case CSSPropertyWebkitBorderBeforeColor:
-    case CSSPropertyWebkitBorderBeforeStyle:
-    case CSSPropertyWebkitBorderBeforeWidth:
-    case CSSPropertyWebkitBorderAfterColor:
-    case CSSPropertyWebkitBorderAfterStyle:
-    case CSSPropertyWebkitBorderAfterWidth:
-    case CSSPropertyWebkitMarginEnd:
-    case CSSPropertyWebkitMarginStart:
-    case CSSPropertyWebkitMarginBefore:
-    case CSSPropertyWebkitMarginAfter:
-    case CSSPropertyWebkitMarginBeforeCollapse:
-    case CSSPropertyWebkitMarginTopCollapse:
-    case CSSPropertyWebkitMarginAfterCollapse:
-    case CSSPropertyWebkitMarginBottomCollapse:
-    case CSSPropertyWebkitPaddingEnd:
-    case CSSPropertyWebkitPaddingStart:
-    case CSSPropertyWebkitPaddingBefore:
-    case CSSPropertyWebkitPaddingAfter:
-    case CSSPropertyWebkitLogicalWidth:
-    case CSSPropertyWebkitLogicalHeight:
-    case CSSPropertyWebkitMinLogicalWidth:
-    case CSSPropertyWebkitMinLogicalHeight:
-    case CSSPropertyWebkitMaxLogicalWidth:
-    case CSSPropertyWebkitMaxLogicalHeight:
-        ASSERT_NOT_REACHED();
-        return;
-    case CSSPropertyFontStretch:
-    case CSSPropertyPage:
-    case CSSPropertyTextLineThroughColor:
-    case CSSPropertyTextLineThroughMode:
-    case CSSPropertyTextLineThroughStyle:
-    case CSSPropertyTextLineThroughWidth:
-    case CSSPropertyTextOverlineColor:
-    case CSSPropertyTextOverlineMode:
-    case CSSPropertyTextOverlineStyle:
-    case CSSPropertyTextOverlineWidth:
-    case CSSPropertyTextUnderlineColor:
-    case CSSPropertyTextUnderlineMode:
-    case CSSPropertyTextUnderlineStyle:
-    case CSSPropertyTextUnderlineWidth:
-    case CSSPropertyWebkitFontSizeDelta:
-    case CSSPropertyWebkitTextDecorationsInEffect:
-        return;
-
-    // CSS Text Layout Module Level 3: Vertical writing support
-    case CSSPropertyWebkitWritingMode: {
-        HANDLE_INHERIT_AND_INITIAL(writingMode, WritingMode);
-
-        if (primitiveValue)
-            state.setWritingMode(*primitiveValue);
-
-        // FIXME: It is not ok to modify document state while applying style.
-        if (state.element() && state.element() == state.document().documentElement())
-            state.document().setWritingModeSetOnDocumentElement(true);
-        return;
-    }
-
-    case CSSPropertyWebkitTextOrientation: {
-        HANDLE_INHERIT_AND_INITIAL(textOrientation, TextOrientation);
-
-        if (primitiveValue)
-            state.setTextOrientation(*primitiveValue);
-
-        return;
-    }
-
-    // CSS Fonts Module Level 3
-    case CSSPropertyWebkitFontFeatureSettings: {
-        if (primitiveValue && primitiveValue->getValueID() == CSSValueNormal) {
-            state.fontBuilder().setFeatureSettingsNormal();
-            return;
-        }
-
-        if (!value->isValueList())
-            return;
-
-        state.fontBuilder().setFeatureSettingsValue(value);
-        return;
-    }
-
-    // These properties are aliased and we already applied the property on the prefixed version.
-    case CSSPropertyAnimationDelay:
-    case CSSPropertyAnimationDirection:
-    case CSSPropertyAnimationDuration:
-    case CSSPropertyAnimationFillMode:
-    case CSSPropertyAnimationIterationCount:
-    case CSSPropertyAnimationName:
-    case CSSPropertyAnimationPlayState:
-    case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyTransitionDelay:
-    case CSSPropertyTransitionDuration:
-    case CSSPropertyTransitionProperty:
-    case CSSPropertyTransitionTimingFunction:
-        return;
-    // These properties are implemented in StyleBuilder::applyProperty.
-    case CSSPropertyBackgroundAttachment:
-    case CSSPropertyBackgroundBlendMode:
-    case CSSPropertyBackgroundClip:
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBackgroundImage:
-    case CSSPropertyBackgroundOrigin:
-    case CSSPropertyBackgroundPositionX:
-    case CSSPropertyBackgroundPositionY:
-    case CSSPropertyBackgroundRepeatX:
-    case CSSPropertyBackgroundRepeatY:
-    case CSSPropertyBackgroundSize:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyBorderBottomLeftRadius:
-    case CSSPropertyBorderBottomRightRadius:
-    case CSSPropertyBorderBottomStyle:
-    case CSSPropertyBorderBottomWidth:
-    case CSSPropertyBorderCollapse:
-    case CSSPropertyBorderImageOutset:
-    case CSSPropertyBorderImageRepeat:
-    case CSSPropertyBorderImageSlice:
-    case CSSPropertyBorderImageSource:
-    case CSSPropertyBorderImageWidth:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderLeftStyle:
-    case CSSPropertyBorderLeftWidth:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderRightStyle:
-    case CSSPropertyBorderRightWidth:
-    case CSSPropertyBorderTopColor:
-    case CSSPropertyBorderTopLeftRadius:
-    case CSSPropertyBorderTopRightRadius:
-    case CSSPropertyBorderTopStyle:
-    case CSSPropertyBorderTopWidth:
-    case CSSPropertyBottom:
-    case CSSPropertyBoxShadow:
-    case CSSPropertyBoxSizing:
-    case CSSPropertyCaptionSide:
-    case CSSPropertyClear:
-    case CSSPropertyClip:
-    case CSSPropertyColor:
-    case CSSPropertyCounterIncrement:
-    case CSSPropertyCounterReset:
-    case CSSPropertyCursor:
-    case CSSPropertyDirection:
-    case CSSPropertyDisplay:
-    case CSSPropertyEmptyCells:
-    case CSSPropertyFloat:
-    case CSSPropertyFontKerning:
-    case CSSPropertyFontSize:
-    case CSSPropertyFontStyle:
-    case CSSPropertyFontVariant:
-    case CSSPropertyFontVariantLigatures:
-    case CSSPropertyFontWeight:
-    case CSSPropertyGridAutoColumns:
-    case CSSPropertyGridAutoRows:
-    case CSSPropertyGridColumnStart:
-    case CSSPropertyGridColumnEnd:
-    case CSSPropertyGridRowStart:
-    case CSSPropertyGridRowEnd:
-    case CSSPropertyGridTemplateAreas:
-    case CSSPropertyGridTemplateColumns:
-    case CSSPropertyGridTemplateRows:
-    case CSSPropertyHeight:
-    case CSSPropertyImageRendering:
-    case CSSPropertyIsolation:
-    case CSSPropertyLeft:
-    case CSSPropertyLetterSpacing:
-    case CSSPropertyLineHeight:
-    case CSSPropertyListStyleImage:
-    case CSSPropertyListStylePosition:
-    case CSSPropertyListStyleType:
-    case CSSPropertyMarginBottom:
-    case CSSPropertyMarginLeft:
-    case CSSPropertyMarginRight:
-    case CSSPropertyMarginTop:
-    case CSSPropertyMaxHeight:
-    case CSSPropertyMaxWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyMixBlendMode:
-    case CSSPropertyMinWidth:
-    case CSSPropertyObjectFit:
-    case CSSPropertyOpacity:
-    case CSSPropertyOrphans:
-    case CSSPropertyOutlineColor:
-    case CSSPropertyOutlineOffset:
-    case CSSPropertyOutlineStyle:
-    case CSSPropertyOutlineWidth:
-    case CSSPropertyOverflowWrap:
-    case CSSPropertyOverflowX:
-    case CSSPropertyOverflowY:
-    case CSSPropertyPaddingBottom:
-    case CSSPropertyPaddingLeft:
-    case CSSPropertyPaddingRight:
-    case CSSPropertyPaddingTop:
-    case CSSPropertyPageBreakAfter:
-    case CSSPropertyPageBreakBefore:
-    case CSSPropertyPageBreakInside:
-    case CSSPropertyPointerEvents:
-    case CSSPropertyPosition:
-    case CSSPropertyResize:
-    case CSSPropertyRight:
-    case CSSPropertyScrollBehavior:
-    case CSSPropertySize:
-    case CSSPropertySpeak:
-    case CSSPropertyTabSize:
-    case CSSPropertyTableLayout:
-    case CSSPropertyTextAlign:
-    case CSSPropertyTextAlignLast:
-    case CSSPropertyTextDecoration:
-    case CSSPropertyTextDecorationLine:
-    case CSSPropertyTextDecorationStyle:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyTextIndent:
-    case CSSPropertyTextJustify:
-    case CSSPropertyTextOverflow:
-    case CSSPropertyTextRendering:
-    case CSSPropertyTextShadow:
-    case CSSPropertyTextTransform:
-    case CSSPropertyTop:
-    case CSSPropertyTouchAction:
-    case CSSPropertyTouchActionDelay:
-    case CSSPropertyUnicodeBidi:
-    case CSSPropertyVerticalAlign:
-    case CSSPropertyVisibility:
-    case CSSPropertyWebkitAnimationDelay:
-    case CSSPropertyWebkitAnimationDirection:
-    case CSSPropertyWebkitAnimationDuration:
-    case CSSPropertyWebkitAnimationFillMode:
-    case CSSPropertyWebkitAnimationIterationCount:
-    case CSSPropertyWebkitAnimationName:
-    case CSSPropertyWebkitAnimationPlayState:
-    case CSSPropertyWebkitAnimationTimingFunction:
-    case CSSPropertyWebkitAppearance:
-    case CSSPropertyWebkitAspectRatio:
-    case CSSPropertyBackfaceVisibility:
-    case CSSPropertyWebkitBackfaceVisibility:
-    case CSSPropertyWebkitBackgroundClip:
-    case CSSPropertyWebkitBackgroundComposite:
-    case CSSPropertyWebkitBackgroundOrigin:
-    case CSSPropertyWebkitBackgroundSize:
-    case CSSPropertyWebkitBorderFit:
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-    case CSSPropertyWebkitBorderImage:
-    case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyWebkitBoxAlign:
-    case CSSPropertyWebkitBoxDecorationBreak:
-    case CSSPropertyWebkitBoxDirection:
-    case CSSPropertyWebkitBoxFlex:
-    case CSSPropertyWebkitBoxFlexGroup:
-    case CSSPropertyWebkitBoxLines:
-    case CSSPropertyWebkitBoxOrdinalGroup:
-    case CSSPropertyWebkitBoxOrient:
-    case CSSPropertyWebkitBoxPack:
-    case CSSPropertyWebkitBoxShadow:
-    case CSSPropertyWebkitColumnBreakAfter:
-    case CSSPropertyWebkitColumnBreakBefore:
-    case CSSPropertyWebkitColumnBreakInside:
-    case CSSPropertyWebkitColumnCount:
-    case CSSPropertyColumnFill:
-    case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnRuleColor:
-    case CSSPropertyWebkitColumnRuleStyle:
-    case CSSPropertyWebkitColumnRuleWidth:
-    case CSSPropertyWebkitColumnSpan:
-    case CSSPropertyWebkitColumnWidth:
-    case CSSPropertyAlignContent:
-    case CSSPropertyFlexBasis:
-    case CSSPropertyFlexDirection:
-    case CSSPropertyFlexGrow:
-    case CSSPropertyFlexShrink:
-    case CSSPropertyFlexWrap:
-    case CSSPropertyJustifyContent:
-    case CSSPropertyOrder:
-    case CSSPropertyWebkitFilter:
-    case CSSPropertyWebkitFontSmoothing:
-    case CSSPropertyWebkitHighlight:
-    case CSSPropertyWebkitHyphenateCharacter:
-    case CSSPropertyWebkitLineBreak:
-    case CSSPropertyWebkitLineClamp:
-    case CSSPropertyInternalMarqueeDirection:
-    case CSSPropertyInternalMarqueeIncrement:
-    case CSSPropertyInternalMarqueeRepetition:
-    case CSSPropertyInternalMarqueeSpeed:
-    case CSSPropertyInternalMarqueeStyle:
-    case CSSPropertyWebkitMaskBoxImage:
-    case CSSPropertyWebkitMaskBoxImageOutset:
-    case CSSPropertyWebkitMaskBoxImageRepeat:
-    case CSSPropertyWebkitMaskBoxImageSlice:
-    case CSSPropertyWebkitMaskBoxImageSource:
-    case CSSPropertyWebkitMaskBoxImageWidth:
-    case CSSPropertyWebkitMaskClip:
-    case CSSPropertyWebkitMaskComposite:
-    case CSSPropertyWebkitMaskImage:
-    case CSSPropertyWebkitMaskOrigin:
-    case CSSPropertyWebkitMaskPositionX:
-    case CSSPropertyWebkitMaskPositionY:
-    case CSSPropertyWebkitMaskRepeatX:
-    case CSSPropertyWebkitMaskRepeatY:
-    case CSSPropertyWebkitMaskSize:
-    case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyWebkitPerspectiveOrigin:
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitPerspectiveOriginY:
-    case CSSPropertyWebkitPrintColorAdjust:
-    case CSSPropertyWebkitRtlOrdering:
-    case CSSPropertyWebkitRubyPosition:
-    case CSSPropertyWebkitTextCombine:
-    case CSSPropertyTextUnderlinePosition:
-    case CSSPropertyWebkitTextEmphasisColor:
-    case CSSPropertyWebkitTextEmphasisPosition:
-    case CSSPropertyWebkitTextEmphasisStyle:
-    case CSSPropertyWebkitTextFillColor:
-    case CSSPropertyWebkitTextSecurity:
-    case CSSPropertyWebkitTextStrokeColor:
-    case CSSPropertyTransform:
-    case CSSPropertyWebkitTransform:
-    case CSSPropertyWebkitTransformOriginX:
-    case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitTransformOriginZ:
-    case CSSPropertyTransformOrigin:
-    case CSSPropertyTransformStyle:
-    case CSSPropertyWebkitTransformStyle:
-    case CSSPropertyWebkitTransitionDelay:
-    case CSSPropertyWebkitTransitionDuration:
-    case CSSPropertyWebkitTransitionProperty:
-    case CSSPropertyWebkitTransitionTimingFunction:
-    case CSSPropertyWebkitUserDrag:
-    case CSSPropertyWebkitUserModify:
-    case CSSPropertyWebkitUserSelect:
-    case CSSPropertyWebkitClipPath:
-    case CSSPropertyWebkitWrapFlow:
-    case CSSPropertyShapeMargin:
-    case CSSPropertyShapeImageThreshold:
-    case CSSPropertyWebkitWrapThrough:
-    case CSSPropertyShapeOutside:
-    case CSSPropertyWhiteSpace:
-    case CSSPropertyWidows:
-    case CSSPropertyWidth:
-    case CSSPropertyWillChange:
-    case CSSPropertyWordBreak:
-    case CSSPropertyWordSpacing:
-    case CSSPropertyWordWrap:
-    case CSSPropertyZIndex:
-    case CSSPropertyZoom:
-    case CSSPropertyFontFamily:
-    case CSSPropertyGridAutoFlow:
-    case CSSPropertyMarker:
-    case CSSPropertyAlignmentBaseline:
-    case CSSPropertyBufferedRendering:
-    case CSSPropertyClipRule:
-    case CSSPropertyColorInterpolation:
-    case CSSPropertyColorInterpolationFilters:
-    case CSSPropertyColorRendering:
-    case CSSPropertyDominantBaseline:
-    case CSSPropertyFillRule:
-    case CSSPropertyMaskSourceType:
-    case CSSPropertyMaskType:
-    case CSSPropertyShapeRendering:
-    case CSSPropertyStrokeLinecap:
-    case CSSPropertyStrokeLinejoin:
-    case CSSPropertyTextAnchor:
-    case CSSPropertyVectorEffect:
-    case CSSPropertyWritingMode:
-    case CSSPropertyClipPath:
-    case CSSPropertyFillOpacity:
-    case CSSPropertyFilter:
-    case CSSPropertyFloodOpacity:
-    case CSSPropertyMarkerEnd:
-    case CSSPropertyMarkerMid:
-    case CSSPropertyMarkerStart:
-    case CSSPropertyMask:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyStrokeDashoffset:
-    case CSSPropertyStrokeMiterlimit:
-    case CSSPropertyStrokeOpacity:
-    case CSSPropertyStrokeWidth:
-    case CSSPropertyStopColor:
-    case CSSPropertyLightingColor:
-    case CSSPropertyFloodColor:
-    case CSSPropertyWebkitTapHighlightColor:
-    case CSSPropertyPaintOrder:
-    case CSSPropertyStrokeDasharray:
-    case CSSPropertyGlyphOrientationHorizontal:
-    case CSSPropertyGlyphOrientationVertical:
-    case CSSPropertyQuotes:
-    case CSSPropertyWebkitTextStrokeWidth:
-    case CSSPropertyWebkitLineBoxContain:
-    case CSSPropertyWebkitBoxReflect:
-    case CSSPropertyJustifySelf:
-    case CSSPropertyAlignSelf:
-    case CSSPropertyAlignItems:
-    case CSSPropertyFill:
-    case CSSPropertyStroke:
-        ASSERT_NOT_REACHED();
-        return;
-    // Only used in @viewport rules
-    case CSSPropertyMaxZoom:
-    case CSSPropertyMinZoom:
-    case CSSPropertyOrientation:
-    case CSSPropertyUserZoom:
-        return;
-
-    case CSSPropertyBaselineShift:
-    {
-        HANDLE_SVG_INHERIT_AND_INITIAL(baselineShift, BaselineShift);
-        if (!primitiveValue)
-            break;
-
-        SVGRenderStyle* svgStyle = state.style()->accessSVGStyle();
-        if (primitiveValue->getValueID()) {
-            switch (primitiveValue->getValueID()) {
-            case CSSValueBaseline:
-                svgStyle->setBaselineShift(BS_BASELINE);
+            switch (contentValue->getValueID()) {
+            case CSSValueOpenQuote:
+                state.style()->setContent(OPEN_QUOTE, didSet);
+                didSet = true;
                 break;
-            case CSSValueSub:
-                svgStyle->setBaselineShift(BS_SUB);
+            case CSSValueCloseQuote:
+                state.style()->setContent(CLOSE_QUOTE, didSet);
+                didSet = true;
                 break;
-            case CSSValueSuper:
-                svgStyle->setBaselineShift(BS_SUPER);
+            case CSSValueNoOpenQuote:
+                state.style()->setContent(NO_OPEN_QUOTE, didSet);
+                didSet = true;
+                break;
+            case CSSValueNoCloseQuote:
+                state.style()->setContent(NO_CLOSE_QUOTE, didSet);
+                didSet = true;
                 break;
             default:
-                break;
+                // normal and none do not have any effect.
+                { }
             }
-        } else {
-            svgStyle->setBaselineShift(BS_LENGTH);
-            svgStyle->setBaselineShiftValue(SVGLength::fromCSSPrimitiveValue(primitiveValue));
         }
-
-        break;
     }
-    // end of ident only properties
-    case CSSPropertyEnableBackground:
-        // Silently ignoring this property for now
-        // http://bugs.webkit.org/show_bug.cgi?id=6022
-        break;
+    if (!didSet)
+        state.style()->clearContent();
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyFont(StyleResolverState&)
+{
+    ASSERT_NOT_REACHED();
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyFont(StyleResolverState&)
+{
+    ASSERT_NOT_REACHED();
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyFont(StyleResolverState& state, CSSValue* value)
+{
+    // Only System Font identifiers should come through this method
+    // all other values should have been handled when the shorthand
+    // was expanded by the parser.
+    // FIXME: System Font identifiers should not hijack this
+    // short-hand CSSProperty like this (crbug.com/353932)
+    state.style()->setLineHeight(RenderStyle::initialLineHeight());
+    state.setLineHeightValue(0);
+    state.fontBuilder().fromSystemFont(toCSSPrimitiveValue(value)->getValueID(), state.style()->effectiveZoom());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+    const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID() == CSSValueAuto)
+        state.style()->setLocale(nullAtom);
+    else
+        state.style()->setLocale(AtomicString(primitiveValue->getStringValue()));
+    state.fontBuilder().setScript(state.style()->locale());
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyWebkitAppRegion(StyleResolverState&)
+{
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyWebkitAppRegion(StyleResolverState&)
+{
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitAppRegion(StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+    const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (!primitiveValue->getValueID())
+        return;
+    state.style()->setDraggableRegionMode(primitiveValue->getValueID() == CSSValueDrag ? DraggableRegionDrag : DraggableRegionNoDrag);
+    state.document().setHasAnnotatedRegions(true);
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyWebkitPerspective(StyleResolverState& state)
+{
+    applyInitialCSSPropertyPerspective(state);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyWebkitPerspective(StyleResolverState& state)
+{
+    applyInheritCSSPropertyPerspective(state);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitPerspective(StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->isNumber()) {
+        float perspectiveValue = CSSPrimitiveValue::create(primitiveValue->getDoubleValue(), CSSPrimitiveValue::CSS_PX)->computeLength<float>(state.cssToLengthConversionData());
+        if (perspectiveValue >= 0.0f)
+            state.style()->setPerspective(perspectiveValue);
+    } else {
+        applyValueCSSPropertyPerspective(state, value);
+    }
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyPerspective(StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID() == CSSValueNone) {
+        state.style()->setPerspective(0);
+        return;
+    }
+
+    if (!primitiveValue->isLength())
+        return;
+    float perspectiveValue = primitiveValue->computeLength<float>(state.cssToLengthConversionData());
+    if (perspectiveValue >= 0.0f)
+        state.style()->setPerspective(perspectiveValue);
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyInternalCallback(StyleResolverState& state)
+{
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyInternalCallback(StyleResolverState& state)
+{
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyInternalCallback(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueInternalPresence)
+        state.style()->addCallbackSelector(state.currentRule()->selectorList().selectorsText());
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitWritingMode(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue())
+        state.setWritingMode(*toCSSPrimitiveValue(value));
+
+    // FIXME: It is not ok to modify document state while applying style.
+    if (state.element() && state.element() == state.document().documentElement())
+        state.document().setWritingModeSetOnDocumentElement(true);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextOrientation(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue())
+        state.setTextOrientation(*toCSSPrimitiveValue(value));
+}
+
+// FIXME: We should handle initial and inherit for font-feature-settings
+void StyleBuilderFunctions::applyInitialCSSPropertyWebkitFontFeatureSettings(StyleResolverState& state)
+{
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyWebkitFontFeatureSettings(StyleResolverState& state)
+{
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyWebkitFontFeatureSettings(StyleResolverState& state, CSSValue* value)
+{
+    if (value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNormal) {
+        state.fontBuilder().setFeatureSettingsNormal();
+        return;
+    }
+
+    if (value->isValueList())
+        state.fontBuilder().setFeatureSettingsValue(value);
+}
+
+
+void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverState& state, CSSValue* value)
+{
+    if (!value->isPrimitiveValue())
+        return;
+
+    SVGRenderStyle* svgStyle = state.style()->accessSVGStyle();
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    if (primitiveValue->getValueID()) {
+        switch (primitiveValue->getValueID()) {
+        case CSSValueBaseline:
+            svgStyle->setBaselineShift(BS_BASELINE);
+            break;
+        case CSSValueSub:
+            svgStyle->setBaselineShift(BS_SUB);
+            break;
+        case CSSValueSuper:
+            svgStyle->setBaselineShift(BS_SUPER);
+            break;
+        default:
+            break;
+        }
+    } else {
+        svgStyle->setBaselineShift(BS_LENGTH);
+        svgStyle->setBaselineShiftValue(SVGLength::fromCSSPrimitiveValue(primitiveValue));
     }
 }
 

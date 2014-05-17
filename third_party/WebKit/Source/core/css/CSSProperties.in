@@ -47,6 +47,7 @@ caption-side
 clear
 clip custom_all
 color custom_all
+content custom_all
 counter-increment custom_all
 counter-reset custom_all
 cursor custom_all
@@ -59,6 +60,7 @@ flex-grow type_name=float
 flex-shrink type_name=float
 flex-wrap
 float type_name=EFloat, name_for_methods=Floating
+font custom_all
 font-family custom_all
 font-kerning font, type_name=FontDescription::Kerning, name_for_methods=Kerning
 font-size custom_all
@@ -79,6 +81,7 @@ grid-template-areas custom_all
 height type_name=Length, initial=initialSize, converter=convertLengthSizing
 justify-content
 image-rendering
+internal-callback custom_all
 isolation
 justify-self custom_value
 left type_name=Length, initial=initialOffset, converter=convertLengthOrAuto
@@ -116,6 +119,7 @@ padding-top type_name=Length, initial=initialPadding, converter=convertLength
 page-break-after type_name=EPageBreak, initial=initialPageBreak
 page-break-before type_name=EPageBreak, initial=initialPageBreak
 page-break-inside type_name=EPageBreak, initial=initialPageBreak
+perspective custom_value
 pointer-events
 position
 quotes converter=convertQuotes
@@ -166,6 +170,7 @@ z-index type_name=int, custom_all
 -webkit-animation-name custom_all
 -webkit-animation-play-state custom_all
 -webkit-animation-timing-function custom_all
+-webkit-app-region custom_all
 -webkit-appearance type_name=ControlPart
 -webkit-aspect-ratio custom_all
 backface-visibility
@@ -202,12 +207,14 @@ column-fill type_name=ColumnFill
 -webkit-column-span type_name=ColumnSpan
 -webkit-column-width type_name=float, custom_all
 -webkit-filter custom_value
+-webkit-font-feature-settings custom_all
 -webkit-font-smoothing font, type_name=FontSmoothingMode
 -webkit-highlight type_name=AtomicString, converter=convertString<CSSValueNone>
 -webkit-hyphenate-character type_name=AtomicString, name_for_methods=HyphenationString, converter=convertString<CSSValueAuto>
 -webkit-line-box-contain converter=convertLineBoxContain
 -webkit-line-break type_name=LineBreak
 -webkit-line-clamp type_name=LineClampValue
+-webkit-locale custom_value
 -webkit-margin-after-collapse type_name=EMarginCollapse
 -webkit-margin-before-collapse type_name=EMarginCollapse
 -webkit-margin-bottom-collapse type_name=EMarginCollapse, name_for_methods=MarginAfterCollapse
@@ -231,6 +238,7 @@ column-fill type_name=ColumnFill
 -webkit-mask-repeat-x custom_all
 -webkit-mask-repeat-y custom_all
 -webkit-mask-size custom_all
+-webkit-perspective custom_all
 perspective-origin custom_all
 -webkit-perspective-origin custom_all
 -webkit-perspective-origin-x type_name=Length, converter=convertLength
@@ -244,6 +252,7 @@ perspective-origin custom_all
 -webkit-text-emphasis-position type_name=TextEmphasisPosition
 -webkit-text-emphasis-style custom_all
 -webkit-text-fill-color custom_all
+-webkit-text-orientation custom_value
 -webkit-text-security
 -webkit-text-stroke-color custom_all
 -webkit-text-stroke-width converter=convertTextStrokeWidth
@@ -265,8 +274,10 @@ transform-style name_for_methods=TransformStyle3D
 -webkit-user-select
 -webkit-wrap-flow type_name=WrapFlow
 -webkit-wrap-through type_name=WrapThrough
+-webkit-writing-mode custom_value
 
 alignment-baseline svg
+baseline-shift svg, custom_value
 buffered-rendering svg
 clip-path svg, type_name=String, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
 clip-rule svg, type_name=WindRule

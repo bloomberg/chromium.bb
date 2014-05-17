@@ -12,7 +12,7 @@
 
 namespace WebCore {
 
-bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
+void StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& state, CSSValue* value, bool isInitial, bool isInherit) {
     switch(property) {
     {% for property_id, property in properties.items()
           if not property.direction_aware and not property.skip %}
@@ -25,7 +25,7 @@ bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& sta
             StyleBuilderFunctions::applyInherit{{used_property_id}}(state);
         else
             StyleBuilderFunctions::applyValue{{used_property_id}}(state, value);
-        return true;
+        return;
 
     {% endfor %}
     {% for property_id, property in properties.items() if property.direction_aware %}
@@ -35,14 +35,15 @@ bool StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& sta
         CSSPropertyID resolvedProperty = CSSProperty::resolveDirectionAwareProperty(property, state.style()->direction(), state.style()->writingMode());
         ASSERT(resolvedProperty != property);
         applyProperty(resolvedProperty, state, value);
-        return true;
+        return;
     }
     {% for property_id, property in properties.items() if property.skip %}
     case {{property_id}}:
     {% endfor %}
-        return true;
+        return;
     default:
-        return false;
+        // FIXME: We should explicitly handle all cases here once we merge the various .in files
+        ASSERT_NOT_REACHED();
     }
 }
 
