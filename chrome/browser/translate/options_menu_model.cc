@@ -6,11 +6,8 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/component_strings.h"
 #include "grit/locale_settings.h"
@@ -39,8 +36,7 @@ OptionsMenuModel::OptionsMenuModel(
 
   // Populate the menu.
   // Incognito mode does not get any preferences related items.
-  if (!translate_delegate->GetWebContents()->GetBrowserContext()->
-      IsOffTheRecord()) {
+  if (!translate_delegate->is_off_the_record()) {
     if (!autodetermined_source_language) {
       AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
           l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,

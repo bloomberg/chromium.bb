@@ -75,6 +75,10 @@ TranslateManager::TranslateManager(
       translate_driver_(translate_client_->GetTranslateDriver()),
       weak_method_factory_(this) {}
 
+base::WeakPtr<TranslateManager> TranslateManager::GetWeakPtr() {
+  return weak_method_factory_.GetWeakPtr();
+}
+
 void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   // Short-circuit out if not in a state where initiating translation makes
   // sense (this method may be called muhtiple times for a given page).
@@ -239,12 +243,9 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
 
   // The script is not available yet.  Queue that request and query for the
   // script.  Once it is downloaded we'll do the translate.
-  TranslateScript::RequestCallback callback =
-      base::Bind(&TranslateManager::OnTranslateScriptFetchComplete,
-                 weak_method_factory_.GetWeakPtr(),
-                 translate_driver_->GetCurrentPageID(),
-                 source_lang,
-                 target_lang);
+  TranslateScript::RequestCallback callback = base::Bind(
+      &TranslateManager::OnTranslateScriptFetchComplete, GetWeakPtr(),
+      translate_driver_->GetCurrentPageID(), source_lang, target_lang);
 
   script->Request(callback);
 }

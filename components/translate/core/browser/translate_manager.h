@@ -35,6 +35,12 @@ class TranslateManager {
                    const std::string& accept_language_pref_name);
   virtual ~TranslateManager();
 
+  // Returns a weak pointer to this instance.
+  base::WeakPtr<TranslateManager> GetWeakPtr();
+
+  // Cannot return NULL.
+  TranslateClient* translate_client() { return translate_client_; }
+
   // Returns the language to translate to. The language returned is the
   // first language found in the following list that is supported by the
   // translation service:

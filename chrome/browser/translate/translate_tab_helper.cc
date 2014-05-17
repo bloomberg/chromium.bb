@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -178,7 +179,9 @@ void TranslateTabHelper::ShowTranslateUI(translate::TranslateStep step,
   Profile* original_profile = profile->GetOriginalProfile();
   TranslateInfoBarDelegate::Create(
       step != translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
-      web_contents(),
+      translate_manager_->GetWeakPtr(),
+      InfoBarService::FromWebContents(web_contents()),
+      profile->IsOffTheRecord(),
       step,
       source_language,
       target_language,

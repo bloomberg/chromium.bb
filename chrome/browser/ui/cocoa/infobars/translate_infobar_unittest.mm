@@ -17,6 +17,7 @@
 #import "chrome/browser/ui/cocoa/infobars/translate_infobar_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/translate/core/browser/translate_language_list.h"
+#include "components/translate/core/browser/translate_manager.h"
 #import "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
 #import "testing/gmock/include/gmock/gmock.h"
@@ -40,14 +41,17 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
                                translate::TranslateStep step,
                                TranslateErrors::Type error,
                                PrefService* prefs)
-      : TranslateInfoBarDelegate(web_contents,
-                                 step,
-                                 NULL,
-                                 "en",
-                                 "es",
-                                 error,
-                                 prefs,
-                                 false) {}
+      : TranslateInfoBarDelegate(
+            TranslateTabHelper::GetManagerFromWebContents(
+                web_contents)->GetWeakPtr(),
+            false,
+            step,
+            NULL,
+            "en",
+            "es",
+            error,
+            prefs,
+            false) {}
 
   MOCK_METHOD0(Translate, void());
   MOCK_METHOD0(RevertTranslation, void());

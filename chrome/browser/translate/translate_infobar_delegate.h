@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/browser/translate_step.h"
@@ -18,7 +19,10 @@
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_errors.h"
 
+class InfoBarService;
 class PrefService;
+class TranslateClient;
+class TranslateManager;
 
 namespace content {
 class WebContents;
@@ -50,7 +54,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   // infobar already present there.  Otherwise, the infobar will only be added
   // if there is no other translate infobar already present.
   static void Create(bool replace_existing_infobar,
-                     content::WebContents* web_contents,
+                     const base::WeakPtr<TranslateManager>& translate_manager,
+                     InfoBarService* infobar_service,
+                     bool is_off_the_record,
                      translate::TranslateStep step,
                      const std::string& original_language,
                      const std::string& target_language,
@@ -72,6 +78,8 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   }
 
   translate::TranslateStep translate_step() const { return step_; }
+
+  bool is_off_the_record() { return is_off_the_record_; }
 
   TranslateErrors::Type error_type() const { return error_type_; }
 
@@ -168,14 +176,16 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
                                        bool autodetermined_source_language);
 
  protected:
-  TranslateInfoBarDelegate(content::WebContents* web_contents,
-                           translate::TranslateStep step,
-                           TranslateInfoBarDelegate* old_delegate,
-                           const std::string& original_language,
-                           const std::string& target_language,
-                           TranslateErrors::Type error_type,
-                           PrefService* prefs,
-                           bool triggered_from_menu);
+  TranslateInfoBarDelegate(
+      const base::WeakPtr<TranslateManager>& translate_manager,
+      bool is_off_the_record,
+      translate::TranslateStep step,
+      TranslateInfoBarDelegate* old_delegate,
+      const std::string& original_language,
+      const std::string& target_language,
+      TranslateErrors::Type error_type,
+      PrefService* prefs,
+      bool triggered_from_menu);
 
  private:
   friend class TranslationInfoBarTest;
@@ -185,6 +195,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   static scoped_ptr<infobars::InfoBar> CreateInfoBar(
       scoped_ptr<TranslateInfoBarDelegate> delegate);
 
+  // May return NULL if the client has been destroyed.
+  TranslateClient* GetTranslateClient();
+
   // InfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
@@ -192,6 +205,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   virtual bool ShouldExpire(const NavigationDetails& details) const OVERRIDE;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() OVERRIDE;
 
+  bool is_off_the_record_;
   translate::TranslateStep step_;
 
   // The type of fading animation if any that should be used when showing this
@@ -199,6 +213,7 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   BackgroundAnimationType background_animation_;
 
   TranslateUIDelegate ui_delegate_;
+  base::WeakPtr<TranslateManager> translate_manager_;
 
   // The error that occurred when trying to translate (NONE if no error).
   TranslateErrors::Type error_type_;
