@@ -10,7 +10,7 @@
             "href": "/devtools/index"
           },
           {
-            "title": "Authoring & Development Workflow",
+            "title": "Development Workflow",
             "href": "/devtools/docs/authoring-development-workflow"
           },
           {
@@ -53,8 +53,8 @@
             "href": "/devtools/docs/dom-and-styles",
             "items": [
               {
-                "title": "Editing Styles & DOM",
-                "href": "/devtools/docs/elements"
+                "title": "Editing Styles and the DOM",
+                "href": "/devtools/docs/dom-and-styles"
               },
               {
                 "title": "Working with CSS Preprocessors",
@@ -77,6 +77,10 @@
           {
             "title": "Remote Debugging on Android",
             "href": "/devtools/docs/remote-debugging"
+          },
+          {
+            "title": "Saving Changes with Workspaces",
+            "href": "/devtools/docs/workspaces"
           }
         ]
       },
@@ -92,7 +96,7 @@
             "href": "/devtools/docs/timeline"
           },
           {
-            "title": "Timeline Demo: Finding Forced Synchronous Layouts",
+            "title": "Timeline Demo: Layout Thrashing",
             "href": "/devtools/docs/demos/too-much-layout/index"
           },
           {
@@ -112,10 +116,6 @@
                 "href": "/devtools/docs/heap-profiling-summary"
               }
             ]
-          },
-          {
-            "title": "Setting Up a Clean Testing Environment",
-            "href": "/devtools/docs/clean-testing-environment"
           }
         ]
       },
