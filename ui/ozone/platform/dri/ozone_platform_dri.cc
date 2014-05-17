@@ -7,7 +7,6 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
-#include "ui/ozone/ime/input_method_context_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/platform/dri/cursor_factory_evdev_dri.h"
 #include "ui/ozone/platform/dri/dri_surface_factory.h"
@@ -43,10 +42,6 @@ class OzonePlatformDri : public OzonePlatform {
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
     return event_factory_ozone_.get();
   }
-  virtual InputMethodContextFactoryOzone* GetInputMethodContextFactoryOzone()
-      OVERRIDE {
-    return input_method_context_factory_ozone_.get();
-  }
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
     return cursor_factory_ozone_.get();
   }
@@ -64,8 +59,6 @@ class OzonePlatformDri : public OzonePlatform {
         new CursorFactoryEvdevDri(surface_factory_ozone_.get()));
     event_factory_ozone_.reset(new EventFactoryEvdev(
         cursor_factory_ozone_.get(), device_manager_.get()));
-    input_method_context_factory_ozone_.reset(
-        new InputMethodContextFactoryOzone());
   }
 
   virtual void InitializeGPU() OVERRIDE {}
@@ -79,9 +72,6 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<DriSurfaceFactory> surface_factory_ozone_;
   scoped_ptr<CursorFactoryEvdevDri> cursor_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
-  // This creates a minimal input context.
-  scoped_ptr<InputMethodContextFactoryOzone>
-      input_method_context_factory_ozone_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformDri);
 };

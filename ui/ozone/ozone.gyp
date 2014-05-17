@@ -49,9 +49,6 @@
         'ozone_switches.h',
         '<@(external_ozone_platform_files)',
       ],
-      'includes': [
-        'ime/ime.gypi',
-      ],
       'actions': [
         {
           'action_name': 'generate_ozone_platform_list',

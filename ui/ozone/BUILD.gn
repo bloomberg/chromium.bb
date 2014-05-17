@@ -19,10 +19,6 @@ component("ozone") {
     # "chromeos" folder name.
     "common/chromeos/native_display_delegate_ozone.cc",
     "common/chromeos/native_display_delegate_ozone.h",
-    "ime/fake_input_method_context_ozone.cc",
-    "ime/fake_input_method_context_ozone.h",
-    "ime/input_method_context_factory_ozone.cc",
-    "ime/input_method_context_factory_ozone.h",
     "ozone_platform.cc",
     "ozone_platform.h",
     "ozone_switches.cc",

@@ -19,6 +19,7 @@
         '../../base/base.gyp:base',
         '../../build/linux/system.gyp:dridrm',
         '../../skia/skia.gyp:skia',
+        '../base/ui_base.gyp:ui_base',
         '../display/display.gyp:display_types',
         '../display/display.gyp:display_util',
         '../events/events.gyp:events',

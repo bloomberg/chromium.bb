@@ -5,10 +5,6 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "ui/base/cursor/ozone/cursor_factory_ozone.h"
-#include "ui/events/ozone/event_factory_ozone.h"
-#include "ui/gfx/ozone/surface_factory_ozone.h"
-#include "ui/ozone/ime/input_method_context_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/ozone_platform_list.h"
 #include "ui/ozone/ozone_switches.h"
@@ -62,8 +58,6 @@ void OzonePlatform::InitializeForUI() {
     return;
   g_platform_initialized_ui = true;
   instance_->InitializeUI();
-  ui::InputMethodContextFactoryOzone::SetInstance(
-      instance_->GetInputMethodContextFactoryOzone());
 }
 
 // static

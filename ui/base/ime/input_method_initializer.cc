@@ -6,15 +6,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/chromeos/ime_bridge.h"
-#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
+#elif defined(USE_AURA) && defined(OS_LINUX)
 #include "base/logging.h"
 #include "ui/base/ime/linux/fake_input_method_context_factory.h"
 #endif
 
 namespace {
 
-#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX) && \
-    !defined(USE_OZONE)
+#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
 const ui::LinuxInputMethodContextFactory* g_linux_input_method_context_factory;
 #endif
 
@@ -37,7 +36,7 @@ void ShutdownInputMethod() {
 void InitializeInputMethodForTesting() {
 #if defined(OS_CHROMEOS)
   chromeos::IMEBridge::Initialize();
-#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
+#elif defined(USE_AURA) && defined(OS_LINUX)
   if (!g_linux_input_method_context_factory)
     g_linux_input_method_context_factory = new FakeInputMethodContextFactory();
   const LinuxInputMethodContextFactory* factory =
@@ -53,7 +52,7 @@ void InitializeInputMethodForTesting() {
 void ShutdownInputMethodForTesting() {
 #if defined(OS_CHROMEOS)
   chromeos::IMEBridge::Shutdown();
-#elif defined(USE_AURA) && defined(OS_LINUX) && !defined(USE_OZONE)
+#elif defined(USE_AURA) && defined(OS_LINUX)
   const LinuxInputMethodContextFactory* factory =
       LinuxInputMethodContextFactory::instance();
   CHECK(!factory || factory == g_linux_input_method_context_factory)

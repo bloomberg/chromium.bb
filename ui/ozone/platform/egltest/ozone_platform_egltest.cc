@@ -15,7 +15,6 @@
 #include "ui/gfx/ozone/impl/file_surface_factory.h"
 #include "ui/gfx/ozone/surface_ozone_egl.h"
 #include "ui/gfx/vsync_provider.h"
-#include "ui/ozone/ime/input_method_context_factory_ozone.h"
 #include "ui/ozone/ozone_platform.h"
 #include "ui/ozone/ozone_switches.h"
 
@@ -240,10 +239,6 @@ class OzonePlatformEgltest : public OzonePlatform {
   virtual EventFactoryOzone* GetEventFactoryOzone() OVERRIDE {
     return event_factory_ozone_.get();
   }
-  virtual InputMethodContextFactoryOzone* GetInputMethodContextFactoryOzone()
-      OVERRIDE {
-    return input_method_context_factory_ozone_.get();
-  }
   virtual CursorFactoryOzone* GetCursorFactoryOzone() OVERRIDE {
     return cursor_factory_ozone_.get();
   }
@@ -260,8 +255,6 @@ class OzonePlatformEgltest : public OzonePlatform {
     surface_factory_ozone_.reset(new SurfaceFactoryEgltest(&eglplatform_shim_));
     event_factory_ozone_.reset(
         new EventFactoryEvdev(NULL, device_manager_.get()));
-    input_method_context_factory_ozone_.reset(
-        new InputMethodContextFactoryOzone());
     cursor_factory_ozone_.reset(new CursorFactoryOzone());
   }
 
@@ -272,8 +265,6 @@ class OzonePlatformEgltest : public OzonePlatform {
   scoped_ptr<DeviceManager> device_manager_;
   scoped_ptr<SurfaceFactoryEgltest> surface_factory_ozone_;
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
-  scoped_ptr<InputMethodContextFactoryOzone>
-      input_method_context_factory_ozone_;
   scoped_ptr<CursorFactoryOzone> cursor_factory_ozone_;
 
   bool shim_initialized_;
