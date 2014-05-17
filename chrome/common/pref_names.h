@@ -592,9 +592,6 @@ extern const char kDevToolsRemoteEnabled[];
 
 extern const char kGoogleServicesPasswordHash[];
 
-extern const char kInvalidatorClientId[];
-extern const char kInvalidatorInvalidationState[];
-extern const char kInvalidatorSavedInvalidations[];
 extern const char kInvalidationServiceUseGCMChannel[];
 
 extern const char kSignInPromoStartupCount[];

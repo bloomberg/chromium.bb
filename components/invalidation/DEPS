@@ -2,6 +2,7 @@ include_rules = [
   "-content",
 
   "+components/keyed_service",
+  "+components/pref_registry",
 
   "+google/cacheinvalidation",
   "+google_apis/gaia",

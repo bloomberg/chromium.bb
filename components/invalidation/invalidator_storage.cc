@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/invalidator_storage.h"
+#include "components/invalidation/invalidator_storage.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
+#include "components/invalidation/invalidation_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 namespace {

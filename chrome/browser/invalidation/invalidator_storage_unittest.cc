@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/invalidator_storage.h"
+#include "components/invalidation/invalidator_storage.h"
 
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"

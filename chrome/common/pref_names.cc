@@ -1792,17 +1792,6 @@ const char kDevToolsPortForwardingConfig[] = "devtools.port_forwarding_config";
 const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";
 #endif
 
-// An ID to uniquely identify this client to the invalidator service.
-const char kInvalidatorClientId[] = "invalidator.client_id";
-
-// Opaque state from the invalidation subsystem that is persisted via prefs.
-// The value is base 64 encoded.
-const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
-
-// List of received invalidations that have not been acted on by any clients
-// yet.  Used to keep invalidation clients in sync in case of a restart.
-const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
-
 // Boolean indicating that TiclInvalidationService should use GCM channel.
 // False or lack of settings means XMPPPushClient channel.
 const char kInvalidationServiceUseGCMChannel[] =

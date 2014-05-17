@@ -916,8 +916,6 @@
         'browser/invalidation/invalidation_service_android.h',
         'browser/invalidation/invalidation_service_factory.cc',
         'browser/invalidation/invalidation_service_factory.h',
-        'browser/invalidation/invalidator_storage.cc',
-        'browser/invalidation/invalidator_storage.h',
         'browser/invalidation/ticl_invalidation_service.cc',
         'browser/invalidation/ticl_invalidation_service.h',
         'browser/invalidation/ticl_profile_settings_provider.cc',

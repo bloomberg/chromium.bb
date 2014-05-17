@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -6,8 +6,8 @@
 // to use PrefService as persistence for invalidation state. It is not thread
 // safe, and lives on the UI thread.
 
-#ifndef CHROME_BROWSER_INVALIDATION_INVALIDATOR_STORAGE_H_
-#define CHROME_BROWSER_INVALIDATION_INVALIDATOR_STORAGE_H_
+#ifndef COMPONENTS_INVALIDATION_INVALIDATOR_STORAGE_H_
+#define COMPONENTS_INVALIDATION_INVALIDATOR_STORAGE_H_
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
@@ -76,4 +76,4 @@ class InvalidatorStorage : public syncer::InvalidationStateTracker {
 
 }  // namespace invalidation
 
-#endif  // CHROME_BROWSER_INVALIDATION_INVALIDATOR_STORAGE_H_
+#endif  // COMPONENTS_INVALIDATION_INVALIDATOR_STORAGE_H_
