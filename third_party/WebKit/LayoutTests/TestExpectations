@@ -474,9 +474,6 @@ crbug.com/318431 [ Linux ] fast/dom/shadow/transition-on-shadow-host-with-distri
 
 crbug.com/340206 [ Win ] http/tests/security/cross-origin-css.html [ Pass Timeout ]
 
-crbug.com/320139 fast/repaint/reflection-repaint-test.html [ NeedsRebaseline ]
-crbug.com/320139 fast/repaint/inline-relative-positioned.html [ NeedsRebaseline ]
-
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass ImageOnlyFailure ]
 
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
