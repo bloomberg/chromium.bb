@@ -15373,6 +15373,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Network.Shill.Cellular.DHCPOptionFailureDetected"
     enum="NetworkDHCPOptionFailure">
+  <obsolete>
+    Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
+  </obsolete>
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
@@ -15534,8 +15537,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.DHCPOptionFailureDetected"
+    enum="NetworkTechnology">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the number of DHCP option failures
+    encountered by Shill for each network technology.  This indicates that Shill
+    is using minimal DHCP options due to suspected MTU issues on the return path
+    from the DHCP server back to the client.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Ethernet.DHCPOptionFailureDetected"
     enum="NetworkDHCPOptionFailure">
+  <obsolete>
+    Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
+  </obsolete>
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
@@ -15749,6 +15766,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.UserInitiatedEvents" enum="UserInitiatedEvent">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network metric that tracks the number of user-initiated events.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.Vpn.Driver" enum="VPNDriver">
   <owner>quiche@chromium.org</owner>
   <summary>
@@ -15870,6 +15894,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Network.Shill.Wifi.DHCPOptionFailureDetected"
     enum="NetworkDHCPOptionFailure">
+  <obsolete>
+    Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
+  </obsolete>
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
@@ -16123,8 +16150,29 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.TransmitBitrateMbps" units="Mbps">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the transmit bitrate in
+    Mbps for the wifi device when it is connected to a network. The bitrate is
+    reported once every minute after the wifi connection is established.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.UserInitiatedConnectionResult"
+    enum="ConnectionResult">
+  <owner>zqiu@chromium.org</owner>
+  <summary>
+    Chrome OS network performance metric that tracks the result of
+    user-initiated wifi connection attempts.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiMax.DHCPOptionFailureDetected"
     enum="NetworkDHCPOptionFailure">
+  <obsolete>
+    Deprecated 5/2014, and replaced by Network.Shill.DHCPOptionFailureDetected.
+  </obsolete>
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network metric that tracks the number of DHCP option failures
@@ -32344,6 +32392,12 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="GPU compositor"/>
 </enum>
 
+<enum name="ConnectionResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Aborted"/>
+</enum>
+
 <enum name="ConnectionType" type="int">
   <summary>
     Connection type as defined in net/base/connection_type_histograms.h
@@ -38775,6 +38829,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="14" label="HTTP_GET_FAILED"/>
 </enum>
 
+<enum name="NetworkTechnology" type="int">
+  <int value="0" label="Cellular"/>
+  <int value="1" label="Ethernet"/>
+  <int value="2" label="Ethernet EAP"/>
+  <int value="3" label="WiFi"/>
+  <int value="4" label="WiMax"/>
+  <int value="5" label="VPN"/>
+  <int value="6" label="Unknown"/>
+</enum>
+
 <enum name="NewTabPageActionAndroid" type="int">
   <int value="0" label="Searched using the omnibox"/>
   <int value="1" label="Navigated to Google search homepage using the omnibox"/>
@@ -43149,6 +43213,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="8" label="kBlobURLScheme"/>
   <int value="9" label="kDataURLScheme"/>
   <int value="10" label="kFileSystemScheme"/>
+</enum>
+
+<enum name="UserInitiatedEvent" type="int">
+  <int value="0" label="WiFi Scan"/>
 </enum>
 
 <enum name="UserSelectableSyncType" type="int">
