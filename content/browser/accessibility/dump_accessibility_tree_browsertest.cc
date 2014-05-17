@@ -297,6 +297,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaLevel) {
   RunTest(FILE_PATH_LITERAL("aria-level.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaList) {
+  RunTest(FILE_PATH_LITERAL("aria-list.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaMenu) {
   RunTest(FILE_PATH_LITERAL("aria-menu.html"));
 }

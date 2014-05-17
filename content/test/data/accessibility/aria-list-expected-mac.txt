@@ -1,0 +1,8 @@
+AXWebArea
+    AXList AXSubrole=AXContentList
+        AXGroup
+            AXStaticText AXValue='Item 1'
+        AXGroup
+            AXStaticText AXValue='Item 2'
+        AXGroup
+            AXStaticText AXValue='Item 3'

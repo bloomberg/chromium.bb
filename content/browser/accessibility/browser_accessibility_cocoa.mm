@@ -847,11 +847,10 @@ NSDictionary* attributeToMethodNameMap = nil;
       browserAccessibility_, ui::AX_ATTR_HTML_TAG);
 
   if (browserAccessibilityRole == ui::AX_ROLE_LIST) {
-    if ([htmlTag isEqualToString:@"ul"] ||
-        [htmlTag isEqualToString:@"ol"]) {
-      return @"AXContentList";
-    } else if ([htmlTag isEqualToString:@"dl"]) {
+    if ([htmlTag isEqualToString:@"dl"]) {
       return @"AXDescriptionList";
+    } else {
+      return @"AXContentList";
     }
   }
 
