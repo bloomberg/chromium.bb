@@ -273,8 +273,12 @@ void DomDistillerViewerSource::StartDataRequest(
           content::RenderFrameHost::FromID(render_process_id,
                                            render_frame_id));
   DCHECK(web_contents);
-  RequestViewerHandle* request_viewer_handle =
-      new RequestViewerHandle(web_contents, scheme_, path.substr(1), callback);
+  // An empty |path| is invalid, but guard against it. If not empty, assume
+  // |path| starts with '?', which is stripped away.
+  const std::string path_after_query_separator =
+      path.size() > 0 ? path.substr(1) : "";
+  RequestViewerHandle* request_viewer_handle = new RequestViewerHandle(
+      web_contents, scheme_, path_after_query_separator, callback);
   scoped_ptr<ViewerHandle> viewer_handle = viewer::CreateViewRequest(
       dom_distiller_service_, path, request_viewer_handle);
 
