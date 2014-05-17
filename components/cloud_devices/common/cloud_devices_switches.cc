@@ -6,6 +6,9 @@
 
 namespace switches {
 
+// Enable Google Cloud Devices code.
+const char kEnableCloudDevices[] = "enable-cloud-devices";
+
 // The URL of the cloud print service to use, overrides any value stored in
 // preferences, and the default. Only used if the cloud print service has been
 // enabled. Used for testing.

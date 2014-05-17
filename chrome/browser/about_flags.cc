@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/switches.h"
@@ -1337,22 +1338,29 @@ const Experiment kExperiments[] = {
     "disable-device-discovery",
     IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_NAME,
     IDS_FLAGS_DISABLE_DEVICE_DISCOVERY_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kDisableDeviceDiscovery)
   },
   {
     "device-discovery-notifications",
     IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_NAME,
     IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsDesktop,
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableDeviceDiscoveryNotifications,
                               switches::kDisableDeviceDiscoveryNotifications)
+  },
+  {
+    "enable-cloud-devices",
+    IDS_FLAGS_ENABLE_CLOUD_DEVICES_NAME,
+    IDS_FLAGS_ENABLE_CLOUD_DEVICES_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableCloudDevices)
   },
   {
     "enable-print-preview-register-promos",
     IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_NAME,
     IDS_FLAGS_ENABLE_PRINT_PREVIEW_REGISTER_PROMOS_DESCRIPTION,
-    kOsWin | kOsLinux | kOsCrOS,
+    kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnablePrintPreviewRegisterPromos)
   },
 #endif  // ENABLE_SERVICE_DISCOVERY

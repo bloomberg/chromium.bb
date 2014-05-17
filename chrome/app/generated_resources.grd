@@ -13930,6 +13930,12 @@ Do you accept?
 
     <!-- Local Device Discovery display strings -->
     <if expr="enable_service_discovery">
+      <message name="IDS_FLAGS_ENABLE_CLOUD_DEVICES_NAME" desc="Name of the 'Enable Cloud Devices' lab.">
+        Enable Google Cloud Devices
+      </message>
+      <message name="IDS_FLAGS_ENABLE_CLOUD_DEVICES_DESCRIPTION" desc="Description of the 'Enable Cloud Devices' lab.">
+        Enabled Google Cloud Devices features.
+      </message>
       <message name="IDS_LOCAL_DISCOVERY_SERVICE_REGISTER" desc="Name for button to register device in the Cloud">
         Register
       </message>
