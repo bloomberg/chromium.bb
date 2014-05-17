@@ -471,7 +471,7 @@ void NetworkSmsHandler::DevicePropertiesCallback(
     return;
   }
   dbus::ObjectPath object_path(object_path_string);
-  if (service_name == modemmanager::kModemManager1) {
+  if (service_name == modemmanager::kModemManager1ServiceName) {
     device_handlers_.push_back(
         new ModemManager1NetworkSmsDeviceHandler(
             this, service_name, object_path));
