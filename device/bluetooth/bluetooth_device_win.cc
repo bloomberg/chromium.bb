@@ -39,7 +39,7 @@ BluetoothDeviceWin::BluetoothDeviceWin(
       net_log_(net_log),
       net_log_source_(net_log_source) {
   name_ = state.name;
-  address_ = state.address;
+  address_ = CanonicalizeAddress(state.address);
   bluetooth_class_ = state.bluetooth_class;
   visible_ = state.visible;
   connected_ = state.connected;

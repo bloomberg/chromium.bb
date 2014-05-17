@@ -73,7 +73,12 @@ BluetoothDevice* BluetoothAdapter::GetDevice(const std::string& address) {
 
 const BluetoothDevice* BluetoothAdapter::GetDevice(
     const std::string& address) const {
-  DevicesMap::const_iterator iter = devices_.find(address);
+  std::string canonicalized_address =
+      BluetoothDevice::CanonicalizeAddress(address);
+  if (canonicalized_address.empty())
+    return NULL;
+
+  DevicesMap::const_iterator iter = devices_.find(canonicalized_address);
   if (iter != devices_.end())
     return iter->second;
 

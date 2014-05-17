@@ -196,7 +196,7 @@ void BluetoothAdapterWin::AdapterStateChanged(
   name_ = state.name;
   bool was_present = IsPresent();
   bool is_present = !state.address.empty();
-  address_ = state.address;
+  address_ = BluetoothDevice::CanonicalizeAddress(state.address);
   if (was_present != is_present) {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       AdapterPresentChanged(this, is_present));

@@ -249,7 +249,7 @@ void BluetoothAdapterMac::PollAdapter() {
 
   if (controller != nil) {
     name = base::SysNSStringToUTF8([controller nameAsString]);
-    address = BluetoothDeviceMac::NormalizeAddress(
+    address = BluetoothDevice::CanonicalizeAddress(
         base::SysNSStringToUTF8([controller addressAsString]));
     powered = ([controller powerState] == kBluetoothHCIPowerStateON);
   }

@@ -128,7 +128,7 @@ std::string BluetoothAdapterChromeOS::GetAddress() const {
           GetProperties(object_path_);
   DCHECK(properties);
 
-  return properties->address.value();
+  return BluetoothDevice::CanonicalizeAddress(properties->address.value());
 }
 
 std::string BluetoothAdapterChromeOS::GetName() const {

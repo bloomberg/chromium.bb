@@ -296,9 +296,8 @@ bool BluetoothGetDeviceFunction::DoWork(
 
   scoped_ptr<GetDevice::Params> params(GetDevice::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
-  const std::string& device_address = params->device_address;
 
-  BluetoothDevice* device = adapter->GetDevice(device_address);
+  BluetoothDevice* device = adapter->GetDevice(params->device_address);
   if (device) {
     bluetooth::Device extension_device;
     bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);

@@ -81,12 +81,6 @@ class BluetoothDeviceMac : public BluetoothDevice {
   // normalized format (see below).
   static std::string GetDeviceAddress(IOBluetoothDevice* device);
 
-  // Returns the address formatted according to Chrome's expectations rather
-  // than per the system convention: octets are separated by colons rather than
-  // by dashes. That is, the returned format is XX:XX:XX:XX:XX:XX rather than
-  // xx-xx-xx-xx-xx-xx.
-  static std::string NormalizeAddress(const std::string& address);
-
  protected:
   // BluetoothDevice override
   virtual std::string GetDeviceName() const OVERRIDE;

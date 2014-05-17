@@ -194,7 +194,7 @@ std::string BluetoothDeviceChromeOS::GetAddress() const {
           GetProperties(object_path_);
   DCHECK(properties);
 
-  return properties->address.value();
+  return CanonicalizeAddress(properties->address.value());
 }
 
 BluetoothDevice::VendorIDSource

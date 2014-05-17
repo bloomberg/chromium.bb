@@ -27,14 +27,14 @@ const char FakeBluetoothAdapterClient::kAdapterPath[] =
 const char FakeBluetoothAdapterClient::kAdapterName[] =
     "Fake Adapter";
 const char FakeBluetoothAdapterClient::kAdapterAddress[] =
-    "01:1a:2b:1a:2b:03";
+    "01:1A:2B:1A:2B:03";
 
 const char FakeBluetoothAdapterClient::kSecondAdapterPath[] =
     "/fake/hci1";
 const char FakeBluetoothAdapterClient::kSecondAdapterName[] =
     "Second Fake Adapter";
 const char FakeBluetoothAdapterClient::kSecondAdapterAddress[] =
-    "00:de:51:10:01:00";
+    "00:DE:51:10:01:00";
 
 FakeBluetoothAdapterClient::Properties::Properties(
     const PropertyChangedCallback& callback)

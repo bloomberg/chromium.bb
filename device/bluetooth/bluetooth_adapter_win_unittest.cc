@@ -15,7 +15,7 @@
 
 namespace {
 
-const char kAdapterAddress[] = "Bluetooth Adapter Address";
+const char kAdapterAddress[] = "A1:B2:C3:D4:E5:F6";
 const char kAdapterName[] = "Bluetooth Adapter Name";
 
 
