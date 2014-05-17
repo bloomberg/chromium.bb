@@ -519,6 +519,95 @@ TEST(ServiceWorkerDatabaseTest, Registration_Multiple) {
   VerifyResourceRecords(resources2, resources_out);
 }
 
+TEST(ServiceWorkerDatabaseTest, UpdateVersionToActive) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  GURL origin("http://example.com");
+
+  // Should be false because a registration does not exist.
+  EXPECT_FALSE(database->UpdateVersionToActive(0, origin));
+
+  // Add a registration.
+  RegistrationData data;
+  data.registration_id = 100;
+  data.scope = URL(origin, "/foo");
+  data.script = URL(origin, "/script.js");
+  data.version_id = 200;
+  data.is_active = false;
+  EXPECT_TRUE(database->WriteRegistration(data, std::vector<Resource>()));
+
+  // Make sure that the registration is stored.
+  RegistrationData data_out;
+  std::vector<Resource> resources_out;
+  EXPECT_TRUE(database->ReadRegistration(
+      data.registration_id, origin, &data_out, &resources_out));
+  VerifyRegistrationData(data, data_out);
+  EXPECT_TRUE(resources_out.empty());
+
+  // Activate the registration.
+  EXPECT_TRUE(database->UpdateVersionToActive(data.registration_id, origin));
+
+  // Make sure that the registration is activated.
+  resources_out.clear();
+  EXPECT_TRUE(database->ReadRegistration(
+      data.registration_id, origin, &data_out, &resources_out));
+  RegistrationData expected_data = data;
+  expected_data.is_active = true;
+  VerifyRegistrationData(expected_data, data_out);
+  EXPECT_TRUE(resources_out.empty());
+
+  // Delete the registration.
+  EXPECT_TRUE(database->DeleteRegistration(data.registration_id, origin));
+
+  // Should be false because the registration is gone.
+  EXPECT_FALSE(database->UpdateVersionToActive(data.registration_id, origin));
+}
+
+TEST(ServiceWorkerDatabaseTest, UpdateLastCheckTime) {
+  scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
+  GURL origin("http://example.com");
+
+  // Should be false because a registration does not exist.
+  EXPECT_FALSE(database->UpdateLastCheckTime(0, origin, base::Time::Now()));
+
+  // Add a registration.
+  RegistrationData data;
+  data.registration_id = 100;
+  data.scope = URL(origin, "/foo");
+  data.script = URL(origin, "/script.js");
+  data.version_id = 200;
+  data.last_update_check = base::Time::Now();
+  EXPECT_TRUE(database->WriteRegistration(data, std::vector<Resource>()));
+
+  // Make sure that the registration is stored.
+  RegistrationData data_out;
+  std::vector<Resource> resources_out;
+  EXPECT_TRUE(database->ReadRegistration(
+      data.registration_id, origin, &data_out, &resources_out));
+  VerifyRegistrationData(data, data_out);
+  EXPECT_TRUE(resources_out.empty());
+
+  // Update the last check time.
+  base::Time updated_time = base::Time::Now();
+  EXPECT_TRUE(database->UpdateLastCheckTime(
+      data.registration_id, origin, updated_time));
+
+  // Make sure that the registration is updated.
+  resources_out.clear();
+  EXPECT_TRUE(database->ReadRegistration(
+      data.registration_id, origin, &data_out, &resources_out));
+  RegistrationData expected_data = data;
+  expected_data.last_update_check = updated_time;
+  VerifyRegistrationData(expected_data, data_out);
+  EXPECT_TRUE(resources_out.empty());
+
+  // Delete the registration.
+  EXPECT_TRUE(database->DeleteRegistration(data.registration_id, origin));
+
+  // Should be false because the registration is gone.
+  EXPECT_FALSE(database->UpdateLastCheckTime(
+      data.registration_id, origin, base::Time::Now()));
+}
+
 TEST(ServiceWorkerDatabaseTest, UncommittedResourceIds) {
   scoped_ptr<ServiceWorkerDatabase> database(CreateDatabaseInMemory());
 
