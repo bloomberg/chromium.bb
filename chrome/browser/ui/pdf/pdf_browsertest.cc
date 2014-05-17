@@ -51,7 +51,8 @@ class PDFBrowserTest : public InProcessBrowserTest,
         load_stop_notification_count_(0) {
     base::FilePath src_dir;
     EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
-    pdf_test_server_.ServeFilesFromDirectory(src_dir.AppendASCII("pdf/test"));
+    pdf_test_server_.ServeFilesFromDirectory(src_dir.AppendASCII(
+        "chrome/test/data/pdf_private"));
   }
 
  protected:
@@ -62,12 +63,6 @@ class PDFBrowserTest : public InProcessBrowserTest,
 
   int load_stop_notification_count() const {
     return load_stop_notification_count_;
-  }
-
-  base::FilePath GetPDFTestDir() {
-    return base::FilePath(base::FilePath::kCurrentDirectory).AppendASCII("..").
-        AppendASCII("..").AppendASCII("..").AppendASCII("pdf").
-        AppendASCII("test");
   }
 
   void Load() {
@@ -82,7 +77,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     browser()->window()->SetBounds(bounds);
 
     GURL url(ui_test_utils::GetTestUrl(
-        GetPDFTestDir(),
+        base::FilePath(FILE_PATH_LITERAL("pdf_private")),
         base::FilePath(FILE_PATH_LITERAL("pdf_browsertest.pdf"))));
     ui_test_utils::NavigateToURL(browser(), url);
   }
@@ -133,7 +128,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     base::MessageLoopForUI::current()->Quit();
     ASSERT_EQ(success, true);
     base::FilePath reference = ui_test_utils::GetTestFilePath(
-        GetPDFTestDir(),
+        base::FilePath(FILE_PATH_LITERAL("pdf_private")),
         base::FilePath().AppendASCII(expected_filename_));
     base::File::Info info;
     ASSERT_TRUE(base::GetFileInfo(reference, &info));
@@ -319,7 +314,8 @@ IN_PROC_BROWSER_TEST_P(PDFBrowserTest, MAYBE_Loading) {
   std::string base_url = std::string("/");
 
   base::FileEnumerator file_enumerator(
-      ui_test_utils::GetTestFilePath(GetPDFTestDir(), base::FilePath()),
+      ui_test_utils::GetTestFilePath(
+          base::FilePath(FILE_PATH_LITERAL("pdf_private")), base::FilePath()),
       false,
       base::FileEnumerator::FILES,
       FILE_PATH_LITERAL("*.pdf"));
