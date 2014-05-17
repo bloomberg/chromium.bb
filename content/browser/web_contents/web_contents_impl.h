@@ -24,7 +24,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -630,6 +629,7 @@ class CONTENT_EXPORT WebContentsImpl
 
  private:
   friend class TestNavigationObserver;
+  friend class WebContentsAddedObserver;
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
 

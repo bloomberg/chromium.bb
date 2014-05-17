@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
@@ -89,6 +90,59 @@ void ShellAddedObserver::ShellCreated(Shell* shell) {
   shell_ = shell;
   if (runner_.get())
     runner_->QuitClosure().Run();
+}
+
+class RenderViewCreatedObserver : public WebContentsObserver {
+ public:
+  RenderViewCreatedObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        render_view_created_called_(false) {
+  }
+
+  // WebContentsObserver:
+  virtual void RenderViewCreated(RenderViewHost* rvh) OVERRIDE {
+    render_view_created_called_ = true;
+  }
+
+  bool render_view_created_called_;
+};
+
+WebContentsAddedObserver::WebContentsAddedObserver()
+    : web_contents_created_callback_(
+          base::Bind(
+              &WebContentsAddedObserver::WebContentsCreated,
+              base::Unretained(this))),
+      web_contents_(NULL) {
+  WebContentsImpl::AddCreatedCallback(web_contents_created_callback_);
+}
+
+WebContentsAddedObserver::~WebContentsAddedObserver() {
+  WebContentsImpl::RemoveCreatedCallback(web_contents_created_callback_);
+}
+
+void WebContentsAddedObserver::WebContentsCreated(WebContents* web_contents) {
+  DCHECK(!web_contents_);
+  web_contents_ = web_contents;
+  child_observer_.reset(new RenderViewCreatedObserver(web_contents));
+
+  if (runner_.get())
+    runner_->QuitClosure().Run();
+}
+
+WebContents* WebContentsAddedObserver::GetWebContents() {
+  if (web_contents_)
+    return web_contents_;
+
+  runner_ = new MessageLoopRunner();
+  runner_->Run();
+  return web_contents_;
+}
+
+bool WebContentsAddedObserver::RenderViewCreatedCalled() {
+  if (child_observer_)
+    return child_observer_->render_view_created_called_;
+
+  return false;
 }
 
 }  // namespace content

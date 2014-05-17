@@ -1418,6 +1418,7 @@ void WebContentsImpl::CreateNewWindow(
   if (params.disposition == NEW_BACKGROUND_TAB)
     create_params.initially_hidden = true;
   new_contents->Init(create_params);
+  new_contents->RenderViewCreated(new_contents->GetRenderViewHost());
 
   // Save the window for later if we're not suppressing the opener (since it
   // will be shown immediately).

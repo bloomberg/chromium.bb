@@ -437,5 +437,24 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_EQ(3, delegate->loadingStateToDifferentDocumentCount());
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       RenderViewCreatedForChildWindow) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  NavigateToURL(shell(),
+                embedded_test_server()->GetURL("/title1.html"));
+
+  WebContentsAddedObserver new_web_contents_observer;
+  ASSERT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "var a = document.createElement('a');"
+                            "a.href='./title2.html';"
+                            "a.target = '_blank';"
+                            "document.body.appendChild(a);"
+                            "a.click();"));
+  WebContents* new_web_contents = new_web_contents_observer.GetWebContents();
+  WaitForLoadStop(new_web_contents);
+  EXPECT_TRUE(new_web_contents_observer.RenderViewCreatedCalled());
+}
+
 }  // namespace content
 
