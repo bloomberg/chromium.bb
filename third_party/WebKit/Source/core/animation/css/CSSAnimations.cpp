@@ -437,6 +437,8 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> startKeyframe = AnimatableValueKeyframe::create();
     startKeyframe->setPropertyValue(id, from.get());
     startKeyframe->setOffset(0);
+    startKeyframe->setEasing(timing.timingFunction.release());
+    timing.timingFunction = LinearTimingFunction::shared();
     keyframes.append(startKeyframe);
 
     RefPtrWillBeRawPtr<AnimatableValueKeyframe> endKeyframe = AnimatableValueKeyframe::create();
