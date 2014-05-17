@@ -15,7 +15,7 @@ cr.define('serviceworker', function() {
 
     // All commands are sent with the partition_path and scope, and
     // are all completed with 'onOperationComplete'.
-    var COMMANDS = ['unregister', 'start', 'stop', 'sync'];
+    var COMMANDS = ['unregister', 'start', 'stop', 'sync', 'inspect'];
     function commandHandler(command) {
         return function(event) {
             var link = event.target;
