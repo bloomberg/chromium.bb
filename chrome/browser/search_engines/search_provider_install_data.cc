@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/search_host_to_urls_map.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
@@ -25,10 +26,6 @@
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 
@@ -122,17 +119,11 @@ void GoogleURLChangeNotifier::OnChange(const std::string& google_base_url) {
 
 // Notices changes in the Google base URL and sends them along
 // to the SearchProviderInstallData on the I/O thread.
-class GoogleURLObserver : public content::NotificationObserver,
-                          public content::RenderProcessHostObserver {
+class GoogleURLObserver : public content::RenderProcessHostObserver {
  public:
   GoogleURLObserver(Profile* profile,
                     GoogleURLChangeNotifier* change_notifier,
                     content::RenderProcessHost* host);
-
-  // Implementation of content::NotificationObserver.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   // Implementation of content::RenderProcessHostObserver.
   virtual void RenderProcessHostDestroyed(
@@ -141,8 +132,12 @@ class GoogleURLObserver : public content::NotificationObserver,
  private:
   virtual ~GoogleURLObserver() {}
 
+  // Callback that is called when the Google URL is updated.
+  void OnGoogleURLUpdated(GURL old_url, GURL new_url);
+
   scoped_refptr<GoogleURLChangeNotifier> change_notifier_;
-  content::NotificationRegistrar registrar_;
+
+  scoped_ptr<GoogleURLTracker::Subscription> google_url_updated_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleURLObserver);
 };
@@ -153,21 +148,24 @@ GoogleURLObserver::GoogleURLObserver(
     content::RenderProcessHost* host)
     : change_notifier_(change_notifier) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                 content::Source<Profile>(profile->GetOriginalProfile()));
+  GoogleURLTracker* google_url_tracker =
+      GoogleURLTrackerFactory::GetForProfile(profile);
+
+  // GoogleURLTracker is not created in tests.
+  if (google_url_tracker) {
+    google_url_updated_subscription_ =
+        google_url_tracker->RegisterCallback(base::Bind(
+            &GoogleURLObserver::OnGoogleURLUpdated, base::Unretained(this)));
+  }
   host->AddObserver(this);
 }
 
-void GoogleURLObserver::Observe(int type,
-                                const content::NotificationSource& source,
-                                const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_URL_UPDATED, type);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&GoogleURLChangeNotifier::OnChange,
-                 change_notifier_.get(),
-                 content::Details<GoogleURLTracker::UpdatedDetails>(details)->
-                     second.spec()));
+void GoogleURLObserver::OnGoogleURLUpdated(GURL old_url, GURL new_url) {
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&GoogleURLChangeNotifier::OnChange,
+                                     change_notifier_.get(),
+                                     new_url.spec()));
 }
 
 void GoogleURLObserver::RenderProcessHostDestroyed(

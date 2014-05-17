@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -49,6 +50,12 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
                          public net::NetworkChangeNotifier::IPAddressObserver,
                          public KeyedService {
  public:
+  // Callback that is called when the Google URL is updated. The arguments are
+  // the old and new URLs.
+  typedef base::Callback<void(GURL, GURL)> OnGoogleURLUpdatedCallback;
+  typedef base::CallbackList<void(GURL, GURL)> CallbackList;
+  typedef CallbackList::Subscription Subscription;
+
   // The contents of the Details for a NOTIFICATION_GOOGLE_URL_UPDATED.
   typedef std::pair<GURL, GURL> UpdatedDetails;
 
@@ -58,6 +65,9 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
     NORMAL_MODE,
     UNIT_TEST_MODE,
   };
+
+  static const char kDefaultGoogleHomepage[];
+  static const char kSearchDomainCheckURL[];
 
   // Only the GoogleURLTrackerFactory and tests should call this.  No code other
   // than the GoogleURLTracker itself should actually use
@@ -125,8 +135,8 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   virtual void OnTabClosed(
       content::NavigationController* navigation_controller);
 
-  static const char kDefaultGoogleHomepage[];
-  static const char kSearchDomainCheckURL[];
+  scoped_ptr<Subscription> RegisterCallback(
+      const OnGoogleURLUpdatedCallback& cb);
 
  private:
   friend class GoogleURLTrackerTest;
@@ -174,6 +184,10 @@ class GoogleURLTracker : public net::URLFetcherDelegate,
   void UnregisterForEntrySpecificNotifications(
       const GoogleURLTrackerMapEntry& map_entry,
       bool must_be_listening_for_commit);
+
+  void NotifyGoogleURLUpdated(GURL old_url, GURL new_url);
+
+  CallbackList callback_list_;
 
   Profile* profile_;
 

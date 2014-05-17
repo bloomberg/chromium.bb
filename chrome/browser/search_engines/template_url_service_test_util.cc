@@ -18,7 +18,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -127,13 +126,10 @@ void TemplateURLServiceTestUtilBase::SetGoogleBaseURL(
     const GURL& base_url) const {
   DCHECK(base_url.is_valid());
   UIThreadSearchTermsData data(profile());
-  GoogleURLTracker::UpdatedDetails urls(GURL(data.GoogleBaseURLValue()),
-                                        base_url);
+  GURL old_url = GURL(data.GoogleBaseURLValue());
   UIThreadSearchTermsData::SetGoogleBaseURL(base_url.spec());
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-      content::Source<Profile>(profile()),
-      content::Details<GoogleURLTracker::UpdatedDetails>(&urls));
+  TemplateURLServiceFactory::GetForProfile(profile())
+      ->OnGoogleURLUpdated(old_url, base_url);
 }
 
 void TemplateURLServiceTestUtilBase::SetManagedDefaultSearchPreferences(

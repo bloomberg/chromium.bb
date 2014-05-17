@@ -107,6 +107,10 @@ void GoogleURLTracker::AcceptGoogleURL(bool redo_searches) {
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetString(prefs::kLastKnownGoogleURL, google_url_.spec());
   prefs->SetString(prefs::kLastPromptedGoogleURL, google_url_.spec());
+  NotifyGoogleURLUpdated(urls.first, urls.second);
+
+  // TODO(blundell): Convert all clients to use the callback interface and
+  // eliminate this notification. crbug.com/373237
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
       content::Source<Profile>(profile_),
@@ -374,6 +378,11 @@ void GoogleURLTracker::OnTabClosed(
   NOTREACHED();
 }
 
+scoped_ptr<GoogleURLTracker::Subscription> GoogleURLTracker::RegisterCallback(
+    const OnGoogleURLUpdatedCallback& cb) {
+  return callback_list_.Add(cb);
+}
+
 void GoogleURLTracker::CloseAllEntries(bool redo_searches) {
   // Delete all entries, whether they have infobars or not.
   while (!entry_map_.empty())
@@ -420,4 +429,8 @@ void GoogleURLTracker::UnregisterForEntrySpecificNotifications(
     DCHECK(!search_committed_);
     nav_helper_->SetListeningForNavigationStart(false);
   }
+}
+
+void GoogleURLTracker::NotifyGoogleURLUpdated(GURL old_url, GURL new_url) {
+  callback_list_.Notify(old_url, new_url);
 }

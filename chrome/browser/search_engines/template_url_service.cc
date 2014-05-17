@@ -24,7 +24,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/google/google_url_tracker.h"
+#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -980,19 +980,12 @@ base::string16 TemplateURLService::GetKeywordShortName(
 void TemplateURLService::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_HISTORY_URL_VISITED) {
-    content::Details<history::URLVisitedDetails> visit_details(details);
-    if (!loaded_)
-      visits_to_add_.push_back(*visit_details.ptr());
-    else
-      UpdateKeywordSearchTermsForURL(*visit_details.ptr());
-  } else {
-    DCHECK_EQ(chrome::NOTIFICATION_GOOGLE_URL_UPDATED, type);
-    if (loaded_) {
-      GoogleBaseURLChanged(
-          content::Details<GoogleURLTracker::UpdatedDetails>(details)->first);
-    }
-  }
+  DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URL_VISITED);
+  content::Details<history::URLVisitedDetails> visit_details(details);
+  if (!loaded_)
+    visits_to_add_.push_back(*visit_details.ptr());
+  else
+    UpdateKeywordSearchTermsForURL(*visit_details.ptr());
 }
 
 void TemplateURLService::Shutdown() {
@@ -1508,8 +1501,15 @@ void TemplateURLService::Init(const Initializer* initializers,
     content::Source<Profile> profile_source(profile_->GetOriginalProfile());
     notification_registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED,
                                 profile_source);
-    notification_registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-                                profile_source);
+    GoogleURLTracker* google_url_tracker =
+        GoogleURLTrackerFactory::GetForProfile(profile_);
+
+    // GoogleURLTracker is not created in tests.
+    if (google_url_tracker) {
+      google_url_updated_subscription_ =
+          google_url_tracker->RegisterCallback(base::Bind(
+              &TemplateURLService::OnGoogleURLUpdated, base::Unretained(this)));
+    }
     pref_change_registrar_.Init(GetPrefs());
     pref_change_registrar_.Add(
         prefs::kSyncedDefaultSearchProviderGUID,
@@ -1913,6 +1913,11 @@ void TemplateURLService::GoogleBaseURLChanged(const GURL& old_base_url) {
   }
   if (something_changed)
     NotifyObservers();
+}
+
+void TemplateURLService::OnGoogleURLUpdated(GURL old_url, GURL new_url) {
+  if (loaded_)
+    GoogleBaseURLChanged(old_url);
 }
 
 void TemplateURLService::OnDefaultSearchChange(

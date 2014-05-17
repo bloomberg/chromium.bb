@@ -21,9 +21,6 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/variations/entropy_provider.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 
 InstantUnitTestBase::InstantUnitTestBase() {
   field_trial_list_.reset(new base::FieldTrialList(
@@ -75,12 +72,8 @@ void InstantUnitTestBase::NotifyGoogleBaseURLUpdate(
   // UIThreadSearchTermsData::GoogleBaseURLValue()
   // For simulating test behavior, this is overridden below.
   UIThreadSearchTermsData::SetGoogleBaseURL(new_google_base_url);
-  GoogleURLTracker::UpdatedDetails details(GURL("https://www.google.com/"),
-                                           GURL(new_google_base_url));
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_GOOGLE_URL_UPDATED,
-      content::Source<Profile>(profile()->GetOriginalProfile()),
-      content::Details<GoogleURLTracker::UpdatedDetails>(&details));
+  TemplateURLServiceFactory::GetForProfile(profile())->OnGoogleURLUpdated(
+      GURL("https://www.google.com"), GURL(new_google_base_url));
 }
 
 bool InstantUnitTestBase::IsInstantServiceObserver(
