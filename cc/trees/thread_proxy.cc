@@ -710,9 +710,6 @@ void ThreadProxy::BeginMainFrame(
   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.BeginMainFrame");
   DCHECK(IsMainThread());
 
-  if (!layer_tree_host())
-    return;
-
   if (main().defer_commits) {
     main().pending_deferred_commit = begin_main_frame_state.Pass();
     layer_tree_host()->DidDeferCommit();
@@ -1186,23 +1183,17 @@ void ThreadProxy::ReadyToFinalizeTextureUpdates() {
 
 void ThreadProxy::DidCommitAndDrawFrame() {
   DCHECK(IsMainThread());
-  if (!layer_tree_host())
-    return;
   layer_tree_host()->DidCommitAndDrawFrame();
 }
 
 void ThreadProxy::DidCompleteSwapBuffers() {
   DCHECK(IsMainThread());
-  if (!layer_tree_host())
-    return;
   layer_tree_host()->DidCompleteSwapBuffers();
 }
 
 void ThreadProxy::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) {
   TRACE_EVENT0("cc", "ThreadProxy::SetAnimationEvents");
   DCHECK(IsMainThread());
-  if (!layer_tree_host())
-    return;
   layer_tree_host()->SetAnimationEvents(events.Pass());
 }
 
