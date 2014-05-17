@@ -151,12 +151,17 @@ cr.define('cr.ui', function() {
 
       switch (e.type) {
         case 'mousedown':
-        case 'touchstart':
           if (!this.menu.contains(e.target))
             this.hideMenu();
           else
             e.preventDefault();
           break;
+
+        case 'touchstart':
+          if (!this.menu.contains(e.target))
+            this.hideMenu();
+          break;
+
         case 'keydown':
           // keyIdentifier does not report 'Esc' correctly
           if (e.keyCode == 27 /* Esc */) {
