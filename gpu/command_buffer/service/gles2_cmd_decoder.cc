@@ -8254,7 +8254,8 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DBucket(
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(
     uint32 immediate_data_size, const cmds::TexImage2D& c) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexImage2D");
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexImage2D",
+      "width", c.width, "height", c.height);
   // Set as failed for now, but if it successed, this will be set to not failed.
   texture_state_.tex_image_2d_failed = true;
   GLenum target = static_cast<GLenum>(c.target);
@@ -8728,7 +8729,8 @@ error::Error GLES2DecoderImpl::DoTexSubImage2D(
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(
     uint32 immediate_data_size, const cmds::TexSubImage2D& c) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::HandleTexSubImage2D");
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexSubImage2D",
+      "width", c.width, "height", c.height);
   GLboolean internal = static_cast<GLboolean>(c.internal);
   if (internal == GL_TRUE && texture_state_.tex_image_2d_failed)
     return error::kNoError;
@@ -10100,7 +10102,8 @@ void GLES2DecoderImpl::DoTexStorage2DEXT(
     GLenum internal_format,
     GLsizei width,
     GLsizei height) {
-  TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoTexStorage2DEXT");
+  TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoTexStorage2DEXT",
+      "width", width, "height", height);
   if (!texture_manager()->ValidForTarget(target, 0, width, height, 1) ||
       TextureManager::ComputeMipMapCount(target, width, height, 1) < levels) {
     LOCAL_SET_GL_ERROR(
