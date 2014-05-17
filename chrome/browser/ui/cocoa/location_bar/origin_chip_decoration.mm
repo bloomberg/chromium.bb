@@ -26,7 +26,7 @@
 
 namespace {
 
-const CGFloat kInnerLeftPadding = 3;
+const CGFloat kInnerLeftPadding = 5;
 const CGFloat kIconLabelPadding = 2;
 const CGFloat kInnerRightPadding = 6;
 const CGFloat kOuterRightPadding = 3;
