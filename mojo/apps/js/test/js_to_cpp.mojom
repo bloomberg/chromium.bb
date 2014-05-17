@@ -23,18 +23,23 @@ struct EchoArgs {
   handle<data_pipe_consumer> data_handle;
 };
 
+struct EchoArgsList {
+  EchoArgsList next;
+  EchoArgs item;
+};
+
 interface CppSide {
   StartTest();  // Sent for all tests to notify that the JS side is now ready.
   TestFinished();  // Sent in echo / bit-flip tests to indicate end.
   PingResponse();
-  EchoResponse(EchoArgs arg1, EchoArgs arg2);
+  EchoResponse(EchoArgsList list);
   BitFlipResponse(EchoArgs arg);
 };
 
 [Client=CppSide]
 interface JsSide {
   Ping();
-  Echo(int32 numIterations, EchoArgs arg);
+  Echo(int32 numIterations, EchoArgsList list);
   BitFlip(EchoArgs arg);
 };
 

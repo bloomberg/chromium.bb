@@ -202,8 +202,8 @@ define("mojo/public/js/bindings/codec", [
     return offsetPointer + offset;
   };
 
-  Decoder.prototype.decodeAndCreateDecoder = function() {
-    return new Decoder(this.buffer, this.handles, this.decodePointer());
+  Decoder.prototype.decodeAndCreateDecoder = function(pointer) {
+    return new Decoder(this.buffer, this.handles, pointer);
   };
 
   Decoder.prototype.decodeHandle = function() {
@@ -234,15 +234,27 @@ define("mojo/public/js/bindings/codec", [
   };
 
   Decoder.prototype.decodeStructPointer = function(cls) {
-    return cls.decode(this.decodeAndCreateDecoder());
+    var pointer = this.decodePointer();
+    if (!pointer) {
+      return null;
+    }
+    return cls.decode(this.decodeAndCreateDecoder(pointer));
   };
 
   Decoder.prototype.decodeArrayPointer = function(cls) {
-    return this.decodeAndCreateDecoder().decodeArray(cls);
+    var pointer = this.decodePointer();
+    if (!pointer) {
+      return null;
+    }
+    return this.decodeAndCreateDecoder(pointer).decodeArray(cls);
   };
 
   Decoder.prototype.decodeStringPointer = function() {
-    return this.decodeAndCreateDecoder().decodeString();
+    var pointer = this.decodePointer();
+    if (!pointer) {
+      return null;
+    }
+    return this.decodeAndCreateDecoder(pointer).decodeString();
   };
 
   // Encoder ------------------------------------------------------------------
@@ -367,17 +379,29 @@ define("mojo/public/js/bindings/codec", [
   };
 
   Encoder.prototype.encodeStructPointer = function(cls, val) {
+    if (!val) {
+      this.encodePointer(val);
+      return;
+    }
     var encoder = this.createAndEncodeEncoder(cls.encodedSize);
     cls.encode(encoder, val);
   };
 
   Encoder.prototype.encodeArrayPointer = function(cls, val) {
+    if (!val) {
+      this.encodePointer(val);
+      return;
+    }
     var encodedSize = kArrayHeaderSize + cls.encodedSize * val.length;
     var encoder = this.createAndEncodeEncoder(encodedSize);
     encoder.encodeArray(cls, val);
   };
 
   Encoder.prototype.encodeStringPointer = function(val) {
+    if (!val) {
+      this.encodePointer(val);
+      return;
+    }
     var encodedSize = kArrayHeaderSize + unicode.utf8Length(val);
     var encoder = this.createAndEncodeEncoder(encodedSize);
     encoder.encodeString(val);
@@ -642,10 +666,18 @@ define("mojo/public/js/bindings/codec", [
   PointerTo.prototype.encodedSize = 8;
 
   PointerTo.prototype.decode = function(decoder) {
-    return this.cls.decode(decoder.decodeAndCreateDecoder());
+    var pointer = decoder.decodePointer();
+    if (!pointer) {
+      return null;
+    }
+    return this.cls.decode(decoder.decodeAndCreateDecoder(pointer));
   };
 
   PointerTo.prototype.encode = function(encoder, val) {
+    if (!val) {
+      encoder.encodePointer(val);
+      return;
+    }
     var objectEncoder = encoder.createAndEncodeEncoder(this.cls.encodedSize);
     this.cls.encode(objectEncoder, val);
   };

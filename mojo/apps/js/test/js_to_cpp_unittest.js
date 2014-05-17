@@ -29,13 +29,15 @@ define('mojo/apps/js/test/js_to_cpp_unittest', [
     this.cppSide_.pingResponse();
   };
 
-  JsSideConnection.prototype.echo = function (numIterations, arg) {
-    var arg2;
+  JsSideConnection.prototype.echo = function (numIterations, list) {
+    var arg = list.item;
     var dataPipe1;
     var dataPipe2;
     var i;
     var messagePipe1;
     var messagePipe2;
+    var resultList;
+    var specialArg;
 
     // Ensure expected negative values are negative.
     if (arg.si64 > 0)
@@ -59,18 +61,24 @@ define('mojo/apps/js/test/js_to_cpp_unittest', [
       arg.data_handle = dataPipe1.consumerHandle;
       arg.message_handle = messagePipe1.handle1;
 
-      arg2 = new jsToCpp.EchoArgs();
-      arg2.si64 = -1;
-      arg2.si32 = -1;
-      arg2.si16 = -1;
-      arg2.si8 = -1;
-      arg2.name = 'going';
-      arg2.data_handle = dataPipe2.consumerHandle;
-      arg2.message_handle = messagePipe2.handle1;
+      specialArg = new jsToCpp.EchoArgs();
+      specialArg.si64 = -1;
+      specialArg.si32 = -1;
+      specialArg.si16 = -1;
+      specialArg.si8 = -1;
+      specialArg.name = 'going';
+      specialArg.data_handle = dataPipe2.consumerHandle;
+      specialArg.message_handle = messagePipe2.handle1;
 
       writeDataPipe(dataPipe1, senderData);
       writeDataPipe(dataPipe2, senderData);
-      this.cppSide_.echoResponse(arg, arg2);
+
+      resultList = new jsToCpp.EchoArgsList();
+      resultList.next = new jsToCpp.EchoArgsList();
+      resultList.item = specialArg;
+      resultList.next.item = arg;
+
+      this.cppSide_.echoResponse(resultList);
 
       core.close(dataPipe1.producerHandle);
       core.close(dataPipe2.producerHandle);
