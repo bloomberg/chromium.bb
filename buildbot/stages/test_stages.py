@@ -244,9 +244,12 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       # HWTest passed with warning. All builders should pass.
       logging.warning('HWTest passed with warning code.')
       return self._HandleExceptionAsWarning(exc_info)
-    elif issubclass(exc_type, failures_lib.InfrastructureFailure):
-      # Tests did not run correctly; builders that do not check in
-      # code should pass.
+    elif (issubclass(exc_type, failures_lib.InfrastructureFailure) or
+          issubclass(exc_type, commands.SuiteTimedOut)):
+      # Tests did not run correctly or suite timed out before completion;
+      # builders that do not check in code should pass. Note that timeout
+      # could be caused by real bugs, but we ignore that for now so canaries
+      # don't fail frequently due to timeouts.
       logging.warning('HWTest did not complete due to infrastructure issues '
                       '(%s)', exc_type)
       if not cbuildbot_config.IsPFQType(self._run.config.build_type):

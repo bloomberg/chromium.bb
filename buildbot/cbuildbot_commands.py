@@ -61,6 +61,9 @@ class TestFailure(failures_lib.StepFailure):
 class TestWarning(failures_lib.StepFailure):
   """Raised if a test stage (e.g. VMTest) returns a warning code."""
 
+class SuiteTimedOut(failures_lib.TestLabFailure):
+  """Raised if a test suite timed out with no test failures."""
+
 
 # =========================== Command Helpers =================================
 
@@ -761,13 +764,19 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
                         cros_build_lib.CmdToStr(cmd))
   else:
     result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
-
+    # run_suite error codes:
+    #   0 - OK: Tests ran and passed.
+    #   1 - ERROR: Tests ran and failed (or timed out).
+    #   2 - WARNING: Tests ran and passed with warning(s). Note that 2
+    #         may also be CLIENT_HTTP_CODE error returned by
+    #         autotest_rpc_client.py. We ignore that case for now.
+    #   3 - INFRA_FAILURE: Tests did not complete due to lab issues.
+    #   4 - SUITE_TIMEOUT: Suite timed out. This could be caused by
+    #         infrastructure failures or by test failures.
     # 11, 12, 13 for cases when rpc is down, see autotest_rpc_errors.py.
-    infra_error_codes = (11, 12, 13)
-    # 2 for warnings returned by run_suite.py Note that 2 may also be
-    # CLIENT_HTTP_CODE error returned by autotest_rpc_client.py. We
-    # ignore that case for now.
     lab_warning_codes = (2,)
+    infra_error_codes = (3, 11, 12, 13)
+    timeout_codes = (4,)
 
     if result.returncode in lab_warning_codes:
       raise TestWarning('** Suite passed with a warning code **')
@@ -775,6 +784,8 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
       raise failures_lib.TestLabFailure(
           '** HWTest did not complete due to infrastructure issues '
           '(code %d) **' % result.returncode)
+    elif result.returncode in timeout_codes:
+      raise SuiteTimedOut('** Suite timed out before completion **')
     elif result.returncode != 0:
       raise TestFailure('** HWTest failed (code %d) **' % result.returncode,
                         possibly_flaky=True)

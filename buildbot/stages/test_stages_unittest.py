@@ -231,43 +231,58 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self._RunHWTestSuite(timeout=True)
 
   def testHandleWarningCodeForCQ(self):
-    """Tests that we pass CQ on a lab warning code"""
+    """Tests that we pass CQ on WARNING."""
     self._Prepare('x86-alex-paladin')
     self._RunHWTestSuite(returncode=2, fails=False)
 
   def testHandleWarningCodeForPFQ(self):
-    """Tests that we pass PFQ on a lab warning code"""
+    """Tests that we pass PFQ on WARNING."""
     self._Prepare('daisy-chromium-pfq')
     self._RunHWTestSuite(returncode=2, fails=False)
 
   def testHandleWarningCodeForCanary(self):
-    """Tests that we pass canary on a lab warning code"""
+    """Tests that we pass canary on WARNING."""
     self._Prepare('x86-alex-release')
     self._RunHWTestSuite(returncode=2, fails=False)
 
   def testHandleInfraErrorCodeForCQ(self):
-    """Tests that we fail CQ on returncode of 11."""
+    """Tests that we fail CQ on INFRA_FAILURE."""
     self._Prepare('x86-alex-paladin')
-    self._RunHWTestSuite(returncode=11, fails=True)
+    self._RunHWTestSuite(returncode=3, fails=True)
 
   def testHandleInfraErrorCodeForPFQ(self):
-    """Tests that we fail PFQ on returncode of 11."""
+    """Tests that we fail PFQ on INFRA_FAILURE."""
     self._Prepare('daisy-chromium-pfq')
-    self._RunHWTestSuite(returncode=11, fails=True)
+    self._RunHWTestSuite(returncode=3, fails=True)
 
   def testHandleInfraErrorCodeForCanary(self):
-    """Tests that we pass canaries on returncode of 11."""
+    """Tests that we pass canary on INFRA_FAILURE."""
     self._Prepare('x86-alex-release')
-    self._RunHWTestSuite(returncode=11, fails=False)
+    self._RunHWTestSuite(returncode=3, fails=False)
 
   def testWithSuiteWithFatalFailure(self):
-    """Tests that we fail if we get a returncode of 1."""
+    """Tests that we fail on ERROR."""
     self._RunHWTestSuite(returncode=1, fails=True)
 
   def testWithSuiteWithFatalFailureWarnFlag(self):
-    """Tests that we fail if we get a returncode of 1."""
+    """Tests that we don't fail if hw_test_warn is True."""
     self._Prepare('x86-alex-release', extra_config={'hw_tests_warn': True})
     self._RunHWTestSuite(returncode=1, fails=False)
+
+  def testHandleTestTimeoutForCanary(self):
+    """Tests that we pass canary on SUITE_TIMEOUT."""
+    self._Prepare('x86-alex-release')
+    self._RunHWTestSuite(returncode=4, fails=False)
+
+  def testHandleTestTimeoutForCQ(self):
+    """Tests that we fail CQ on SUITE_TIMEOUT."""
+    self._Prepare('x86-alex-paladin')
+    self._RunHWTestSuite(returncode=4, fails=True)
+
+  def testHandleTestTimeoutForPFQ(self):
+    """Tests that we fail PFQ on SUITE_TIMEOUT."""
+    self._Prepare('daisy-chromium-pfq')
+    self._RunHWTestSuite(returncode=4, fails=True)
 
   def testHandleLabDownAsWarning(self):
     """Test that buildbot warn when lab is down."""

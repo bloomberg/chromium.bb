@@ -194,9 +194,21 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     ], error_code_ok=True)
 
   def testRunHWTestSuiteFailure(self):
-    """Test RunHWTestSuite when an error is returned."""
+    """Test RunHWTestSuite when ERROR is returned."""
     self.rc.SetDefaultCmdResult(returncode=1)
     self.assertRaises(commands.TestFailure, commands.RunHWTestSuite,
+                      self._build, self._suite, self._board, debug=False)
+
+  def testRunHWTestSuiteTimedOut(self):
+    """Test RunHWTestSuite when SUITE_TIMEOUT is returned."""
+    self.rc.SetDefaultCmdResult(returncode=4)
+    self.assertRaises(commands.SuiteTimedOut, commands.RunHWTestSuite,
+                      self._build, self._suite, self._board, debug=False)
+
+  def testRunHWTestSuiteInfraFail(self):
+    """Test RunHWTestSuite when INFRA_FAILURE is returned."""
+    self.rc.SetDefaultCmdResult(returncode=3)
+    self.assertRaises(failures_lib.TestLabFailure, commands.RunHWTestSuite,
                       self._build, self._suite, self._board, debug=False)
 
 
