@@ -724,9 +724,10 @@ bool Textfield::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
   }
 #endif
 
-  // Skip any accelerator handling of backspace; textfields handle this key.
+  // Skip backspace accelerator handling; editable textfields handle this key.
   // Also skip processing Windows [Alt]+<num-pad digit> Unicode alt-codes.
-  return event.key_code() == ui::VKEY_BACK || event.IsUnicodeKeyCode();
+  const bool is_backspace = event.key_code() == ui::VKEY_BACK;
+  return (is_backspace && !read_only()) || event.IsUnicodeKeyCode();
 }
 
 bool Textfield::GetDropFormats(
