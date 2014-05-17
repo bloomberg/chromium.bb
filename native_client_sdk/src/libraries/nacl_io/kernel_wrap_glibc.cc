@@ -325,72 +325,76 @@ int WRAP(write)(int fd, const void* buf, size_t count, size_t* nwrote) {
 
 int WRAP(accept)(int sockfd, struct sockaddr* addr,
                  socklen_t* addrlen, int *sd) {
-  int result = ki_accept(sockfd, addr, addrlen);
-  if (result < 0) {
-    *sd = -1;
-    return errno;
-  } else {
-    *sd = result;
-    return 0;
-  }
+  *sd = ki_accept(sockfd, addr, addrlen);
+  RTN_ERRNO_IF(*sd < 0);
+  return 0;
 }
 
 int WRAP(bind)(int sockfd, const struct sockaddr* addr, socklen_t addrlen) {
-  return (ki_bind(sockfd, addr, addrlen) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_bind(sockfd, addr, addrlen) < 0);
+  return 0;
 }
 
 int WRAP(connect)(int sockfd, const struct sockaddr* addr, socklen_t addrlen) {
-  return (ki_connect(sockfd, addr, addrlen) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_connect(sockfd, addr, addrlen) < 0);
+  return 0;
 }
 
 int WRAP(getpeername)(int sockfd, struct sockaddr* addr, socklen_t* addrlen) {
-  return (ki_getpeername(sockfd, addr, addrlen) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_getpeername(sockfd, addr, addrlen) < 0);
+  return 0;
 }
 
 int WRAP(getsockname)(int sockfd, struct sockaddr* addr, socklen_t* addrlen) {
-  return (ki_getsockname(sockfd, addr, addrlen) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_getsockname(sockfd, addr, addrlen) < 0);
+  return 0;
 }
 
 int WRAP(getsockopt)(int sockfd, int level, int optname, void* optval,
                      socklen_t* optlen) {
-  return (ki_getsockopt(
-      sockfd, level, optname, optval, optlen) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_getsockopt(sockfd, level, optname, optval, optlen) < 0);
+  return 0;
 }
 
 int WRAP(setsockopt)(int sockfd, int level, int optname, const void* optval,
                      socklen_t optlen) {
-  return (ki_setsockopt(
-      sockfd, level, optname, optval, optlen) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_setsockopt(sockfd, level, optname, optval, optlen) < 0);
+  return 0;
 }
 
 int WRAP(listen)(int sockfd, int backlog) {
-  return (ki_listen(sockfd, backlog) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_listen(sockfd, backlog) < 0);
+  return 0;
 }
 
 int WRAP(recv)(int sockfd, void* buf, size_t len, int flags, int* count) {
   ssize_t signed_nread = ki_recv(sockfd, buf, len, flags);
   *count = static_cast<int>(signed_nread);
-  return (signed_nread < 0) ? errno : 0;
+  RTN_ERRNO_IF(signed_nread < 0);
+  return 0;
 }
 
 int WRAP(recvfrom)(int sockfd, void* buf, size_t len, int flags,
                    struct sockaddr* addr, socklen_t* addrlen, int* count) {
   ssize_t signed_nread = ki_recvfrom(sockfd, buf, len, flags, addr, addrlen);
   *count = static_cast<int>(signed_nread);
-  return (signed_nread < 0) ? errno : 0;
+  RTN_ERRNO_IF(signed_nread < 0);
+  return 0;
 }
 
 int WRAP(recvmsg)(int sockfd, struct msghdr* msg, int flags, int *count) {
   ssize_t signed_nread = ki_recvmsg(sockfd, msg, flags);
   *count = static_cast<int>(signed_nread);
-  return (signed_nread < 0) ? errno : 0;
+  RTN_ERRNO_IF(signed_nread < 0);
+  return 0;
 }
 
 ssize_t WRAP(send)(int sockfd, const void* buf, size_t len, int flags,
                    int* count) {
   ssize_t signed_nread = ki_send(sockfd, buf, len, flags);
   *count = static_cast<int>(signed_nread);
-  return (signed_nread < 0) ? errno : 0;
+  RTN_ERRNO_IF(signed_nread < 0);
+  return 0;
 }
 
 ssize_t WRAP(sendto)(int sockfd, const void* buf, size_t len, int flags,
@@ -398,33 +402,32 @@ ssize_t WRAP(sendto)(int sockfd, const void* buf, size_t len, int flags,
                      int* count) {
   ssize_t signed_nread = ki_sendto(sockfd, buf, len, flags, addr, addrlen);
   *count = static_cast<int>(signed_nread);
-  return (signed_nread < 0) ? errno : 0;
+  RTN_ERRNO_IF(signed_nread < 0);
+  return 0;
 }
 
 ssize_t WRAP(sendmsg)(int sockfd, const struct msghdr* msg, int flags,
                       int* count) {
   ssize_t signed_nread = ki_sendmsg(sockfd, msg, flags);
   *count = static_cast<int>(signed_nread);
-  return (signed_nread < 0) ? errno : 0;
+  RTN_ERRNO_IF(signed_nread < 0);
+  return 0;
 }
 
 int WRAP(shutdown)(int sockfd, int how) {
-  return (ki_shutdown(sockfd, how) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_shutdown(sockfd, how) < 0);
+  return 0;
 }
 
 int WRAP(socket)(int domain, int type, int protocol, int* sd) {
-  int result = ki_socket(domain, type, protocol);
-  if (result < 0) {
-    *sd = -1;
-    return errno;
-  } else {
-    *sd = result;
-    return 0;
-  }
+  *sd = ki_socket(domain, type, protocol);
+  RTN_ERRNO_IF(*sd < 0);
+  return 0;
 }
 
 int WRAP(socketpair)(int domain, int type, int protocol, int* sv) {
-  return (ki_socketpair(domain, type, protocol, sv) < 0) ? errno : 0;
+  RTN_ERRNO_IF(ki_socketpair(domain, type, protocol, sv) < 0);
+  return 0;
 }
 
 static void assign_real_pointers() {

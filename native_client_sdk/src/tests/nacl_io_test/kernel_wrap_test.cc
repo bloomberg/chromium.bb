@@ -655,9 +655,10 @@ TEST_F(KernelWrapTest, bind) {
   struct sockaddr addr;
   EXPECT_CALL(mock, bind(kDummyInt, &addr, kDummyInt2))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(0, bind(kDummyInt, &addr, kDummyInt2));
   EXPECT_EQ(-1, bind(kDummyInt, &addr, kDummyInt2));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, connect) {
@@ -666,9 +667,10 @@ TEST_F(KernelWrapTest, connect) {
   struct sockaddr addr;
   EXPECT_CALL(mock, connect(kDummyInt, &addr, kDummyInt2))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(0, connect(kDummyInt, &addr, kDummyInt2));
   EXPECT_EQ(-1, connect(kDummyInt, &addr, kDummyInt2));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, gethostbyname) {
@@ -684,9 +686,10 @@ TEST_F(KernelWrapTest, getpeername) {
   socklen_t len;
   EXPECT_CALL(mock, getpeername(kDummyInt, &addr, &len))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(0, getpeername(kDummyInt, &addr, &len));
   EXPECT_EQ(-1, getpeername(kDummyInt, &addr, &len));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, getsockname) {
@@ -694,11 +697,13 @@ TEST_F(KernelWrapTest, getsockname) {
   // so we test 0 and -1.
   struct sockaddr addr;
   socklen_t len;
+
   EXPECT_CALL(mock, getsockname(kDummyInt, &addr, &len))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(0, getsockname(kDummyInt, &addr, &len));
   EXPECT_EQ(-1, getsockname(kDummyInt, &addr, &len));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, getsockopt) {
@@ -710,13 +715,14 @@ TEST_F(KernelWrapTest, getsockopt) {
   EXPECT_CALL(
       mock, getsockopt(kDummyInt, kDummyInt2, kDummyInt3, dummy_void_ptr, &len))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(
       0,
       getsockopt(kDummyInt, kDummyInt2, kDummyInt3, dummy_void_ptr, &len));
   EXPECT_EQ(
       -1,
       getsockopt(kDummyInt, kDummyInt2, kDummyInt3, dummy_void_ptr, &len));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, listen) {
@@ -724,9 +730,10 @@ TEST_F(KernelWrapTest, listen) {
   // test 0 and -1.
   EXPECT_CALL(mock, listen(kDummyInt, kDummyInt2))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(0, listen(kDummyInt, kDummyInt2));
   EXPECT_EQ(-1, listen(kDummyInt, kDummyInt2));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, recv) {
@@ -803,7 +810,7 @@ TEST_F(KernelWrapTest, setsockopt) {
       setsockopt(
           kDummyInt, kDummyInt2, kDummyInt3, kDummyVoidPtr, kDummySockLen))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(
       0,
       setsockopt(
@@ -812,6 +819,7 @@ TEST_F(KernelWrapTest, setsockopt) {
       -1,
       setsockopt(
           kDummyInt, kDummyInt2, kDummyInt3, kDummyVoidPtr, kDummySockLen));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, shutdown) {
@@ -819,9 +827,10 @@ TEST_F(KernelWrapTest, shutdown) {
   // test 0 and -1.
   EXPECT_CALL(mock, shutdown(kDummyInt, kDummyInt2))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
   EXPECT_EQ(0, shutdown(kDummyInt, kDummyInt2));
   EXPECT_EQ(-1, shutdown(kDummyInt, kDummyInt2));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 TEST_F(KernelWrapTest, socket) {
@@ -836,11 +845,10 @@ TEST_F(KernelWrapTest, socketpair) {
   int dummy_val;
   EXPECT_CALL(mock, socketpair(kDummyInt, kDummyInt2, kDummyInt3, &dummy_val))
       .WillOnce(Return(0))
-      .WillOnce(Return(-1));
-  EXPECT_EQ(0,
-            socketpair(kDummyInt, kDummyInt2, kDummyInt3, &dummy_val));
-  EXPECT_EQ(-1,
-            socketpair(kDummyInt, kDummyInt2, kDummyInt3, &dummy_val));
+      .WillOnce(DoAll(SetErrno(kDummyErrno), Return(-1)));
+  EXPECT_EQ(0, socketpair(kDummyInt, kDummyInt2, kDummyInt3, &dummy_val));
+  EXPECT_EQ(-1, socketpair(kDummyInt, kDummyInt2, kDummyInt3, &dummy_val));
+  EXPECT_EQ(kDummyErrno, errno);
 }
 
 #endif  // PROVIDES_SOCKET_API
