@@ -1877,6 +1877,12 @@ void RenderFrameImpl::didCommitProvisionalLoad(
   DocumentState* document_state =
       DocumentState::FromDataSource(frame->dataSource());
   NavigationState* navigation_state = document_state->navigation_state();
+
+  // When we perform a new navigation, we need to update the last committed
+  // session history entry with state for the page we are leaving. Do this
+  // before updating the HistoryController state.
+  render_view_->UpdateSessionHistory(frame);
+
   render_view_->history_controller()->UpdateForCommit(this, item, commit_type,
       navigation_state->was_within_same_page());
 
@@ -1894,10 +1900,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
 
   bool is_new_navigation = commit_type == blink::WebStandardCommit;
   if (is_new_navigation) {
-    // When we perform a new navigation, we need to update the last committed
-    // session history entry with state for the page we are leaving.
-    render_view_->UpdateSessionHistory(frame);
-
     // We bump our Page ID to correspond with the new session history entry.
     render_view_->page_id_ = render_view_->next_page_id_++;
 
@@ -1935,7 +1937,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
         navigation_state->pending_page_id() != render_view_->page_id_ &&
         !navigation_state->request_committed()) {
       // This is a successful session history navigation!
-      render_view_->UpdateSessionHistory(frame);
       render_view_->page_id_ = navigation_state->pending_page_id();
 
       render_view_->history_list_offset_ =

@@ -1810,6 +1810,9 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
+  PageState back_state =
+      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
+
   LoadHTML("<div id=pagename>Page C</div>");
   int was_page_c = -1;
   base::string16 check_page_c =
@@ -1820,17 +1823,18 @@ TEST_F(RenderViewImplTest, TestBackForward) {
 
   PageState forward_state =
       HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
-  GoBack(HistoryEntryToPageState(
-      view()->history_controller()->GetPreviousEntry()));
+  GoBack(back_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
+
+  PageState back_state2 =
+      HistoryEntryToPageState(view()->history_controller()->GetCurrentEntry());
 
   GoForward(forward_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_c);
 
-  GoBack(HistoryEntryToPageState(
-      view()->history_controller()->GetPreviousEntry()));
+  GoBack(back_state2);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 

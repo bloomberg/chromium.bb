@@ -118,7 +118,6 @@ class CONTENT_EXPORT HistoryController {
                        bool navigation_within_page);
 
   HistoryEntry* GetCurrentEntry();
-  HistoryEntry* GetPreviousEntry();
   blink::WebHistoryItem GetItemForNewChildFrame(RenderFrameImpl* frame) const;
   void RemoveChildrenForRedirect(RenderFrameImpl* frame);
 
@@ -138,7 +137,6 @@ class CONTENT_EXPORT HistoryController {
   RenderViewImpl* render_view_;
 
   scoped_ptr<HistoryEntry> current_entry_;
-  scoped_ptr<HistoryEntry> previous_entry_;
   scoped_ptr<HistoryEntry> provisional_entry_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryController);

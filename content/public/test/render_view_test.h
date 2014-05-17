@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/common/page_state.h"
 #include "content/public/test/mock_render_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -76,14 +77,13 @@ class RenderViewTest : public testing::Test {
   // the navigation is committed.
   void LoadHTML(const char* html);
 
+  // Returns the current PageState.
+  PageState GetCurrentPageState();
+
   // Navigates the main frame back or forward in session history and commits.
   // The caller must capture a PageState for the target page.
   void GoBack(const PageState& state);
   void GoForward(const PageState& state);
-
-  // Navigates the main frame back to whatever is considered the previous
-  // history entry internally.
-  void GoBackToPrevious();
 
   // Sends one native key event over IPC.
   void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);

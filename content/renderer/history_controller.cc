@@ -76,14 +76,6 @@ void HistoryController::GoToEntry(scoped_ptr<HistoryEntry> target_entry,
     // navigation, so we can safely assume this is the different document case.
     different_document_loads.push_back(
         std::make_pair(main_frame, provisional_entry_->root()));
-  } else if (different_document_loads.empty()) {
-    // If we have only same document navigations to perform, immediately
-    // declare the load "committed" by updating the current entry.
-    // TODO(japhet): This is a historical quirk, because same-document
-    // history navigations call UpdateForCommit() with commit type
-    // HistoryInertCommit. If that is fixed, we can remove this block.
-    previous_entry_.reset(current_entry_.release());
-    current_entry_.reset(provisional_entry_.release());
   }
 
   for (size_t i = 0; i < same_document_loads.size(); ++i) {
@@ -160,7 +152,6 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
   if (commit_type == blink::WebBackForwardCommit) {
     if (!provisional_entry_)
       return;
-    previous_entry_.reset(current_entry_.release());
     current_entry_.reset(provisional_entry_.release());
   } else if (commit_type == blink::WebStandardCommit) {
     CreateNewBackForwardItem(frame, item, navigation_within_page);
@@ -171,10 +162,6 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
 
 HistoryEntry* HistoryController::GetCurrentEntry() {
   return current_entry_.get();
-}
-
-HistoryEntry* HistoryController::GetPreviousEntry() {
-  return previous_entry_.get();
 }
 
 WebHistoryItem HistoryController::GetItemForNewChildFrame(
@@ -200,8 +187,7 @@ void HistoryController::CreateNewBackForwardItem(
     current_entry_.reset(
         new HistoryEntry(new_item, target_frame->GetRoutingID()));
   } else {
-    previous_entry_.reset(current_entry_.release());
-    current_entry_.reset(previous_entry_->CloneAndReplace(
+    current_entry_.reset(current_entry_->CloneAndReplace(
         new_item, clone_children_of_target, target_frame, render_view_));
   }
 }

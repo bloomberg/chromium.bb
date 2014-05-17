@@ -461,6 +461,8 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   EXPECT_EQ("zh", params.a.adopted_language);
   render_thread_->sink().ClearMessages();
 
+  content::PageState back_state = GetCurrentPageState();
+
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"fr\">"
            "</head><body>This page is in French.</body></html>");
   message = render_thread_->sink().GetUniqueMessageMatching(
@@ -470,7 +472,7 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   EXPECT_EQ("fr", params.a.adopted_language);
   render_thread_->sink().ClearMessages();
 
-  GoBackToPrevious();
+  GoBack(back_state);
 
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeViewHostMsg_TranslateLanguageDetermined::ID);

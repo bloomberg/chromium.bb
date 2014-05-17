@@ -1323,16 +1323,15 @@ void RenderViewImpl::OnPauseVideo() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-// Sends the last committed session history state to the browser so it will be
-// saved before we navigate to a new page. This must be called *before* the
-// page ID has been updated so we know what it was.
+// Sends the current history state to the browser so it will be saved before we
+// navigate to a new page.
 void RenderViewImpl::UpdateSessionHistory(WebFrame* frame) {
   // If we have a valid page ID at this point, then it corresponds to the page
   // we are navigating away from.  Otherwise, this is the first navigation, so
   // there is no past session history to record.
   if (page_id_ == -1)
     return;
-  SendUpdateState(history_controller_->GetPreviousEntry());
+  SendUpdateState(history_controller_->GetCurrentEntry());
 }
 
 void RenderViewImpl::SendUpdateState(HistoryEntry* entry) {

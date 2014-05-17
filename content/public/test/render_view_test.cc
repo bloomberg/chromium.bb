@@ -124,18 +124,17 @@ void RenderViewTest::LoadHTML(const char* html) {
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
 }
 
+PageState RenderViewTest::GetCurrentPageState() {
+  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  return HistoryEntryToPageState(impl->history_controller()->GetCurrentEntry());
+}
+
 void RenderViewTest::GoBack(const PageState& state) {
   GoToOffset(-1, state);
 }
 
 void RenderViewTest::GoForward(const PageState& state) {
   GoToOffset(1, state);
-}
-
-void RenderViewTest::GoBackToPrevious() {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  GoBack(HistoryEntryToPageState(
-      impl->history_controller()->GetPreviousEntry()));
 }
 
 void RenderViewTest::SetUp() {
