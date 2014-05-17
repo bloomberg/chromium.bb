@@ -312,6 +312,7 @@ NaClProcessHost::~NaClProcessHost() {
     } else {
       LOG(ERROR) << message;
     }
+    NaClBrowser::GetInstance()->OnProcessEnd(process_->GetData().id);
   }
 
   if (internal_->socket_for_renderer != NACL_INVALID_HANDLE) {
@@ -351,6 +352,7 @@ void NaClProcessHost::OnProcessCrashed(int exit_status) {
 // static
 void NaClProcessHost::EarlyStartup() {
   NaClBrowser::GetInstance()->EarlyStartup();
+  // Inform NaClBrowser that we exist and will have a debug port at some point.
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Open the IRT file early to make sure that it isn't replaced out from
   // under us by autoupdate.
@@ -491,6 +493,7 @@ void NaClProcessHost::OnChannelConnected(int32 peer_pid) {
 void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
   process_launched_by_broker_ = true;
   process_->SetHandle(handle);
+  SetDebugStubPort(nacl::kGdbDebugStubPortUnknown);
   if (!StartWithLaunchedProcess())
     delete this;
 }
@@ -766,13 +769,9 @@ void NaClProcessHost::SendMessageToRenderer(
   }
 }
 
-void NaClProcessHost::SetDebugStubPort(uint16_t port) {
+void NaClProcessHost::SetDebugStubPort(int port) {
   NaClBrowser* nacl_browser = NaClBrowser::GetInstance();
-  if (nacl_browser->HasGdbDebugStubPortListener()) {
-    nacl_browser->FireGdbDebugStubPortOpened(port);
-  }
-  // Set debug stub port on the process object.
-  process_->SetNaClDebugStubPort(port);
+  nacl_browser->SetProcessGdbDebugStubPort(process_->GetData().id, port);
 }
 
 #if defined(OS_POSIX)

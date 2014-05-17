@@ -272,15 +272,15 @@ void NaClBrowser::OnIrtOpened(scoped_ptr<base::FileProxy> file_proxy,
   CheckWaiting();
 }
 
-void NaClBrowser::FireGdbDebugStubPortOpened(int port) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(debug_stub_port_listener_, port));
-}
-
-bool NaClBrowser::HasGdbDebugStubPortListener() {
-  return !debug_stub_port_listener_.is_null();
+void NaClBrowser::SetProcessGdbDebugStubPort(int process_id, int port) {
+  gdb_debug_stub_port_map_[process_id] = port;
+  if (port != kGdbDebugStubPortUnknown &&
+      !debug_stub_port_listener_.is_null()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(debug_stub_port_listener_, port));
+  }
 }
 
 void NaClBrowser::SetGdbDebugStubPortListener(
@@ -290,6 +290,14 @@ void NaClBrowser::SetGdbDebugStubPortListener(
 
 void NaClBrowser::ClearGdbDebugStubPortListener() {
   debug_stub_port_listener_.Reset();
+}
+
+int NaClBrowser::GetProcessGdbDebugStubPort(int process_id) {
+  GdbDebugStubPortMap::iterator i = gdb_debug_stub_port_map_.find(process_id);
+  if (i != gdb_debug_stub_port_map_.end()) {
+    return i->second;
+  }
+  return kGdbDebugStubPortUnused;
 }
 
 void NaClBrowser::InitValidationCacheFilePath() {
@@ -532,6 +540,10 @@ void NaClBrowser::PersistValidationCache() {
                    base::Owned(pickle)));
   }
   validation_cache_is_modified_ = false;
+}
+
+void NaClBrowser::OnProcessEnd(int process_id) {
+  gdb_debug_stub_port_map_.erase(process_id);
 }
 
 void NaClBrowser::OnProcessCrashed() {

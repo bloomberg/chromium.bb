@@ -56,10 +56,6 @@ size_t Resource::GetV8MemoryUsed() const {
   return 0;
 }
 
-int Resource::GetNaClDebugStubPort() const {
-  return 0;
-}
-
 bool Resource::CanInspect() const {
   return false;
 }

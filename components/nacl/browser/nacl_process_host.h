@@ -107,8 +107,8 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   bool LaunchNaClGdb();
 
   // Mark the process as using a particular GDB debug stub port and notify
-  // listeners.
-  void SetDebugStubPort(uint16_t port);
+  // listeners (if the port is not kGdbDebugStubPortUnknown).
+  void SetDebugStubPort(int port);
 
 #if defined(OS_POSIX)
   // Create bound TCP socket in the browser process so that the NaCl GDB debug

@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/nacl/browser/nacl_browser.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
@@ -191,9 +192,7 @@ class TaskManagerModelGpuDataManagerObserver
 };
 
 TaskManagerModel::PerResourceValues::PerResourceValues()
-    : is_nacl_debug_stub_port_valid(false),
-      nacl_debug_stub_port(0),
-      is_title_valid(false),
+    : is_title_valid(false),
       is_profile_name_valid(false),
       network_usage(0),
       is_process_id_valid(false),
@@ -229,7 +228,9 @@ TaskManagerModel::PerProcessValues::PerProcessValues()
       gdi_handles_peak(0),
       is_user_handles_valid(0),
       user_handles(0),
-      user_handles_peak(0) {}
+      user_handles_peak(0),
+      is_nacl_debug_stub_port_valid(false),
+      nacl_debug_stub_port(0) {}
 
 TaskManagerModel::PerProcessValues::~PerProcessValues() {}
 
@@ -292,10 +293,10 @@ int TaskManagerModel::GroupCount() const {
 }
 
 int TaskManagerModel::GetNaClDebugStubPort(int index) const {
-  PerResourceValues& values(GetPerResourceValues(index));
+  base::ProcessHandle handle = GetResource(index)->GetProcess();
+  PerProcessValues& values(per_process_cache_[handle]);
   if (!values.is_nacl_debug_stub_port_valid) {
-    values.is_nacl_debug_stub_port_valid = true;
-    values.nacl_debug_stub_port = GetResource(index)->GetNaClDebugStubPort();
+    return nacl::kGdbDebugStubPortUnknown;
   }
   return values.nacl_debug_stub_port;
 }
@@ -417,7 +418,9 @@ const base::string16& TaskManagerModel::GetResourceProfileName(
 
 base::string16 TaskManagerModel::GetResourceNaClDebugStubPort(int index) const {
   int port = GetNaClDebugStubPort(index);
-  if (port == 0) {
+  if (port == nacl::kGdbDebugStubPortUnknown) {
+    return base::ASCIIToUTF16("Unknown");
+  } else if (port == nacl::kGdbDebugStubPortUnused) {
     return base::ASCIIToUTF16("N/A");
   } else {
     return base::IntToString16(port);
@@ -1179,7 +1182,12 @@ void TaskManagerModel::Refresh() {
   per_resource_cache_.clear();
   per_process_cache_.clear();
 
-  // Compute the CPU usage values.
+#if !defined(DISABLE_NACL)
+  nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
+#endif  // !defined(DISABLE_NACL)
+
+  // Compute the CPU usage values and check if NaCl GDB debug stub port is
+  // known.
   // Note that we compute the CPU usage for all resources (instead of doing it
   // lazily) as process_util::GetCPUUsage() returns the CPU usage since the last
   // time it was called, and not calling it everytime would skew the value the
@@ -1189,6 +1197,16 @@ void TaskManagerModel::Refresh() {
        iter != resources_.end(); ++iter) {
     base::ProcessHandle process = (*iter)->GetProcess();
     PerProcessValues& values(per_process_cache_[process]);
+#if !defined(DISABLE_NACL)
+    // Debug stub port doesn't change once known.
+    if (!values.is_nacl_debug_stub_port_valid) {
+      values.nacl_debug_stub_port = nacl_browser->GetProcessGdbDebugStubPort(
+          (*iter)->GetUniqueChildProcessId());
+      if (values.nacl_debug_stub_port != nacl::kGdbDebugStubPortUnknown) {
+        values.is_nacl_debug_stub_port_valid = true;
+      }
+    }
+#endif  // !defined(DISABLE_NACL)
     if (values.is_cpu_usage_valid && values.is_idle_wakeups_valid)
       continue;
     MetricsMap::iterator metrics_iter = metrics_map_.find(process);
