@@ -62,6 +62,7 @@ group("root") {
     "//ui/events",
     "//ui/gfx",
     "//ui/resources",
+    "//ui/surface",
     "//url",
   ]
 
@@ -84,6 +85,8 @@ group("root") {
       "//ui/base:ui_base",
       "//ui/events",
       "//ui/gfx",
+      "//ui/surface",  # TODO(brettw): Skia does not build on Android yet.
+                       # Re-enable this when skia is fixed.
     ]
   }
 }
