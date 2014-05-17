@@ -1124,6 +1124,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnReleaseDisambiguationPopupBitmap)
     IPC_MESSAGE_HANDLER(ViewMsg_WindowSnapshotCompleted,
                         OnWindowSnapshotCompleted)
+    IPC_MESSAGE_HANDLER(ViewMsg_SelectWordAroundCaret, OnSelectWordAroundCaret)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(InputMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -1149,6 +1150,15 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+void RenderViewImpl::OnSelectWordAroundCaret() {
+  if (!webview())
+    return;
+
+  handling_input_event_ = true;
+  webview()->focusedFrame()->selectWordAroundCaret();
+  handling_input_event_ = false;
 }
 
 void RenderViewImpl::OnNavigate(const FrameMsg_Navigate_Params& params) {

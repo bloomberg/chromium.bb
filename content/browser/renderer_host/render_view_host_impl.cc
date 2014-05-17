@@ -1691,4 +1691,8 @@ void RenderViewHostImpl::AttachToFrameTree() {
   frame_tree->ResetForMainFrameSwap();
 }
 
+void RenderViewHostImpl::SelectWordAroundCaret() {
+  Send(new ViewMsg_SelectWordAroundCaret(GetRoutingID()));
+}
+
 }  // namespace content

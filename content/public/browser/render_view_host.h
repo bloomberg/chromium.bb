@@ -213,6 +213,9 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Sets the mojo handle for WebUI pages.
   virtual void SetWebUIHandle(mojo::ScopedMessagePipeHandle handle) = 0;
 
+  // Notify the render view host to select the word around the caret.
+  virtual void SelectWordAroundCaret() = 0;
+
 #if defined(OS_ANDROID)
   // Selects and zooms to the find result nearest to the point (x,y)
   // defined in find-in-page coordinates.

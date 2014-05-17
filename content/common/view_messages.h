@@ -994,6 +994,8 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ReclaimCompositorResources,
                     uint32 /* output_surface_id */,
                     cc::CompositorFrameAck /* ack */)
 
+IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
