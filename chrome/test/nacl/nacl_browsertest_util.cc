@@ -20,7 +20,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "net/base/net_util.h"
 
-typedef TestMessageHandler::MessageResponse MessageResponse;
+typedef content::TestMessageHandler::MessageResponse MessageResponse;
 
 MessageResponse StructuredMessageHandler::HandleMessage(
     const std::string& json) {
@@ -234,9 +234,10 @@ GURL NaClBrowserTestBase::TestURL(
   return test_server_->GetURL(expanded_url.MaybeAsASCII());
 }
 
-bool NaClBrowserTestBase::RunJavascriptTest(const GURL& url,
-                                            TestMessageHandler* handler) {
-  JavascriptTestObserver observer(
+bool NaClBrowserTestBase::RunJavascriptTest(
+    const GURL& url,
+    content::TestMessageHandler* handler) {
+  content::JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
       handler);
   ui_test_utils::NavigateToURL(browser(), url);

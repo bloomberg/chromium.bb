@@ -42,7 +42,7 @@ void PnaclHeaderTest::RunLoadTest(const std::string& url,
                                   int expected_cors) {
   StartServer();
   LoadTestMessageHandler handler;
-  JavascriptTestObserver observer(
+  content::JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
       &handler);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(url));

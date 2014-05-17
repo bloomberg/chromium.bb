@@ -8,11 +8,11 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/javascript_test_observer.h"
+#include "content/public/test/javascript_test_observer.h"
 
 // A helper base class that decodes structured automation messages of the form:
 // {"type": type_name, ...}
-class StructuredMessageHandler : public TestMessageHandler {
+class StructuredMessageHandler : public content::TestMessageHandler {
  public:
   virtual MessageResponse HandleMessage(const std::string& json) OVERRIDE;
 
@@ -85,7 +85,7 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
   // Load a URL and listen to automation events with a given handler.
   // Returns true if the test glue function correctly.  (The handler should
   // seperately indicate if the test failed.)
-  bool RunJavascriptTest(const GURL& url, TestMessageHandler* handler);
+  bool RunJavascriptTest(const GURL& url, content::TestMessageHandler* handler);
 
   // Run a simple test that checks that a nexe loads correctly.  Useful for
   // setting up other tests, such as checking that UMA data was logged.

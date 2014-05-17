@@ -33,6 +33,7 @@
 
 using content::DomOperationNotificationDetails;
 using content::RenderViewHost;
+using content::TestMessageHandler;
 
 namespace {
 
@@ -280,7 +281,7 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   // any other value indicates completion (in this case it will start with
   // "PASS" or "FAIL"). This keeps us from timing out on waits for long tests.
   PPAPITestMessageHandler handler;
-  JavascriptTestObserver observer(
+  content::JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
       &handler);
 

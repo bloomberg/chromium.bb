@@ -83,6 +83,8 @@
         'public/test/download_test_observer.h',
         'public/test/fake_speech_recognition_manager.cc',
         'public/test/fake_speech_recognition_manager.h',
+        'public/test/javascript_test_observer.cc',
+        'public/test/javascript_test_observer.h',
         'public/test/mock_blob_url_request_context.cc',
         'public/test/mock_blob_url_request_context.h',
         'public/test/mock_download_item.cc',

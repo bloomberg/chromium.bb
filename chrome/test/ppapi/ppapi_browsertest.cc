@@ -11,11 +11,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/test/base/javascript_test_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/javascript_test_observer.h"
 #include "content/public/test/test_renderer_host.h"
 
 using content::RenderViewHost;
@@ -1205,7 +1205,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_CreateInvisible) {
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, View_PageHideShow) {
   // The plugin will be loaded in the foreground tab and will send us a message.
   PPAPITestMessageHandler handler;
-  JavascriptTestObserver observer(
+  content::JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents(),
       &handler);
 

@@ -10,19 +10,18 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/javascript_test_observer.h"
+#include "content/public/test/javascript_test_observer.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
 namespace content {
 class RenderViewHost;
 }
 
-class PPAPITestMessageHandler : public TestMessageHandler {
+class PPAPITestMessageHandler : public content::TestMessageHandler {
  public:
   PPAPITestMessageHandler();
 
-  MessageResponse HandleMessage(const std::string& json);
-
+  virtual MessageResponse HandleMessage(const std::string& json) OVERRIDE;
   virtual void Reset() OVERRIDE;
 
   const std::string& message() const {
