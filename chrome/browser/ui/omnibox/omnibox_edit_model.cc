@@ -247,8 +247,11 @@ const OmniboxEditModel::State OmniboxEditModel::GetStateForTabSwitch() {
 void OmniboxEditModel::RestoreState(const State* state) {
   // We need to update the permanent text correctly and revert the view
   // regardless of whether there is saved state.
+  bool url_replacement_enabled = !state || state->url_replacement_enabled;
   controller_->GetToolbarModel()->set_url_replacement_enabled(
-      !state || state->url_replacement_enabled);
+      url_replacement_enabled);
+  controller_->GetToolbarModel()->set_origin_chip_enabled(
+      url_replacement_enabled);
   permanent_text_ = controller_->GetToolbarModel()->GetText();
   // Don't muck with the search term replacement state, as we've just set it
   // correctly.
