@@ -474,8 +474,12 @@ void IpcPacketSocket::OnSendComplete() {
 
 void IpcPacketSocket::OnError() {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
+  bool was_closed = (state_ == IS_ERROR || state_ == IS_CLOSED);
   state_ = IS_ERROR;
   error_ = ECONNABORTED;
+  if (!was_closed) {
+    SignalClose(this, 0);
+  }
 }
 
 void IpcPacketSocket::OnDataReceived(const net::IPEndPoint& address,
