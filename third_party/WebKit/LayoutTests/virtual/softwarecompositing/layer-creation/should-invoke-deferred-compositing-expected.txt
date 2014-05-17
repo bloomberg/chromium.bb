@@ -8,11 +8,7 @@
       (children 1
         (GraphicsLayer
           (bounds 300.00 300.00)
-          (children 1
-            (GraphicsLayer
-              (bounds 200.00 200.00)
-            )
-          )
+          (drawsContent 1)
         )
       )
     )
