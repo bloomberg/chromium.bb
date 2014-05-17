@@ -756,8 +756,14 @@ void OpaqueBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
     // client edge filled rects start there or at the bottom of the toolbar,
     // whichever is shorter.
     gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
-    image_top += toolbar_bounds.y() +
-        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height();
+
+    gfx::ImageSkia* content_top_left_corner =
+        tp->GetImageSkiaNamed(IDR_CONTENT_TOP_LEFT_CORNER);
+    // TODO(oshima): Sanity checks for crbug.com/374273. Remove when it's fixed.
+    CHECK(content_top_left_corner);
+    CHECK(!content_top_left_corner->isNull());
+
+    image_top += toolbar_bounds.y() + content_top_left_corner->height();
     client_area_top = std::min(image_top,
         client_area_top + toolbar_bounds.bottom() - kClientEdgeThickness);
   } else if (!browser_view()->IsTabStripVisible()) {
