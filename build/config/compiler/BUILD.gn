@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/gcc/gcc_version.gni")
 import("//build/config/android/config.gni")
 if (cpu_arch == "arm") {
   import("//build/config/arm.gni")
@@ -216,8 +217,19 @@ config("compiler") {
       "-fno-short-enums",
     ]
     if (!is_clang) {
-      # Clang doesn't support this one.
-      cflags += [ "-finline-limit=64" ]
+      # Clang doesn't support these flags.
+      cflags += [
+        "-finline-limit=64",
+        # The following 6 options are disabled to save on
+        # binary size in gcc 4.8.
+        # TODO(fdegans) Reevaluate when we upgrade GCC.
+        "-fno-partial-inlining",
+        "-fno-early-inlining",
+        "-fno-tree-copy-prop",
+        "-fno-tree-loop-optimize",
+        "-fno-move-loop-invariants",
+        "-fno-caller-saves",
+      ]
     }
     if (is_android_webview_build) {
       # Android predefines this as 1; undefine it here so Chromium can redefine
@@ -609,6 +621,15 @@ config("default_warnings") {
         "-Wno-sign-promo",
       ]
     }
+
+    if (gcc_version >= 48) {
+      # Don't warn about the "typedef 'foo' locally defined but not used"
+      # for gcc 4.8.
+      # TODO: remove this flag once all builds work. See crbug.com/227506
+      cflags += [
+        "-Wno-unused-local-typedefs",
+      ]
+    }
   }
 }
 
@@ -751,4 +772,3 @@ config("no_symbols") {
     cflags = [ "-g0" ]
   }
 }
-
