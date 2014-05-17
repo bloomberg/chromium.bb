@@ -1419,8 +1419,12 @@ void RenderThreadImpl::OnMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_CRITICAL) {
     // Trigger full v8 garbage collection on critical memory notification.
     v8::V8::LowMemoryNotification();
-    // Clear the image cache.
-    blink::WebImageCache::clear();
+
+    if (webkit_platform_support_) {
+      // Clear the image cache. Do not call into blink if it is not initialized.
+      blink::WebImageCache::clear();
+    }
+
     // Purge Skia font cache, by setting it to 0 and then again to the previous
     // limit.
     size_t font_cache_limit = SkGraphics::SetFontCacheLimit(0);
