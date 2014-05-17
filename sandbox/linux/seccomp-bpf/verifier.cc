@@ -387,7 +387,9 @@ bool Verifier::VerifyBPF(SandboxBPF* sandbox,
     }
 #endif
 #endif
-    ErrorCode code = policy.EvaluateSyscall(sandbox, sysnum);
+    ErrorCode code = iter.IsValid(sysnum)
+                         ? policy.EvaluateSyscall(sandbox, sysnum)
+                         : policy.InvalidSyscall(sandbox);
     if (!VerifyErrorCode(sandbox, program, &data, code, code, err)) {
       return false;
     }

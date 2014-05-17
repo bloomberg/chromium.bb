@@ -129,6 +129,7 @@
         'seccomp-bpf/sandbox_bpf.cc',
         'seccomp-bpf/sandbox_bpf.h',
         'seccomp-bpf/sandbox_bpf_compatibility_policy.h',
+        'seccomp-bpf/sandbox_bpf_policy.cc',
         'seccomp-bpf/sandbox_bpf_policy.h',
         'seccomp-bpf/syscall.cc',
         'seccomp-bpf/syscall.h',

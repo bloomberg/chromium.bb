@@ -28,6 +28,7 @@ class CompatibilityPolicy : public SandboxBPFPolicy {
 
   virtual ErrorCode EvaluateSyscall(SandboxBPF* sandbox_compiler,
                                     int system_call_number) const OVERRIDE {
+    DCHECK(SandboxBPF::IsValidSyscallNumber(system_call_number));
     return syscall_evaluator_(sandbox_compiler, system_call_number, aux_);
   }
 
