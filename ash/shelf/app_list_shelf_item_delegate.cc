@@ -32,8 +32,8 @@ base::string16 AppListShelfItemDelegate::GetTitle() {
   ShelfModel* model = Shell::GetInstance()->shelf_model();
   DCHECK(model);
   return model->status() == ShelfModel::STATUS_LOADING ?
-      l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_SYNCING_TITLE) :
-      l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
+      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_SYNCING_TITLE) :
+      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_TITLE);
 }
 
 ui::MenuModel* AppListShelfItemDelegate::CreateContextMenu(

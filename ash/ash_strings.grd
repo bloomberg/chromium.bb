@@ -164,10 +164,10 @@ This file contains the strings for ash.
       <ph> element).  You can also use the 'grit add' tool to help you identify
       nontranslateable parts and create placeholders for them. -->
       <!-- TODO(zork): Only include these in Aura builds -->
-      <message name="IDS_AURA_APP_LIST_TITLE" desc="The title used for the Aura app list in the launcher">
+      <message name="IDS_ASH_SHELF_APP_LIST_TITLE" desc="The title used for the Ash App List in the Shelf">
         Apps
       </message>
-      <message name="IDS_AURA_APP_LIST_SYNCING_TITLE" desc="The title used for the Aura app list in the launcher to indicate loading/syncing apps.">
+      <message name="IDS_ASH_SHELF_APP_LIST_SYNCING_TITLE" desc="The title used for the Ash App List in the Shelf to indicate loading/syncing apps.">
         Syncing apps...
       </message>
       <message name="IDS_ASH_SHELF_OVERFLOW_NAME" desc="The title used for the Ash overflow button in the shelf">

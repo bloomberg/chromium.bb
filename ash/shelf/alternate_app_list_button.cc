@@ -37,7 +37,7 @@ AlternateAppListButton::AlternateAppListButton(views::ButtonListener* listener,
     : views::ImageButton(listener),
       host_(host),
       shelf_widget_(shelf_widget) {
-  SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
+  SetAccessibleName(l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_TITLE));
   SetSize(gfx::Size(ShelfLayoutManager::kShelfSize,
                     ShelfLayoutManager::kShelfSize));
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
