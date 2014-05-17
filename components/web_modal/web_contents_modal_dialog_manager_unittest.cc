@@ -241,47 +241,39 @@ TEST_F(WebContentsModalDialogManagerTest, VisibilityObservation) {
   native_manager->StopTracking();
 }
 
-// Test that attaching an interstitial page closes dialogs configured to close.
+// Test that attaching an interstitial page closes all dialogs.
 TEST_F(WebContentsModalDialogManagerTest, InterstitialPage) {
   const NativeWebContentsModalDialog dialog1 = MakeFakeDialog();
   const NativeWebContentsModalDialog dialog2 = MakeFakeDialog();
-  const NativeWebContentsModalDialog dialog3 = MakeFakeDialog();
 
   NativeManagerTracker tracker1;
   NativeManagerTracker tracker2;
-  NativeManagerTracker tracker3;
   TestNativeWebContentsModalDialogManager* native_manager1 =
       new TestNativeWebContentsModalDialogManager(dialog1, manager, &tracker1);
   TestNativeWebContentsModalDialogManager* native_manager2 =
       new TestNativeWebContentsModalDialogManager(dialog2, manager, &tracker2);
-  TestNativeWebContentsModalDialogManager* native_manager3 =
-      new TestNativeWebContentsModalDialogManager(dialog3, manager, &tracker3);
   manager->ShowDialogWithManager(dialog1,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager1).Pass());
   manager->ShowDialogWithManager(dialog2,
       scoped_ptr<SingleWebContentsDialogManager>(native_manager2).Pass());
-  manager->ShowDialogWithManager(dialog3,
-      scoped_ptr<SingleWebContentsDialogManager>(native_manager3).Pass());
-
-#if defined(OS_WIN) || defined(USE_AURA)
-  manager->SetCloseOnInterstitialPage(dialog2, false);
-#else
-  // TODO(wittman): Remove this section once Mac is changed to close on
-  // interstitial pages by default.
-  manager->SetCloseOnInterstitialPage(dialog1, true);
-  manager->SetCloseOnInterstitialPage(dialog3, true);
-#endif
 
   test_api->DidAttachInterstitialPage();
 
+#if defined(USE_AURA)
   EXPECT_EQ(NativeManagerTracker::CLOSED, tracker1.state_);
-  EXPECT_EQ(NativeManagerTracker::SHOWN, tracker2.state_);
-  EXPECT_EQ(NativeManagerTracker::CLOSED, tracker3.state_);
-  EXPECT_TRUE(tracker1.was_shown_);
-  EXPECT_TRUE(tracker2.was_shown_);
-  EXPECT_FALSE(tracker3.was_shown_);
+  EXPECT_EQ(NativeManagerTracker::CLOSED, tracker2.state_);
+#else
+  EXPECT_EQ(NativeManagerTracker::SHOWN, tracker1.state_);
+  EXPECT_EQ(NativeManagerTracker::NOT_SHOWN, tracker2.state_);
+#endif
 
+  EXPECT_TRUE(tracker1.was_shown_);
+  EXPECT_FALSE(tracker2.was_shown_);
+
+#if !defined(USE_AURA)
+  native_manager1->StopTracking();
   native_manager2->StopTracking();
+#endif
 }
 
 
