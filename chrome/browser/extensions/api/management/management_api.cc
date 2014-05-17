@@ -580,13 +580,24 @@ void ManagementUninstallFunctionBase::SetAutoConfirmForTest(
 
 void ManagementUninstallFunctionBase::Finish(bool should_uninstall) {
   if (should_uninstall) {
-    bool success = service()->UninstallExtension(
-        extension_id_,
-        false, /* external uninstall */
-        NULL);
+    // The extension can be uninstalled in another window while the UI was
+    // showing. Do nothing in that case.
+    ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
+    const Extension* extension = registry->GetExtensionById(
+        extension_id_, ExtensionRegistry::EVERYTHING);
+    if (!extension) {
+      error_ = ErrorUtils::FormatErrorMessage(keys::kNoExtensionError,
+                                              extension_id_);
+      SendResponse(false);
+    } else {
+      bool success =
+          service()->UninstallExtension(extension_id_,
+                                        false, /* external uninstall */
+                                        NULL);
 
-    // TODO set error_ if !success
-    SendResponse(success);
+      // TODO set error_ if !success
+      SendResponse(success);
+    }
   } else {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kUninstallCanceledError, extension_id_);
