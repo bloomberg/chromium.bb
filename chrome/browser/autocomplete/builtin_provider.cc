@@ -15,6 +15,7 @@
 
 namespace {
 
+#if !defined(OS_ANDROID)
 // This list should be kept in sync with chrome/common/url_constants.h.
 // Only include useful sub-pages, confirmation alerts are not useful.
 const char* const kChromeSettingsSubPages[] = {
@@ -32,6 +33,7 @@ const char* const kChromeSettingsSubPages[] = {
   chrome::kInternetOptionsSubPage,
 #endif
 };
+#endif // !defined(OS_ANDROID)
 
 }  // namespace
 
@@ -48,12 +50,15 @@ BuiltinProvider::BuiltinProvider(AutocompleteProviderListener* listener,
   for (std::vector<std::string>::iterator i(builtins.begin());
        i != builtins.end(); ++i)
     builtins_.push_back(base::ASCIIToUTF16(*i));
+
+#if !defined(OS_ANDROID)
   base::string16 settings(base::ASCIIToUTF16(chrome::kChromeUISettingsHost) +
                           base::ASCIIToUTF16("/"));
   for (size_t i = 0; i < arraysize(kChromeSettingsSubPages); i++) {
     builtins_.push_back(
         settings + base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
   }
+#endif
 }
 
 void BuiltinProvider::Start(const AutocompleteInput& input,
@@ -87,8 +92,10 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     // Include some common builtin chrome URLs as the user types the scheme.
     AddMatch(base::ASCIIToUTF16(chrome::kChromeUIChromeURLsURL),
              base::string16(), styles);
+#if !defined(OS_ANDROID)
     AddMatch(base::ASCIIToUTF16(chrome::kChromeUISettingsURL),
              base::string16(), styles);
+#endif
     AddMatch(base::ASCIIToUTF16(chrome::kChromeUIVersionURL),
              base::string16(), styles);
   } else {

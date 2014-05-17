@@ -73,6 +73,7 @@ void BuiltinProviderTest::RunTest(test_data<ResultType>* builtin_cases,
   }
 }
 
+#if !defined(OS_ANDROID)
 TEST_F(BuiltinProviderTest, TypingScheme) {
   const base::string16 kAbout = ASCIIToUTF16(content::kAboutScheme);
   const base::string16 kChrome = ASCIIToUTF16(content::kChromeUIScheme);
@@ -120,6 +121,54 @@ TEST_F(BuiltinProviderTest, TypingScheme) {
   RunTest<GURL>(typing_scheme_cases, arraysize(typing_scheme_cases),
                 &AutocompleteMatch::destination_url);
 }
+#else // Android uses a subset of the URLs
+TEST_F(BuiltinProviderTest, TypingScheme) {
+  const base::string16 kAbout = ASCIIToUTF16(content::kAboutScheme);
+  const base::string16 kChrome = ASCIIToUTF16(content::kChromeUIScheme);
+  const base::string16 kSeparator1 = ASCIIToUTF16(":");
+  const base::string16 kSeparator2 = ASCIIToUTF16(":/");
+  const base::string16 kSeparator3 =
+      ASCIIToUTF16(content::kStandardSchemeSeparator);
+
+  // These default URLs should correspond with those in BuiltinProvider::Start.
+  const GURL kURL1 = GURL(chrome::kChromeUIChromeURLsURL);
+  const GURL kURL2 = GURL(chrome::kChromeUIVersionURL);
+
+  test_data<GURL> typing_scheme_cases[] = {
+    // Typing an unrelated scheme should give nothing.
+    {ASCIIToUTF16("h"),        0, {}},
+    {ASCIIToUTF16("http"),     0, {}},
+    {ASCIIToUTF16("file"),     0, {}},
+    {ASCIIToUTF16("abouz"),    0, {}},
+    {ASCIIToUTF16("aboutt"),   0, {}},
+    {ASCIIToUTF16("aboutt:"),  0, {}},
+    {ASCIIToUTF16("chroma"),   0, {}},
+    {ASCIIToUTF16("chromee"),  0, {}},
+    {ASCIIToUTF16("chromee:"), 0, {}},
+
+    // Typing a portion of about:// should give the default urls.
+    {kAbout.substr(0, 1),      2, {kURL1, kURL2}},
+    {ASCIIToUTF16("A"),        2, {kURL1, kURL2}},
+    {kAbout,                   2, {kURL1, kURL2}},
+    {kAbout + kSeparator1,     2, {kURL1, kURL2}},
+    {kAbout + kSeparator2,     2, {kURL1, kURL2}},
+    {kAbout + kSeparator3,     2, {kURL1, kURL2}},
+    {ASCIIToUTF16("aBoUT://"), 2, {kURL1, kURL2}},
+
+    // Typing a portion of chrome:// should give the default urls.
+    {kChrome.substr(0, 1),      2, {kURL1, kURL2}},
+    {ASCIIToUTF16("C"),         2, {kURL1, kURL2}},
+    {kChrome,                   2, {kURL1, kURL2}},
+    {kChrome + kSeparator1,     2, {kURL1, kURL2}},
+    {kChrome + kSeparator2,     2, {kURL1, kURL2}},
+    {kChrome + kSeparator3,     2, {kURL1, kURL2}},
+    {ASCIIToUTF16("ChRoMe://"), 2, {kURL1, kURL2}},
+  };
+
+  RunTest<GURL>(typing_scheme_cases, arraysize(typing_scheme_cases),
+                &AutocompleteMatch::destination_url);
+}
+#endif
 
 TEST_F(BuiltinProviderTest, NonChromeURLs) {
   test_data<GURL> non_chrome_url_cases[] = {

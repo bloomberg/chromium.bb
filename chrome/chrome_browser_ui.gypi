@@ -2923,6 +2923,7 @@
             ['exclude', '^browser/ui/webui/ntp'],
             ['exclude', '^browser/ui/webui/options'],
             ['exclude', '^browser/ui/webui/options'],
+	    ['exclude', '^browser/ui/webui/quota_internals'],
             ['exclude', '^browser/ui/webui/signin/'],
             ['exclude', '^browser/ui/webui/suggestions_internals'],
             ['exclude', '^browser/ui/webui/sync_file_system_internals'],
