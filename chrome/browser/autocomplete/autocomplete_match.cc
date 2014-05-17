@@ -81,6 +81,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       contents_class(match.contents_class),
       description(match.description),
       description_class(match.description_class),
+      answer_contents(match.answer_contents),
+      answer_type(match.answer_type),
       transition(match.transition),
       is_history_what_you_typed_match(match.is_history_what_you_typed_match),
       type(match.type),
@@ -117,6 +119,8 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   contents_class = match.contents_class;
   description = match.description;
   description_class = match.description_class;
+  answer_contents = match.answer_contents;
+  answer_type = match.answer_type;
   transition = match.transition;
   is_history_what_you_typed_match = match.is_history_what_you_typed_match;
   type = match.type;
