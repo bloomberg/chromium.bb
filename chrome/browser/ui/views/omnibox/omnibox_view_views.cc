@@ -229,6 +229,7 @@ void OmniboxViewViews::Update() {
   if (model()->UpdatePermanentText()) {
     // Something visibly changed.  Re-enable URL replacement.
     controller()->GetToolbarModel()->set_url_replacement_enabled(true);
+    controller()->GetToolbarModel()->set_origin_chip_enabled(true);
     model()->UpdatePermanentText();
 
     // Select all the new text if the user had all the old text selected, or if
