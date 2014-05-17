@@ -15,11 +15,6 @@ CursorFactoryEvdevDri::CursorFactoryEvdevDri(DriSurfaceFactory* dri)
   // widgets initialized.
   cursor_window_ = DriSurfaceFactory::kDefaultWidgetHandle;
   cursor_location_ = gfx::PointF(2560 / 2, 1700 / 2);  // TODO(spang): Argh!
-
-  // The DRI cursor is invisible unless explicitly set. Therefore, set the
-  // pointer cursor on initialization.
-  // TODO(spang): Move this to DRI window initialization.
-  SetCursor(cursor_window_, GetDefaultCursor(kCursorPointer));
 }
 
 CursorFactoryEvdevDri::~CursorFactoryEvdevDri() {}
