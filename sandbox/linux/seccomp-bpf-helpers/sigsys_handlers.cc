@@ -180,4 +180,8 @@ const char* GetIoctlErrorMessageContentForTests() {
   return SECCOMP_MESSAGE_IOCTL_CONTENT;
 }
 
+const char* GetKillErrorMessageContentForTests() {
+  return SECCOMP_MESSAGE_KILL_CONTENT;
+}
+
 }  // namespace sandbox.

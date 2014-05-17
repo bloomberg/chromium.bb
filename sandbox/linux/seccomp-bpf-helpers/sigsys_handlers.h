@@ -48,6 +48,7 @@ SANDBOX_EXPORT const char* GetErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetCloneErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetPrctlErrorMessageContentForTests();
 SANDBOX_EXPORT const char* GetIoctlErrorMessageContentForTests();
+SANDBOX_EXPORT const char* GetKillErrorMessageContentForTests();
 
 }  // namespace sandbox.
 
