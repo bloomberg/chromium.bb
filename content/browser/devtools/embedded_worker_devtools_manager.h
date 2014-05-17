@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
@@ -15,10 +14,10 @@
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/common/content_export.h"
 
-class GURL;
-
 namespace content {
+
 class DevToolsAgentHost;
+class ServiceWorkerContextCore;
 
 // EmbeddedWorkerDevToolsManager is used instead of WorkerDevToolsManager when
 // "enable-embedded-shared-worker" flag is set.
@@ -28,27 +27,37 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
   typedef std::pair<int, int> WorkerId;
   class EmbeddedWorkerDevToolsAgentHost;
 
+  class ServiceWorkerIdentifier {
+   public:
+    ServiceWorkerIdentifier(
+        const ServiceWorkerContextCore* const service_worker_context,
+        int64 service_worker_version_id);
+    explicit ServiceWorkerIdentifier(const ServiceWorkerIdentifier& other);
+    ~ServiceWorkerIdentifier() {}
+
+    bool Matches(const ServiceWorkerIdentifier& other) const;
+
+   private:
+    const ServiceWorkerContextCore* const service_worker_context_;
+    const int64 service_worker_version_id_;
+  };
+
   // Returns the EmbeddedWorkerDevToolsManager singleton.
   static EmbeddedWorkerDevToolsManager* GetInstance();
 
   DevToolsAgentHost* GetDevToolsAgentHostForWorker(int worker_process_id,
                                                    int worker_route_id);
   DevToolsAgentHost* GetDevToolsAgentHostForServiceWorker(
-      const base::FilePath& storage_partition_path,
-      const GURL& service_worker_scope);
+      const ServiceWorkerIdentifier& service_worker_id);
 
   // Returns true when the worker must be paused on start.
   bool SharedWorkerCreated(int worker_process_id,
                            int worker_route_id,
                            const SharedWorkerInstance& instance);
   // Returns true when the worker must be paused on start.
-  // TODO(horo): Currently we identify ServiceWorkers with the path of storage
-  // partition and the scope of ServiceWorker. Consider having a class like
-  // SharedWorkerInstance instead of the pair.
   bool ServiceWorkerCreated(int worker_process_id,
                             int worker_route_id,
-                            const base::FilePath& storage_partition_path,
-                            const GURL& service_worker_scope);
+                            const ServiceWorkerIdentifier& service_worker_id);
   void WorkerContextStarted(int worker_process_id, int worker_route_id);
   void WorkerDestroyed(int worker_process_id, int worker_route_id);
 
@@ -70,8 +79,7 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
     // Creates WorkerInfo for SharedWorker.
     explicit WorkerInfo(const SharedWorkerInstance& instance);
     // Creates WorkerInfo for ServiceWorker.
-    WorkerInfo(const base::FilePath& storage_partition_path,
-               const GURL& service_worker_scope);
+    explicit WorkerInfo(const ServiceWorkerIdentifier& service_worker_id);
     ~WorkerInfo();
 
     WorkerState state() { return state_; }
@@ -81,13 +89,11 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
       agent_host_ = agent_host;
     }
     bool Matches(const SharedWorkerInstance& other);
-    bool Matches(const base::FilePath& other_storage_partition_path,
-                 const GURL& other_service_worker_scope);
+    bool Matches(const ServiceWorkerIdentifier& other);
 
    private:
     scoped_ptr<SharedWorkerInstance> shared_worker_instance_;
-    scoped_ptr<base::FilePath> storage_partition_path_;
-    scoped_ptr<GURL> service_worker_scope_;
+    scoped_ptr<ServiceWorkerIdentifier> service_worker_id_;
     WorkerState state_;
     EmbeddedWorkerDevToolsAgentHost* agent_host_;
   };
@@ -102,8 +108,7 @@ class CONTENT_EXPORT EmbeddedWorkerDevToolsManager {
   WorkerInfoMap::iterator FindExistingSharedWorkerInfo(
       const SharedWorkerInstance& instance);
   WorkerInfoMap::iterator FindExistingServiceWorkerInfo(
-      const base::FilePath& storage_partition_path,
-      const GURL& service_worker_scope);
+      const ServiceWorkerIdentifier& service_worker_id);
 
   void MoveToPausedState(const WorkerId& id, const WorkerInfoMap::iterator& it);
 

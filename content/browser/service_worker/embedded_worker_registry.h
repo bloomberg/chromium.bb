@@ -50,12 +50,9 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   scoped_ptr<EmbeddedWorkerInstance> CreateWorker();
 
   // Called from EmbeddedWorkerInstance, relayed to the child process.
-  void StartWorker(const std::vector<int>& process_ids,
-                   int embedded_worker_id,
-                   int64 service_worker_version_id,
-                   const GURL& scope,
-                   const GURL& script_url,
-                   const StatusCallback& callback);
+  void SendStartWorker(scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+                       const StatusCallback& callback,
+                       int process_id);
   ServiceWorkerStatusCode StopWorker(int process_id,
                                      int embedded_worker_id);
 
@@ -95,13 +92,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   typedef std::map<int, IPC::Sender*> ProcessToSenderMap;
 
   ~EmbeddedWorkerRegistry();
-
-  void StartWorkerWithProcessId(
-      int embedded_worker_id,
-      scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
-      const StatusCallback& callback,
-      ServiceWorkerStatusCode status,
-      int process_id);
 
   ServiceWorkerStatusCode Send(int process_id, IPC::Message* message);
 

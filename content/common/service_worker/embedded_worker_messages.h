@@ -23,6 +23,7 @@ IPC_STRUCT_BEGIN(EmbeddedWorkerMsg_StartWorker_Params)
   IPC_STRUCT_MEMBER(GURL, scope)
   IPC_STRUCT_MEMBER(GURL, script_url)
   IPC_STRUCT_MEMBER(int, worker_devtools_agent_route_id)
+  IPC_STRUCT_MEMBER(bool, pause_on_start)
 IPC_STRUCT_END()
 
 // Parameters structure for EmbeddedWorkerHostMsg_ReportConsoleMessage.

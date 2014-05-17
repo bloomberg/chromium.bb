@@ -82,7 +82,9 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
   blink::WebEmbeddedWorkerStartData start_data;
   start_data.scriptURL = params.script_url;
   start_data.userAgent = base::UTF8ToUTF16(GetContentClient()->GetUserAgent());
-  start_data.startMode = blink::WebEmbeddedWorkerStartModeDontPauseOnStart;
+  start_data.startMode =
+      params.pause_on_start ? blink::WebEmbeddedWorkerStartModePauseOnStart
+                            : blink::WebEmbeddedWorkerStartModeDontPauseOnStart;
 
   wrapper->worker()->startWorkerContext(start_data);
   workers_.AddWithID(wrapper.release(), params.embedded_worker_id);

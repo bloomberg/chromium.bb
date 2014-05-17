@@ -19,47 +19,18 @@ namespace content {
 
 EmbeddedWorkerRegistry::EmbeddedWorkerRegistry(
     base::WeakPtr<ServiceWorkerContextCore> context)
-    : context_(context),
-      next_embedded_worker_id_(0) {}
+    : context_(context), next_embedded_worker_id_(0) {
+}
 
 scoped_ptr<EmbeddedWorkerInstance> EmbeddedWorkerRegistry::CreateWorker() {
   scoped_ptr<EmbeddedWorkerInstance> worker(
-      new EmbeddedWorkerInstance(this, next_embedded_worker_id_));
+      new EmbeddedWorkerInstance(context_, next_embedded_worker_id_));
   worker_map_[next_embedded_worker_id_++] = worker.get();
   return worker.Pass();
 }
 
-void EmbeddedWorkerRegistry::StartWorker(const std::vector<int>& process_ids,
-                                         int embedded_worker_id,
-                                         int64 service_worker_version_id,
-                                         const GURL& scope,
-                                         const GURL& script_url,
-                                         const StatusCallback& callback) {
-  if (!context_) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
-      new EmbeddedWorkerMsg_StartWorker_Params());
-  params->embedded_worker_id = embedded_worker_id;
-  params->service_worker_version_id = service_worker_version_id;
-  params->scope = scope;
-  params->script_url = script_url;
-  params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
-  context_->process_manager()->AllocateWorkerProcess(
-      process_ids,
-      script_url,
-      base::Bind(&EmbeddedWorkerRegistry::StartWorkerWithProcessId,
-                 this,
-                 embedded_worker_id,
-                 base::Passed(&params),
-                 callback));
-}
-
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::StopWorker(
     int process_id, int embedded_worker_id) {
-  if (context_)
-    context_->process_manager()->ReleaseWorkerProcess(process_id);
   return Send(process_id,
               new EmbeddedWorkerMsg_StopWorker(embedded_worker_id));
 }
@@ -210,37 +181,10 @@ EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
   Shutdown();
 }
 
-void EmbeddedWorkerRegistry::StartWorkerWithProcessId(
-    int embedded_worker_id,
+void EmbeddedWorkerRegistry::SendStartWorker(
     scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     const StatusCallback& callback,
-    ServiceWorkerStatusCode status,
     int process_id) {
-  WorkerInstanceMap::const_iterator worker =
-      worker_map_.find(embedded_worker_id);
-  if (worker == worker_map_.end()) {
-    // The Instance was destroyed before it could finish starting.  Undo what
-    // we've done so far.
-    if (context_)
-      context_->process_manager()->ReleaseWorkerProcess(process_id);
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-  if (status == SERVICE_WORKER_OK) {
-    // Gets the new routing id for the renderer process.
-    scoped_refptr<RenderWidgetHelper> helper(
-        RenderWidgetHelper::FromProcessHostID(process_id));
-    // |helper| may be NULL in unittest.
-    params->worker_devtools_agent_route_id =
-        helper ? helper->GetNextRoutingID() : MSG_ROUTING_NONE;
-  }
-  worker->second->RecordProcessId(
-      process_id, status, params->worker_devtools_agent_route_id);
-
-  if (status != SERVICE_WORKER_OK) {
-    callback.Run(status);
-    return;
-  }
   // The ServiceWorkerDispatcherHost is supposed to be created when the process
   // is created, and keep an entry in process_sender_map_ for its whole
   // lifetime.

@@ -34,6 +34,25 @@ bool SendMessageToWorker(
 
 }  // namespace
 
+EmbeddedWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
+    const ServiceWorkerContextCore* const service_worker_context,
+    int64 service_worker_version_id)
+    : service_worker_context_(service_worker_context),
+      service_worker_version_id_(service_worker_version_id) {
+}
+
+EmbeddedWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
+    const ServiceWorkerIdentifier& other)
+    : service_worker_context_(other.service_worker_context_),
+      service_worker_version_id_(other.service_worker_version_id_) {
+}
+
+bool EmbeddedWorkerDevToolsManager::ServiceWorkerIdentifier::Matches(
+    const ServiceWorkerIdentifier& other) const {
+  return service_worker_context_ == other.service_worker_context_ &&
+         service_worker_version_id_ == other.service_worker_version_id_;
+}
+
 EmbeddedWorkerDevToolsManager::WorkerInfo::WorkerInfo(
     const SharedWorkerInstance& instance)
     : shared_worker_instance_(new SharedWorkerInstance(instance)),
@@ -42,10 +61,8 @@ EmbeddedWorkerDevToolsManager::WorkerInfo::WorkerInfo(
 }
 
 EmbeddedWorkerDevToolsManager::WorkerInfo::WorkerInfo(
-    const base::FilePath& storage_partition_path,
-    const GURL& service_worker_scope)
-    : storage_partition_path_(new base::FilePath(storage_partition_path)),
-      service_worker_scope_(new GURL(service_worker_scope)),
+    const ServiceWorkerIdentifier& service_worker_id)
+    : service_worker_id_(new ServiceWorkerIdentifier(service_worker_id)),
       state_(WORKER_UNINSPECTED),
       agent_host_(NULL) {
 }
@@ -58,12 +75,10 @@ bool EmbeddedWorkerDevToolsManager::WorkerInfo::Matches(
 }
 
 bool EmbeddedWorkerDevToolsManager::WorkerInfo::Matches(
-    const base::FilePath& other_storage_partition_path,
-    const GURL& other_service_worker_scope) {
-  if (!storage_partition_path_ || !service_worker_scope_)
+    const ServiceWorkerIdentifier& other) {
+  if (!service_worker_id_)
     return false;
-  return *storage_partition_path_ == other_storage_partition_path &&
-         *service_worker_scope_ == other_service_worker_scope;
+  return service_worker_id_->Matches(other);
 }
 
 EmbeddedWorkerDevToolsManager::WorkerInfo::~WorkerInfo() {
@@ -175,10 +190,8 @@ DevToolsAgentHost* EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForWorker(
 
 DevToolsAgentHost*
 EmbeddedWorkerDevToolsManager::GetDevToolsAgentHostForServiceWorker(
-    const base::FilePath& storage_partition_path,
-    const GURL& service_worker_scope) {
-  WorkerInfoMap::iterator it = FindExistingServiceWorkerInfo(
-      storage_partition_path, service_worker_scope);
+    const ServiceWorkerIdentifier& service_worker_id) {
+  WorkerInfoMap::iterator it = FindExistingServiceWorkerInfo(service_worker_id);
   if (it == workers_.end())
     return NULL;
   return GetDevToolsAgentHostForWorker(it->first.first, it->first.second);
@@ -209,15 +222,12 @@ bool EmbeddedWorkerDevToolsManager::SharedWorkerCreated(
 bool EmbeddedWorkerDevToolsManager::ServiceWorkerCreated(
     int worker_process_id,
     int worker_route_id,
-    const base::FilePath& storage_partition_path,
-    const GURL& service_worker_scope) {
+    const ServiceWorkerIdentifier& service_worker_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const WorkerId id(worker_process_id, worker_route_id);
-  WorkerInfoMap::iterator it = FindExistingServiceWorkerInfo(
-      storage_partition_path, service_worker_scope);
+  WorkerInfoMap::iterator it = FindExistingServiceWorkerInfo(service_worker_id);
   if (it == workers_.end()) {
-    scoped_ptr<WorkerInfo> info(
-        new WorkerInfo(storage_partition_path, service_worker_scope));
+    scoped_ptr<WorkerInfo> info(new WorkerInfo(service_worker_id));
     workers_.set(id, info.Pass());
     return false;
   }
@@ -316,11 +326,10 @@ EmbeddedWorkerDevToolsManager::FindExistingSharedWorkerInfo(
 
 EmbeddedWorkerDevToolsManager::WorkerInfoMap::iterator
 EmbeddedWorkerDevToolsManager::FindExistingServiceWorkerInfo(
-    const base::FilePath& storage_partition_path,
-    const GURL& service_worker_scope) {
+    const ServiceWorkerIdentifier& service_worker_id) {
   WorkerInfoMap::iterator it = workers_.begin();
   for (; it != workers_.end(); ++it) {
-    if (it->second->Matches(storage_partition_path, service_worker_scope))
+    if (it->second->Matches(service_worker_id))
       break;
   }
   return it;
