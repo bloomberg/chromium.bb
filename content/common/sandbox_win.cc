@@ -602,6 +602,13 @@ base::ProcessHandle StartSandboxedProcess(
                                          sandbox::MITIGATION_DEP_NO_ATL_THUNK |
                                          sandbox::MITIGATION_SEHOP;
 
+ if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
+     type_str == switches::kRendererProcess &&
+     browser_command_line.HasSwitch(
+        switches::kEnableWin32kRendererLockDown)) {
+   mitigations |= sandbox::MITIGATION_WIN32K_DISABLE;
+ }
+
   if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return 0;
 

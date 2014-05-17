@@ -129,8 +129,7 @@ TEST(ProcessMitigationsTest, CheckWin8) {
 
   EXPECT_EQ(policy->SetProcessMitigations(mitigations), SBOX_ALL_OK);
 
-  mitigations |= MITIGATION_STRICT_HANDLE_CHECKS |
-                 MITIGATION_WIN32K_DISABLE;
+  mitigations |= MITIGATION_STRICT_HANDLE_CHECKS;
 
   EXPECT_EQ(policy->SetDelayedProcessMitigations(mitigations), SBOX_ALL_OK);
 

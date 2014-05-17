@@ -308,7 +308,6 @@ bool CanSetProcessMitigationsPostStartup(MitigationFlags flags) {
                      MITIGATION_RELOCATE_IMAGE_REQUIRED |
                      MITIGATION_BOTTOM_UP_ASLR |
                      MITIGATION_STRICT_HANDLE_CHECKS |
-                     MITIGATION_WIN32K_DISABLE |
                      MITIGATION_EXTENSION_DLL_DISABLE |
                      MITIGATION_DLL_SEARCH_ORDER));
 }
@@ -316,7 +315,6 @@ bool CanSetProcessMitigationsPostStartup(MitigationFlags flags) {
 bool CanSetProcessMitigationsPreStartup(MitigationFlags flags) {
   // These mitigations cannot be enabled prior to startup.
   return !(flags & (MITIGATION_STRICT_HANDLE_CHECKS |
-                    MITIGATION_WIN32K_DISABLE |
                     MITIGATION_DLL_SEARCH_ORDER));
 }
 
