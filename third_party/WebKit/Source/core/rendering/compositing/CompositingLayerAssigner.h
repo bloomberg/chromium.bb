@@ -51,6 +51,7 @@ private:
         SquashingState()
             : mostRecentMapping(0)
             , hasMostRecentMapping(false)
+            , haveAssignedBackingsToEntireSquashingLayerSubtree(false)
             , nextSquashedLayerIndex(0)
             , totalAreaOfSquashedRects(0) { }
 
@@ -59,6 +60,11 @@ private:
         // The most recent composited backing that the layer should squash onto if needed.
         CompositedLayerMappingPtr mostRecentMapping;
         bool hasMostRecentMapping;
+
+        // Whether all RenderLayers in the stacking subtree rooted at the most recent mapping's
+        // owning layer have had CompositedLayerMappings assigned. Layers cannot squash into a
+        // CompositedLayerMapping owned by a stacking ancestor, since this changes paint order.
+        bool haveAssignedBackingsToEntireSquashingLayerSubtree;
 
         // Coordinates of the compositedLayerMapping's owning layer in the space of the transformed ancestor. This is used for computing the correct
         // positions of renderlayers when they paint into the squashing layer.

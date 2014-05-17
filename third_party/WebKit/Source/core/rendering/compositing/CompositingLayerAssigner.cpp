@@ -63,6 +63,7 @@ void CompositingLayerAssigner::SquashingState::updateSquashingStateForNewMapping
     boundingRect = IntRect();
     mostRecentMapping = newCompositedLayerMapping;
     hasMostRecentMapping = hasNewCompositedLayerMapping;
+    haveAssignedBackingsToEntireSquashingLayerSubtree = false;
     offsetFromTransformedAncestorForSquashingCLM = newOffsetFromTransformedAncestorForSquashingCLM;
 }
 
@@ -113,6 +114,9 @@ CompositingStateTransitionType CompositingLayerAssigner::computeCompositedLayerU
 
 bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLayer* layer, const CompositingLayerAssigner::SquashingState& squashingState)
 {
+    if (!squashingState.haveAssignedBackingsToEntireSquashingLayerSubtree)
+        return false;
+
     // FIXME: this special case for video exists only to deal with corner cases
     // where a RenderVideo does not report that it needs to be directly composited.
     // Video does not currently support sharing a backing, but this could be
@@ -135,9 +139,6 @@ bool CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner(const RenderLa
         if (!squashingLayer.compositedLayerMapping()->containingSquashedLayer(layer->renderer()->clippingContainer()))
             return false;
     }
-
-    if (layer->compositingContainer() == &squashingLayer)
-        return false;
 
     // Composited descendants need to be clipped by a child contianment graphics layer, which would not be available if the layer is
     if (m_compositor->clipsCompositingDescendants(layer))
@@ -281,6 +282,9 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
     RenderLayerStackingNodeIterator iterator(*layer->stackingNode(), NormalFlowChildren | PositiveZOrderChildren);
     while (RenderLayerStackingNode* curNode = iterator.next())
         assignLayersToBackingsInternal(curNode->layer(), squashingState, layersChanged);
+
+    if (squashingState.hasMostRecentMapping && &squashingState.mostRecentMapping->owningLayer() == layer)
+        squashingState.haveAssignedBackingsToEntireSquashingLayerSubtree = true;
 }
 
 }
