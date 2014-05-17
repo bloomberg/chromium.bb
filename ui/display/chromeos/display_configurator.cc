@@ -215,15 +215,33 @@ void DisplayConfigurator::ForceInitialConfigure(
   NotifyObservers(success, new_state);
 }
 
+bool DisplayConfigurator::IsMirroring() const {
+  return display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR ||
+      (mirroring_controller_ &&
+       mirroring_controller_->SoftwareMirroringEnabled());
+}
+
 bool DisplayConfigurator::ApplyProtections(const ContentProtections& requests) {
   for (DisplayStateList::const_iterator it = cached_displays_.begin();
        it != cached_displays_.end();
        ++it) {
     uint32_t all_desired = 0;
-    ContentProtections::const_iterator request_it =
-        requests.find(it->display->display_id());
-    if (request_it != requests.end())
-      all_desired = request_it->second;
+
+    // In mirror mode, protection request of all displays need to be fulfilled.
+    // In non-mirror mode, only request of client's display needs to be
+    // fulfilled.
+    ContentProtections::const_iterator request_it;
+    if (IsMirroring()) {
+      for (request_it = requests.begin();
+           request_it != requests.end();
+           ++request_it)
+        all_desired |= request_it->second;
+    } else {
+      request_it = requests.find(it->display->display_id());
+      if (request_it != requests.end())
+        all_desired = request_it->second;
+    }
+
     switch (it->display->type()) {
       case DISPLAY_CONNECTION_TYPE_UNKNOWN:
         return false;
@@ -294,8 +312,10 @@ bool DisplayConfigurator::QueryContentProtectionStatus(
   for (DisplayStateList::const_iterator it = cached_displays_.begin();
        it != cached_displays_.end();
        ++it) {
-    if (it->display->display_id() != display_id)
+    // Query display if it is in mirror mode or client on the same display.
+    if (!IsMirroring() && it->display->display_id() != display_id)
       continue;
+
     *link_mask |= it->display->type();
     switch (it->display->type()) {
       case DISPLAY_CONNECTION_TYPE_UNKNOWN:

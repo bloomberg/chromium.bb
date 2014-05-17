@@ -350,7 +350,7 @@ class TestMirroringController
     software_mirroring_enabled_ = enabled;
   }
 
-  bool software_mirroring_enabled() const {
+  virtual bool SoftwareMirroringEnabled() const OVERRIDE {
     return software_mirroring_enabled_;
   }
 
@@ -566,7 +566,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   observer_.Reset();
@@ -581,7 +581,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Disconnect the second output.
@@ -595,7 +595,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
@@ -618,14 +618,14 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
 
   observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR));
   EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
-  EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Setting MULTIPLE_DISPLAY_STATE_DUAL_MIRROR should try to reconfigure.
@@ -633,7 +633,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   EXPECT_TRUE(
       configurator_.SetDisplayMode(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED));
   EXPECT_EQ(JoinActions(NULL), log_->GetActionsAndClear());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Set back to software mirror mode.
@@ -642,7 +642,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
-  EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Disconnect the second output.
@@ -656,7 +656,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 }
 
@@ -676,7 +676,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
           kUngrab,
           NULL),
       log_->GetActionsAndClear());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Turning off the internal display should switch the external display to
@@ -714,7 +714,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
                   NULL),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Turn all displays on and check that mirroring is still used.
@@ -733,7 +733,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
           NULL),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR, configurator_.display_state());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
@@ -762,7 +762,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
-  EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Turning off the internal display should switch the external display to
@@ -783,7 +783,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
           NULL),
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_SINGLE, configurator_.display_state());
-  EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_FALSE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // When all displays are turned off, the framebuffer should switch back
@@ -809,7 +809,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
-  EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 
   // Turn all displays on and check that mirroring is still used.
@@ -835,7 +835,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
       log_->GetActionsAndClear());
   EXPECT_EQ(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED,
             configurator_.display_state());
-  EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_TRUE(mirroring_controller_.SoftwareMirroringEnabled());
   EXPECT_EQ(1, observer_.num_changes());
 }
 

@@ -94,6 +94,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
 
     // Called when the hardware mirroring failed.
     virtual void SetSoftwareMirroring(bool enabled) = 0;
+    virtual bool SoftwareMirroringEnabled() const = 0;
   };
 
   class TouchscreenDelegate {
@@ -320,6 +321,9 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // Returns the ratio between mirrored mode area and native mode area:
   // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
   float GetMirroredDisplayAreaRatio(const DisplayState& display);
+
+  // Returns true if in either hardware or software mirroring mode.
+  bool IsMirroring() const;
 
   // Applies display protections according to requests.
   bool ApplyProtections(const ContentProtections& requests);

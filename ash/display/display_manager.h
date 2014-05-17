@@ -252,6 +252,7 @@ class ASH_EXPORT DisplayManager
   // SoftwareMirroringController override:
 #if defined(OS_CHROMEOS)
   virtual void SetSoftwareMirroring(bool enabled) OVERRIDE;
+  virtual bool SoftwareMirroringEnabled() const OVERRIDE;
 #endif
   bool software_mirroring_enabled() const {
     return second_display_mode_ == MIRRORING;

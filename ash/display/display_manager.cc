@@ -936,6 +936,10 @@ void DisplayManager::SetSoftwareMirroring(bool enabled) {
     return;
   SetSecondDisplayMode(enabled ? MIRRORING : EXTENDED);
 }
+
+bool DisplayManager::SoftwareMirroringEnabled() const {
+  return software_mirroring_enabled();
+}
 #endif
 
 void DisplayManager::SetSecondDisplayMode(SecondDisplayMode mode) {
