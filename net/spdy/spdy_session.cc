@@ -49,8 +49,9 @@ const int kReadBufferSize = 8 * 1024;
 const int kDefaultConnectionAtRiskOfLossSeconds = 10;
 const int kHungIntervalSeconds = 10;
 
-// Always start at 1 for the first stream id.
+// As we always act as the client, start at 1 for the first stream id.
 const SpdyStreamId kFirstStreamId = 1;
+const SpdyStreamId kLastStreamId = 0x7fffffff;
 
 // Minimum seconds that unclaimed pushed streams will be kept in memory.
 const int kMinPushedStreamLifetimeSeconds = 300;
@@ -1384,6 +1385,14 @@ int SpdySession::DoWrite() {
       scoped_ptr<SpdyStream> owned_stream =
           ActivateCreatedStream(stream.get());
       InsertActivatedStream(owned_stream.Pass());
+
+      if (stream_hi_water_mark_ > kLastStreamId) {
+        CHECK_EQ(stream->stream_id(), kLastStreamId);
+        // We've exhausted the stream ID space, and no new streams may be
+        // created after this one.
+        MakeUnavailable();
+        StartGoingAway(kLastStreamId, ERR_ABORTED);
+      }
     }
 
     in_flight_write_ = producer->ProduceBuffer();
@@ -1610,11 +1619,10 @@ void SpdySession::LogAbandonedActiveStream(ActiveStreamMap::const_iterator it,
   }
 }
 
-int SpdySession::GetNewStreamId() {
-  int id = stream_hi_water_mark_;
+SpdyStreamId SpdySession::GetNewStreamId() {
+  CHECK_LE(stream_hi_water_mark_, kLastStreamId);
+  SpdyStreamId id = stream_hi_water_mark_;
   stream_hi_water_mark_ += 2;
-  if (stream_hi_water_mark_ > 0x7fff)
-    stream_hi_water_mark_ = 1;
   return id;
 }
 

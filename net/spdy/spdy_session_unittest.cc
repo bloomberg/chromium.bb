@@ -920,6 +920,131 @@ TEST_P(SpdySessionTest, PingAndWriteLoop) {
   session->CloseSessionOnError(ERR_ABORTED, "Aborting");
 }
 
+TEST_P(SpdySessionTest, StreamIdSpaceExhausted) {
+  const SpdyStreamId kLastStreamId = 0x7fffffff;
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  // Test setup: |stream_hi_water_mark_| and |max_concurrent_streams_| are
+  // fixed to allow for two stream ID assignments, and three concurrent
+  // streams. Four streams are started, and two are activated. Verify the
+  // session goes away, and that the created (but not activated) and
+  // stalled streams are aborted. Also verify the activated streams complete,
+  // at which point the session closes.
+
+  scoped_ptr<SpdyFrame> req1(spdy_util_.ConstructSpdyGet(
+      NULL, 0, false, kLastStreamId - 2, MEDIUM, true));
+  scoped_ptr<SpdyFrame> req2(
+      spdy_util_.ConstructSpdyGet(NULL, 0, false, kLastStreamId, MEDIUM, true));
+
+  MockWrite writes[] = {
+      CreateMockWrite(*req1, 0), CreateMockWrite(*req2, 1),
+  };
+
+  scoped_ptr<SpdyFrame> resp1(
+      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, kLastStreamId - 2));
+  scoped_ptr<SpdyFrame> resp2(
+      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, kLastStreamId));
+
+  scoped_ptr<SpdyFrame> body1(
+      spdy_util_.ConstructSpdyBodyFrame(kLastStreamId - 2, true));
+  scoped_ptr<SpdyFrame> body2(
+      spdy_util_.ConstructSpdyBodyFrame(kLastStreamId, true));
+
+  MockRead reads[] = {
+      CreateMockRead(*resp1, 2), CreateMockRead(*resp2, 3),
+      CreateMockRead(*body1, 4), CreateMockRead(*body2, 5),
+      MockRead(ASYNC, 0, 6)  // EOF
+  };
+
+  DeterministicSocketData data(
+      reads, arraysize(reads), writes, arraysize(writes));
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  CreateDeterministicNetworkSession();
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  // Fix stream_hi_water_mark_ to allow for two stream activations.
+  session->stream_hi_water_mark_ = kLastStreamId - 2;
+  // Fix max_concurrent_streams to allow for three stream creations.
+  session->max_concurrent_streams_ = 3;
+
+  // Create three streams synchronously, and begin a fourth (which is stalled).
+  GURL url(kDefaultURL);
+  base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate1(stream1);
+  stream1->SetDelegate(&delegate1);
+
+  base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate2(stream2);
+  stream2->SetDelegate(&delegate2);
+
+  base::WeakPtr<SpdyStream> stream3 = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, MEDIUM, BoundNetLog());
+  test::StreamDelegateDoNothing delegate3(stream3);
+  stream3->SetDelegate(&delegate3);
+
+  SpdyStreamRequest request4;
+  TestCompletionCallback callback4;
+  EXPECT_EQ(ERR_IO_PENDING,
+            request4.StartRequest(SPDY_REQUEST_RESPONSE_STREAM,
+                                  session,
+                                  url,
+                                  MEDIUM,
+                                  BoundNetLog(),
+                                  callback4.callback()));
+
+  // Streams 1-3 were created. 4th is stalled. No streams are active yet.
+  EXPECT_EQ(0u, session->num_active_streams());
+  EXPECT_EQ(3u, session->num_created_streams());
+  EXPECT_EQ(1u, session->pending_create_stream_queue_size(MEDIUM));
+
+  // Activate stream 1. One ID remains available.
+  stream1->SendRequestHeaders(
+      scoped_ptr<SpdyHeaderBlock>(
+          spdy_util_.ConstructGetHeaderBlock(url.spec())),
+      NO_MORE_DATA_TO_SEND);
+  data.RunFor(1);
+
+  EXPECT_EQ(kLastStreamId - 2u, stream1->stream_id());
+  EXPECT_EQ(1u, session->num_active_streams());
+  EXPECT_EQ(2u, session->num_created_streams());
+  EXPECT_EQ(1u, session->pending_create_stream_queue_size(MEDIUM));
+
+  // Activate stream 2. ID space is exhausted.
+  stream2->SendRequestHeaders(
+      scoped_ptr<SpdyHeaderBlock>(
+          spdy_util_.ConstructGetHeaderBlock(url.spec())),
+      NO_MORE_DATA_TO_SEND);
+  data.RunFor(1);
+
+  // Active streams remain active.
+  EXPECT_EQ(kLastStreamId, stream2->stream_id());
+  EXPECT_EQ(2u, session->num_active_streams());
+
+  // Session is going away. Created and stalled streams were aborted.
+  EXPECT_EQ(SpdySession::STATE_GOING_AWAY, session->availability_state_);
+  EXPECT_EQ(ERR_ABORTED, delegate3.WaitForClose());
+  EXPECT_EQ(ERR_ABORTED, callback4.WaitForResult());
+  EXPECT_EQ(0u, session->num_created_streams());
+  EXPECT_EQ(0u, session->pending_create_stream_queue_size(MEDIUM));
+
+  // Read responses on remaining active streams.
+  data.RunFor(4);
+  EXPECT_EQ(OK, delegate1.WaitForClose());
+  EXPECT_EQ(kUploadData, delegate1.TakeReceivedData());
+  EXPECT_EQ(OK, delegate2.WaitForClose());
+  EXPECT_EQ(kUploadData, delegate2.TakeReceivedData());
+
+  // Session was destroyed.
+  EXPECT_FALSE(session.get());
+}
+
 TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
   session_deps_.host_resolver->set_synchronous_mode(true);
   session_deps_.time_func = TheNearFuture;

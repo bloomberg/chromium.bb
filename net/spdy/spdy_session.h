@@ -493,6 +493,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoReceiveLeaks);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoSendLeaks);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlEndToEnd);
+  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, StreamIdSpaceExhausted);
 
   typedef std::deque<base::WeakPtr<SpdyStreamRequest> >
       PendingStreamRequestQueue;
@@ -684,7 +685,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void CheckPingStatus(base::TimeTicks last_check_time);
 
   // Get a new stream id.
-  int GetNewStreamId();
+  SpdyStreamId GetNewStreamId();
 
   // Pushes the given frame with the given priority into the write
   // queue for the session.
@@ -953,7 +954,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // The read buffer used to read data from the socket.
   scoped_refptr<IOBuffer> read_buffer_;
 
-  int stream_hi_water_mark_;  // The next stream id to use.
+  SpdyStreamId stream_hi_water_mark_;  // The next stream id to use.
 
   // Queue, for each priority, of pending stream requests that have
   // not yet been satisfied.
