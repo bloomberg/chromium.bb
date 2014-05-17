@@ -10,7 +10,7 @@ import android.accounts.AccountManagerCallback;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -100,7 +100,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         builder.setMessage(R.string.noaccounts_message);
         builder.setPositiveButton(R.string.noaccounts_add_account,
                 new DialogInterface.OnClickListener() {
-                    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+                    @SuppressLint("InlinedApi")
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         Intent intent = new Intent(Settings.ACTION_ADD_ACCOUNT);

@@ -4,7 +4,7 @@
 
 package org.chromium.chromoting;
 
-import android.annotation.TargetApi;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -88,7 +88,7 @@ public class Desktop extends Activity implements View.OnSystemUiVisibilityChange
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    @SuppressLint("InlinedApi")
     private int getSystemUiFlags() {
         int flags = View.SYSTEM_UI_FLAG_LOW_PROFILE;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
