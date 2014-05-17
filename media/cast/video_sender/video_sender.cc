@@ -153,13 +153,15 @@ void VideoSender::InsertRawVideoFrame(
           video_frame,
           capture_time,
           base::Bind(&VideoSender::SendEncodedVideoFrameMainThread,
-                     weak_factory_.GetWeakPtr()))) {
+                     weak_factory_.GetWeakPtr(),
+                     current_requested_bitrate_))) {
     frames_in_encoder_++;
     UpdateFramesInFlight();
   }
 }
 
 void VideoSender::SendEncodedVideoFrameMainThread(
+    int requested_bitrate_before_encode,
     scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
     const base::TimeTicks& capture_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
@@ -176,7 +178,7 @@ void VideoSender::SendEncodedVideoFrameMainThread(
       last_send_time_, FRAME_ENCODED, VIDEO_EVENT, encoded_frame->rtp_timestamp,
       frame_id, static_cast<int>(encoded_frame->data.size()),
       encoded_frame->key_frame,
-      current_requested_bitrate_);
+      requested_bitrate_before_encode);
 
   // Used by chrome/browser/extension/api/cast_streaming/performance_test.cc
   TRACE_EVENT_INSTANT1(

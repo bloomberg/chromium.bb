@@ -92,6 +92,7 @@ class VideoSender : public base::NonThreadSafe,
   void UpdateFramesInFlight();
 
   void SendEncodedVideoFrameMainThread(
+      int requested_bitrate_before_encode,
       scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
       const base::TimeTicks& capture_time);
 
