@@ -677,6 +677,19 @@ void TileManager::GetTilesWithAssignedBins(PrioritizedTileSet* tiles) {
   }
 }
 
+void TileManager::CleanUpLayers() {
+  for (size_t i = 0; i < layers_.size(); ++i) {
+    if (layers_[i]->IsDrawnRenderSurfaceLayerListMember())
+      continue;
+
+    layers_[i]->DidUnregisterLayer();
+    std::swap(layers_[i], layers_.back());
+    layers_.pop_back();
+    --i;
+    prioritized_tiles_dirty_ = true;
+  }
+}
+
 void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
   TRACE_EVENT0("cc", "TileManager::ManageTiles");
 
@@ -685,6 +698,8 @@ void TileManager::ManageTiles(const GlobalStateThatImpactsTilePriority& state) {
     global_state_ = state;
     prioritized_tiles_dirty_ = true;
   }
+
+  CleanUpLayers();
 
   // We need to call CheckForCompletedTasks() once in-between each call
   // to ScheduleTasks() to prevent canceled tasks from being scheduled.
