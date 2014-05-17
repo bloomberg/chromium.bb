@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "sync/api/attachments/attachment.h"
+#include "sync/protocol/sync.pb.h"
 
 namespace syncer {
 
@@ -21,6 +22,8 @@ FakeAttachmentUploader::~FakeAttachmentUploader() {
 void FakeAttachmentUploader::UploadAttachment(const Attachment& attachment,
                                               const UploadCallback& callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!attachment.GetId().GetProto().unique_id().empty());
+
   UploadResult result = UPLOAD_SUCCESS;
   AttachmentId updated_id = attachment.GetId();
   // TODO(maniscalco): Update the attachment id with server address information
