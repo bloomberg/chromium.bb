@@ -40,23 +40,7 @@ void UpgradeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
 
 int UpgradeDetector::GetIconResourceID(UpgradeNotificationIconType type) {
   if (type == UPGRADE_ICON_TYPE_BADGE) {
-    // Badges do not exist on Views and Mac OS X.
-#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
-    switch (upgrade_notification_stage_) {
-      case UPGRADE_ANNOYANCE_NONE:
-        return 0;
-      case UPGRADE_ANNOYANCE_LOW:
-        return IDR_UPDATE_BADGE;
-      case UPGRADE_ANNOYANCE_ELEVATED:
-        return IDR_UPDATE_BADGE2;
-      case UPGRADE_ANNOYANCE_HIGH:
-        return IDR_UPDATE_BADGE3;
-      case UPGRADE_ANNOYANCE_SEVERE:
-        return IDR_UPDATE_BADGE3;
-      case UPGRADE_ANNOYANCE_CRITICAL:
-        return IDR_UPDATE_BADGE3;
-    }
-#endif
+    // TODO(oshima): Badges no longer exist. remove this.
     NOTREACHED();
     return 0;
   }
