@@ -173,24 +173,6 @@ scoped_ptr<base::Value> CreateValueFromOptionalArray(
   return scoped_ptr<base::Value>();
 }
 
-template <class TParent, class T>
-scoped_ptr<base::Value> CreateValueFromEnumArray(const std::vector<T>& from) {
-  base::ListValue* list = new base::ListValue();
-  for (typename std::vector<T>::const_iterator it = from.begin();
-      it != from.end(); ++it) {
-    list->AppendString(TParent::ToString(*it));
-  }
-  return scoped_ptr<base::Value>(list);
-}
-
-template <class TParent, class T>
-scoped_ptr<base::Value> CreateValueFromOptionalEnumArray(
-    const scoped_ptr<std::vector<T> >& from) {
-  if (from.get())
-    return CreateValueFromEnumArray<TParent>(*from);
-  return scoped_ptr<base::Value>();
-}
-
 std::string ValueTypeToString(base::Value::Type type);
 
 }  // namespace util

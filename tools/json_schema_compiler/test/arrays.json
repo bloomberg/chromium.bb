@@ -17,6 +17,48 @@
         }
       },
       {
+        "id": "Enumeration",
+        "type": "string",
+        "enum": ["one", "two", "three"]
+      },
+      {
+        "id": "EnumArrayReference",
+        "type": "object",
+        "properties": {
+          "types": {
+            "type": "array",
+            "items": {
+              "$ref": "Enumeration"
+            }
+          }
+        }
+      },
+      {
+        "id": "EnumArrayMixed",
+        "type": "object",
+        "properties": {
+          "inline_enums": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["one", "two", "three"]
+            }
+          },
+          "infile_enums": {
+            "type": "array",
+            "items": {
+              "$ref": "Enumeration"
+            }
+          },
+          "external_enums": {
+            "type": "array",
+            "items": {
+              "$ref": "enums.Enumeration"
+            }
+          }
+        }
+      },
+      {
         "id": "OptionalEnumArrayType",
         "type": "object",
         "properties": {

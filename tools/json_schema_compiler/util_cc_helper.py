@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from model import PropertyType
-
-
 _API_UTIL_NAMESPACE = 'json_schema_compiler::util'
 
 
@@ -55,30 +52,17 @@ class UtilCCHelper(object):
       'dst': dst
     }
 
-  def CreateValueFromArray(self, cpp_namespace, type_, src, optional):
+  def CreateValueFromArray(self, src, optional):
     """Generates code to create a scoped_pt<Value> from the array at src.
 
-    |cpp_namespace| The namespace which contains |type_|. This is needed for
-        enum conversions, where the ToString method is on the containing
-        namespace.
-    |type_| The type of the values being converted. This is needed for enum
-        conversions, to know whether to use the Enum form of conversion.
     |src| The variable to convert, either a vector or scoped_ptr<vector>.
     |optional| Whether |type_| was optional. Optional types are pointers so
         must be treated differently.
     """
-    if type_.item_type.property_type == PropertyType.ENUM:
-      # Enums are treated specially because C++ templating thinks that they're
-      # ints, but really they're strings.
-      if optional:
-        name = 'CreateValueFromOptionalEnumArray<%s>' % cpp_namespace
-      else:
-        name = 'CreateValueFromEnumArray<%s>' % cpp_namespace
+    if optional:
+      name = 'CreateValueFromOptionalArray'
     else:
-      if optional:
-        name = 'CreateValueFromOptionalArray'
-      else:
-        name = 'CreateValueFromArray'
+      name = 'CreateValueFromArray'
     return '%s::%s(%s)' % (_API_UTIL_NAMESPACE, name, src)
 
   def GetIncludePath(self):
