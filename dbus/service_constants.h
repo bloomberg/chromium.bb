@@ -939,10 +939,6 @@ const char kSMSReceivedSignal[] = "SmsReceived";
 // ModemManager1 interfaces and signals
 // The canonical source for these constants is:
 //   /usr/include/ModemManager/ModemManager-names.h
-//
-// TODO(benchan): Deprecate and remove kModemManager1 after migrating other code
-// to use kModemManager1ServiceName.
-const char kModemManager1[] = "org.freedesktop.ModemManager1";
 const char kModemManager1ServiceName[] = "org.freedesktop.ModemManager1";
 const char kModemManager1ServicePath[] = "/org/freedesktop/ModemManager1";
 const char kModemManager1MessagingInterface[] =
