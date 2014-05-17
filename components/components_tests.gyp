@@ -437,7 +437,7 @@
                 '../third_party/libusb/libusb.gyp:libusb',
               ],
             }],
-            ['OS == "android" and gtest_target_type == "shared_library"', {
+            ['OS == "android"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
               ]
@@ -580,7 +580,7 @@
            'visitedlink/test/visitedlink_perftest.cc',
          ],
          'conditions': [
-           ['OS == "android" and gtest_target_type == "shared_library"', {
+           ['OS == "android"', {
              'dependencies': [
                '../testing/android/native_test.gyp:native_test_native_code',
              ],
@@ -591,7 +591,7 @@
         },
       ],
       'conditions': [
-        ['OS == "android" and gtest_target_type == "shared_library"', {
+        ['OS == "android"', {
           'targets': [
             {
               'target_name': 'components_unittests_apk',

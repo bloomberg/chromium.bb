@@ -663,13 +663,7 @@
         ['OS == "android"', {
           'dependencies': [
             'android/jni_generator/jni_generator.gyp:jni_generator_tests',
-          ],
-          'conditions': [
-            ['gtest_target_type == "shared_library"', {
-              'dependencies': [
-                '../testing/android/native_test.gyp:native_test_native_code',
-              ],
-            }],
+            '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
         ['OS == "ios" and _toolset != "host"', {
@@ -805,7 +799,7 @@
         '../testing/perf/perf_test.cc'
       ],
       'conditions': [
-        ['OS == "android" and gtest_target_type == "shared_library"', {
+        ['OS == "android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
@@ -1430,7 +1424,7 @@
 
       ],
     }],
-    ['OS == "android" and gtest_target_type == "shared_library"', {
+    ['OS == "android"', {
       'targets': [
         {
           'target_name': 'base_perftests_apk',
@@ -1461,13 +1455,7 @@
         },
       ],
     }],
-    # Special target to wrap a gtest_target_type == shared_library
-    # base_unittests into an android apk for execution.
-    # TODO(jrg): lib.target comes from _InstallableTargetInstallPath()
-    # in the gyp make generator.  What is the correct way to extract
-    # this path from gyp and into 'raw' for input to antfiles?
-    # Hard-coding in the gypfile seems a poor choice.
-    ['OS == "android" and gtest_target_type == "shared_library"', {
+    ['OS == "android"', {
       'targets': [
         {
           'target_name': 'base_unittests_apk',

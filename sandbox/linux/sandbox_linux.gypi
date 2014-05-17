@@ -105,7 +105,7 @@
       ],
       'type': 'shared_library',
       'conditions': [
-        [ 'OS == "android" and gtest_target_type == "shared_library"', {
+        [ 'OS == "android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
@@ -319,8 +319,7 @@
         }
       ],
     }],
-    # Strategy copied from base_unittests_apk in base/base.gyp.
-    [ 'OS=="android" and gtest_target_type == "shared_library"', {
+    [ 'OS=="android"', {
       'targets': [
         {
         'target_name': 'sandbox_linux_jni_unittests_apk',

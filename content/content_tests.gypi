@@ -880,7 +880,7 @@
             '../third_party/libvpx/libvpx.gyp:libvpx',
           ],
         }],
-        ['OS == "android" and gtest_target_type == "shared_library"', {
+        ['OS == "android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
@@ -954,7 +954,7 @@
             'test/run_all_perftests.cc',
           ],
           'conditions': [
-            ['OS == "android" and gtest_target_type == "shared_library"', {
+            ['OS == "android"', {
               'dependencies': [
                 '../testing/android/native_test.gyp:native_test_native_code',
               ],
@@ -1283,7 +1283,7 @@
               'sources!': [
                 # These tests depend on single process mode, which is disabled
                 # in official builds.
-		'renderer/browser_render_view_browsertest.cc',
+    'renderer/browser_render_view_browsertest.cc',
                 'renderer/dom_serializer_browsertest.cc',
                 'renderer/resource_fetcher_browsertest.cc',
                 'renderer/savable_resources_browsertest.cc',
@@ -1492,10 +1492,7 @@
         },
       ]
     }],
-    # Special target to wrap a gtest_target_type==shared_library
-    # content_unittests into an android apk for execution.
-    # See base.gyp for TODO(jrg)s about this strategy.
-    ['OS == "android" and gtest_target_type == "shared_library"', {
+    ['OS == "android"', {
       'targets': [
         {
           'target_name': 'content_gl_tests_apk',

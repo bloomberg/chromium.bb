@@ -2600,12 +2600,8 @@
             ['exclude', '^utility/importer/'],
             ['exclude', '^utility/media_galleries/'],
           ],
-          'conditions': [
-            ['gtest_target_type == "shared_library"', {
-              'dependencies': [
-                '../testing/android/native_test.gyp:native_test_native_code',
-              ],
-            }],
+          'dependencies': [
+            '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],  # OS == android
         ['OS!="android" and OS!="ios" and chromeos==0 and configuration_policy==1', {
@@ -2780,9 +2776,7 @@
   ],
 
   'conditions': [
-    # Special target to wrap a gtest_target_type==shared_library
-    # unit_tests into an android apk for execution.
-    ['OS == "android" and gtest_target_type == "shared_library"', {
+    ['OS == "android"', {
       'targets': [
         {
           'target_name': 'unit_tests_java',

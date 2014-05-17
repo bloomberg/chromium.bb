@@ -23,7 +23,7 @@
     '<(DEPTH)/tools/android/android_tools.gyp:android_tools',
   ],
   'conditions': [
-     ['OS == "android" and gtest_target_type == "shared_library"', {
+     ['OS == "android"', {
        'variables': {
          # These are used to configure java_apk.gypi included below.
          'apk_name': '<(test_suite_name)',
@@ -35,6 +35,6 @@
          'gyp_managed_install': 0,
        },
        'includes': [ 'java_apk.gypi' ],
-     }],  # 'OS == "android" and gtest_target_type == "shared_library"
+     }],  # 'OS == "android"
   ],  # conditions
 }

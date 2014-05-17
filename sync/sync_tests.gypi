@@ -439,7 +439,7 @@
           'internal_api/sync_backup_manager_unittest.cc',
           'internal_api/sync_core_proxy_impl_unittest.cc',
           'internal_api/sync_encryption_handler_impl_unittest.cc',
-          'internal_api/sync_manager_impl_unittest.cc',          
+          'internal_api/sync_manager_impl_unittest.cc',
           'internal_api/sync_rollback_manager_base_unittest.cc',
           'internal_api/sync_rollback_manager_unittest.cc',
           'internal_api/syncapi_server_connection_manager_unittest.cc',
@@ -518,7 +518,7 @@
             '../base/allocator/allocator.gyp:allocator',
           ],
         }],
-        ['OS == "android" and gtest_target_type == "shared_library"', {
+        ['OS == "android"', {
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
@@ -677,9 +677,7 @@
         },
       ],
     }],
-    # Special target to wrap a gtest_target_type==shared_library
-    # sync_unit_tests into an android apk for execution.
-    ['OS == "android" and gtest_target_type == "shared_library"', {
+    ['OS == "android"', {
       'targets': [
         {
           'target_name': 'sync_unit_tests_apk',

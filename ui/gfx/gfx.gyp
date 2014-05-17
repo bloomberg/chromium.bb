@@ -548,10 +548,7 @@
        },
      ],
     }],
-    # Special target to wrap a gtest_target_type==shared_library
-    # gfx_unittests into an android apk for execution.
-    # See base.gyp for TODO(jrg)s about this strategy.
-    ['OS == "android" and gtest_target_type == "shared_library"', {
+    ['OS == "android"', {
       'targets': [
         {
           'target_name': 'gfx_unittests_apk',

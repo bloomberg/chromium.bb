@@ -799,7 +799,7 @@
             ],
           },
         ],
-        ['OS == "android" and gtest_target_type == "shared_library"', {
+        ['OS == "android"', {
           # TODO(mmenke):  This depends on test_support_base, which depends on
           #                icu.  Figure out a way to remove that dependency.
           'dependencies': [
@@ -1627,10 +1627,7 @@
         },
       ],
     }],
-    # Special target to wrap a gtest_target_type==shared_library
-    # net_unittests into an android apk for execution.
-    # See base.gyp for TODO(jrg)s about this strategy.
-    ['OS == "android" and gtest_target_type == "shared_library"', {
+    ['OS == "android"', {
       'targets': [
         {
           'target_name': 'net_unittests_apk',
