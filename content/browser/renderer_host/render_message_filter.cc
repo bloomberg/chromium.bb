@@ -434,8 +434,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
 #endif
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
         render_widget_helper_->DidReceiveBackingStoreMsg(message))
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
-        render_widget_helper_->DidReceiveBackingStoreMsg(message))
     IPC_MESSAGE_HANDLER(DesktopNotificationHostMsg_CheckPermission,
                         OnCheckNotificationPermission)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SyncAllocateSharedMemory,
