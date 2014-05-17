@@ -3042,7 +3042,16 @@ TEST_F(ExtensionServiceTest, AddPendingExtensionFromSync) {
   EXPECT_EQ(kFakeUpdateURL, pending_extension_info->update_url());
   EXPECT_EQ(&IsExtension, pending_extension_info->should_allow_install_);
   EXPECT_EQ(kFakeInstallSilently, pending_extension_info->install_silently());
-  EXPECT_EQ(kFakeRemoteInstall, pending_extension_info->remote_install());
+  // Use
+  // EXPECT_TRUE(kFakeRemoteInstall == pending_extension_info->remote_install())
+  // instead of
+  // EXPECT_EQ(kFakeRemoteInstall, pending_extension_info->remote_install())
+  // as gcc 4.7 issues the following warning on EXPECT_EQ(false, x), which is
+  // turned into an error with -Werror=conversion-null:
+  //   converting 'false' to pointer type for argument 1 of
+  //   'char testing::internal::IsNullLiteralHelper(testing::internal::Secret*)'
+  // https://code.google.com/p/googletest/issues/detail?id=458
+  EXPECT_TRUE(kFakeRemoteInstall == pending_extension_info->remote_install());
 }
 
 namespace {
