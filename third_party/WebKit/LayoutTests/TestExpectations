@@ -82,14 +82,6 @@ crbug.com/310679 [ Mac ] fast/events/scale-and-scroll-iframe-window.html [ Image
 crbug.com/310679 [ Mac ] fast/frames/frame-set-rotation-hit.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/310679 [ Mac ] fast/frames/frame-set-scaling-hit.html [ Failure ImageOnlyFailure Pass ]
 
-crbug.com/369609 svg/as-image/animated-svg-as-image.html [ NeedsRebaseline ]
-crbug.com/369609 svg/as-image/animated-svg-as-image-no-fixed-intrinsic-size.html [ NeedsRebaseline ]
-crbug.com/369609 svg/as-image/animated-svg-as-image-same-image.html [ NeedsRebaseline ]
-crbug.com/369609 svg/custom/animate-path-discrete.svg [ NeedsRebaseline ]
-crbug.com/369609 svg/custom/animate-path-morphing.svg [ NeedsRebaseline ]
-crbug.com/369609 svg/custom/animate-target-removed-from-document.svg [ NeedsRebaseline ]
-crbug.com/369609 svg/filters/feImage-animated-transform-on-target-rect.svg [ NeedsRebaseline ]
-
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
 
