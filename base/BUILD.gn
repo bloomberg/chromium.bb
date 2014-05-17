@@ -810,12 +810,13 @@ component("base") {
       "sha1_win.cc",
     ]
 
-    if (is_component_build) {
-      sources -= [ "debug/debug_on_start_win.cc" ]
-    }
-
-    # Needed by win_util.h
-    libs = [ "netapi32.lib" ]
+    libs = [
+      "netapi32.lib",
+      "powrprof.lib",
+    ]
+    ldflags = [
+      "/DELAYLOAD:powrprof.dll",
+    ]
   } else if (!is_nacl) {
     # Non-Windows.
     deps += [ "//third_party/libevent" ]
@@ -967,7 +968,6 @@ source_set("prefs") {
     "prefs/value_map_pref_store.cc",
     "prefs/value_map_pref_store.h",
     "prefs/writeable_pref_store.h",
-
   ]
 
   defines = [ "BASE_PREFS_IMPLEMENTATION" ]
@@ -1109,7 +1109,6 @@ test("base_unittests") {
     "message_loop/message_loop_unittest.cc",
     "message_loop/message_pump_glib_unittest.cc",
     "message_loop/message_pump_io_ios_unittest.cc",
-    "message_loop/message_pump_libevent_unittest.cc",
     "metrics/sample_map_unittest.cc",
     "metrics/sample_vector_unittest.cc",
     "metrics/bucket_ranges_unittest.cc",
@@ -1251,7 +1250,6 @@ test("base_unittests") {
 
   if (is_ios) {
     sources -= [
-      "message_loop/message_pump_libevent_unittest.cc",  # libevent not used.
       "metrics/stats_table_uinittest.cc",  # Requires spawning a process.
       "process/memory_unittest.cc",
       "process/memory_unittest_mac.h",
@@ -1285,16 +1283,8 @@ test("base_unittests") {
     sources -= [ "message_loop/message_pump_glib_unittest.cc" ]
   }
 
-  if (is_win) {
-    sources -= [
-      "file_descriptor_shuffle_unittest.cc",
-      "files/dir_reader_posix_unittest.cc",
-      "threading/worker_pool_posix_unittest.cc",
-      "message_loop/message_pump_libevent_unittest.cc",
-    ]
-  }
-
-  if (!is_win || is_ios) {
+  if (is_posix || is_ios) {
+    sources += [ "message_loop/message_pump_libevent_unittest.cc" ]
     deps += [ "//third_party/libevent" ]
   }
 

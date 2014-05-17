@@ -34,6 +34,7 @@ if (!is_android) {
       # We don't list dynamic_annotations.c since its copy is already
       # present in the dynamic_annotations target.
       "$tcmalloc_dir/src/base/elf_mem_image.cc",
+      "$tcmalloc_dir/src/base/elf_mem_image.h",
       "$tcmalloc_dir/src/base/linuxthreads.cc",
       "$tcmalloc_dir/src/base/linuxthreads.h",
       "$tcmalloc_dir/src/base/logging.cc",
@@ -150,7 +151,7 @@ if (!is_android) {
         "$tcmalloc_dir/src/profile-handler.h",
         "$tcmalloc_dir/src/profiler.cc",
       ]
-      defines = [ "PERFTOOLS_DLL_DECL=" ]
+      defines += [ "PERFTOOLS_DLL_DECL=" ]
     }
     if (is_linux || is_android) {
       sources -= [

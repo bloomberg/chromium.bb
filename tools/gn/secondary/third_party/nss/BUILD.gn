@@ -359,7 +359,7 @@ if (is_linux) {
         cflags = [ "-all_load" ]
       } else if (is_win) {
         # Pass the def file to the linker.
-        ldflags += [ rebase_path("nss/exports_win.def", root_build_dir) ]
+        ldflags = [ rebase_path("nss/exports_win.def", root_build_dir) ]
       }
     }
 
