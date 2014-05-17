@@ -1206,6 +1206,8 @@
     'browser/service_worker/service_worker_utils.h',
     'browser/service_worker/service_worker_version.cc',
     'browser/service_worker/service_worker_version.h',
+    'browser/service_worker/service_worker_write_to_cache_job.cc',
+    'browser/service_worker/service_worker_write_to_cache_job.h',
     'browser/shared_worker/shared_worker_host.cc',
     'browser/shared_worker/shared_worker_host.h',
     'browser/shared_worker/shared_worker_instance.cc',

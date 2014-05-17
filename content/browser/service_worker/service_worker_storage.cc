@@ -709,7 +709,8 @@ ServiceWorkerStorage::CreateRegistration(
       context_->GetLiveVersion(data.version_id);
   if (!version) {
     version = new ServiceWorkerVersion(registration, data.version_id, context_);
-    version->SetStatus(data.GetVersionStatus());
+    version->SetStatus(data.is_active ?
+        ServiceWorkerVersion::ACTIVE : ServiceWorkerVersion::INSTALLED);
   }
 
   if (version->status() == ServiceWorkerVersion::ACTIVE)

@@ -38,6 +38,15 @@ class ServiceWorkerRequestInterceptor
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRequestInterceptor);
 };
 
+bool IsMethodSupported(const std::string& method) {
+  return (method == "GET") || (method == "HEAD");
+}
+
+bool IsSchemeAndMethodSupported(const net::URLRequest* request) {
+  return request->url().SchemeIsHTTPOrHTTPS() &&
+         IsMethodSupported(request->method());
+}
+
 }  // namespace
 
 void ServiceWorkerRequestHandler::InitializeHandler(
@@ -46,8 +55,10 @@ void ServiceWorkerRequestHandler::InitializeHandler(
     int process_id,
     int provider_id,
     ResourceType::Type resource_type) {
-  if (!ServiceWorkerUtils::IsFeatureEnabled())
+  if (!ServiceWorkerUtils::IsFeatureEnabled() ||
+      !IsSchemeAndMethodSupported(request)) {
     return;
+  }
 
   if (!context_wrapper || !context_wrapper->context() ||
       provider_id == kInvalidServiceWorkerProviderId) {

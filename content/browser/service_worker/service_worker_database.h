@@ -10,12 +10,13 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace leveldb {
@@ -51,12 +52,6 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
     bool is_active;
     bool has_fetch_handler;
     base::Time last_update_check;
-
-    ServiceWorkerVersion::Status GetVersionStatus() const {
-      if (is_active)
-        return ServiceWorkerVersion::ACTIVE;
-      return ServiceWorkerVersion::INSTALLED;
-    }
 
     RegistrationData();
     ~RegistrationData();

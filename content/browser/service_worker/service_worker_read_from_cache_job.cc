@@ -63,8 +63,9 @@ void ServiceWorkerReadFromCacheJob::Kill() {
 }
 
 net::LoadState ServiceWorkerReadFromCacheJob::GetLoadState() const {
-  NOTIMPLEMENTED();
-  return net::LOAD_STATE_WAITING_FOR_APPCACHE;
+  if (reader_.get() && reader_->IsReadPending())
+    return net::LOAD_STATE_READING_RESPONSE;
+  return net::LOAD_STATE_IDLE;
 }
 
 bool ServiceWorkerReadFromCacheJob::GetCharset(std::string* charset) {

@@ -13,9 +13,6 @@ namespace content {
 ServiceWorkerScriptCacheMap::ServiceWorkerScriptCacheMap(
     ServiceWorkerVersion* owner)
     : owner_(owner),
-      is_eval_complete_(false),
-      resources_started_(0),
-      resources_finished_(0),
       has_error_(false) {
 }
 
@@ -29,48 +26,42 @@ int64 ServiceWorkerScriptCacheMap::Lookup(const GURL& url) {
   return found->second;
 }
 
-void ServiceWorkerScriptCacheMap::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ServiceWorkerScriptCacheMap::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void ServiceWorkerScriptCacheMap::NotifyStartedCaching(
     const GURL& url, int64 resource_id) {
   DCHECK_EQ(kInvalidServiceWorkerResponseId, Lookup(url));
-  DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
-         owner_->status() == ServiceWorkerVersion::INSTALLING);
-  DCHECK(!is_eval_complete_);
+  DCHECK(owner_->status() == ServiceWorkerVersion::NEW);
   resource_ids_[url] = resource_id;
-  ++resources_started_;
+  // TODO(michaeln): Add resource id to the uncommitted list.
 }
 
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     const GURL& url, bool success) {
   DCHECK_NE(kInvalidServiceWorkerResponseId, Lookup(url));
-  DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
-         owner_->status() == ServiceWorkerVersion::INSTALLING);
-  ++resources_finished_;
-  if (!success)
+  DCHECK(owner_->status() == ServiceWorkerVersion::NEW);
+  if (!success) {
     has_error_ = true;
-  if (url == owner_->script_url()) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnMainScriptCached(owner_, success));
-  }
-  if (is_eval_complete_ && resources_finished_ == resources_started_) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnAllScriptsCached(owner_, has_error_));
+    resource_ids_.erase(url);
+    // TODO(michaeln): Doom the resource id.
   }
 }
 
-void ServiceWorkerScriptCacheMap::NotifyEvalCompletion() {
-  DCHECK(!is_eval_complete_);
-  is_eval_complete_ = true;
-  if (resources_finished_ == resources_started_) {
-    FOR_EACH_OBSERVER(Observer, observers_,
-                      OnAllScriptsCached(owner_, has_error_));
+void ServiceWorkerScriptCacheMap::GetResources(
+    std::vector<ServiceWorkerDatabase::ResourceRecord>* resources) {
+  DCHECK(resources->empty());
+  for (ResourceIDMap::const_iterator it = resource_ids_.begin();
+       it != resource_ids_.end(); ++it) {
+    ServiceWorkerDatabase::ResourceRecord record = { it->second, it->first };
+    resources->push_back(record);
+  }
+}
+
+void ServiceWorkerScriptCacheMap::SetResources(
+    const std::vector<ServiceWorkerDatabase::ResourceRecord>& resources) {
+  DCHECK(resource_ids_.empty());
+  typedef std::vector<ServiceWorkerDatabase::ResourceRecord> RecordVector;
+  for (RecordVector::const_iterator it = resources.begin();
+       it != resources.end(); ++it) {
+    resource_ids_[it->url] = it->resource_id;
   }
 }
 

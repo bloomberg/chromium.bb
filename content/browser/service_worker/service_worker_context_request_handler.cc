@@ -4,9 +4,12 @@
 
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
 
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_read_from_cache_job.h"
+#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -26,7 +29,11 @@ ServiceWorkerContextRequestHandler::~ServiceWorkerContextRequestHandler() {
 net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) {
-  if (!provider_host_ || !version_)
+  if (!provider_host_ || !version_ || !context_)
+    return NULL;
+
+  // We currently have no use case for hijacking a redirected request.
+  if (request->url_chain().size() > 1)
     return NULL;
 
   // We only use the script cache for main script loading and
@@ -40,8 +47,11 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
   }
 
   if (ShouldAddToScriptCache(request->url())) {
-    return NULL;
-    // TODO(michaeln): return new ServiceWorkerWriteToCacheJob();
+    int64 response_id = context_->storage()->NewResourceId();
+    if (response_id == kInvalidServiceWorkerResponseId)
+      return NULL;
+    return new ServiceWorkerWriteToCacheJob(
+        request, network_delegate, context_, version_, response_id);
   }
 
   int64 response_id = kInvalidServiceWorkerResponseId;
@@ -56,8 +66,7 @@ net::URLRequestJob* ServiceWorkerContextRequestHandler::MaybeCreateJob(
 
 bool ServiceWorkerContextRequestHandler::ShouldAddToScriptCache(
     const GURL& url) {
-  // TODO(michaeln): Ensure the transition to INSTALLING can't
-  // happen prior to the initial eval completion.
+  // We only write imports that occur during the initial eval.
   if (version_->status() != ServiceWorkerVersion::NEW)
     return false;
   return version_->script_cache_map()->Lookup(url) ==

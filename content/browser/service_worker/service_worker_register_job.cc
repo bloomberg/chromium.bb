@@ -95,8 +95,8 @@ ServiceWorkerRegistration* ServiceWorkerRegisterJob::registration() {
 
 void ServiceWorkerRegisterJob::set_pending_version(
     ServiceWorkerVersion* version) {
-  DCHECK(phase_ == UPDATE || phase_ == ACTIVATE) << phase_;
-  DCHECK(!internal_.pending_version || !version);
+  DCHECK(phase_ == UPDATE) << phase_;
+  DCHECK(!internal_.pending_version);
   internal_.pending_version = version;
 }
 
@@ -375,7 +375,8 @@ void ServiceWorkerRegisterJob::Complete(ServiceWorkerStatusCode status) {
       ResolvePromise(status, NULL, NULL);
   }
   DCHECK(callbacks_.empty());
-  context_->storage()->NotifyDoneInstallingRegistration(registration());
+  if (registration())
+    context_->storage()->NotifyDoneInstallingRegistration(registration());
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
@@ -400,7 +401,7 @@ void ServiceWorkerRegisterJob::AssociatePendingVersionToDocuments(
     ServiceWorkerVersion* version) {
   // TODO(michaeln): This needs to respect the longest prefix wins
   // when it comes to finding a registration for a document url.
-  // This should should utilize storage->FindRegistrationForDocument().
+  // This should utilize storage->FindRegistrationForDocument().
   for (scoped_ptr<ServiceWorkerContextCore::ProviderHostIterator> it =
            context_->GetProviderHostIterator();
        !it->IsAtEnd();

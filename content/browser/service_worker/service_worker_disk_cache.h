@@ -42,6 +42,10 @@ class ServiceWorkerResponseWriter
 
 struct HttpResponseInfoIOBuffer
     : public appcache::HttpResponseInfoIOBuffer {
+ public:
+  HttpResponseInfoIOBuffer() : appcache::HttpResponseInfoIOBuffer() {}
+  explicit HttpResponseInfoIOBuffer(net::HttpResponseInfo* info)
+      : appcache::HttpResponseInfoIOBuffer(info) {}
  protected:
   virtual ~HttpResponseInfoIOBuffer();
 };
