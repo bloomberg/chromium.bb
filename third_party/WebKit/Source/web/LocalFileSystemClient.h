@@ -43,7 +43,8 @@ public:
     virtual ~LocalFileSystemClient();
 
     virtual bool allowFileSystem(WebCore::ExecutionContext*) OVERRIDE;
-    virtual void requestFileSystemAccess(WebCore::ExecutionContext*, PassOwnPtr<WebCore::PermissionCallbacks>) OVERRIDE;
+    virtual bool requestFileSystemAccessSync(WebCore::ExecutionContext*) OVERRIDE;
+    virtual void requestFileSystemAccessAsync(WebCore::ExecutionContext*, PassOwnPtr<WebCore::PermissionCallbacks>) OVERRIDE;
 
 private:
     LocalFileSystemClient();

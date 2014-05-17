@@ -58,7 +58,12 @@ public:
         return true;
     }
 
-    virtual void requestFileSystemAccess(const WebPermissionCallbacks& callbacks)
+    virtual bool requestFileSystemAccessSync()
+    {
+        return true;
+    }
+
+    virtual void requestFileSystemAccessAsync(const WebPermissionCallbacks& callbacks)
     {
         WebPermissionCallbacks permissionCallbacks(callbacks);
         permissionCallbacks.doAllow();

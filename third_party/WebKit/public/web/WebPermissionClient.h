@@ -47,7 +47,10 @@ public:
     // Controls whether access to File System is allowed for this frame.
     virtual bool allowFileSystem() { return true; }
 
-    virtual void requestFileSystemAccess(const WebPermissionCallbacks& callbacks) { }
+    // Controls whether access to File System is allowed for this frame.
+    virtual bool requestFileSystemAccessSync() { return true; }
+
+    virtual void requestFileSystemAccessAsync(const WebPermissionCallbacks& callbacks) { }
 
     // Controls whether images are allowed for this frame.
     virtual bool allowImage(bool enabledPerSettings, const WebURL& imageURL) { return enabledPerSettings; }
