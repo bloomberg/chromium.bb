@@ -420,9 +420,6 @@ bool test_utimes(const char *test_file) {
 }
 
 bool test_truncate(const char *test_file) {
-  // TODO(mseaborn): Implement truncate for unsandboxed mode.
-  if (NONSFI_MODE)
-    return true;
   char temp_file[PATH_MAX];
   snprintf(temp_file, PATH_MAX, "%s.tmp_truncate", test_file);
 
@@ -954,13 +951,13 @@ bool testSuite(const char *test_file) {
   ret &= test_getcwd();
   ret &= test_mkdir_rmdir(test_file);
   ret &= test_isatty(test_file);
+  ret &= test_rename(test_file);
+  ret &= test_link(test_file);
   if (!NONSFI_MODE) {
-    ret &= test_rename(test_file);
-    ret &= test_link(test_file);
     ret &= test_symlinks(test_file);
-    ret &= test_chmod(test_file);
-    ret &= test_access(test_file);
   }
+  ret &= test_chmod(test_file);
+  ret &= test_access(test_file);
 #endif
 // TODO(sbc): remove this restriction once glibc's truncate calls
 // is hooked up to the IRT dev-filename-0.2 interface:

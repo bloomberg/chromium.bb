@@ -446,6 +446,14 @@ static int irt_stat(const char *pathname, struct stat *stat_info_nacl) {
   return 0;
 }
 
+static int irt_lstat(const char *pathname, struct stat *stat_info_nacl) {
+  struct stat stat_info;
+  if (lstat(pathname, &stat_info) != 0)
+    return errno;
+  convert_to_nacl_stat(stat_info_nacl, &stat_info);
+  return 0;
+}
+
 static int irt_mkdir(const char *pathname, mode_t mode) {
   return check_error(mkdir(pathname, mode));
 }
@@ -466,6 +474,26 @@ static int irt_getcwd(char *pathname, size_t len) {
 
 static int irt_unlink(const char *pathname) {
   return check_error(unlink(pathname));
+}
+
+static int irt_truncate(const char *pathname, nacl_irt_off_t length) {
+  return check_error(truncate(pathname, length));
+}
+
+static int irt_link(const char *oldpath, const char *newpath) {
+  return check_error(link(oldpath, newpath));
+}
+
+static int irt_rename(const char *oldpath, const char *newpath) {
+  return check_error(rename(oldpath, newpath));
+}
+
+static int irt_chmod(const char *pathname, mode_t mode) {
+  return check_error(chmod(pathname, mode));
+}
+
+static int irt_access(const char *pathname, int mode) {
+  return check_error(access(pathname, mode));
 }
 
 static int irt_getpid(int *pid) {
@@ -540,13 +568,7 @@ static const struct nacl_irt_futex irt_futex = {
 };
 #endif
 
-DEFINE_STUB(truncate)
-DEFINE_STUB(lstat)
-DEFINE_STUB(link)
-DEFINE_STUB(rename)
 DEFINE_STUB(symlink)
-DEFINE_STUB(chmod)
-DEFINE_STUB(access)
 DEFINE_STUB(readlink)
 DEFINE_STUB(utimes)
 static const struct nacl_irt_dev_filename irt_dev_filename = {
@@ -557,13 +579,13 @@ static const struct nacl_irt_dev_filename irt_dev_filename = {
   irt_chdir,
   irt_getcwd,
   irt_unlink,
-  USE_STUB(irt_dev_filename, truncate),
-  USE_STUB(irt_dev_filename, lstat),
-  USE_STUB(irt_dev_filename, link),
-  USE_STUB(irt_dev_filename, rename),
+  irt_truncate,
+  irt_lstat,
+  irt_link,
+  irt_rename,
   USE_STUB(irt_dev_filename, symlink),
-  USE_STUB(irt_dev_filename, chmod),
-  USE_STUB(irt_dev_filename, access),
+  irt_chmod,
+  irt_access,
   USE_STUB(irt_dev_filename, readlink),
   USE_STUB(irt_dev_filename, utimes),
 };
