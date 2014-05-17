@@ -43,7 +43,7 @@ HRESULT ForegroundHelper::ForegroundHotKey(HWND window) {
   hotkey.type = INPUT_KEYBOARD;
   hotkey.ki.wVk =  VK_F22;
   if (1 != SendInput(1, &hotkey, sizeof(hotkey))) {
-    LOG(WARNING) << "Failed to send input";
+    LOG(WARNING) << "Failed to send input; GetLastError(): " << GetLastError();
     return E_FAIL;
   }
 
