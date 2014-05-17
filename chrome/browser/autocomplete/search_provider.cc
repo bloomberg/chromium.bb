@@ -641,11 +641,9 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   TemplateURLRef::SearchTermsArgs search_term_args(input.text());
   search_term_args.cursor_position = input.cursor_position();
   search_term_args.page_classification = input.current_page_classification();
-#if defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableAnswersInSuggest))
+          switches::kEnableAnswersInSuggest))
     search_term_args.session_token = GetSessionToken();
-#endif
   GURL suggest_url(template_url->suggestions_url_ref().ReplaceSearchTerms(
       search_term_args));
   if (!suggest_url.is_valid())

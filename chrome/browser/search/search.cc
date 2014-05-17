@@ -332,7 +332,7 @@ struct NewTabURLDetails {
       default:
         // Use the local New Tab otherwise.
         return NewTabURLDetails(local_url, state);
-    };
+    }
   }
 
   GURL url;

@@ -437,6 +437,9 @@ extern const char kEnableAccessRequestNotifications[] =
 // Enables the <adview> tag in packaged apps.
 const char kEnableAdview[]                  = "enable-adview";
 
+// Enable Answers in Suggest.
+const char kEnableAnswersInSuggest[]        = "enable-answers-in-suggest";
+
 // If set, the app list will be enabled as if enabled from CWS.
 const char kEnableAppList[]                 = "enable-app-list";
 
@@ -1313,9 +1316,6 @@ const char kDisableZeroSuggest[] = "disable-zero-suggest";
 // Enable the accessibility tab switcher.
 const char kEnableAccessibilityTabSwitcher[] =
     "enable-accessibility-tab-switcher";
-
-// Enable Answers in Suggest.
-const char kEnableAnswersInSuggest[] = "enable-answers-in-suggest";
 
 // Enables app install alerts.
 const char kEnableAppInstallAlerts[]        = "enable-app-install-alerts";

@@ -84,9 +84,7 @@ const char kGoogleRLZParameter[] = "google:RLZ";
 const char kGoogleSearchClient[] = "google:searchClient";
 const char kGoogleSearchFieldtrialParameter[] =
     "google:searchFieldtrialParameter";
-#if defined (OS_ANDROID)
 const char kGoogleSearchVersion[] = "google:searchVersion";
-#endif
 const char kGoogleSessionToken[] = "google:sessionToken";
 const char kGoogleSourceIdParameter[] = "google:sourceId";
 const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
@@ -605,13 +603,10 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_SEARCH_CLIENT, start));
   } else if (parameter == kGoogleSearchFieldtrialParameter) {
     replacements->push_back(Replacement(GOOGLE_SEARCH_FIELDTRIAL_GROUP, start));
-#if defined(OS_ANDROID)
   } else if (parameter == kGoogleSearchVersion) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kEnableAnswersInSuggest)) {
+            switches::kEnableAnswersInSuggest))
       url->insert(start, "gs_rn=42&");
-    }
-#endif
   } else if (parameter == kGoogleSessionToken) {
     replacements->push_back(Replacement(GOOGLE_SESSION_TOKEN, start));
   } else if (parameter == kGoogleSourceIdParameter) {

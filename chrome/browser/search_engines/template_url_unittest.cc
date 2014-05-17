@@ -1325,7 +1325,6 @@ TEST_F(TemplateURLTest, ReflectsBookmarkBarPinned) {
   EXPECT_EQ("http://www.google.com/?bmbp=1&q=foo", result);
 }
 
-#if defined(OS_ANDROID)
 TEST_F(TemplateURLTest, AnswersHasVersion) {
   TemplateURLData data;
   UIThreadSearchTermsData::SetGoogleBaseURL("http://bar/");
@@ -1342,7 +1341,6 @@ TEST_F(TemplateURLTest, AnswersHasVersion) {
   result = url2.url_ref().ReplaceSearchTerms(search_terms_args);
   EXPECT_EQ("http://bar/search?q=foo&gs_rn=42&xssi=t", result);
 }
-#endif
 
 TEST_F(TemplateURLTest, SessionToken) {
   TemplateURLData data;

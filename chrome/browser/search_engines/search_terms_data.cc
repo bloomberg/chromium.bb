@@ -166,7 +166,7 @@ std::string UIThreadSearchTermsData::GetSuggestRequestIdentifier() const {
   sync_pb::SyncEnums::DeviceType device_type =
       browser_sync::DeviceInfo::GetLocalDeviceType();
   if (device_type == sync_pb::SyncEnums_DeviceType_TYPE_PHONE) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableAnswersInSuggest)) {
       return "chrome-mobile-ext-ansg";
     } else {

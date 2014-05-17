@@ -3104,7 +3104,6 @@ TEST_F(SearchProviderTest, CheckDuplicateMatchesSaved) {
   EXPECT_EQ(0U, match_apricot.duplicate_matches.size());
 }
 
-#if defined(OS_ANDROID)
 TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableAnswersInSuggest);
@@ -3142,7 +3141,6 @@ TEST_F(SearchProviderTest, SuggestQueryUsesToken) {
   fetcher->delegate()->OnURLFetchComplete(fetcher);
   RunTillProviderDone();
 }
-#endif
 
 TEST_F(SearchProviderTest, SessionToken) {
   // Subsequent calls always get the same token.
